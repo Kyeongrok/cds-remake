@@ -3237,9 +3237,6 @@ public sealed class ShipMapWindow : Window
             // 행적에 적는다(원본 갈래 0, 0x0049270F — 도시 화면을 펼 때) — 은퇴하면 이 줄들이 누적 캐릭터의 발자취가 된다.
             _game.Player.Note(Player.TraceArrival, city, _game.Player.Nation);
 
-            // 원본에 없는 것 — 모드 창에서 켜 두었으면 여기서 자동저장한다.
-            AutoSaveHere();
-
             inCity = ShowCityPicture(city, name);
         }
         finally
@@ -6121,6 +6118,8 @@ public sealed class ShipMapWindow : Window
         _game.Bgm.Play(track);
         SetInCity(true);          // 지도에 남색 막을 씌운다(그림 창과는 따로 논다)
         _game.Player.EnterCity(city, name);
+        // 도시 상태를 반영한 뒤 저장해야 CONTINUE가 실제 입항 도시에서 시작한다.
+        AutoSaveHere();
         // 건물 조건 없이 도시·연도·명성만으로 여는 이야기 장면(장의 첫머리)은 여기서 잡는다 —
         // 건물 안에서 여는 것은 CityPicView.CheckStory 가 따로 본다.
         CheckStory(-1);
