@@ -1,0 +1,5121 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Books": [
+      {
+        "Index": 0,
+        "Title": "형이상학",
+        "Author": "아리스토텔레스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          127,
+          10,
+          24,
+          26,
+          34,
+          62,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 1,
+        "Title": "원자론",
+        "Author": "데모크리토스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72,
+          66
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 2,
+        "Title": "국가론",
+        "Author": "플라톤 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72,
+          38,
+          62
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 3,
+        "Title": "전사",
+        "Author": "투키디데스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          14,
+          26,
+          72,
+          54
+        ],
+        "Hints": [
+          85
+        ]
+      },
+      {
+        "Index": 4,
+        "Title": "스토이케아",
+        "Author": "유클리드 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          30,
+          72,
+          79,
+          119
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 5,
+        "Title": "약물지",
+        "Author": "디오스코리데스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          29,
+          72,
+          82,
+          127
+        ],
+        "Hints": [
+          138
+        ]
+      },
+      {
+        "Index": 6,
+        "Title": "아나바시스",
+        "Author": "크세노폰 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 7,
+        "Title": "아가멤논",
+        "Author": "아이스큐로스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          0,
+          29,
+          38,
+          72
+        ],
+        "Hints": [
+          81
+        ]
+      },
+      {
+        "Index": 8,
+        "Title": "페르시아인",
+        "Author": "아이스킬로스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          4,
+          24,
+          28,
+          72
+        ],
+        "Hints": [
+          33
+        ]
+      },
+      {
+        "Index": 9,
+        "Title": "안티고네",
+        "Author": "소포클레스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72,
+          26,
+          29,
+          12
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 10,
+        "Title": "오이디푸스왕",
+        "Author": "소포클레스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          28,
+          30,
+          33,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 11,
+        "Title": "메디아",
+        "Author": "에우리피데스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          0,
+          29,
+          34,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 12,
+        "Title": "큐크롭스",
+        "Author": "에우리피데스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72
+        ],
+        "Hints": [
+          150
+        ]
+      },
+      {
+        "Index": 13,
+        "Title": "구름",
+        "Author": "아리스토파네스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          26,
+          28,
+          30,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 14,
+        "Title": "벌",
+        "Author": "아리스토파네스 작",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          28,
+          29,
+          30,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 15,
+        "Title": "부활",
+        "Author": "테르츄리아누스",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 16,
+        "Title": "아르고나우티카",
+        "Author": "아폴로니우스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          78
+        ],
+        "Hints": [
+          151
+        ]
+      },
+      {
+        "Index": 17,
+        "Title": "디오니소스 민담",
+        "Author": "논노스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          79
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 18,
+        "Title": "노동과 나날",
+        "Author": "헤시오도스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          0,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 19,
+        "Title": "신통기",
+        "Author": "헤시오도스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72,
+          26,
+          0
+        ],
+        "Hints": [
+          105
+        ]
+      },
+      {
+        "Index": 20,
+        "Title": "일리아드",
+        "Author": "호메로스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          26,
+          34,
+          0,
+          72
+        ],
+        "Hints": [
+          31,
+          22
+        ]
+      },
+      {
+        "Index": 21,
+        "Title": "오디세이아",
+        "Author": "호메로스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          28,
+          26,
+          62,
+          72
+        ],
+        "Hints": [
+          25,
+          86
+        ]
+      },
+      {
+        "Index": 22,
+        "Title": "역사",
+        "Author": "헤로도토스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72,
+          34,
+          38
+        ],
+        "Hints": [
+          0,
+          134
+        ]
+      },
+      {
+        "Index": 23,
+        "Title": "역사",
+        "Author": "헤로도토스 저",
+        "Language": 1,
+        "Year": 1480,
+        "Cities": [
+          0
+        ],
+        "Hints": [
+          0
+        ]
+      },
+      {
+        "Index": 24,
+        "Title": "지리사",
+        "Author": "스트라본 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          26,
+          34,
+          62,
+          72,
+          24,
+          29
+        ],
+        "Hints": [
+          2
+        ]
+      },
+      {
+        "Index": 25,
+        "Title": "지리사",
+        "Author": "스트라보 저",
+        "Language": 1,
+        "Year": 1480,
+        "Cities": [
+          0
+        ],
+        "Hints": [
+          2
+        ]
+      },
+      {
+        "Index": 26,
+        "Title": "과학집성",
+        "Author": "프톨레마이오스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          30,
+          72,
+          78,
+          127
+        ],
+        "Hints": [
+          9
+        ]
+      },
+      {
+        "Index": 27,
+        "Title": "세계7대경관",
+        "Author": "필론 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          29,
+          72,
+          112,
+          28,
+          82
+        ],
+        "Hints": [
+          26
+        ]
+      },
+      {
+        "Index": 28,
+        "Title": "입문서",
+        "Author": "유프스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          72,
+          24,
+          66
+        ],
+        "Hints": [
+          32
+        ]
+      },
+      {
+        "Index": 29,
+        "Title": "지리학",
+        "Author": "프톨레마이오스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33,
+          24,
+          28
+        ],
+        "Hints": [
+          15
+        ]
+      },
+      {
+        "Index": 30,
+        "Title": "박물지",
+        "Author": "플리니우스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          0,
+          12,
+          29,
+          33
+        ],
+        "Hints": [
+          110,
+          136
+        ]
+      },
+      {
+        "Index": 31,
+        "Title": "서간집",
+        "Author": "소 플리니우스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33,
+          34
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 32,
+        "Title": "로마사",
+        "Author": "리비우스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          26,
+          28,
+          29,
+          30,
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 33,
+        "Title": "갈리아 전기",
+        "Author": "카이사르 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          4,
+          14,
+          33,
+          38,
+          66,
+          0
+        ],
+        "Hints": [
+          20
+        ]
+      },
+      {
+        "Index": 34,
+        "Title": "갈리아 전기",
+        "Author": "카이사르 저",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          7
+        ],
+        "Hints": [
+          20
+        ]
+      },
+      {
+        "Index": 35,
+        "Title": "게르마니아",
+        "Author": "타키투스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          24,
+          33,
+          54
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 36,
+        "Title": "역사",
+        "Author": "타키투스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          0,
+          33,
+          12,
+          29
+        ],
+        "Hints": [
+          158
+        ]
+      },
+      {
+        "Index": 37,
+        "Title": "영웅전",
+        "Author": "플루타르코스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          0,
+          26,
+          33,
+          38
+        ],
+        "Hints": [
+          24
+        ]
+      },
+      {
+        "Index": 38,
+        "Title": "아에이네스",
+        "Author": "베르길리우스 작",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          24,
+          28,
+          29,
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 39,
+        "Title": "시집",
+        "Author": "폴라티우스 작",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          4,
+          29,
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 40,
+        "Title": "우정론",
+        "Author": "키케로 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          29,
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 41,
+        "Title": "역사",
+        "Author": "폴리비우스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33,
+          4
+        ],
+        "Hints": [
+          163
+        ]
+      },
+      {
+        "Index": 42,
+        "Title": "행복론",
+        "Author": "세네카 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 43,
+        "Title": "어록",
+        "Author": "에픽테토스",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          4,
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 44,
+        "Title": "자성론",
+        "Author": "아우렐리우스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 45,
+        "Title": "로마법 대전",
+        "Author": "유스티니아누스 황제 엮음",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          26,
+          28,
+          29,
+          30,
+          33,
+          34
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 46,
+        "Title": "구약성경",
+        "Author": "유대 기독교 성전",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          0,
+          7,
+          14,
+          33,
+          38,
+          54,
+          62,
+          120
+        ],
+        "Hints": [
+          55,
+          54
+        ]
+      },
+      {
+        "Index": 47,
+        "Title": "신약성경",
+        "Author": "기독교 성전",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          0,
+          7,
+          14,
+          33,
+          38,
+          54,
+          62,
+          120
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 48,
+        "Title": "그리스 이야기",
+        "Author": "파우사니아스",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          29,
+          30,
+          72,
+          112
+        ],
+        "Hints": [
+          23
+        ]
+      },
+      {
+        "Index": 49,
+        "Title": "그리스인에의 권고",
+        "Author": "클레멘스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          33,
+          72
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 50,
+        "Title": "성 베네딕투스전",
+        "Author": "그레고리우스 저",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          33,
+          12
+        ],
+        "Hints": [
+          53
+        ]
+      },
+      {
+        "Index": 51,
+        "Title": "신국",
+        "Author": "아우구스티누스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          7,
+          28,
+          29,
+          30,
+          33,
+          34,
+          62,
+          12
+        ],
+        "Hints": [
+          153,
+          109
+        ]
+      },
+      {
+        "Index": 52,
+        "Title": "고백",
+        "Author": "아우구스티누스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          26,
+          28,
+          29,
+          30,
+          34,
+          62,
+          4
+        ],
+        "Hints": [
+          156
+        ]
+      },
+      {
+        "Index": 53,
+        "Title": "영국 교회사",
+        "Author": "비드 저",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          38
+        ],
+        "Hints": [
+          80
+        ]
+      },
+      {
+        "Index": 54,
+        "Title": "기원론",
+        "Author": "이시돌 다 세빌랴 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          4,
+          7,
+          12,
+          0
+        ],
+        "Hints": [
+          120,
+          114
+        ]
+      },
+      {
+        "Index": 55,
+        "Title": "서고트사",
+        "Author": "이시돌 다 세빌랴 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          4,
+          12
+        ],
+        "Hints": [
+          165
+        ]
+      },
+      {
+        "Index": 56,
+        "Title": "칼 대제전",
+        "Author": "아인하르트 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14,
+          24,
+          54,
+          66
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 57,
+        "Title": "묵시록 주석",
+        "Author": "베아투스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          4,
+          12
+        ],
+        "Hints": [
+          103
+        ]
+      },
+      {
+        "Index": 58,
+        "Title": "엘 시드의 노래",
+        "Author": "카스티랴 무훈시",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          4,
+          7
+        ],
+        "Hints": [
+          180,
+          75
+        ]
+      },
+      {
+        "Index": 59,
+        "Title": "내 고통의 역사",
+        "Author": "아벨라르 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 60,
+        "Title": "예와 아니오",
+        "Author": "아벨라르 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 61,
+        "Title": "신학대전",
+        "Author": "토마스 아퀴나스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14,
+          26,
+          28,
+          29,
+          30,
+          33,
+          34
+        ],
+        "Hints": [
+          47
+        ]
+      },
+      {
+        "Index": 62,
+        "Title": "신학대전",
+        "Author": "토마스 아퀴나스 저",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          7,
+          12
+        ],
+        "Hints": [
+          47
+        ]
+      },
+      {
+        "Index": 63,
+        "Title": "이단논박대전",
+        "Author": "토마스 아퀴나스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14,
+          33,
+          34
+        ],
+        "Hints": [
+          101
+        ]
+      },
+      {
+        "Index": 64,
+        "Title": "주판서",
+        "Author": "리벨 아바키 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          28,
+          29,
+          30
+        ],
+        "Hints": [
+          181
+        ]
+      },
+      {
+        "Index": 65,
+        "Title": "칠부대전",
+        "Author": "알폰소 10세 저",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          4,
+          7,
+          12
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 66,
+        "Title": "산타 마리아 찬가집",
+        "Author": "알폰소 10세 저",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          4,
+          12
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 67,
+        "Title": "엘렉과 에니드",
+        "Author": "트로아 작",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14,
+          26
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 68,
+        "Title": "카르미나 부라나",
+        "Author": "솔본느 대학 시집",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 69,
+        "Title": "우신 예찬",
+        "Author": "에라스무스 저",
+        "Language": 3,
+        "Year": 1510,
+        "Cities": [
+          24,
+          38,
+          54,
+          66
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 70,
+        "Title": "사가",
+        "Author": "바이킹족 전승",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          66
+        ],
+        "Hints": [
+          148,
+          18,
+          130
+        ]
+      },
+      {
+        "Index": 71,
+        "Title": "에다",
+        "Author": "바이킹족 서사시",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          66,
+          7
+        ],
+        "Hints": [
+          104,
+          147
+        ]
+      },
+      {
+        "Index": 72,
+        "Title": "성 블렌타누스의 항해",
+        "Author": "아일랜드 전승",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          38,
+          7
+        ],
+        "Hints": [
+          56
+        ]
+      },
+      {
+        "Index": 73,
+        "Title": "시볼라의 일곱 황금도시",
+        "Author": "포르투갈 전승",
+        "Language": 1,
+        "Year": 1480,
+        "Cities": [
+          0,
+          7
+        ],
+        "Hints": [
+          58
+        ]
+      },
+      {
+        "Index": 74,
+        "Title": "하멜룬의 피리 부는 사나이",
+        "Author": "독일 전승",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          62,
+          66,
+          54
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 75,
+        "Title": "장미 이야기",
+        "Author": "장 드 묑 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14,
+          7
+        ],
+        "Hints": [
+          46
+        ]
+      },
+      {
+        "Index": 76,
+        "Title": "프레스테 조안의 전설",
+        "Author": "유럽 전승",
+        "Language": 1,
+        "Year": 1480,
+        "Cities": [
+          0,
+          38
+        ],
+        "Hints": [
+          51
+        ]
+      },
+      {
+        "Index": 77,
+        "Title": "아마조네스",
+        "Author": "작자 미상",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          7
+        ],
+        "Hints": [
+          149
+        ]
+      },
+      {
+        "Index": 78,
+        "Title": "여행기",
+        "Author": "만데빌 저",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          24,
+          38
+        ],
+        "Hints": [
+          135
+        ]
+      },
+      {
+        "Index": 79,
+        "Title": "키난인의 여행기",
+        "Author": "쥬바일 저",
+        "Language": 0,
+        "Year": 1480,
+        "Cities": [
+          12,
+          4
+        ],
+        "Hints": [
+          52,
+          13
+        ]
+      },
+      {
+        "Index": 80,
+        "Title": "작센 슈피겔",
+        "Author": "레프 고우 저",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          54
+        ],
+        "Hints": [
+          100
+        ]
+      },
+      {
+        "Index": 81,
+        "Title": "롤랑의 노래",
+        "Author": "프랑스 기사도 문학",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 82,
+        "Title": "베오울프",
+        "Author": "노삼브리아 궁정 엮음",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          38
+        ],
+        "Hints": [
+          79
+        ]
+      },
+      {
+        "Index": 83,
+        "Title": "아더왕 전설",
+        "Author": "웨이스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14,
+          38,
+          7
+        ],
+        "Hints": [
+          21,
+          99
+        ]
+      },
+      {
+        "Index": 84,
+        "Title": "니벨룽겐의 노래",
+        "Author": "독일 민족 서사시",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          54
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 85,
+        "Title": "이고리 원정기",
+        "Author": "작자 미상",
+        "Language": 4,
+        "Year": 1480,
+        "Cities": [
+          62,
+          54
+        ],
+        "Hints": [
+          49
+        ]
+      },
+      {
+        "Index": 86,
+        "Title": "알렉시아스",
+        "Author": "안나 콤네나 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          28,
+          62
+        ],
+        "Hints": [
+          50
+        ]
+      },
+      {
+        "Index": 87,
+        "Title": "신곡",
+        "Author": "단테 작",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          28,
+          29,
+          30
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 88,
+        "Title": "궁정인",
+        "Author": "카스틸리오네스 저",
+        "Language": 2,
+        "Year": 1490,
+        "Cities": [
+          33,
+          34
+        ],
+        "Hints": [
+          175
+        ]
+      },
+      {
+        "Index": 89,
+        "Title": "켄터베리 이야기",
+        "Author": "쵸오사 저",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          38
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 90,
+        "Title": "데카메론",
+        "Author": "복카치오 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          30,
+          34
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 91,
+        "Title": "신들의 계보",
+        "Author": "복카치오 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          30,
+          29
+        ],
+        "Hints": [
+          48
+        ]
+      },
+      {
+        "Index": 92,
+        "Title": "아프리카",
+        "Author": "베트라스카 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          26,
+          34,
+          0
+        ],
+        "Hints": [
+          115,
+          113
+        ]
+      },
+      {
+        "Index": 93,
+        "Title": "마그나 카르타",
+        "Author": "영국 대헌장",
+        "Language": 3,
+        "Year": 1480,
+        "Cities": [
+          38
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 94,
+        "Title": "군주론",
+        "Author": "마키아벨리 저",
+        "Language": 2,
+        "Year": 1510,
+        "Cities": [
+          30
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 95,
+        "Title": "가르강튀아와 팡타그뤼엘",
+        "Author": "라블레 저",
+        "Language": 2,
+        "Year": 1530,
+        "Cities": [
+          14
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 96,
+        "Title": "유토피아",
+        "Author": "토마스 무어 저",
+        "Language": 3,
+        "Year": 1515,
+        "Cities": [
+          38
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 97,
+        "Title": "알스 노바 무디카",
+        "Author": "비토리 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          14
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 98,
+        "Title": "세계지",
+        "Author": "피우스 2세 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33,
+          30
+        ],
+        "Hints": [
+          126,
+          116,
+          157
+        ]
+      },
+      {
+        "Index": 99,
+        "Title": "몽골인의 역사",
+        "Author": "플라노 카르피니 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33,
+          26
+        ],
+        "Hints": [
+          152
+        ]
+      },
+      {
+        "Index": 100,
+        "Title": "몽고제국 여행기",
+        "Author": "루브루크 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          33,
+          34
+        ],
+        "Hints": [
+          5,
+          162
+        ]
+      },
+      {
+        "Index": 101,
+        "Title": "세계의 모습",
+        "Author": "피엘 다이 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          28,
+          29,
+          34
+        ],
+        "Hints": [
+          142,
+          118,
+          143
+        ]
+      },
+      {
+        "Index": 102,
+        "Title": "동방 견문록",
+        "Author": "마르코 폴로 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          28,
+          33,
+          29
+        ],
+        "Hints": [
+          8,
+          92,
+          68,
+          161
+        ]
+      },
+      {
+        "Index": 103,
+        "Title": "기네발견 정복기",
+        "Author": "아브랄라 저",
+        "Language": 1,
+        "Year": 1480,
+        "Cities": [
+          0
+        ],
+        "Hints": [
+          102
+        ]
+      },
+      {
+        "Index": 104,
+        "Title": "항해 기록",
+        "Author": "카다모스트 저",
+        "Language": 1,
+        "Year": 1480,
+        "Cities": [
+          0
+        ],
+        "Hints": [
+          111,
+          119
+        ]
+      },
+      {
+        "Index": 105,
+        "Title": "콩고 왕국기",
+        "Author": "피카 페타 저",
+        "Language": 2,
+        "Year": 1482,
+        "Cities": [
+          4,
+          26,
+          0
+        ],
+        "Hints": [
+          141
+        ]
+      },
+      {
+        "Index": 106,
+        "Title": "세계 지도",
+        "Author": "토스카 넬리 작",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          54,
+          24,
+          28,
+          30
+        ],
+        "Hints": [
+          1
+        ]
+      },
+      {
+        "Index": 107,
+        "Title": "세계 지도",
+        "Author": "토스카 넬리 작",
+        "Language": 0,
+        "Year": 1483,
+        "Cities": [
+          7
+        ],
+        "Hints": [
+          1
+        ]
+      },
+      {
+        "Index": 108,
+        "Title": "세계 지도",
+        "Author": "마르틴 베하임 작",
+        "Language": 3,
+        "Year": 1490,
+        "Cities": [
+          54,
+          0
+        ],
+        "Hints": [
+          3
+        ]
+      },
+      {
+        "Index": 109,
+        "Title": "세계 지도",
+        "Author": "요한 셰나 작",
+        "Language": 3,
+        "Year": 1505,
+        "Cities": [
+          54,
+          7
+        ],
+        "Hints": [
+          6
+        ]
+      },
+      {
+        "Index": 110,
+        "Title": "세계지 서설",
+        "Author": "바르토제뮬라 작",
+        "Language": 3,
+        "Year": 1510,
+        "Cities": [
+          54,
+          0
+        ],
+        "Hints": [
+          7
+        ]
+      },
+      {
+        "Index": 111,
+        "Title": "세계지 서설",
+        "Author": "바르토제뮬라 작",
+        "Language": 0,
+        "Year": 1510,
+        "Cities": [
+          7
+        ],
+        "Hints": [
+          7
+        ]
+      },
+      {
+        "Index": 112,
+        "Title": "아베스타",
+        "Author": "조로아스터교 성전",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          130
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 113,
+        "Title": "코란",
+        "Author": "이슬람교 성전",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          79,
+          112,
+          119,
+          120,
+          123,
+          127,
+          130,
+          132
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 114,
+        "Title": "포도주 예찬",
+        "Author": "더 히스 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          10,
+          78,
+          112,
+          127
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 115,
+        "Title": "동물 개론",
+        "Author": "더 히스 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          119,
+          127,
+          132,
+          10
+        ],
+        "Hints": [
+          121,
+          129
+        ]
+      },
+      {
+        "Index": 116,
+        "Title": "고레스탕",
+        "Author": "사드 작",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          130,
+          132
+        ],
+        "Hints": [
+          42
+        ]
+      },
+      {
+        "Index": 117,
+        "Title": "꽃의 경이",
+        "Author": "이븐 이어스",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          79
+        ],
+        "Hints": [
+          27
+        ]
+      },
+      {
+        "Index": 118,
+        "Title": "의학 정전",
+        "Author": "이븐 시나",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          79,
+          123,
+          127,
+          132
+        ],
+        "Hints": [
+          173
+        ]
+      },
+      {
+        "Index": 119,
+        "Title": "치료의 서",
+        "Author": "이븐 시나",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          112,
+          120,
+          123,
+          127
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 120,
+        "Title": "샤 나메",
+        "Author": "필 두시 저",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          130,
+          119,
+          132
+        ],
+        "Hints": [
+          146
+        ]
+      },
+      {
+        "Index": 121,
+        "Title": "외과 전서",
+        "Author": "라지 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          79,
+          112,
+          120,
+          130,
+          10
+        ],
+        "Hints": [
+          133
+        ]
+      },
+      {
+        "Index": 122,
+        "Title": "지쥬 앗사비",
+        "Author": "바타니 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          120,
+          127,
+          130,
+          132,
+          34
+        ],
+        "Hints": [
+          57
+        ]
+      },
+      {
+        "Index": 123,
+        "Title": "대수",
+        "Author": "알 파리즈미 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          127,
+          130,
+          132
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 124,
+        "Title": "용서의 서",
+        "Author": "마앗리 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          112,
+          119,
+          123
+        ],
+        "Hints": [
+          84
+        ]
+      },
+      {
+        "Index": 125,
+        "Title": "루즈 미야드",
+        "Author": "마앗리 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          82,
+          119
+        ],
+        "Hints": [
+          76
+        ]
+      },
+      {
+        "Index": 126,
+        "Title": "튜르크 어록집",
+        "Author": "카슈 갈리 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          112,
+          119
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 127,
+        "Title": "철학자의 모순",
+        "Author": "가잘리 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          79,
+          112,
+          127,
+          132
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 128,
+        "Title": "종교학의 부활",
+        "Author": "가잘리 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          82,
+          120,
+          127
+        ],
+        "Hints": [
+          77
+        ]
+      },
+      {
+        "Index": 129,
+        "Title": "부조리의 부조리",
+        "Author": "이븐 루슈드 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          10,
+          79,
+          82,
+          112
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 130,
+        "Title": "의학대전",
+        "Author": "이븐 루슈드 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          10,
+          82,
+          119,
+          78
+        ],
+        "Hints": [
+          179
+        ]
+      },
+      {
+        "Index": 131,
+        "Title": "의학잠언집",
+        "Author": "이븐 마이문 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          79,
+          82,
+          120
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 132,
+        "Title": "미슈네 토라",
+        "Author": "이븐 마이문 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          79
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 133,
+        "Title": "호스로와 시린",
+        "Author": "니자미 작",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          130
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 134,
+        "Title": "일곱왕비 이야기",
+        "Author": "니자미 작",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          130,
+          127
+        ],
+        "Hints": [
+          182
+        ]
+      },
+      {
+        "Index": 135,
+        "Title": "지혜의 언저리",
+        "Author": "이븐 알 아라비 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          112,
+          120,
+          123,
+          127
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 136,
+        "Title": "메카의 계시",
+        "Author": "이븐 알 아라비 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          112,
+          120,
+          123,
+          127
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 137,
+        "Title": "카릴라와 디무나",
+        "Author": "동물 우화",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          112,
+          127,
+          82
+        ],
+        "Hints": [
+          128,
+          127
+        ]
+      },
+      {
+        "Index": 138,
+        "Title": "가요서",
+        "Author": "이슬람가요집",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          82,
+          119
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 139,
+        "Title": "마카마트",
+        "Author": "하릴리 작",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          79,
+          112,
+          119
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 140,
+        "Title": "정신적 매스나비",
+        "Author": "루우미 저",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          112,
+          119,
+          130
+        ],
+        "Hints": [
+          62
+        ]
+      },
+      {
+        "Index": 141,
+        "Title": "루우미 어록",
+        "Author": "루우미 저",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          112,
+          120,
+          123
+        ],
+        "Hints": [
+          74
+        ]
+      },
+      {
+        "Index": 142,
+        "Title": "집사",
+        "Author": "래시드 아딘 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          123,
+          127,
+          130,
+          79
+        ],
+        "Hints": [
+          28
+        ]
+      },
+      {
+        "Index": 143,
+        "Title": "샤리아에 의한 통치",
+        "Author": "이븐 타이미야 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          120,
+          123
+        ],
+        "Hints": [
+          62
+        ]
+      },
+      {
+        "Index": 144,
+        "Title": "악마론",
+        "Author": "이븐 타이미야 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          123
+        ],
+        "Hints": [
+          117
+        ]
+      },
+      {
+        "Index": 145,
+        "Title": "교훈의 책",
+        "Author": "이븐 할둔 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          112,
+          119,
+          123,
+          127,
+          132,
+          145
+        ],
+        "Hints": [
+          64
+        ]
+      },
+      {
+        "Index": 146,
+        "Title": "역사서설",
+        "Author": "이븐 할둔 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          82,
+          112,
+          120
+        ],
+        "Hints": [
+          29
+        ]
+      },
+      {
+        "Index": 147,
+        "Title": "시집",
+        "Author": "하피즈 작",
+        "Language": 6,
+        "Year": 1480,
+        "Cities": [
+          130
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 148,
+        "Title": "큐레겐 천문집",
+        "Author": "우르그 베크 엮음",
+        "Language": 9,
+        "Year": 1480,
+        "Cities": [
+          132
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 149,
+        "Title": "대원일통지",
+        "Author": "듀말 우딘 외 저",
+        "Language": 9,
+        "Year": 1480,
+        "Cities": [
+          132,
+          119
+        ],
+        "Hints": [
+          171
+        ]
+      },
+      {
+        "Index": 150,
+        "Title": "완사",
+        "Author": "알 아시르 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78,
+          120,
+          127
+        ],
+        "Hints": [
+          170,
+          63
+        ]
+      },
+      {
+        "Index": 151,
+        "Title": "천일야화",
+        "Author": "아랍 전승",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          10,
+          112,
+          119,
+          123
+        ],
+        "Hints": [
+          107
+        ]
+      },
+      {
+        "Index": 152,
+        "Title": "3대륙 주유기",
+        "Author": "이븐 밧투타 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          10,
+          82
+        ],
+        "Hints": [
+          65,
+          61,
+          112
+        ]
+      },
+      {
+        "Index": 153,
+        "Title": "아프리카지",
+        "Author": "무함마드 저",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          79,
+          78
+        ],
+        "Hints": [
+          106
+        ]
+      },
+      {
+        "Index": 154,
+        "Title": "마파 문데스",
+        "Author": "고대지도",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          78
+        ],
+        "Hints": [
+          10
+        ]
+      },
+      {
+        "Index": 155,
+        "Title": "세계지도",
+        "Author": "알 이드리쉬 작",
+        "Language": 5,
+        "Year": 1480,
+        "Cities": [
+          82,
+          112,
+          127,
+          10
+        ],
+        "Hints": [
+          4
+        ]
+      },
+      {
+        "Index": 156,
+        "Title": "리그 베다",
+        "Author": "인도 고전",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          34
+        ]
+      },
+      {
+        "Index": 157,
+        "Title": "우파니샤드",
+        "Author": "베다 설명서",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 158,
+        "Title": "마누 법전",
+        "Author": "힌두교 법전",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          88
+        ]
+      },
+      {
+        "Index": 159,
+        "Title": "샤쿤트라",
+        "Author": "카리다사 작",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 160,
+        "Title": "마하바라타",
+        "Author": "인도 서사시",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          125
+        ]
+      },
+      {
+        "Index": 161,
+        "Title": "라마야나",
+        "Author": "인도 서사시",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          144
+        ]
+      },
+      {
+        "Index": 162,
+        "Title": "바가바타푸라나",
+        "Author": "힌두 서사시",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          137
+        ]
+      },
+      {
+        "Index": 163,
+        "Title": "판챠탄트라",
+        "Author": "산스크리트 설화",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          108
+        ]
+      },
+      {
+        "Index": 164,
+        "Title": "계산의 본질",
+        "Author": "슈리다라 저",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 165,
+        "Title": "쾌락에 관한 잠언",
+        "Author": "봐 챠야나 저",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 166,
+        "Title": "카우시카 수트라",
+        "Author": "나가르쥬나 저",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          172
+        ]
+      },
+      {
+        "Index": 167,
+        "Title": "우파 데샤 사하스리",
+        "Author": "샨카라 저",
+        "Language": 8,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 168,
+        "Title": "나가라크루타가마",
+        "Author": "프라판챠 작",
+        "Language": 12,
+        "Year": 1480,
+        "Cities": [
+          145
+        ],
+        "Hints": [
+          42
+        ]
+      },
+      {
+        "Index": 169,
+        "Title": "서경",
+        "Author": "중국 고대사",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          188,
+          182,
+          190,
+          185
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 170,
+        "Title": "시경",
+        "Author": "시가집",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          178,
+          182,
+          184,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 171,
+        "Title": "역경",
+        "Author": "중국 고전",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          178,
+          182,
+          184,
+          185,
+          190
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 172,
+        "Title": "예기",
+        "Author": "중국 고전",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          178,
+          182,
+          184,
+          185,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 173,
+        "Title": "춘추",
+        "Author": "공자 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          178,
+          182,
+          184,
+          185,
+          188,
+          190
+        ],
+        "Hints": [
+          91,
+          90
+        ]
+      },
+      {
+        "Index": 174,
+        "Title": "주역",
+        "Author": "중국 고전",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          184,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 175,
+        "Title": "의례",
+        "Author": "중국 고전",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177,
+          178,
+          185,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 176,
+        "Title": "효경",
+        "Author": "중국 고전",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          182,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 177,
+        "Title": "논어",
+        "Author": "공자 원작, 그 외 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177,
+          178,
+          182,
+          184,
+          185,
+          188,
+          190
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 178,
+        "Title": "초사",
+        "Author": "시가집",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178,
+          185
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 179,
+        "Title": "전국책",
+        "Author": "중국 고대사",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177,
+          178,
+          184,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 180,
+        "Title": "사기",
+        "Author": "사마천 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          185,
+          188,
+          178,
+          182,
+          184
+        ],
+        "Hints": [
+          37
+        ]
+      },
+      {
+        "Index": 181,
+        "Title": "한서",
+        "Author": "반고 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          182,
+          185,
+          188,
+          177
+        ],
+        "Hints": [
+          38
+        ]
+      },
+      {
+        "Index": 182,
+        "Title": "염철론",
+        "Author": "환관 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184,
+          185,
+          188,
+          174
+        ],
+        "Hints": [
+          169
+        ]
+      },
+      {
+        "Index": 183,
+        "Title": "설문해자",
+        "Author": "허신 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 184,
+        "Title": "후한서",
+        "Author": "범엽 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 185,
+        "Title": "두공부집",
+        "Author": "두보 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177,
+          178,
+          184,
+          185
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 186,
+        "Title": "이태백 작",
+        "Author": "이백 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          178,
+          184,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 187,
+        "Title": "수경주",
+        "Author": "지리 실용서",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          185,
+          178,
+          174,
+          188
+        ],
+        "Hints": [
+          14
+        ]
+      },
+      {
+        "Index": 188,
+        "Title": "귀거래사",
+        "Author": "도연명 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 189,
+        "Title": "문선",
+        "Author": "소명태자 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 190,
+        "Title": "세설신어",
+        "Author": "류의경 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 191,
+        "Title": "삼국지",
+        "Author": "진수 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 192,
+        "Title": "위지왜인전",
+        "Author": "진수 엮음",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184,
+          188
+        ],
+        "Hints": [
+          95
+        ]
+      },
+      {
+        "Index": 193,
+        "Title": "송서",
+        "Author": "침약 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          185
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 194,
+        "Title": "란정서",
+        "Author": "왕의지 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 195,
+        "Title": "포박자",
+        "Author": "갈홍 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 196,
+        "Title": "상한론",
+        "Author": "왕숙화 엮음",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178,
+          182,
+          188
+        ],
+        "Hints": [
+          183
+        ]
+      },
+      {
+        "Index": 197,
+        "Title": "형초세시기",
+        "Author": "종품 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174,
+          178
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 198,
+        "Title": "제민요술",
+        "Author": "가사협 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          185,
+          184
+        ],
+        "Hints": [
+          124
+        ]
+      },
+      {
+        "Index": 199,
+        "Title": "백씨문집",
+        "Author": "백거이 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178,
+          182,
+          184,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 200,
+        "Title": "대장경",
+        "Author": "한역불전",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          182
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 201,
+        "Title": "오경정의",
+        "Author": "공전달,안사고 외 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 202,
+        "Title": "사통",
+        "Author": "류지기 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188,
+          177
+        ],
+        "Hints": [
+          178
+        ]
+      },
+      {
+        "Index": 203,
+        "Title": "통전",
+        "Author": "두우 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 204,
+        "Title": "진서",
+        "Author": "방현령 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 205,
+        "Title": "완화군현 도시",
+        "Author": "이길보 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188,
+          178
+        ],
+        "Hints": [
+          123
+        ]
+      },
+      {
+        "Index": 206,
+        "Title": "해남화이도",
+        "Author": "가탐 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177,
+          174
+        ],
+        "Hints": [
+          145
+        ]
+      },
+      {
+        "Index": 207,
+        "Title": "의산잡찬",
+        "Author": "이상은 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 208,
+        "Title": "태극도설",
+        "Author": "주돈이 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188,
+          182
+        ],
+        "Hints": [
+          122
+        ]
+      },
+      {
+        "Index": 209,
+        "Title": "통감강목",
+        "Author": "주희 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 210,
+        "Title": "자치통감",
+        "Author": "사마광 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          182,
+          184
+        ],
+        "Hints": [
+          39
+        ]
+      },
+      {
+        "Index": 211,
+        "Title": "신오대사",
+        "Author": "구양수 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          184,
+          185
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 212,
+        "Title": "태평광기",
+        "Author": "송대사서",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          185
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 213,
+        "Title": "무경총요",
+        "Author": "조공량, 정도외 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 214,
+        "Title": "몽계필담",
+        "Author": "침괄 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 215,
+        "Title": "태평혜민화제국방",
+        "Author": "화제혜민국 엮음",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178,
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 216,
+        "Title": "적벽부",
+        "Author": "소식 작",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          178
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 217,
+        "Title": "끽다양생기",
+        "Author": "송서 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177,
+          178
+        ],
+        "Hints": [
+          166
+        ]
+      },
+      {
+        "Index": 218,
+        "Title": "직지심경",
+        "Author": "선서",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          174
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 219,
+        "Title": "서상기",
+        "Author": "원곡",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 220,
+        "Title": "비파기",
+        "Author": "원곡",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 221,
+        "Title": "원조비사",
+        "Author": "몽골사",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 222,
+        "Title": "원전장",
+        "Author": "원법서",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 223,
+        "Title": "수시력",
+        "Author": "돈수경 외 엮음",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          188,
+          174
+        ],
+        "Hints": [
+          93
+        ]
+      },
+      {
+        "Index": 224,
+        "Title": "불국기",
+        "Author": "법현 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          182,
+          177
+        ],
+        "Hints": [
+          176
+        ]
+      },
+      {
+        "Index": 225,
+        "Title": "대당서역기",
+        "Author": "현장 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          182,
+          188
+        ],
+        "Hints": [
+          36
+        ]
+      },
+      {
+        "Index": 226,
+        "Title": "남해기귀내법전",
+        "Author": "의정 저",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          182,
+          184
+        ],
+        "Hints": [
+          89,
+          66
+        ]
+      },
+      {
+        "Index": 227,
+        "Title": "해양견성도",
+        "Author": "항해지도",
+        "Language": 7,
+        "Year": 1480,
+        "Cities": [
+          177,
+          174
+        ],
+        "Hints": [
+          12
+        ]
+      },
+      {
+        "Index": 228,
+        "Title": "현풍경회록",
+        "Author": "장춘진인 저",
+        "Language": 9,
+        "Year": 1480,
+        "Cities": [
+          188,
+          184
+        ],
+        "Hints": [
+          87
+        ]
+      },
+      {
+        "Index": 229,
+        "Title": "장춘진인 서유기",
+        "Author": "장춘진인 저",
+        "Language": 9,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 230,
+        "Title": "담연거사문집",
+        "Author": "야율초재 저",
+        "Language": 9,
+        "Year": 1480,
+        "Cities": [
+          188
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 231,
+        "Title": "서유록",
+        "Author": "야율초재 저",
+        "Language": 9,
+        "Year": 1480,
+        "Cities": [
+          188,
+          182
+        ],
+        "Hints": [
+          67
+        ]
+      },
+      {
+        "Index": 232,
+        "Title": "대월사기",
+        "Author": "대월사사",
+        "Language": 12,
+        "Year": 1480,
+        "Cities": [
+          174,
+          177
+        ],
+        "Hints": [
+          35
+        ]
+      },
+      {
+        "Index": 233,
+        "Title": "이공친서",
+        "Author": "안남사서",
+        "Language": 12,
+        "Year": 1480,
+        "Cities": [
+          174
+        ],
+        "Hints": [
+          78
+        ]
+      },
+      {
+        "Index": 234,
+        "Title": "상전고금예문",
+        "Author": "고려문집",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          190
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 235,
+        "Title": "팔도도",
+        "Author": "정보 작",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          190
+        ],
+        "Hints": [
+          40
+        ]
+      },
+      {
+        "Index": 236,
+        "Title": "해동제국기",
+        "Author": "신숙주 저",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          190
+        ],
+        "Hints": [
+          94
+        ]
+      },
+      {
+        "Index": 237,
+        "Title": "삼국유사",
+        "Author": "일연",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          190
+        ],
+        "Hints": [
+          185
+        ]
+      },
+      {
+        "Index": 238,
+        "Title": "고사기",
+        "Author": "오오노 야수마로 엮음",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": [
+          41
+        ]
+      },
+      {
+        "Index": 239,
+        "Title": "일본서기",
+        "Author": "토네리친왕 엮음",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 240,
+        "Title": "만엽집",
+        "Author": "오오토모노 야캬모치 엮음",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 241,
+        "Title": "죽취이야기",
+        "Author": "일본전승",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": [
+          177
+        ]
+      },
+      {
+        "Index": 242,
+        "Title": "원씨이야기",
+        "Author": "무라사키 시키부 작",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 243,
+        "Title": "침초자",
+        "Author": "세이쇼오 나곤 작",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 244,
+        "Title": "평가이야기",
+        "Author": "군기이야기",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 245,
+        "Title": "토사일기",
+        "Author": "키노 쓰라유키 작",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 246,
+        "Title": "고금화가집",
+        "Author": "키노 쓰라유키 외 엮음",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 247,
+        "Title": "도연초",
+        "Author": "요시다 켄코 작",
+        "Language": 13,
+        "Year": 1480,
+        "Cities": [
+          193
+        ],
+        "Hints": []
+      },
+      {
+        "Index": 248,
+        "Title": "볼보닉스 그림문서",
+        "Author": "신대륙전승",
+        "Language": 11,
+        "Year": 1480,
+        "Cities": [
+          201,
+          200
+        ],
+        "Hints": [
+          98,
+          70,
+          96
+        ]
+      },
+      {
+        "Index": 249,
+        "Title": "아스카티트란 그림문서",
+        "Author": "신대륙전승",
+        "Language": 11,
+        "Year": 1480,
+        "Cities": [
+          201,
+          200
+        ],
+        "Hints": [
+          17,
+          11
+        ]
+      },
+      {
+        "Index": 250,
+        "Title": "텔레리아노레멘시스 그림문서",
+        "Author": "신대륙전승",
+        "Language": 11,
+        "Year": 1480,
+        "Cities": [
+          201,
+          200
+        ],
+        "Hints": [
+          71,
+          44
+        ]
+      },
+      {
+        "Index": 251,
+        "Title": "태양의 그림문서",
+        "Author": "신대륙전승",
+        "Language": 11,
+        "Year": 1480,
+        "Cities": [
+          201,
+          200
+        ],
+        "Hints": [
+          155
+        ]
+      },
+      {
+        "Index": 252,
+        "Title": "이슈트릴 쇼티틀 그림문서",
+        "Author": "신대륙전승",
+        "Language": 11,
+        "Year": 1480,
+        "Cities": [
+          201,
+          200
+        ],
+        "Hints": [
+          16,
+          69,
+          43
+        ]
+      },
+      {
+        "Index": 253,
+        "Title": "누에바 에스파냐의 인디아스사",
+        "Author": "디에고 두란 저",
+        "Language": 0,
+        "Year": 1499,
+        "Cities": [
+          201,
+          7
+        ],
+        "Hints": [
+          168,
+          131
+        ]
+      },
+      {
+        "Index": 254,
+        "Title": "누에바 에스파냐 제사물개사",
+        "Author": "사아군 저",
+        "Language": 0,
+        "Year": 1500,
+        "Cities": [
+          201,
+          7
+        ],
+        "Hints": [
+          159,
+          139
+        ]
+      },
+      {
+        "Index": 255,
+        "Title": "신세계자연문화사",
+        "Author": "호세 데 아코스타 저",
+        "Language": 0,
+        "Year": 1502,
+        "Cities": [
+          201,
+          7
+        ],
+        "Hints": [
+          160,
+          132,
+          19,
+          140
+        ]
+      },
+      {
+        "Index": 256,
+        "Title": "유카탄사물기",
+        "Author": "디에고 데 에란다 저",
+        "Language": 0,
+        "Year": 1500,
+        "Cities": [
+          201,
+          4
+        ],
+        "Hints": [
+          167,
+          164,
+          97
+        ]
+      }
+    ],
+    "HintNeeds": [
+      {
+        "Skill": 0,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 1,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 1,
+        "Parents": [
+          2
+        ],
+        "Picture": 18,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 2,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 2,
+        "Parents": [
+          0,
+          3,
+          6
+        ],
+        "Picture": 19,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": 17,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 3,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 3,
+        "Parents": [
+          9
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 0,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 2,
+        "Parents": [
+          9
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 3,
+        "Parents": [
+          15
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": 4
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          8
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 3,
+        "Parents": [
+          90
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": [
+          67
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": [
+          97,
+          71
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": 16,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 3,
+        "Parents": [
+          50
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 3,
+        "Parents": [
+          183,
+          180,
+          186,
+          185,
+          179,
+          184,
+          113
+        ],
+        "Picture": -1,
+        "Language": 6
+      },
+      {
+        "Skill": -1,
+        "Level": 3,
+        "Parents": [
+          73,
+          89,
+          26
+        ],
+        "Picture": -1,
+        "Language": 4
+      },
+      {
+        "Skill": -1,
+        "Level": 2,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": 10
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": 10
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          8
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          15
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 3,
+        "Parents": [
+          78,
+          79,
+          19,
+          20,
+          31,
+          91,
+          86
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 0,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 0,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 0,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 7,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          8
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          8
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          193
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": [
+          62
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 3,
+        "Parents": [
+          133
+        ],
+        "Picture": 3,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 3,
+        "Parents": null,
+        "Picture": 4,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": null,
+        "Picture": 5,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": null,
+        "Picture": 6,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": null,
+        "Picture": 7,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": null,
+        "Picture": 10,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          6
+        ],
+        "Picture": 8,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          3
+        ],
+        "Picture": 12,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          9
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 0,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 3,
+        "Parents": null,
+        "Picture": 2,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          4
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          9
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          4
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          6
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 3,
+        "Parents": [
+          4
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          193
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 3,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          4
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 3,
+        "Parents": [
+          4
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": 10
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          3
+        ],
+        "Picture": 1,
+        "Language": 12
+      },
+      {
+        "Skill": 5,
+        "Level": 2,
+        "Parents": [
+          8
+        ],
+        "Picture": 13,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 2,
+        "Parents": [
+          3
+        ],
+        "Picture": 11,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          9
+        ],
+        "Picture": -1,
+        "Language": 12
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          4
+        ],
+        "Picture": 0,
+        "Language": 12
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          1
+        ],
+        "Picture": 14,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 2,
+        "Parents": [
+          1
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 3,
+        "Parents": [
+          9
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 2,
+        "Parents": null,
+        "Picture": 15,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 1,
+        "Parents": [
+          74
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 1,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 11,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 12,
+        "Level": 1,
+        "Parents": [
+          3
+        ],
+        "Picture": 9,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 1,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          193
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 1,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 1,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 2,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 3,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 1,
+        "Parents": [
+          192
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 1,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": -1,
+        "Level": 3,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": 10
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 3,
+        "Parents": [
+          3
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          8
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 1,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 0,
+        "Parents": [
+          0
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 2,
+        "Parents": [
+          2
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 5,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 9,
+        "Level": 3,
+        "Parents": null,
+        "Picture": -1,
+        "Language": -1
+      },
+      {
+        "Skill": 8,
+        "Level": 3,
+        "Parents": [
+          5
+        ],
+        "Picture": -1,
+        "Language": 13
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 4
+}

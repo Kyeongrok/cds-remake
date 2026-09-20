@@ -1,0 +1,2042 @@
+{
+  "Stamp": "226곳",
+  "Data": {
+    "Cities": [
+      {
+        "Id": 0,
+        "Name": "리스본",
+        "Culture": "이베리아",
+        "Latitude": 38,
+        "Longitude": -9,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 1,
+        "Name": "오포르트",
+        "Culture": "이베리아",
+        "Latitude": 41,
+        "Longitude": -8,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 2,
+        "Name": "라코루냐",
+        "Culture": "이베리아",
+        "Latitude": 43,
+        "Longitude": -8,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 3,
+        "Name": "빌바오",
+        "Culture": "이베리아",
+        "Latitude": 43,
+        "Longitude": -3,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 4,
+        "Name": "톨레도",
+        "Culture": "이베리아",
+        "Latitude": 40,
+        "Longitude": -4,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 5,
+        "Name": "사라고사",
+        "Culture": "이베리아",
+        "Latitude": 41,
+        "Longitude": -1,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 6,
+        "Name": "코르도바",
+        "Culture": "이베리아",
+        "Latitude": 38,
+        "Longitude": -5,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 7,
+        "Name": "세빌리아",
+        "Culture": "이베리아",
+        "Latitude": 37,
+        "Longitude": -6,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 8,
+        "Name": "카디스",
+        "Culture": "이베리아",
+        "Latitude": 36,
+        "Longitude": -6,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 9,
+        "Name": "말라가",
+        "Culture": "이슬람",
+        "Latitude": 36,
+        "Longitude": -4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 10,
+        "Name": "그라나다",
+        "Culture": "이슬람",
+        "Latitude": 37,
+        "Longitude": -3,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 11,
+        "Name": "발렌시아",
+        "Culture": "이베리아",
+        "Latitude": 39,
+        "Longitude": 0,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 12,
+        "Name": "바르셀로나",
+        "Culture": "이베리아",
+        "Latitude": 39,
+        "Longitude": 2,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 13,
+        "Name": "마요르카",
+        "Culture": "이베리아",
+        "Latitude": 41,
+        "Longitude": 2,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 14,
+        "Name": "파리",
+        "Culture": "북유럽",
+        "Latitude": 48,
+        "Longitude": 2,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 15,
+        "Name": "루앙",
+        "Culture": "북유럽",
+        "Latitude": 49,
+        "Longitude": 0,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 16,
+        "Name": "투르",
+        "Culture": "북유럽",
+        "Latitude": 47,
+        "Longitude": 0,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 17,
+        "Name": "낭트",
+        "Culture": "북유럽",
+        "Latitude": 47,
+        "Longitude": -2,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 18,
+        "Name": "보르도",
+        "Culture": "북유럽",
+        "Latitude": 45,
+        "Longitude": 1,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 19,
+        "Name": "툴루즈",
+        "Culture": "북유럽",
+        "Latitude": 43,
+        "Longitude": 1,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 20,
+        "Name": "리옹",
+        "Culture": "북유럽",
+        "Latitude": 45,
+        "Longitude": 4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 21,
+        "Name": "마르세유",
+        "Culture": "지중해",
+        "Latitude": 43,
+        "Longitude": 5,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 22,
+        "Name": "브뤼즈",
+        "Culture": "북유럽",
+        "Latitude": 51,
+        "Longitude": 3,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 23,
+        "Name": "엔트워프",
+        "Culture": "북유럽",
+        "Latitude": 52,
+        "Longitude": 4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 24,
+        "Name": "암스테르담",
+        "Culture": "북유럽",
+        "Latitude": 52,
+        "Longitude": 4,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 25,
+        "Name": "브뤼셀",
+        "Culture": "북유럽",
+        "Latitude": 50,
+        "Longitude": 4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 26,
+        "Name": "밀라노",
+        "Culture": "지중해",
+        "Latitude": 45,
+        "Longitude": 9,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 27,
+        "Name": "토리노",
+        "Culture": "지중해",
+        "Latitude": 45,
+        "Longitude": 8,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 28,
+        "Name": "제노바",
+        "Culture": "지중해",
+        "Latitude": 44,
+        "Longitude": 8,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 29,
+        "Name": "베니스",
+        "Culture": "지중해",
+        "Latitude": 45,
+        "Longitude": 12,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 30,
+        "Name": "피렌체",
+        "Culture": "지중해",
+        "Latitude": 43,
+        "Longitude": 11,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 31,
+        "Name": "피사",
+        "Culture": "지중해",
+        "Latitude": 43,
+        "Longitude": 10,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 32,
+        "Name": "안코나",
+        "Culture": "지중해",
+        "Latitude": 43,
+        "Longitude": 13,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 33,
+        "Name": "로마",
+        "Culture": "지중해",
+        "Latitude": 42,
+        "Longitude": 11,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 34,
+        "Name": "나폴리",
+        "Culture": "지중해",
+        "Latitude": 41,
+        "Longitude": 14,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 35,
+        "Name": "칼리아스",
+        "Culture": "지중해",
+        "Latitude": 39,
+        "Longitude": 9,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 36,
+        "Name": "팔레르모",
+        "Culture": "지중해",
+        "Latitude": 38,
+        "Longitude": 13,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 37,
+        "Name": "시라쿠사",
+        "Culture": "지중해",
+        "Latitude": 37,
+        "Longitude": 15,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 38,
+        "Name": "런던",
+        "Culture": "북유럽",
+        "Latitude": 50,
+        "Longitude": 0,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 39,
+        "Name": "사우셈프턴",
+        "Culture": "북유럽",
+        "Latitude": 51,
+        "Longitude": -1,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 40,
+        "Name": "브리스틀",
+        "Culture": "북유럽",
+        "Latitude": 51,
+        "Longitude": -3,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 41,
+        "Name": "요크",
+        "Culture": "북유럽",
+        "Latitude": 54,
+        "Longitude": -1,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 42,
+        "Name": "에든버러",
+        "Culture": "북유럽",
+        "Latitude": 56,
+        "Longitude": -2,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 43,
+        "Name": "더블린",
+        "Culture": "북유럽",
+        "Latitude": 53,
+        "Longitude": -6,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 44,
+        "Name": "함부르크",
+        "Culture": "북유럽",
+        "Latitude": 53,
+        "Longitude": 9,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 45,
+        "Name": "뤼베크",
+        "Culture": "북유럽",
+        "Latitude": 54,
+        "Longitude": 10,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 46,
+        "Name": "브레멘",
+        "Culture": "북유럽",
+        "Latitude": 53,
+        "Longitude": 8,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 47,
+        "Name": "쾰른",
+        "Culture": "북유럽",
+        "Latitude": 51,
+        "Longitude": 6,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 48,
+        "Name": "프랑크푸르트",
+        "Culture": "북유럽",
+        "Latitude": 50,
+        "Longitude": 7,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 49,
+        "Name": "스트라스부르크",
+        "Culture": "북유럽",
+        "Latitude": 48,
+        "Longitude": 6,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 50,
+        "Name": "마그데부르크",
+        "Culture": "북유럽",
+        "Latitude": 52,
+        "Longitude": 11,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 51,
+        "Name": "뉘른베르크",
+        "Culture": "북유럽",
+        "Latitude": 49,
+        "Longitude": 10,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 52,
+        "Name": "아우크스부르크",
+        "Culture": "북유럽",
+        "Latitude": 48,
+        "Longitude": 10,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 53,
+        "Name": "프라하",
+        "Culture": "북유럽",
+        "Latitude": 49,
+        "Longitude": 14,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 54,
+        "Name": "비엔나",
+        "Culture": "북유럽",
+        "Latitude": 47,
+        "Longitude": 16,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 55,
+        "Name": "베른",
+        "Culture": "북유럽",
+        "Latitude": 46,
+        "Longitude": 7,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 56,
+        "Name": "단치히",
+        "Culture": "북유럽",
+        "Latitude": 54,
+        "Longitude": 18,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 57,
+        "Name": "쾨니히스베르크",
+        "Culture": "북유럽",
+        "Latitude": 54,
+        "Longitude": 19,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 58,
+        "Name": "리가",
+        "Culture": "북유럽",
+        "Latitude": 57,
+        "Longitude": 23,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 59,
+        "Name": "노브고르트",
+        "Culture": "북유럽",
+        "Latitude": 58,
+        "Longitude": 31,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 60,
+        "Name": "모스크바",
+        "Culture": "북유럽",
+        "Latitude": 56,
+        "Longitude": 36,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 61,
+        "Name": "키에프",
+        "Culture": "북유럽",
+        "Latitude": 50,
+        "Longitude": 30,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 62,
+        "Name": "바르샤바",
+        "Culture": "북유럽",
+        "Latitude": 52,
+        "Longitude": 20,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 63,
+        "Name": "부다페스트",
+        "Culture": "북유럽",
+        "Latitude": 47,
+        "Longitude": 18,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 64,
+        "Name": "스톡홀롬",
+        "Culture": "북유럽",
+        "Latitude": 59,
+        "Longitude": 18,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 65,
+        "Name": "비즈비",
+        "Culture": "북유럽",
+        "Latitude": 57,
+        "Longitude": 18,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 66,
+        "Name": "코펜하겐",
+        "Culture": "북유럽",
+        "Latitude": 55,
+        "Longitude": 12,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 67,
+        "Name": "오슬로",
+        "Culture": "북유럽",
+        "Latitude": 59,
+        "Longitude": 10,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 68,
+        "Name": "베르겐",
+        "Culture": "북유럽",
+        "Latitude": 60,
+        "Longitude": 4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 69,
+        "Name": "베오그라드",
+        "Culture": "지중해",
+        "Latitude": 44,
+        "Longitude": 20,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 70,
+        "Name": "부쿠레슈티",
+        "Culture": "이슬람",
+        "Latitude": 45,
+        "Longitude": 20,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 71,
+        "Name": "라구사",
+        "Culture": "지중해",
+        "Latitude": 42,
+        "Longitude": 17,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 72,
+        "Name": "아테네",
+        "Culture": "이슬람",
+        "Latitude": 38,
+        "Longitude": 23,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 73,
+        "Name": "살로니카",
+        "Culture": "이슬람",
+        "Latitude": 40,
+        "Longitude": 23,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 74,
+        "Name": "간디아",
+        "Culture": "발칸",
+        "Latitude": 35,
+        "Longitude": 25,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 75,
+        "Name": "파마가스타",
+        "Culture": "지중해",
+        "Latitude": 35,
+        "Longitude": 33,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 76,
+        "Name": "바르나",
+        "Culture": "이슬람",
+        "Latitude": 42,
+        "Longitude": 29,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 77,
+        "Name": "몬카스트로",
+        "Culture": "지중해",
+        "Latitude": 44,
+        "Longitude": 30,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 78,
+        "Name": "알렉산드리아",
+        "Culture": "이슬람",
+        "Latitude": 31,
+        "Longitude": 30,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 79,
+        "Name": "카이로",
+        "Culture": "이슬람",
+        "Latitude": 30,
+        "Longitude": 30,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 80,
+        "Name": "아스완",
+        "Culture": "이슬람",
+        "Latitude": 24,
+        "Longitude": 32,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 81,
+        "Name": "트리폴리",
+        "Culture": "이슬람",
+        "Latitude": 32,
+        "Longitude": 13,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 82,
+        "Name": "튀니스",
+        "Culture": "이슬람",
+        "Latitude": 27,
+        "Longitude": 10,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 83,
+        "Name": "알제",
+        "Culture": "이슬람",
+        "Latitude": 37,
+        "Longitude": 4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 84,
+        "Name": "세우타",
+        "Culture": "이슬람",
+        "Latitude": 35,
+        "Longitude": 5,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 85,
+        "Name": "카사블랑카",
+        "Culture": "이슬람",
+        "Latitude": 33,
+        "Longitude": 8,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 86,
+        "Name": "아조레스",
+        "Culture": "아프리카",
+        "Latitude": 38,
+        "Longitude": -28,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 87,
+        "Name": "마디라",
+        "Culture": "아프리카",
+        "Latitude": 32,
+        "Longitude": -16,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 88,
+        "Name": "라스팔마스",
+        "Culture": "아프리카",
+        "Latitude": 28,
+        "Longitude": -15,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 89,
+        "Name": "아르킨",
+        "Culture": "아프리카",
+        "Latitude": 27,
+        "Longitude": -13,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 90,
+        "Name": "베르덴곶",
+        "Culture": "아프리카",
+        "Latitude": 14,
+        "Longitude": -17,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 91,
+        "Name": "시에라리온",
+        "Culture": "아프리카",
+        "Latitude": 8,
+        "Longitude": -13,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 92,
+        "Name": "타가자",
+        "Culture": "아프리카",
+        "Latitude": 26,
+        "Longitude": -3,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 93,
+        "Name": "통북투",
+        "Culture": "",
+        "Latitude": 19,
+        "Longitude": -1,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 94,
+        "Name": "카노",
+        "Culture": "아프리카",
+        "Latitude": 17,
+        "Longitude": -3,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 95,
+        "Name": "젠네",
+        "Culture": "아프리카",
+        "Latitude": 15,
+        "Longitude": -4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 96,
+        "Name": "가노",
+        "Culture": "",
+        "Latitude": 14,
+        "Longitude": -14,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 97,
+        "Name": "산호르해",
+        "Culture": "아프리카",
+        "Latitude": 5,
+        "Longitude": 0,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 98,
+        "Name": "아페",
+        "Culture": "아프리카",
+        "Latitude": 6,
+        "Longitude": -3,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 99,
+        "Name": "산토메",
+        "Culture": "아프리카",
+        "Latitude": 0,
+        "Longitude": 6,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 100,
+        "Name": "르완다",
+        "Culture": "아프리카",
+        "Latitude": -8,
+        "Longitude": 13,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 101,
+        "Name": "케이프",
+        "Culture": "아프리카",
+        "Latitude": -33,
+        "Longitude": 18,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 102,
+        "Name": "소팔라",
+        "Culture": "아프리카",
+        "Latitude": -19,
+        "Longitude": 34,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 103,
+        "Name": "모잠비크",
+        "Culture": "아프리카",
+        "Latitude": -15,
+        "Longitude": 40,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 104,
+        "Name": "짐바브웨",
+        "Culture": "아프리카",
+        "Latitude": -18,
+        "Longitude": 29,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 105,
+        "Name": "킬와",
+        "Culture": "아프리카",
+        "Latitude": -8,
+        "Longitude": 39,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 106,
+        "Name": "잔지바르",
+        "Culture": "아프리카",
+        "Latitude": -7,
+        "Longitude": 39,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 107,
+        "Name": "몸바사",
+        "Culture": "아프리카",
+        "Latitude": -4,
+        "Longitude": 39,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 108,
+        "Name": "말린디",
+        "Culture": "아프리카",
+        "Latitude": -2,
+        "Longitude": 40,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 109,
+        "Name": "모가디슈",
+        "Culture": "아프리카",
+        "Latitude": 2,
+        "Longitude": 44,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 110,
+        "Name": "악숨",
+        "Culture": "아프리카",
+        "Latitude": 8,
+        "Longitude": 38,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 111,
+        "Name": "하르툼",
+        "Culture": "",
+        "Latitude": 15,
+        "Longitude": 33,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 112,
+        "Name": "이스탄불",
+        "Culture": "이슬람",
+        "Latitude": 41,
+        "Longitude": 29,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 113,
+        "Name": "카파",
+        "Culture": "이슬람",
+        "Latitude": 42,
+        "Longitude": 35,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 114,
+        "Name": "타나",
+        "Culture": "이슬람",
+        "Latitude": 44,
+        "Longitude": 38,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 115,
+        "Name": "시높",
+        "Culture": "이슬람",
+        "Latitude": 39,
+        "Longitude": 34,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 116,
+        "Name": "트레비존드",
+        "Culture": "이슬람",
+        "Latitude": 38,
+        "Longitude": 38,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 117,
+        "Name": "앙골라",
+        "Culture": "이슬람",
+        "Latitude": 38,
+        "Longitude": 32,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 118,
+        "Name": "안티오키아",
+        "Culture": "이슬람",
+        "Latitude": 36,
+        "Longitude": 35,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 119,
+        "Name": "다마스쿠스",
+        "Culture": "이슬람",
+        "Latitude": 32,
+        "Longitude": 34,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 120,
+        "Name": "예루살렘",
+        "Culture": "이슬람",
+        "Latitude": 32,
+        "Longitude": 34,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 121,
+        "Name": "베이루트",
+        "Culture": "이슬람",
+        "Latitude": 34,
+        "Longitude": 35,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 122,
+        "Name": "메디아",
+        "Culture": "이슬람",
+        "Latitude": 24,
+        "Longitude": 39,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 123,
+        "Name": "메카",
+        "Culture": "이슬람",
+        "Latitude": 21,
+        "Longitude": 39,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 124,
+        "Name": "아덴",
+        "Culture": "이슬람",
+        "Latitude": 13,
+        "Longitude": 45,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 125,
+        "Name": "무스카트",
+        "Culture": "이슬람",
+        "Latitude": 23,
+        "Longitude": 58,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 126,
+        "Name": "바스라",
+        "Culture": "이슬람",
+        "Latitude": 30,
+        "Longitude": 48,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 127,
+        "Name": "바그다드",
+        "Culture": "이슬람",
+        "Latitude": 32,
+        "Longitude": 44,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 128,
+        "Name": "호르무즈",
+        "Culture": "이슬람",
+        "Latitude": 27,
+        "Longitude": 56,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 129,
+        "Name": "시라즈",
+        "Culture": "이슬람",
+        "Latitude": 29,
+        "Longitude": 52,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 130,
+        "Name": "이스파한",
+        "Culture": "이슬람",
+        "Latitude": 32,
+        "Longitude": 51,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 131,
+        "Name": "타브리즈",
+        "Culture": "이슬람",
+        "Latitude": 37,
+        "Longitude": 43,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 132,
+        "Name": "사마르칸트",
+        "Culture": "중앙아시아",
+        "Latitude": 39,
+        "Longitude": 66,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 133,
+        "Name": "타슈겐트",
+        "Culture": "",
+        "Latitude": 41,
+        "Longitude": 69,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 134,
+        "Name": "우르겐치",
+        "Culture": "중앙아시아",
+        "Latitude": 41,
+        "Longitude": 58,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 135,
+        "Name": "헤라트",
+        "Culture": "중앙아시아",
+        "Latitude": 34,
+        "Longitude": 63,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 136,
+        "Name": "카불",
+        "Culture": "중앙아시아",
+        "Latitude": 34,
+        "Longitude": 69,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 137,
+        "Name": "카슈가르",
+        "Culture": "",
+        "Latitude": 39,
+        "Longitude": 77,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 138,
+        "Name": "투르판",
+        "Culture": "중앙아시아",
+        "Latitude": 44,
+        "Longitude": 88,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 139,
+        "Name": "라사",
+        "Culture": "중앙아시아",
+        "Latitude": 32,
+        "Longitude": 90,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 140,
+        "Name": "아스트라한",
+        "Culture": "중앙아시아",
+        "Latitude": 44,
+        "Longitude": 4,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 141,
+        "Name": "카잔",
+        "Culture": "중앙아시아",
+        "Latitude": 56,
+        "Longitude": 44,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 142,
+        "Name": "사빌",
+        "Culture": "",
+        "Latitude": 57,
+        "Longitude": 72,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 143,
+        "Name": "호브드",
+        "Culture": "",
+        "Latitude": 49,
+        "Longitude": 90,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 144,
+        "Name": "카라코룸",
+        "Culture": "",
+        "Latitude": 49,
+        "Longitude": 100,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 145,
+        "Name": "델리",
+        "Culture": "인도",
+        "Latitude": 28,
+        "Longitude": 77,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 146,
+        "Name": "라호르",
+        "Culture": "인도",
+        "Latitude": 31,
+        "Longitude": 73,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 147,
+        "Name": "아마다바드",
+        "Culture": "인도",
+        "Latitude": 23,
+        "Longitude": 72,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 148,
+        "Name": "디우",
+        "Culture": "인도",
+        "Latitude": 21,
+        "Longitude": 70,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 149,
+        "Name": "비자푸르",
+        "Culture": "인도",
+        "Latitude": 16,
+        "Longitude": 75,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 150,
+        "Name": "고아",
+        "Culture": "인도",
+        "Latitude": 15,
+        "Longitude": 73,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 151,
+        "Name": "카나놀",
+        "Culture": "인도",
+        "Latitude": 12,
+        "Longitude": 75,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 152,
+        "Name": "캘리컷",
+        "Culture": "인도",
+        "Latitude": 11,
+        "Longitude": 75,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 153,
+        "Name": "비자야나가르",
+        "Culture": "인도",
+        "Latitude": 15,
+        "Longitude": 76,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 154,
+        "Name": "코친",
+        "Culture": "인도",
+        "Latitude": 10,
+        "Longitude": 76,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 155,
+        "Name": "콜롬보",
+        "Culture": "인도",
+        "Latitude": 7,
+        "Longitude": 79,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 156,
+        "Name": "골콘다",
+        "Culture": "인도",
+        "Latitude": 17,
+        "Longitude": 78,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 157,
+        "Name": "캘커타",
+        "Culture": "인도",
+        "Latitude": 21,
+        "Longitude": 88,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 158,
+        "Name": "아바",
+        "Culture": "동남아시아",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 159,
+        "Name": "페구",
+        "Culture": "동남아시아",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 160,
+        "Name": "말라카",
+        "Culture": "동남아시아",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 161,
+        "Name": "리콜",
+        "Culture": "",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 162,
+        "Name": "아유타야",
+        "Culture": "동남아시아",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 163,
+        "Name": "프놈펜",
+        "Culture": "동남아시아",
+        "Latitude": 11,
+        "Longitude": 105,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 164,
+        "Name": "유에",
+        "Culture": "동남아시아",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 165,
+        "Name": "교도",
+        "Culture": "동남아시아",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 166,
+        "Name": "아친",
+        "Culture": "동남아시아",
+        "Latitude": -5,
+        "Longitude": 95,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 167,
+        "Name": "파렌바",
+        "Culture": "동남아시아",
+        "Latitude": -2,
+        "Longitude": 104,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 168,
+        "Name": "반탐",
+        "Culture": "동남아시아",
+        "Latitude": -5,
+        "Longitude": 105,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 169,
+        "Name": "수라바야",
+        "Culture": "동남아시아",
+        "Latitude": -7,
+        "Longitude": 112,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 170,
+        "Name": "브루나이",
+        "Culture": "동남아시아",
+        "Latitude": -5,
+        "Longitude": 114,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 171,
+        "Name": "테르나테",
+        "Culture": "동남아시아",
+        "Latitude": 0,
+        "Longitude": 127,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 172,
+        "Name": "암보이나",
+        "Culture": "동남아시아",
+        "Latitude": -3,
+        "Longitude": 127,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 173,
+        "Name": "오문",
+        "Culture": "중국",
+        "Latitude": 22,
+        "Longitude": 113,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 174,
+        "Name": "광주",
+        "Culture": "중국",
+        "Latitude": 22,
+        "Longitude": 113,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 175,
+        "Name": "천주",
+        "Culture": "중국",
+        "Latitude": 25,
+        "Longitude": 118,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 176,
+        "Name": "복주",
+        "Culture": "중국",
+        "Latitude": 26,
+        "Longitude": 119,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 177,
+        "Name": "항주",
+        "Culture": "중국",
+        "Latitude": null,
+        "Longitude": null,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 178,
+        "Name": "남경",
+        "Culture": "중국",
+        "Latitude": 31,
+        "Longitude": 121,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 179,
+        "Name": "무창",
+        "Culture": "중국",
+        "Latitude": 30,
+        "Longitude": 113,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 180,
+        "Name": "계림",
+        "Culture": "중국",
+        "Latitude": 25,
+        "Longitude": 109,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 181,
+        "Name": "운남",
+        "Culture": "중국",
+        "Latitude": 24,
+        "Longitude": 102,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 182,
+        "Name": "성도",
+        "Culture": "중국",
+        "Latitude": 29,
+        "Longitude": 103,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 183,
+        "Name": "감주",
+        "Culture": "중국",
+        "Latitude": 39,
+        "Longitude": 98,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 184,
+        "Name": "서안",
+        "Culture": "중국",
+        "Latitude": 33,
+        "Longitude": 109,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 185,
+        "Name": "개봉",
+        "Culture": "중국",
+        "Latitude": 34,
+        "Longitude": 114,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 186,
+        "Name": "제남",
+        "Culture": "중국",
+        "Latitude": 37,
+        "Longitude": 117,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 187,
+        "Name": "태원",
+        "Culture": "중국",
+        "Latitude": 38,
+        "Longitude": 112,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 188,
+        "Name": "북경",
+        "Culture": "중국",
+        "Latitude": 40,
+        "Longitude": 116,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 189,
+        "Name": "요동",
+        "Culture": "중국",
+        "Latitude": 41,
+        "Longitude": 121,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 190,
+        "Name": "한양",
+        "Culture": "중국",
+        "Latitude": 37,
+        "Longitude": 126,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 191,
+        "Name": "나가사키",
+        "Culture": "일본",
+        "Latitude": 32,
+        "Longitude": 129,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 192,
+        "Name": "사카이",
+        "Culture": "일본",
+        "Latitude": 34,
+        "Longitude": 135,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 193,
+        "Name": "쿄토",
+        "Culture": "일본",
+        "Latitude": 34,
+        "Longitude": 135,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 194,
+        "Name": "산토도밍고",
+        "Culture": "아메리카",
+        "Latitude": 18,
+        "Longitude": -69,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 195,
+        "Name": "산티아고",
+        "Culture": "아메리카",
+        "Latitude": 20,
+        "Longitude": -76,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 196,
+        "Name": "아바나",
+        "Culture": "아메리카",
+        "Latitude": 23,
+        "Longitude": -82,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 197,
+        "Name": "자메이카",
+        "Culture": "아메리카",
+        "Latitude": 18,
+        "Longitude": -77,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 198,
+        "Name": "산후안",
+        "Culture": "아메리카",
+        "Latitude": 18,
+        "Longitude": -66,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 199,
+        "Name": "베라클루즈",
+        "Culture": "",
+        "Latitude": 19,
+        "Longitude": -96,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 200,
+        "Name": "테노치티클란",
+        "Culture": "아메리카",
+        "Latitude": 20,
+        "Longitude": -101,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 201,
+        "Name": "멕시코",
+        "Culture": "아메리카",
+        "Latitude": 20,
+        "Longitude": -101,
+        "HasLibrary": true,
+        "HasGuild": false
+      },
+      {
+        "Id": 202,
+        "Name": "투라스칼라",
+        "Culture": "아메리카",
+        "Latitude": 19,
+        "Longitude": -98,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 203,
+        "Name": "트라파",
+        "Culture": "아메리카",
+        "Latitude": 18,
+        "Longitude": -98,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 204,
+        "Name": "미틀라",
+        "Culture": "아메리카",
+        "Latitude": 17,
+        "Longitude": -95,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 205,
+        "Name": "아카풀코",
+        "Culture": "아메리카",
+        "Latitude": 17,
+        "Longitude": -100,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 206,
+        "Name": "메리다",
+        "Culture": "아메리카",
+        "Latitude": 21,
+        "Longitude": -88,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 207,
+        "Name": "과테말라",
+        "Culture": "아메리카",
+        "Latitude": 14,
+        "Longitude": -90,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 208,
+        "Name": "투르히요",
+        "Culture": "아메리카",
+        "Latitude": 15,
+        "Longitude": -86,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 209,
+        "Name": "레온",
+        "Culture": "아메리카",
+        "Latitude": 11,
+        "Longitude": -85,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 210,
+        "Name": "파나마",
+        "Culture": "아메리카",
+        "Latitude": 9,
+        "Longitude": -79,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 211,
+        "Name": "산타마르타",
+        "Culture": "아메리카",
+        "Latitude": 11,
+        "Longitude": -75,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 212,
+        "Name": "코로",
+        "Culture": "아메리카",
+        "Latitude": 11,
+        "Longitude": -70,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 213,
+        "Name": "쿠마나",
+        "Culture": "아메리카",
+        "Latitude": 10,
+        "Longitude": -64,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 214,
+        "Name": "페르남부쿠",
+        "Culture": "아메리카",
+        "Latitude": -7,
+        "Longitude": -34,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 215,
+        "Name": "바이앙",
+        "Culture": "아메리카",
+        "Latitude": -12,
+        "Longitude": -38,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 216,
+        "Name": "리우데자네이루",
+        "Culture": "아메리카",
+        "Latitude": -23,
+        "Longitude": -44,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 217,
+        "Name": "부에노스아이레스",
+        "Culture": "아메리카",
+        "Latitude": -34,
+        "Longitude": -58,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 218,
+        "Name": "보고타",
+        "Culture": "아메리카",
+        "Latitude": -5,
+        "Longitude": -73,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 219,
+        "Name": "키토",
+        "Culture": "아메리카",
+        "Latitude": 0,
+        "Longitude": -78,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 220,
+        "Name": "툼베스",
+        "Culture": "아메리카",
+        "Latitude": -3,
+        "Longitude": -80,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 221,
+        "Name": "찬찬",
+        "Culture": "아메리카",
+        "Latitude": -6,
+        "Longitude": -80,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 222,
+        "Name": "리마",
+        "Culture": "아메리카",
+        "Latitude": -12,
+        "Longitude": -77,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 223,
+        "Name": "쿠스코",
+        "Culture": "아메리카",
+        "Latitude": -13,
+        "Longitude": -71,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 224,
+        "Name": "나스카",
+        "Culture": "아메리카",
+        "Latitude": -15,
+        "Longitude": -75,
+        "HasLibrary": false,
+        "HasGuild": false
+      },
+      {
+        "Id": 225,
+        "Name": "포토시",
+        "Culture": "아메리카",
+        "Latitude": -19,
+        "Longitude": -65,
+        "HasLibrary": false,
+        "HasGuild": false
+      }
+    ]
+  },
+  "Source": "cdshelper.db"
+}

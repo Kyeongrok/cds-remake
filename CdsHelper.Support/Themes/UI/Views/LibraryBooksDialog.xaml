@@ -1,0 +1,48 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:CdsHelper.Support.UI.Views">
+
+    <Style TargetType="{x:Type views:LibraryBooksDialog}">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type views:LibraryBooksDialog}">
+                    <Border Background="{TemplateBinding Background}" Padding="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding CityName, RelativeSource={RelativeSource TemplatedParent}, StringFormat='{}{0} 도서관 소장 도서'}"
+                                   FontSize="16" FontWeight="Bold" Margin="0,0,0,10" />
+
+                        <DataGrid x:Name="PART_BooksDataGrid" Grid.Row="1"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
+                                  SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="도서명" Binding="{Binding Name}" Width="150" />
+                                <DataGridTextColumn Header="언어" Binding="{Binding Language}" Width="80" />
+                                <DataGridTextColumn Header="힌트" Binding="{Binding Hint}" Width="150" />
+                                <DataGridTextColumn Header="필요" Binding="{Binding Required}" Width="80" />
+                                <DataGridTextColumn Header="조건" Binding="{Binding Condition}" Width="100" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                            <Button x:Name="PART_CloseButton" Content="닫기" Width="80" Height="30" />
+                        </StackPanel>
+                    </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

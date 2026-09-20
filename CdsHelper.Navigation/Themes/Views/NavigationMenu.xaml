@@ -1,0 +1,89 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:units="clr-namespace:CdsHelper.Support.UI.Units;assembly=CdsHelper.Support"
+    xmlns:views="clr-namespace:CdsHelper.Navigation.UI.Views">
+
+    <Style TargetType="{x:Type views:NavigationMenu}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type views:NavigationMenu}">
+                    <Grid>
+                        <units:AccordionControl x:Name="PART_InnerAccordion" IsMinimized="{Binding IsMinimized, RelativeSource={RelativeSource TemplatedParent}}">
+                            <units:AccordionItem
+                                Header="데이터"
+                                IsExpanded="True"
+                                IsGroup="True">
+                                <units:AccordionItem Header="플레이어" Tag="PlayerContent">
+                                    <units:AccordionItem.Icon>
+                                        <Path
+                                            Width="16"
+                                            Height="16"
+                                            Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                                            Fill="White"
+                                            Stretch="Uniform" />
+                                    </units:AccordionItem.Icon>
+                                </units:AccordionItem>
+                                <units:AccordionItem Header="항해사" Tag="CharacterContent">
+                                    <units:AccordionItem.Icon>
+                                        <Path
+                                            Width="16"
+                                            Height="16"
+                                            Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                            Fill="White"
+                                            Stretch="Uniform" />
+                                    </units:AccordionItem.Icon>
+                                </units:AccordionItem>
+                            </units:AccordionItem>
+
+                            <units:AccordionItem
+                                Header="아이템"
+                                IsExpanded="True"
+                                IsGroup="True">
+                                <units:AccordionItem Header="아이템" Tag="ItemContent">
+                                    <units:AccordionItem.Icon>
+                                        <Path
+                                            Width="16"
+                                            Height="16"
+                                            Data="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"
+                                            Fill="White"
+                                            Stretch="Uniform" />
+                                    </units:AccordionItem.Icon>
+                                </units:AccordionItem>
+                            </units:AccordionItem>
+
+                            <units:AccordionItem Header="세계지도" Tag="WorldMapContent">
+                                <units:AccordionItem.Icon>
+                                    <Path
+                                        Width="16"
+                                        Height="16"
+                                        Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                                        Fill="White"
+                                        Stretch="Uniform" />
+                                </units:AccordionItem.Icon>
+                            </units:AccordionItem>
+
+                            <units:AccordionItem
+                                Header="도구"
+                                IsExpanded="True"
+                                IsGroup="True">
+                                <units:AccordionItem Header="자동플레이" Tag="AutoPlayContent">
+                                    <units:AccordionItem.Icon>
+                                        <Path
+                                            Width="16"
+                                            Height="16"
+                                            Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+                                            Fill="White"
+                                            Stretch="Uniform" />
+                                    </units:AccordionItem.Icon>
+                                </units:AccordionItem>
+                            </units:AccordionItem>
+
+                        </units:AccordionControl>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

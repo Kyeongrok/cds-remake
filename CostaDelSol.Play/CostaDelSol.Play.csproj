@@ -1,0 +1,120 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <RootNamespace>CostaDelSol.Play</RootNamespace>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <!-- 놀이 exe 는 제 아이콘을 쓴다. 뷰어(CdsHelper.exe)와 나란히 놓이므로 아이콘까지 같으면 어느 쪽인지 알아볼 수가 없다. -->
+        <ApplicationIcon>play.ico</ApplicationIcon>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <AssemblyName>CostaDelSol</AssemblyName>
+        <Version>1.12.0</Version>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
+
+    <!-- 놀이 화면이 파일로 읽는 것들. 뷰어 exe 와 같은 폴더에 놓이므로 한 벌만 있으면 된다. -->
+    <ItemGroup>
+      <Content Include="..\asset\**\*">
+        <Link>asset\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- BGM은 릴리즈의 별도 bgm.zip으로 배포하고 실행 파일에는 넣지 않는다. -->
+      <Content Remove="..\asset\bgm\**\*" />
+      <Content Include="..\exe-tables\**\*.json">
+        <Link>exe-tables\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\cities.json">
+        <Link>cities.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\books.json">
+        <Link>books.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\patrons.json">
+        <Link>patrons.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\figurehead.json">
+        <Link>figurehead.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\item.json">
+        <Link>item.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\hint.json">
+        <Link>hint.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\발견물.json">
+        <Link>발견물.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\발견이벤트.json">
+        <Link>발견이벤트.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\이야기0.json">
+        <Link>이야기0.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\이야기1.json">
+        <Link>이야기1.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\PEX.json">
+        <Link>PEX.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\PDG.json">
+        <Link>PDG.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\PHT.json">
+        <Link>PHT.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\PCQ.json">
+        <Link>PCQ.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\EEX.json">
+        <Link>EEX.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\EDG.json">
+        <Link>EDG.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\EHT.json">
+        <Link>EHT.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\ECQ.json">
+        <Link>ECQ.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\CdsHelper\인물표.json">
+        <Link>인물표.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CdsHelper.Game\CdsHelper.Game.csproj" />
+      <ProjectReference Include="..\CdsHelper.Maze\CdsHelper.Maze.csproj" />
+      <ProjectReference Include="..\CdsHelper.Duel\CdsHelper.Duel.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="..\asset\video\">
+        <Link>asset\video</Link>
+      </Folder>
+    </ItemGroup>
+
+</Project>

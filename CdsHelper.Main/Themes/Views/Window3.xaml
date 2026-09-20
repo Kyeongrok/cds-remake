@@ -1,0 +1,131 @@
+﻿<Window x:Class="CdsHelper.Main.Themes.Views.Window3"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:CdsHelper.Main.Themes.Views"
+        mc:Ignorable="d"
+        Title="Window3" Height="450" Width="1024">
+    
+    <Window.Resources>
+        <Style x:Key="StepButton" TargetType="Button">
+        <Setter Property="Width" Value="86" />
+        <Setter Property="Height" Value="62" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border CornerRadius="4" BorderThickness="1" BorderBrush="#3A7BA8" Margin="0,0,4,4">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#404040" BlurRadius="6" ShadowDepth="3" Direction="315" Opacity="0.5" />
+                        </Border.Effect>
+                        <Border CornerRadius="5" BorderThickness="1">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#BDE0F3" Offset="0.0" />
+                                    <GradientStop Color="#6FB2D8" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#7FC3E6" Offset="0.0" />
+                                    <GradientStop Color="#5AA5D0" Offset="0.5" />
+                                    <GradientStop Color="#4E97C2" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+
+                            <Grid>
+                                
+                                <Border Height="20" VerticalAlignment="Top" CornerRadius="4,4,0,0" Margin="1">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#99FFFFFF" Offset="0.0" /> <GradientStop Color="#00FFFFFF" Offset="1.0" /> </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <ContentPresenter.Effect>
+                                        <DropShadowEffect Color="#205070" BlurRadius="2" ShadowDepth="1" Direction="315" Opacity="0.8" />
+                                    </ContentPresenter.Effect>
+                                </ContentPresenter>
+                                
+                            </Grid>
+                        </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+        <Style x:Key="ClassifyCell" TargetType="Border">
+            <Setter Property="Background" Value="#8E969E" />
+            <Setter Property="Margin" Value="4, 4" />
+        </Style>
+        <Style x:Key="ClassifyCellText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#2E2E2E" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Padding" Value="4,8" />
+        </Style>
+    </Window.Resources>
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+            <ColumnDefinition Width="106" />
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Row="0" Grid.Column="1" Content="1 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="2" Content="2 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="3" Content="3 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="4" Content="4 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="5" Content="5 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="6" Content="6 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="7" Content="7 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+        <Button Grid.Row="0" Grid.Column="8" Content="8 단" Style="{StaticResource StepButton}" HorizontalAlignment="Center" />
+
+        <Border Grid.Row="1" Grid.ColumnSpan="9" Background="#A8AEB4" />
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="불량검출법"
+                   Foreground="White" FontWeight="Bold" FontSize="16"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="4" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="5" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="6" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="7" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+        <Border Grid.Row="1" Grid.Column="8" Style="{StaticResource ClassifyCell}">
+            <TextBlock Text="추종오차&#x0a;(Envelop)" Style="{StaticResource ClassifyCellText}" />
+        </Border>
+    </Grid>
+</Window>

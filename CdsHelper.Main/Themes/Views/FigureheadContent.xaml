@@ -1,0 +1,52 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:CdsHelper.Main.UI.Views"
+                    xmlns:units="clr-namespace:CdsHelper.Support.UI.Units;assembly=CdsHelper.Support">
+
+    <Style TargetType="{x:Type views:FigureheadContent}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type views:FigureheadContent}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- 선수상 검색 필터 -->
+                        <WrapPanel Grid.Row="0" Margin="10" Orientation="Horizontal">
+                            <TextBlock Text="선수상명/효과:" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            <TextBox Width="150" Height="25" VerticalAlignment="Center" Margin="0,0,10,0"
+                                     Text="{Binding FigureheadNameSearch, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="기능:" VerticalAlignment="Center" Margin="10,0,5,0" />
+                            <ComboBox Width="80" Height="25" VerticalAlignment="Center" Margin="0,0,10,0"
+                                      ItemsSource="{Binding FigureheadFunctions}"
+                                      SelectedItem="{Binding SelectedFigureheadFunction}" />
+
+                            <TextBlock Text="레벨:" VerticalAlignment="Center" Margin="10,0,5,0" />
+                            <ComboBox Width="80" Height="25" VerticalAlignment="Center" Margin="0,0,10,0"
+                                      ItemsSource="{Binding FigureheadLevels}"
+                                      SelectedItem="{Binding SelectedFigureheadLevel}" />
+
+                            <Button Content="필터 초기화" Width="100" Height="30" Margin="10,0,0,0"
+                                    Command="{Binding ResetFigureheadFilterCommand}" />
+                        </WrapPanel>
+
+                        <!-- 선수상 데이터 그리드 -->
+                        <units:CdsDataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Figureheads}"
+                                  Margin="10">
+                            <units:CdsDataGrid.Columns>
+                                <DataGridTextColumn Header="선수상" Binding="{Binding Name}" Width="120" />
+                                <DataGridTextColumn Header="기능" Binding="{Binding Function}" Width="60" />
+                                <DataGridTextColumn Header="레벨" Binding="{Binding Level}" Width="60" />
+                                <DataGridTextColumn Header="비고" Binding="{Binding Note}" Width="*" />
+                            </units:CdsDataGrid.Columns>
+                        </units:CdsDataGrid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

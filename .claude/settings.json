@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "wpf-dev-pack@dotnet-claude-plugins": true
+  }
+}

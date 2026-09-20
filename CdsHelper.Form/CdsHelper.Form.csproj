@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
+      <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+      <PackageReference Include="Velopack" Version="0.0.1298" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CdsHelper.Game\CdsHelper.Game.csproj" />
+      <ProjectReference Include="..\CdsHelper.Main\CdsHelper.Main.csproj" />
+      <ProjectReference Include="..\CdsHelper.Maze\CdsHelper.Maze.csproj" />
+      <ProjectReference Include="..\CdsHelper.Duel\CdsHelper.Duel.csproj" />
+      <ProjectReference Include="..\CdsHelper.Navigation\CdsHelper.Navigation.csproj" />
+      <ProjectReference Include="..\CdsHelper.Support\CdsHelper.Support.csproj" />
+    </ItemGroup>
+
+</Project>

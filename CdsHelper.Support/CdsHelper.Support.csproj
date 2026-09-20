@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.3" />
+      <PackageReference Include="Prism.Core" Version="9.0.537" />
+      <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
+      <PackageReference Include="OpenCvSharp4.Extensions" Version="4.10.0.20241108" />
+      <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CdsHelper.Api\CdsHelper.Api.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Local\Assets\mnist_digit.onnx" />
+      <!-- 초상화 원본. DLL 안에 박아 두면 bin 에 고칠 수 있는 사본이 안 생긴다 —
+           넣은 얼굴은 APPDATA 아래로 가므로 다시 구워도 안 날아간다. -->
+      <EmbeddedResource Include="Local\Assets\MALE.CDS" />
+      <EmbeddedResource Include="Local\Assets\FEMALE.CDS" />
+    </ItemGroup>
+
+</Project>

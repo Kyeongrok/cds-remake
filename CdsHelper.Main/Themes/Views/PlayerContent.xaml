@@ -1,0 +1,186 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:CdsHelper.Main.UI.Views"
+                    xmlns:units="clr-namespace:CdsHelper.Support.UI.Units;assembly=CdsHelper.Support"
+                    xmlns:converters="clr-namespace:CdsHelper.Main.Local.Converters">
+
+    <!-- 링크 스타일 버튼 -->
+    <Style x:Key="LinkButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="#0066CC" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <TextBlock Text="{TemplateBinding Content}"
+                               Foreground="{TemplateBinding Foreground}"
+                               TextDecorations="Underline" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="#003399" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type views:PlayerContent}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type views:PlayerContent}">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- 위 줄은 비워 둔다 — 플레이어 칸은 놀이 쪽(Play)으로 옮겼다. -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" />
+
+                        <!-- 중앙: 동료 상세 + 힌트 -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 오른쪽: 동료 상세 + 힌트 -->
+                                <StackPanel Grid.Column="0" Margin="0">
+
+                                    <!-- 힌트 획득 현황 -->
+                                    <GroupBox Padding="10" Margin="0,0,0,10">
+                                        <GroupBox.Header>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="힌트 획득 현황 - " />
+                                                <TextBlock Text="{Binding HintSummary}" FontWeight="Bold" />
+                                                <CheckBox x:Name="PART_FilterUndiscovered"
+                                                          Content="미발견만"
+                                                          Margin="15,0,0,0"
+                                                          VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </GroupBox.Header>
+                                        <DataGrid x:Name="PART_HintsDataGrid"
+                                                  ItemsSource="{Binding Hints}"
+                                                  HorizontalAlignment="Left"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  HeadersVisibility="Column"
+                                                  MaxHeight="600"
+                                                  MaxWidth="700"
+                                                  FontSize="14"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Cursor="Hand">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="순번" Binding="{Binding Index}" Width="40" />
+                                                <DataGridTextColumn Header="이름" Binding="{Binding Name}" Width="200" />
+                                                <DataGridTextColumn Header="언어" Binding="{Binding BookLanguage}" Width="80" />
+                                                <DataGridTextColumn Header="필요" Binding="{Binding BookRequired}" Width="60" />
+                                                <DataGridTextColumn Header="선행" Binding="{Binding BookCondition}" Width="100" />
+                                                <DataGridTemplateColumn Header="힌트" Width="40">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding HasHint, Converter={converters:BoolToOXConverter}}"
+                                                                       HorizontalAlignment="Center">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground" Value="Gray" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding HasHint}" Value="True">
+                                                                                <Setter Property="Foreground" Value="Green" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                                <DataGridTemplateColumn Header="발견" Width="40">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding IsDiscovered, Converter={converters:BoolToOXConverter}}"
+                                                                       HorizontalAlignment="Center">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground" Value="Gray" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsDiscovered}" Value="True">
+                                                                                <Setter Property="Foreground" Value="Blue" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </GroupBox>
+
+                                    <!-- 선택된 동료 정보 -->
+                                    <GroupBox Header="동료 상세" Padding="10"
+                                              Visibility="{Binding SelectedCrewMember, Converter={converters:NullToVisibilityConverter}}">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="60" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="이름:" FontWeight="Bold" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedCrewMember.Name}" FontWeight="Bold" />
+
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="나이:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCrewMember.Age}" Margin="0,3,0,0" />
+
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="소재:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedCrewMember.Location}" Margin="0,3,0,0" />
+
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="명성:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedCrewMember.Fame}" Margin="0,3,0,0" />
+
+                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="체력:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedCrewMember.HP}" Margin="0,3,0,0" />
+
+                                                <TextBlock Grid.Row="5" Grid.Column="0" Text="지력:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedCrewMember.Intelligence}" Margin="0,3,0,0" />
+
+                                                <TextBlock Grid.Row="6" Grid.Column="0" Text="무력:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedCrewMember.Strength}" Margin="0,3,0,0" />
+
+                                                <TextBlock Grid.Row="7" Grid.Column="0" Text="매력:" Margin="0,3,0,0" />
+                                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedCrewMember.Charm}" Margin="0,3,0,0" />
+                                            </Grid>
+
+                                            <TextBlock Text="특기:" FontWeight="Bold" Margin="0,10,0,3" />
+                                            <TextBlock Text="{Binding SelectedCrewMember.Skills}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </GroupBox>
+                                </StackPanel>
+                            </Grid>
+                        </ScrollViewer>
+
+                        <!-- 하단: 상태바 -->
+                        <TextBlock Grid.Row="2" Text="{Binding StatusText}" Margin="0,10,0,0" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

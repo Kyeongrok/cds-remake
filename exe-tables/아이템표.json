@@ -1,0 +1,2869 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Items": [
+      {
+        "Id": 0,
+        "Name": "잠수폭탄",
+        "Pic": 39,
+        "BuyList": 20000,
+        "SellList": 10000,
+        "Effect": 0,
+        "Category": 0,
+        "Hint": -1
+      },
+      {
+        "Id": 1,
+        "Name": "속사포",
+        "Pic": 40,
+        "BuyList": 25000,
+        "SellList": 12000,
+        "Effect": 1,
+        "Category": 0,
+        "Hint": -1
+      },
+      {
+        "Id": 2,
+        "Name": "작렬탄",
+        "Pic": 41,
+        "BuyList": 30000,
+        "SellList": 15000,
+        "Effect": 2,
+        "Category": 0,
+        "Hint": -1
+      },
+      {
+        "Id": 3,
+        "Name": "수수 경단",
+        "Pic": 42,
+        "BuyList": 2,
+        "SellList": 1,
+        "Effect": 3,
+        "Category": 0,
+        "Hint": -1
+      },
+      {
+        "Id": 4,
+        "Name": "이디스의 방패",
+        "Pic": 43,
+        "BuyList": 175000,
+        "SellList": 100000,
+        "Effect": 4,
+        "Category": 0,
+        "Hint": -1
+      },
+      {
+        "Id": 5,
+        "Name": "서진 기모노",
+        "Pic": 63,
+        "BuyList": 5000,
+        "SellList": 3500,
+        "Effect": 3,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 6,
+        "Name": "영원한 맹세",
+        "Pic": 64,
+        "BuyList": 9000,
+        "SellList": 6000,
+        "Effect": 5,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 7,
+        "Name": "연인들의 라프소디",
+        "Pic": 65,
+        "BuyList": 6000,
+        "SellList": 4000,
+        "Effect": 3,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 8,
+        "Name": "황금 수금",
+        "Pic": 66,
+        "BuyList": 50000,
+        "SellList": 35000,
+        "Effect": 25,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 9,
+        "Name": "가희",
+        "Pic": 67,
+        "BuyList": 7500,
+        "SellList": 5000,
+        "Effect": 4,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 10,
+        "Name": "말괄량이",
+        "Pic": 68,
+        "BuyList": 4500,
+        "SellList": 3000,
+        "Effect": 3,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 11,
+        "Name": "천사의 미소",
+        "Pic": 69,
+        "BuyList": 15000,
+        "SellList": 10000,
+        "Effect": 10,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 12,
+        "Name": "화리아나의 귀부인",
+        "Pic": 70,
+        "BuyList": 8000,
+        "SellList": 5400,
+        "Effect": 4,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 13,
+        "Name": "순진무구한 마음",
+        "Pic": 71,
+        "BuyList": 25000,
+        "SellList": 17000,
+        "Effect": 15,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 14,
+        "Name": "야음의 장미",
+        "Pic": 72,
+        "BuyList": 36000,
+        "SellList": 24000,
+        "Effect": 20,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 15,
+        "Name": "여신의 눈물",
+        "Pic": 73,
+        "BuyList": 80000,
+        "SellList": 55000,
+        "Effect": 30,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 16,
+        "Name": "무지개 머리장식",
+        "Pic": 74,
+        "BuyList": 24000,
+        "SellList": 16000,
+        "Effect": 15,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 17,
+        "Name": "약속반지",
+        "Pic": 75,
+        "BuyList": 20000,
+        "SellList": 13000,
+        "Effect": 13,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 18,
+        "Name": "싸락눈 윤무곡",
+        "Pic": 76,
+        "BuyList": 8500,
+        "SellList": 5600,
+        "Effect": 5,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 19,
+        "Name": "유리구두",
+        "Pic": 77,
+        "BuyList": 3000,
+        "SellList": 2000,
+        "Effect": 2,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 20,
+        "Name": "행운의 케이프",
+        "Pic": 78,
+        "BuyList": 5500,
+        "SellList": 3600,
+        "Effect": 3,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 21,
+        "Name": "선녀의 날개옷",
+        "Pic": 79,
+        "BuyList": 12000,
+        "SellList": 8000,
+        "Effect": 6,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 22,
+        "Name": "녹색 보석",
+        "Pic": 80,
+        "BuyList": 64000,
+        "SellList": 42000,
+        "Effect": 28,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 23,
+        "Name": "불루 오션",
+        "Pic": 81,
+        "BuyList": 60000,
+        "SellList": 40000,
+        "Effect": 27,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 24,
+        "Name": "제혈 여왕",
+        "Pic": 82,
+        "BuyList": 56000,
+        "SellList": 37000,
+        "Effect": 26,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 25,
+        "Name": "여의주",
+        "Pic": 83,
+        "BuyList": 48000,
+        "SellList": 32000,
+        "Effect": 24,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 26,
+        "Name": "인어의 눈동자",
+        "Pic": 84,
+        "BuyList": 45000,
+        "SellList": 30000,
+        "Effect": 23,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 27,
+        "Name": "희망의 조각",
+        "Pic": 85,
+        "BuyList": 100000,
+        "SellList": 65000,
+        "Effect": 34,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 28,
+        "Name": "환상의 거울",
+        "Pic": 86,
+        "BuyList": 72000,
+        "SellList": 48000,
+        "Effect": 29,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 29,
+        "Name": "기적의 꽃",
+        "Pic": 87,
+        "BuyList": 27000,
+        "SellList": 18000,
+        "Effect": 16,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 30,
+        "Name": "황금 사과",
+        "Pic": 88,
+        "BuyList": 40000,
+        "SellList": 27000,
+        "Effect": 22,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 31,
+        "Name": "진실의 오카리나",
+        "Pic": 89,
+        "BuyList": 7200,
+        "SellList": 4800,
+        "Effect": 4,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 32,
+        "Name": "보물나무가지",
+        "Pic": 90,
+        "BuyList": 90000,
+        "SellList": 60000,
+        "Effect": 32,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 33,
+        "Name": "나침반",
+        "Pic": 36,
+        "BuyList": 10000,
+        "SellList": 5000,
+        "Effect": 0,
+        "Category": 2,
+        "Hint": -1
+      },
+      {
+        "Id": 34,
+        "Name": "육분의",
+        "Pic": 37,
+        "BuyList": 2500,
+        "SellList": 1250,
+        "Effect": 1,
+        "Category": 2,
+        "Hint": -1
+      },
+      {
+        "Id": 35,
+        "Name": "망원경",
+        "Pic": 38,
+        "BuyList": 8000,
+        "SellList": 4000,
+        "Effect": 2,
+        "Category": 2,
+        "Hint": -1
+      },
+      {
+        "Id": 36,
+        "Name": "터번",
+        "Pic": 204,
+        "BuyList": 100,
+        "SellList": 50,
+        "Effect": 4,
+        "Category": 2,
+        "Hint": -1
+      },
+      {
+        "Id": 37,
+        "Name": "레이피아",
+        "Pic": 94,
+        "BuyList": 300,
+        "SellList": 100,
+        "Effect": 22,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 38,
+        "Name": "롱소드",
+        "Pic": 92,
+        "BuyList": 1200,
+        "SellList": 500,
+        "Effect": 28,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 39,
+        "Name": "브로드소드",
+        "Pic": 95,
+        "BuyList": 2400,
+        "SellList": 1050,
+        "Effect": 34,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 40,
+        "Name": "그라디우스",
+        "Pic": 100,
+        "BuyList": 5500,
+        "SellList": 2600,
+        "Effect": 38,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 41,
+        "Name": "에스톡",
+        "Pic": 98,
+        "BuyList": 8800,
+        "SellList": 4200,
+        "Effect": 43,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 42,
+        "Name": "바스타드소드",
+        "Pic": 96,
+        "BuyList": 12000,
+        "SellList": 6000,
+        "Effect": 48,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 43,
+        "Name": "카트바르겔",
+        "Pic": 101,
+        "BuyList": 17500,
+        "SellList": 9500,
+        "Effect": 52,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 44,
+        "Name": "와룸소드",
+        "Pic": 107,
+        "BuyList": 25500,
+        "SellList": 13500,
+        "Effect": 56,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 45,
+        "Name": "투핸드소드",
+        "Pic": 97,
+        "BuyList": 34000,
+        "SellList": 17500,
+        "Effect": 60,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 46,
+        "Name": "프랑베르쥬",
+        "Pic": 99,
+        "BuyList": 47000,
+        "SellList": 25000,
+        "Effect": 65,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 47,
+        "Name": "묘르닐의 철퇴",
+        "Pic": 119,
+        "BuyList": 150000,
+        "SellList": 80000,
+        "Effect": 75,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 48,
+        "Name": "롱기누스의 창",
+        "Pic": 115,
+        "BuyList": 450000,
+        "SellList": 320000,
+        "Effect": 95,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 49,
+        "Name": "성검 엑스칼리버",
+        "Pic": 114,
+        "BuyList": 240000,
+        "SellList": 160000,
+        "Effect": 85,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 50,
+        "Name": "미노타우로스의 도끼",
+        "Pic": 117,
+        "BuyList": 10000,
+        "SellList": 5000,
+        "Effect": 3,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 51,
+        "Name": "쇼텔",
+        "Pic": 102,
+        "BuyList": 12500,
+        "SellList": 6000,
+        "Effect": 48,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 52,
+        "Name": "카타르",
+        "Pic": 93,
+        "BuyList": 2300,
+        "SellList": 1000,
+        "Effect": 30,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 53,
+        "Name": "사베르",
+        "Pic": 103,
+        "BuyList": 10000,
+        "SellList": 4800,
+        "Effect": 45,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 54,
+        "Name": "코라",
+        "Pic": 105,
+        "BuyList": 22000,
+        "SellList": 12000,
+        "Effect": 55,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 55,
+        "Name": "샴실",
+        "Pic": 104,
+        "BuyList": 44000,
+        "SellList": 23000,
+        "Effect": 65,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 56,
+        "Name": "필랑기",
+        "Pic": 106,
+        "BuyList": 81000,
+        "SellList": 43000,
+        "Effect": 70,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 57,
+        "Name": "삼절곤",
+        "Pic": 111,
+        "BuyList": 7600,
+        "SellList": 3800,
+        "Effect": 40,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 58,
+        "Name": "청룡도",
+        "Pic": 112,
+        "BuyList": 60000,
+        "SellList": 35000,
+        "Effect": 68,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 59,
+        "Name": "쇄겸",
+        "Pic": 110,
+        "BuyList": 17000,
+        "SellList": 8800,
+        "Effect": 52,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 60,
+        "Name": "명도장광",
+        "Pic": 108,
+        "BuyList": 84000,
+        "SellList": 45000,
+        "Effect": 67,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 61,
+        "Name": "아이베는 안강",
+        "Pic": 109,
+        "BuyList": 380000,
+        "SellList": 280000,
+        "Effect": 90,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 62,
+        "Name": "나마하게의 포정",
+        "Pic": 118,
+        "BuyList": 1200,
+        "SellList": 500,
+        "Effect": 7,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 63,
+        "Name": "아즈텍의 나이프",
+        "Pic": 116,
+        "BuyList": 2000,
+        "SellList": 1000,
+        "Effect": 5,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 64,
+        "Name": "창",
+        "Pic": 113,
+        "BuyList": 2000,
+        "SellList": 600,
+        "Effect": 25,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 65,
+        "Name": "포르숑",
+        "Pic": 91,
+        "BuyList": 16000,
+        "SellList": 8000,
+        "Effect": 50,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 66,
+        "Name": "레자아마",
+        "Pic": 121,
+        "BuyList": 400,
+        "SellList": 150,
+        "Effect": 15,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 67,
+        "Name": "체인메일",
+        "Pic": 122,
+        "BuyList": 3000,
+        "SellList": 1200,
+        "Effect": 25,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 68,
+        "Name": "링메일",
+        "Pic": 123,
+        "BuyList": 12000,
+        "SellList": 5000,
+        "Effect": 35,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 69,
+        "Name": "플레이트메일",
+        "Pic": 124,
+        "BuyList": 35000,
+        "SellList": 18000,
+        "Effect": 50,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 70,
+        "Name": "스케일메일",
+        "Pic": 130,
+        "BuyList": 6000,
+        "SellList": 2400,
+        "Effect": 28,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 71,
+        "Name": "브레스트아마",
+        "Pic": 132,
+        "BuyList": 10000,
+        "SellList": 4000,
+        "Effect": 33,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 72,
+        "Name": "라멜라아마",
+        "Pic": 128,
+        "BuyList": 18000,
+        "SellList": 8000,
+        "Effect": 40,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 73,
+        "Name": "브리간디",
+        "Pic": 133,
+        "BuyList": 25500,
+        "SellList": 13000,
+        "Effect": 45,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 74,
+        "Name": "무도복",
+        "Pic": 131,
+        "BuyList": 2500,
+        "SellList": 1000,
+        "Effect": 22,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 75,
+        "Name": "몽고갑옷",
+        "Pic": 125,
+        "BuyList": 14000,
+        "SellList": 6000,
+        "Effect": 37,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 76,
+        "Name": "무사갑옷",
+        "Pic": 126,
+        "BuyList": 21000,
+        "SellList": 10000,
+        "Effect": 42,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 77,
+        "Name": "흑장속",
+        "Pic": 129,
+        "BuyList": 42000,
+        "SellList": 22000,
+        "Effect": 52,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 78,
+        "Name": "적사위통환 갑옷",
+        "Pic": 127,
+        "BuyList": 74000,
+        "SellList": 40000,
+        "Effect": 60,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 79,
+        "Name": "삿톤후의 투구",
+        "Pic": -1,
+        "BuyList": 50000,
+        "SellList": 20000,
+        "Effect": 30,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 80,
+        "Name": "존왕의 술잔",
+        "Pic": -1,
+        "BuyList": 56000,
+        "SellList": 25000,
+        "Effect": 28,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 81,
+        "Name": "아가멤논의 마스크",
+        "Pic": -1,
+        "BuyList": 72000,
+        "SellList": 29000,
+        "Effect": 32,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 82,
+        "Name": "투탄카멘의 마스크",
+        "Pic": -1,
+        "BuyList": 150000,
+        "SellList": 60000,
+        "Effect": 45,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 83,
+        "Name": "로제타석",
+        "Pic": -1,
+        "BuyList": 6000,
+        "SellList": 3000,
+        "Effect": 20,
+        "Category": 7,
+        "Hint": 30
+      },
+      {
+        "Id": 84,
+        "Name": "이집트의 앵크",
+        "Pic": -1,
+        "BuyList": 30000,
+        "SellList": 10000,
+        "Effect": 16,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 85,
+        "Name": "사르곤의 두상",
+        "Pic": -1,
+        "BuyList": 16000,
+        "SellList": 8000,
+        "Effect": 22,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 86,
+        "Name": "우르의 황금머리장식",
+        "Pic": -1,
+        "BuyList": 160000,
+        "SellList": 75000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 87,
+        "Name": "은 접시",
+        "Pic": -1,
+        "BuyList": 67000,
+        "SellList": 34000,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 88,
+        "Name": "은 주전자",
+        "Pic": -1,
+        "BuyList": 66000,
+        "SellList": 33000,
+        "Effect": 29,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 89,
+        "Name": "시바신상",
+        "Pic": -1,
+        "BuyList": 75000,
+        "SellList": 40000,
+        "Effect": 33,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 90,
+        "Name": "황금 코끼리",
+        "Pic": -1,
+        "BuyList": 150000,
+        "SellList": 70000,
+        "Effect": 38,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 91,
+        "Name": "마니통",
+        "Pic": -1,
+        "BuyList": 30000,
+        "SellList": 12000,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 92,
+        "Name": "금루옥의",
+        "Pic": -1,
+        "BuyList": 160000,
+        "SellList": 78000,
+        "Effect": 45,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 93,
+        "Name": "사양 방존",
+        "Pic": -1,
+        "BuyList": 40000,
+        "SellList": 20000,
+        "Effect": 22,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 94,
+        "Name": "명나라 칠보",
+        "Pic": -1,
+        "BuyList": 170000,
+        "SellList": 72000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 95,
+        "Name": "후풍지동의",
+        "Pic": -1,
+        "BuyList": 120000,
+        "SellList": 55000,
+        "Effect": 36,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 96,
+        "Name": "흰 유리그릇",
+        "Pic": -1,
+        "BuyList": 100000,
+        "SellList": 48000,
+        "Effect": 34,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 97,
+        "Name": "땅의 여신상",
+        "Pic": -1,
+        "BuyList": 3500,
+        "SellList": 1700,
+        "Effect": 25,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 98,
+        "Name": "사마대국의 도장",
+        "Pic": -1,
+        "BuyList": 140000,
+        "SellList": 67000,
+        "Effect": 35,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 99,
+        "Name": "태양석",
+        "Pic": -1,
+        "BuyList": 5000,
+        "SellList": 2000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 100,
+        "Name": "수정해골",
+        "Pic": -1,
+        "BuyList": 150000,
+        "SellList": 70000,
+        "Effect": 35,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 101,
+        "Name": "시페 토테크신의 가면",
+        "Pic": -1,
+        "BuyList": 190000,
+        "SellList": 85000,
+        "Effect": 1,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 102,
+        "Name": "비취가면",
+        "Pic": -1,
+        "BuyList": 160000,
+        "SellList": 75000,
+        "Effect": 4,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 103,
+        "Name": "아더왕의 성배",
+        "Pic": -1,
+        "BuyList": 180000,
+        "SellList": 76000,
+        "Effect": 9,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 104,
+        "Name": "성 스테판의 관",
+        "Pic": -1,
+        "BuyList": 96000,
+        "SellList": 60000,
+        "Effect": 24,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 105,
+        "Name": "성스러운 유물상자",
+        "Pic": -1,
+        "BuyList": 110000,
+        "SellList": 52000,
+        "Effect": 27,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 106,
+        "Name": "테라코타상",
+        "Pic": -1,
+        "BuyList": 2500,
+        "SellList": 1200,
+        "Effect": 38,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 107,
+        "Name": "시칸의 황금대가면",
+        "Pic": -1,
+        "BuyList": 180000,
+        "SellList": 80000,
+        "Effect": 19,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 108,
+        "Name": "고대의 소뿔",
+        "Pic": 44,
+        "BuyList": 3400,
+        "SellList": 1200,
+        "Effect": 17,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 109,
+        "Name": "마린지팡이",
+        "Pic": 45,
+        "BuyList": 4500,
+        "SellList": 2500,
+        "Effect": 11,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 110,
+        "Name": "사자의 책",
+        "Pic": 53,
+        "BuyList": 1000,
+        "SellList": 500,
+        "Effect": 0,
+        "Category": 7,
+        "Hint": 82
+      },
+      {
+        "Id": 111,
+        "Name": "헬레네의 쥬엘",
+        "Pic": 47,
+        "BuyList": 120000,
+        "SellList": 60000,
+        "Effect": 35,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 112,
+        "Name": "슈메르의 점토판",
+        "Pic": 48,
+        "BuyList": 400,
+        "SellList": 150,
+        "Effect": 15,
+        "Category": 7,
+        "Hint": 59
+      },
+      {
+        "Id": 113,
+        "Name": "석봉인",
+        "Pic": 49,
+        "BuyList": 300,
+        "SellList": 100,
+        "Effect": 10,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 114,
+        "Name": "오라관의 금화",
+        "Pic": 57,
+        "BuyList": 50000,
+        "SellList": 28000,
+        "Effect": 25,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 115,
+        "Name": "황금귀걸이",
+        "Pic": 52,
+        "BuyList": 10000,
+        "SellList": 5500,
+        "Effect": 10,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 116,
+        "Name": "은 십자가",
+        "Pic": 59,
+        "BuyList": 7000,
+        "SellList": 3200,
+        "Effect": 15,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 117,
+        "Name": "순례십자가",
+        "Pic": 59,
+        "BuyList": 3200,
+        "SellList": 1500,
+        "Effect": 3,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 118,
+        "Name": "그리스정교의 십자가",
+        "Pic": 59,
+        "BuyList": 4500,
+        "SellList": 2200,
+        "Effect": 7,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 119,
+        "Name": "비잔틴 금화",
+        "Pic": 51,
+        "BuyList": 120,
+        "SellList": 50,
+        "Effect": 12,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 120,
+        "Name": "그림성경",
+        "Pic": 54,
+        "BuyList": 9000,
+        "SellList": 5000,
+        "Effect": 28,
+        "Category": 7,
+        "Hint": 174
+      },
+      {
+        "Id": 121,
+        "Name": "신전기사단 갑옷",
+        "Pic": 60,
+        "BuyList": 65000,
+        "SellList": 33000,
+        "Effect": 58,
+        "Category": 4,
+        "Hint": -1
+      },
+      {
+        "Id": 122,
+        "Name": "포포르·부흐",
+        "Pic": 56,
+        "BuyList": 5000,
+        "SellList": 1500,
+        "Effect": 35,
+        "Category": 7,
+        "Hint": 72
+      },
+      {
+        "Id": 123,
+        "Name": "트로아노 고사본",
+        "Pic": 56,
+        "BuyList": 3000,
+        "SellList": 800,
+        "Effect": 30,
+        "Category": 7,
+        "Hint": 73
+      },
+      {
+        "Id": 124,
+        "Name": "페레시아누스 고사본",
+        "Pic": 56,
+        "BuyList": 3000,
+        "SellList": 800,
+        "Effect": 31,
+        "Category": 7,
+        "Hint": 154
+      },
+      {
+        "Id": 125,
+        "Name": "함무라비법전의 스텔라",
+        "Pic": 50,
+        "BuyList": 15000,
+        "SellList": 5000,
+        "Effect": 50,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 126,
+        "Name": "잉카의 키프",
+        "Pic": 61,
+        "BuyList": 500,
+        "SellList": 200,
+        "Effect": 10,
+        "Category": 7,
+        "Hint": 45
+      },
+      {
+        "Id": 127,
+        "Name": "트롤의 보물",
+        "Pic": 46,
+        "BuyList": 15000,
+        "SellList": 6000,
+        "Effect": 15,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 128,
+        "Name": "갑옷용",
+        "Pic": -1,
+        "BuyList": 45000,
+        "SellList": 12500,
+        "Effect": 12,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 129,
+        "Name": "대구수",
+        "Pic": -1,
+        "BuyList": 70000,
+        "SellList": 15000,
+        "Effect": 25,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 130,
+        "Name": "대각조",
+        "Pic": -1,
+        "BuyList": 40000,
+        "SellList": 10000,
+        "Effect": 10,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 131,
+        "Name": "인면수",
+        "Pic": -1,
+        "BuyList": 75000,
+        "SellList": 14000,
+        "Effect": 24,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 132,
+        "Name": "반어조",
+        "Pic": -1,
+        "BuyList": 40000,
+        "SellList": 8000,
+        "Effect": 40,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 133,
+        "Name": "별탑가지",
+        "Pic": -1,
+        "BuyList": 4000,
+        "SellList": 1200,
+        "Effect": 17,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 134,
+        "Name": "웰 웽챠",
+        "Pic": -1,
+        "BuyList": 6000,
+        "SellList": 2500,
+        "Effect": 15,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 135,
+        "Name": "네펜데스",
+        "Pic": -1,
+        "BuyList": 10000,
+        "SellList": 2000,
+        "Effect": 21,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 136,
+        "Name": "파리지옥풀",
+        "Pic": -1,
+        "BuyList": 10000,
+        "SellList": 1800,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 137,
+        "Name": "거대화",
+        "Pic": -1,
+        "BuyList": 16000,
+        "SellList": 10000,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 138,
+        "Name": "이구아나",
+        "Pic": -1,
+        "BuyList": 11000,
+        "SellList": 9000,
+        "Effect": 36,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 139,
+        "Name": "북극곰",
+        "Pic": -1,
+        "BuyList": 32000,
+        "SellList": 16000,
+        "Effect": 32,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 140,
+        "Name": "사마귀멧돼지",
+        "Pic": -1,
+        "BuyList": 7000,
+        "SellList": 3000,
+        "Effect": 6,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 141,
+        "Name": "시라칸스",
+        "Pic": -1,
+        "BuyList": 15000,
+        "SellList": 8000,
+        "Effect": 32,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 142,
+        "Name": "아프리카 바늘두더지",
+        "Pic": -1,
+        "BuyList": 4000,
+        "SellList": 2000,
+        "Effect": 10,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 143,
+        "Name": "팬더",
+        "Pic": -1,
+        "BuyList": 40000,
+        "SellList": 25000,
+        "Effect": 35,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 144,
+        "Name": "호랑이",
+        "Pic": -1,
+        "BuyList": 35000,
+        "SellList": 20000,
+        "Effect": 25,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 145,
+        "Name": "검은 담비",
+        "Pic": -1,
+        "BuyList": 7000,
+        "SellList": 35000,
+        "Effect": 60,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 146,
+        "Name": "극락조",
+        "Pic": -1,
+        "BuyList": 65000,
+        "SellList": 30000,
+        "Effect": 50,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 147,
+        "Name": "캥거루",
+        "Pic": -1,
+        "BuyList": 50000,
+        "SellList": 25000,
+        "Effect": 40,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 148,
+        "Name": "코알라",
+        "Pic": -1,
+        "BuyList": 45000,
+        "SellList": 24000,
+        "Effect": 38,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 149,
+        "Name": "원바트",
+        "Pic": -1,
+        "BuyList": 40000,
+        "SellList": 21000,
+        "Effect": 36,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 150,
+        "Name": "신천옹",
+        "Pic": -1,
+        "BuyList": 15000,
+        "SellList": 9500,
+        "Effect": 20,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 151,
+        "Name": "갈라파고스 코끼리거북",
+        "Pic": -1,
+        "BuyList": 35000,
+        "SellList": 25000,
+        "Effect": 35,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 152,
+        "Name": "큰군관조",
+        "Pic": -1,
+        "BuyList": 27000,
+        "SellList": 13500,
+        "Effect": 30,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 153,
+        "Name": "무스",
+        "Pic": -1,
+        "BuyList": 26000,
+        "SellList": 14000,
+        "Effect": 28,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 154,
+        "Name": "버팔로",
+        "Pic": -1,
+        "BuyList": 16000,
+        "SellList": 8000,
+        "Effect": 24,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 155,
+        "Name": "푸레리독",
+        "Pic": -1,
+        "BuyList": 22000,
+        "SellList": 12000,
+        "Effect": 32,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 156,
+        "Name": "랴마",
+        "Pic": -1,
+        "BuyList": 8000,
+        "SellList": 15000,
+        "Effect": 28,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 157,
+        "Name": "타란츄라",
+        "Pic": -1,
+        "BuyList": 10000,
+        "SellList": 6000,
+        "Effect": 25,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 158,
+        "Name": "파피루스",
+        "Pic": -1,
+        "BuyList": 3000,
+        "SellList": 1500,
+        "Effect": 8,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 159,
+        "Name": "망그로브 가지",
+        "Pic": -1,
+        "BuyList": 1500,
+        "SellList": 800,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 160,
+        "Name": "들모란",
+        "Pic": -1,
+        "BuyList": 1500,
+        "SellList": 1000,
+        "Effect": 5,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 161,
+        "Name": "큰가시연꽃",
+        "Pic": -1,
+        "BuyList": 5000,
+        "SellList": 1500,
+        "Effect": 25,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 162,
+        "Name": "빵나무 열매",
+        "Pic": -1,
+        "BuyList": 1400,
+        "SellList": 500,
+        "Effect": 15,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 163,
+        "Name": "세쿼이어 가지",
+        "Pic": -1,
+        "BuyList": 1300,
+        "SellList": 350,
+        "Effect": 12,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 164,
+        "Name": "고무나무수액",
+        "Pic": -1,
+        "BuyList": 1200,
+        "SellList": 150,
+        "Effect": 15,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 165,
+        "Name": "홋텐토트의 창",
+        "Pic": 113,
+        "BuyList": 2500,
+        "SellList": 1500,
+        "Effect": 20,
+        "Category": 3,
+        "Hint": -1
+      },
+      {
+        "Id": 166,
+        "Name": "파돈족의 목걸이",
+        "Pic": 62,
+        "BuyList": 24000,
+        "SellList": 9000,
+        "Effect": 33,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 167,
+        "Name": "숲사람",
+        "Pic": -1,
+        "BuyList": 180000,
+        "SellList": 40000,
+        "Effect": 35,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 168,
+        "Name": "아마조네스의 활",
+        "Pic": 120,
+        "BuyList": 120000,
+        "SellList": 35000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 169,
+        "Name": "파타곤의 구두",
+        "Pic": -1,
+        "BuyList": 50000,
+        "SellList": 2000,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 170,
+        "Name": "남극인",
+        "Pic": -1,
+        "BuyList": 100000,
+        "SellList": 25000,
+        "Effect": 50,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 171,
+        "Name": "비어",
+        "Pic": -1,
+        "BuyList": 60000,
+        "SellList": 11000,
+        "Effect": 24,
+        "Category": 8,
+        "Hint": -1
+      },
+      {
+        "Id": 172,
+        "Name": "아프리카 남단의 지도",
+        "Pic": 58,
+        "BuyList": 50000,
+        "SellList": 8000,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 173,
+        "Name": "서회 항로도",
+        "Pic": 58,
+        "BuyList": 200000,
+        "SellList": 30000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 174,
+        "Name": "인도 항로도",
+        "Pic": 58,
+        "BuyList": 200000,
+        "SellList": 30000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 175,
+        "Name": "말라카 해협의 해도",
+        "Pic": 58,
+        "BuyList": 100000,
+        "SellList": 15000,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 176,
+        "Name": "향료제도의 지도",
+        "Pic": 58,
+        "BuyList": 150000,
+        "SellList": 28000,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 177,
+        "Name": "중국지도",
+        "Pic": 58,
+        "BuyList": 120000,
+        "SellList": 27000,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 178,
+        "Name": "신세계해협의 해도",
+        "Pic": 58,
+        "BuyList": 160000,
+        "SellList": 30000,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 179,
+        "Name": "세계 일주 지도",
+        "Pic": 58,
+        "BuyList": 250000,
+        "SellList": 50000,
+        "Effect": 60,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 180,
+        "Name": "지팡그 지도",
+        "Pic": 58,
+        "BuyList": 150000,
+        "SellList": 24000,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 181,
+        "Name": "남방대륙지도",
+        "Pic": 58,
+        "BuyList": 100000,
+        "SellList": 19000,
+        "Effect": 35,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 182,
+        "Name": "남극대륙지도",
+        "Pic": 58,
+        "BuyList": 60000,
+        "SellList": 9000,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 183,
+        "Name": "북쪽 해협해도",
+        "Pic": 58,
+        "BuyList": 80000,
+        "SellList": 14000,
+        "Effect": 35,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 184,
+        "Name": "사해사본",
+        "Pic": 55,
+        "BuyList": 35000,
+        "SellList": 9000,
+        "Effect": 27,
+        "Category": 7,
+        "Hint": 60
+      },
+      {
+        "Id": 185,
+        "Name": "경교의 십자가",
+        "Pic": 59,
+        "BuyList": 15000,
+        "SellList": 5000,
+        "Effect": 17,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 186,
+        "Name": "벼이삭",
+        "Pic": 135,
+        "BuyList": 300,
+        "SellList": 50,
+        "Effect": 10,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 187,
+        "Name": "옥수수씨앗",
+        "Pic": 136,
+        "BuyList": 500,
+        "SellList": 100,
+        "Effect": 15,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 188,
+        "Name": "감자싹",
+        "Pic": 137,
+        "BuyList": 400,
+        "SellList": 80,
+        "Effect": 12,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 189,
+        "Name": "후추열매",
+        "Pic": 157,
+        "BuyList": 140,
+        "SellList": 50,
+        "Effect": 45,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 190,
+        "Name": "정향열매",
+        "Pic": 158,
+        "BuyList": 160,
+        "SellList": 55,
+        "Effect": 50,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 191,
+        "Name": "계피나무",
+        "Pic": 160,
+        "BuyList": 130,
+        "SellList": 45,
+        "Effect": 42,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 192,
+        "Name": "피멘트열매",
+        "Pic": 161,
+        "BuyList": 90,
+        "SellList": 30,
+        "Effect": 36,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 193,
+        "Name": "커피나무",
+        "Pic": 163,
+        "BuyList": 300,
+        "SellList": 90,
+        "Effect": 25,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 194,
+        "Name": "차잎",
+        "Pic": 164,
+        "BuyList": 50,
+        "SellList": 10,
+        "Effect": 24,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 195,
+        "Name": "카카오열매",
+        "Pic": 165,
+        "BuyList": 100,
+        "SellList": 40,
+        "Effect": 22,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 196,
+        "Name": "담배잎",
+        "Pic": 166,
+        "BuyList": 60,
+        "SellList": 12,
+        "Effect": 27,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 197,
+        "Name": "누에고치",
+        "Pic": 169,
+        "BuyList": 150,
+        "SellList": 50,
+        "Effect": 40,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 198,
+        "Name": "태고시대골동품",
+        "Pic": 181,
+        "BuyList": 600,
+        "SellList": 1000,
+        "Effect": 28,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 199,
+        "Name": "수제 융단",
+        "Pic": 182,
+        "BuyList": 500,
+        "SellList": 600,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 200,
+        "Name": "고급편사",
+        "Pic": 183,
+        "BuyList": 200,
+        "SellList": 300,
+        "Effect": 21,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 201,
+        "Name": "사향향수",
+        "Pic": 185,
+        "BuyList": 400,
+        "SellList": 950,
+        "Effect": 22,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 202,
+        "Name": "유향향수",
+        "Pic": 186,
+        "BuyList": 300,
+        "SellList": 1000,
+        "Effect": 24,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 203,
+        "Name": "용연향향수",
+        "Pic": 187,
+        "BuyList": 350,
+        "SellList": 850,
+        "Effect": 20,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 204,
+        "Name": "백단조각",
+        "Pic": 188,
+        "BuyList": 250,
+        "SellList": 200,
+        "Effect": 12,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 205,
+        "Name": "큰알 진주",
+        "Pic": 190,
+        "BuyList": 110000,
+        "SellList": 30000,
+        "Effect": 27,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 206,
+        "Name": "비취구슬",
+        "Pic": 191,
+        "BuyList": 25000,
+        "SellList": 9000,
+        "Effect": 17,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 207,
+        "Name": "코뿔소의 뿔",
+        "Pic": 192,
+        "BuyList": 380,
+        "SellList": 480,
+        "Effect": 5,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 208,
+        "Name": "상아",
+        "Pic": 193,
+        "BuyList": 350,
+        "SellList": 700,
+        "Effect": 7,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 209,
+        "Name": "산호초",
+        "Pic": 194,
+        "BuyList": 40000,
+        "SellList": 11000,
+        "Effect": 21,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 210,
+        "Name": "별갑세공",
+        "Pic": 195,
+        "BuyList": 300,
+        "SellList": 600,
+        "Effect": 6,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 211,
+        "Name": "한방약재",
+        "Pic": 201,
+        "BuyList": 250,
+        "SellList": 350,
+        "Effect": 30,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 212,
+        "Name": "노예거래 어음",
+        "Pic": -1,
+        "BuyList": 30000,
+        "SellList": 10000,
+        "Effect": 35,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 213,
+        "Name": "송골매상",
+        "Pic": 0,
+        "BuyList": 1200,
+        "SellList": 400,
+        "Effect": 0,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 214,
+        "Name": "요정상",
+        "Pic": 1,
+        "BuyList": 1250,
+        "SellList": 420,
+        "Effect": 1,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 215,
+        "Name": "제독상",
+        "Pic": 2,
+        "BuyList": 1300,
+        "SellList": 440,
+        "Effect": 2,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 216,
+        "Name": "백조상",
+        "Pic": 3,
+        "BuyList": 1350,
+        "SellList": 460,
+        "Effect": 3,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 217,
+        "Name": "마상",
+        "Pic": 4,
+        "BuyList": 1400,
+        "SellList": 480,
+        "Effect": 4,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 218,
+        "Name": "표범상",
+        "Pic": 5,
+        "BuyList": 1450,
+        "SellList": 500,
+        "Effect": 5,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 219,
+        "Name": "거북상",
+        "Pic": 6,
+        "BuyList": 1500,
+        "SellList": 520,
+        "Effect": 6,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 220,
+        "Name": "이리상",
+        "Pic": 7,
+        "BuyList": 1600,
+        "SellList": 550,
+        "Effect": 7,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 221,
+        "Name": "올빼미상",
+        "Pic": 8,
+        "BuyList": 5000,
+        "SellList": 2100,
+        "Effect": 8,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 222,
+        "Name": "돌고래상",
+        "Pic": 9,
+        "BuyList": 5500,
+        "SellList": 2200,
+        "Effect": 9,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 223,
+        "Name": "사슴상",
+        "Pic": 10,
+        "BuyList": 6000,
+        "SellList": 2300,
+        "Effect": 10,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 224,
+        "Name": "상어상",
+        "Pic": 11,
+        "BuyList": 6500,
+        "SellList": 2400,
+        "Effect": 11,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 225,
+        "Name": "뱀신상",
+        "Pic": 12,
+        "BuyList": 7000,
+        "SellList": 2500,
+        "Effect": 12,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 226,
+        "Name": "코끼리조각",
+        "Pic": 13,
+        "BuyList": 23500,
+        "SellList": 7950,
+        "Effect": 13,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 227,
+        "Name": "위인상",
+        "Pic": 14,
+        "BuyList": 24000,
+        "SellList": 8000,
+        "Effect": 14,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 228,
+        "Name": "비룡상",
+        "Pic": 15,
+        "BuyList": 24500,
+        "SellList": 8100,
+        "Effect": 15,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 229,
+        "Name": "불뱀상",
+        "Pic": 16,
+        "BuyList": 25000,
+        "SellList": 8200,
+        "Effect": 16,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 230,
+        "Name": "정령상",
+        "Pic": 17,
+        "BuyList": 25500,
+        "SellList": 8400,
+        "Effect": 17,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 231,
+        "Name": "사자상",
+        "Pic": 18,
+        "BuyList": 26000,
+        "SellList": 8500,
+        "Effect": 18,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 232,
+        "Name": "일각수상",
+        "Pic": 19,
+        "BuyList": 26500,
+        "SellList": 8700,
+        "Effect": 19,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 233,
+        "Name": "천사상",
+        "Pic": 20,
+        "BuyList": 27000,
+        "SellList": 8850,
+        "Effect": 20,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 234,
+        "Name": "매상",
+        "Pic": 21,
+        "BuyList": 27500,
+        "SellList": 9000,
+        "Effect": 21,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 235,
+        "Name": "고래상",
+        "Pic": 22,
+        "BuyList": 28000,
+        "SellList": 9150,
+        "Effect": 22,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 236,
+        "Name": "인마상",
+        "Pic": 23,
+        "BuyList": 28500,
+        "SellList": 9300,
+        "Effect": 23,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 237,
+        "Name": "독수리조각상",
+        "Pic": 24,
+        "BuyList": 29000,
+        "SellList": 9500,
+        "Effect": 24,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 238,
+        "Name": "해수상",
+        "Pic": 25,
+        "BuyList": 30000,
+        "SellList": 9700,
+        "Effect": 25,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 239,
+        "Name": "여신상",
+        "Pic": 26,
+        "BuyList": 240000,
+        "SellList": 140000,
+        "Effect": 26,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 240,
+        "Name": "해신상",
+        "Pic": 27,
+        "BuyList": 210000,
+        "SellList": 125000,
+        "Effect": 27,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 241,
+        "Name": "수룡상",
+        "Pic": 28,
+        "BuyList": 200000,
+        "SellList": 120000,
+        "Effect": 28,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 242,
+        "Name": "불꽃신상",
+        "Pic": 29,
+        "BuyList": 230000,
+        "SellList": 135000,
+        "Effect": 29,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 243,
+        "Name": "청룡상",
+        "Pic": 30,
+        "BuyList": 220000,
+        "SellList": 130000,
+        "Effect": 30,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 244,
+        "Name": "백호상",
+        "Pic": 31,
+        "BuyList": 210000,
+        "SellList": 125000,
+        "Effect": 31,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 245,
+        "Name": "불사조상",
+        "Pic": 32,
+        "BuyList": 230000,
+        "SellList": 135000,
+        "Effect": 32,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 246,
+        "Name": "천마상",
+        "Pic": 33,
+        "BuyList": 235000,
+        "SellList": 138000,
+        "Effect": 33,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 247,
+        "Name": "사신상",
+        "Pic": 34,
+        "BuyList": 280000,
+        "SellList": 200000,
+        "Effect": 34,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 248,
+        "Name": "마왕상",
+        "Pic": 35,
+        "BuyList": 320000,
+        "SellList": 230000,
+        "Effect": 35,
+        "Category": 6,
+        "Hint": -1
+      },
+      {
+        "Id": 249,
+        "Name": "깨어진 투구",
+        "Pic": -1,
+        "BuyList": 160,
+        "SellList": 50,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 250,
+        "Name": "금도금 술잔",
+        "Pic": -1,
+        "BuyList": 900,
+        "SellList": 400,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 251,
+        "Name": "이교도의 가면",
+        "Pic": -1,
+        "BuyList": 480,
+        "SellList": 200,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 252,
+        "Name": "목조 가면",
+        "Pic": -1,
+        "BuyList": 300,
+        "SellList": 100,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 253,
+        "Name": "행운의 앵크",
+        "Pic": -1,
+        "BuyList": 560,
+        "SellList": 200,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 254,
+        "Name": "기괴한 두상",
+        "Pic": -1,
+        "BuyList": 600,
+        "SellList": 120,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 255,
+        "Name": "싸구려 머리장식",
+        "Pic": -1,
+        "BuyList": 125,
+        "SellList": 25,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 256,
+        "Name": "토산품 술잔",
+        "Pic": -1,
+        "BuyList": 210,
+        "SellList": 100,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 257,
+        "Name": "동 주전자",
+        "Pic": -1,
+        "BuyList": 700,
+        "SellList": 200,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 258,
+        "Name": "목조불상",
+        "Pic": -1,
+        "BuyList": 360,
+        "SellList": 100,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 259,
+        "Name": "흰 목상",
+        "Pic": -1,
+        "BuyList": 250,
+        "SellList": 100,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 260,
+        "Name": "장난감 북",
+        "Pic": -1,
+        "BuyList": 80,
+        "SellList": 30,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 261,
+        "Name": "갑옷장식물",
+        "Pic": -1,
+        "BuyList": 560,
+        "SellList": 200,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 262,
+        "Name": "청동향로",
+        "Pic": -1,
+        "BuyList": 640,
+        "SellList": 250,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 263,
+        "Name": "싸구려 도자기",
+        "Pic": -1,
+        "BuyList": 120,
+        "SellList": 50,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 264,
+        "Name": "철제 항아리",
+        "Pic": -1,
+        "BuyList": 580,
+        "SellList": 200,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 265,
+        "Name": "유리 그릇",
+        "Pic": -1,
+        "BuyList": 460,
+        "SellList": 150,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 266,
+        "Name": "실패작 도자기",
+        "Pic": -1,
+        "BuyList": 20,
+        "SellList": 5,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 267,
+        "Name": "보통인감",
+        "Pic": -1,
+        "BuyList": 480,
+        "SellList": 200,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 268,
+        "Name": "장식석",
+        "Pic": -1,
+        "BuyList": 320,
+        "SellList": 100,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 269,
+        "Name": "유리해골",
+        "Pic": -1,
+        "BuyList": 800,
+        "SellList": 300,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 270,
+        "Name": "사악한 신의 가면",
+        "Pic": -1,
+        "BuyList": 350,
+        "SellList": 120,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 271,
+        "Name": "점토가면",
+        "Pic": -1,
+        "BuyList": 150,
+        "SellList": 50,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 272,
+        "Name": "금빛 잔",
+        "Pic": -1,
+        "BuyList": 1000,
+        "SellList": 350,
+        "Effect": 2,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 273,
+        "Name": "장식용 관",
+        "Pic": -1,
+        "BuyList": 1500,
+        "SellList": 700,
+        "Effect": 4,
+        "Category": 1,
+        "Hint": -1
+      },
+      {
+        "Id": 274,
+        "Name": "예쁜 소품상자",
+        "Pic": -1,
+        "BuyList": 200,
+        "SellList": 50,
+        "Effect": 1,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 275,
+        "Name": "초벌구이 두상",
+        "Pic": -1,
+        "BuyList": 160,
+        "SellList": 45,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 276,
+        "Name": "이상한 신의 가면",
+        "Pic": -1,
+        "BuyList": 500,
+        "SellList": 190,
+        "Effect": 0,
+        "Category": 5,
+        "Hint": -1
+      },
+      {
+        "Id": 277,
+        "Name": "지중해의 유혹어1",
+        "Pic": 53,
+        "BuyList": 100,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 278,
+        "Name": "지중해의 유혹어2",
+        "Pic": 53,
+        "BuyList": 200,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 279,
+        "Name": "지중해의 유혹어3",
+        "Pic": 53,
+        "BuyList": 250,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 280,
+        "Name": "지중해의 유혹어4",
+        "Pic": 53,
+        "BuyList": 300,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 281,
+        "Name": "지중해의 유혹어5",
+        "Pic": 53,
+        "BuyList": 1500,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 282,
+        "Name": "지중해의 유혹어6",
+        "Pic": 53,
+        "BuyList": 2000,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 283,
+        "Name": "지중해의 유혹어7",
+        "Pic": 53,
+        "BuyList": 1000,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 284,
+        "Name": "지중해의 유혹어8",
+        "Pic": 53,
+        "BuyList": 500,
+        "SellList": 500,
+        "Effect": 1,
+        "Category": 7,
+        "Hint": -1
+      },
+      {
+        "Id": 285,
+        "Name": "만파식적",
+        "Pic": 205,
+        "BuyList": 150000,
+        "SellList": 60000,
+        "Effect": 35,
+        "Category": 5,
+        "Hint": -1
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 2
+}

@@ -1,0 +1,633 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Nations": [
+      {
+        "Id": 0,
+        "Name": "포르투갈 왕국",
+        "Language": 1,
+        "Capital": 0,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 1,
+        "Name": "에스파니아 왕국",
+        "Language": 0,
+        "Capital": 7,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 2,
+        "Name": "나슬 왕조 그라나다 왕국",
+        "Language": 5,
+        "Capital": 10,
+        "Sect": 3,
+        "Entry": 2
+      },
+      {
+        "Id": 3,
+        "Name": "프랑스 왕국",
+        "Language": 2,
+        "Capital": 14,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 4,
+        "Name": "밀라노 공국",
+        "Language": 2,
+        "Capital": 26,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 5,
+        "Name": "사보이 공국",
+        "Language": 2,
+        "Capital": 27,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 6,
+        "Name": "제노바 공화국",
+        "Language": 2,
+        "Capital": 28,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 7,
+        "Name": "피렌체 공화국",
+        "Language": 2,
+        "Capital": 30,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 8,
+        "Name": "베니스 공화국",
+        "Language": 2,
+        "Capital": 29,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 9,
+        "Name": "교황령",
+        "Language": 2,
+        "Capital": 33,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 10,
+        "Name": "나폴리 왕국",
+        "Language": 2,
+        "Capital": 34,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 11,
+        "Name": "잉글랜드 왕국",
+        "Language": 3,
+        "Capital": 38,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 12,
+        "Name": "스코틀랜드 왕국",
+        "Language": 3,
+        "Capital": 42,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 13,
+        "Name": "아일랜드",
+        "Language": 3,
+        "Capital": 43,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 14,
+        "Name": "신성 로마 제국",
+        "Language": 3,
+        "Capital": 53,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 15,
+        "Name": "스위스 자유연방",
+        "Language": 3,
+        "Capital": 55,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 16,
+        "Name": "덴마크·노르웨이 연합왕국",
+        "Language": 3,
+        "Capital": 66,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 17,
+        "Name": "스웨덴 왕국",
+        "Language": 3,
+        "Capital": 64,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 18,
+        "Name": "폴란드·리투아니아 연합왕국",
+        "Language": 4,
+        "Capital": 62,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 19,
+        "Name": "독일 기사단령",
+        "Language": 3,
+        "Capital": 57,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 20,
+        "Name": "프로이센 공국",
+        "Language": 3,
+        "Capital": 57,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 21,
+        "Name": "헝가리 왕국",
+        "Language": 4,
+        "Capital": 63,
+        "Sect": 0,
+        "Entry": 0
+      },
+      {
+        "Id": 22,
+        "Name": "몰다비아 공국",
+        "Language": 4,
+        "Capital": 77,
+        "Sect": 2,
+        "Entry": 0
+      },
+      {
+        "Id": 23,
+        "Name": "키프로스 왕국",
+        "Language": 4,
+        "Capital": 75,
+        "Sect": 2,
+        "Entry": 0
+      },
+      {
+        "Id": 24,
+        "Name": "모스크바 대공국",
+        "Language": 4,
+        "Capital": 60,
+        "Sect": 2,
+        "Entry": 0
+      },
+      {
+        "Id": 25,
+        "Name": "노브고르트 공화국",
+        "Language": 4,
+        "Capital": 59,
+        "Sect": 2,
+        "Entry": 0
+      },
+      {
+        "Id": 26,
+        "Name": "맘루크 왕조 이집트",
+        "Language": 5,
+        "Capital": 79,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 27,
+        "Name": "하프스 왕조",
+        "Language": 5,
+        "Capital": 82,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 28,
+        "Name": "송가이 왕국",
+        "Language": 5,
+        "Capital": 93,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 29,
+        "Name": "카넴 왕국",
+        "Language": 10,
+        "Capital": 96,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 30,
+        "Name": "베닌 왕국",
+        "Language": 10,
+        "Capital": 98,
+        "Sect": 10,
+        "Entry": 0
+      },
+      {
+        "Id": 31,
+        "Name": "콩고 왕국",
+        "Language": 10,
+        "Capital": 100,
+        "Sect": 10,
+        "Entry": 0
+      },
+      {
+        "Id": 32,
+        "Name": "짐바브웨 왕국",
+        "Language": 10,
+        "Capital": 104,
+        "Sect": 9,
+        "Entry": 0
+      },
+      {
+        "Id": 33,
+        "Name": "모노모타파 왕국",
+        "Language": 10,
+        "Capital": 104,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 34,
+        "Name": "이슬람교도 국령 동아프리카",
+        "Language": 5,
+        "Capital": 109,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 35,
+        "Name": "에티오피아 왕국",
+        "Language": 10,
+        "Capital": 110,
+        "Sect": 11,
+        "Entry": 0
+      },
+      {
+        "Id": 36,
+        "Name": "훈지 왕국",
+        "Language": 5,
+        "Capital": 111,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 37,
+        "Name": "오스만·투르크 제국",
+        "Language": 5,
+        "Capital": 112,
+        "Sect": 3,
+        "Entry": 2
+      },
+      {
+        "Id": 38,
+        "Name": "라슬",
+        "Language": 5,
+        "Capital": 124,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 39,
+        "Name": "오만",
+        "Language": 5,
+        "Capital": 125,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 40,
+        "Name": "티무르 제국",
+        "Language": 5,
+        "Capital": 132,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 41,
+        "Name": "사파비 왕조 이란",
+        "Language": 6,
+        "Capital": 130,
+        "Sect": 4,
+        "Entry": 1
+      },
+      {
+        "Id": 42,
+        "Name": "아스트라한 한국",
+        "Language": 5,
+        "Capital": 140,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 43,
+        "Name": "세이바니 왕조",
+        "Language": 5,
+        "Capital": 132,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 44,
+        "Name": "히바 한국",
+        "Language": 5,
+        "Capital": 134,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 45,
+        "Name": "카잔 한국",
+        "Language": 9,
+        "Capital": 141,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 46,
+        "Name": "이빌·시빌",
+        "Language": 9,
+        "Capital": 142,
+        "Sect": 9,
+        "Entry": 0
+      },
+      {
+        "Id": 47,
+        "Name": "로디 왕조",
+        "Language": 8,
+        "Capital": 145,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 48,
+        "Name": "무갈 제국",
+        "Language": 8,
+        "Capital": 145,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 49,
+        "Name": "구자라트 왕국",
+        "Language": 8,
+        "Capital": 147,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 50,
+        "Name": "비자푸르 왕국",
+        "Language": 8,
+        "Capital": 149,
+        "Sect": 5,
+        "Entry": 0
+      },
+      {
+        "Id": 51,
+        "Name": "비자야나가르 왕국",
+        "Language": 8,
+        "Capital": 153,
+        "Sect": 5,
+        "Entry": 0
+      },
+      {
+        "Id": 52,
+        "Name": "골콘다 왕국",
+        "Language": 8,
+        "Capital": 156,
+        "Sect": 5,
+        "Entry": 0
+      },
+      {
+        "Id": 53,
+        "Name": "벵갈",
+        "Language": 8,
+        "Capital": 157,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 54,
+        "Name": "세이론",
+        "Language": 8,
+        "Capital": 155,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 55,
+        "Name": "카슈가르 한국",
+        "Language": 9,
+        "Capital": 137,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 56,
+        "Name": "오이라트",
+        "Language": 9,
+        "Capital": 143,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 57,
+        "Name": "타타르",
+        "Language": 9,
+        "Capital": 144,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 58,
+        "Name": "티베트",
+        "Language": 7,
+        "Capital": 139,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 59,
+        "Name": "아바 왕조 버마",
+        "Language": 7,
+        "Capital": 158,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 60,
+        "Name": "퉁구 왕조 버마",
+        "Language": 7,
+        "Capital": 158,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 61,
+        "Name": "페구",
+        "Language": 7,
+        "Capital": 159,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 62,
+        "Name": "아유타야 왕조 샴 왕국",
+        "Language": 7,
+        "Capital": 162,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 63,
+        "Name": "말라카 왕국",
+        "Language": 12,
+        "Capital": 160,
+        "Sect": 3,
+        "Entry": 1
+      },
+      {
+        "Id": 64,
+        "Name": "앙코르 왕조 캄보디아",
+        "Language": 12,
+        "Capital": 163,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 65,
+        "Name": "여조 대월",
+        "Language": 7,
+        "Capital": 165,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 66,
+        "Name": "마자파히트 왕국",
+        "Language": 12,
+        "Capital": 169,
+        "Sect": 5,
+        "Entry": 0
+      },
+      {
+        "Id": 67,
+        "Name": "데마크 왕국",
+        "Language": 12,
+        "Capital": 169,
+        "Sect": 3,
+        "Entry": 0
+      },
+      {
+        "Id": 68,
+        "Name": "테르나테 왕국",
+        "Language": 12,
+        "Capital": 171,
+        "Sect": 9,
+        "Entry": 0
+      },
+      {
+        "Id": 69,
+        "Name": "명",
+        "Language": 7,
+        "Capital": 188,
+        "Sect": 7,
+        "Entry": 1
+      },
+      {
+        "Id": 70,
+        "Name": "조선 왕조",
+        "Language": 13,
+        "Capital": 190,
+        "Sect": 7,
+        "Entry": 0
+      },
+      {
+        "Id": 71,
+        "Name": "일본",
+        "Language": 13,
+        "Capital": 193,
+        "Sect": 6,
+        "Entry": 0
+      },
+      {
+        "Id": 72,
+        "Name": "아즈텍 왕국",
+        "Language": 11,
+        "Capital": 200,
+        "Sect": 8,
+        "Entry": 0
+      },
+      {
+        "Id": 73,
+        "Name": "투라스칼테카 왕국",
+        "Language": 11,
+        "Capital": 202,
+        "Sect": 8,
+        "Entry": 0
+      },
+      {
+        "Id": 74,
+        "Name": "마야",
+        "Language": 11,
+        "Capital": 206,
+        "Sect": 8,
+        "Entry": 0
+      },
+      {
+        "Id": 75,
+        "Name": "키체국",
+        "Language": 11,
+        "Capital": 207,
+        "Sect": 8,
+        "Entry": 0
+      },
+      {
+        "Id": 76,
+        "Name": "치브챠 왕국",
+        "Language": 11,
+        "Capital": 218,
+        "Sect": 8,
+        "Entry": 0
+      },
+      {
+        "Id": 77,
+        "Name": "잉카 제국",
+        "Language": 11,
+        "Capital": 223,
+        "Sect": 8,
+        "Entry": 0
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 3
+}

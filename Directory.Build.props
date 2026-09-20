@@ -1,0 +1,9 @@
+<Project>
+    <PropertyGroup>
+        <!--
+          CommunityToolkit.Mvvm 8.4+ requires Microsoft.Windows.SDK.NET.Ref >= 10.0.19041.56.
+          Pin it here so publish/build works on any machine regardless of installed .NET SDK bundled version.
+        -->
+        <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
+    </PropertyGroup>
+</Project>

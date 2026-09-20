@@ -1,0 +1,4045 @@
+{
+  "Stamp": "",
+  "Data": {
+    "Parts": [
+      {
+        "Index": 0,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 11
+              },
+              "Note": "건물 조건: 값 11"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "에밀리오님이시지요． 저는 프란시스코·데·에란쪼 사령관님의 심부름꾼입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "당신의 아버님이신 페드로님은 각하의 친구셨습니다． 각하는 이번 페드로님의 전사에 대단히 침통해 하고 계십니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "저는 각하로부터 에밀리오님을 저택에 모셔오라는 명령을 받았습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "에밀리오님이 괜찮으시다면 각하의 「저택」까지 함께 가주십시오．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 1,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "41 10",
+              "Call": "NotInBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 아님 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "프란시스코 각하께서 기다리고 계십니다． 서두릅시다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "「저택」은 마을의 북쪽에 있는 초록색 지붕 건물입니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "여기가 각하의 저택입니다． 그럼， 안내하겠습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "오오， 에밀리오！ 잘 왔네． 나는 프란시스코·데·에란쪼네． 돌아가신 자네 아버님의 친구라네．"
+              }
+            },
+            {
+              "OpCode": "38 12",
+              "Call": "MeetSponsor",
+              "Args": {
+                "Sponsor": 22
+              },
+              "Note": "후원자 소개"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "자네가 어렸을 때 자주 놀아주었네만， 기억하고 있나？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그런데 말이네． 오늘， 자네를 부른 것은 다른 일이네． 자네 아버님이 이교도와의 싸움에 나가기 전에 나에게 부탁한 말이 있네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "「나에게 무슨 일이 있거든 아들의 후견인이 되어주게」라고．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "우선， 금화 １００００닢을 주겠네． 받아주게．"
+              }
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L0396",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "사양할 것 없네． 돈을 가지고 가도 상관없네． 아무말 말고 받아주게．"
+              }
+            },
+            {
+              "Label": "L0396",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L03EB",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그런가． 그렇게까지 말한다면 하는 수 없지．"
+              }
+            },
+            {
+              "Label": "L03EB",
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L041C",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 10000
+              },
+              "Note": "금화 +10000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 １００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "Label": "L041C",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그리고 베테랑인 선원을 자네에게 붙이겠네． 어이， 후안을 불러주게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "알겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 41 83 93 81 81 83 8D 83 68 83 8A 83 53",
+                "Text": "부르셨습니까？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "흠， 후안． 지금부터 자네는 여기에 있는 에밀리오를 도와주도록 하게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 41 83 93 81 81 83 8D 83 68 83 8A 83 53",
+                "Text": "옛， 알겠습니다．"
+              }
+            },
+            {
+              "OpCode": "40 0D",
+              "Call": "SetAide",
+              "Args": {
+                "Person": 119
+              },
+              "Note": "부관 앉힘"
+            },
+            {
+              "OpCode": "38 0D",
+              "Call": "MeetPerson",
+              "Args": {
+                "Person": 119
+              },
+              "Note": "인물 조우 처리: 인물 119"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에밀리오． 지금부터 자네는 모험가로서 살아가는 것일세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "우리들은 에스파니아와 포르투갈에 대항해 많은 모험가를 지원하고 있네． 자네가 모험을 떠난다면， 나도 자네를 원조하겠네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "모험의 목적은 옆에 있는 도서관에 가면 알 수 있을 것이네． 나도 젊었을땐 자주 갔었다네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그런데 「몽생미셸」을 알고 있나？ 성자가 천사장 미카엘의 계시를 받아 세운 예배당일세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "기독교도인 나로서는 꼭 「몽생미셸」에 가서 순례자의 증거품인 「순례의 십자가」를 가지고 오고 싶지만， 너무 바빠서 말이지···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "어떤가？ 언제든지 좋으니 「몽생미셸」에 가주지 않겠나？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "오늘 용무는 여기까지네． 모험의 목적을 찾게 되거든 다시 오게나．"
+              }
+            },
+            {
+              "OpCode": "19 12 16 00 1C 1C 00",
+              "Call": "AddAffinity",
+              "Args": {
+                "Value": {
+                  "Const": 40
+                }
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 2,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 7
+              },
+              "Note": "도시 조건: 값 7"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "일단 모험의 자료를 발견하러 「도서관」에 갑시다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "거기서 모험 힌트를 발견하면 「저택」에 돌아가서 설득합시다． 성공할 경우 모험 자금과 배를 빌릴 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그리고 모험중 에밀리오님을 「제독」이라고 부르도록 하겠습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 3,
+        "Step": 3,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 16
+          },
+          {
+            "Condition": 1,
+            "Body": 17
+          },
+          {
+            "Condition": 2,
+            "Body": 18
+          },
+          {
+            "Condition": 3,
+            "Body": 19
+          },
+          {
+            "Condition": 4,
+            "Body": 20
+          },
+          {
+            "Condition": 5,
+            "Body": 21
+          },
+          {
+            "Condition": 6,
+            "Body": 22
+          },
+          {
+            "Condition": 7,
+            "Body": 23
+          },
+          {
+            "Condition": 8,
+            "Body": 24
+          },
+          {
+            "Condition": 9,
+            "Body": 25
+          },
+          {
+            "Condition": 10,
+            "Body": 26
+          },
+          {
+            "Condition": 11,
+            "Body": 27
+          },
+          {
+            "Condition": 12,
+            "Body": 28
+          },
+          {
+            "Condition": 13,
+            "Body": 29
+          },
+          {
+            "Condition": 14,
+            "Body": 30
+          },
+          {
+            "Condition": 15,
+            "Body": 31
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 값 2"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 값 3"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 0
+              },
+              "Note": "건물 조건: 값 0"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 8
+              },
+              "Note": "건물 조건: 값 8"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 6
+              },
+              "Note": "건물 조건: 값 6"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 1
+              },
+              "Note": "건물 조건: 값 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 7
+              },
+              "Note": "건물 조건: 값 7"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 5
+              },
+              "Note": "건물 조건: 값 5"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 10
+              },
+              "Note": "건물 조건: 값 10"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 11
+              },
+              "Note": "건물 조건: 값 11"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 13
+              },
+              "Note": "건물 조건: 값 13"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 14
+              },
+              "Note": "건물 조건: 값 14"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 15
+              },
+              "Note": "건물 조건: 값 15"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기에는 이자벨 여왕이 계십니다． 제독의 명성이 올라가지 않으면 들어갈 수 없습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "모험의 스폰서가 되어 주는 교회가 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "대규모 스폰서입니다만 교회에 관계된 일 외에는 흥미가 없는 듯 합니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기서 바다의 출입을 합니다． 물과 식량을 싣는 일도 여기서 합니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "물론 배가 없으면 바다에 나갈 수 없습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "또， 가까운 도시의 위치도 알 수 있습니다． 도시의 위치를 모를 때는 여기서 정보를 얻어 주십시오．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "도서관입니다． 여기에서 힌트를 발견해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "앗， 그리고 모든 책을 다 읽을 수는 없습니다． 제독이 읽을 수 있는 책은 「파란책」뿐입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그건 그렇고， 에란쪼 각하께서 말한 「몽생미셸」에 꼭 가보고 싶군요．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기에서 배를 만듭니다． 배는 상당히 비싸니， 어느 정도 경험을 쌓지 않으면 자신의 배를 살 수 없습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그때까지 스폰서에게 배를 빌리도록 하십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "또， 여기에서는 배의 개조도 가능합니다． 개조는 꼭 할 필요가 있습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "배가 있을 경우 여기서 교역품을 매매할 수 있습니다． 도시에는 각기 특산품이 있으니까요． 잘 하면 돈을 벌 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기에서는 편리한 아이템을 팔고 있습니다． 나침반과 육분의는 절대 필요합니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "무기는「일기토」에서 사용합니다． 맨손으로 싸우는 일은 피해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "적어도 레이피아， 레자아마는 사 두는 것이 좋습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "술집에서는 항해자들이 모이니까 정보를 모을 때나 선원을 고용할 때도 좋습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "술을 마시며 쉬는 것도 좋지만 너무 마시지 않도록 해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "긴 항해를 하다 보면 피로가 쌓이게 됩니다． 때때로 여관에서 휴양해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기서 여러 기능을 익힐 수 있습니다． 시간이 있을 때는 여기서 수련해 두는 것도 좋습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기서부터 탐험에 나갈 수 있습니다． 하지만， 탐험 대원을 모집하지 않으면 문앞에서 거절당하고 맙니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기가 제독의 집입니까？ 남는 돈이나 중요한 물건은 집에 보관해 두는 것이 좋습니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "마을의 명사의 저택이군요． 지금은 모험이 유행이니까 귀족이나 관리를 설득한다면 제독의 스폰서가 되어줄 것입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "하지만 명성이 없으면 좀처럼 만나주지 않습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "마을의 명사의 저택이군요． 지금은 모험이 유행이니까 귀족이나 관리를 설득한다면 제독의 스폰서가 되어줄 것입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "하지만 명성이 없으면 좀처럼 만나주지 않습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "학자가 있는 연구소이군요． 그들의 흥미를 끄는 정보를 제공하지 않으면 필시 돈을 대주지 않을 것입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "게다가 어느 정도 명성이 없으면 이야기도 들어주지 않을 것입니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "각하의 저택입니다． 일단 맺은 계약을 거절할 때는 스폰서에게 사과하러 가 주십시오．"
+              }
+            },
+            {
+              "OpCode": "43 0F 0E",
+              "GotoIf": {
+                "Call": "HintInactive",
+                "Args": {
+                  "Hint": 47
+                }
+              },
+              "Target": "L0B8E",
+              "Note": "힌트 미활성 분기, 힌트 47"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "아니 에밀리오님， 잘 오셨습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L0B8E",
+              "OpCode": "43 4B",
+              "GotoIf": {
+                "Call": "LastCondition"
+              },
+              "Target": "L0C68",
+              "Note": "이전 조건 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "프란시스코·데·에란쪼님은 외출 중입니다． 다음번에 와 주십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 「몽생미셸」을 찾지 않겠습니까？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "에란쪼 각하께 신세를 져서···， 가끔은 무언가 해드리고 싶습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "Label": "L0C68",
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 4,
+        "Step": 4,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 3
+          },
+          {
+            "Condition": 1,
+            "Body": 4
+          },
+          {
+            "Condition": 2,
+            "Body": 5
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "42 10",
+              "Call": "BuildingCommand",
+              "Args": {
+                "Building": 12,
+                "Command": 0
+              },
+              "Note": "건물 명령 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "65",
+              "Call": "SponsorVisitEnded",
+              "Note": "후원자 건물 나섬 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 15
+              },
+              "Note": "건물 조건: 값 15"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "설명할 때입니다． 스폰서에게는 모험하고 싶어하는 성향이 있습니다． 이 성향이 대단히 중요합니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "성향에 맞지 않는 모험에는 원조를 해주지 않거나 원조 금액이 적어지기도 합니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "또， 스폰서가 원조를 해 줄 경우 「교섭」을 할 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "「교섭」에서 기간， 자금을 늘릴 수 있지만 교섭을 실패할 경우 원조를 거절당하고 맙니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "게다가 스폰서도 화가 나서 당분간 만나주지 않을테니 잘 생각한 다음 「교섭」을 하는 것이 좋습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "우선 마을 서쪽에 있는 「술집」에서 정보수집을 하도록 합시다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "수상한 자다！ 썩 꺼져라！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 역시 여관이나 자택에서 １개월 지낸 다음， 에란쪼 각하의 기분이 풀리기를 기다리는 것이 좋겠습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 5,
+        "Step": 5,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 3
+          },
+          {
+            "Condition": 1,
+            "Body": 4
+          },
+          {
+            "Condition": 2,
+            "Body": 5
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "42 10",
+              "Call": "BuildingCommand",
+              "Args": {
+                "Building": 0,
+                "Command": 0
+              },
+              "Note": "건물 명령 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "42 10",
+              "Call": "BuildingCommand",
+              "Args": {
+                "Building": 10,
+                "Command": 0
+              },
+              "Note": "건물 명령 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "여기서 목표의 발견물 정보를 입수하도록 합시다． 술집 주인은 정보통이니， 대개의 일은 알고 있습니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "해로로 나가실 거지요． 해로에서는 식량， 물을 소비하게 되니까 항상 남은 식량에 대해서는 주의해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "또， 근해와 원양에서의 차이점도 기억해 두어야 합니다． 근해에서는 바람， 조수의 영향을 받지 않고， 선원들도 안심하고 항해할 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "반대로 원양에 나가게 되면 선원들이 불안해 하며， 바람， 조수의 영향이 커 조종이 어렵게 됩니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "하지만 몸에 배면 바람과 조수를 이용해 빨리 진행할 수도 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "도중에 정박할 경우는 오른쪽을 클릭해 주십시오． 해안에서 정박할 경우， 식량과 물을 얻을 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "게다가， 상륙해 탐험을 할 수도 있습니다． 좋습니까？"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "육로로 가겠습니까？ 육로에서는 금을 소비하게 되니 남은 소지금에 주의해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "이동중 임의의 지점에서 오른쪽을 클릭하게 되면 캠프를 칠 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "또， 해안에 함대를 정박하고 있을 경우， 배 가까이에서 오른쪽을 클릭해 「승선」을 선택하면 배를 탈 수 있습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 6,
+        "Step": 6,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 3A 0B",
+              "GotoIf": {
+                "Call": "Discovered",
+                "Args": {
+                  "Discovery": 65
+                }
+              },
+              "Target": "L0016",
+              "Note": "발견물 조건 분기"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L0016",
+              "OpCode": "43 2B",
+              "GotoIf": {
+                "Call": "LessThan",
+                "Args": {
+                  "A": {
+                    "Stat": 27,
+                    "Name": "후원자 계약 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 1
+                  }
+                }
+              },
+              "Target": "L006B",
+              "Note": "후원자 계약 남은 기한(일) < 1 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "기한 내에 도착했군요． 각하께서도 필시 기뻐하실 것입니다．"
+              }
+            },
+            {
+              "Label": "L006B",
+              "OpCode": "43 4B",
+              "GotoIf": {
+                "Call": "LastCondition"
+              },
+              "Target": "L00C8",
+              "Note": "이전 조건 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "기한을 넘기고 말았군요． 각하께서 용서해 주신다면 좋겠지만···괜찮을지．"
+              }
+            },
+            {
+              "Label": "L00C8",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아， 제독은 「매수」를 알고 계십니까？ 때로는 감찰관을 돈으로 입막음 해서， 위조품을 스폰서에게 전하는 부정한 자들이 있다 합니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "하지만 그런 짓은 하지 않는 편이 좋습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 7,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1500
+              },
+              "Note": "연도 >= 1500"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 17,
+                  "Name": "명성"
+                },
+                "B": {
+                  "Const": 2000
+                }
+              },
+              "Note": "조건: 명성 >= 2000"
+            },
+            {
+              "OpCode": "59",
+              "Call": "HasFleet",
+              "Note": "배 있음 조건"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 02"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 8,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 1
+              },
+              "Note": "문화권 조건: 값 1"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 0
+              },
+              "Note": "문화권 조건: 값 0"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 7
+              },
+              "Note": "도시 조건: 값 7"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "프란시스코·데·에란쪼 사령관이 자네를 찾고 있었네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "에밀리오님， 각하께서 기다리고 계십니다． 이쪽으로 오십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에밀리오， 갑자기 미안하네만 북유럽의 비즈비에 가 주게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "거기서 시장에서 팔고 있는 어떤 물건을 사가지고 와주었으면 하네． 그것이 무엇인지는 가보면 알걸세．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "부탁할 사람이 자네밖에 없네． 이유는 묻지 말아 주게． 해 주겠나？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L0255",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "고맙네！ 금화 ５０００닢을 주겠네．"
+              }
+            },
+            {
+              "Label": "L0255",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L02D0",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그런가···일부러 불러내서 미안했네．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 30
+                }
+              },
+              "Note": "악명 + 30"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "1A 12 16 00 1C 1C 00 1A"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "0A",
+              "Call": "SayBare",
+              "Args": {
+                "Text": ""
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 내려갔다！"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 01"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L02D0",
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 5000
+              },
+              "Note": "금화 +5000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ５０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "앗， 중요한 이야기를 빼먹었다． 기한은 반년이네． 절대 늦으면 안되네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "비즈비는 북동쪽의 발트해에 떠 있는 조그만 섬이네． 부탁하네．"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 183
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 183"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 9,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 7
+              },
+              "Note": "도시 조건: 값 7"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 12 05",
+              "GotoIf": {
+                "Call": "HasItem",
+                "Args": {
+                  "Item": 7
+                }
+              },
+              "Target": "L001C",
+              "Note": "아이템 조건 분기, 아이템 ID 7"
+            },
+            {
+              "OpCode": "30 1D",
+              "Goto": "L06FD",
+              "Note": "절대 이동"
+            },
+            {
+              "Label": "L001C",
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L018C",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "기한이 벌써 지났네． 이번은 봐주도록 하지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에밀리오． 듣고 싶지 않겠지만 세상에는 약속에 대해 말많은 자들이 많이 있네． 기한을 지키도록 하는 것이 좋을 걸세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "보수를 지불하지．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 3000
+              },
+              "Note": "금화 +3000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 150
+                }
+              },
+              "Note": "명성 + 150"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 50
+                }
+              },
+              "Note": "악명 + 50"
+            },
+            {
+              "Label": "L018C",
+              "OpCode": "43 4B",
+              "GotoIf": {
+                "Call": "LastCondition"
+              },
+              "Target": "L048C",
+              "Note": "이전 조건 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "오오， 사가지고 왔나！"
+              }
+            },
+            {
+              "OpCode": "00 05",
+              "Call": "GiveItem",
+              "Args": {
+                "Item": 7
+              },
+              "Note": "아이템 획득: 아이템 ID 7"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "보수를 받아 주게！"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 5000
+              },
+              "Note": "금화 +5000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ５０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 300
+                }
+              },
+              "Note": "명성 + 300"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "19 12 16 00 1C 1C 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 0
+              },
+              "Note": "금화 -0"
+            },
+            {
+              "OpCode": "0A",
+              "Call": "SayBare",
+              "Args": {
+                "Text": "친밀도가 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "응？ 이것을 어떻게 할거냐고？ 창피한 이야기네만···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "실은， 아내의 생일에 선물을 할 작정이네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에스테반이 태어나고부터 줄곧 아이 키우는 일에만 전념해 주어서 말이지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에스테반도 이제 혼자서 설 수 있는 나이가 되었으니 둘이서 여행가는 것도 좋지． 아， 아니， 미안하네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "자， 이런 일을 부탁할 사람은 자네밖에 없네． 지금 한 이야기는 아무에게도 하지 말아 주게．"
+              }
+            },
+            {
+              "Label": "L048C",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "앞으로도 전면적으로 자네를 원조하겠네． 앞으로 자네와 부딪힐 일들， 모험이 필시 자네를 크게 만들 것이네． 그래서 위대한 자네 아버님을 뛰어 넘는 것일세．"
+              }
+            },
+            {
+              "OpCode": "43 3A 0B",
+              "GotoIf": {
+                "Call": "Discovered",
+                "Args": {
+                  "Discovery": 1
+                }
+              },
+              "Target": "L06BE",
+              "Note": "발견물 조건 분기"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그리고 자네 아버님은 생전에 나와 함께 「서회 항로」라는 것을 찾았었네． 여하튼 서쪽에서 인도로 가기 위한 환상의 항로인 것 같네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "만약， 이 항로의 소문을 듣거든 어떻게 해서든 발견해 주었으면 하네． 나와 돌아가신 자네 아버님의 꿈을 잇길 바라는 것일세．"
+              }
+            },
+            {
+              "Label": "L06BE",
+              "OpCode": "57 05",
+              "Call": "RemoveItem",
+              "Args": {
+                "Item": 7
+              },
+              "Note": "아이템 상실: 아이템 ID 7"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "자 그럼， 또 만나세．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L06FD",
+              "OpCode": "43 2E",
+              "GotoIf": {
+                "Call": "NotEqualTo",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L0841",
+              "Note": "STORY 의뢰 남은 기한(일) != 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에밀리오， 기한은 벌써 지났네． 그 이야기는 없었던 걸로 해 주게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "어떤 일류 항해자라도 꼭 실수는 범하는 것． 중요한 것은 그 실패로 무언가 배워， 똑같은 실수를 범하지 않도록 하는 것일세． 앞으로의 자네를 기대하겠네．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L0841",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "비즈비는 코펜하겐보다 더 동쪽이네． 기다리고 있겠네．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 10,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 3
+          },
+          {
+            "Condition": 1,
+            "Body": 4
+          },
+          {
+            "Condition": 2,
+            "Body": 5
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1490
+              },
+              "Note": "연도 >= 1490"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "3A 0B",
+              "Call": "NotDiscovered",
+              "Args": {
+                "Discovery": 1
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "02 0B",
+              "Call": "Discovered",
+              "Args": {
+                "Discovery": 1
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 코론이라는 제노바인이 서로에의 항로의 개척을 계획하고 있는 것 같습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "저희들도 가만히 있을 수는 없습니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 11,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 3
+          },
+          {
+            "Condition": 1,
+            "Body": 4
+          },
+          {
+            "Condition": 2,
+            "Body": 5
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1490
+              },
+              "Note": "연도 >= 1490"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "02 0B",
+              "Call": "Discovered",
+              "Args": {
+                "Discovery": 1
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "12 0E",
+              "Call": "HintInactive",
+              "Args": {
+                "Hint": 1
+              },
+              "Note": "힌트 상태 미활성 조건: 힌트 상태 ID 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "0F 0E",
+              "Call": "HintActive",
+              "Args": {
+                "Hint": 1
+              },
+              "Note": "힌트 상태 활성 조건: 힌트 상태 ID 1"
+            },
+            {
+              "OpCode": "3A 0B",
+              "Call": "NotDiscovered",
+              "Args": {
+                "Discovery": 1
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 드디어 서회 항로가 발견되었다 합니다． 저희들이 발견하고 싶었는데···"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 그 「서회 항로」야 말로， 서로부터 인도로 가기 위한 환상의 항로가 아닐까요？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "이것을 찾는다면 제독은 에스파니아 왕국 제일의 모험가가 되는 것입니다． 제독， 「서회 항로」를 찾읍시다． 이런 멋있는 모험은 두 번 다시 없을 것입니다．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 12,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1500
+              },
+              "Note": "연도 >= 1500"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1498
+              },
+              "Note": "연도 >= 1498"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "04",
+              "Call": "CloseStory",
+              "Note": "이야기 끝"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 13,
+        "Step": 3,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 2
+              },
+              "Note": "문화권 조건: 값 2"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 10
+              },
+              "Note": "문화권 조건: 값 10"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 1
+              },
+              "Note": "문화권 조건: 값 1"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "27 00 00 00 08 61 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 7
+              },
+              "Note": "도시 조건: 값 7"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "자네， 에밀리오지？ 프란시스코·데·에란쪼 사령관이 자네를 찾고 있었네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "오오， 에밀리오님， 각하께서 기다리고 계십니다． 어서 안으로．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에밀리오인가， 잘 왔네． 실은 곤란한 일이 생겨서 말이지． 자네 도움이 필요하네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "내 아들 에스테반의 배가 포르투갈령의 산호르헤 앞바다에서 나포되고 말았네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "어째서 일부러 포르투갈 영역에까지 갔습니까？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "아마 상아 거래의 소문을 들었겠지． 포르투갈 배로 가장해， 거래에 뛰어들 생각이었을 걸세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "정말이지 군인의 아들이 상인이 되다니···잘될 일이 없지． 그렇게 반대했건만． 이해 타산 빠른 상인 따위···아， 아니， 으흠．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "어떤 불초한 자식이라도， 역시 부모로서는 걱정일세． 부디 에스테반을 도와주게．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "부탁하네． 에밀리오． 해 주겠지？"
+              }
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L0491",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "자네를 믿고 부탁하는 것일세． 그래도 거절할텐가？"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 50
+                }
+              },
+              "Note": "악명 + 50"
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "한번 더 묻겠네． 해 주겠지？"
+              }
+            },
+            {
+              "Label": "L0491",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L0566",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그런가···자기 아들을 위해 목숨을 걸라고 하는 것도， 생각해 보면 뻔뻔스런 이야기네． 알겠네． 물러가도 좋네．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 1000
+                }
+              },
+              "Note": "악명 + 1000"
+            },
+            {
+              "OpCode": "1A 12 16 00 1C 1C 00",
+              "Call": "SubAffinity",
+              "Args": {
+                "Value": {
+                  "Const": 60
+                }
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 대폭 내려갔다！"
+              }
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "Label": "L0566",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "고맙네！ 사실상 포르투갈은 적국이네． 이것으로 충분히 장비를 갖추어 주게．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 30000
+              },
+              "Note": "금화 +30000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "가능한 한 서둘러 주게． 산호르헤는 아프리카의 기니아 남단의 항만도시이네． 좋은 소식을 기다리고 있겠네．"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 182
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 182"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 14,
+        "Step": 4,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 3
+          },
+          {
+            "Condition": 1,
+            "Body": 4
+          },
+          {
+            "Condition": 2,
+            "Body": 5
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 7
+              },
+              "Note": "도시 조건: 값 7"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 97
+              },
+              "Note": "도시 조건: 값 97"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 10
+              },
+              "Note": "건물 조건: 값 10"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 97
+              },
+              "Note": "도시 조건: 값 97"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 5
+              },
+              "Note": "건물 조건: 값 5"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L0134",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "에밀리오님···기다려 주십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "대체， 지금까지 뭘 하고 있었나！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "아， 에스테반이 살았으니 이번 일은 봐주도록 하지．"
+              }
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 30000
+              },
+              "Note": "금화 -30000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３００００닢을 돌려주었다"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 400
+                }
+              },
+              "Note": "악명 + 400"
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "Label": "L0134",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "서둘러 주게． 시간이 없네．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "성문",
+                "Text": "읍！ 에스파니아인이다， 잡아라！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "위험하다！ 이렇게 경비가 삼엄해서야 성문에 다가갈 수 없습니다． 포기합시다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L025F",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 이미 기한이 지났습니다． 세빌리아에 돌아가 용서를 구합시다．"
+              }
+            },
+            {
+              "OpCode": "4E",
+              "Call": "EndUnhandled",
+              "Note": "이벤트 결과 코드 2"
+            },
+            {
+              "Label": "L025F",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "여관",
+                "Text": "뭔가？"
+              }
+            },
+            {
+              "OpCode": "10 0A",
+              "Call": "AskChoice",
+              "Args": {
+                "Text": "돈을 준다/위협한다/속인다",
+                "Base": 0
+              }
+            },
+            {
+              "OpCode": "43 11 0A",
+              "GotoIf": {
+                "Call": "ChoiceIsNot",
+                "Args": {
+                  "Value": 0
+                }
+              },
+              "Target": "L03B8",
+              "Note": "선택지 분기, 선택값 0"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아－， 잠시 물어보고 싶은 것이 있네만···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "여관",
+                "Text": "머물고 있는 손님에 대해서는 이야기할 수 없네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "자자， 이걸로 맛있는 거라도 사먹게나．"
+              }
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 100
+              },
+              "Note": "금화 -100"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 １００닢을 건넸다"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "여관",
+                "Text": "····"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아， 실은 여기에 잡혀있는 에스파니아인을 찾고 있네만···"
+              }
+            },
+            {
+              "Label": "L03B8",
+              "OpCode": "43 11 0A",
+              "GotoIf": {
+                "Call": "ChoiceIsNot",
+                "Args": {
+                  "Value": 1
+                }
+              },
+              "Target": "L0586",
+              "Note": "선택지 분기, 선택값 1"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아， 잠시 물어보고 싶은 것이 있네만···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "여관",
+                "Text": "머물고 있는 손님에 대해서는 말할 수 없네． 앗！ 무， 무슨 짓을 하는 건가！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그런 식으로 이 제독을 화나게 하면 무슨 일을 저지를지 모르네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "얼마 전에는 고집센 포로를 사정없이 때려서 말이지···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그때 이 사람의 눈매는 한마디로 악마였지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "여관",
+                "Text": "····"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그것이 가혹해서 말이지． 도저히 보고 있을 수 없을 정도였지．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 1
+                }
+              },
+              "Note": "악명 + 1"
+            },
+            {
+              "Label": "L0586",
+              "OpCode": "43 11 0A",
+              "GotoIf": {
+                "Call": "ChoiceIsNot",
+                "Args": {
+                  "Value": 2
+                }
+              },
+              "Target": "L0612",
+              "Note": "선택지 분기, 선택값 2"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "（제독， 잠시만 참아 주십시오．） 어이， 빨리 걷지 못할까！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "새로운 포로다． 이 전의 옆 방은 열려 있나？"
+              }
+            },
+            {
+              "Label": "L0612",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "여관 주인은 말없이 숙박부에서 방 호실을 가리켰다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "고맙네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "（잘 되었습니다！）"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 여깁니다． 아， 들켰다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "병사",
+                "Text": "뭐냐， 너희들은！？ 수상한 자들이다！"
+              }
+            },
+            {
+              "OpCode": "26 0F",
+              "Call": "SetDuelSet",
+              "Args": {
+                "Set": 4
+              },
+              "Note": "일기토 연출 세트: 4"
+            },
+            {
+              "OpCode": "0C 0D",
+              "Call": "Duel",
+              "Args": {
+                "Person": 231
+              },
+              "Note": "일기토: 인물 231"
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L06E4",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "4A",
+              "Call": "GameOver",
+              "Note": "게임 오버"
+            },
+            {
+              "Label": "L06E4",
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 0
+              },
+              "Note": "음원 재생: 슬롯 0"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "방 열쇠를 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "자아， 열겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "페트로스",
+                "Text": "누구냐···？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아니？ 어디선가 본 것 같은···기분 탓인가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "페트로스",
+                "Text": "아니， 나를 구하러 와 준 것인가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 적에게 발견되기 전에 도망칩시다！"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 15,
+        "Step": 5,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "5F"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 66 83 42 83 49 83 53 81 81 83 8D 83 79 83 58",
+                "Text": "기다려라！ 놓치지 않겠다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "그렇게 쉽게 놓아주지 않는군요． 돌파하겠습니다！"
+              }
+            },
+            {
+              "OpCode": "0D 0D",
+              "Call": "SeaBattle",
+              "Args": {
+                "Person": 20
+              },
+              "Note": "해전(인물)"
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L00CD",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "이런 녀석들을 상대하고 있을 때가 아닙니다！ 빨리 도망칩시다！"
+              }
+            },
+            {
+              "Label": "L00CD",
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L00F3",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 6,
+                "StatName": "무력",
+                "Value": {
+                  "Const": 2
+                }
+              },
+              "Note": "무력 + 2"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "무력이 ２ 올라갔다！"
+              }
+            },
+            {
+              "Label": "L00F3",
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 16,
+        "Step": 6,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 7
+              },
+              "Note": "도시 조건: 값 7"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "오오！ 무사히 돌아왔군！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "빨리 각하께 무사한 모습을 보이심이． 기다려 주십시오．"
+              }
+            },
+            {
+              "OpCode": "29 1A",
+              "Call": "Wait",
+              "Args": {
+                "Ticks": 1
+              },
+              "Note": "기다리기(29 1A)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "뭐라고！ 살아 돌아왔는가！！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "페트로스",
+                "Text": "아버님···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에스테반！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "이 바보같은 녀석！！ 네 녀석은 이 집을 이을 자격이 없다． 인연을 끊겠다！ 어디로든 가거라！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "페트로스",
+                "Text": "····"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "각하， 그것은 너무나···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "에이， 그대들은 잠자코 있게！ 두 번 다시 이 집에 발을 들여 놓았다간 용서치 않겠다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "페트로스",
+                "Text": "알겠습니다． 이 이상， 아버님께 폐를 끼치지 않겠습니다． 저 또한 한번 죽은 몸， 다시 태어난 기분으로 새 인생을 살아가겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "에스테반은 어디론가 사라지고 없었다"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "각하， 정말 괜찮습니까？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "그녀석은 자기 길을 걸어가야 하네． 내 밑에 있어서는 성공하지 못하네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "각하···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "흉한 꼴을 보였네． 에밀리오에게 고맙다는 말도 못했군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "자네들에게는 충분히 사례를 하겠네． 산초！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "알고 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "음， 자네들에게 원조를 할 수 있음을 나는 자랑스럽게 생각하네． 그럼， 또 만나세．"
+              }
+            },
+            {
+              "OpCode": "19 12 16 00 1C 1C 00",
+              "Call": "AddAffinity",
+              "Args": {
+                "Value": {
+                  "Const": 60
+                }
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 대폭 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "SpeakerTag": "83 74 83 89 83 93 83 56 83 58 83 52 81 81 83 66 81 81 83 47 83 89 83 93 83 63 83 48",
+                "Text": "흐음， 그러나 아내에게 뭐라 말을 해야 할지 마음이 무겁군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "에란쪼 사령관은 머리를 싸매며 자리에서 물러났다···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "에밀리오님， 각하로부터의 사례금입니다． 받아 주십시오．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 50000
+              },
+              "Note": "금화 +50000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ５００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 500
+                }
+              },
+              "Note": "명성 + 500"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 22,
+                "StatName": "매력",
+                "Value": {
+                  "Const": 1
+                }
+              },
+              "Note": "매력 + 1"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "매력이 １ 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  "Source": "DISEV.CDS",
+  "Version": 14
+}

@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/CdsHelper.Form;component/Themes/Views/CdsHelperWindow.xaml"/>
+        <ResourceDictionary Source="/CdsHelper.Form;component/Themes/Views/SettingsDialog.xaml"/>
+        <ResourceDictionary Source="/CdsHelper.Form;component/Themes/Views/DbTableViewerDialog.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

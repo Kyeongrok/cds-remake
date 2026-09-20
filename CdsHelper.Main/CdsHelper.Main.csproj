@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
+      <PackageReference Include="Prism.Core" Version="9.0.537" />
+    </ItemGroup>
+
+    <!-- UseWindowsForms가 System.Windows.Forms를 글로벌 using으로 추가하면 WPF 타입과 충돌하므로 제거 -->
+    <ItemGroup>
+      <Using Remove="System.Windows.Forms" />
+      <Using Remove="System.Drawing" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- 발견물 그림 뷰어가 DSTILL.CDS 읽개(DiscoveryStills)와 발견물 표를 쓴다. -->
+      <ProjectReference Include="..\CdsHelper.Game\CdsHelper.Game.csproj" />
+      <ProjectReference Include="..\CdsHelper.Support\CdsHelper.Support.csproj" />
+    </ItemGroup>
+
+</Project>

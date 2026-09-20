@@ -1,0 +1,172 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:units="clr-namespace:CdsHelper.Support.UI.Units">
+
+    <!--
+        mv-data-view 에서 옮겨 온 생김새다. 그쪽은 어두운 바탕이라 색만 이 앱(밝은 바탕)에
+        맞춰 다시 적었다. 점찍는 색은 이 앱이 여기저기 쓰는 #104F89 를 그대로 쓴다.
+    -->
+    <SolidColorBrush x:Key="Spinner.InputBrush" Color="White" />
+    <SolidColorBrush x:Key="Spinner.TextBrush" Color="#212121" />
+    <SolidColorBrush x:Key="Spinner.ButtonBrush" Color="#F0F0F0" />
+    <SolidColorBrush x:Key="Spinner.ButtonHoverBrush" Color="#DCE5EE" />
+    <SolidColorBrush x:Key="Spinner.ArrowBrush" Color="#5F6368" />
+    <SolidColorBrush x:Key="Spinner.ArrowMutedBrush" Color="#BDBDBD" />
+    <SolidColorBrush x:Key="Spinner.BorderBrush" Color="#ABADB3" />
+    <SolidColorBrush x:Key="Spinner.AccentBrush" Color="#104F89" />
+
+    <!--  글자 칸  -->
+    <Style x:Key="Spinner.TextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource Spinner.InputBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource Spinner.TextBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource Spinner.TextBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource Spinner.AccentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!--  오르내림 단추: 위·아래가 같은 생김새다  -->
+    <Style x:Key="Spinner.ButtonStyle" TargetType="RepeatButton">
+        <Setter Property="Delay" Value="400" />
+        <Setter Property="Interval" Value="60" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Background" Value="{StaticResource Spinner.ButtonBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource Spinner.ArrowBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border
+                        x:Name="Bd"
+                        Background="{TemplateBinding Background}"
+                        SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource Spinner.ButtonHoverBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource Spinner.AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource Spinner.AccentBrush}" />
+                            <Setter Property="Foreground" Value="#F2F7F9" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource Spinner.ArrowMutedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type units:NumericSpinner}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type units:NumericSpinner}">
+                    <!--
+                        전체를 Border 하나로 감싸고 OpacityMask(VisualBrush)로 통째로 둥글린다.
+                        (참고: github.com/Stopbyte/WPF-Numeric-Spinner-NumericUpDown)
+                        좌·우를 각자 CornerRadius 로 나눠 둥글이면 안쪽 것의 실제 그려진 높이가
+                        어긋날 때 한쪽만 알약처럼 과하게 둥글어진다. 그래서 다 그려진 뒤의
+                        크기(ActualWidth/Height)를 재서 한 번에 잘라 낸다.
+                    -->
+                    <Border x:Name="ClipHost">
+                        <Border.OpacityMask>
+                            <VisualBrush>
+                                <VisualBrush.Visual>
+                                    <Border
+                                        Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Border}}"
+                                        Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Border}}"
+                                        Background="Black"
+                                        CornerRadius="4"
+                                        SnapsToDevicePixels="True" />
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Border.OpacityMask>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+
+                            <TextBox
+                                x:Name="PART_TextBox"
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="0"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                Style="{StaticResource Spinner.TextBoxStyle}" />
+
+                            <RepeatButton
+                                x:Name="PART_UpButton"
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Style="{StaticResource Spinner.ButtonStyle}">
+                                <Path
+                                    Width="7"
+                                    Height="4"
+                                    Data="M0,5 L4,0 L8,5 Z"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"
+                                    Stretch="Fill" />
+                            </RepeatButton>
+
+                            <RepeatButton
+                                x:Name="PART_DownButton"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Style="{StaticResource Spinner.ButtonStyle}">
+                                <Path
+                                    Width="7"
+                                    Height="4"
+                                    Data="M0,0 L8,0 L4,5 Z"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"
+                                    Stretch="Fill" />
+                            </RepeatButton>
+
+                            <!--  가르는 선(위 단추|아래 단추) — 누르는 데 끼어들지 않게 얹기만 한다  -->
+                            <Border
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                BorderBrush="{StaticResource Spinner.BorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                IsHitTestVisible="False" />
+
+                            <!--  바깥 테두리 — 합쳐진 모양 위에 한 번에 그린다  -->
+                            <Border
+                                x:Name="OuterBorder"
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2"
+                                BorderBrush="{StaticResource Spinner.BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger SourceName="PART_TextBox" Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{StaticResource Spinner.AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,176 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:CdsHelper.Main.UI.Views"
+                    xmlns:units="clr-namespace:CdsHelper.Support.UI.Units;assembly=CdsHelper.Support"
+                    xmlns:converters="clr-namespace:CdsHelper.Main.Local.Converters">
+
+    <Style TargetType="{x:Type views:CharacterContent}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type views:CharacterContent}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- 상단 필터 -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+                            <Button Content="세이브파일 백업" Command="{Binding BackupCommand}"
+                                    Width="90" Height="25" Margin="0,0,15,0"
+                                    Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                                    BorderThickness="0" Cursor="Hand"/>
+                            <CheckBox Content="고용가능만" VerticalAlignment="Center" Margin="0,0,10,0"
+                                      IsChecked="{Binding ShowOnlyHirable}" />
+                            <CheckBox Content="미등장 포함" VerticalAlignment="Center" Margin="0,0,10,0"
+                                      IsChecked="{Binding ShowGrayCharacters}" />
+                            <TextBlock Text="이름 검색:" VerticalAlignment="Center" Margin="10,0,5,0" />
+                            <TextBox Width="120" Height="25" VerticalAlignment="Center" Margin="0,0,10,0"
+                                     Text="{Binding CharacterNameSearch, UpdateSourceTrigger=PropertyChanged}" />
+                            <CheckBox Content="특기 필터:" VerticalAlignment="Center" Margin="10,0,5,0"
+                                      IsChecked="{Binding FilterBySkill}" />
+                            <ComboBox Width="120" Height="25" VerticalAlignment="Center" Margin="0,0,5,0"
+                                      ItemsSource="{Binding SkillNames}"
+                                      SelectedIndex="{Binding SelectedSkillIndex}" />
+                            <TextBlock Text="Lv:" VerticalAlignment="Center" Margin="5,0,5,0" />
+                            <ComboBox Width="50" Height="25" VerticalAlignment="Center" Margin="0,0,10,0"
+                                      ItemsSource="{Binding SkillLevels}"
+                                      SelectedItem="{Binding SelectedSkillLevel}" />
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                                <TextBlock Text="내 명성: " />
+                                <TextBlock Text="{Binding PlayerFame}" FontWeight="Bold" Foreground="#1976D2" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- 토스트 알림 -->
+                        <Border Grid.Row="0" Grid.RowSpan="2"
+                                Panel.ZIndex="999"
+                                HorizontalAlignment="Center" VerticalAlignment="Top"
+                                Margin="0,50,0,0"
+                                Background="#323232" CornerRadius="5"
+                                Padding="20,10"
+                                Visibility="{Binding IsToastVisible, Converter={converters:BoolToVisibilityConverter}}">
+                            <TextBlock Text="{Binding ToastMessage}" Foreground="White" FontSize="14"/>
+                        </Border>
+
+                        <!-- 데이터 그리드 -->
+                        <units:CdsDataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Characters}"
+                                  Margin="10">
+                            <units:CdsDataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsGray}" Value="True">
+                                            <Setter Property="Foreground" Value="#888888" />
+                                        </DataTrigger>
+                                        <!-- 고용 불가 (명성 부족) -->
+                                        <DataTrigger Binding="{Binding CanRecruit}" Value="False">
+                                            <Setter Property="Background" Value="#FFF3E0" />
+                                            <Setter Property="Foreground" Value="#E65100" />
+                                        </DataTrigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                <Condition Property="IsSelected" Value="False"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" Value="#E8F4FC"/>
+                                        </MultiTrigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#104F89"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </units:CdsDataGrid.RowStyle>
+                            <units:CdsDataGrid.Columns>
+                                <DataGridTextColumn Header="이름" Binding="{Binding Name}" Width="150" />
+                                <DataGridTextColumn Header="체력" Binding="{Binding HP}" Width="50" />
+                                <DataGridTextColumn Header="지력" Binding="{Binding Intelligence}" Width="50" />
+                                <DataGridTextColumn Header="무력" Binding="{Binding Strength}" Width="50" />
+                                <DataGridTextColumn Header="매력" Binding="{Binding Charm}" Width="50" />
+                                <DataGridTextColumn Header="운" Binding="{Binding Luck}" Width="50" />
+                                <DataGridTextColumn Header="일반특기" Binding="{Binding GeneralSkills}" Width="300" />
+                                <DataGridTextColumn Header="언어" Binding="{Binding LanguageSkillsText}" Width="300">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#0066CC" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="명성" Width="60">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Fame, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"
+                                                     BorderThickness="0"
+                                                     Background="Transparent"
+                                                     TextAlignment="Center"
+                                                     Width="50"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="소재" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox Text="{Binding Location, Mode=OneWay}"
+                                                      SelectedIndex="{Binding LocationSelectIndex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                      IsEditable="True"
+                                                      IsReadOnly="True"
+                                                      BorderThickness="0"
+                                                      Background="Transparent">
+                                                <ComboBoxItem Content="리스본" />
+                                                <ComboBoxItem Content="세빌리아" />
+                                                <ComboBoxItem Content="함대소속" />
+                                            </ComboBox>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="건물" Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox Text="{Binding BuildingName, Mode=OneWay}"
+                                                      SelectedIndex="{Binding BuildingSelectIndex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                      IsEditable="True"
+                                                      IsReadOnly="True"
+                                                      BorderThickness="0"
+                                                      Background="Transparent">
+                                                <ComboBoxItem Content="주점" />
+                                                <ComboBoxItem Content="여관" />
+                                            </ComboBox>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="고용" Width="90">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox SelectedIndex="{Binding HireStatusIndex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                      BorderThickness="0"
+                                                      Background="Transparent"
+                                                      IsEnabled="{Binding CanEditHireStatus}">
+                                                <ComboBoxItem Content="대화만" />
+                                                <ComboBoxItem Content="고용가능" />
+                                                <ComboBoxItem Content="고용중" IsEnabled="False" />
+                                            </ComboBox>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="연령" Width="50">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Age, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"
+                                                     BorderThickness="0"
+                                                     Background="Transparent"
+                                                     TextAlignment="Center"
+                                                     Width="40"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </units:CdsDataGrid.Columns>
+                        </units:CdsDataGrid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

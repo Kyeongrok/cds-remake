@@ -1,0 +1,885 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Guests": [
+      {
+        "Index": 0,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 1,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 2,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 3,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 4,
+        "Female": false,
+        "Width": 48,
+        "Height": 96
+      },
+      {
+        "Index": 5,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 6,
+        "Female": true,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 7,
+        "Female": true,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 8,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 9,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 10,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 11,
+        "Female": false,
+        "Width": 56,
+        "Height": 96
+      },
+      {
+        "Index": 12,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 13,
+        "Female": true,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 14,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 15,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 16,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 17,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 18,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 19,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 20,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 21,
+        "Female": false,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 22,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 23,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 24,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 25,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 26,
+        "Female": false,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 27,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 28,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 29,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 30,
+        "Female": false,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 31,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 32,
+        "Female": false,
+        "Width": 64,
+        "Height": 72
+      },
+      {
+        "Index": 33,
+        "Female": false,
+        "Width": 64,
+        "Height": 72
+      },
+      {
+        "Index": 34,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 35,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 36,
+        "Female": false,
+        "Width": 56,
+        "Height": 96
+      },
+      {
+        "Index": 37,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 38,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 39,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 40,
+        "Female": true,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 41,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 42,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 43,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 44,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 45,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 46,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 47,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 48,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 49,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 50,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 51,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 52,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 53,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 54,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 55,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 56,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 57,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 58,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 59,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 60,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 61,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 62,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 63,
+        "Female": false,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 64,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 65,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 66,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 67,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 68,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 69,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 70,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 71,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 72,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 73,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 74,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 75,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 76,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 77,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 78,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 79,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 80,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 81,
+        "Female": false,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 82,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 83,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 84,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 85,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 86,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 87,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 88,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 89,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 90,
+        "Female": true,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 91,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 92,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 93,
+        "Female": true,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 94,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 95,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 96,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 97,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 98,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 99,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 100,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 101,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 102,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 103,
+        "Female": true,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 104,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 105,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 106,
+        "Female": false,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 107,
+        "Female": false,
+        "Width": 66,
+        "Height": 96
+      },
+      {
+        "Index": 108,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 109,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 110,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 111,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 112,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 113,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 114,
+        "Female": true,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 115,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 116,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 117,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 118,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 119,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 120,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 121,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 122,
+        "Female": true,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 123,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 124,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 125,
+        "Female": true,
+        "Width": 64,
+        "Height": 80
+      },
+      {
+        "Index": 126,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 127,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 128,
+        "Female": true,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 129,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 130,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 131,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 132,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 133,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 134,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 135,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 136,
+        "Female": true,
+        "Width": 64,
+        "Height": 88
+      },
+      {
+        "Index": 137,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 138,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 139,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 140,
+        "Female": false,
+        "Width": 64,
+        "Height": 96
+      },
+      {
+        "Index": 141,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 142,
+        "Female": true,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 143,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 144,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      },
+      {
+        "Index": 145,
+        "Female": false,
+        "Width": 64,
+        "Height": 104
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 1
+}

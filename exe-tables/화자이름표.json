@@ -1,0 +1,1819 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Names": [
+      {
+        "Name": "ジョアン二世",
+        "Sponsor": 0,
+        "Person": -1
+      },
+      {
+        "Name": "マヌエル一世",
+        "Sponsor": 1,
+        "Person": -1
+      },
+      {
+        "Name": "フェルナン＝マルティンス",
+        "Sponsor": 2,
+        "Person": -1
+      },
+      {
+        "Name": "アルヴァロ＝デ＝ブラガンサ",
+        "Sponsor": 3,
+        "Person": -1
+      },
+      {
+        "Name": "バルトロメウ＝マルキオーニ",
+        "Sponsor": 4,
+        "Person": -1
+      },
+      {
+        "Name": "ファブリス＝デ＝フェレロ",
+        "Sponsor": 5,
+        "Person": -1
+      },
+      {
+        "Name": "ジョアン＝エストレイト",
+        "Sponsor": 6,
+        "Person": -1
+      },
+      {
+        "Name": "ディオゴ＝オルティス",
+        "Sponsor": 7,
+        "Person": -1
+      },
+      {
+        "Name": "アントニオ＝バルディ",
+        "Sponsor": 8,
+        "Person": -1
+      },
+      {
+        "Name": "ルーカス＝レム",
+        "Sponsor": 9,
+        "Person": -1
+      },
+      {
+        "Name": "マルティン＝ベハイム",
+        "Sponsor": 10,
+        "Person": -1
+      },
+      {
+        "Name": "ガスパル＝コレア",
+        "Sponsor": 11,
+        "Person": -1
+      },
+      {
+        "Name": "アフォンソ＝デ＝アルブケルケ",
+        "Sponsor": 12,
+        "Person": -1
+      },
+      {
+        "Name": "アントニオ＝ブリト",
+        "Sponsor": 13,
+        "Person": -1
+      },
+      {
+        "Name": "イザベル一世",
+        "Sponsor": 14,
+        "Person": -1
+      },
+      {
+        "Name": "カルロス一世",
+        "Sponsor": 15,
+        "Person": -1
+      },
+      {
+        "Name": "フアン＝ペレス＝デ＝マルチェナ",
+        "Sponsor": 16,
+        "Person": -1
+      },
+      {
+        "Name": "マクシミリアーノ＝トランシルバーノ",
+        "Sponsor": 17,
+        "Person": -1
+      },
+      {
+        "Name": "フアン＝ロドリゲス＝デ＝フォンセカ",
+        "Sponsor": 18,
+        "Person": -1
+      },
+      {
+        "Name": "クリストバル＝デ＝アロ",
+        "Sponsor": 19,
+        "Person": -1
+      },
+      {
+        "Name": "アントニオ＝デ＝ネブリハ",
+        "Sponsor": 20,
+        "Person": -1
+      },
+      {
+        "Name": "サンチョ＝デ＝マティエンソ",
+        "Sponsor": 21,
+        "Person": -1
+      },
+      {
+        "Name": "フランシスコ＝デ＝エランツォ",
+        "Sponsor": 22,
+        "Person": -1
+      },
+      {
+        "Name": "ドン＝エンリケ＝デ＝グスマン",
+        "Sponsor": 23,
+        "Person": -1
+      },
+      {
+        "Name": "アルフォンソ＝グティエレス",
+        "Sponsor": 24,
+        "Person": -1
+      },
+      {
+        "Name": "アルヴァロ＝ダ＝コスタ",
+        "Sponsor": 25,
+        "Person": -1
+      },
+      {
+        "Name": "フランシスコ＝レイネル＝ファレイロ",
+        "Sponsor": 26,
+        "Person": -1
+      },
+      {
+        "Name": "イグナシオ＝デ＝ロヨラ",
+        "Sponsor": 27,
+        "Person": -1
+      },
+      {
+        "Name": "フランチェスコ＝キエリガディ",
+        "Sponsor": 28,
+        "Person": -1
+      },
+      {
+        "Name": "アントニオ＝デ＝エレラ",
+        "Sponsor": 29,
+        "Person": -1
+      },
+      {
+        "Name": "フランチェスコ＝グイッチャルディーニ",
+        "Sponsor": 30,
+        "Person": -1
+      },
+      {
+        "Name": "ルイス＝デ＝サンタンヘル",
+        "Sponsor": 31,
+        "Person": -1
+      },
+      {
+        "Name": "フライ＝エルナンド＝デ＝タラベーラ",
+        "Sponsor": 32,
+        "Person": -1
+      },
+      {
+        "Name": "ゲラルドゥス＝メルカトール",
+        "Sponsor": 33,
+        "Person": -1
+      },
+      {
+        "Name": "フランシスコ＝デ＝マルドナード",
+        "Sponsor": 34,
+        "Person": -1
+      },
+      {
+        "Name": "ニコラス＝デ＝オバンド",
+        "Sponsor": 35,
+        "Person": -1
+      },
+      {
+        "Name": "ディエゴ＝ベラスケス",
+        "Sponsor": 36,
+        "Person": -1
+      },
+      {
+        "Name": "アントニオ＝デ＝メンドーサ",
+        "Sponsor": 37,
+        "Person": -1
+      },
+      {
+        "Name": "ペドラリアス＝ダビラ",
+        "Sponsor": 38,
+        "Person": -1
+      },
+      {
+        "Name": "エルナンド＝ルーケ",
+        "Sponsor": 39,
+        "Person": -1
+      },
+      {
+        "Name": "ガスパール＝デ＝エスピノサ",
+        "Sponsor": 40,
+        "Person": -1
+      },
+      {
+        "Name": "ゴンサーロ＝ピサロ",
+        "Sponsor": 41,
+        "Person": -1
+      },
+      {
+        "Name": "イノケンティウス八世",
+        "Sponsor": 42,
+        "Person": -1
+      },
+      {
+        "Name": "レオ十世",
+        "Sponsor": 43,
+        "Person": -1
+      },
+      {
+        "Name": "チェザーレ＝ボルジア",
+        "Sponsor": 44,
+        "Person": -1
+      },
+      {
+        "Name": "ルクレツィア＝ボルジア",
+        "Sponsor": 45,
+        "Person": -1
+      },
+      {
+        "Name": "ロレンツォ＝デ＝メディチ",
+        "Sponsor": 46,
+        "Person": -1
+      },
+      {
+        "Name": "ジロラモ＝サヴォナローラ",
+        "Sponsor": 47,
+        "Person": -1
+      },
+      {
+        "Name": "アレッサンドロ＝デ＝メディチ",
+        "Sponsor": 48,
+        "Person": -1
+      },
+      {
+        "Name": "パオロ＝デル＝ポッツォ＝トスカネリ",
+        "Sponsor": 49,
+        "Person": -1
+      },
+      {
+        "Name": "ニコロ＝マキャベリ",
+        "Sponsor": 50,
+        "Person": -1
+      },
+      {
+        "Name": "ジャーノ＝フレゴーソ",
+        "Sponsor": 51,
+        "Person": -1
+      },
+      {
+        "Name": "カルロ＝チェントリオーネ",
+        "Sponsor": 52,
+        "Person": -1
+      },
+      {
+        "Name": "ロドヴィゴ＝イル＝モロ",
+        "Sponsor": 53,
+        "Person": -1
+      },
+      {
+        "Name": "フランチェスコ二世",
+        "Sponsor": 54,
+        "Person": -1
+      },
+      {
+        "Name": "フェルナンド＝デラ＝スカラ",
+        "Sponsor": 55,
+        "Person": -1
+      },
+      {
+        "Name": "ミケーレ＝スピノラ",
+        "Sponsor": 56,
+        "Person": -1
+      },
+      {
+        "Name": "フリードリヒ三世",
+        "Sponsor": 57,
+        "Person": -1
+      },
+      {
+        "Name": "フリードリヒ賢公",
+        "Sponsor": 58,
+        "Person": -1
+      },
+      {
+        "Name": "フィリップ大公",
+        "Sponsor": 59,
+        "Person": -1
+      },
+      {
+        "Name": "ヤコプ＝フッガー",
+        "Sponsor": 60,
+        "Person": -1
+      },
+      {
+        "Name": "ヨーゼフ＝ヴェルザー",
+        "Sponsor": 61,
+        "Person": -1
+      },
+      {
+        "Name": "ヨハン＝モイティング",
+        "Sponsor": 62,
+        "Person": -1
+      },
+      {
+        "Name": "フランツ＝トゥルツォン",
+        "Sponsor": 63,
+        "Person": -1
+      },
+      {
+        "Name": "エンリクス＝マルテルス",
+        "Sponsor": 64,
+        "Person": -1
+      },
+      {
+        "Name": "リヒャルト＝グライフェンクラウ",
+        "Sponsor": 65,
+        "Person": -1
+      },
+      {
+        "Name": "ヨハネス＝ロイヒリン",
+        "Sponsor": 66,
+        "Person": -1
+      },
+      {
+        "Name": "マルティン＝ヴァルトゼーミュラー",
+        "Sponsor": 67,
+        "Person": -1
+      },
+      {
+        "Name": "ヘンリー七世",
+        "Sponsor": 68,
+        "Person": -1
+      },
+      {
+        "Name": "ヘンリー八世",
+        "Sponsor": 69,
+        "Person": -1
+      },
+      {
+        "Name": "デシデリウス＝エラスムス",
+        "Sponsor": 70,
+        "Person": -1
+      },
+      {
+        "Name": "シャルル八世",
+        "Sponsor": 71,
+        "Person": -1
+      },
+      {
+        "Name": "ルイ十二世",
+        "Sponsor": 72,
+        "Person": -1
+      },
+      {
+        "Name": "フランソワ一世",
+        "Sponsor": 73,
+        "Person": -1
+      },
+      {
+        "Name": "ジャン＝カルヴァン",
+        "Sponsor": 74,
+        "Person": -1
+      },
+      {
+        "Name": "マルティン＝ルター",
+        "Sponsor": 75,
+        "Person": -1
+      },
+      {
+        "Name": "ウルリヒ＝ツヴィングリ",
+        "Sponsor": 76,
+        "Person": -1
+      },
+      {
+        "Name": "クリスティアン二世",
+        "Sponsor": 77,
+        "Person": -1
+      },
+      {
+        "Name": "クリスティアン三世",
+        "Sponsor": 78,
+        "Person": -1
+      },
+      {
+        "Name": "カジミェシュ四世",
+        "Sponsor": 79,
+        "Person": -1
+      },
+      {
+        "Name": "ジグムント一世",
+        "Sponsor": 80,
+        "Person": -1
+      },
+      {
+        "Name": "バルトロメウ",
+        "Sponsor": -1,
+        "Person": 0
+      },
+      {
+        "Name": "ペドロ＝アルバレス",
+        "Sponsor": -1,
+        "Person": 1
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 2
+      },
+      {
+        "Name": "ヴァスコ",
+        "Sponsor": -1,
+        "Person": 3
+      },
+      {
+        "Name": "アフォンソ",
+        "Sponsor": -1,
+        "Person": 4
+      },
+      {
+        "Name": "クリストバル",
+        "Sponsor": -1,
+        "Person": 5
+      },
+      {
+        "Name": "アメリゴ",
+        "Sponsor": -1,
+        "Person": 6
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 7
+      },
+      {
+        "Name": "フェルナンド",
+        "Sponsor": -1,
+        "Person": 8
+      },
+      {
+        "Name": "エルナン",
+        "Sponsor": -1,
+        "Person": 9
+      },
+      {
+        "Name": "セバスチャン",
+        "Sponsor": -1,
+        "Person": 10
+      },
+      {
+        "Name": "ジャック",
+        "Sponsor": -1,
+        "Person": 11
+      },
+      {
+        "Name": "ジョン",
+        "Sponsor": -1,
+        "Person": 12
+      },
+      {
+        "Name": "ハサン",
+        "Sponsor": -1,
+        "Person": 13
+      },
+      {
+        "Name": "フェルナン",
+        "Sponsor": -1,
+        "Person": 14
+      },
+      {
+        "Name": "ディオゴ",
+        "Sponsor": -1,
+        "Person": 15
+      },
+      {
+        "Name": "アルヴァロ",
+        "Sponsor": -1,
+        "Person": 16
+      },
+      {
+        "Name": "アフォンソ",
+        "Sponsor": -1,
+        "Person": 17
+      },
+      {
+        "Name": "フェルナン",
+        "Sponsor": -1,
+        "Person": 18
+      },
+      {
+        "Name": "ドゥアルテ",
+        "Sponsor": -1,
+        "Person": 19
+      },
+      {
+        "Name": "ディオゴ＝ロペス",
+        "Sponsor": -1,
+        "Person": 20
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 21
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 22
+      },
+      {
+        "Name": "ロドリーゴ",
+        "Sponsor": -1,
+        "Person": 23
+      },
+      {
+        "Name": "トメ",
+        "Sponsor": -1,
+        "Person": 24
+      },
+      {
+        "Name": "ジョルジェ",
+        "Sponsor": -1,
+        "Person": 25
+      },
+      {
+        "Name": "フェルナン＝ペレス",
+        "Sponsor": -1,
+        "Person": 26
+      },
+      {
+        "Name": "エルナンド＝ピント",
+        "Sponsor": -1,
+        "Person": 27
+      },
+      {
+        "Name": "ゴンサーロ",
+        "Sponsor": -1,
+        "Person": 28
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 29
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 30
+      },
+      {
+        "Name": "ゴメス",
+        "Sponsor": -1,
+        "Person": 31
+      },
+      {
+        "Name": "ポンセ",
+        "Sponsor": -1,
+        "Person": 32
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 33
+      },
+      {
+        "Name": "アロンソ",
+        "Sponsor": -1,
+        "Person": 34
+      },
+      {
+        "Name": "ガスパル",
+        "Sponsor": -1,
+        "Person": 35
+      },
+      {
+        "Name": "フェルナンデス",
+        "Sponsor": -1,
+        "Person": 36
+      },
+      {
+        "Name": "パンフィロ",
+        "Sponsor": -1,
+        "Person": 37
+      },
+      {
+        "Name": "フアン＝ディアス",
+        "Sponsor": -1,
+        "Person": 38
+      },
+      {
+        "Name": "バスコ＝ヌニェス",
+        "Sponsor": -1,
+        "Person": 39
+      },
+      {
+        "Name": "エルナンデス",
+        "Sponsor": -1,
+        "Person": 40
+      },
+      {
+        "Name": "ヒメネス",
+        "Sponsor": -1,
+        "Person": 41
+      },
+      {
+        "Name": "アロンソ",
+        "Sponsor": -1,
+        "Person": 42
+      },
+      {
+        "Name": "アロンソ",
+        "Sponsor": -1,
+        "Person": 43
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 44
+      },
+      {
+        "Name": "ペドロ",
+        "Sponsor": -1,
+        "Person": 45
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 46
+      },
+      {
+        "Name": "エルナンド",
+        "Sponsor": -1,
+        "Person": 47
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 48
+      },
+      {
+        "Name": "マルコス",
+        "Sponsor": -1,
+        "Person": 49
+      },
+      {
+        "Name": "ルイ＝ロペス",
+        "Sponsor": -1,
+        "Person": 50
+      },
+      {
+        "Name": "アンドレス",
+        "Sponsor": -1,
+        "Person": 51
+      },
+      {
+        "Name": "ジャン",
+        "Sponsor": -1,
+        "Person": 52
+      },
+      {
+        "Name": "ドメニコ",
+        "Sponsor": -1,
+        "Person": 53
+      },
+      {
+        "Name": "ジョヴァンニ",
+        "Sponsor": -1,
+        "Person": 54
+      },
+      {
+        "Name": "セバスティアン",
+        "Sponsor": -1,
+        "Person": 55
+      },
+      {
+        "Name": "ロバート",
+        "Sponsor": -1,
+        "Person": 56
+      },
+      {
+        "Name": "アムブローズ",
+        "Sponsor": -1,
+        "Person": 57
+      },
+      {
+        "Name": "アミル",
+        "Sponsor": -1,
+        "Person": 58
+      },
+      {
+        "Name": "ウルージ",
+        "Sponsor": -1,
+        "Person": 59
+      },
+      {
+        "Name": "ケマル",
+        "Sponsor": -1,
+        "Person": 60
+      },
+      {
+        "Name": "ピリー",
+        "Sponsor": -1,
+        "Person": 61
+      },
+      {
+        "Name": "バルバロス",
+        "Sponsor": -1,
+        "Person": 62
+      },
+      {
+        "Name": "ペドロ",
+        "Sponsor": -1,
+        "Person": 63
+      },
+      {
+        "Name": "ディオゴ",
+        "Sponsor": -1,
+        "Person": 64
+      },
+      {
+        "Name": "アフォンソ",
+        "Sponsor": -1,
+        "Person": 65
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 66
+      },
+      {
+        "Name": "ベーロ",
+        "Sponsor": -1,
+        "Person": 67
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 68
+      },
+      {
+        "Name": "ラビ＝アブラハン",
+        "Sponsor": -1,
+        "Person": 69
+      },
+      {
+        "Name": "ニコラス",
+        "Sponsor": -1,
+        "Person": 70
+      },
+      {
+        "Name": "ゴンサロ",
+        "Sponsor": -1,
+        "Person": 71
+      },
+      {
+        "Name": "ジュセ",
+        "Sponsor": -1,
+        "Person": 72
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 73
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 74
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 75
+      },
+      {
+        "Name": "アイレス",
+        "Sponsor": -1,
+        "Person": 76
+      },
+      {
+        "Name": "ドゥアルテ",
+        "Sponsor": -1,
+        "Person": 77
+      },
+      {
+        "Name": "エステヴァン",
+        "Sponsor": -1,
+        "Person": 78
+      },
+      {
+        "Name": "ヌノ＝ヴァス",
+        "Sponsor": -1,
+        "Person": 79
+      },
+      {
+        "Name": "アルヴァロ",
+        "Sponsor": -1,
+        "Person": 80
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 81
+      },
+      {
+        "Name": "フェルナンド",
+        "Sponsor": -1,
+        "Person": 82
+      },
+      {
+        "Name": "ガルシーア",
+        "Sponsor": -1,
+        "Person": 83
+      },
+      {
+        "Name": "ルイ",
+        "Sponsor": -1,
+        "Person": 84
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 85
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 86
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 87
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 88
+      },
+      {
+        "Name": "ロポ",
+        "Sponsor": -1,
+        "Person": 89
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 90
+      },
+      {
+        "Name": "ペドロ",
+        "Sponsor": -1,
+        "Person": 91
+      },
+      {
+        "Name": "ロドリゲス",
+        "Sponsor": -1,
+        "Person": 92
+      },
+      {
+        "Name": "トリスタン",
+        "Sponsor": -1,
+        "Person": 93
+      },
+      {
+        "Name": "クリストバル",
+        "Sponsor": -1,
+        "Person": 94
+      },
+      {
+        "Name": "ヴァスコ＝ゴメス",
+        "Sponsor": -1,
+        "Person": 95
+      },
+      {
+        "Name": "ペロ",
+        "Sponsor": -1,
+        "Person": 96
+      },
+      {
+        "Name": "ゴンサーロ＝ゴメス",
+        "Sponsor": -1,
+        "Person": 97
+      },
+      {
+        "Name": "ペロ＝アフォンソ",
+        "Sponsor": -1,
+        "Person": 98
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 99
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 100
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 101
+      },
+      {
+        "Name": "アフォンソ",
+        "Sponsor": -1,
+        "Person": 102
+      },
+      {
+        "Name": "ガルシア",
+        "Sponsor": -1,
+        "Person": 103
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 104
+      },
+      {
+        "Name": "ジョルジェ",
+        "Sponsor": -1,
+        "Person": 105
+      },
+      {
+        "Name": "ペドロ",
+        "Sponsor": -1,
+        "Person": 106
+      },
+      {
+        "Name": "マルティン",
+        "Sponsor": -1,
+        "Person": 107
+      },
+      {
+        "Name": "ビセンテ",
+        "Sponsor": -1,
+        "Person": 108
+      },
+      {
+        "Name": "ルイス",
+        "Sponsor": -1,
+        "Person": 109
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 110
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 111
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 112
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 113
+      },
+      {
+        "Name": "ペラロンソ",
+        "Sponsor": -1,
+        "Person": 114
+      },
+      {
+        "Name": "クリストバル",
+        "Sponsor": -1,
+        "Person": 115
+      },
+      {
+        "Name": "ロドリゴ",
+        "Sponsor": -1,
+        "Person": 116
+      },
+      {
+        "Name": "ロペ",
+        "Sponsor": -1,
+        "Person": 117
+      },
+      {
+        "Name": "ロドリゴ",
+        "Sponsor": -1,
+        "Person": 118
+      },
+      {
+        "Name": "フアン＝ロドリゴ",
+        "Sponsor": -1,
+        "Person": 119
+      },
+      {
+        "Name": "アントン",
+        "Sponsor": -1,
+        "Person": 120
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 121
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 122
+      },
+      {
+        "Name": "ガルシ",
+        "Sponsor": -1,
+        "Person": 123
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 124
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 125
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 126
+      },
+      {
+        "Name": "バルトロメ",
+        "Sponsor": -1,
+        "Person": 127
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 128
+      },
+      {
+        "Name": "バルトロメ",
+        "Sponsor": -1,
+        "Person": 129
+      },
+      {
+        "Name": "ペドロ＝サンチェス",
+        "Sponsor": -1,
+        "Person": 130
+      },
+      {
+        "Name": "ガスパール",
+        "Sponsor": -1,
+        "Person": 131
+      },
+      {
+        "Name": "セバスチャン",
+        "Sponsor": -1,
+        "Person": 132
+      },
+      {
+        "Name": "ルイス",
+        "Sponsor": -1,
+        "Person": 133
+      },
+      {
+        "Name": "アンドレス",
+        "Sponsor": -1,
+        "Person": 134
+      },
+      {
+        "Name": "バルトロメ",
+        "Sponsor": -1,
+        "Person": 135
+      },
+      {
+        "Name": "ミゲル＝ヘレス",
+        "Sponsor": -1,
+        "Person": 136
+      },
+      {
+        "Name": "ペドロ",
+        "Sponsor": -1,
+        "Person": 137
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 138
+      },
+      {
+        "Name": "ビセンテ",
+        "Sponsor": -1,
+        "Person": 139
+      },
+      {
+        "Name": "エンリケ",
+        "Sponsor": -1,
+        "Person": 140
+      },
+      {
+        "Name": "ペドロ",
+        "Sponsor": -1,
+        "Person": 141
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 142
+      },
+      {
+        "Name": "アマドール",
+        "Sponsor": -1,
+        "Person": 143
+      },
+      {
+        "Name": "パスクワル",
+        "Sponsor": -1,
+        "Person": 144
+      },
+      {
+        "Name": "ヘロニモ＝ロペス",
+        "Sponsor": -1,
+        "Person": 145
+      },
+      {
+        "Name": "シエサ",
+        "Sponsor": -1,
+        "Person": 146
+      },
+      {
+        "Name": "ミゲル",
+        "Sponsor": -1,
+        "Person": 147
+      },
+      {
+        "Name": "アンドレス",
+        "Sponsor": -1,
+        "Person": 148
+      },
+      {
+        "Name": "ガルシア＝ホフレ",
+        "Sponsor": -1,
+        "Person": 149
+      },
+      {
+        "Name": "ルイス",
+        "Sponsor": -1,
+        "Person": 150
+      },
+      {
+        "Name": "マルティン",
+        "Sponsor": -1,
+        "Person": 151
+      },
+      {
+        "Name": "トリピオ＝アロンソ",
+        "Sponsor": -1,
+        "Person": 152
+      },
+      {
+        "Name": "ベルナル＝ディアス",
+        "Sponsor": -1,
+        "Person": 153
+      },
+      {
+        "Name": "フェルナンデス",
+        "Sponsor": -1,
+        "Person": 154
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 155
+      },
+      {
+        "Name": "フェリペ",
+        "Sponsor": -1,
+        "Person": 156
+      },
+      {
+        "Name": "ミゲル",
+        "Sponsor": -1,
+        "Person": 157
+      },
+      {
+        "Name": "アルバロ",
+        "Sponsor": -1,
+        "Person": 158
+      },
+      {
+        "Name": "ディエゴ",
+        "Sponsor": -1,
+        "Person": 159
+      },
+      {
+        "Name": "イニゲス",
+        "Sponsor": -1,
+        "Person": 160
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 161
+      },
+      {
+        "Name": "アルバ＝ヌニェス",
+        "Sponsor": -1,
+        "Person": 162
+      },
+      {
+        "Name": "マルティン",
+        "Sponsor": -1,
+        "Person": 163
+      },
+      {
+        "Name": "ミゲル＝ロペス",
+        "Sponsor": -1,
+        "Person": 164
+      },
+      {
+        "Name": "エルナンド",
+        "Sponsor": -1,
+        "Person": 165
+      },
+      {
+        "Name": "クリストバル",
+        "Sponsor": -1,
+        "Person": 166
+      },
+      {
+        "Name": "エルナンド",
+        "Sponsor": -1,
+        "Person": 167
+      },
+      {
+        "Name": "バスケス",
+        "Sponsor": -1,
+        "Person": 168
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 169
+      },
+      {
+        "Name": "ロペス",
+        "Sponsor": -1,
+        "Person": 170
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 171
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 172
+      },
+      {
+        "Name": "フランシスコ",
+        "Sponsor": -1,
+        "Person": 173
+      },
+      {
+        "Name": "シャビエール",
+        "Sponsor": -1,
+        "Person": 174
+      },
+      {
+        "Name": "オルティス",
+        "Sponsor": -1,
+        "Person": 175
+      },
+      {
+        "Name": "フアン",
+        "Sponsor": -1,
+        "Person": 176
+      },
+      {
+        "Name": "ミケーレ",
+        "Sponsor": -1,
+        "Person": 177
+      },
+      {
+        "Name": "マルティン",
+        "Sponsor": -1,
+        "Person": 178
+      },
+      {
+        "Name": "ロドヴィゴ",
+        "Sponsor": -1,
+        "Person": 179
+      },
+      {
+        "Name": "アントニオ",
+        "Sponsor": -1,
+        "Person": 180
+      },
+      {
+        "Name": "バティスタ",
+        "Sponsor": -1,
+        "Person": 181
+      },
+      {
+        "Name": "ニコラオ",
+        "Sponsor": -1,
+        "Person": 182
+      },
+      {
+        "Name": "ウィリアム",
+        "Sponsor": -1,
+        "Person": 183
+      },
+      {
+        "Name": "ジョージ",
+        "Sponsor": -1,
+        "Person": 184
+      },
+      {
+        "Name": "ヒュー",
+        "Sponsor": -1,
+        "Person": 185
+      },
+      {
+        "Name": "ニコラス",
+        "Sponsor": -1,
+        "Person": 186
+      },
+      {
+        "Name": "アフマド",
+        "Sponsor": -1,
+        "Person": 187
+      },
+      {
+        "Name": "ナコダ",
+        "Sponsor": -1,
+        "Person": 188
+      },
+      {
+        "Name": "レオン",
+        "Sponsor": -1,
+        "Person": 189
+      },
+      {
+        "Name": "ロッコ",
+        "Sponsor": -1,
+        "Person": 190
+      },
+      {
+        "Name": "ジョアン",
+        "Sponsor": -1,
+        "Person": 191
+      },
+      {
+        "Name": "カタリーナ",
+        "Sponsor": -1,
+        "Person": 192
+      },
+      {
+        "Name": "カルロス",
+        "Sponsor": -1,
+        "Person": 193
+      },
+      {
+        "Name": "オットー",
+        "Sponsor": -1,
+        "Person": 194
+      },
+      {
+        "Name": "ピエトロ",
+        "Sponsor": -1,
+        "Person": 195
+      },
+      {
+        "Name": "ミケーレ",
+        "Sponsor": -1,
+        "Person": 196
+      },
+      {
+        "Name": "エルネスト",
+        "Sponsor": -1,
+        "Person": 197
+      },
+      {
+        "Name": "アル",
+        "Sponsor": -1,
+        "Person": 198
+      },
+      {
+        "Name": "ヘロニモ",
+        "Sponsor": -1,
+        "Person": 199
+      },
+      {
+        "Name": "ドーニャ",
+        "Sponsor": -1,
+        "Person": 200
+      },
+      {
+        "Name": "ミケランジェロ",
+        "Sponsor": -1,
+        "Person": 201
+      },
+      {
+        "Name": "レオナルド",
+        "Sponsor": -1,
+        "Person": 202
+      },
+      {
+        "Name": "ブラド",
+        "Sponsor": -1,
+        "Person": 203
+      },
+      {
+        "Name": "ニコラウス",
+        "Sponsor": -1,
+        "Person": 204
+      },
+      {
+        "Name": "インディオの首領",
+        "Sponsor": -1,
+        "Person": 205
+      },
+      {
+        "Name": "アテネの将軍",
+        "Sponsor": -1,
+        "Person": 206
+      },
+      {
+        "Name": "王墓の番人",
+        "Sponsor": -1,
+        "Person": 207
+      },
+      {
+        "Name": "盗賊の頭",
+        "Sponsor": -1,
+        "Person": 208
+      },
+      {
+        "Name": "アステカの役人",
+        "Sponsor": -1,
+        "Person": 209
+      },
+      {
+        "Name": "メリダの親父",
+        "Sponsor": -1,
+        "Person": 210
+      },
+      {
+        "Name": "トゥラスカラの青年",
+        "Sponsor": -1,
+        "Person": 211
+      },
+      {
+        "Name": "トゥラスカラの戦士",
+        "Sponsor": -1,
+        "Person": 212
+      },
+      {
+        "Name": "ホッテントット族長",
+        "Sponsor": -1,
+        "Person": 213
+      },
+      {
+        "Name": "アボリジニの族長",
+        "Sponsor": -1,
+        "Person": 214
+      },
+      {
+        "Name": "ニューギニアの族長",
+        "Sponsor": -1,
+        "Person": 215
+      },
+      {
+        "Name": "パドンの族長",
+        "Sponsor": -1,
+        "Person": 216
+      },
+      {
+        "Name": "ジャワの老人",
+        "Sponsor": -1,
+        "Person": 217
+      },
+      {
+        "Name": "インドの老人",
+        "Sponsor": -1,
+        "Person": 218
+      },
+      {
+        "Name": "イヌイットの族長",
+        "Sponsor": -1,
+        "Person": 219
+      },
+      {
+        "Name": "インディアンの酋長",
+        "Sponsor": -1,
+        "Person": 220
+      },
+      {
+        "Name": "アマゾネスの族長",
+        "Sponsor": -1,
+        "Person": 221
+      },
+      {
+        "Name": "中国の老人",
+        "Sponsor": -1,
+        "Person": 222
+      },
+      {
+        "Name": "僧侶",
+        "Sponsor": -1,
+        "Person": 223
+      },
+      {
+        "Name": "モクテスマ二世",
+        "Sponsor": -1,
+        "Person": 224
+      },
+      {
+        "Name": "アタワルパ",
+        "Sponsor": -1,
+        "Person": 225
+      },
+      {
+        "Name": "トパック",
+        "Sponsor": -1,
+        "Person": 226
+      },
+      {
+        "Name": "キスキス",
+        "Sponsor": -1,
+        "Person": 227
+      },
+      {
+        "Name": "正倉院の番人",
+        "Sponsor": -1,
+        "Person": 228
+      },
+      {
+        "Name": "塚原ト伝",
+        "Sponsor": -1,
+        "Person": 229
+      },
+      {
+        "Name": "ムー人",
+        "Sponsor": -1,
+        "Person": 230
+      },
+      {
+        "Name": "兵士",
+        "Sponsor": -1,
+        "Person": 231
+      },
+      {
+        "Name": "娘",
+        "Sponsor": -1,
+        "Person": 232
+      },
+      {
+        "Name": "ジョアン＝バロス",
+        "Sponsor": -1,
+        "Person": 233
+      },
+      {
+        "Name": "ヌジンガ＝ヌクウ",
+        "Sponsor": -1,
+        "Person": 234
+      },
+      {
+        "Name": "ウルグ＝ベク",
+        "Sponsor": -1,
+        "Person": 235
+      },
+      {
+        "Name": "王女",
+        "Sponsor": -1,
+        "Person": 236
+      },
+      {
+        "Name": "嘉靖帝",
+        "Sponsor": -1,
+        "Person": 237
+      },
+      {
+        "Name": "ダンディ",
+        "Sponsor": -1,
+        "Person": 238
+      },
+      {
+        "Name": "アルベール",
+        "Sponsor": -1,
+        "Person": 239
+      },
+      {
+        "Name": "ジェラルド",
+        "Sponsor": -1,
+        "Person": 240
+      },
+      {
+        "Name": "ペトロス",
+        "Sponsor": -1,
+        "Person": 241
+      },
+      {
+        "Name": "マルクス",
+        "Sponsor": -1,
+        "Person": 242
+      },
+      {
+        "Name": "ジュリオ",
+        "Sponsor": -1,
+        "Person": 243
+      },
+      {
+        "Name": "ザガー",
+        "Sponsor": -1,
+        "Person": 244
+      },
+      {
+        "Name": "セリヌ",
+        "Sponsor": -1,
+        "Person": 245
+      },
+      {
+        "Name": "イェニチェリ",
+        "Sponsor": -1,
+        "Person": 246
+      },
+      {
+        "Name": "マムルーク",
+        "Sponsor": -1,
+        "Person": 247
+      },
+      {
+        "Name": "マチャイ族",
+        "Sponsor": -1,
+        "Person": 248
+      },
+      {
+        "Name": "ジャガ族",
+        "Sponsor": -1,
+        "Person": 249
+      },
+      {
+        "Name": "ムスリム",
+        "Sponsor": -1,
+        "Person": 250
+      },
+      {
+        "Name": "マラータ",
+        "Sponsor": -1,
+        "Person": 251
+      },
+      {
+        "Name": "警備兵",
+        "Sponsor": -1,
+        "Person": 252
+      },
+      {
+        "Name": "盗賊団",
+        "Sponsor": -1,
+        "Person": 253
+      },
+      {
+        "Name": "戦国武士団",
+        "Sponsor": -1,
+        "Person": 254
+      },
+      {
+        "Name": "野伏せり",
+        "Sponsor": -1,
+        "Person": 255
+      },
+      {
+        "Name": "タタル族",
+        "Sponsor": -1,
+        "Person": 256
+      },
+      {
+        "Name": "モンゴル族",
+        "Sponsor": -1,
+        "Person": 257
+      },
+      {
+        "Name": "ネグリート",
+        "Sponsor": -1,
+        "Person": 258
+      },
+      {
+        "Name": "泥棒族",
+        "Sponsor": -1,
+        "Person": 259
+      },
+      {
+        "Name": "スー族",
+        "Sponsor": -1,
+        "Person": 260
+      },
+      {
+        "Name": "ナチェズ族",
+        "Sponsor": -1,
+        "Person": 261
+      },
+      {
+        "Name": "私掠艦隊",
+        "Sponsor": -1,
+        "Person": 262
+      },
+      {
+        "Name": "海賊",
+        "Sponsor": -1,
+        "Person": 263
+      },
+      {
+        "Name": "コルセール",
+        "Sponsor": -1,
+        "Person": 264
+      },
+      {
+        "Name": "アラブ海賊",
+        "Sponsor": -1,
+        "Person": 265
+      },
+      {
+        "Name": "イスラム艦隊",
+        "Sponsor": -1,
+        "Person": 266
+      },
+      {
+        "Name": "トルコ海軍",
+        "Sponsor": -1,
+        "Person": 267
+      },
+      {
+        "Name": "賞金稼ぎ",
+        "Sponsor": -1,
+        "Person": 268
+      },
+      {
+        "Name": "私設艦隊",
+        "Sponsor": -1,
+        "Person": 269
+      },
+      {
+        "Name": "追討艦隊",
+        "Sponsor": -1,
+        "Person": 270
+      },
+      {
+        "Name": "クラーケン",
+        "Sponsor": -1,
+        "Person": 271
+      },
+      {
+        "Name": "シーサーペント",
+        "Sponsor": -1,
+        "Person": 272
+      },
+      {
+        "Name": "人喰い鮫",
+        "Sponsor": -1,
+        "Person": 273
+      },
+      {
+        "Name": "マンタ",
+        "Sponsor": -1,
+        "Person": 274
+      },
+      {
+        "Name": "ダミー",
+        "Sponsor": -1,
+        "Person": 275
+      },
+      {
+        "Name": "累積０",
+        "Sponsor": -1,
+        "Person": 276
+      },
+      {
+        "Name": "累積１",
+        "Sponsor": -1,
+        "Person": 277
+      },
+      {
+        "Name": "累積２",
+        "Sponsor": -1,
+        "Person": 278
+      },
+      {
+        "Name": "累積３",
+        "Sponsor": -1,
+        "Person": 279
+      },
+      {
+        "Name": "累積４",
+        "Sponsor": -1,
+        "Person": 280
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 1
+}

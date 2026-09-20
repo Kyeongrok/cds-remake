@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <!-- 화면은 CdsHelper.Game 의 밤색 판·게임 글꼴·띠 단추를 그대로 쓴다. -->
+    <ItemGroup>
+      <ProjectReference Include="..\CdsHelper.Game\CdsHelper.Game.csproj" />
+      <ProjectReference Include="..\CdsHelper.Support\CdsHelper.Support.csproj" />
+    </ItemGroup>
+
+</Project>

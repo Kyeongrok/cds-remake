@@ -1,0 +1,654 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Items": [
+      {
+        "Id": 0,
+        "Name": "밀",
+        "Pic": 134,
+        "Category": 0,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 1,
+        "Name": "쌀",
+        "Pic": 135,
+        "Category": 0,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 2,
+        "Name": "옥수수",
+        "Pic": 136,
+        "Category": 0,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 3,
+        "Name": "감자",
+        "Pic": 137,
+        "Category": 0,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 4,
+        "Name": "콩",
+        "Pic": 138,
+        "Category": 0,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 5,
+        "Name": "어육",
+        "Pic": 139,
+        "Category": 0,
+        "Weight": 7,
+        "Life": 4,
+        "FreshShelf": 120
+      },
+      {
+        "Id": 6,
+        "Name": "쇠고기",
+        "Pic": 140,
+        "Category": 0,
+        "Weight": 8,
+        "Life": 5,
+        "FreshShelf": 150
+      },
+      {
+        "Id": 7,
+        "Name": "유제품",
+        "Pic": 141,
+        "Category": 0,
+        "Weight": 7,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 8,
+        "Name": "설탕",
+        "Pic": 142,
+        "Category": 0,
+        "Weight": 7,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 9,
+        "Name": "벌꿀",
+        "Pic": 143,
+        "Category": 0,
+        "Weight": 10,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 10,
+        "Name": "돌소금",
+        "Pic": 144,
+        "Category": 0,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 11,
+        "Name": "올리브유",
+        "Pic": 145,
+        "Category": 0,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 12,
+        "Name": "야자유",
+        "Pic": 146,
+        "Category": 0,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 13,
+        "Name": "포도주",
+        "Pic": 147,
+        "Category": 1,
+        "Weight": 10,
+        "Life": 6,
+        "FreshShelf": 180
+      },
+      {
+        "Id": 14,
+        "Name": "브랜디",
+        "Pic": 148,
+        "Category": 1,
+        "Weight": 10,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 15,
+        "Name": "럼주",
+        "Pic": 149,
+        "Category": 1,
+        "Weight": 10,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 16,
+        "Name": "금",
+        "Pic": 150,
+        "Category": 2,
+        "Weight": 38,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 17,
+        "Name": "은",
+        "Pic": 151,
+        "Category": 2,
+        "Weight": 28,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 18,
+        "Name": "유리",
+        "Pic": 152,
+        "Category": 3,
+        "Weight": 12,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 19,
+        "Name": "가죽제품",
+        "Pic": 153,
+        "Category": 3,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 20,
+        "Name": "도자기",
+        "Pic": 154,
+        "Category": 3,
+        "Weight": 12,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 21,
+        "Name": "총",
+        "Pic": 155,
+        "Category": 4,
+        "Weight": 15,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 22,
+        "Name": "대포",
+        "Pic": 156,
+        "Category": 4,
+        "Weight": 20,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 23,
+        "Name": "후추",
+        "Pic": 157,
+        "Category": 5,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 24,
+        "Name": "정향",
+        "Pic": 158,
+        "Category": 5,
+        "Weight": 4,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 25,
+        "Name": "육두구",
+        "Pic": 159,
+        "Category": 5,
+        "Weight": 4,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 26,
+        "Name": "계피",
+        "Pic": 160,
+        "Category": 5,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 27,
+        "Name": "피멘트",
+        "Pic": 161,
+        "Category": 5,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 28,
+        "Name": "생강",
+        "Pic": 162,
+        "Category": 5,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 29,
+        "Name": "커피",
+        "Pic": 163,
+        "Category": 6,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 30,
+        "Name": "차",
+        "Pic": 164,
+        "Category": 6,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 31,
+        "Name": "카카오",
+        "Pic": 165,
+        "Category": 6,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 32,
+        "Name": "담배",
+        "Pic": 166,
+        "Category": 6,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 33,
+        "Name": "양모",
+        "Pic": 167,
+        "Category": 7,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 34,
+        "Name": "면화",
+        "Pic": 168,
+        "Category": 7,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 35,
+        "Name": "생사",
+        "Pic": 169,
+        "Category": 7,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 36,
+        "Name": "마",
+        "Pic": 170,
+        "Category": 7,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 37,
+        "Name": "모직물",
+        "Pic": 171,
+        "Category": 8,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 38,
+        "Name": "면직물",
+        "Pic": 172,
+        "Category": 8,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 39,
+        "Name": "견직물",
+        "Pic": 173,
+        "Category": 8,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 40,
+        "Name": "린네르",
+        "Pic": 174,
+        "Category": 8,
+        "Weight": 3,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 41,
+        "Name": "철광석",
+        "Pic": 175,
+        "Category": 9,
+        "Weight": 20,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 42,
+        "Name": "동광석",
+        "Pic": 176,
+        "Category": 9,
+        "Weight": 25,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 43,
+        "Name": "주석광석",
+        "Pic": 177,
+        "Category": 9,
+        "Weight": 30,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 44,
+        "Name": "수은",
+        "Pic": 178,
+        "Category": 9,
+        "Weight": 40,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 45,
+        "Name": "석탄",
+        "Pic": 179,
+        "Category": 9,
+        "Weight": 12,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 46,
+        "Name": "미술품",
+        "Pic": 180,
+        "Category": 10,
+        "Weight": 7,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 47,
+        "Name": "골등품",
+        "Pic": 181,
+        "Category": 10,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 48,
+        "Name": "융단",
+        "Pic": 182,
+        "Category": 10,
+        "Weight": 5,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 49,
+        "Name": "편사",
+        "Pic": 183,
+        "Category": 10,
+        "Weight": 4,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 50,
+        "Name": "모피",
+        "Pic": 184,
+        "Category": 10,
+        "Weight": 4,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 51,
+        "Name": "사향",
+        "Pic": 185,
+        "Category": 10,
+        "Weight": 6,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 52,
+        "Name": "유향",
+        "Pic": 186,
+        "Category": 10,
+        "Weight": 6,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 53,
+        "Name": "용연향",
+        "Pic": 187,
+        "Category": 10,
+        "Weight": 6,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 54,
+        "Name": "백단향",
+        "Pic": 188,
+        "Category": 10,
+        "Weight": 6,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 55,
+        "Name": "보석",
+        "Pic": 189,
+        "Category": 11,
+        "Weight": 16,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 56,
+        "Name": "진주",
+        "Pic": 190,
+        "Category": 11,
+        "Weight": 12,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 57,
+        "Name": "비취",
+        "Pic": 191,
+        "Category": 11,
+        "Weight": 14,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 58,
+        "Name": "코뿔소 뿔",
+        "Pic": 192,
+        "Category": 11,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 59,
+        "Name": "상아",
+        "Pic": 193,
+        "Category": 11,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 60,
+        "Name": "산호",
+        "Pic": 194,
+        "Category": 11,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 61,
+        "Name": "별갑",
+        "Pic": 195,
+        "Category": 11,
+        "Weight": 9,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 62,
+        "Name": "호박",
+        "Pic": 196,
+        "Category": 11,
+        "Weight": 9,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 63,
+        "Name": "장신구",
+        "Pic": 197,
+        "Category": 11,
+        "Weight": 12,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 64,
+        "Name": "목재",
+        "Pic": 198,
+        "Category": 12,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 65,
+        "Name": "염료",
+        "Pic": 199,
+        "Category": 12,
+        "Weight": 8,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 66,
+        "Name": "피혁",
+        "Pic": 200,
+        "Category": 12,
+        "Weight": 4,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 67,
+        "Name": "약재",
+        "Pic": 201,
+        "Category": 12,
+        "Weight": 4,
+        "Life": 7,
+        "FreshShelf": 210
+      },
+      {
+        "Id": 68,
+        "Name": "말",
+        "Pic": 202,
+        "Category": 12,
+        "Weight": 15,
+        "Life": 6,
+        "FreshShelf": 180
+      },
+      {
+        "Id": 69,
+        "Name": "노예",
+        "Pic": 203,
+        "Category": 12,
+        "Weight": 8,
+        "Life": 6,
+        "FreshShelf": 180
+      }
+    ],
+    "CategoryNames": [
+      "식량품",
+      "주류",
+      "귀금속",
+      "공예품",
+      "무기",
+      "향신료",
+      "기호품",
+      "섬유",
+      "직물",
+      "광석",
+      "사치품",
+      "보석",
+      "기타"
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 2
+}

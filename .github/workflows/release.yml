@@ -1,0 +1,106 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      # v5 부터 Node 24 로 돈다. v4 로 두면 러너가 Node 20 폐기 경고를 낸다.
+      # 러너는 v2.327.1 이상이어야 하는데 GitHub 호스티드 windows-latest 는 이미 넘는다.
+      - uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Get version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          $parts = $version.Split('.')
+          while ($parts.Count -lt 3) { $parts += '0' }
+          $version = $parts -join '.'
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore CdsHelper/CdsHelper.csproj
+
+      # 놀이만 띄우는 exe 도 같이 낸다 — 같은 폴더에 나란히 놓인다.
+      - name: Restore (play)
+        run: dotnet restore CostaDelSol.Play/CostaDelSol.Play.csproj
+
+      - name: Publish
+        run: dotnet publish CdsHelper/CdsHelper.csproj -c Release -o publish --no-restore -p:Version=${{ steps.version.outputs.version }} -p:AssemblyVersion=${{ steps.version.outputs.version }} -p:FileVersion=${{ steps.version.outputs.version }} -p:InformationalVersion=${{ steps.version.outputs.version }}
+
+      - name: Publish (play)
+        run: dotnet publish CostaDelSol.Play/CostaDelSol.Play.csproj -c Release -o publish --no-restore -p:Version=${{ steps.version.outputs.version }} -p:AssemblyVersion=${{ steps.version.outputs.version }} -p:FileVersion=${{ steps.version.outputs.version }} -p:InformationalVersion=${{ steps.version.outputs.version }}
+
+      - name: Install vpk
+        # CLI와 라이브러리(Velopack 0.0.1298) 버전 일치시켜 호환성 문제 회피
+        run: dotnet tool install -g vpk --version 0.0.1298
+
+      - name: Download previous release for delta updates
+        shell: pwsh
+        run: vpk download github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} --outputDir releases
+        continue-on-error: true
+
+      - name: Pack with Velopack
+        # --mainExe: Velopack이 Setup.exe bootstrapper를 만들려면 entry point exe를 명시해야 함.
+        #   누락 시 Setup.exe 생성이 skip되고 nupkg/RELEASES만 만들어짐.
+        # --packTitle / --packAuthors: 설치 UI와 시작 메뉴 등에 표시되는 이름.
+        run: vpk pack --packId CdsHelper --packTitle "CdsHelper" --packAuthors "Kyeongrok" --packVersion ${{ steps.version.outputs.version }} --packDir publish --mainExe Editor.exe --outputDir releases --icon CdsHelper/app.ico
+
+      - name: List releases folder (debug)
+        shell: pwsh
+        run: |
+          Write-Host "=== releases 폴더 내용 ==="
+          Get-ChildItem -Path releases -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
+          Write-Host "=== Setup.exe 존재 여부 ==="
+          $setup = Get-ChildItem -Path releases -Filter "*Setup.exe" -Recurse
+          if ($setup) { Write-Host "✓ Setup.exe 발견: $($setup.FullName)" } else { Write-Host "✗ Setup.exe 없음" }
+
+      # 단일 파일 판 — 설치 없이 exe 하나로 도는 벌이다. 게임(CostaDelSol.exe)과 도구(Editor.exe)를
+      # 각각 한 파일로 굽는다: .NET 런타임(self-contained) · 네이티브 dll · asset 폴더와 json 자료까지
+      # exe 안에 묶는다(IncludeAllContentForSelfExtract). 처음 켤 때 %TEMP%\.net 아래에 풀어 쓴다.
+      #
+      # releases 밖(single)에 짓는다 — vpk upload 가 releases 를 통째로 올리므로 그 안에 두면 섞여 든다.
+      - name: Publish single-file exes
+        shell: pwsh
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          $props = @("-p:Version=$v", "-p:AssemblyVersion=$v", "-p:FileVersion=$v", "-p:InformationalVersion=$v",
+                     "-p:PublishSingleFile=true", "-p:IncludeNativeLibrariesForSelfExtract=true",
+                     "-p:IncludeAllContentForSelfExtract=true", "-p:DebugType=none")
+          foreach ($proj in @("CostaDelSol.Play/CostaDelSol.Play.csproj", "CdsHelper/CdsHelper.csproj")) {
+            dotnet restore $proj -r win-x64 -p:SelfContained=true -p:PublishSingleFile=true
+            if ($LASTEXITCODE -ne 0) { throw "restore 실패: $proj" }
+            dotnet publish $proj -c Release -r win-x64 --self-contained true --no-restore -o single @props
+            if ($LASTEXITCODE -ne 0) { throw "publish 실패: $proj" }
+          }
+          foreach ($exe in @("CostaDelSol.exe", "Editor.exe")) {
+            if (-not (Test-Path "single/$exe")) { throw "single 에 $exe 가 없습니다" }
+          }
+          Get-ChildItem single | Select-Object Name, Length | Format-Table -AutoSize
+
+      - name: Upload to GitHub Releases
+        # --publish: draft가 아니라 정식 릴리즈로 업로드 (없으면 Setup.exe 포함 에셋이 전부 draft에 묻힘)
+        # --merge: tag push로 자동 생성된 빈 릴리즈가 있으면 그쪽에 에셋을 병합
+        run: vpk upload github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.ref_name }} --releaseName "${{ github.ref_name }}" --outputDir releases --publish --merge
+
+      # 단일 파일 exe 둘은 Velopack 이 모르는 덤이라 따로 붙인다. 릴리즈가 선 뒤라야 붙는다.
+      - name: Upload single-file exes
+        shell: pwsh
+        run: |
+          gh release upload "${{ github.ref_name }}" single/CostaDelSol.exe single/Editor.exe --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

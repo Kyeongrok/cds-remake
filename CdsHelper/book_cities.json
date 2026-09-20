@@ -1,0 +1,2012 @@
+[
+  {
+    "bookId": 1,
+    "cityId": 4,
+    "bookName": "갈리아 전기",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 1,
+    "cityId": 14,
+    "bookName": "갈리아 전기",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 1,
+    "cityId": 33,
+    "bookName": "갈리아 전기",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 1,
+    "cityId": 38,
+    "bookName": "갈리아 전기",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 1,
+    "cityId": 66,
+    "bookName": "갈리아 전기",
+    "cityName": "코펜하겐"
+  },
+  {
+    "bookId": 1,
+    "cityId": 0,
+    "bookName": "갈리아 전기",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 2,
+    "cityId": 7,
+    "bookName": "갈리아 전기",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 3,
+    "cityId": 28,
+    "bookName": "계산의 본질",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 3,
+    "cityId": 30,
+    "bookName": "계산의 본질",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 4,
+    "cityId": 130,
+    "bookName": "고레스탕",
+    "cityName": "이스파한"
+  },
+  {
+    "bookId": 4,
+    "cityId": 132,
+    "bookName": "고레스탕",
+    "cityName": "사마르칸트"
+  },
+  {
+    "bookId": 5,
+    "cityId": 26,
+    "bookName": "고백",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 5,
+    "cityId": 28,
+    "bookName": "고백",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 5,
+    "cityId": 30,
+    "bookName": "고백",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 5,
+    "cityId": 34,
+    "bookName": "고백",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 5,
+    "cityId": 62,
+    "bookName": "고백",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 5,
+    "cityId": 4,
+    "bookName": "고백",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 6,
+    "cityId": 165,
+    "bookName": "고사기",
+    "cityName": "교토"
+  },
+  {
+    "bookId": 7,
+    "cityId": 30,
+    "bookName": "과학집성",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 7,
+    "cityId": 72,
+    "bookName": "과학집성",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 7,
+    "cityId": 78,
+    "bookName": "과학집성",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 7,
+    "cityId": 127,
+    "bookName": "과학집성",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 8,
+    "cityId": 112,
+    "bookName": "교훈의 책",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 8,
+    "cityId": 119,
+    "bookName": "교훈의 책",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 8,
+    "cityId": 123,
+    "bookName": "교훈의 책",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 8,
+    "cityId": 127,
+    "bookName": "교훈의 책",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 8,
+    "cityId": 132,
+    "bookName": "교훈의 책",
+    "cityName": "사마르칸트"
+  },
+  {
+    "bookId": 8,
+    "cityId": 145,
+    "bookName": "교훈의 책",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 9,
+    "cityId": 0,
+    "bookName": "구약성경",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 9,
+    "cityId": 7,
+    "bookName": "구약성경",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 9,
+    "cityId": 14,
+    "bookName": "구약성경",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 9,
+    "cityId": 33,
+    "bookName": "구약성경",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 9,
+    "cityId": 38,
+    "bookName": "구약성경",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 9,
+    "cityId": 54,
+    "bookName": "구약성경",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 9,
+    "cityId": 62,
+    "bookName": "구약성경",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 9,
+    "cityId": 120,
+    "bookName": "구약성경",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 11,
+    "cityId": 33,
+    "bookName": "궁정인",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 11,
+    "cityId": 34,
+    "bookName": "궁정인",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 12,
+    "cityId": 30,
+    "bookName": "그리스 이야기",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 12,
+    "cityId": 72,
+    "bookName": "그리스 이야기",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 12,
+    "cityId": 112,
+    "bookName": "그리스 이야기",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 14,
+    "cityId": 0,
+    "bookName": "정복기",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 15,
+    "cityId": 4,
+    "bookName": "기원론",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 15,
+    "cityId": 7,
+    "bookName": "기원론",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 15,
+    "cityId": 12,
+    "bookName": "기원론",
+    "cityName": "바르셀로나"
+  },
+  {
+    "bookId": 15,
+    "cityId": 0,
+    "bookName": "기원론",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 17,
+    "cityId": 78,
+    "bookName": "꽃의 경이",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 17,
+    "cityId": 79,
+    "bookName": "꽃의 경이",
+    "cityName": "카이로"
+  },
+  {
+    "bookId": 18,
+    "cityId": 178,
+    "bookName": "끽다양생기",
+    "cityName": "남경"
+  },
+  {
+    "bookId": 19,
+    "cityId": 145,
+    "bookName": "나가라크루타가마",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 20,
+    "cityId": 182,
+    "bookName": "남해기귀내법전",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 20,
+    "cityId": 184,
+    "bookName": "남해기귀내법전",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 22,
+    "cityId": 201,
+    "bookName": "누에바 에스파냐의 인디아스사",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 22,
+    "cityId": 7,
+    "bookName": "누에바 에스파냐의 인디아스사",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 24,
+    "cityId": 201,
+    "bookName": "누에바 에스파냐의 제사물개사",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 24,
+    "cityId": 7,
+    "bookName": "누에바 에스파냐의 제사물개사",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 26,
+    "cityId": 182,
+    "bookName": "대당서역기",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 26,
+    "cityId": 188,
+    "bookName": "대당서역기",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 27,
+    "cityId": 132,
+    "bookName": "대원일통지",
+    "cityName": "사마르칸트"
+  },
+  {
+    "bookId": 27,
+    "cityId": 119,
+    "bookName": "대원일통지",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 28,
+    "cityId": 174,
+    "bookName": "대월사기",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 29,
+    "cityId": 119,
+    "bookName": "동물개론",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 29,
+    "cityId": 127,
+    "bookName": "동물개론",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 29,
+    "cityId": 132,
+    "bookName": "동물개론",
+    "cityName": "사마르칸트"
+  },
+  {
+    "bookId": 29,
+    "cityId": 10,
+    "bookName": "동물개론",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 31,
+    "cityId": 28,
+    "bookName": "동방견문록",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 31,
+    "cityId": 33,
+    "bookName": "동방견문록",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 35,
+    "cityId": 145,
+    "bookName": "라마야나",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 37,
+    "cityId": 112,
+    "bookName": "루우미어록",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 37,
+    "cityId": 120,
+    "bookName": "루우미어록",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 37,
+    "cityId": 123,
+    "bookName": "루우미어록",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 38,
+    "cityId": 82,
+    "bookName": "루즈미야드",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 38,
+    "cityId": 119,
+    "bookName": "루즈미야드",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 39,
+    "cityId": 145,
+    "bookName": "리그베다",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 40,
+    "cityId": 145,
+    "bookName": "마누법전",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 41,
+    "cityId": 78,
+    "bookName": "마파문데스",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 42,
+    "cityId": 145,
+    "bookName": "마하바라타",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 43,
+    "cityId": 33,
+    "bookName": "몽고제국 여행기",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 43,
+    "cityId": 34,
+    "bookName": "몽고제국 여행기",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 45,
+    "cityId": 33,
+    "bookName": "몽골인의 역사",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 45,
+    "cityId": 26,
+    "bookName": "몽골인의 역사",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 46,
+    "cityId": 4,
+    "bookName": "묵시록주석",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 46,
+    "cityId": 12,
+    "bookName": "묵시록주석",
+    "cityName": "바르셀로나"
+  },
+  {
+    "bookId": 47,
+    "cityId": 145,
+    "bookName": "바가바타푸라나",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 48,
+    "cityId": 0,
+    "bookName": "박물지",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 48,
+    "cityId": 12,
+    "bookName": "박물지",
+    "cityName": "바르셀로나"
+  },
+  {
+    "bookId": 48,
+    "cityId": 33,
+    "bookName": "박물지",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 50,
+    "cityId": 38,
+    "bookName": "베오울프",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 51,
+    "cityId": 201,
+    "bookName": "볼보닉스 그림문서",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 54,
+    "cityId": 182,
+    "bookName": "불국기",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 55,
+    "cityId": 66,
+    "bookName": "사가",
+    "cityName": "코펜하겐"
+  },
+  {
+    "bookId": 58,
+    "cityId": 185,
+    "bookName": "사기",
+    "cityName": "개봉"
+  },
+  {
+    "bookId": 58,
+    "cityId": 188,
+    "bookName": "사기",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 58,
+    "cityId": 178,
+    "bookName": "사기",
+    "cityName": "남경"
+  },
+  {
+    "bookId": 58,
+    "cityId": 182,
+    "bookName": "사기",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 58,
+    "cityId": 184,
+    "bookName": "사기",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 60,
+    "cityId": 188,
+    "bookName": "사통",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 64,
+    "cityId": 10,
+    "bookName": "삼대륙 주유기",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 64,
+    "cityId": 82,
+    "bookName": "삼대륙 주유기",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 64,
+    "cityId": 10,
+    "bookName": "삼대륙 주유기",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 64,
+    "cityId": 82,
+    "bookName": "삼대륙 주유기",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 64,
+    "cityId": 10,
+    "bookName": "삼대륙 주유기",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 64,
+    "cityId": 82,
+    "bookName": "삼대륙 주유기",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 66,
+    "cityId": 178,
+    "bookName": "상한론",
+    "cityName": "남경"
+  },
+  {
+    "bookId": 66,
+    "cityId": 182,
+    "bookName": "상한론",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 66,
+    "cityId": 188,
+    "bookName": "상한론",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 67,
+    "cityId": 130,
+    "bookName": "샤나메",
+    "cityName": "이스파한"
+  },
+  {
+    "bookId": 67,
+    "cityId": 119,
+    "bookName": "샤나메",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 67,
+    "cityId": 132,
+    "bookName": "샤나메",
+    "cityName": "사마르칸트"
+  },
+  {
+    "bookId": 68,
+    "cityId": 120,
+    "bookName": "샤리아에 의한 통치",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 68,
+    "cityId": 123,
+    "bookName": "샤리아에 의한 통치",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 69,
+    "cityId": 4,
+    "bookName": "서고트사",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 69,
+    "cityId": 12,
+    "bookName": "서고트사",
+    "cityName": "바르셀로나"
+  },
+  {
+    "bookId": 70,
+    "cityId": 188,
+    "bookName": "서유록",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 70,
+    "cityId": 182,
+    "bookName": "서유록",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 71,
+    "cityId": 33,
+    "bookName": "성베네딕투스전",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 72,
+    "cityId": 38,
+    "bookName": "성블렌타누스의 항해",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 72,
+    "cityId": 7,
+    "bookName": "성블렌타누스의 항해",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 73,
+    "cityId": 72,
+    "bookName": "세계의 7대 경관",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 73,
+    "cityId": 112,
+    "bookName": "세계의 7대 경관",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 73,
+    "cityId": 28,
+    "bookName": "세계의 7대 경관",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 73,
+    "cityId": 82,
+    "bookName": "세계의 7대 경관",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 74,
+    "cityId": 28,
+    "bookName": "세계의 모습",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 74,
+    "cityId": 34,
+    "bookName": "세계의 모습",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 77,
+    "cityId": 33,
+    "bookName": "세계지",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 77,
+    "cityId": 30,
+    "bookName": "세계지",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 82,
+    "cityId": 54,
+    "bookName": "세계지도",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 82,
+    "cityId": 0,
+    "bookName": "세계지도",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 81,
+    "cityId": 82,
+    "bookName": "세계지도",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 81,
+    "cityId": 112,
+    "bookName": "세계지도",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 81,
+    "cityId": 127,
+    "bookName": "세계지도",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 81,
+    "cityId": 10,
+    "bookName": "세계지도",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 82,
+    "cityId": 54,
+    "bookName": "세계지도",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 82,
+    "cityId": 7,
+    "bookName": "세계지도",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 83,
+    "cityId": 54,
+    "bookName": "세계지도",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 83,
+    "cityId": 24,
+    "bookName": "세계지도",
+    "cityName": "암스테르담"
+  },
+  {
+    "bookId": 83,
+    "cityId": 28,
+    "bookName": "세계지도",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 83,
+    "cityId": 30,
+    "bookName": "세계지도",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 84,
+    "cityId": 7,
+    "bookName": "세계지도",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 85,
+    "cityId": 54,
+    "bookName": "세계지서설",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 85,
+    "cityId": 0,
+    "bookName": "세계지서설",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 86,
+    "cityId": 7,
+    "bookName": "세계지서설",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 87,
+    "cityId": 185,
+    "bookName": "수경주",
+    "cityName": "개봉"
+  },
+  {
+    "bookId": 87,
+    "cityId": 178,
+    "bookName": "수경주",
+    "cityName": "남경"
+  },
+  {
+    "bookId": 87,
+    "cityId": 174,
+    "bookName": "수경주",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 87,
+    "cityId": 188,
+    "bookName": "수경주",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 88,
+    "cityId": 188,
+    "bookName": "수시력",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 88,
+    "cityId": 174,
+    "bookName": "수시력",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 90,
+    "cityId": 0,
+    "bookName": "시볼라 일곱황금도시",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 90,
+    "cityId": 7,
+    "bookName": "시볼라 일곱황금도시",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 91,
+    "cityId": 7,
+    "bookName": "신국",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 91,
+    "cityId": 28,
+    "bookName": "신국",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 91,
+    "cityId": 30,
+    "bookName": "신국",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 91,
+    "cityId": 33,
+    "bookName": "신국",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 91,
+    "cityId": 34,
+    "bookName": "신국",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 91,
+    "cityId": 62,
+    "bookName": "신국",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 93,
+    "cityId": 30,
+    "bookName": "신들의 계보",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 94,
+    "cityId": 201,
+    "bookName": "신세계자연문화사",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 94,
+    "cityId": 7,
+    "bookName": "신세계자연문화사",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 98,
+    "cityId": 72,
+    "bookName": "신통기",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 98,
+    "cityId": 26,
+    "bookName": "신통기",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 98,
+    "cityId": 0,
+    "bookName": "신통기",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 99,
+    "cityId": 14,
+    "bookName": "신학대전",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 99,
+    "cityId": 26,
+    "bookName": "신학대전",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 99,
+    "cityId": 28,
+    "bookName": "신학대전",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 99,
+    "cityId": 30,
+    "bookName": "신학대전",
+    "cityName": "피렌체"
+  },
+  {
+    "bookId": 99,
+    "cityId": 33,
+    "bookName": "신학대전",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 99,
+    "cityId": 34,
+    "bookName": "신학대전",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 100,
+    "cityId": 7,
+    "bookName": "신학대전",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 101,
+    "cityId": 0,
+    "bookName": "아가멤논",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 101,
+    "cityId": 38,
+    "bookName": "아가멤논",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 101,
+    "cityId": 72,
+    "bookName": "아가멤논",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 102,
+    "cityId": 14,
+    "bookName": "아더왕 전설",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 102,
+    "cityId": 38,
+    "bookName": "아더왕 전설",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 102,
+    "cityId": 7,
+    "bookName": "아더왕 전설",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 104,
+    "cityId": 78,
+    "bookName": "아르고나우티카",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 105,
+    "cityId": 7,
+    "bookName": "아마조네스",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 106,
+    "cityId": 201,
+    "bookName": "아스카티트란 그림문서",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 108,
+    "cityId": 26,
+    "bookName": "아프리카",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 108,
+    "cityId": 34,
+    "bookName": "아프리카",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 108,
+    "cityId": 0,
+    "bookName": "아프리카",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 110,
+    "cityId": 79,
+    "bookName": "아프리카지",
+    "cityName": "카이로"
+  },
+  {
+    "bookId": 110,
+    "cityId": 78,
+    "bookName": "아프리카지",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 111,
+    "cityId": 78,
+    "bookName": "악마론",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 111,
+    "cityId": 123,
+    "bookName": "악마론",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 112,
+    "cityId": 28,
+    "bookName": "알렉시아스",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 112,
+    "cityId": 62,
+    "bookName": "알렉시아스",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 113,
+    "cityId": 72,
+    "bookName": "약물지",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 113,
+    "cityId": 82,
+    "bookName": "약물지",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 113,
+    "cityId": 127,
+    "bookName": "약물지",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 114,
+    "cityId": 66,
+    "bookName": "에다",
+    "cityName": "코펜하겐"
+  },
+  {
+    "bookId": 114,
+    "cityId": 7,
+    "bookName": "에다",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 116,
+    "cityId": 4,
+    "bookName": "엘시드의 노래",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 116,
+    "cityId": 7,
+    "bookName": "엘시드의 노래",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 118,
+    "cityId": 24,
+    "bookName": "여행기",
+    "cityName": "암스테르담"
+  },
+  {
+    "bookId": 118,
+    "cityId": 38,
+    "bookName": "여행기",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 120,
+    "cityId": 0,
+    "bookName": "역사",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 120,
+    "cityId": 33,
+    "bookName": "역사",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 120,
+    "cityId": 12,
+    "bookName": "역사",
+    "cityName": "바르셀로나"
+  },
+  {
+    "bookId": 120,
+    "cityId": 33,
+    "bookName": "역사",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 120,
+    "cityId": 4,
+    "bookName": "역사",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 121,
+    "cityId": 72,
+    "bookName": "역사",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 121,
+    "cityId": 34,
+    "bookName": "역사",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 121,
+    "cityId": 38,
+    "bookName": "역사",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 123,
+    "cityId": 0,
+    "bookName": "역사",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 124,
+    "cityId": 78,
+    "bookName": "역사서설",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 124,
+    "cityId": 82,
+    "bookName": "역사서설",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 124,
+    "cityId": 112,
+    "bookName": "역사서설",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 124,
+    "cityId": 120,
+    "bookName": "역사서설",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 125,
+    "cityId": 184,
+    "bookName": "염철론",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 125,
+    "cityId": 185,
+    "bookName": "염철론",
+    "cityName": "개봉"
+  },
+  {
+    "bookId": 125,
+    "cityId": 188,
+    "bookName": "염철론",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 125,
+    "cityId": 174,
+    "bookName": "염철론",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 126,
+    "cityId": 38,
+    "bookName": "영국교회사",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 127,
+    "cityId": 0,
+    "bookName": "영웅전",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 127,
+    "cityId": 26,
+    "bookName": "영웅전",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 127,
+    "cityId": 33,
+    "bookName": "영웅전",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 127,
+    "cityId": 38,
+    "bookName": "영웅전",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 128,
+    "cityId": 28,
+    "bookName": "오디세이아",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 128,
+    "cityId": 26,
+    "bookName": "오디세이아",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 128,
+    "cityId": 62,
+    "bookName": "오디세이아",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 128,
+    "cityId": 72,
+    "bookName": "오디세이아",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 130,
+    "cityId": 78,
+    "bookName": "완사",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 130,
+    "cityId": 120,
+    "bookName": "완사",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 130,
+    "cityId": 127,
+    "bookName": "완사",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 132,
+    "cityId": 79,
+    "bookName": "외과전서",
+    "cityName": "카이로"
+  },
+  {
+    "bookId": 132,
+    "cityId": 112,
+    "bookName": "외과전서",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 132,
+    "cityId": 120,
+    "bookName": "외과전서",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 132,
+    "cityId": 130,
+    "bookName": "외과전서",
+    "cityName": "이스파한"
+  },
+  {
+    "bookId": 132,
+    "cityId": 10,
+    "bookName": "외과전서",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 133,
+    "cityId": 78,
+    "bookName": "용서의 책",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 133,
+    "cityId": 112,
+    "bookName": "용서의 책",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 133,
+    "cityId": 119,
+    "bookName": "용서의 책",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 133,
+    "cityId": 123,
+    "bookName": "용서의 책",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 134,
+    "cityId": 188,
+    "bookName": "완화군현도시",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 134,
+    "cityId": 184,
+    "bookName": "완화군현도시",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 135,
+    "cityId": 184,
+    "bookName": "위지왜인전",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 135,
+    "cityId": 188,
+    "bookName": "위지왜인전",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 136,
+    "cityId": 201,
+    "bookName": "유카탄 사물기",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 136,
+    "cityId": 4,
+    "bookName": "유카탄 사물기",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 139,
+    "cityId": 10,
+    "bookName": "의학대전",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 139,
+    "cityId": 82,
+    "bookName": "의학대전",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 139,
+    "cityId": 119,
+    "bookName": "의학대전",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 139,
+    "cityId": 78,
+    "bookName": "의학대전",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 140,
+    "cityId": 79,
+    "bookName": "의학정전",
+    "cityName": "카이로"
+  },
+  {
+    "bookId": 140,
+    "cityId": 123,
+    "bookName": "의학정전",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 140,
+    "cityId": 127,
+    "bookName": "의학정전",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 140,
+    "cityId": 132,
+    "bookName": "의학정전",
+    "cityName": "사마르칸트"
+  },
+  {
+    "bookId": 141,
+    "cityId": 62,
+    "bookName": "이고리원정기",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 141,
+    "cityId": 54,
+    "bookName": "이고리원정기",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 142,
+    "cityId": 174,
+    "bookName": "이공친서",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 143,
+    "cityId": 14,
+    "bookName": "이단논박대전",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 143,
+    "cityId": 33,
+    "bookName": "이단논박대전",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 143,
+    "cityId": 34,
+    "bookName": "이단논박대전",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 144,
+    "cityId": 201,
+    "bookName": "이슈트릴쇼티틀 그림문서",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 147,
+    "cityId": 130,
+    "bookName": "일곱왕비 이야기",
+    "cityName": "이스파한"
+  },
+  {
+    "bookId": 147,
+    "cityId": 127,
+    "bookName": "일곱왕비 이야기",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 148,
+    "cityId": 26,
+    "bookName": "일리아드",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 148,
+    "cityId": 34,
+    "bookName": "일리아드",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 148,
+    "cityId": 0,
+    "bookName": "일리아드",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 148,
+    "cityId": 72,
+    "bookName": "일리아드",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 150,
+    "cityId": 72,
+    "bookName": "입문서",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 150,
+    "cityId": 24,
+    "bookName": "입문서",
+    "cityName": "암스테르담"
+  },
+  {
+    "bookId": 150,
+    "cityId": 66,
+    "bookName": "입문서",
+    "cityName": "코펜하겐"
+  },
+  {
+    "bookId": 152,
+    "cityId": 182,
+    "bookName": "자치통감",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 152,
+    "cityId": 184,
+    "bookName": "자치통감",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 153,
+    "cityId": 54,
+    "bookName": "작센",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 154,
+    "cityId": 14,
+    "bookName": "장미미야기",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 154,
+    "cityId": 7,
+    "bookName": "장미미야기",
+    "cityName": "세빌리아"
+  },
+  {
+    "bookId": 155,
+    "cityId": 14,
+    "bookName": "전사",
+    "cityName": "파리"
+  },
+  {
+    "bookId": 155,
+    "cityId": 26,
+    "bookName": "전사",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 155,
+    "cityId": 72,
+    "bookName": "전사",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 155,
+    "cityId": 54,
+    "bookName": "전사",
+    "cityName": "비엔나"
+  },
+  {
+    "bookId": 156,
+    "cityId": 112,
+    "bookName": "정신적 매스나미",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 156,
+    "cityId": 119,
+    "bookName": "정신적 매스나미",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 156,
+    "cityId": 130,
+    "bookName": "정신적 매스나미",
+    "cityName": "이스파한"
+  },
+  {
+    "bookId": 157,
+    "cityId": 185,
+    "bookName": "제민요술",
+    "cityName": "개봉"
+  },
+  {
+    "bookId": 157,
+    "cityId": 184,
+    "bookName": "제민요술",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 158,
+    "cityId": 82,
+    "bookName": "종교학의",
+    "cityName": "튀니스"
+  },
+  {
+    "bookId": 158,
+    "cityId": 120,
+    "bookName": "종교학의",
+    "cityName": "예루살렘"
+  },
+  {
+    "bookId": 158,
+    "cityId": 127,
+    "bookName": "종교학의",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 159,
+    "cityId": 165,
+    "bookName": "죽취이야기",
+    "cityName": "교토"
+  },
+  {
+    "bookId": 160,
+    "cityId": 26,
+    "bookName": "지리사",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 160,
+    "cityId": 34,
+    "bookName": "지리사",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 160,
+    "cityId": 62,
+    "bookName": "지리사",
+    "cityName": "바르샤바"
+  },
+  {
+    "bookId": 161,
+    "cityId": 0,
+    "bookName": "지리사",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 162,
+    "cityId": 33,
+    "bookName": "지리학",
+    "cityName": "로마"
+  },
+  {
+    "bookId": 162,
+    "cityId": 24,
+    "bookName": "지리학",
+    "cityName": "암스테르담"
+  },
+  {
+    "bookId": 162,
+    "cityId": 28,
+    "bookName": "지리학",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 163,
+    "cityId": 78,
+    "bookName": "지쥬 앗사비",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 163,
+    "cityId": 34,
+    "bookName": "지쥬 앗사비",
+    "cityName": "나폴리"
+  },
+  {
+    "bookId": 163,
+    "cityId": 24,
+    "bookName": "지쥬 앗사비",
+    "cityName": "암스테르담"
+  },
+  {
+    "bookId": 164,
+    "cityId": 123,
+    "bookName": "집사",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 164,
+    "cityId": 127,
+    "bookName": "집사",
+    "cityName": "바그다드"
+  },
+  {
+    "bookId": 164,
+    "cityId": 130,
+    "bookName": "집사",
+    "cityName": "이스파한"
+  },
+  {
+    "bookId": 164,
+    "cityId": 79,
+    "bookName": "집사",
+    "cityName": "카이로"
+  },
+  {
+    "bookId": 165,
+    "cityId": 10,
+    "bookName": "천일야화",
+    "cityName": "그라나다"
+  },
+  {
+    "bookId": 165,
+    "cityId": 112,
+    "bookName": "천일야화",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 165,
+    "cityId": 119,
+    "bookName": "천일야화",
+    "cityName": "다마스쿠스"
+  },
+  {
+    "bookId": 165,
+    "cityId": 123,
+    "bookName": "천일야화",
+    "cityName": "메카"
+  },
+  {
+    "bookId": 166,
+    "cityId": 174,
+    "bookName": "춘추",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 166,
+    "cityId": 178,
+    "bookName": "춘추",
+    "cityName": "남경"
+  },
+  {
+    "bookId": 166,
+    "cityId": 182,
+    "bookName": "춘추",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 166,
+    "cityId": 184,
+    "bookName": "춘추",
+    "cityName": "서안"
+  },
+  {
+    "bookId": 166,
+    "cityId": 190,
+    "bookName": "춘추",
+    "cityName": "한양"
+  },
+  {
+    "bookId": 167,
+    "cityId": 78,
+    "bookName": "카릴라와 디무나",
+    "cityName": "알렉산드리아"
+  },
+  {
+    "bookId": 167,
+    "cityId": 112,
+    "bookName": "카릴라와 디무나",
+    "cityName": "이스탄불"
+  },
+  {
+    "bookId": 169,
+    "cityId": 145,
+    "bookName": "카우시카수트라",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 170,
+    "cityId": 4,
+    "bookName": "콩고 왕국기",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 170,
+    "cityId": 26,
+    "bookName": "콩고 왕국기",
+    "cityName": "밀라노"
+  },
+  {
+    "bookId": 170,
+    "cityId": 0,
+    "bookName": "콩고 왕국기",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 171,
+    "cityId": 72,
+    "bookName": "큐크롭스",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 172,
+    "cityId": 12,
+    "bookName": "키난인의 여행기",
+    "cityName": "바르셀로나"
+  },
+  {
+    "bookId": 172,
+    "cityId": 4,
+    "bookName": "키난인의 여행기",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 173,
+    "cityId": 188,
+    "bookName": "태극도설",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 173,
+    "cityId": 182,
+    "bookName": "태극도설",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 174,
+    "cityId": 201,
+    "bookName": "태양의 그림문서",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 175,
+    "cityId": 201,
+    "bookName": "텔레리아노레멘시스 그림문서",
+    "cityName": "멕시코"
+  },
+  {
+    "bookId": 177,
+    "cityId": 145,
+    "bookName": "판챠탄트라",
+    "cityName": "델리"
+  },
+  {
+    "bookId": 178,
+    "cityId": 190,
+    "bookName": "팔도도",
+    "cityName": "한양"
+  },
+  {
+    "bookId": 180,
+    "cityId": 4,
+    "bookName": "폐르시아인",
+    "cityName": "톨레도"
+  },
+  {
+    "bookId": 180,
+    "cityId": 24,
+    "bookName": "폐르시아인",
+    "cityName": "암스테르담"
+  },
+  {
+    "bookId": 180,
+    "cityId": 28,
+    "bookName": "폐르시아인",
+    "cityName": "제노바"
+  },
+  {
+    "bookId": 180,
+    "cityId": 72,
+    "bookName": "폐르시아인",
+    "cityName": "아테네"
+  },
+  {
+    "bookId": 182,
+    "cityId": 0,
+    "bookName": "프레스테 조안의 전설",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 182,
+    "cityId": 38,
+    "bookName": "프레스테 조안의 전설",
+    "cityName": "런던"
+  },
+  {
+    "bookId": 183,
+    "cityId": 182,
+    "bookName": "한서",
+    "cityName": "성도"
+  },
+  {
+    "bookId": 183,
+    "cityId": 185,
+    "bookName": "한서",
+    "cityName": "개봉"
+  },
+  {
+    "bookId": 183,
+    "cityId": 188,
+    "bookName": "한서",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 184,
+    "cityId": 0,
+    "bookName": "항해 기록",
+    "cityName": "리스본"
+  },
+  {
+    "bookId": 186,
+    "cityId": 174,
+    "bookName": "해남화이도",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 187,
+    "cityId": 190,
+    "bookName": "해동제국기",
+    "cityName": "한양"
+  },
+  {
+    "bookId": 188,
+    "cityId": 174,
+    "bookName": "해양견성도",
+    "cityName": "광주"
+  },
+  {
+    "bookId": 189,
+    "cityId": 188,
+    "bookName": "현풍경회록",
+    "cityName": "북경"
+  },
+  {
+    "bookId": 189,
+    "cityId": 184,
+    "bookName": "현풍경회록",
+    "cityName": "서안"
+  }
+]

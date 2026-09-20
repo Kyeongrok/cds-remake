@@ -1,0 +1,18 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/LinkButton.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/ResetButton.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/CityMarker.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/AreaMarker.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Views/LibraryBooksDialog.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Views/EditCityPixelDialog.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/ExportButton.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/CdsDataGrid.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/CdsWindow.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/AccordionControl.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/SkillGroupBox.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/SearchableComboBox.xaml" />
+        <ResourceDictionary Source="/CdsHelper.Support;component/Themes/UI/Units/NumericSpinner.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

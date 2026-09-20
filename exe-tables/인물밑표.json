@@ -1,0 +1,2257 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Rows": [
+      {
+        "Id": 0,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 164,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 1,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 103,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 2,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 89,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 3,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 145,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 4,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 412,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 5,
+        "Nation": 6,
+        "Job": 0,
+        "Face": 241,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 6,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 100,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 7,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 210,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 8,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 45,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 9,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 213,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 10,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 69,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 11,
+        "Nation": 3,
+        "Job": 0,
+        "Face": 54,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 12,
+        "Nation": 6,
+        "Job": 0,
+        "Face": 409,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 13,
+        "Nation": 27,
+        "Job": 0,
+        "Face": 324,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 14,
+        "Nation": 0,
+        "Job": 6,
+        "Face": 169,
+        "Blood": 0,
+        "JobName": "상인"
+      },
+      {
+        "Id": 15,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 137,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 16,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 101,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 17,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 144,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 18,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 148,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 19,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 130,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 20,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 146,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 21,
+        "Nation": 0,
+        "Job": 3,
+        "Face": 109,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 22,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 135,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 23,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 90,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 24,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 102,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 25,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 94,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 26,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 120,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 27,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 105,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 28,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 405,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 29,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 125,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 30,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 126,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 31,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 91,
+        "Blood": 2,
+        "JobName": "상인"
+      },
+      {
+        "Id": 32,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 86,
+        "Blood": 3,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 33,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 35,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 34,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 199,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 35,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 154,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 36,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 188,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 37,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 142,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 38,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 183,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 39,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 234,
+        "Blood": 3,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 40,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 81,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 41,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 189,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 42,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 85,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 43,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 172,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 44,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 227,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 45,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 200,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 46,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 222,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 47,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 179,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 48,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 216,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 49,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 75,
+        "Blood": 3,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 50,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 214,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 51,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 174,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 52,
+        "Nation": 3,
+        "Job": 4,
+        "Face": 106,
+        "Blood": 0,
+        "JobName": "해적"
+      },
+      {
+        "Id": 53,
+        "Nation": 6,
+        "Job": 6,
+        "Face": 113,
+        "Blood": 1,
+        "JobName": "상인"
+      },
+      {
+        "Id": 54,
+        "Nation": 8,
+        "Job": 0,
+        "Face": 239,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 55,
+        "Nation": 11,
+        "Job": 0,
+        "Face": 220,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 56,
+        "Nation": 11,
+        "Job": 4,
+        "Face": 231,
+        "Blood": 0,
+        "JobName": "해적"
+      },
+      {
+        "Id": 57,
+        "Nation": 14,
+        "Job": 3,
+        "Face": 238,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 58,
+        "Nation": 26,
+        "Job": 7,
+        "Face": 320,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 59,
+        "Nation": 27,
+        "Job": 4,
+        "Face": 342,
+        "Blood": 1,
+        "JobName": "해적"
+      },
+      {
+        "Id": 60,
+        "Nation": 37,
+        "Job": 4,
+        "Face": 321,
+        "Blood": 1,
+        "JobName": "해적"
+      },
+      {
+        "Id": 61,
+        "Nation": 37,
+        "Job": 0,
+        "Face": 340,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 62,
+        "Nation": 37,
+        "Job": 4,
+        "Face": 310,
+        "Blood": 2,
+        "JobName": "해적"
+      },
+      {
+        "Id": 63,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 147,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 64,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 49,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 65,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 221,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 66,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 155,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 67,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 82,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 68,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 98,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 69,
+        "Nation": 0,
+        "Job": 13,
+        "Face": 326,
+        "Blood": 2,
+        "JobName": "통역"
+      },
+      {
+        "Id": 70,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 228,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 71,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 171,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 72,
+        "Nation": 0,
+        "Job": 13,
+        "Face": 78,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 73,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 204,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 74,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 127,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 75,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 131,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 76,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 170,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 77,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 88,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 78,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 36,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 79,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 50,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 80,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 198,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 81,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 177,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 82,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 33,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 83,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 185,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 84,
+        "Nation": 0,
+        "Job": 21,
+        "Face": 190,
+        "Blood": 2,
+        "JobName": "학자"
+      },
+      {
+        "Id": 85,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 121,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 86,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 143,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 87,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 226,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 88,
+        "Nation": 0,
+        "Job": 13,
+        "Face": 237,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 89,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 225,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 90,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 193,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 91,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 184,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 92,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 151,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 93,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 399,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 94,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 218,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 95,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 207,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 96,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 175,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 97,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 46,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 98,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 217,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 99,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 157,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 100,
+        "Nation": 0,
+        "Job": 6,
+        "Face": 263,
+        "Blood": 0,
+        "JobName": "상인"
+      },
+      {
+        "Id": 101,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 165,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 102,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 152,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 103,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 158,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 104,
+        "Nation": 0,
+        "Job": 6,
+        "Face": 191,
+        "Blood": 2,
+        "JobName": "상인"
+      },
+      {
+        "Id": 105,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 201,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 106,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 180,
+        "Blood": 2,
+        "JobName": "상인"
+      },
+      {
+        "Id": 107,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 230,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 108,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 194,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 109,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 178,
+        "Blood": 2,
+        "JobName": "통역"
+      },
+      {
+        "Id": 110,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 149,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 111,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 209,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 112,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 411,
+        "Blood": 1,
+        "JobName": "상인"
+      },
+      {
+        "Id": 113,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 197,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 114,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 256,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 115,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 37,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 116,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 250,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 117,
+        "Nation": 1,
+        "Job": 21,
+        "Face": 195,
+        "Blood": 2,
+        "JobName": "학자"
+      },
+      {
+        "Id": 118,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 233,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 119,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 104,
+        "Blood": 1,
+        "JobName": "상인"
+      },
+      {
+        "Id": 120,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 116,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 121,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 108,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 122,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 253,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 123,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 255,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 124,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 124,
+        "Blood": 2,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 125,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 160,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 126,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 58,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 127,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 163,
+        "Blood": 1,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 128,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 66,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 129,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 206,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 130,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 68,
+        "Blood": 0,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 131,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 87,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 132,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 257,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 133,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 254,
+        "Blood": 0,
+        "JobName": "상인"
+      },
+      {
+        "Id": 134,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 258,
+        "Blood": 1,
+        "JobName": "상인"
+      },
+      {
+        "Id": 135,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 95,
+        "Blood": 0,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 136,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 259,
+        "Blood": 2,
+        "JobName": "통역"
+      },
+      {
+        "Id": 137,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 55,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 138,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 260,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 139,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 413,
+        "Blood": 1,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 140,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 366,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 141,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 252,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 142,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 150,
+        "Blood": 1,
+        "JobName": "상인"
+      },
+      {
+        "Id": 143,
+        "Nation": 1,
+        "Job": 6,
+        "Face": 261,
+        "Blood": 0,
+        "JobName": "상인"
+      },
+      {
+        "Id": 144,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 262,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 145,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 99,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 146,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 219,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 147,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 133,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 148,
+        "Nation": 1,
+        "Job": 21,
+        "Face": 265,
+        "Blood": 2,
+        "JobName": "학자"
+      },
+      {
+        "Id": 149,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 266,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 150,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 268,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 151,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 192,
+        "Blood": 0,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 152,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 269,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 153,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 270,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 154,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 271,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 155,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 41,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 156,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 272,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 157,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 48,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 158,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 273,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 159,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 274,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 160,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 298,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 161,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 139,
+        "Blood": 3,
+        "JobName": "통역"
+      },
+      {
+        "Id": 162,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 123,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 163,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 110,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 164,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 129,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 165,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 71,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 166,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 166,
+        "Blood": 0,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 167,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 62,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 168,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 76,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 169,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 61,
+        "Blood": 0,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 170,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 73,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 171,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 290,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 172,
+        "Nation": 1,
+        "Job": 3,
+        "Face": 53,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 173,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 215,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 174,
+        "Nation": 1,
+        "Job": 5,
+        "Face": 167,
+        "Blood": 1,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 175,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 52,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 176,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 173,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 177,
+        "Nation": 6,
+        "Job": 6,
+        "Face": 140,
+        "Blood": 3,
+        "JobName": "상인"
+      },
+      {
+        "Id": 178,
+        "Nation": 6,
+        "Job": 0,
+        "Face": 51,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 179,
+        "Nation": 8,
+        "Job": 0,
+        "Face": 176,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 180,
+        "Nation": 8,
+        "Job": 13,
+        "Face": 203,
+        "Blood": 0,
+        "JobName": "통역"
+      },
+      {
+        "Id": 181,
+        "Nation": 9,
+        "Job": 5,
+        "Face": 64,
+        "Blood": 1,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 182,
+        "Nation": 10,
+        "Job": 0,
+        "Face": 235,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 183,
+        "Nation": 11,
+        "Job": 0,
+        "Face": 224,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 184,
+        "Nation": 11,
+        "Job": 0,
+        "Face": 141,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 185,
+        "Nation": 11,
+        "Job": 0,
+        "Face": 267,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 186,
+        "Nation": 14,
+        "Job": 3,
+        "Face": 63,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 187,
+        "Nation": 50,
+        "Job": 0,
+        "Face": 327,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 188,
+        "Nation": 50,
+        "Job": 0,
+        "Face": 318,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 189,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 107,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 190,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 211,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 191,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 398,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 192,
+        "Nation": 1,
+        "Job": 4,
+        "Face": 3,
+        "Blood": 1,
+        "JobName": "해적"
+      },
+      {
+        "Id": 193,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 112,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 194,
+        "Nation": 11,
+        "Job": 7,
+        "Face": 223,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 195,
+        "Nation": 6,
+        "Job": 0,
+        "Face": 400,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 196,
+        "Nation": 8,
+        "Job": 6,
+        "Face": 134,
+        "Blood": 1,
+        "JobName": "상인"
+      },
+      {
+        "Id": 197,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 279,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 198,
+        "Nation": 37,
+        "Job": 6,
+        "Face": 334,
+        "Blood": 0,
+        "JobName": "상인"
+      },
+      {
+        "Id": 199,
+        "Nation": 1,
+        "Job": 13,
+        "Face": 83,
+        "Blood": 2,
+        "JobName": "통역"
+      },
+      {
+        "Id": 200,
+        "Nation": 74,
+        "Job": 13,
+        "Face": 134,
+        "Blood": 2,
+        "JobName": "통역"
+      },
+      {
+        "Id": 201,
+        "Nation": 7,
+        "Job": 21,
+        "Face": 289,
+        "Blood": 0,
+        "JobName": "학자"
+      },
+      {
+        "Id": 202,
+        "Nation": 4,
+        "Job": 21,
+        "Face": 404,
+        "Blood": 1,
+        "JobName": "학자"
+      },
+      {
+        "Id": 203,
+        "Nation": 21,
+        "Job": 7,
+        "Face": 114,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 204,
+        "Nation": 18,
+        "Job": 21,
+        "Face": 70,
+        "Blood": 3,
+        "JobName": "학자"
+      },
+      {
+        "Id": 205,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 335,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 206,
+        "Nation": 23,
+        "Job": 7,
+        "Face": 287,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 207,
+        "Nation": 26,
+        "Job": 7,
+        "Face": 322,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 208,
+        "Nation": 69,
+        "Job": 4,
+        "Face": 377,
+        "Blood": 1,
+        "JobName": "해적"
+      },
+      {
+        "Id": 209,
+        "Nation": 72,
+        "Job": 7,
+        "Face": 335,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 210,
+        "Nation": 74,
+        "Job": 6,
+        "Face": 336,
+        "Blood": 0,
+        "JobName": "상인"
+      },
+      {
+        "Id": 211,
+        "Nation": 0,
+        "Job": 21,
+        "Face": 339,
+        "Blood": 3,
+        "JobName": "학자"
+      },
+      {
+        "Id": 212,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 338,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 213,
+        "Nation": 31,
+        "Job": 7,
+        "Face": 309,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 214,
+        "Nation": 66,
+        "Job": 7,
+        "Face": 304,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 215,
+        "Nation": 66,
+        "Job": 7,
+        "Face": 308,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 216,
+        "Nation": 59,
+        "Job": 7,
+        "Face": 348,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 217,
+        "Nation": 66,
+        "Job": 21,
+        "Face": 360,
+        "Blood": 1,
+        "JobName": "학자"
+      },
+      {
+        "Id": 218,
+        "Nation": 50,
+        "Job": 21,
+        "Face": 353,
+        "Blood": 2,
+        "JobName": "학자"
+      },
+      {
+        "Id": 219,
+        "Nation": 72,
+        "Job": 21,
+        "Face": 336,
+        "Blood": 0,
+        "JobName": "학자"
+      },
+      {
+        "Id": 220,
+        "Nation": 72,
+        "Job": 7,
+        "Face": 335,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 221,
+        "Nation": 77,
+        "Job": 7,
+        "Face": 138,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 222,
+        "Nation": 69,
+        "Job": 21,
+        "Face": 376,
+        "Blood": 2,
+        "JobName": "학자"
+      },
+      {
+        "Id": 223,
+        "Nation": 69,
+        "Job": 5,
+        "Face": 372,
+        "Blood": 3,
+        "JobName": "전도사"
+      },
+      {
+        "Id": 224,
+        "Nation": 72,
+        "Job": 3,
+        "Face": 337,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 225,
+        "Nation": 77,
+        "Job": 3,
+        "Face": 337,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 226,
+        "Nation": 77,
+        "Job": 7,
+        "Face": 335,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 227,
+        "Nation": 77,
+        "Job": 7,
+        "Face": 338,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 228,
+        "Nation": 71,
+        "Job": 7,
+        "Face": 391,
+        "Blood": 0,
+        "JobName": "군인"
+      },
+      {
+        "Id": 229,
+        "Nation": 71,
+        "Job": 7,
+        "Face": 392,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 230,
+        "Nation": 77,
+        "Job": 21,
+        "Face": 2,
+        "Blood": 2,
+        "JobName": "학자"
+      },
+      {
+        "Id": 231,
+        "Nation": 14,
+        "Job": 7,
+        "Face": 276,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 232,
+        "Nation": 14,
+        "Job": 21,
+        "Face": 94,
+        "Blood": 1,
+        "JobName": "학자"
+      },
+      {
+        "Id": 233,
+        "Nation": 0,
+        "Job": 21,
+        "Face": 285,
+        "Blood": 0,
+        "JobName": "학자"
+      },
+      {
+        "Id": 234,
+        "Nation": 30,
+        "Job": 7,
+        "Face": 305,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 235,
+        "Nation": 27,
+        "Job": 4,
+        "Face": 330,
+        "Blood": 1,
+        "JobName": "해적"
+      },
+      {
+        "Id": 236,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 1,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 237,
+        "Nation": 69,
+        "Job": 7,
+        "Face": 371,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 238,
+        "Nation": 11,
+        "Job": 0,
+        "Face": 275,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 239,
+        "Nation": 3,
+        "Job": 0,
+        "Face": 236,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 240,
+        "Nation": 9,
+        "Job": 0,
+        "Face": 314,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 241,
+        "Nation": 8,
+        "Job": 0,
+        "Face": 264,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 242,
+        "Nation": 14,
+        "Job": 21,
+        "Face": 291,
+        "Blood": 3,
+        "JobName": "학자"
+      },
+      {
+        "Id": 243,
+        "Nation": 6,
+        "Job": 0,
+        "Face": 208,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 244,
+        "Nation": 37,
+        "Job": 7,
+        "Face": 341,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 245,
+        "Nation": 1,
+        "Job": 0,
+        "Face": 251,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 246,
+        "Nation": 37,
+        "Job": 3,
+        "Face": 332,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 247,
+        "Nation": 0,
+        "Job": 3,
+        "Face": 333,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 248,
+        "Nation": 30,
+        "Job": 3,
+        "Face": 300,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 249,
+        "Nation": 31,
+        "Job": 3,
+        "Face": 301,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 250,
+        "Nation": 48,
+        "Job": 3,
+        "Face": 350,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 251,
+        "Nation": 51,
+        "Job": 3,
+        "Face": 352,
+        "Blood": 3,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 252,
+        "Nation": 69,
+        "Job": 3,
+        "Face": 375,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 253,
+        "Nation": 69,
+        "Job": 3,
+        "Face": 377,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 254,
+        "Nation": 71,
+        "Job": 3,
+        "Face": 384,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 255,
+        "Nation": 71,
+        "Job": 3,
+        "Face": 390,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 256,
+        "Nation": 57,
+        "Job": 3,
+        "Face": 361,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 257,
+        "Nation": 57,
+        "Job": 3,
+        "Face": 373,
+        "Blood": 3,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 258,
+        "Nation": 66,
+        "Job": 3,
+        "Face": 354,
+        "Blood": 0,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 259,
+        "Nation": 66,
+        "Job": 3,
+        "Face": 367,
+        "Blood": 1,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 260,
+        "Nation": 72,
+        "Job": 3,
+        "Face": 338,
+        "Blood": 2,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 261,
+        "Nation": 72,
+        "Job": 3,
+        "Face": 335,
+        "Blood": 3,
+        "JobName": "정복자"
+      },
+      {
+        "Id": 262,
+        "Nation": 11,
+        "Job": 4,
+        "Face": 231,
+        "Blood": 0,
+        "JobName": "해적"
+      },
+      {
+        "Id": 263,
+        "Nation": 3,
+        "Job": 4,
+        "Face": 106,
+        "Blood": 1,
+        "JobName": "해적"
+      },
+      {
+        "Id": 264,
+        "Nation": 16,
+        "Job": 4,
+        "Face": 287,
+        "Blood": 2,
+        "JobName": "해적"
+      },
+      {
+        "Id": 265,
+        "Nation": 27,
+        "Job": 4,
+        "Face": 330,
+        "Blood": 0,
+        "JobName": "해적"
+      },
+      {
+        "Id": 266,
+        "Nation": 26,
+        "Job": 7,
+        "Face": 316,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 267,
+        "Nation": 37,
+        "Job": 7,
+        "Face": 320,
+        "Blood": 2,
+        "JobName": "군인"
+      },
+      {
+        "Id": 268,
+        "Nation": 1,
+        "Job": 4,
+        "Face": 276,
+        "Blood": 0,
+        "JobName": "해적"
+      },
+      {
+        "Id": 269,
+        "Nation": 0,
+        "Job": 7,
+        "Face": 216,
+        "Blood": 1,
+        "JobName": "군인"
+      },
+      {
+        "Id": 270,
+        "Nation": 1,
+        "Job": 7,
+        "Face": 85,
+        "Blood": 3,
+        "JobName": "군인"
+      },
+      {
+        "Id": 271,
+        "Nation": 66,
+        "Job": 0,
+        "Face": -1,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 272,
+        "Nation": 66,
+        "Job": 0,
+        "Face": -1,
+        "Blood": 1,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 273,
+        "Nation": 66,
+        "Job": 0,
+        "Face": -1,
+        "Blood": 2,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 274,
+        "Nation": 66,
+        "Job": 0,
+        "Face": -1,
+        "Blood": 3,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 275,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 0,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 276,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 0,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 277,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 0,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 278,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 0,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 279,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 0,
+        "Blood": 0,
+        "JobName": "탐험가"
+      },
+      {
+        "Id": 280,
+        "Nation": 0,
+        "Job": 0,
+        "Face": 0,
+        "Blood": 0,
+        "JobName": "탐험가"
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 2
+}

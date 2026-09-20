@@ -1,0 +1,105 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <RootNamespace>cds_helper</RootNamespace>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <ApplicationIcon>app.ico</ApplicationIcon>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <!-- 도구 앱 exe 이름. 게임(CostaDelSol.exe)과 나란히 놓인다. 프로젝트 폴더는 그대로 CdsHelper 다. -->
+        <AssemblyName>Editor</AssemblyName>
+        <!-- 로컬 빌드 기본값. CI에서는 -p:Version=$tag 로 오버라이드됨 (아래 workflow 참고) -->
+        <Version>1.12.0</Version>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
+
+    <!-- 함대 그림 등 실행 시 파일로 읽는 것들. 폴더 구조를 그대로 실행 파일 옆에 둔다. -->
+    <ItemGroup>
+      <Content Include="..\asset\**\*">
+        <Link>asset\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- BGM은 릴리즈의 별도 bgm.zip으로 배포하고 실행 파일에는 넣지 않는다. -->
+      <Content Remove="..\asset\bgm\**\*" />
+      <Content Include="..\exe-tables\**\*.json">
+        <Link>exe-tables\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+      <PackageReference Include="Velopack" Version="0.0.1298" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="books.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="cities.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="patrons.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="figurehead.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="item.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="hint.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="발견물.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- 발견 이벤트 대본 원본. DISEV.CDS 를 한 번 떠서 넣었다 — 게임 폴더에 DISEV.CDS 가 없어도 대본이 돈다. -->
+      <Content Include="발견이벤트.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- 미리 만든 주인공 둘의 이야기. STORY0/1.CDS 를 떠서 넣었다 — 그릇도 말도 DISEV.CDS 와 같다. -->
+      <Content Include="이야기0.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="이야기1.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <!-- 새 주인공(NORMAL)의 개인 이야기 여덟 — 국적 x 4 + 직업(0x00552750). PEX … ECQ.CDS.orig 를 떠서 넣었다. -->
+      <Content Include="PEX.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="PDG.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="PHT.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="PCQ.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="EEX.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="EDG.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="EHT.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <Content Include="ECQ.json"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+      <!-- 세이브 없이도 술집에 사람이 서게 하는 본. CdsHelper/SAVEDATA.CDS 에서 구웠다. -->
+      <Content Include="인물표.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CdsHelper.Form\CdsHelper.Form.csproj" />
+      <ProjectReference Include="..\CdsHelper.Main\CdsHelper.Main.csproj" />
+    </ItemGroup>
+
+    <!-- 런타임 다운로드 대상 대용량 네이티브 DLL 제외 -->
+    <ItemGroup>
+      <Content Remove="**\opencv_videoio_ffmpeg*.dll" />
+      <None Remove="**\opencv_videoio_ffmpeg*.dll" />
+    </ItemGroup>
+    <Target Name="RemoveNativeDeps" AfterTargets="Publish">
+      <Delete Files="$(PublishDir)\opencv_videoio_ffmpeg4100_64.dll;$(PublishDir)\OpenCvSharpExtern.dll;$(PublishDir)\onnxruntime.dll;$(PublishDir)\onnxruntime_providers_shared.dll" />
+    </Target>
+
+    <ItemGroup>
+      <None Remove="대항해시대3 후원자.csv" />
+    </ItemGroup>
+
+</Project>

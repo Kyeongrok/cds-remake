@@ -1,0 +1,98 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:CdsHelper.Main.UI.Views">
+    
+    <Style x:Key="Button1" TargetType="Button">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="#1976D2" CornerRadius="3" Padding="6,6">
+                        <ContentPresenter TextElement.Foreground="White" HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"></ContentPresenter>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type views:WorldMapContent}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type views:WorldMapContent}">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Grid.Row="0" Text="WORLD.CDS 세계지도 뷰어" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                        <!-- Toolbar -->
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                            <CheckBox x:Name="PART_ShowSpeed" Content="속도" VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="이동 경로에 구간 속도 표시"/>
+                            <TextBlock Text="추적주기:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox x:Name="PART_TrackingInterval" VerticalAlignment="Center" Width="70" Margin="0,0,8,0"
+                                      ToolTip="수동 좌표추적 주기 (매 N초마다 화면 캡처)">
+                                <ComboBoxItem Content="0.5초" Tag="0.5"/>
+                                <ComboBoxItem Content="1초" Tag="1"/>
+                                <ComboBoxItem Content="2초" Tag="2"/>
+                                <ComboBoxItem Content="3초" Tag="3"/>
+                                <ComboBoxItem Content="5초" Tag="5"/>
+                            </ComboBox>
+                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2"/>
+                            <Button x:Name="PART_BtnTrackCoordinate" Content="좌표 추적" Height="28" Padding="8,0" Margin="0,0,4,0" ToolTip="게임 화면에서 좌표를 인식하여 지도에 표시"
+                                Style="{StaticResource Button1}" />
+                            <Button x:Name="PART_BtnClearTrail" Content="경로 지우기" Height="28" Padding="8,0" Margin="0,0,4,0" ToolTip="이동 경로 삭제"
+                                Style="{StaticResource Button1}" />
+                            <Button x:Name="PART_BtnSaveTrail" Content="경로 저장" Height="28" Padding="8,0" Margin="0,0,4,0" ToolTip="이동 경로를 파일로 저장"
+                                Style="{StaticResource Button1}" />
+                            <Button x:Name="PART_BtnLoadTrail" Content="경로 불러오기" Height="28" Padding="8,0" Margin="0,0,4,0" ToolTip="저장된 경로 불러오기"
+                                Style="{StaticResource Button1}" />
+                            <Button x:Name="PART_BtnCenterPosition" Content="◎" Width="28" Height="28" FontSize="16" FontWeight="Bold" Margin="0,0,6,0" ToolTip="내 위치로 이동"
+                                Style="{StaticResource Button1}" />
+                            <TextBlock x:Name="PART_TxtCurrentCoordinate" VerticalAlignment="Center" Foreground="#0078D4" FontWeight="Bold" Margin="0,0,8,0"/>
+                            <Button x:Name="PART_BtnStopNav" Content="자동이동 중지" Height="28" Padding="8,0" Margin="0,0,6,0"
+                                    Background="#DC3545" Foreground="White" FontWeight="Bold" Visibility="Collapsed"/>
+                            <TextBlock x:Name="PART_TxtNavStatus" VerticalAlignment="Center" FontFamily="Consolas" FontWeight="Bold"
+                                       Foreground="#1565C0" Margin="0,0,8,0"/>
+                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2"/>
+                            <TextBlock x:Name="PART_Status" VerticalAlignment="Center" Foreground="Gray" Margin="6,0,0,0"/>
+                        </WrapPanel>
+
+                        <!-- Map display -->
+                        <Border Grid.Row="2" BorderBrush="#555" BorderThickness="1" Background="#111">
+                            <ScrollViewer x:Name="PART_ScrollViewer"
+                                          HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Auto">
+                                <Grid x:Name="PART_MapGrid">
+                                    <views:WorldMapSurface x:Name="PART_MapImage"
+                                                           SnapsToDevicePixels="True"/>
+                                    <Canvas x:Name="PART_OverlayCanvas" Background="Transparent" IsHitTestVisible="True"
+                                            HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Zoom label -->
+                        <TextBlock x:Name="PART_ZoomLabel" Grid.Row="2"
+                                   HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                   Margin="0,0,12,8" Padding="4,2"
+                                   Background="#AA000000" Foreground="White"
+                                   FontFamily="Consolas" FontSize="12"
+                                   Text="x2.0"/>
+
+                        <!-- Cell info bar -->
+                        <Border Grid.Row="3" Background="#222" Padding="6,4" Margin="0,4,0,0">
+                            <TextBlock x:Name="PART_CellInfo" Foreground="#CCC" FontFamily="Consolas" FontSize="12"
+                                       Text="마우스를 지도 위에 올리면 셀 정보가 표시됩니다"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,183 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:units="clr-namespace:CdsHelper.Support.UI.Units">
+
+    <!-- 타이틀바 버튼 스타일 -->
+    <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="46"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="#323232"/>
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E5E5E5"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#CACACB"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 닫기 버튼 스타일 (빨간색 호버) -->
+    <Style x:Key="CloseButtonStyle" TargetType="Button" BasedOn="{StaticResource TitleBarButtonStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0">
+                        <ContentPresenter x:Name="content"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E81123"/>
+                            <Setter TargetName="content" Property="TextElement.Foreground" Value="White"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#F1707A"/>
+                            <Setter TargetName="content" Property="TextElement.Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- CdsWindow 스타일 -->
+    <Style TargetType="{x:Type units:CdsWindow}">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#104F89"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="WindowStyle" Value="None"/>
+        <Setter Property="AllowsTransparency" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type units:CdsWindow}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="32"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 커스텀 타이틀바 -->
+                            <Border x:Name="PART_TitleBar"
+                                    Grid.Row="0"
+                                    Background="#104F89">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 아이콘 -->
+                                    <Image Grid.Column="0"
+                                           Source="{TemplateBinding Icon}"
+                                           Width="20" Height="20"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"
+                                           WindowChrome.IsHitTestVisibleInChrome="True"/>
+
+                                    <!-- 제목 -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{TemplateBinding Title}"
+                                               Foreground="White"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"
+                                               Margin="10,0,0,0"/>
+
+                                    <!-- 윈도우 컨트롤 버튼 -->
+                                    <StackPanel Grid.Column="2"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Right">
+                                        <!-- 최소화 -->
+                                        <Button x:Name="PART_MinimizeButton"
+                                                Style="{StaticResource TitleBarButtonStyle}"
+                                                Foreground="White">
+                                            <Path Data="M 0 0 H 10"
+                                                  Stroke="White"
+                                                  StrokeThickness="1"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"/>
+                                        </Button>
+                                        <!-- 최대화 -->
+                                        <Button x:Name="PART_MaximizeButton"
+                                                Style="{StaticResource TitleBarButtonStyle}"
+                                                Foreground="White">
+                                            <Rectangle Width="10" Height="10"
+                                                       Stroke="White"
+                                                       StrokeThickness="1"/>
+                                        </Button>
+                                        <!-- 복원 -->
+                                        <Button x:Name="PART_RestoreButton"
+                                                Style="{StaticResource TitleBarButtonStyle}"
+                                                Foreground="White"
+                                                Visibility="Collapsed">
+                                            <Grid>
+                                                <Rectangle Width="8" Height="8"
+                                                           Stroke="White"
+                                                           StrokeThickness="1"
+                                                           Margin="0,2,2,0"/>
+                                                <Rectangle Width="8" Height="8"
+                                                           Stroke="White"
+                                                           StrokeThickness="1"
+                                                           Margin="2,0,0,2"/>
+                                            </Grid>
+                                        </Button>
+                                        <!-- 닫기 -->
+                                        <Button x:Name="PART_CloseButton"
+                                                Style="{StaticResource CloseButtonStyle}"
+                                                Foreground="White">
+                                            <Path Data="M 0 0 L 10 10 M 0 10 L 10 0"
+                                                  Stroke="White"
+                                                  StrokeThickness="1"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- 컨텐츠 영역 -->
+                            <AdornerDecorator Grid.Row="1">
+                                <ContentPresenter/>
+                            </AdornerDecorator>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- 최대화 상태일 때 -->
+                        <Trigger Property="WindowState" Value="Maximized">
+                            <Setter TargetName="PART_MaximizeButton" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_RestoreButton" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <!-- 비활성화 상태일 때 -->
+                        <Trigger Property="IsActive" Value="False">
+                            <Setter TargetName="PART_TitleBar" Property="Background" Value="#6B6B6B"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

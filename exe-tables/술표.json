@@ -1,0 +1,394 @@
+{
+  "Stamp": "1662464-634738899700000000",
+  "Data": {
+    "Drinks": [
+      {
+        "Name": "와인",
+        "Price": 4,
+        "Region": 0,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 3,
+        "Region": 1,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 4,
+        "Region": 2,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 5,
+        "Region": 3,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 7,
+        "Region": 4,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 6,
+        "Region": 5,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 5,
+        "Region": 6,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 8,
+        "Region": 7,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 7,
+        "Region": 8,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 8,
+        "Region": 9,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 7,
+        "Region": 10,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 8,
+        "Region": 11,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 9,
+        "Region": 12,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 10,
+        "Region": 13,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 12,
+        "Region": 14,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "와인",
+        "Price": 14,
+        "Region": 15,
+        "Proof": 10,
+        "Alias": "붉은 술"
+      },
+      {
+        "Name": "위스키",
+        "Price": 6,
+        "Region": 4,
+        "Proof": 45,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "위스키",
+        "Price": 8,
+        "Region": 7,
+        "Proof": 45,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "진",
+        "Price": 5,
+        "Region": 4,
+        "Proof": 35,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "진",
+        "Price": 7,
+        "Region": 5,
+        "Proof": 35,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 9,
+        "Region": 0,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 7,
+        "Region": 1,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 7,
+        "Region": 2,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 8,
+        "Region": 3,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 9,
+        "Region": 4,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 5,
+        "Region": 5,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 7,
+        "Region": 6,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 8,
+        "Region": 7,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "브랜디",
+        "Price": 9,
+        "Region": 8,
+        "Proof": 40,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 7,
+        "Region": 0,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 7,
+        "Region": 1,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 7,
+        "Region": 2,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 7,
+        "Region": 3,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 6,
+        "Region": 5,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 7,
+        "Region": 6,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 7,
+        "Region": 8,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 4,
+        "Region": 9,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 2,
+        "Region": 23,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "럼주",
+        "Price": 5,
+        "Region": 25,
+        "Proof": 50,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "보드카",
+        "Price": 7,
+        "Region": 6,
+        "Proof": 60,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "맥주",
+        "Price": 4,
+        "Region": 5,
+        "Proof": 5,
+        "Alias": "갈색 발포주"
+      },
+      {
+        "Name": "맥주",
+        "Price": 4,
+        "Region": 6,
+        "Proof": 5,
+        "Alias": "갈색 발포주"
+      },
+      {
+        "Name": "맥주",
+        "Price": 5,
+        "Region": 8,
+        "Proof": 5,
+        "Alias": "갈색 발포주"
+      },
+      {
+        "Name": "맥주",
+        "Price": 3,
+        "Region": 13,
+        "Proof": 5,
+        "Alias": "갈색 발포주"
+      },
+      {
+        "Name": "마유주",
+        "Price": 3,
+        "Region": 16,
+        "Proof": 25,
+        "Alias": "흰 술"
+      },
+      {
+        "Name": "인도주",
+        "Price": 4,
+        "Region": 17,
+        "Proof": 15,
+        "Alias": "흰 술"
+      },
+      {
+        "Name": "샴주",
+        "Price": 3,
+        "Region": 18,
+        "Proof": 20,
+        "Alias": "갈색 술"
+      },
+      {
+        "Name": "야자주",
+        "Price": 1,
+        "Region": 19,
+        "Proof": 25,
+        "Alias": "흰 술"
+      },
+      {
+        "Name": "노주",
+        "Price": 4,
+        "Region": 20,
+        "Proof": 55,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "노주",
+        "Price": 4,
+        "Region": 21,
+        "Proof": 55,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "소주",
+        "Price": 2,
+        "Region": 20,
+        "Proof": 20,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "소주",
+        "Price": 2,
+        "Region": 22,
+        "Proof": 20,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "청주",
+        "Price": 4,
+        "Region": 22,
+        "Proof": 15,
+        "Alias": "반투명한 술"
+      },
+      {
+        "Name": "풀케",
+        "Price": 4,
+        "Region": 24,
+        "Proof": 50,
+        "Alias": "투명한 술"
+      },
+      {
+        "Name": "풀케",
+        "Price": 4,
+        "Region": 26,
+        "Proof": 50,
+        "Alias": "투명한 술"
+      }
+    ]
+  },
+  "Source": "CDS_95.EXE",
+  "Version": 1
+}
