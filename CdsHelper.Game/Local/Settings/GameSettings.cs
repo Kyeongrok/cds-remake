@@ -73,6 +73,12 @@ public sealed class GameSettingsData
     /// <summary>도시에 들어가면 현재 계약 힌트를 기능·언어 쪽지 위에 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowContractHintOverlay { get; set; }
 
+    /// <summary>도시에 들어가면 현재 함대의 배 이름 쪽지를 띄울지. 기존 기능을 유지하도록 켜 두고 시작한다.</summary>
+    public bool ShowFleetOverlay { get; set; } = true;
+
+    /// <summary>도시에 들어가면 아직 남은 힌트 열 개를 함대 쪽지 아래에 띄울지.</summary>
+    public bool ShowHintOverlay { get; set; }
+
     /// <summary>햄버거에 「발견물 지도」 줄을 낼지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryMapMenu { get; set; }
 
@@ -571,6 +577,29 @@ public static class GameSettings
 
     /// <summary><see cref="ShowContractHintOverlay"/> 가 바뀌었다.</summary>
     public static event Action? ShowContractHintOverlayChanged;
+
+    public static event Action? ShowFleetOverlayChanged;
+    public static event Action? ShowHintOverlayChanged;
+
+    public static bool ShowFleetOverlay
+    {
+        get => Get(d => d.ShowFleetOverlay);
+        set
+        {
+            Set(d => d.ShowFleetOverlay = value);
+            ShowFleetOverlayChanged?.Invoke();
+        }
+    }
+
+    public static bool ShowHintOverlay
+    {
+        get => Get(d => d.ShowHintOverlay);
+        set
+        {
+            Set(d => d.ShowHintOverlay = value);
+            ShowHintOverlayChanged?.Invoke();
+        }
+    }
 
     /// <summary>
     /// 도시에 들어가면 현재 계약 힌트를 기능·언어 쪽지 위에 띄울지 — 모드 창에서 켜고 끈다.

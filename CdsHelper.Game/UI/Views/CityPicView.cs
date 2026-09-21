@@ -402,6 +402,8 @@ public sealed class CityPicView : GameWindow, ITownScreen
             RefreshShipLabel();
             SyncSkillNote();
         };
+        GameSettings.ShowFleetOverlayChanged += RefreshShipLabel;
+        GameSettings.ShowHintOverlayChanged += RefreshShipLabel;
         // 개발 창에서 켜고 끄면 떠 있는 도시 창에도 곧바로 든다.
         GameSettings.ShowSkillOverlayChanged += SyncSkillNote;
         GameSettings.ShowContractHintOverlayChanged += SyncSkillNote;
@@ -411,6 +413,8 @@ public sealed class CityPicView : GameWindow, ITownScreen
         {
             GameSettings.ShowSkillOverlayChanged -= SyncSkillNote;
             GameSettings.ShowContractHintOverlayChanged -= SyncSkillNote;
+            GameSettings.ShowFleetOverlayChanged -= RefreshShipLabel;
+            GameSettings.ShowHintOverlayChanged -= RefreshShipLabel;
             _shipNote?.Close(); _shipNote = null;
             _skillNote?.Close(); _skillNote = null;
         };
@@ -1898,9 +1902,23 @@ public sealed class CityPicView : GameWindow, ITownScreen
     /// 함대 쪽지를 지금 함대로 채운다 — 배마다 한 줄 「배 이름(선체)」, 함대 차례대로.
     /// 배가 없으면 쪽지가 안 뜬다.
     /// </summary>
-    private void RefreshShipLabel() =>
-        _shipNote?.Set(string.Join(Environment.NewLine,
-                                   _player.Ships.Select(s => $"{s.Name}({s.Hull.Name})")));
+    private void RefreshShipLabel()
+    {
+        var lines = new List<string>();
+        if (GameSettings.ShowFleetOverlay)
+        {
+            lines.Add("현재 함대");
+            lines.AddRange(_player.Ships.Select(s => $"{s.Name}({s.Hull.Name})"));
+        }
+
+        if (GameSettings.ShowHintOverlay)
+        {
+            lines.Add("현재 힌트");
+            lines.AddRange(GameInfo.HintNames(_game).Take(10));
+        }
+
+        _shipNote?.Set(string.Join(Environment.NewLine, lines));
+    }
 
     /// <summary>
     /// 시설의 명령 창을 짓는다 — 줄과 손은 <see cref="TownMenu"/> 가 짝지어 주고,

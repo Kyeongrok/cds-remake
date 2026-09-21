@@ -112,6 +112,14 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.ShowContractHintOverlay = on,
             "도시에 들어가면 현재 계약을 맺은 힌트 이름을 기능·언어 쪽지 위에 띄웁니다."));
 
+        rows.Children.Add(Toggle("현재 함대 선박 이름", GameSettings.ShowFleetOverlay,
+            on => GameSettings.ShowFleetOverlay = on,
+            "도시에 들어가면 현재 함대의 선박 이름과 선체를 도시 창 옆에 띄웁니다."));
+
+        rows.Children.Add(Toggle("현재 힌트 목록", GameSettings.ShowHintOverlay,
+            on => GameSettings.ShowHintOverlay = on,
+            "현재 남아 있는 힌트를 최대 10개까지 함대 선박 이름 아래에 띄웁니다."));
+
         // 기능·언어 — 켜 두면 도시에 들어갈 때 도시 그림 왼쪽에 쪽지로 뜬다.
         rows.Children.Add(Toggle("기능·언어", GameSettings.ShowSkillOverlay,
             on => GameSettings.ShowSkillOverlay = on,
