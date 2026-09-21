@@ -43,6 +43,9 @@ public sealed class CityPicView : GameWindow, ITownScreen
     /// </summary>
     private FleetLabelWindow? _shipNote;
 
+    /// <summary>현재 힌트 쪽지. 함대 쪽지와 별도 창으로 아래에 붙인다.</summary>
+    private FleetLabelWindow? _hintNote;
+
     /// <summary>기능·언어 쪽지. 개발 창에서 켜 두었을 때만 뜬다(<see cref="GameSettings.ShowSkillOverlay"/>).</summary>
     private SkillOverlayWindow? _skillNote;
 
@@ -69,6 +72,7 @@ public sealed class CityPicView : GameWindow, ITownScreen
     {
         _shade.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
         _shipNote?.Shade(on);
+        _hintNote?.Shade(on);
         _skillNote?.Shade(on);
     }
 
@@ -398,6 +402,7 @@ public sealed class CityPicView : GameWindow, ITownScreen
         Loaded += (_, _) =>
         {
             _shipNote = FleetLabelWindow.Attach(this, 13 * scale);
+            _hintNote = FleetLabelWindow.Attach(this, 13 * scale, belowFleet: true);
             _noteFontSize = 13 * scale;
             RefreshShipLabel();
             SyncSkillNote();
@@ -416,6 +421,7 @@ public sealed class CityPicView : GameWindow, ITownScreen
             GameSettings.ShowFleetOverlayChanged -= RefreshShipLabel;
             GameSettings.ShowHintOverlayChanged -= RefreshShipLabel;
             _shipNote?.Close(); _shipNote = null;
+            _hintNote?.Close(); _hintNote = null;
             _skillNote?.Close(); _skillNote = null;
         };
 
@@ -1904,20 +1910,13 @@ public sealed class CityPicView : GameWindow, ITownScreen
     /// </summary>
     private void RefreshShipLabel()
     {
-        var lines = new List<string>();
-        if (GameSettings.ShowFleetOverlay)
-        {
-            lines.Add("현재 함대");
-            lines.AddRange(_player.Ships.Select(s => $"{s.Name}({s.Hull.Name})"));
-        }
-
-        if (GameSettings.ShowHintOverlay)
-        {
-            lines.Add("현재 힌트");
-            lines.AddRange(GameInfo.HintNames(_game).Take(10));
-        }
-
-        _shipNote?.Set(string.Join(Environment.NewLine, lines));
+        _shipNote?.Set(GameSettings.ShowFleetOverlay
+            ? string.Join(Environment.NewLine,
+                ["현재 함대", .. _player.Ships.Select(s => $"{s.Name}({s.Hull.Name})")])
+            : "");
+        _hintNote?.Set(GameSettings.ShowHintOverlay
+            ? string.Join(Environment.NewLine, ["현재 힌트", .. GameInfo.HintNames(_game).Take(10)])
+            : "");
     }
 
     /// <summary>

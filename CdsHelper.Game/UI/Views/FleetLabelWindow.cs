@@ -32,6 +32,7 @@ public sealed class FleetLabelWindow : Window
     /// 도시에 드나들 때마다 쪽지가 제자리로 돌아가면 옮긴 뜻이 없다.
     /// </summary>
     private static double _dx = double.NaN, _dy;
+    private static double _hintDx = double.NaN, _hintDy;
 
     private readonly TextBlock _text = new()
     {
@@ -47,10 +48,12 @@ public sealed class FleetLabelWindow : Window
     };
 
     private readonly Window _anchor;
+    private readonly bool _belowFleet;
 
-    private FleetLabelWindow(Window anchor, double fontSize)
+    private FleetLabelWindow(Window anchor, double fontSize, bool belowFleet)
     {
         _anchor = anchor;
+        _belowFleet = belowFleet;
         _text.FontSize = fontSize;
 
         Title = "함대";
@@ -98,9 +101,9 @@ public sealed class FleetLabelWindow : Window
     private void OnAnchorMoved(object? sender, EventArgs e) => Place();
 
     /// <summary>주인 창 옆에 쪽지를 띄운다. 글이 비면 안 뜬다.</summary>
-    public static FleetLabelWindow Attach(Window anchor, double fontSize)
+    public static FleetLabelWindow Attach(Window anchor, double fontSize, bool belowFleet = false)
     {
-        var note = new FleetLabelWindow(anchor, fontSize);
+        var note = new FleetLabelWindow(anchor, fontSize, belowFleet);
         note.Show();
         note.Place();
         return note;
@@ -125,8 +128,16 @@ public sealed class FleetLabelWindow : Window
     /// <summary>지금 자리를 주인 창에서 잰 거리로 적어 둔다.</summary>
     private void Remember()
     {
-        _dx = Left - _anchor.Left;
-        _dy = Top - _anchor.Top;
+        if (_belowFleet)
+        {
+            _hintDx = Left - _anchor.Left;
+            _hintDy = Top - _anchor.Top;
+        }
+        else
+        {
+            _dx = Left - _anchor.Left;
+            _dy = Top - _anchor.Top;
+        }
     }
 
     /// <summary>
@@ -140,17 +151,20 @@ public sealed class FleetLabelWindow : Window
         double width = ActualWidth > 0 ? ActualWidth : Width;
         if (double.IsNaN(width)) width = 0;
 
-        if (double.IsNaN(_dx))
+        ref double dx = ref (_belowFleet ? ref _hintDx : ref _dx);
+        ref double dy = ref (_belowFleet ? ref _hintDy : ref _dy);
+        if (double.IsNaN(dx))
         {
-            _dx = _anchor.ActualWidth + Gap;
-            _dy = 0;
+            dx = _anchor.ActualWidth + Gap;
+            dy = 0;
 
             // 오른쪽이 화면 밖이면 그림 왼쪽에 붙인다.
             double right = SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth;
-            if (_anchor.Left + _dx + width > right) _dx = -(width + Gap);
+            if (_anchor.Left + dx + width > right) dx = -(width + Gap);
+            if (_belowFleet) dy = _anchor.ActualHeight + Gap;
         }
 
-        Left = _anchor.Left + _dx;
-        Top = _anchor.Top + _dy;
+        Left = _anchor.Left + dx;
+        Top = _anchor.Top + dy;
     }
 }
