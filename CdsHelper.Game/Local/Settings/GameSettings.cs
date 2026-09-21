@@ -67,6 +67,9 @@ public sealed class GameSettingsData
     /// <summary>도시에 들어가면 도시 그림 왼쪽에 기능·언어 쪽지를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowSkillOverlay { get; set; }
 
+    /// <summary>도시에 들어가면 현재 계약 힌트를 기능·언어 쪽지 위에 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    public bool ShowContractHintOverlay { get; set; }
+
     /// <summary>햄버거에 「발견물 지도」 줄을 낼지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryMapMenu { get; set; }
 
@@ -556,6 +559,22 @@ public static class GameSettings
 
     /// <summary><see cref="ShowSkillOverlay"/> 가 바뀌었다.</summary>
     public static event Action? ShowSkillOverlayChanged;
+
+    /// <summary><see cref="ShowContractHintOverlay"/> 가 바뀌었다.</summary>
+    public static event Action? ShowContractHintOverlayChanged;
+
+    /// <summary>
+    /// 도시에 들어가면 현재 계약 힌트를 기능·언어 쪽지 위에 띄울지 — 모드 창에서 켜고 끈다.
+    /// </summary>
+    public static bool ShowContractHintOverlay
+    {
+        get => Get(d => d.ShowContractHintOverlay);
+        set
+        {
+            Set(d => d.ShowContractHintOverlay = value);
+            ShowContractHintOverlayChanged?.Invoke();
+        }
+    }
 
     /// <summary>
     /// 계약을 맺을 때 배가 있으면 후원자가 「배를 빌리겠습니까?」를 묻는지(<c>0x00410724</c>).

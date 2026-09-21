@@ -404,11 +404,13 @@ public sealed class CityPicView : GameWindow, ITownScreen
         };
         // 개발 창에서 켜고 끄면 떠 있는 도시 창에도 곧바로 든다.
         GameSettings.ShowSkillOverlayChanged += SyncSkillNote;
+        GameSettings.ShowContractHintOverlayChanged += SyncSkillNote;
         // 도시 창이 닫히면 쪽지도 같이 접는다(주인 창이 닫히면 따라 닫히지만, 펼침 효과로
         // 미끄러지는 동안 닫는 자리도 있어 손으로 짚어 둔다).
         Closed += (_, _) =>
         {
             GameSettings.ShowSkillOverlayChanged -= SyncSkillNote;
+            GameSettings.ShowContractHintOverlayChanged -= SyncSkillNote;
             _shipNote?.Close(); _shipNote = null;
             _skillNote?.Close(); _skillNote = null;
         };
@@ -418,7 +420,7 @@ public sealed class CityPicView : GameWindow, ITownScreen
         Activated += (_, _) =>
         {
             RefreshShipLabel();
-            _skillNote?.Refresh(_player);
+            _skillNote?.Refresh(_game);
         };
 
         // 도시 그림에 그려진 마을 사람들. <b>건물보다 먼저</b> 깐다 — 자리가 겹치면 건물이 이긴다(0x00491DC0).
@@ -1863,7 +1865,9 @@ public sealed class CityPicView : GameWindow, ITownScreen
         while (true)
         {
             // 힌트가 없으면 게임도 설득 때와 같은 「설득 가능한 힌트가 없습니다」를 낸다.
-            int at = HintListDialog.Pick(owner, [.. ids.Select(id => GameInfo.HintLabel(_game, id))]);
+            int at = HintListDialog.Pick(owner, [.. ids.Select(HintNameOf)],
+                                         rightTexts: [.. ids.Select(id => _game.Hints?.Find(id) is { } hint
+                                             ? _game.Hints.CategoryOf(hint.Category) : "")]);
             if (at < 0 || at >= ids.Count) return;
             if (_game.Hints?.Find(ids[at]) is not { } hint) return;
 
@@ -1872,12 +1876,17 @@ public sealed class CityPicView : GameWindow, ITownScreen
         }
     }
 
-    /// <summary>기능·언어 쪽지를 설정대로 붙이거나 걷는다.</summary>
+    /// <summary>계약 힌트·기능·언어 쪽지를 설정대로 붙이거나 걷는다.</summary>
     private void SyncSkillNote()
     {
         if (!IsLoaded) return;
-        if (GameSettings.ShowSkillOverlay)
-            _skillNote ??= SkillOverlayWindow.Attach(this, _player, _noteFontSize);
+        if (GameSettings.ShowSkillOverlay || GameSettings.ShowContractHintOverlay)
+        {
+            if (_skillNote == null)
+                _skillNote = SkillOverlayWindow.Attach(this, _game, _noteFontSize);
+            else
+                _skillNote.Refresh(_game);
+        }
         else
         {
             _skillNote?.Close();

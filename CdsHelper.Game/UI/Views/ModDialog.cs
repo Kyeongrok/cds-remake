@@ -107,6 +107,11 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.PlaceShipByCtrlClick = on,
             "Ctrl 을 짚고 지도를 찍으면 배를 그 자리에 놓습니다. 끄면 여느 클릭처럼 닻만 오르내립니다."));
 
+        // 계약 힌트 — 기능·언어 쪽지 위에 현재 계약의 힌트 이름을 띄운다.
+        rows.Children.Add(Toggle("현재 계약 힌트", GameSettings.ShowContractHintOverlay,
+            on => GameSettings.ShowContractHintOverlay = on,
+            "도시에 들어가면 현재 계약을 맺은 힌트 이름을 기능·언어 쪽지 위에 띄웁니다."));
+
         // 기능·언어 — 켜 두면 도시에 들어갈 때 도시 그림 왼쪽에 쪽지로 뜬다.
         rows.Children.Add(Toggle("기능·언어", GameSettings.ShowSkillOverlay,
             on => GameSettings.ShowSkillOverlay = on,

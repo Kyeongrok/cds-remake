@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
@@ -83,24 +84,32 @@ public sealed class SkillOverlayWindow : Window
     private void OnAnchorMoved(object? sender, EventArgs e) => Place();
 
     /// <summary>주인 창 왼쪽에 쪽지를 띄운다.</summary>
-    public static SkillOverlayWindow Attach(Window anchor, Player player, double fontSize)
+    public static SkillOverlayWindow Attach(Window anchor, Engine.Game game, double fontSize)
     {
         var note = new SkillOverlayWindow(anchor, fontSize);
-        note.Refresh(player);
+        note.Refresh(game);
         note.Show();
         note.Place();
         return note;
     }
 
     /// <summary>지금 제독·부하 값으로 판을 다시 짓는다(술집에서 부하를 들이고 돌아왔을 때 따위).</summary>
-    public void Refresh(Player player)
+    public void Refresh(Engine.Game game)
     {
         var people = PersonTable.Open();
-        var columns = new StackPanel { Orientation = Orientation.Horizontal };
-        columns.Children.Add(Column("기능", SkillBoardDialog.Build(player, people, language: false)));
-        columns.Children.Add(Column("언어", SkillBoardDialog.Build(player, people, language: true)));
+        var content = new StackPanel();
+        if (GameSettings.ShowContractHintOverlay && game.Player.Contract is { } contract)
+        {
+            content.Children.Add(Text("현재 계약 힌트"));
+            content.Children.Add(Text(game.HintName(contract.Hint)));
+        }
 
-        _frame.Child = columns;
+        var columns = new StackPanel { Orientation = Orientation.Horizontal };
+        columns.Children.Add(Column("기능", SkillBoardDialog.Build(game.Player, people, language: false)));
+        columns.Children.Add(Column("언어", SkillBoardDialog.Build(game.Player, people, language: true)));
+        content.Children.Add(columns);
+
+        _frame.Child = content;
     }
 
     /// <summary>한 갈래(기능·언어) — 이름 · 제일 높은 값을 안에 적은 막대.</summary>
