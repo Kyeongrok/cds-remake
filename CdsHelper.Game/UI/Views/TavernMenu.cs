@@ -135,7 +135,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             return;
         }
 
-        ConfirmDialog.Tell(_view, Greetings[at], face: face);
+        // 술꾼의 인사도 그 도시 나라의 말이다 — 아랍어 1레벨이면 손님 소문처럼
+        // 글자가 뭉개져야 한다(0x004780E0 → 0x004252F0).
+        ConfirmDialog.Tell(_view, StrangerTalk.Garble(Greetings[at], TongueLevelOfCity(), _game.Random),
+                           face: face);
     }
 
     /// <summary>
@@ -1039,6 +1042,15 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         int nation = _game.CityRows?.NationOf(_cityId) ?? -1;
         int language = _game.Nations?.Find(nation)?.Language ?? -1;
         return language >= 0 && language < Skill.Languages.Length ? Skill.Languages[language] : "";
+    }
+
+    /// <summary>그 도시 나라 말을 제독이 알아듣는 수준.</summary>
+    private int TongueLevelOfCity()
+    {
+        int nation = _game.CityRows?.NationOf(_cityId) ?? -1;
+        int language = _game.Nations?.Find(nation)?.Language ?? -1;
+        return language >= 0 && language < Skill.Languages.Length
+            ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
     }
 
     /// <summary>
