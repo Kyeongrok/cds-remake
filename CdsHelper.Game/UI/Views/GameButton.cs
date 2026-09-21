@@ -74,6 +74,17 @@ internal sealed class GameButton : Border
             if (_on) _run?.Invoke();
         };
 
+        // 마우스로 활성화한 줄을 키보드로도 바로 고를 수 있게 실제 초점을 맞춘다.
+        Focusable = true;
+        MouseEnter += (_, _) => Focus();
+        KeyDown += (_, e) =>
+        {
+            if (e.Key is not (Key.Enter or Key.Space)) return;
+            if (!_on || _run == null) return;
+            e.Handled = true;
+            _run();
+        };
+
         Build();
     }
 
