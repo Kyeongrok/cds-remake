@@ -111,6 +111,8 @@ public sealed class PersonMoveDialog : GameWindow
         Width = 1000;
         Height = 640;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        _grid.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
+        _grid.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
 
         ConfigureCards();
 
@@ -223,12 +225,13 @@ public sealed class PersonMoveDialog : GameWindow
 
     private void ConfigureCards()
     {
-        var panel = new FrameworkElementFactory(typeof(WrapPanel));
-        panel.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+        var panel = new FrameworkElementFactory(typeof(StackPanel));
+        panel.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
         _grid.ItemsPanel = new ItemsPanelTemplate(panel);
 
         var card = new FrameworkElementFactory(typeof(Border));
-        card.SetValue(FrameworkElement.WidthProperty, 290d);
+        card.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+        card.SetValue(FrameworkElement.MinWidthProperty, 620d);
         card.SetValue(FrameworkElement.HeightProperty, 112d);
         card.SetValue(FrameworkElement.MarginProperty, new Thickness(5));
         card.SetValue(Border.BorderBrushProperty, Brushes.Silver);
