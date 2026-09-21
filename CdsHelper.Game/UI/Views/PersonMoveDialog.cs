@@ -388,7 +388,10 @@ public sealed class PersonMoveDialog : GameWindow
             if (city >= 0 && person.City != city && !(onRoad && person.Dest == city)) continue;
 
             if (_states[(int)StateKind(person, active, onRoad)].IsChecked != true) continue;
-            if (_hireableOnly.IsChecked == true && person.Hire != PersonTable.Hireable) continue;
+            // 201번 이후는 이벤트·괴물·누적 인물이라 표의 Hire 값과 관계없이 고용할 수 없다.
+            if (_hireableOnly.IsChecked == true &&
+                (person.Id >= PersonTable.MovingEnd || person.Hire != PersonTable.Hireable))
+                continue;
             if (_search.Text.Length > 0 && !person.Name.Contains(_search.Text, StringComparison.OrdinalIgnoreCase))
                 continue;
 
