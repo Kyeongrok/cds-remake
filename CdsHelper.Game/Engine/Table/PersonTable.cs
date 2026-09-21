@@ -107,6 +107,9 @@ public sealed class PersonTable
         /// <summary>얼굴 코드.</summary>
         public int Face { get; set; }
 
+        /// <summary>여자 얼굴이면 참이다. 옛 인물표에는 없으므로 기본값은 거짓이다.</summary>
+        public bool Female { get; set; }
+
         /// <summary>능력 여섯. <b>세이브에 적힌 날값</b>이라 게임이 쓰는 값보다 하나 크다.</summary>
         public int[] Stats { get; set; } = new int[StatCount];
 

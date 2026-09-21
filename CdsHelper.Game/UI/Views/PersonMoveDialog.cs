@@ -78,24 +78,26 @@ public sealed class PersonMoveDialog : GameWindow
 
     private sealed class FaceImageConverter(Portraits? faces) : IValueConverter
     {
-        private readonly Dictionary<int, BitmapSource?> _cache = [];
+        private readonly Dictionary<(int Face, bool Female), BitmapSource?> _cache = [];
 
         public object? Convert(object? value, Type targetType, object? parameter,
                                System.Globalization.CultureInfo culture)
         {
-            if (value is not int face) return null;
-            if (_cache.TryGetValue(face, out var image)) return image;
+            if (value is not PersonTable.Row person) return null;
+            bool female = person.Female;
+            var key = (person.Face, female);
+            if (_cache.TryGetValue(key, out var image)) return image;
 
-            if (faces?.TryGetBgra(face, female: false) is not { } pixels)
+            if (faces?.TryGetBgra(person.Face, female) is not { } pixels)
             {
-                _cache[face] = null;
+                _cache[key] = null;
                 return null;
             }
 
             image = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
                                         PixelFormats.Bgra32, null, pixels, Portraits.Width * 4);
             image.Freeze();
-            _cache[face] = image;
+            _cache[key] = image;
             return image;
         }
 
@@ -280,7 +282,7 @@ public sealed class PersonMoveDialog : GameWindow
 
         var image = new FrameworkElementFactory(typeof(Image));
         image.SetBinding(Image.SourceProperty,
-                         new Binding($"{nameof(Row.Source)}.{nameof(PersonTable.Row.Face)}")
+                         new Binding(nameof(Row.Source))
                          { Converter = new FaceImageConverter(_game.Faces) });
         image.SetValue(FrameworkElement.WidthProperty, 72d);
         image.SetValue(FrameworkElement.HeightProperty, 86d);
