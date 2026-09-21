@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Engine;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -38,6 +39,21 @@ public sealed class PersonMoveDialog : GameWindow
 
     /// <summary>도시 거르개. 첫 줄 「전체」 뒤로 도시가 선다 — 줄의 Tag 가 도시 번호다.</summary>
     private readonly ComboBox _city = new() { Width = 160, VerticalAlignment = VerticalAlignment.Center };
+
+    private readonly TextBox _search = new()
+    {
+        Width = 170,
+        VerticalAlignment = VerticalAlignment.Center,
+        ToolTip = "이름으로 찾기",
+    };
+
+    private readonly CheckBox _hireableOnly = new()
+    {
+        Content = "고용 가능만",
+        IsChecked = true,
+        VerticalAlignment = VerticalAlignment.Center,
+        Margin = new Thickness(16, 0, 0, 0),
+    };
 
     /// <summary>「보기」에서 「모두」의 자리.</summary>
     private const int ViewAll = 2;
@@ -100,7 +116,8 @@ public sealed class PersonMoveDialog : GameWindow
 
     /// <summary>표 한 줄.</summary>
     private sealed record Row(int Id, string Name, int Age, string Now, string To, string Left,
-                              string State, string Kind, PersonTable.Row Source);
+                              string State, string Kind, string Skills, string Languages,
+                              PersonTable.Row Source);
 
     private PersonMoveDialog(Engine.Game game, PersonWorld world)
     {
@@ -133,6 +150,9 @@ public sealed class PersonMoveDialog : GameWindow
         }
         if (_city.SelectedItem == null) _city.SelectedIndex = 0;
         _city.SelectionChanged += (_, _) => Rebuild();
+        _search.TextChanged += (_, _) => Rebuild();
+        _hireableOnly.Checked += (_, _) => Rebuild();
+        _hireableOnly.Unchecked += (_, _) => Rebuild();
         _grid.SelectionChanged += (_, _) => ShowDetail();
 
         var bar = new StackPanel
@@ -155,6 +175,14 @@ public sealed class PersonMoveDialog : GameWindow
                     VerticalAlignment = VerticalAlignment.Center,
                 },
                 _city,
+                new TextBlock
+                {
+                    Text = "이름:",
+                    Margin = new Thickness(16, 0, 6, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                },
+                _search,
+                _hireableOnly,
             },
         };
 
@@ -261,6 +289,12 @@ public sealed class PersonMoveDialog : GameWindow
         AddCardText(text, nameof(Row.To), "목적지: {0}");
         AddCardText(text, nameof(Row.State), fontSize: 12);
         body.AppendChild(text);
+
+        var abilities = new FrameworkElementFactory(typeof(StackPanel));
+        abilities.SetValue(FrameworkElement.MarginProperty, new Thickness(24, 0, 0, 0));
+        AddCardText(abilities, nameof(Row.Skills), fontSize: 12);
+        AddCardText(abilities, nameof(Row.Languages), fontSize: 12);
+        body.AppendChild(abilities);
         card.AppendChild(body);
 
         _grid.ItemTemplate = new DataTemplate { VisualTree = card };
@@ -311,16 +345,21 @@ public sealed class PersonMoveDialog : GameWindow
             if (city >= 0 && person.City != city && !(onRoad && person.Dest == city)) continue;
 
             if (_states[(int)StateKind(person, active, onRoad)].IsChecked != true) continue;
+            if (_hireableOnly.IsChecked == true && person.Hire != PersonTable.Hireable) continue;
+            if (_search.Text.Length > 0 && !person.Name.Contains(_search.Text, StringComparison.OrdinalIgnoreCase))
+                continue;
 
             string to = person.Dest == PersonWorld.SpotDest ? "발견물 자리" : CityOf(person.Dest);
             string left = _world.DaysLeft(person) is { } days ? $"{days}일" : "";
             string kind = person.Kind >= 0 && person.Kind < KindNames.Length
                 ? KindNames[person.Kind] : $"{person.Kind}";
             if (person.Id < PersonTable.VoyagerCount) kind = "대본";
+            string skills = Levels(person.Skills, Skill.Names, "기능");
+            string languages = Levels(person.Languages, Skill.Languages, "언어");
 
             rows.Add(new Row(person.Id, person.Name, _world.Table.AgeOn(person, date.Year),
                              CityOf(person.City), onRoad ? to : "", left,
-                             StateOf(person, active, onRoad), kind, person));
+                             StateOf(person, active, onRoad), kind, skills, languages, person));
         }
 
         _grid.ItemsSource = rows;
@@ -328,6 +367,16 @@ public sealed class PersonMoveDialog : GameWindow
 
         _status.Text = $"{date:yyyy년 M월 d일} · 길 위 {moving}명 · 쉬는 중 {resting}명 · 목록 {rows.Count}명";
         ShowDetail();
+    }
+
+    private static string Levels(int[] values, string[] names, string label)
+    {
+        var learned = names
+            .Select((name, i) => (name, level: i < values.Length ? values[i] : 0))
+            .Where(x => x.level > 0)
+            .Select(x => $"{x.name} {x.level}");
+        string text = string.Join(" · ", learned);
+        return text.Length == 0 ? $"{label}: 없음" : $"{label}: {text}";
     }
 
     /// <summary>언젠가 스스로 떠날 수 있는 사람인가.</summary>
