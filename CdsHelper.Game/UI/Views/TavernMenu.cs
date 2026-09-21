@@ -2024,7 +2024,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     public void HearInfo() => Alone(() =>
     {
         var face = _game.SpeakerFace(BuildingCode, _cultureNo);
-        void Say(string words) => TalkDialog.Say(_view, face, "", words);
+        // 정보도 그 도시 나라의 말로 들린다 — 아랍어 1레벨이면 주인 대사도
+        // 손님 소문과 같은 확률로 뭉개야 한다(0x004780E0 → 0x004252F0).
+        int language = _game.Nations?.Find(_game.CityRows?.NationOf(_cityId) ?? -1)?.Language ?? -1;
+        int level = language >= 0 && language < Skill.Languages.Length
+            ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
+        void Say(string words) => TalkDialog.Say(_view, face, "",
+                                                 StrangerTalk.Garble(words, level, _game.Random));
 
         if (_rumor < 0 || _game.Rumors?.Rumors is not { } rumors || _rumor >= rumors.Count) return;
         var rumor = rumors[_rumor];
