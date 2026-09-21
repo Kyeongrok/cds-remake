@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Engine;
@@ -76,6 +77,8 @@ public sealed class PersonMoveDialog : GameWindow
         HorizontalContentAlignment = HorizontalAlignment.Stretch,
     };
 
+    private ScrollViewer? _gridScroll;
+
     private sealed class FaceImageConverter(Portraits? faces) : IValueConverter
     {
         private readonly Dictionary<(int Face, bool Female), BitmapSource?> _cache = [];
@@ -132,6 +135,8 @@ public sealed class PersonMoveDialog : GameWindow
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         _grid.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
         _grid.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
+        _grid.Loaded += (_, _) => _gridScroll ??= FindScrollViewer(_grid);
+        _grid.PreviewMouseWheel += GridPreviewMouseWheel;
 
         ConfigureCards();
 
@@ -237,6 +242,31 @@ public sealed class PersonMoveDialog : GameWindow
         Content = page;
 
         Rebuild();
+    }
+
+    private void GridPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (_gridScroll is not { ScrollableHeight: > 0 } scroll) return;
+
+        const double wheelStep = 24;
+        double next = scroll.VerticalOffset - Math.Sign(e.Delta) * wheelStep;
+        next = Math.Clamp(next, 0, scroll.ScrollableHeight);
+        if (next == scroll.VerticalOffset) return;
+
+        scroll.ScrollToVerticalOffset(next);
+        e.Handled = true;
+    }
+
+    private static ScrollViewer? FindScrollViewer(DependencyObject parent)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is ScrollViewer scroll) return scroll;
+            if (FindScrollViewer(child) is { } nested) return nested;
+        }
+
+        return null;
     }
 
     /// <summary>창을 연다. 인물 표를 못 읽었으면 그렇다고 알린다.</summary>
