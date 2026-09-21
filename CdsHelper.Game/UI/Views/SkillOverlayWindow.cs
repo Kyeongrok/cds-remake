@@ -98,10 +98,12 @@ public sealed class SkillOverlayWindow : Window
     {
         var people = PersonTable.Open();
         var content = new StackPanel();
-        if (GameSettings.ShowContractHintOverlay && game.Player.Contract is { } contract)
+        if (GameSettings.ShowContractHintOverlay)
         {
             content.Children.Add(Text("현재 계약 힌트"));
-            content.Children.Add(Text(game.HintName(contract.Hint)));
+            content.Children.Add(Text(game.Player.Contract is { } contract
+                ? game.HintName(contract.Hint)
+                : "없음"));
         }
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
