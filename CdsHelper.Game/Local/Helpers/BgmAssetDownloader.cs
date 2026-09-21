@@ -28,7 +28,8 @@ public static class BgmAssetDownloader
             string tempDirectory = Path.Combine(cacheDirectory, ".part");
             Directory.CreateDirectory(tempDirectory);
 
-            for (int track = 2; track <= 29; track++)
+            // 배포 에셋은 첫 화면 곡(23번)부터 받는다.
+            for (int track = BgmPlayer.TitleTrack; track <= 29; track++)
             {
                 string target = CachePath(track);
                 if (File.Exists(target)) continue;
