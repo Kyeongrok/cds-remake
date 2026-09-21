@@ -260,15 +260,23 @@ public sealed class PersonMoveDialog : GameWindow
         var card = new FrameworkElementFactory(typeof(Border));
         card.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
         card.SetValue(FrameworkElement.MinWidthProperty, 620d);
-        card.SetValue(FrameworkElement.HeightProperty, 112d);
+        card.SetValue(FrameworkElement.MinHeightProperty, 112d);
         card.SetValue(FrameworkElement.MarginProperty, new Thickness(5));
         card.SetValue(Border.BorderBrushProperty, Brushes.Silver);
         card.SetValue(Border.BorderThicknessProperty, new Thickness(1));
         card.SetValue(Border.BackgroundProperty, Brushes.White);
         card.SetValue(Border.PaddingProperty, new Thickness(6));
 
-        var body = new FrameworkElementFactory(typeof(StackPanel));
-        body.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+        var body = new FrameworkElementFactory(typeof(Grid));
+        var imageColumn = new FrameworkElementFactory(typeof(ColumnDefinition));
+        imageColumn.SetValue(ColumnDefinition.WidthProperty, GridLength.Auto);
+        body.AppendChild(imageColumn);
+        var textColumn = new FrameworkElementFactory(typeof(ColumnDefinition));
+        textColumn.SetValue(ColumnDefinition.WidthProperty, new GridLength(230));
+        body.AppendChild(textColumn);
+        var abilitiesColumn = new FrameworkElementFactory(typeof(ColumnDefinition));
+        abilitiesColumn.SetValue(ColumnDefinition.WidthProperty, new GridLength(1, GridUnitType.Star));
+        body.AppendChild(abilitiesColumn);
 
         var image = new FrameworkElementFactory(typeof(Image));
         image.SetBinding(Image.SourceProperty,
@@ -278,10 +286,12 @@ public sealed class PersonMoveDialog : GameWindow
         image.SetValue(FrameworkElement.HeightProperty, 86d);
         image.SetValue(Image.StretchProperty, Stretch.Fill);
         image.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
+        image.SetValue(Grid.ColumnProperty, 0);
         body.AppendChild(image);
 
         var text = new FrameworkElementFactory(typeof(StackPanel));
         text.SetValue(FrameworkElement.MarginProperty, new Thickness(8, 0, 0, 0));
+        text.SetValue(Grid.ColumnProperty, 1);
         AddCardText(text, nameof(Row.Name), fontSize: 17, bold: true);
         AddCardText(text, nameof(Row.Id), "번호 {0}");
         AddCardText(text, nameof(Row.Age), "나이 {0}세");
@@ -292,6 +302,7 @@ public sealed class PersonMoveDialog : GameWindow
 
         var abilities = new FrameworkElementFactory(typeof(StackPanel));
         abilities.SetValue(FrameworkElement.MarginProperty, new Thickness(24, 0, 0, 0));
+        abilities.SetValue(Grid.ColumnProperty, 2);
         AddCardText(abilities, nameof(Row.Skills), fontSize: 12);
         AddCardText(abilities, nameof(Row.Languages), fontSize: 12);
         body.AppendChild(abilities);
@@ -311,7 +322,7 @@ public sealed class PersonMoveDialog : GameWindow
         label.SetValue(TextBlock.FontSizeProperty, fontSize);
         label.SetValue(TextBlock.FontWeightProperty, bold ? FontWeights.Bold : FontWeights.Normal);
         label.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 0, 2));
-        label.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+        label.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
         parent.AppendChild(label);
     }
 
