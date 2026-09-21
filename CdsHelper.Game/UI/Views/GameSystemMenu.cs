@@ -41,6 +41,7 @@ internal static class GameSystemMenu
         // 남의 나라 도시에서는 「중단」이다(0x004A27D0) — 적고 나서 첫 화면으로 돌아간다.
         "중단" => () => Suspend(view, game, menu),
         "로드" => () => Load(view, menu),
+        "단축키" => () => ShortcutDialog.Show(menu.Window ?? view),
         "게임 종료" => () => Quit(view, game, menu),
         "게임 재개" => menu.Close,
         _ => null,

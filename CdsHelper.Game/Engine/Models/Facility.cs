@@ -106,7 +106,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     /// <summary>
     /// 어느 시설에서 "기능" 을 골랐을 때 뜨는 줄들. 게임은 여기서 저장·로드까지 한다.
     /// </summary>
-    public static readonly string[] SystemMenu = ["저장", "로드", "게임 종료", "게임 재개"];
+    public static readonly string[] SystemMenu = ["저장", "로드", "단축키", "게임 종료", "게임 재개"];
 
     /// <summary>
     /// 항구에서 "함대편성" 을 골랐을 때 뜨는 줄들. 게임처럼 제목 없이 줄만 쌓인다.
