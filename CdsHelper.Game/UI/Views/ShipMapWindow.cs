@@ -486,6 +486,7 @@ public sealed class ShipMapWindow : Window
             // 섞여 있으면 원본과 달라 보인다(개발 창을 옮긴 것과 같은 까닭이다).
             // 지도 배율은 고르는 그 자리에서 지도에 먹인다.
             ("설정", () => SettingsDialog.Show(this, _game.Bgm, s => _host.ApplyMapScale(s))),
+            ("단축키", () => ShortcutDialog.Show(this)),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
             // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는
