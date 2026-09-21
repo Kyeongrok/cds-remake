@@ -259,15 +259,15 @@ public sealed class DiscoveryMapDialog : GameWindow
         {
             Foreground = GameUi.Text,
             FontSize = 14,
-            Margin = new Thickness(6, 4, 6, 6),
+            Margin = new Thickness(4, 2, 4, 4),
             HorizontalAlignment = HorizontalAlignment.Center,
         };
 
         var ok = GameUi.PushButton("확인", Close, 88);
         ok.HorizontalAlignment = HorizontalAlignment.Center;
-        ok.Margin = new Thickness(0, 0, 0, 8);
+        ok.Margin = new Thickness(0, 0, 0, 4);
 
-        var stack = new StackPanel { Margin = new Thickness(8) };
+        var stack = new StackPanel { Margin = new Thickness(2) };
         stack.Children.Add(viewport);
         if (_hasFlows)
         {
@@ -275,7 +275,7 @@ public sealed class DiscoveryMapDialog : GameWindow
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 6, 0, 0),
+                Margin = new Thickness(0, 2, 0, 0),
             };
             toggles.Children.Add(Toggle("풍향", () => GameSettings.DiscoveryMapWind,
                                         v => GameSettings.DiscoveryMapWind = v, _windLayer, out _toggleWind));
