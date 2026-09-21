@@ -109,6 +109,9 @@ public sealed class ShipMapHost : HwndHost
     private double _targetX, _targetY;  // 배가 향하는 자리(칸)
     private bool _shipKnown;
 
+    /// <summary>실제 함대가 있을 때만 주인공 배 그림을 그린다.</summary>
+    public bool ShowShip { get; set; } = true;
+
     /// <summary>한 틱의 길이. 게임처럼 틱마다 한 걸음씩 나아간다.</summary>
     private const double TickSeconds = 0.1;
 
@@ -624,7 +627,7 @@ public sealed class ShipMapHost : HwndHost
         if (_follow && _shipKnown) FollowShip(w, h);
         origin = (_centerX - w / 2.0 * _cellsPerPixel, _centerY - h / 2.0 * _cellsPerPixel);
 
-        var rect = _shipKnown && _spriteReady ? SpriteRectAt(_shipX, _shipY, origin)
+        var rect = ShowShip && _shipKnown && _spriteReady ? SpriteRectAt(_shipX, _shipY, origin)
                                              : (0f, 0f, 0f, 0f);
 
         // 덧그림 한 장을 두 가지로 나눠 쓴다. 둘이 같이 뜰 일은 없다 — 상륙하면 닻이 풀린다.
@@ -632,8 +635,8 @@ public sealed class ShipMapHost : HwndHost
         //           배와 같은 자리에 겹치면 게임처럼 배 왼쪽 아래에 걸린다.
         //   뭍에 있을 때  대 둔 배. 어디로 상륙했는지 그 자리에 남는다.
         var overlay = (0f, 0f, 0f, 0f);
-        if (_anchored && !_onLand && _shipKnown && _spriteReady) overlay = rect;
-        else if (_onLand && _moored) overlay = SpriteRectAt(_mooredX, _mooredY, origin);
+        if (ShowShip && _anchored && !_onLand && _shipKnown && _spriteReady) overlay = rect;
+        else if (ShowShip && _onLand && _moored) overlay = SpriteRectAt(_mooredX, _mooredY, origin);
         SyncOverlaySprite();
 
         // 남의 배가 옮겨 앉았으면 다시 그려야 한다. 자리가 그대로면 아무 일도 없다 —

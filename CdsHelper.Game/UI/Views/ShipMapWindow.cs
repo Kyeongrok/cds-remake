@@ -61,6 +61,9 @@ public sealed class ShipMapWindow : Window
         HorizontalAlignment = HorizontalAlignment.Left,
     };
 
+    /// <summary>현재 타이틀 화면용 알림 글자. 지도 하단 띠와 컨트롤을 공유하지 않는다.</summary>
+    private GameUi.GameLabel? _titleNote;
+
     /// <summary>한 판 — 게임 폴더 · 주인공 · 표들 · 소리. 화면들이 이것을 받아 쓴다.</summary>
     private readonly Engine.Game _game = new();
 
@@ -81,8 +84,11 @@ public sealed class ShipMapWindow : Window
     /// <summary>타이틀 쪽 화면. 키를 이 화면에서만 받으려고 들고 있는다.</summary>
     private FrameworkElement? _titleRoot;
 
-    /// <summary>지도 위의 까만 조작 줄. 개발 창에서 끄고 켠다.</summary>
-    private Border? _toolBar;
+    /// <summary>게임 상단 정보 띠. 플레이어 값을 한 번 채운 뒤에만 보인다.</summary>
+    private FrameworkElement? _gameBar;
+
+    /// <summary>상단 정보 띠의 첫 표시를 끝냈는지.</summary>
+    private bool _barReady;
 
     /// <summary>지도를 한 번 띄웠는지. <see cref="ShipMapHost.Start"/> 는 한 번만 부른다.</summary>
     private bool _started;
@@ -291,82 +297,6 @@ public sealed class ShipMapWindow : Window
         Background = Brushes.Black;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-        var steer = new CheckBox
-        {
-            Content = "커서로 몰기",
-            IsChecked = true,
-            Foreground = Brushes.Gainsboro,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(8, 0, 4, 0),
-            ToolTip = "끄면 게임 함대의 실제 자리를 따라갑니다",
-        };
-        steer.Checked += (_, _) => _host.SteerWithMouse = true;
-        steer.Unchecked += (_, _) => _host.SteerWithMouse = false;
-
-        var follow = new CheckBox
-        {
-            Content = "화면 따라가기",
-            IsChecked = true,
-            Foreground = Brushes.Gainsboro,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(8, 0, 4, 0),
-        };
-        follow.Checked += (_, _) => _host.RecenterOnShip();
-        follow.Unchecked += (_, _) => _host.Follow = false;
-
-        var recenter = new Button { Content = "배로", Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(4, 0, 0, 0) };
-        recenter.Click += (_, _) => { follow.IsChecked = true; _host.RecenterOnShip(); };
-
-        var toLisbon = new Button
-        {
-            Content = "리스본",
-            Padding = new Thickness(8, 2, 8, 2),
-            Margin = new Thickness(4, 0, 0, 0),
-            ToolTip = "배를 리스본 앞바다로 되돌립니다",
-        };
-        toLisbon.Click += (_, _) => { follow.IsChecked = true; _host.ResetToLisbon(); };
-
-        // 자동항해가 걸려 있을 때만 나온다 — 손으로 끄는 길은 이 단추뿐이다(마우스로
-        // 조타를 시도해도 풀리지 않는다).
-        var stopAuto = new Button
-        {
-            Content = "자동항해 해제",
-            Padding = new Thickness(8, 2, 8, 2),
-            Margin = new Thickness(4, 0, 0, 0),
-            Visibility = Visibility.Collapsed,
-        };
-        stopAuto.Click += (_, _) => { _host.StopAutoSail(); Say("자동항해를 껐습니다"); };
-        _stopAutoButton = stopAuto;
-
-        // 안내 글은 띠를 지을 때 한 번 박힌다 — 모드에서 배 놓기를 끄면 다음에 여는 판부터 든다.
-        var hint = new TextBlock
-        {
-            Text = "왼쪽 클릭: 정박/닻 올리기"
-                   + (GameSettings.PlaceShipByCtrlClick ? " · Ctrl+클릭: 배 놓기" : "")
-                   + " · Shift+오른쪽 클릭: 자동항해",
-            Foreground = Brushes.Gray,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(10, 0, 0, 0),
-        };
-
-        // 도시 화면이 떠 있는 동안 잠그는 줄. 넷 다 바다에서만 뜻이 있는 조작이다.
-        _seaControls = [steer, follow, recenter, toLisbon, stopAuto];
-
-        var bar = new DockPanel { Background = new SolidColorBrush(Color.FromRgb(0x22, 0x22, 0x22)), LastChildFill = true };
-        bar.Children.Add(steer);
-        DockPanel.SetDock(steer, Dock.Left);
-        bar.Children.Add(follow);
-        DockPanel.SetDock(follow, Dock.Left);
-        bar.Children.Add(recenter);
-        DockPanel.SetDock(recenter, Dock.Left);
-        bar.Children.Add(toLisbon);
-        DockPanel.SetDock(toLisbon, Dock.Left);
-        bar.Children.Add(stopAuto);
-        DockPanel.SetDock(stopAuto, Dock.Left);
-        bar.Children.Add(hint);
-        DockPanel.SetDock(hint, Dock.Left);
-        bar.Children.Add(_status);
-
         // HwndHost 자체는 WPF 에 아무것도 그리지 않아 히트테스트에 안 걸린다.
         // 같은 자리에 투명 Border 를 겹쳐 두고 마우스는 그쪽에서 받는다.
         // (자식 창이 D3D 로 덮으므로 이 Border 는 보이지 않는다 — 입력만 받는다.)
@@ -503,6 +433,8 @@ public sealed class ShipMapWindow : Window
                 BorderThickness = new Thickness(0, 0, 0, 2),
                 Child = gameCells,
             };
+        _gameBar = gameBar;
+        gameBar.Visibility = Visibility.Collapsed;
 
         // 띠를 오른쪽 단추로 누르면 도시정보 창이 뜬다 — 게임처럼 도시 안에서만 낸다.
         gameBar.MouseRightButtonUp += (_, e) =>
@@ -523,16 +455,6 @@ public sealed class ShipMapWindow : Window
         var root = new DockPanel();
         DockPanel.SetDock(gameBar, Dock.Top);
         root.Children.Add(gameBar);
-        // 지도 위의 까만 조작 줄. 놀이에는 없는 것이라 개발 창에서 끄고 켤 수 있다.
-        _toolBar = new Border
-        {
-            Child = bar,
-            Height = 30,
-            Visibility = GameSettings.ShowToolBar ? Visibility.Visible : Visibility.Collapsed,
-        };
-        DockPanel.SetDock(_toolBar, Dock.Top);
-        root.Children.Add(_toolBar);
-
         // 게임은 지도 아래에도 같은 띠를 하나 둔다 — 짧은 알림이 이 자리에 뜬다.
         var footer = TitleBarStrip(null, _note);
         // 띠를 누르면 마지막 알림을 상자로 다시 편다(0x0040DE30).
@@ -644,9 +566,9 @@ public sealed class ShipMapWindow : Window
         _statusTimer = new DispatcherTimerLite(TimeSpan.FromMilliseconds(100), () =>
         {
             SyncMouse();
+            _host.ShowShip = _game.Player.Ships.Count > 0;
             _status.Text = _focusNote.Length > 0 ? $"{_host.Status}    {_focusNote}"
                                                  : _host.Status;
-            _stopAutoButton.Visibility = _host.AutoSailing ? Visibility.Visible : Visibility.Collapsed;
             // 한 틱의 차례는 원본 고리 그대로다(0x0048EF18~0x0048EF7D) —
             // 조우 → 극지 → 발견 → 도시 발견·입항 물음 → 이동·날 눈금.
             // <b>조우가 걸린 틱은 나머지를 통째로 건너뛴다</b>(0x0048EF1D).
@@ -696,6 +618,11 @@ public sealed class ShipMapWindow : Window
             _cityLabel.Text = _game.Player.CityName.Length > 0 ? _game.Player.CityName : NoCity;
             _language.Text = CityLanguage();
             _rate.Text = CityRate();
+            if (!_barReady && _started)
+            {
+                _barReady = true;
+                if (_gameBar != null) _gameBar.Visibility = Visibility.Visible;
+            }
             if (_overlay.IsOpen) FillOverlay(lat, lon);
             if (_vital.IsOpen) FillVital();
             if (_miniWanted) SyncMiniMap();
@@ -893,12 +820,6 @@ public sealed class ShipMapWindow : Window
             : source.CompositionTarget.TransformFromDevice.Transform(device);
     }
 
-    /// <summary>도시 화면이 떠 있는 동안 잠그는 조작 줄 단추들.</summary>
-    private Control[] _seaControls = [];
-
-    /// <summary>자동항해가 걸려 있을 때만 보이는 "자동항해 해제" 단추.</summary>
-    private Button _stopAutoButton = null!;
-
     /// <summary>
     /// 도시 화면을 여닫는다. 들어가 있는 동안은 바다 명령이 전부 막힌다 —
     /// 막는 일 자체는 <see cref="ShipMapHost.SeaBlocked"/> 가 하고, 여기서는 그 김에
@@ -907,7 +828,6 @@ public sealed class ShipMapWindow : Window
     private void SetInCity(bool on)
     {
         _host.InCity = on;
-        foreach (var c in _seaControls) c.IsEnabled = !on;
     }
 
     /// <summary>
@@ -1413,8 +1333,9 @@ public sealed class ShipMapWindow : Window
         _titleFocus = new GameUi.FocusGroup();
         items.Children.Add(TitleMenuItem("NEW GAME", NewGame));
 
-        // 줄은 <b>늘 살아 있다</b>(0x0045F947) — 적어 둔 판이 없으면 로드해 보고 나서 에러를 낸다.
-        items.Children.Add(TitleMenuItem("LOAD GAME", () =>
+        // 적어 둔 판이 있을 때만 고를 수 있다. 빈 새 설치에서는 게임처럼 흐리게 낸다.
+        items.Children.Add(TitleMenuItem("LOAD GAME",
+            System.IO.File.Exists(Engine.GameSave.Path) ? () =>
         {
             // 게임도 제목 띠를 얹는다 — 0x00571A78 "게임 로드" · 0x00571A88 본문.
             if (!ConfirmDialog.Ask(this, "마지막에 저장한 데이터를 로드합니다", "게임 로드")) return;
@@ -1426,7 +1347,7 @@ public sealed class ShipMapWindow : Window
                 return;
             }
             StartMap(fresh: false);
-        }));
+        } : null));
         // CONTINUE — 원본에 없는 줄이다. 입항 자동저장(모드 창)이 적어 둔 파일을 연다.
         // 적어 둔 것이 없으면 <b>줄이 흐리다</b>(눌러도 안 먹는다) — LOAD GAME 과 달리
         // 원본에 없는 줄이라 「없습니다」를 띄울 자리가 아니다.
@@ -1474,7 +1395,17 @@ public sealed class ShipMapWindow : Window
         DockPanel.SetDock(top, Dock.Top);
         screen.Children.Add(top);
 
-        var bottom = TitleBarStrip(null);
+        // 다운로드·오류 같은 시작 알림도 타이틀 화면 아래 띠에 보인다.
+        _titleNote = new GameUi.GameLabel(GameFont.BlackColor)
+        {
+            Margin = new Thickness(12, 0, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Text = _note.Text,
+            Visibility = _note.Visibility,
+        };
+        var bottom = TitleBarStrip(null, _titleNote);
+        bottom.Cursor = System.Windows.Input.Cursors.Hand;
+        bottom.MouseLeftButtonUp += (_, e) => { e.Handled = true; ReadNote(); };
         DockPanel.SetDock(bottom, Dock.Bottom);
         screen.Children.Add(bottom);
 
@@ -2415,6 +2346,9 @@ public sealed class ShipMapWindow : Window
     /// </param>
     private void StartMap(bool fresh, bool auto = false)
     {
+        _barReady = false;
+        if (_gameBar != null) _gameBar.Visibility = Visibility.Collapsed;
+
         // 불러올 것이 없으면 타이틀에 그대로 머문다 — 화면부터 갈아 끼우면 되돌리기 번거롭다.
         GameSave.Data? saved = null;
         if (!fresh)
@@ -2464,6 +2398,7 @@ public sealed class ShipMapWindow : Window
 
         if (fresh)
         {
+            _host.ShowShip = false;
             _host.ResetToLisbon();
         }
         else if (saved != null)
@@ -2676,13 +2611,6 @@ public sealed class ShipMapWindow : Window
         Duel = PlayDuel,
         LandSpar = () => LandSparDialog.Play(this, _game),
         SeaSpar = MockSeaBattle,
-        ToolBarOn = () => GameSettings.ShowToolBar,
-        SetToolBar = on =>
-        {
-            GameSettings.ShowToolBar = on;
-            if (_toolBar != null)
-                _toolBar.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
-        },
         // 게임에는 없는 것이라 해상 커맨드에서 개발 창으로 옮겼다(fb-ui-21). 지도를 Shift+오른쪽 클릭해
         // 바로 찍는 길은 그대로다.
         AutoSail = () =>
@@ -3008,8 +2936,9 @@ public sealed class ShipMapWindow : Window
     {
         // 게임은 글을 넣기 앞서 통을 비운다(0x0040E0D7) — 그래서 통에는 <b>마지막 하나</b>만 남는다.
         if (text.Length > 0) _lastNote = text;
-        _note.Text = text;
+        SetNoteText(text);
         _note.Visibility = Visibility.Visible;
+        if (_titleNote != null) _titleNote.Visibility = Visibility.Visible;
         _noteTick = 0;
 
         _noteTimer ??= new DispatcherTimerLite(TimeSpan.FromMilliseconds(100), NoteTick);
@@ -3033,6 +2962,12 @@ public sealed class ShipMapWindow : Window
     /// 눌러 보면 나온다. 비우는 것은 띠를 감출 때뿐이다(<c>0x0040E060</c>).
     /// </remarks>
     private string _lastNote = "";
+
+    private void SetNoteText(string text)
+    {
+        _note.Text = text;
+        if (_titleNote != null) _titleNote.Text = text;
+    }
 
     /// <summary>
     /// 띠를 눌러 마지막 알림을 다시 편다(<c>0x0040DE30</c>).
@@ -3058,16 +2993,19 @@ public sealed class ShipMapWindow : Window
         if (_noteTick <= NoteBlinkTicks)
         {
             // 열 틱마다 한 틱을 비운다 — 게임이 그 자리에서 띠를 다시 그리며 깜빡이는 것이다.
-            _note.Visibility = _noteTick % NoteBlinkEvery == 0
+            var visibility = _noteTick % NoteBlinkEvery == 0
                 ? Visibility.Hidden
                 : Visibility.Visible;
+            _note.Visibility = visibility;
+            if (_titleNote != null) _titleNote.Visibility = visibility;
             return;
         }
 
         _note.Visibility = Visibility.Visible;
+        if (_titleNote != null) _titleNote.Visibility = Visibility.Visible;
         if (_noteTick < NoteBlinkTicks + NoteHoldTicks) return;
 
-        _note.Text = "";
+        SetNoteText("");
         _noteTimer?.Stop();
     }
 
@@ -6263,10 +6201,18 @@ public sealed class ShipMapWindow : Window
             if (result == MessageBoxResult.Yes)
             {
                 _status.Text = "BGM 다운로드 중...";
+                Say("BGM 다운로드 중...");
                 var download = await BgmAssetDownloader.DownloadAsync();
                 if (!download.Success)
+                {
+                    Say($"BGM 다운로드 실패: {download.Error}");
                     MessageBox.Show($"BGM 다운로드 실패:\n{download.Error}", "오류",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    Say("BGM 다운로드 완료");
+                }
             }
         }
 
