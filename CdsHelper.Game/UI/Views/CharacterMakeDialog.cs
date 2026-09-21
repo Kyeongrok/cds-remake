@@ -168,12 +168,11 @@ internal sealed class CharacterMakeDialog : GameWindow
 
         _face = player.Face;
 
-        // <b>혈액형과 국적은 처음에 안 골라져 있다</b> — 게임은 신상 칸을 -1 로 깔아 두고
-        // (<c>0x0045CD8E</c> 가 -1 인지 본다) 안 고르면 「입력 에러」로 물린다. 우리 쪽 신상
-        // 값은 0 이 A형·포르투갈이라 새 사람일 때만 -1 로 두고 시작한다.
+        // 새 사람은 A형·포르투갈 왕국을 기본으로 고른다. 기존 주인공을 다시 열 때는 저장된
+        // 값을 그대로 보여 준다.
         bool fresh = player.Family.Length == 0 && player.Given.Length == 0;
-        _blood = fresh ? Unpicked : player.Blood;
-        _nation = fresh ? Unpicked : player.Nation;
+        _blood = fresh ? 0 : player.Blood;
+        _nation = fresh ? 0 : player.Nation;
         _family.Text = player.Family;
         _given.Text = player.Given;
         _age.Text = $"{player.Age}";

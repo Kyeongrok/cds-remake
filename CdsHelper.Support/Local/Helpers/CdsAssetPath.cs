@@ -9,6 +9,9 @@ public static class CdsAssetPath
     private const string ReleaseBase =
         "https://github.com/Kyeongrok/cds-helper/releases/download/map-assets/";
 
+    /// <summary>다운로드한 CDSX 에셋이 저장되는 실행 폴더.</summary>
+    public static string DownloadDirectory => AppDomain.CurrentDomain.BaseDirectory;
+
     /// <summary>게임 폴더의 원본을 우선하고, 없으면 실행 폴더 캐시 또는 릴리즈 에셋을 쓴다.</summary>
     public static string Resolve(string gameDirectory, string cdsName)
     {
@@ -20,7 +23,7 @@ public static class CdsAssetPath
             : string.Equals(Path.GetExtension(cdsName), ".P", StringComparison.OrdinalIgnoreCase)
                 ? Path.GetFileNameWithoutExtension(cdsName).ToUpperInvariant() + ".PX"
                 : Path.GetFileNameWithoutExtension(cdsName).ToUpperInvariant() + ".CDSX";
-        string local = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, assetName);
+        string local = Path.Combine(DownloadDirectory, assetName);
         if (File.Exists(local)) return local;
 
         string temp = local + ".part";

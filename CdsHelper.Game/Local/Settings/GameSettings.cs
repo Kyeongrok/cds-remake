@@ -46,9 +46,6 @@ public sealed class GameSettingsData
     /// <summary>지도 위에 좌표 상자를 겹쳐 보일지.</summary>
     public bool ShowCoordOverlay { get; set; } = true;
 
-    /// <summary>지도 위의 까만 조작 줄을 보일지.</summary>
-    public bool ShowToolBar { get; set; } = true;
-
     /// <summary>저장·발견물 지도 단축키(글쇠 이름). 비면 기본값을 쓴다.</summary>
     public string SaveKey { get; set; } = "V";
     public string MapKey { get; set; } = "D";
@@ -228,7 +225,6 @@ public static class GameSettings
             any |= Bool("SfxEnabled", v => moved.SfxEnabled = v);
             any |= Bool("ShowCoordOverlay", v => moved.ShowCoordOverlay = v);
             any |= Bool("ShowPeopleOverlay", v => moved.ShowPeopleOverlay = v);
-            any |= Bool("ShowToolBar", v => moved.ShowToolBar = v);
             any |= Bool("ShowFlowArrows", v => moved.ShowFlowArrows = v);
 
             if (root.TryGetProperty("BandPad", out var pad) && pad.TryGetInt32(out int padValue))
@@ -583,13 +579,6 @@ public static class GameSettings
     {
         get => Get(d => d.AutoSaveOnPort);
         set => Set(d => d.AutoSaveOnPort = value);
-    }
-
-    /// <summary>지도 위의 까만 조작 줄을 보일지. 개발 창에서 켜고 끈다.</summary>
-    public static bool ShowToolBar
-    {
-        get => Get(d => d.ShowToolBar);
-        set => Set(d => d.ShowToolBar = value);
     }
 
     /// <summary>게임 상단 띠에 켜 둔 칸 이름들. 도시정보 창에서 켜고 끈다.</summary>

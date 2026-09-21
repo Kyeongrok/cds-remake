@@ -13,6 +13,10 @@ public static class BgmAssetDownloader
     public static string CachePath(int track) =>
         Path.Combine(AppContext.BaseDirectory, "bgm", $"Track{track:D2}.mp3");
 
+    /// <summary>다운로드한 BGM 파일이 저장되는 폴더.</summary>
+    public static string CacheDirectory =>
+        Path.Combine(AppContext.BaseDirectory, "bgm");
+
     public static async Task<(bool Success, string Error)> DownloadAsync(
         CancellationToken cancellationToken = default)
     {

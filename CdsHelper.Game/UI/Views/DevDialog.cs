@@ -1,9 +1,12 @@
-﻿using System.Windows;
+using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using CdsHelper.Support.Local.Models;
 using CdsHelper.Support.Local.Settings;
+using CdsHelper.Support.Local.Helpers;
+using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
@@ -37,10 +40,6 @@ public sealed class DevDialog : GameWindow
         /// <summary>좌표 겹쳐 보기.</summary>
         public Func<bool> CoordsOn { get; init; } = () => false;
         public Action<bool> SetCoords { get; init; } = _ => { };
-
-        /// <summary>지도 위의 까만 조작 줄(체크상자·안내 글).</summary>
-        public Func<bool> ToolBarOn { get; init; } = () => false;
-        public Action<bool> SetToolBar { get; init; } = _ => { };
 
         /// <summary>자동항해 — 목적지 도시를 골라 손을 놓고 몬다. 개발 창을 닫은 뒤 부른다.</summary>
         public Action? AutoSail { get; init; }
@@ -151,6 +150,61 @@ public sealed class DevDialog : GameWindow
             rows.Children.Add(line);
         }
 
+        // 게임 폴더에 원본 CDS가 없을 때 내려받는 CDSX 에셋은 실행 폴더에 둔다.
+        var cdsxLine = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(0, 4, 0, 4),
+        };
+        cdsxLine.Children.Add(new TextBlock
+        {
+            Text = "CDSX",
+            Width = 64,
+            Foreground = GameUi.Text,
+            FontWeight = FontWeights.Bold,
+            FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        cdsxLine.Children.Add(new TextBlock
+        {
+            Text = CdsAssetPath.DownloadDirectory,
+            Width = 420,
+            Foreground = GameUi.Text,
+            FontSize = 13,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            ToolTip = CdsAssetPath.DownloadDirectory,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        cdsxLine.Children.Add(GameUi.PushButton("폴더 열기", OpenCdsxDirectory, 120));
+        rows.Children.Add(cdsxLine);
+
+        var bgmLine = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(0, 4, 0, 4),
+        };
+        bgmLine.Children.Add(new TextBlock
+        {
+            Text = "BGM",
+            Width = 64,
+            Foreground = GameUi.Text,
+            FontWeight = FontWeights.Bold,
+            FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        bgmLine.Children.Add(new TextBlock
+        {
+            Text = BgmAssetDownloader.CacheDirectory,
+            Width = 420,
+            Foreground = GameUi.Text,
+            FontSize = 13,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            ToolTip = BgmAssetDownloader.CacheDirectory,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        bgmLine.Children.Add(GameUi.PushButton("폴더 열기", OpenBgmDirectory, 120));
+        rows.Children.Add(bgmLine);
+
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
@@ -178,6 +232,41 @@ public sealed class DevDialog : GameWindow
 
         Sync();
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+    }
+
+    /// <summary>다운로드한 CDSX 에셋이 있는 실행 폴더를 탐색기로 연다.</summary>
+    private void OpenCdsxDirectory()
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                CdsAssetPath.DownloadDirectory)
+            {
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex)
+        {
+            NoticeDialog.Show(this, $"CDSX 폴더를 열지 못했습니다 — {ex.Message}");
+        }
+    }
+
+    /// <summary>다운로드한 BGM 파일이 있는 폴더를 탐색기로 연다.</summary>
+    private void OpenBgmDirectory()
+    {
+        try
+        {
+            Directory.CreateDirectory(BgmAssetDownloader.CacheDirectory);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                BgmAssetDownloader.CacheDirectory)
+            {
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex)
+        {
+            NoticeDialog.Show(this, $"BGM 폴더를 열지 못했습니다 — {ex.Message}");
+        }
     }
 
     /// <summary>
