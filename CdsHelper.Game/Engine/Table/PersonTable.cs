@@ -10,7 +10,7 @@
 /// 그래서 한 번만 구워 두고 그 뒤로는 <b>세이브를 보지 않는다</b>.
 ///
 /// <code>
-///   %APPDATA%\CdsHelper\exe-tables\인물표.json   사람이 고친 것   ← 있으면 이것
+///   %APPDATA%\CdsHelper\exe-tables\인물표-고친것.json  사람이 고친 것 ← 있으면 이것
 ///   실행 파일 옆 인물표.json                      같이 깔린 본     ← 이것이 유일한 기본 표
 ///   세이브(SAVEDATA.CDS)                          씨앗            ← 기본 표가 없을 때만
 ///   아무것도 없다                                 빈 표 — 술집에는 지나가는 사람만 선다
@@ -27,8 +27,11 @@
 /// </remarks>
 public sealed class PersonTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\인물표.json</c>).</summary>
-    private const string CacheName = "인물표";
+    /// <summary>사람이 고친 표의 파일 이름.</summary>
+    private const string CacheName = "인물표-고친것";
+
+    /// <summary>파일 이름을 바꾸기 전 버전의 편집 캐시 이름.</summary>
+    private const string LegacyCacheName = "인물표";
 
     /// <summary>알맹이 모양 판. 칸을 더하면 올린다 — 옛 파일은 버리고 다시 굽는다.</summary>
     private const int Shape = 2;
@@ -227,10 +230,19 @@ public sealed class PersonTable
 
         // ① 사람이 고친 것
         var saved = TableCache.Read<Snapshot>(CacheName);
+        if (saved == null)
+        {
+            var legacy = TableCache.Read<Snapshot>(LegacyCacheName);
+            if (legacy is { Version: Shape } && legacy.Data.People.Count > 0)
+            {
+                saved = legacy;
+                MigrateLegacyCache(legacy);
+            }
+        }
         if (saved is { Version: Shape } && saved.Data.People.Count > 0)
         {
             Edited = true;
-            Source = saved.Source.Length > 0 ? saved.Source : "고친 것";
+            Source = saved.Source.Length > 0 ? saved.Source : CacheName + ".json";
             return new PersonTable(WithFees(Fix(saved.Data.People)), saved.Data.Year);
         }
         Edited = false;
@@ -289,6 +301,21 @@ public sealed class PersonTable
     }
 
     private static List<Row> Fix(List<Row> rows) => rows.Select(r => r.Fixed()).ToList();
+
+    private static void MigrateLegacyCache(TableCache.Cached<Snapshot> saved)
+    {
+        TableCache.Write(CacheName, saved with { Source = CacheName + ".json" });
+        try
+        {
+            string migrated = TableCache.PathFor(CacheName);
+            if (System.IO.File.Exists(migrated))
+                System.IO.File.Delete(TableCache.PathFor(LegacyCacheName));
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PersonTable] 이전 편집 캐시를 지우지 못했습니다: {ex.Message}");
+        }
+    }
 
     /// <summary>세이브가 제독 자리로 쓴 줄에 남는 채움 나이. 그 줄은 나이·등급·명성이 모두 끝값이다.</summary>
     private const int FillerAge = 255;
