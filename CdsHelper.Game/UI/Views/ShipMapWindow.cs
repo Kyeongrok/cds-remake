@@ -1106,6 +1106,7 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void SyncMiniMap()
     {
+        _mini.SetOpacity(GameSettings.MiniMapOpacity);
         bool calm = !_asking && !_host.Paused
                     && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible);
         var now = DateTime.UtcNow;
@@ -2572,6 +2573,12 @@ public sealed class ShipMapWindow : Window
             _miniWanted = on;
             GameSettings.ShowMiniMap = on;   // 다음에 켤 때도 그대로
             SyncOverlay();
+        },
+        MiniMapOpacity = () => GameSettings.MiniMapOpacity,
+        SetMiniMapOpacity = opacity =>
+        {
+            GameSettings.MiniMapOpacity = opacity;
+            _mini.SetOpacity(opacity);
         },
         ConditionOn = () => _vitalWanted,
         SetCondition = on =>

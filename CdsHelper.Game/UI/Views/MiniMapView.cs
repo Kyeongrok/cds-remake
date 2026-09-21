@@ -61,6 +61,9 @@ internal sealed class MiniMapView : Border
         Child = new Canvas { Children = { _world } };
     }
 
+    /// <summary>미니맵의 불투명도를 바꾼다.</summary>
+    public void SetOpacity(double opacity) => Opacity = Math.Clamp(opacity, 0.1, 1.0);
+
     /// <summary>바탕 지도가 섰는지. 안 섰으면 <see cref="SetChart"/> 부터.</summary>
     public bool HasChart { get; private set; }
 

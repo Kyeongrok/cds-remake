@@ -28,6 +28,8 @@ public sealed class ModDialog : GameWindow
         /// <summary>미니맵 — 발견물 지도를 작게 잘라 배를 따라간다.</summary>
         public Func<bool> MiniMapOn { get; init; } = () => false;
         public Action<bool> SetMiniMap { get; init; } = _ => { };
+        public Func<double> MiniMapOpacity { get; init; } = () => 0.75;
+        public Action<double> SetMiniMapOpacity { get; init; } = _ => { };
 
         /// <summary>바람·해류 화살표 — 원본에 없는 덧그림이다.</summary>
         public Func<bool> ArrowsOn { get; init; } = () => false;
@@ -78,9 +80,7 @@ public sealed class ModDialog : GameWindow
             "제독 컨디션(HP, 0~2000)을 지도 왼쪽 아래에 띄웁니다. 300·100 아래면 부관이 쉬라고 하고, 0 이면 쓰러집니다."));
 
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
-        rows.Children.Add(Toggle("미니맵", options.MiniMapOn(), options.SetMiniMap,
-            "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다"
-            + " (빨강 찾음 · 회색 아직 · 파랑 내 자리)."));
+        rows.Children.Add(MiniMapControls(options));
 
         // 바람·해류 화살표 — 원본은 물결로만 흐름을 보인다. 개발 창에 있던 것을 여기로 옮겼다.
         rows.Children.Add(Toggle("바람·해류 화살표", options.ArrowsOn(), options.SetArrows,
@@ -236,6 +236,58 @@ public sealed class ModDialog : GameWindow
         box.Unchecked += (_, _) => set(false);
         Watch(box, label, tip);
         return box;
+    }
+
+    private UIElement MiniMapControls(Options options)
+    {
+        var box = Toggle("미니맵", options.MiniMapOn(), options.SetMiniMap,
+            "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다"
+            + " (빨강 찾음 · 회색 아직 · 파랑 내 자리).");
+
+        var value = new TextBlock
+        {
+            Width = 48,
+            Foreground = GameUi.Text,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        var slider = new Slider
+        {
+            Minimum = 0.1,
+            Maximum = 1.0,
+            TickFrequency = 0.1,
+            IsSnapToTickEnabled = true,
+            Width = 150,
+            Margin = new Thickness(18, 0, 0, 0),
+            IsEnabled = box.IsChecked == true,
+            Value = Math.Clamp(options.MiniMapOpacity(), 0.1, 1.0),
+        };
+        void ShowValue() => value.Text = $"{slider.Value:P0}";
+        slider.ValueChanged += (_, _) =>
+        {
+            ShowValue();
+            options.SetMiniMapOpacity(slider.Value);
+        };
+        box.Checked += (_, _) => slider.IsEnabled = true;
+        box.Unchecked += (_, _) => slider.IsEnabled = false;
+        ShowValue();
+
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 2) };
+        line.Children.Add(new TextBlock
+        {
+            Text = "투명도",
+            Width = 64,
+            Foreground = GameUi.Text,
+            Margin = new Thickness(18, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        line.Children.Add(slider);
+        line.Children.Add(value);
+        Watch(line, "미니맵 투명도", "미니맵을 켠 상태에서 투명도를 조절합니다. 체크를 끄면 조절할 수 없습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(line);
+        return group;
     }
 
     /// <summary>고르는 줄 하나 — 이름과 펼침 상자. 고르면 곧바로 설정에 남긴다.</summary>

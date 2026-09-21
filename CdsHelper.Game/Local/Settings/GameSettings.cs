@@ -59,6 +59,9 @@ public sealed class GameSettingsData
     /// <summary>항해·뭍 이동 중에 지도 오른쪽 아래에 미니맵을 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowMiniMap { get; set; }
 
+    /// <summary>미니맵의 불투명도(0.1~1.0). 모드에서 미니맵을 켰을 때만 조절한다.</summary>
+    public double MiniMapOpacity { get; set; } = 0.75;
+
     /// <summary>
     /// 풀린 미니게임 번호(0~6). 원본은 레지스트리 <c>MG00</c>~<c>MG06</c> 이라 세이브가 아니라 설치에 딸린다.
     /// </summary>
@@ -541,6 +544,12 @@ public static class GameSettings
     {
         get => Get(d => d.ShowMiniMap);
         set => Set(d => d.ShowMiniMap = value);
+    }
+
+    public static double MiniMapOpacity
+    {
+        get => Math.Clamp(Get(d => d.MiniMapOpacity), 0.1, 1.0);
+        set => Set(d => d.MiniMapOpacity = Math.Clamp(value, 0.1, 1.0));
     }
 
     /// <summary>
