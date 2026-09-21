@@ -92,7 +92,7 @@ public sealed class HintListDialog : GameWindow
     private HintListDialog(IReadOnlyList<string> hints, bool choosing, string caption,
                            string header = "", IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null, IReadOnlyList<bool>? marks = null,
-                           bool multi = false)
+                           bool multi = false, IReadOnlyList<string>? rightTexts = null)
     {
         _marks = marks;
         _multi = multi;
@@ -103,7 +103,10 @@ public sealed class HintListDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
-        var list = new StackPanel();
+        var list = new StackPanel
+        {
+            Width = faces == null ? ListWidth : ListWidth + FaceWidth + FaceGap,
+        };
 
         // 머리글 — 고를 수 없는 줄 하나를 맨 위에 둔다(조선소 개조 목록이 쓴다).
         if (header.Length > 0)
@@ -162,6 +165,31 @@ public sealed class HintListDialog : GameWindow
                     Orientation = Orientation.Horizontal,
                     Children = { Face(i < faces.Count ? faces[i] : null), text },
                 };
+            if (rightTexts != null)
+            {
+                var rowContent = new Grid();
+                rowContent.ColumnDefinitions.Add(new ColumnDefinition());
+                rowContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                Grid.SetColumn(content, 0);
+                rowContent.Children.Add(content);
+
+                if (i < rightTexts.Count && rightTexts[i].Length > 0)
+                {
+                    var right = new GameUi.GameLabel(GameFont.BlackColor, GameUi.ItemTextHeight)
+                    {
+                        Text = rightTexts[i],
+                        Bold = false,
+                        FallbackBrush = Brushes.Black,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(8, 0, 0, 0),
+                    };
+                    Grid.SetColumn(right, 1);
+                    rowContent.Children.Add(right);
+                }
+
+                content = rowContent;
+            }
 
             var row = new Border
             {
@@ -367,7 +395,8 @@ public sealed class HintListDialog : GameWindow
                            string header = "",
                            IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null,
-                           IReadOnlyList<bool>? marks = null)
+                           IReadOnlyList<bool>? marks = null,
+                           IReadOnlyList<string>? rightTexts = null)
     {
         if (items.Count == 0)
         {
@@ -375,7 +404,8 @@ public sealed class HintListDialog : GameWindow
             return -1;
         }
 
-        var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks) { Owner = owner };
+        var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
+                                     rightTexts: rightTexts) { Owner = owner };
         dlg.ShowDialog();
         return dlg._picked;
     }
