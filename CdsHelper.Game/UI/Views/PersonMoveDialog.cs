@@ -52,13 +52,12 @@ public sealed class PersonMoveDialog : GameWindow
     /// <summary>상태 거르개. 기본은 「나오지 않음」만 끈다.</summary>
     private readonly CheckBox[] _states = new CheckBox[StateNames.Length];
 
-    private readonly DataGrid _grid = new()
+    private readonly ListBox _grid = new()
     {
-        AutoGenerateColumns = false,
-        IsReadOnly = true,
-        HeadersVisibility = DataGridHeadersVisibility.Column,
-        AlternatingRowBackground = Brushes.WhiteSmoke,
-        SelectionMode = DataGridSelectionMode.Single,
+        SelectionMode = SelectionMode.Single,
+        BorderThickness = new Thickness(0),
+        Background = Brushes.Transparent,
+        HorizontalContentAlignment = HorizontalAlignment.Stretch,
     };
 
     private sealed class FaceImageConverter(Portraits? faces) : IValueConverter
@@ -95,6 +94,8 @@ public sealed class PersonMoveDialog : GameWindow
         TextWrapping = TextWrapping.Wrap,
     };
 
+    private readonly ScrollViewer _detailScroll;
+
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 6, 10, 8) };
 
     /// <summary>표 한 줄.</summary>
@@ -111,15 +112,7 @@ public sealed class PersonMoveDialog : GameWindow
         Height = 640;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-        PortraitColumn();
-        Col("번호", nameof(Row.Id), 50);
-        Col("이름", nameof(Row.Name), 170);
-        Col("나이", nameof(Row.Age), 45);
-        Col("지금", nameof(Row.Now), 110);
-        Col("가는 곳", nameof(Row.To), 110);
-        Col("남은 날", nameof(Row.Left), 60);
-        Col("상태", nameof(Row.State), 170);
-        Col("갈래", nameof(Row.Kind), 60);
+        ConfigureCards();
 
         foreach (var name in Views) _view.Items.Add(name);
         _view.SelectedIndex = ViewAll;
@@ -187,17 +180,21 @@ public sealed class PersonMoveDialog : GameWindow
 
         var top = new StackPanel { Children = { bar, stateBar } };
 
-        var side = new ScrollViewer
+        _detailScroll = new ScrollViewer
         {
             Width = 280,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             Content = _detail,
+            Visibility = Visibility.Collapsed,
         };
 
-        var split = new DockPanel();
-        DockPanel.SetDock(side, Dock.Right);
-        split.Children.Add(side);
+        var split = new Grid();
+        split.ColumnDefinitions.Add(new ColumnDefinition());
+        split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(280) });
+        Grid.SetColumn(_grid, 0);
+        Grid.SetColumn(_detailScroll, 1);
         split.Children.Add(_grid);
+        split.Children.Add(_detailScroll);
 
         var page = new DockPanel();
         DockPanel.SetDock(top, Dock.Top);
@@ -224,32 +221,61 @@ public sealed class PersonMoveDialog : GameWindow
         new PersonMoveDialog(game, world) { Owner = owner }.ShowDialog();
     }
 
-    private void Col(string header, string path, double width) => _grid.Columns.Add(
-        new DataGridTextColumn
-        {
-            Header = header,
-            Binding = new System.Windows.Data.Binding(path),
-            Width = new DataGridLength(width),
-        });
-
-    private void PortraitColumn()
+    private void ConfigureCards()
     {
+        var panel = new FrameworkElementFactory(typeof(WrapPanel));
+        panel.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+        _grid.ItemsPanel = new ItemsPanelTemplate(panel);
+
+        var card = new FrameworkElementFactory(typeof(Border));
+        card.SetValue(FrameworkElement.WidthProperty, 290d);
+        card.SetValue(FrameworkElement.HeightProperty, 112d);
+        card.SetValue(FrameworkElement.MarginProperty, new Thickness(5));
+        card.SetValue(Border.BorderBrushProperty, Brushes.Silver);
+        card.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+        card.SetValue(Border.BackgroundProperty, Brushes.White);
+        card.SetValue(Border.PaddingProperty, new Thickness(6));
+
+        var body = new FrameworkElementFactory(typeof(StackPanel));
+        body.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+
         var image = new FrameworkElementFactory(typeof(Image));
         image.SetBinding(Image.SourceProperty,
                          new Binding($"{nameof(Row.Source)}.{nameof(PersonTable.Row.Face)}")
                          { Converter = new FaceImageConverter(_game.Faces) });
-        image.SetValue(FrameworkElement.WidthProperty, 40d);
-        image.SetValue(FrameworkElement.HeightProperty, 48d);
+        image.SetValue(FrameworkElement.WidthProperty, 72d);
+        image.SetValue(FrameworkElement.HeightProperty, 86d);
         image.SetValue(Image.StretchProperty, Stretch.Fill);
         image.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
+        body.AppendChild(image);
 
-        _grid.Columns.Add(new DataGridTemplateColumn
+        var text = new FrameworkElementFactory(typeof(StackPanel));
+        text.SetValue(FrameworkElement.MarginProperty, new Thickness(8, 0, 0, 0));
+        AddCardText(text, nameof(Row.Name), fontSize: 17, bold: true);
+        AddCardText(text, nameof(Row.Id), "번호 {0}");
+        AddCardText(text, nameof(Row.Age), "나이 {0}세");
+        AddCardText(text, nameof(Row.Now), "현재: {0}");
+        AddCardText(text, nameof(Row.To), "목적지: {0}");
+        AddCardText(text, nameof(Row.State), fontSize: 12);
+        body.AppendChild(text);
+        card.AppendChild(body);
+
+        _grid.ItemTemplate = new DataTemplate { VisualTree = card };
+    }
+
+    private static void AddCardText(FrameworkElementFactory parent, string path,
+                                    string? format = null, double fontSize = 13, bool bold = false)
+    {
+        var label = new FrameworkElementFactory(typeof(TextBlock));
+        label.SetBinding(TextBlock.TextProperty, new Binding(path)
         {
-            Header = "초상화",
-            CellTemplate = new DataTemplate { VisualTree = image },
-            Width = new DataGridLength(52),
-            IsReadOnly = true,
+            StringFormat = format,
         });
+        label.SetValue(TextBlock.FontSizeProperty, fontSize);
+        label.SetValue(TextBlock.FontWeightProperty, bold ? FontWeights.Bold : FontWeights.Normal);
+        label.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 0, 2));
+        label.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+        parent.AppendChild(label);
     }
 
     private string CityOf(int city) => city >= 0 ? _game.CityName(city) : "—";
@@ -346,10 +372,11 @@ public sealed class PersonMoveDialog : GameWindow
     {
         if (_grid.SelectedItem is not Row row)
         {
-            _detail.Text = "사람을 고르면 어디로 갈 수 있는지 보입니다.";
+            _detailScroll.Visibility = Visibility.Collapsed;
             return;
         }
 
+        _detailScroll.Visibility = Visibility.Visible;
         var person = row.Source;
         var lines = new List<string> { $"{person.Name} (#{person.Id})", "" };
 
