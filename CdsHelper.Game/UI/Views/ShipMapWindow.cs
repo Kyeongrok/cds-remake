@@ -2676,9 +2676,9 @@ public sealed class ShipMapWindow : Window
             //  항해일지·기능뿐이다).
             // 대 둔 배 곁(세 칸 안)이어야 선다(0x0048B397) — 상륙 지점을 둘레 3x3에서
             // 고르는 우리 지도 좌표와 맞춘다. 아무 물가에서나 타지는 못한다.
-            // 함대가 도시 항구에 들어가 있으면(0x005B6388 — 바다로 들어와 성문으로 탐험 나선 길) 줄이 없다 —
-            // 그 도시로 걸어 돌아가야 배에 오른다.
-            if (_host.IsNearMoor(3) && _game.Player.FleetCity < 0)
+            // 육상 이동 중에는 함대가 원래 출항한 도시 번호를 계속 들고 있어도
+            // 대 둔 배 곁이면 바로 탈 수 있다. 실제 가능 여부는 _moored 거리로 가른다.
+            if (_host.IsNearMoor(3))
                 // 뭍에서 배로 옮겨 타는 줄은 「승선」이다(0x0056F9A8, 0x0048B3ED) — 「출항」은 항구 것이다.
                 items.Add(("승선", () => { if (_host.Embark()) _game.Bgm.Play(BgmPlayer.SeaTrack); Close(); }));
         }
