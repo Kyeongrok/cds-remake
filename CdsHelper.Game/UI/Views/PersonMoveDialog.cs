@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using CdsHelper.Game.Engine;
 using CdsHelper.Game.Local.Helpers;
 
@@ -59,6 +61,34 @@ public sealed class PersonMoveDialog : GameWindow
         SelectionMode = DataGridSelectionMode.Single,
     };
 
+    private sealed class FaceImageConverter(Portraits? faces) : IValueConverter
+    {
+        private readonly Dictionary<int, BitmapSource?> _cache = [];
+
+        public object? Convert(object? value, Type targetType, object? parameter,
+                               System.Globalization.CultureInfo culture)
+        {
+            if (value is not int face) return null;
+            if (_cache.TryGetValue(face, out var image)) return image;
+
+            if (faces?.TryGetBgra(face, female: false) is not { } pixels)
+            {
+                _cache[face] = null;
+                return null;
+            }
+
+            image = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
+                                        PixelFormats.Bgra32, null, pixels, Portraits.Width * 4);
+            image.Freeze();
+            _cache[face] = image;
+            return image;
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter,
+                                  System.Globalization.CultureInfo culture) =>
+            Binding.DoNothing;
+    }
+
     private readonly TextBlock _detail = new()
     {
         Margin = new Thickness(10),
@@ -81,6 +111,7 @@ public sealed class PersonMoveDialog : GameWindow
         Height = 640;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
+        PortraitColumn();
         Col("번호", nameof(Row.Id), 50);
         Col("이름", nameof(Row.Name), 170);
         Col("나이", nameof(Row.Age), 45);
@@ -200,6 +231,26 @@ public sealed class PersonMoveDialog : GameWindow
             Binding = new System.Windows.Data.Binding(path),
             Width = new DataGridLength(width),
         });
+
+    private void PortraitColumn()
+    {
+        var image = new FrameworkElementFactory(typeof(Image));
+        image.SetBinding(Image.SourceProperty,
+                         new Binding($"{nameof(Row.Source)}.{nameof(PersonTable.Row.Face)}")
+                         { Converter = new FaceImageConverter(_game.Faces) });
+        image.SetValue(FrameworkElement.WidthProperty, 40d);
+        image.SetValue(FrameworkElement.HeightProperty, 48d);
+        image.SetValue(Image.StretchProperty, Stretch.Fill);
+        image.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
+
+        _grid.Columns.Add(new DataGridTemplateColumn
+        {
+            Header = "초상화",
+            CellTemplate = new DataTemplate { VisualTree = image },
+            Width = new DataGridLength(52),
+            IsReadOnly = true,
+        });
+    }
 
     private string CityOf(int city) => city >= 0 ? _game.CityName(city) : "—";
 
