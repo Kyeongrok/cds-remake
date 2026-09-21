@@ -3018,7 +3018,9 @@ public sealed class ShipMapWindow : Window
 
         while (true)
         {
-            int at = HintListDialog.Pick(this, [.. ids.Select(id => GameInfo.HintLabel(_game, id))]);
+            int at = HintListDialog.Pick(this, [.. ids.Select(id => _game.HintName(id))],
+                                         rightTexts: [.. ids.Select(id => _game.Hints?.Find(id) is { } hint
+                                             ? _game.Hints.CategoryOf(hint.Category) : "")]);
             if (at < 0 || at >= ids.Count) return;
             if (_game.Hints?.Find(ids[at]) is not { } hint) return;
 
@@ -6034,6 +6036,10 @@ public sealed class ShipMapWindow : Window
     {
         // 그림도 건물 표도 Game 이 처음 쓸 때 연다. 둘 중 하나라도 없으면 도시 화면을 안 연다.
         if (_game.CityPics == null || _game.Buildings == null) return false;
+
+        // 새 판의 모항·도시에서 재개하는 길은 EnterCity 를 거치지 않는다.
+        // 이때도 항해가 끝난 것이므로 해상재해를 풀고 부관의 회복 말을 낸다.
+        if (enterHome || resumed) EndVoyage();
 
         // 도는 곡은 문화권마다 다르다 — 세우타 같은 중근동 도시는 딴 곡이다.
         // 문화권은 건물에 들어갈 때 뜨는 타원 사진을 고르는 데도 쓴다(BuildingPhoto).
