@@ -107,6 +107,12 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.PlaceShipByCtrlClick = on,
             "Ctrl 을 짚고 지도를 찍으면 배를 그 자리에 놓습니다. 끄면 여느 클릭처럼 닻만 오르내립니다."));
 
+        // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 등록은 햄버거의 「BGM」 창에서 한다.
+        rows.Children.Add(Toggle("커스텀 BGM", GameSettings.CustomBgmEnabled,
+            on => GameSettings.CustomBgmEnabled = on,
+            "원본에 없는 기능입니다 — 햄버거의 「BGM」 창에서 곡 번호마다 등록해 둔 파일이 있으면"
+            + " 그걸로 갈아 낍니다. 꺼도 등록은 그대로 남고, 다시 켜면 그대로 씁니다."));
+
         // 계약 힌트 — 기능·언어 쪽지 위에 현재 계약의 힌트 이름을 띄운다.
         rows.Children.Add(Toggle("현재 계약 힌트", GameSettings.ShowContractHintOverlay,
             on => GameSettings.ShowContractHintOverlay = on,

@@ -499,6 +499,8 @@ public sealed class ShipMapWindow : Window
             // 「도구 앱」은 개발 창으로 옮겼다 — 표를 손보는 길이라 개발 쪽이 맞다.
             // 원본에 없는 편의 기능(컨디션·미니맵·바람 화살표·기능·언어·출입 일수)은 모드 창에 모아 두었다.
             ("모드", ShowModDialog),
+            // 곡 번호마다 파일을 갈아 끼운다 — 쓸지 말지는 모드 창의 「커스텀 BGM」 스위치가 정한다.
+            ("BGM", () => CustomBgmDialog.Show(this)),
             ("개발", ShowDevDialog));
         DockPanel.SetDock(titleBar, Dock.Top);
         shell.Children.Add(titleBar);

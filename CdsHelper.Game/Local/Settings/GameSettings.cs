@@ -119,6 +119,15 @@ public sealed class GameSettingsData
 
     /// <summary>육상전 모의전 창이 지난번에 차렸던 짜임. 한 번도 안 차렸으면 null.</summary>
     public LandSparData? LandSpar { get; set; }
+
+    /// <summary>
+    /// 곡 번호별로 갈아 끼운 파일(전체 경로). 비어 있으면 아무것도 안 바꾼 것이다.
+    /// 원본에 없는 것이라 <see cref="CustomBgmEnabled"/> 가 꺼져 있으면 등록해 두어도 안 쓴다.
+    /// </summary>
+    public Dictionary<int, string> CustomBgmTracks { get; set; } = new();
+
+    /// <summary>등록한 곡 갈아 끼우기를 쓸지 — 모드 창에서 켜고 끈다.</summary>
+    public bool CustomBgmEnabled { get; set; }
 }
 
 /// <summary>
@@ -637,6 +646,29 @@ public static class GameSettings
         get => Get(d => d.AutoSaveOnPort);
         set => Set(d => d.AutoSaveOnPort = value);
     }
+
+    /// <summary>
+    /// 등록한 곡 갈아 끼우기를 쓸지 — 모드 창에서 켜고 끈다. 꺼도 등록은 그대로 남는다.
+    /// </summary>
+    public static bool CustomBgmEnabled
+    {
+        get => Get(d => d.CustomBgmEnabled);
+        set => Set(d => d.CustomBgmEnabled = value);
+    }
+
+    /// <summary>지금 갈아 끼워 둔 곡 번호와 파일 — BGM 창이 목록을 그릴 때 쓴다.</summary>
+    public static IReadOnlyDictionary<int, string> CustomBgmTracks => Get(d => d.CustomBgmTracks);
+
+    /// <summary>그 곡 번호에 갈아 끼운 파일. 없으면 null.</summary>
+    public static string? CustomBgmTrackPath(int track) =>
+        Get(d => d.CustomBgmTracks.TryGetValue(track, out var path) ? path : null);
+
+    /// <summary>그 곡 번호에 파일을 갈아 끼운다. <paramref name="path"/> 가 null 이면 등록을 지운다.</summary>
+    public static void SetCustomBgmTrack(int track, string? path) => Set(d =>
+    {
+        if (string.IsNullOrEmpty(path)) d.CustomBgmTracks.Remove(track);
+        else d.CustomBgmTracks[track] = path;
+    });
 
     /// <summary>게임 상단 띠에 켜 둔 칸 이름들. 도시정보 창에서 켜고 끈다.</summary>
     public static IReadOnlyList<string>? BarCells

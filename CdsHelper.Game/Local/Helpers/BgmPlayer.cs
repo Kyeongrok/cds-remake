@@ -183,6 +183,38 @@ public sealed class BgmPlayer : IDisposable
     /// </summary>
     public const int SponsorTrack = 21;
 
+    /// <summary>
+    /// 게임에서 실제로 도는 곡 번호를 사람이 읽을 이름과 함께 늘어놓은 것 — BGM 갈아 끼우기
+    /// 창(<see cref="Views.CustomBgmDialog"/>)이 목록을 그릴 때 쓴다. 원본에 없는 자리다.
+    /// </summary>
+    public static readonly (int Track, string Label)[] KnownTracks =
+    [
+        (TitleTrack, "타이틀"),
+        (SeaTrack, "해상 — 유럽 근해(북위 55~30, 서경 65~동경 45)"),
+        (13, "해상 — 그 밖 중위도"),
+        (19, "해상 — 남·북위 55 밖"),
+        (24, "해상 — 동경 21~130 밖"),
+        (25, "해상 — 북위 30 아래(서경 65~동경 30)"),
+        (CityTrack, "도시 — 이베리아"),
+        (9, "도시 — 북유럽"),
+        (5, "도시 — 지중해"),
+        (2, "도시 — 아프리카"),
+        (7, "도시 — 중근동(이슬람)"),
+        (12, "도시 — 인도"),
+        (6, "도시 — 중국"),
+        (27, "도시 — 중앙아시아 · 동남아시아"),
+        (18, "도시 — 일본"),
+        (4, "도시 — 아메리카"),
+        (LandTrack, "뭍 이동"),
+        (BattleTrack, "전투(해전·육상전)"),
+        (GameOverTrack, "게임 오버"),
+        (TavernTrack, "술집"),
+        (DuelTrack, "일기토 · 반란"),
+        (ChurchTrack, "교회"),
+        (PalaceTrack, "왕궁(유럽 문화권)"),
+        (SponsorTrack, "후원자 알현(보고 · 설득 · 계약중단)"),
+    ];
+
     private readonly MediaPlayer _player = new();
     private string _dir = "";
     private int _track = -1;
@@ -275,7 +307,14 @@ public sealed class BgmPlayer : IDisposable
         if (!_enabled) return;
         if (_track == track) return;
 
-        var path = Path.Combine(_dir, "bgm", $"Track{track:D2}.mp3");
+        // 등록해 둔 갈아 끼우기가 있으면 그것을 먼저 본다 — 원본에 없는 기능이라 꺼 두면
+        // 안 본다(모드 창의 "커스텀 BGM"). 파일이 지워졌으면 조용히 원래 곡으로 물러난다.
+        string? custom = Settings.GameSettings.CustomBgmEnabled
+            ? Settings.GameSettings.CustomBgmTrackPath(track)
+            : null;
+        string path = custom != null && File.Exists(custom)
+            ? custom
+            : Path.Combine(_dir, "bgm", $"Track{track:D2}.mp3");
         if (!File.Exists(path))
             path = BgmAssetDownloader.CachePath(track);
         if (!File.Exists(path))
