@@ -8,7 +8,9 @@ using CdsHelper.Form.UI.Views;
 using CdsHelper.Main.Local.ViewModels;
 using CdsHelper.Main.UI.Views;
 using CdsHelper.Support.Local.Helpers;
+using CdsHelper.Support.Local.Settings;
 using CdsHelper.Game.Local.Settings;
+using CdsHelper.Game.Local.Helpers;
 
 namespace cds_helper;
 
@@ -40,6 +42,10 @@ internal class App : PrismApplication
         // 놀이 설정을 앱 설정보다 먼저 읽어 둔다. 옛 settings.json 에서 옮겨 오는 일이
         // 여기서 벌어지는데, 앱 설정이 먼저 저장되면 옛 값이 지워진 뒤라 놓치게 된다.
         GameSettings.Load();
+
+        // BGM 은 놀이 창(ShipMapWindow)을 열어야 받아지는데, 헬퍼는 그 창을 안 거치고도
+        // 오래 쓴다 — 여기서도 조용히 미리 받아 둔다(물음창 없이, 실패해도 그냥 넘어간다).
+        PrefetchBgmAsync();
 
         base.OnStartup(e);
     }
@@ -78,5 +84,23 @@ internal class App : PrismApplication
         containerRegistry.RegisterForNavigation<DiscoveryStillContent>();
         containerRegistry.RegisterForNavigation<AutoPlayContent>();
         containerRegistry.RegisterForNavigation<WorldMapContent>();
+    }
+
+    /// <summary>
+    /// 게임 폴더든 캐시든 BGM 이 이미 있으면 아무 일도 안 한다. 없으면 릴리즈에서 받아 두어,
+    /// 나중에 놀이 창을 열었을 때 "다운로드할까요?" 물음이 안 뜨게 한다.
+    /// </summary>
+    private static async void PrefetchBgmAsync()
+    {
+        try
+        {
+            string dir = Path.GetDirectoryName(AppSettings.LastSaveFilePath) is { Length: > 0 } saved
+                        && Directory.Exists(saved)
+                ? saved
+                : AppDomain.CurrentDomain.BaseDirectory;
+            if (!BgmPlayer.IsAvailable(dir))
+                await BgmAssetDownloader.DownloadAsync();
+        }
+        catch { /* 조용히 넘어간다 — 놀이 창을 열 때 다시 시도된다. */ }
     }
 }
