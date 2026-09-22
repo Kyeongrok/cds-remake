@@ -48,11 +48,12 @@ public static class LandEvents
         (luck * 4 + 4) * 25 + dice.Next(20);
 
     /// <summary>
-    /// 짐승의 소굴에서 당하는 사람 수의 <b>밑값</b>(<c>0x0048DD62</c> — <c>rand(10)+10</c>).
+    /// 짐승의 소굴에서 당하는 사람 수의 <b>밑값</b>(<c>0x0048DD62</c> — <c>rand(10)+10</c>, 선원 수를 넘지 않는다).
     /// </summary>
     /// <remarks>
-    /// 게임은 이 값을 부하 값 하나(<c>0x0048DDB2</c> 의 <c>+0x34</c>)로 다시 깎는데 그 칸이
-    /// 무엇인지 아직 못 짚어 <b>밑값 그대로</b> 쓴다.
+    /// 게임은 이 값을 <c>0x0047CCA0(5, 0, …)</c> 이 고른 사람의 <c>+0x54</c>(기능표 <c>+0x40</c> 의 여섯째 = <b>의학</b>,
+    /// <c>0x0048DDB2</c> 가 능력 블록 <c>+0x20</c> 기준으로 <c>+0x34</c> 를 읽는다)로 다시 깎는다 — 그 셈이
+    /// <see cref="Returned"/> 다. 예전에는 그 칸을 못 짚어 「밑값 그대로」라고 적어 두었었다.
     /// </remarks>
     public static int DenLoss(GameRandom dice) => dice.Next(10) + 10;
 
