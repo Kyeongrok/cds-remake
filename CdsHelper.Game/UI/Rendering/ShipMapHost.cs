@@ -2525,6 +2525,22 @@ public sealed class ShipMapHost : HwndHost
         Status = $"[{cityName}] 입항 — {_shipX:F1}, {_shipY:F1} 칸";
     }
 
+    /// <summary>
+    /// 도시에서 나오면 <b>닻을 내린 채</b> 선다 — 왼쪽 클릭으로 닻을 올려야 나아간다.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 도시 화면(<c>0x00492430</c>)에서 돌아오자마자 <c>0x005B3A00</c> 에 1 을 놓는다
+    /// (<c>0x0048EB32</c>) — 바다든 뭍이든 가리지 않는다. 입항할 때 <see cref="EnterPort"/> 가
+    /// 나아가기를 세워 두므로, 닻이 없으면 닻도 안 보이고 움직이지도 않는 어정쩡한 채로 남았다.
+    /// </remarks>
+    public void HoldAfterCity()
+    {
+        if (!_ready) return;
+        _anchored = true;
+        _tickAccum = 0;
+        _dirty = true;
+    }
+
     /// <summary>배가 있는 자리로 되돌아가 다시 따라다닌다.</summary>
     public void RecenterOnShip()
     {

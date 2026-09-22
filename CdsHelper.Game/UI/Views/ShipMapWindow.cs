@@ -6118,6 +6118,9 @@ public sealed class ShipMapWindow : Window
             // 것이다. 예전에는 그 거짓을 그대로 받아 성문으로 나섰는데 출항 곡이 돌았다.
             bool walking = dialog.Explored && (_host.IsOnLand || _host.Land());
             _game.Bgm.Play(walking ? BgmPlayer.LandTrack : BgmPlayer.SeaTrack);
+            // 나오면 닻을 내린 채 선다(0x0048EB32) — 클릭으로 닻을 올려야 간다. 뭍에 오른 뒤에 해야
+            // Land() 가 지운 것을 도로 세운다.
+            _host.HoldAfterCity();
             _host.Paused = false;
             _asking = false;
             _game.Player.EnterCity(-1);
