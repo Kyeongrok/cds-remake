@@ -115,6 +115,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>그림 배율. 건물 사진도 같은 배율로 놓아야 자리가 맞는다.</summary>
     private readonly int _scale;
 
+    /// <summary>그림 배율 — 도시 안에서 뜨는 창(아이템·시장)이 같은 배로 커지려고 본다.</summary>
+    public int Scale => _scale;
+
+    /// <summary>틀(<see cref="CityFrame"/>)을 둘렀으면 그 두께(점), 못 읽었으면 0. 그림은 그만큼 안쪽에 있다.</summary>
+    private readonly int _frameBorder;
+
     /// <summary>
     /// 이 도시에서 도는 곡. 문화권마다 다르다 — 시설에서 나오면 이 곡으로 돌아간다.
     /// </summary>
@@ -310,8 +316,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 띄울 창을 못 고르기 때문이다.
         Closing += (_, _) => Owner?.Activate();
 
-        // 창 크기는 그림 크기 그대로다. 제목 줄이 없어(WindowStyle.None) 테가 붙지 않는다.
-        double fullW = CityPictures.Width * scale, fullH = CityPictures.Height * scale;
+        // 창 크기는 <b>틀을 두른 그림</b> 크기다(416x336 — 게임도 CITYFRM.CDS 로 여덟 점 틀을 두른다, 0x004924DB).
+        // 틀을 못 읽으면 그림 크기 그대로다. 제목 줄이 없어(WindowStyle.None) 테가 붙지 않는다.
+        var frame = CityFrame.TryGetBgra(game.Directory, CityFrame.GoldPart);
+        _frameBorder = frame != null ? CityFrame.Border : 0;
+        double fullW = (CityPictures.Width + _frameBorder * 2) * scale,
+               fullH = (CityPictures.Height + _frameBorder * 2) * scale;
 
         // 지도를 덮는 남색 막은 이 창이 아니라 지도(D3D) 쪽에서 씌운다 — 그래야 이 그림을
         // 끌어 옮겨도 막이 따라오지 않는다. 게임도 막과 그림이 따로다.
@@ -398,6 +408,26 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             Children = { image, _layer, _shade },
         };
 
+        // 틀 위에 그림을 여덟 점 안쪽으로 얹는다. 건물 자리 셈은 그림(picBox) 기준이라 그대로다.
+        var frameBox = new Grid { Width = fullW, Height = fullH };
+        if (frame != null)
+        {
+            var frameImage = new Image
+            {
+                Source = BitmapSource.Create(CityFrame.Width, CityFrame.Height, 96, 96,
+                                             PixelFormats.Bgra32, null, frame, CityFrame.Width * 4),
+                Width = fullW,
+                Height = fullH,
+                Stretch = Stretch.Fill,
+            };
+            RenderOptions.SetBitmapScalingMode(frameImage, GameUi.SpriteScaling);
+            frameBox.Children.Add(frameImage);
+        }
+        picBox.HorizontalAlignment = HorizontalAlignment.Left;
+        picBox.VerticalAlignment = VerticalAlignment.Top;
+        picBox.Margin = new Thickness(_frameBorder * scale);
+        frameBox.Children.Add(picBox);
+
         // 함대 쪽지는 이 창이 자리를 잡은 뒤에야 옆에 붙일 수 있다.
         Loaded += (_, _) =>
         {
@@ -460,7 +490,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 게임 화면에는 제목 줄도 안내 줄도 없다. 그림 한 장이 곧 창이다.
         // 펼치는 동안 창이 작아지므로 그림도 같이 줄어야 한다 — Viewbox 가 창에 맞춰 준다.
         // 다 펼쳐지면 창과 그림이 같은 크기라 배율이 1 이 되어, 건물 누르는 자리도 그대로 맞는다.
-        Content = new Viewbox { Child = picBox, Stretch = Stretch.Fill };
+        Content = new Viewbox { Child = frameBox, Stretch = Stretch.Fill };
 
         // 제목 줄이 없어도 옮길 수는 있어야 한다 — 그림의 아무 데나 잡으면 끌린다.
         // 건물 판과 명령 창은 누르는 자리라 제 몫으로 삼키므로 여기까지 오지 않는다.
@@ -470,6 +500,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             {
                 if (Mouse.LeftButton == MouseButtonState.Pressed) DragMove();
             };
+        // 틀을 잡아도 끌린다 — 틀은 누르는 자리가 아니라 늘 끌기다.
+        frameBox.MouseLeftButtonDown += (_, _) =>
+        {
+            if (Mouse.LeftButton == MouseButtonState.Pressed) DragMove();
+        };
 
         // 그림을 옮기면 옆에 붙은 커맨드 창도 같이 옮긴다. 함대 창이 옮겨져 이 그림이
         // 끌려갈 때에도 같은 길로 이어진다.
@@ -1590,8 +1625,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         var people = kind == FacilityKind.Home ? WifeArt() : Guests.GuestArt(kind);
         _photoWindow = BuildingPhotoWindow.Show(this, photos.TryGetBgra(k), people, _scale,
-                                                new Point(Left + PhotoLeft * _scale,
-                                                          Top + PhotoTop * _scale));
+                                                new Point(Left + (PhotoLeft + _frameBorder) * _scale,
+                                                          Top + (PhotoTop + _frameBorder) * _scale));
     }
 
     /// <summary>
