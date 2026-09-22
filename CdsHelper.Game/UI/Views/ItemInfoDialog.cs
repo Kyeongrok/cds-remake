@@ -44,13 +44,14 @@ public sealed class ItemInfoDialog : GameWindow
     }
 
     private ItemInfoDialog(ItemTable.Record item, string description, ItemArt? art,
-                           bool equipped)
+                           bool equipped, int scale = 1)
     {
         Title = item.Name;
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.Height;
-        Width = 560;
+        // 원본은 창이 도시 창(틀까지 416점)만큼 넓다 — 안은 게임 점으로 짜고 도시 그림 배율로 통째로 키운다.
+        Width = InnerWidth * scale;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ShowInTaskbar = false;
         Background = Back;
@@ -87,15 +88,20 @@ public sealed class ItemInfoDialog : GameWindow
         body.Children.Add(picture);
         body.Children.Add(text);
 
-        var ok = GameUi.PushButton("확인", Close, 88);
-        ok.HorizontalAlignment = HorizontalAlignment.Right;
-        ok.Margin = new Thickness(0, 0, 14, 12);
+        // 「확인」은 게임 띠 단추다 — 원본 화면의 베이지 띠 그대로.
+        var ok = new GameButton("확인", Close, width: 88)
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 0, 14, 12),
+        };
 
         var stack = new StackPanel();
         stack.Children.Add(head);
         stack.Children.Add(body);
         stack.Children.Add(ok);
-        Content = GameUi.InfoFrame(stack, Back);
+        var root = GameUi.InfoFrame(stack, Back);
+        root.LayoutTransform = new ScaleTransform(scale, scale);
+        Content = root;
 
         GameUi.EnableDrag(this, head);
         KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter or Key.Space) Close(); };
@@ -140,8 +146,11 @@ public sealed class ItemInfoDialog : GameWindow
         return row;
     }
 
+    /// <summary>창 안 폭(게임 점) — 도시 창 틀 폭(<see cref="CityFrame.Width"/>)과 같다.</summary>
+    private const double InnerWidth = CityFrame.Width;
+
     /// <summary>설명 글이 놓이는 자리의 폭(점). 그림 자리를 뺀 나머지다.</summary>
-    private const double TextWidth = 560 - ItemArt.Width - 60;
+    private const double TextWidth = InnerWidth - ItemArt.Width - 60;
 
     /// <summary>
     /// 판 위의 글씨. <b>게임 글꼴</b>로 찍는다 — 바탕이 밝아 검은 글씨다.
@@ -159,7 +168,7 @@ public sealed class ItemInfoDialog : GameWindow
     /// <param name="equipped">「장비중」을 찍을지 — <see cref="IsEquipped"/> 가 가른다.</param>
     public static void Show(Window owner, ItemTable.Record item, string description, ItemArt? art,
                             bool equipped = false) =>
-        new ItemInfoDialog(item, description, art, equipped) { Owner = owner }.ShowDialog();
+        new ItemInfoDialog(item, description, art, equipped, GameUi.CityScaleOf(owner)) { Owner = owner }.ShowDialog();
 
     /// <summary>
     /// 창을 띄워 둔 채 <paramref name="during"/> 을 하고 <b>바로 닫는다</b> — 고문서를 못 읽을 때다
@@ -168,7 +177,7 @@ public sealed class ItemInfoDialog : GameWindow
     public static void ShowWhile(Window owner, ItemTable.Record item, string description, ItemArt? art,
                                  bool equipped, Action<Window> during)
     {
-        var dialog = new ItemInfoDialog(item, description, art, equipped) { Owner = owner };
+        var dialog = new ItemInfoDialog(item, description, art, equipped, GameUi.CityScaleOf(owner)) { Owner = owner };
         dialog.Show();
         try { during(dialog); }
         finally { dialog.Close(); }

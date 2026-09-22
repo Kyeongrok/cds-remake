@@ -604,6 +604,17 @@ internal static class GameUi
     /// </remarks>
     public static BitmapScalingMode SpriteScaling => BitmapScalingMode.Linear;
 
+    /// <summary>
+    /// 그 창이 <b>도시 안</b>에서 떴으면 도시 그림의 배율, 아니면 1. 도시에서 여는 창(아이템·시장)이 그림과
+    /// 같은 배로 커지려고 본다 — 원본은 640x480 한 화면이라 창과 도시 그림이 늘 같은 배율이다.
+    /// </summary>
+    public static int CityScaleOf(Window? owner)
+    {
+        for (var w = owner; w != null; w = w.Owner)
+            if (w is CityPicView city) return Math.Max(1, city.Scale);
+        return 1;
+    }
+
     public static double BandWidthFor(string text) =>
         Math.Max(UiSprites.WidthFor(1), GameSettings.BandPad * 2 + (Font?.TextWidth(text) ?? 0));
 

@@ -69,7 +69,7 @@ public sealed class MarketBuyDialog : GameWindow
     private MarketBuyDialog(Player player, Market market, int cityId,
                             ItemDescriptions? descriptions, ItemArt? art,
                             Engine.Discovery.DiscoveryLog? found, uint[]? face = null,
-                            Engine.Game? game = null)
+                            Engine.Game? game = null, int scale = 1)
     {
         _face = face;
         _game = game;
@@ -120,7 +120,10 @@ public sealed class MarketBuyDialog : GameWindow
         stack.Children.Add(_list);
         stack.Children.Add(buttons);
 
-        Content = GameUi.DialogEdge(stack);
+        // 도시 그림과 같은 배로 키운다 — 원본은 한 화면이라 시장 창도 그림과 같은 배율이다.
+        var root = GameUi.DialogEdge(stack);
+        root.LayoutTransform = new System.Windows.Media.ScaleTransform(scale, scale);
+        Content = root;
 
         KeyDown += OnKey;
     }
@@ -251,7 +254,8 @@ public sealed class MarketBuyDialog : GameWindow
             TalkDialog.Say(owner, face, "", "미안하네, 지금 물건이 떨어지고 없네.");
             return;
         }
-        new MarketBuyDialog(player, market, cityId, descriptions, art, found, face, game)
+        new MarketBuyDialog(player, market, cityId, descriptions, art, found, face, game,
+                            GameUi.CityScaleOf(owner))
             { Owner = owner }.ShowDialog();
     }
 }
