@@ -22,7 +22,7 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 이 창은 그림만 깐다 — 말과 차림표는 이 창을 임자로 삼아 그 위에 뜬다.
 /// </remarks>
-internal sealed class GateScene : GameWindow
+internal sealed class GateScene : GameWindow, IGateStage
 {
     /// <summary>
     /// 한 장이 머무는 참. <b>벌마다 따로 잡는다.</b>
@@ -36,9 +36,9 @@ internal sealed class GateScene : GameWindow
     /// (한 장 140ms, 열 장 1.4초) 동전은 그 비율대로 70ms 면 팽이처럼 돌아 따라가기가
     /// 어려웠다. 동전만 100ms 로 늦춰 스물세 장에 2.3초로 두었다.
     /// </remarks>
-    private static readonly TimeSpan HeartSpan = TimeSpan.FromMilliseconds(140);
+    internal static readonly TimeSpan HeartSpan = TimeSpan.FromMilliseconds(140);
 
-    private static readonly TimeSpan CoinSpan = TimeSpan.FromMilliseconds(100);
+    internal static readonly TimeSpan CoinSpan = TimeSpan.FromMilliseconds(100);
 
     /// <summary>그 벌의 한 장이 머무는 참.</summary>
     private static TimeSpan SpanOf(int anim) => anim == EffectAnim.Coin ? CoinSpan : HeartSpan;

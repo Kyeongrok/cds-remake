@@ -32,7 +32,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 그대로 온다. 표에 항구가 없는 도시라면 그림 아무 데나 눌러도 항구 명령 창이 열리게 해
 /// 두었다 — 출항할 길은 어디서나 있어야 한다.
 /// </remarks>
-public sealed class CityPicView : GameWindow, ITownScreen
+public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 {
     /// <summary>건물 이름표와 명령 창을 얹는 자리. 그림과 같은 격자 칸에 둔다.</summary>
     private readonly Canvas _layer = new();
@@ -839,7 +839,9 @@ public sealed class CityPicView : GameWindow, ITownScreen
     ///   아니면(마을에서 걸어 들어왔다 나간다)
     ///     0x00468874  성문이면 0x005519C0 「출발할 때는…」, 항구면 0x005519F0 「출항할 때에는…」
     /// </code>
-    /// 적대 도시 차림표(<c>0x004687FD</c>)는 우리 쪽이 도시 그림을 열기 전에 이미 돈다(<c>ShipMapWindow.PassGate</c>).
+    /// 적대 도시 차림표(<c>0x004687FD</c>)는 이 칸 안에서 돈다 — <b>뭍으로 온 성문</b>은 도시 그림을
+    /// 열기 전에 이미 봤고(<c>ShipMapWindow.PassGate</c>), <b>배로 닿은 항구</b>는 배를 댈 때 출입여부
+    /// 2 만 봤으므로(<c>0x004770BD</c>) 여기서 「마을에 들어간다」를 고를 때 1 을 본다.
     /// </remarks>
     private void LeaveGateway(FacilityKind kind, bool arrived)
     {
@@ -852,6 +854,9 @@ public sealed class CityPicView : GameWindow, ITownScreen
                     : "출발할 때는 말해 주십시오. 곧 준비하겠습니다.");
             return;
         }
+
+        // 배로 닿아 항구에서 마을로 드는 문 — 출입여부 1 은 항구까지만 열고 마을은 막는다.
+        if (harbor && !PassTownGate()) return;
 
         if (_game.AideFace is { } aideFace)
             TalkDialog.Say(this, aideFace, "",
@@ -868,6 +873,67 @@ public sealed class CityPicView : GameWindow, ITownScreen
         }
 
         AmbientFolk();
+    }
+
+    /// <summary>
+    /// 배로 닿은 항구에서 마을로 드는 문(<c>0x004687FD</c>) — 출입여부가 0 보다 크면 적대 차림표가 뜬다.
+    /// 뚫었으면 참. 물러섰으면 항구 차림표를 도로 열어 두고 거짓 — 출항은 할 수 있어야 한다.
+    /// </summary>
+    /// <remarks>
+    /// 조약은 여기서 다시 안 본다 — 배를 댈 때 이미 봤다(<c>ShipMapWindow.PassGate</c>).
+    /// 도시 그림은 이미 떠 있으므로 차림표만 그 위에 낸다. 잠입하다 잡혀 죽으면 게임 오버다.
+    /// </remarks>
+    private bool PassTownGate()
+    {
+        int nation = _game.CityRows?.NationOf(_cityId) ?? -1;
+        int entry = Standoff.EntryOf(_player, _game.Nations, nation);
+        if (nation < 0 || !Standoff.Barred(entry, byLand: true)) return true;
+
+        var end = HostileCityMenu.Run(this, _game, _cityId, _cityName, byLand: true, inCity: true, stage: this);
+        if (end.GameOver)
+        {
+            GameOverDialog.Show(this, _game.EventStills, end.Picture, bgm: _game.Bgm);
+            if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+            return false;
+        }
+        if (end.Entered) return true;
+
+        // 들켜 달아났거나 추방·벌금을 받았으면 마을을 떠난다 — 게임은 +0xA0 이 서 있으면 항구 차림표를
+        // 닫고(0x004779C0 의 줄 7 → 0x004A2740 이 1 을 돌려준다) 도시 화면까지 끝낸다(0x004A26CA).
+        // 닿자마자 뜬 항구에서 곧장 나가는 것이라 출항과 같이 나오는 열흘은 없다(0x00477319).
+        if (end.MustLeave)
+        {
+            Sailed = true;
+            SailedOnArrival = true;
+            _gateway = null;
+            Close();
+            return false;
+        }
+
+        // 물러섰다 — 항구 차림표로 되돌아간다. 다시 「마을에 들어간다」를 고르면 또 뜬다(0x004A5669 는 남기는 것이 없다).
+        ReopenArrivalHarbor();
+        return false;
+    }
+
+    /// <summary>배로 닿은 항구 차림표를 인사 없이 도로 연다 — 성문 앞에서 물러선 뒤다.</summary>
+    private void ReopenArrivalHarbor()
+    {
+        foreach (var building in Standing(_cityId))
+        {
+            var facility = Facility.For(building.Kind, building.Code);
+            if (facility.Kind != FacilityKind.Harbor) continue;
+            _openKind = facility.Kind;
+            _pickedCode = building.Code;
+            var shown = ArrivalHarbor(facility);
+            ShowMenu(() => BuildMenu(shown, building.Name, building.Code, building.TeachMask, building.Kind),
+                     BuildingTrack(building.Code));
+            MarkGateway(FacilityKind.Harbor, arrived: true);
+            return;
+        }
+        var harbor = Facility.For("항구");
+        var bare = ArrivalHarbor(harbor);
+        ShowMenu(() => BuildMenu(bare, harbor.Name, HarborCode, 0, harbor.Name), BuildingTrack(HarborCode));
+        MarkGateway(FacilityKind.Harbor, arrived: true);
     }
 
     /// <summary>
@@ -1255,6 +1321,20 @@ public sealed class CityPicView : GameWindow, ITownScreen
     public void PlayHeart(bool won) =>
         PlayEffect(EffectAnim.Heart, [.. Plead, won ? Granted : Refused]);
 
+    // ── 성문 앞 무대 — 배로 닿아 항구에서 마을로 들다 막혔을 때, 성문 장면 대신 이 그림 위에서 돈다 ──
+
+    /// <summary>교섭하는 하트 — 성문 쪽 차례(<see cref="EffectAnim.HeartFrames"/>)와 참(<see cref="GateScene.HeartSpan"/>)이다.</summary>
+    void IGateStage.PlayHeart(bool won) =>
+        PlayEffect(EffectAnim.Heart, EffectAnim.HeartFrames(won), GateScene.HeartSpan);
+
+    /// <summary>잠입하는 동전(<see cref="EffectAnim.CoinFrames"/>) — 한 걸음에 한 장이라 더 빠르다.</summary>
+    void IGateStage.PlayCoin(bool won) =>
+        PlayEffect(EffectAnim.Coin, EffectAnim.CoinFrames(won), GateScene.CoinSpan);
+
+    /// <summary>들킨 뒤 달아나는 벌(파트 0) — 갈래 0 의 차례로 돈다.</summary>
+    void IGateStage.PlayEscape(bool won) =>
+        PlayEffect(EffectAnim.Load, EffectAnim.HeartFrames(won), GateScene.HeartSpan);
+
     /// <summary>
     /// 동그란 애니메이션 한 벌을 도시 그림 한가운데에서 돌린다.
     /// </summary>
@@ -1263,7 +1343,8 @@ public sealed class CityPicView : GameWindow, ITownScreen
     /// 뜨는데, 애니메이션은 그림 위에 얹히므로 창에 통째로 가려 안 보였다 — 후원자에게
     /// 이야기를 내밀 때 도는 하트가 그래서 한 번도 안 나왔다. 게임도 이때는 명령 창을 지운다.
     /// </remarks>
-    private void PlayEffect(int anim, int[] order)
+    /// <param name="span">한 장이 머무는 참. 안 주면 <see cref="FrameSpan"/> 이다.</param>
+    private void PlayEffect(int anim, int[] order, TimeSpan? span = null)
     {
         if (_playing) return;                       // 도는 동안 또 누르면 겹친다
 
@@ -1303,7 +1384,7 @@ public sealed class CityPicView : GameWindow, ITownScreen
                     art[f] = bmp;
                 }
                 image.Source = art[f];
-                Wait(FrameSpan);
+                Wait(span ?? FrameSpan);
             }
         }
         finally

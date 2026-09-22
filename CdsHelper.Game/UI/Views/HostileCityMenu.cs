@@ -37,7 +37,14 @@ internal static class HostileCityMenu
     /// <summary>한 판의 끝.</summary>
     /// <param name="Entered">문이 열렸는지 — 들어가도 되면 참.</param>
     /// <param name="GameOver">잡혀 죽었는지(<c>0x004A559F</c>).</param>
-    public readonly record struct Outcome(bool Entered, bool GameOver, int Picture = GameOverDialog.MutinyLost);
+    /// <param name="MustLeave">
+    /// 마을을 <b>떠나야</b> 하는지 — 잠입하다 들켜 달아났거나(<c>0x004A55A7</c>) 재판에서
+    /// 추방·벌금을 받았을 때(<c>0x004A555F</c> → <c>0x004A55A4</c>)다. 게임은 건물 객체의
+    /// <c>+0xA0</c>(마을을 떠난다)을 세우고 돌아가서, 항구 차림표를 닫고 도시 화면까지 끝내
+    /// 바다로 나간다. 「떠난다」·교섭 실패로 물러선 것은 이 플래그가 없어 항구 차림표에 남는다.
+    /// </param>
+    public readonly record struct Outcome(bool Entered, bool GameOver, int Picture = GameOverDialog.MutinyLost,
+                                          bool MustLeave = false);
 
     /// <summary>
     /// 적대 도시 앞에 선다.
@@ -48,11 +55,20 @@ internal static class HostileCityMenu
     /// 조약으로 막힌 문인지 — 게임은 그때 <b>딴 화면</b>(<c>0x0046ABB0</c>)을 쓴다.
     /// 차림표도 말도 벌이 다르고 교섭 주사위가 <c>rand(150)</c> 으로 헐렁하다.
     /// </param>
+    /// <param name="inCity">
+    /// 도시 그림이 <b>이미 떠 있는</b> 채로 부르는지 — 배로 닿아 항구 차림표에서 「마을에
+    /// 들어간다」를 고른 자리다. 그때는 그림을 새로 펴지 않고 그 창 위에 차림표만 낸다.
+    /// </param>
+    /// <param name="stage">
+    /// <paramref name="inCity"/> 일 때 하트·동전을 돌릴 무대 — 도시 그림 창 자신이다.
+    /// </param>
     public static Outcome Run(Window owner, Engine.Game game, int city, string cityName,
-                              bool byLand, Rect mapArea = default, bool byTreaty = false)
+                              bool byLand, Rect mapArea = default, bool byTreaty = false,
+                              bool inCity = false, IGateStage? stage = null)
     {
         // 게임도 그림부터 편다 — 도시는 그려지고 성문에서 막히는 것이다.
-        var scene = GateScene.Open(owner, game, city, mapArea);
+        var scene = inCity ? null : GateScene.Open(owner, game, city, mapArea);
+        IGateStage? fx = scene ?? stage;
 
         // 그림이 펴졌으면 이미 도시에 닿은 것이라 곡도 그 도시 것으로 바뀐다.
         // 못 들어가고 물러서면 부르는 쪽이 뭍·바다 곡으로 되돌린다(ShipMapWindow.PassGate).
@@ -60,7 +76,7 @@ internal static class HostileCityMenu
             game.Bgm.Play(BgmPlayer.CityTrackForCulture(game.CityRows?.CultureOf(city) ?? 0));
         try
         {
-            return AtTheGate(scene as Window ?? owner, scene, game, city, cityName, byLand, byTreaty);
+            return AtTheGate(scene as Window ?? owner, fx, game, city, cityName, byLand, byTreaty);
         }
         finally
         {
@@ -75,7 +91,7 @@ internal static class HostileCityMenu
     }
 
     /// <summary>성문 앞에서 문지기를 만나고 차림표를 돌린다.</summary>
-    private static Outcome AtTheGate(Window owner, GateScene? scene, Engine.Game game, int city,
+    private static Outcome AtTheGate(Window owner, IGateStage? scene, Engine.Game game, int city,
                                      string cityName, bool byLand, bool byTreaty)
     {
         var say = byTreaty ? Standoff.Treaty : Standoff.Hostile;
@@ -222,7 +238,7 @@ internal static class HostileCityMenu
     /// 다가설 때마다 새로 서므로 <b>물러섰다 다시 오면 교섭 칸이 되살아난다</b>. 그래서
     /// 우리도 세이브에 적지 않고 이 고리 안의 <c>canTalk</c> 하나로 든다.
     /// </remarks>
-    private static bool Talk(Window owner, GateScene? scene, Engine.Game game, GameRandom dice,
+    private static bool Talk(Window owner, IGateStage? scene, Engine.Game game, GameRandom dice,
                              int city, string where, Standoff.Script say)
     {
         var player = game.Player;
@@ -265,7 +281,7 @@ internal static class HostileCityMenu
     /// <c>0x004A57E2</c> 가 잠입을 부르고 <c>0x004A57E7</c> 이 곧장 고리 밖으로 뛴다.
     /// 달아났어도 다시 조를 기회를 안 준다는 뜻이다.
     /// </remarks>
-    private static Outcome Sneak(Window owner, GateScene? scene, Engine.Game game,
+    private static Outcome Sneak(Window owner, IGateStage? scene, Engine.Game game,
                                  GameRandom dice, int city, uint[]? gate, int heard,
                                  Standoff.Script say)
     {
@@ -303,7 +319,8 @@ internal static class HostileCityMenu
         if (away)
         {
             if (aide) TalkDialog.Say(owner, game.AideFace, "", say.GotAway);
-            return new Outcome(false, false);  // 차림표로 안 돌아간다 — 그대로 물러선다
+            // 차림표로 안 돌아간다 — 마을을 떠난다(0x004A55A7 이 +0xA0 을 세운다).
+            return new Outcome(false, false, MustLeave: true);
         }
 
         return Trial(owner, scene, game, dice, gate, heard, aide, say);
@@ -325,7 +342,7 @@ internal static class HostileCityMenu
     /// 자리도 없다 — 그 사이의 <c>0x004A5AE0(-1, 1)</c> 은 <c>0x00428000(40, 1)</c> 을
     /// 부르는 <b>40밀리초 기다리기</b>지 날짜가 아니다.
     /// </remarks>
-    private static Outcome Trial(Window owner, GateScene? scene, Engine.Game game,
+    private static Outcome Trial(Window owner, IGateStage? scene, Engine.Game game,
                                  GameRandom dice, uint[]? gate, int heard, bool aide,
                                  Standoff.Script say)
     {
@@ -362,7 +379,8 @@ internal static class HostileCityMenu
         }
 
         if (aide) TalkDialog.Say(owner, game.AideFace, "", say.GiveUpHere);
-        return new Outcome(false, false);
+        // 추방이든 벌금이든 마을을 떠난다(0x004A555F → 0x004A55A4 가 +0xA0 을 세운다).
+        return new Outcome(false, false, MustLeave: true);
     }
 
     /// <summary>그 도시가 쓰는 말을 얼마나 아는지. 표를 못 읽으면 0.</summary>
