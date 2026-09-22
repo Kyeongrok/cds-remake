@@ -25,8 +25,6 @@ public sealed class SettingsDialog : GameWindow
     private readonly Border _sfxVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sizeRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _mapRow = new() { Padding = new Thickness(8, 2, 8, 2) };
-    private readonly Border _saveKeyRow = new() { Padding = new Thickness(8, 2, 8, 2) };
-    private readonly Border _mapKeyRow = new() { Padding = new Thickness(8, 2, 8, 4) };
 
     /// <summary>해상 지도 배율을 바꿨을 때 지도에 곧바로 먹이는 손. 없으면 다음에 켤 때 든다.</summary>
     private readonly Action<double>? _onMapScale;
@@ -49,8 +47,6 @@ public sealed class SettingsDialog : GameWindow
         _sfxVolRow.Child = VolumeRow("효과음  ", GameSettings.SfxVolume, StepSfx);
         _sizeRow.Child = SizeRow();
         _mapRow.Child = MapRow();
-        _saveKeyRow.Child = SaveKeyRow();
-        _mapKeyRow.Child = MapKeyRow();
 
         var title = GameUi.TitleBar("설정", Close);
         GameUi.EnableDrag(this, title);
@@ -63,8 +59,6 @@ public sealed class SettingsDialog : GameWindow
         stack.Children.Add(_sfxVolRow);
         stack.Children.Add(_sizeRow);
         stack.Children.Add(_mapRow);
-        stack.Children.Add(_saveKeyRow);
-        stack.Children.Add(_mapKeyRow);
         stack.Children.Add(new StackPanel
         {
             Orientation = Orientation.Horizontal,
@@ -86,39 +80,7 @@ public sealed class SettingsDialog : GameWindow
         MouseRightButtonUp += (_, _) => Close();
     }
 
-    /// <summary>단축키로 고를 수 있는 글쇠 — A~Z 스물여섯이다.</summary>
-    private static readonly char[] Letters = [.. "ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
-
-    /// <summary>
-    /// 단축키 한 줄 — <c>◀ 이름 X ▶</c>. 다른 줄과 같은 걸음 단추 꼴이다.
-    /// </summary>
-    /// <remarks>
-    /// 저장은 <b>V</b>, 발견물 지도는 <b>D</b> 가 기본이다. 고른 글쇠는 설정에 적히고
-    /// <see cref="GameWindow"/> 의 공용 손이 <b>어느 창에서든</b> 받는다.
-    /// </remarks>
-    private UIElement KeyRow(string name, string now, Action<string> set, Action refresh)
-    {
-        var row = new StackPanel { Orientation = Orientation.Horizontal };
-        row.Children.Add(new GameButton("◀", () => { Step(-1); refresh(); }, BandStyle.Button, StepWidth));
-        row.Children.Add(Value($"{name} {now}"));
-        row.Children.Add(new GameButton("▶", () => { Step(+1); refresh(); }, BandStyle.Button, StepWidth));
-        return row;
-
-        void Step(int by)
-        {
-            int at = Array.IndexOf(Letters, char.ToUpperInvariant(now.Length > 0 ? now[0] : 'A'));
-            if (at < 0) at = 0;
-            set(Letters[(at + by + Letters.Length) % Letters.Length].ToString());
-        }
-    }
-
-    private UIElement SaveKeyRow() =>
-        KeyRow("저장 글쇠", GameSettings.SaveKey, v => GameSettings.SaveKey = v,
-               () => _saveKeyRow.Child = SaveKeyRow());
-
-    private UIElement MapKeyRow() =>
-        KeyRow("지도 글쇠", GameSettings.MapKey, v => GameSettings.MapKey = v,
-               () => _mapKeyRow.Child = MapKeyRow());
+    // 저장·지도 글쇠 줄은 햄버거의 「단축키」 창(ShortcutDialog)으로 옮겨 여기서 걷었다.
 
     /// <summary>줄 글자. 두 줄의 폭이 어긋나지 않게 이름을 같은 길이로 맞춰 둔다.</summary>
     private static string Label(string name, bool on) => $"{name}   {(on ? "켬" : "끔")}";
