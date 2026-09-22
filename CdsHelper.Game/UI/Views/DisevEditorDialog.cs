@@ -139,7 +139,7 @@ public sealed class DisevEditorDialog : GameWindow
 
     public DisevEditorDialog()
     {
-        Title = "발견 이벤트 편집기 (발견이벤트.json)";
+        Title = "대본 편집기 — 발견 이벤트 · 이야기";
         Width = 1280;
         Height = 860;
         MinWidth = 900;
@@ -398,9 +398,9 @@ public sealed class DisevEditorDialog : GameWindow
         var rows = new List<PartRow>(_book.Count);
         for (int i = 0; i < _book.Count; i++)
         {
-            // 이야기 책은 파트 번호가 발견물 번호가 아니다 — 이름표를 붙이지 않는다.
+            // 이야기 책은 파트 번호가 발견물 번호가 아니다 — 장면 조건과 첫 대사로 이름표를 짓는다.
             var record = Discoveries ? _names?.Find(i) : null;
-            string name = record?.Name ?? (Discoveries ? $"발견물 {i}" : $"장면 {i}");
+            string name = record?.Name ?? (Discoveries ? $"발견물 {i}" : $"장면 {i}  {SceneLabel(i)}");
             string category = record?.CategoryName ?? "";
 
             if (pick != AllCategories && category != pick) continue;
@@ -422,6 +422,110 @@ public sealed class DisevEditorDialog : GameWindow
             ? $"{rows.Count}개"
             : $"{rows.Count}개 보임 / 모두 {_book.Count}개";
     }
+
+    /// <summary>
+    /// 이야기 책의 장면 이름표 — 슬롯 조건을 짧게 늘어놓고 「」 안에 본문 첫 대사를 붙인다.
+    /// 「1500년~ · 명성 ≥ 3000 · 함대 있음 · 계약 없음 「제독, 편지가 왔습니다」」 꼴이다.
+    /// </summary>
+    /// <remarks>
+    /// 개인 이야기(PEX 따위)는 파트 번호가 곧 장면 차례라 이름이 없다 — 어느 장면이 어디서 도는지 조건을
+    /// 안 풀면 알 길이 없어 붙였다. 못 읽는 조건은 명령 이름 그대로 낸다.
+    /// </remarks>
+    private string SceneLabel(int index)
+    {
+        if (_book == null || DisevPart.Parse(_book.Part(index), out _) is not { } part) return "";
+
+        var terms = new List<string>();
+        string? firstLine = null;
+        foreach (var slot in part.Slots)
+        {
+            foreach (var (call, args) in Calls(part, slot.Condition))
+                if (Term(call, args) is { Length: > 0 } term && !terms.Contains(term)) terms.Add(term);
+            if (firstLine == null)
+                foreach (var (call, args) in Calls(part, slot.Body))
+                    if (call is DisevCall.Say or DisevCall.SayBare && args["Text"]?.ToString() is { Length: > 0 } text)
+                    {
+                        firstLine = text.Trim();
+                        break;
+                    }
+        }
+
+        string head = string.Join(" · ", terms);
+        if (firstLine is { } line)
+        {
+            if (line.Length > 22) line = line[..22] + "…";
+            head = head.Length > 0 ? $"{head} 「{line}」" : $"「{line}」";
+        }
+        return head;
+    }
+
+    /// <summary>그 덩이의 명령을 호출로 풀어 낸다 — 못 푸는 줄은 건너뛴다.</summary>
+    private static IEnumerable<(DisevCall Call, System.Text.Json.Nodes.JsonObject Args)> Calls(DisevPart part, int chunk)
+    {
+        if (chunk < 0 || chunk >= part.ChunkStarts.Count) yield break;
+        var (from, to) = part.ChunkRange(part.ChunkStarts[chunk]);
+        foreach (var op in DisevScript.Parse(part.Data, from, to))
+        {
+            var raw = new byte[Math.Min(op.Length, part.Data.Length - op.Offset)];
+            Array.Copy(part.Data, op.Offset, raw, 0, raw.Length);
+            if (DisevCalls.Decode(raw) is { } got) yield return (got.Call, got.Args);
+        }
+    }
+
+    /// <summary>조건 한 줄을 짧은 말로. 이름표에 안 올릴 것은 빈 글.</summary>
+    private string Term(DisevCall call, System.Text.Json.Nodes.JsonObject args)
+    {
+        long N(string key) => args[key] is { } node && long.TryParse(node.ToJsonString(), out long v) ? v : 0;
+        string Expr(string key)
+        {
+            if (args[key] is not System.Text.Json.Nodes.JsonObject expr) return "?";
+            if (expr["Const"] is { } c) return c.ToJsonString();
+            if (expr["Stat"] is { } s)
+                return DisevScript.StatNames.TryGetValue((int)long.Parse(s.ToJsonString()), out var name) ? name : $"값{s}";
+            if (expr["Cargo"] is System.Text.Json.Nodes.JsonObject cargo)
+                return $"{_cities?.NameOf((int)long.Parse(cargo["City"]?.ToJsonString() ?? "0")) ?? "?"} 교역품 {cargo["Goods"]}";
+            return "?";
+        }
+        return call switch
+        {
+            DisevCall.End or DisevCall.Or => "",
+            DisevCall.InCity => _cities?.NameOf((int)N("City")) ?? $"도시 {N("City")}",
+            DisevCall.NotInCity => $"{_cities?.NameOf((int)N("City")) ?? $"도시 {N("City")}"} 아님",
+            DisevCall.InBuilding => BuildingName((int)N("Building")),
+            DisevCall.NotInBuilding => $"{BuildingName((int)N("Building"))} 아님",
+            DisevCall.InNation => N("Nation") == 0 ? "포르투갈" : N("Nation") == 1 ? "에스파니아" : $"나라 {N("Nation")}",
+            DisevCall.InCulture => $"문화권 {N("Culture")}",
+            DisevCall.YearAtLeast => $"{N("Year")}년~",
+            DisevCall.YearAtMost => $"~{N("Year")}년",
+            DisevCall.YearIs => $"{N("Year")}년",
+            DisevCall.YearBetween => $"{N("From")}~{N("To")}년",
+            DisevCall.YearMonthIs => $"{N("Year")}년 {N("Month")}월",
+            DisevCall.HasFleet => "함대 있음",
+            DisevCall.NoContract => "계약 없음",
+            DisevCall.NoAide => "부관 없음",
+            DisevCall.HasItem => $"{_items?.Find((int)N("Item"))?.Name ?? $"아이템 {N("Item")}"} 지님",
+            DisevCall.LacksItem => $"{_items?.Find((int)N("Item"))?.Name ?? $"아이템 {N("Item")}"} 없음",
+            DisevCall.Discovered or DisevCall.DiscoveryDone => $"{_names?.Find((int)N("Discovery"))?.Name ?? $"발견물 {N("Discovery")}"} 발견",
+            DisevCall.NotDiscovered or DisevCall.DiscoveryNotDone => $"{_names?.Find((int)N("Discovery"))?.Name ?? $"발견물 {N("Discovery")}"} 미발견",
+            DisevCall.HintActive => $"힌트 {N("Hint")}",
+            DisevCall.HintInactive => $"힌트 {N("Hint")} 없음",
+            DisevCall.RandomChance => $"{N("Success")}/{N("Denominator")} 확률",
+            DisevCall.GreaterThan => $"{Expr("A")} > {Expr("B")}",
+            DisevCall.GreaterOrEqual => $"{Expr("A")} ≥ {Expr("B")}",
+            DisevCall.LessThan => $"{Expr("A")} < {Expr("B")}",
+            DisevCall.LessOrEqual => $"{Expr("A")} ≤ {Expr("B")}",
+            DisevCall.EqualTo => $"{Expr("A")} = {Expr("B")}",
+            DisevCall.NotEqualTo => $"{Expr("A")} ≠ {Expr("B")}",
+            _ => call.ToString(),
+        };
+    }
+
+    /// <summary>건물 코드 이름 — 0 항구 · 2 왕궁 · 6 조선소 · 10 성문 · 11 자택 · 12~15 후원자 저택(0x005606A0~).</summary>
+    private static string BuildingName(int code) => code switch
+    {
+        0 => "항구", 1 => "교역소", 2 => "왕궁", 3 => "교회", 4 => "술집", 5 => "여관", 6 => "조선소", 7 => "시장",
+        8 => "도서관", 9 => "조합", 10 => "성문", 11 => "자택", >= 12 and <= 15 => $"저택 {code - 11}", _ => $"건물 {code}",
+    };
 
     /// <summary>지금 고치는 책이 <b>발견 이벤트</b>인지 — 이야기 책이면 이름표를 안 붙인다.</summary>
     private bool Discoveries => _book_.SelectedIndex <= 0;

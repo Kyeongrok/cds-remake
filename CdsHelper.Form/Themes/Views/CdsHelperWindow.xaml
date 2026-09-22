@@ -300,8 +300,8 @@
                                             ToolTip="도시마다의 문화권·왕국을 갈아 씌운다 — 시설 화자 얼굴도 따라 바뀐다" />
                                         <MenuItem
                                             x:Name="PART_DisevEditorMenu"
-                                            Header="발견 이벤트"
-                                            ToolTip="DISEV.CDS 의 발견 이벤트 스크립트를 보고 고친다" />
+                                            Header="대본 편집 (발견 이벤트 · 이야기)"
+                                            ToolTip="발견 이벤트(DISEV.CDS)와 초심자·새 주인공의 이야기 대본(STORY0/1 · PEX~ECQ)을 보고 고친다" />
                                         <MenuItem
                                             x:Name="PART_FormationMenu"
                                             Header="부대 편성"
