@@ -134,12 +134,13 @@ public sealed class WaveBankDialog : Window
 
     private void Load()
     {
-        var dir = Path.GetDirectoryName(AppSettings.LastSaveFilePath);
-        if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
-        {
-            _status.Text = "게임 폴더를 모릅니다 — 먼저 세이브 파일을 한 번 열어 주세요.";
-            return;
-        }
+        // 세이브를 한 번도 안 열었어도 원본 폴더가 없다는 뜻일 뿐이다 — CdsAssetPath 가
+        // 알아서 릴리즈의 WAVES.CDSX 로 물러나므로(fb-ui-24 와 같은 까닭) 실행 폴더를
+        // 대신 준다. 원본을 아는 자리는 여전히 그쪽을 먼저 본다.
+        var saved = Path.GetDirectoryName(AppSettings.LastSaveFilePath);
+        var dir = !string.IsNullOrEmpty(saved) && Directory.Exists(saved)
+            ? saved
+            : AppDomain.CurrentDomain.BaseDirectory;
 
         _bank = WaveBank.LoadFromDirectory(dir);
         if (_bank == null)
