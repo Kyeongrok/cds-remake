@@ -32,7 +32,8 @@ public sealed class DisevBook
     public const string CacheName = "발견이벤트";
 
     /// <summary>
-    /// 이 집이 다룰 수 있는 <b>대본 책</b> 셋 — 발견 이벤트와 미리 만든 주인공 둘의 이야기다.
+    /// 이 집이 다룰 수 있는 <b>대본 책</b> 열하나 — 발견 이벤트, 미리 만든 주인공 둘의 이야기, 새 주인공의
+    /// 국적 x 직업 개인 이야기 여덟이다.
     /// </summary>
     /// <remarks>
     /// <c>STORY0.CDS</c> · <c>STORY1.CDS</c> 는 <b>그릇도 말도 DISEV.CDS 와 같다</b> — 같은
@@ -186,6 +187,35 @@ public sealed class DisevBook
 
         var book = FromEntries(bundle.Data.Parts, bundle.Stamp, cache);
         book?.Write();
+        return book;
+    }
+
+    /// <summary>
+    /// 게임 폴더의 <b>CDS 아카이브에서 책을 떠서</b> 적어 두고 연다 — 실어 둔 JSON 이 없는 책(새 주인공의 개인 이야기
+    /// 여덟)을 처음 굽는 길이고, 편집기의 「게임 CDS 에서 다시 뜨기」도 이 길이다.
+    /// </summary>
+    /// <param name="cdsPath">게임 폴더의 <c>PEX.CDS</c> 따위.</param>
+    /// <param name="cache">적어 둘 이름(<see cref="Books"/> 의 첫 칸).</param>
+    /// <remarks>적어 둔 것이 있어도 <b>덮어쓴다</b>. 못 읽으면 null 이고 까닭은 <see cref="LastError"/> 다.</remarks>
+    public static DisevBook? FromArchive(string cdsPath, string cache)
+    {
+        LastError = "";
+        if (DisevArchive.Open(cdsPath) is not { } archive)
+        {
+            LastError = DisevArchive.LastError;
+            return null;
+        }
+
+        var parts = new List<byte[]>(archive.PartCount);
+        for (int i = 0; i < archive.PartCount; i++) parts.Add(archive.Part(i));
+        if (parts.Count == 0)
+        {
+            LastError = $"{cdsPath} 에 파트가 없습니다";
+            return null;
+        }
+
+        var book = new DisevBook(parts, "", cache);
+        book.Write();
         return book;
     }
 
@@ -372,7 +402,8 @@ public sealed class DisevBook
         var rows = new List<Entry>(_parts.Count);
         for (int i = 0; i < _parts.Count; i++) rows.Add(Split(i, _parts[i]));
 
+        string source = Books.FirstOrDefault(b => b.Cache == _cache).Source ?? "DISEV.CDS";
         TableCache.Write(_cache, new TableCache.Cached<Snapshot>(
-            _stamp, new Snapshot(rows), "DISEV.CDS", SnapshotVersion));
+            _stamp, new Snapshot(rows), source, SnapshotVersion));
     }
 }

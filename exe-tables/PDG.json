@@ -1,0 +1,3648 @@
+{
+  "Stamp": "",
+  "Data": {
+    "Parts": [
+      {
+        "Index": 0,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1500
+              },
+              "Note": "연도 >= 1500"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 17,
+                  "Name": "명성"
+                },
+                "B": {
+                  "Const": 2000
+                }
+              },
+              "Note": "조건: 명성 >= 2000"
+            },
+            {
+              "OpCode": "59",
+              "Call": "HasFleet",
+              "Note": "배 있음 조건"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 02"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 1,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 2
+              },
+              "Note": "문화권 조건: 값 2"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 0
+              },
+              "Note": "문화권 조건: 값 0"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 1
+              },
+              "Note": "도시 조건: 값 1"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 1
+              },
+              "Note": "건물 조건: 값 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "오포르토 교역소에서 자네를 찾고 있는 사람이 있었네． 벌써 만났나？"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "<제독>님이시지요． 찾고 있었습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "최근， 포르투갈 배의 아프리카 진출이 성하고 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "배를 만들 목재가 모자랍니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "특히 오슬로산 목재가 모자라 큰일입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "주문에 맞추기 위해 적어도 ５０통은 꼭 필요합니다．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "부탁입니다． 앞으로 반년 안에 어떻게 해 주십시오．"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L028D",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "오， 고맙습니다！ 사례는 후하게 지불하겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "선금으로 ３０００닢 드리겠습니다． 부탁드립니다．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 3000
+              },
+              "Note": "금화 +3000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 183
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 183"
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L028D",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L02C9",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "그렇습니까···어쩔 수 없군요．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 10
+                }
+              },
+              "Note": "악명 + 10"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 01"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L02C9",
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 2,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 1
+              },
+              "Note": "도시 조건: 값 1"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 1
+              },
+              "Note": "건물 조건: 값 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L0090",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "벌써 기한이 지났습니다． 선금은 돌려 받겠습니다．"
+              }
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 3000
+              },
+              "Note": "금화 -3000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３０００닢을 돌려주었다"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 50
+                }
+              },
+              "Note": "악명 + 50"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L0090",
+              "OpCode": "43 2C",
+              "GotoIf": {
+                "Call": "GreaterOrEqual",
+                "Args": {
+                  "A": {
+                    "Cargo": {
+                      "City": 67,
+                      "Goods": 64
+                    }
+                  },
+                  "B": {
+                    "Const": 50
+                  }
+                }
+              },
+              "Target": "L00E3",
+              "Note": "교역품 조건 분기, 원산 도시 67, 교역품 64, 수량 50"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "오슬로산 목재 ５０통， 가능한 한 서둘러 주십시오．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "Label": "L00E3",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "오오！ 역시 내가 생각한 대로군！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "그럼 사례금을 받아 주십시오．"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "5B 08"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "43 00 15 40 00 00"
+              },
+              "Note": "미확인 0015 분기"
+            },
+            {
+              "Label": "L0145",
+              "OpCode": "0A",
+              "Call": "SayBare",
+              "Args": {
+                "Text": "오슬로산 목재를 전부 팔았습니다"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 3000
+              },
+              "Note": "금화 +3000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 250
+                }
+              },
+              "Note": "명성 + 250"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 3,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1500
+              },
+              "Note": "연도 >= 1500"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 17,
+                  "Name": "명성"
+                },
+                "B": {
+                  "Const": 5000
+                }
+              },
+              "Note": "조건: 명성 >= 5000"
+            },
+            {
+              "OpCode": "59",
+              "Call": "HasFleet",
+              "Note": "배 있음 조건"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 03"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 4,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 2
+              },
+              "Note": "문화권 조건: 값 2"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 0
+              },
+              "Note": "문화권 조건: 값 0"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "리스본 조합에서 자네를 찾고 있었네． 벌써 만났나？"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "여어， 자네가 <제독>인가． 찾고 있었네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "좀 부탁할 일이 있네만， 들어주게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "실은， 자네가 찾아봐 주었으면 하는 사람이 있네． 이름은 조안·팔로스．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "대학에서는 역사학을 연구하고 있네만 풋내기 학자라고 할까．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "북 아프리카 세우타에 발굴조사로 갔지만 소식이 끊어진지 ２년째라네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "이교도에게 붙잡혔는지도 모르네． 친족으로부터 수색 부탁이 들어와서 말이지．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "기한은 １년 후． 어떤가？ 그 자를 데리고 와주지 않겠나？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L02A0",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "그런가！ 좋아 부탁하네．"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 365
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 365"
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L02A0",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L02E8",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "음 그런가． 그럼 다른 사람에게 부탁하지．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 20
+                }
+              },
+              "Note": "악명 + 20"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 02"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L02E8",
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 5,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 3
+          },
+          {
+            "Condition": 1,
+            "Body": 4
+          },
+          {
+            "Condition": 2,
+            "Body": 5
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 84
+              },
+              "Note": "도시 조건: 값 84"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 81
+              },
+              "Note": "도시 조건: 값 81"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 5
+              },
+              "Note": "건물 조건: 값 5"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "젊은 역사학자를 찾고 있나？ ２년 전에 트리폴리로 떠났네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "여관",
+                "Text": "어서 오게． 머물건가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "오， 오랜만에 보는 유럽인！ 자네 포르투갈인인가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 이 자가 아닙니까？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "응？ 조안·팔로스는 난데···나를 찾아왔다고？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "아， 연구에 몰두하느라 꽤 연락을 하지 못했었군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "일단락 지어졌으니 일단 돌아가 대학에 얼굴을 내밀어 볼까．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "자， 태워주게． 일부러 오게 해서 미안하네．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L02A1",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "어이， 기한이 지나지 않았는가！ 더 이상 자네에게 부탁하지 않겠네．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 50
+                }
+              },
+              "Note": "악명 + 50"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 01"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L02A1",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "빨리 조안·팔로스를 데리고 와주게．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 6,
+        "Step": 3,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L00FA",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "꽤 늦었군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "꽤 소동을 일으킨 것 같군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "건강해 보여서 다행이네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "기한이 지났으니 보수는 반이네．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 10000
+              },
+              "Note": "금화 +10000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 １００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 5
+                }
+              },
+              "Note": "악명 + 5"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 120
+                }
+              },
+              "Note": "명성 + 120"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L00FA",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "오， 어땠나？ 잘 되었나！！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조안 바로스",
+                "Text": "꽤 소동을 일으킨 것 같군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "건강해 보여서 다행이네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "보수네． 받아주게．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 20000
+              },
+              "Note": "금화 +20000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ２００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 280
+                }
+              },
+              "Note": "명성 + 280"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 7,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1510
+              },
+              "Note": "연도 >= 1510"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 17,
+                  "Name": "명성"
+                },
+                "B": {
+                  "Const": 6000
+                }
+              },
+              "Note": "조건: 명성 >= 6000"
+            },
+            {
+              "OpCode": "59",
+              "Call": "HasFleet",
+              "Note": "배 있음 조건"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 02"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 8,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 2
+              },
+              "Note": "문화권 조건: 값 2"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 0
+              },
+              "Note": "문화권 조건: 값 0"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 29
+              },
+              "Note": "도시 조건: 값 29"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "베니스의 대상인이 자네를 찾고 있었네． 벌써 만났나？"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "38 12",
+              "Call": "MeetSponsor",
+              "Args": {
+                "Sponsor": 56
+              },
+              "Note": "후원자 소개"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "오오， <제독>인가． 실은 자네에게 부탁할 일이 있네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "우리 가문은 대대로 실크로드를 경유해 향료장사를 해왔네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "그런데 터키가 무역을 봉쇄해 전혀 손에 들어오지 않게 되었다네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "그러나 어떤 주문에도 응하는 것이 나의 철칙．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "그래서 시급히 안티오키아산의 육두구를 사 와 주었으면 하네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "재고가 없어지기 전에 적어도 앞으로 １００통은 필요하네．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "부탁하네． １년 안에 어떻게 안되겠나？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L03C5",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "오오， 그런가！ 물론 사례는 하겠네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "선금으로 ８０００닢 주겠네． 부탁하네．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 8000
+              },
+              "Note": "금화 +8000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ８０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "좋은가？ 안티오키아산이네． 안티오키아는 지중해의 동쪽으로 맞닿는 곳이네．"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 365
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 365"
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L03C5",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L042E",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "그런가····그렇다면 물러가게．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 20
+                }
+              },
+              "Note": "악명 + 20"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "1A 12 38 00 1C 1C 00 1A 0F 00 00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 내려갔다"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 01"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L042E",
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 9,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 29
+              },
+              "Note": "도시 조건: 값 29"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 12
+              },
+              "Note": "건물 조건: 값 12"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L00B5",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "이미 기한이 지났네． 선금은 돌려 받겠네．"
+              }
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 8000
+              },
+              "Note": "금화 -8000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ８０００닢을 돌려주었다"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 50
+                }
+              },
+              "Note": "악명 + 50"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "1A 12 38 00 1C 1C 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 0
+              },
+              "Note": "금화 -0"
+            },
+            {
+              "OpCode": "0A",
+              "Call": "SayBare",
+              "Args": {
+                "Text": "친밀도가 내려갔다"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L00B5",
+              "OpCode": "43 2C",
+              "GotoIf": {
+                "Call": "GreaterOrEqual",
+                "Args": {
+                  "A": {
+                    "Cargo": {
+                      "City": 118,
+                      "Goods": 25
+                    }
+                  },
+                  "B": {
+                    "Const": 100
+                  }
+                }
+              },
+              "Target": "L0110",
+              "Note": "교역품 조건 분기, 원산 도시 118, 교역품 25, 수량 100"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "안티오키아산 육두구 １００통을 서둘러 사와주게．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "Label": "L0110",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "오오！ 역시 내가 기대한 대로군！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "미켈레 스피놀라",
+                "Text": "그럼 사례금을 받아주게．"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "5B 08 76 00 15 19 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "안티오키아산 육두구를 전부 팔았다"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 5000
+              },
+              "Note": "금화 +5000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ５０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 500
+                }
+              },
+              "Note": "명성 + 500"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "19 12 38 00 1C 1C 00 1A 19 00 00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 10,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 17,
+                  "Name": "명성"
+                },
+                "B": {
+                  "Const": 5000
+                }
+              },
+              "Note": "조건: 명성 >= 5000"
+            },
+            {
+              "OpCode": "5E 0B",
+              "Call": "DiscoveryNotDone",
+              "Args": {
+                "Discovery": 5
+              },
+              "Note": "미발견 조건: 발견물 ID 5"
+            },
+            {
+              "OpCode": "59",
+              "Call": "HasFleet",
+              "Note": "배 있음 조건"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 11,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 2
+              },
+              "Note": "문화권 조건: 값 2"
+            },
+            {
+              "OpCode": "50",
+              "Call": "Or",
+              "Note": "OR 연결"
+            },
+            {
+              "OpCode": "17 19",
+              "Call": "InCulture",
+              "Args": {
+                "Culture": 0
+              },
+              "Note": "문화권 조건: 값 0"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "리스본 조합에서 일할 사람을 찾고 있었네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "오， 자네 부탁 좀 들어주지 않겠나？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L00BA",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "말귀를 알아듣는 친구로군．"
+              }
+            },
+            {
+              "Label": "L00BA",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "자， 대답은 얘기를 듣고 난 후에 해 주게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "큰일은 아니네． 어떤 물건을 좀 사 가지고 와주게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "어떤 물건이라는 것은 청룡도라는 무기네． 내가 개인적으로 갖고 싶은 물건이라네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "중국에서 제일 큰 도시에서 팔고 있다는 소릴 들었네만···어쨌든 가지고 오기만하면 되네．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "기한은 ５년． 선금으로 ６００００닢， 보수도 같네만 어떤가． 하겠나？"
+              }
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L028F",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "흠， 하는 수 없지．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 5
+                }
+              },
+              "Note": "악명 + 5"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 01"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L028F",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "좋아． 결정됐네． 자， 선금．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 60000
+              },
+              "Note": "금화 +60000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ６００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "기한이 지나면 보수는 반이네． 부탁하네．"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 1825
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 1825"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 12,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "12 05",
+              "Call": "LacksItem",
+              "Args": {
+                "Item": 58
+              },
+              "Note": "아이템 비소지 조건: 아이템 ID 58"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 9
+              },
+              "Note": "건물 조건: 값 9"
+            },
+            {
+              "OpCode": "0F 05",
+              "Call": "HasItem",
+              "Args": {
+                "Item": 58
+              },
+              "Note": "아이템 소지 조건: 아이템 ID 58"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L00A7",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "어이， 벌써 기한이 지났네！ 선금은 돌려 받겠네．"
+              }
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 60000
+              },
+              "Note": "금화 -60000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "선금 ６００００닢을 돌려주었다"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 80
+                }
+              },
+              "Note": "악명 + 80"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L00A7",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "빠른 시일 안에 청룡도를 사가지고 와 주게．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "오， 사가지고 왔나！"
+              }
+            },
+            {
+              "OpCode": "00 05",
+              "Call": "GiveItem",
+              "Args": {
+                "Item": 58
+              },
+              "Note": "아이템 보이기: 아이템 ID 58"
+            },
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L0187",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "기한이 지났으니 보수는 반이네．"
+              }
+            },
+            {
+              "OpCode": "57 05",
+              "Call": "RemoveItem",
+              "Args": {
+                "Item": 58
+              },
+              "Note": "아이템 상실: 아이템 ID 58"
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 30000
+              },
+              "Note": "금화 +30000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 30
+                }
+              },
+              "Note": "악명 + 30"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 200
+                }
+              },
+              "Note": "명성 + 200"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L0187",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "조합",
+                "Text": "해내었군！ 보수니 받게나！"
+              }
+            },
+            {
+              "OpCode": "57 05",
+              "Call": "RemoveItem",
+              "Args": {
+                "Item": 58
+              },
+              "Note": "아이템 상실: 아이템 ID 58"
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 60000
+              },
+              "Note": "금화 +60000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ６００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 500
+                }
+              },
+              "Note": "명성 + 500"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 13,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 17,
+                  "Name": "명성"
+                },
+                "B": {
+                  "Const": 8000
+                }
+              },
+              "Note": "조건: 명성 >= 8000"
+            },
+            {
+              "OpCode": "5E 0B",
+              "Call": "DiscoveryNotDone",
+              "Args": {
+                "Discovery": 102
+              },
+              "Note": "미발견 조건: 발견물 ID 102"
+            },
+            {
+              "OpCode": "59",
+              "Call": "HasFleet",
+              "Note": "배 있음 조건"
+            },
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1495
+              },
+              "Note": "연도 >= 1495"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "28 08 AD 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 14,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 00",
+              "Call": "InNation",
+              "Args": {
+                "Nation": 0
+              },
+              "Note": "국가 조건: 값 0"
+            },
+            {
+              "OpCode": "5A",
+              "Call": "NoContract",
+              "Note": "후원자 계약 없음 조건"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 값 4"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 값 2"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "아， <제독>． 포르투갈 왕께서 자네를 찾고 있었네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "왕께서 기다리고 계십니다． 어서 안으로．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "오오， <제독>． 자네에게 꼭 부탁하고 싶은 일이 있네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "자네 중국의 명 제국을 알고 있나？ 동방 최대의 대국이네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "전부터 나는 그 명과 친교를 맺으려고 생각하고 있었네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "그러나 명황제는 해금 정책을 펴， 다른 나라와의 교역을 거부하고 있네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "그래서 자네에게 외교 사자를 맡기고자 하네． 우리 나라와의 통상을 허락받는 일이네．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "자네밖에 맡길 사람이 없네． 부디 허락해 주지 않겠나？"
+              }
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L02E7",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "뭐라고！ 이것은 왕명이다！ 한번 더 묻겠다． 해주겠나？"
+              }
+            },
+            {
+              "Label": "L02E7",
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L0350",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "···물러가도 좋다···물러가게！！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 150
+                }
+              },
+              "Note": "악명 + 150"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "1A 12 01 00 1C 1C 00 1A 28 00 00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 내려갔다！"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "58 02"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "Label": "L0350",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "오오， 그런가！！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "선금으로 금화 ３００００닢을 주겠네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "４년 안에 교섭을 성립시키고 귀환해 주게．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 30000
+              },
+              "Note": "금화 +30000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 29,
+                "StatName": "STORY 의뢰 남은 기한(일)",
+                "Value": {
+                  "Const": 1460
+                }
+              },
+              "Note": "STORY 의뢰 남은 기한(일) = 1460"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "그럼 부탁하네．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 15,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 188
+              },
+              "Note": "도시 조건: 값 188"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 값 2"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 값 2"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "성문",
+                "Text": "무슨 일이냐？ 이국의 사자라고？ 잠시 기다리게．"
+              }
+            },
+            {
+              "OpCode": "29 1A",
+              "Call": "Wait",
+              "Args": {
+                "Ticks": 1
+              },
+              "Note": "기다리기(29 1A)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "성문",
+                "Text": "왕께서 뵙기를 허락하셨다． 통과해도 좋다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "남만의 사자가 대체 무슨 볼일인가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "뭐라고···으으으！ 우리 나라를 개국하라고！？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "그렇게는 못하네！ 해금은 선제로부터 이어져온 정책이네！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "뭐라고？ 아직 할 말이 남았는가？ 무슨 말이 하고 싶은 건가？"
+              }
+            },
+            {
+              "OpCode": "10 0A",
+              "Call": "AskChoice",
+              "Args": {
+                "Text": "자신의 입장 /자국의 위협 /교역의 이익",
+                "Base": 0
+              }
+            },
+            {
+              "OpCode": "43 11 0A",
+              "GotoIf": {
+                "Call": "ChoiceIsNot",
+                "Args": {
+                  "Value": 0
+                }
+              },
+              "Target": "L0273",
+              "Note": "선택지 분기, 선택값 0"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "그런 일， 내가 알 바가 아니네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "그러나 참으로 우직한 자로군．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 18,
+                "StatName": "운",
+                "Value": {
+                  "Const": 1
+                }
+              },
+              "Note": "운 + 1"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "운이 １ 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "나도 솔직히 말하자면···"
+              }
+            },
+            {
+              "Label": "L0273",
+              "OpCode": "43 11 0A",
+              "GotoIf": {
+                "Call": "ChoiceIsNot",
+                "Args": {
+                  "Value": 1
+                }
+              },
+              "Target": "L037C",
+              "Note": "선택지 분기, 선택값 1"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "하하하， 대단한 자로군． 내가 타국의 협박에 굴하리라고 생각했나？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "힘을 믿고 덤빈다면 받아주지！ 아하하！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 6,
+                "StatName": "무력",
+                "Value": {
+                  "Const": 1
+                }
+              },
+              "Note": "무력 + 1"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "무력이 １ 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "···그러나 나로서는 무턱대고 타국과 문제를 일으키려는 것은 아니겠지．"
+              }
+            },
+            {
+              "Label": "L037C",
+              "OpCode": "43 11 0A",
+              "GotoIf": {
+                "Call": "ChoiceIsNot",
+                "Args": {
+                  "Value": 2
+                }
+              },
+              "Target": "L03EB",
+              "Note": "선택지 분기, 선택값 2"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "음， 확실히 교역에 대한 이익은 생각해 볼만하지만···"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 21,
+                "StatName": "지력",
+                "Value": {
+                  "Const": 2
+                }
+              },
+              "Note": "지력 + 2"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "지력이 ２ 올라갔다！"
+              }
+            },
+            {
+              "Label": "L03EB",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "왜구 무리들로 고심할 것을 생각하면 개항은 할 수 없네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "으음， 기다리게． 이렇게 하는 것은 어떤가？ 그러니까···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "명의 항구는 개항하지 않는다． 대신 그대 나라에 항구를 조성할 땅을 유상으로 빌려 주겠소．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "그 항구에서의 무역세는 명이 징수하는 것으로 하겠네． 이것으로 어떤가？"
+              }
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L05A2",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "음， 그럼 하는 수 없군． 무상으로 빌려주도록 하지．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 1
+                }
+              },
+              "Note": "악명 + 1"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 10
+                }
+              },
+              "Note": "명성 + 10"
+            },
+            {
+              "Label": "L05A2",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "음， 얘기는 끝났네！ 남만의 왕에게 이 뜻을 전하게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "가정제",
+                "Text": "물러가도 좋네．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L073C",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "<제독>님···왕께서 몹시 화가 나 계십니다．"
+              }
+            },
+            {
+              "OpCode": "29 1A",
+              "Call": "Wait",
+              "Args": {
+                "Ticks": 1
+              },
+              "Note": "기다리기(29 1A)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "<제독>！ 기한이 지나지 않았는가！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "도대체 어디를 헤매고 왔는가！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "선금을 돌려주고 빨리 물러가게！"
+              }
+            },
+            {
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 30000
+              },
+              "Note": "금화 -30000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ３００００닢을 돌려주었다"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 200
+                }
+              },
+              "Note": "악명 + 200"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "1A 12 01 00 1C 1C 00 1A 28 00 00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 내려갔다！"
+              }
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "Label": "L073C",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "왕명을 달성하기를 기도하겠습니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 16,
+        "Step": 3,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 0
+              },
+              "Note": "도시 조건: 값 0"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 값 2"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "집사",
+                "Text": "왕께서 기다리고 계십니다． 어서 안으로．"
+              }
+            },
+            {
+              "OpCode": "29 1A",
+              "Call": "Wait",
+              "Args": {
+                "Ticks": 1
+              },
+              "Note": "기다리기(29 1A)"
+            },
+            {
+              "OpCode": "43 2D",
+              "GotoIf": {
+                "Call": "GreaterThan",
+                "Args": {
+                  "A": {
+                    "Stat": 29,
+                    "Name": "STORY 의뢰 남은 기한(일)"
+                  },
+                  "B": {
+                    "Const": 0
+                  }
+                }
+              },
+              "Target": "L0147",
+              "Note": "STORY 의뢰 남은 기한(일) > 0 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "<제독>！ 기한이 지나지 않았는가！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "하지만， 성공했다면 됐네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "보수를 받게나．"
+              }
+            },
+            {
+              "OpCode": "26 08",
+              "Call": "CreateCity",
+              "Args": {
+                "City": 173
+              },
+              "Note": "신도시 생성: 도시 ID 173"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 4,
+                "StatName": "악명",
+                "Value": {
+                  "Const": 10
+                }
+              },
+              "Note": "악명 + 10"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 400
+                }
+              },
+              "Note": "명성 + 400"
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 20000
+              },
+              "Note": "금화 +20000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ２００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "19 12 01 00 1C 1C 00 1A"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "0A",
+              "Call": "SayBare",
+              "Args": {
+                "Text": ""
+              }
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 조금 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "Label": "L0147",
+              "OpCode": "29 1A",
+              "Call": "Wait",
+              "Args": {
+                "Ticks": 1
+              },
+              "Note": "기다리기(29 1A)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "오오， 어땠는가？ 뭐라고！！ 잘 되었는가！！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "마누엘 1세",
+                "Text": "수고했네． 사례금을 받게나．"
+              }
+            },
+            {
+              "OpCode": "26 08",
+              "Call": "CreateCity",
+              "Args": {
+                "City": 173
+              },
+              "Note": "신도시 생성: 도시 ID 173"
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 50000
+              },
+              "Note": "금화 +50000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 ５００００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 1000
+                }
+              },
+              "Note": "명성 + 1000"
+            },
+            {
+              "Call": "Raw",
+              "Args": {
+                "Bytes": "19 12 01 00 1C 1C 00 1A 28 00 00 00"
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "친밀도가 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  "Source": "PDG.CDS",
+  "Version": 14
+}
