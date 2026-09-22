@@ -1741,8 +1741,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
             if (dice.Next(inTime ? 120 : 150) > mind + 1)
             {
+                // 「%s%s」는 「죽었다·도망쳤다」에 조사 라면/이라면 을 붙인 것이다(0x0044FB67 의 0x004281B0(말, 9)).
                 TalkDialog.Say(_view, _game.Faces?.TryGetBgra(Inspector.Face, female: false), "",
-                               $"나라면 여기 있지만, 여행지에서 {word}니 누구를 말하는 건가?");
+                               $"나라면 여기 있지만, 여행지에서 {word}{NameToken.Of(word, 9)} 누구를 말하는 건가?");
                 // 0x0054C338 · 0x0054C360 · 0x0054C398
                 Say(Pick3("이 거짓말장이를 감옥에 집어 넣어라!",
                           "자네들을 믿고 있었건만... 이 자들을 감옥에 집어 넣어라!",
