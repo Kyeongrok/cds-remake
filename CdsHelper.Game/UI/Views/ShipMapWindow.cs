@@ -3796,7 +3796,8 @@ public sealed class ShipMapWindow : Window
     ///          최대 = min(소지금/값, 100, 빈 적재, 남는 무게/단중량)
     /// </code>
     /// 「정보를 산다」(<c>0x005702A0</c>)와 그 대답 두 줄은 EXE 에 글만 있고 <b>아무도 안 읽는다</b>.
-    /// 인사말의 셋째 %s 는 조사 갈래를 못 짚어 받침이 있으면 「이」를 붙인다.
+    /// 인사말의 셋째 %s 는 조사 갈래 16(<c>0x0048CD6B</c> 의 <c>0x004281B0(이름, 0x10)</c>) — 받침이 있으면
+    /// 「이」, 없으면 빈 글이다(「길동이」의 그 이). 첫째 %s 는 나라표(<c>0x004CA370</c>, 24바이트)의 이름이다.
     /// </remarks>
     private void Trade(PersonTable.Row who, string nationName, int[] fortune, uint[]? face, uint[]? aide)
     {
