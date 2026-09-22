@@ -403,8 +403,10 @@ public static class Encounter
     /// <code>
     ///   척수 = 무력/14 + (해적 2 · 군인·정복자 1)   1~8, 굴림 없음
     /// </code>
-    /// 능력 합(<see cref="Enemy.Sum"/>)에 어느 넷이 드는지는 아직 못 짚었다 — <b>무력·지력·매력·운</b>의
-    /// 게임 값(날값−1) 합에 1 을 더해 쓴다. 이름은 인물 이름(262 「사략 함대」 따위)이다.
+    /// 능력 합(<see cref="Enemy.Sum"/>)은 <b>적장을 모를 때의 갈음값</b>일 뿐이다 — 요구액에 드는 것은 적장의
+    /// 검술·포술·사격술·신학(<see cref="SkillSum"/>, <c>0x00455A36</c>)이고, 적장은 늘 있어(<c>0x004435DE</c> 의
+    /// <c>0x004319D0(번호)</c>) 이 값은 실제로 안 쓰인다. 무력·지력·매력·운의 게임 값(날값−1) 합에 1 을 더해 둔다.
+    /// 이름은 인물 이름(262 「사략 함대」 따위)이다.
     /// </remarks>
     private static Enemy Make(EnemyKind kind, int leaderId, Random rng, Func<int, Captain?>? lookup)
     {
