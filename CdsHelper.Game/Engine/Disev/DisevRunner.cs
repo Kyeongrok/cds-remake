@@ -1373,22 +1373,69 @@ public sealed class DisevRunner
     }
 
     /// <summary>
-    /// 능력치 한 칸을 그만큼 움직인다. 아는 칸만 움직이고 나머지는 지나간다.
+    /// 능력치 한 칸을 그만큼 움직인다. 게임의 뜀표(<c>0x004094C7</c> 의 <c>0x0040C228</c>, 0~29)를 따른다 —
+    /// 표에 없는 칸(5·9·12~16·19·24~)은 게임도 지나간다.
     /// </summary>
-    /// <remarks>번호는 <see cref="DisevScript.StatNames"/> 표 그대로다.</remarks>
+    /// <remarks>
+    /// 번호는 <see cref="DisevScript.StatNames"/> 표 그대로다. 갈래마다 게임이 하는 일은 이렇다.
+    /// <code>
+    ///    0  0x004094CE  함대 피로도            vt+0x10(n)            1  0x004094E5  규율 0x00474060(n)
+    ///    2  0x004094F8  총 선원 수             vt+4(n) — 0~정원      3  0x0040950F  소지금 0x0047CBC0(n)
+    ///    4  0x00409522  악명 0x004800E0(1, n)  0..99999 로 자르고 「악명이 %d 올라갔다/내려갔다」(0x005386E0 · 0x005386C8)
+    ///    6  무력 · 7 체력 · 18 운 · 21 지력 · 22 매력 · 23 신앙심   0x00432C50(칸, n) — 보이는 값 1~100 으로 자른다
+    ///    8  0x0040959E  제독 컨디션            0x00432C80(n) — 0..2000
+    ///   10  0x004095B1  부관 체력 · 11 0x004095D6 부관 컨디션 — 부관 자리(+0x20)에 같은 셈. 부관이 없으면 지나간다
+    ///   17  0x004095F9  명성 0x004800E0(0, n)  0..99999 로 자르고 상태 칸을 다시 그린 뒤(0x0047E360(…, 6))
+    ///                                          「명성이 %d 올라갔다/내려갔다」(0x00538710 · 0x005386F8)
+    ///   20  0x0040966C  기함 내구              hp = clamp(hp + n, 0, 250)(0x0044C860 → 0x0049E560 → 0x0044C850)
+    /// </code>
+    /// 명성·악명 알림은 0 이면 안 낸다(<c>0x00409554</c> 의 <c>jle</c>).
+    /// </remarks>
     private void Adjust(int stat, int by)
     {
+        var player = _game.Player;
         switch (stat)
         {
-            case 0: _game.Player.Tire(by); break;      // 피로도
-            case 1: _game.Player.Cheer(by); break;     // 규율(사기)
-            case 3:                                    // 소지금
-                if (by >= 0) _game.Player.Earn(by); else _game.Player.Pay(-by);
+            case 0: player.Tire(by); break;      // 피로도
+            case 1: player.Cheer(by); break;     // 규율(사기)
+            case 2: player.AddCrew(by); break;   // 총 선원 수
+            case 3:                              // 소지금
+                if (by >= 0) player.Earn(by); else player.Pay(-by);
                 break;
-            case 4: _game.Player.Infamy = Math.Max(0, _game.Player.Infamy + by); break;   // 악명
-            case 6: _game.Player.AdjustAbility(Support.Local.Models.Ability.Might, by); break;    // 무력
-            case 17: _game.Player.Fame = Math.Max(0, _game.Player.Fame + by); break;   // 명성
-            case 22: _game.Player.AdjustAbility(Support.Local.Models.Ability.Charm, by); break;   // 매력
+            case 4:                              // 악명
+                player.Infamy = Math.Clamp(player.Infamy + by, 0, Sea.FleetRaid.MaxRenown);
+                if (by < 0) NoticeDialog.Show(_owner, $"악명이 {-by} 내려갔다");
+                else if (by > 0) NoticeDialog.Show(_owner, $"악명이 {by} 올라갔다");
+                break;
+            case 6: player.AdjustAbility(Support.Local.Models.Ability.Might, by); break;   // 무력
+            case 7: player.AdjustAbility(Support.Local.Models.Ability.Body, by); break;    // 체력
+            case 8: player.SetCondition(player.Condition + by); break;                     // 컨디션
+            case 10:                             // 부관 체력
+                if (AideInfo() is { } aideBody)
+                    player.RememberMate(aideBody with
+                    {
+                        Body = Math.Clamp(Support.Local.Models.Ability.Display(aideBody.Body) + by,
+                                          1, Support.Local.Models.Ability.Max) - 1,
+                    });
+                break;
+            case 11:                             // 부관 컨디션
+                if (AideInfo() is { } aideLife)
+                    player.RememberMate(aideLife with
+                    {
+                        Condition = Math.Clamp(aideLife.Condition + by, 0,
+                                               Support.Local.Models.Player.ConditionMax),
+                    });
+                break;
+            case 17:                             // 명성
+                player.Fame = Math.Clamp(player.Fame + by, 0, Sea.FleetRaid.MaxRenown);
+                if (by < 0) NoticeDialog.Show(_owner, $"명성이 {-by} 내려갔다");
+                else if (by > 0) NoticeDialog.Show(_owner, $"명성이 {by} 올라갔다");
+                break;
+            case 18: player.AdjustAbility(Support.Local.Models.Ability.Luck, by); break;   // 운
+            case 20: player.FlagshipHull?.Batter(by); break;                               // 기함 내구
+            case 21: player.AdjustAbility(Support.Local.Models.Ability.Mind, by); break;   // 지력
+            case 22: player.AdjustAbility(Support.Local.Models.Ability.Charm, by); break;  // 매력
+            case 23: player.AdjustAbility(Support.Local.Models.Ability.Faith, by); break;  // 신앙심
         }
     }
 
