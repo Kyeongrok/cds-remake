@@ -261,8 +261,14 @@ public sealed class DisevEditorDialog : GameWindow
     }
 
     /// <summary>임자 창 가운데에 띄운다.</summary>
-    public static void Show(Window owner) =>
-        new DisevEditorDialog { Owner = owner }.ShowDialog();
+    /// <param name="book">처음에 펼 책(<see cref="DisevBook.Books"/> 의 첫 칸, 「PEX」 따위). 없으면 발견 이벤트다.</param>
+    public static void Show(Window owner, string? book = null)
+    {
+        var dialog = new DisevEditorDialog { Owner = owner };
+        int at = Array.FindIndex(DisevBook.Books, b => b.Cache == book);
+        if (at >= 0) dialog._book_.SelectedIndex = at;
+        dialog.ShowDialog();
+    }
 
     private static Button Bar(string text) => new()
     {

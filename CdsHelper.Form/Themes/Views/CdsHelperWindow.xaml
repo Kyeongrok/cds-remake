@@ -303,6 +303,10 @@
                                             Header="대본 편집 (발견 이벤트 · 이야기)"
                                             ToolTip="발견 이벤트(DISEV.CDS)와 초심자·새 주인공의 이야기 대본(STORY0/1 · PEX~ECQ)을 보고 고친다" />
                                         <MenuItem
+                                            x:Name="PART_QuestEditorMenu"
+                                            Header="퀘스트 (직업별 이야기)"
+                                            ToolTip="새 주인공(NORMAL)의 국적 x 직업 개인 이야기 여덟 책(PEX~ECQ)을 장면마다 보고 고친다" />
+                                        <MenuItem
                                             x:Name="PART_FormationMenu"
                                             Header="부대 편성"
                                             ToolTip="적이 내는 부대 세트 여덟 벌을 보고 고친다 — 맘루크·예니체리·사무라이가 무엇을 데리고 나오는지" />

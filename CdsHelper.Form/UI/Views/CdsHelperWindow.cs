@@ -31,6 +31,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_CityCultureMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_NationEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_DisevEditorMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_QuestEditorMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_VoyagerEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_BuildingListMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_PersonEditMenu, Type = typeof(MenuItem))]
@@ -69,6 +70,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_CityCultureMenu = "PART_CityCultureMenu";
     private const string PART_NationEditMenu = "PART_NationEditMenu";
     private const string PART_DisevEditorMenu = "PART_DisevEditorMenu";
+    private const string PART_QuestEditorMenu = "PART_QuestEditorMenu";
     private const string PART_VoyagerEditMenu = "PART_VoyagerEditMenu";
     private const string PART_BuildingListMenu = "PART_BuildingListMenu";
     private const string PART_PersonEditMenu = "PART_PersonEditMenu";
@@ -208,6 +210,11 @@ public class CdsHelperWindow : CdsWindow
         if (GetTemplateChild(PART_DisevEditorMenu) is MenuItem disevEditorMenu)
         {
             disevEditorMenu.Click += OnDisevEditorMenuClick;
+        }
+
+        if (GetTemplateChild(PART_QuestEditorMenu) is MenuItem questEditorMenu)
+        {
+            questEditorMenu.Click += OnQuestEditorMenuClick;
         }
 
         if (GetTemplateChild(PART_VoyagerEditMenu) is MenuItem voyagerEditMenu)
@@ -461,6 +468,11 @@ public class CdsHelperWindow : CdsWindow
     // 저장할 때 옆에 시각을 붙인 백업을 남긴다.
     private void OnDisevEditorMenuClick(object sender, RoutedEventArgs e) =>
         CdsHelper.Game.UI.Views.DisevEditorDialog.Show(this);
+
+    // 새 주인공(NORMAL)의 직업별 퀘스트 — 같은 편집기를 개인 이야기 책(PEX~ECQ)부터 펴서 연다.
+    // 책 콤보에서 국적 x 직업 여덟 책을 오가고, 장면마다 「조건 · 첫 대사」 이름표가 붙는다.
+    private void OnQuestEditorMenuClick(object sender, RoutedEventArgs e) =>
+        CdsHelper.Game.UI.Views.DisevEditorDialog.Show(this, "PEX");
 
     // 역사 항해자 열넷이 언제 무엇을 채가는지 고치는 창. 이 놀이의 유일한 경쟁자다.
     private void OnVoyagerEditMenuClick(object sender, RoutedEventArgs e) =>
