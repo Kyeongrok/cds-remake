@@ -480,6 +480,7 @@ public sealed class ShipMapWindow : Window
                 DiscoveryMapRow => GameSettings.ShowDiscoveryMapMenu,
                 BarmaidBookRow => GameSettings.ShowBarmaidBookMenu,
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
+                CustomBgmRow => GameSettings.CustomBgmEnabled,
                 _ => true,
             },
             // 설정은 게임 띠에 두었다가 햄버거로 옮겼다 — 게임 띠에 없는 칸이라
@@ -499,8 +500,8 @@ public sealed class ShipMapWindow : Window
             // 「도구 앱」은 개발 창으로 옮겼다 — 표를 손보는 길이라 개발 쪽이 맞다.
             // 원본에 없는 편의 기능(컨디션·미니맵·바람 화살표·기능·언어·출입 일수)은 모드 창에 모아 두었다.
             ("모드", ShowModDialog),
-            // 곡 번호마다 파일을 갈아 끼운다 — 쓸지 말지는 모드 창의 「커스텀 BGM」 스위치가 정한다.
-            ("BGM", () => CustomBgmDialog.Show(this)),
+            // 곡 번호마다 파일을 갈아 끼운다 — 모드 창의 「커스텀 BGM」 스위치를 켜야 줄이 뜬다.
+            (CustomBgmRow, () => CustomBgmDialog.Show(this)),
             ("개발", ShowDevDialog));
         DockPanel.SetDock(titleBar, Dock.Top);
         shell.Children.Add(titleBar);
@@ -692,6 +693,9 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>햄버거의 인물 이동 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string PersonMoveRow = "인물 이동";
+
+    /// <summary>햄버거의 BGM 줄 이름. 모드 창의 「커스텀 BGM」 스위치가 이 줄을 켜고 끈다.</summary>
+    internal const string CustomBgmRow = "BGM";
 
     private void ShowDiscoveryMap()
     {
