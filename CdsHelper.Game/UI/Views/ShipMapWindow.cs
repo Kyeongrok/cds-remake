@@ -6088,6 +6088,9 @@ public sealed class ShipMapWindow : Window
         if (Vitality.EntryWarning(_game.Player) is { } warn)
             TalkDialog.Say(dialog, MateFace(), "", warn);
 
+        // 그 다음이 도시에 들어서면 발견되는 것 넷이다(0x004928BB) — 인도·향료제도·중국·지팡그 따위.
+        if (dialog.DiscoverOnEntry()) return true;
+
 
         // 지구를 돌고 계약을 맺은 도시로 돌아왔으면 그 자리에서 세계일주 장면이 돈다
         // (0x00492040) — 항구 명령 창보다 먼저다.

@@ -14,6 +14,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x1C  지역 무리(0~26) — 항구 "마을정보" 가 이 무리 안의 도시를 늘어놓는다
 ///   +0x10,+0x14  딸린 내륙 도시 번호(-1 = 없음)
 ///   +0x18  조선소가 만들 줄 아는 선체 비트(0 코그 ~ 7 다우) — <see cref="HullMaskOf"/>
+///   +0x64  들어서면 발견되는 발견물 넷(-1 은 빈 칸) — <see cref="DiscoveriesOf"/>
 ///   +0x20  문화권 (0~10)         +0x24  나라 번호
 ///   +0x28  규모(처음 값, 0~7)     +0x2C  시세 첫값(어디나 100)
 ///   +0x30  특산품                 +0x3C  시장 물건 8칸 (i32), 빈 칸은 -1
@@ -42,8 +43,8 @@ public sealed class CityExeTable
     /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\도시표-게임.json</c>).</summary>
     private const string CacheName = "도시표-게임";
 
-    /// <summary>알맹이 모양 판. 지역 무리를 더하며 5 로 올렸다.</summary>
-    private const int Version = 9;
+    /// <summary>알맹이 모양 판. 지역 무리를 더하며 5 로, 들어서면 발견되는 발견물을 더하며 10 으로 올렸다.</summary>
+    private const int Version = 10;
 
     private const int TableVa = 0x004D14B0;
     private const int RowSize = 136;
@@ -126,6 +127,18 @@ public sealed class CityExeTable
     /// <summary>딸린 내륙 도시 번호가 놓인 두 자리.</summary>
     private static readonly int[] InlandOffsets = [0x10, 0x14];
 
+    /// <summary>
+    /// 도시에 <b>들어서면 발견되는</b> 발견물 번호 넷이 놓인 자리(<c>+0x64</c>, -1 은 빈 칸).
+    /// </summary>
+    /// <remarks>
+    /// 도시 화면을 열 때(<c>0x004928BB</c>) 네 칸을 차례로 돌며, 열려 있고 아직 못 찾은 것
+    /// (<c>0x004AAD20</c>)이면 그 번호의 발견 대본(DISEV.CDS)을 튼다. 인도 문화권 열세 도시가 2(인도),
+    /// 테르나테·암보이나가 4(향료제도), 중국 열일곱 도시가 5(중국), 일본 세 도시가 8(지팡그)을 들고
+    /// 있고, 예루살렘(215)·테노치티클란·멕시코(192)·쿠스코(193)·툼베스(264)도 하나씩 든다. 지도에
+    /// 사각형이 없는(<c>-1</c>) 발견물은 이 길로만 잡힌다.
+    /// </remarks>
+    private const int DiscoveryOffset = 0x64, DiscoverySlots = 4;
+
     /// <summary>문화권 수(0~10).</summary>
     public const int CultureCount = 11;
 
@@ -135,7 +148,7 @@ public sealed class CityExeTable
                                     int[] Nations, int[][] Specials,
                                     int[] CellX, int[] CellY, int[] Reach, int[] Regions,
                                     ushort[][] Erase, int[] Flags, int[]? Buildings = null,
-                                    int[]? HullMasks = null);
+                                    int[]? HullMasks = null, int[][]? Discoveries = null);
 
     private readonly int[][] _stock;
     private readonly int[] _cultures;
@@ -147,9 +160,11 @@ public sealed class CityExeTable
     private readonly int[] _flags;
     private readonly int[] _buildings;
     private readonly int[] _hullMasks;
+    private readonly int[][] _discoveries;
 
     private CityExeTable(Snapshot snapshot)
     {
+        _discoveries = snapshot.Discoveries ?? [];
         _hullMasks = snapshot.HullMasks ?? [];
         _buildings = snapshot.Buildings ?? [];
         _stock = snapshot.Stock;
@@ -278,6 +293,12 @@ public sealed class CityExeTable
     public int HullMaskOf(int cityId) =>
         cityId >= 0 && cityId < _hullMasks.Length ? _hullMasks[cityId] : 0;
 
+    /// <summary>
+    /// 그 도시에 <b>들어서면 발견되는</b> 발견물 번호들(<c>+0x64</c>, 표 차례 그대로). 빈 칸은 빼고 낸다.
+    /// </summary>
+    public IReadOnlyList<int> DiscoveriesOf(int cityId) =>
+        cityId >= 0 && cityId < _discoveries.Length ? _discoveries[cityId] : [];
+
     /// <summary>그 도시의 형편 낱말(<c>+0x62</c>). 범위 밖이면 0.</summary>
     public int FlagsOf(int cityId) =>
         cityId >= 0 && cityId < _flags.Length ? _flags[cityId] : 0;
@@ -364,9 +385,18 @@ public sealed class CityExeTable
         var flags = new int[Count];
         var buildings = new int[Count];
         var hullMasks = new int[Count];
+        var discoveries = new int[Count][];
         for (int city = 0; city < Count; city++)
         {
             int row = TableVa + city * RowSize;
+
+            var found = new List<int>(DiscoverySlots);
+            for (int k = 0; k < DiscoverySlots; k++)
+            {
+                int id = exe.Int(row + DiscoveryOffset + k * 4);
+                if (id >= 0) found.Add(id);
+            }
+            discoveries[city] = [.. found];
 
             // 도시를 지웠을 때 깔 바탕 타일 3×3.
             var block = new ushort[EraseCells];
@@ -420,6 +450,6 @@ public sealed class CityExeTable
         }
 
         return new Snapshot(stock, cultures, scales, nations, specials, cellX, cellY, reach,
-                            regions, erase, flags, buildings, hullMasks);
+                            regions, erase, flags, buildings, hullMasks, discoveries);
     }
 }

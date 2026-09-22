@@ -1201,6 +1201,53 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
+    /// 도시에 <b>들어서는 것으로</b> 발견되는 것 — 인도(2)·향료제도(4)·중국(5)·지팡그(8) 따위다.
+    /// 게임 오버로 끝났으면 true.
+    /// </summary>
+    /// <remarks>
+    /// 도시 화면을 열 때(<c>0x00492430</c>) HP 를 보고 부관이 쉬라 한 뒤에 돈다(<c>0x004928BB</c>) —
+    /// 도시 표 <c>+0x64</c> 의 발견물 넷(<see cref="CityExeTable.DiscoveriesOf"/>)을 차례로 돌며 열려 있고
+    /// 아직 못 찾은 것(<c>0x004AAD20</c>)이면 그 번호의 발견 대본을 튼다. 이런 발견물은 지도에 사각형이
+    /// 없어(<c>-1</c>) 바다 판정(<see cref="DiscoveryLog.At"/>)으로는 영영 안 잡힌다 — 예전에는 인도항로
+    /// 계약을 맺고 캘리컷에 들어가도 아무 일이 없었다. 대본이 결과 0·1 로 끝나면 게임은 발견물 줄의
+    /// <c>+0x17</c> 비트 0 을 세우는데(<c>0x0049294A</c>) 그것을 읽는 데가 없어 옮기지 않는다.
+    /// 역사가 먼저 가져간 것은 바다 판정과 같이 미리 뺀다(<see cref="DiscoveryLog.TakenBy"/>).
+    /// </remarks>
+    public bool DiscoverOnEntry()
+    {
+        if (_game.Discoveries is not { } log) return false;
+        if (_game.CityRows is not { } rows) return false;
+
+        foreach (int id in rows.DiscoveriesOf(_cityId))
+        {
+            if (log.Table.Find(id) is not { } row) continue;
+            if (_player.HasFound(row.Id)) continue;
+            if (!log.IsOpen(_player, row)) continue;
+            if (log.TakenBy(row, _player.Date) >= 0) continue;
+
+            // 대본이 있으면 그것이 다 한다 — 대사 · 음원 · 아이템 · 발견까지(바다·건물 발견과 같은 길이다).
+            bool scripted = Engine.Disev.DisevRunner.Run(this, _game, row.Id);
+            if (Engine.Disev.DisevRunner.LastEndedInGameOver)
+            {
+                GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
+                if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+                return true;
+            }
+
+            // 대본이 없을 때만 여기서 적고 알린다 — "%s%s 발견했다!"(0x00544720).
+            if (!scripted)
+            {
+                log.Discover(_player, row.Id);
+                string found = $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!";
+                MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+                if (row.Movie >= 0) NoticeDialog.Show(this, found);
+                else DiscoveryDialog.Show(this, _game.Stills, row.Picture, found);
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// 초심자(EASY) 캐릭터의 개인 퀘스트라인(이야기0·이야기1) 한 장면을 체크한다.
     /// </summary>
     /// <remarks>
