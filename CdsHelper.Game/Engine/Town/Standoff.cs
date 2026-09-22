@@ -208,7 +208,7 @@ public static class Standoff
         TalkWonWord, TalkWonNews, TalkLostWord, TalkLostNews,
         TongueTooThin, TakeCare, Spotted, GotAwaySafe,
         Caught, Banished, Fined, Robbed, GiveUpHere,
-        "거기는 악명 높은 {0}군. 죽음으로서 속죄하라!");
+        "거기는 악명 높은 {0}{1}군. 죽음으로서 속죄하라!");   // 0x00552070 — {1} 은 조사 로/으로(0x004A5566 의 0x004281B0(이름, 10))
 
     /// <summary>조약으로 막힌 문(<c>0x0046Axxx</c>) — 「침입한다」 쪽이다.</summary>
     public static readonly Script Treaty = new(
@@ -228,7 +228,7 @@ public static class Standoff
         "벌금형 또는 추방을 명한다. 목숨을 구한걸 신에게 감사해라.",          // 0x005523C0
         "소지금을 전부 빼앗겼습니다!",                          // 0x00552400
         "제독, 무사하셨습니까! 여기는 위험하니 포기합시다.",      // 0x00552420
-        "거기는 악명 높은 {0}(이) 아닌가. 죽음으로서 속죄해라.");  // 0x00552458
+        "거기는 악명 높은 {0}{1} 아닌가. 죽음으로서 속죄해라.");  // 0x00552458 — {1} 은 조사 이/가(0x0046AA20 의 0x004281B0(이름, 0))
 
     /// <summary>공격 전에 두 번 묻는 말(<c>0x00551BF0</c> · <c>0x00551C00</c>).</summary>
     /// <summary>
