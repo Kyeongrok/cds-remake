@@ -22,17 +22,23 @@ public static class DiscoveryClipPlayer
     private static readonly TimeSpan FrameTime = TimeSpan.FromMilliseconds(100);
 
     /// <summary>그 편을 끝까지 틀고 돌아온다. 못 풀면 아무 일도 없다.</summary>
+    /// <remarks>
+    /// 올려 둔 편(<see cref="DiscoveryClipFiles"/>)이 먼저고, 없으면 원본(<paramref name="clips"/>)
+    /// 이다 — 올려 둔 것은 <b>240x176 이 아닐 수 있어</b> 그 크기로 편다.
+    /// </remarks>
     public static void Play(Window owner, DiscoveryClips? clips, int clip)
     {
-        var frames = clips?.Frames(clip);
+        int width = DiscoveryClips.Width, height = DiscoveryClips.Height;
+        var frames = DiscoveryClipFiles.Frames(clip, out int uw, out int uh);
+        if (frames != null && frames.Length > 0) { width = uw; height = uh; }
+        else frames = clips?.Frames(clip);
         if (frames == null || frames.Length == 0) return;
 
         var bitmaps = new BitmapSource[frames.Length];
         for (int i = 0; i < frames.Length; i++)
         {
-            var bitmap = BitmapSource.Create(DiscoveryClips.Width, DiscoveryClips.Height, 96, 96,
-                                             PixelFormats.Bgra32, null, frames[i],
-                                             DiscoveryClips.Width * 4);
+            var bitmap = BitmapSource.Create(width, height, 96, 96,
+                                             PixelFormats.Bgra32, null, frames[i], width * 4);
             bitmap.Freeze();
             bitmaps[i] = bitmap;
         }
@@ -40,8 +46,8 @@ public static class DiscoveryClipPlayer
         double zoom = GameUi.PixelZoom(owner, 2);
         var image = new Image
         {
-            Width = DiscoveryClips.Width,
-            Height = DiscoveryClips.Height,
+            Width = width,
+            Height = height,
             Stretch = Stretch.Fill,
             Source = bitmaps[0],
             LayoutTransform = new ScaleTransform(zoom, zoom),

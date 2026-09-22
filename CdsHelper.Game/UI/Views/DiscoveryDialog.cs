@@ -183,8 +183,7 @@ public sealed class DiscoveryDialog : GameWindow
 
         if (movie != null && !File.Exists(movie)) movie = null;
 
-        if (movie == null && stills != null && picture >= 0
-            && stills.TryGetBgra(picture, out int w, out int h) is { } bgra)
+        if (movie == null && picture >= 0 && BgraOf(stills, picture, out int w, out int h) is { } bgra)
         {
             var bmp = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, bgra, w * 4);
             bmp.Freeze();
@@ -241,7 +240,7 @@ public sealed class DiscoveryDialog : GameWindow
     /// </remarks>
     public static void ShowPicture(Window owner, DiscoveryStills? stills, int picture)
     {
-        if (stills == null || picture < 0 || stills.TryGetBgra(picture, out int w, out int h) is not { } bgra) return;
+        if (picture < 0 || BgraOf(stills, picture, out int w, out int h) is not { } bgra) return;
 
         var bmp = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, bgra, w * 4);
         bmp.Freeze();
@@ -303,6 +302,16 @@ public sealed class DiscoveryDialog : GameWindow
     /// </summary>
     public static string? MovieOf(string gameDirectory, int movie) =>
         movie < 0 ? null : MovieFiles.Resolve(gameDirectory, MovieFiles.DiscoveryStem(movie));
+
+    /// <summary>
+    /// 그 그림 번호의 BGRA — 올려 둔 그림(<see cref="DiscoveryStillFiles"/>)이 먼저고, 없으면
+    /// 게임 폴더의 원본(<paramref name="stills"/>)이다.
+    /// </summary>
+    private static uint[]? BgraOf(DiscoveryStills? stills, int picture, out int w, out int h)
+    {
+        if (DiscoveryStillFiles.TryGetBgra(picture, out w, out h) is { } uploaded) return uploaded;
+        return stills?.TryGetBgra(picture, out w, out h);
+    }
 
     /// <summary>그림이 없을 때의 글 칸 너비. 게임 알림창의 가장 좁은 폭이다.</summary>
     private const double MinWidth_ = 272;

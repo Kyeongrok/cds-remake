@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Support.Local.Settings;
+using Microsoft.Win32;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -67,6 +68,22 @@ public sealed class DiscoveryEditDialog : GameWindow
         Margin = new Thickness(6, 0, 0, 0),
     };
 
+    private readonly Button _export = new()
+    {
+        Content = "내보내기…",
+        Padding = new Thickness(10, 2, 10, 2),
+        Margin = new Thickness(18, 0, 0, 0),
+        ToolTip = "고른 발견물을 표 줄·대본·힌트·그림/동영상까지 통째로 zip 한 장에 담는다",
+    };
+
+    private readonly Button _import = new()
+    {
+        Content = "불러오기…",
+        Padding = new Thickness(10, 2, 10, 2),
+        Margin = new Thickness(6, 0, 0, 0),
+        ToolTip = "내보내 둔 zip 을 읽어 그 번호의 발견물을 통째로 되돌려 놓는다",
+    };
+
     private readonly TextBlock _status = new()
     {
         Margin = new Thickness(10, 4, 10, 8),
@@ -75,6 +92,7 @@ public sealed class DiscoveryEditDialog : GameWindow
 
     private DiscoveryTable? _discoveries;
     private HintTable? _hints;
+    private string _dir = "";
 
     public DiscoveryEditDialog()
     {
@@ -120,6 +138,8 @@ public sealed class DiscoveryEditDialog : GameWindow
             Rebuild();
         };
         _resetAll.Click += (_, _) => { DiscoveryEdits.ResetAll(); Rebuild(); };
+        _export.Click += (_, _) => ExportSelected();
+        _import.Click += (_, _) => ImportOne();
 
         var label = new TextBlock
         {
@@ -131,7 +151,7 @@ public sealed class DiscoveryEditDialog : GameWindow
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(10, 10, 10, 0),
-            Children = { label, _search, _editedOnly, _add, _reset, _resetAll },
+            Children = { label, _search, _editedOnly, _add, _reset, _resetAll, _export, _import },
         };
 
         var page = new DockPanel();
@@ -191,9 +211,9 @@ public sealed class DiscoveryEditDialog : GameWindow
 
     private void Load()
     {
-        string dir = Path.GetDirectoryName(AppSettings.LastSaveFilePath) ?? "";
-        _discoveries = DiscoveryTable.Open(dir);
-        _hints = HintTable.Open(dir);
+        _dir = Path.GetDirectoryName(AppSettings.LastSaveFilePath) ?? "";
+        _discoveries = DiscoveryTable.Open(_dir);
+        _hints = HintTable.Open(_dir);
 
         if (_discoveries == null)
         {
@@ -312,6 +332,49 @@ public sealed class DiscoveryEditDialog : GameWindow
         && a.OpenAtStart == b.OpenAtStart && a.OnLand == b.OnLand && a.Once == b.Once
         && a.X1 == b.X1 && a.Y1 == b.Y1 && a.X2 == b.X2 && a.Y2 == b.Y2
         && a.Picture == b.Picture && a.Movie == b.Movie;
+
+    /// <summary>
+    /// 고른 발견물을 zip 한 장으로 내보낸다 — 표 줄·대본·힌트·미디어까지 통째로다.
+    /// </summary>
+    private void ExportSelected()
+    {
+        if (_discoveries is not { } table) return;
+        if (_grid.SelectedItem is not Row row) { _status.Text = "내보낼 줄을 먼저 고르세요."; return; }
+
+        var box = new SaveFileDialog
+        {
+            Title = $"「{row.Name}」(발견물 {row.Id}) 내보내기",
+            Filter = "발견물 꾸러미 (*.discovery.zip)|*.discovery.zip|모든 파일|*.*",
+            FileName = $"{row.Id:000}_{row.Name}.discovery.zip",
+        };
+        if (box.ShowDialog(this) != true) return;
+
+        string error = DiscoveryPackage.Export(row.Id, _dir, table, _hints, box.FileName);
+        _status.Text = error.Length == 0
+            ? $"{box.FileName} 로 내보냈습니다."
+            : $"못 내보냈습니다 — {error}";
+    }
+
+    /// <summary>
+    /// zip 을 불러와 담겨 있던 번호로 통째로 되돌려 놓는다 — 표 줄·대본·힌트·미디어까지.
+    /// </summary>
+    private void ImportOne()
+    {
+        var box = new OpenFileDialog
+        {
+            Title = "발견물 불러오기",
+            Filter = "발견물 꾸러미 (*.discovery.zip)|*.discovery.zip|모든 파일|*.*",
+        };
+        if (box.ShowDialog(this) != true) return;
+
+        string error = DiscoveryPackage.Import(box.FileName, out int id);
+        if (error.Length > 0) { _status.Text = $"못 불러왔습니다 — {error}"; return; }
+
+        Rebuild();
+        if (_grid.ItemsSource is List<Row> rows)
+            _grid.SelectedItem = rows.FirstOrDefault(r => r.Id == id);
+        _status.Text = $"발견물 {id} 번을 불러왔습니다.";
+    }
 
     /// <summary>창을 띄운다.</summary>
     public static void Show(Window? owner)
