@@ -408,6 +408,7 @@ public sealed class DisevRunner
             case DisevCall.LastConditionFalse: return !_lastCondition;               // 4B (0x0040B23F)
             case DisevCall.NoAide: return player.MateAt(0).Length == 0;              // 56 (0x0040B368)
             case DisevCall.ChoiceIs: return _choice == I("Value");                   // 11 0A (0x00408FC0)
+            case DisevCall.ChoiceIsNot: return _choice != I("Value");                // 43 11 0A — 개인 이야기가 쓴다
             case DisevCall.HintActive: return HintHeld(I("Hint"));                   // 0F 0E
             case DisevCall.HintInactive: return !HintHeld(I("Hint"));                // 12 0E (0x0040902F)
             case DisevCall.HasItem: return player.HasItem(I("Item"));                // 0F 05 (0x00408EC8)
@@ -460,8 +461,10 @@ public sealed class DisevRunner
             case DisevCall.LessThan:
             case DisevCall.LessOrEqual:
             case DisevCall.EqualTo:
+            case DisevCall.NotEqualTo:
             {
-                // 비교 뜀표 0x0040C380 — 2A A>B · 2B A≥B · 2C A<B · 2D A≤B · 2E A==B.
+                // 비교 뜀표 0x0040C380 — 2A A>B · 2B A≥B · 2C A<B · 2D A≤B · 2E A==B. 분기(43)에서는 거꾸로 이름이 온다
+                // (43 2D 가 GreaterThan, 43 2E 가 NotEqualTo) — 개인 이야기의 「의뢰 기한」 분기가 이것이다.
                 if (ValueOf(args["A"] as JsonObject) is not { } a || ValueOf(args["B"] as JsonObject) is not { } b) return null;
                 return condition switch
                 {
@@ -469,6 +472,7 @@ public sealed class DisevRunner
                     DisevCall.GreaterOrEqual => a >= b,
                     DisevCall.LessThan => a < b,
                     DisevCall.LessOrEqual => a <= b,
+                    DisevCall.NotEqualTo => a != b,
                     _ => a == b,
                 };
             }
@@ -1555,6 +1559,13 @@ public sealed class DisevRunner
         if (expr["Const"] is { } constant) return N(constant);
         if (expr["Random"] is JsonObject random)
             return N(random["From"]) + _game.Random.Next((int)Math.Max(1, N(random["Width"])));
+        // 08 [도시] 15 [교역품] — 함대 짐칸(16바이트 x n, +0 종류 · +4 수 · +8 원산지)을 훑어 <b>그 도시에서 산 그 교역품</b>의
+        // 수를 다 더한다(0x00406D9B~0x00406E21). 개인 이야기의 「캘리컷 후추 100 이상」 같은 의뢰 조건이 이것이다.
+        if (expr["Cargo"] is JsonObject cargo)
+        {
+            long city = N(cargo["City"]), goods = N(cargo["Goods"]);
+            return _game.Player.CargoHold.Where(c => c.Kind == goods && c.Origin == city).Sum(c => (long)c.Count);
+        }
         if (expr["Stat"] is not { } stat) return null;
 
         // 값 표는 0x00406E76 의 점프표(0x00407310) 그대로다. 능력치는 <b>1 을 더해</b> 낸다.
