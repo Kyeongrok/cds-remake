@@ -998,9 +998,15 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 세계일주는 가늠 없이 딴 갈래로 빠진다(0x00411FC0 이 먼저 그것을 본다).
         bool world = rows.Any(r => r.Id == Palace.WorldRoute);
         var grade = world ? Palace.ReportGrade.Good : GradeOf(patron, contract, rows);
-        int paid = world ? Palace.WorldRouteRewardFor(contract.Unpaid, inTime, _random)
-                         : RewardFor(contract, grade, inTime, scoopedHead);
-        if (world) WorldRemark(patron, inTime);
+        // 세계일주도 남이 먼저 발표했으면 딴 말·딴 사례다(0x00411D9B 가 먼저 그것을 본다) — 기한 안이면
+        // 계약금의 1/4 을 100닢 단위로 내려 주고(0x00411DAF → 0x004117D0), 늦었으면 한 푼도 없다(0x00411E77).
+        int paid = world
+            ? scoopedHead ? inTime ? Palace.To100(contract.Amount / 4) : 0
+                          : Palace.WorldRouteRewardFor(contract.Unpaid, inTime, _random)
+            : RewardFor(contract, grade, inTime, scoopedHead);
+        if (world && scoopedHead && Headline(rows) is { } beatenWorld)
+            WorldScoopedRemark(patron, beatenWorld, inTime, paid);
+        else if (world) WorldRemark(patron, inTime);
         else if (scoopedHead && Headline(rows) is { } beaten)
             ScoopedRemark(patron, beaten, inTime, paid);
         else Remark(patron, grade, inTime, paid);
@@ -1081,6 +1087,37 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             : Pick3("훌륭하다! 잘 해내었다!! 늦은 것은 공제하겠다.",
                     "이것은... 상상 이상입니다!! 제 눈이 틀림없었던 것 같군요.",
                     "오오, 이건 굉장하다! 기대를 져버리지 않았군. 늦은 것은 없었던일로 하지."));
+    }
+
+    /// <summary>
+    /// <b>세계일주</b>를 남이 먼저 발표한 뒤에 보고했을 때의 말(<c>0x00411D90</c> 의 앞 두 갈래) — 기한 둘 x 말투 셋이다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   기한 안  0x005307A8 · 0x00530800 · 0x00530850   ; 사례 닢수가 들어간다
+    ///   늦음     0x005308B8 · 0x00530928 · 0x00530988   ; 한 푼도 없다
+    /// </code>
+    /// 조사는 발견물이 가/이(<c>0x00411DEE</c> · <c>0x00411E9C</c> 의 <c>0x004281B0(이름, 0)</c>), 발표한 사람은
+    /// <see cref="ScoopedRemark"/> 와 같이 이/가 로 둔다.
+    /// </remarks>
+    private void WorldScoopedRemark(Patron patron, DiscoveryTable.Record row, bool inTime, int paid)
+    {
+        int style = StyleOf(patron);
+        string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
+
+        string me = _player.Name;
+        string what = row.Name;
+        string who = _player.ScoopedBy(row.Id) ?? "";
+        string ga = GameUi.Josa(what, "이", "가");
+        string iga = GameUi.Josa(who, "이", "가");
+
+        TalkDialog.Say(_view, FaceOf(patron), "", inTime
+            ? Pick3($"{me}, 안됐지만 {what}{ga}, 벌써 {who}{iga} 발표했네. 노력한 건 알겠지만, {paid}닢 밖에 지불할 수 없네.",
+                    $"{me}, {what}{ga} {who}{iga} 벌써 발표했습니다. 안됐지만 {paid}닢 밖에 지불할 수 없습니다.",
+                    $"늦었군, {me}. {what}{ga} {who}{iga} 발표했네. 사례는 {paid}닢이면 되겠지.")
+            : Pick3($"{me}, 자네가 발견해 온 {what}{ga}, 벌써 {who}에 의해 발표되었다. 늦은데다 이것이라니 돈은 지불할 수 없다. 불만없겠지.",
+                    $"{me}, 당신이 발견한 {what}{ga} {who}{iga} 먼저 발표했습니다. 계약기한이 넘었으니, 사례는 지불할 수 없습니다.",
+                    $"늦었군, {me}. {what}{ga} 벌써 {who}{iga} 발표했네. 기한이 넘었으니 사례를 지불하라고는 하지 못하겠지."));
     }
 
     /// <summary>
