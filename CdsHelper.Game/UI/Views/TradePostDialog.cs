@@ -329,7 +329,9 @@ public sealed class TradePostDialog : GameWindow
         _root.Children.Clear();
 
         var body = new StackPanel { IsHitTestVisible = !_bargainOn };
-        var title = GameUi.TitleBar($"매매 — {_cityName} · 시세 {_game.Rates.Of(_city)} · {CityState.NameOf(_game.Rates.StateOf(_city))}", Close);
+        // 제목은 게임 글꼴 조각으로 찍는다 — CP949 에 없는 「—」는 ? 로, 기호 영역의 「·」는 빈칸으로
+        // 나오므로 한글·ASCII 만 쓴다.
+        var title = GameUi.TitleBar($"{_cityName} 매매 (시세 {_game.Rates.Of(_city)}, {CityState.NameOf(_game.Rates.StateOf(_city))})", Close);
         GameUi.EnableDrag(this, title);
         body.Children.Add(title);
 
