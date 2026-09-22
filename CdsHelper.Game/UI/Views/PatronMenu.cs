@@ -2135,7 +2135,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private void BorrowNow(Patron patron)
     {
         if (_player.Contract is not { } contract) return;
-        if (!Local.Settings.GameSettings.AskLendShips) return;
+        // 모드의 「배 빌림 묻기」는 <b>계약할 때 저절로 묻는 것</b>만 끈다 — 여기는 사람이 줄을 골라 조르는
+        // 자리라 꺼 두어도 돈다. 예전에는 여기서도 물러나, 줄은 뜨는데 눌러도 아무 일이 없었다.
 
         _cityMenu.Close();
         var face = FaceOf(patron);
