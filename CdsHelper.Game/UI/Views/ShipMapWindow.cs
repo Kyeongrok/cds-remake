@@ -6174,7 +6174,7 @@ public sealed class ShipMapWindow : Window
     /// </summary>
     private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
-        // <b>작업표시줄 단추를 하나로 둔다.</b> 뷰어에서 띄운 것이면 이 창까지
+        // <b>작업표시줄 단추를 하나로 둔다.</b> 개발도구에서 띄운 것이면 이 창까지
         // 단추를 갖는데, 대화 창을 여닫을 때마다 활성 창이 두 단추 사이를 오가는 것이
         // 눈에 보인다 — WPF 의 ShowDialog 가 앱의 창을 다 잠갔다 푸는 통에 활성 창이
         // 잠깐 주인 쪽으로 넘어가기 때문이다. 주인이 없으면(놀이 전용 exe) 제 단추를

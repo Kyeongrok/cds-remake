@@ -182,7 +182,7 @@ public partial class CdsHelperViewModel : ObservableObject
 
     [ObservableProperty] private string _statusText = "준비됨";
     [ObservableProperty] private string _filePath = "파일 경로: 없음";
-    [ObservableProperty] private string _windowTitle = "대항해시대3 세이브 뷰어";
+    [ObservableProperty] private string _windowTitle = "대항해시대3 개발도구";
 
     public int CurrentYear => _saveGameInfo?.Year ?? 1480;
 
@@ -365,7 +365,7 @@ public partial class CdsHelperViewModel : ObservableObject
             _allCharacters = _saveGameInfo.Characters;
 
             FilePath = $"파일 경로: {filePath}";
-            WindowTitle = $"대항해시대3 세이브 뷰어 - {_saveGameInfo.DateString}";
+            WindowTitle = $"대항해시대3 개발도구 - {_saveGameInfo.DateString}";
 
             AppSettings.LastSaveFilePath = filePath;
 

@@ -1,4 +1,4 @@
-# 대항해시대3 세이브 뷰어
+# 대항해시대3 개발도구
 
 [![Release](https://img.shields.io/github/v/release/Kyeongrok/cds-helper?logo=github)](https://github.com/Kyeongrok/cds-helper/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Kyeongrok/cds-helper/total?color=brightgreen)](https://github.com/Kyeongrok/cds-helper/releases)

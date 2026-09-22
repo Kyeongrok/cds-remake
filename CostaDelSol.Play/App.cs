@@ -11,12 +11,12 @@ namespace CostaDelSol.Play;
 /// 놀이만 띄우는 실행 파일 — <c>CostaDelSol.exe</c>.
 /// </summary>
 /// <remarks>
-/// 세이브 뷰어(<c>Editor.exe</c>)를 거치지 않고 <see cref="ShipMapWindow"/> 를 바로 연다.
+/// 개발도구(<c>Editor.exe</c>)를 거치지 않고 <see cref="ShipMapWindow"/> 를 바로 연다.
 /// 두 exe 는 <b>같은 폴더에 나란히</b> 놓이고 설정도 같은 자리를 본다
-/// (<c>%APPDATA%\CdsHelper</c>) — 뷰어에서 세이브를 열어 두었으면 이쪽도 그 게임 폴더를
+/// (<c>%APPDATA%\CdsHelper</c>) — 개발도구에서 세이브를 열어 두었으면 이쪽도 그 게임 폴더를
 /// 그대로 쓴다.
 ///
-/// 게임 폴더를 아직 모르면 <b>처음 켤 때 한 번 묻는다</b>. 뷰어에는 "세이브 파일 열기" 가
+/// 게임 폴더를 아직 모르면 <b>처음 켤 때 한 번 묻는다</b>. 개발도구에는 "세이브 파일 열기" 가
 /// 있지만 이쪽에는 없으니, 여기서 안 물으면 곡도 그림도 못 읽는다.
 /// </remarks>
 internal sealed class App : Application

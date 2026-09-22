@@ -16,7 +16,7 @@ namespace CdsHelper.Main.Local.ViewModels;
 /// 발견물인지는 발견물 표의 <c>+0x0C</c> 가 들고 있어서(<see cref="DiscoveryTable"/>),
 /// 표가 열리면 이름을 붙이고 안 열리면 번호만 낸다.
 ///
-/// 게임 폴더는 마지막으로 연 세이브 파일이 있는 자리로 잡는다 — 뷰어의 다른 화면들과
+/// 게임 폴더는 마지막으로 연 세이브 파일이 있는 자리로 잡는다 — 개발도구의 다른 화면들과
 /// 같은 길이다(<see cref="AppSettings.LastSaveFilePath"/>).
 /// </remarks>
 public partial class DiscoveryStillContentViewModel : ObservableObject
