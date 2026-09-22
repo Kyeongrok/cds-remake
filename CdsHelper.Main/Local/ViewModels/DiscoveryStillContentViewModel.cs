@@ -49,13 +49,12 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
         Stills.Clear();
         Selected = null;
 
+        // 세이브를 한 번도 안 열었어도 원본 폴더가 없다는 뜻일 뿐이다 — DiscoveryStills.Open 이
+        // CdsAssetPath 로 릴리즈 cdsx 로 물러나므로(fb-ui-24 와 같은 까닭) 실행 폴더를 대신 준다.
         string? save = AppSettings.LastSaveFilePath;
-        string dir = string.IsNullOrEmpty(save) ? "" : Path.GetDirectoryName(save) ?? "";
-        if (dir.Length == 0)
-        {
-            Note = "게임 폴더를 아직 모릅니다 — 세이브 파일을 한 번 열어 주세요.";
-            return;
-        }
+        string dir = !string.IsNullOrEmpty(save) && Directory.Exists(Path.GetDirectoryName(save))
+            ? Path.GetDirectoryName(save)!
+            : AppDomain.CurrentDomain.BaseDirectory;
 
         var art = DiscoveryStills.Open(dir);
         if (art == null)

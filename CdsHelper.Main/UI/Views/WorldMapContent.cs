@@ -266,16 +266,14 @@ public class WorldMapContent : ContentControl
             }
         }
 
-        // 세이브 파일 경로 기준으로 WORLD.CDS 자동 로드
+        // 세이브 파일 경로 기준으로 WORLD.CDS 자동 로드 — 세이브를 한 번도 안 열었어도
+        // CdsAssetPath 가 릴리즈 cdsx 로 물러나므로(fb-ui-24 와 같은 까닭) 실행 폴더를 대신 준다.
         var savePath = AppSettings.LastSaveFilePath;
-        if (!string.IsNullOrEmpty(savePath))
-        {
-            var dir = Path.GetDirectoryName(savePath);
-            if (dir != null)
-            {
-                LoadAndRender(CdsAssetPath.Resolve(dir, "WORLD.CDS"));
-            }
-        }
+        var dir = !string.IsNullOrEmpty(savePath) && Path.GetDirectoryName(savePath) is { } saved
+                 && Directory.Exists(saved)
+            ? saved
+            : AppDomain.CurrentDomain.BaseDirectory;
+        LoadAndRender(CdsAssetPath.Resolve(dir, "WORLD.CDS"));
 
         // 좌표 추적 자동 시작
         var autoHWnd = GameWindowHelper.FindGameWindow();

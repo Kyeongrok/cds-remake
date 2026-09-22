@@ -205,10 +205,13 @@ public class EditDiscoveryDialog : Window
 
     private void LoadWorldMap()
     {
+        // 세이브를 한 번도 안 열었어도 원본 폴더가 없다는 뜻일 뿐이다 — CdsAssetPath 가
+        // 릴리즈 cdsx 로 물러나므로(fb-ui-24 와 같은 까닭) 실행 폴더를 대신 준다.
         var savePath = AppSettings.LastSaveFilePath;
-        if (string.IsNullOrEmpty(savePath)) return;
-        var dir = Path.GetDirectoryName(savePath);
-        if (string.IsNullOrEmpty(dir)) return;
+        var dir = !string.IsNullOrEmpty(savePath) && Path.GetDirectoryName(savePath) is { } saved
+                 && Directory.Exists(saved)
+            ? saved
+            : AppDomain.CurrentDomain.BaseDirectory;
         var worldPath = CdsAssetPath.Resolve(dir, "WORLD.CDS");
         var data = WorldMapRenderer.LoadWorldData(worldPath);
         if (data == null) return;
