@@ -1373,76 +1373,86 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         bool seated = contract.Sponsor == patron.Name;
         void Steward(string words) => TalkDialog.Say(_view, StewardFace(), "", words);
 
-        Steward(seated
-            ? inTime
-                ? $"아니, {me}님. 귀환을 축하드립니다. {rank}{GameUi.Josa(rank, "이", "가")} 기다리고 계십니다. 안내하지요."
-                : $"아니, {me}, 꽤 귀환이 늦었군요... 일단 {rank}에게 보고하지요."
-            : inTime
-                ? $"아니, {me}님. 무사 귀환을 축하드립니다."
-                : $"아니, {me}. 꽤 귀환이 늦었군요...");
-
-        // 계약을 맺은 사람이 은퇴하고 뒷사람이 그 자리에 앉았으면 인사가 통째로 다르다
-        // (0x00411620) — 집사가 자리가 바뀐 것을 먼저 이르고 대신 보고해 준다.
-        if (!seated)
-            HandOver(patron, contract, Pick3);
-        else
-        {
-            // 집사가 후원자에게 아뢴다(0x00411751). 여기서도 후원자는 경칭으로만 부른다.
-            Steward($"{rank}. {me}{GameUi.Josa(me, "이", "가")} 돌아왔습니다.");
-            Say(inTime
-                ? Pick3("으음, 기다리고 있었네! 결과는 어떻게 되었나?",
-                        "무사해서 다행입니다. 모험은 어떠했습니까?",
-                        "오오, 무사히 돌아왔는가! 자 빨리 성과를 들려 주게.")
-                : Pick3("꽤 늦었군. 그래, 결과는 어떤가?",
-                        "꽤 늦으셨군요. 그래도 성과는 있으셨겠지요?",
-                        $"{me}, 기다리기 지쳤네. 그래, 성과는 있었나?"));
-        }
-
-        // 인사 다음에 <b>계약 정보 창</b>이 뜬다 — 발견물과 증거품이 거기 적힌다.
-        var sheet = GameInfo.ContractSheetOf(_game);
-        ContractDialog.Show(_view, sheet.Contract, _player.Date,
-                            sheet.HintName, sheet.Found, sheet.Evidence,
-                            _game.Sponsors?.FindByName(sheet.Contract?.Sponsor ?? "")?.Name);
-
-        var stage = _view as CityPicView;
-        int paid;
-        Palace.ReportGrade grade;
-        bool scooped;
+        // 설득 · 배신 결판과 같은 자리다 — 인사를 받는 순간부터 알현 곡이 돌고, 보고를
+        // 마치고 나서면 도시 곡으로 돌아간다(PersuadeBody · Reckon 의 볼트 주석 참고).
+        _game.Bgm.Play(BgmPlayer.SponsorTrack);
         try
         {
-            // 보고하는 동안 도시 그림이 파래진다 — 바다에서 발견할 때와 같다.
-            stage?.Shade(true);
-            (paid, grade, scooped) = ReportEach(patron, contract, rows, inTime);
+            Steward(seated
+                ? inTime
+                    ? $"아니, {me}님. 귀환을 축하드립니다. {rank}{GameUi.Josa(rank, "이", "가")} 기다리고 계십니다. 안내하지요."
+                    : $"아니, {me}, 꽤 귀환이 늦었군요... 일단 {rank}에게 보고하지요."
+                : inTime
+                    ? $"아니, {me}님. 무사 귀환을 축하드립니다."
+                    : $"아니, {me}. 꽤 귀환이 늦었군요...");
+
+            // 계약을 맺은 사람이 은퇴하고 뒷사람이 그 자리에 앉았으면 인사가 통째로 다르다
+            // (0x00411620) — 집사가 자리가 바뀐 것을 먼저 이르고 대신 보고해 준다.
+            if (!seated)
+                HandOver(patron, contract, Pick3);
+            else
+            {
+                // 집사가 후원자에게 아뢴다(0x00411751). 여기서도 후원자는 경칭으로만 부른다.
+                Steward($"{rank}. {me}{GameUi.Josa(me, "이", "가")} 돌아왔습니다.");
+                Say(inTime
+                    ? Pick3("으음, 기다리고 있었네! 결과는 어떻게 되었나?",
+                            "무사해서 다행입니다. 모험은 어떠했습니까?",
+                            "오오, 무사히 돌아왔는가! 자 빨리 성과를 들려 주게.")
+                    : Pick3("꽤 늦었군. 그래, 결과는 어떤가?",
+                            "꽤 늦으셨군요. 그래도 성과는 있으셨겠지요?",
+                            $"{me}, 기다리기 지쳤네. 그래, 성과는 있었나?"));
+            }
+
+            // 인사 다음에 <b>계약 정보 창</b>이 뜬다 — 발견물과 증거품이 거기 적힌다.
+            var sheet = GameInfo.ContractSheetOf(_game);
+            ContractDialog.Show(_view, sheet.Contract, _player.Date,
+                                sheet.HintName, sheet.Found, sheet.Evidence,
+                                _game.Sponsors?.FindByName(sheet.Contract?.Sponsor ?? "")?.Name);
+
+            var stage = _view as CityPicView;
+            int paid;
+            Palace.ReportGrade grade;
+            bool scooped;
+            try
+            {
+                // 보고하는 동안 도시 그림이 파래진다 — 바다에서 발견할 때와 같다.
+                stage?.Shade(true);
+                (paid, grade, scooped) = ReportEach(patron, contract, rows, inTime);
+            }
+            finally
+            {
+                stage?.Shade(false);
+            }
+
+            // 사례는 파란 막이 걷힌 뒤에 받는다. 줄도 갈래마다 다르다
+            // (0x005304B0 · 0x00530570 · 0x00530648 · 0x00530788).
+            string him = patron.Name;
+            GameDialog.Show(_view, grade != Palace.ReportGrade.Poor && !scooped
+                ? $"금화 {paid}닢을 받았다!"
+                : inTime ? $"{him}{GameUi.Josa(him, "은", "는")} 금화 {paid}닢 밖에 지불하지 않았다!"
+                         : $"{him}{GameUi.Josa(him, "은", "는")} 돈을 지불하지 않았다!");
+
+            // 마무리 대사(0x00411010 — 기한 · 세계일주인가 · 남이 먼저 발표했는가 셋을 받는다).
+            // <code>
+            //   0041115b  cmp 기한, 0     ; je  → 짧은 벌
+            //   00411165  cmp 알려짐, 0   ; jne → 짧은 벌
+            //   0041116f  → 긴 벌 — 0x0052FA50 · 0x0052FA78 · 0x0052FAB8
+            //   0041119a  → 짧은 벌 — 0x0052FB08 · 0x0052FB28 · 0x0052FB58
+            // </code>
+            // 남이 먼저 발표해 버렸어도 짧은 벌이다(0x00411165).
+            if (world) WorldFinale(patron, inTime, Pick3);
+            else Say(inTime && !scooped
+                ? Pick3("잘 했네. 무슨 일이 있으면 또 오게나.",
+                        "수고하셨습니다. 다시 모험을 하게 되신다면 여기에 와 주십시오.",
+                        "음음, 잘 했네. 또 흥미있는 이야기가 있을 때는 원조하겠네. 부담없이 와 주게나.")
+                : Pick3("무슨 일이 있으면 또 오게나.",
+                        "다시 모험을 하게 되신다면 여기에 와 주십시오.",
+                        "또 흥미있는 이야기가 있을 때는 원조하겠네. 부담없이 와 주게나."));
         }
         finally
         {
-            stage?.Shade(false);
+            _game.Bgm.Play(_cityTrack);
         }
-
-        // 사례는 파란 막이 걷힌 뒤에 받는다. 줄도 갈래마다 다르다
-        // (0x005304B0 · 0x00530570 · 0x00530648 · 0x00530788).
-        string him = patron.Name;
-        GameDialog.Show(_view, grade != Palace.ReportGrade.Poor && !scooped
-            ? $"금화 {paid}닢을 받았다!"
-            : inTime ? $"{him}{GameUi.Josa(him, "은", "는")} 금화 {paid}닢 밖에 지불하지 않았다!"
-                     : $"{him}{GameUi.Josa(him, "은", "는")} 돈을 지불하지 않았다!");
-
-        // 마무리 대사(0x00411010 — 기한 · 세계일주인가 · 남이 먼저 발표했는가 셋을 받는다).
-        // <code>
-        //   0041115b  cmp 기한, 0     ; je  → 짧은 벌
-        //   00411165  cmp 알려짐, 0   ; jne → 짧은 벌
-        //   0041116f  → 긴 벌 — 0x0052FA50 · 0x0052FA78 · 0x0052FAB8
-        //   0041119a  → 짧은 벌 — 0x0052FB08 · 0x0052FB28 · 0x0052FB58
-        // </code>
-        // 남이 먼저 발표해 버렸어도 짧은 벌이다(0x00411165).
-        if (world) WorldFinale(patron, inTime, Pick3);
-        else Say(inTime && !scooped
-            ? Pick3("잘 했네. 무슨 일이 있으면 또 오게나.",
-                    "수고하셨습니다. 다시 모험을 하게 되신다면 여기에 와 주십시오.",
-                    "음음, 잘 했네. 또 흥미있는 이야기가 있을 때는 원조하겠네. 부담없이 와 주게나.")
-            : Pick3("무슨 일이 있으면 또 오게나.",
-                    "다시 모험을 하게 되신다면 여기에 와 주십시오.",
-                    "또 흥미있는 이야기가 있을 때는 원조하겠네. 부담없이 와 주게나."));
 
         // 나설 때의 차례 그대로다(0x0044E6C0) — 부하 재계약(0x00454160) · 빌린 배 돌려주기(0x004105A0) 다음이
         // 숨겨 둔 증거품(0x0041C480)이다.
@@ -1504,98 +1514,108 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         _cityMenu.Close();
 
-        // 문간에서 집사가 먼저 맞는다(0x0044F2E0) — <b>기한을 지켰는지</b>와 <b>계약한 사람이
-        // 아직 그 자리에 앉아 있는지</b>로 네 갈래다(0x0054B520 · 0x0054B558 · 0x0054B5A0 ·
-        // 0x0054B618). 뒤에 이어지는 「…이 왔습니다」는 집사가 주인에게 아뢰는 딴 말이다.
-        GreetAtDoor(patron, contract, overdue);
-
-        // 집사가 먼저 알린다. 기한을 넘겼으면 말이 달라진다.
-        string me = _player.Name;
-        // 계약을 맺은 사람이 은퇴하고 뒷사람이 앉았으면 집사가 <b>선대의 계약</b>이라 이른다
-        // (0x0054B7A0 · 0x0054B7F0) — 주인의 대꾸도 따로 있다(0x0054B860 · 0x0054B878 · 0x0054B8A0).
-        bool handed = contract.Sponsor != patron.Name;
-        Say(handed
-            ? (overdue
-                ? $"{patron.Name}님. {_player.NationName}의 {me}{GameUi.Josa(me, "이", "가")} 왔습니다. "
-                  + "전 주인과 계약을 맺은 모양입니다만, 기한을 넘은 데다 아무런 성과도 없는 듯 합니다만."
-                : $"{patron.Name}님. {_player.NationName}의 {me}{GameUi.Josa(me, "이", "가")} 왔습니다. "
-                  + "뭔가, 전 주인과의 계약을 파기 하고 싶다고 합니다만.")
-            : (overdue
-                ? $"{patron.Name}님. {me}{GameUi.Josa(me, "이", "가")} 돌아왔습니다. "
-                  + "기한을 넘은 데다, 아무런 성과도 없는 듯 합니다만."
-                : $"{patron.Name}님. {me}{GameUi.Josa(me, "이", "가")} 왔습니다. "
-                  + "뭔가, 계약을 파기하고 싶다고 합니다만."));
-
-        // 집사 말을 듣고 주인이 먼저 한숨을 짓는다(0x0044F2E0) — 말투 셋 x 기한 둘이다.
-        // 선대의 계약이면 그 자리에 딴 말이 든다(0x0054B860 · 0x0054B878 · 0x0054B8A0).
-        // <code>
-        //   기한 안  0x0054B6D0 · 0x0054B6E0 · 0x0054B6F0
-        //   늦음     0x0054B760 · 0x0054B770 · 0x0054B788
-        // </code>
-        Say(handed
-            ? Pick3("전 주인과 계약....", "아니... 전 주인과의 계약입니까...", "흐~음, 전 주인과의 계약이라니...")
-            : overdue
-                ? Pick3(".........", "무슨 일일까요...", "후~, 기대하고 있었건만.")
-                : Pick3("뭐라고...", "뭐라고...", "후~... 계약을 파기하리라고는."));
-
-        // 계약중단은 어느 갈래로 끝나든 후원자가 삐진다(0x0044EEA0 의 비트 14) — 30일 동안 설득을 물린다.
-        // 부관의 「제독, 곤란하게 되었습니다…」(0x00532430)는 여기서 안 나온다 — 감찰관을 처벌했을 때
-        // 나서는 말이다(0x0044E6FD 의 +0xBC == 2).
-        bool forgiven = Forgiven(patron, overdue);
-        if (!forgiven)
+        // 보고 · 설득과 같은 자리다 — 집사가 맞는 순간부터 알현 곡이 돌고, 나서면 도시
+        // 곡으로 돌아간다(PersuadeBody 의 볼트 주석 참고).
+        _game.Bgm.Play(BgmPlayer.SponsorTrack);
+        try
         {
-            // 용서받지 못하면 곧바로 죄를 묻는다(0x0044F7EB → 0x0044F87D 의 0x0044F100) —
-            // 친밀도 −20 뒤 봐줌·위약금·감옥으로 갈린다.
-            bool doomed = Punish(patron, _game.Sponsors?.FindByName(patron.Name), Pick3);
+            // 문간에서 집사가 먼저 맞는다(0x0044F2E0) — <b>기한을 지켰는지</b>와 <b>계약한 사람이
+            // 아직 그 자리에 앉아 있는지</b>로 네 갈래다(0x0054B520 · 0x0054B558 · 0x0054B5A0 ·
+            // 0x0054B618). 뒤에 이어지는 「…이 왔습니다」는 집사가 주인에게 아뢰는 딴 말이다.
+            GreetAtDoor(patron, contract, overdue);
+
+            // 집사가 먼저 알린다. 기한을 넘겼으면 말이 달라진다.
+            string me = _player.Name;
+            // 계약을 맺은 사람이 은퇴하고 뒷사람이 앉았으면 집사가 <b>선대의 계약</b>이라 이른다
+            // (0x0054B7A0 · 0x0054B7F0) — 주인의 대꾸도 따로 있다(0x0054B860 · 0x0054B878 · 0x0054B8A0).
+            bool handed = contract.Sponsor != patron.Name;
+            Say(handed
+                ? (overdue
+                    ? $"{patron.Name}님. {_player.NationName}의 {me}{GameUi.Josa(me, "이", "가")} 왔습니다. "
+                      + "전 주인과 계약을 맺은 모양입니다만, 기한을 넘은 데다 아무런 성과도 없는 듯 합니다만."
+                    : $"{patron.Name}님. {_player.NationName}의 {me}{GameUi.Josa(me, "이", "가")} 왔습니다. "
+                      + "뭔가, 전 주인과의 계약을 파기 하고 싶다고 합니다만.")
+                : (overdue
+                    ? $"{patron.Name}님. {me}{GameUi.Josa(me, "이", "가")} 돌아왔습니다. "
+                      + "기한을 넘은 데다, 아무런 성과도 없는 듯 합니다만."
+                    : $"{patron.Name}님. {me}{GameUi.Josa(me, "이", "가")} 왔습니다. "
+                      + "뭔가, 계약을 파기하고 싶다고 합니다만."));
+
+            // 집사 말을 듣고 주인이 먼저 한숨을 짓는다(0x0044F2E0) — 말투 셋 x 기한 둘이다.
+            // 선대의 계약이면 그 자리에 딴 말이 든다(0x0054B860 · 0x0054B878 · 0x0054B8A0).
+            // <code>
+            //   기한 안  0x0054B6D0 · 0x0054B6E0 · 0x0054B6F0
+            //   늦음     0x0054B760 · 0x0054B770 · 0x0054B788
+            // </code>
+            Say(handed
+                ? Pick3("전 주인과 계약....", "아니... 전 주인과의 계약입니까...", "흐~음, 전 주인과의 계약이라니...")
+                : overdue
+                    ? Pick3(".........", "무슨 일일까요...", "후~, 기대하고 있었건만.")
+                    : Pick3("뭐라고...", "뭐라고...", "후~... 계약을 파기하리라고는."));
+
+            // 계약중단은 어느 갈래로 끝나든 후원자가 삐진다(0x0044EEA0 의 비트 14) — 30일 동안 설득을 물린다.
+            // 부관의 「제독, 곤란하게 되었습니다…」(0x00532430)는 여기서 안 나온다 — 감찰관을 처벌했을 때
+            // 나서는 말이다(0x0044E6FD 의 +0xBC == 2).
+            bool forgiven = Forgiven(patron, overdue);
+            if (!forgiven)
+            {
+                // 용서받지 못하면 곧바로 죄를 묻는다(0x0044F7EB → 0x0044F87D 의 0x0044F100) —
+                // 친밀도 −20 뒤 봐줌·위약금·감옥으로 갈린다.
+                bool doomed = Punish(patron, _game.Sponsors?.FindByName(patron.Name), Pick3);
+                _player.Sulk(patron.Name);
+                ReturnLentShips(broken: true);
+                _player.EndContract();
+                if (doomed) { EndGame(); return; }
+                RecontractMates();
+                return;
+            }
+
+            // 눈감아 주는 말도 세 벌씩이다.
+            // <code>
+            //   기한 안  0x0054BA60 · 0x0054BAB8 · 0x0054BB00
+            //   늦음     0x0054BB48 · 0x0054BBA8 · 0x0054BC08
+            // </code>
+            Say(overdue
+                ? Pick3("자네에게 기대한 내가 어리석었다. 어쩔 수 없군. 실패한 죄는 묻지 않겠다. 빨리 사라져 버려라.",
+                        "당신에게 기대했는데 실망했습니다. 실패한 죄는 묻지 않겠습니다. 제 앞에서 사라져 주십시오.",
+                        "기대가 빗나갔군! 이번 실패는 잊어주지. 생각이 바뀌기 전에 나가주게.")
+                : Pick3("안됐지만, 싫다는 사람을 강제로 보내서 좋을 일은 없다. 좋다, 계약은 없었던 일로 하지.",
+                        "안됐군요, 무리하게 보내서는 성과도 없을테니, 이 계약은 잊어버립시다.",
+                        "그래... 싫은가. 정말 안됐네. 어쩔 수 없군. 계약은 없었던 일로 하지."));
+
+            int penalty = contract.Penalty;
+            if (!_player.Pay(penalty))
+            {
+                GameDialog.Show(_view, "위약금을 지불할 수 없습니다!");
+                Say(Pick3("이 바보같은 녀석!",
+                          "이런 바보같은!",
+                          "바보같은, 위약금을 지불할 수 없다고! 어디까지 어리석은..."));
+
+                // <b>못 내면 죄를 묻는다</b>(0x0044F87F 가 0x0044F100 을 부른다) — 그 안에서
+                // 친밀도를 20 깎고 용서·위약금·감옥으로 갈린다.
+                bool over = Punish(patron, _game.Sponsors?.FindByName(patron.Name), Pick3);
+
+                _player.Sulk(patron.Name);
+                ReturnLentShips(broken: true);
+                _player.EndContract();
+                if (over) { EndGame(); return; }
+
+                RecontractMates();
+                return;
+            }
+
+            // 냈으면 친밀도만 20 깎인다(0x0044F886 이 -0x14 를 0x00478530 에 넘긴다).
+            _player.Endear(patron.Name, -BreakPenaltyCloseness);
             _player.Sulk(patron.Name);
             ReturnLentShips(broken: true);
             _player.EndContract();
-            if (doomed) { EndGame(); return; }
+            // 낼 수 있으면 말 없이 돈만 빠진다(0x0044F874 → 0x0047CBC0) — 알림은 없다.
             RecontractMates();
-            return;
         }
-
-        // 눈감아 주는 말도 세 벌씩이다.
-        // <code>
-        //   기한 안  0x0054BA60 · 0x0054BAB8 · 0x0054BB00
-        //   늦음     0x0054BB48 · 0x0054BBA8 · 0x0054BC08
-        // </code>
-        Say(overdue
-            ? Pick3("자네에게 기대한 내가 어리석었다. 어쩔 수 없군. 실패한 죄는 묻지 않겠다. 빨리 사라져 버려라.",
-                    "당신에게 기대했는데 실망했습니다. 실패한 죄는 묻지 않겠습니다. 제 앞에서 사라져 주십시오.",
-                    "기대가 빗나갔군! 이번 실패는 잊어주지. 생각이 바뀌기 전에 나가주게.")
-            : Pick3("안됐지만, 싫다는 사람을 강제로 보내서 좋을 일은 없다. 좋다, 계약은 없었던 일로 하지.",
-                    "안됐군요, 무리하게 보내서는 성과도 없을테니, 이 계약은 잊어버립시다.",
-                    "그래... 싫은가. 정말 안됐네. 어쩔 수 없군. 계약은 없었던 일로 하지."));
-
-        int penalty = contract.Penalty;
-        if (!_player.Pay(penalty))
+        finally
         {
-            GameDialog.Show(_view, "위약금을 지불할 수 없습니다!");
-            Say(Pick3("이 바보같은 녀석!",
-                      "이런 바보같은!",
-                      "바보같은, 위약금을 지불할 수 없다고! 어디까지 어리석은..."));
-
-            // <b>못 내면 죄를 묻는다</b>(0x0044F87F 가 0x0044F100 을 부른다) — 그 안에서
-            // 친밀도를 20 깎고 용서·위약금·감옥으로 갈린다.
-            bool over = Punish(patron, _game.Sponsors?.FindByName(patron.Name), Pick3);
-
-            _player.Sulk(patron.Name);
-            ReturnLentShips(broken: true);
-            _player.EndContract();
-            if (over) { EndGame(); return; }
-
-            RecontractMates();
-            return;
+            _game.Bgm.Play(_cityTrack);
         }
-
-        // 냈으면 친밀도만 20 깎인다(0x0044F886 이 -0x14 를 0x00478530 에 넘긴다).
-        _player.Endear(patron.Name, -BreakPenaltyCloseness);
-        _player.Sulk(patron.Name);
-        ReturnLentShips(broken: true);
-        _player.EndContract();
-        // 낼 수 있으면 말 없이 돈만 빠진다(0x0044F874 → 0x0047CBC0) — 알림은 없다.
-        RecontractMates();
     }
 
     /// <summary>
