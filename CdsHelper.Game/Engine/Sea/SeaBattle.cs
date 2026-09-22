@@ -1829,8 +1829,8 @@ public sealed class SeaBattle
     ]);
 
     /// <summary>
-    /// 적이 결투를 신청할 때 부관 말(<c>0x0056B128</c>~). <c>%s%s</c> 는 적장 이름과 조사(<c>0x004281B0(이름,0)</c>)인데
-    /// 조사 갈래 0 을 못 짚어 이/가 로 둔다.
+    /// 적이 결투를 신청할 때 부관 말(<c>0x0056B128</c>~). <c>%s%s</c> 는 적장 이름과 조사 이/가 다
+    /// (<c>0x0043A60D</c> 의 <c>0x004281B0(이름, 0)</c> — 갈래 0 이 가/이다).
     /// </summary>
     public string ChallengeWord(string foe)
     {
@@ -1929,7 +1929,8 @@ public sealed class SeaBattle
     };
 
     /// <summary>
-    /// 적 기함이 달아났을 때 부관의 다섯 벌(<c>0x0056AD40</c>~). 끝 줄의 조사 갈래는 못 짚어 이/가 로 둔다.
+    /// 적 기함이 달아났을 때 부관의 다섯 벌(<c>0x0056AD40</c>~). 끝 줄의 조사는 은/는이다
+    /// (<c>0x00435FDA</c> 의 <c>0x004281B0(이름, 1)</c>).
     /// </summary>
     public string FoeFledWord(string foe) => _rng.Next(5) switch
     {
@@ -1937,7 +1938,7 @@ public sealed class SeaBattle
         1 => "모처럼의 사냥감을 놓쳤군요.",
         2 => "하하하, 꼴 좋군.",
         3 => "제독이 무서워서 도망간 것 같군요.",
-        _ => $"제독, {foe}{Josa(foe, "이", "가")} 도망친 것 갔습니다!",
+        _ => $"제독, {foe}{Josa(foe, "은", "는")} 도망친 것 갔습니다!",
     };
 
     private static string Josa(string word, string batchim, string plain)
