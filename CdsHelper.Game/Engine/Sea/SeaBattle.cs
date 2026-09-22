@@ -245,17 +245,19 @@ public sealed class SeaBattle
         int x, y;
         if (formation is >= 0 and < FormationCount)
         {
-            // 대열 — 기함 자리에 호위 (ΔX, ΔY) 를 더한다(0x004421F6).
-            // <b>아군이 ΔX 를 뒤집는 쪽</b>이다(0x00442B12 의 판종류−2 — 아군 1 이면 −1,
-            // 적 3 이면 +1). 아군은 오른쪽 끝(X=17)에서 왼쪽으로, 적은 왼쪽 끝(X=5)에서
-            // 오른쪽으로 펼쳐 서로 마주 본다.
-            int flagY = FlagshipRow(formation);
+            // 대열 — 기함 자리에 호위 (ΔX, ΔY) 를 더한다(0x004421F6). 곱하는 부호는 판종류−2 다
+            // (0x00442B22 — 아군 1 이면 −1, 적 3 이면 +1)고 <b>ΔX 와 ΔY 둘 다</b>에 곱한다(0x00442B28 · 0x00442B33).
+            // 기함 줄도 적은 거울상이라(0x004422AE) 적 대열은 아군 대열을 (11, 8) 에서 점대칭한 꼴이다 —
+            // 아군은 오른쪽 끝(X=17)에서 왼쪽으로, 적은 왼쪽 끝(X=5)에서 오른쪽으로 펼쳐 서로 마주 본다.
+            // 예전에는 ΔX 만 뒤집고 적 기함 줄도 아군 것을 써서 적 대열이 위아래로 어긋났다.
+            int sign = mine ? -1 : 1;
+            int flagY = FlagshipRow(formation, mine);
             if (slot == 0) { x = baseX; y = flagY; }
             else
             {
                 var (dx, dy) = Formations[formation][Math.Min(slot, 7) - 1];
-                x = baseX + (mine ? -dx : dx);
-                y = flagY + dy;
+                x = baseX + sign * dx;
+                y = flagY + sign * dy;
             }
         }
         else
@@ -331,8 +333,15 @@ public sealed class SeaBattle
         [(2, 0), (0, -1), (0, 1), (1, -4), (1, 4), (-2, -2), (-2, 2)],
     ];
 
-    /// <summary>기함 Y — 대열 0·4·6 은 7, 5 는 9, 그 밖은 8(<c>0x004421F6</c>).</summary>
-    public static int FlagshipRow(int formation) => formation is 0 or 4 or 6 ? 7 : formation == 5 ? 9 : 8;
+    /// <summary>
+    /// 기함 Y — 아군은 대열 0·4·6 이 7, 5 가 9, 그 밖은 8(<c>0x0044224B</c>)이고, 적은 그 거울상으로
+    /// 0·4·6 이 9, 5 가 7, 그 밖은 8 이다(<c>0x004422AE</c>).
+    /// </summary>
+    public static int FlagshipRow(int formation, bool mine = true)
+    {
+        int row = formation is 0 or 4 or 6 ? 7 : formation == 5 ? 9 : 8;
+        return mine ? row : 16 - row;
+    }
 
     /// <summary>
     /// 판 안에서 비어 있는 가장 가까운 칸. 원본이 판 밖·겹침을 비키는 셈(<c>0x00442B0A</c> 뒤)은 아직
