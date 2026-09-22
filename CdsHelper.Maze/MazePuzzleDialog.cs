@@ -523,10 +523,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
                 break;
 
             case MazePuzzle.Result.GaveUp:
-                // 「포기한다」 줄은 두 자리에 있고 문구가 조금 다르다 — 누른 자리 갈래(0x0042B895)는
-                // 「…포기하겠습니까?」·「포기하자, … 시작했다.」(0x00559F80 · 0x00559FB8)고, 다른 갈래(0x0042B43C)는
-                // 「미궁으로부터 탈출을 포기합니까?」·「포기하자 … 시작했다!」(0x00559B18 · 0x00559B48)다. 앞 짝을 따른다.
-                NoticeDialog.Show(owner, "포기하자, 바닥이 차츰 웅웅거리기 시작했다.", "게임 오버");
+                NoticeDialog.Show(owner, "포기하자, 바닥이 차츰 웅웅거리기 시작했다!", "게임 오버");
                 NoticeDialog.Show(owner, "게임 오버입니다. 다음 번엔 노력합시다.", "게임 오버");
                 break;
 
