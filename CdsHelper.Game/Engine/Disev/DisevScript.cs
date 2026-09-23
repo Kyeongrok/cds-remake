@@ -669,13 +669,17 @@ public static class DisevScript
             case "도시 점령지 해제":
             case "도시 제거":
             case "이벤트 대상 도시 이동":
-                return $"{kind}: 도시 ID {U16(raw, 2)}";
+                return $"{kind}: 도시 {DisevNames.City(U16(raw, 2))}";
             case "도시 국적 변경":
-                return $"도시 국적 변경: 도시 ID {U16(raw, 5)} → 주인공 나라";
+                return $"도시 국적 변경: 도시 {DisevNames.City(U16(raw, 5))} → 주인공 나라";
             case "도시 시설 제거":
-                return $"도시 시설 제거: 시설 비트 {U16(raw, 2)}, 도시 {U16(raw, 5)}";
+                return $"도시 시설 제거: 시설 비트 {U16(raw, 2)}, 도시 {DisevNames.City(U16(raw, 5))}";
             case "국가 멸망 처리":
-                return $"국가 멸망 처리: 나라 {U16(raw, 2)}";
+                return $"국가 멸망 처리: 나라 {DisevNames.Nation(U16(raw, 2))}";
+            case "교역품 인수(산지)":
+                return $"교역품 인수: {DisevNames.City(U16(raw, 2))}산 {DisevNames.Good(U16(raw, 5))} 전부를 정가로";
+            case "교역품 인수":
+                return $"교역품 인수: {DisevNames.Good(U16(raw, 2))} 전부를 정가로";
             case "인물 조우 처리":
             case "통역 고용·교체":
             case "일기토":
@@ -685,7 +689,7 @@ public static class DisevScript
             case "힌트 획득":
                 return $"힌트 획득: 힌트 {U16(raw, 2)}";
             case "교역품 활성화":
-                return $"교역품 활성화: 교역품 {U16(raw, 2)}";
+                return $"교역품 활성화: 교역품 {DisevNames.Good(U16(raw, 2))}";
             case "아이템 획득(발견물 제외)":
             case "아이템 획득(버리기 창)":
                 return $"{kind}: 아이템 ID {U16(raw, 2)}";
@@ -702,11 +706,23 @@ public static class DisevScript
             case "투입 인원 절반":
                 return "투입 인원 절반(올림)";
             case "특수 건물 생성":
-                return $"특수 건물 생성: 건물 {U16(raw, 2)}, 도시 {U16(raw, 5)}";
+                return $"특수 건물 생성: 건물 {U16(raw, 2)}, 도시 {DisevNames.City(U16(raw, 5))}";
         }
 
-        if (kind.EndsWith("조건") && raw.Length == 4 && raw[0] == 0x17)
-            return $"{kind}: 값 {U16(raw, 2)}";
+        // 17 xx · 41 xx — 도시·건물·문화권·나라 조건. 번호 뒤에 이름을 단다(「1(북유럽)」).
+        if (kind.EndsWith("조건") && raw.Length == 4 && raw[0] is 0x17 or 0x41)
+        {
+            int value = U16(raw, 2);
+            string named = raw[1] switch
+            {
+                0x08 => DisevNames.City(value),
+                0x10 => DisevNames.Building(value),
+                0x19 => DisevNames.Culture(value),
+                0x00 => DisevNames.Nation(value),
+                _ => value.ToString(),
+            };
+            return $"{kind}: {named}";
+        }
 
         if (form.JumpOffset >= 0 && form.JumpOffset + 2 <= raw.Length)
         {
@@ -719,13 +735,13 @@ public static class DisevScript
                 "미발견 분기" => $", 발견물 {U16(raw, 3)}",
                 "기준 연도 분기" or "연도 상한 분기" => $", 연도 {U16(raw, 3)}",
                 "연도 범위 분기" => $", 연도 {U16(raw, 3)}~{U16(raw, 6)}",
-                "도시 분기" => $", 도시 {U16(raw, 3)}",
+                "도시 분기" => $", 도시 {DisevNames.City(U16(raw, 3))}",
                 "인물 조우 분기" => $", 인물 {U16(raw, 3)}",
                 "후원자 활성 분기" => $", 후원자 {U16(raw, 3)}",
-                "도시 국적 분기" => $", 나라 {U16(raw, 3)}, 도시 {U16(raw, 6)}",
+                "도시 국적 분기" => $", 나라 {DisevNames.Nation(U16(raw, 3))}, 도시 {DisevNames.City(U16(raw, 6))}",
                 "선택지 분기" => $", 선택값 {raw[3]}",
                 "교역품 조건 분기" =>
-                    $", 원산 도시 {U16(raw, 3)}, 교역품 {U16(raw, 6)}, 수량 {U32(raw, 9)}",
+                    $", 원산 도시 {DisevNames.City(U16(raw, 3))}, 교역품 {DisevNames.Good(U16(raw, 6))}, 수량 {U32(raw, 9)}",
                 _ => "",
             };
             return $"{kind}{extra}, 상대 +0x{relative:X} → 파트 +0x{target:X}";

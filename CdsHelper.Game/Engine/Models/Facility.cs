@@ -209,6 +209,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     private static readonly string[] CodeKinds =
         ["항구", "교역소", "왕궁", "교회", "술집", "여관", "조선소", "시장", "도서관", "조합", "성문", "자택"];
 
+    /// <summary>건물 코드의 이름(「술집」). 0~11 밖이면 null.</summary>
+    public static string? CodeName(int code) => code >= 0 && code < CodeKinds.Length ? CodeKinds[code] : null;
+
     /// <summary>
     /// 건물의 시설을 찾는다 — 코드가 0~11 이면 그 갈래, 아니면 종류 이름으로 찾고, 그래도 없으면
     /// 나가기 한 줄만 있는 창을 준다.
