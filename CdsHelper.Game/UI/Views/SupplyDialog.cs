@@ -46,9 +46,11 @@ namespace CdsHelper.Game.UI.Views;
 /// <b>탄약은 도시 형편 비트 8 이 선 곳에서만 판다</b>(121곳, 거의 유럽). 아니면 단가가 −1 이라
 /// (<c>0x00493FB0</c>) 단가 칸이 「---」(<c>0x0055F368</c>)이고 더 실을 수 없다 — 덜어 내기만 된다.
 ///
-/// 용량·중량은 함대가 실을 수 있는 양이다(<see cref="Player.Capacity"/> ·
-/// <see cref="Player.Tonnage"/> — 배마다의 적재량·톤수를 더한 것). 게임은 여기에 실어 둔
-/// 교역품까지 같이 세는데, 우리 쪽은 아직 보급품만 센다.
+/// 용량·중량 줄은 <b>보급품만</b> 센다 — 한도에서 교역품(과 대포) 몫을 먼저 뺀다. 함대정보가 짐용량
+/// <c>10/128</c> · 짐중량 <c>150/1250</c>(총 10통)일 때 이 화면은 <c>0/ 118</c> · <c>0/ 1100</c> 이다.
+///
+/// 실은 교역품은 보급품 아래에 <b>한 줄씩</b> 선다 — 「총  [7]  15/ 0  10통 + 0  0닢」. 괄호는 남은 기한(달),
+/// 단가는 0 이고 보충량은 움직이지 않는다. 보여 주기만 하는 줄이다.
 /// </remarks>
 public sealed class SupplyDialog : GameWindow
 {
@@ -112,8 +114,12 @@ public sealed class SupplyDialog : GameWindow
     /// <summary>이 도시가 탄약을 파는지(도시 형편 비트 8, <c>0x00493FB0</c> · <c>0x0040EC40</c>).</summary>
     private readonly bool _ammoSold;
 
-    private SupplyDialog(Player player, int rate, bool ammoSold)
+    /// <summary>교역품 이름. 없으면 번호로 적는다.</summary>
+    private readonly Func<int, string>? _goodsName;
+
+    private SupplyDialog(Player player, int rate, bool ammoSold, Func<int, string>? goodsName = null)
     {
+        _goodsName = goodsName;
         _ammoSold = ammoSold;
         _mate = player.MateAt(0).Length > 0;
         _player = player;
@@ -140,6 +146,7 @@ public sealed class SupplyDialog : GameWindow
         rows.Children.Add(head);
         rows.Children.Add(HeaderRow());
         for (int i = 0; i < Supply.Count; i++) rows.Children.Add(ItemRow(i));
+        foreach (var cargo in player.CargoHold) rows.Children.Add(CargoRow(cargo));
 
         // 총계는 판 아래쪽에 붙는다 — 게임은 품목과 총계 사이를 통째로 비워 둔다.
         var totalRow = new StackPanel
@@ -240,6 +247,31 @@ public sealed class SupplyDialog : GameWindow
                    Cell(spin, AddWidth),
                    Cell(_costLabels[index], CostWidth));
     }
+
+    /// <summary>
+    /// 실은 교역품 한 줄 — 이름 · [남은 달] · 개체중량/0 · 실은 통 · + 0 · 0닢. 움직이지 않는 줄이다.
+    /// </summary>
+    private UIElement CargoRow(Player.Cargo cargo)
+    {
+        var name = new StackPanel { Orientation = Orientation.Horizontal };
+        name.Children.Add(new Border { Width = NameWidth, Child = Label(_goodsName?.Invoke(cargo.Kind) ?? $"교역품 {cargo.Kind}") });
+        name.Children.Add(Label($"[{cargo.Months}]"));
+
+        var spin = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        spin.Children.Add(Label("+"));
+        spin.Children.Add(Label($"{0,5}"));
+        // ↑↓ 자리는 비워 둔다 — 보급품 줄과 숫자가 세로로 맞게.
+        spin.Children.Add(new Border { Width = 2 * (UiSprites.IconWidth + 1) });
+
+        return Row(name,
+                   Cell(Label($"{cargo.UnitWeight,3}/{0,4}"), UnitWidth),
+                   Cell(Label($"{cargo.Count,5}통"), HaveWidth),
+                   Cell(spin, AddWidth),
+                   Cell(Label("0닢"), CostWidth));
+    }
+
+    /// <summary>교역품 이름 칸의 폭 — 그 뒤에 [남은 달]이 선다.</summary>
+    private const double NameWidth = 110;
 
     /// <summary>
     /// 줄 하나. 첫 칸(품목 이름)은 왼쪽에 붙고 나머지는 <b>못 박은 폭</b>으로 오른쪽에 선다 —
@@ -535,8 +567,10 @@ public sealed class SupplyDialog : GameWindow
             _addLabels[i].Text = $"{Math.Abs(_add[i]),5}";
             _costLabels[i].Text = $"{Cost(i)}닢";
         }
-        _capacity.Text = $"{Barrels}/{_player.Capacity}";
-        _weight.Text = $"{Weight}/{_player.Tonnage}";
+        // 보급품만 센다 — 한도에서 교역품·대포 몫을 먼저 뺀다(함대정보 10/128 → 여기 0/ 118).
+        int otherBarrels = _player.CargoCount, otherWeight = _player.CargoWeight + _player.GunWeight;
+        _capacity.Text = $"{Barrels - otherBarrels}/{_player.Capacity - otherBarrels,5}";
+        _weight.Text = $"{Weight - otherWeight}/{_player.Tonnage - otherWeight,5}";
         _gold.Text = $"{_player.Gold}닢";
         _total.Text = $"{Total}닢";
         _decide.On = _add.Any(a => a != 0);
@@ -566,15 +600,16 @@ public sealed class SupplyDialog : GameWindow
     /// 넘으면 「최대」로 다시 맞춘다(<c>0x0040F3C9</c>). 그러고도 더 실을 여유가 전혀 없으면 부관이(없으면
     /// 알림으로) 「이 이상 실을 여유가 없습니다.」(<c>0x00545678</c>) 하고 창이 곧 닫힌다(<c>0x0040F3F5</c>).
     /// </remarks>
+    /// <param name="goodsName">교역품 번호의 이름 — 실은 교역품 줄에 적는다.</param>
     public static void Show(Window owner, Player player, int rate = 100, bool ammoSold = true,
-                            uint[]? mateFace = null)
+                            uint[]? mateFace = null, Func<int, string>? goodsName = null)
     {
         if (player.Ships.Count == 0)
         {
             GameDialog.Show(owner, "실을 배가 없지 않은가.");
             return;
         }
-        var dialog = new SupplyDialog(player, rate, ammoSold) { Owner = owner };
+        var dialog = new SupplyDialog(player, rate, ammoSold, goodsName) { Owner = owner };
         dialog.Last();
         if (dialog.Weight > player.Tonnage || dialog.Barrels > player.Capacity) dialog.Fill();
 
