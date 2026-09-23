@@ -471,6 +471,20 @@ public sealed class Game
     /// <summary>그 도시가 <b>지금 지도에 보이는가</b> — 서 있고, 알고 있어야 한다.</summary>
     public bool CityVisible(int city) => CityStanding(city) && CityKnown(city);
 
+    /// <summary>
+    /// 인물 세상을 버린다 — 다음에 물을 때 시작 날부터 다시 따라잡는다.
+    /// </summary>
+    /// <remarks>
+    /// 세상은 앞으로만 간다(<see cref="PersonWorld.Advance"/>). 개발 창에서 해를 <b>되돌렸을</b> 때 부른다.
+    /// </remarks>
+    public void ResetWorld()
+    {
+        _world = null;
+        _worldRevision = -1;
+        _roster = null;
+        _rosterWalk = (-1, -1);
+    }
+
     public PersonWorld? World
     {
         get

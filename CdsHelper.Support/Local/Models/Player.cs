@@ -867,6 +867,19 @@ public sealed class Player
         AgeCargo(months * DaysPerMonth);
     }
 
+    /// <summary>
+    /// 해만 바꾼다(개발 창). 달·날은 그대로 두고, 2월 29일이 없는 해면 28일로 당긴다.
+    /// </summary>
+    /// <remarks>
+    /// 놀이 안에서 흐른 것이 아니라 회복·짐 썩음은 셈하지 않는다. 시세·역사는 다음에 물을 때
+    /// 따라잡는다(<c>Game.CatchUpMonths</c> 가 뒤로 간 달도 받는다).
+    /// </remarks>
+    public void SetYear(int year)
+    {
+        year = Math.Clamp(year, DateTime.MinValue.Year, DateTime.MaxValue.Year);
+        Date = new DateTime(year, Date.Month, Math.Min(Date.Day, DateTime.DaysInMonth(year, Date.Month)));
+    }
+
     /// <summary>게임이 달을 날로 셀 때 쓰는 날수. 달력 달이 아니라 서른 날이다.</summary>
     public const int DaysPerMonth = 30;
 

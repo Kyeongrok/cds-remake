@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,6 +55,9 @@ public sealed class DevDialog : GameWindow
         public Action? LandSpar { get; init; }
         public Action? SeaSpar { get; init; }
 
+        /// <summary>해를 바꾼 뒤 — 되돌렸으면(<c>true</c>) 앞으로만 가는 것들을 다시 연다.</summary>
+        public Action<bool>? YearChanged { get; init; }
+
     }
 
     private DevDialog(Player player, Options options)
@@ -72,6 +75,7 @@ public sealed class DevDialog : GameWindow
         var rows = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
         rows.Children.Add(Row("소지금", _gold, GoldStep, v => _player.SetGold(v)));
         rows.Children.Add(Row("명성", _fame, FameStep, v => _player.Fame = v));
+        rows.Children.Add(YearRow(options.YearChanged));
         rows.Children.Add(EffectRow());
         rows.Children.Add(SpouseRow());
 
@@ -310,6 +314,39 @@ public sealed class DevDialog : GameWindow
         }, 96));
         line.Children.Add(GameUi.PushButton("없앤다", () => { _player.Marry(""); Paint(); }, 96));
         line.Children.Add(shown);
+        return line;
+    }
+
+    /// <summary>개발 창에서 고를 수 있는 해. 놀이는 1480년에 열린다.</summary>
+    private const int FirstYear = 1480, LastYear = 1600;
+
+    /// <summary>
+    /// 해를 바꾸는 줄 — 새 주인공의 나이처럼 <b>계산기</b>로 넣는다(<see cref="NumberPadDialog"/>).
+    /// </summary>
+    private UIElement YearRow(Action<bool>? changed)
+    {
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+        line.Children.Add(new TextBlock
+        {
+            Text = "연도",
+            Width = 64,
+            Foreground = GameUi.Text,
+            FontWeight = FontWeights.Bold,
+            FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+
+        Border? pick = null;
+        string Label() => $"{_player.Date.Year}년 {_player.Date.Month}월 {_player.Date.Day}일…";
+        pick = GameUi.PushButton(Label(), () =>
+        {
+            int was = _player.Date.Year;
+            if (NumberPadDialog.Ask(this, was, FirstYear, LastYear) is not { } year || year == was) return;
+            _player.SetYear(year);
+            changed?.Invoke(year < was);
+            if (pick!.Child is TextBlock text) text.Text = Label();
+        }, 180);
+        line.Children.Add(pick);
         return line;
     }
 
