@@ -1616,6 +1616,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         _photoWindow?.Close();
         _photoWindow = null;
+        _photoOf = (kind, buildingCode);
 
         var photos = _game.Photos;
         if (photos == null) return;
@@ -1627,6 +1628,24 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         _photoWindow = BuildingPhotoWindow.Show(this, photos.TryGetBgra(k), people, _scale,
                                                 new Point(Left + (PhotoLeft + _frameBorder) * _scale,
                                                           Top + (PhotoTop + _frameBorder) * _scale));
+    }
+
+    /// <summary>지금 뜬 사진이 어느 건물 것인지 — 손님을 다시 세울 때 쓴다.</summary>
+    private (FacilityKind Kind, int Code)? _photoOf;
+
+    /// <summary>
+    /// 사진 앞 손님을 다시 세운다 — 부하로 들인 사람은 술집에 남지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 손님 그림을 누른 그 처리 안에서 불리므로 창을 바로 부수지 않고 한 박자 미룬다.
+    /// </remarks>
+    internal void RefreshPhoto()
+    {
+        if (_photoWindow == null || _photoOf is not { } of) return;
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (_photoWindow != null) ShowPhoto(of.Kind, of.Code);
+        });
     }
 
     /// <summary>

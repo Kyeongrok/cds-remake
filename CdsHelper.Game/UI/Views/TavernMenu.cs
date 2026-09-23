@@ -1187,6 +1187,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </param>
     private void MeetPerson(TavernRoster.Person who, bool female, bool inn = false)
     {
+        // 사진은 들어올 때 세운 그대로라, 방금 들인 부하가 아직 서 있을 수 있다 — 두 번 들이지 않는다.
+        if (_player.HasMate(who.Name)) return;
+
         var face = FaceOf(who);
         bool known = Known(who);
 
@@ -1855,6 +1858,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             // 됨됨이를 지금 베껴 둔다 — 나중에 인물정보를 낼 때 게임 세이브를 다시 안 뒤지게.
             _player.RememberMate(Tavern.MateInfoOf(who));
             PlaceMate(who.Name);
+            // 부하가 되면 술집 자리에서 빠진다(Sitting) — 사진 앞 손님도 다시 세운다.
+            (_view as CityPicView)?.RefreshPhoto();
         }
         return true;
     }
