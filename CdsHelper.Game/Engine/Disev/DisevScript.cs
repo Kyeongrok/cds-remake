@@ -213,6 +213,8 @@ public static class DisevScript
         new(Sig(0x04, 0x4D), 2, "이벤트 완전 종료"),
         new(Sig(0x06, 0xFF), 1, "다음 단계"),
         new(Sig(0x06), 1, "다음 단계"),
+        // 58 [u8 n] — 단계를 n+1 건너뛰고 결과 2 로 끝낸다(0x0040BE5C).
+        new(Sig(0x58), 2, "단계 건너뛰기"),
         new(Sig(0x04), 1, "이야기 끝"),
         new(Sig(0x0E, 0x03), 4, "음원 재생"),
         // 0E 04 [u16 n] — 미니게임 n 을 한 판 하고 이겼는지를 「마지막 결과」에 둔다(0x00408D16).
@@ -678,6 +680,8 @@ public static class DisevScript
                 return $"국가 멸망 처리: 나라 {DisevNames.Nation(U16(raw, 2))}";
             case "교역품 인수(산지)":
                 return $"교역품 인수: {DisevNames.City(U16(raw, 2))}산 {DisevNames.Good(U16(raw, 5))} 전부를 정가로";
+            case "단계 건너뛰기":
+                return $"단계 건너뛰기: {raw[1] + 1}칸 앞으로, 결과 2 로 끝";
             case "교역품 인수":
                 return $"교역품 인수: {DisevNames.Good(U16(raw, 2))} 전부를 정가로";
             case "인물 조우 처리":

@@ -963,6 +963,15 @@ public sealed class DisevRunner
                 LastAdvancedStep = true;
                 LastStepsAdvanced++;
                 return null;
+            // 58 [n] — 맥락 +4 = 1 · +0x10 = n+1 · +8 = 2 를 적고 대본을 끝낸다(0x0040BE5C).
+            // 대본이 끝나면 0x004AB495 가 「+4 == 1 이면 단계 += [+0x10]」으로 거둔다 — 06 은 +0x10 = 1 이라
+            // 한 칸이고, 이것은 n+1 칸이다. 칸 수는 <b>더하지 않고 박는다</b>(원본도 +0x10 을 덮는다).
+            // EEX 견직물 의뢰를 거절하면 58 01 로 납품 장면(2)을 건너 3 으로 가고, 기한을 넘기면 58 00 이다.
+            case DisevCall.SkipSteps:
+                LastAdvancedStep = true;
+                LastStepsAdvanced = I("Skip") + 1;
+                LastResult = 2;
+                return Stop;
             case DisevCall.NextStepFF:
                 LastAdvancedStep = true;
                 LastStepsAdvanced++;

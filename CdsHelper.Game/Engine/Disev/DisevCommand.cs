@@ -42,7 +42,7 @@ public enum DisevCall
     Wait, AdvanceDays,
 
     // ── 끝 ───────────────────────────────────────────────────
-    ClearResult, GameOver, EndDone, EndFailed, EndUnhandled, NextStep, NextStepFF, AdvanceStep, CloseStory, EndEventCompletely, End,
+    ClearResult, GameOver, EndDone, EndFailed, EndUnhandled, SkipSteps, NextStep, NextStepFF, AdvanceStep, CloseStory, EndEventCompletely, End,
 
     // ── 조건식 ───────────────────────────────────────────────
     Result, ResultFalse, LastConditionFalse, LastCondition, NoAide, HasAide, ChoiceIs, ChoiceIsNot,
@@ -164,6 +164,8 @@ public static class DisevCalls
         S(DisevCall.NextStepFF, "06 FF"),
         // 06 한 바이트 — 이야기 단계를 하나 올리고 대본은 이어 간다(0x00408B2F: 맥락 +4 = 1, +0x10 = 1).
         S(DisevCall.AdvanceStep, "06"),
+        // 58 [n] — 이야기 단계를 n+1 건너뛰고 끝낸다(0x0040BE5C). 의뢰를 거절하거나 기한을 넘기면 납품 장면을 뛰어넘는다.
+        S(DisevCall.SkipSteps, "58 u8", "Skip"),
         // 04 한 바이트 — 이야기 책을 닫는다(0x004089EC: 맥락 +4 = 2 → 진행 카운터 −1). 대본은 이어 간다.
         S(DisevCall.CloseStory, "04"),
         S(DisevCall.End, "FF"),
