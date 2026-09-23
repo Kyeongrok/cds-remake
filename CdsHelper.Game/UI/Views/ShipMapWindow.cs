@@ -2700,7 +2700,9 @@ public sealed class ShipMapWindow : Window
         {
             // 「상륙」은 곧바로 뭍에 올리지 않는다 — 네 줄짜리 차림표가 한 겹 더 있다
             // (0x0048E5E0). 「탐색」만 뭍에 올리고, 보급·수리는 <b>배에 탄 채로</b> 한다.
-            items.Add(("상륙", () => CommandMenu.Push(AshoreMenuBox)));
+            // 재해는 <b>차림표를 열 때</b> 풀린다 — 게임은 네 줄을 짓기 전에 부관 말을 내고
+            // 항해일수·재해 비트를 0 으로 둔다(0x0048E618~0x0048E6AD). 탐색까지 안 가도 된다.
+            items.Add(("상륙", () => { EndVoyage(); CommandMenu.Push(AshoreMenuBox); }));
         }
 
         items.Add(("정보", () => CommandMenu.Push(InfoMenuBox)));
@@ -2821,13 +2823,8 @@ public sealed class ShipMapWindow : Window
             {
                 if (!_host.Land()) { Shut(); return; }
                 _game.Bgm.Play(BgmPlayer.LandTrack);
-
-                // 재해가 풀려 <b>부관이 한 마디 할 때만</b> 창을 남긴다 — 닫으면 그 자리에서
-                // 멈춤이 풀려 말이 뜨는 동안 말(馬)이 벌써 달려 나가고, 읽고 나면 바로 승선할
-                // 수도 있기 때문이다. 아무 말 없이 상륙했으면 <b>곧바로 닫아</b> 그 자리에서
-                // 움직이게 둔다.
-                if (EndVoyage()) CommandMenu.Refresh();
-                else Shut();
+                // 재해는 「상륙」 차림표를 열 때 이미 풀렸다 — 뭍에 오르면 곧바로 닫아 움직이게 둔다.
+                Shut();
             }),
             ("보급", () => { Forage(); CommandMenu.Refresh(); }),
             ("수리", () => { RepairAshore(); CommandMenu.Refresh(); }),
