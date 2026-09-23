@@ -1792,6 +1792,15 @@ public sealed class Player
     /// <summary>그 장이 끝났는지 — 끝난 장은 다시 트리거되지 않는다.</summary>
     public bool IsStoryArcClosed(string arcKey) => _closedStoryArcs.Contains(arcKey);
 
+    /// <summary>
+    /// 진행값을 그 값으로 <b>박는다</b>(개발 창) — 내려가기도 하고, 닫힌 책도 다시 연다.
+    /// </summary>
+    public void ForceStoryStep(string arcKey, int step)
+    {
+        _storyProgress[arcKey] = Math.Max(0, step);
+        _closedStoryArcs.Remove(arcKey);
+    }
+
     /// <summary>그 장을 닫는다.</summary>
     public void CloseStoryArc(string arcKey) => _closedStoryArcs.Add(arcKey);
 

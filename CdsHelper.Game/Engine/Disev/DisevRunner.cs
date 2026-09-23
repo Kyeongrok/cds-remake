@@ -241,6 +241,58 @@ public sealed class DisevRunner
         return false;
     }
 
+    /// <summary>조건 한 줄과 지금 값. 값이 null 이면 지금 가릴 수 없는 것(건물에 들어가야 아는 것 따위)이다.</summary>
+    public readonly record struct Check(string Text, bool? Value);
+
+    /// <summary>슬롯 하나 — 조건 줄들, 지금 통과하는지, 본문 줄들.</summary>
+    public readonly record struct SlotView(IReadOnlyList<Check> Checks, bool Passes, IReadOnlyList<string> Body);
+
+    /// <summary>
+    /// 그 파트의 슬롯을 <b>풀어서</b> 낸다 — 조건마다 지금 참·거짓, 슬롯 통과 여부, 본문 줄. 개발 창이 쓴다.
+    /// 파트가 없으면 null.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="IsEligible"/> 과 같은 잣대(<see cref="Passes"/>)로 잰다. 건물 조건은 건물에 들어선
+    /// 사건에서만 뜻이 있어서 <paramref name="building"/> 이 -1 이면 값을 비워 둔다.
+    /// </remarks>
+    public static IReadOnlyList<SlotView>? Inspect(Game game, string cache, int partIndex, int building = -1)
+    {
+        if (Open(game.Directory, cache) is not { } book) return null;
+        if (partIndex < 0 || partIndex >= book.Count) return null;
+
+        var raw = book.Part(partIndex);
+        if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return null;
+
+        var runner = new DisevRunner(null!, game, cache, building);
+        var slots = new List<SlotView>();
+        foreach (var slot in part.Slots)
+        {
+            var (from, to) = part.ChunkRange(slot.Condition);
+            var lines = Lines(part, from, to);
+
+            var checks = new List<Check>();
+            foreach (var line in lines)
+            {
+                if (line.Call is DisevCall.End) break;
+                if (line.Call is DisevCall.Or) { checks.Add(new("또는", null)); continue; }
+                bool inside = line.Call is DisevCall.InBuilding or DisevCall.NotInBuilding
+                              or DisevCall.BuildingCommand or DisevCall.SponsorVisitEnded;
+                bool? value = line.Call is { } call && !(inside && building < 0)
+                    ? runner.Evaluate(call, line.Args) : null;
+                checks.Add(new(line.Op.Text, value));
+            }
+
+            var (bodyFrom, bodyTo) = part.ChunkRange(slot.Body);
+            var body = Lines(part, bodyFrom, bodyTo)
+                .Where(l => l.Call is not DisevCall.End)
+                .Select(l => l.Op.Text)
+                .ToList();
+
+            slots.Add(new(checks, runner.Passes(lines), body));
+        }
+        return slots;
+    }
+
     /// <summary>
     /// 한 줄을 호출로 푼 것 — <see cref="DisevCalls"/> 표가 짓는다.
     /// </summary>

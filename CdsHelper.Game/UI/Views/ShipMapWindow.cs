@@ -2627,6 +2627,7 @@ public sealed class ShipMapWindow : Window
         SeaSpar = MockSeaBattle,
         // 해를 되돌렸으면 인물 세상을 다시 연다 — 세상은 앞으로만 간다.
         YearChanged = back => { if (back) _game.ResetWorld(); },
+        Quest = () => QuestDialog.Show(this, _game),
         // 게임에는 없는 것이라 해상 커맨드에서 개발 창으로 옮겼다(fb-ui-21). 지도를 Shift+오른쪽 클릭해
         // 바로 찍는 길은 그대로다.
         AutoSail = () =>

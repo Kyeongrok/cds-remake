@@ -55,6 +55,9 @@ public sealed class DevDialog : GameWindow
         public Action? LandSpar { get; init; }
         public Action? SeaSpar { get; init; }
 
+        /// <summary>퀘스트(개인 이야기) 상태 창 — 창을 닫은 뒤 부른다.</summary>
+        public Action? Quest { get; init; }
+
         /// <summary>해를 바꾼 뒤 — 되돌렸으면(<c>true</c>) 앞으로만 가는 것들을 다시 연다.</summary>
         public Action<bool>? YearChanged { get; init; }
 
@@ -117,6 +120,23 @@ public sealed class DevDialog : GameWindow
                 VerticalAlignment = VerticalAlignment.Center,
             });
             line.Children.Add(GameUi.PushButton(label + "…", () => { Close(); go(); }, 180));
+            rows.Children.Add(line);
+        }
+
+        // 퀘스트 — 개인 이야기의 진행값과 지금 파트의 발동 조건을 풀어 본다.
+        if (options.Quest is { } quest)
+        {
+            var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+            line.Children.Add(new TextBlock
+            {
+                Text = "퀘스트",
+                Width = 64,
+                Foreground = GameUi.Text,
+                FontWeight = FontWeights.Bold,
+                FontSize = 15,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            line.Children.Add(GameUi.PushButton("이야기 상태…", () => { Close(); quest(); }, 180));
             rows.Children.Add(line);
         }
 
