@@ -2536,7 +2536,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         SupplyDialog.Show(Menu.Window ?? this, _player, Market?.Rates.Of(_cityId) ?? 100,
                           ((_game.CityRows?.FlagsOf(_cityId) ?? 0) & 8) != 0,
                           Port.MateFace(),
-                          kind => _game.Goods?.Find(kind)?.Name ?? $"교역품 {kind}");
+                          c => (_game.Goods?.Find(c.Kind)?.Name ?? $"교역품 {c.Kind}",
+                                c.Origin >= 0 ? $"{_game.CityName(c.Origin)}산" : ""));
 
     void ITownScreen.BuyShip() => Yard.BuyShip();
     void ITownScreen.SellShip() => Yard.SellShip();

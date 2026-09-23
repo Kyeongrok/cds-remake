@@ -193,8 +193,13 @@ internal sealed class FleetInfoDialog : InfoDialog
                 });
             }
 
-            Build("", rows, BoardWidth, BoardHeight, new GameButton("취소", Close));
+            // 보급물자 넷이 한 줄에 다 들도록 함대정보 판보다 넓게 잡고, 키는 줄 수만큼만 — 교역품이 늘면 같이 는다.
+            rows.Children.Add(Gap(8));
+            Build("", rows, CargoWidth, double.NaN, new GameButton("취소", Close));
         }
+
+        /// <summary>짐 판의 폭 — 「식량 … 탄약 0통」 한 줄에 닫기(X) 자리까지 든다.</summary>
+        private const double CargoWidth = 480;
 
         public static void Show(Window owner, Player player, Func<Player.Cargo, string>? cargoName,
                                 Action<Window, Player.Cargo>? cargoInfo) =>
