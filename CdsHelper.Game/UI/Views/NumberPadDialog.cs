@@ -355,19 +355,37 @@ internal sealed class NumberPadDialog : GameWindow
             Margin = default,
         };
 
+    /// <summary>
+    /// 판을 연 뒤로 아직 아무 글쇠도 안 눌렀는지(<c>[+0xA0]</c>, 여는 자리 <c>0x004821D1</c> 이 켠다).
+    /// </summary>
+    /// <remarks>
+    /// 켜져 있으면 <b>첫 숫자가 지금 값을 지우고 새로 시작한다</b>(<c>0x00482510</c>). 숫자·DEL·AC 를
+    /// 누르면 꺼진다(<c>0x0048255B</c>). MAX·MIN 은 이 길을 안 거쳐 그대로 둔다.
+    /// 예전에는 이것이 없어 처음 값(나이 25) 뒤에 숫자가 붙었고, "253" 이 최대를 넘어 막혀서
+    /// AC 를 먼저 누르지 않으면 아무 숫자도 안 들어갔다.
+    /// </remarks>
+    private bool _fresh = true;
+
+    /// <summary>
+    /// 숫자를 찍는다. <b>치는 동안은 범위를 안 따진다</b> — 백만을 넘으면 9,999,999 로 묶을
+    /// 뿐이다(<c>0x00482529</c>). 범위는 ENTER 가 본다.
+    /// </summary>
     private void Type(string digits)
     {
-        // 앞자리 0 은 안 쌓는다. 넘치면 안 받는다.
-        string next = (_typed == "0" ? "" : _typed) + digits;
-        if (next.Length > 9) return;
-        if (int.TryParse(next, out int n) && n <= _max) { _typed = $"{n}"; Sync(); }
+        int n = _fresh || !int.TryParse(_typed, out int now) ? 0 : now;
+        _fresh = false;
+        foreach (char d in digits)
+            n = n >= 1_000_000 ? 9_999_999 : n * 10 + (d - '0');
+        _typed = $"{n}";
+        Sync();
     }
 
-    private void Clear(string _) { _typed = "0"; Sync(); }
+    private void Clear(string _) { _typed = "0"; _fresh = false; Sync(); }
 
     private void Back(string _)
     {
         _typed = _typed.Length <= 1 ? "0" : _typed[..^1];
+        _fresh = false;
         Sync();
     }
 
@@ -411,10 +429,24 @@ internal sealed class NumberPadDialog : GameWindow
         return BitmapSource.Create(stride, h, 96, 96, PixelFormats.Bgra32, null, all, stride * 4);
     }
 
+    /// <summary>
+    /// ENTER — 범위 밖이면 <b>닫지 않고</b> 알린다(<c>0x00482638</c>, 문구 <c>0x0053B328</c>).
+    /// </summary>
+    /// <remarks>
+    /// "%s" 는 최대값 끝 자리에 붙는 조사 "(으)로" 다(<c>0x00429720(최대, 10)</c>) — 받침 없는
+    /// 이·사·오·구(표 <c>0x0053C528</c>)와 ㄹ 받침인 일·칠·팔 뒤는 "로", 나머지는 "으로".
+    /// </remarks>
     private void Enter()
     {
         if (!int.TryParse(_typed, out int n)) { Close(); return; }
-        _result = Math.Clamp(n, _min, _max);
+        if (n < _min || n > _max)
+        {
+            string josa = (_max % 10) is 2 or 4 or 5 or 9 or 1 or 7 or 8 ? "로" : "으로";
+            NoticeDialog.Show(this, $"입력된 수치가 범위를 초과했습니다.\n{_min} ~ {_max} {josa} 입력해 주십시오.",
+                              "에러");
+            return;
+        }
+        _result = n;
         Close();
     }
 
