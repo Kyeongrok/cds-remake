@@ -426,8 +426,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             Canvas.SetLeft(image, sx);
             Canvas.SetTop(image, sy - 12);
 
-            // 배 옆 글자 — 아군 파란 A(dot-01), 적 붉은 E(dot-02, 짐작).
-            Put(_marks, _art.Path_(ship.Mine ? "dot-01" : "dot-02"), sx + (ship.Mine ? 4 : 36), sy + (ship.Mine ? 0 : 22), 8, 8, z: 0);
+            // 배 옆 글자 — <b>A(dot-01)는 기함</b> 표시라 양쪽 기함에만 찍고(0x004407D5, 칸 0·8만 돈다),
+            // <b>E(dot-02)는 적</b> 표시라 적 배마다 찍는다(0x00440885). 그래서 적 기함에는 둘 다 붙는다.
+            // 괴물 싸움(+0x8FC)이면 적 쪽은 둘 다 안 찍는다.
+            bool foeMarks = ship.Mine || !_battle.Monster;
+            if (ship.Flagship && foeMarks)
+                Put(_marks, _art.Path_("dot-01"), sx + 8, sy, 8, 8, z: 0);
+            if (!ship.Mine && foeMarks)
+                Put(_marks, _art.Path_("dot-02"), sx + 32, sy + 24, 8, 8, z: 0);
         }
         UpdateFlames();
     }
