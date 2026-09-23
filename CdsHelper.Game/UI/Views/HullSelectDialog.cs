@@ -26,7 +26,8 @@ public sealed class HullSelectDialog : GameWindow
         ["선체명", "내구력", "추진력", "적재용량", "적재중량", "필요승인", "대포수"];
 
     /// <summary>칸 폭. 이름만 넓고 숫자는 글자에 맞춰 좁다.</summary>
-    private static readonly double[] Widths = [108, 58, 58, 64, 68, 64, 58];
+    /// <remarks>네 글자 머리글(적재용량·적재중량·필요승원)이 잘리지 않게 넓혔다 — 게임 글꼴 한 글자가 16점이다.</remarks>
+    private static readonly double[] Widths = [108, 64, 64, 80, 80, 80, 64];
 
     /// <summary>
     /// 머리글 띠와 줄 띠의 색. 게임 갈무리에서 그대로 뽑았다 — 머리글이 한 톤 짙다.
