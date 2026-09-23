@@ -742,6 +742,14 @@ public sealed class DisevRunner
                 _game.Player.ActivateGoods(I("Goods"));
                 return null;
 
+            // 5B 08 [도시] 15 [교역품] · 5B 15 [교역품] — 의뢰한 짐을 <b>정가로 인수</b>한다(0x0040B3C8).
+            case DisevCall.BuyCargoFrom:
+                BuyCargo(I("Goods"), I("City"));
+                return null;
+            case DisevCall.BuyCargo:
+                BuyCargo(I("Goods"), null);
+                return null;
+
             // 05 05 — 16칸 소지품에 넣는다. 아이템 획득(00 05)과 달리 알림 창은 없다.
             // 05 05 [아이템] — 준다(0x00408A06). 다만 그 아이템이 <b>발견물 아이템</b>(표 +0x30)이면 아무 일도
             // 없다 — 발견물 아이템은 발표할 때 들어온다. 꽉 찼으면 버리기 창 없이 놓친다.
@@ -1256,6 +1264,42 @@ public sealed class DisevRunner
 
     /// <summary>부하 자리 번호 — <see cref="Support.Local.Models.Player.MateRoles"/> 차례다.</summary>
     private const int AideSlot = 0, InterpreterSlot = 3;
+
+    /// <summary>
+    /// 짐칸에서 그 교역품(산지를 주면 그 도시산만)을 몽땅 거둬 가고 값을 치른다(<c>0x0040B3C8</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0040b430  짐칸 여덟을 돌며 종류(·산지)가 맞으면 수를 더하고 그 칸을 비운다(0x004742F0)
+    ///   0040b494  지금 도시(0x00477EB0)가 없으면 여기서 끝 — 짐은 이미 걷혔다
+    ///   0040b4ba  단가 = 교역품 기준가[그 도시 지역](0x0042E3C0) x 시세 / 100, 0 이면 1(0x00429DC0)
+    ///   0040b4d2  소지금 += 단가 x 수 · 알림 「금화 %ld닢을 손에 넣었다」(0x00538EA0)
+    /// </code>
+    /// 교역소 매각가와 달리 특산가·햇수·도시 상태를 안 본다 — 기준가에 시세만 먹인 「정가」다.
+    /// </remarks>
+    private void BuyCargo(int goods, int? origin)
+    {
+        var player = _game.Player;
+        int count = 0;
+        for (int slot = player.CargoHold.Count - 1; slot >= 0; slot--)
+        {
+            var c = player.CargoHold[slot];
+            if (c.Kind != goods || (origin is { } city && c.Origin != city)) continue;
+            count += c.Count;
+            player.UnloadCargo(slot, c.Count);
+        }
+
+        int here = player.CityId;
+        if (here < 0 || _game.Trade is not { } trade) return;
+
+        int basis = trade.BasePrice(trade.RegionOf(here), goods);
+        int unit = basis * _game.Rates.Of(here) / Market.MarketRates.Par;
+        if (basis > 0 && unit < 1) unit = 1;
+
+        int gold = unit * count;
+        player.Earn(gold);
+        NoticeDialog.Show(_owner, $"금화 {gold}닢을 손에 넣었다");
+    }
 
     /// <summary>
     /// 대본이 그 인물을 부하 자리에 앉힌다(<c>0x0040B0CA</c> 부관 · <c>0x0040AE0B</c> 통역).
