@@ -343,9 +343,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         var owner = Owner;
         while (true)
         {
-            int at = HintListDialog.Pick(owner,
-                [.. _player.Ships.Select((s, i) => RefitLine(s, i == _player.Flagship))],
-                "개조선박의 선택", "배가 없습니다", RefitHead);   // 0x00532300
+            // 배 목록 표 — 머리글을 누르면 칸 묶음이 돈다. 개조는 묶음 1(0x0056E290)로 연다.
+            int at = ShipPickDialog.Pick(owner, _player, _game.Items, "개조선박의 선택", startSet: 1);   // 0x00532300
             if (at < 0 || at >= _player.Ships.Count) return;
 
             // 그 마을에서 손댈 수 있는 배인지 본다(0x004969F9) — 유럽권(0·1·2·10)은 다우선을
@@ -963,7 +962,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     private const string GunHead = "    대포명   단가   중량";
 
     /// <summary>돛 한 자리를 글자로 — 없음 <c>＿</c> · 삼각 <c>△</c> · 사각 <c>□</c>(0x005455F0 벌).</summary>
-    private static string SailMark(int sail) => sail switch
+    internal static string SailMark(int sail) => sail switch
     {
         Ship.Lateen => "△",
         Ship.Square => "□",
