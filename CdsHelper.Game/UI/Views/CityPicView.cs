@@ -1799,7 +1799,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>함대 정보 판.</summary>
     private void ShowFleet() => KeepCityMenu(() => FleetInfoDialog.Show(this, _player, items: _game.Items,
-                                                                    cargoName: c => GameInfo.CargoLabel(_game, c)));
+                                                                    cargoName: c => GameInfo.CargoLabel(_game, c),
+                                                                    cargoInfo: (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind)));
 
     /// <summary>
     /// 정보 판 하나를 띄우는 동안 도시 커맨드 창을 감춰 두었다가 <b>도로 편다</b> — 게임은 판을 닫으면 차림표를

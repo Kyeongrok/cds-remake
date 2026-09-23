@@ -122,6 +122,13 @@ public sealed class GoodsInfoDialog : GameWindow
         };
 
     /// <summary>교역품 하나를 보여 준다.</summary>
+    /// <summary>교역품 번호로 띄운다 — 표에 없으면 아무것도 안 한다.</summary>
+    public static void Show(Window owner, Engine.Game game, int kind)
+    {
+        if (game.Goods is not { } table || table.Find(kind) is not { } goods) return;
+        Show(owner, goods, table.CategoryName(goods.Category), game.ItemPictures);
+    }
+
     public static void Show(Window owner, GoodsTable.Goods goods, string category, ItemArt? art) =>
         new GoodsInfoDialog(goods, category, art) { Owner = owner }.ShowDialog();
 }

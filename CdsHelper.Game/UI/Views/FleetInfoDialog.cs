@@ -49,7 +49,8 @@ internal sealed class FleetInfoDialog : InfoDialog
     /// <inheritdoc/>
     protected override Brush BoardEdge => SteelEdge;
 
-    private FleetInfoDialog(Player player, string coord, ItemTable? items, Func<Player.Cargo, string>? cargoName)
+    private FleetInfoDialog(Player player, string coord, ItemTable? items, Func<Player.Cargo, string>? cargoName,
+                            Action<Window, Player.Cargo>? cargoInfo)
     {
         var rows = new StackPanel();
 
@@ -82,7 +83,7 @@ internal sealed class FleetInfoDialog : InfoDialog
 
         Build("함대정보", rows, BoardWidth, BoardHeight,
               new GameButton("대열", () => FormationDialog.Show(this, player)),
-              new GameButton("짐", () => CargoView.Show(this, player, cargoName)),
+              new GameButton("짐", () => CargoView.Show(this, player, cargoName, cargoInfo)),
               new GameButton("취소", Close));
     }
 
@@ -150,9 +151,11 @@ internal sealed class FleetInfoDialog : InfoDialog
     /// <param name="coord">함대좌표에 적을 글. 도시 안이면 비워 둔다 — 「위도 ---도  경도 ---도」가 선다.</param>
     /// <param name="items">아이템 표. 배 정보의 선수상 이름을 여기서 낸다.</param>
     /// <param name="cargoName">교역품 한 칸의 이름 — 「%s산」 과 품목 이름(<c>0x0042E310</c>).</param>
+    /// <param name="cargoInfo">짐 판에서 교역품 단추를 눌렀을 때 — 그 교역품 창(그림·분류·개체중량)을 띄운다.</param>
     public static void Show(Window owner, Player player, string coord = "",
-                            ItemTable? items = null, Func<Player.Cargo, string>? cargoName = null) =>
-        new FleetInfoDialog(player, coord, items, cargoName) { Owner = owner }.ShowDialog();
+                            ItemTable? items = null, Func<Player.Cargo, string>? cargoName = null,
+                            Action<Window, Player.Cargo>? cargoInfo = null) =>
+        new FleetInfoDialog(player, coord, items, cargoName, cargoInfo) { Owner = owner }.ShowDialog();
 
     /// <summary>
     /// 「짐」 판 — 보급물자 한 줄과 교역품일람(<c>0x0046F97D</c> ~ <c>0x0046FC6D</c>).
@@ -162,13 +165,14 @@ internal sealed class FleetInfoDialog : InfoDialog
     ///   보급물자                                               0x00571390
     ///   식량%4d통    물  %4d통    자재%4d통    탄약%4d통        0x005713A0 (식량·물은 (값+9)/10 통)
     ///   교역품일람                                             0x005713D8
-    ///   칸마다 「%s산」 + 품목 이름                              0x0042E310
+    ///   칸마다 「%s산」 + 품목 이름 — 띠 단추, 누르면 교역품 창    0x0042E310
     ///   취소                                                   0x005713E8
     /// </code>
     /// </remarks>
     private sealed class CargoView : InfoDialog
     {
-        private CargoView(Player player, Func<Player.Cargo, string>? cargoName)
+        private CargoView(Player player, Func<Player.Cargo, string>? cargoName,
+                          Action<Window, Player.Cargo>? cargoInfo)
         {
             var rows = new StackPanel { Margin = new Thickness(RowInset, 0, RowInset, 0) };
             rows.Children.Add(Label("보급물자"));
@@ -178,13 +182,22 @@ internal sealed class FleetInfoDialog : InfoDialog
                                     + $"탄약{player.SupplyOf(SupplyKind.Ammo),4}통"));
             rows.Children.Add(Gap(8));
             rows.Children.Add(Label("교역품일람"));
+            // 칸마다 판 너비 띠 단추다 — 누르면 그 교역품 창(그림·분류·개체중량)이 뜬다.
             foreach (var cargo in player.CargoHold)
-                rows.Children.Add(Label(cargoName?.Invoke(cargo) ?? $"교역품 {cargo.Kind}"));
+            {
+                var item = cargo;
+                rows.Children.Add(new GameButton(cargoName?.Invoke(item) ?? $"교역품 {item.Kind}",
+                                                 () => cargoInfo?.Invoke(this, item))
+                {
+                    Margin = new Thickness(0, 4, 0, 0),
+                });
+            }
 
             Build("", rows, BoardWidth, BoardHeight, new GameButton("취소", Close));
         }
 
-        public static void Show(Window owner, Player player, Func<Player.Cargo, string>? cargoName) =>
-            new CargoView(player, cargoName) { Owner = owner }.ShowDialog();
+        public static void Show(Window owner, Player player, Func<Player.Cargo, string>? cargoName,
+                                Action<Window, Player.Cargo>? cargoInfo) =>
+            new CargoView(player, cargoName, cargoInfo) { Owner = owner }.ShowDialog();
     }
 }
