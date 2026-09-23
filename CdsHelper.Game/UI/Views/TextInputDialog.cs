@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 using CdsHelper.Game.Local.Helpers;
 
@@ -15,53 +16,112 @@ namespace CdsHelper.Game.UI.Views;
 /// 게임에는 글쇠판 입력이 없다. 글꼴이 비트맵이라 글자를 찍어 넣는 판을 따로 두고 그것을
 /// 눌러 짓는다 — 선명입력의 오른쪽 위 작은 단추(계산기처럼 생겼다)를 누르면 이 판이 뜬다.
 ///
-/// 판은 두 벌이다. <b>영문</b> 은 게임 화면 그대로 옮겼다.
+/// 게임의 <c>0x004AFDF3</c> 창(400 x 280)이다. 자리는 모두 창 속 왼쪽 위에서 잰다.
 /// <code>
-///   A B C D E F G H I J K L M      0 1 2 3 4 5 6 7 8 9
-///   N O P Q R S T U V W X Y Z      ' ' , . : ; ? !
-///   a b c d e f g h i j k l m      + - ± × ÷ = ≈ &lt; &gt; ≤ ≥ ∞ ∴
-///   n o p q r s t u v w x y z      ( ) 「 」 ≪ ≫ 【 】 ( ) … ~
+///   입력 줄  (16,16)  304 x 16   "%-38s" 로 크림 띠를 채워 찍는다(0x004AF82F)
+///   판       (16,48)  304 x 192  한 칸 16 x 16 — 19칸 x 12줄
+///   단추     x 344 · 48 x 24     결정 16 · 뒤로 48 · 영문 80 · 한글 112 · 삭제 144
 /// </code>
-/// <b>한글</b> 판은 우리가 지었다. 게임 화면을 못 봐서 짜임을 모르지만, 낱자를 찍어 모아
-/// 쓰는 것 말고는 길이 없다 — 한글은 글자가 만 자가 넘어 통째로 늘어놓을 수가 없다.
-/// 초성 열아홉 · 중성 스물하나 · 종성 스물일곱을 늘어놓고 찍는 대로 모아 준다.
+/// 판은 세 가지다(<c>[+0x26C]</c> 판 · <c>[+0x278]</c> 초성).
+/// <list type="bullet">
+/// <item><b>영문</b> — 표 <c>0x0057C6B8</c> 의 열두 줄. 줄마다 앞의 빈칸 둘이 첫 칸을 비운다.</item>
+/// <item><b>초성 고르기</b> — "한글" 을 누르면 판에 두 줄만 뜬다(<c>0x004AF7B2</c>).
+///   <c>가까나다따 싸아자짜차 / 라마바빠사 카타파하</c>.</item>
+/// <item><b>음절</b> — 고른 초성으로 시작하는 <b>완성형 음절 전부</b>를 코드 차례로 한 줄에 열아홉씩
+///   깐다(<c>0x004AF4E0</c>). 범위는 표 <c>0x0057C6E8</c> 의 {처음, 끝} 이다. 가장 많은 "아" 가
+///   208자라 열두 줄(228칸)을 안 넘는다 — 게임의 굴림대는 실제로는 안 선다.</item>
+/// </list>
+/// 낱자를 모아 짓는 판이 아니다. 예전에는 첫소리·가운뎃소리·받침을 늘어놓고 모아 주었는데,
+/// 받침이 다음 자로 못 넘어가고("가" 뒤에 ㄱ·ㅏ 가 "각아") "없음" 칸이 글자 그대로 찍혔다.
+///
+/// 찍는 규칙(<c>0x004AF8D0</c>).
+/// <list type="bullet">
+/// <item>판의 글자를 누르면 <b>커서 자리에 덮어쓰고</b> 커서가 한 자 나아간다(끼워 넣지 않는다).</item>
+/// <item>입력 줄의 글자를 누르면 커서가 그 자로 간다. 글 끝 뒤를 눌러서는 안 옮겨진다.</item>
+/// <item>"삭제" 는 커서 <b>앞</b> 한 자를 지우고 뒤를 당긴다.</item>
+/// <item>"뒤로" 는 그만두기다. 오른쪽 단추는 「페이지선택」(영문·한글) 차림표를 띄운다(<c>0x004B0411</c>).</item>
+/// <item>판은 <b>빈 채로</b> 열린다 — 게임이 버퍼를 0 으로 채워 잡는다.</item>
+/// </list>
+/// 게임은 글자를 찍을 때 딸깍 소리(<c>0x00428140(0)</c>)를 내는데 여기서는 아직 안 낸다.
 /// </remarks>
 public sealed class TextInputDialog : GameWindow
 {
-    /// <summary>지금까지 지은 글.</summary>
+    // ── 창 속 자리(게임 그대로) ─────────────────────────────────────────────────
+
+    private const double BodyWidth = 400, BodyHeight = 256;
+    private const double LineX = 16, LineY = 16, PageX = 16, PageY = 48;
+    private const int Cell = 16, Columns = 19, Rows = 12;
+    private const double ButtonX = 344, ButtonWidth = 48, ButtonTop = 16, ButtonStep = 32;
+
+    /// <summary>커서 — 글자 칸 아래에 붙는 밑줄 막대(<c>0x004AF865</c> 의 (0,12)-(15,15)).</summary>
+    private const double CursorTop = 12, CursorHeight = 4;
+
+    /// <summary>판 바탕(색 <c>0x2B</c>)과 글자·커서(색 <c>0x49</c>). 갈무리에서 뽑았다.</summary>
+    private static readonly Brush Paper = Frozen(Color.FromRgb(0xD6, 0xCE, 0xB5));
+    private static readonly Brush CursorInk = Frozen(Color.FromRgb(0x1C, 0x1D, 0x26));
+    private const byte InkIndex = 0x49;
+
+    // ── 판 ────────────────────────────────────────────────────────────────────
+
+    /// <summary>영문 판 열두 줄(<c>0x0057C6B8</c>). 빈 줄은 게임도 빈 문자열이다.</summary>
+    private static readonly string[] Roman =
+    [
+        "",
+        "ＡＢＣＤＥＦＧＨＩＪＫＬＭ",
+        "ＮＯＰＱＲＳＴＵＶＷＸＹＺ",
+        "ａｂｃｄｅｆｇｈｉｊｋｌｍ",
+        "ｎｏｐｑｒｓｔｕｖｗｘｙｚ",
+        "",
+        "０１２３４５６７８９",
+        "　‘’，．·：；？！",
+        "＋－±×÷＝≠＜＞≤≥∞∴",
+        "〔〕「」《》【】（）…∼",
+        "",
+        "",
+    ];
+
+    /// <summary>
+    /// 초성 고르기 두 줄(<c>0x0057C794</c> · <c>0x0057C77C</c>). 빈칸 둘이 한 칸을 비운다.
+    /// </summary>
+    private static readonly string[] Initials = ["가까나다따\u0000싸아자짜차", "라마바빠사\u0000카타파하"];
+
+    /// <summary>
+    /// 초성마다 완성형 코드 범위(<c>0x0057C6E8</c>, 한 칸이 {처음, 끝, 0xFFFF}).
+    /// ㄱ ㄲ ㄴ ㄷ ㄸ ㄹ ㅁ ㅂ ㅃ ㅅ ㅆ ㅇ ㅈ ㅉ ㅊ ㅋ ㅌ ㅍ ㅎ 차례다.
+    /// </summary>
+    private static readonly (int First, int Last)[] Leads =
+    [
+        (0xB0A1, 0xB1ED), (0xB1EE, 0xB3A9), (0xB3AA, 0xB4D8), (0xB4D9, 0xB5FA),
+        (0xB5FB, 0xB6F2), (0xB6F3, 0xB8B5), (0xB8B6, 0xB9D8), (0xB9D9, 0xBAFB),
+        (0xBAFC, 0xBBE6), (0xBBE7, 0xBDCD), (0xBDCE, 0xBEC5), (0xBEC6, 0xC0D9),
+        (0xC0DA, 0xC2A4), (0xC2A5, 0xC2F6), (0xC2F7, 0xC4AA), (0xC4AB, 0xC5B7),
+        (0xC5B8, 0xC6C3), (0xC6C4, 0xC7CE), (0xC7CF, 0xC8FE),
+    ];
+
+    /// <summary>판 칸 표 — 칸마다 찍힐 글자. 빈 칸은 null(<c>[+0xA4]</c> 의 워드 표).</summary>
+    private readonly string?[,] _cells = new string?[Rows, Columns];
+
+    /// <summary>초성 고르기 칸 표 — 칸마다 초성 번호, 없으면 -1.</summary>
+    private readonly int[,] _leadCells = new int[Rows, Columns];
+
+    private enum Page { Roman, Initials, Syllables }
+
+    private Page _page;
+
+    // ── 글 ────────────────────────────────────────────────────────────────────
+
     private readonly StringBuilder _text = new();
-
-    /// <summary>모으는 중인 한글 한 자(초성·중성·종성 자리).</summary>
-    private int _lead = -1, _vowel = -1, _tail;
-
-    private readonly GameUi.GameLabel _line;
-    private readonly Border _page;
+    private int _cursor;
     private readonly int _maxLength;
     private string? _result;
 
-    // ── 한글 낱자. 유니코드 조합 차례 그대로다(U+AC00 + (초x21 + 중)x28 + 종). ──
-    private const string Leads = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
-    private const string Vowels = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
-    private const string Tails = " ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+    private readonly Canvas _pageLayer = new() { Width = Columns * Cell, Height = Rows * Cell };
+    private readonly Canvas _line = new() { Width = Columns * Cell, Height = Cell, IsHitTestVisible = false };
+    private readonly Rectangle _caret = new() { Width = Cell, Height = CursorHeight, Fill = CursorInk };
 
-    // ── 영문 판. 게임 화면에서 줄까지 그대로 옮겼다. ──
-    private static readonly string[] Roman =
-    [
-        "ABCDEFGHIJKLM",
-        "NOPQRSTUVWXYZ",
-        "abcdefghijklm",
-        "nopqrstuvwxyz",
-        "",
-        "0123456789",
-        "‘’ ，·：；？！",
-        "＋－±×÷＝≒＜＞≤≥∞∴",
-        "()「」≪≫【】（）…～",
-    ];
-
-    private TextInputDialog(string start, int maxLength, string caption)
+    private TextInputDialog(int maxLength, string caption)
     {
         _maxLength = maxLength;
-        _text.Append(start);
 
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -70,184 +130,236 @@ public sealed class TextInputDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
-        _line = Ink("");
-        _line.Margin = new Thickness(8, 3, 8, 3);
-        _line.MinWidth = 300;
+        var body = new Canvas { Width = BodyWidth, Height = BodyHeight, Background = GameUi.Back };
 
-        _page = new Border { Padding = new Thickness(10, 8, 10, 8) };
-        ShowRoman();
+        // 입력 줄 — 크림 띠 위에 글을 찍고, 누르면 그 자로 커서를 옮긴다.
+        var lineBack = new Border { Width = Columns * Cell, Height = Cell, Background = Paper };
+        lineBack.MouseLeftButtonUp += (_, e) => { e.Handled = true; PointLine(e.GetPosition(lineBack)); };
+        Place(body, lineBack, LineX, LineY);
 
-        // 오른쪽 단추 줄. 게임 화면 차례 그대로다.
-        var side = new StackPanel { Margin = new Thickness(6, 0, 4, 0) };
-        side.Children.Add(GameUi.PushButton("결정", Decide, 64));
-        side.Children.Add(GameUi.PushButton("뒤로", Cancel, 64));
-        side.Children.Add(GameUi.PushButton("영문", ShowRoman, 64));
-        side.Children.Add(GameUi.PushButton("한글", ShowHangul, 64));
-        side.Children.Add(GameUi.PushButton("삭제", Backspace, 64));
+        Place(body, _line, LineX, LineY);
+        _caret.IsHitTestVisible = false;
+        body.Children.Add(_caret);
 
-        var left = new StackPanel();
-        left.Children.Add(Framed(_line, new Thickness(4, 4, 0, 0)));
-        left.Children.Add(Framed(_page, new Thickness(4, 4, 0, 4)));
+        // 판.
+        var pageBack = new Border
+        {
+            Width = Columns * Cell,
+            Height = Rows * Cell,
+            Background = Paper,
+            Child = _pageLayer,
+        };
+        pageBack.MouseLeftButtonUp += (_, e) => { e.Handled = true; PointPage(e.GetPosition(pageBack)); };
+        Place(body, pageBack, PageX, PageY);
 
-        var body = new DockPanel();
-        DockPanel.SetDock(side, Dock.Right);
-        body.Children.Add(side);
-        body.Children.Add(left);
+        // 오른쪽 단추 다섯. 게임 차례 그대로다.
+        (string Text, Action Run)[] buttons =
+        [
+            ("결정", Decide), ("뒤로", Cancel), ("영문", ShowRoman), ("한글", ShowInitials), ("삭제", Delete),
+        ];
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            var button = new GameButton(buttons[i].Text, buttons[i].Run, width: ButtonWidth)
+            {
+                Margin = default,
+            };
+            Place(body, button, ButtonX, ButtonTop + i * ButtonStep);
+        }
 
-        var title = GameUi.TitleBar(caption, Cancel);
+        var title = GameUi.TitleBar(caption, null);
         GameUi.EnableDrag(this, title);
 
         var stack = new StackPanel();
         stack.Children.Add(title);
         stack.Children.Add(body);
+        Content = stack;
 
-        Content = new Border
-        {
-            Background = GameUi.Back,
-            BorderBrush = GameUi.Edge,
-            BorderThickness = new Thickness(2),
-            Margin = new Thickness(4),
-            Child = stack,
-        };
-
+        ShowRoman();
         Sync();
+
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Cancel(); };
-        MouseRightButtonUp += (_, _) => Cancel();
+        MouseRightButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            GameUi.ContextMenuAt(this, e.GetPosition(this),
+                                 [("영문", ShowRoman), ("한글", ShowInitials)]);
+        };
     }
 
-    private static Border Framed(UIElement child, Thickness margin) => new()
+    private static void Place(Canvas canvas, UIElement child, double x, double y)
     {
-        Background = GameUi.PageFill,
-        BorderBrush = GameUi.ItemEdge,
-        BorderThickness = new Thickness(2),
-        Margin = margin,
-        Child = child,
-    };
+        Canvas.SetLeft(child, x);
+        Canvas.SetTop(child, y);
+        canvas.Children.Add(child);
+    }
 
-    /// <summary>영문·숫자·기호 판.</summary>
+    // ── 판 바꾸기 ──────────────────────────────────────────────────────────────
+
+    /// <summary>판을 비운다 — 칸 표도 그림도.</summary>
+    private void ClearPage(Page page)
+    {
+        _page = page;
+        _pageLayer.Children.Clear();
+        Array.Clear(_cells);
+        for (int r = 0; r < Rows; r++)
+            for (int c = 0; c < Columns; c++)
+                _leadCells[r, c] = -1;
+    }
+
+    /// <summary>
+    /// 한 줄을 판에 찍는다. <paramref name="glyphs"/> 는 한 글자가 한 칸이고 <c>\0</c> 은 빈 칸이다.
+    /// </summary>
+    private void DrawRow(int row, int column, string glyphs) =>
+        DrawGlyphs(_pageLayer, row * Cell, column, glyphs);
+
+    /// <summary>
+    /// 글자를 <b>한 칸에 하나씩</b> 놓는다 — 줄을 통째로 찍으면 글꼴에 없는 글자가 폭 0 으로
+    /// 빠져 뒤 칸이 당겨진다. 게임은 칸 자리를 셈으로 가르므로 칸이 어긋나면 안 된다.
+    /// </summary>
+    private static void DrawGlyphs(Canvas layer, double top, int column, string glyphs)
+    {
+        for (int i = 0; i < glyphs.Length; i++)
+        {
+            if (glyphs[i] is '\0' or '　') continue;
+            var label = Ink(glyphs[i].ToString());
+            label.IsHitTestVisible = false;
+            Canvas.SetLeft(label, (column + i) * Cell);
+            Canvas.SetTop(label, top);
+            layer.Children.Add(label);
+        }
+    }
+
+    /// <summary>영문 판(<c>0x004AF630</c>). 글자는 둘째 칸부터 선다.</summary>
     private void ShowRoman()
     {
-        var rows = new StackPanel();
-        foreach (string row in Roman)
+        ClearPage(Page.Roman);
+        for (int r = 0; r < Rows; r++)
         {
-            if (row.Length == 0) { rows.Children.Add(new Border { Height = 10 }); continue; }
-            rows.Children.Add(Keys(row.Select(c => c.ToString())));
+            string row = Roman[r];
+            if (row.Length == 0) continue;
+            for (int c = 0; c < row.Length && c + 1 < Columns; c++)
+                _cells[r, c + 1] = row[c].ToString();
+            DrawRow(r, 1, row);
         }
-        _page.Child = rows;
     }
 
-    /// <summary>한글 낱자 판 — 초성·중성·종성.</summary>
-    private void ShowHangul()
+    /// <summary>
+    /// 초성 고르기(<c>0x004AF7B2</c>). 둘째 줄부터 두 줄, 둘째 칸부터 다섯씩 두 묶음이다.
+    /// </summary>
+    /// <remarks>
+    /// 누른 칸을 번호로 바꾸는 식이 <c>0x004AFB8B</c> 에 있다 — 윗줄 왼쪽 0~4 · 오른쪽 10~14,
+    /// 아랫줄 왼쪽 5~9 · 오른쪽 15~18. 곧 ㄱ부터 ㅎ까지 제 차례다.
+    /// </remarks>
+    private void ShowInitials()
     {
-        var rows = new StackPanel();
-        rows.Children.Add(Label("첫소리"));
-        rows.Children.Add(Keys(Leads.Select(c => c.ToString())));
-        rows.Children.Add(Label("가운뎃소리"));
-        rows.Children.Add(Keys(Vowels.Select(c => c.ToString())));
-        rows.Children.Add(Label("받침"));
-        rows.Children.Add(Keys(Tails.Select(c => c == ' ' ? "없음" : c.ToString())));
-        _page.Child = rows;
-    }
-
-    private static TextBlock Label(string text) => new()
-    {
-        Text = text,
-        Foreground = new SolidColorBrush(Color.FromRgb(0x7A, 0x6A, 0x50)),
-        FontSize = 12,
-        Margin = new Thickness(2, 6, 0, 1),
-    };
-
-    /// <summary>글자 한 줄을 눌리는 칸으로 늘어놓는다.</summary>
-    private WrapPanel Keys(IEnumerable<string> glyphs)
-    {
-        var row = new WrapPanel { MaxWidth = 420 };
-        foreach (string glyph in glyphs)
+        ClearPage(Page.Initials);
+        int[][] numbers = [[0, 1, 2, 3, 4, -1, 10, 11, 12, 13, 14], [5, 6, 7, 8, 9, -1, 15, 16, 17, 18]];
+        for (int r = 0; r < Initials.Length; r++)
         {
-            string key = glyph;
-            var cell = new Border
-            {
-                Background = Brushes.Transparent,
-                Padding = new Thickness(key.Length > 1 ? 4 : 6, 2, key.Length > 1 ? 4 : 6, 2),
-                Cursor = Cursors.Hand,
-                Child = Ink(key, center: true),
-            };
-            cell.MouseEnter += (_, _) => cell.Background = GameUi.ItemFill;
-            cell.MouseLeave += (_, _) => cell.Background = Brushes.Transparent;
-            cell.MouseLeftButtonUp += (_, e) => { e.Handled = true; Tap(key); };
-            row.Children.Add(cell);
+            for (int c = 0; c < numbers[r].Length; c++)
+                _leadCells[r + 1, c + 1] = numbers[r][c];
+            DrawRow(r + 1, 1, Initials[r]);
         }
-        return row;
     }
 
-    /// <summary>글자 한 칸을 찍었다.</summary>
-    private void Tap(string key)
+    /// <summary>그 초성의 완성형 음절을 다 깐다(<c>0x004AF4E0</c>).</summary>
+    private void ShowSyllables(int lead)
     {
-        int lead = Leads.IndexOf(key, StringComparison.Ordinal);
-        int vowel = Vowels.IndexOf(key, StringComparison.Ordinal);
-        int tail = key == "없음" ? 0 : Tails.IndexOf(key, StringComparison.Ordinal);
+        ClearPage(Page.Syllables);
+        var (first, last) = Leads[lead];
+        var cp949 = Cp949;
 
-        // 한글이 아니면 모으던 자를 매듭짓고 그대로 붙인다.
-        if (lead < 0 && vowel < 0 && tail <= 0)
+        var all = new List<string>();
+        for (int code = first; code <= last; code++)
         {
-            Settle();
-            Add(key);
-            Sync();
+            int low = code & 0xFF;
+            if (low < 0xA1 || low > 0xFE) continue;
+            all.Add(cp949.GetString([(byte)(code >> 8), (byte)low]));
+        }
+
+        for (int r = 0; r < Rows && r * Columns < all.Count; r++)
+        {
+            var row = all.Skip(r * Columns).Take(Columns).ToList();
+            for (int c = 0; c < row.Count; c++) _cells[r, c] = row[c];
+            DrawRow(r, 0, string.Concat(row));
+        }
+    }
+
+    private static Encoding? _cp949;
+
+    private static Encoding Cp949
+    {
+        get
+        {
+            if (_cp949 != null) return _cp949;
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            return _cp949 = Encoding.GetEncoding(949);
+        }
+    }
+
+    // ── 누르기 ─────────────────────────────────────────────────────────────────
+
+    /// <summary>판을 눌렀다.</summary>
+    private void PointPage(Point at)
+    {
+        int c = (int)(at.X / Cell), r = (int)(at.Y / Cell);
+        if (c < 0 || c >= Columns || r < 0 || r >= Rows) return;
+
+        if (_page == Page.Initials)
+        {
+            if (_leadCells[r, c] is >= 0 and var lead) ShowSyllables(lead);
             return;
         }
 
-        if (lead >= 0 && _lead < 0) { _lead = lead; }
-        else if (vowel >= 0 && _lead >= 0 && _vowel < 0) { _vowel = vowel; }
-        else if (tail > 0 && _lead >= 0 && _vowel >= 0 && _tail == 0) { _tail = tail; Settle(); }
-        else
+        if (_cells[r, c] is { } glyph) Type(glyph);
+    }
+
+    /// <summary>
+    /// 한 자 찍는다 — 커서 자리에 <b>덮어쓰고</b> 한 자 나아간다. 길이가 찼으면 안 받는다.
+    /// </summary>
+    private void Type(string glyph)
+    {
+        if (_cursor >= _maxLength) return;
+
+        if (_cursor < _text.Length) _text[_cursor] = glyph[0];
+        else _text.Append(glyph);
+        _cursor++;
+        Sync();
+    }
+
+    /// <summary>입력 줄을 눌렀다 — 글이 있는 자리면 커서를 그리로 옮긴다.</summary>
+    private void PointLine(Point at)
+    {
+        int pos = (int)(at.X / Cell);
+        if (pos >= 0 && pos < _text.Length)
         {
-            // 차례가 어긋나면 모으던 자를 매듭짓고 새로 시작한다.
-            Settle();
-            if (lead >= 0) _lead = lead;
-            else if (vowel >= 0) { _lead = Leads.IndexOf('ㅇ'); _vowel = vowel; }
+            _cursor = pos;
+            Sync();
         }
+    }
+
+    /// <summary>커서 앞의 한 자를 지운다.</summary>
+    private void Delete()
+    {
+        if (_cursor <= 0) return;
+        _cursor--;
+        _text.Remove(_cursor, 1);
         Sync();
     }
 
-    /// <summary>모으던 한글 한 자를 글에 붙인다.</summary>
-    private void Settle()
-    {
-        if (_lead >= 0 && _vowel >= 0)
-            Add(((char)(0xAC00 + ((_lead * 21) + _vowel) * 28 + _tail)).ToString());
-        else if (_lead >= 0)
-            Add(Leads[_lead].ToString());
-
-        _lead = _vowel = -1;
-        _tail = 0;
-    }
-
-    private void Add(string text)
-    {
-        if (_text.Length + text.Length <= _maxLength) _text.Append(text);
-    }
-
-    /// <summary>한 글자 지운다. 모으던 자가 있으면 그것부터 물린다.</summary>
-    private void Backspace()
-    {
-        if (_tail > 0) _tail = 0;
-        else if (_vowel >= 0) _vowel = -1;
-        else if (_lead >= 0) _lead = -1;
-        else if (_text.Length > 0) _text.Length--;
-        Sync();
-    }
-
-    /// <summary>입력 줄을 다시 찍는다. 모으는 중인 자도 미리 보여 준다.</summary>
+    /// <summary>입력 줄과 커서를 다시 찍는다.</summary>
     private void Sync()
     {
-        string pending = _lead >= 0 && _vowel >= 0
-            ? ((char)(0xAC00 + ((_lead * 21) + _vowel) * 28 + _tail)).ToString()
-            : _lead >= 0 ? Leads[_lead].ToString() : "";
-        _line.Text = _text + pending;
+        _line.Children.Clear();
+        DrawGlyphs(_line, 0, 0, _text.ToString());
+        Canvas.SetLeft(_caret, LineX + _cursor * Cell);
+        Canvas.SetTop(_caret, LineY + CursorTop);
+        _caret.Visibility = _cursor < Columns ? Visibility.Visible : Visibility.Hidden;
     }
 
     private void Decide()
     {
-        Settle();
-        _result = _text.ToString().Trim();
+        _result = _text.ToString().Replace('　', ' ').Trim();
         Close();
     }
 
@@ -257,33 +369,38 @@ public sealed class TextInputDialog : GameWindow
         Close();
     }
 
-    /// <summary>
-    /// 입력 칸과 자판 글자. <b>게임 글꼴</b>로 찍는다 — 바탕이 밝아 검은 글씨다.
-    /// </summary>
-    /// <remarks>
-    /// 게임 글꼴을 못 읽었을 때만 윈도 글꼴로 물러선다(<see cref="GameUi.GameLabel"/>).
-    /// </remarks>
-    private static GameUi.GameLabel Ink(string text, bool center = false) =>
-        new(GameFont.BlackColor)
+    /// <summary>판과 입력 줄의 글자. <b>게임 글꼴</b>로 찍는다.</summary>
+    private static GameUi.GameLabel Ink(string text) =>
+        new(InkIndex)
         {
             Text = text,
             Bold = false,
-            FallbackBrush = System.Windows.Media.Brushes.Black,
-            HorizontalAlignment = center ? HorizontalAlignment.Center : HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Center,
+            FallbackBrush = CursorInk,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
         };
 
+    private static Brush Frozen(Color c)
+    {
+        var b = new SolidColorBrush(c);
+        b.Freeze();
+        return b;
+    }
+
     /// <summary>
-    /// 판을 띄우고 지은 글을 낸다. 중단했으면 null.
+    /// 판을 띄우고 지은 글을 낸다. 그만뒀거나 빈 글이면 null.
     /// </summary>
     /// <param name="owner">주인 창.</param>
-    /// <param name="start">처음 들어 있을 글.</param>
-    /// <param name="maxLength">가장 긴 길이.</param>
+    /// <param name="start">
+    /// 예전 인자라 받기만 한다 — 게임은 판을 <b>빈 채로</b> 연다(<c>0x004AF8D0</c> 가 버퍼를 0 으로 채운다).
+    /// </param>
+    /// <param name="maxLength">가장 긴 길이(글자 수).</param>
     /// <param name="caption">창 제목.</param>
     public static string? Ask(Window owner, string start, int maxLength,
                               string caption = "문자입력")
     {
-        var dialog = new TextInputDialog(start, maxLength, caption) { Owner = owner };
+        _ = start;
+        var dialog = new TextInputDialog(maxLength, caption) { Owner = owner };
         dialog.ShowDialog();
         return string.IsNullOrWhiteSpace(dialog._result) ? null : dialog._result;
     }
