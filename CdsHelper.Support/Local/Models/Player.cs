@@ -2004,7 +2004,13 @@ public sealed class Player
     /// <remarks>
     /// 배는 선체 다섯 가지 중 하나라 이름만 적어 두면 된다. 모르는 이름은 버린다 —
     /// 선체 표가 갈려도 세이브가 통째로 깨지지는 않게.
+    ///
+    /// <b>판 31 앞의 세이브는 선체 칸에 배 이름을 적었다</b>(「산티아고」 · 「테레사」). 그대로 찾으면 선체 이름이
+    /// 아니라 배가 몽땅 버려지고 새 카라벨 한 척이 들어섰다 — 개조가 풀리고 척수가 준 까닭이다.
+    /// <paramref name="hullNames"/> 가 거짓이면 이름으로 못 찾은 배를 <b>적어 둔 값으로 가장 가까운 선체</b>에 붙인다
+    /// (<see cref="GuessHull"/>).
     /// </remarks>
+    /// <param name="hullNames">선체 칸에 선체 이름이 적힌 세이브인지(판 31 부터).</param>
     public void RestoreFleet(IEnumerable<string>? ships, int flagship,
                              IEnumerable<KeyValuePair<int, List<string>>>? docked,
                              IReadOnlyList<int>? shipHp = null,
@@ -2014,10 +2020,12 @@ public sealed class Player
                              IReadOnlyList<string>? shipNames = null,
                              IReadOnlyDictionary<int, List<string>>? dockedNames = null,
                              bool gunsInStats = true,
-                             bool sailsInStats = true)
+                             bool sailsInStats = true,
+                             bool hullNames = true)
     {
         // 해전에서 빼앗은 코구·다우 따위는 조선소 선체에 없어 선체표에서 살린다.
-        static Hull? Find(string name) => Hull.All.FirstOrDefault(h => h.Name == name) ?? Hull.FromTableName(name);
+        static Hull? ByName(string name) => Hull.All.FirstOrDefault(h => h.Name == name) ?? Hull.FromTableName(name);
+        Hull? Find(string name, Ship.Stats? st) => ByName(name) ?? (hullNames ? null : GuessHull(st));
 
         List<Ship> Build(IEnumerable<string> hulls, IReadOnlyList<int>? hps,
                          IReadOnlyList<Ship.Stats>? stats, IReadOnlyList<string>? names)
@@ -2030,12 +2038,14 @@ public sealed class Player
                 var st = stats != null && at < stats.Count ? stats[at] : null;
                 var nm = names != null && at < names.Count ? names[at] : null;
                 at++;
+                var found = Find(hull, st);
                 // 판 18·19 앞 세이브에는 포탑·대포·돛 칸이 없다 — 선체 기본값으로 되살린다.
                 if (st != null && !gunsInStats)
-                    st = st with { Turrets = Find(hull)?.Guns ?? 0, Gun = -1, Guns = 0 };
+                    st = st with { Turrets = found?.Guns ?? 0, Gun = -1, Guns = 0 };
                 if (st != null && !sailsInStats)
                     st = st with { Sails = [Ship.Lateen, Ship.NoSail, Ship.NoSail] };
-                if (Find(hull) is { } found) list.Add(new Ship(found, hp, st, nm));
+                // 판 31 앞 세이브는 배 이름 칸이 없으면 선체 칸(= 배 이름)을 이름으로 쓴다.
+                if (found != null) list.Add(new Ship(found, hp, st, nm ?? (hullNames ? null : hull)));
             }
             return list;
         }
@@ -2058,6 +2068,33 @@ public sealed class Player
                 dockedNames != null && dockedNames.TryGetValue(city, out var n) ? n : null);
             if (list.Count > 0) _docked[city] = list;
         }
+    }
+
+    /// <summary>
+    /// 적어 둔 값에 가장 가까운 선체 — 선체 칸에 배 이름을 적던 옛 세이브(판 31 앞)를 살릴 때만 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// 개조는 용량·중량·내구·추진력을 선체값에서 조금씩 옮길 뿐이고 필요승원·포탑은 거의 안 바뀐다. 그래서
+    /// 한계(<see cref="Hull.HpCeiling"/> 따위)를 넘지 않는 선체 가운데 필요승원·포탑이 맞고 나머지가 가까운 것을
+    /// 고른다. 값이 없으면(판 14 앞) 고를 잣대가 없어 버린다.
+    /// </remarks>
+    private static Hull? GuessHull(Ship.Stats? st)
+    {
+        if (st == null) return null;
+
+        var hulls = Hull.All
+            .Concat(Enumerable.Range(0, Hull.Table.Length).Select(Hull.FromTable))
+            .DistinctBy(h => h.Name)
+            .ToList();
+
+        static int Score(Hull h, Ship.Stats s) =>
+            Math.Abs(s.Crew - h.Crew) * 4 + Math.Abs(s.Turrets - h.Guns) * 4
+            + Math.Abs(s.Capacity - h.Capacity) / 50 + Math.Abs(s.Tonnage - h.Tonnage) / 500
+            + Math.Abs(s.MaxHp - h.Hp) / 10 + Math.Abs(s.Speed - h.Speed) / 5;
+
+        var fits = hulls.Where(h => st.MaxHp <= h.HpCeiling && st.Capacity <= h.CapacityCeiling
+                                    && st.Tonnage <= h.TonnageCeiling && st.Turrets <= h.GunsCeiling).ToList();
+        return (fits.Count > 0 ? fits : hulls).MinBy(h => Score(h, st));
     }
 
     /// <summary>맡겨 둔 배를 마을별로. 세이브에 적을 때 쓴다.</summary>

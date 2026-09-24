@@ -63,6 +63,16 @@ public static class GameSave
     public const int SailsInStatsFrom = 19;
 
     /// <summary>
+    /// 이 판부터 <c>Ships</c> · <c>Docked</c> 에 <b>선체 이름</b>이 적힌다 — 지금 적는 판이다.
+    /// </summary>
+    /// <remarks>
+    /// 앞 판은 여기에 배 이름(「산티아고」)을 적어, 불러오면 선체를 못 찾아 배가 몽땅 버려지고 새 카라벨 한 척이
+    /// 섰다(개조가 풀리고 척수가 줄었다). 앞 판을 열 때는 적어 둔 값으로 선체를 가늠한다
+    /// (<see cref="Support.Local.Models.Player.RestoreFleet"/> 의 <c>hullNames</c>).
+    /// </remarks>
+    public const int HullNamesFrom = 31;
+
+    /// <summary>
     /// 적어 둔 것을 지운다 — 새 놀이에서 <b>삭제한다</b> 를 고를 때다.
     /// </summary>
     /// <remarks>
@@ -229,16 +239,17 @@ public static class GameSave
     /// </param>
     public static string Save(Player player, bool suspended = false, string? path = null)
     {
-        var data = new Data(VirtualItemsFrom, DateTime.Now, player.Gold, player.Date,
+        var data = new Data(HullNamesFrom, DateTime.Now, player.Gold, player.Date,
                             player.CityId, player.CityName,
                             new Dictionary<string, int>(player.Skills), [.. player.Hints],
                             [.. player.Mates], [.. player.Met], [.. player.Items],
                             [.. player.Supplies], [.. player.Discoveries], DealOf(player),
                             player.Crew, [.. player.Announced], player.Fame,
                             [.. player.Stored], player.Savings,
-                            [.. player.Ships.Select(s => s.Name)], player.Flagship,
+                            // 선체 칸에는 <b>선체 이름</b>을 적는다 — 배 이름은 아래 ShipNames 에 따로 든다.
+                            [.. player.Ships.Select(s => s.Hull.Name)], player.Flagship,
                             player.Docked.ToDictionary(
-                                e => e.Key, e => e.Value.Select(s => s.Name).ToList()),
+                                e => e.Key, e => e.Value.Select(s => s.Hull.Name).ToList()),
                             [.. player.Ships.Select(s => s.Hp)],
                             player.Docked.ToDictionary(
                                 e => e.Key, e => e.Value.Select(s => s.Hp).ToList()),

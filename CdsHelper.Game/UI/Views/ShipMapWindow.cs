@@ -2438,7 +2438,8 @@ public sealed class ShipMapWindow : Window
                                  saved.ShipStats, saved.DockedStats,
                                  saved.ShipNames, saved.DockedNames,
                                  gunsInStats: saved.Version >= GameSave.GunsInStatsFrom,
-                                 sailsInStats: saved.Version >= GameSave.SailsInStatsFrom);
+                                 sailsInStats: saved.Version >= GameSave.SailsInStatsFrom,
+                                 hullNames: saved.Version >= GameSave.HullNamesFrom);
             _game.Player.RestoreMateBook(saved.MateBook);
             // 실은 교역품과 교역소 재고. 이 판 앞의 세이브에는 없어 빈 짐 · 처음 재고로 연다.
             _game.Player.RestoreCargo(saved.Cargo);
