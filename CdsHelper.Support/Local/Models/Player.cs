@@ -2054,7 +2054,10 @@ public sealed class Player
         {
             _ships.Clear();
             _ships.AddRange(Build(ships, shipHp, shipStats, shipNames));
-            if (_ships.Count == 0) _ships.Add(new Ship(Hull.Cheapest, name: ShipNames.All[0]));
+            // <b>적힌 배가 없으면 빈 채로 둔다</b> — 새 주인공은 배 없이 시작해 조선소에서 첫 배를 산다(NewGame 의
+            // ClearShips). 예전에는 0척이어도 카라벨을 넣어, 배를 사기 전에 저장·불러오면 공짜 카라벨이 생겼다.
+            // 적힌 배가 있는데 하나도 못 살렸을 때만(깨진 세이브) 한 척을 남긴다.
+            if (_ships.Count == 0 && ships.Any()) _ships.Add(new Ship(Hull.Cheapest, name: ShipNames.All[0]));
         }
         Flagship = Math.Clamp(flagship, 0, Math.Max(0, _ships.Count - 1));
 
