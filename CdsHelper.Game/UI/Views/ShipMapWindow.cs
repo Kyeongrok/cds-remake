@@ -287,9 +287,25 @@ public sealed class ShipMapWindow : Window
         GameSettings.BarCells =
             [.. _infoCells.Where(p => p.Value.Visibility == Visibility.Visible).Select(p => p.Key)];
 
+    /// <summary>
+    /// 실행 파일의 버전 — 릴리즈는 태그 판(<c>1.0.14</c>)이 들어온다(CI 가 <c>-p:Version=</c> 으로 넣는다).
+    /// 빌드 해시(<c>+abc123</c>)는 뗀다. 못 읽으면 빈 글이다.
+    /// </summary>
+    private static string AppVersion
+    {
+        get
+        {
+            var assembly = System.Reflection.Assembly.GetEntryAssembly();
+            string? text = assembly?.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+                .OfType<System.Reflection.AssemblyInformationalVersionAttribute>().FirstOrDefault()?.InformationalVersion
+                ?? assembly?.GetName().Version?.ToString(3);
+            return text?.Split('+')[0] ?? "";
+        }
+    }
+
     public ShipMapWindow()
     {
-        Title = "대항해시대3";
+        Title = AppVersion is { Length: > 0 } version ? $"대항해시대3  v{version}" : "대항해시대3";
         // 크기는 설정에 적어 둔 것으로 선다(기본은 예전 그대로 1200x800).
         Width = 1200;
         Height = 800;
