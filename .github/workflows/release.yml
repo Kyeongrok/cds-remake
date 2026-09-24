@@ -1,4 +1,4 @@
-name: Build and Release
+﻿name: Build and Release
 
 on:
   push:
@@ -56,9 +56,11 @@ jobs:
 
       - name: Pack with Velopack
         # --mainExe: Velopack이 Setup.exe bootstrapper를 만들려면 entry point exe를 명시해야 함.
+        #   설치가 끝나면 띄우고 바로가기를 거는 것이 이 exe 다 — 게임(CostaDelSol.exe)으로 둔다.
+        #   그 exe 는 Main 맨 앞에서 VelopackApp.Build().Run() 을 불러야 한다(CostaDelSol.Play/App.cs).
         #   누락 시 Setup.exe 생성이 skip되고 nupkg/RELEASES만 만들어짐.
         # --packTitle / --packAuthors: 설치 UI와 시작 메뉴 등에 표시되는 이름.
-        run: vpk pack --packId CdsHelper --packTitle "CdsHelper" --packAuthors "Kyeongrok" --packVersion ${{ steps.version.outputs.version }} --packDir publish --mainExe Editor.exe --outputDir releases --icon CdsHelper/app.ico
+        run: vpk pack --packId CdsHelper --packTitle "CdsHelper" --packAuthors "Kyeongrok" --packVersion ${{ steps.version.outputs.version }} --packDir publish --mainExe CostaDelSol.exe --outputDir releases --icon CdsHelper/app.ico
 
       - name: List releases folder (debug)
         shell: pwsh
