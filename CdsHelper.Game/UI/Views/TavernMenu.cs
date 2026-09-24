@@ -765,9 +765,11 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         var face = FaceOfMaid(her);
 
-        // 그 고장 말을 하나도 모르면 이야기가 안 된다(0x004664D1) — 한 마디만 듣고 끝난다.
-        string cityTongue = TongueOfCity();
-        if (cityTongue.Length > 0 && _player.TongueOf(cityTongue) <= 0)
+        // <b>그 여급과</b> 통하는 말이 하나도 없으면 이야기가 안 된다 — 한 마디만 듣고 끝난다.
+        // 게임은 0x004664D1 에서 0x00468F70(여급) 을 부른다 — 제독·부관·통역 가운데 여급이 하는 말(표 +0x20 비트)을
+        // 가장 잘하는 수준이다. 예전에는 <b>도시 나라 말</b>을 제독 혼자 보아서, 포르투갈어 3 인 제독이 포르투갈어를
+        // 하는 보르도 여급에게 「알아들을 수 없다」는 말을 들었다.
+        if (TongueWith(her) <= 0)
         {
             TalkDialog.Say(_view, face, "", Barmaids.StrangerWord(first, destined));
             if (first && destined) _player.AddLiking(her.Id, Barmaids.StrangerLike);
@@ -1947,6 +1949,30 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
             if (RowOf(_player.MateAt(slot)) is { } mate)
                 best = Math.Max(best, Shared(mate.Languages, i => row.Languages[i]));
+        return best;
+    }
+
+    /// <summary>
+    /// 그 여급과 통하는 말 — 인물과 같은 셈(<c>0x00468F70</c>)을 <b>여급의 말</b>에 댄다.
+    /// </summary>
+    /// <remarks>
+    /// 여급의 말 수준은 표 <c>+0x20</c> 비트다(<c>0x004795B0</c>) — 비트가 서면 3, 아니면 0.
+    /// <code>
+    ///   004795ba  dx = [0x517B18 + 번호*40]      ; 전수 언어 비트
+    ///   004795c6  (dx &amp; (1 &lt;&lt; 언어)) ? 3 : 0
+    /// </code>
+    /// 비트 차례는 <see cref="Skill.Languages"/> 와 같다 — 보르도의 소피는 비트 1·2·3(포르투갈어·로망스어·게르만어)이다.
+    /// </remarks>
+    private int TongueWith(BarmaidTable.Barmaid her)
+    {
+        var theirs = new int[Skill.Languages.Length];
+        for (int i = 0; i < theirs.Length; i++)
+            theirs[i] = (her.Tongues & (1 << i)) != 0 ? FluentTongue : 0;
+
+        int best = Shared(theirs, i => _player.TongueOf(Skill.Languages[i]));
+        foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+            if (RowOf(_player.MateAt(slot)) is { } mate)
+                best = Math.Max(best, Shared(mate.Languages, i => theirs[i]));
         return best;
     }
 
