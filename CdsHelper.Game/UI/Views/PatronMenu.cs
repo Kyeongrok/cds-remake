@@ -2090,7 +2090,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var dice = new GameRandom(Environment.TickCount);
         DuelDialog.Show(_view, duel, dice, face, _game.Fighters,
                         // 후원자 자리는 술집·여관이 아니므로 무대가 밑값 1(초원)이다(0x004A2D92).
-                        FighterSprites.SetForCulture(_culture), arena: DuelArt.Field, bgm: _game.Bgm);
+                        FighterSprites.SetForCulture(_culture),
+                        myFace: _game.Faces?.TryGetBgra(PortraitAges.At(_player.Face, _player.Age, false, _game.Faces),
+                                                        female: false),
+                        arena: DuelArt.Field, bgm: _game.Bgm);
         // 지면 여느 일기토처럼 도망·용서·죽음이 갈리고, <b>베였을 때만</b> 놀이가 끝난다(0x00410145 의
         // 결과 3). 졌어도 살았으면 이긴 것과 같이 이어 간다 — 원본 함수는 그때도 1 을 낸다.
         // 빌린 배 선장과의 판은 종류 4 라 도망도 용서도 없다(0x004A9EDE).

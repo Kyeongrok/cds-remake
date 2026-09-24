@@ -172,8 +172,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (PersonTable.Open().Find(BrawlPerson) is not { } row || row.Stats.Length < 5) return false;
 
         int k = dice.Next(3);
-        var face = _game.PersonTemplates?.Find(BrawlPerson) is { } t
-            ? _game.Faces?.TryGetBgra(t.Face, female: false) : null;
+        var face = BrawlFace();
         var mate = _game.AideFace;
         bool hasMate = _player.MateAt(0).Length > 0;
 
@@ -197,7 +196,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                                                row.Stats[4], gear.Weapon, gear.Armor);
         var duel = new Engine.Town.Duel(Mine(), foe, Shielded(), Environment.TickCount);
         DuelDialog.Show(_view, duel, roll, face, _game.Fighters,
-                        FighterSprites.SetForCulture(_cultureNo), arena: DuelArt.TavernFor(_cultureNo), bgm: _game.Bgm);
+                        FighterSprites.SetForCulture(_cultureNo), myFace: MyFace(),
+                        arena: DuelArt.TavernFor(_cultureNo), bgm: _game.Bgm);
         if (duel.Won == true)
         {
             _player.Hurt(duel.BodyLost);
@@ -458,8 +458,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private void PickFight(uint[]? mate)
     {
         // 시비는 제독 얼굴(0x0042EC75), 받는 말은 인물 275 얼굴(0x0042EC8D)이다.
-        var face = _game.PersonTemplates?.Find(BrawlPerson) is { } t
-            ? _game.Faces?.TryGetBgra(t.Face, female: false) : null;
+        var face = BrawlFace();
         int k = _game.Random.Next(Taunts.Length);
         ConfirmDialog.Tell(_view, Taunts[k], face: MyFace());
         ConfirmDialog.Tell(_view, Retorts[k], face: face);
@@ -477,7 +476,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var duel = new Engine.Town.Duel(Mine(), foe, Shielded(), Environment.TickCount);
 
         DuelDialog.Show(_view, duel, dice, face, _game.Fighters,
-                        FighterSprites.SetForCulture(_cultureNo), arena: DuelArt.TavernFor(_cultureNo), bgm: _game.Bgm);
+                        FighterSprites.SetForCulture(_cultureNo), myFace: MyFace(),
+                        arena: DuelArt.TavernFor(_cultureNo), bgm: _game.Bgm);
         if (duel.Won == true)
         {
             _player.Hurt(duel.BodyLost);
@@ -499,6 +499,18 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>취중에 시비가 붙는 상대(<c>0x0042EC19</c> 의 <c>0x113</c>).</summary>
     internal const int BrawlPerson = 275;
+
+    /// <summary>
+    /// 인물 275(술주정꾼·연적) 얼굴 — 그 사람 <b>레코드</b>의 얼굴(MALE.CDS 212)이다(<c>0x0042EC8D</c> 가 <c>0x004692E0(인물)</c> 로 낸다).
+    /// </summary>
+    /// <remarks>
+    /// 인물 밑표의 275 줄은 얼굴이 0 이라, 예전처럼 밑표에서 꺼내면 <b>기본 제독 얼굴</b>이 떠 일기토 왼쪽에 내 얼굴이 섰다.
+    /// </remarks>
+    private uint[]? BrawlFace() =>
+        _game.Faces?.TryGetBgra(PersonTable.Open().Find(BrawlPerson)?.Face ?? BrawlFaceFallback, female: false);
+
+    /// <summary>표를 못 읽었을 때의 얼굴 — 빌린 배 선장과 같은 MALE.CDS 212 다.</summary>
+    private const int BrawlFaceFallback = 212;
 
     /// <summary>
     /// 그 사람의 이름은 판이 열릴 때 <b>「술집의 술주정꾼」으로 덮인다</b>(<c>0x004A2C40</c> 이
@@ -1010,8 +1022,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <returns>혼인을 이어도 되면 참.</returns>
     private bool RivalBeaten(GameRandom dice)
     {
-        var face = _game.PersonTemplates?.Find(BrawlPerson) is { } t
-            ? _game.Faces?.TryGetBgra(t.Face, female: false) : null;
+        var face = BrawlFace();
         TalkDialog.Say(_view, face, "", Barmaids.RivalWord);
 
         if (PersonTable.Open().Find(BrawlPerson) is not { } row || row.Stats.Length < 5) return true;
@@ -1023,7 +1034,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                                                row.Stats[4], gear.Weapon, gear.Armor);
         var duel = new Engine.Town.Duel(Mine(), foe, Shielded(), dice.Next());
         DuelDialog.Show(_view, duel, dice, face, _game.Fighters,
-                        FighterSprites.SetForCulture(_cultureNo), arena: DuelArt.TavernFor(_cultureNo), bgm: _game.Bgm);
+                        FighterSprites.SetForCulture(_cultureNo), myFace: MyFace(),
+                        arena: DuelArt.TavernFor(_cultureNo), bgm: _game.Bgm);
 
         if (duel.Won == true)
         {

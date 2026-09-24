@@ -391,7 +391,9 @@ internal sealed class LandBattleScene : GameWindow
                                    _battle.FoeLuck, 0, 0);
 
         var duel = new Duel(mine, foe, shield: false, dice.Next());
-        if (DuelDialog.Show(this, duel, dice, null, bgm: _game?.Bgm)) return DuelEnd.Won;
+        // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
+        var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
+        if (DuelDialog.Show(this, duel, dice, null, myFace: myFace, bgm: _game?.Bgm)) return DuelEnd.Won;
 
         // 지면 여느 일기토와 같이 갈린다 — 도망·용서면 퇴각한 셈이고, 베이면 그대로 GAME OVER 다.
         return duel.FateOf(me.Fame) == Duel.Fate.Slain ? DuelEnd.Slain : DuelEnd.Lost;
