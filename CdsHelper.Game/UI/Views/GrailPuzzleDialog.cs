@@ -34,7 +34,10 @@ namespace CdsHelper.Game.UI.Views;
 ///   0x0046810E  바가지 셋 — x = 12 · 60 · 108, y = 0x90 (144)
 ///   0x004681AE  성배 열   — x = 0x00559040 의 열 값, y = 0x13E (318)
 ///   0x00468077  큰 항아리 — (0xD5, 0x74) = (213, 116)
+///   0x00467FD6  버리는 곳 — (0xA0, 0x30) = (160, 48), 조각 47(64x32) · 자리 0 · 종류 2
 /// </code>
+/// <b>버리는 곳은 석상이 든 뿔잔</b>이다. 바가지를 거기에 놓으면 비워진다(<see cref="GrailPuzzle.Drop"/> 의
+/// 종류 2 갈래, <c>0x00467C34</c>). 뿔잔도 항아리도 배경 그림에 이미 그려져 있어 조각을 따로 안 얹는다.
 /// 값은 게임처럼 <b>분수</b>로 적는다 — 위가 든 물, 아래가 용량이다. 잡은 그릇에는
 /// 흰 네모를 두른다.
 ///
@@ -67,6 +70,12 @@ internal sealed class GrailPuzzleDialog : InfoDialog
 
     /// <summary>큰 항아리 자리(<c>0x00468077</c>) 언저리.</summary>
     private const int JarX = 196, JarY = 100, JarBoxW = 132, JarBoxH = 158;
+
+    /// <summary>
+    /// 버리는 곳(뿔잔) 자리(<c>0x00467FD6</c> — (160, 48)에 64x32) 언저리. 뿔잔 입이 다 들게 조금 넓힌다.
+    /// </summary>
+    /// <remarks>예전에는 이 자리를 안 만들어 바가지를 비울 수가 없었다.</remarks>
+    private const int DrainX = 152, DrainY = 40, DrainBoxW = 80, DrainBoxH = 48;
 
     private static readonly Brush Ring = Frozen(Colors.White);
 
@@ -101,6 +110,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
             Art(GrailPuzzle.FirstDipper + i, DipperX[i], DipperY, DipperW, DipperH);
 
         Spot(GrailPuzzle.Jar, JarX, JarY, JarBoxW, JarBoxH, label: false);
+        Spot(GrailPuzzle.Idle, DrainX, DrainY, DrainBoxW, DrainBoxH, label: false);
         for (int i = 0; i < GrailPuzzle.Dippers; i++)
             Spot(GrailPuzzle.FirstDipper + i, DipperX[i], DipperY, DipperW, DipperH);
         for (int i = 0; i < GrailPuzzle.Grails; i++)

@@ -1,4 +1,4 @@
-namespace CdsHelper.Support.Local.Models;
+﻿namespace CdsHelper.Support.Local.Models;
 
 /// <summary>
 /// 미니 게임 「성배 퍼즐」 — 대·중·소 바가지로 성배 열을 성수로 딱 맞게 채우는 놀이.
@@ -18,7 +18,7 @@ namespace CdsHelper.Support.Local.Models;
 /// 종류가 있고, 종류는 그릇 클래스의 첫 가상 자리가 낸다.
 /// <code>
 ///   자리  종류  용량                     만드는 곳
-///   0     2     0                        0x00467FFB  — 아무것도 못 주고 못 받는다(그림)
+///   0     2     0                        0x00467FFB  — 버리는 곳(석상의 뿔잔). 놓으면 바가지가 비워진다
 ///   1     1     9999                     0x0046809E  — 큰 항아리
 ///   2·3·4 3     문제표[문제][0·1·2]      0x0046812E  — 바가지 소·중·대
 ///   5~14  4     1 2 3 … 10               0x004681CB  — 성배 열
