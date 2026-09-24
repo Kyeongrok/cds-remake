@@ -672,8 +672,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         byte building = kind == FacilityKind.Tavern ? TavernRoster.Tavern : TavernRoster.Inn;
         var people = Sitting(building);
-        var keys = new List<int>(people.Count);
-        foreach (var p in people) keys.Add(p.Index);
+        var keys = new List<TavernGuests.Sitter>(people.Count);
+        foreach (var p in people)
+        {
+            int home = HomeCulture(p.Index);
+            keys.Add(new(p.Index, p.Female,
+                         home >= 0 && home < CityCultureEdits.Names.Length ? CityCultureEdits.Names[home] : _culture));
+        }
 
         var art = new List<BuildingPhotoWindow.GuestArt>(TavernGuests.MaxOnScreen);
         var maid = kind == FacilityKind.Tavern ? Standing() : null;
@@ -707,11 +712,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             {
                 // 낯을 트기 전에는 이름이 안 보인다 — 이름표도 "남"·"여" 다.
                 var who = people[seat.Person];
-                bool known = Known(who);
+                bool female = seat.Art.Female;
+                // 이름표는 <b>커서를 올릴 때마다</b> 다시 정한다 — 말을 걸어 낯을 트면 곧바로 이름이 뜬다.
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
-                            known ? who.ShortName : seat.Art.Female ? "여" : "남",
+                            Known(who) ? who.ShortName : female ? "여" : "남",
                             () => Alone(() => MeetPerson(who, seat.Art.Female,
-                                                         inn: kind == FacilityKind.Inn))));
+                                                         inn: kind == FacilityKind.Inn)),
+                            () => Known(who) ? who.ShortName : female ? "여" : "남"));
             }
         }
         return art;

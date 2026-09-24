@@ -222,7 +222,38 @@ public sealed class TavernGuests
         return made;
     }
 
-    public IReadOnlyList<Slot> Seat(string? culture, int seed, IReadOnlyList<int> personKeys,
+    /// <summary>술집에 앉힐 인물 하나 — 인물 번호, 여자인지, 그 사람 <b>나라 수도의</b> 문화권 이름.</summary>
+    public readonly record struct Sitter(int Id, bool Female, string? Culture);
+
+    /// <summary>
+    /// 인물이 서는 그림(<c>0x0049D440</c>) — 그 사람 <b>나라 수도의 문화권</b>에서 <b>그 사람 성별</b>의 손님 가운데
+    /// <c>(4096 + 인물 번호) % 그 수</c> 번째다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   49d448  0x00477EA0(인물) → 나라 형편 칸 → 수도 도시 +0x58   ; 문화권 — 지금 술집 도시가 아니다
+    ///   49d45f  vtbl[0x10] 여자인가                                   ; 남자 수 0x0049D600 · 여자 수 0x0049D4C0
+    ///   49d468  0x004783C0(인물) = 0x00477AF0(1, 번호) = (1 &lt;&lt; 12) | 번호
+    ///   49d483  0x0049D630(문화권, 성별, 나머지)                      ; 그 성별 가운데 나머지 번째
+    /// </code>
+    /// 예전에는 지금 도시의 문화권 · 늘 남자 · 인물 번호 그대로로 골라 원본과 다른 사람이 섰다.
+    /// </remarks>
+    private Guest? ArtOf(Sitter who, string? here)
+    {
+        if (!Ranges.TryGetValue(who.Culture ?? "", out var range)
+            && !Ranges.TryGetValue(here ?? "", out range)) range = Ranges["이베리아"];
+
+        var pool = new List<int>();
+        for (int i = 0; i < range.Count; i++)
+            if (_guests[range.Start + i].Female == who.Female) pool.Add(range.Start + i);
+        if (pool.Count == 0) return null;
+        return _guests[pool[Mod(PersonKeyBase + who.Id, pool.Count)]];
+    }
+
+    /// <summary>인물 고유값의 갈래 몫 — <c>0x00477AF0(1, 번호)</c> 의 <c>1 &lt;&lt; 12</c>.</summary>
+    private const int PersonKeyBase = 1 << 12;
+
+    public IReadOnlyList<Slot> Seat(string? culture, int seed, IReadOnlyList<Sitter> persons,
                                     bool withMaid = true)
     {
         if (!Ranges.TryGetValue(culture ?? "", out var range)) range = Ranges["이베리아"];
@@ -242,8 +273,8 @@ public sealed class TavernGuests
             seats.Add(new Slot(_guests[women[fixedRng.Next(women.Count)]], -1));
 
         // 인물 — 각자 제 그림으로 앉는다. <b>한 자리는 비워 둔다</b> — 무명 손님 몫이다.
-        for (int i = 0; i < personKeys.Count && seats.Count < MaxOnScreen - 1; i++)
-            seats.Add(new Slot(_guests[men[Mod(personKeys[i], men.Count)]], i));
+        for (int i = 0; i < persons.Count && seats.Count < MaxOnScreen - 1; i++)
+            if (ArtOf(persons[i], culture) is { } art) seats.Add(new Slot(art, i));
 
         // 남는 자리는 무명 손님. 앞서 선 사람과 겹치지 않게 고른다.
         // 무명 손님은 들어갈 때마다 새로 굴린다.

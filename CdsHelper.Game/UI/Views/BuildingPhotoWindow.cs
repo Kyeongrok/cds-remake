@@ -25,8 +25,10 @@ public sealed class BuildingPhotoWindow : GameWindow
     /// <summary>
     /// 손님 한 명. 그림과 크기, 커서를 올렸을 때 뜰 이름표, 눌렀을 때 할 일을 함께 든다.
     /// </summary>
+    /// <param name="LiveName">있으면 커서를 올릴 때마다 이것으로 이름표를 다시 정한다 — 말을 걸어 낯을 트면
+    /// 사진을 다시 세우지 않아도 이름이 뜬다.</param>
     public readonly record struct GuestArt(uint[] Bgra, int Width, int Height, string Name,
-                                           Action? Click = null);
+                                           Action? Click = null, Func<string>? LiveName = null);
 
     private BuildingPhotoWindow(uint[] photo, IReadOnlyList<GuestArt> guests, int scale)
     {
@@ -61,7 +63,7 @@ public sealed class BuildingPhotoWindow : GameWindow
             Canvas.SetTop(image, h - g.Height * scale);
             canvas.Children.Add(image);
 
-            AddTag(canvas, image, g.Name, left + g.Width * scale / 2.0, h);
+            AddTag(canvas, image, g.Name, left + g.Width * scale / 2.0, h, g.LiveName);
 
             if (g.Click is { } run)
             {
@@ -83,14 +85,16 @@ public sealed class BuildingPhotoWindow : GameWindow
     /// 건물 이름표처럼 덩굴 띠를 두르지 않는다 — 게임 것은 짙은 판에 밝은 한 점 테를 두른
     /// 민 이름표다(<see cref="GameUi.HoverTag"/>).
     /// </remarks>
-    private static void AddTag(Canvas canvas, Image guest, string name, double centerX, double bottom)
+    private static void AddTag(Canvas canvas, Image guest, string name, double centerX, double bottom,
+                               Func<string>? live = null)
     {
-        var (tag, _) = GameUi.HoverTag(name);
+        var (tag, text) = GameUi.HoverTag(name);
         Panel.SetZIndex(tag, 10);
         canvas.Children.Add(tag);
 
         guest.MouseEnter += (_, _) =>
         {
+            if (live != null) text.Text = live();
             tag.Visibility = Visibility.Visible;
             tag.UpdateLayout();
             double tw = tag.ActualWidth > 0 ? tag.ActualWidth : 48;

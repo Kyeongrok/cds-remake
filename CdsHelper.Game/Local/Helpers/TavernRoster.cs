@@ -33,7 +33,7 @@ public sealed class TavernRoster
                                          byte Body, byte Mind, byte Might, byte Charm, byte Luck,
                                          byte Sword, byte Shooting = 0, byte Gunnery = 0,
                                          byte Sailing = 0, byte Handling = 0,
-                                         byte Medicine = 0, byte Science = 0)
+                                         byte Medicine = 0, byte Science = 0, bool Female = false)
     {
         /// <summary>
         /// 술집 이름표에 적는 짧은 이름 — 이름 칸(<c>+0x32</c>)만 쓴다.
@@ -105,7 +105,8 @@ public sealed class TavernRoster
                 Level(r, Support.Local.Models.Skill.Sailing),
                 Level(r, Support.Local.Models.Skill.Handling),
                 Level(r, Support.Local.Models.Skill.Medicine),
-                Level(r, Support.Local.Models.Skill.Science)));
+                Level(r, Support.Local.Models.Skill.Science),
+                r.Female));
         }
         return new TavernRoster(people);
     }
