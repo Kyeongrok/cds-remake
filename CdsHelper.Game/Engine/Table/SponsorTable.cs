@@ -164,11 +164,24 @@ public sealed class SponsorTable
         Sponsor? holder = null;
         foreach (var s in _sponsors)
         {
-            if (s.City != city || s.Building != building || s.YearsIn(year) < 0) continue;
+            if (s.City != city || SeatOf(s) != building || s.YearsIn(year) < 0) continue;
             if (holder is not { } best || s.YearsIn(year) < best.YearsIn(year)) holder = s;
         }
         return holder;
     }
+
+    /// <summary>
+    /// 앉는 건물 — 표 값(<c>+0x28</c>)에 우리가 고친 자리를 덮는다.
+    /// </summary>
+    /// <remarks>
+    /// <b>에라스무스</b>(런던 · 표에는 건물 0)는 런던 건물 0 이 항구라 표대로면 아무 데도 못 만난다 — 항구에는
+    /// 후원자 차림표가 없다. 신부라 <b>런던 교회(건물 3, 캔터베리 대성당)</b>에 앉힌다.
+    /// </remarks>
+    private static int SeatOf(Sponsor s) =>
+        s.City == LondonCity && s.Building == HarborCode && Key(s.Name).Contains("에라스무스") ? LondonChurch : s.Building;
+
+    /// <summary>런던 · 항구 건물 코드 · 런던 교회(캔터베리 대성당) 건물 번호.</summary>
+    private const int LondonCity = 38, HarborCode = 0, LondonChurch = 3;
 
     /// <summary>이름 맞추기용 열쇠 — 가운뎃점과 빈칸을 뗀다.</summary>
     private static string Key(string name) =>
