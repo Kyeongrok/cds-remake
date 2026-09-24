@@ -679,9 +679,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             && ConfirmDialog.Ask(this, SeaBattle.OfferToLead, BattleTitle, _face))
         {
             _battle.Delegated = true;
+            AutoTurn();
             return;
         }
-        if (_battle.Delegated) return;
+        if (_battle.Delegated) { AutoTurn(); return; }
 
         Say(_battle.WindNotice());
         Say(_battle.OrderPrompt());
@@ -757,10 +758,40 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 }
                 Unpick();
                 Redraw();
+                AutoTurn();
             }
             return;
         }
 
+        RunTurn();
+    }
+
+    /// <summary>위임 중 턴 사이에 쉬는 틈 — 이 사이에 판을 누르면 지휘를 되찾을 수 있다.</summary>
+    private static readonly TimeSpan AutoTurnPause = TimeSpan.FromMilliseconds(600);
+
+    /// <summary>
+    /// 위임 중이면 계획 단계를 건너뛰고 턴을 굴린다(<c>0x0043C5DE</c> — <c>+0x944</c> 가 2 면 이동 지시를 안 받는다).
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 위임을 받아 깃발만 세우고 아무것도 굴리지 않아, 판이 멈춘 채 「Set」을 누르면 도로
+    /// 「제독이 명령하시겠습니까?」만 떴다. 아군 길은 <see cref="SeaBattle.EndPlanning"/> 이 위임 중에 적과 같은 AI 로 짠다.
+    /// 턴 사이를 조금 띄워 그 틈에 판을 누르면 되찾을 수 있게 한다(<see cref="TookBack"/>).
+    /// </remarks>
+    private void AutoTurn()
+    {
+        if (!_battle.Delegated) return;
+        var timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = AutoTurnPause };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (_battle.Delegated && !_running && !_battle.Over && IsLoaded) RunTurn();
+        };
+        timer.Start();
+    }
+
+    /// <summary>한 턴을 굴린다(<c>0x0043CA60</c>) — 계획을 마친 뒤든 위임 중이든 같은 길이다.</summary>
+    private void RunTurn()
+    {
         _running = true;
         _picked = null;
         _options = [];
@@ -788,7 +819,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             _battle.TurnMonster(admiral.AbilityOf(Ability.Luck), admiral.AbilityOf(Ability.Mind));
 
         if (_battle.Wind != windBefore) Say(_battle.WindNotice());
-        if (_battle.Delegated) return;      // 맡긴 동안은 재촉도 안내도 없다
+        if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 재촉도 안내도 없이 다음 턴으로
 
         Say(_battle.OrderPrompt());
         if (_battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
