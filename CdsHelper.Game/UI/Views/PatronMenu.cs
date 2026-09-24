@@ -70,9 +70,25 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>후원자 자료. 한 번만 읽어 둔다.</summary>
     private static List<Patron>? _patrons;
 
-    /// <summary>이 건물에 앉아 있는 후원자. 없으면 null.</summary>
-    public Patron? At(string kind, HashSet<string> kindsHere) =>
-        new PatronService().SeatedAt(LoadPatrons(), _cityName, _player.Date.Year, kind, kindsHere);
+    /// <summary>
+    /// 이 건물에 앉아 있는 후원자. 없으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 후원자마다 <b>앉는 도시와 건물 코드가 정해져 있다</b>(후원자 표 <c>+0x24</c> · <c>+0x28</c>) — 게임은 그 둘이 맞는
+    /// 사람을 시설에 물린다(<c>0x0044E5C0</c>, <see cref="SponsorTable.SeatedAt"/>). 건물 <b>종류</b>로만 맞추면 같은 종류가
+    /// 둘인 도시(리스본의 말키오니 상회·리스본 상회)에서 한 사람이 두 곳에 다 앉는다.
+    /// 자리를 적어 두지 않은 옛 표일 때만 예전처럼 직업·건물 종류로 앉힌다.
+    /// </remarks>
+    /// <param name="code">건물 코드 — 도시 안 건물 번호(건물 표 <c>Code</c>).</param>
+    public Patron? At(int code, string kind, HashSet<string> kindsHere)
+    {
+        if (_game.Sponsors is { KnowsSeats: true } sponsors)
+        {
+            if (sponsors.SeatedAt(_cityId, code, _player.Date.Year) is not { } seated) return null;
+            return LoadPatrons().FirstOrDefault(p => sponsors.FindByName(p.Name)?.Index == seated.Index);
+        }
+        return new PatronService().SeatedAt(LoadPatrons(), _cityName, _player.Date.Year, kind, kindsHere);
+    }
 
     /// <summary>
     /// 왕궁의 "설득" — 후원자에게 힌트를 내밀어 자금을 받아 낸다.
@@ -819,17 +835,25 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 그 후원자에게 보고할 발견물. 계약의 유적 번호를 가진 것 중 발견했고 아직 안 알린 것이다.
     /// </summary>
     /// <summary>
-    /// 계약을 맺은 <b>그 자리</b>에 서 있는가(<c>0x0044E550</c> — 도시와 시설 종류를 본다).
+    /// 계약을 맺은 <b>그 자리</b>에 서 있는가(<c>0x0044E550</c> — 계약에 적힌 도시·건물 코드를 이 시설과 견준다).
     /// </summary>
     /// <remarks>
-    /// 우리 계약은 후원자 이름과 마을만 들고 있으므로, 앉을 자리가 <b>직업으로만</b> 정해지는
-    /// 것(<see cref="Patron.Seats"/>)을 써서 같은 마을·같은 직업이면 같은 자리로 본다 —
-    /// 국왕 자리는 다음 국왕이 잇는다. 이름까지 같으면 물론 같은 자리다.
+    /// 우리 계약은 후원자 이름과 마을만 들고 있으므로, 계약한 후원자의 자리(후원자 표 도시·건물)와 지금 이 건물에
+    /// 앉은 사람의 자리를 견준다 — 자리가 같으면 사람이 바뀌었어도(국왕 → 다음 국왕) 같은 자리다.
+    /// 예전에는 <b>같은 마을·같은 직업</b>이면 같은 자리로 쳐서, 리스본에서 조안·에스토레이트(리스본 상회)와 계약하고
+    /// 말키오니 상회에 가면 그곳도 계약 자리로 잡혔다. 자리를 모르는 옛 표일 때만 예전 셈으로 물러선다.
     /// </remarks>
-    private bool AtContractSeat(Patron patron) =>
-        _player.Contract is { } c && c.City == _cityName
-        && (c.Sponsor == patron.Name
-            || LoadPatrons().FirstOrDefault(p => p.Name == c.Sponsor)?.Occupation == patron.Occupation);
+    private bool AtContractSeat(Patron patron)
+    {
+        if (_player.Contract is not { } c || c.City != _cityName) return false;
+        if (c.Sponsor == patron.Name) return true;
+
+        if (_game.Sponsors is { KnowsSeats: true } sponsors)
+            return sponsors.FindByName(c.Sponsor) is { } signed && sponsors.FindByName(patron.Name) is { } here
+                   && signed.City == here.City && signed.Building == here.Building;
+
+        return LoadPatrons().FirstOrDefault(p => p.Name == c.Sponsor)?.Occupation == patron.Occupation;
+    }
 
     private List<DiscoveryTable.Record> ReportTargets(Patron patron) =>
         Palace.ReportTargets(_player, AtContractSeat(patron),

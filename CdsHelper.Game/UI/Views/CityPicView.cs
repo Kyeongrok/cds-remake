@@ -1328,7 +1328,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </remarks>
     private bool PassFameGate(CityBuildingTable.Building building, Facility facility)
     {
-        var patron = PatronAt(building.Kind);
+        var patron = PatronAt(building.Code, building.Kind);
         if (patron == null) return true;
 
         // <b>교회만</b> 문에서 안 본다. 교회는 수련하는 데라 후원자를 못 만나도 들어가고,
@@ -1569,7 +1569,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                   or FacilityKind.Market)) return;
 
         // 후원자가 앉은 건물이면 그쪽이 먼저다(slot7 이 1 을 돌려주면 slot8 이 아예 안 불린다).
-        if (building.Kind is { Length: > 0 } kind && PatronAt(kind) != null) return;
+        if (building.Kind is { Length: > 0 } kind && PatronAt(building.Code, kind) != null) return;
 
         if (!FamilyVisit.Due(_player, _cityId, _game.Random)) return;
         if (FamilyVisit.MetChild(_player, _game.Random) is not { } child) return;
@@ -2109,7 +2109,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private GameMenu BuildMenu(Facility facility, string title, int code, uint teachMask,
                                string kind)
     {
-        var patron = PatronAt(kind);
+        var patron = PatronAt(code, kind);
 
         return TownMenu.Build(facility, title, code, teachMask, patron,
             new TownWorks.TownState(
@@ -2207,7 +2207,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private uint[]? PatronFaceAt(int buildingCode)
     {
         var building = _table.InCity(_cityId).FirstOrDefault(b => b.Code == buildingCode);
-        if (building.Kind is not { Length: > 0 } kind || PatronAt(kind) is not { } patron) return null;
+        if (building.Kind is not { Length: > 0 } kind || PatronAt(buildingCode, kind) is not { } patron) return null;
         return _game.Sponsors?.FindByName(patron.Name) is { } sponsor
             ? _game.Faces?.TryGetBgra(sponsor.Face, sponsor.IsFemale)
             : null;
@@ -2324,7 +2324,13 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private TradePost? _tradePost;
 
     /// <summary>이 건물에 앉아 있는 후원자. 없으면 null.</summary>
-    private Patron? PatronAt(string kind) => Patrons.At(kind, KindsHere);
+    /// <remarks>
+    /// 후원자는 도시·건물 코드로 앉는다(<see cref="PatronMenu.At"/>). <b>항구에는 안 앉힌다</b> — 후원자 표에서 에라스무스만
+    /// 런던 건물 0(런던항)을 가리키는데, 항구 차림표에는 설득 줄이 없고 문간 관문(0x0040D370)도 후원자 건물 다섯 벌에만
+    /// 있어, 앉혀 봐야 항구 문에서 명성을 재고 집사 얼굴이 바뀌는 탈만 난다. 원본에서 그를 어디서 만나는지는 아직 못 밝혔다.
+    /// </remarks>
+    private Patron? PatronAt(int code, string kind) =>
+        kind == "항구" || code == HarborCode ? null : Patrons.At(code, kind, KindsHere);
 
     /// <summary>이 도시에 있는 건물 종류들. 후원자를 앉힐 자리를 고를 때 쓴다.</summary>
     private HashSet<string> KindsHere =>

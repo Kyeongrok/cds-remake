@@ -14,6 +14,9 @@
         "Nation": 0,
         "Blood": 1,
         "Languages": 3,
+        "City": 0,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -29,6 +32,9 @@
         "Nation": 0,
         "Blood": 0,
         "Languages": 3,
+        "City": 0,
+        "Building": 2,
+        "Appear": 15,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -44,6 +50,9 @@
         "Nation": 0,
         "Blood": 2,
         "Languages": 7,
+        "City": 0,
+        "Building": 3,
+        "Appear": 0,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -59,6 +68,9 @@
         "Nation": 0,
         "Blood": 2,
         "Languages": 3,
+        "City": 0,
+        "Building": 12,
+        "Appear": 18,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -74,6 +86,9 @@
         "Nation": 0,
         "Blood": 3,
         "Languages": 3,
+        "City": 0,
+        "Building": 13,
+        "Appear": 24,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -89,6 +104,9 @@
         "Nation": 0,
         "Blood": 2,
         "Languages": 3,
+        "City": 0,
+        "Building": 12,
+        "Appear": 0,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -104,6 +122,9 @@
         "Nation": 0,
         "Blood": 1,
         "Languages": 3,
+        "City": 0,
+        "Building": 14,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -119,6 +140,9 @@
         "Nation": 0,
         "Blood": 1,
         "Languages": 7,
+        "City": 0,
+        "Building": 15,
+        "Appear": 0,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -134,6 +158,9 @@
         "Nation": 0,
         "Blood": 2,
         "Languages": 3,
+        "City": 1,
+        "Building": 12,
+        "Appear": 24,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -149,6 +176,9 @@
         "Nation": 0,
         "Blood": 0,
         "Languages": 3,
+        "City": 1,
+        "Building": 13,
+        "Appear": 16,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -164,6 +194,9 @@
         "Nation": 14,
         "Blood": 0,
         "Languages": 14,
+        "City": 1,
+        "Building": 14,
+        "Appear": 4,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -179,6 +212,9 @@
         "Nation": 0,
         "Blood": 1,
         "Languages": 7,
+        "City": 1,
+        "Building": 15,
+        "Appear": 30,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -194,6 +230,9 @@
         "Nation": 0,
         "Blood": 1,
         "Languages": 3,
+        "City": 150,
+        "Building": 12,
+        "Appear": 34,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -209,6 +248,9 @@
         "Nation": 0,
         "Blood": 2,
         "Languages": 4099,
+        "City": 171,
+        "Building": 12,
+        "Appear": 41,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -224,6 +266,9 @@
         "Nation": 1,
         "Blood": 3,
         "Languages": 3,
+        "City": 7,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -239,6 +284,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 11,
+        "City": 7,
+        "Building": 2,
+        "Appear": 36,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -254,6 +302,9 @@
         "Nation": 1,
         "Blood": 1,
         "Languages": 7,
+        "City": 4,
+        "Building": 3,
+        "Appear": 0,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -269,6 +320,9 @@
         "Nation": 1,
         "Blood": 3,
         "Languages": 3,
+        "City": 4,
+        "Building": 12,
+        "Appear": 36,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -284,6 +338,9 @@
         "Nation": 1,
         "Blood": 2,
         "Languages": 3,
+        "City": 4,
+        "Building": 13,
+        "Appear": 36,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -299,6 +356,9 @@
         "Nation": 1,
         "Blood": 1,
         "Languages": 3,
+        "City": 4,
+        "Building": 14,
+        "Appear": 36,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -314,6 +374,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 7,
+        "City": 4,
+        "Building": 15,
+        "Appear": 0,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -329,6 +392,9 @@
         "Nation": 1,
         "Blood": 1,
         "Languages": 7,
+        "City": 7,
+        "Building": 3,
+        "Appear": 18,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -344,6 +410,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 3,
+        "City": 7,
+        "Building": 12,
+        "Appear": 0,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -359,6 +428,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 3,
+        "City": 7,
+        "Building": 12,
+        "Appear": 36,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -374,6 +446,9 @@
         "Nation": 1,
         "Blood": 1,
         "Languages": 3,
+        "City": 7,
+        "Building": 13,
+        "Appear": 0,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -389,6 +464,9 @@
         "Nation": 0,
         "Blood": 1,
         "Languages": 3,
+        "City": 7,
+        "Building": 14,
+        "Appear": 0,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -404,6 +482,9 @@
         "Nation": 1,
         "Blood": 2,
         "Languages": 3,
+        "City": 7,
+        "Building": 15,
+        "Appear": 0,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -419,6 +500,9 @@
         "Nation": 1,
         "Blood": 3,
         "Languages": 7,
+        "City": 5,
+        "Building": 3,
+        "Appear": 41,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -434,6 +518,9 @@
         "Nation": 8,
         "Blood": 1,
         "Languages": 5,
+        "City": 12,
+        "Building": 3,
+        "Appear": 25,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -449,6 +536,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 3,
+        "City": 12,
+        "Building": 12,
+        "Appear": 30,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -464,6 +554,9 @@
         "Nation": 7,
         "Blood": 1,
         "Languages": 5,
+        "City": 12,
+        "Building": 13,
+        "Appear": 34,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -479,6 +572,9 @@
         "Nation": 1,
         "Blood": 3,
         "Languages": 3,
+        "City": 12,
+        "Building": 14,
+        "Appear": 17,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -494,6 +590,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 7,
+        "City": 10,
+        "Building": 3,
+        "Appear": 11,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -509,6 +608,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 13,
+        "City": 24,
+        "Building": 12,
+        "Appear": 42,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -524,6 +626,9 @@
         "Nation": 1,
         "Blood": 1,
         "Languages": 3,
+        "City": 88,
+        "Building": 12,
+        "Appear": 0,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -539,6 +644,9 @@
         "Nation": 1,
         "Blood": 2,
         "Languages": 2051,
+        "City": 194,
+        "Building": 12,
+        "Appear": 21,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -554,6 +662,9 @@
         "Nation": 1,
         "Blood": 2,
         "Languages": 3,
+        "City": 196,
+        "Building": 12,
+        "Appear": 35,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -569,6 +680,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 2051,
+        "City": 201,
+        "Building": 12,
+        "Appear": 48,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -584,6 +698,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 3,
+        "City": 210,
+        "Building": 12,
+        "Appear": 40,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -599,6 +716,9 @@
         "Nation": 1,
         "Blood": 0,
         "Languages": 3,
+        "City": 210,
+        "Building": 3,
+        "Appear": 40,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -614,6 +734,9 @@
         "Nation": 1,
         "Blood": 2,
         "Languages": 2051,
+        "City": 210,
+        "Building": 13,
+        "Appear": 40,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -629,6 +752,9 @@
         "Nation": 1,
         "Blood": 3,
         "Languages": 3,
+        "City": 223,
+        "Building": 2,
+        "Appear": 52,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -644,6 +770,9 @@
         "Nation": 9,
         "Blood": 1,
         "Languages": 4,
+        "City": 33,
+        "Building": 2,
+        "Appear": 0,
         "Job": "교황",
         "Honorific": "예하"
       },
@@ -659,6 +788,9 @@
         "Nation": 9,
         "Blood": 0,
         "Languages": 4,
+        "City": 33,
+        "Building": 2,
+        "Appear": 33,
         "Job": "교황",
         "Honorific": "예하"
       },
@@ -674,6 +806,9 @@
         "Nation": 9,
         "Blood": 1,
         "Languages": 4,
+        "City": 33,
+        "Building": 12,
+        "Appear": 13,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -689,6 +824,9 @@
         "Nation": 9,
         "Blood": 3,
         "Languages": 21,
+        "City": 33,
+        "Building": 12,
+        "Appear": 27,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -704,6 +842,9 @@
         "Nation": 7,
         "Blood": 0,
         "Languages": 4,
+        "City": 30,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -719,6 +860,9 @@
         "Nation": 7,
         "Blood": 3,
         "Languages": 4,
+        "City": 30,
+        "Building": 2,
+        "Appear": 12,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -734,6 +878,9 @@
         "Nation": 7,
         "Blood": 0,
         "Languages": 4,
+        "City": 30,
+        "Building": 2,
+        "Appear": 23,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -749,6 +896,9 @@
         "Nation": 7,
         "Blood": 2,
         "Languages": 4,
+        "City": 30,
+        "Building": 12,
+        "Appear": 0,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -764,6 +914,9 @@
         "Nation": 7,
         "Blood": 2,
         "Languages": 4,
+        "City": 30,
+        "Building": 12,
+        "Appear": 10,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -779,6 +932,9 @@
         "Nation": 6,
         "Blood": 0,
         "Languages": 4,
+        "City": 28,
+        "Building": 2,
+        "Appear": 0,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -794,6 +950,9 @@
         "Nation": 6,
         "Blood": 2,
         "Languages": 4,
+        "City": 28,
+        "Building": 12,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -809,6 +968,9 @@
         "Nation": 4,
         "Blood": 0,
         "Languages": 4,
+        "City": 26,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -824,6 +986,9 @@
         "Nation": 4,
         "Blood": 1,
         "Languages": 4,
+        "City": 26,
+        "Building": 2,
+        "Appear": 35,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -839,6 +1004,9 @@
         "Nation": 8,
         "Blood": 1,
         "Languages": 4,
+        "City": 29,
+        "Building": 2,
+        "Appear": 0,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -854,6 +1022,9 @@
         "Nation": 8,
         "Blood": 3,
         "Languages": 6,
+        "City": 29,
+        "Building": 12,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -869,6 +1040,9 @@
         "Nation": 14,
         "Blood": 2,
         "Languages": 8,
+        "City": 53,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -884,6 +1058,9 @@
         "Nation": 14,
         "Blood": 3,
         "Languages": 8,
+        "City": 53,
+        "Building": 2,
+        "Appear": 39,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -899,6 +1076,9 @@
         "Nation": 14,
         "Blood": 0,
         "Languages": 8,
+        "City": 52,
+        "Building": 12,
+        "Appear": 0,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -914,6 +1094,9 @@
         "Nation": 14,
         "Blood": 1,
         "Languages": 9,
+        "City": 52,
+        "Building": 13,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -929,6 +1112,9 @@
         "Nation": 14,
         "Blood": 1,
         "Languages": 8,
+        "City": 52,
+        "Building": 14,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -944,6 +1130,9 @@
         "Nation": 14,
         "Blood": 2,
         "Languages": 8,
+        "City": 45,
+        "Building": 12,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -959,6 +1148,9 @@
         "Nation": 14,
         "Blood": 1,
         "Languages": 8,
+        "City": 44,
+        "Building": 12,
+        "Appear": 0,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -974,6 +1166,9 @@
         "Nation": 14,
         "Blood": 0,
         "Languages": 13,
+        "City": 44,
+        "Building": 13,
+        "Appear": 0,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -989,6 +1184,9 @@
         "Nation": 14,
         "Blood": 1,
         "Languages": 8,
+        "City": 47,
+        "Building": 12,
+        "Appear": 30,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -1004,6 +1202,9 @@
         "Nation": 14,
         "Blood": 0,
         "Languages": 12,
+        "City": 47,
+        "Building": 13,
+        "Appear": 0,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -1019,6 +1220,9 @@
         "Nation": 14,
         "Blood": 2,
         "Languages": 8,
+        "City": 50,
+        "Building": 12,
+        "Appear": 15,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -1034,6 +1238,9 @@
         "Nation": 11,
         "Blood": 1,
         "Languages": 8,
+        "City": 38,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1049,6 +1256,9 @@
         "Nation": 11,
         "Blood": 1,
         "Languages": 8,
+        "City": 38,
+        "Building": 2,
+        "Appear": 29,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1064,6 +1274,9 @@
         "Nation": 11,
         "Blood": 3,
         "Languages": 15,
+        "City": 38,
+        "Building": 0,
+        "Appear": 6,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1079,6 +1292,9 @@
         "Nation": 3,
         "Blood": 0,
         "Languages": 4,
+        "City": 14,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1094,6 +1310,9 @@
         "Nation": 3,
         "Blood": 1,
         "Languages": 4,
+        "City": 14,
+        "Building": 2,
+        "Appear": 18,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1109,6 +1328,9 @@
         "Nation": 3,
         "Blood": 1,
         "Languages": 4,
+        "City": 14,
+        "Building": 2,
+        "Appear": 35,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1124,6 +1346,9 @@
         "Nation": 3,
         "Blood": 3,
         "Languages": 12,
+        "City": 14,
+        "Building": 3,
+        "Appear": 40,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1139,6 +1364,9 @@
         "Nation": 14,
         "Blood": 2,
         "Languages": 12,
+        "City": 50,
+        "Building": 3,
+        "Appear": 25,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1154,6 +1382,9 @@
         "Nation": 15,
         "Blood": 0,
         "Languages": 12,
+        "City": 55,
+        "Building": 3,
+        "Appear": 26,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1169,6 +1400,9 @@
         "Nation": 16,
         "Blood": 3,
         "Languages": 8,
+        "City": 66,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1184,6 +1418,9 @@
         "Nation": 16,
         "Blood": 2,
         "Languages": 8,
+        "City": 66,
+        "Building": 2,
+        "Appear": 40,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1199,6 +1436,9 @@
         "Nation": 18,
         "Blood": 1,
         "Languages": 16,
+        "City": 62,
+        "Building": 2,
+        "Appear": 0,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1214,11 +1454,14 @@
         "Nation": 18,
         "Blood": 0,
         "Languages": 28,
+        "City": 62,
+        "Building": 2,
+        "Appear": 26,
         "Job": "국왕",
         "Honorific": "폐하"
       }
     ]
   },
   "Source": "CDS_95.EXE",
-  "Version": 4
+  "Version": 5
 }

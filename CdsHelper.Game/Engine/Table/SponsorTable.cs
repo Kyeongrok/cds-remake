@@ -24,8 +24,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class SponsorTable
 {
-    /// <summary>알맹이 모양 판. 안목·친밀도·취향 칸을 더하면서 올렸다.</summary>
-    private const int SnapshotVersion = 4;
+    /// <summary>알맹이 모양 판. 안목·친밀도·취향 칸을 더하면서 올렸고, 앉는 자리(도시·건물)를 더하며 5 가 됐다.</summary>
+    private const int SnapshotVersion = 5;
 
     private const int TableVa = 0x005228B8;
     private const int RowCount = 81;
@@ -69,11 +69,21 @@ public sealed class SponsorTable
     /// 하는 말(<c>+0x3A</c> 워드의 비트, 언어 열넷 차례). 비트가 선 말은 <b>수준 3</b>으로 친다
     /// (vtbl+0x20 = <c>0x004AD7B0</c>) — 설득 들머리의 말 관문이 이것을 본다(<c>0x004AE0B0</c>).
     /// </param>
+    /// <param name="City">앉는 도시(<c>+0x24</c>, 게임 도시 번호).</param>
+    /// <param name="Building">앉는 건물 코드(<c>+0x28</c>) — 도시 안 건물 번호다. 리스본의 조안·에스토레이트는 14(리스본 상회),
+    /// 바르톨로메우·말키오니는 13(말키오니 상회)이다. 시설이 후원자를 물리는 루프(<c>0x0044E5C0</c>)가
+    /// 이 둘을 시설의 도시(<c>+0x90</c>)·건물 코드(<c>vtbl[0x48]</c>)와 견준다.</param>
+    /// <param name="Appear">나오는 해 − 1480(<c>+0x14</c>). <c>patrons.json</c> 의 등장 해와 81명 모두 같다.</param>
     public readonly record struct Sponsor(int Index, string Name, int Face, bool IsFemale,
                                           int JobCode, int Eye = 0, int Closeness = 0,
                                           int Tastes = 0, int Nation = -1, int Blood = 0,
-                                          int Languages = 0)
+                                          int Languages = 0, int City = -1, int Building = -1,
+                                          int Appear = 0)
     {
+        /// <summary>
+        /// 그 해에 이 사람이 나와 있은 햇수(<c>vtbl[0x0C]</c> = <c>0x004ADA80</c>: 해 − 1480 − <c>+0x14</c>). 음수면 아직 안 나왔다.
+        /// </summary>
+        public int YearsIn(int year) => year - FirstYear - Appear;
         /// <summary>직업 이름. 모르는 코드면 빈 문자열.</summary>
         public string Job => JobCode switch
         {
@@ -128,6 +138,38 @@ public sealed class SponsorTable
     public Sponsor? FindByName(string name) =>
         _byName.TryGetValue(Key(name), out var s) ? s : null;
 
+    /// <summary>앉는 자리(도시·건물)를 아는 표인지 — 판 4 로 적어 둔 옛 JSON 이면 다 -1 이다.</summary>
+    public bool KnowsSeats => _sponsors.Any(s => s.City >= 0 && s.Building >= 0);
+
+    /// <summary>판이 열리는 해 — <c>0x004ADA80</c> 의 <c>0x5C8</c>.</summary>
+    public const int FirstYear = 1480;
+
+    /// <summary>
+    /// 그 해에 그 도시 그 건물에 앉는 후원자. 없으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 게임이 시설마다 후원자를 물리는 루프(<c>0x0044E5C0</c>) 그대로다.
+    /// <code>
+    ///   44e5d5  i = 0..80  후원자 i 의 도시(+0x24) == 시설 도시(+0x90)
+    ///   44e5f7             · 건물(+0x28) == 시설 건물 코드(vtbl[0x48])
+    ///   44e60b             · 자리 임자인가(vtbl[0x38] = 0x004ADD70) 면 그 사람을 +0xB4 에 물린다
+    ///   4add70  자리 임자 = 나와 있고(햇수 ≥ 0), 같은 자리의 나와 있는 누구보다 햇수가 크지 않다
+    /// </code>
+    /// 곧 <b>같은 자리에서는 가장 늦게 나온 사람</b>이 앉는다 — 국왕이 바뀌면 새 국왕이 잇는다. 은퇴 해는 따로 없다.
+    /// 예전에는 직업으로 건물 <b>종류</b>만 맞춰 앉혀서, 상관이 둘인 리스본에서 조안·에스토레이트가
+    /// 리스본 상회와 말키오니 상회 두 곳에 다 앉았다.
+    /// </remarks>
+    public Sponsor? SeatedAt(int city, int building, int year)
+    {
+        Sponsor? holder = null;
+        foreach (var s in _sponsors)
+        {
+            if (s.City != city || s.Building != building || s.YearsIn(year) < 0) continue;
+            if (holder is not { } best || s.YearsIn(year) < best.YearsIn(year)) holder = s;
+        }
+        return holder;
+    }
+
     /// <summary>이름 맞추기용 열쇠 — 가운뎃점과 빈칸을 뗀다.</summary>
     private static string Key(string name) =>
         name.Replace("·", "").Replace(" ", "");
@@ -167,7 +209,10 @@ public sealed class SponsorTable
                 Tastes: exe.Int(row + 0x38) & 0xFF,
                 Nation: exe.Int(row + 0x0C),
                 Blood: exe.Int(row + 0x1C),
-                Languages: (exe.Int(row + 0x38) >> 16) & 0xFFFF));
+                Languages: (exe.Int(row + 0x38) >> 16) & 0xFFFF,
+                City: exe.Int(row + 0x24),
+                Building: exe.Int(row + 0x28),
+                Appear: exe.Int(row + 0x14)));
         }
 
         // 판이 다른 EXE 를 잘못 읽지 않도록 첫 줄을 확인한다.
