@@ -80,8 +80,8 @@ public sealed class ShipNameDialog : GameWindow
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 8, 0, 8),
         };
-        buttons.Children.Add(GameUi.PushButton("결정", Decide));
-        if (!_mustName) buttons.Children.Add(GameUi.PushButton("중단", Cancel));
+        buttons.Children.Add(new GameButton("결정", Decide, width: 110));
+        if (!_mustName) buttons.Children.Add(new GameButton("중단", Cancel, width: 110));
 
         // 이름을 꼭 지어야 하는 창은 제목 줄의 닫기도 안 단다.
         var title = _mustName ? GameUi.TitleBar("선명입력", null) : GameUi.TitleBar("선명입력", Cancel);
