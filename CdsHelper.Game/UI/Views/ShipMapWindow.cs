@@ -4559,7 +4559,8 @@ public sealed class ShipMapWindow : Window
             var band = Encounter.OfPerson(CaptainOf(bandLeader) ?? Encounter.CaptainOf(bandLeader), party.Name)
                        with { Kind = EnemyKind.Raider };
             var talkFace = MateFace();
-            switch (ChoiceDialog.Ask(this, Encounter.TitleOf(EnemyKind.Raider), Encounter.Choices))
+            // 고르기 창은 제목 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
+            switch (ChoiceDialog.Pick(this, "", Encounter.Choices))
             {
                 case 0 when Talked(band, dice, talkFace, weight: foeMen): return;
                 case 1:
@@ -5054,7 +5055,8 @@ public sealed class ShipMapWindow : Window
             var face = MateFace();
             ConfirmDialog.Tell(this, Encounter.GreetOf(foe, rng), Encounter.TitleOf(foe.Kind), face);
 
-            int pick = ChoiceDialog.Ask(this, Encounter.TitleOf(foe.Kind), Encounter.Choices);
+            // 고르기 창은 제목도 「취소」 줄도 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
+            int pick = ChoiceDialog.Pick(this, "", Encounter.Choices);
             switch (pick)
             {
                 case 0 when Talked(foe, rng, face): return;  // 교섭이 되면 그대로 끝난다
