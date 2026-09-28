@@ -104,8 +104,9 @@ public sealed class LandBattle
     /// <param name="mock">모의전이면 참 — 값을 안 치른다.</param>
     public LandBattle(IReadOnlyList<int> mine, Player player, Player.MateInfo? aide,
                       int scale, int nation, int culture, int terrain, GameRandom dice,
-                      int myMen = 0, bool mock = false, int city = -1)
+                      int myMen = 0, bool mock = false, int city = -1, int sort = Town)
     {
+        Sort = sort == ScriptCity ? ScriptCity : Town;
         City = city;
         Nation = nation;
         Culture = culture;
@@ -565,9 +566,10 @@ public sealed class LandBattle
         {
             Field => (60, 0),
             Script => (50, 0),
+            ScriptCity => (100, 0),
             _ => (100, 200),
         };
-        bool countsInfamy = Sort != Script;         // 갈래 3·4 는 악명을 건너뛴다(0x004496DA)
+        bool countsInfamy = Sort is not (Script or ScriptCity);   // 갈래 3·4 는 악명을 건너뛴다(0x004496DA)
         bool same = Nation >= 0 && Nation == _me.Nation;
 
         int fame = won ? fameBase + (same ? 0 : 10) + dice.Next(11) : dice.Next(11);
@@ -668,8 +670,15 @@ public sealed class LandBattle
     /// </remarks>
     public int Sort { get; } = Town;
 
-    /// <summary>전투 갈래 — 들에서 마주친 부대 · 마을 공략 · 발견 대본의 인물전(<c>2F 0D</c>)이다.</summary>
-    public const int Field = 1, Town = 2, Script = 3;
+    /// <summary>전투 갈래 — 들에서 마주친 부대 · 마을 공략 · 발견 대본의 인물전(<c>2F 0D</c>) · 대본의 도시전(<c>2F 08</c>)이다.</summary>
+    /// <remarks>
+    /// <see cref="ScriptCity"/>(4)는 적을 마을 공략처럼 도시 규모로 짓지만(<c>0x00449E50</c> 이 2·4 를 함께 본다)
+    /// 증원이 없고(<c>0x00449930</c> 은 2 만) 악명을 안 센다(<c>0x004496DA</c> 는 3·4 를 건너뛴다).
+    /// </remarks>
+    public const int Field = 1, Town = 2, Script = 3, ScriptCity = 4;
+
+    /// <summary>적을 도시 규모로 짓는 판인지 — 마을 공략(2)과 대본의 도시전(4)이다.</summary>
+    private bool CityFight => Sort is Town or ScriptCity;
 
     /// <summary>작렬탄을 받았는지. 서 있으면 포가 비를 안 타고 두 번 쏜다.</summary>
     public bool Shells { get; private set; }
@@ -895,7 +904,7 @@ public sealed class LandBattle
     /// </remarks>
     public bool DuelOffered(GameRandom dice)
     {
-        if (Sort == Town) return false;     // 0x004479B0 은 갈래 2·4 만 닫는다
+        if (CityFight) return false;        // 0x004479B0 은 갈래 2·4 만 닫는다
 
         // 몫이 0 이하여도 닫지 않는다 — 0 으로 눌러 두고 굴리므로 늘 1% 는 열린다(0x0044799B).
         // 능력은 셋 다 0x00446FF0 으로 읽는다 — 아군은 제독·부관 가운데 큰 쪽 + 1, 적은 대장 + 1 이다.
@@ -927,7 +936,7 @@ public sealed class LandBattle
     /// </remarks>
     public bool FoeDuelOffered(GameRandom dice)
     {
-        if (Sort == Town) return false;     // 0x004479D7 도 갈래 2·4 만 거른다
+        if (CityFight) return false;        // 0x004479D7 도 갈래 2·4 만 거른다
 
         // 적 첫 칸이 아직 성하면 부대 수까지 본다.
         if (_units[FirstFoe].Men >= RoomPerUnit(FirstFoe) * 4 / 10

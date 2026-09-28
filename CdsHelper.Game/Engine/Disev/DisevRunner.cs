@@ -1320,7 +1320,8 @@ public sealed class DisevRunner
     /// </summary>
     /// <remarks>
     /// 적은 도시 규모로 짓는다(<c>0x00449E50</c> 은 갈래 2·4 가 함께 쓴다). 지형 인자 7 은
-    /// 싸움터 0(도시)이다(<c>0x0044A624</c>). 우리 판에 갈래 4 가 따로 없어 마을 공략(2)으로 세운다.
+    /// 싸움터 0(도시)이다(<c>0x0044A624</c>). 갈래 4(<see cref="LandBattle.ScriptCity"/>)로 세운다 — 마을 공략(2)과
+    /// 달리 증원이 없고 악명을 안 센다. 예전에는 2 로 세워 증원 2차전과 악명 +200 이 붙었다.
     /// </remarks>
     private LandBattle CityBattle(int city)
     {
@@ -1330,7 +1331,7 @@ public sealed class DisevRunner
         var rows = _game.CityRows;
         return new LandBattle(Deploy(aide), player, aide, rows?.ScaleOf(city) ?? 0,
                               rows?.NationOf(city) ?? -1, rows?.CultureOf(city) ?? 0,
-                              0, _dice, myMen, city: city)
+                              0, _dice, myMen, city: city, sort: LandBattle.ScriptCity)
         {
             KeepsCrew = _borrowedMen >= 0,
             MyCulture = _game.MyCulture,
