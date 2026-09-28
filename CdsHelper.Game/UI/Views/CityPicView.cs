@@ -1125,7 +1125,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _player.AbilityOf(Ability.Body), _player.AbilityOf(Ability.Might),
             _player.LevelOf(Skill.Names[Skill.Sword]), _player.AbilityOf(Ability.Luck), 0, 0);
 
-        var duel = new Engine.Town.Duel(mine, foe, _player.Items.Contains(Engine.Town.Duel.EdithShieldId),
+        // 무기·방어구는 판을 지을 때 쥔다 — 내 쪽은 지닌 것, 병사는 그 벌로 굴린다(0x004A8829 · 0x004A89D4).
+        var duel = new Engine.Town.Duel(Engine.Town.Duel.Equipped(mine, _player.Items, _game.Items),
+                                        Engine.Town.Duel.Armed(foe, FighterSprites.SetForCulture(_cultureNo),
+                                                               new GameRandom(Environment.TickCount), _game.Items),
+                                        _player.Items.Contains(Engine.Town.Duel.EdithShieldId),
                                         Environment.TickCount);
         bool won = DuelDialog.Show(this, duel, new GameRandom(Environment.TickCount), face,
                                    _game.Fighters, FighterSprites.SetForCulture(_cultureNo),
@@ -1168,7 +1172,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _player.LevelOf(Skill.Names[Skill.Sword]), _player.AbilityOf(Ability.Luck), 0, 0);
 
         var dice = new GameRandom(Environment.TickCount);
-        var duel = new Engine.Town.Duel(mine, foe, _player.Items.Contains(Engine.Town.Duel.EdithShieldId),
+        // 무기·방어구는 판을 지을 때 쥔다(0x004A8829 · 0x004A89D4).
+        var duel = new Engine.Town.Duel(Engine.Town.Duel.Equipped(mine, _player.Items, _game.Items),
+                                        Engine.Town.Duel.Armed(foe, FighterSprites.SetForCulture(_cultureNo),
+                                                               dice, _game.Items),
+                                        _player.Items.Contains(Engine.Town.Duel.EdithShieldId),
                                         Environment.TickCount);
         var face = _game.PersonTemplates?.Find(hunter) is { } t ? _game.Faces?.TryGetBgra(t.Face, female: false) : null;
         DuelDialog.Show(this, duel, dice, face, _game.Fighters, FighterSprites.SetForCulture(_cultureNo),

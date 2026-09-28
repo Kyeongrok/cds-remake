@@ -553,7 +553,9 @@ internal sealed class LandBattleScene : GameWindow
         // 무대는 싸움터(+0xA8)다 — 0(도시)이면 1(초원), 2 숲, 3 모래(0x004478CA). 예전에는 늘 초원이었다.
         string arena = _battle.Terrain switch { 2 => "duel-wood", 3 => "duel-sand", _ => DuelArt.Field };
 
-        var duel = new Duel(mine, foe, shield: false, dice.Next());
+        // 무기·방어구·방패는 어느 판이든 판을 지을 때 쥔다(0x004A8500 — 0x004A85EC · 0x004A8829 · 0x004A89D4).
+        var duel = new Duel(Duel.Equipped(mine, me.Items, game.Items), Duel.Armed(foe, 1, dice, game.Items),
+                            me.Items.Contains(Duel.EdithShieldId), dice.Next());
         // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
         var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
         if (DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm))

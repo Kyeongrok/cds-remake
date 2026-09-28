@@ -1746,7 +1746,7 @@ public sealed class ShipMapWindow : Window
     /// <remarks>
     /// 싸우는 값은 해전 값이 아니라 <b>인물 레코드</b>(체력·무력·검술·운)다. 갈래 0 이라 부관이 있으면
     /// 「　부관을 싸우게 하겠습니까?」를 묻는다(<c>0x004A8611</c>). 이기면 처형·놓아 준다·모두 뺏는다(<c>0x004A9E50</c>).
-    /// 지면 용서받아도 기함이 가라앉은 것으로 쳐 GAME OVER 라 도망·용서 말은 안 낸다. 상대 무기·갑옷은 인물표에 없어 0 이다.
+    /// 지면 용서받아도 기함이 가라앉은 것으로 쳐 GAME OVER 라 도망·용서 말은 안 낸다. 상대 무기·갑옷은 인물표에 없어도 판을 지을 때 굴린다(<c>0x004A89D4</c>).
     /// </remarks>
     private Func<Window, bool?> SeaDuel(int leaderId, string name, uint[]? foeFace) => board =>
     {
@@ -1768,7 +1768,8 @@ public sealed class ShipMapWindow : Window
                                            BestItem(Engine.Town.Duel.WeaponCategory),
                                            BestItem(Engine.Town.Duel.ArmorCategory))
             : MyFighter();
-        var duel = new Engine.Town.Duel(me, foe, player.Items.Contains(Engine.Town.Duel.EdithShieldId),
+        var duel = new Engine.Town.Duel(me, Engine.Town.Duel.Armed(foe, 1, dice, _game.Items),
+                                        player.Items.Contains(Engine.Town.Duel.EdithShieldId),
                                         Environment.TickCount);
 
         DuelDialog.Show(board, duel, dice, foeFace, _game.Fighters, foeSet: 1,
@@ -5752,7 +5753,7 @@ public sealed class ShipMapWindow : Window
                                                    BestItem(Engine.Town.Duel.WeaponCategory),
                                                    BestItem(Engine.Town.Duel.ArmorCategory))
                     : MyFighter(),
-                MutinyLeader(dice),
+                Engine.Town.Duel.Armed(MutinyLeader(dice), 1, dice, _game.Items),
                 _game.Player.Items.Contains(Engine.Town.Duel.EdithShieldId),
                 Environment.TickCount);
             // 배경은 뭍이면 초원, 바다면 배 갑판이다.

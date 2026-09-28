@@ -1,4 +1,6 @@
-﻿namespace CdsHelper.Game.Engine.Town;
+﻿using CdsHelper.Game.Local.Helpers;
+
+namespace CdsHelper.Game.Engine.Town;
 
 /// <summary>
 /// 일기토 — 술집에서 이름난 항해자에게 칼을 겨루는 판.
@@ -130,6 +132,46 @@ public sealed class Duel
     {
         var (weapon, armor) = GearOf(set, might, dice);
         return (effectOf(weapon), effectOf(armor));
+    }
+
+    /// <summary>
+    /// 상대에게 <b>그 자리에서 굴린 무기·방어구</b>를 쥐여 준다(<c>0x004A89D4</c>~<c>0x004A8D5F</c>).
+    /// </summary>
+    /// <remarks>
+    /// 일기토 판은 늘 <c>0x004A8500</c> 하나로 짓는다(부르는 자리는 <c>0x004AA861</c> 뿐이다) —
+    /// 술집이든 해전·육상전·대본·성문 앞이든 상대 장비를 이렇게 굴린다. 인물 표에 칸이 없다고 0 으로
+    /// 두면 안 된다. 갈래는 몸짓 그림 벌(<c>+0x15C</c>)과 같은 값이고, 벌 1·3·6·7 이 아니면
+    /// 포르숑 · 체인메일로 못 박힌다.
+    /// </remarks>
+    /// <param name="set">복장 갈래 — 판에 넘기는 상대 몸짓 벌이다.</param>
+    public static Fighter Armed(Fighter foe, int set, GameRandom dice, ItemTable? items)
+    {
+        var (weapon, armor) = GearFor(set, foe.Might, dice, id => items?.Find(id)?.Effect ?? 0);
+        return foe with { Weapon = weapon, Armor = armor };
+    }
+
+    /// <summary>
+    /// 내 쪽에 <b>지닌 것 가운데 가장 센 무기·방어구</b>를 쥐여 준다(<c>0x004A8829</c>).
+    /// </summary>
+    /// <remarks>
+    /// 부관이 대신 나가도 제독이 지닌 것을 그대로 쓴다 — 훑는 것은 늘 <c>0x005B60A0</c> 의 열여섯 칸이다.
+    /// <para>
+    /// 원본에는 흠이 하나 있다 — 더 센 무기를 찾으면 <c>0x004A8853</c> 이 <c>edi</c> 를 한 번 더 올려
+    /// <b>바로 다음 칸을 건너뛴다</b>. 코드의 흠이라 옮기지 않고 칸을 다 훑는다(술집·해전의
+    /// <c>Best</c>·<c>BestItem</c> 과 같게 둔다).
+    /// </para>
+    /// </remarks>
+    public static Fighter Equipped(Fighter me, IEnumerable<int> owned, ItemTable? items)
+    {
+        int weapon = 0, armor = 0;
+        if (items != null)
+            foreach (int id in owned)
+            {
+                if (items.Find(id) is not { } item) continue;
+                if (item.Category == WeaponCategory) weapon = Math.Max(weapon, item.Effect);
+                else if (item.Category == ArmorCategory) armor = Math.Max(armor, item.Effect);
+            }
+        return me with { Weapon = weapon, Armor = armor };
     }
 
     /// <summary>도망 판정(<c>0x004A9EED</c>) — <c>운*5 + 10 + rand(60) &gt;= rand(1000)</c>.</summary>
