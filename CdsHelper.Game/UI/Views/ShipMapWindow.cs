@@ -2070,15 +2070,22 @@ public sealed class ShipMapWindow : Window
 
         while (true)
         {
-            ConfirmDialog.Tell(this,
+            // 물음 글은 단추 없는 「모험 중단」 창(종류 3, 0x0045F667)으로 띄워 둔 채 세 줄을 고르게 하고,
+            // 고르고 나서 걷는다(0x0045F734 → 0x0049E510) — 확인을 한 번 더 누르게 하지 않는다.
+            var held = ConfirmDialog.Hold(this,
                 $"현재 게임중의 캐릭터인 {name}{GameUi.Josa(name, "이", "가")} 있습니다만 " +
                 "어떻게 하겠습니까?", "모험 중단");
 
             // 누적 캐릭터 자리가 다 찼으면 「은퇴시킨다」 줄이 <b>흐리게 남는다</b> — 목록에서 빠지지는 않는다
             // (0x0045F700 이 [0x005A4D1A] 의 0x40 비트로 그 줄의 켜짐 칸을 0 으로 둔다).
             bool room = Engine.AccData.Load().Count < Engine.AccData.Slots;
-            int at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "삭제한다"], "신규작성을 중지한다",
-                                      dim: room ? -1 : 0);
+            int at;
+            try
+            {
+                at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "삭제한다"], "신규작성을 중지한다",
+                                      dim: room ? -1 : 0, under: held);
+            }
+            finally { held.Close(); }
 
             if (at == 0)
             {

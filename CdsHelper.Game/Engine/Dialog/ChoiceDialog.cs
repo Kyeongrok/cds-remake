@@ -100,10 +100,15 @@ internal sealed class ChoiceDialog : GameWindow
     /// <param name="dim">
     /// 그 자리의 줄을 <b>죽은 줄</b>로 낸다 — 흐리게 깔고 못 고르게 한다. −1 이면 없다.
     /// </param>
+    /// <param name="under">
+    /// 주면 그 창 <b>바로 아래</b>에 선다 — 글을 띄워 둔 채(<see cref="ConfirmDialog.Hold"/>) 고르게 하는
+    /// 자리다. 둘은 한 덩이로 주인 창 가운데에 앉는다.
+    /// </param>
     public static int Ask(Window owner, string title, IReadOnlyList<string> rows,
-                          string cancel = "취소", int dim = -1)
+                          string? cancel = "취소", int dim = -1, Window? under = null)
     {
         var dialog = new ChoiceDialog(title, rows, cancel, dim) { Owner = owner };
+        if (under != null) GameUi.PlaceUnder(dialog, under, GameUi.RootOf(owner));
         dialog.ShowDialog();
         return dialog._picked;
     }

@@ -46,7 +46,7 @@ public sealed class ConfirmDialog : GameWindow
     private readonly GameUi.FocusGroup _focus = new();
 
     private ConfirmDialog(string text, string? title, bool yesNo, uint[]? face,
-                          double indent)
+                          double indent, bool bare = false)
     {
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -63,7 +63,12 @@ public sealed class ConfirmDialog : GameWindow
             Margin = new Thickness(0, TextGap, 0, 0),
         };
         // 초점이 간 단추의 안쪽 테가 깜빡인다 — 게임이 지금 고른 것을 그렇게 알린다.
-        if (yesNo)
+        if (bare)
+        {
+            // 단추 없는 창(종류 3) — 단추 줄도 그 앞 사이도 없다.
+            buttons.Visibility = Visibility.Collapsed;
+        }
+        else if (yesNo)
         {
             var yes = _focus.Add("YES", () => { DialogResult = true; }, ButtonWidth);
             var no = _focus.Add("NO", () => { DialogResult = false; }, ButtonWidth);
@@ -298,6 +303,26 @@ public sealed class ConfirmDialog : GameWindow
             box.ContentRendered += (_, _) => place(box);
         }
         return box.ShowDialog() == true;
+    }
+
+    /// <summary>
+    /// <b>단추 없이</b> 글만 띄워 두고 곧바로 돌아온다 — 게임 알림의 <b>종류 3</b> 이다.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 <c>0x0049E3E0(3, 제목, 글)</c> 로 창을 세워 둔 채(<c>0x0049E46A</c> 가 창을 따로 지어
+    /// <c>0x0056EA78</c> 에 걸어 둔다) 이어서 고르기 창을 내고, 고른 뒤에 <c>0x0049E510</c> 으로 걷는다.
+    /// 「모험 중단」(<c>0x0045F667</c>)과 누적 캐릭터 물음(<c>0x0041AEA0</c>)이 그렇다.
+    /// 부르는 쪽이 다 쓴 뒤 <see cref="Window.Close"/> 로 걷는다.
+    /// </remarks>
+    public static Window Hold(Window owner, string text, string? title = null)
+    {
+        var box = new ConfirmDialog(text, title, yesNo: false, null, 0, bare: true)
+        {
+            Owner = owner,
+            ShowActivated = false,
+        };
+        box.Show();
+        return box;
     }
 
     /// <summary>
