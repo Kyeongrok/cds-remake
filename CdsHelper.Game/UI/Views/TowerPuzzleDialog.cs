@@ -307,12 +307,23 @@ internal sealed class TowerPuzzleDialog : InfoDialog
         }
     }
 
-    private void Explain() =>
-        NoticeDialog.Explain(this,
-            "돌 판자를 셋째 기둥에 다 모으면 됩니다." + Environment.NewLine +
-            "한 번에 맨 위 판자 하나만 옮길 수 있고, 저보다 작은 판자 위에는 놓지 " +
-            "못합니다." + Environment.NewLine +
-            "기둥을 눌러 집고, 다시 눌러 놓습니다. 오른쪽 단추로 도로 놓습니다.");
+    /// <summary>
+    /// 게임 EXE 의 설명 글 그대로(<c>0x0056BB60</c> · <c>0x0056BC78</c>, 제목 「게임 설명」).
+    /// </summary>
+    /// <remarks>
+    /// 「가운데에 있는 좌대」가 곧 다 모을 기둥(<see cref="TowerPuzzle.Goal"/>, 가운데 위 받침)이다.
+    /// 판을 열 때(<c>0x004310CE</c>)와 차림표 「게임 설명」(<c>0x00430B0F</c>) 두 자리에서 같은 글을 낸다.
+    /// </remarks>
+    private static readonly string Rules =
+        "원반을 가운데에 있는 좌대에 다 쌓으면 게임이 끝납니다." + Environment.NewLine +
+        "좌대 가장 위에 있는 원반 위에서 마우스의 오른쪽 버튼을" + Environment.NewLine +
+        "누르고, 그대로 원반을 이동시킵니다." + Environment.NewLine +
+        "좌대 위에서 버튼을 놓으면 원반을 쌓을 수 있습니다만" + Environment.NewLine +
+        "작은 원반 위에 큰 원반을 쌓을 수는 없습니다.";
+
+    private static void Explain(Window owner) => NoticeDialog.Explain(owner, Rules);
+
+    private void Explain() => Explain(this);
 
     private void Sync()
     {
@@ -384,6 +395,8 @@ internal sealed class TowerPuzzleDialog : InfoDialog
                                           "판자를 몇 장 사용하겠습니까?");
         if (planks == null) return;
 
+        // 판을 열자마자 설명부터 낸다(0x004310CE).
+        Explain(owner);
         new TowerPuzzleDialog(planks.Value, rng) { Owner = owner }.ShowDialog();
     }
 
@@ -397,6 +410,7 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     public static bool Play(Window owner, Random rng, int planks)
     {
         int count = Math.Clamp(planks, TowerPuzzle.LeastPlanks, TowerPuzzle.MostPlanks);
+        Explain(owner);
         var dialog = new TowerPuzzleDialog(count, rng) { Owner = owner };
         dialog.ShowDialog();
         return dialog._game.Won;
