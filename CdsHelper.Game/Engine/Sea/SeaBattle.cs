@@ -1550,7 +1550,7 @@ public sealed class SeaBattle
     /// </summary>
     /// <remarks>
     /// <code>
-    ///   맞은편이 이미 불이면 안 붙음
+    ///   맞은편이 이미 불이면 안 붙음 · 괴물 판에서 맞은편이 적(괴물)이면 안 붙음(0x00437E5F)
     ///   c = max(0, 무력 / (4 − 검술) − 상대 지력/2)      ; 들이받은 편 무력·검술, 받힌 편 지력
     ///   rand(100) ≤ c (부호 없는 비교) → 상태 5, 소리 0x30, blast-03~05
     /// </code>
@@ -1559,6 +1559,7 @@ public sealed class SeaBattle
     private void Ignite(Ship m, Ship t)
     {
         if (t.Burning) return;
+        if (!t.Mine && Monster) return;                   // 괴물에게는 불이 안 붙는다 — 예전에는 붙었다
         var (me, them) = m.Mine ? (MineSide, EnemySide) : (EnemySide, MineSide);
         int c = Math.Max(0, me.Might / Math.Max(1, 4 - me.Sword) - them.Mind / 2);
         if ((uint)_rng.Next(100) > (uint)c) return;
