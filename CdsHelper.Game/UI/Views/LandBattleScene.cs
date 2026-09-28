@@ -48,6 +48,13 @@ internal sealed class LandBattleScene : GameWindow
     private readonly LandArt? _art;
     private readonly LandBattle _battle;
 
+    /// <summary>
+    /// 그 부대가 선 칸 — 슬롯이 아니라 <b>자리</b>(<see cref="LandBattle.PlaceOf"/>)로 찾는다. 앞열이 비어 후열이
+    /// 앞으로 나오면 그림도 앞줄로 옮긴다(<c>0x004470D0</c>).
+    /// </summary>
+    private (int X, int Y) SpotOf(int slot) =>
+        StandAt[(slot >= LandBattle.FirstFoe ? LandBattle.FirstFoe : 0) + _battle.PlaceOf(slot)];
+
     /// <summary>판을 늘려 건 배수 — 차림표를 판 구석에 붙일 때 여백을 이만큼 곱한다.</summary>
     private readonly double _scale;
     private readonly Canvas _board = new()
@@ -127,6 +134,9 @@ internal sealed class LandBattleScene : GameWindow
         // 아이템을 지녔으면 40%다(0x00449C9E).
         if (_game is { } g && _battle.TryShell(g.Player, dice))
             NoticeDialog.Show(this, _battle.ShellWord, "");
+
+        // 판을 열 때 앞열이 빈 편은 후열을 앞으로 당긴다(0x00449CC2 → 0x00448440) — 후열에만 놓은 배치다.
+        if (_battle.AdvanceRows(foe: false) | _battle.AdvanceRows(foe: true)) Redraw();
 
         while (true)
         {
@@ -531,7 +541,7 @@ internal sealed class LandBattleScene : GameWindow
         var shown = new List<(FrameworkElement Glyph, int Left, int Top)>();
         foreach (var (slot, men) in hits)
         {
-            var (x, y) = StandAt[slot];
+            var (x, y) = SpotOf(slot);
             int left = x + (LandArt.DeployWidth - men.Length * Digit) / 2;
             int top = y + (LandArt.DeployWidth - Digit) / 2;
 
@@ -592,7 +602,7 @@ internal sealed class LandBattleScene : GameWindow
         int wide = (cells + 2) * side;
         bool mine = slot < LandBattle.FirstFoe;
 
-        var (ux, uy) = StandAt[slot];
+        var (ux, uy) = SpotOf(slot);
         int x = mine ? ux + LandArt.DeployWidth : ux - (cells + 1) * side;
         int y = uy;
         x = Math.Clamp(x, 0, Math.Max(0, LandArt.FieldWidth - wide));
@@ -773,7 +783,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 예전에 화면 두 장을 재어 「목표까지 거리의 반쯤」으로 두었던 것은, 후열 부대가
     /// 넉 걸음 나간 것을 잰 것이었다.
     /// </remarks>
-    private static int StridesOf(int slot) => LandUnits.IsFront(slot) ? 2 : 4;
+    private int StridesOf(int slot) => _battle.IsFront(slot) ? 2 : 4;
 
     /// <summary>
     /// 한 줄을 몸짓으로 보인다 — <b>나가서 치는 데까지</b>다.
@@ -1074,7 +1084,7 @@ internal sealed class LandBattleScene : GameWindow
             int men = _menNow is { } snap && i < snap.Count ? snap[i] : unit.Men;
             if (unit.Kind < 0 || men <= 0) continue;
 
-            var (x, y) = StandAt[i];
+            var (x, y) = SpotOf(i);
 
             // 치고 있는 부대는 몸짓을 갈아 끼우고, 맞붙는 병종이면 앞으로 나가 있다.
             int frame = 0;

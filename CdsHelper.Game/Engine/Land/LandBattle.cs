@@ -46,6 +46,55 @@ public sealed class LandBattle
 
     private readonly Unit[] _units = new Unit[Slots];
 
+    /// <summary>
+    /// 후열에서 앞으로 나온 부대인지 — 부대 <c>+0x08</c>(열)을 0 으로 내리고 <c>+0x0C</c>(자리)를 3 당긴 것이다.
+    /// </summary>
+    private readonly bool[] _advanced = new bool[Slots];
+
+    /// <summary>
+    /// 그 부대가 선 자리(0~5, 0·1·2 앞열) — 처음에는 슬롯 자리 그대로이고, 앞열이 비어 앞으로 나오면 3 을 당긴다
+    /// (<see cref="AdvanceRows"/>).
+    /// </summary>
+    public int PlaceOf(int slot) => slot % PerSide - (_advanced[slot] ? 3 : 0);
+
+    /// <summary>그 부대가 앞열에 서 있는지.</summary>
+    public bool IsFront(int slot) => LandUnits.IsFront(PlaceOf(slot));
+
+    /// <summary>그 편에서 그 자리(0~5)에 선 부대(<c>0x00447470</c>). 없으면 −1.</summary>
+    public int AtPlace(bool foe, int place)
+    {
+        int side = foe ? FirstFoe : 0;
+        for (int i = side; i < side + PerSide; i++)
+            if (_units[i].Standing && PlaceOf(i) == place) return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// 그 편 앞열이 다 쓰러졌으면 <b>후열을 앞으로 당긴다</b>(<c>0x004484F0</c> → <c>0x00447660</c> 이 앞열 수를 세고,
+    /// 0 이면 <c>0x00448440</c> 이 산 후열 부대의 열을 0 으로, 자리를 3 당긴다 — 그림도 앞줄로 옮긴다 <c>0x004470D0</c>).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 한 대 칠 때마다(<c>0x0044886D</c> · <c>0x004488EC</c> · <c>0x00448A14</c>), 한꺼번에 쓰러뜨린 뒤
+    /// (<c>0x00448530</c>), 판을 열 때(<c>0x00449CC2</c>) 이것을 본다. 예전에는 자리를 슬롯 번호로 못박아, 앞열이
+    /// 비면 근접이 헛치고 후열에만 놓은 부대는 적 근접이 거의 못 쳤다.
+    /// </remarks>
+    /// <returns>당긴 부대가 있으면 true.</returns>
+    public bool AdvanceRows(bool foe)
+    {
+        int side = foe ? FirstFoe : 0;
+        for (int i = side; i < side + PerSide; i++)
+            if (_units[i].Standing && IsFront(i)) return false;
+
+        bool moved = false;
+        for (int i = side; i < side + PerSide; i++)
+        {
+            if (!_units[i].Standing || _advanced[i]) continue;
+            _advanced[i] = true;
+            moved = true;
+        }
+        return moved;
+    }
+
     /// <summary>부대 열둘. 앞 여섯이 아군이다.</summary>
     public IReadOnlyList<Unit> Units => _units;
 
@@ -340,7 +389,7 @@ public sealed class LandBattle
         if (Scale < ReinforcingScale && City is not (ReinforcingCityA or ReinforcingCityB)) return false;
 
         _reinforced = true;
-        for (int i = FirstFoe; i < Slots; i++) _units[i] = default;
+        for (int i = FirstFoe; i < Slots; i++) { _units[i] = default; _advanced[i] = false; }
 
         Muster(Scale, dice);
         // 적 처음 인원은 새 편성으로 <b>다시</b> 센다(0x004A1320 — 더하지 않는다).
