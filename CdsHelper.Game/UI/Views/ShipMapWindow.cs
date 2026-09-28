@@ -5301,7 +5301,9 @@ public sealed class ShipMapWindow : Window
         // 아무도 모르면 굴림 없이 「말이 통하지 않습니다…」다. 추격대는 그 앞에서 막힌다(0x0045585C).
         if (!Encounter.CanTalk(foe.Kind) || !SpeaksWithFoe(foe))
         {
-            EffectPopup.PlayCoin(this, _game, false, MapAreaOnScreen());
+            // 진 동전은 말이 안 통하는 적(추격대)일 때만이다(0x00455860). 말을 몰라 막힐 때는 동전 없이
+            // 곧장 말이 나온다(0x004558B1 ~ 0x00455978).
+            if (!Encounter.CanTalk(foe.Kind)) EffectPopup.PlayCoin(this, _game, false, MapAreaOnScreen());
             ConfirmDialog.Tell(this,
                 Encounter.CanTalk(foe.Kind) ? Encounter.NoWordsWord(rng) : Encounter.TalkFailedWord(rng),
                 "교섭", face: face);
