@@ -1003,24 +1003,44 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                   && Barmaids.Score(_player, her, Barmaids.Destined(_player, her),
                                     Barmaids.Suits(_player, her))
                      >= dice.Next(Barmaids.WooRoll);
+        // 굴린 결과대로 하트가 커지거나 깨진다(0x00465B05 → 0x004A6360).
+        PlayHeart(ok);
         if (!ok)
         {
             TalkDialog.Say(_view, face, "", Barmaids.Fond);
             return;
         }
 
-        if (TalkDialog.Ask(_view, face, "", Barmaids.Invitations[dice.Next(Barmaids.Invitations.Length)],
-                           "그러겠소", "미안하오") == 0)
+        // 여급이 먼저 물어 오는 동안은 사랑 곡이고(0x00465B1E), 끝나면 술집 곡으로 돌린다(0x00465BBA).
+        PlayLove();
+        try
         {
-            Wed(her, face);
-            return;
-        }
+            if (TalkDialog.Ask(_view, face, "", Barmaids.Invitations[dice.Next(Barmaids.Invitations.Length)],
+                               "그러겠소", "미안하오") == 0)
+            {
+                Wed(her, face);
+                return;
+            }
 
-        // 물리면 그 여급과는 끝이다 — 친밀도가 0 이 되고 프로포즈 줄도 다시 안 선다(0x00465B9E).
-        TalkDialog.Say(_view, face, "", Barmaids.Jilted[dice.Next(Barmaids.Jilted.Length)]);
-        GameDialog.Show(_view, Barmaids.JiltedNotice);
-        _player.MarkRefused(her.Id);
+            // 물리면 그 여급과는 끝이다 — 친밀도가 0 이 되고 프로포즈 줄도 다시 안 선다(0x00465B9E).
+            TalkDialog.Say(_view, face, "", Barmaids.Jilted[dice.Next(Barmaids.Jilted.Length)]);
+            GameDialog.Show(_view, Barmaids.JiltedNotice);
+            _player.MarkRefused(her.Id);
+        }
+        finally { EndLove(); }
     }
+
+    /// <summary>하트(MPEFFECT 3)를 돌린다 — 되면 커지고 안 되면 깨진다(<c>0x004A6360</c>).</summary>
+    private void PlayHeart(bool won) => (_view as CityPicView)?.PlayHeart(won);
+
+    /// <summary>사랑 곡(소리 1)을 튼다(<c>0x004225A0(1, 0)</c>).</summary>
+    private void PlayLove() => _game.Bgm?.Play(BgmPlayer.LoveTrack);
+
+    /// <summary>
+    /// 술집 곡(소리 <c>0x14</c>)으로 돌린다(<c>0x00465BBA</c> · <c>0x00466231</c>) — 원본은 문화권을 안 가리고
+    /// 늘 이 곡을 튼다.
+    /// </summary>
+    private void EndLove() => _game.Bgm?.Play(BgmPlayer.TavernTrack);
 
     /// <summary>
     /// 「프로포즈 한다」(<c>0x00466150</c>) — 소지품의 유혹어를 골라 읊고 한 번에 판가름한다.
@@ -1033,6 +1053,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     {
         var dice = _game.Random;
         int bonus = 0;
+
+        // 프로포즈 들머리에서 사랑 곡을 튼다(0x00466162).
+        PlayLove();
 
         // 유혹어를 지녔으면 어느 것을 쓸지 고른다(0x00466250) — 안 쓰면 보너스도 말도 없다.
         var wooItems = _player.Items
@@ -1052,16 +1075,23 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         int score = bonus + Barmaids.Score(_player, her, Barmaids.Destined(_player, her),
                                            Barmaids.Suits(_player, her));
-        if (score >= dice.Next(Barmaids.WooRoll))
+        bool won = score >= dice.Next(Barmaids.WooRoll);
+        // 판가름 뒤에 하트가 돈다(0x004661A6 → 0x004A6360).
+        PlayHeart(won);
+        try
         {
-            Wed(her, face);
-            return;
-        }
+            if (won)
+            {
+                Wed(her, face);
+                return;
+            }
 
-        // 모항에서는 「이 마을을 떠날 수는 없어요」가 안 나온다(0x004661F6).
-        int rows = _cityId == _player.HomePort ? 2 : Barmaids.Refusals.Length;
-        TalkDialog.Say(_view, face, "", Barmaids.Refusals[dice.Next(rows)]);
-        _player.MarkRefused(her.Id);
+            // 모항에서는 「이 마을을 떠날 수는 없어요」가 안 나온다(0x004661F6).
+            int rows = _cityId == _player.HomePort ? 2 : Barmaids.Refusals.Length;
+            TalkDialog.Say(_view, face, "", Barmaids.Refusals[dice.Next(rows)]);
+            _player.MarkRefused(her.Id);
+        }
+        finally { EndLove(); }   // 되든 안 되든 술집 곡으로 돌린다(0x00466231)
     }
 
     /// <summary>
@@ -1072,6 +1102,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var dice = _game.Random;
         if (dice.Next(4) == 0 && !RivalBeaten(new GameRandom(dice.Next()))) return;
 
+        // 혼인 대답도 사랑 곡 위에서 한다(0x00465921) — 연적 일기토가 곡을 바꿔 놓았으면 되돌린다.
+        PlayLove();
         TalkDialog.Say(_view, face, "", Barmaids.Yeses[dice.Next(Barmaids.Yeses.Length)]);
         _player.Marry(her.Name, her.Id);
         DiscoveryDialog.Show(_view, _game.EventStills, Barmaids.WeddingStill,
