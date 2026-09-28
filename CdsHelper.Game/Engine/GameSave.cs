@@ -218,7 +218,8 @@ public static class GameSave
         List<int>? LastSupply = null,
         int? FleetCity = null, bool? SkipsCumulative = null, bool? Suspended = null,
         Dictionary<int, string>? Scooped = null, int? Drinking = null,
-        Dictionary<int, DateTime>? ScoopedOn = null);
+        Dictionary<int, DateTime>? ScoopedOn = null,
+        List<int>? VisitedCities = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -338,6 +339,8 @@ public static class GameSave
                             ScriptedCities: player.ScriptedCities.ToDictionary(e => e.Key, e => e.Value),
                             // 보급 창 「전회분」. 이 칸 앞의 세이브는 0 으로 연다.
                             LastSupply: [.. player.LastSupply],
+                            // 들어가 본 도시(「도시좌표」가 고르는 것). 이 칸 앞의 세이브는 지금 도시만 든다.
+                            VisitedCities: [.. player.VisitedCities],
                             // 함대가 닻을 내린 도시. 이 칸 앞의 세이브는 모름으로 연다.
                             FleetCity: player.FleetCity == Player.FleetUnknown ? null : player.FleetCity,
                             // 「누적캐릭터를 등장시키지 않는다」 깃발. 이 칸 앞의 세이브는 서지 않은 것으로 연다.

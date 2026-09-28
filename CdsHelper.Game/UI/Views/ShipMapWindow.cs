@@ -272,20 +272,58 @@ public sealed class ShipMapWindow : Window
     /// 칸 너비는 글자 수를 따라가므로 <b>서식이 맞으면 너비도 맞는다</b> — 예전에는
     /// "1499년 5월8일" · "1770닢" 처럼 자리를 안 맞춰 칸마다 폭이 어긋났다.
     /// </remarks>
-    private FrameworkElement InfoCell(string name, GameButton cell, bool on)
+    private FrameworkElement InfoCell(string name, GameButton cell)
     {
-        // 지난번에 켜고 끈 것이 있으면 그것이 먼저다. 한 번도 안 건드렸으면(null)
-        // 여기 적힌 기본값으로 선다.
-        var saved = GameSettings.BarCells;
-        cell.Visibility = (saved?.Contains(name) ?? on) ? Visibility.Visible : Visibility.Collapsed;
+        cell.Visibility = Visibility.Collapsed;   // 어느 칸이 설지는 자리가 정해질 때 고른다(SyncBarPlace)
         _infoCells[name] = cell;
         return cell;
     }
 
-    /// <summary>지금 띠에 켜져 있는 칸을 적어 둔다. 다음에 켤 때 이대로 선다.</summary>
-    private void SaveBarCells() =>
-        GameSettings.BarCells =
-            [.. _infoCells.Where(p => p.Value.Visibility == Visibility.Visible).Select(p => p.Key)];
+    /// <summary>
+    /// 띠 갈래마다 처음 켜져 있는 칸 — 도시정보 줄 차례(<see cref="CityInfoMenu.Rows"/>)의 비트다
+    /// (<c>0x0047E167</c>~<c>0x0047E17F</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0 바다  0x000F  날짜 · 선원 · 물·식량 · 위도·경도
+    ///   1 뭍    0x041B  날짜 · 대원 · 위도·경도 · 소지금 · 남은일수
+    ///   2 도시  0x0691  날짜 · 소지금 · 도시명 · 시세 · 남은일수
+    /// </code>
+    /// 갈래는 배에 오르고 내릴 때(<c>0x0048B5E4</c> · <c>0x0048E7BE</c>)와 도시에 들 때(<c>0x00492461</c>, 2)
+    /// <c>0x0047E3A0</c> 이 갈아 끼우고, 도시정보 창은 <b>지금 갈래의 마스크만</b> 뒤집는다(<c>0x0047DB69</c>).
+    /// </remarks>
+    private static readonly int[] BarDefaults = [0x000F, 0x041B, 0x0691];
+
+    /// <summary>지금 띠 갈래 — 0 바다 · 1 뭍 · 2 도시. 아직 안 골랐으면 -1.</summary>
+    private int _barPlace = -1;
+
+    /// <summary>
+    /// 자리가 바뀌었으면 그 자리의 칸들로 띠를 갈아 끼운다. 지난번에 켜고 끈 것이 있으면
+    /// 그것이, 없으면 게임 기본값(<see cref="BarDefaults"/>)이 선다.
+    /// </summary>
+    private void SyncBarPlace()
+    {
+        int place = _host.InCity ? 2 : _host.IsOnLand ? 1 : 0;
+        if (place == _barPlace) return;
+        _barPlace = place;
+
+        var saved = GameSettings.BarCellsAt(place);
+        for (int i = 0; i < CityInfoMenu.Rows.Length; i++)
+        {
+            string name = CityInfoMenu.Rows[i];
+            if (!_infoCells.TryGetValue(name, out var cell)) continue;
+            bool on = saved?.Contains(name) ?? ((BarDefaults[place] >> i) & 1) != 0;
+            cell.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    /// <summary>지금 띠에 켜져 있는 칸을 <b>지금 자리 몫으로</b> 적어 둔다. 다음에 그 자리에 오면 이대로 선다.</summary>
+    private void SaveBarCells()
+    {
+        if (_barPlace < 0) return;
+        GameSettings.SetBarCellsAt(_barPlace,
+            _infoCells.Where(p => p.Value.Visibility == Visibility.Visible).Select(p => p.Key));
+    }
 
     /// <summary>
     /// 실행 파일의 버전 — 릴리즈는 태그 판(<c>1.0.14</c>)이 들어온다(CI 가 <c>-p:Version=</c> 으로 넣는다).
@@ -421,23 +459,24 @@ public sealed class ShipMapWindow : Window
 
         // 게임 상단 띠. 어느 칸을 띄울지는 도시정보 창에서 켜고 끈다(띠를 오른쪽 단추로 누른다).
         // 이동 모드(정박·해상 이동) 칸은 뺐다 — 게임 띠에 없는 칸이다.
+        // 칸은 도시정보 줄 차례 그대로 왼쪽부터 선다 — 게임은 열다섯 칸을 번호 차례로 훑어 켜진 것만
+        // 이어 붙인다(0x0047E3E0~0x0047E436). 어느 칸이 켜지는지는 바다·뭍·도시마다 다르다(SyncBarPlace).
         var gameCells = new StackPanel { Orientation = Orientation.Horizontal };
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Date, _date, on: true));
-        // 선원 칸은 처음부터 켜 둔다 — 게임 띠도 날짜·선원·소지금 셋으로 선다.
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Crew, _crew, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Stores, _stores, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.DaysLeft, _left, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Wind, _windText, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Coord, _coord, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Gold, _purse, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Fame, _fame, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Fatigue, _tired, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Morale, _morale, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.City, _cityLabel, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Language, _language, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Rate, _rate, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Current, _currentText, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Vitality, _hpCell, on: false));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Date, _date));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Crew, _crew));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Stores, _stores));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Coord, _coord));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Gold, _purse));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Fatigue, _tired));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Fame, _fame));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.City, _cityLabel));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Language, _language));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Rate, _rate));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.DaysLeft, _left));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Morale, _morale));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Wind, _windText));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Current, _currentText));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Vitality, _hpCell));
 
         // 게임처럼 액자를 깔고 그 위에 칸들을 얹는다(asset/ui/misc-00.png).
         // 그림이 없으면 예전처럼 민색 띠로 물러선다.
@@ -586,6 +625,7 @@ public sealed class ShipMapWindow : Window
         _statusTimer = new DispatcherTimerLite(TimeSpan.FromMilliseconds(100), () =>
         {
             SyncMouse();
+            SyncBarPlace();
             _host.ShowShip = _game.Player.Ships.Count > 0;
             _status.Text = _focusNote.Length > 0 ? $"{_host.Status}    {_focusNote}"
                                                  : _host.Status;
@@ -851,6 +891,8 @@ public sealed class ShipMapWindow : Window
     private void SetInCity(bool on)
     {
         _host.InCity = on;
+        // 도시에 들면 띠가 도시 갈래로 갈린다(0x00492461 이 0x0047E3A0(2) 을 부른다).
+        SyncBarPlace();
     }
 
     /// <summary>
@@ -2527,6 +2569,8 @@ public sealed class ShipMapWindow : Window
             // 항해하다 알게 된 도시들. 판 27 앞의 세이브에는 없어 유럽 101곳만 아는 채로
             // 시작한다 — 원본을 처음 켠 것과 같다.
             _game.Player.RestoreKnownCities(saved.KnownCities);
+            // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
+            _game.Player.RestoreVisitedCities(saved.VisitedCities);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.
             _game.Player.RestoreCloseness(saved.Closeness);
@@ -2666,7 +2710,8 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>
     /// 게임 커맨드 창을 흉내낸 우클릭 메뉴. 떠 있는 동안 <b>게임이 멈춘다</b> —
-    /// 배도 시간도 그 자리에 선다(닻을 내리는 것과는 다르다. 닻은 그대로 두고 멈추기만 한다).
+    /// 배도 시간도 그 자리에 선다. 여는 김에 <b>닻도 내린다</b> — 원본이 창을 지으며 닻을 놓고
+    /// 되돌리지 않아(<c>0x0048B1C2</c>) 닫은 뒤에도 배가 선 채로 있다.
     /// </summary>
     /// <remarks>
     /// 제 창(HWND)으로 띄운다 — D3D 자식 창 위에 제대로 뜨고(airspace 를 안 탄다),
@@ -2684,6 +2729,8 @@ public sealed class ShipMapWindow : Window
 
         CommandMenu.Open(CommandMenuBox, ToScreen(anchor, at));
         _host.Paused = true;
+        // 커맨드 창을 열면 닻이 내려진다 — 닫아도 선 채로 남는다(0x0048B1C2).
+        _host.HoldForCommand();
     }
 
     /// <summary>
@@ -2718,11 +2765,9 @@ public sealed class ShipMapWindow : Window
             // 뭍에 올라 있는 동안은 보급·수리 줄이 <b>없다</b> — 그 둘은 배에 탄 채로 여는
             // 「상륙」 차림표에 있다(0x0048B1E2~0x0048B4C2 에는 도시·승선·정보·도시좌표·
             //  항해일지·기능뿐이다).
-            // 대 둔 배 곁(세 칸 안)이어야 선다(0x0048B397) — 상륙 지점을 둘레 3x3에서
-            // 고르는 우리 지도 좌표와 맞춘다. 아무 물가에서나 타지는 못한다.
-            // 육상 이동 중에는 함대가 원래 출항한 도시 번호를 계속 들고 있어도
-            // 대 둔 배 곁이면 바로 탈 수 있다. 실제 가능 여부는 _moored 거리로 가른다.
-            if (_host.IsNearMoor(3))
+            // 대 둔 배 곁 — 가로세로 <b>두 칸</b>(1/16 눈금 0x20) 안이어야 선다(0x0048B3C6~0x0048B3D8).
+            // 아무 물가에서나 타지는 못한다. 내린 자리는 배 둘레 3x3 이라 내리자마자 타는 데는 걸리지 않는다.
+            if (_host.IsNearMoor())
                 // 뭍에서 배로 옮겨 타는 줄은 「승선」이다(0x0056F9A8, 0x0048B3ED) — 「출항」은 항구 것이다.
                 items.Add(("승선", () => { if (_host.Embark()) _game.Bgm.Play(BgmPlayer.SeaTrack); Close(); }));
         }
@@ -6033,8 +6078,19 @@ public sealed class ShipMapWindow : Window
     /// 「도시좌표」(<c>0x004269F0</c>) — 가 본 도시를 골라 위도·경도를 듣는다.
     /// </summary>
     /// <remarks>
-    /// 가 본 곳이 열여섯 곳이 넘으면 문화권부터 고르고(맨 끝에 「전도시 일람」), 그 밑이면 바로 도시 목록이다.
+    /// 가 본 곳(도시 레코드 <c>+0x04</c> 의 <c>0x80</c>, <see cref="Support.Local.Models.Player.Visited"/>)이
+    /// 열여섯 곳 이상이면 문화권부터 고르고(맨 끝에 「전도시 일람」), 그 밑이면 바로 도시 목록이다.
     /// 측량사 자리에 사람이 있으면 <b>그 사람이 말하고</b>, 없으면 얼굴 없는 알림이다(<c>0x00426C6E</c>).
+    ///
+    /// 한 번 듣고 끝나지 않는다 — 좌표를 말한 뒤 <b>고르던 목록으로 돌아가</b> 취소할 때까지 돈다
+    /// (<c>0x00426D50</c> 이 <c>0x00426AC3</c> 으로 되돌린다).
+    /// <list type="bullet">
+    /// <item>도시 목록만 낼 때 — 목록을 다시 낸다. 취소하면 끝난다.</item>
+    /// <item>문화권의 도시 목록 — 문화권 창으로 돌아간다. 도시 목록을 취소해도 그렇다(<c>0x00426B78</c>).</item>
+    /// <item>「전도시 일람」 — 그 뒤로는 <b>전도시 목록에 머문다</b>(<c>[esp+0x1C]</c> = 1, <c>0x00426B8A</c>).
+    ///   거기서 취소하면 문화권 창으로 안 돌아가고 끝난다.</item>
+    /// </list>
+    /// 안내 글(<c>0x005333E0</c>)은 들어설 때 한 번만 낸다(<c>0x00426AB4</c>).
     /// </remarks>
     private void ShowCityCoordinates()
     {
@@ -6042,7 +6098,7 @@ public sealed class ShipMapWindow : Window
         var rows = _game.CityRows;
         var seen = new List<int>();
         for (int city = 0; city < CityExeTable.Count; city++)
-            if (player.Knows(city) && CityCoordinates.Of(rows, city) != null) seen.Add(city);
+            if (player.Visited(city) && CityCoordinates.Of(rows, city) != null) seen.Add(city);
 
         // 고를 도시가 없으면 말없이 물린다 — 원본(0x004269F0)에는 빈 목록을 알리는 말이 없다.
         if (seen.Count == 0) return;
@@ -6051,14 +6107,14 @@ public sealed class ShipMapWindow : Window
         _host.Paused = true;
         try
         {
-            bool guided = false;
+            bool byRegion = seen.Count >= CityCoordinates.AskRegionFrom;
+            if (byRegion) NoticeDialog.Show(this, CityCoordinates.Guide);
+
             while (true)
             {
                 var list = seen;
-                if (seen.Count >= CityCoordinates.AskRegionFrom)
+                if (byRegion)
                 {
-                    if (!guided) { guided = true; NoticeDialog.Show(this, CityCoordinates.Guide); }
-
                     var regions = seen.Select(c => rows?.CultureOf(c) ?? -1)
                                       .Where(r => r >= 0 && r < CityCoordinates.Regions.Length)
                                       .Distinct().Order().ToList();
@@ -6067,15 +6123,19 @@ public sealed class ShipMapWindow : Window
 
                     int at = ChoiceDialog.Ask(this, "", names);
                     if (at < 0) return;
-                    if (at < regions.Count)
-                        list = [.. seen.Where(c => rows?.CultureOf(c) == regions[at])];
+                    if (at >= regions.Count)
+                    {
+                        byRegion = false;           // 전도시 일람 — 이제부터는 전도시 목록에 머문다
+                        continue;
+                    }
+                    list = [.. seen.Where(c => rows?.CultureOf(c) == regions[at])];
                 }
 
                 int pick = ChoiceDialog.Ask(this, CityCoordinates.CityListTitle,
                                             [.. list.Select(_game.CityName)]);
                 if (pick < 0)
                 {
-                    if (seen.Count >= CityCoordinates.AskRegionFrom) continue;    // 도시 목록만 낼 때는 그대로 끝난다
+                    if (byRegion) continue;         // 문화권 창으로 돌아간다
                     return;
                 }
 
@@ -6088,8 +6148,6 @@ public sealed class ShipMapWindow : Window
                     TalkDialog.Say(this, _game.Faces?.TryGetBgra(who.Face, female: false), "",
                                    $"{name}{NameToken.Of(name, 9)} {spot.Words}");
                 else NoticeDialog.Show(this, $"{name}  {spot.Words}");
-
-                if (seen.Count < CityCoordinates.AskRegionFrom) return;
             }
         }
         finally

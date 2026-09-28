@@ -2541,6 +2541,16 @@ public sealed class ShipMapHost : HwndHost
         _dirty = true;
     }
 
+    /// <summary>
+    /// 커맨드 창을 열면 <b>닻을 내린다</b> — 창을 닫아도 선 채로 남아 왼쪽 클릭으로 올려야 나아간다.
+    /// </summary>
+    /// <remarks>
+    /// 커맨드 창을 짓는 <c>0x0048B190</c> 이 맨 앞(<c>0x0048B1C2</c>)에서 <c>0x005B3A00</c> 에 1 을 놓고
+    /// 아무 데서도 되돌리지 않는다. 알림 글은 안 낸다 — 닻 알림(<c>0x0056F970</c> 벌)은 클릭으로 뒤집을
+    /// 때(<c>0x0048B0C8</c>)만 뜬다. 바다든 뭍이든 가리지 않는다.
+    /// </remarks>
+    public void HoldForCommand() => HoldAfterCity();
+
     /// <summary>배가 있는 자리로 되돌아가 다시 따라다닌다.</summary>
     public void RecenterOnShip()
     {
