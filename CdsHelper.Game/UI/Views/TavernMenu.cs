@@ -860,6 +860,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         int price = table.Find(slots[at])?.BuyList ?? 0;
         _player.Drop(slots[at]);
         _player.AddLiking(her.Id, Barmaids.GiftGain(_player.LikingOf(her.Id), price));
+        // 선물을 받았다는 표시를 세운다(0x00466B45 의 [여급+0x34] = 1) — 설득 60~89 구간(0x00465D49)과
+        // 청혼 밑점수 +10(0x00465E44)이 이것을 본다.
+        _player.MarkGifted(her.Id);
         TalkDialog.Say(_view, face, "", Barmaids.GiftWord(_player.LikingOf(her.Id)));
     }
 
