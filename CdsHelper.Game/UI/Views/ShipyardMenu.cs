@@ -940,9 +940,6 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     }
 
     /// <summary>
-    /// 배 한 척을 줄로 적는다 — 이름과 내구·추진·적재를 붙인다. 상했으면 내구를 "지금/최대"로 낸다.
-    /// </summary>
-    /// <summary>
     /// 개조 목록의 머리글 — 게임 낱말 그대로다(<c>0x00545580</c> 벌: 선명 · 추진력 ·
     /// 「대포명  포문수」 · 돛종류).
     /// </summary>
@@ -983,13 +980,5 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         return $"{(flag ? "*" : " ")}{GameUi.Pad(ship.Name, 10)}"
              + $" {ship.MaxSpeed,3}/{ship.Hull.SpeedCeiling,3}"
              + $"  {gun}  {sails}";
-    }
-
-    internal static string ShipLine(Ship ship, bool flag)
-    {
-        string hp = ship.NeedsRepair ? $"{ship.Hp,3}/{ship.MaxHp,-3}" : $"{ship.MaxHp,3}    ";
-        // 추진력도 상했으면 내구처럼 지금/최대로 낸다.
-        string go = ship.Speed < ship.MaxSpeed ? $"{ship.Speed,3}/{ship.MaxSpeed,-3}" : $"{ship.MaxSpeed,3}    ";
-        return $"{(flag ? "*" : " ")}{ship.Name}  내구{hp} 추진{go} 적재{ship.UsableCapacity,4}";
     }
 }

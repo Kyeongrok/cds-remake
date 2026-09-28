@@ -258,7 +258,8 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         // 배를 맡겨 두는 것은 <b>모항에서만</b>이다(0x0046A2A4 — 도시 +0x1D 비트 8).
         "선박 삭제" when _player.Ships.Count > 1 && _cityId == _player.HomePort
                       && _player.DockedAt(_cityId).Count < Player.MaxDocked => LeaveShip,
-        "선박 파기" when _player.Ships.Count > 1 => ScrapShip,
+        // 파기는 <b>제독 것인 배</b>가 하나라도 있어야 켜진다(0x0046A2C0 → 0x0040E210 — 소유주가 제독인 배 수).
+        "선박 파기" when _player.Ships.Count > 1 && _player.Ships.Any(s => !s.Lent) => ScrapShip,
         Facility.FleetExit => FleetDone,
         _ => null,
     };
@@ -274,30 +275,18 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         _menu.Pop();
     }
 
-    /// <summary>함대 목록의 차례 — <b>기함이 맨 앞</b>이고 나머지는 칸 차례다(<c>0x0049D360</c>).</summary>
-    private List<int> FleetOrder()
-    {
-        var order = new List<int>();
-        int flag = _player.Flagship;
-        if (flag >= 0 && flag < _player.Ships.Count) order.Add(flag);
-        for (int i = 0; i < _player.Ships.Count; i++) if (i != flag) order.Add(i);
-        return order;
-    }
-
     /// <summary>기함을 바꾼다. 게임의 <c>0x0046A2F0</c> 자리다.</summary>
+    /// <remarks>
+    /// 배 목록 표(<c>0x0049D3F0</c>, 묶음 3 <c>0x005602C8</c>)를 방식 2 로 연다 — <b>지금 기함 줄은 흐리다</b>.
+    /// </remarks>
     private void ChangeFlagship()
     {
         var owner = Owner;
-        var ships = _player.Ships;
+        int at = ShipPickDialog.Pick(owner, _player, _game.Items, "기함 변경", startSet: 3,
+                                     mode: ShipPickDialog.NoFlagship);
+        if (at < 0) return;
 
-        var order = FleetOrder();
-        int pick = HintListDialog.Pick(owner,
-            [.. order.Select(i => ShipyardMenu.ShipLine(ships[i], i == _player.Flagship))],
-            "기함 변경", "바꿀 배가 없습니다");
-        if (pick < 0) return;
-        int at = order[pick];
-
-        var name = ships[at].Name;
+        var name = _player.Ships[at].Name;
         if (!ConfirmDialog.Ask(owner, $"기함을 {name}호로 변경하겠습니다. 좋습니까?")) return;
 
         _player.SetFlagship(at);
@@ -308,6 +297,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// <remarks>
     /// 한 척 받고 끝나지 않는다 — 물리거나 맡긴 배가 떨어질 때까지 목록을 다시 연다(<c>0x0046A3DE</c> →
     /// <c>0x0046A355</c>). 받다가 여덟 척이 차면 「이 이상 편입할 수 없습니다.」(<c>0x005453D0</c>)다.
+    /// 목록은 배 목록 표(<c>0x0046C3E0</c>, 묶음 4 <c>0x005602CC</c>, 방식 0)다.
     /// </remarks>
     private void TakeShip()
     {
@@ -320,8 +310,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
                 break;
             }
 
-            int at = HintListDialog.Pick(owner, [.. docked.Select(h => ShipyardMenu.ShipLine(h, false))],
-                                         "편입선박 선택", "이 마을에 맡겨 둔 배가 없습니다");
+            int at = ShipPickDialog.Pick(owner,
+                [.. docked.Select(s => new ShipPickDialog.Entry(s, 0, false))],
+                _game.Items, "편입선박 선택", startSet: 4);
             if (at < 0) break;
             _player.Undock(_cityId, at);
         }
@@ -331,16 +322,15 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     }
 
     /// <summary>함대의 배를 이 마을에 맡긴다. 게임의 <c>0x0046A400</c> 자리다.</summary>
+    /// <remarks>
+    /// 배 목록 표(묶음 4 <c>0x005602D0</c>)를 방식 2 로 연다 — <b>기함은 못 맡긴다</b>(그 줄이 흐리다).
+    /// </remarks>
     private void LeaveShip()
     {
         var owner = Owner;
-
-        var order = FleetOrder();
-        int pick = HintListDialog.Pick(owner,
-            [.. order.Select(i => ShipyardMenu.ShipLine(_player.Ships[i], i == _player.Flagship))],
-            "선박삭제", "삭제할 배가 없습니다");
-        if (pick < 0) return;
-        int at = order[pick];
+        int at = ShipPickDialog.Pick(owner, _player, _game.Items, "선박삭제", startSet: 4,
+                                     mode: ShipPickDialog.NoFlagship);
+        if (at < 0) return;
 
         if (!_player.Dock(at, _cityId))
             GameDialog.Show(owner, "이 이상 삭제할 수 없습니다.");
@@ -349,16 +339,15 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     }
 
     /// <summary>배를 없앤다. 게임의 <c>0x0046A490</c> 자리다 — 묻지 않는다.</summary>
+    /// <remarks>
+    /// 배 목록 표(묶음 4 <c>0x005602D4</c>)를 방식 3 으로 연다 — <b>기함과 빌린 배는 흐리다</b>.
+    /// </remarks>
     private void ScrapShip()
     {
         var owner = Owner;
-
-        var order = FleetOrder();
-        int pick = HintListDialog.Pick(owner,
-            [.. order.Select(i => ShipyardMenu.ShipLine(_player.Ships[i], i == _player.Flagship))],
-            "선박파기", "파기할 배가 없습니다");
-        if (pick < 0) return;
-        int at = order[pick];
+        int at = ShipPickDialog.Pick(owner, _player, _game.Items, "선박파기", startSet: 4,
+                                     mode: ShipPickDialog.NoFlagship | ShipPickDialog.NoLent);
+        if (at < 0) return;
 
         // 원본은 고르면 묻지 않고 곧바로 없앤다(0x0046A4B8 → 0x00473E60 · 0x0044CA90).
         if (!_player.Scrap(at))
