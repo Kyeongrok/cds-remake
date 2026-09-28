@@ -722,12 +722,14 @@ public sealed class SeaBattle
     /// <b>괴물은 잠수해 있을 때만</b> 물러설 마음을 먹는다 — 내 배 가운데 격침·나포된 것이
     /// 하나라도 있으면 가장자리로 간다(<c>0x0043B7A1</c>: <c>+0x8FC == 1</c> 이고 내 배
     /// 1~7 에 상태 1·2 가 있을 때). 떠 있을 때(<c>+0x8FC == 2</c>)는 여느 내구·승원·척수
-    /// 판정을 그대로 탄다.
+    /// 판정을 그대로 탄다(<c>0x0043B79A</c> → <c>0x0043B7AA</c> → <c>0x0043B7F5</c> → <c>0x0043B84E</c>).
+    /// 다만 괴물 판의 적 척수는 <c>[0x848] = 7</c>(<c>0x00440EB5</c>)이라 척수 판정은 걸리지 않는다.
+    /// 예전에는 떠 있는 괴물은 아예 물러서지 않았다.
     /// </remarks>
     private bool WantsRetreat(Ship ship, bool mine)
     {
-        if (!mine && Monster)
-            return !MonsterUp && Ships.Any(s => s.Mine && s.State is ShipState.Sunk or ShipState.Captured);
+        if (!mine && Monster && !MonsterUp)
+            return Ships.Any(s => s.Mine && s.State is ShipState.Sunk or ShipState.Captured);
 
         // 위임했을 때 아군은 <b>부관 성미 칸 0</b> 으로 셋으로 갈린다(0x0043B7B1 · 0x0043B807).
         //   0        내 배 가운데 격침·나포된 것이 있으면 물러선다(0x0043B7C8)
@@ -743,6 +745,7 @@ public sealed class SeaBattle
 
         int ours = Ships.Count(s => s.Mine && s.CanAct);
         int theirs = Ships.Count(s => !s.Mine && s.CanAct);
+        if (!mine && Monster) theirs = 7;           // 괴물 판 적 척수 [0x848] = 7(0x00440EB5)
         int enemyCount = mine ? ours : theirs;      // 배의 편
         int opposing = mine ? theirs : ours;        // 상대 편
         // 승원 문턱은 선체표 +0x34 에 10 을 더한 값이다(0x0043B866~0x0043B88A 의 [0x4FC214+종류*64]+10 >= 승원).
