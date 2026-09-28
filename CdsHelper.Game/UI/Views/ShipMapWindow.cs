@@ -4718,8 +4718,10 @@ public sealed class ShipMapWindow : Window
         int back = LandEvents.Returned(MateMedicine(), hurt, dice);
         player.SetCrew(player.Crew - (hurt - back));
 
-        NoticeDialog.Show(this, $"대원 {hurt}명이 사망했습니다.");
-        if (back > 0) NoticeDialog.Show(this, $"{back}명의 대원이 돌아왔습니다.");
+        // 두 말 다 부관(없으면 뱃사람) 얼굴로 한다(0x00426E45 · 0x00426E6A → 0x00478280).
+        var face = MateFace();
+        ConfirmDialog.Tell(this, $"대원 {hurt}명이 사망했습니다.", face: face);
+        if (back > 0) ConfirmDialog.Tell(this, $"{back}명의 대원이 돌아왔습니다.", face: face);
     }
 
     /// <summary>
