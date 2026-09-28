@@ -706,7 +706,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             {
                 maidSeated = true;
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
-                            _player.LikingOf(her.Id) > 0 ? her.Name : "여",
+                            _player.HasMetBarmaid(her.Id) ? her.Name : "여",
                             () => Alone(() => MeetBarmaid(her))));
                 continue;
             }
@@ -763,7 +763,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private void MeetBarmaid(BarmaidTable.Barmaid her)
     {
         bool destined = Barmaids.Destined(_player, her);
-        bool first = _player.LikingOf(her.Id) == 0;
+        // 낯을 텄는지는 친밀도가 아니라 따로 든 깃발로 본다(여급 칸 +0x28, vtbl[0x34]) — 퇴짜를 맞아 친밀도가
+        // 0 이 되어도 아는 사람으로 남는다. 예전에는 친밀도 0 을 모르는 사이로 쳐서 다시 처음 보는 여자가 되었다.
+        bool first = !_player.HasMetBarmaid(her.Id);
 
         // 낯 트기 전에는 얼굴도 이름도 없다.
         if (first)
@@ -773,6 +775,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (!BuyDrink()) return;
 
             _player.AddLiking(her.Id, Barmaids.FirstMeet(_player, her));
+            _player.MeetBarmaid(her.Id);
         }
 
         var face = FaceOfMaid(her);

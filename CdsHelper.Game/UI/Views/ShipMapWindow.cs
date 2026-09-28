@@ -2459,7 +2459,7 @@ public sealed class ShipMapWindow : Window
                 foreach (int item in GameInfo.VirtualItems(_game)) _game.Player.Drop(item);
             _game.Player.RestoreScriptedCities(saved.ScriptedCities);
             _game.Player.RestoreNationStatus(saved.NationStatus);
-            _game.Player.RestoreBarmaidFlags(saved.GiftedBarmaids, saved.RefusedBarmaids);
+            _game.Player.RestoreBarmaidFlags(saved.GiftedBarmaids, saved.RefusedBarmaids, saved.MetBarmaids);
             _game.Player.Laps = saved.Laps ?? 0;
             _game.Player.RestorePurses(saved.Purses);
             _game.Player.RestoreHidden(saved.Hidden);

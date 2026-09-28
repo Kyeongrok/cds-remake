@@ -1116,13 +1116,40 @@ public sealed class Player
         _liking[barmaid] = 0;
     }
 
+    /// <summary>
+    /// 낯을 튼 여급(여급 칸 <c>+0x28</c> 이 0 이 된 것, <c>vtbl[0x34]</c> 가 거짓). null 이면 이 칸이 없던 세이브라
+    /// <b>친밀도가 0 보다 큰 여급</b>을 아는 사이로 친다.
+    /// </summary>
+    /// <remarks>
+    /// 친밀도와 따로 든다 — 퇴짜(<c>0x00465BA0</c> · <c>0x00466222</c>)는 친밀도(<c>+0x20</c>)와 <c>+0x30</c> 만
+    /// 0 으로 만들고 이 깃발은 그대로 두므로, 퇴짜를 놓은 여급도 여전히 아는 사람이다.
+    /// </remarks>
+    private HashSet<int>? _metBarmaids = [];
+
+    /// <summary>낯을 튼 여급들. 세이브에 적는다.</summary>
+    public IReadOnlyCollection<int> MetBarmaids =>
+        (IReadOnlyCollection<int>?)_metBarmaids ?? [.. _liking.Where(p => p.Value > 0).Select(p => p.Key)];
+
+    /// <summary>그 여급과 낯을 텄는지.</summary>
+    public bool HasMetBarmaid(int barmaid) => _metBarmaids?.Contains(barmaid) ?? LikingOf(barmaid) > 0;
+
+    /// <summary>낯을 튼 것으로 적는다(<c>0x0046676F</c> · <c>0x00466501</c> 의 <c>[여급+0x28] = 0</c>).</summary>
+    public void MeetBarmaid(int barmaid)
+    {
+        _metBarmaids ??= [.. _liking.Where(p => p.Value > 0).Select(p => p.Key)];
+        _metBarmaids.Add(barmaid);
+    }
+
     /// <summary>세이브에서 여급 형편을 되돌린다.</summary>
-    public void RestoreBarmaidFlags(IEnumerable<int>? gifted, IEnumerable<int>? refused)
+    /// <param name="met">낯을 튼 여급. 이 칸이 없던 세이브면 null — 친밀도로 가늠한다.</param>
+    public void RestoreBarmaidFlags(IEnumerable<int>? gifted, IEnumerable<int>? refused,
+                                    IEnumerable<int>? met = null)
     {
         _giftedBarmaids.Clear();
         foreach (int id in gifted ?? []) _giftedBarmaids.Add(id);
         _refusedBarmaids.Clear();
         foreach (int id in refused ?? []) _refusedBarmaids.Add(id);
+        _metBarmaids = met == null ? null : [.. met];
     }
 
     /// <summary>아내를 맞는다. 빈 이름을 주면 홀로 돌아간다.</summary>
