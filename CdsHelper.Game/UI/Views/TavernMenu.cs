@@ -774,6 +774,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                                "한잔 산다", "무시한다") != 0) return;
             if (!BuyDrink()) return;
         }
+        else
+        {
+            // 아는 여급도 곧장 차림표로 가지 않는다 — 「[%s]%s 있다」(0x0054ABC0)를 띄우고
+            // 말을 건다(0x0054ABD0) · 무시한다를 고르게 한다(0x0042F338). 술은 안 산다.
+            if (TalkDialog.Ask(_view, null, "", $"[{her.Name}]{Subject(her.Name)} 있다",
+                               "말을 건다", "무시한다") != 0) return;
+        }
 
         var face = FaceOfMaid(her);
 
