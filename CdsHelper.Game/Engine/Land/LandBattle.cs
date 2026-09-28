@@ -52,10 +52,16 @@ public sealed class LandBattle
     private readonly bool[] _advanced = new bool[Slots];
 
     /// <summary>
-    /// 그 부대가 선 자리(0~5, 0·1·2 앞열) — 처음에는 슬롯 자리 그대로이고, 앞열이 비어 앞으로 나오면 3 을 당긴다
+    /// 판을 열 때 그 부대가 선 자리(부대 <c>+0x0C</c>, <c>0x004470D0</c> 이 적는다). 아군은 배치 창에서 고른
+    /// 슬롯 그대로이고, 적은 <see cref="PlaceFoes"/> 가 굴려 정한다.
+    /// </summary>
+    private readonly int[] _place = [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5];
+
+    /// <summary>
+    /// 그 부대가 선 자리(0~5, 0·1·2 앞열) — 판을 열 때의 자리에서, 앞열이 비어 앞으로 나오면 3 을 당긴다
     /// (<see cref="AdvanceRows"/>).
     /// </summary>
-    public int PlaceOf(int slot) => slot % PerSide - (_advanced[slot] ? 3 : 0);
+    public int PlaceOf(int slot) => _place[slot] - (_advanced[slot] ? 3 : 0);
 
     /// <summary>그 부대가 앞열에 서 있는지.</summary>
     public bool IsFront(int slot) => LandUnits.IsFront(PlaceOf(slot));
@@ -538,6 +544,95 @@ public sealed class LandBattle
         int each = Math.Max(1, men / units), over = men % units;
         for (int i = 0; i < units && i < PerSide; i++)
             _units[FirstFoe + i] = new Unit(kinds[i], each + (i == 0 ? over : 0));
+
+        PlaceFoes(dice);
+    }
+
+    /// <summary>
+    /// 적 부대를 앞열·뒷열 자리에 세운다(<c>0x004A1020</c>) — 진형을 짓고 나서 <c>0x004A1320</c> 이 부른다.
+    /// </summary>
+    /// <remarks>
+    /// 부대 <c>+0xAC</c> 는 <c>0x00446E90</c> 이 <c>0x00446F00(병종)</c> 으로 채운 <b>갈래</b>다
+    /// (0 근접 · 1 사격 · 2 포 · 3 지원 — <see cref="LandUnits.KindOf"/> 와 같다).
+    /// <code>
+    ///   L = 선 적 부대(슬롯 6, 7, …, n = 0x00447530(1))   L[0] 은 대장이라 안 움직인다
+    ///   L[1..] 을 갈래 오름차순으로 삽입 정렬                    ; 0x004A1048~0x004A10C6
+    ///   m = 대장 뺀 근접 부대 수(0x00447580(0, 1))
+    ///   i = 1 .. m-1    : L[i] ↔ L[rand(m) + 1]                ; 근접끼리 섞는다
+    ///   b = n - m - 1
+    ///   i = m+1 .. b-1  : L[i] ↔ L[m + rand(b) + 1]            ; 나머지끼리 — 끝을 m+b 가 아니라 b 로 본다(원본 그대로)
+    ///   앞 = m · 뒤 = b ; 앞이 0 이고 뒤가 있으면 하나를 앞으로
+    ///   대장 = 앞·뒤 다 0 이면 자리 1(앞열 가운데), 아니면 4(뒷열 가운데)   ; 0x00447340(6, …)
+    ///   0x004A0FA0 가 열마다 수를 자른다 — 앞 셋 · 뒤 둘(대장이 뒷열 한 칸을 쓴다)
+    ///   L[1 .. 앞] 은 앞열, 그 뒤 뒤 개는 뒷열 — 한 부대씩 열*3 + rand(3) 을 빈 칸이 나올 때까지 굴린다
+    ///                                                          ; 0x004A0F60 → 0x004473F0 · 0x00447340
+    /// </code>
+    /// 원본의 빈 칸 검사(<c>0x004473F0</c>)는 <b>아직 안 놓인</b> 부대의 옛 자리(<c>+0xB8</c>, 앞 판에서 남은 값)도
+    /// 찬 것으로 본다. 판 사이에 새어 드는 찌꺼기라 옮기지 않고, 놓인 부대만 본다.
+    /// </remarks>
+    private void PlaceFoes(GameRandom dice)
+    {
+        for (int i = FirstFoe; i < Slots; i++) _place[i] = i - FirstFoe;
+
+        var order = new List<int>();
+        for (int i = FirstFoe; i < Slots; i++) if (_units[i].Standing) order.Add(i);
+        int n = order.Count;
+        if (n == 0) return;
+
+        int KindAt(int k) => (int)LandUnits.KindOf(_units[order[k]].Kind);
+        void Swap(int a, int b) => (order[a], order[b]) = (order[b], order[a]);
+
+        // 대장(L[0]) 뒤를 갈래 오름차순으로 — 근접이 앞으로 모인다.
+        for (int k = 2; k < n; k++)
+            for (int j = k; j >= 2 && KindAt(j - 1) > KindAt(j); j--) Swap(j - 1, j);
+
+        int melee = 0;
+        for (int k = 1; k < n; k++)
+            if (!_units[order[k]].IsLeader && KindAt(k) == (int)LandUnits.Kind.Melee) melee++;
+
+        for (int i = 1; i < melee; i++) Swap(i, dice.Next(melee) + 1);
+
+        int rest = n - melee - 1;
+        for (int i = melee + 1; i < rest; i++) Swap(i, melee + dice.Next(rest) + 1);
+
+        int front = melee, back = rest;
+        if (front == 0 && back > 0) { front = 1; back--; }
+
+        var placed = new bool[Slots];
+        void Stand(int slot, int place) { _place[slot] = place; placed[slot] = true; }
+
+        Stand(order[0], front == 0 && back == 0 ? 1 : 4);
+
+        // 0x004A0FA0 — 앞열은 셋, 뒷열은 대장 옆 둘까지다.
+        if (front == 0)
+        {
+            if (back > 2) { back = 2; front = n - 3; }
+            else if (back != 0) { front = 1; back = n - 2; }
+        }
+        else if (front > 3) { front = 3; back = n - 4; }
+        else if (back > 2) { back = 2; front = n - 3; }
+
+        bool Taken(int slot, int place)
+        {
+            for (int i = FirstFoe; i < Slots; i++)
+                if (i != slot && placed[i] && _place[i] == place) return true;
+            return false;
+        }
+
+        // 0x004A0F60 — 그 열에서 빈 칸이 나올 때까지 rand(3) 을 굴린다.
+        void Roll(int slot, int row)
+        {
+            for (int guard = 0; guard < 100; guard++)
+            {
+                int place = row * 3 + dice.Next(3);
+                if (!Taken(slot, place)) { Stand(slot, place); return; }
+            }
+            for (int place = 0; place < PerSide; place++)      // 끝내 못 찾으면 첫 빈 칸(원본은 끝없이 돈다)
+                if (!Taken(slot, place)) { Stand(slot, place); return; }
+        }
+
+        for (int i = 0; i < front && 1 + i < n; i++) Roll(order[1 + i], 0);
+        for (int i = 0; i < back && front + 1 + i < n; i++) Roll(order[front + 1 + i], 1);
     }
 
     /// <summary>
