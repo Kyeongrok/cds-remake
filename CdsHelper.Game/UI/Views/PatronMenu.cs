@@ -2118,8 +2118,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         string shown = sir?.Name ?? sponsor;
 
         // 부하들이 순순히 따르지 않으면 배 한 척의 선장이 나서서 겨루자고 한다.
-        if (!LentShips.Obeys(_player.AbilityOf(Ability.Charm), _player.Fame, _player.Infamy, dice)
-            && !WonLoyaltyDuel(shown, lent[0].Name))
+        bool obeys = LentShips.Obeys(_player.AbilityOf(Ability.Charm), _player.Fame, _player.Infamy, dice);
+        EffectPopup.PlayOn(_view, _game, EffectAnim.Heart, obeys);   // 따르는지는 하트로 보인다(0x00410215)
+        if (!obeys && !WonLoyaltyDuel(shown, lent[0].Name))
         {
             // 베였다 — 그 자리에서 판이 끝난다(0x0044AF40(4)). 배는 손대지 않는다.
             GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
@@ -2135,6 +2136,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             bool mine = (keep && stays.Count == 0)
                         || LentShips.Stays(_player.AbilityOf(Ability.Luck), dice);
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, mine);   // 배마다 남는지는 동전이다(0x004102E4)
             if (mine) stays.Add(ship);
         }
 
