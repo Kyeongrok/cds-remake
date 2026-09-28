@@ -717,8 +717,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             {
                 string label = seat.Art.Female ? "여" : "남";
                 // 무명 남자 손님은 자리를 지을 때 어디서 왔는지와 할 이야기가 정해진다(0x004A15C0).
-                var talk = seat.Art.Female ? null : SeatStranger();
                 bool inn = kind == FacilityKind.Inn;
+                var talk = seat.Art.Female ? null : SeatStranger(inn);
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height, label,
                             () => Alone(() => MeetStranger(seat.Art.Female, talk, inn))));
             }
@@ -1204,7 +1204,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                                 "한잔 산다", "무시한다") != 0 || !BuyDrink()) return;
 
         // 무명 손님은 <b>이야기만</b> 건넨다 — 고용도 결투도 없다(0x004A4E60).
-        seat ??= SeatStranger();
+        seat ??= SeatStranger(inn);
         var face = _game.Faces?.TryGetBgra(TavernRumors.StrangerFace(seat.Culture), female: false)
                    ?? _game.SpeakerFace(BuildingCode, _cultureNo);
         var dice = _game.Random;
@@ -1245,7 +1245,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 무명 손님 자리를 짓는다(<c>0x004A15C0</c>) — 반쯤은 그 나라 <b>수도</b>에서 온 손님이라(<c>0x004A14F0</c>)
     /// 얼굴과 이야기 갈래가 수도 문화권을 따르고, 이야기는 이때 하나로 정해진다(<c>0x004A43F0</c>).
     /// </summary>
-    private StrangerSeat SeatStranger()
+    /// <param name="inn">여관 자리인지 — 건물 번호가 소문 고르기까지 넘어간다(<c>0x004A1B56</c> → <c>0x004A36D0</c>).</param>
+    private StrangerSeat SeatStranger(bool inn = false)
     {
         var dice = _game.Random;
         _game.CatchUpMonths();
@@ -1258,7 +1259,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                                && her.Id != _player.SpouseId
             ? (her.Name, her.Personality) : null;
         string? line = StrangerTalk.Pick(culture, _cultureNo, _player.RumorsOf(_cityId), woman,
-                                         () => TavernRumors.Of(culture, dice), dice);
+                                         () => TavernRumors.Of(culture, dice, inn), dice);
         return new StrangerSeat(culture, line);
     }
 
@@ -1364,7 +1365,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
             int at = ChoiceDialog.Ask(_view, "", rows, "떠난다");
             if (at == duelAt) Duel(who, face);
-            else if (at == hearAt) HearFrom(who, face);
+            else if (at == hearAt) HearFrom(who, face, inn);
             return;
         }
 
@@ -1397,7 +1398,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (at == duelAt) { Duel(who, face); return; }
             if (at == hearAt)
             {
-                HearFrom(who, face);
+                HearFrom(who, face, inn);
                 heard = true;
                 continue;
             }
@@ -1410,11 +1411,12 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 대본 26 0A)이 살아 있으면 그것을, 없으면 <b>그 사람 고향 문화권의 소문</b>을 한 마디 한다
     /// (<c>0x004A4790</c> → <c>0x004A4630</c> 갈래 0 → <c>0x004A3740</c>).
     /// </summary>
-    private void HearFrom(TavernRoster.Person who, uint[]? face)
+    /// <param name="inn">여관에서 들었는지 — 소문 벌의 술집 전용 앞 줄을 뺀다(<see cref="TavernRumors.Of"/>).</param>
+    private void HearFrom(TavernRoster.Person who, uint[]? face, bool inn = false)
     {
         _game.CatchUpMonths();
         TalkDialog.Say(_view, face, "", _player.PersonLineOf(who.Index)
-                                        ?? TavernRumors.Of(HomeCulture(who.Index), _game.Random));
+                                        ?? TavernRumors.Of(HomeCulture(who.Index), _game.Random, inn));
     }
 
     /// <summary>

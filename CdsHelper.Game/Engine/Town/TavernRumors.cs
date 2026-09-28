@@ -35,12 +35,28 @@ public static class TavernRumors
     public static int StrangerFace(int culture) =>
         culture >= 0 && culture < SetOf.Length ? FaceOfSet[SetOf[culture]] : 240;
 
-    /// <summary>그 문화권 사람이 건네는 소문 한 마디. 문화권이 범위 밖이면 유럽 것이다.</summary>
-    public static string Of(int culture, Random random)
+    /// <summary>
+    /// 그 문화권 사람이 건네는 소문 한 마디. 문화권이 범위 밖이면 유럽 것이다.
+    /// </summary>
+    /// <remarks>
+    /// 줄을 고르는 <c>0x004A36D0</c> 은 <b>건물</b>을 본다 — 술집(4)이면 벌 전체에서 굴리고, 그 밖(여관)이면
+    /// 앞의 <see cref="TavernOnly"/> 줄을 빼고 굴린다(<c>rand(전체 − k) + k</c>, 표 <c>0x00572878</c>).
+    /// 벌마다 앞 줄이 「한잔 마시게나」 같은 술자리 말이라서다. 건물 번호는 무명 자리를 지을 때
+    /// (<c>0x004A1B56</c>)와 인물에게 들을 때(<c>0x004A483F</c> · <c>0x004A4E9A</c>) 모두 vtbl+0x48 로 넘어온다.
+    /// </remarks>
+    /// <param name="inn">여관 손님인지. 참이면 술집에서만 하는 앞 줄을 뺀다.</param>
+    public static string Of(int culture, Random random, bool inn = false)
     {
-        var lines = Sets[culture >= 0 && culture < SetOf.Length ? SetOf[culture] : 0];
-        return lines[random.Next(lines.Length)];
+        int set = culture >= 0 && culture < SetOf.Length ? SetOf[culture] : 0;
+        var lines = Sets[set];
+        int skip = inn ? Math.Min(TavernOnly[set], lines.Length - 1) : 0;
+        return lines[random.Next(lines.Length - skip) + skip];
     }
+
+    /// <summary>
+    /// 갈래마다 <b>술집에서만</b> 나오는 앞 줄 수 — 표 <c>0x00572878</c> 의 (전체, k) 에서 k 다.
+    /// </summary>
+    private static readonly int[] TavernOnly = [1, 2, 4, 2, 2, 1, 2, 1, 2];
 
     /// <summary>갈래 아홉 벌. 차례는 <see cref="SetOf"/> 가 가리키는 그대로다.</summary>
     private static readonly string[][] Sets =
