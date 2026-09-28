@@ -605,7 +605,7 @@ public sealed class SeaBattle
                             _marks[cx, cy] |= 4;
                         }
 
-                plan = BestTowardEdge(ship, avoidDanger: true) ?? BestTowardEdge(ship, avoidDanger: false);
+                plan = TowardEdge(ship);
 
                 for (int x = 0; x < Cols; x++)
                     for (int y = 0; y < Rows; y++)
@@ -921,23 +921,64 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 모드 2·5 — 퇴각 가장자리에 가장 가까워지는 길. 바람 0: Y 작게, |X−10| · 1·2: X 크게, |Y−7| ·
-    /// 3: Y 크게, |X−10| · 4·5: X 작게, |Y−7|.
+    /// 모드 2·5 — 퇴각 가장자리에 가장 가까워지는 길(<c>0x0043B336</c>~<c>0x0043B414</c> · <c>0x0043B4A6</c>).
     /// </summary>
-    private List<Move>? BestTowardEdge(Ship ship, bool avoidDanger)
+    /// <remarks>
+    /// 모드 2 는 위험 칸(+4)도 피한다. 한 걸음 수를 다 늘어놓은 뒤 <b>마지막 조합이 실패했고 그때까지 위험 칸에
+    /// 한 번이라도 막혔으면</b> 모드 5(위험 무시)로 바꿔 걸음 수 1 부터 다시 센다 — 그때까지 쥔 가장 좋은 길은 그대로 둔다
+    /// (<c>0x0043B4A6</c>~<c>0x0043B4CD</c>). 새 길은 아래가 참일 때만 갈아 든다(처음 찾은 길은 그냥 든다).
+    /// <code>
+    ///   바람 0     새 Y &lt; 쥔 Y ,  또는 새 Y == 0  이고 |새X−10| &lt; |쥔X−10|
+    ///   바람 1·2   새 X &gt; 쥔 X ,  또는 새 X == 22 이고 |새Y−7|  &lt; |쥔Y−7|
+    ///   바람 3     새 Y &gt; 쥔 Y ,  또는 새 Y == 16 이고 |새X−10| &lt; |쥔X−10|
+    ///   바람 4·5   새 X &lt; 쥔 X ,  또는 새 X == 0  이고 |새Y−7|  &lt; |<b>쥔X</b>−7|    ← 원본이 쥔 X 를 쓴다(0x0043B3FF)
+    /// </code>
+    /// 예전에는 안전한 길이 하나도 없을 때만 위험을 무시했고, 버금 잣대를 가장자리 줄이 아니어도 썼다.
+    /// </remarks>
+    private List<Move>? TowardEdge(Ship ship)
     {
         List<Move>? pick = null;
-        (int, int) best = (int.MaxValue, int.MaxValue);
-        foreach (var (plan, x, y, _) in Paths(ship, avoidReserved: true, avoidDanger: avoidDanger))
+        int bx = 0, by = 0;
+        bool avoidDanger = true, dangerHit = false;
+
+        for (int len = 1; len <= ship.Power; len++)
         {
-            var score = RetreatWind switch
+            bool lastFailed = false;
+            int total = (int)Math.Pow(3, len);
+            for (int code = 0; code < total; code++)
             {
-                0 => (y, Math.Abs(x - 10)),
-                1 or 2 => (-x, Math.Abs(y - 7)),
-                3 => (-y, Math.Abs(x - 10)),
-                _ => (x, Math.Abs(y - 7)),
-            };
-            if (score.CompareTo(best) < 0) { best = score; pick = plan; }
+                var plan = new List<Move>(new Move[len]);
+                int rest = code;
+                for (int i = len - 1; i >= 0; i--) { plan[i] = (Move)(rest % 3); rest /= 3; }
+
+                int x = ship.X, y = ship.Y, way = ship.Way;
+                bool ok = true;
+                foreach (var move in plan)
+                {
+                    way = Turn(way, move);
+                    (x, y) = Step(x, y, way);
+                    if (!OnBoard(x, y) || (_marks[x, y] & 8) != 0 || ShipAt(x, y) is not null) { ok = false; break; }
+                    if (avoidDanger && (_marks[x, y] & 4) != 0) { dangerHit = true; ok = false; break; }
+                }
+                lastFailed = !ok;
+                if (!ok) continue;
+
+                bool better = pick == null || RetreatWind switch
+                {
+                    0 => y < by || (y == 0 && Math.Abs(x - 10) < Math.Abs(bx - 10)),
+                    1 or 2 => x > bx || (x == Cols - 1 && Math.Abs(y - 7) < Math.Abs(by - 7)),
+                    3 => y > by || (y == Rows - 1 && Math.Abs(x - 10) < Math.Abs(bx - 10)),
+                    _ => x < bx || (x == 0 && Math.Abs(y - 7) < Math.Abs(bx - 7)),
+                };
+                if (better) { pick = plan; bx = x; by = y; }
+            }
+
+            if (avoidDanger && lastFailed && dangerHit)
+            {
+                avoidDanger = false;
+                dangerHit = false;
+                len = 0;
+            }
         }
         return pick;
     }
