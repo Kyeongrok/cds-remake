@@ -156,8 +156,7 @@ internal sealed class LandBattleScene : GameWindow
             // ON 이면 깃발 비트 0 을 끄고, OFF 면 켠다. 물리면 그대로다.
             if (order == LandBattle.Animate)
             {
-                int pick = ChoiceDialog.Ask(this, "애니메이션", ["O N", "O F F"]);
-                if (pick >= 0) _quick = pick == 1;
+                Animation();
                 continue;
             }
 
@@ -239,6 +238,20 @@ internal sealed class LandBattleScene : GameWindow
 
     /// <summary>애니메이션을 끄면 한 줄씩 안 세우고 몰아서 낸다.</summary>
     private bool _quick;
+
+    /// <summary>
+    /// 「애니메이션」 차림표 — 「O N」·「O F F」 두 줄뿐이다(<c>0x00449190</c>).
+    /// </summary>
+    /// <remarks>
+    /// <c>0x004878A0(0x00549CD8, 0x0056D470, 0, 0, 0)</c> 로 띄운다 — 셋째 인자의 낮은 바이트가 0 이라
+    /// 「취소」 줄이 없다(2·3 이어야 <c>0x005199D4</c> 「취소」를 붙인다, <c>0x004860E8</c>). 물리면 그대로다.
+    /// 예전에는 「취소」 줄이 붙었다.
+    /// </remarks>
+    private void Animation()
+    {
+        int pick = ChoiceDialog.Pick(this, "애니메이션", ["O N", "O F F"]);
+        if (pick >= 0) _quick = pick == 1;
+    }
 
     /// <summary>
     /// 병사수를 찍을 때인지 — <b>차림표가 떠 있는 동안만</b> 참이다.
