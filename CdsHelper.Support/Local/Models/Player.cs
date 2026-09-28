@@ -2820,8 +2820,13 @@ public sealed class Player
     public int LoadedBarrels => Supply.All.Sum(s => SupplyOf(s.Kind)) + CargoCount;
 
     /// <summary>
-    /// 지금 실은 무게 — 보급품과 <b>대포</b>를 센다. 소지품 무게는 아직 안 센다.
+    /// 지금 실은 무게 — 보급품과 <b>대포</b>와 교역품을 센다.
     /// </summary>
+    /// <remarks>
+    /// 원본 적재 무게(<c>0x00474330</c>)는 짐 여덟 칸 x 교역품 표 <c>+0x7C</c> 에 함대 <c>+0x34~+0x40</c>
+    /// 보급품 넷만 더한다 — <b>소지품은 세지 않는다</b>. 아이템 표(<c>0x004FD558</c>, 28바이트)에는
+    /// 무게 칸이 아예 없다. 한도(<c>0x004743F0</c>)도 배마다의 중량(<c>0x0044C8B0</c>)을 더할 뿐이다.
+    /// </remarks>
     public int LoadedWeight =>
         Supply.All.Sum(s => SupplyOf(s.Kind) * s.UnitWeight) + GunWeight + CargoWeight;
 
