@@ -216,7 +216,8 @@ public static class GameSave
         Dictionary<int, bool>? ScriptedCities = null,
         List<int>? LastSupply = null,
         int? FleetCity = null, bool? SkipsCumulative = null, bool? Suspended = null,
-        Dictionary<int, string>? Scooped = null, int? Drinking = null);
+        Dictionary<int, string>? Scooped = null, int? Drinking = null,
+        Dictionary<int, DateTime>? ScoopedOn = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -324,6 +325,8 @@ public static class GameSave
                             Hidden: [.. player.HiddenDiscoveries],
                             // 누적 캐릭터가 먼저 세상에 알려 버린 발견물(발견물 칸 2).
                             Scooped: player.Scooped.ToDictionary(e => e.Key, e => e.Value),
+                            // 남이 발표한 연월(칸 2). 이 칸 앞의 세이브는 그 줄이 연표에 안 선다.
+                            ScoopedOn: player.ScoopedDates.ToDictionary(e => e.Key, e => e.Value),
                             // 주량 — 세대교체로만 바뀐다. 이 칸 앞의 세이브는 0 으로 연다.
                             Drinking: player.Drinking,
                             Traces: [.. player.Traces],

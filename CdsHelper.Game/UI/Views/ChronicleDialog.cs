@@ -23,7 +23,8 @@ namespace CdsHelper.Game.UI.Views;
 ///   단추   앞장(360,416) · 다음장(448,416) · 취소(536,416)
 /// </code>
 /// <b>줄을 고르는 규칙이 갈래마다 다르다</b>(<c>0x00424590</c> · <c>0x004246C0</c>).
-/// 연표는 <b>보고까지 끝낸</b> 발견물만 싣고 「발견」과 「보고」 두 줄을 내며, 항해일지는 발견한 것을 다 싣고
+/// 연표는 <b>세상에 알려진</b>(사람 칸 2 가 찬) 발견물을 다 싣는다 — 알린 사람이 제독이면 「발견」과 「보고」
+/// 두 줄, 남(누적 캐릭터)이면 그 사람 이름으로 「보고」 한 줄이고 글색이 다르다. 항해일지는 발견한 것을 다 싣고
 /// 보고한 것에 「보고」 줄을 더한다. 읽고 넘기는 것뿐이라 날짜도 소지금도 움직이지 않는다.
 /// </remarks>
 public sealed class ChronicleDialog : GameWindow
@@ -39,7 +40,14 @@ public sealed class ChronicleDialog : GameWindow
     /// <param name="Who">한 사람 이름. 항해일지면 빈 글이다.</param>
     /// <param name="What">발견물 이름.</param>
     /// <param name="Reported">보고 줄인지(<c>보고했다</c>). 아니면 <c>발견했다</c>.</param>
-    public readonly record struct Row(DateTime When, string Who, string What, bool Reported);
+    /// <param name="Mine">제독 제 줄인지. 남(누적 캐릭터)이 보고한 줄이면 글색이 다르다.</param>
+    public readonly record struct Row(DateTime When, string Who, string What, bool Reported, bool Mine = true);
+
+    /// <summary>
+    /// 줄 글색(공용 색표) — 사람 이름이 제독이면 <c>0x49</c>, 남이면 <c>0x3B</c> 다
+    /// (<c>0x00423F79</c> 의 strcmp → <c>sbb/and 0xE/add 0x3B</c>).
+    /// </summary>
+    private const byte MineColor = 0x49, OthersColor = 0x3B;
 
     private readonly List<Row> _rows;
     private readonly Canvas _sheet = new() { Width = PanelW, Height = PanelH };
@@ -124,8 +132,9 @@ public sealed class ChronicleDialog : GameWindow
             year = row.When.Year;
             month = row.When.Month;
 
-            Put(when, DateX, y, 90);
-            Put(Words(row), TextX, y, TextW);
+            byte color = row.Mine ? MineColor : OthersColor;
+            Put(when, DateX, y, 90, color);
+            Put(Words(row), TextX, y, TextW, color);
         }
 
         // 앞장은 첫 쪽이 아닐 때만, 다음장은 뒤에 쪽이 남았을 때만 눌린다(0x00424437 ~ 0x0042446A 의 켜짐 비트 4).
@@ -141,10 +150,10 @@ public sealed class ChronicleDialog : GameWindow
         return row.Who.Length == 0 ? what : $"{row.Who}{GameUi.Josa(row.Who, "이", "가")} {what}";
     }
 
-    private void Put(string text, double x, double y, double width)
+    private void Put(string text, double x, double y, double width, byte color)
     {
         if (text.Length == 0) return;
-        var label = new GameUi.GameLabel(GameFont.BlackColor, GameUi.ItemTextHeight) { Text = text };
+        var label = new GameUi.GameLabel(color, GameUi.ItemTextHeight) { Text = text };
         var box = new Border { Width = width, Child = label, HorizontalAlignment = HorizontalAlignment.Left };
         Canvas.SetLeft(box, x);
         Canvas.SetTop(box, y);
@@ -163,8 +172,13 @@ public sealed class ChronicleDialog : GameWindow
     }
 
     /// <summary>
-    /// 자택의 <b>연표</b> — 보고까지 끝낸 발견물만, 발견 줄과 보고 줄을 함께 낸다(<c>0x00424590</c>).
+    /// 자택의 <b>연표</b> — 세상에 알려진 발견물을 싣는다(<c>0x00424590</c>).
     /// </summary>
+    /// <remarks>
+    /// 게임은 발견물마다 사람 칸 2(알린 사람)가 차 있으면 싣는다. 그 이름이 제독이면 「발견」 줄을 먼저 넣고,
+    /// 「보고」 줄은 누가 알렸든 넣는다(<c>0x004245FA</c> ~ <c>0x0042466E</c>). 남이 알린 것은
+    /// <see cref="Player.Scooped"/> 다 — 그 날짜를 안 적던 세이브에서 온 것은 줄을 세울 수 없어 뺀다.
+    /// </remarks>
     public static void ShowChronicle(Window owner, Player player, DiscoveryTable? table)
     {
         var rows = new List<Row>();
@@ -175,6 +189,11 @@ public sealed class ChronicleDialog : GameWindow
             if (player.FoundDateOf(id) is { } found)
                 rows.Add(new Row(found, player.Name, name, Reported: false));
             rows.Add(new Row(told, player.Name, name, Reported: true));
+        }
+        foreach (var (id, who) in player.Scooped)
+        {
+            if (player.HasAnnounced(id) || player.ScoopedOn(id) is not { } told) continue;
+            rows.Add(new Row(told, who, NameOf(table, id), Reported: true, Mine: false));
         }
         Open(owner, rows, "연표");
     }
