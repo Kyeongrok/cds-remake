@@ -801,22 +801,20 @@ public sealed class SeaBattle
     /// <summary>
     /// 모드 3 — 끝 칸에서 노릴 자리가 <b>뱃전</b> 거리 2~사거리에 들어오는 첫 길을 고른다
     /// (<c>0x0043AF72</c>~<c>0x0043B1E6</c>). 판정은 <see cref="AimInBroadside"/> 다.
-    /// 없으면 노릴 자리 쪽으로 가장 가까이 가는 길이다.
     /// </summary>
+    /// <remarks>
+    /// 그런 길이 없으면 <b>아무것도 적지 않는다</b> — 모드 3 은 가장 좋은 길을 따로 쥐지 않고 그냥 끝난다
+    /// (<c>0x0043B1E6</c> → <c>0x0043B4F6</c>). 걸음 수는 턴 끝(<c>0x0043D80C</c>)에 비워 둔 0 이고, 노릴 자리
+    /// <c>+0x8C4</c> 가 채워져 있어 선회 굴림(<c>0x0043BC92</c>)도 안 탄다 — 그 배는 가만히 선다.
+    /// 예전에는 노릴 자리에 가장 가까워지는 길로 다가갔다.
+    /// </remarks>
     private List<Move>? Broadside(Ship ship, int ax, int ay)
     {
         int range = RangeOf(ship.Gun);
-        List<Move>? closest = null;
-        int best = int.MaxValue;
-
         foreach (var (plan, x, y, way) in Paths(ship, avoidReserved: true, avoidDanger: false))
-        {
             for (int d = 2; d <= range; d++)
                 if (AimInBroadside(x, y, way, ax, ay, d)) return plan;
-            int dist = BfsDistance(x, y, ax, ay);
-            if (dist < best) { best = dist; closest = plan; }
-        }
-        return closest;
+        return null;
     }
 
     /// <summary>
