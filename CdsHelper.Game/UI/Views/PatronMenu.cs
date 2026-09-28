@@ -433,12 +433,25 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             _game.Sponsors?.FindByName(patron.Name)?.Closeness ?? DefaultCloseness,
             verdict);
 
-        // 재력 판정(0x004AF169) — 견주는 것은 <b>지갑</b>이다. 낼 돈이 모자라도 스무 닢만
-        // 넘으면 있는 만큼으로 깎아 내주고, 그마저 없으면 물린다(0x004AF264).
+        bool keen = verdict is Persuasion.Verdict.Interested;
+
+        // 재력 판정(0x004AF113) — 후원자 재력(표 +0x2C, x10000 — patrons.json 의 wealth 가 그 값이다)이
+        // 낼 돈에 못 미치면 <b>두말없이 받아 준 때가 아니면</b> 물린다(0x004AF136 이 판정 0 이면 건너뛴다).
+        if (patron.Wealth < funds && !keen)
+        {
+            // 0x00546930 · 0x00546958 · 0x00546998
+            Say(Pick3("흠, 원조해 주고 싶은 마음은 많지만.",
+                      "원조해 드리고 싶지만, 그렇게 큰 모험은, 저로서는 도저히...",
+                      "가능한 한 원조해 주고 싶지만, 너무 이야기가 엄청나네."));
+            return;
+        }
+
+        // 지갑 판정(0x004AF169) — 낼 돈이 지갑(+0x24)보다 크면 <b>마지못해 받은 때는 늘 물리고</b>
+        // (0x004AF178), 두말없이 받은 때만 지갑이 스무 닢을 넘으면 있는 만큼으로 깎아 준다(0x004AF183).
         int purse = _player.PurseOf(patron.Name, patron.Wealth);
         if (funds > purse)
         {
-            if (purse <= Palace.PurseFloor)
+            if (!keen || purse <= Palace.PurseFloor)
             {
                 Say(Pick3("흠, 원조 못 할 것은 없지만 요즘 지출이 많아서. 다른 이야기를 가지고 오는 것이 좋겠네.",
                           "자금을 대 드리고 싶지만..., 아무래도..., 안됐지만 힘이 되드릴 수 없군요.",
