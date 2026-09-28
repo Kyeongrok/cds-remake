@@ -898,8 +898,10 @@ public sealed class LandBattle
         if (Sort == Town) return false;     // 0x004479B0 은 갈래 2·4 만 닫는다
 
         // 몫이 0 이하여도 닫지 않는다 — 0 으로 눌러 두고 굴리므로 늘 1% 는 열린다(0x0044799B).
-        int odds = Math.Max(0, _me.AbilityOf(Ability.Luck) * 3 / 10
-                             - _me.AbilityOf(Ability.Might) + FoeMight);
+        // 능력은 셋 다 0x00446FF0 으로 읽는다 — 아군은 제독·부관 가운데 큰 쪽 + 1, 적은 대장 + 1 이다.
+        // 예전에는 제독 값만 +1 없이 보아 부관이 세도 덜 닫혔다.
+        int luck = Math.Max(_me.AbilityOf(Ability.Luck), _aide?.Luck ?? 0) + 1;
+        int odds = Math.Max(0, luck * 3 / 10 - MightAt(0) + MightAt(FirstFoe));
         return dice.Next(100) <= odds;
     }
 
