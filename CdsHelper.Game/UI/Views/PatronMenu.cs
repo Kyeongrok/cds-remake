@@ -239,12 +239,20 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         // 교회는 들머리에 관문이 하나 더 있다(0x004AE1F0 — 건물 코드 3 일 때만). 아직 못 만난 후원자
         // (비트 15)면 안목 x 80 을 명성과 견주고(0x0044E740(0x50)), 모자라면 교회 사람이 돌려보낸다.
+        // 판정을 내면 설득 때와 같은 명성 판정 그림(5번)이 돈다(0x0044E78A → 0x004A63A0) — 넘든 못 넘든 돈다.
         if (church && !_player.HasMet(patron.Name) && !(sponsor is { } met && _player.HasMet(met.Name))
-            && (sponsor?.Eye ?? patron.Fame / 70) * ChurchEye > _player.Fame)
+            && ChurchGateFails())
         {
             TalkDialog.Say(_view, _game.SpeakerFace(ChurchCode, _culture), "",
                            $"{shown}님은 바쁘셔서 만나실 수 없습니다.");
             return;
+        }
+
+        bool ChurchGateFails()
+        {
+            bool pass = (sponsor?.Eye ?? patron.Fame / 70) * ChurchEye <= _player.Fame;
+            (_view as CityPicView)?.PlayFameCheck(pass);
+            return !pass;
         }
 
         // 기분이 상한 후원자는 문간에서 돌려보낸다(0x004AEFC1, 후원자 비트 14) — 설득을 물렸거나
