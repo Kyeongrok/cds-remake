@@ -1971,6 +1971,13 @@ public sealed class ShipMapWindow : Window
 
         StartMap(fresh: true);
         OpenHome();
+
+        // 다 지으면 곧바로 적어 둔다(0x0045F76B → 0x00478E80) — 저장하지 않고 끝내도 다음 NEW GAME 이
+        // 「모험 중단」을 묻고 LOAD GAME 으로 그 사람을 다시 부를 수 있다.
+        // 모항에 못 앉혔으면(도시 표를 못 읽었으면) 적을 자리가 없어 건너뛴다.
+        if (_game.Player.CityId < 0) return;
+        string error = _game.Save();
+        if (error.Length > 0) Say(error);
     }
 
     /// <summary>
