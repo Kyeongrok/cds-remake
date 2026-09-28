@@ -83,6 +83,9 @@ public sealed class DisevRunner
     /// <summary>지금 들어와 있는 건물 코드. 모르면 -1 — <see cref="DisevCall.InBuilding"/> 이 이것을 본다.</summary>
     private readonly int _building;
 
+    /// <summary>대본을 부른 사건 — 조건 17 08 · 17 10 · 42 10 · 65 가 이것을 본다.</summary>
+    private readonly DisevEvent _event;
+
     /// <summary>
     /// 아직 안 낸 DSTILL 그림 자리. 다음 대사와 <b>함께</b> 낸다.
     /// </summary>
@@ -166,13 +169,18 @@ public sealed class DisevRunner
     /// <summary>대본을 여기서 멈추라는 뜻으로 <see cref="Step"/> 이 내는 값.</summary>
     private const int Stop = int.MinValue;
 
-    private DisevRunner(Window owner, Game game, string cache, int building)
+    private DisevRunner(Window owner, Game game, string cache, DisevEvent ev)
     {
         _owner = owner;
         _game = game;
         _cache = cache;
-        _building = building;
+        _event = ev;
+        _building = ev.Building;
     }
+
+    /// <summary>건물 코드만 아는 옛 부르기 — 건물이 있으면 건물에 들어선 사건, 없으면 도시에 들어선 사건이다.</summary>
+    private static DisevEvent EventOf(Game game, int building) =>
+        building >= 0 ? DisevEvent.EnterBuilding(game.Player.CityId, building) : DisevEvent.EnterCity(game.Player.CityId);
 
     /// <summary>
     /// 그 발견물의 대본을 돌린다. 대본이 없으면 false — 부른 쪽이 예전처럼 한 줄만 낸다.
@@ -192,7 +200,11 @@ public sealed class DisevRunner
     /// <param name="cache">돌릴 책 이름(<see cref="DisevBook.Cache"/>).</param>
     /// <param name="partIndex">파트 번호 — 발견 이벤트면 발견물 번호, 이야기책이면 장면 번호다.</param>
     /// <param name="building">지금 들어와 있는 건물 코드. 모르면 -1.</param>
-    public static bool Run(Window owner, Game game, string cache, int partIndex, int building)
+    public static bool Run(Window owner, Game game, string cache, int partIndex, int building) =>
+        Run(owner, game, cache, partIndex, EventOf(game, building));
+
+    /// <summary>그 책의 그 파트를 <b>그 사건으로</b> 돌린다 — 건물 명령 고름(갈래 4) 따위.</summary>
+    public static bool Run(Window owner, Game game, string cache, int partIndex, DisevEvent ev)
     {
         LastEndedInGameOver = false;
         LastGameOverPicture = GameOverDialog.MutinyLost;
@@ -207,7 +219,7 @@ public sealed class DisevRunner
         if (raw.Length == 0) return false;
         if (DisevPart.Parse(raw, out _) is not { } part) return false;
 
-        var runner = new DisevRunner(owner, game, cache, building);
+        var runner = new DisevRunner(owner, game, cache, ev);
         int body = runner.PickBody(part);
         if (body < 0) return false;
 
@@ -223,7 +235,11 @@ public sealed class DisevRunner
     /// 고르는 잣대는 <see cref="PickBody"/> 와 같다 — 둘 다 맞는 슬롯이 없으면 물러서지 않는다
     /// (<c>0x00407EFD</c>). 다만 이쪽은 본문을 돌리지 않고 <b>될지 안 될지만</b> 낸다.
     /// </remarks>
-    public static bool IsEligible(Game game, string cache, int partIndex, int building)
+    public static bool IsEligible(Game game, string cache, int partIndex, int building) =>
+        IsEligible(game, cache, partIndex, EventOf(game, building));
+
+    /// <summary><see cref="IsEligible(Game, string, int, int)"/> 을 그 사건으로 묻는다.</summary>
+    public static bool IsEligible(Game game, string cache, int partIndex, DisevEvent ev)
     {
         if (Open(game.Directory, cache) is not { } book) return false;
         if (partIndex < 0 || partIndex >= book.Count) return false;
@@ -232,7 +248,7 @@ public sealed class DisevRunner
         if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return false;
 
         // 조건만 묻고 아무 것도 그리지 않으므로 창이 없어도 된다 — Step()·Speak() 은 안 부른다.
-        var runner = new DisevRunner(null!, game, cache, building);
+        var runner = new DisevRunner(null!, game, cache, ev);
         foreach (var slot in part.Slots)
         {
             var (from, to) = part.ChunkRange(slot.Condition);
@@ -263,7 +279,7 @@ public sealed class DisevRunner
         var raw = book.Part(partIndex);
         if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return null;
 
-        var runner = new DisevRunner(null!, game, cache, building);
+        var runner = new DisevRunner(null!, game, cache, EventOf(game, building));
         var slots = new List<SlotView>();
         foreach (var slot in part.Slots)
         {
@@ -476,17 +492,27 @@ public sealed class DisevRunner
             case DisevCall.YearAtMost: return I("Year") >= year;                     // 39 16 (0x0040AAF0)
             case DisevCall.YearIs: return year == I("Year");                         // 1C 16 (0x00409704)
             case DisevCall.YearBetween: return year >= I("From") && year <= I("To");
-            case DisevCall.InCity: return player.CityId == I("City");                // 17 08 (0x00409074)
+            // 17 08 — 사건이 적은 도시와 견준다(0x00407562): 갈래 1·2 는 맥락 +0x14, 3 은 +0x18, 맥락이 없으면
+            // 지금 도시(제독 vt+0x2C). 갈래 4·5(건물 명령·후원자 건물 나섬)에서는 늘 거짓이다.
+            case DisevCall.InCity:
+                return _event.Kind is DisevEvent.CommandKind or DisevEvent.SponsorLeftKind
+                    ? false
+                    : (_event.City >= 0 ? _event.City : player.CityId) == I("City");
             case DisevCall.InNation: return player.Nation == I("Nation");            // 17 00
-            case DisevCall.InBuilding: return _building == I("Building");            // 17 10
+            // 17 10 — 건물에 들어선 사건(갈래 3)의 건물(+0x1C)일 때만 참이다(0x004075CF).
+            case DisevCall.InBuilding: return _event.Kind == DisevEvent.BuildingKind && _building == I("Building");
             case DisevCall.NotInCity: return player.CityId != I("City");             // 41 08 (0x00407C7E)
             // 41 10 — 건물에 들어선 사건이면 그 건물이 아닐 때 참, 딴 사건(도시에 들어섬 따위)이면 거짓(0x00407CE8)
-            case DisevCall.NotInBuilding: return _building >= 0 && _building != I("Building");
-            // 건물 명령 고름(갈래 4)·후원자 건물 나섬(갈래 5) 사건은 아직 안 올린다 — 그 사건이 아니니 거짓이다.
+            case DisevCall.NotInBuilding: return _event.Kind == DisevEvent.BuildingKind && _building != I("Building");
             case DisevCall.HasFleet: return player.Ships.Count > 0;                   // 59 (0x00407DA9)
+            // 42 10 [건물] 21 [명령] — 건물 차림표에서 그 명령을 고른 사건(갈래 4)이고 건물(+0x14)·명령(+0x18)이
+            // 같으면 참(0x00407D31). 초심자 이야기가 설득·출항·외출 앞에서 이것으로 설명하고 단계를 올린다 —
+            // 예전에는 이 사건을 안 올려 이야기가 파트 4 에서 멈췄다.
             case DisevCall.BuildingCommand:
+                return _event.Kind == DisevEvent.CommandKind && _building == I("Building") && _event.Command == I("Command");
+            // 65 — 후원자 건물을 나서는 사건(갈래 5, 0x0044E72F)이면 참(0x00407E7C).
             case DisevCall.SponsorVisitEnded:
-                return false;
+                return _event.Kind == DisevEvent.SponsorLeftKind;
             case DisevCall.InCulture:                                                // 17 19
                 return player.CityId >= 0 && _game.CityRows?.CultureOf(player.CityId) == I("Culture");
             case DisevCall.PersonUnmet:                                              // 37 0D
@@ -1765,4 +1791,33 @@ public sealed class DisevRunner
 
     /// <summary>부하 첫 자리의 얼굴. 판이 들고 있는 것을 그대로 쓴다.</summary>
     private uint[]? MateFace() => _game.AideFace;
+}
+
+/// <summary>
+/// 이야기 대본을 부른 사건 — 이야기 관리자(<c>0x00629898</c>)가 맥락 <c>+0x00</c> 에 적는 갈래와 그 값들.
+/// </summary>
+/// <remarks>
+/// <code>
+///   갈래 1  도시에 들어섬      0x004AB4D0 ← 0x00492971   +0x14 도시
+///   갈래 2  도시를 나섬        0x004AB560 ← 0x0048EBA8   +0x14 나선 도시
+///   갈래 3  건물에 들어섬      0x004AB5A0 ← 0x004A2625    +0x18 도시 · +0x1C 건물
+///   갈래 4  건물 명령을 고름   0x004AB5F0 ← 0x004A248C    +0x14 건물 · +0x18 명령 줄
+///   갈래 5  후원자 건물을 나섬 0x004AB640 ← 0x0044E72F
+/// </code>
+/// 대본이 결과 1(<c>4D</c>)로 끝나면 부른 쪽이 참을 받는다(<c>0x004AB4AC</c>) — 건물에 안 들고, 명령을 안 한다.
+/// </remarks>
+/// <param name="Kind">갈래(1~5).</param>
+/// <param name="City">도시. 모르면 −1.</param>
+/// <param name="Building">건물 코드. 모르면 −1.</param>
+/// <param name="Command">고른 명령 줄(갈래 4). 모르면 −1.</param>
+/// <param name="OnLand">뭍에 올라 있는지(<c>0x005B61B4</c>) — 조건 5F · 60 이 본다.</param>
+public readonly record struct DisevEvent(int Kind, int City = -1, int Building = -1, int Command = -1, bool OnLand = false)
+{
+    public const int CityKind = 1, LeftCityKind = 2, BuildingKind = 3, CommandKind = 4, SponsorLeftKind = 5;
+
+    public static DisevEvent EnterCity(int city) => new(CityKind, city);
+    public static DisevEvent LeaveCity(int city, bool onLand) => new(LeftCityKind, city, OnLand: onLand);
+    public static DisevEvent EnterBuilding(int city, int building) => new(BuildingKind, city, building);
+    public static DisevEvent PickCommand(int building, int command) => new(CommandKind, Building: building, Command: command);
+    public static DisevEvent LeaveSponsor(int building) => new(SponsorLeftKind, Building: building);
 }

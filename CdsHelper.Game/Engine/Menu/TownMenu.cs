@@ -38,8 +38,20 @@ internal static class TownMenu
     {
         var items = TownWorks.LinesOf(facility, state);
 
+        // 줄을 고르면 명령을 하기 전에 이야기 대본의 「건물 명령 고름」 사건을 먼저 올린다(0x004A248C →
+        // 0x004AB5F0(건물, 줄)). 대본이 결과 1 로 끝나면 그 명령은 안 한다(0x004A2493).
         return new GameMenu(title, null,
-            [.. items.Select(item => (item, ActionFor(facility, item, code, teachMask, patron, screen)))]);
+            [.. items.Select((item, row) => (item, Guarded(ActionFor(facility, item, code, teachMask, patron, screen), code, row, screen)))]);
+    }
+
+    private static Action? Guarded(Action? action, int code, int row, ITownScreen screen)
+    {
+        if (action == null) return null;
+        return () =>
+        {
+            if (screen.StoryCommand(code, row)) return;
+            action();
+        };
     }
 
     /// <summary>
