@@ -1341,7 +1341,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // <b>계약 기한이 아직 남아 있어야</b> 한다. 기한을 넘겼으면 모조품은 절대 안 봐 준다.
         bool mayForgive = inTime && SponsorFortune(sponsorRow)[Palace.MercyFortune] > 0;
 
-        if (mayForgive && Palace.CounterfeitForgiven(_player.ClosenessOf(patron.Name), luck, _random))
+        bool pardoned = mayForgive && Palace.CounterfeitForgiven(_player.ClosenessOf(patron.Name), luck, _random);
+        // 봐 줄 여지가 있을 때만 굴리고, 그 결과를 동전으로 보인다(0x00412336 → 0x004A6380).
+        if (mayForgive) EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, pardoned);
+        if (pardoned)
         {
             // 0x004123FA — 봐줄 때의 말투 셋(0x00530BC8 벌).
             TalkDialog.Say(_view, FaceOf(patron), "", Pick3(
