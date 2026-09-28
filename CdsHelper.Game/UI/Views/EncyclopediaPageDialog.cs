@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -196,12 +196,18 @@ public sealed class EncyclopediaPageDialog : GameWindow
             Ink($"발견년  {found.Year,4}년 {found.Month}월", FoundX, FoundY);
     }
 
-    /// <summary>「삽화」 판 — 못 누르면 흐리다.</summary>
+    /// <summary>
+    /// 「삽화」 단추 — 게임 띠 단추다(<c>0x00462FEF</c> 가 <c>0x00413450</c> 으로 48x24 를 짓는다).
+    /// 못 누르면 흐리다(켜짐 비트 4, <c>0x00463073</c>). 띠는 제 크기로 짓고 창 배율만큼 키운다.
+    /// </summary>
     private void AddPlate(Action? run)
     {
-        var plate = GameUi.PushButton("삽화", run, PlateWidth * _scale);
-        plate.Margin = new Thickness(0);
-        plate.Height = PlateHeight * _scale;
+        var plate = new GameButton("삽화", run ?? (() => { }), width: PlateWidth)
+        {
+            Margin = new Thickness(0),
+            On = run != null,
+            LayoutTransform = new System.Windows.Media.ScaleTransform(_scale, _scale),
+        };
         Canvas.SetLeft(plate, PlateX * _scale);
         Canvas.SetTop(plate, PlateY * _scale);
         Panel.SetZIndex(plate, 5);
