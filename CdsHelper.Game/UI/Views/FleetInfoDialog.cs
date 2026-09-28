@@ -50,7 +50,7 @@ internal sealed class FleetInfoDialog : InfoDialog
     protected override Brush BoardEdge => SteelEdge;
 
     private FleetInfoDialog(Player player, string coord, ItemTable? items, Func<Player.Cargo, string>? cargoName,
-                            Action<Window, Player.Cargo>? cargoInfo)
+                            Action<Window, Player.Cargo>? cargoInfo, Engine.Game? game = null)
     {
         var rows = new StackPanel();
 
@@ -65,7 +65,7 @@ internal sealed class FleetInfoDialog : InfoDialog
         {
             int at = i;
             ships.Children.Add(new GameButton($"{player.Ships[at].Name}호",
-                                              () => ShipInfoDialog.Show(this, player, at, items))
+                                              () => ShipInfoDialog.Show(this, player, at, items, game))
             {
                 Margin = default,
             });
@@ -154,8 +154,8 @@ internal sealed class FleetInfoDialog : InfoDialog
     /// <param name="cargoInfo">짐 판에서 교역품 단추를 눌렀을 때 — 그 교역품 창(그림·분류·개체중량)을 띄운다.</param>
     public static void Show(Window owner, Player player, string coord = "",
                             ItemTable? items = null, Func<Player.Cargo, string>? cargoName = null,
-                            Action<Window, Player.Cargo>? cargoInfo = null) =>
-        new FleetInfoDialog(player, coord, items, cargoName, cargoInfo) { Owner = owner }.ShowDialog();
+                            Action<Window, Player.Cargo>? cargoInfo = null, Engine.Game? game = null) =>
+        new FleetInfoDialog(player, coord, items, cargoName, cargoInfo, game) { Owner = owner }.ShowDialog();
 
     /// <summary>
     /// 「짐」 판 — 보급물자 한 줄과 교역품일람(<c>0x0046F97D</c> ~ <c>0x0046FC6D</c>).

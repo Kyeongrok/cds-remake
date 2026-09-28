@@ -53,7 +53,7 @@ internal sealed class ShipInfoDialog : InfoDialog
     /// <inheritdoc/>
     protected override Brush BoardEdge => SteelEdge;
 
-    private ShipInfoDialog(Player player, int at)
+    private ShipInfoDialog(Player player, int at, Engine.Game? game)
     {
         var ship = player.Ships[at];
         var rows = new StackPanel();
@@ -74,9 +74,12 @@ internal sealed class ShipInfoDialog : InfoDialog
         // 함대정보 짐용량과 같은 잣대다 — 포탑이 먹은 자리를 뺀 것(갈무리: 함대 10/128 · 이 판 128).
         rows.Children.Add(Line("최대용량", $"{ship.UsableCapacity}", valueLeft: ValueLeft + 16));
 
-        // 「영상」은 배 그림을 크게 띄우는 단추다. 그 그림은 아직 옮기지 않아 흐려 둔다.
+        // 「영상」은 그 선체의 동영상 AVI\S%02d_0001.AVI 를 튼다 — 배 레코드 +0x28(선체)을 0x00422C10 에 넘기고
+        // (0x0046D146 ~ 0x0046D15F), 누를 때마다 다시 튼다. 선체 0~7 에만 동영상이 있고 그 밖이면 아무 일도 없다
+        // (0x00422C1B). 못 트는 배(등록해 넣은 배 · 파일 없음)면 단추를 흐려 둔다.
+        string? movie = game == null ? null : MovieOf(game, ship.Hull);
         Build("", rows, BoardWidth, BoardHeight,
-              new GameButton("영상", () => { }) { On = false },
+              new GameButton("영상", () => MoviePlayer.Play(GameUi.RootOf(this), movie, game?.Bgm)) { On = movie != null },
               new GameButton("뒤로", Close));
     }
 
@@ -150,9 +153,17 @@ internal sealed class ShipInfoDialog : InfoDialog
 
     /// <summary>그 배의 판을 연다.</summary>
     /// <param name="items">예전 판이 선수상 이름을 내던 표. 지금 판은 안 쓴다 — 부르는 쪽을 그대로 두려고 남겼다.</param>
-    public static void Show(Window owner, Player player, int at, ItemTable? items = null)
+    /// <param name="game">「영상」 단추가 동영상을 찾고 곡을 멈추는 데 쓴다. 없으면 단추를 흐려 둔다.</param>
+    public static void Show(Window owner, Player player, int at, ItemTable? items = null, Engine.Game? game = null)
     {
         if (at < 0 || at >= player.Ships.Count) return;
-        new ShipInfoDialog(player, at) { Owner = owner }.ShowDialog();
+        new ShipInfoDialog(player, at, game) { Owner = owner }.ShowDialog();
+    }
+
+    /// <summary>그 선체의 동영상 자리 — 조선소와 같은 셈(올려 둔 것 먼저, 없으면 게임 폴더 원본). 없으면 null.</summary>
+    private static string? MovieOf(Engine.Game game, Hull hull)
+    {
+        int n = MovieFiles.Hulls.IndexOf(hull.Name);
+        return n < 0 ? null : MovieFiles.Resolve(game.Directory, MovieFiles.HullStem(n));
     }
 }
