@@ -67,6 +67,31 @@ internal sealed class EffectPopup : Window
         Play(owner, game, EffectAnim.Coin, won, area);
 
     /// <summary>
+    /// 대포 한 장이 머무는 참 — 장 간격이 하트의 다섯 배(10 걸음, <c>0x004A5F5E</c>)다.
+    /// </summary>
+    private static readonly TimeSpan CannonSpan = TimeSpan.FromMilliseconds(700);
+
+    /// <summary>그 벌의 한 장 참.</summary>
+    public static TimeSpan SpanOf(int anim) =>
+        anim == EffectAnim.Coin ? CoinSpan : anim == EffectAnim.Cannon ? CannonSpan : HeartSpan;
+
+    /// <summary>
+    /// 결말 장에서 내는 소리의 WAVE 파트 — 대포만 있다(<c>0x004A6340</c>: 되면 0x2A, 아니면 0x2B). 없으면 -1.
+    /// </summary>
+    public static int SoundOf(int anim, bool won) =>
+        anim == EffectAnim.Cannon ? (won ? 0x2A : 0x2B) - Support.Local.Helpers.WaveBank.FirstSoundId : -1;
+
+    /// <summary>
+    /// 부르는 창에 맞춰 한 벌을 돌린다 — 도시 그림 위면 그림 한가운데(<see cref="CityPicView"/>),
+    /// 아니면 그 창 한가운데에 뜬다. 게임은 굴린 뒤 <c>0x004A6140(벌, 결과, 소리)</c> 으로 돌린다.
+    /// </summary>
+    public static void PlayOn(Window? owner, Engine.Game game, int anim, bool won)
+    {
+        if (owner is CityPicView pic) { pic.PlayMpEffect(anim, won); return; }
+        if (owner != null) Play(owner, game, anim, won, default);
+    }
+
+    /// <summary>
     /// 한 벌을 끝까지 돌리고 닫는다. 그림을 못 읽으면 아무 일도 없다.
     /// </summary>
     public static void Play(Window owner, Engine.Game game, int anim, bool won, Rect area)
@@ -74,7 +99,8 @@ internal sealed class EffectPopup : Window
         if (game.Effects is not { } effects) return;
 
         var popup = new EffectPopup(area) { Owner = owner };
-        var span = anim == EffectAnim.Coin ? CoinSpan : HeartSpan;
+        var span = SpanOf(anim);
+        int sound = SoundOf(anim, won);
         var art = new BitmapSource?[EffectAnim.FrameCount];
 
         popup.Show();
@@ -92,6 +118,8 @@ internal sealed class EffectPopup : Window
                     art[f] = bmp;
                 }
                 popup._image.Source = art[f];
+                // 결말 장으로 넘어가는 참에 소리를 낸다(0x004A5D59 가 깃발을 세우면 0x004A5EB4 가 낸다).
+                if (sound >= 0 && f >= 2) { game.Sfx?.Play(sound); sound = -1; }
                 Wait(span);
             }
         }

@@ -1373,7 +1373,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // <b>계약 기한이 아직 남아 있어야</b> 한다. 기한을 넘겼으면 모조품은 절대 안 봐 준다.
         bool mayForgive = inTime && SponsorFortune(sponsorRow)[Palace.MercyFortune] > 0;
 
-        if (mayForgive && Palace.CounterfeitForgiven(_player.ClosenessOf(patron.Name), luck, _random))
+        bool pardoned = mayForgive && Palace.CounterfeitForgiven(_player.ClosenessOf(patron.Name), luck, _random);
+        // 봐 줄 여지가 있을 때만 굴리고, 그 결과를 동전으로 보인다(0x00412336 → 0x004A6380).
+        if (mayForgive) EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, pardoned);
+        if (pardoned)
         {
             // 0x004123FA — 봐줄 때의 말투 셋(0x00530BC8 벌).
             TalkDialog.Say(_view, FaceOf(patron), "", Pick3(
@@ -1716,6 +1719,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 부관의 「제독, 곤란하게 되었습니다…」(0x00532430)는 여기서 안 나온다 — 감찰관을 처벌했을 때
             // 나서는 말이다(0x0044E6FD 의 +0xBC == 2).
             bool forgiven = Forgiven(patron, overdue);
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, forgiven);   // 봐주는지는 동전이다(0x0044F7E1)
             if (!forgiven)
             {
                 // 용서받지 못하면 곧바로 죄를 묻는다(0x0044F7EB → 0x0044F87D 의 0x0044F100) —
@@ -1878,8 +1882,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             int luck = _player.AbilityOf(Ability.Luck), mind = _player.AbilityOf(Ability.Mind),
                 charm = _player.AbilityOf(Ability.Charm);
 
-            bool mercy = (inTime ? kindness > 0 : kindness == 2)
-                         && dice.Next(inTime ? 150 : 200) < _player.ClosenessOf(patron.Name) + luck + 1;
+            bool rolls = inTime ? kindness > 0 : kindness == 2;
+            bool mercy = rolls && dice.Next(inTime ? 150 : 200) < _player.ClosenessOf(patron.Name) + luck + 1;
+            // 봐줄지를 굴리는 후원자면 동전이 돈다(0x0044F96C) — 굴리지도 않는 후원자는 동전 없이 죄를 묻는다.
+            if (rolls) EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, mercy);
             if (!mercy)
             {
                 // 못 넘으면 죄를 묻는 본체로 간다(0x0044F100) — 친밀도 −20 뒤, 배신 깃발(13)이 서 있으니
@@ -1898,7 +1904,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                         "그렇게 무능하리라고는... 나도 보는 눈이 없어졌나 보군 후~, 어쩔 수 없군. 계약일은 잊어버려 주지\n응? 감찰관은 어떻게 됐나?"));
             string word = ChoiceDialog.Pick(_view, "", ["병에 걸려 죽었다", "도망쳤다"]) == 1 ? "도망쳤다" : "죽었다";
 
-            if (dice.Next(inTime ? 120 : 150) > mind + 1)
+            bool caughtLying = dice.Next(inTime ? 120 : 150) > mind + 1;
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Scribe, !caughtLying);   // 거짓말이 먹히는지는 서기다(0x0044FA19)
+            if (caughtLying)
             {
                 // 「%s%s」는 「죽었다·도망쳤다」에 조사 라면/이라면 을 붙인 것이다(0x0044FB67 의 0x004281B0(말, 9)).
                 TalkDialog.Say(_view, _game.Faces?.TryGetBgra(Inspector.Face, female: false), "",
@@ -1912,7 +1920,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 return;
             }
 
-            if ((sponsor?.Closeness ?? 60) >= dice.Next(luck + 1))
+            bool suspects = (sponsor?.Closeness ?? 60) >= dice.Next(luck + 1);
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, !suspects);   // 감찰관을 없앴다고 의심하는지는 동전이다(0x0044FA52)
+            if (suspects)
             {
                 // 0x0054C188 · 0x0054C1F8 · 0x0054C270
                 Say(Pick3("감찰관이 돌아오지 않을 이유가 없다! 자네, 뭔가 불리한 일이 있어 없앤게 아닌가! 그 녀석을 감옥에 쳐 넣어라.",
@@ -2155,8 +2165,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         string shown = sir?.Name ?? sponsor;
 
         // 부하들이 순순히 따르지 않으면 배 한 척의 선장이 나서서 겨루자고 한다.
-        if (!LentShips.Obeys(_player.AbilityOf(Ability.Charm), _player.Fame, _player.Infamy, dice)
-            && !WonLoyaltyDuel(shown, lent[0].Name))
+        bool obeys = LentShips.Obeys(_player.AbilityOf(Ability.Charm), _player.Fame, _player.Infamy, dice);
+        EffectPopup.PlayOn(_view, _game, EffectAnim.Heart, obeys);   // 따르는지는 하트로 보인다(0x00410215)
+        if (!obeys && !WonLoyaltyDuel(shown, lent[0].Name))
         {
             // 베였다 — 그 자리에서 판이 끝난다(0x0044AF40(4)). 배는 손대지 않는다.
             GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
@@ -2172,6 +2183,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             bool mine = (keep && stays.Count == 0)
                         || LentShips.Stays(_player.AbilityOf(Ability.Luck), dice);
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, mine);   // 배마다 남는지는 동전이다(0x004102E4)
             if (mine) stays.Add(ship);
         }
 

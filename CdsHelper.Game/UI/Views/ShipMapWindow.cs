@@ -99,6 +99,9 @@ public sealed class ShipMapWindow : Window
     /// <summary>다이얼로그가 떠 있는 동안 또 묻지 않게.</summary>
     private bool _asking;
 
+    /// <summary>첫 출항 갈매기(장면 16)를 이미 치렀는가 — 원본 항해 고리의 <c>[ebp-0x2C]</c>.</summary>
+    private bool _gullsShown;
+
     /// <summary>초점 진단이 마지막으로 찍은 줄. 상태줄 뒤에 붙는다.</summary>
     private string _focusNote = "";
 
@@ -2649,6 +2652,7 @@ public sealed class ShipMapWindow : Window
         // 날짜가 다 자리잡은 뒤라야 어느 도시가 섰는지 셀 수 있다. 처음 한 번은
         // 조용히 세고 지도만 갈아 끼운다 — 이어 가는 판에서 스무 줄이 쏟아지면 안 된다.
         _founded = null;
+        _gullsShown = false;             // 판을 열 때마다 첫 출항 갈매기를 다시 기다린다(0x0048EA10)
         TellFounded();
 
         // 적어 둔 자리가 도시면 도시 화면부터 연다. 바다에서 적었으면(CityId 가 -1) 그대로 둔다 —
@@ -2943,7 +2947,7 @@ public sealed class ShipMapWindow : Window
         // 바다에서는 함대좌표 칸에 지금 자리를 적는다. 도시 안이라면 게임처럼 "---" 다.
         ("함대정보", () => Info(() => FleetInfoDialog.Show(this, _game.Player, CoordLine(), _game.Items,
                                                         c => GameInfo.CargoLabel(_game, c),
-                                                        (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind)))),
+                                                        (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind), _game))),
         // 부하가 있으면 게임처럼 누구를 볼지 먼저 묻는다 — 도시 창과 한 벌이다.
         ("인물정보", PersonInfo),
         // 설명문과 그림을 <b>같이 넘긴다</b> — null 로 두어 바다에서 연 소지품 창만
@@ -3695,7 +3699,8 @@ public sealed class ShipMapWindow : Window
             int dx = cx - sx, dy = cy - sy;
             if (dx * dx + dy * dy > far) continue;
 
-            if (_game.Player.Know(city)) spotted.Add(city);
+            // 원본은 한 틱에 <b>첫 도시 하나만</b> 알아보고 고리를 빠져나간다(0x0048D9D5 → 0x0048DA19).
+            if (_game.Player.Know(city)) { spotted.Add(city); break; }
         }
         if (spotted.Count == 0) return;
 
@@ -3709,6 +3714,9 @@ public sealed class ShipMapWindow : Window
         _host.Paused = true;
         try
         {
+            // 항구가 있는 도시(건물 낱말 비트 0)면 넷에 한 번 갈매기가 먼저 난다(0x0048D9B2 ~ 0x0048D9D0).
+            if (_game.Random.Next(4) == 0 && rows.HasBuilding(spotted[0], 0))
+                PlayEventScene(EventAnimation.GullsAtCity);
             if (_game.Player.MateAt(0).Length > 0)
                 ConfirmDialog.Tell(this, "제독, 도시가 보입니다!", face: MateFace());
             else
@@ -5300,7 +5308,9 @@ public sealed class ShipMapWindow : Window
         // 아무도 모르면 굴림 없이 「말이 통하지 않습니다…」다. 추격대는 그 앞에서 막힌다(0x0045585C).
         if (!Encounter.CanTalk(foe.Kind) || !SpeaksWithFoe(foe))
         {
-            EffectPopup.PlayCoin(this, _game, false, MapAreaOnScreen());
+            // 진 동전은 말이 안 통하는 적(추격대)일 때만이다(0x00455860). 말을 몰라 막힐 때는 동전 없이
+            // 곧장 말이 나온다(0x004558B1 ~ 0x00455978).
+            if (!Encounter.CanTalk(foe.Kind)) EffectPopup.PlayCoin(this, _game, false, MapAreaOnScreen());
             ConfirmDialog.Tell(this,
                 Encounter.CanTalk(foe.Kind) ? Encounter.NoWordsWord(rng) : Encounter.TalkFailedWord(rng),
                 "교섭", face: face);
@@ -6346,6 +6356,14 @@ public sealed class ShipMapWindow : Window
             // 도시를 나선 사건(갈래 2, 0x0048EBA8 → 0x004AB560(나선 도시))을 이야기 대본에 올린다 —
             // 조건 5F(바다)·60(뭍)이 이것을 본다. 출항하자마자 붙는 해적·이슬람 함대가 이 자리다.
             CheckStory(DisevEvent.LeaveCity(city, _host.IsOnLand));
+
+            // 판을 열거나 불러온 뒤 <b>처음 도시를 나설 때</b>만 — 배로 나섰으면 갈매기가 난다(0x0048EBC2 ·
+            // 0x0048EBE5, 뭍이면 [0x005B61B4] 라 없다). 깃발은 어느 쪽으로 나서든 한 번에 내린다.
+            if (!_gullsShown)
+            {
+                _gullsShown = true;
+                if (!walking) PlayEventScene(EventAnimation.Gulls);
+            }
         };
         return true;
     }

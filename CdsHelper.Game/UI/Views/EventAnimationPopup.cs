@@ -28,7 +28,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 지도 창이 구름을 그리는 셈과 같이 <b>게임 한 점 = 칸 1/16</b> 로 잡아 넓이를 게임 점으로
 /// 바꾸고, 셈은 게임 식을 정수 그대로 돌린다.
 /// </remarks>
-internal sealed class EventAnimationPopup : Window
+internal sealed partial class EventAnimationPopup : Window
 {
     /// <summary>한 걸음 참(<c>0x0048B14A</c> 의 100).</summary>
     private static readonly TimeSpan StepSpan = TimeSpan.FromMilliseconds(100);
@@ -118,6 +118,7 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Flamingo => new FlamingoScene(),
             EventAnimation.Morpho => new MorphoScene(),
             EventAnimation.GhostShip => new GhostShipScene(),
+            EventAnimation.Gulls or EventAnimation.GullsAtCity => new GullScene(scene),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
@@ -138,12 +139,16 @@ internal sealed class EventAnimationPopup : Window
 
         var popup = new EventAnimationPopup(area, scale) { Owner = owner };
         popup.Show();
+        // 16번 장면만 누르면 곧장 끝난다 — 0x0048E8A4 가 누름(3)을 받으면 걸음 -1 로 불러(0x0049B0FD) 치운다.
+        void Click(object? _, System.Windows.Input.MouseButtonEventArgs e) { play.Cancelled = true; e.Handled = true; }
+        if (play.EndsOnClick) owner.PreviewMouseDown += Click;
         try
         {
             Run(popup._surface, play);
         }
         finally
         {
+            if (play.EndsOnClick) owner.PreviewMouseDown -= Click;
             popup.Close();
             if (play.SoundPart >= 0) sfx?.StopLoop();      // 끝에 제 소리를 끈다(0x00422A40(소리, 3))
             if (track >= 0) game.Bgm.Play(track);
@@ -159,7 +164,7 @@ internal sealed class EventAnimationPopup : Window
 
         void Tick()
         {
-            if (closing) { frame.Continue = false; return; }
+            if (closing || play.Cancelled) { frame.Continue = false; return; }
             surface.Draws.Clear();
             bool done = play.Step(step++, surface.Draws);
             surface.Dim = play.Dim;
@@ -244,6 +249,12 @@ internal sealed class EventAnimationPopup : Window
 
         /// <summary>도는 동안 곡을 끊는가.</summary>
         public virtual bool StopsMusic => false;
+
+        /// <summary>누르면 곧장 끝나는 장면인가(16번 갈매기뿐, <c>0x0048E8A4</c>).</summary>
+        public virtual bool EndsOnClick => false;
+
+        /// <summary>눌러서 끝났는가.</summary>
+        public bool Cancelled { get; set; }
 
         /// <summary>이번 걸음에 지도를 덮을 검은 막의 짙기(0~1). 덮지 않는 장면은 0 이다.</summary>
         public virtual double Dim => 0;

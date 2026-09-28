@@ -98,8 +98,13 @@ public sealed class Lodging
     /// 이미 아는 말이면 아무 일도 없다. 셋에 한 번 걸리고, 걸리면 <c>rand(100) &lt; 지력 + 1</c> 로 갈린다.
     /// 배우면 그 말이 <b>1</b> 이 된다(올리는 것이 아니라 박는 것이다).
     /// </remarks>
+    /// <param name="rolled">
+    /// 모르는 말이라 굴렸으면 그 결과로 부른다 — 게임은 여기서 서기 벌을 돌린다(<c>0x0047FB33</c> → <c>0x004A6320</c>).
+    /// 셋에 한 번이 안 걸려도 「못 배웠다」로 돈다.
+    /// </param>
     /// <returns>배웠으면 말 이름, 아니면 null.</returns>
-    public string? LearnTongue(Player player, int cityId, NationTable? nations, Random random)
+    public string? LearnTongue(Player player, int cityId, NationTable? nations, Random random,
+                               Action<bool>? rolled = null)
     {
         int nation = _cities?.NationOf(cityId) ?? -1;
         int language = nations?.Find(nation)?.Language ?? -1;
@@ -107,8 +112,9 @@ public sealed class Lodging
 
         string name = Skill.Languages[language];
         if (player.TongueOf(name) > 0) return null;
-        if (random.Next(3) != 0) return null;
-        if (random.Next(100) >= player.AbilityOf(Ability.Mind) + 1) return null;
+        bool learnt = random.Next(3) == 0 && random.Next(100) < player.AbilityOf(Ability.Mind) + 1;
+        rolled?.Invoke(learnt);
+        if (!learnt) return null;
 
         player.SetTongue(name, 1);
         return name;

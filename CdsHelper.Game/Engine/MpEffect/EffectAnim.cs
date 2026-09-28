@@ -35,6 +35,12 @@ public sealed class EffectAnim
     /// </remarks>
     public const int Load = 0;
 
+    /// <summary>
+    /// 책상의 서기(파트 4~7). 껍데기는 <c>0x004A6320</c> 이다 — 지력으로 굴리는 자리
+    /// (대본 판정 <c>0x0040A98C</c> · 말 배우기 <c>0x0047FB33</c> · 감찰관 거짓말 <c>0x0044FA19</c>)가 쓴다.
+    /// </summary>
+    public const int Scribe = 1;
+
     /// <summary>한 장의 한 변. 게임이 늘 이 크기로 그린다.</summary>
     public const int Size = 80;
     private const int Pixels = Size * Size;
@@ -90,9 +96,23 @@ public sealed class EffectAnim
     public static int StepOf(int anim) =>
         anim == Cannon ? CannonStep : anim == Coin ? CoinStep : HeartStep;
 
-    /// <summary>그 벌이 넘어가는 차례. 동전만 제 셈이고 나머지는 갈래 0 을 쓴다.</summary>
+    /// <summary>그 벌이 넘어가는 차례. 동전·대포는 제 셈이고 나머지는 갈래 0 을 쓴다.</summary>
     public static int[] Frames(int anim, bool won) =>
-        anim == Coin ? CoinFrames(won) : HeartFrames(won);
+        anim == Coin ? CoinFrames(won) : anim == Cannon ? CannonFrames(won) : HeartFrames(won);
+
+    /// <summary>
+    /// 갈래 1 — 대포가 넘어가는 차례(<c>0x004A5D20</c>). 첫 장 0 에서 1 로, 그 다음이 결말 장이다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   004a5d2f  장 0 이면 1 로
+    ///   004a5d43  장 1 이면 되면 2, 어그러지면 3 — 이때 소리 깃발을 세운다(0x004A5D59)
+    ///   004a5d65  그다음 걸음에 끝난다
+    /// </code>
+    /// 장 간격이 10 이라(<see cref="CannonStep"/>) 세 장이 하트 열 장보다 길게 머문다.
+    /// 소리(<c>0x2A</c>·<c>0x2B</c>)는 결말 장에서 난다(<c>0x004A5EB4</c>).
+    /// </remarks>
+    public static int[] CannonFrames(bool won) => [0, 1, won ? 2 : 3];
 
     /// <summary>
     /// 갈래 0 — 짐 싣기 · 서기 · 하트 · 설득이 넘어가는 차례(<c>0x004A5CB0</c>).

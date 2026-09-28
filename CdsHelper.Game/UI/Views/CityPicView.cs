@@ -1059,13 +1059,18 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
 
         // 나) 현상금 사냥꾼.
-        if (dice.Next(100) <= _player.AbilityOf(Ability.Luck) + 1) return false;
+        // 운 굴림은 동전으로 보인다 — 비켜 가도 돈다(0x0044FEE1 → 0x004A6380).
+        bool dodged = dice.Next(100) <= _player.AbilityOf(Ability.Luck) + 1;
+        PlayMpEffect(EffectAnim.Coin, dodged);
+        if (dodged) return false;
 
         GameDialog.Show(this, "어이... 저 자, 벽보의...");
         GameDialog.Show(this, "확실히...");
         TalkDialog.Say(this, aide, "", "왠지 분위기가 않좋군요, 도망칩시다.");
 
         int r = dice.Next(100);
+        // 달아나는 굴림은 짐 싣기 벌(0번)로 보인다(0x0044FF7F → 0x004A6120).
+        PlayMpEffect(EffectAnim.Load, r <= 96 && _player.AbilityOf(Ability.Body) + 1 > r);
         if (r <= 96 && _player.AbilityOf(Ability.Body) + 1 > r)
         {
             TalkDialog.Say(this, aide, "", "후우~, 더 이상 쫓아오지 않는군요. 제독, 여긴 너무 위험합니다. 빨리 마을을 떠납시다.");
@@ -1180,7 +1185,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                    ? DuelArt.TavernFor(_cultureNo) : DuelArt.Field,
                         bgm: _game.Bgm);
         _huntSlain = false;
-        if (duel.Won != true && TavernMenu.LostDuel(this, _player, duel, face, dice, mateFought: false))
+        if (duel.Won != true && TavernMenu.LostDuel(this, _player, duel, face, dice, mateFought: false, game: _game))
         {
             _huntSlain = true;
             return false;
@@ -1406,8 +1411,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 한 번 만난 뒤에는 게임도 관문을 건너뛴다(후원자 비트 15) — <see cref="PassFameGate"/> 가
     /// 그것을 보므로 이 애니메이션도 <b>첫 알현 때만</b> 돈다.
     /// </remarks>
-    public void PlayFameCheck(bool passed) =>
-        PlayEffect(EffectAnim.Persuade, [.. Plead, passed ? Granted : Refused]);
+    public void PlayFameCheck(bool passed) => PlayMpEffect(EffectAnim.Persuade, passed);
 
     /// <summary>
     /// 자택 "후손을 남긴다" 의 애니메이션 — <b>MPEFFECT 2번(대포)</b>이다.
@@ -1415,10 +1419,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <remarks>
     /// 게임도 그렇다(<c>0x004613E3</c> 이 <c>0x004A6340</c> 을 부른다). 그 껍데기는 인자가
     /// 1 이면 소리 <c>0x2A</c>, 아니면 <c>0x2B</c> 를 함께 낸다 — 되고 안 되고가 곧 소리다.
+    /// 장은 0 → 1 → 결말 셋뿐이고 한 장이 하트의 다섯 배 머문다(<c>0x004A5D20</c>, 장 간격 10).
     /// </remarks>
-    public void PlayHeir(bool born) =>
-        PlayEffect(EffectAnim.Cannon, [.. Plead, born ? Granted : Refused],
-                   sound: (born ? 0x2A : 0x2B) - Support.Local.Helpers.WaveBank.FirstSoundId);
+    public void PlayHeir(bool born) => PlayMpEffect(EffectAnim.Cannon, born);
 
     /// <summary>
     /// 후원자의 마음이 동하는지 — <b>MPEFFECT 3번(하트)</b>이다.
@@ -1427,8 +1430,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 이야기를 고르고 나서 돈다(<c>0x004AE7B7</c> · <c>0x004AE815</c>). 굴림에 이기면
     /// 하트가 커지고, 지면 깨진다 — 넷째 장이 곧 깨진 하트다.
     /// </remarks>
-    public void PlayHeart(bool won) =>
-        PlayEffect(EffectAnim.Heart, [.. Plead, won ? Granted : Refused]);
+    public void PlayHeart(bool won) => PlayMpEffect(EffectAnim.Heart, won);
+
+    /// <summary>
+    /// 굴린 결과대로 MPEFFECT 한 벌을 원본 차례(<see cref="EffectAnim.Frames"/>)와 참으로 돌린다
+    /// (<c>0x004A6140(벌, 결과, 소리)</c>).
+    /// </summary>
+    public void PlayMpEffect(int anim, bool won) =>
+        PlayEffect(anim, EffectAnim.Frames(anim, won), EffectPopup.SpanOf(anim), EffectPopup.SoundOf(anim, won));
 
     // ── 성문 앞 무대 — 배로 닿아 항구에서 마을로 들다 막혔을 때, 성문 장면 대신 이 그림 위에서 돈다 ──
 
@@ -1505,11 +1514,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (wasShown) HideMenu(false);
         }
     }
-
-    /// <summary>
-    /// 청하는 두 장. 이것을 두 번 되풀이해 흔든 뒤 결말 장으로 넘어간다(모두 0부터 센다).
-    /// </summary>
-    private static readonly int[] Plead = [0, 1, 0, 1];
 
     /// <summary>결말 장 — 받아 드는 셋째 장과 엎어지는 넷째 장.</summary>
     private const int Granted = 2, Refused = 3;
@@ -1842,7 +1846,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>함대 정보 판.</summary>
     private void ShowFleet() => KeepCityMenu(() => FleetInfoDialog.Show(this, _player, items: _game.Items,
                                                                     cargoName: c => GameInfo.CargoLabel(_game, c),
-                                                                    cargoInfo: (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind)));
+                                                                    cargoInfo: (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind), game: _game));
 
     /// <summary>
     /// 정보 판 하나를 띄우는 동안 도시 커맨드 창을 감춰 두었다가 <b>도로 편다</b> — 게임은 판을 닫으면 차림표를
@@ -1937,7 +1941,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 말을 조금 배우고(0x0047FAE0), 모항이면 능력이 오를 때가 있고(0x0047FB80), 일어난 말, HP 다.
         DayPass.Blackout(this, () => inn.Stay(_player, _cityId));
         _player.Note(Player.TraceInnStay);   // 0x0047FCA8 — 행적에 숙박을 적는다
-        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
+        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
         HomeInnBonus();
         NoticeDialog.Show(this, Lodging.WakeWord(_random));
         // 한 달 묵으면 HP 가 30~59 찬다(0x0047FCFF).
@@ -1979,7 +1983,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 한 해가 가는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
         DayPass.Blackout(this, () => _player.PassTownDays(Lodging.OddJobDays));
         _player.SetCondition(_player.Condition + Lodging.OddJobRest(_random));
-        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
+        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
 
         ConfirmDialog.Tell(this, Lodging.OddJobDone, face: face);
         NoticeDialog.Show(this, $"금화 {pay}닢을 손에 넣었다!");
