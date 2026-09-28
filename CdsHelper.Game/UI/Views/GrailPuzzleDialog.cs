@@ -424,9 +424,10 @@ internal sealed class GrailPuzzleDialog : InfoDialog
     /// </returns>
     public static bool Play(Window owner, Player player, Random rng, SoundBank? sfx = null)
     {
-        // 「대실패」(넘침) 뒤의 다시 하기는 <b>딱 한 번</b>이다 — 0x004684F5 가 깃발을 세우고 0x00468566 이
-        // 두 번째부터는 묻지도 않고 0 을 낸다. 「다시 한번 찬스」(쉰 수 넘김)는 그런 문이 없다.
-        bool spilledOnce = false;
+        // 「대실패」(넘침) 뒤의 다시 하기는 <b>첫 판에만</b> 있다 — 0x004684F5 가 깃발(esi)을 세우고 0x00468566 이
+        // 그것을 보는데, 0x00468651 이 결과가 무엇이든 판이 끝날 때마다 지운다. 그래서 「다시 한번 찬스」
+        // (쉰 수 넘김)로 다시 한 판에서 넘치면 묻지 않고 끝난다. 예전에는 넘친 적이 없으면 몇 번째 판이든 물었다.
+        bool firstRound = true;
 
         while (true)
         {
@@ -445,11 +446,11 @@ internal sealed class GrailPuzzleDialog : InfoDialog
 
                 case GrailPuzzle.Result.Spilled:
                     NoticeDialog.Show(owner, "성배에서 물이 넘쳤다!", "대실패");
-                    if (spilledOnce) return false;
-                    spilledOnce = true;
+                    if (!firstRound) return false;
                     NoticeDialog.Show(owner, "재주가 없는 녀석이로군···한번 더 찬스를 주겠다",
                                       "성스러운 항아리");
                     if (!ConfirmDialog.Ask(owner, "다시 도전하겠습니까?", "메시지")) return false;
+                    firstRound = false;
                     break;
 
                 case GrailPuzzle.Result.Slow:
@@ -459,6 +460,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
                                       "재주가 없는 녀석이로군···으음···다시 한번 찬스를 주겠다",
                                       "성스러운 항아리");
                     if (!ConfirmDialog.Ask(owner, "다시 도전하겠습니까?", "메시지")) return false;
+                    firstRound = false;
                     break;
 
                 case GrailPuzzle.Result.Good:
