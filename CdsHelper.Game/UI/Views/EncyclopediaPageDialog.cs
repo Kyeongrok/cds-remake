@@ -154,10 +154,14 @@ public sealed class EncyclopediaPageDialog : GameWindow
                                     LeftPageX, PageY));
         _layer.Children.Add(Picture(EncyclopediaArt.RightPage, RightPageX, PageY));
 
+        // 가운데 맞춤 폭은 글자 수가 아니라 <b>쪽 색인</b>으로 정한다 — 색인 10 밑이면 24, 아니면 32 다
+        // (0x004629D5 의 cmp [+0x1C0], 0xA). 그래서 10쪽(색인 9, 「-10-」)만 4점 오른쪽으로 치우친다.
         string number = $"-{_index + 1}-";
-        Ink(number, LeftPageX + (256 - number.Length * CellWidth) / 2, NumberY);
+        int numberWidth = _index < 10 ? 24 : 32;
+        Ink(number, LeftPageX + (256 - numberWidth) / 2, NumberY);
 
-        bool reported = player.HasAnnounced(row.Id);
+        // 쪽이 차는 것은 발견자 칸(칸 2)에 이름이 있을 때다(0x00462A41) — 내가 보고했거나 남이 먼저 발표했거나.
+        bool reported = player.HasAnnounced(row.Id) || player.ScoopedBy(row.Id) != null;
         bool hasArt = row.Movie >= 0 || row.Clip >= 0 || row.Picture >= 0;
         AddPlate(reported && hasArt ? () => Illustrate(row) : null);
         if (!reported) return;   // 발견자가 없으면 빈 쪽이다
@@ -184,15 +188,19 @@ public sealed class EncyclopediaPageDialog : GameWindow
             _layer.Children.Add(image);
         }
 
-        // 발견자 — 이름은 「·」 앞까지만 쓴다(0x005499EC).
-        string finder = player.Name;
+        // 발견자 — <b>칸 2 에 적힌 보고자 이름</b>이다(0x00462A3C · 0x00462B63 의 0x004AABA0(2)). 지금 제독이
+        // 아니다 — 세대교체 뒤에도 아버지가 보고한 쪽은 아버지 이름이다. 「·」 앞까지만 쓴다(0x005499EC).
+        string reporter = player.ReporterOf(row.Id);
+        string finder = reporter;
         int dot = finder.IndexOf('·');
         if (dot > 0) finder = finder[..dot];
         Ink("발견자", FinderLabelX, FinderY);
         Ink(finder, FinderNameX, FinderY);
 
-        // 발견년 — 찾은 사람이 보고한 사람과 같을 때만 그 칸의 해·달을 쓴다.
-        if (player.FoundDateOf(row.Id) is { } found)
+        // 발견년 — 보고자 이름이 찾은 사람(칸 0) 이름과 같을 때만 칸 0 의 해·달을 쓴다(0x00462B74).
+        // (칸 1 과 견주는 갈래 0x00462B84 는 우리 쪽에 칸 1 이 없어 옮기지 않는다.)
+        if (player.HasFound(row.Id) && player.FinderOf(row.Id) == reporter
+            && player.FoundDateOf(row.Id) is { } found)
             Ink($"발견년  {found.Year,4}년 {found.Month}월", FoundX, FoundY);
     }
 

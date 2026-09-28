@@ -407,10 +407,16 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             return;
         }
 
-        var rows = teachable.Select(t => t.Skill
-            ? $"{Skill.Names[t.Index]}  {son.Skills[t.Index]}"
-            : $"{Skill.Languages[t.Index]}  {son.Tongues[t.Index]}").ToList();
-        int pick = ChoiceDialog.Ask(owner, "교육 가능 기능", rows, "취소");
+        // 고르는 창은 수련과 같은 「습득가능 기술」 벌이다 — 게임은 둘 다 0x0040D590 을 부르고, 교육은
+        // 아이를 넘겨(0x004618E5) 줄마다 <b>아이 수준</b>을 「이름 ( LVn )」으로 찍는다. 하나 고르면 창을 닫는다.
+        var names = teachable.Select(t => t.Skill ? Skill.Names[t.Index] : Skill.Languages[t.Index]).ToList();
+        int pick = -1;
+        SkillLearnDialog.Show(owner, names,
+                              name => names.IndexOf(name) is >= 0 and var i
+                                  ? (teachable[i].Skill ? son.Skills[teachable[i].Index] : son.Tongues[teachable[i].Index])
+                                  : 0,
+                              name => { pick = names.IndexOf(name); return true; },
+                              "교육 가능 기능");
         if (pick < 0 || pick >= teachable.Count) return;
         var (isSkill, index) = teachable[pick];
 
@@ -473,6 +479,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     ///   금화 2/3 · 저금 4/5 · 명성·악명은 Home.InheritedFame/Infamy
     ///   부하를 모두 내보낸다(0x004534E0)
     ///   제독 자리를 아들로 갈아 끼운다(0x0047D4B0) — 이름·생년월일·능력치·기능·언어가 아들 것이 된다
+    ///   아내 자리를 비운다(0x0047D5FB — [0x005B61B0] = -1)
     ///   [플레이어 정보 / 직업 변경 / 게임 재개]
     ///   사건 그림 9 · 소리 0x4D → 「%s의 아들 %s%s %s%s서의 첫걸음을 내디뎠다.」
     ///   딸이 있으면 작별 인사 · 아이 칸을 비운다
@@ -530,6 +537,11 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         for (int i = 0; i < Skill.Names.Length && i < son.Skills.Length; i++) _player.SetSkill(Skill.Names[i], son.Skills[i]);
         for (int i = 0; i < Skill.Languages.Length && i < son.Tongues.Length; i++) _player.SetTongue(Skill.Languages[i], son.Tongues[i]);
 
+        // 아내 자리도 비운다 — 아버지의 아내가 아들의 아내로 남지 않는다. 원본은 아내 레코드의
+        // +0x38·+0x24 를 -1 로 지우고(0x00461C04), 제독 자리를 갈아 끼우는 0x0047D4B0 이
+        // 끝에 [제독+0x110](= 아내 번호 0x005B61B0)을 -1 로 둔다(0x0047D5FB).
+        _player.Marry(null);
+
         // 플레이어 정보 · 직업 변경 · 게임 재개 — 게임 재개를 고를 때까지 돈다.
         while (true)
         {
@@ -539,7 +551,8 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             if (pick == 0) PersonInfoDialog.Show(owner, _player, _game.Directory);
             else if (pick == 1)
             {
-                int job = ChoiceDialog.Ask(owner, "직업 변경",
+                // 창 제목은 「직업 선택」이다(0x004AB715 의 0x0057B430) — 줄 이름 「직업 변경」과 다르다.
+                int job = ChoiceDialog.Ask(owner, "직업 선택",
                                            [.. Job.All.Take(Job.Choosable).Select(j => j.Name)], "취소");
                 if (job >= 0 && job < Job.Choosable) _player.JobIndex = job;
             }

@@ -96,7 +96,8 @@ public sealed class EncyclopediaDialog : GameWindow
         for (int i = 0; i < DiscoveryTable.CategoryNames.Length; i++)
         {
             var pages = table.Discoveries.Where(r => r.Category == i && !r.Indirect).ToList();
-            int reported = pages.Count(r => game.Player.HasAnnounced(r.Id));
+            // 발견자 칸(칸 2)에 이름이 있는 쪽을 센다(0x00471780 모드 1) — 남이 먼저 발표한 것도 든다.
+            int reported = pages.Count(r => game.Player.HasAnnounced(r.Id) || game.Player.ScoopedBy(r.Id) != null);
             AddBook(i, slot++, spines[reported > 0 ? SpineBlue : SpineRed]);
             int filler = pages.Count > 0 && reported <= pages.Count ? reported * 5 / pages.Count : 0;
             for (int k = 0; k < filler; k++) AddBook(-1, slot++, spines[SpineGreen]);

@@ -1653,8 +1653,45 @@ public sealed class Player
     {
         if (discovery < 0 || !_found.Add(discovery)) return false;
         _foundOn[discovery] = Date;
+        // 칸 0 에는 날과 함께 찾은 사람 이름이 적힌다 — 세대교체 뒤에도 아버지 이름으로 남는다.
+        _foundBy[discovery] = Name;
         Contract?.Add(discovery);
         return true;
+    }
+
+    private readonly Dictionary<int, string> _foundBy = [];
+    private readonly Dictionary<int, string> _announcedBy = [];
+
+    /// <summary>
+    /// 찾은 사람 · 보고한 사람의 이름 — 발견물 인스턴스 칸 0 · 칸 2 의 이름이다(<c>0x004AABA0(0)</c> · <c>(2)</c>).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 찾을 때·보고할 때 <b>그때의 제독 이름</b>을 칸에 베껴 둔다. 그래서 세대교체 뒤에도 아버지가
+    /// 보고한 쪽의 「발견자」는 아버지 이름이다(백과사전 <c>0x00462B63</c>). 이름을 안 적던 옛 세이브에서
+    /// 온 것은 칸이 없어 지금 제독 이름으로 본다.
+    /// </remarks>
+    public IReadOnlyDictionary<int, string> FoundBy => _foundBy;
+
+    /// <inheritdoc cref="FoundBy"/>
+    public IReadOnlyDictionary<int, string> AnnouncedBy => _announcedBy;
+
+    /// <summary>그것을 찾은 사람 이름. 적힌 것이 없으면 지금 제독 이름이다.</summary>
+    public string FinderOf(int discovery) => _foundBy.TryGetValue(discovery, out var who) ? who : Name;
+
+    /// <summary>그것을 보고한 사람 이름. 남이 먼저 발표했으면 그 사람, 적힌 것이 없으면 지금 제독 이름이다.</summary>
+    public string ReporterOf(int discovery) =>
+        ScoopedBy(discovery) ?? (_announcedBy.TryGetValue(discovery, out var who) ? who : Name);
+
+    /// <summary>세이브에서 찾은 사람·보고한 사람 이름을 되돌린다. 없던 칸이면 비워 둔다(지금 제독 이름으로 본다).</summary>
+    public void RestoreDiscoverers(IReadOnlyDictionary<int, string>? foundBy,
+                                   IReadOnlyDictionary<int, string>? announcedBy)
+    {
+        _foundBy.Clear();
+        _announcedBy.Clear();
+        foreach (var (id, who) in foundBy ?? new Dictionary<int, string>())
+            if (_found.Contains(id) && who.Length > 0) _foundBy[id] = who;
+        foreach (var (id, who) in announcedBy ?? new Dictionary<int, string>())
+            if (_announced.Contains(id) && who.Length > 0) _announcedBy[id] = who;
     }
 
     private readonly Dictionary<int, DateTime> _foundOn = [];
@@ -1871,6 +1908,7 @@ public sealed class Player
     {
         if (!HasFound(discovery) || !_announced.Add(discovery)) return false;
         _announcedOn[discovery] = Date;
+        _announcedBy[discovery] = Name;   // 칸 2 의 이름(0x004AACA0) — 백과사전 「발견자」가 이것이다
         // 행적에도 한 줄 남는다(0x0047E630 끝의 0x0041A070(…, 9, 발견물번호)) — 은퇴하면 누적 캐릭터의 발자취가 된다.
         Note(TraceDiscovery, discovery);
         return true;

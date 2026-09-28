@@ -89,8 +89,8 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
             ["왕궁을 나온다"]),
 
         // 게임 도서관 줄은 셋이지만(검색 0x00544B48 · 열람 · 나온다) <b>「검색」은 걷었다</b> —
-        // 고를 책을 모으는 칸(책 +0x40)을 세우는 코드가 원본 어디에도 없어 목록이 늘 비고,
-        // 사서가 묻기만 하고 끝나는 죽은 줄이다(까닭은 LibraryMenu.Search 주석에 적어 둔다).
+        // 차림표를 짓는 0x004B3630 이 검색 줄의 보임 칸([0x005800B4])을 늘 0 으로 두어 원본 화면에도
+        // 안 뜨는 줄이다. 줄 뒤의 일(0x004B3540)은 살아 있다 — 까닭은 LibraryMenu.Search 주석에 적어 둔다.
         new(FacilityKind.Library, "도서관",
             ["열람", "도서관을 나온다"]),
 
