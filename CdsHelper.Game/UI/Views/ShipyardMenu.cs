@@ -751,7 +751,9 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         var owner = Owner;
         Say("포탑은 몇 개로 할건가?");
 
-        int want = CountDialog.Ask(owner, "포탑수 결정", "포탑수", "문", ship.MaxTurrets, 1, true,
+        // 수 적기 창(0x00454AA0)에는 「최대」 단추가 없다 — 넷째·여섯째 인자는 처음 값·가장 작은 값(0x00454638 →
+        // +0xC8, 0x00454331)이고, 선원고용과 같이 0·0 을 넘긴다. 「최대」는 보급 창(0x0040F13A)에만 있다.
+        int want = CountDialog.Ask(owner, "포탑수 결정", "포탑수", "문", ship.MaxTurrets, 1, false,
             new CountDialog.Gauge("최대포탑수", ship.MaxTurrets),
             new CountDialog.Gauge("현재의 포탑수", ship.Turrets));
         if (want < 0) return;
@@ -840,7 +842,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             {
                 // 「얼마나 싣겠나?」는 말로 하고, 수 적기 창의 제목은 대포 이름이다(0x004965D2~0x00496617).
                 Say("얼마나 싣겠나?");
-                want = CountDialog.Ask(owner, gun.Name, "대포수", "문", room, 1, true,
+                // 포탑수 결정과 같이 「최대」 단추가 없다(0x00496617 — 인자 1·0·0).
+                want = CountDialog.Ask(owner, gun.Name, "대포수", "문", room, 1, false,
                     new CountDialog.Gauge("최대대포수", room),
                     new CountDialog.Gauge("현재의 포수", same ? ship.Guns : 0));
             }
