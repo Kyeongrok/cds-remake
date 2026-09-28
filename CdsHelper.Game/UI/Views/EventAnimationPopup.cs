@@ -115,6 +115,7 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Whale => new WhaleScene(),
             EventAnimation.Dolphin => new DolphinScene(),
             EventAnimation.FlyingFish => new FlyingFishScene(),
+            EventAnimation.Flamingo => new FlamingoScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
@@ -871,6 +872,128 @@ internal sealed class EventAnimationPopup : Window
             _x[i] += _w / (i == 0 ? -100 : -150);
             _n[i]++;
             return false;
+        }
+    }
+
+    /// <summary>
+    /// 22 플라밍고 떼 — 크기가 다른 세 무리가 지도를 가로질러 날아간다(<c>0x00419130</c>, 객체 <c>0x0061DF78</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x004195B0  팔레트 0x32 — 작은 무리 파트 0x19(208x160 다섯 장) · 가운데 0x1A(288x192 아홉 장) ·
+    ///               큰 무리 0x1B(384x288 아홉 장) · 여는 참에 소리 0x3D, 끝에 끈다
+    ///   0x004194E0  첫자리  작은 (41·(W/40), H − 80) · 가운데 (W − W/10, −19) · 큰 ((4W/5)/50·50, 5H/8)
+    ///   한 걸음 — 큰 무리(0x00419290) → c ≥ 6 이면 가운데(0x00419230) → c ≥ 16 이면 작은 무리(0x004191A0)
+    ///     큰·가운데 장 = c % 9 · 작은 무리 장 = 제 걸음 0 1 2 3 4 4 4 3 4 1 1 되풀이
+    ///     작은(0x004192F0)  x −= W/40, 오른쪽 반에서는 곧게 오르고 왼쪽 반에서는 포물선
+    ///     가운데(0x00419400) x −= W/40, y += H/50 − 2 · 4 · 5 (오른쪽 셋째마다)
+    ///     큰(0x00419470)    x −= (4W/5)/50, 포물선으로 내려온다
+    ///   끝(0x00419158) — 작은 무리가 화면을 벗어났고, 큰 무리도 왼쪽이나 위로 나갔으면
+    ///     (가운데 무리는 x 가 안에 있는 채 y ≥ H 일 때만 붙든다 — 원본 셈 그대로)
+    /// </code>
+    /// </remarks>
+    private sealed class FlamingoScene : Scene
+    {
+        private const int AW = 0xD0, AH = 0xA0, BW = 0x120, BH = 0xC0, CW = 0x180, CH = 0x120;
+
+        public override int SoundPart => 0x3D - WaveBank.FirstSoundId;
+
+        private BitmapSource[] _a = [], _b = [], _c = [];
+        private int _w, _h, _xa, _ya, _xb, _yb, _xc, _yc, _na;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _a = Frames(anims, 0x19, AW, AH, 0x32) ?? [];
+            _b = Frames(anims, 0x1A, BW, BH, 0x32) ?? [];
+            _c = Frames(anims, 0x1B, CW, CH, 0x32) ?? [];
+            return _a.Length >= 5 && _b.Length >= 9 && _c.Length >= 9;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w; _h = h;
+            _xa = w / 40 * 41;
+            _ya = h - 0x50;
+            _xb = w + w / -10;
+            _yb = -0x13;
+            _xc = w * 4 / 5 / 50 * 50;
+            _yc = h * 5 / 8;
+            _na = 0;
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c > 2000) return true;                      // 원본에는 없다 — 안 끝나는 일이 없게
+
+            draws.Add(new Draw(_c[c % 9], _xc, _yc));
+            MoveC();
+            if (c >= 6)
+            {
+                draws.Add(new Draw(_b[c % 9], _xb, _yb));
+                MoveB();
+            }
+            if (c >= 0x10)
+            {
+                int n = _na;
+                int f = n < 4 ? n : n < 7 ? 4 : n < 9 ? n - 4 : 1;
+                _na = n >= 10 ? 0 : n + 1;
+                draws.Add(new Draw(_a[f], _xa, _ya));
+                MoveA();
+            }
+
+            // 0x00419158
+            if (_xa + AW >= 0 && _ya + AH >= 0) return false;
+            if (_xb + BW >= 0 && _yb >= _h) return false;
+            return _xc + CW < 0 || _yc + CH < 0;
+        }
+
+        /// <summary>작은 무리(<c>0x004192F0</c>).</summary>
+        private void MoveA()
+        {
+            int d = Math.Max(1, _w / 40);
+            _xa -= d;
+            int h8 = _h / 8;
+            if (_w / 2 < _xa)
+            {
+                _ya = (0x50 - _h * 3 / 4) / 19 * ((_w - _xa) / d) + _h - 0x50;
+                return;
+            }
+            int q = _w / 4;
+            if (q <= _xa)
+            {
+                int t = (_xa - q) / d;
+                _ya = t * t * h8 / 100 + h8;
+            }
+            else if (_w / 8 <= _xa)
+            {
+                int t = (q - _xa) / d;
+                _ya = t * t * h8 / 100 + h8;
+            }
+            else
+            {
+                _ya += d / 2;
+            }
+        }
+
+        /// <summary>가운데 무리(<c>0x00419400</c>).</summary>
+        private void MoveB()
+        {
+            int h50 = _h / 50;
+            _xb += _w / -40;
+            if (_w * 2 / 3 <= _xb) _yb += h50 - 2;
+            else if (_w / 3 <= _xb) _yb += h50 - 4;
+            else _yb += h50 - 5;
+        }
+
+        /// <summary>큰 무리(<c>0x00419470</c>).</summary>
+        private void MoveC()
+        {
+            int s = Math.Max(1, _w * 4 / 5 / 50);
+            _xc -= s;
+            int t = _xc / s;
+            int drop = _h / 2 * t * t / 2500;
+            if (t >= 0 && drop > 0) _yc = _h / 8 + drop;
+            else _yc--;
         }
     }
 
