@@ -287,13 +287,23 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 판 아래에 말 줄은 없다 — 원본은 말을 모두 창으로 띄운다.
         Content = _board;
 
-        // 배를 우클릭하면 「해전전황정보(선박)」 — 아군·적 모두. 빈 바다면 항복 차림표다.
+        // 오른쪽 단추(0x0043EE91 — 사건 2).
+        //   위임 중이면 「제독이 명령하시겠습니까?」만 묻고 끝난다(0x0043EE9A).
+        //   판 칸 밖(띠·기둥)을 누르면 「해전전황정보(제독·함대수)」(0x0043FAC2 → 0x00434430),
+        //   배가 선 칸이면 그 배의 「해전전황정보(선박)」(0x0043FAB3 → 0x0043EBD0)다 — 아군·적 모두.
+        //   빈 바다 칸은 게임에서 아무 일도 없다 — 여기서는 앱 차림표(항복)를 낸다.
         MouseRightButtonUp += (_, e) =>
         {
             if (_running) return;
+            if (_battle.Delegated) { TookBack(); return; }
             var spot = e.GetPosition(_board);
             var (x, y) = CellAt(new Point(spot.X + _scrollX, spot.Y + _scrollY));
-            if (x >= 0 && _battle.ShipAt(x, y) is { } ship)
+            if (x < 0)
+            {
+                SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader, _foe.Name);
+                return;
+            }
+            if (_battle.ShipAt(x, y) is { } ship)
             {
                 SeaShipInfoDialog.Show(this, ship);
                 return;
