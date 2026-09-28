@@ -32,9 +32,11 @@ namespace CdsHelper.Game.Engine.Disev;
 ///
 /// <b>파트 번호가 곧 발견물 번호다</b> — 274개가 발견물 표와 1:1 이다.
 ///
-/// <b>아직 안 하는 것.</b> 외부 분기(<c>STORY0.CDS</c> · <c>STORY1.CDS</c>)는 그 파일을
-/// 안 뜯어서 <b>건너뛴다</b> — 뛰지 않고 다음 줄로 간다. 그 밖에 뜻을 모르는 명령도
-/// 건너뛴다. 대본이 끊기는 것보다 한 줄 빠지는 편이 낫다.
+/// 「외부 분기」(<c>43 6D</c> · <c>43 6E</c>)는 딴 파일로 뛰는 것이 아니다. 조건 6D·6E 가
+/// 이야기 관리자에 걸린 <b>주인공의 이야기 책 이름</b>(<c>[0x0062989C]</c>)을 <c>"C:STORY0.CDS"</c> ·
+/// <c>"C:STORY1.CDS"</c> 와 견줄 뿐이다(<c>0x0040BC5E</c> · <c>0x0040BC98</c>) — 그 주인공이 아니면
+/// 뒤따르는 줄을 뛰어넘는다. 카르낙 거석군의 「드디어 찾아냈군요…」는 라몬만 듣는다.
+/// 뜻을 모르는 명령은 건너뛴다. 대본이 끊기는 것보다 한 줄 빠지는 편이 낫다.
 /// </remarks>
 public sealed class DisevRunner
 {
@@ -77,7 +79,7 @@ public sealed class DisevRunner
     private readonly Window _owner;
     private readonly Game _game;
 
-    /// <summary>지금 돌고 있는 책 이름 — Story0·Story1 조건식(<c>6D</c>·<c>6E</c>)이 이것으로 갈린다.</summary>
+    /// <summary>지금 돌고 있는 책 이름 — 발견 이벤트의 확률 조건을 건너뛸지가 이것으로 갈린다.</summary>
     private readonly string _cache;
 
     /// <summary>지금 들어와 있는 건물 코드. 모르면 -1 — <see cref="DisevCall.InBuilding"/> 이 이것을 본다.</summary>
@@ -548,8 +550,11 @@ public sealed class DisevRunner
             // 짜여 같은 해에서 달을 보는 갈래(0x004077C3)에 영영 안 닿는다 — 달은 읽기만 한다.
             case DisevCall.YearMonthIs:
                 return year >= I("Year");
-            case DisevCall.Story0: return _cache == "이야기0";                        // 6D
-            case DisevCall.Story1: return _cache == "이야기1";                        // 6E
+            // 6D · 6E — 주인공이 든 이야기 책이 STORY0 · STORY1 인가(0x0040BC5E · 0x0040BC98). 새 게임을 열 때
+            // 0x004AB420 이 [0x0062989C] 에 그 이름을 적는다(0x0045E932 · 0x0045EB9F). 돌고 있는 책이 아니다 —
+            // 예전에는 돌고 있는 책과 견주어 발견 대본(DISEV) 안에서는 늘 거짓이라 라몬·에밀리오 대사가 빠졌다.
+            case DisevCall.Story0: return player.ActiveStoryBook == "이야기0";
+            case DisevCall.Story1: return player.ActiveStoryBook == "이야기1";
             case DisevCall.RandomChance:
             {
                 int denominator = I("Denominator");
