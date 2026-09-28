@@ -131,7 +131,7 @@ public sealed class TradePostDialog : GameWindow
         return _wins > 0 ? plain with { Total = TradePost.Haggled(TradePost.CostOf(plain), _wins) } : plain;
     }
 
-    /// <summary>이번 [결정] 에서 흥정에 이긴 수 — 이길 때마다 총액이 95% 가 된다.</summary>
+    /// <summary>흥정에 이긴 수 — 이길 때마다 총액이 95% 가 된다. 살 수량을 바꾸면 0 이 된다.</summary>
     private int _wins;
 
     /// <summary>악명을 올린다(<c>0x004697C0(1, n)</c> — 알림 없이, 끝에서 자른다).</summary>
@@ -172,6 +172,7 @@ public sealed class TradePostDialog : GameWindow
     {
         if (i < 0 || i >= _rows.Count) return;
         _qty[i] = Math.Clamp(_qty[i] + n, 0, _rows[i].Supply);
+        _wins = 0;
         Paint();
     }
 
@@ -190,15 +191,52 @@ public sealed class TradePostDialog : GameWindow
 
     // ── 결정 · 흥정 ──────────────────────────────────────────────────────────
 
+    /// <remarks>
+    /// 게임은 [결정]을 누르는 자리(<c>0x00415CB0</c>)에서 먼저 품목 수 · 무게 · 자리 · 돈을 본다(<c>0x00415A70</c>).
+    /// 걸리면 <c>0x996</c> 을 안 내므로 <b>흥정 판까지 가지 않는다</b> — 안 될 거래로 깎다가 악명이 오르고
+    /// 상인이 물건을 거둬 가는 일이 없다.
+    /// <para>
+    /// 깎인 값은 <b>살 수량을 바꾸기 전까지</b> 남는다. 게임은 깎일 때마다 구입 창 소계(<c>+0xC0</c>)를 그 값으로
+    /// 바꿔 두고(<c>0x00415980</c>), [결정]은 그 소계를 읽는다(<c>0x00415960</c>). 소계를 다시 셈하는 것은 수량 창을
+    /// 닫을 때(<c>0x004154E6</c> 의 <c>0x004150B0(-1)</c>)뿐이라 「돌아간다」로 나왔다가 다시 [결정]해도 깎인 값이다.
+    /// </para>
+    /// </remarks>
     private void Decide()
     {
         if (_bargainOn) return;
-        _pct = 100;
-        _wins = 0;
+        var why = _post.Check(_player, _city, DealNow());
+        if (why != TradePost.Outcome.Ok) { Block(why); return; }
         int cost = Cost;
         if (!_post.CanBargain(_player, _city, cost)) { Apply(close: true); return; }
         _bargainOn = true;
         Paint();
+    }
+
+    /// <summary>
+    /// 거래를 막는 말 — <b>부관이 있으면 「제독, 」이 붙는 두 벌</b>이고 부관이 말한다(<c>0x00469680</c>).
+    /// 품목 수 말의 부관 없는 쪽만 마침표가 없다 — 원본 글 그대로다(<c>0x00532F60</c>).
+    /// </summary>
+    private void Block(TradePost.Outcome outcome)
+    {
+        bool mate = _player.MateAt(0).Length > 0;
+        string? word = outcome switch
+        {
+            TradePost.Outcome.NotEnoughGold => mate ? "제독, 금화가 모자랍니다." : "금화가 모자랍니다.",
+            TradePost.Outcome.HoldFull => mate ? "제독, 실을 장소가 없습니다." : "실을 장소가 없습니다.",
+            TradePost.Outcome.TooHeavy => mate ? "제독, 너무 무거워 배가 가라앉고 맙니다."
+                                              : "너무 무거워 배가 가라앉고 맙니다.",
+            TradePost.Outcome.NoSlot => mate ? $"제독, 실을 수 있는 것은 {Player.CargoSlots} 품목까지입니다."
+                                             : $"실을 수 있는 것은 {Player.CargoSlots} 품목까지입니다",
+            _ => null,
+        };
+        if (word == null)
+        {
+            Say(outcome == TradePost.Outcome.Nothing ? "담은 것이 없습니다." : "공급량이 모자랍니다.", true);
+            Paint();
+            return;
+        }
+        if (_game.MateSpeaks is { } aide) TalkDialog.Say(this, aide, "", word);
+        else NoticeDialog.Show(this, word);
     }
 
     private void Apply(bool close)
@@ -208,20 +246,8 @@ public sealed class TradePostDialog : GameWindow
         var outcome = _post.Apply(_player, _city, deal);
         if (outcome != TradePost.Outcome.Ok)
         {
-            // 막는 말은 <b>부관이 있으면 「제독, 」이 붙는 두 벌</b>이다(0x00469680).
-            // 품목 수 말의 부관 없는 쪽만 마침표가 없다 — 원본 글 그대로다(0x00532F60).
-            bool mate = _player.MateAt(0).Length > 0;
-            Say(outcome switch
-            {
-                TradePost.Outcome.Nothing => "담은 것이 없습니다.",
-                TradePost.Outcome.NotEnoughGold => mate ? "제독, 금화가 모자랍니다." : "금화가 모자랍니다.",
-                TradePost.Outcome.HoldFull => mate ? "제독, 실을 장소가 없습니다." : "실을 장소가 없습니다.",
-                TradePost.Outcome.TooHeavy => mate ? "제독, 너무 무거워 배가 가라앉고 맙니다."
-                                                  : "너무 무거워 배가 가라앉고 맙니다.",
-                TradePost.Outcome.NoSlot => mate ? $"제독, 실을 수 있는 것은 {Player.CargoSlots} 품목까지입니다."
-                                                 : $"실을 수 있는 것은 {Player.CargoSlots} 품목까지입니다",
-                _ => "공급량이 모자랍니다.",
-            }, true);
+            // 흥정 전에 이미 보았으니(Decide) 여기 닿는 일은 거의 없다 — 깎인 값으로 셈이 달라졌을 때뿐이다.
+            Block(outcome);
             _pct = 100;
             _wins = 0;
             _bargainOn = false;
@@ -258,14 +284,14 @@ public sealed class TradePostDialog : GameWindow
         RaiseInfamy(TradePost.HaggleInfamy);
         bool ok = TradePost.RollBargain(_player, _random, MateAccounting());
         if (ok) _wins++;
-        Say(TradePost.BargainLine(ok, _tries, Cost), !ok);
+        // 상인은 깎을 때마다 제 얼굴로 한 마디 한다(0x004812B8 → 0x00481380 → 0x004692E0) — 성립·결렬 때만이 아니다.
+        TalkDialog.Say(this, _face, "", TradePost.BargainLine(ok, _tries, Cost));
         _tries++;
 
         // 세 번째에 이기면 그 값으로 거래가 서고 창이 닫힌다(0x004812DA → 0x00481430 → 0x0048187F).
         if (ok && _tries >= TradePost.BargainWins)
         {
             RaiseInfamy(TradePost.HaggleWinInfamy);
-            TalkDialog.Say(this, _face, "", _message);
             _bargainOn = false;
             Apply(close: true);
             return;
@@ -274,7 +300,6 @@ public sealed class TradePostDialog : GameWindow
         if (!ok && _tries >= TradePost.BargainLosses)
         {
             int cut = _tries >= 3 ? TradePost.CutHard : TradePost.CutBreak;
-            TalkDialog.Say(this, _face, "", _message);
             _post.CutSupply(_player, _city, cut);
             _settled = true;
             Close();
@@ -362,6 +387,7 @@ public sealed class TradePostDialog : GameWindow
         panel.Children.Add(Header("내 짐", new GameButton("비우기", () =>
         {
             Array.Clear(_qty);
+            _wins = 0;
             Array.Clear(_sell);
             Say("", false);
             Paint();
@@ -425,7 +451,7 @@ public sealed class TradePostDialog : GameWindow
         lines.Children.Add(third);
 
         var buttons = StepButtons(n => AddBuy(i, n),
-            () => { _qty[i] = _qty[i] >= row.Supply ? 0 : row.Supply; Paint(); });
+            () => { _qty[i] = _qty[i] >= row.Supply ? 0 : row.Supply; _wins = 0; Paint(); });
 
         var border = Row(i, row.Kind, lines, buttons);
         border.MouseLeftButtonDown += (_, e) =>
@@ -481,7 +507,7 @@ public sealed class TradePostDialog : GameWindow
         else
         {
             int at = r.Row;
-            buttons = Small("비움", () => { if (at >= 0) _qty[at] = 0; Paint(); }, 50);
+            buttons = Small("비움", () => { if (at >= 0) _qty[at] = 0; _wins = 0; Paint(); }, 50);
         }
 
         var border = Row(v, r.Kind, lines, buttons);
