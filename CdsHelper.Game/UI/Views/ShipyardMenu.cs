@@ -143,7 +143,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             // 동영상은 넘겨받은 창을 가득 채운다 — 명령 창(작다)이 아니라 맨 위 게임 창을 덮는다.
             MoviePlayer.Play(GameUi.RootOf(owner), MovieOf(hull));
 
-            string name = ShipNameDialog.Ask(owner, _player.SuggestShipName(), mustName: true)!;
+            // 선명입력(0x00423BE0) — 중단하면 조선소가 골라 준 이름(0x0044B7B0)으로 산다.
+            string name = ShipNameDialog.Settle(owner, _player.SuggestShipName());
             _player.Buy(hull, name, price);
             _menu.Refresh();
             return;
@@ -912,8 +913,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 단추를 누르면 글자판이 떠서 하나씩 찍어 지을 수 있다 —
     /// <see cref="ShipNameDialog"/> · <see cref="TextInputDialog"/> 가 그 둘이다.
     ///
-    /// 게임은 배를 <b>살 때도</b> 같은 창으로 이름을 받는데 우리 조선소 구입은 아직 안 묻는다 —
-    /// 그때는 안 쓴 이름을 하나 집어 준다(<c>Player.SuggestShipName</c>).
+    /// 게임은 배를 <b>살 때도</b> 같은 창(<c>0x00423BE0</c>)으로 이름을 받는다 — 우리도
+    /// <see cref="ShipNameDialog.Settle"/> 하나를 둘이 같이 쓴다.
     /// </remarks>
     /// <remarks>
     /// 곧장 입력 창이다. 「배의 이름을 정해 주십시오」(<c>0x00531478</c>)는 <b>빈 이름으로 결정했을 때만</b>
@@ -921,17 +922,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private void RenameShip(Ship ship)
     {
-        var owner = Owner;
-        while (ShipNameDialog.Ask(owner, ship.Name) is { } name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                Notice("배의 이름을 정해 주십시오");
-                continue;
-            }
-            if (name != ship.Name) ship.Rename(name);
-            break;
-        }
+        string name = ShipNameDialog.Settle(Owner, ship.Name);
+        if (name != ship.Name) ship.Rename(name);
         _menu.Refresh();
     }
 

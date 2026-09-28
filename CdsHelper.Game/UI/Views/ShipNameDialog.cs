@@ -32,12 +32,8 @@ public sealed class ShipNameDialog : GameWindow
     private readonly List<Border> _rows = [];
     private string? _result;
 
-    /// <summary>물러날 길이 없는 창인지 — 배를 살 때가 그렇다.</summary>
-    private readonly bool _mustName;
-
-    private ShipNameDialog(string current, bool mustName)
+    private ShipNameDialog(string current)
     {
-        _mustName = mustName;
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -81,10 +77,9 @@ public sealed class ShipNameDialog : GameWindow
             Margin = new Thickness(0, 8, 0, 8),
         };
         buttons.Children.Add(new GameButton("결정", Decide, width: 110));
-        if (!_mustName) buttons.Children.Add(new GameButton("중단", Cancel, width: 110));
+        buttons.Children.Add(new GameButton("중단", Cancel, width: 110));
 
-        // 이름을 꼭 지어야 하는 창은 제목 줄의 닫기도 안 단다.
-        var title = _mustName ? GameUi.TitleBar("선명입력", null) : GameUi.TitleBar("선명입력", Cancel);
+        var title = GameUi.TitleBar("선명입력", Cancel);
         GameUi.EnableDrag(this, title);
 
         var stack = new StackPanel();
@@ -111,9 +106,6 @@ public sealed class ShipNameDialog : GameWindow
         Mark(current);
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Cancel(); };
         MouseRightButtonUp += (_, _) => Cancel();
-
-        // 창을 닫는 다른 길(Alt+F4 따위)로 빠져나가도 이름은 남아야 한다.
-        Closing += (_, _) => { if (_mustName) _result ??= _name.Text.Trim(); };
     }
 
     private static Border Framed(UIElement child, Thickness margin) => new()
@@ -150,20 +142,15 @@ public sealed class ShipNameDialog : GameWindow
         }
     }
 
-    /// <summary>결정 — 이름이 비었으면 안 닫는다. 배 이름이 빈 채로 넘어갈 수는 없다.</summary>
+    /// <summary>결정 — 빈 이름도 그대로 낸다. 비었을 때 알리고 다시 여는 것은 <see cref="Settle"/> 이 한다.</summary>
     private void Decide()
     {
-        string name = _name.Text.Trim();
-        if (_mustName && name.Length == 0) return;
-
-        _result = name;
+        _result = _name.Text.Trim();
         Close();
     }
 
     private void Cancel()
     {
-        if (_mustName) return;   // 물러날 길이 없는 창이다
-
         _result = null;
         Close();
     }
@@ -184,7 +171,7 @@ public sealed class ShipNameDialog : GameWindow
     };
 
     /// <summary>
-    /// 창을 띄우고 정한 이름을 낸다. 중단했거나 이름이 비었으면 null.
+    /// 창을 띄우고 정한 이름을 낸다. 중단했으면 null, 빈 채로 결정했으면 빈 글이다.
     /// </summary>
     /// <remarks>
     /// <b>그대로 결정한 것도 답이다.</b> 예전에는 <paramref name="current"/> 와 같으면 null 을
@@ -193,16 +180,32 @@ public sealed class ShipNameDialog : GameWindow
     /// </remarks>
     /// <param name="owner">주인 창.</param>
     /// <param name="current">지금 이름. 창을 열 때 위 줄에 올려 둔다.</param>
-    /// <param name="mustName">
-    /// 참이면 중단이 없다 — 결정 말고는 나갈 길이 없고, 늘 이름을 낸다.
-    /// 배를 살 때가 그렇다(<see cref="HullSelectDialog"/>). 살지 말지는 그 앞에서 이미 물었다.
-    /// </param>
-    public static string? Ask(Window owner, string current, bool mustName = false)
+    public static string? Ask(Window owner, string current)
     {
-        var dialog = new ShipNameDialog(current, mustName) { Owner = owner };
+        var dialog = new ShipNameDialog(current) { Owner = owner };
         dialog.ShowDialog();
+        return dialog._result;
+    }
 
-        string? name = dialog._result;
-        return string.IsNullOrWhiteSpace(name) ? (mustName ? current : null) : name;
+    /// <summary>
+    /// 게임의 <c>0x00423BE0</c> 그대로 이름을 받는다 — 구입과 선명변경이 같이 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   00423CFF  0x00454D30 — 선명입력 창. 중단이면 버퍼를 안 건드린다(이름이 그대로 남는다)
+    ///   00423D0C  결정했는데 비었으면 「배의 이름을 정해 주십시오」(0x00531478, 얼굴 없이) 뒤 창을 다시 연다
+    /// </code>
+    /// 배를 살 때도 <b>중단이 있다</b> — 누르면 조선소가 골라 준 이름으로 산다. 예전에는 살 때만 중단을 떼고
+    /// 빈 이름 결정을 말없이 무시했다.
+    /// </remarks>
+    /// <returns>정한 이름. 중단했으면 <paramref name="current"/> 그대로다.</returns>
+    public static string Settle(Window owner, string current)
+    {
+        while (Ask(owner, current) is { } name)
+        {
+            if (name.Length > 0) return name;
+            ConfirmDialog.Tell(owner, "배의 이름을 정해 주십시오");
+        }
+        return current;
     }
 }
