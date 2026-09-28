@@ -280,14 +280,14 @@ public sealed class TradePostDialog : GameWindow
         RaiseInfamy(TradePost.HaggleInfamy);
         bool ok = TradePost.RollBargain(_player, _random, MateAccounting());
         if (ok) _wins++;
-        Say(TradePost.BargainLine(ok, _tries, Cost), !ok);
+        // 상인은 깎을 때마다 제 얼굴로 한 마디 한다(0x004812B8 → 0x00481380 → 0x004692E0) — 성립·결렬 때만이 아니다.
+        TalkDialog.Say(this, _face, "", TradePost.BargainLine(ok, _tries, Cost));
         _tries++;
 
         // 세 번째에 이기면 그 값으로 거래가 서고 창이 닫힌다(0x004812DA → 0x00481430 → 0x0048187F).
         if (ok && _tries >= TradePost.BargainWins)
         {
             RaiseInfamy(TradePost.HaggleWinInfamy);
-            TalkDialog.Say(this, _face, "", _message);
             _bargainOn = false;
             Apply(close: true);
             return;
@@ -296,7 +296,6 @@ public sealed class TradePostDialog : GameWindow
         if (!ok && _tries >= TradePost.BargainLosses)
         {
             int cut = _tries >= 3 ? TradePost.CutHard : TradePost.CutBreak;
-            TalkDialog.Say(this, _face, "", _message);
             _post.CutSupply(_player, _city, cut);
             _settled = true;
             Close();
