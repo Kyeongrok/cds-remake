@@ -360,8 +360,8 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         return true;
     }
 
-    /// <summary>은퇴 그림(EVSTILL 15)과 곡(<c>0x0C</c>).</summary>
-    private const int RetireStill = 15, RetireTrack = 0x0C;
+    /// <summary>은퇴 그림(EVSTILL 15)과 곡 — 소리 <c>0x0C</c>(<c>0x0046216C</c>)라 CD 트랙으로는 +2 한 14 다.</summary>
+    private const int RetireStill = 15, RetireTrack = 0x0C + 2;
 
     public void Educate()
     {
