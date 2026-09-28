@@ -309,7 +309,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             if (_running) return;
             if (e.Key == Key.PageUp)
             {
-                SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader);
+                SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader, _foe.Name);
                 e.Handled = true;
             }
             else if (e.Key == Key.PageDown && _picked is { } shown)
