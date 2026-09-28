@@ -1821,8 +1821,7 @@ public sealed class ShipMapWindow : Window
         {
             case 0:
                 TalkDialog.Say(owner, face, "", TavernMenu.Executed[dice.Next(TavernMenu.Executed.Length)]);
-                if (_game.World?.People.FirstOrDefault(r => r.Id == leaderId) is { } person)
-                    person.Appear = 0;                                            // 0x00432180(0)
+                _game.Execute(leaderId);                                          // 0x00432180(0)
                 break;
 
             case 2:
@@ -2601,6 +2600,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreKnownCities(saved.KnownCities);
             // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
             _game.Player.RestoreVisitedCities(saved.VisitedCities);
+            _game.Player.RestoreExecuted(saved.Executed);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.
             _game.Player.RestoreCloseness(saved.Closeness);

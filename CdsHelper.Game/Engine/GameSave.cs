@@ -219,7 +219,8 @@ public static class GameSave
         int? FleetCity = null, bool? SkipsCumulative = null, bool? Suspended = null,
         Dictionary<int, string>? Scooped = null, int? Drinking = null,
         Dictionary<int, DateTime>? ScoopedOn = null,
-        List<int>? VisitedCities = null);
+        List<int>? VisitedCities = null,
+        List<int>? Executed = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -345,7 +346,9 @@ public static class GameSave
                             FleetCity: player.FleetCity == Player.FleetUnknown ? null : player.FleetCity,
                             // 「누적캐릭터를 등장시키지 않는다」 깃발. 이 칸 앞의 세이브는 서지 않은 것으로 연다.
                             SkipsCumulative: player.SkipsCumulative ? true : null,
-                            Suspended: suspended ? true : null);
+                            Suspended: suspended ? true : null,
+                            // 처형한 인물. 이 칸 앞의 세이브는 아무도 안 죽인 것으로 연다.
+                            Executed: [.. player.Executed]);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

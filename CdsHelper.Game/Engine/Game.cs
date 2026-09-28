@@ -500,10 +500,17 @@ public sealed class Game
     {
         get
         {
-            if (_world != null && _worldRevision == PersonTable.Revision) return _world;
+            // 표가 고쳐졌거나, 판이 갈렸거나(NEW GAME 은 주인공을 갈아 끼우고 불러오기는 Loads 를 올린다),
+            // 날짜가 뒤로 갔으면 새로 짓는다 — 세상은 앞으로만 가므로(PersonWorld.Advance) 이른 세이브를
+            // 불러오면 사람들이 늦은 판 자리에 얼어붙어 그 날짜를 지날 때까지 안 움직였다.
+            if (_world != null && _worldRevision == PersonTable.Revision
+                && ReferenceEquals(_worldPlayer, Player) && _worldLoads == Player.Loads
+                && Player.Date >= _world.AsOf) return _world;
 
             var table = PersonTable.Open();
             _worldRevision = PersonTable.Revision;
+            _worldPlayer = Player;
+            _worldLoads = Player.Loads;
             _roster = null;
             _rosterWalk = (-1, -1);
 
@@ -513,10 +520,24 @@ public sealed class Game
                 return _world = null;
             }
             // 역사 항해자 열넷은 주사위가 아니라 제 대본대로 움직인다 — 대본을 물려준다.
-            return _world = new PersonWorld(table, CityRows, Buildings,
-                                            Support.Local.Models.Player.StartDate,
-                                            Voyagers, Discoveries?.Table, Cells);
+            _world = new PersonWorld(table, CityRows, Buildings,
+                                     Support.Local.Models.Player.StartDate,
+                                     Voyagers, Discoveries?.Table, Cells);
+            // 처형한 사람은 세상을 새로 지어도 안 돌아온다(0x00432180(0) 이 세이브에 남는 것과 같다).
+            foreach (var row in _world.People)
+                if (Player.Executed.Contains(row.Id)) row.Appear = 0;
+            return _world;
         }
+    }
+
+    /// <summary>
+    /// 일기토에 이긴 뒤 그 인물을 <b>처형한다</b> — 등장 칸을 0 으로 두고(<c>0x004AA35D</c> 의
+    /// <c>0x00432180(0)</c>) 주인공 쪽에도 적어 세이브에 남긴다.
+    /// </summary>
+    public void Execute(int person)
+    {
+        Player.Execute(person);
+        if (World?.People.FirstOrDefault(r => r.Id == person) is { } row) row.Appear = 0;
     }
 
     /// <summary>
@@ -702,6 +723,10 @@ public sealed class Game
 
     /// <summary>인물 표를 읽었을 때의 판. 표가 고쳐지면 달라져 세상을 새로 연다.</summary>
     private int _worldRevision = -1;
+
+    /// <summary>세상을 지을 때의 주인공과 불러오기 횟수 — 판이 갈렸는지 본다.</summary>
+    private Player? _worldPlayer;
+    private int _worldLoads = -1;
 
     /// <summary>술집 목록을 짤 때 사람들이 서 있던 자리. 누가 움직이면 달라진다.</summary>
     private (int Walk, int Year) _rosterWalk = (-1, -1);

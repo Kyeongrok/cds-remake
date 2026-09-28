@@ -1403,6 +1403,38 @@ public sealed class Player
         if (CityId >= 0) _visitedCities.Add(CityId);
     }
 
+    private readonly HashSet<int> _executed = [];
+
+    /// <summary>
+    /// 일기토에 이겨 <b>처형한</b> 인물 번호들.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 인물 레코드의 등장 칸(<c>+0xF4</c>)을 0 으로 두어(<c>0x004AA35D</c> 의 <c>0x00432180(0)</c>)
+    /// 세이브에 그대로 남긴다. 우리 인물 세상은 날짜로 다시 셈해 짓는 것이라 이 칸에 따로 적어 두고,
+    /// 세상을 지을 때마다 덮는다. 이 칸 앞의 세이브는 아무도 안 죽인 것으로 연다.
+    /// </remarks>
+    public IReadOnlyCollection<int> Executed => _executed;
+
+    /// <summary>그 인물을 처형했다고 적는다.</summary>
+    public void Execute(int person)
+    {
+        if (person >= 0) _executed.Add(person);
+    }
+
+    /// <summary>세이브에서 처형한 인물을 되돌린다.</summary>
+    public void RestoreExecuted(IEnumerable<int>? people)
+    {
+        _executed.Clear();
+        foreach (int person in people ?? []) Execute(person);
+        Loads++;                                   // 이미 지어 둔 세상이 있으면 새로 지어 덮게 한다
+    }
+
+    /// <summary>
+    /// 불러오기 횟수 — <see cref="Restore"/> 마다 하나 오른다. 인물 세상처럼 판 밖에 붙어 있는 것이
+    /// 딴 세이브로 갈렸는지 알아보는 데 쓴다.
+    /// </summary>
+    public int Loads { get; private set; }
+
     /// <summary>그 적대 도시의 문이 이미 열렸는지.</summary>
     public bool IsGateOpen(int city) => _openedGates.Contains(city);
 
@@ -1989,6 +2021,8 @@ public sealed class Player
                         int? savings = null,
                         bool supplyInBarrels = false)
     {
+        Loads++;
+        _executed.Clear();
         Gold = gold;
         Date = date;
         EnterCity(cityId, cityName);
