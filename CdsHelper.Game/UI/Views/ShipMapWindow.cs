@@ -2057,7 +2057,7 @@ public sealed class ShipMapWindow : Window
     /// <code>
     ///   0045F65B  "현재 게임중의 캐릭터인 %s%s 있습니다만 어떻게 하겠습니까?"  제목 "모험 중단"
     ///   0045F66C  은퇴시킨다 · 삭제한다 · 신규작성을 중지한다
-    ///   0045F700  은퇴 줄은 [0x005A4D1A] &amp; 0x40 — <b>누적 캐릭터 자리가 비어야</b> 켜진다
+    ///   0045F700  은퇴 줄은 [0x005A4D1A] &amp; 0x40 이 없어야 켜진다 — 그 비트를 세우는 곳이 없어 <b>늘 켜진다</b>
     ///   0045F8CE  삭제한다 → "[%s]%s 삭제합니다. 좋습니까?"
     ///   0045F8F2  YES 면 C:SAVEDATA.CDS · C:SAVEDATA.TMP · C:ACCDATA.CDS 를 지우고 만들기로
     /// </code>
@@ -2085,34 +2085,25 @@ public sealed class ShipMapWindow : Window
                 $"현재 게임중의 캐릭터인 {name}{GameUi.Josa(name, "이", "가")} 있습니다만 " +
                 "어떻게 하겠습니까?", "모험 중단");
 
-            // 누적 캐릭터 자리가 다 찼으면 「은퇴시킨다」 줄이 <b>흐리게 남는다</b> — 목록에서 빠지지는 않는다
-            // (0x0045F700 이 [0x005A4D1A] 의 0x40 비트로 그 줄의 켜짐 칸을 0 으로 둔다).
-            bool room = Engine.AccData.Load().Count < Engine.AccData.Slots;
+            // 「은퇴시킨다」 줄은 <b>늘 켜져 있다</b>. 켜짐은 [0x005A4D1A] 의 0x40 비트로 가르지만(0x0045F700)
+            // 그 비트를 세우는 코드가 게임에 없다 — 자택 은퇴(0x004620A1)도 같은 비트를 보고 같은 까닭으로 안 뜬다.
+            // 그래서 「[%s]에서는 5명의 캐릭터가 …」(0x00571D88)도 안 뜬다.
             int at;
             try
             {
                 at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "삭제한다"], "신규작성을 중지한다",
-                                      dim: room ? -1 : 0, under: held);
+                                      under: held);
             }
             finally { held.Close(); }
 
             if (at == 0)
             {
-                // 초심자용 캐릭터는 못 올린다(0x0045F886). 자리가 다 찼어도 마찬가지고, 둘 다 알린 뒤
-                // <b>타이틀로</b> 나간다(0x0045F89B · 0x0045F853 이 차림표를 부순다).
+                // 초심자용 캐릭터는 못 올린다(0x0045F886) — 알린 뒤 <b>타이틀로</b> 나간다(0x0045F89B).
                 if (Beginner.IsBeginnerBook(saved.ActiveStoryBook))
                 {
                     ConfirmDialog.Tell(this,
                         $"[{name}]{GameUi.Josa(name, "은", "는")} 초심자용 캐릭터입니다. 은퇴할 수 없습니다.",
                         "모험 중단");
-                    return false;
-                }
-
-                if (!room)
-                {
-                    ConfirmDialog.Tell(this,
-                        $"[{name}]에서는 {Engine.AccData.Slots}명의 캐릭터가 사용되고 있기 때문에 "
-                        + "이 캐릭터를 은퇴시킬 수 없습니다.", "모험 중단");
                     return false;
                 }
 
@@ -2130,15 +2121,10 @@ public sealed class ShipMapWindow : Window
                 if (saved.SkipsCumulative == true) Engine.AccData.Clear();
 
                 // 적어 둔 것 그대로 누적 캐릭터로 올린다(0x0041AB90 → 0x0041A270).
-                // <b>자리가 다 찼으면 못 올린다</b>(0x0045F83E) — 그때는 적어 둔 것을
-                // 지우지 않고 되돌아간다. 예전에는 올리지 못한 채로 지워 버렸다.
-                if (!Engine.AccData.Register(saved))
-                {
-                    ConfirmDialog.Tell(this,
-                        $"[{name}]에서는 {Engine.AccData.Slots}명의 캐릭터가 사용되고 있기 때문에 "
-                        + "이 캐릭터를 은퇴시킬 수 없습니다.", "모험 중단");
-                    return false;
-                }
+                // 자리가 다 찼으면 <b>아무 말 없이 못 올리고</b>(0x0041AC60 이 −1 을 내 0x0041ABD5 가 건너뛴다)
+                // 적어 둔 것은 그래도 지운 뒤 새로 짓기로 간다(0x0041ABE2 → 0x0045F81B) — 다섯을 다 등장시킨 판은
+                // 은퇴할 수 없다고 누적 캐릭터 물음이 미리 일러 둔다(0x0055DFE8).
+                Engine.AccData.Register(saved);
 
                 if (GameSave.Delete()) return true;
                 NoticeDialog.Show(this, "적어 둔 것을 지우지 못했습니다.");
