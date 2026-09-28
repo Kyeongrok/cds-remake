@@ -81,7 +81,7 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Meteor => new MeteorScene(),
             // 오아시스(0x00497D60) — 물이 비쳤다 사라졌다 한다. 소리가 둘 걸린다.
             EventAnimation.Oasis => new StripScene(6, 0x80, 0x80, 0x22, up: 0x20,
-                soundAt: 0x0B, sound: 0x3A, endAt: 0x3A, pick: c => c switch
+                soundAt: 0x0B, sound: 0x3A, soundAt2: 0x17, sound2: 0x3B, endAt: 0x3A, pick: c => c switch   // 0x00497D76 · 0x00497D8D
                 {
                     < 0x0B => 0,
                     < 0x11 => 1 + (c - 0x0B) / 2,
@@ -533,7 +533,7 @@ internal sealed class EventAnimationPopup : Window
         /// <summary>여덟 걸음짜리 한 바퀴를 세 번.</summary>
         private const int Steps = 8 * 3;
 
-        public override int SoundPart => 0x36;
+        public override int SoundPart => 0x36 - WaveBank.FirstSoundId;   // 사운드 ID 0x36(0x00499C40) — 파트는 28 을 뺀 26
 
         private BitmapSource[] _berg = [], _spray = [];
         private int _x, _y;
@@ -608,7 +608,7 @@ internal sealed class EventAnimationPopup : Window
         public override bool Step(int c, List<Draw> draws)
         {
             if (c >= 0x36) return true;
-            if (c == 5) Sfx?.Play(0x3C);
+            if (c == 5) Sfx?.Play(0x3C - WaveBank.FirstSoundId);   // 사운드 ID 0x3C(0x00497FAC) — 파트는 28 을 뺀 32
             if (c == 0x2B) Sfx?.Stop();
             if (c < 5) return false;
 
@@ -644,7 +644,8 @@ internal sealed class EventAnimationPopup : Window
     /// </remarks>
     private sealed class StripScene(int part, int frameW, int frameH, int palette, int up = 7,
                                     int soundAt = -1, int sound = -1, int soundOff = -1,
-                                    int endAt = -1, Func<int, int>? pick = null)
+                                    int endAt = -1, Func<int, int>? pick = null,
+                                    int soundAt2 = -1, int sound2 = -1)
         : Scene
     {
         private BitmapSource[] _art = [];
@@ -666,7 +667,9 @@ internal sealed class EventAnimationPopup : Window
 
         public override bool Step(int count, List<Draw> draws)
         {
-            if (count == soundAt && sound >= 0) Sfx?.Play(sound);
+            // sound·sound2 는 사운드 ID 다 — 파트는 28 을 뺀 값이다(0x3A → 30).
+            if (count == soundAt && sound >= 0) Sfx?.Play(sound - WaveBank.FirstSoundId);
+            if (count == soundAt2 && sound2 >= 0) Sfx?.Play(sound2 - WaveBank.FirstSoundId);
             if (count == soundOff) Sfx?.Stop();
 
             // 걸음별 장 표가 있으면 그대로 따르고, 없으면 한 걸음에 한 장씩 곧이 넘긴다.
