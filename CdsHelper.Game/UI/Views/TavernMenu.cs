@@ -367,7 +367,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         // 부관이 깨운다 — <c>부관 지력 + 1 + 제독 운 + 1 &gt;= rand(150)</c> 이라야 한다
         // (0x0042F191 · 0x0042F1A7). 지력은 0x00468F10(부관, 1) 이 사람 칸 +0x24 에서 꺼낸다.
-        if (hasMate && MateGuards())
+        bool guarded = hasMate && MateGuards();
+        // 부관이 있으면 굴린 결과대로 동전이 돈다 — 되든 안 되든(0x0042F1AD → 0x004A6380).
+        if (hasMate) EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, guarded);
+        if (guarded)
         {
             ConfirmDialog.Tell(_view, "제독! 이봐요, 제독! 괜찮습니까?", face: mate);
             ConfirmDialog.Tell(_view, "부관의 목소리에 정신이 들었다");
@@ -378,9 +381,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         // <b>아내가 데리러 온다</b>(0x0042F1D0) — 여기가 제독 나라의 수도(나라 표 +0)이면서 모항이고,
         // 아내가 있고, rand(150) ≤ 운 + 신앙심 + 2 일 때다. 못 걸리면 아래 다섯 가지로 간다.
-        if (_game.Nations?.Find(_player.Nation) is { } home && home.Capital == _cityId
-            && _cityId == _player.HomePort && _player.Spouse.Length > 0
-            && _game.Random.Next(150) <= _player.AbilityOf(Ability.Luck) + _player.AbilityOf(Ability.Faith) + 2)
+        bool wifeNear = _game.Nations?.Find(_player.Nation) is { } home && home.Capital == _cityId
+                        && _cityId == _player.HomePort && _player.Spouse.Length > 0;
+        bool fetched = wifeNear
+                       && _game.Random.Next(150) <= _player.AbilityOf(Ability.Luck) + _player.AbilityOf(Ability.Faith) + 2;
+        // 아내가 올 수 있는 자리면 굴린 결과대로 동전이 돈다(0x0042F232 → 0x004A6380).
+        if (wifeNear) EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, fetched);
+        if (fetched)
         {
             var her = _game.Barmaids?.Find(_player.SpouseId) is { } wife
                 ? _game.Faces?.TryGetBgra(wife.Face, female: true) : null;
