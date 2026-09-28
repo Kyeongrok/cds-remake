@@ -41,7 +41,36 @@ internal static class TownMenu
         // 줄을 고르면 명령을 하기 전에 이야기 대본의 「건물 명령 고름」 사건을 먼저 올린다(0x004A248C →
         // 0x004AB5F0(건물, 줄)). 대본이 결과 1 로 끝나면 그 명령은 안 한다(0x004A2493).
         return new GameMenu(title, null,
-            [.. items.Select((item, row) => (item, Guarded(ActionFor(facility, item, code, teachMask, patron, screen), code, row, screen)))]);
+            [.. items.Select((item, row) => (item, Guarded(ActionFor(facility, item, code, teachMask, patron, screen), code,
+                TableRow(facility, TownWorks.WorkOf(facility, item, TownWorks.Teaches(teachMask), patron != null), row),
+                screen)))]);
+    }
+
+    /// <summary>
+    /// 이야기 대본에 올리는 줄 번호 — 게임은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
+    /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
+    /// </summary>
+    /// <remarks>
+    /// 후원자가 앉는 세 자리는 칸이 붙박이고 조건이 어긋난 칸은 감출 뿐이다 —
+    /// 교회 <c>0x00425440</c> · 그 밖 <c>0x0040D3F0</c> 은 후원자 · 매수 · 빌림 · 수련 · 해설 · 나가기,
+    /// 왕궁 <c>0x00470BD0</c> 은 수련이 없는 다섯 칸이다. 그래서 후원자가 없는 저택에서 첫 줄(나가기)을
+    /// 고르면 칸 5 다 — 보이는 차례 0 을 넘기면 초심자 이야기의 「저택 칸 0(설득)」이 잘못 걸린다.
+    /// 그 밖의 시설은 이야기가 보는 칸(항구·성문 0)이 늘 맨 앞이라 보이는 차례를 그대로 쓴다.
+    /// </remarks>
+    private static int TableRow(Facility facility, TownWork work, int row)
+    {
+        if (facility.Kind is not (FacilityKind.Church or FacilityKind.Palace or FacilityKind.Other)) return row;
+        bool palace = facility.Kind == FacilityKind.Palace;
+        return work switch
+        {
+            TownWork.Persuade or TownWork.Report or TownWork.BreakContract => 0,
+            TownWork.BribeInspector => 1,
+            TownWork.BorrowShips => 2,
+            TownWork.Train => 3,
+            TownWork.Comment => palace ? 3 : 4,
+            TownWork.Exit => palace ? 4 : 5,
+            _ => row,
+        };
     }
 
     private static Action? Guarded(Action? action, int code, int row, ITownScreen screen)

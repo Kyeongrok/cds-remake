@@ -29,8 +29,8 @@ namespace CdsHelper.Game.UI.Views;
 /// 제대로 뜬다(airspace 를 안 탄다). 그림은 400x320 도트 그림이라 정수배로만 늘린다.
 ///
 /// 건물 자리·이름·가르치는 기능은 게임 EXE 의 건물 표(<see cref="CityBuildingTable"/>)에서
-/// 그대로 온다. 표에 항구가 없는 도시라면 그림 아무 데나 눌러도 항구 명령 창이 열리게 해
-/// 두었다 — 출항할 길은 어디서나 있어야 한다.
+/// 그대로 온다. 표에 항구가 없는데 함대가 닻을 내린 도시라면 그림 아무 데나 눌러도 항구 명령 창이
+/// 열리게 해 두었다 — 배를 두고 갇히지 않게 하는 비상구다. 뭍 마을은 성문으로 나선다.
 /// </remarks>
 public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 {
@@ -475,9 +475,13 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (building.Kind == "항구") harborPlaced = true;
         }
 
-        // 표에 항구가 없는 도시는 아무 데나 눌러도 항구 명령 창이 열린다(건물 판이 먼저 먹는다).
+        // 표에 항구가 없는데 함대가 여기 닻을 내렸으면 아무 데나 눌러도 항구 명령 창이 열린다(건물 판이
+        // 먼저 먹는다) — 배를 두고 갇히지 않게 둔 우리 쪽 비상구다. 게임은 항구 줄이 없으면 시설을 아예
+        // 안 연다(0x004A2566) — <b>뭍 한가운데 마을</b>(항구 없는 90곳)에서 빈 자리를 눌러 항구가 뜨던 것은
+        // 원본에 없는 길이라 막는다. 그 마을은 성문으로 나선다.
         _harborPlaced = harborPlaced;
-        if (!harborPlaced)
+        bool bareHarbor = !harborPlaced && _player.FleetHere(cityId, 1);
+        if (bareHarbor)
         {
             picBox.Cursor = Cursors.Hand;
             picBox.MouseLeftButtonUp += (_, _) =>
@@ -495,7 +499,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 제목 줄이 없어도 옮길 수는 있어야 한다 — 그림의 아무 데나 잡으면 끌린다.
         // 건물 판과 명령 창은 누르는 자리라 제 몫으로 삼키므로 여기까지 오지 않는다.
         // 항구를 못 찾은 그림은 그림 전체가 누르는 자리라 끌기를 달지 않는다.
-        if (harborPlaced)
+        if (!bareHarbor)
             picBox.MouseLeftButtonDown += (_, _) =>
             {
                 if (Mouse.LeftButton == MouseButtonState.Pressed) DragMove();
@@ -746,6 +750,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </summary>
     private void Enter(CityBuildingTable.Building building, bool arrived = false)
     {
+        // 건물이 곧 발견물이면 <b>그것이 맨 먼저</b>다 — 게임은 시설을 열기(0x00490AD0) 전에 도시 화면
+        // 쪽에서 발견 대본을 돌리고(0x00492A5E~0x00492AF9), 결과가 밑값 2 로 남으면 건물에 안 든다.
+        if (!Discover(building)) return;
+
         // 초심자 개인 이야기(이야기0/1)가 <b>맨 먼저</b>다 — 게임은 들어서자마자 0x004AB5A0 으로
         // 건물 사건을 보고, 장면이 돌았으면 보복·문간 관문·차림표를 다 건너뛰고 건물을 나선다
         // (0x004A266A → 0x004A26BC). 그래서 명성이 모자라도 이야기의 저택에는 불려 들어간다.
@@ -756,7 +764,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         var facility = Facility.For(building.Kind, building.Code);
         if (!PassFameGate(building, facility)) return;   // 문 앞에서 돌아섰다
-        Discover(building);                              // 이 건물이 곧 발견물일 수 있다
         Greet(facility, building, arrived);
         ShowPhoto(facility.Kind, building.Code);
         if (arrived) facility = ArrivalHarbor(facility);
@@ -892,6 +899,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         // 배로 닿아 항구에서 마을로 드는 문 — 출입여부 1 은 항구까지만 열고 마을은 막는다.
         if (harbor && !PassTownGate()) return;
+
+        // 뭍으로 닿아 성문을 지나 마을에 들면 성문 칸 5(0x004686F0)가 0x004A2AD0(10, 2)를 돌려 삐짐을
+        // 다 푼다. 배로 닿은 항구는 닿을 때 0x004A2AD0(10, 1)(0x004770F2)이라 안 푼다.
+        if (!harbor) _player.ClearSulks();
 
         if (_game.AideFace is { } aideFace)
             TalkDialog.Say(this, aideFace, "",
@@ -1202,14 +1213,23 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 지도에 사각형이 없어(<c>-1</c>) 자리로는 영영 안 잡힌다.
     ///
     /// 힌트로 열리는 것도 있으므로 <see cref="DiscoveryLog.IsOpen"/> 을 거친다.
+    ///
+    /// 게임은 대본의 결과 코드(밑값 2)로 <b>건물에 들지</b>를 가른다(<c>0x00492B06</c>):
+    /// <code>
+    ///   0 · 1   발견물 줄 +0x17 비트 0 을 세우고 건물에 든다
+    ///   2       안 든다 — 발견 장면만 보고 도시 그림으로 돌아간다
+    ///   그 밖   건물에 든다
+    /// </code>
+    /// 예전에는 발견하고 나서 곧장 인사와 차림표로 이어졌다.
     /// </remarks>
-    private void Discover(CityBuildingTable.Building building)
+    /// <returns>건물에 들어가도 되면 true — 발견할 것이 없었으면 늘 true 다.</returns>
+    private bool Discover(CityBuildingTable.Building building)
     {
-        if (!building.IsDiscovery) return;
-        if (_game.Discoveries is not { } log) return;
-        if (log.Table.Find(building.Discovery) is not { } row) return;
-        if (_player.HasFound(row.Id)) return;
-        if (!log.IsOpen(_player, row)) return;
+        if (!building.IsDiscovery) return true;
+        if (_game.Discoveries is not { } log) return true;
+        if (log.Table.Find(building.Discovery) is not { } row) return true;
+        if (_player.HasFound(row.Id)) return true;
+        if (!log.IsOpen(_player, row)) return true;
 
         // 발견 대본(DISEV)이 있으면 <b>그것이 다 한다</b> — 동영상 · 대사 · 육상전까지. 바다·뭍 발견
         // (ShipMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
@@ -1221,7 +1241,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         {
             GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
             if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
-            return;
+            return false;
         }
 
         // 대본이 돌았으면 발견·물건은 대본의 01 0B 가 준다(0x0048D3F0 은 따로 안 적는다).
@@ -1233,6 +1253,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             DiscoveryDialog.Show(this, _game.Stills, building.Picture,
                                  $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");
 
+        // 대본이 없으면 결과가 밑값 2 그대로라 안 든다.
+        return scripted && Engine.Disev.DisevRunner.LastResult != 2;
     }
 
     /// <summary>
@@ -1952,7 +1974,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         int pay = inn.OddJobPay(_cityId);
         // 한 해가 가는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
-        DayPass.Blackout(this, () => _player.AdvanceDays(Lodging.OddJobDays));
+        DayPass.Blackout(this, () => _player.PassTownDays(Lodging.OddJobDays));
         _player.SetCondition(_player.Condition + Lodging.OddJobRest(_random));
         TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
 
@@ -2532,6 +2554,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!Port.ConfirmSail()) return;
         Sailed = true;
         SailedOnArrival = _arrived;
+        // 마을에서 걸어 나와 출항하면 항구 칸 6(0x00477310)이 0x004A2AD0(10, 2)를 돌려 삐짐을 다 푼다.
+        // 닿자마자 곧장 떠나면(+0x98) 그 칸이 아무것도 안 한다. 열흘은 지도 창이 보낸다.
+        if (!_arrived) _player.ClearSulks();
         _gateway = null;
         Close();
     }
@@ -2548,6 +2573,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 : "탐험하러 출발하십니까?")) return;
 
         Explored = true;
+        // 성문 칸 6(0x00468770)이 0x004A2AD0(10, 2) — 탐험을 떠나면 삐짐이 다 풀린다.
+        _player.ClearSulks();
         _gateway = null;
         Close();
     }

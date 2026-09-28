@@ -183,14 +183,11 @@ public sealed class StorageDialog : GameWindow
     {
         var stack = new StackPanel { Width = ListWidth };
 
-        // 원본 조각을 못 읽었으면 띠 대신 글자만 낸다.
+        // 원본 조각을 못 읽었으면 띠 대신 게임 글자만 낸다.
         if (GameUi.TitleFrame(GameUi.Sprites, title) is { } band) stack.Children.Add(band);
-        else stack.Children.Add(new TextBlock
+        else stack.Children.Add(new GameUi.GameLabel(GameFont.WhiteColor)
         {
             Text = title,
-            Foreground = GameUi.Text,
-            FontWeight = FontWeights.Bold,
-            FontSize = 15,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 3, 0, 3),
         });

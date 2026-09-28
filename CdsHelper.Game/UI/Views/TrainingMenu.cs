@@ -167,7 +167,7 @@ internal sealed class TrainingMenu(Window view, Engine.Game game, int buildingCo
         Player.SetGold(Player.Gold - cost);
         int days = (200 - Player.AbilityOf(Ability.Mind)) * months * 30 / 100;
 
-        Blackout(() => Player.AdvanceDays(days));
+        Blackout(() => Player.PassTownDays(days));   // 0x00491260 의 0x004A2AD0(날, 1)
         // 배우는 동안 쉰 셈으로 HP 가 지난 날의 10분의 1 만큼 찬다(0x00491270).
         Player.SetCondition(Player.Condition + days / 10);
 

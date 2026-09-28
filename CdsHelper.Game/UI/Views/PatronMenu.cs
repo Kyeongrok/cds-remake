@@ -256,7 +256,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
 
         // 기분이 상한 후원자는 문간에서 돌려보낸다(0x004AEFC1, 후원자 비트 14) — 설득을 물렸거나
-        // 계약 결판을 치른 뒤 한동안이다(풀리는 셈은 Player.IsSulking 참고).
+        // 계약 결판을 치른 뒤 한동안이다(풀리는 셈은 Player.PassTownDays 참고).
         if (_player.IsSulking(patron.Name))
         {
             // 0x00546778 「%s%s 꽤 기분이…」 — 인자는 경칭과 그 조사 은/는 뿐이다(0x004AEFA2 의 0x004281B0(경칭, 1)).
@@ -1952,7 +1952,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int years = dice.Next(2) + (109 - luck) / 10;
         GameDialog.Show(_view, $"그리고 {years}년의 세월이 흘렀다");
 
-        _player.AdvanceDays(years * 365);
+        // 0x0044EF8F 의 0x004A2AD0(해x365, 1) — 한 해가 넘으니 삐짐이 다 풀리고, 곧바로 이 후원자만
+        // 다시 삐진다(0x0044EF9F 의 0x004ADAA0(0xE)).
+        _player.PassTownDays(years * 365);
+        _player.Sulk(patron.Name);
         var stats = _player.Abilities.ToArray();
         stats[Ability.Body] = Math.Max(Ability.Min, stats[Ability.Body] - 5 * years);
         stats[Ability.Charm] = Math.Max(Ability.Min, stats[Ability.Charm] - 5 * years);

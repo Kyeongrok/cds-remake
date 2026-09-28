@@ -1616,31 +1616,46 @@ public sealed class Player
 
     private readonly Dictionary<string, DateTime> _sulks = [];
 
-    /// <summary>후원자가 기분이 상해 있는 날수 — 이만큼 지나면 풀린다.</summary>
-    /// <remarks>
-    /// <b>원본과 셈이 다르다.</b> 게임은 날을 넘기는 <c>0x004A2AD0(날수, 모드)</c> 가 모드 2 이거나,
-    /// 모드 1 로 <b>한 번에 30일 이상</b> 넘길 때 81명 모두의 비트 14 를 한꺼번에 지운다(<c>0x004A2B40</c>).
-    /// 모드 1 은 휴양·감옥 같은 긴 넘김이고, 모드 2 는 항구·성문 건물의 나설 때 갈래(vtable <c>0x00519E58</c> ·
-    /// <c>0x00519EA4</c> · <c>0x00519EA8</c> → <c>0x00477310</c> · <c>0x004686F0</c> · <c>0x00468770</c>, 열흘)인데,
-    /// 그 갈래가 어떤 때 타는지(<c>[0x005A4D18] &amp; 8</c> · 건물 <c>+0x98</c>)는 아직 못 밝혔다. 그래서 후원자마다
-    /// 삐진 날부터 30일로 어림한다 — 항해로 흐르는 날은 원본에서 삐짐을 안 푸는 듯하다.
-    /// </remarks>
-    public const int SulkDays = 30;
-
     /// <summary>
     /// 기분이 상한 후원자와 그 날 — 게임의 후원자 플래그 비트 14. 켜져 있으면 설득을 문간에서 돌려보낸다.
     /// </summary>
+    /// <remarks>
+    /// 날은 세이브 모양을 지키려고 남겨 둔 것이고 셈에는 안 쓴다 — 게임의 비트 14 는 날짜를 안 들고,
+    /// <b>마을에서 날을 넘길 때 81명 것을 한꺼번에</b> 지운다(<see cref="PassTownDays"/>).
+    /// </remarks>
     public IReadOnlyDictionary<string, DateTime> Sulks => _sulks;
 
-    /// <summary>후원자 기분을 상하게 한다(설득 거절 · 계약 결판 뒤).</summary>
+    /// <summary>후원자 기분을 상하게 한다(설득 거절 · 계약 결판 · 감옥 뒤 — <c>0x004ADAA0(0xE)</c>).</summary>
     public void Sulk(string sponsor)
     {
         if (!string.IsNullOrEmpty(sponsor)) _sulks[sponsor] = Date;
     }
 
-    /// <summary>그 후원자가 아직 기분이 상해 있는지.</summary>
-    public bool IsSulking(string sponsor) =>
-        _sulks.TryGetValue(sponsor, out var since) && (Date - since).TotalDays < SulkDays;
+    /// <summary>그 후원자가 아직 기분이 상해 있는지 — 비트 14 가 서 있는지.</summary>
+    public bool IsSulking(string sponsor) => _sulks.ContainsKey(sponsor);
+
+    /// <summary>모든 후원자의 삐짐을 푼다(<c>0x004A2B40</c> — 81명의 비트 14 를 지운다).</summary>
+    public void ClearSulks() => _sulks.Clear();
+
+    /// <summary>
+    /// 마을에서 날을 넘긴다 — 게임의 <c>0x004A2AD0(날수, 모드)</c> 다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   4a2ad5  모드 2            → 0x004A2B40  삐짐을 모두 푼다
+    ///   4a2ade  모드 1, 날수 ≥ 30 → 0x004A2B40
+    ///   4a2afc  날수 &gt; 0 이면 피로 −날수 · 사기 +날수x3 · 날짜를 넘긴다
+    /// </code>
+    /// 모드 1 은 숙박(30) · 허드렛일(365) · 휴양 · 교육 · 수련 · 감옥 · 배로 닿음(10)이고,
+    /// 모드 2 는 항구·성문을 나설 때 도는 열흘뿐이다(<paramref name="leaving"/>).
+    /// 바다의 날(<see cref="PassDayAtSea"/>)과 대본의 날 넘김은 이 길을 안 타 삐짐이 안 풀린다.
+    /// </remarks>
+    /// <param name="leaving">모드 2 — 날수와 상관없이 삐짐을 푼다.</param>
+    public void PassTownDays(int days, bool leaving = false)
+    {
+        if (leaving || days >= DaysPerMonth) ClearSulks();
+        AdvanceDays(days);
+    }
 
     /// <summary>세이브를 되돌릴 때.</summary>
     public void RestoreSulks(Dictionary<string, DateTime>? sulks)

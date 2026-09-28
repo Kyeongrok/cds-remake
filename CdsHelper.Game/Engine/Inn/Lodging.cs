@@ -147,7 +147,7 @@ public sealed class Lodging
 
         player.Pay(price);
         // 달력 한 달이 아니라 <b>서른 날</b>이다(0x0047FC9C 의 0x004A2AD0(0x1E, 1)).
-        player.AdvanceDays(StayDays);
+        player.PassTownDays(StayDays);
         return StayResult.Ok;
     }
 

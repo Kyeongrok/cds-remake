@@ -18,7 +18,11 @@ public enum FacilityKind
     Guild,        // 조합
     Home,         // 자택 — 내 집이다(저택 = 귀족 저택은 딴 건물이다)
     Gate,         // 성문
-    Other,        // 그 밖(저택·상관·모스크·사원 …) — 아직 흉내내지 않는다
+    // 그 밖(코드 12~15 — 저택·상관·학자 저택 …). 제 일이 없는 자리다 — 게임의 다섯 벌(0x0051A250~)이
+    // 인사 칸에 문간 관문(0x0040D370)을, 차림표에 여섯 줄(0x0040D3F0)을 둔다:
+    // 후원자 줄(0x0044EAE0) · 감찰관을 매수 · 배를 빌린다 · 수련(0x00490D60) · 해설(0x004A2A10) ·
+    // 「%s에서 나온다」(0x004A2A40). 모두 조건 줄이라 다 옮겨 두었다(TownWorks.LinesOf).
+    Other,
 }
 
 /// <summary>
@@ -38,8 +42,8 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public string ExitItem => Menu[^1];
 
     /// <summary>
-    /// 게임에 있는 시설들. 지금 도시 그림에서 자리를 아는 것은 항구·조선소·술집 셋이고,
-    /// 나머지는 자리를 찾으면 그대로 뜬다(<see cref="CityBuildings"/>).
+    /// 게임에 있는 시설들 — 건물 코드 0~11 이 이 가운데 하나다(<see cref="CodeName"/>).
+    /// 12~15 는 <see cref="For"/> 가 나가기 한 줄짜리 <see cref="FacilityKind.Other"/> 로 짓는다.
     /// </summary>
     public static readonly Facility[] All =
     [
