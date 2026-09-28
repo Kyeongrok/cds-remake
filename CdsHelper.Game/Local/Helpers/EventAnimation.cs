@@ -83,6 +83,12 @@ public sealed class EventAnimation
     /// </summary>
     public const int GhostShip = 9;
 
+    /// <summary>
+    /// 갈매기 장면 — 16 은 판을 열거나 불러온 뒤 <b>첫 출항</b>(<c>0x0048EBE5</c>), 17 은 항구 도시를 처음
+    /// 알아봤을 때 넷에 한 번(<c>0x0048D9D0</c>)이다. EVANIME 파트 20(96x96 서른여섯 장) · 팔레트 46 · 소리 0x31.
+    /// </summary>
+    public const int Gulls = 16, GullsAtCity = 17;
+
     /// <summary>바다 짐승 장면들(아래).</summary>
     public const int Whale = 19, Dolphin = 20, FlyingFish = 21, Flamingo = 22, Morpho = 23;
 
