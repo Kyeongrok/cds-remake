@@ -750,8 +750,8 @@ public sealed class LandBattle
     ///                     갈래 2·4 rand(9) != 0 ? 방어중시 : 통상
     ///                     갈래 3   명령을 안 바꾼다
     /// </code>
-    /// <b>함대전 갈래(4)는 따로 옮길 것이 없다.</b> 지고 있을 때는 마을 공략(2)과 셈이 같고,
-    /// 이기고 있을 때는 명령을 아예 안 바꾼다. 우리 쪽에는 그 판이 없기도 하다.
+    /// <b>갈래 4 는 대본의 도시전(<c>2F 08</c>)이다.</b> 지고 있을 때는 마을 공략(2)과 셈이 같고,
+    /// 이기고 있을 때는 명령을 아예 안 바꾼다.
     ///
     /// <b>죽은 가지 하나</b> — <c>0x00447B14</c> 가 <c>갈래 != 0</c> 이면 뛰고 나서 <c>갈래 == 3</c>
     /// 을 보는데, 거기 닿았을 때 갈래는 반드시 0 이라 절대 안 걸린다.
@@ -759,7 +759,12 @@ public sealed class LandBattle
     /// <b>적은 마을 공략에서 일기토를 안 건다</b>(<c>0x004479D7</c> 이 갈래 2·4 를
     /// 먼저 걸러 낸다). 퇴각도 갈래 1 에서만 고른다.
     /// </remarks>
-    public int FoeOrder(GameRandom dice)
+    public int FoeOrder(GameRandom dice) => _foeOrder = PickFoeOrder(dice);
+
+    /// <summary>적이 지난 턴에 고른 명령(<c>+0x94</c>) — 갈래 3·4 의 늦은 턴은 이것을 그대로 쓴다.</summary>
+    private int _foeOrder = Normal;
+
+    private int PickFoeOrder(GameRandom dice)
     {
         bool ahead = MenOn(foe: true) >= MenOn(foe: false);
         bool field = Sort == Field;                    // 들에서 마주친 부대는 셈이 다르다
@@ -769,6 +774,9 @@ public sealed class LandBattle
             if (field)
                 return ahead ? (dice.Next(5) != 0 ? Charge : Normal)
                              : (dice.Next(4) == 0 ? Retreat : Normal);
+            // 대본의 인물전(3)은 늦은 턴에 명령을 새로 안 고르고(0x00447AAC · 0x00447B44 → 0x00447C1C),
+            // 대본의 도시전(4)은 앞설 때만 그렇다. 예전에는 둘 다 마을 공략 셈으로 굴렸다.
+            if (Sort == Script || (Sort == ScriptCity && ahead)) return _foeOrder;
             // 마을 공략은 앞서면 지키고, 밀리면 아홉에 여덟으로 지킨다.
             return dice.Next(ahead ? 4 : 9) != 0 ? Guarded : Normal;
         }
