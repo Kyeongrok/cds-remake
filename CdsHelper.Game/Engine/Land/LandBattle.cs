@@ -46,6 +46,55 @@ public sealed class LandBattle
 
     private readonly Unit[] _units = new Unit[Slots];
 
+    /// <summary>
+    /// 후열에서 앞으로 나온 부대인지 — 부대 <c>+0x08</c>(열)을 0 으로 내리고 <c>+0x0C</c>(자리)를 3 당긴 것이다.
+    /// </summary>
+    private readonly bool[] _advanced = new bool[Slots];
+
+    /// <summary>
+    /// 그 부대가 선 자리(0~5, 0·1·2 앞열) — 처음에는 슬롯 자리 그대로이고, 앞열이 비어 앞으로 나오면 3 을 당긴다
+    /// (<see cref="AdvanceRows"/>).
+    /// </summary>
+    public int PlaceOf(int slot) => slot % PerSide - (_advanced[slot] ? 3 : 0);
+
+    /// <summary>그 부대가 앞열에 서 있는지.</summary>
+    public bool IsFront(int slot) => LandUnits.IsFront(PlaceOf(slot));
+
+    /// <summary>그 편에서 그 자리(0~5)에 선 부대(<c>0x00447470</c>). 없으면 −1.</summary>
+    public int AtPlace(bool foe, int place)
+    {
+        int side = foe ? FirstFoe : 0;
+        for (int i = side; i < side + PerSide; i++)
+            if (_units[i].Standing && PlaceOf(i) == place) return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// 그 편 앞열이 다 쓰러졌으면 <b>후열을 앞으로 당긴다</b>(<c>0x004484F0</c> → <c>0x00447660</c> 이 앞열 수를 세고,
+    /// 0 이면 <c>0x00448440</c> 이 산 후열 부대의 열을 0 으로, 자리를 3 당긴다 — 그림도 앞줄로 옮긴다 <c>0x004470D0</c>).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 한 대 칠 때마다(<c>0x0044886D</c> · <c>0x004488EC</c> · <c>0x00448A14</c>), 한꺼번에 쓰러뜨린 뒤
+    /// (<c>0x00448530</c>), 판을 열 때(<c>0x00449CC2</c>) 이것을 본다. 예전에는 자리를 슬롯 번호로 못박아, 앞열이
+    /// 비면 근접이 헛치고 후열에만 놓은 부대는 적 근접이 거의 못 쳤다.
+    /// </remarks>
+    /// <returns>당긴 부대가 있으면 true.</returns>
+    public bool AdvanceRows(bool foe)
+    {
+        int side = foe ? FirstFoe : 0;
+        for (int i = side; i < side + PerSide; i++)
+            if (_units[i].Standing && IsFront(i)) return false;
+
+        bool moved = false;
+        for (int i = side; i < side + PerSide; i++)
+        {
+            if (!_units[i].Standing || _advanced[i]) continue;
+            _advanced[i] = true;
+            moved = true;
+        }
+        return moved;
+    }
+
     /// <summary>부대 열둘. 앞 여섯이 아군이다.</summary>
     public IReadOnlyList<Unit> Units => _units;
 
@@ -68,6 +117,21 @@ public sealed class LandBattle
 
     /// <summary>싸움터 그림 번호 — 0 도시 · 1 초지 · 2 숲 · 3 황무지.</summary>
     public int Terrain { get; }
+
+    /// <summary>
+    /// 일기토에 나서는 적 대장 인물 — 대본 인물전은 그 인물, 마을 공략·대본 도시전은 인물 0x113(275)이다
+    /// (<c>0x004478A0</c>). 모르면 −1.
+    /// </summary>
+    public int FoePerson
+    {
+        get => _foePerson >= 0 ? _foePerson : CityFight ? TownDuelist : -1;
+        init => _foePerson = value;
+    }
+
+    private readonly int _foePerson = -1;
+
+    /// <summary>마을 공략의 일기토 상대 인물(<c>0x004478C5</c> 의 <c>mov eax, 0x113</c>).</summary>
+    public const int TownDuelist = 0x113;
 
     /// <summary>상대 도시의 문화권. 적 진형과 그림이 이것으로 갈린다.</summary>
     public int Culture { get; }
@@ -104,8 +168,9 @@ public sealed class LandBattle
     /// <param name="mock">모의전이면 참 — 값을 안 치른다.</param>
     public LandBattle(IReadOnlyList<int> mine, Player player, Player.MateInfo? aide,
                       int scale, int nation, int culture, int terrain, GameRandom dice,
-                      int myMen = 0, bool mock = false, int city = -1)
+                      int myMen = 0, bool mock = false, int city = -1, int sort = Town)
     {
+        Sort = sort == ScriptCity ? ScriptCity : Town;
         City = city;
         Nation = nation;
         Culture = culture;
@@ -129,7 +194,9 @@ public sealed class LandBattle
         Muster(scale, dice);
         for (int i = FirstFoe; i < Slots; i++) FoeFirst += _units[i].Men;
         FoeRoom = FoeUnits > 0 ? FoeFirst / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         MyRoom = MyUnits > 0 ? MyFirst / MyUnits : MyFirst;
+        MySpare = MyUnits > 0 ? MyFirst % MyUnits : 0;
     }
 
     /// <summary>
@@ -168,7 +235,9 @@ public sealed class LandBattle
 
         for (int i = FirstFoe; i < Slots; i++) FoeFirst += _units[i].Men;
         FoeRoom = FoeUnits > 0 ? FoeFirst / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         MyRoom = MyUnits > 0 ? MyFirst / MyUnits : MyFirst;
+        MySpare = MyUnits > 0 ? MyFirst % MyUnits : 0;
     }
 
     /// <summary>
@@ -223,7 +292,9 @@ public sealed class LandBattle
         Deal(Math.Max(1, foeMen), dice);
         for (int i = FirstFoe; i < Slots; i++) FoeFirst += _units[i].Men;
         FoeRoom = FoeUnits > 0 ? FoeFirst / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         MyRoom = MyUnits > 0 ? MyFirst / MyUnits : MyFirst;
+        MySpare = MyUnits > 0 ? MyFirst % MyUnits : 0;
     }
 
     /// <summary>
@@ -318,12 +389,13 @@ public sealed class LandBattle
         if (Scale < ReinforcingScale && City is not (ReinforcingCityA or ReinforcingCityB)) return false;
 
         _reinforced = true;
-        for (int i = FirstFoe; i < Slots; i++) _units[i] = default;
+        for (int i = FirstFoe; i < Slots; i++) { _units[i] = default; _advanced[i] = false; }
 
         Muster(Scale, dice);
         // 적 처음 인원은 새 편성으로 <b>다시</b> 센다(0x004A1320 — 더하지 않는다).
         FoeFirst = MenOn(foe: true);
         FoeRoom = FoeUnits > 0 ? MenOn(foe: true) / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         return true;
     }
 
@@ -359,6 +431,22 @@ public sealed class LandBattle
     /// <summary>부대 하나의 정원.</summary>
     public int RoomPerUnit(int side) => side >= FirstFoe ? FoeRoom : MyRoom;
 
+    /// <summary>
+    /// 그 자리 부대의 정원 — 총대장 부대는 나누고 남은 나머지를 더 갖는다(<c>0x00448280</c> 이 슬롯 6 이면
+    /// 나머지를 더한다 · 적 일기토 문 <c>0x004479E1</c> 의 <c>+0x40</c> 도 대장 처음 인원이다).
+    /// </summary>
+    public int RoomAt(int slot)
+    {
+        bool foe = slot >= FirstFoe;
+        int room = foe ? FoeRoom : MyRoom;
+        return slot >= 0 && slot < Slots && _units[slot].IsLeader ? room + (foe ? FoeSpare : MySpare) : room;
+    }
+
+    /// <summary>처음 인원을 부대 수로 나누고 남은 것 — 총대장 부대 몫이다.</summary>
+    private int FoeSpare { get; set; }
+
+    private int MySpare { get; set; }
+
     /// <summary>그 부대의 병사수를 고쳐 넣는다. 0 이 되면 쓰러진 것이다.</summary>
     public void SetMen(int slot, int men)
     {
@@ -389,16 +477,16 @@ public sealed class LandBattle
     }
 
     /// <summary>
-    /// 그 자리 부대의 무력 — 아군은 <b>제독과 부관 가운데 큰 쪽 + 1</b> 이다
-    /// (<c>0x00446FF0</c>, 기능과 같은 규칙이다).
+    /// 그 자리 부대의 무력 — 아군은 <b>제독과 부관 가운데 큰 쪽 + 1</b>, 적은 적 대장 값 + 1 이다
+    /// (<c>0x00446FF0</c>, 기능과 같은 규칙이다). 피해 셈(<c>0x00444AB0</c>)은 이 값을 그대로 쓴다.
     /// </summary>
     public int MightAt(int slot) =>
-        slot >= FirstFoe ? FoeMight
+        slot >= FirstFoe ? FoeMight + 1
         : Math.Max(_me.AbilityOf(Ability.Might), _aide?.Might ?? 0) + 1;
 
-    /// <summary>그 자리 부대의 지력 — 아군은 제독과 부관 가운데 큰 쪽 + 1 이다(<c>0x00446FF0</c>).</summary>
+    /// <summary>그 자리 부대의 지력 — 아군은 제독과 부관 가운데 큰 쪽 + 1, 적은 적 대장 값 + 1 이다(<c>0x00446FF0</c>).</summary>
     public int MindAt(int slot) =>
-        slot >= FirstFoe ? FoeMind
+        slot >= FirstFoe ? FoeMind + 1
         : Math.Max(_me.AbilityOf(Ability.Mind), _aide?.Mind ?? 0) + 1;
 
     // ── 아군 ───────────────────────────────────────────────────────────────────
@@ -493,6 +581,11 @@ public sealed class LandBattle
     /// </remarks>
     private int FoeSkill(int slot)
     {
+        // 신학(+0x6C)은 규모로 안 매긴다 — 0x00449E50 은 인물 0x113(275)을 떠 와 검술·포술·사격술만 고치므로
+        // 마을 공략의 신학은 275 번 값 그대로인 0 이다. 대본 판은 그 인물의 신학이다. 예전에는 신학에도 규모
+        // 등급을 주어 주술사·고승·표범의 방어와 행동 빠르기가 부풀었다.
+        if (slot == Skill.Theology) return Math.Clamp(FoeTheology, 0, Skill.MaxLevel);
+
         // 적 대장 인물을 알면(발견 대본의 2F 0D [인물]) 그 사람의 기능 자리를 그대로 본다.
         // 파르테논 신전의 206번에게 사격술 3 을 주면 화승총병이 아니라 머스켓총병이 선다.
         if (FoeSkills is { } known)
@@ -512,6 +605,9 @@ public sealed class LandBattle
     /// </summary>
     /// <remarks>게임은 <c>0x00446F70(기능, 6)</c> 으로 적 대장 인물 레코드를 본다.</remarks>
     public (int Sword, int Gunnery, int Shooting)? FoeSkills { get; init; }
+
+    /// <summary>적 대장의 신학. 대본 판은 그 인물 것이고, 마을 공략·들싸움은 0 이다(<c>0x00449E50</c>).</summary>
+    public int FoeTheology { get; init; }
 
     /// <summary>적장 얼굴 — 몰살한 뒤 봐 줄 때 적장이 한마디 한다(<c>0x00446DD9</c> 가 <c>[+0x9C]</c> 의 얼굴을 쓴다).</summary>
     public uint[]? FoeFace { get; init; }
@@ -557,9 +653,10 @@ public sealed class LandBattle
         {
             Field => (60, 0),
             Script => (50, 0),
+            ScriptCity => (100, 0),
             _ => (100, 200),
         };
-        bool countsInfamy = Sort != Script;         // 갈래 3·4 는 악명을 건너뛴다(0x004496DA)
+        bool countsInfamy = Sort is not (Script or ScriptCity);   // 갈래 3·4 는 악명을 건너뛴다(0x004496DA)
         bool same = Nation >= 0 && Nation == _me.Nation;
 
         int fame = won ? fameBase + (same ? 0 : 10) + dice.Next(11) : dice.Next(11);
@@ -660,8 +757,15 @@ public sealed class LandBattle
     /// </remarks>
     public int Sort { get; } = Town;
 
-    /// <summary>전투 갈래 — 들에서 마주친 부대 · 마을 공략 · 발견 대본의 인물전(<c>2F 0D</c>)이다.</summary>
-    public const int Field = 1, Town = 2, Script = 3;
+    /// <summary>전투 갈래 — 들에서 마주친 부대 · 마을 공략 · 발견 대본의 인물전(<c>2F 0D</c>) · 대본의 도시전(<c>2F 08</c>)이다.</summary>
+    /// <remarks>
+    /// <see cref="ScriptCity"/>(4)는 적을 마을 공략처럼 도시 규모로 짓지만(<c>0x00449E50</c> 이 2·4 를 함께 본다)
+    /// 증원이 없고(<c>0x00449930</c> 은 2 만) 악명을 안 센다(<c>0x004496DA</c> 는 3·4 를 건너뛴다).
+    /// </remarks>
+    public const int Field = 1, Town = 2, Script = 3, ScriptCity = 4;
+
+    /// <summary>적을 도시 규모로 짓는 판인지 — 마을 공략(2)과 대본의 도시전(4)이다.</summary>
+    private bool CityFight => Sort is Town or ScriptCity;
 
     /// <summary>작렬탄을 받았는지. 서 있으면 포가 비를 안 타고 두 번 쏜다.</summary>
     public bool Shells { get; private set; }
@@ -733,8 +837,8 @@ public sealed class LandBattle
     ///                     갈래 2·4 rand(9) != 0 ? 방어중시 : 통상
     ///                     갈래 3   명령을 안 바꾼다
     /// </code>
-    /// <b>함대전 갈래(4)는 따로 옮길 것이 없다.</b> 지고 있을 때는 마을 공략(2)과 셈이 같고,
-    /// 이기고 있을 때는 명령을 아예 안 바꾼다. 우리 쪽에는 그 판이 없기도 하다.
+    /// <b>갈래 4 는 대본의 도시전(<c>2F 08</c>)이다.</b> 지고 있을 때는 마을 공략(2)과 셈이 같고,
+    /// 이기고 있을 때는 명령을 아예 안 바꾼다.
     ///
     /// <b>죽은 가지 하나</b> — <c>0x00447B14</c> 가 <c>갈래 != 0</c> 이면 뛰고 나서 <c>갈래 == 3</c>
     /// 을 보는데, 거기 닿았을 때 갈래는 반드시 0 이라 절대 안 걸린다.
@@ -742,7 +846,12 @@ public sealed class LandBattle
     /// <b>적은 마을 공략에서 일기토를 안 건다</b>(<c>0x004479D7</c> 이 갈래 2·4 를
     /// 먼저 걸러 낸다). 퇴각도 갈래 1 에서만 고른다.
     /// </remarks>
-    public int FoeOrder(GameRandom dice)
+    public int FoeOrder(GameRandom dice) => _foeOrder = PickFoeOrder(dice);
+
+    /// <summary>적이 지난 턴에 고른 명령(<c>+0x94</c>) — 갈래 3·4 의 늦은 턴은 이것을 그대로 쓴다.</summary>
+    private int _foeOrder = Normal;
+
+    private int PickFoeOrder(GameRandom dice)
     {
         bool ahead = MenOn(foe: true) >= MenOn(foe: false);
         bool field = Sort == Field;                    // 들에서 마주친 부대는 셈이 다르다
@@ -752,6 +861,9 @@ public sealed class LandBattle
             if (field)
                 return ahead ? (dice.Next(5) != 0 ? Charge : Normal)
                              : (dice.Next(4) == 0 ? Retreat : Normal);
+            // 대본의 인물전(3)은 늦은 턴에 명령을 새로 안 고르고(0x00447AAC · 0x00447B44 → 0x00447C1C),
+            // 대본의 도시전(4)은 앞설 때만 그렇다. 예전에는 둘 다 마을 공략 셈으로 굴렸다.
+            if (Sort == Script || (Sort == ScriptCity && ahead)) return _foeOrder;
             // 마을 공략은 앞서면 지키고, 밀리면 아홉에 여덟으로 지킨다.
             return dice.Next(ahead ? 4 : 9) != 0 ? Guarded : Normal;
         }
@@ -887,11 +999,13 @@ public sealed class LandBattle
     /// </remarks>
     public bool DuelOffered(GameRandom dice)
     {
-        if (Sort == Town) return false;     // 0x004479B0 은 갈래 2·4 만 닫는다
+        if (CityFight) return false;        // 0x004479B0 은 갈래 2·4 만 닫는다
 
         // 몫이 0 이하여도 닫지 않는다 — 0 으로 눌러 두고 굴리므로 늘 1% 는 열린다(0x0044799B).
-        int odds = Math.Max(0, _me.AbilityOf(Ability.Luck) * 3 / 10
-                             - _me.AbilityOf(Ability.Might) + FoeMight);
+        // 능력은 셋 다 0x00446FF0 으로 읽는다 — 아군은 제독·부관 가운데 큰 쪽 + 1, 적은 대장 + 1 이다.
+        // 예전에는 제독 값만 +1 없이 보아 부관이 세도 덜 닫혔다.
+        int luck = Math.Max(_me.AbilityOf(Ability.Luck), _aide?.Luck ?? 0) + 1;
+        int odds = Math.Max(0, luck * 3 / 10 - MightAt(0) + MightAt(FirstFoe));
         return dice.Next(100) <= odds;
     }
 
@@ -917,10 +1031,10 @@ public sealed class LandBattle
     /// </remarks>
     public bool FoeDuelOffered(GameRandom dice)
     {
-        if (Sort == Town) return false;     // 0x004479D7 도 갈래 2·4 만 거른다
+        if (CityFight) return false;        // 0x004479D7 도 갈래 2·4 만 거른다
 
         // 적 첫 칸이 아직 성하면 부대 수까지 본다.
-        if (_units[FirstFoe].Men >= RoomPerUnit(FirstFoe) * 4 / 10
+        if (_units[FirstFoe].Men >= RoomAt(FirstFoe) * 4 / 10
             && Standing(FirstFoe) > 3) return false;
 
         if (MenOn(foe: true) >= MenOn(foe: false)) return false;

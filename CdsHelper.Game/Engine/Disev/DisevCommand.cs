@@ -49,7 +49,8 @@ public enum DisevCall
     HintActive, HintInactive, HasItem, LacksItem, Discovered, NotDiscovered, DiscoveryDone, DiscoveryNotDone,
     YearAtLeast, YearBefore, YearAtMost, YearAfter, YearIs, YearBetween, YearOutside, YearMonthIs,
     InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
-    CityNationCheck, Story0, NotStory0, Story1, NotStory1, Unknown0015, NoContract, Or, RandomChance,
+    CityNationCheck, CityNationIs, CityStanding, CityGone, BuildingStanding, BuildingGone, LeftCityBySea, LeftCityOnLand,
+    Story0, NotStory0, Story1, NotStory1, Unknown0015, NoContract, Or, RandomChance,
     GreaterThan, GreaterOrEqual, LessThan, LessOrEqual, EqualTo, NotEqualTo,
 }
 
@@ -136,11 +137,11 @@ public static class DisevCalls
 
         S(DisevCall.AddGold, "19 14 u32", "Amount"),
         S(DisevCall.SubGold, "1A 14 u32", "Amount"),
-        // 후원자 친밀도 증감 — 표에 없던 명령이다. 이야기0/1(STORY0/1.CDS)의 "친밀도가
-        // (대폭) 올라갔다/내려갔다!" 대사 앞에서 늘 이 여섯 고정 바이트(12 16 00 1C 1C 00)
-        // 뒤에 값 식이 온다. AddStat(19 1C)·SubStat(1A 1C)와 앞 바이트가 달라 안 섞인다.
-        S(DisevCall.AddAffinity, "19 12 16 00 1C 1C 00 expr", "Value"),
-        S(DisevCall.SubAffinity, "1A 12 16 00 1C 1C 00 expr", "Value"),
+        // 19|1A 12 [u16 후원자] 1C [u16 칸] [값 식] — 그 <b>후원자</b>의 칸을 더하고 뺀다(0x004093CD → 0x004AD810(후원자)).
+        // 칸 0x1C 만 뜻이 있어 친밀도(+0x20)를 0~100 으로 자른다(0x00478530). 예전에는 후원자 자리를 16 00(에란쪼)으로
+        // 못박아 지금 계약한 후원자에게 주었고, 개인 이야기 여덟 책의 딴 후원자(0·1·3·15·18·43·56·60)는 읽지도 못했다.
+        S(DisevCall.AddAffinity, "19 12 u16 1C u16 expr", "Sponsor", "Stat", "Value"),
+        S(DisevCall.SubAffinity, "1A 12 u16 1C u16 expr", "Sponsor", "Stat", "Value"),
         S(DisevCall.AddStat, "19 1C u16 expr", "Stat", "Value"),
         S(DisevCall.SubStat, "1A 1C u16 expr", "Stat", "Value"),
         S(DisevCall.SetStat, "26 1C u16 expr", "Stat", "Value"),
@@ -210,7 +211,21 @@ public static class DisevCalls
         C(DisevCall.InCulture, null, "17 19 u16", "Culture"),
         C(DisevCall.PersonUnmet, DisevCall.PersonMet, "37 0D u16", "Person"),
         C(DisevCall.SponsorActive, DisevCall.SponsorInactive, "37 12 u16", "Sponsor"),
-        C(DisevCall.CityNationCheck, null, "28 00 u16 08 u16", "Nation", "City"),
+        C(DisevCall.CityNationCheck, DisevCall.CityNationIs, "28 00 u16 08 u16", "Nation", "City"),
+        // 27·28 00 / 08 / 10 — 도시 레코드를 보는 짝(0x004078E0 · 0x004079AE). 27 이 「그렇다」, 28 이 「아니다」.
+        //   00 [나라] 08 [도시]   도시 나라(+0x00) == 나라
+        //   08 [도시]             도시가 서 있다(+0x04 비트 4 가 꺼짐)
+        //   10 [비트] 08 [도시]   건물 낱말(+0x1C)의 그 비트가 켜짐
+        // 개인 이야기(ECQ·EEX 6 · EDG 9 · PCQ 11 · PEX 10·13 · PDG 13 · 이야기1 13)가 문으로 쓴다.
+        C(DisevCall.CityNationIs, DisevCall.CityNationCheck, "27 00 u16 08 u16", "Nation", "City"),
+        C(DisevCall.CityStanding, DisevCall.CityGone, "27 08 u16", "City"),
+        C(DisevCall.CityGone, DisevCall.CityStanding, "28 08 u16", "City"),
+        C(DisevCall.BuildingStanding, DisevCall.BuildingGone, "27 10 u16 08 u16", "Building", "City"),
+        C(DisevCall.BuildingGone, DisevCall.BuildingStanding, "28 10 u16 08 u16", "Building", "City"),
+        // 5F · 60 — 도시 밖(제독 vt+0x2C == −1)이고 바다(0x005B61B4 == 0)면 5F, 뭍이면 60(0x00407E38 · 0x00407E5A).
+        // 도시를 나선 사건(갈래 2)에서 쓴다 — 출항하자마자 붙는 해적·함대, 성문을 나서자마자 쫓아오는 병사.
+        C(DisevCall.LeftCityBySea, null, "5F"),
+        C(DisevCall.LeftCityOnLand, null, "60"),
         C(DisevCall.Story0, DisevCall.NotStory0, "6D"),
         C(DisevCall.Story1, DisevCall.NotStory1, "6E"),
         C(DisevCall.Unknown0015, null, "00 15 u16", "Value"),

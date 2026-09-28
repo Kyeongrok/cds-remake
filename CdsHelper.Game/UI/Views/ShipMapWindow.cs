@@ -5916,12 +5916,18 @@ public sealed class ShipMapWindow : Window
     /// 조건이 없는(도시·연도·명성만 보는) 장면용이다. 건물 안에서 여는 것은
     /// <see cref="CityPicView.CheckStory"/> 가 따로 본다(같은 <see cref="StoryLog"/> 를 쓴다).
     /// </summary>
-    private void CheckStory(int building)
+    private void CheckStory(int building) =>
+        CheckStory(building >= 0
+            ? DisevEvent.EnterBuilding(_game.Player.CityId, building)
+            : DisevEvent.EnterCity(_game.Player.CityId));
+
+    /// <summary>이야기 대본을 그 사건(<see cref="DisevEvent"/>)으로 한 장면 돌린다.</summary>
+    private void CheckStory(DisevEvent ev)
     {
         if (_game.Player.ActiveStoryBook is not { } book) return;
-        if (StoryLog.NextPart(_game.Player, _game, building) is not { } part) return;
+        if (StoryLog.NextPart(_game.Player, _game, ev) is not { } part) return;
 
-        DisevRunner.Run(this, _game, book, part, building);
+        DisevRunner.Run(this, _game, book, part, ev);
         StoryLog.Advance(_game.Player, _game, book, part);
 
         if (DisevRunner.LastEndedInGameOver)
@@ -6237,6 +6243,10 @@ public sealed class ShipMapWindow : Window
 
             // 도시에서 계약을 맺거나 깨거나 보고했으면 목표 유적 그림이 드러나거나 다시 덮인다.
             HideCities();
+
+            // 도시를 나선 사건(갈래 2, 0x0048EBA8 → 0x004AB560(나선 도시))을 이야기 대본에 올린다 —
+            // 조건 5F(바다)·60(뭍)이 이것을 본다. 출항하자마자 붙는 해적·이슬람 함대가 이 자리다.
+            CheckStory(DisevEvent.LeaveCity(city, _host.IsOnLand));
         };
         return true;
     }

@@ -45,7 +45,18 @@ public static class CityFounding
     /// </param>
     /// <param name="Needs">먼저 서 있어야 하는 도시. −1 이면 조건이 없다.</param>
     /// <param name="Cities">세우는 도시들.</param>
-    public readonly record struct Rule(int Year, int Month, bool Wait, int Needs, int[] Cities);
+    /// <param name="Discovery">
+    /// 누군가(주인공이든 역사 항해자든) 먼저 찾아 두어야 하는 발견물. −1 이면 조건이 없다.
+    /// 조건 <c>02 0B [n]</c> 과 <c>1B 0B [n] 16 [해]</c> 가 이것이다 — 뒤의 것은 「찾은 뒤 몇 해」 꼴이지만
+    /// 원본 판정(<c>0x004076A1</c>)이 부호를 어긋나게 비교해 찾았기만 하면 참이 된다.
+    /// </param>
+    public readonly record struct Rule(int Year, int Month, bool Wait, int Needs, int[] Cities, int Discovery = -1);
+
+    /// <summary>
+    /// 그 발견물이 그 날짜까지 찾아졌는지 — 게임(<c>Game</c>)이 판을 열 때 걸어 둔다.
+    /// 비어 있으면 발견물 조건을 늘 참으로 친다(헬퍼 창처럼 판 없이 부를 때).
+    /// </summary>
+    public static Func<int, DateTime, bool>? Discovered { get; set; }
 
     /// <summary>
     /// <c>HIST_EV.CDS</c> 에서 뽑은 스무 벌. 파트 번호 차례다.
@@ -58,23 +69,23 @@ public static class CityFounding
     [
         new(1482, 2, false, -1, [97]),          // 파트  2  산호르헤
         new(1484, 4, false, -1, [99]),          // 파트  3  산토메
-        new(1489, 1, true, -1, [101]),          // 파트  8  케이프
-        new(1494, 1, true, -1, [194]),          // 파트 15  산토도밍고
-        new(1499, 1, true, -1, [197]),          // 파트 19  자메이카
-        new(1500, 1, true, -1, [195]),          // 파트 21  산티아고
-        new(1502, 1, true, -1, [213]),          // 파트 26  쿠마나
-        new(1504, 1, true, -1, [198]),          // 파트 27  산후안
-        new(1506, 1, true, -1, [196]),          // 파트 29  아바나
-        new(1510, 1, true, -1, [215]),          // 파트 34  바이앙
+        new(1489, 1, true, -1, [101], 0),       // 파트  8  케이프       — 02 0B 00 00(희망봉)
+        new(1494, 1, true, -1, [194], 1),       // 파트 15  산토도밍고   — 1B 0B 01 00(신대륙)
+        new(1499, 1, true, -1, [197], 1),       // 파트 19  자메이카
+        new(1500, 1, true, -1, [195], 1),       // 파트 21  산티아고
+        new(1502, 1, true, -1, [213], 1),       // 파트 26  쿠마나
+        new(1504, 1, true, -1, [198], 1),       // 파트 27  산후안
+        new(1506, 1, true, -1, [196], 1),       // 파트 29  아바나
+        new(1510, 1, true, -1, [215], 1),       // 파트 34  바이앙       — 02 0B 01 00
         new(1515, 1, true, 215, [214]),         // 파트 38  페르남부쿠
         new(1517, 1, true, 215, [216]),         // 파트 43  리우데자네이루
-        new(1520, 1, true, -1, [199]),          // 파트 47  베라클루즈
+        new(1520, 1, true, -1, [199], 1),       // 파트 47  베라클루즈
         new(1520, 1, true, 215, [217]),         // 파트 48  부에노스아이레스
-        new(1522, 7, true, -1, [205]),          // 파트 50  아카풀코
+        new(1522, 7, true, -1, [205], 192),     // 파트 50  아카풀코     — 02 0B C0 00(아즈텍왕국)
         new(1523, 1, true, 210, [209]),         // 파트 56  레온     — 파나마가 있어야
         new(1525, 1, true, 209, [212, 208]),    // 파트 59  코로·투르히요
         new(1531, 3, false, 215, [210]),        // 파트 70  파나마   — 그 달에만!
-        new(1535, 1, true, -1, [173]),          // 파트 75  오문
+        new(1535, 1, true, -1, [173], 5),       // 파트 75  오문         — 1B 0B 05 00(중국)
     ];
 
     /// <summary>놀이가 시작하는 해. 여기서부터 달을 훑는다.</summary>
@@ -120,13 +131,18 @@ public static class CityFounding
                 if (done[i]) continue;
                 var rule = Rules[i];
 
+                // 1B 17 은 달을 안 본다 — 원본 0x004077BB 의 jge 가 같은 해의 달 비교를 건너뛴다.
                 bool now = rule.Wait
-                    ? year > rule.Year || (year == rule.Year && month >= rule.Month)
+                    ? year >= rule.Year
                     : year == rule.Year && month == rule.Month;
                 if (!now) continue;
 
                 // 그 달에만 보는 꼴은 조건이 안 맞으면 그대로 흘려보낸다.
-                if (rule.Needs >= 0 && !up.Contains(rule.Needs))
+                // 발견물 조건도 함께 본다 — 예전에는 날짜만 보아, 그 발견물을 아무도 못 찾았어도 섰다.
+                bool needsMet = rule.Needs < 0 || up.Contains(rule.Needs);
+                if (needsMet && rule.Discovery >= 0 && Discovered is { } found)
+                    needsMet = found(rule.Discovery, new DateTime(year, month, 1));
+                if (!needsMet)
                 {
                     if (!rule.Wait) done[i] = true;
                     continue;
@@ -149,7 +165,7 @@ public static class CityFounding
     public static (int Year, int Month)? WhenOf(int city)
     {
         foreach (var rule in Rules)
-            if (rule.Cities.Contains(city)) return (rule.Year, rule.Month);
+            if (rule.Cities.Contains(city)) return (rule.Year, rule.Wait ? 1 : rule.Month);   // 1B 는 달을 안 본다
         return null;
     }
 }

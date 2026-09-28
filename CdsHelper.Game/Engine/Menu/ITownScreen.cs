@@ -20,6 +20,14 @@ namespace CdsHelper.Game.Engine.Menu;
 /// </remarks>
 internal interface ITownScreen
 {
+    /// <summary>
+    /// 명령 줄을 골랐다 — 이야기 대본의 「건물 명령 고름」 사건(갈래 4, <c>0x004A248C</c>)을 먼저 본다.
+    /// 대본이 결과 1 로 끝나 그 명령을 막아야 하면 true.
+    /// </summary>
+    /// <param name="code">건물 코드.</param>
+    /// <param name="row">고른 줄(0 부터).</param>
+    bool StoryCommand(int code, int row) => false;
+
     // ── 할 수 있나 ───────────────────────────────────────────────────────
 
     /// <summary>배가 한 척이라도 있는지. 출항·보급·선원편성이 이것을 본다.</summary>

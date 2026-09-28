@@ -107,6 +107,13 @@ public static class DisevScript
         new(Sig(0x43, 0x37, 0x0D), 7, "인물 조우 분기", 5),
         new(Sig(0x43, 0x37, 0x12), 7, "후원자 활성 분기", 5),
         new(Sig(0x43, 0x28, 0x00), 10, "도시 국적 분기", 8),
+        new(Sig(0x43, 0x27, 0x00), 10, "도시 국적 분기", 8),
+        new(Sig(0x43, 0x27, 0x10), 10, "건물 분기", 8),
+        new(Sig(0x43, 0x28, 0x10), 10, "건물 분기", 8),
+        new(Sig(0x43, 0x27, 0x08), 7, "도시 있음 분기", 5),
+        new(Sig(0x43, 0x28, 0x08), 7, "도시 없음 분기", 5),
+        new(Sig(0x43, 0x5F), 4, "바다로 나섬 분기", 2),
+        new(Sig(0x43, 0x60), 4, "뭍으로 나섬 분기", 2),
         new(Sig(0x43, 0x00, 0x15), 6, "미확인 0015 분기", 4),
         new(Sig(0x43, 0x11), 6, "선택지 분기", 4),
         // 43 45 는 늘 뛰는 것이 아니다 — 조건 45 가 「마지막 결과」를 그대로 내므로(0x0040B1B4)
@@ -123,6 +130,16 @@ public static class DisevScript
         new(Sig(0x43, 0x6D), 4, "STORY0.CDS 외 분기", 2),
         new(Sig(0x43, 0x6E), 4, "STORY1.CDS 외 분기", 2),
         new(Sig(0x17, 0x00), 4, "국가 조건"),
+        // 27·28 00 [나라] 08 [도시] · 08 [도시] · 10 [비트] 08 [도시] — 도시 나라·도시 있음·건물 있음(0x004078E0 · 0x004079AE).
+        new(Sig(0x27, 0x00), 7, "도시 국적 조건"),
+        new(Sig(0x28, 0x00), 7, "도시 국적 아님 조건"),
+        new(Sig(0x27, 0x08), 4, "도시 있음 조건"),
+        new(Sig(0x28, 0x08), 4, "도시 없음 조건"),
+        new(Sig(0x27, 0x10), 7, "건물 있음 조건"),
+        new(Sig(0x28, 0x10), 7, "건물 없음 조건"),
+        // 5F · 60 — 도시를 나서 바다에 있음 · 뭍에 있음(0x00407E38 · 0x00407E5A).
+        new(Sig(0x5F), 1, "바다로 나섬 조건"),
+        new(Sig(0x60), 1, "뭍으로 나섬 조건"),
         new(Sig(0x17, 0x08), 4, "도시 조건"),
         new(Sig(0x17, 0x10), 4, "건물 조건"),
         new(Sig(0x41, 0x08), 4, "도시 아님 조건"),
@@ -170,6 +187,9 @@ public static class DisevScript
         new(Sig(0x37, 0x12), 4, "후원자 런타임 조건"),
         // 26 1C 1A 00 08 [u16 도시] — 그 도시를 주인공 나라로 바꾼다. 26 1C 보다 먼저 잡아야 9바이트로 안 읽힌다.
         new(Sig(0x26, 0x1C, 0x1A, 0x00, 0x08), 7, "도시 국적 변경"),
+        // 19|1A 12 [u16 후원자] 1C [u16 칸] [값 식] — 후원자 친밀도(0x004093CD). 길이는 값 식에 따라 10·12·16 이다.
+        new(Sig(0x19, 0x12), 12, "친밀도 증가"),
+        new(Sig(0x1A, 0x12), 12, "친밀도 감소"),
         new(Sig(0x19, 0x1C), 9, "능력치 증가"),
         new(Sig(0x1A, 0x1C), 9, "능력치 감소"),
         new(Sig(0x26, 0x1C), 9, "능력치/기한 설정"),
@@ -536,6 +556,12 @@ public static class DisevScript
                     && i + 13 <= end && data[i + 4] == 0x20)
                 {
                     length = 13;
+                }
+                // 친밀도는 일곱 바이트 뒤에 값 식이 온다 — 머리 바이트로 길이를 가른다(CompareLength 와 같은 셈).
+                if (known.Kind is "친밀도 증가" or "친밀도 감소" && i + 7 < end
+                    && CompareLength(data[i + 7]) is > 0 and var compare)
+                {
+                    length = compare;   // 43 2B 1C [u16] [식] [u16] 과 머리·꼬리 길이 합이 같다(2+2+1+2 = 7 + 식)
                 }
                 var raw = span.Slice(i, Math.Min(length, end - i));
                 ops.Add(new Op(i, length, known.Kind, Describe(known, raw, i), Hex(raw), true));

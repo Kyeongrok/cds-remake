@@ -137,9 +137,17 @@ public sealed class CityHistory
                               CityExeTable? cities, FoundCheck found, ref bool once)
     {
         bool all = true, orMode = false, orAcc = false;
+        // 나라 조건(27/28 00)이 붙은 칸은 <b>한 번 돈 것으로 적지 않는다</b>. 원본은 끝남 깃발이 아예 없어
+        // (칸 고르기 0x00407390, 매달 모든 파트를 도는 0x0044B383 어디에도 없다) 조건이 다시 참이 되면 또 돈다 —
+        // 파트 30(도시 106)·54(도시 171)는 주인공이 빼앗아도 다음 달에 포르투갈로 도로 넘긴다.
+        bool nationGate = false;
         while (i < p.Length)
         {
-            if (p[i] == 0xFF) return all;
+            if (p[i] == 0xFF)
+            {
+                if (nationGate) once = false;
+                return all;
+            }
             if (i + 1 >= p.Length) return null;
 
             bool term;
@@ -149,8 +157,10 @@ public sealed class CityHistory
                     term = year == U16(p, i + 4) && month == p[i + 2];
                     i += 6;
                     break;
-                case (0x1B, 0x17) when i + 5 < p.Length:                        // 그 해 그 달부터
-                    term = MonthKey(year, month) >= MonthKey(U16(p, i + 4), p[i + 2]);
+                case (0x1B, 0x17) when i + 5 < p.Length:                        // 그 해부터 — 달은 안 본다
+                    // 원본(0x004077B5)은 cmp 해 ; jge 참 ; jne 거짓 이라 같은 해의 달 비교(0x004077C3)에
+                    // 닿지 않는다(0x004077BB 가 7D = jge). 예전에는 그 달부터로 셈해 아카풀코(1522/7) 따위가 늦었다.
+                    term = year >= U16(p, i + 4);
                     once = true;
                     i += 6;
                     break;
@@ -175,6 +185,7 @@ public sealed class CityHistory
                     int now = player.HistoryNations.TryGetValue(city, out int changed)
                         ? changed : cities?.StartNationOf(city) ?? -1;
                     term = p[i] == 0x27 ? now == nation : now != nation;
+                    nationGate = true;
                     i += 7;
                     break;
                 }

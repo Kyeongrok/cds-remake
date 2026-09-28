@@ -23,7 +23,13 @@ public static class StoryLog
     /// 지금 자리에서 열리는 이야기 파트 — 카운터가 가리키는 그 파트의 조건이 맞을 때만. 없으면 null.
     /// </summary>
     /// <param name="building">지금 들어온 건물 코드. 건물 밖(도시만 들어왔을 때)이면 -1.</param>
-    public static int? NextPart(Player player, Game game, int building)
+    public static int? NextPart(Player player, Game game, int building) =>
+        NextPart(player, game, building >= 0
+            ? DisevEvent.EnterBuilding(player.CityId, building)
+            : DisevEvent.EnterCity(player.CityId));
+
+    /// <summary>그 사건(<see cref="DisevEvent"/>)에서 열리는 이야기 파트. 없으면 null.</summary>
+    public static int? NextPart(Player player, Game game, DisevEvent ev)
     {
         if (player.ActiveStoryBook is not { } cache) return null;
         if (player.IsStoryArcClosed(cache)) return null;
@@ -31,7 +37,7 @@ public static class StoryLog
 
         int part = PartOf(player, cache);
         if (part < 0 || part >= book.Count) return null;
-        return DisevRunner.IsEligible(game, cache, part, building) ? part : null;
+        return DisevRunner.IsEligible(game, cache, part, ev) ? part : null;
     }
 
     /// <summary>

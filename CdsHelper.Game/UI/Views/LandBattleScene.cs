@@ -48,6 +48,13 @@ internal sealed class LandBattleScene : GameWindow
     private readonly LandArt? _art;
     private readonly LandBattle _battle;
 
+    /// <summary>
+    /// 그 부대가 선 칸 — 슬롯이 아니라 <b>자리</b>(<see cref="LandBattle.PlaceOf"/>)로 찾는다. 앞열이 비어 후열이
+    /// 앞으로 나오면 그림도 앞줄로 옮긴다(<c>0x004470D0</c>).
+    /// </summary>
+    private (int X, int Y) SpotOf(int slot) =>
+        StandAt[(slot >= LandBattle.FirstFoe ? LandBattle.FirstFoe : 0) + _battle.PlaceOf(slot)];
+
     /// <summary>판을 늘려 건 배수 — 차림표를 판 구석에 붙일 때 여백을 이만큼 곱한다.</summary>
     private readonly double _scale;
     private readonly Canvas _board = new()
@@ -128,6 +135,9 @@ internal sealed class LandBattleScene : GameWindow
         if (_game is { } g && _battle.TryShell(g.Player, dice))
             NoticeDialog.Show(this, _battle.ShellWord, "");
 
+        // 판을 열 때 앞열이 빈 편은 후열을 앞으로 당긴다(0x00449CC2 → 0x00448440) — 후열에만 놓은 배치다.
+        if (_battle.AdvanceRows(foe: false) | _battle.AdvanceRows(foe: true)) Redraw();
+
         while (true)
         {
             int order = Ask(dice);
@@ -141,8 +151,15 @@ internal sealed class LandBattleScene : GameWindow
                 return false;
             }
 
-            // 「애니메이션」은 켜고 끄는 것이라 턴이 안 간다(0x00449190).
-            if (order == LandBattle.Animate) { _quick = !_quick; continue; }
+            // 「애니메이션」은 켜고 끄는 것이라 턴이 안 간다(0x00449190). 누르면 바로 뒤집지 않고
+            // 차림표 「애니메이션」(0x0056D470)에 「O N」·「O F F」(0x00549CD8)를 세워 고르게 한다 —
+            // ON 이면 깃발 비트 0 을 끄고, OFF 면 켠다. 물리면 그대로다.
+            if (order == LandBattle.Animate)
+            {
+                int pick = ChoiceDialog.Ask(this, "애니메이션", ["O N", "O F F"]);
+                if (pick >= 0) _quick = pick == 1;
+                continue;
+            }
 
             // 「일기토」는 판을 한 판에 가른다 — 이기면 그대로 이긴다(0x004478A0).
             if (order == LandBattle.Duel)
@@ -386,14 +403,23 @@ internal sealed class LandBattleScene : GameWindow
                                     me.AbilityOf(Ability.Body), me.AbilityOf(Ability.Might),
                                     me.LevelOf(Skill.Names[Skill.Sword]),
                                     me.AbilityOf(Ability.Luck), 0, 0);
-        var foe = new Duel.Fighter("적장", _battle.FoeBody, _battle.FoeMight,
+        // 상대는 적 대장 인물이다(0x004478A0 → 0x004AA700(인물, 무대, 마을 여부, −1)) — 마을 공략이면 인물 275.
+        // 이름과 얼굴은 그 인물 <b>레코드</b>의 것이다. 예전에는 「적장」에 얼굴 없이 섰다.
+        var foeRow = _battle.FoePerson >= 0 ? PersonTable.Open()?.Find(_battle.FoePerson) : null;
+        var foe = new Duel.Fighter(foeRow is { Name.Length: > 0 } named ? named.Name : "적장",
+                                   _battle.FoeBody, _battle.FoeMight,
                                    _battle.SkillAt(LandBattle.FirstFoe, Skill.Sword),
                                    _battle.FoeLuck, 0, 0);
+        var foeFace = foeRow is { } r ? game.Faces?.TryGetBgra(r.Face, female: false) : null;
+
+        // 무대는 싸움터(+0xA8)다 — 0(도시)이면 1(초원), 2 숲, 3 모래(0x004478CA). 예전에는 늘 초원이었다.
+        string arena = _battle.Terrain switch { 2 => "duel-wood", 3 => "duel-sand", _ => DuelArt.Field };
 
         var duel = new Duel(mine, foe, shield: false, dice.Next());
         // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
         var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
-        if (DuelDialog.Show(this, duel, dice, null, myFace: myFace, bgm: _game?.Bgm)) return DuelEnd.Won;
+        if (DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm))
+            return DuelEnd.Won;
 
         // 지면 여느 일기토와 같이 갈린다 — 도망·용서면 퇴각한 셈이고, 베이면 그대로 GAME OVER 다.
         return duel.FateOf(me.Fame) == Duel.Fate.Slain ? DuelEnd.Slain : DuelEnd.Lost;
@@ -515,7 +541,7 @@ internal sealed class LandBattleScene : GameWindow
         var shown = new List<(FrameworkElement Glyph, int Left, int Top)>();
         foreach (var (slot, men) in hits)
         {
-            var (x, y) = StandAt[slot];
+            var (x, y) = SpotOf(slot);
             int left = x + (LandArt.DeployWidth - men.Length * Digit) / 2;
             int top = y + (LandArt.DeployWidth - Digit) / 2;
 
@@ -576,7 +602,7 @@ internal sealed class LandBattleScene : GameWindow
         int wide = (cells + 2) * side;
         bool mine = slot < LandBattle.FirstFoe;
 
-        var (ux, uy) = StandAt[slot];
+        var (ux, uy) = SpotOf(slot);
         int x = mine ? ux + LandArt.DeployWidth : ux - (cells + 1) * side;
         int y = uy;
         x = Math.Clamp(x, 0, Math.Max(0, LandArt.FieldWidth - wide));
@@ -757,7 +783,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 예전에 화면 두 장을 재어 「목표까지 거리의 반쯤」으로 두었던 것은, 후열 부대가
     /// 넉 걸음 나간 것을 잰 것이었다.
     /// </remarks>
-    private static int StridesOf(int slot) => LandUnits.IsFront(slot) ? 2 : 4;
+    private int StridesOf(int slot) => _battle.IsFront(slot) ? 2 : 4;
 
     /// <summary>
     /// 한 줄을 몸짓으로 보인다 — <b>나가서 치는 데까지</b>다.
@@ -1058,7 +1084,7 @@ internal sealed class LandBattleScene : GameWindow
             int men = _menNow is { } snap && i < snap.Count ? snap[i] : unit.Men;
             if (unit.Kind < 0 || men <= 0) continue;
 
-            var (x, y) = StandAt[i];
+            var (x, y) = SpotOf(i);
 
             // 치고 있는 부대는 몸짓을 갈아 끼우고, 맞붙는 병종이면 앞으로 나가 있다.
             int frame = 0;

@@ -537,18 +537,23 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// <summary>금괴를 밟을 때 나는 소리 — 사운드 0x27(<c>0x0049C918</c>), WAVE 파트 11 이다.</summary>
     private const int GoldSoundPart = 0x27 - 28;
 
-    public static void Play(Window owner, Player player, Random rng, Local.Helpers.SoundBank? sfx = null)
+    /// <returns>출구로 나갔으면 true — 0x0049B388 이 판 상태가 0 이 아니면 1 을 낸다. 두 번 다 떨어지면 false.</returns>
+    public static bool Play(Window owner, Player player, Random rng, Local.Helpers.SoundBank? sfx = null)
     {
         // 판을 열기 전에 설명부터 낸다 — 게임도 그렇다.
         Explain(owner);
 
-        bool paid = false;
-        while (true)
+        // 떨어지면 <b>한 판만</b> 더 준다 — 0x0049B3C0 이 알림 뒤 0x0049B310 으로 jmp 해 두 번째 판의 결과를
+        // 그대로 돌려준다. 예전에는 떨어질 때마다 「마지막 찬스다!」를 띄우고 끝없이 다시 깔았다.
+        for (int round = 0; ; round++)
         {
             var dialog = new CubePuzzleDialog(rng) { Owner = owner };
 
             // 금괴를 밟으면 <b>그 자리에서는 글만</b> 뜬다(0x0049C91F, 0x0056DDF8) — 돈은 판을 마쳤을 때
-            // 0x0049B366 이 넣는다. 밟고 떨어지면 못 받는다. 판을 다시 줘도 삯은 한 번뿐이다.
+            // 0x0049B366 이 <b>이번 판 상태가 2</b>(금괴 들고 나감)일 때 넣는다. 금괴 수(+0x28)는 판을 깔 때
+            // 지운다(0x0049CFC6) — 앞 판에서 밟고 떨어졌으면 다시 깐 판에서 또 밟아야 한다. 예전에는 판을
+            // 넘겨 들고 있어 금괴 없이 나가도 1000닢을 받았다.
+            bool paid = false;
             dialog._onGold = () =>
             {
                 if (paid) return;
@@ -565,8 +570,9 @@ internal sealed class CubePuzzleDialog : GameWindow
             {
                 // 판을 마쳤을 때만 금괴 값이 들어온다(0x0049B366).
                 if (paid && dialog._game.Over == true) player.Earn(CubePuzzle.Prize);
-                return;
+                return dialog._game.Over == true;
             }
+            if (round > 0) return false;   // 두 번째 판에서도 떨어졌다
 
             // 떨어져도 끝이 아니다 — 아래층이 있었다며 판을 새로 깔아 준다(0x0049B3C0).
             NoticeDialog.Show(owner,

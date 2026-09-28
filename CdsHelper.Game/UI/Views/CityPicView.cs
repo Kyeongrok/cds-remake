@@ -1292,12 +1292,16 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 연도·명성 같은 조건을 그때그때 살펴 지금 틀 장면을 찾아 준다. 새로운 주인공(NORMAL)은
     /// <see cref="Player.ActiveStoryBook"/> 이 없어 곧장 지나간다.
     /// </remarks>
-    private bool CheckStory(int building)
+    private bool CheckStory(int building) =>
+        RunStory(Engine.Disev.DisevEvent.EnterBuilding(_cityId, building));
+
+    /// <summary>이야기 대본을 그 사건으로 한 장면 돌린다. 결과 1 로 끝나 부른 쪽이 물러서야 하면 true.</summary>
+    private bool RunStory(Engine.Disev.DisevEvent ev)
     {
         if (_player.ActiveStoryBook is not { } book) return false;
-        if (Engine.Discovery.StoryLog.NextPart(_player, _game, building) is not { } part) return false;
+        if (Engine.Discovery.StoryLog.NextPart(_player, _game, ev) is not { } part) return false;
 
-        Engine.Disev.DisevRunner.Run(this, _game, book, part, building);
+        Engine.Disev.DisevRunner.Run(this, _game, book, part, ev);
         Engine.Discovery.StoryLog.Advance(_player, _game, book, part);
 
         if (Engine.Disev.DisevRunner.LastEndedInGameOver)
@@ -2464,7 +2468,16 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     bool ITownScreen.CanSucceed => Home.EldestSon(_player) != null;
     bool ITownScreen.CanEducate => _player.Children.Count > 0;
 
-    void ITownScreen.CloseMenu() => CloseMenu();
+    void ITownScreen.CloseMenu()
+    {
+        // 후원자가 앉은 건물을 나서면 이야기 대본의 「후원자 건물 나섬」 사건(갈래 5)을 올린다(0x0044E72F).
+        bool patronHere = BuildingAt(_pickedCode) is { } here && PatronAt(here.Code, here.Kind) != null;
+        CloseMenu();
+        if (patronHere) RunStory(Engine.Disev.DisevEvent.LeaveSponsor(_pickedCode));
+    }
+
+    /// <summary>명령 줄을 고르기 전에 「건물 명령 고름」 사건(갈래 4, <c>0x004A248C</c>)을 본다. 막아야 하면 true.</summary>
+    bool ITownScreen.StoryCommand(int code, int row) => RunStory(Engine.Disev.DisevEvent.PickCommand(code, row));
 
     /// <summary>
     /// 놀이를 끝낸다(<c>0x0044AF40</c>) — 그림 0x0B 와 CONTINUE? 뒤 첫 화면으로 돌아간다.

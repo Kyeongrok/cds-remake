@@ -27,6 +27,9 @@ public sealed class Game
     /// <summary>주인공 — 소지금과 가진 배. 조선소에서 배를 사면 여기서 돈이 빠진다.</summary>
     public Player Player { get; private set; } = new();
 
+    /// <summary>판을 짓는다 — 신도시의 발견물 조건이 이 판의 발견을 보게 건다.</summary>
+    public Game() => CityFounding.Discovered = FoundBy;
+
     /// <summary>
     /// 주인공을 새로 앉힌다 — <b>NEW GAME</b> 이 부른다.
     /// </summary>
@@ -47,6 +50,14 @@ public sealed class Game
 
     /// <summary>주인공을 도로 앉힌다 — 새 놀이를 짓다 말고 물러났을 때다.</summary>
     public void UsePlayer(Player player) => Player = player;
+
+    /// <summary>
+    /// 그 발견물이 그 날짜까지 찾아졌는지 — 주인공(찾은 날)이든 역사 항해자(대본 날짜)든.
+    /// 신도시 조건(<see cref="CityFounding.Discovered"/>)이 쓴다.
+    /// </summary>
+    private bool FoundBy(int id, DateTime when) =>
+        (Player.FoundDateOf(id) is { } on ? on <= when : Player.HasFound(id))
+        || (Voyagers?.TakenBy(id, when) ?? -1) >= 0;
 
     /// <summary>바다 사건 주사위.</summary>
     public Random Random { get; } = new();

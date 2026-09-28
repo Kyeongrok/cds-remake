@@ -335,13 +335,20 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// 그 편에서 아무 부대 하나. 없으면 −1.
     /// </summary>
     /// <param name="leader">총대장 부대도 고를지(<c>0x004476C0</c> 의 둘째 인자) — 암살자는 안 고른다.</param>
+    /// <remarks>
+    /// 고르게 뽑는 것이 아니다 — <c>rand(6)</c> 자리에서 시작해 <b>앞으로 훑어</b> 처음 선 부대를 집는다
+    /// (<c>0x004476C0</c>~<c>0x0044774F</c>, 여섯째 뒤는 첫 자리로 감긴다). 그래서 빈 자리 바로 뒤 부대가 더 잘 걸린다.
+    /// </remarks>
     private int Any(bool mine, GameRandom dice, bool leader)
     {
         int side = mine ? 0 : LandBattle.FirstFoe;
-        var live = new List<int>();
-        for (int i = side; i < side + LandBattle.PerSide; i++)
-            if (Alive(i) && (leader || !battle.Units[i].IsLeader)) live.Add(i);
-        return live.Count == 0 ? -1 : live[dice.Next(live.Count)];
+        int start = dice.Next(LandBattle.PerSide);
+        for (int k = 0; k < LandBattle.PerSide; k++)
+        {
+            int i = side + (start + k) % LandBattle.PerSide;
+            if (Alive(i) && (leader || !battle.Units[i].IsLeader)) return i;
+        }
+        return -1;
     }
 
     /// <summary>그 편에 선 부대 수.</summary>
@@ -445,7 +452,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                 int front = unit.Kind == LandUnits.Spear ? FrontByRoll(foe: mine) : MeleeTarget(mine);
                 if (front < 0) { Done(); return; }
                 Hit(slot, front);
-                if (unit.Kind == LandUnits.Spear && Behind(front) is { } back && Alive(back))
+                if (unit.Kind == LandUnits.Spear && Behind(front) is var back && back >= 0)
                     Hit(slot, back);
                 break;
 
@@ -497,23 +504,24 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                 break;
 
             case LandUnits.Monk:
-                // <b>한 부대만</b> 고친다(0x00448CFE) — 총대장 부대의 병사수가 정원의 4할
-                // 이상이면 그 대장을, 아니면 제 편에서 병사수가 가장 적은 부대를 고른다.
-                // 되살리는 만큼은 min(정원, 병사수 + 정원*2/10) 이다(0x00448280).
+                // <b>한 부대만</b> 고친다(0x00448CFE) — 총대장 부대의 병사수가 처음 인원의 4할
+                // <b>이하</b>로 줄었으면 그 대장을(cmp 4할, 병사수 ; jge), 아니면 제 편에서 병사수가 가장 적은
+                // 부대를 고른다(0x004475E0(1,1)). 예전에는 거꾸로 대장이 멀쩡할 때 대장을 고쳤다.
+                // 되살리는 만큼은 min(정원, 병사수 + 정원*2/10) 이다(0x00448280). 정원은 대장 부대면
+                // 나머지까지 더한 값이다(0x00448295 · 대장 처음 인원 +0x40) — 예전에는 나눈 몫만 썼다.
                 bool monkFoe = slot >= LandBattle.FirstFoe;
-                int side = monkFoe ? LandBattle.FirstFoe : 0;
-                int room = battle.RoomPerUnit(side);
 
                 int who = LeaderOf(monkFoe);
-                if (who < 0 || battle.Units[who].Men < room * 4 / 10)
+                if (who < 0 || battle.Units[who].Men > battle.RoomAt(who) * 4 / 10)
                     who = Pick(foe: monkFoe, frontOnly: false);
                 if (who < 0) break;
 
+                int room = battle.RoomAt(who);
                 int was = battle.Units[who].Men;
                 int now = Math.Min(room, was + room * 2 / 10);
                 battle.SetMen(who, now);
-                if (now > was)
-                    Say(slot, Prayers[dice.Next(Prayers.Length)], LandUnits.Sound.Heal);
+                // 고칠 것이 없어도(이미 가득) 말풍선·몸짓·회복 연출은 늘 낸다(0x00448D30~0x00448D7F 에 조건이 없다).
+                Say(slot, Prayers[dice.Next(Prayers.Length)], LandUnits.Sound.Heal);
                 break;
 
             case LandUnits.Leopard:
@@ -578,11 +586,12 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         var a = battle.Units[from];
         var d = battle.Units[to];
 
-        int atk = LandUnits.Attack(a.Kind, battle.MightAt(from) + 1,
+        // 무력·지력은 이미 +1 한 값이다(0x00446FF0) — 예전에는 여기서 또 더해 아군만 +2 가 되었다.
+        int atk = LandUnits.Attack(a.Kind, battle.MightAt(from),
                                    battle.SkillAt(from, Skill.Sword),
                                    battle.SkillAt(from, Skill.Gunnery),
                                    battle.SkillAt(from, Skill.Shooting));
-        int def = LandUnits.Defence(d.Kind, battle.MindAt(to) + 1,
+        int def = LandUnits.Defence(d.Kind, battle.MindAt(to),
                                     battle.SkillAt(to, Skill.Sword),
                                     battle.SkillAt(to, Skill.Gunnery),
                                     battle.SkillAt(to, Skill.Shooting),
@@ -670,13 +679,14 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     {
         int side = foe ? LandBattle.FirstFoe : 0;
         bool any = false;
-        for (int i = side; i < side + 3; i++) if (Alive(i)) any = true;
+        for (int i = side; i < side + LandBattle.PerSide; i++) if (Alive(i) && battle.IsFront(i)) any = true;
         if (!any) return -1;
 
+        // 자리(+0x0C)로 찾는다 — 앞으로 나온 후열도 앞열 자리에 서 있다(0x00447470).
         while (true)
         {
-            int at = side + dice.Next(3);
-            if (Alive(at)) return at;
+            int at = battle.AtPlace(foe, dice.Next(3));
+            if (at >= 0) return at;
         }
     }
 
@@ -697,7 +707,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         for (int round = 0; round < MeleeRounds; round++)
         {
             int leader = LeaderOf(foe);
-            if (leader >= 0 && LandUnits.IsFront(leader) && dice.Next(5) < 2) return leader;
+            if (leader >= 0 && battle.IsFront(leader) && dice.Next(5) < 2) return leader;
             if (dice.Next(5) == 2) return Pick(foe, frontOnly: true);
             if (dice.Next(5) > 2) break;
         }
@@ -730,18 +740,18 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         for (int i = side; i < side + LandBattle.PerSide; i++)
         {
             if (!Alive(i)) continue;
-            (LandUnits.IsFront(i) ? front : back).Add(i);
+            (battle.IsFront(i) ? front : back).Add(i);
         }
         if (!frontOnly) return [.. front, .. back];
         return front.Count > 0 ? front : back;
     }
 
     /// <summary>그 앞열 자리의 뒤에 선 부대 — 창병이 꿰뚫는 자리다.</summary>
-    private static int? Behind(int place)
+    /// <remarks>자리(+0x0C)로 찾는다 — 앞 자리 + 3 에 선 부대다(0x00448801 → 0x00447470). 없으면 −1.</remarks>
+    private int Behind(int slot)
     {
-        int side = place < LandBattle.FirstFoe ? 0 : LandBattle.FirstFoe;
-        int at = place - side;
-        return at < 3 ? side + at + 3 : null;
+        int place = battle.PlaceOf(slot);
+        return place < 3 ? battle.AtPlace(slot >= LandBattle.FirstFoe, place + 3) : -1;
     }
 
     private bool Alive(int slot) => battle.Units[slot].Standing;
@@ -771,6 +781,9 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// </remarks>
     private void Done()
     {
+        // 앞열이 다 쓰러진 편은 후열을 앞으로 당긴다(0x004484F0 · 0x00448530).
+        battle.AdvanceRows(foe: false);
+        battle.AdvanceRows(foe: true);
         if (Over != null) return;
 
         for (int i = 0; i < LandBattle.Slots; i++)
