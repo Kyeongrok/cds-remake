@@ -1257,8 +1257,9 @@ public sealed class DisevRunner
     /// </summary>
     /// <remarks>
     /// 상대 능력치는 인물 표의 것을 그대로 쓴다(체력 0 · 무력 2 · 운 4, 검술은 기능 표).
-    /// 무기·방어구는 인물 표에 칸이 없어 0 으로 둔다. 몸짓 그림 벌은 바로 앞의
-    /// <c>26 0F</c> 가 정한다(<see cref="_duelSet"/>).
+    /// 몸짓 그림 벌은 바로 앞의 <c>26 0F</c> 가 정한다(<see cref="_duelSet"/>). 무기·방어구는 인물 표에
+    /// 칸이 없어도 판을 지을 때 그 벌로 굴리고(<c>0x004A89D4</c>), 내 쪽은 지닌 것에서 가장 센 것을 쥔다
+    /// (<c>0x004A8829</c>) — 부관이 나가도 제독이 지닌 것을 쓴다.
     /// </remarks>
     private bool DuelWith(int person)
     {
@@ -1282,8 +1283,9 @@ public sealed class DisevRunner
         if (stand is { } who)
             mine = new Town.Duel.Fighter(who.Name, who.Body, who.Might, who.Sword, who.Luck, 0, 0);
 
-        var duel = new Town.Duel(mine, foe, me.Items.Contains(Town.Duel.EdithShieldId),
-                                 Environment.TickCount);
+        var duel = new Town.Duel(Town.Duel.Equipped(mine, me.Items, _game.Items),
+                                 Town.Duel.Armed(foe, Math.Max(0, _duelSet), _dice, _game.Items),
+                                 me.Items.Contains(Town.Duel.EdithShieldId), Environment.TickCount);
         bool won = UI.Views.DuelDialog.Show(_owner, duel, _dice, face, _game.Fighters,
             foeSet: Math.Max(0, _duelSet),
             myFace: _game.Faces?.TryGetBgra(

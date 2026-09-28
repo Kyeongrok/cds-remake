@@ -251,17 +251,23 @@ public sealed class Poker
     /// 없으면 <see cref="NoCard"/>.
     /// </summary>
     /// <remarks>
-    /// 오름차순으로 놓고 꼭대기부터 짝을 찾는다. 짝 둘 중 <b>무늬가 높은 쪽</b>을 낸다 —
-    /// 원본이 어느 장을 내는지는 확인하지 못했다(무승부 가르기의 무늬 비교에만 영향이 있다).
+    /// <b>끗수만 보는</b> 선택 정렬(<c>0x0045A630</c>)로 오름차순에 놓고 꼭대기부터 짝을 찾아
+    /// 짝의 <b>윗장</b>(<c>[i+1]</c>)을 낸다. 같은 끗수 둘의 앞뒤는 무늬가 아니라 패가 놓인 차례로
+    /// 갈리므로, 같은 끗수 페어끼리 무늬로 가를 때(<c>0x00403142</c>) 어느 무늬가 나올지도 차례에 달린다.
+    /// 두 장 아래면 <c>0x0045A8B0</c> 이 0 을 낸다.
+    /// <para>
+    /// 원본의 흠 하나는 옮기지 않는다 — <c>0x0045A8B0</c> 은 앞 k 장만 줄 세워야 할 안쪽 고리를 5 까지 돌려,
+    /// 부른 쪽이 k 장만 베껴 둔 버퍼 뒤의 <b>스택 쓰레기 바이트</b>까지 끌어들인다(<c>0x00403E61</c> ·
+    /// <c>0x004058CE</c>). 값이 그때그때 달라 옮길 수 없으므로 앞 k 장만 줄 세운다.
+    /// </para>
     /// </remarks>
     public static byte HighestPair(ReadOnlySpan<byte> cards, int k)
     {
-        Span<byte> c = stackalloc byte[HandSize];
-        cards[..k].CopyTo(c);
-        var s = c[..k];
-        SortByKey(s);
-        for (int i = k - 1; i > 0; i--)
-            if (RankOf(s[i]) == RankOf(s[i - 1])) return s[i];
+        if (k < 2) return 0;
+        byte[] s = cards[..k].ToArray();
+        SortByRank(s);
+        for (int i = k - 2; i >= 0; i--)
+            if (RankOf(s[i]) == RankOf(s[i + 1])) return s[i + 1];
         return NoCard;
     }
 
@@ -284,26 +290,29 @@ public sealed class Poker
     ///   k &gt; 3 이고 넷이 같음 → 7 · k &gt; 2 이고 이웃 셋 같음 → 3
     ///   k &gt; 3 이고 투 페어 → 2 · 페어 → 1 · 아니면 0
     /// </code>
-    /// 셈 안에서 끗수로 줄 세운 뒤 이웃을 본다.
+    /// <b>넷·셋은 줄 세우지 않고 연 차례 그대로</b> 본다 — 포카드는 앞 넉 장이 다 같은지
+    /// (<c>0x0045B240</c>), 쓰리카드는 <b>이웃한</b> 셋이 같은지(<c>0x0045B270</c>)다. 그래서 K·5·K·K 로
+    /// 열면 쓰리카드로 못 알아보고 원 페어로 어림한다. 투 페어(<c>0x0045B2C0</c>)·원 페어(<c>0x0045B310</c>)는
+    /// 앞 k 장을 끗수로 줄 세운 뒤 짝을 세는데, 짝을 찾으면 한 칸 건너뛴다.
     /// </remarks>
     public static int Estimate(ReadOnlySpan<byte> cards, int k)
     {
         if (k <= 1) return NoPair;
-        byte[] s = cards[..k].ToArray();
-        SortByRank(s);
+        byte[] open = cards[..k].ToArray();
 
-        int R(int i) => RankOf(s[i]);
-        if (k > 3)
-            for (int i = 0; i + 3 < k; i++)
-                if (R(i) == R(i + 1) && R(i + 1) == R(i + 2) && R(i + 2) == R(i + 3)) return FourOfAKind;
+        int R(byte[] c, int i) => RankOf(c[i]);
+        if (k > 3 && R(open, 0) == R(open, 1) && R(open, 1) == R(open, 2) && R(open, 2) == R(open, 3))
+            return FourOfAKind;
         if (k > 2)
-            for (int i = 0; i + 2 < k; i++)
-                if (R(i) == R(i + 1) && R(i + 1) == R(i + 2)) return ThreeOfAKind;
+            for (int i = 0; i < k - 2; i++)
+                if (R(open, i) == R(open, i + 1) && R(open, i + 1) == R(open, i + 2)) return ThreeOfAKind;
 
+        byte[] s = open.ToArray();
+        SortByRank(s);
         int pairs = 0;
-        for (int i = 0; i + 1 < k; i++)
-            if (R(i) == R(i + 1)) pairs++;
-        if (k > 3 && pairs >= 2) return TwoPair;
+        for (int i = 0; i < k - 1; i++)
+            if (R(s, i) == R(s, i + 1)) { pairs++; i++; }
+        if (k > 3 && pairs > 1) return TwoPair;
         return pairs > 0 ? OnePair : NoPair;
     }
 
@@ -418,20 +427,21 @@ public sealed class Poker
     }
 
     /// <summary>
-    /// 상대가 버릴 카드(<c>0x004048C0</c>). 상대 패를 오름차순으로 두고 표시를 낸다. 난수는 없다.
+    /// 상대가 버릴 카드(<c>0x004048C0</c>). 상대 패를 <b>돌린 차례 그대로</b> 두고 표시를 낸다 — 부르는
+    /// <c>0x00402970</c> 도 줄 세우지 않는다. 난수는 없다.
     /// </summary>
     /// <remarks>
     /// <code>
     ///   노 페어    끗수 &lt; 8 (2~9) 전부
     ///   원 페어    짝 없는 카드 중 끗수 ≤ 8 (2~10)
     ///   투 페어    곁패 한 장
-    ///   쓰리카드   곁패 둘 중 <b>높은 것</b> (둘째 찾기가 자기 자신과 견주는 버그 — 그대로 둔다)
+    ///   쓰리카드   곁패 둘 중 <b>돌린 차례로 뒤에 온 것</b> (0x0040497E 의 둘째 찾기가 첫째 자리에서
+    ///              다시 시작해 자기 자신과 견주므로 첫째 표시만 지워진다 — 그대로 둔다)
     ///   그 위      안 바꾼다
     /// </code>
     /// </remarks>
     public bool[] TheirDiscards()
     {
-        SortByKey(Theirs);
         int hand = Evaluate(Theirs);
         var marks = new bool[HandSize];
 
@@ -457,7 +467,7 @@ public sealed class Poker
                 for (int i = 0; i < HandSize; i++) marks[i] = single[i];
                 break;
             case ThreeOfAKind:
-                // 오름차순이라 뒤에 선 곁패가 높다 — 그것을 버린다.
+                // 뒤에 선 곁패를 버린다. 쓰리카드는 곁패를 안 보므로 승패에는 닿지 않는다.
                 for (int i = HandSize - 1; i >= 0; i--)
                     if (single[i]) { marks[i] = true; break; }
                 break;

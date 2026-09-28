@@ -2207,8 +2207,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         TalkDialog.Say(_view, face, "", LentShips.Challenge(sponsor));
 
         var foe = LentShips.CaptainOf(_random) with { Name = LentShips.DuelName(ship) };
-        var duel = new Duel(Mine(), foe, _player.Items.Contains(Duel.EdithShieldId),
-                            Environment.TickCount);
+        // 선장 무기·방어구도 판을 지을 때 그 벌로 굴린다(0x004A89D4).
+        var duel = new Duel(Mine(),
+                            Duel.Armed(foe, FighterSprites.SetForCulture(_culture),
+                                       new GameRandom(Environment.TickCount), _game.Items),
+                            _player.Items.Contains(Duel.EdithShieldId), Environment.TickCount);
         var dice = new GameRandom(Environment.TickCount);
         DuelDialog.Show(_view, duel, dice, face, _game.Fighters,
                         // 후원자 자리는 술집·여관이 아니므로 무대가 밑값 1(초원)이다(0x004A2D92).

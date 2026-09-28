@@ -737,22 +737,27 @@ public sealed class DuelDialog : GameWindow
         // 상대 쪽으로, 막기만 하면 내 쪽으로다. 맞부딪힘은 제자리다. 맞았는지는 안 본다.
         // 이 판이 시작할 때 옮겨 가므로 <b>공격이면 다가서며 찌르고 방어면 물러나면서</b>
         // 뛴다 — 앞 판에서 옮겨 두면 뛰는 판에 앞으로 나가는 꼴이 된다.
+        // 옮길 쪽은 엔진이 판을 넘길 때 정한 값(+0x144)을 그대로 쓴다 — 벽에 닿았으면 0 이다.
         var (mine, theirs) = Moves(turn);
-        int way = turn.Was switch
-        {
-            Duel.Phase.Attack => -1,
-            Duel.Phase.Guard => +1,
-            _ => 0,
-        };
+        int way = turn.Push;
         // <b>꼬리를 걷는다.</b> 한 판이 서른세 눈금이지만 볼 것은 그 앞쪽에서 끝난다 —
         // 찌르기는 눈금 15 에, 빨강은 눈금 16 에 다 찬다. 남은 눈금은 여느 자세로 서
         // 있기만 하므로 기다릴 까닭이 없다.
         int ticks = turn.Blow == Duel.Blow.Blocked ? DuelStage.ShortTicks : DuelStage.HitTicks;
 
+        // 벽에 몰려 한 번 더 맞은 판은 틱을 7 로 되돌려 <b>같은 몸짓을 한 번 더</b> 돌린다
+        // (0x004A7E3B 의 [+0xDC] = 8 − 1). 깎인 값은 엔진이 이미 둘 다 뺐으므로 첫 바퀴의 빨강이
+        // 둘을 함께 보이고, 두 번째 바퀴는 소리만 한 번 더 낸다.
+        var again = turn with { Critical = turn.AgainCritical };
+        Action done = turn.Again
+            ? () => _stage.Play(mine, theirs, 0, ticks, onSay: null,
+                                onHurt: () => HitSound(again), onDone: () => Settle(turn))
+            : () => Settle(turn);
+
         _stage.Play(mine, theirs, way, ticks,
                     onSay: () => { _myMove.Text = myName; _foeMove.Text = foeName; },
                     onHurt: () => { HitSound(turn); StartHurt(); },
-                    onDone: () => Settle(turn));
+                    onDone: done);
     }
 
     /// <summary>

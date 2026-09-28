@@ -1,4 +1,6 @@
-﻿namespace CdsHelper.Game.Engine.Town;
+﻿using CdsHelper.Game.Local.Helpers;
+
+namespace CdsHelper.Game.Engine.Town;
 
 /// <summary>
 /// 일기토 — 술집에서 이름난 항해자에게 칼을 겨루는 판.
@@ -95,9 +97,14 @@ public sealed class Duel
     /// 이긴 뒤 「모두 뺏는다」를 고르면 이 둘을 그대로 얻는다(<c>0x004AA4B3</c>).
     /// </remarks>
     /// <param name="set">복장 갈래(1~8).</param>
-    /// <param name="might">상대의 무력.</param>
+    /// <param name="might">
+    /// 상대의 무력 — <b>담은 값</b>이다. 게임은 판에 넣은 <c>+0x174</c>(담은 값 + 1)를 90·80·70 과
+    /// 견주므로(<c>0x004A8A04</c> · <c>0x004A8AB6</c>) 담은 값이 딱 90·80·70 이어도 윗급이 된다. 여기서
+    /// 1 을 더해 견준다.
+    /// </param>
     public static (int Weapon, int Armor) GearOf(int set, int might, GameRandom dice)
     {
+        might++;                                  // 판에 넣는 값(+0x174)으로 견준다
         if (set == 6) return (might > 90 ? 0x3A : 0x39, might > 70 ? 0x4B : 0x4A);
         if (set == 7) return (might > 90 ? 0x3C : 0x3B, might > 70 ? 0x4D : 0x4C);
         if (set is not (1 or 3)) return (0x40, 0x42);
@@ -130,6 +137,46 @@ public sealed class Duel
     {
         var (weapon, armor) = GearOf(set, might, dice);
         return (effectOf(weapon), effectOf(armor));
+    }
+
+    /// <summary>
+    /// 상대에게 <b>그 자리에서 굴린 무기·방어구</b>를 쥐여 준다(<c>0x004A89D4</c>~<c>0x004A8D5F</c>).
+    /// </summary>
+    /// <remarks>
+    /// 일기토 판은 늘 <c>0x004A8500</c> 하나로 짓는다(부르는 자리는 <c>0x004AA861</c> 뿐이다) —
+    /// 술집이든 해전·육상전·대본·성문 앞이든 상대 장비를 이렇게 굴린다. 인물 표에 칸이 없다고 0 으로
+    /// 두면 안 된다. 갈래는 몸짓 그림 벌(<c>+0x15C</c>)과 같은 값이고, 벌 1·3·6·7 이 아니면
+    /// 포르숑 · 체인메일로 못 박힌다.
+    /// </remarks>
+    /// <param name="set">복장 갈래 — 판에 넘기는 상대 몸짓 벌이다.</param>
+    public static Fighter Armed(Fighter foe, int set, GameRandom dice, ItemTable? items)
+    {
+        var (weapon, armor) = GearFor(set, foe.Might, dice, id => items?.Find(id)?.Effect ?? 0);
+        return foe with { Weapon = weapon, Armor = armor };
+    }
+
+    /// <summary>
+    /// 내 쪽에 <b>지닌 것 가운데 가장 센 무기·방어구</b>를 쥐여 준다(<c>0x004A8829</c>).
+    /// </summary>
+    /// <remarks>
+    /// 부관이 대신 나가도 제독이 지닌 것을 그대로 쓴다 — 훑는 것은 늘 <c>0x005B60A0</c> 의 열여섯 칸이다.
+    /// <para>
+    /// 원본에는 흠이 하나 있다 — 더 센 무기를 찾으면 <c>0x004A8853</c> 이 <c>edi</c> 를 한 번 더 올려
+    /// <b>바로 다음 칸을 건너뛴다</b>. 코드의 흠이라 옮기지 않고 칸을 다 훑는다(술집·해전의
+    /// <c>Best</c>·<c>BestItem</c> 과 같게 둔다).
+    /// </para>
+    /// </remarks>
+    public static Fighter Equipped(Fighter me, IEnumerable<int> owned, ItemTable? items)
+    {
+        int weapon = 0, armor = 0;
+        if (items != null)
+            foreach (int id in owned)
+            {
+                if (items.Find(id) is not { } item) continue;
+                if (item.Category == WeaponCategory) weapon = Math.Max(weapon, item.Effect);
+                else if (item.Category == ArmorCategory) armor = Math.Max(armor, item.Effect);
+            }
+        return me with { Weapon = weapon, Armor = armor };
     }
 
     /// <summary>도망 판정(<c>0x004A9EED</c>) — <c>운*5 + 10 + rand(60) &gt;= rand(1000)</c>.</summary>
@@ -183,8 +230,33 @@ public sealed class Duel
     /// <param name="FoeMove">상대의 명령.</param>
     /// <param name="Finisher">필살이 나왔는지.</param>
     /// <param name="Critical">회심의 한 수였는지.</param>
+    /// <param name="Push">
+    /// 이 판에 두 사람이 함께 옮겨 간 쪽(<c>+0x144</c>) — <c>−1</c> 내가 몰아붙임 · <c>+1</c> 내가 물러남 ·
+    /// <c>0</c> 제자리(맞부딪힘이거나 벽에 닿음).
+    /// </param>
+    /// <param name="Again">벽에 몰려 <b>한 번 더 맞았는지</b>(<c>0x004A7E36</c>).</param>
+    /// <param name="AgainHurt">두 번째로 깎인 값.</param>
+    /// <param name="AgainCritical">두 번째가 회심이었는지.</param>
     public readonly record struct Turn(Phase Was, Blow Blow, int Line, int MyMove, int FoeMove,
-                                       int Hurt, bool Finisher, bool Critical);
+                                       int Hurt, bool Finisher, bool Critical,
+                                       int Push = 0, bool Again = false, int AgainHurt = 0,
+                                       bool AgainCritical = false);
+
+    /// <summary>
+    /// 두 사람이 선 자리(<c>+0x14C</c> 나 · <c>+0x150</c> 상대) — 판을 차릴 때 152 · 80 이다
+    /// (<c>0x004A9465</c>). 판마다 <see cref="_push"/> 만큼 마흔 점씩 함께 옮긴다(<c>0x004A6DA6</c>).
+    /// </summary>
+    private int _myX = 152, _foeX = 80;
+
+    /// <summary>
+    /// 이번 판에 옮겨 갈 쪽(<c>+0x144</c>). 판을 넘길 때 <b>새 판 갈래와 지금 자리</b>로 정한다
+    /// (<c>0x004A6EE5</c>) — 내가 칠 판이고 상대 x ≥ 40 이면 −1, 내가 막을 판이고 내 x ≤ 200 이면
+    /// +1, 그 밖(벽에 닿음)은 0 이다. 처음은 0 이다(<c>0x004A854D</c>).
+    /// </summary>
+    private int _push;
+
+    /// <summary>한 번에 옮기는 점 수와 벽 문턱(<c>0x004A6DA0</c> · <c>0x004A6EF0</c> · <c>0x004A6F0A</c>).</summary>
+    private const int PushStep = 40, FoeWall = 40, MyWall = 200;
 
     private readonly GameRandom _dice;
 
@@ -251,14 +323,33 @@ public sealed class Duel
             pick -= Lines;
         }
 
+        // 판이 열리면(틱 8) 두 사람이 함께 옮긴다(0x004A6D9A).
+        int push = _push;
+        _myX += push * PushStep;
+        _foeX += push * PushStep;
+
         var turn = was switch
         {
             Phase.Clash => Clash(pick),
             Phase.Attack => Attack(pick, finisher),
             _ => Guard(pick),
-        };
+        } with { Push = push };
+
+        // 벽에 몰린 판(+0x144 == 0)에서 맞부딪힘이 아니고, 막히지 않았고, 첫 칼에 끝나지 않았으면
+        // 틱 16 에 같은 손으로 <b>한 번 더 친다</b>(0x004A7DD0 → 0x004A7E36). 두 번째는 +0x140 이 서 있어
+        // 필살이 두 배가 되지 않고, 필살이면 회심도 굴리지 않는다(0x004A9B45 · 0x004A9CFD).
+        if (push == 0 && was != Phase.Clash && turn.Blow != Blow.Blocked && !Over)
+        {
+            bool mine = turn.Blow is Blow.FoeHit or Blow.FoeGrazed;
+            var again = Strike(turn.Blow, turn.Line, turn.MyMove, turn.FoeMove, mine, turn.Finisher,
+                               followUp: true);
+            turn = turn with { Again = true, AgainHurt = again.Hurt, AgainCritical = again.Critical };
+        }
 
         Advance(turn.Blow, was);
+        _push = Now == Phase.Attack && _foeX >= FoeWall ? -1
+              : Now == Phase.Guard && _myX <= MyWall ? 1
+              : 0;
         return turn;
     }
 
@@ -322,7 +413,12 @@ public sealed class Duel
     /// <summary>
     /// 아픈 값을 셈해 그 부위에서 깎는다(<c>0x004A9AC2</c> · <c>0x004A9C7A</c>).
     /// </summary>
-    private Turn Strike(Blow blow, int line, int myMove, int foeMove, bool mine, bool finisher)
+    /// <param name="followUp">
+    /// 벽에 몰려 한 번 더 치는 칼인지(<c>+0x140</c> == 1). 그러면 필살이라도 두 배가 되지 않고 회심도
+    /// 안 굴린다 — 필살이 아닌 칼만 회심을 굴린다(<c>0x004A9B3C</c>~<c>0x004A9B57</c>).
+    /// </param>
+    private Turn Strike(Blow blow, int line, int myMove, int foeMove, bool mine, bool finisher,
+                        bool followUp = false)
     {
         var hitter = mine ? Me : Foe;
         var taker = mine ? Foe : Me;
@@ -341,7 +437,7 @@ public sealed class Duel
         bool critical = false;
         if (finisher)
         {
-            hurt *= FinisherMultiplier;
+            if (!followUp) hurt *= FinisherMultiplier;
         }
         else if (hitter.Sword + hitter.Luck / CriticalLuckDivider >= _dice.Next(CriticalDice))
         {
