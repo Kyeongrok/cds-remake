@@ -668,6 +668,9 @@ public sealed class DuelDialog : GameWindow
 
     private GameUi.FocusGroup? _focus;
 
+    /// <summary>승패 소리를 낼 때 멈출 곡.</summary>
+    private BgmPlayer? _bgm;
+
     /// <summary>
     /// 명령을 고를 때 나는 칼 부딪히는 소리. 효과음을 못 열면 조용히 넘어간다.
     /// </summary>
@@ -792,7 +795,8 @@ public sealed class DuelDialog : GameWindow
             // 판 중 말풍선을 띄우고 확인 단추를 세웠다. 쓰러지는 모습만 잠깐 보여 주고 닫는다 —
             // 뒤의 말(처형·놓아 준다·모두 뺏는다, 반란 진압)은 부른 쪽이 낸다.
             Speak("");
-            // 이겼으면 77, 졌으면 74 가 난다(0x004A6FBF).
+            // 이겼으면 77, 졌으면 74 가 난다(0x004A6FBF). 그 앞에 곡을 멈춘다(0x004A6FBA 의 CDAudioPause).
+            _bgm?.Pause();
             Sound(_duel.Won == true ? SoundBank.DuelWinPart : SoundBank.DuelLosePart);
             _stage?.Fall(mine: _duel.Won != true);
             _keys.Children.Clear();
@@ -882,7 +886,7 @@ public sealed class DuelDialog : GameWindow
         try
         {
             var window = new DuelDialog(duel, dice, face, myFace, art, foeSet,
-                                        DuelArt.Open(), arena) { Owner = owner };
+                                        DuelArt.Open(), arena) { Owner = owner, _bgm = bgm };
             window.ShowDialog();
         }
         finally
