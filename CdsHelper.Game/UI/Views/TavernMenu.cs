@@ -179,7 +179,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         TalkDialog.Say(_view, face, "", Challenges[k]);
         if (hasMate) TalkDialog.Say(_view, mate, "", ChallengeAdvice[k]);
 
-        if (ChoiceDialog.Ask(_view, "", ["도전을 받는다", "무시한다"]) != 0)
+        // 고를 줄은 둘뿐이다(0x0042FCC5 의 줄 수 2) — 「취소」 줄을 덧붙이지 않는다.
+        if (ChoiceDialog.Pick(_view, "", ["도전을 받는다", "무시한다"]) != 0)
         {
             TalkDialog.Say(_view, face, "", Jeers[k]);
             return true;
