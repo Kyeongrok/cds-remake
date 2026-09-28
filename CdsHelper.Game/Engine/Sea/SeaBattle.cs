@@ -579,6 +579,7 @@ public sealed class SeaBattle
             if (ship.Stuck) { ship.Ordered = true; continue; }       // 지난 턴 충돌 — 걸음 0
 
             List<Move>? plan = null;
+            bool aimed = false;                                      // 노릴 자리(+0x8C4)를 채웠는지
 
             if (WantsRetreat(ship, mine))
             {
@@ -613,6 +614,7 @@ public sealed class SeaBattle
             else if (PickTarget(ship, foes) is { } target)
             {
                 var (ax, ay) = AimPoint(target, aimer: ship);
+                aimed = true;
                 plan = Broadside(ship, ax, ay);
             }
             else
@@ -620,10 +622,14 @@ public sealed class SeaBattle
                 plan = TowardFlagship(ship, foes);
             }
 
-            // 길을 못 찾으면 선회 하나만 굴리고 걸음은 0 이다.
+            // 길을 못 찾으면 걸음은 0 이고 선회 하나만 굴린다 — rand(3) 을 첫 걸음 칸에 넣고 걸음 수 0
+            // (0x0043BC92~0x0043BCC4)이라 틱 0 에 제자리 선회가 된다(0x0043CCD7). 이 굴림은 노릴 자리 +0x8C4 가
+            // −1 로 남았을 때, 곧 물러서기·기함 쪽 길(모드 2·4·5)에서만 탄다 — 뱃전 모드 3 은 노릴 자리를 채워 두어
+            // 안 탄다. 예전에는 선회도 없이 섰다.
             if (plan == null)
             {
                 ship.Plan.Clear();
+                if (!aimed) ship.Pivot = (Move)_rng.Next(3);
             }
             else
             {
