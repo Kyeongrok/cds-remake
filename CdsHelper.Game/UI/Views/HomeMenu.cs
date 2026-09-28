@@ -473,6 +473,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     ///   금화 2/3 · 저금 4/5 · 명성·악명은 Home.InheritedFame/Infamy
     ///   부하를 모두 내보낸다(0x004534E0)
     ///   제독 자리를 아들로 갈아 끼운다(0x0047D4B0) — 이름·생년월일·능력치·기능·언어가 아들 것이 된다
+    ///   아내 자리를 비운다(0x0047D5FB — [0x005B61B0] = -1)
     ///   [플레이어 정보 / 직업 변경 / 게임 재개]
     ///   사건 그림 9 · 소리 0x4D → 「%s의 아들 %s%s %s%s서의 첫걸음을 내디뎠다.」
     ///   딸이 있으면 작별 인사 · 아이 칸을 비운다
@@ -529,6 +530,11 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         _player.Drinking = son.Drinking;
         for (int i = 0; i < Skill.Names.Length && i < son.Skills.Length; i++) _player.SetSkill(Skill.Names[i], son.Skills[i]);
         for (int i = 0; i < Skill.Languages.Length && i < son.Tongues.Length; i++) _player.SetTongue(Skill.Languages[i], son.Tongues[i]);
+
+        // 아내 자리도 비운다 — 아버지의 아내가 아들의 아내로 남지 않는다. 원본은 아내 레코드의
+        // +0x38·+0x24 를 -1 로 지우고(0x00461C04), 제독 자리를 갈아 끼우는 0x0047D4B0 이
+        // 끝에 [제독+0x110](= 아내 번호 0x005B61B0)을 -1 로 둔다(0x0047D5FB).
+        _player.Marry(null);
 
         // 플레이어 정보 · 직업 변경 · 게임 재개 — 게임 재개를 고를 때까지 돈다.
         while (true)
