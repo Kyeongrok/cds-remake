@@ -118,7 +118,7 @@ public static class Sailing
             int v = ship.Speed * (windSpeed + 1) * sails.Efficiency(ship.Sails, relative) / 100;
 
             // 사람이 모자라면 느려지되 <b>반토막 밑으로는 안 떨어진다</b> — 게임은 두 값 가운데 큰 쪽을
-            // 남긴다(0x0048BE1C: 선원비례값 &lt; (v+1)/2 이면 (v+1)/2). 예전에는 작은 쪽을 골라
+            // 남긴다(0x0048BE1C: 선원비례값 < (v+1)/2 이면 (v+1)/2). 예전에는 작은 쪽을 골라
             // 모자랄수록 반보다 더 느려졌다.
             int need = ship.Crew;
             int aboard = CrewOn(player, i);
