@@ -219,9 +219,9 @@ public sealed class EncyclopediaPageDialog : GameWindow
     {
         _hover.IsOpen = false;
         if (row.Movie >= 0)
-            MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+            MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
         else if (row.Clip >= 0)
-            DiscoveryClipPlayer.Play(this, _game.Clips, row.Clip);
+            DiscoveryClipPlayer.Play(this, _game.Clips, row.Clip, _game.Bgm);
         else if (row.Picture >= 0)
             DiscoveryDialog.ShowPicture(this, _game.Stills, row.Picture);
     }

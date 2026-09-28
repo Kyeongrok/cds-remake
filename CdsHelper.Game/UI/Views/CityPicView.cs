@@ -1296,7 +1296,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             {
                 log.Discover(_player, row.Id);
                 string found = $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!";
-                MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+                MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
                 if (row.Movie >= 0) NoticeDialog.Show(this, found);
                 else DiscoveryDialog.Show(this, _game.Stills, row.Picture, found);
             }
@@ -1417,7 +1417,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 1 이면 소리 <c>0x2A</c>, 아니면 <c>0x2B</c> 를 함께 낸다 — 되고 안 되고가 곧 소리다.
     /// </remarks>
     public void PlayHeir(bool born) =>
-        PlayEffect(EffectAnim.Cannon, [.. Plead, born ? Granted : Refused]);
+        PlayEffect(EffectAnim.Cannon, [.. Plead, born ? Granted : Refused],
+                   sound: (born ? 0x2A : 0x2B) - Support.Local.Helpers.WaveBank.FirstSoundId);
 
     /// <summary>
     /// 후원자의 마음이 동하는지 — <b>MPEFFECT 3번(하트)</b>이다.
@@ -1452,7 +1453,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 이야기를 내밀 때 도는 하트가 그래서 한 번도 안 나왔다. 게임도 이때는 명령 창을 지운다.
     /// </remarks>
     /// <param name="span">한 장이 머무는 참. 안 주면 <see cref="FrameSpan"/> 이다.</param>
-    private void PlayEffect(int anim, int[] order, TimeSpan? span = null)
+    private void PlayEffect(int anim, int[] order, TimeSpan? span = null, int sound = -1)
     {
         if (_playing) return;                       // 도는 동안 또 누르면 겹친다
 
@@ -1492,6 +1493,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                     art[f] = bmp;
                 }
                 image.Source = art[f];
+                // 결말 장으로 넘어가는 참에 소리를 낸다(0x004A5D59 가 깃발을 세우면 0x004A5EB4 가 [+0xC0] 소리를 낸다).
+                if (sound >= 0 && f >= Granted) _game.Sfx?.Play(sound);
                 Wait(span ?? FrameSpan);
             }
         }

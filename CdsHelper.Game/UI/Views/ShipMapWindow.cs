@@ -1048,6 +1048,13 @@ public sealed class ShipMapWindow : Window
         _game.Bgm.PlayWhenDone(BgmPlayer.SeaTrackAt(cell.X, cell.Y));
     }
 
+    /// <summary>
+    /// 배가 선 해역의 곡. 도시를 나오거나 배에 오를 때 게임은 모든 소리를 끊고(<c>0x0048EB05</c>)
+    /// 해역 곡 고르기(<c>0x0048D5C0</c>)를 부르므로, 멈춘 뒤라 기다림 없이 <b>그 해역 곡</b>이 곧바로 돈다.
+    /// </summary>
+    private int SeaTrackHere() =>
+        _host.ShipCell is { } cell ? BgmPlayer.SeaTrackAt(cell.X, cell.Y) : BgmPlayer.SeaTrack;
+
     /// <summary>좌표 상자를 띄울 때인지 다시 따진다 — 켜 두었고, 지도가 떠 있고, 이 창이 앞일 때만.</summary>
     /// <remarks>
     /// <b>컨디션만은 도시에 들어가도 그대로 둔다.</b> 다른 상자는 지도를 읽는 것이라 지도가
@@ -2635,7 +2642,7 @@ public sealed class ShipMapWindow : Window
                 : $"바다에서 이어 간다 — {saved.Date:yyyy년 M월 d일}";
         }
 
-        _game.Bgm.Play(BgmPlayer.SeaTrack);
+        _game.Bgm.Play(SeaTrackHere());
         SyncOverlay();
 
         // 날짜가 다 자리잡은 뒤라야 어느 도시가 섰는지 셀 수 있다. 처음 한 번은
@@ -2792,7 +2799,7 @@ public sealed class ShipMapWindow : Window
             // 아무 물가에서나 타지는 못한다. 내린 자리는 배 둘레 3x3 이라 내리자마자 타는 데는 걸리지 않는다.
             if (_host.IsNearMoor())
                 // 뭍에서 배로 옮겨 타는 줄은 「승선」이다(0x0056F9A8, 0x0048B3ED) — 「출항」은 항구 것이다.
-                items.Add(("승선", () => { if (_host.Embark()) _game.Bgm.Play(BgmPlayer.SeaTrack); Close(); }));
+                items.Add(("승선", () => { if (_host.Embark()) _game.Bgm.Play(SeaTrackHere()); Close(); }));
         }
         else if (_host.IsNearLand())
         {
@@ -3438,7 +3445,7 @@ public sealed class ShipMapWindow : Window
         if (!end.Entered)
         {
             if (veiled) SetInCity(false);
-            _game.Bgm.Play(_host.IsOnLand ? BgmPlayer.LandTrack : BgmPlayer.SeaTrack);
+            _game.Bgm.Play(_host.IsOnLand ? BgmPlayer.LandTrack : SeaTrackHere());
         }
 
         if (end.GameOver)
@@ -6086,7 +6093,7 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void PlainNotice(in DiscoveryTable.Record row)
     {
-        MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+        MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
 
         string found = $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!";
 
@@ -6315,7 +6322,7 @@ public sealed class ShipMapWindow : Window
             // 이미 뭍에 서 있으면(말로 걸어 들어온 마을이면) Land() 는 거짓을 낸다 — 그때도 걷는
             // 것이다. 예전에는 그 거짓을 그대로 받아 성문으로 나섰는데 출항 곡이 돌았다.
             bool walking = dialog.Explored && (_host.IsOnLand || _host.Land());
-            _game.Bgm.Play(walking ? BgmPlayer.LandTrack : BgmPlayer.SeaTrack);
+            _game.Bgm.Play(walking ? BgmPlayer.LandTrack : SeaTrackHere());
             // 나오면 닻을 내린 채 선다(0x0048EB32) — 클릭으로 닻을 올려야 간다. 뭍에 오른 뒤에 해야
             // Land() 가 지운 것을 도로 세운다.
             _host.HoldAfterCity();

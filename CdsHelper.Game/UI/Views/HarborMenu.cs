@@ -628,9 +628,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             // 그림은 <b>세 단</b>이다(0x0047E96F → 0x004AAF30) — 표 +0x10 동영상, 없으면 +0x14 움직이는 그림
             // (DISCOVER.CDS), 없으면 +0x0C 스틸이다. 보고도 같은 함수를 쓴다.
             if (row.Movie >= 0)
-                MoviePlayer.Play(owner, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+                MoviePlayer.Play(owner, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
             else if (row.Clip >= 0)
-                DiscoveryClipPlayer.Play(owner, _game.Clips, row.Clip);
+                DiscoveryClipPlayer.Play(owner, _game.Clips, row.Clip, _game.Bgm);
             else if (row.Picture >= 0)
                 DiscoveryDialog.ShowPicture(owner, _game.Stills, row.Picture);   // 그림만(0x004AD640)
 

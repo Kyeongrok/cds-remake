@@ -668,6 +668,9 @@ public sealed class DuelDialog : GameWindow
 
     private GameUi.FocusGroup? _focus;
 
+    /// <summary>승패 소리를 낼 때 멈출 곡.</summary>
+    private BgmPlayer? _bgm;
+
     /// <summary>
     /// 명령을 고를 때 나는 칼 부딪히는 소리. 효과음을 못 열면 조용히 넘어간다.
     /// </summary>
@@ -679,13 +682,15 @@ public sealed class DuelDialog : GameWindow
 
     /// <summary>
     /// 칼이 닿는 눈금(11, <c>[0x00572A74]</c>)에 나는 소리 — 회심의 한 수(<c>[+0x13C] == 1</c>)면 사운드 <b>0x49</b>,
-    /// 여느 맞힘이면 <b>0x4C</b> 다(<c>0x004A7984</c> · <c>0x004A7BF2</c>). 막힌 판(<c>[+0xD0] == 2</c>)은 소리가 없고,
-    /// 판을 끝내는 한 수(<c>[+0x148]</c> 에 진 쪽이 선 판)도 여기서는 안 내고 이기고 지는 소리에 맡긴다.
+    /// 여느 맞힘이면 <b>0x4C</b> 다(<c>0x004A7984</c> · <c>0x004A7BF2</c>). <b>필살</b>(<c>[+0xAC]</c>·<c>[+0xB0]</c> == 2 —
+    /// 명령 번호에 3 이 얹힌 갈래)로 맞히면 회심과 상관없이 늘 0x49 다(<c>0x004A7A72</c> · <c>0x004A7CD4</c>).
+    /// 막힌 판(<c>[+0xD0] == 2</c>)은 소리가 없다. 견주는 <c>[+0x148]</c> 은 판을 열 때(<c>0x004A853B</c>) 0 을 적을 뿐
+    /// 다른 데서 안 바뀌므로, <b>판을 끝내는 한 수도</b> 눈금 11 에 이 소리를 내고 눈금 23 에 이기고 지는 소리가 따른다.
     /// </summary>
     private void HitSound(in Duel.Turn turn)
     {
-        if (turn.Blow == Duel.Blow.Blocked || _duel.Over) return;
-        Sound((turn.Critical ? CriticalSoundId : HitSoundId) - CdsHelper.Support.Local.Helpers.WaveBank.FirstSoundId);
+        if (turn.Blow == Duel.Blow.Blocked) return;
+        Sound((turn.Critical || turn.Finisher ? CriticalSoundId : HitSoundId) - CdsHelper.Support.Local.Helpers.WaveBank.FirstSoundId);
     }
 
     /// <summary>맞힘 소리(<c>0x4C</c>)와 회심 소리(<c>0x49</c>)의 사운드 ID.</summary>
@@ -790,7 +795,8 @@ public sealed class DuelDialog : GameWindow
             // 판 중 말풍선을 띄우고 확인 단추를 세웠다. 쓰러지는 모습만 잠깐 보여 주고 닫는다 —
             // 뒤의 말(처형·놓아 준다·모두 뺏는다, 반란 진압)은 부른 쪽이 낸다.
             Speak("");
-            // 이겼으면 77, 졌으면 74 가 난다(0x004A6FBF).
+            // 이겼으면 77, 졌으면 74 가 난다(0x004A6FBF). 그 앞에 곡을 멈춘다(0x004A6FBA 의 CDAudioPause).
+            _bgm?.Pause();
             Sound(_duel.Won == true ? SoundBank.DuelWinPart : SoundBank.DuelLosePart);
             _stage?.Fall(mine: _duel.Won != true);
             _keys.Children.Clear();
@@ -880,7 +886,7 @@ public sealed class DuelDialog : GameWindow
         try
         {
             var window = new DuelDialog(duel, dice, face, myFace, art, foeSet,
-                                        DuelArt.Open(), arena) { Owner = owner };
+                                        DuelArt.Open(), arena) { Owner = owner, _bgm = bgm };
             window.ShowDialog();
         }
         finally
