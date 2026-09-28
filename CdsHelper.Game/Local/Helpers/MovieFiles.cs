@@ -85,6 +85,17 @@ public static class MovieFiles
     public const string EndingStem = "END";
 
     /// <summary>
+    /// 켤 때 도는 동영상 둘 — <c>AVI\LOGO.AVI</c>(<c>0x00535CB0</c>) 다음 <c>AVI\OPEN.AVI</c>(<c>0x00535CA4</c>).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 판을 비운 뒤(<c>0x00410ACD</c>) 로고를 틀고(<c>0x00410B06</c> 의 <c>0x0045B820(파일, 5, 1)</c>),
+    /// 로고가 제대로 돌았거나 로고 파일이 없으면 오프닝을 튼다(<c>0x00410B1E</c> → <c>0x00410B46</c>).
+    /// 우리 재생기는 못 튼 것을 알리지 않으므로 둘을 잇달아 튼다 — 못 트는 파일은 조용히 건너뛴다.
+    /// 그 뒤에 글꼴을 읽고 메인메뉴로 간다.
+    /// </remarks>
+    public const string LogoStem = "LOGO", OpeningStem = "OPEN";
+
+    /// <summary>
     /// 틀 파일을 찾는다. 올려 둔 것 → 게임 폴더 차례고, 둘 다 없으면 null.
     /// </summary>
     public static string? Resolve(string? gameDirectory, string stem) =>

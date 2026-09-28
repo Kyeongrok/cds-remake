@@ -6323,6 +6323,10 @@ public sealed class ShipMapWindow : Window
             _screen.Content = _titleRoot;
         }
 
+        // 켜면 로고와 오프닝 동영상을 튼 뒤 메인메뉴로 간다(0x00410AE3 · 0x00410B22). 누르면 건너뛴다.
+        MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.LogoStem));
+        MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.OpeningStem));
+
         if (!BgmPlayer.IsAvailable(dir))
         {
             var result = MessageBox.Show(
