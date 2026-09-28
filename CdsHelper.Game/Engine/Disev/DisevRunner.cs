@@ -1176,7 +1176,7 @@ public sealed class DisevRunner
     ///   3  낚시          0x0047BDD0
     ///   6  큐브 퍼즐     0x0049B3C0
     /// </code>
-    /// 큐브는 창이 결과를 안 돌려줘 <b>이긴 것으로 친다</b> — 원본도 늘 1 이다. 낚시는 대어를 잡았는지를 그대로 쓴다.
+    /// 큐브는 출구로 나갔는지를 쓴다 — 두 번 다 떨어지면 0 이다(0x0049B388). 낚시는 대어를 잡았는지를 그대로 쓴다.
     /// </remarks>
     private bool PlayMinigame(int game)
     {
@@ -1195,8 +1195,7 @@ public sealed class DisevRunner
             case DisevMinigame.Fishing:
                 return FishingGameDialog.Play(_owner, _game.Random);
             case DisevMinigame.Cube:
-                CubePuzzleDialog.Play(_owner, _game.Player, _game.Random, _game.Sfx);
-                return true;
+                return CubePuzzleDialog.Play(_owner, _game.Player, _game.Random, _game.Sfx);
             // 4·5 와 7 넘는 번호는 뜀표가 곧장 다음 명령으로 간다 — 결과를 안 건드린다(0x0040C1B0).
             default:
                 return _result;

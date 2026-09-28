@@ -537,7 +537,8 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// <summary>금괴를 밟을 때 나는 소리 — 사운드 0x27(<c>0x0049C918</c>), WAVE 파트 11 이다.</summary>
     private const int GoldSoundPart = 0x27 - 28;
 
-    public static void Play(Window owner, Player player, Random rng, Local.Helpers.SoundBank? sfx = null)
+    /// <returns>출구로 나갔으면 true — 0x0049B388 이 판 상태가 0 이 아니면 1 을 낸다. 두 번 다 떨어지면 false.</returns>
+    public static bool Play(Window owner, Player player, Random rng, Local.Helpers.SoundBank? sfx = null)
     {
         // 판을 열기 전에 설명부터 낸다 — 게임도 그렇다.
         Explain(owner);
@@ -569,9 +570,9 @@ internal sealed class CubePuzzleDialog : GameWindow
             {
                 // 판을 마쳤을 때만 금괴 값이 들어온다(0x0049B366).
                 if (paid && dialog._game.Over == true) player.Earn(CubePuzzle.Prize);
-                return;
+                return dialog._game.Over == true;
             }
-            if (round > 0) return;   // 두 번째 판에서도 떨어졌다
+            if (round > 0) return false;   // 두 번째 판에서도 떨어졌다
 
             // 떨어져도 끝이 아니다 — 아래층이 있었다며 판을 새로 깔아 준다(0x0049B3C0).
             NoticeDialog.Show(owner,
