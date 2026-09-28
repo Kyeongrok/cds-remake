@@ -273,10 +273,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         if (Palace.TreatyWarning(_player.Nation, theirNation, _player.Date.Year))
         {
             string mine = Player.Nations[_player.Nation], theirs = patron.Nationality;
-            string word = $"우리 {mine}{GameUi.Josa(mine, "과", "와")} {theirs}의 사이에는 "
+            // 부관 말(0x00545848)에만 「우리」가 붙고, 부관 없는 말(0x005458F0)은 「현재 …」로 곧장 잇는다.
+            string word = $"{mine}{GameUi.Josa(mine, "과", "와")} {theirs}의 사이에는 "
                         + $"불가침 조약이 맺어져 있습니다. {theirs}의 스폰서와 계약하게 되면, "
                         + "배반자가 되어 모국에 돌아갈 수 없게 됩니다.";
-            if (_game.AideFace is { } aide) TalkDialog.Say(_view, aide, "", $"제독, 알고 계시리라 생각합니다만, {word}");
+            if (_game.AideFace is { } aide) TalkDialog.Say(_view, aide, "", $"제독, 알고 계시리라 생각합니다만, 우리 {word}");
             else GameDialog.Show(_view, $"현재 {word}");
         }
 
