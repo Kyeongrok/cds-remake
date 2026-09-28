@@ -117,6 +117,7 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.FlyingFish => new FlyingFishScene(),
             EventAnimation.Flamingo => new FlamingoScene(),
             EventAnimation.Morpho => new MorphoScene(),
+            EventAnimation.GhostShip => new GhostShipScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
@@ -1144,6 +1145,127 @@ internal sealed class EventAnimationPopup : Window
                 _xb = (half - SW) * t * t / hh / 2 + bend;
             }
             else _xb += _w / 80;
+        }
+    }
+
+    /// <summary>
+    /// 9 유령선 — 지도가 어두워지고 안개 속에서 유령선이 나타나 왼쪽으로 지나간다(<c>0x00498840</c>, 객체 <c>0x0061DFA0</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00498BD0  팔레트 0x27 — 배 파트 0x0B(96x64 아홉 장) · 안개 파트 0x0C(384x128 석 장)
+    ///   0x00498C20  여는 참에 소리를 다 끄고(곡까지) 0x35 · 끝에 0x35 를 끄고 곡을 되튼다(0x0049AEF0)
+    ///               제 걸음 n 은 부를 때마다 먼저 오른다 — n = c + 1
+    ///   0x00498AA0  첫자리  배 (W − W/50, (H − 64)/2 − (함대 위 ≥ H/2 − 48 이면 32))
+    ///               안개 넷(0x00498B20) — 0·1 은 왼쪽 밖((−2−k)·192, k·64 − rand 16),
+    ///                                     2·3 은 오른쪽 밖((k−2)·192 + W, rand 16 − k·64 + H)
+    ///   한 걸음
+    ///     c &lt; 4     어두워진다(0x0049A1A0(4 − c))
+    ///     배 장      n &lt; 10 · 12~13 → 7 · 10~11 → 8 · 14 6 · 16 5 · 18 3 · 20~49 0 0 1 1 2 2 1 1 되풀이 ·
+    ///                50 3 · 52 4 · 54 5 · 56 6 · 58 7 · 60 8 (두 걸음씩)
+    ///     62~64     밝아진다(0x0049A1A0(n − 61)) · 65 끝
+    ///     n ≥ 10 이면 배를 그리고 x += W/−50
+    ///     안개 k 는 장 (n + k) % 3 — 0·1 은 오른쪽으로 W/50 의 1·3 배, 2·3 은 왼쪽으로 2·4 배,
+    ///     화면을 넘으면 처음 자리로 돌아간다(0x00498A20)
+    /// </code>
+    /// 어두움은 오로라와 같이 검은 막으로 낸다 — 단계 1 을 가장 어두운 것으로 친다.
+    /// </remarks>
+    private sealed class GhostShipScene : Scene
+    {
+        private const int ShipW = 0x60, ShipH = 0x40, FogW = 0x180, FogH = 0x80;
+        private const double DarkMost = 0.82;
+
+        public override int SoundPart => 0x35 - WaveBank.FirstSoundId;
+        public override bool StopsMusic => true;
+        public override double Dim => _dim;
+
+        private BitmapSource[] _ship = [], _fog = [];
+        private Random _rng = new();
+        private int _w, _h, _x, _y;
+        private readonly int[] _fx = new int[4], _fy = new int[4];
+        private double _dim;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _ship = Frames(anims, 0x0B, ShipW, ShipH, 0x27) ?? [];
+            _fog = Frames(anims, 0x0C, FogW, FogH, 0x27) ?? [];
+            return _ship.Length >= 9 && _fog.Length >= 3;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _rng = rng;
+            _w = w; _h = h;
+            _x = w + w / -50;
+            int top = (int)(ship?.Y ?? h / 2) - 24;
+            _y = (h - ShipH) / 2 - (top >= h / 2 - 0x30 ? 0x20 : 0);
+            for (int k = 0; k < 4; k++) ResetFog(k);
+            _dim = 0;
+        }
+
+        /// <summary>0x0049A1A0 의 단계 — 4 가 제 밝기, 1 이 가장 어둡다.</summary>
+        private void Shade(int level) => _dim = Math.Clamp(DarkMost * (4 - level) / 3, 0, DarkMost);
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c < 4) { Shade(4 - c); return false; }
+
+            int n = c + 1;
+            int f;
+            if (n is >= 10 and < 12) f = 8;
+            else if (n < 14) f = 7;
+            else if (n < 16) f = 6;
+            else if (n < 18) f = 5;
+            else if (n < 20) f = 3;
+            else if (n < 50) f = (n % 8) switch { < 2 => 0, < 4 => 1, < 6 => 2, _ => 1 };
+            else if (n < 62) f = 3 + (n - 50) / 2;                   // 3 4 5 6 7 8
+            else if (n < 65) { Shade(n - 0x3D); return false; }
+            else { _dim = 0; return true; }
+
+            Shade(1);
+            if (n >= 10)
+            {
+                draws.Add(new Draw(_ship[f], _x, _y));
+                _x += _w / -50;
+            }
+            for (int k = 0; k < 4; k++)
+                draws.Add(new Draw(_fog[(n + k) % 3], _fx[k], _fy[k]));
+            MoveFog();
+            return false;
+        }
+
+        /// <summary>안개를 민다(<c>0x00498A20</c>).</summary>
+        private void MoveFog()
+        {
+            int step = _w / 50;
+            for (int k = 0; k < 4; k++)
+            {
+                if (k < 2)
+                {
+                    _fx[k] += (k == 0 ? 1 : 3) * step;
+                    if (_w <= _fx[k]) ResetFog(k);
+                }
+                else
+                {
+                    _fx[k] += (k == 2 ? 2 : 4) * (_w / -50);
+                    if (_fx[k] < -FogW) ResetFog(k);
+                }
+            }
+        }
+
+        /// <summary>안개 하나를 처음 자리로(<c>0x00498B20</c>).</summary>
+        private void ResetFog(int k)
+        {
+            if (k < 2)
+            {
+                _fx[k] = (-2 - k) * 0xC0;
+                _fy[k] = k * 0x40 - _rng.Next(16);
+            }
+            else
+            {
+                _fx[k] = (k - 2) * 0xC0 + _w;
+                _fy[k] = _rng.Next(16) - k * 0x40 + _h;
+            }
         }
     }
 

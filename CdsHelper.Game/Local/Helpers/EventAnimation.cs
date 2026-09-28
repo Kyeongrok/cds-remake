@@ -81,6 +81,9 @@ public sealed class EventAnimation
     /// 발견 대본의 특수 조우(<c>00 1E</c>)가 부르는 바다 짐승 장면 — 19 백경 · 20 돌고래 · 21 날치 ·
     /// 22 플라밍고 떼 · 23 모르포 나비 떼(<c>0x0049B2A8</c> 의 19~23 갈래).
     /// </summary>
+    public const int GhostShip = 9;
+
+    /// <summary>바다 짐승 장면들(아래).</summary>
     public const int Whale = 19, Dolphin = 20, FlyingFish = 21, Flamingo = 22, Morpho = 23;
 
     /// <summary>얹는 팔레트 색 수(<c>0x56</c>).</summary>
