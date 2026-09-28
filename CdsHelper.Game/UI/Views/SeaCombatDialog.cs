@@ -800,7 +800,6 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         _options = [];
         _pivots = [];
         _path.Children.Clear();
-        int windBefore = _battle.Wind;
         try
         {
             _battle.EndPlanning();
@@ -821,7 +820,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         if (_player is { } admiral)
             _battle.TurnMonster(admiral.AbilityOf(Ability.Luck), admiral.AbilityOf(Ability.Mind));
 
-        if (_battle.Wind != windBefore) Say(_battle.WindNotice());
+        // 바람이 돌아도 바람 알림은 다시 안 낸다 — 알림은 판을 열 때 한 번뿐이다(0x0043C514 의 +0x830 == −1 걸쇠).
+        // 턴 끝(0x0043D9D2~0x0043DA7C)은 바람만 돌리고 이동 지시 재촉(0x0043BEB0)으로 간다.
         if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 재촉도 안내도 없이 다음 턴으로
 
         Say(_battle.OrderPrompt());
