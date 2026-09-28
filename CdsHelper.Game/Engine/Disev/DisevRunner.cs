@@ -135,6 +135,9 @@ public sealed class DisevRunner
 
     private readonly GameRandom _dice = new(Environment.TickCount);
 
+    /// <summary>암전(<c>48</c>)으로 덮어 둔 검은 창. <c>49</c> 가 걷는다. 안 덮었으면 null.</summary>
+    private Window? _shade;
+
     /// <summary>
     /// 마지막으로 돌린 대본이 <b>게임 오버</b>(<c>4A</c>)로 끝났는지. 부른 쪽이 보고 놀이를 끝낸다.
     /// </summary>
@@ -225,7 +228,15 @@ public sealed class DisevRunner
         int body = runner.PickBody(part);
         if (body < 0) return false;
 
-        runner.RunChunk(part, body);
+        try
+        {
+            runner.RunChunk(part, body);
+        }
+        finally
+        {
+            // 암전(48)을 걸어 둔 채 대본이 끝나도 화면은 걷는다 — 원본 대본은 늘 49 로 걷지만 멈춤(4A 따위)이 끼면 못 닿는다.
+            runner._shade?.Close();
+        }
         return true;
     }
 
@@ -582,9 +593,6 @@ public sealed class DisevRunner
             }
             // ── 아직 안 옮긴 명령 ────────────────────────────────────────────────
             // 실제로 쓰이는 것만 적는다(DISEV·이야기0·이야기1 을 앱 파서로 센 값).
-            //   34  Wait(29 1A)          창이 모달이라 멈출 자리가 없다 — 연출이라 건너뛴다
-            //   20  HideDialog(48)       "
-            //   20  ShowDialog(49)       "
             //   10  OccupyCity(23 08)    도시 레코드 +0x04 에 비트 2 를 세운다(0x00409E36, 25 08 이 지운다).
             //                              마을 공략에 이겼을 때(0x00468B20)도 이 비트와 나라를 함께 세운다.
             //                              <b>그 비트를 읽는 곳을 못 찾았다</b> — 나라는 앞의 26 1C 1A 가 넘긴다.
@@ -688,6 +696,20 @@ public sealed class DisevRunner
             // 접을 때가 있어, 안 거두면 엉뚱한 뒷줄에 그 그림이 따라붙는다.
             case DisevCall.CloseImage:
                 _pendingStill = -1;
+                return null;
+
+            // 48 — 화면을 곧장 깜깜하게(팔레트 10~245 를 검정으로, 0x0040B1D5). 49 — 도로 밝힌다(0x0040B220).
+            // 29 1A [n] — n 초 쉰다. 누르거나 키를 치면 곧장 끝난다(0x0040A2C6 → 0x00428000(n x 20, 1)).
+            // 대본은 「일행은 유적 안에 발을 들여놓았다」 뒤에 48 · 29 1A 01 · 49 로 한 초 깜깜하게 한다.
+            case DisevCall.HideDialog:
+                _shade ??= ScriptBlackout.Cover(_owner);
+                return null;
+            case DisevCall.ShowDialog:
+                _shade?.Close();
+                _shade = null;
+                return null;
+            case DisevCall.Wait:
+                ScriptBlackout.Hold(_owner, _shade, (int)Math.Clamp((long)I("Ticks") * 1000, 0, 60_000));
                 return null;
 
             // 66 03 [소리] — 울리던 소리를 멈춘다.
