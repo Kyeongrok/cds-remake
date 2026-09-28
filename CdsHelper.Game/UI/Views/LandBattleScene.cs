@@ -89,6 +89,13 @@ internal sealed class LandBattleScene : GameWindow
             Height = LandArt.FieldHeight * scale,
             Children = { _board },
         };
+
+        // 차림표가 떠 있어도 판은 손을 받는다 — 게임의 차림표(0x004878A0)는 제 고리를 돌리면서도
+        // 판 창의 손 처리(0x00446A70)를 그대로 부른다. 그래서 상자가 떠도 판을 덮지 않고,
+        // 손을 받을지는 아래 처리가 <see cref="_boardLive"/> 로 가른다.
+        Cover(this);
+        MouseLeftButtonUp += (_, e) => ClickUnit(e.GetPosition(_board));
+        MouseRightButtonUp += (_, _) => Functions();
     }
 
     /// <summary>판이 열리기 직전 — 바다 지도가 비·눈을 거둔다(<c>0x0044AA31</c>).</summary>
@@ -156,8 +163,7 @@ internal sealed class LandBattleScene : GameWindow
             // ON 이면 깃발 비트 0 을 끄고, OFF 면 켠다. 물리면 그대로다.
             if (order == LandBattle.Animate)
             {
-                int pick = ChoiceDialog.Ask(this, "애니메이션", ["O N", "O F F"]);
-                if (pick >= 0) _quick = pick == 1;
+                Animation();
                 continue;
             }
 
@@ -241,6 +247,135 @@ internal sealed class LandBattleScene : GameWindow
     private bool _quick;
 
     /// <summary>
+    /// 「애니메이션」 차림표 — 「O N」·「O F F」 두 줄뿐이다(<c>0x00449190</c>).
+    /// </summary>
+    /// <remarks>
+    /// <c>0x004878A0(0x00549CD8, 0x0056D470, 0, 0, 0)</c> 로 띄운다 — 셋째 인자의 낮은 바이트가 0 이라
+    /// 「취소」 줄이 없다(2·3 이어야 <c>0x005199D4</c> 「취소」를 붙인다, <c>0x004860E8</c>). 물리면 그대로다.
+    /// 예전에는 「취소」 줄이 붙었다.
+    /// </remarks>
+    private void Animation()
+    {
+        int pick = ChoiceDialog.Pick(this, "애니메이션", ["O N", "O F F"]);
+        if (pick >= 0) _quick = pick == 1;
+    }
+
+    // ── 판 위의 손 — 0x00446A70 ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// 판이 손을 받는 때 — <b>공격명령·묘책 차림표가 떠 있는 동안</b>이다.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 차림표 고리 안에서 판 창의 손 처리(<c>0x00446A70</c>)를 부른다. 몸짓이 도는 동안이나
+    /// 알림 창이 떠 있을 때는 여기서 손을 안 받는다.
+    /// </remarks>
+    private bool _boardLive;
+
+    /// <summary>기능명령 차림표가 떠 있는 동안 — 겹쳐 열지 않는다.</summary>
+    private bool _busy;
+
+    /// <summary>떠 있는 부대 정보 창(<c>+0x134</c>)과 전황정보 창(<c>+0x138</c>).</summary>
+    private Window? _unitInfo, _fieldInfo;
+
+    /// <summary>
+    /// 왼쪽 단추 — 누른 자리의 부대 정보 창을 편다(<c>0x00446A78</c> → <c>0x00446830</c> → <c>0x00446900</c>).
+    /// </summary>
+    /// <remarks>
+    /// 창이 이미 떠 있으면 안 연다(<c>0x00446A83</c> 이 보임 비트 2 를 본다). 누른 자리는 부대 칸 96x96
+    /// 으로 가른다 — 아군은 자리 5 부터 0 으로 거슬러 처음 맞는 것, 적은 자리 0 부터 5 로 훑어 맞는
+    /// 것이 있으면 그것이 이긴다(<c>0x00446830</c>). 자리에 선 부대가 쓰러졌으면 안 잡힌다
+    /// (<c>0x00447470</c> → <c>0x00444AA0</c>).
+    /// </remarks>
+    private void ClickUnit(Point at)
+    {
+        if (!_boardLive || _busy || _unitInfo is { IsVisible: true }) return;
+
+        int hit = -1;
+        for (int place = LandBattle.PerSide - 1; place >= 0 && hit < 0; place--)
+            hit = UnitAt(foe: false, place, at);
+        for (int place = 0; place < LandBattle.PerSide; place++)
+            if (UnitAt(foe: true, place, at) is var foe and >= 0) { hit = foe; break; }
+        if (hit < 0) return;
+
+        // 창은 그 부대가 선 칸의 왼위에 선다(0x00446937 — 자리표 +0xB4·+0xB8).
+        var (x, y) = SpotOf(hit);
+        var corner = _board.TranslatePoint(new Point(x, y), this);
+        var box = new LandUnitInfoDialog(_battle.Units[hit].Kind)
+        {
+            Owner = this,
+            WindowStartupLocation = WindowStartupLocation.Manual,
+            Left = Left + corner.X,
+            Top = Top + corner.Y,
+        };
+        _unitInfo = box;
+        box.Show();
+    }
+
+    /// <summary>그 편 그 자리에 선 산 부대의 슬롯. 누른 자리가 칸 밖이면 −1.</summary>
+    private int UnitAt(bool foe, int place, Point at)
+    {
+        var (x, y) = StandAt[(foe ? LandBattle.FirstFoe : 0) + place];
+        if (at.X < x || at.X >= x + LandArt.DeployWidth || at.Y < y || at.Y >= y + LandArt.DeployWidth)
+            return -1;
+
+        int first = foe ? LandBattle.FirstFoe : 0;
+        for (int slot = first; slot < first + LandBattle.PerSide; slot++)
+            if (_battle.Units[slot] is { Kind: >= 0, Men: > 0 } && _battle.PlaceOf(slot) == place) return slot;
+        return -1;
+    }
+
+    /// <summary>
+    /// 오른쪽 단추 — 「기능명령」 차림표(<c>0x004491F0</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   004491F3  적 첫 칸(슬롯 6)이 총대장 부대일 때만 연다(+0x1B4 = 슬롯 6 의 +0x18)
+    ///   0044920A  전황정보 창이 떠 있으면 「정보」 줄을 죽인다(끄는 줄 비트 2)
+    ///   00449224  0x004878A0(0x00549CE8, 「기능명령」, 2, 끄는 줄, 0) — 셋째 인자 2 라 「취소」 줄이 붙는다
+    ///   0 「애니메이션」 → 0x00449190      1 「정보」 → 0x004469C0 「육상전 전황정보」
+    /// </code>
+    /// 차림표는 공격명령 차림표 위에 겹쳐 뜨고, 닫힐 때까지 밑의 차림표는 손을 안 받는다.
+    /// </remarks>
+    private void Functions()
+    {
+        if (!_boardLive || _busy) return;
+        if (!_battle.Units[LandBattle.FirstFoe].IsLeader) return;
+
+        _busy = true;
+        try
+        {
+            // 밑에 떠 있는 공격명령 차림표를 주인으로 삼아야 그 차림표가 덮인다.
+            var under = OwnedWindows.OfType<ChoiceDialog>().FirstOrDefault(w => w.IsVisible);
+            bool shown = _fieldInfo is { IsVisible: true };
+            int pick = ChoiceDialog.Pick(under ?? (Window)this, "기능명령",
+                                         [("애니메이션", true), ("정보", !shown), ("취소", true)],
+                                         CenterOnBoard);
+            if (pick == 0) Animation();
+            else if (pick == 1)
+            {
+                var box = new LandBattleInfoDialog(_battle) { Owner = this };
+                _fieldInfo = box;
+                box.Show();
+            }
+        }
+        finally { _busy = false; }
+    }
+
+    /// <summary>
+    /// 차림표를 판 가운데에 세운다 — 주인이 구석의 공격명령 차림표라 제 가운데에 맞추면 구석에
+    /// 몰린다. 게임은 자리를 안 넘기면 화면 가운데에 편다(<c>0x004861F1</c>).
+    /// </summary>
+    private void CenterOnBoard(Window box)
+    {
+        box.WindowStartupLocation = WindowStartupLocation.Manual;
+        box.Loaded += (_, _) =>
+        {
+            box.Left = Left + (ActualWidth - box.ActualWidth) / 2;
+            box.Top = Top + (ActualHeight - box.ActualHeight) / 2;
+        };
+    }
+
+    /// <summary>
     /// 병사수를 찍을 때인지 — <b>차림표가 떠 있는 동안만</b> 참이다.
     /// </summary>
     /// <remarks>
@@ -286,6 +421,7 @@ internal sealed class LandBattleScene : GameWindow
             // 들싸움 첫 턴에는 아예 안 묻고 통상공격으로 간다(0x00449C00).
             if (!_battle.AsksOrder) return LandBattle.Normal;
 
+            _boardLive = true;
             return ChoiceDialog.Pick(this, $" {LandBattle.OrderTitle} ",
                                      _battle.OrderRows(canDuel: _duelRow,
                                                        canRuse: !_ruseThisTurn),
@@ -293,6 +429,7 @@ internal sealed class LandBattleScene : GameWindow
         }
         finally
         {
+            _boardLive = false;
             _showMen = false;
             Redraw();
         }
@@ -328,9 +465,10 @@ internal sealed class LandBattleScene : GameWindow
         _showMen = true;
         Redraw();
         bool scroll = _game?.Player.Items.Contains(LandBattle.JudgementItem) ?? false;
+        _boardLive = true;
         try { pick = ChoiceDialog.Pick(this, $" {LandBattle.RuseTitle} ", _battle.RuseRows(scroll),
                                        Corner, exitRow: false); }
-        finally { _showMen = false; Redraw(); }
+        finally { _boardLive = false; _showMen = false; Redraw(); }
 
         if (pick < 0) return;
         _ruseThisTurn = true;
