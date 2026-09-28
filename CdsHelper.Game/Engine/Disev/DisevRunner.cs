@@ -468,7 +468,10 @@ public sealed class DisevRunner
             case DisevCall.Discovered: return player.HasFound(I("Discovery"));       // 02 0B (0x004089C2)
             case DisevCall.NotDiscovered: return !player.HasFound(I("Discovery"));   // 3A 0B (0x0040AB27)
             case DisevCall.DiscoveryDone: return player.HasFound(I("Discovery"));
-            case DisevCall.DiscoveryNotDone: return !player.HasFound(I("Discovery"));
+            // 5E 0B — 이름과 달리 <b>내가 보고했는지</b>다(0x00407E06: 인스턴스 +0x16 &amp; 0x80, 보고 0x004AACA0 ·
+            // 발표 0x0047E651 이 세운다). 예전에는 「아직 못 찾았다」로 셈해 개인 이야기(PDG 10 · PHT 16 ·
+            // PDG/PEX 13)의 문이 거꾸로 걸렸다. 이름은 구운 대본 JSON 이 쓰고 있어 그대로 둔다.
+            case DisevCall.DiscoveryNotDone: return player.HasAnnounced(I("Discovery"));
             case DisevCall.YearAtLeast: return year >= I("Year");
             case DisevCall.YearAtMost: return I("Year") >= year;                     // 39 16 (0x0040AAF0)
             case DisevCall.YearIs: return year == I("Year");                         // 1C 16 (0x00409704)
