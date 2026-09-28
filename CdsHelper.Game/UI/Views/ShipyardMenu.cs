@@ -633,7 +633,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         for (int i = 0; i < Ship.MastSlots; i++) if (ship.Sails[i] != Ship.NoSail) masts = i + 1;
         if (masts == 0) return;
 
-        // 여럿이면 아니오·돈 부족·바꾼 뒤에도 마스트 목록으로 돌아간다(jmp 0x00494F6B) — 물러야 나온다.
+        // 아니오·돈 부족·바꾼 뒤에도 처음으로 돌아간다(jmp 0x00494F6B) — 물러야 나온다.
         bool single = masts <= 1;
         while (true)
         {
@@ -663,10 +663,17 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             // 물음은 <b>삼각돛일 때만</b> 「삼각→사각」이고, 그 밖이면 「사각→삼각」이다(0x0049507C).
             bool lateen = ship.Sails[mast] == Ship.Lateen;
             int cost = Shipyard.SailCost(ship, _rate);
-            if (Ask(lateen
+            // 첫 물음에 「아니오」면 마스트가 하나인 배는 나가고, 여럿이면 목록으로 돌아간다(0x00495142).
+            // 그 밖(값에 아니오 · 돈 부족 · 바꾼 뒤)은 <b>마스트가 하나여도</b> 처음으로 돌아가 다시 묻는다
+            // (jmp 0x00494F6B) — 바꾼 뒤에는 거꾸로 바꿀지를 묻게 된다.
+            if (!Ask(lateen
                     ? "삼각돛을 순풍에 뛰어난 사각돛으로 바꿀 건가?"
-                    : "사각돛을 역풍에 뛰어난 삼각돛으로 바꿀 건가?")
-                && Ask($"금화 {cost}닢이 드는데, 좋나?"))
+                    : "사각돛을 역풍에 뛰어난 삼각돛으로 바꿀 건가?"))
+            {
+                if (single) break;
+                continue;
+            }
+            if (Ask($"금화 {cost}닢이 드는데, 좋나?"))
             {
                 if (!_player.Pay(cost)) Say("돈이 모자라는 것 같군.");
                 else if (ship.SwapSail(mast))
@@ -676,7 +683,6 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
                         $"{where}{GameUi.Josa(where, "을", "를")} {what}{GameUi.Josa(what, "으로", "로")} 변경했습니다");
                 }
             }
-            if (single) break;
         }
         _menu.Refresh();
     }
