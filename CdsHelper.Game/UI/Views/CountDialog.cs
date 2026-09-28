@@ -132,7 +132,8 @@ public sealed class CountDialog : GameWindow
         foreach (var line in lines) AddRow(rows, line.Name, Label($"{line.Value}{line.Unit ?? unit}"));
 
         // 단추는 창 폭을 <b>나눠 채운다</b> — 결정·중단이 좁은 틈 하나를 두고 양옆으로 넓게 선다.
-        // "최대" 는 계산기 판 안에도 MAX 로 있다. 돈처럼 자릿수가 큰 창에서만 밖에 낸다.
+        // "최대" 는 원본 창(0x00454AA0)에 없는 덧붙임이다 — 계산기 판 안의 MAX 가 그 일을 한다.
+        // 자택 저금·꺼내기는 원본대로 안 단다.
         var bands = new List<GameButton>();
         if (full) bands.Add(new GameButton("최대", () => { _at = _max; Paint(); }));
         _decide = new GameButton("결정", Decide) { On = false };

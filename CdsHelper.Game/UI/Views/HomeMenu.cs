@@ -699,8 +699,9 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             return;
         }
 
+        // 수 적기 창은 결정·중단뿐이다 — 원본 0x00454AA0 에 「최대」 단추는 없다. 끝까지 넣는 것은 계산기 판의 MAX 다.
         int want = CountDialog.Ask(owner, "저금한다", "금  액", "닢",
-                                   Math.Min(room, _player.Gold), MoneyStep, full: true,
+                                   Math.Min(room, _player.Gold), MoneyStep, full: false,
                                    new CountDialog.Gauge("소지금", _player.Gold),
                                    new CountDialog.Gauge("저  금", _player.Savings));
         if (want <= 0) return;
@@ -725,7 +726,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         }
 
         int want = CountDialog.Ask(owner, "저금을 꺼낸다", "금  액", "닢",
-                                   Math.Min(room, _player.Savings), MoneyStep, full: true,
+                                   Math.Min(room, _player.Savings), MoneyStep, full: false,
                                    new CountDialog.Gauge("소지금", _player.Gold),
                                    new CountDialog.Gauge("저  금", _player.Savings));
         if (want <= 0) return;
