@@ -558,11 +558,18 @@ internal sealed class LandBattleScene : GameWindow
                             me.Items.Contains(Duel.EdithShieldId), dice.Next());
         // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
         var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
-        if (DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm))
-            return DuelEnd.Won;
+        bool won = DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm);
+        // 이기든 지든 부위 평균만큼 컨디션이 준다(0x004AA5BB).
+        me.Hurt(duel.BodyLost);
+        if (won) return DuelEnd.Won;
 
-        // 지면 여느 일기토와 같이 갈린다 — 도망·용서면 퇴각한 셈이고, 베이면 그대로 GAME OVER 다.
-        return duel.FateOf(me.Fame) == Duel.Fate.Slain ? DuelEnd.Slain : DuelEnd.Lost;
+        // 지면 이렇게 갈린다(0x004A9E50) — 무대가 지형(1~3)이라 4 아래여서 <b>도망 굴림이 없다</b>
+        // (0x004A9EE4). 마을 공략(갈래 2·4)은 판 종류 1 이라 0·3·8 이 아니어서 <b>반드시 베인다</b>
+        // (0x004A9EDE → 0x004AA197). 들판 싸움(종류 0)만 용서를 굴린다 — rand(100) < 99 − 대원 수.
+        // 용서면 퇴각한 셈이고, 베이면 그대로 GAME OVER 다.
+        bool siege = _battle.Sort is LandBattle.Town or LandBattle.ScriptCity;
+        return duel.FateOf(me.Fame, canFlee: false, canSpare: !siege, crew: me.Crew) == Duel.Fate.Slain
+            ? DuelEnd.Slain : DuelEnd.Lost;
     }
 
     /// <summary>
