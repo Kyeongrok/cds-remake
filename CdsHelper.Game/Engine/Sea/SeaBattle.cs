@@ -582,9 +582,10 @@ public sealed class SeaBattle
 
             if (WantsRetreat(ship, mine))
             {
-                if (IsRetreatCell(ship.X, ship.Y) && !mine)
+                if (IsRetreatCell(ship.X, ship.Y))
                 {
-                    // 적도 퇴각 지대에 서 있으면 판을 뜬다(원본은 편을 가리지 않고 +0x8DC 로 본다).
+                    // 퇴각 지대에 서 있으면 판을 뜬다 — 편을 가리지 않는다(+0x8DC 로 보고, 0x0043B91C 의
+                    // cmp edx,8 ; jl 0x43BA19 로 위임한 아군도 상태 3 이 된다). 예전에는 적만 떴다.
                     ship.State = ShipState.Retreated;
                     ship.Ordered = true;
                     NoteFlag(ship);
