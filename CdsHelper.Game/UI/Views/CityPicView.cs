@@ -1630,6 +1630,19 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                                           Top + (PhotoTop + _frameBorder) * _scale));
     }
 
+    /// <summary>
+    /// 사진을 잠깐 걷고 그 자리(화면 좌표)를 준다 — 조선소의 배 그림 창이 거기 앉는다
+    /// (원본도 <c>0x004A21C0</c> 로 사진을 걷고 <c>0x00494900</c> 으로 배 그림을 세운다).
+    /// </summary>
+    internal Point StashPhoto()
+    {
+        _photoWindow?.Hide();
+        return new Point(Left + (PhotoLeft + _frameBorder) * _scale, Top + (PhotoTop + _frameBorder) * _scale);
+    }
+
+    /// <summary>걷어 둔 사진을 되살린다(<c>0x004A2180</c>).</summary>
+    internal void UnstashPhoto() => _photoWindow?.Show();
+
     /// <summary>지금 뜬 사진이 어느 건물 것인지 — 손님을 다시 세울 때 쓴다.</summary>
     private (FacilityKind Kind, int Code)? _photoOf;
 

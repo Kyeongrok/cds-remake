@@ -582,6 +582,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private void AddMast(Ship ship)
     {
+        // 사진을 걷고 배 그림을 세운다(0x00494C0C) — 끝나면 걷고 사진을 되살린다(0x00494D9D).
+        var still = OpenStill(ship);
+        try { AddMastOn(ship, still); }
+        finally { CloseStill(still); }
+    }
+
+    private void AddMastOn(Ship ship, ShipStillWindow? still)
+    {
         var owner = Owner;
         int cost = Shipyard.MastCost(ship, _rate);
 
@@ -617,6 +625,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         int mast = ship.AddMast(sail);
         if (mast < 0) return;
+        still?.Redraw(ship);   // 새 마스트와 돛을 그림에 얹는다(0x00494B13 → 0x004949E0)
 
         string where = Ship.MastNames[mast], what = Ship.SailNames[sail];
         NoticeDialog.Show(owner, $"{where}에 {what}{GameUi.Josa(what, "을", "를")} 달았습니다");
@@ -637,6 +646,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </code>
     /// </remarks>
     private void SwapSail(Ship ship)
+    {
+        // 마스트 추가와 같이 배 그림을 세운다(0x00494F4A) — 나갈 때 걷는다(0x0049514D).
+        var still = OpenStill(ship);
+        try { SwapSailOn(ship, still); }
+        finally { CloseStill(still); }
+    }
+
+    private void SwapSailOn(Ship ship, ShipStillWindow? still)
     {
         var owner = Owner;
 
@@ -691,6 +708,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
                 if (!_player.Pay(cost)) Say("돈이 모자라는 것 같군.");
                 else if (ship.SwapSail(mast))
                 {
+                    still?.Redraw(ship);   // 0x00494E58 → 0x004949E0
                     string where = Ship.MastNames[mast], what = Ship.SailNames[ship.Sails[mast]];
                     NoticeDialog.Show(owner,
                         $"{where}{GameUi.Josa(where, "을", "를")} {what}{GameUi.Josa(what, "으로", "로")} 변경했습니다");
@@ -698,6 +716,26 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             }
         }
         _menu.Refresh();
+    }
+
+    /// <summary>
+    /// 배 그림 창(<see cref="ShipStillWindow"/>)을 사진 자리에 세운다. 사진은 그동안 걷는다.
+    /// 그림을 못 읽었으면 null — 사진도 그대로 둔다.
+    /// </summary>
+    private ShipStillWindow? OpenStill(Ship ship)
+    {
+        if (_view is not CityPicView city) return null;
+        var still = ShipStillWindow.Show(_view, _game.Directory, ship, city.Scale, city.StashPhoto());
+        if (still == null) city.UnstashPhoto();
+        return still;
+    }
+
+    /// <summary>배 그림 창을 걷고 사진을 되살린다.</summary>
+    private void CloseStill(ShipStillWindow? still)
+    {
+        if (still == null) return;
+        still.Close();
+        (_view as CityPicView)?.UnstashPhoto();
     }
 
     /// <summary>C 의 <c>%Ns</c> 처럼 왼쪽을 채워 오른쪽에 붙인다 — 한글 한 자는 두 칸이다.</summary>
