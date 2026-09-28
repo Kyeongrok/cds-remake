@@ -253,8 +253,13 @@ public sealed class TavernGuests
     /// <summary>인물 고유값의 갈래 몫 — <c>0x00477AF0(1, 번호)</c> 의 <c>1 &lt;&lt; 12</c>.</summary>
     private const int PersonKeyBase = 1 << 12;
 
+    /// <param name="scale">
+    /// 그 도시의 규모(살아 있는 도시 레코드 <c>+0x08</c>, 0~7). 무명 손님 수가 여기에 묶인다 — 게임은
+    /// 앞서 앉은 수를 뺀 자리에서 <c>min(규모, rand(5 - 앉은 수)) + 1</c> 명만 세운다(<c>0x004A1B07</c>~<c>0x004A1B29</c>).
+    /// 음수면 남는 자리를 다 채운다.
+    /// </param>
     public IReadOnlyList<Slot> Seat(string? culture, int seed, IReadOnlyList<Sitter> persons,
-                                    bool withMaid = true)
+                                    bool withMaid = true, int scale = -1)
     {
         if (!Ranges.TryGetValue(culture ?? "", out var range)) range = Ranges["이베리아"];
 
@@ -282,9 +287,14 @@ public sealed class TavernGuests
         var taken = new HashSet<int>();
         foreach (var s in seats) taken.Add(s.Art.Index);
         Shuffle(men, rng);
+
+        // 무명 손님 수는 굴린다(0x004A1B10) — 작은 도시일수록, 앞서 많이 앉았을수록 적게 선다.
+        int room = MaxOnScreen - seats.Count;
+        int strangers = scale < 0 || room <= 0 ? room : Math.Min(Math.Min(scale, rng.Next(room)) + 1, room);
+        int limit = seats.Count + strangers;
         foreach (int i in men)
         {
-            if (seats.Count >= MaxOnScreen) break;
+            if (seats.Count >= limit) break;
             if (taken.Add(i)) seats.Add(new Slot(_guests[i], -1, Stranger: true));
         }
         return seats;
