@@ -554,12 +554,12 @@ public sealed class Duel
     /// 달아나려 드는 상대를 쫓아 잡는지(<c>0x004A494B</c>) — 내 체력과 상대 체력에
     /// 주사위 오십씩을 얹어 견준다. 못 미치면 놓친다.
     /// </summary>
-    /// <param name="myBody">
-    /// 제독 체력(담은 값). <b>부관이 있고 그 값이 더 크면 부관 것을 쓴다</b>
-    /// (<c>0x004A4964</c> 의 <c>0x00468F10(부관, 0)</c>).
+    /// <param name="chase">
+    /// 쫓는 값 — <b>제독 체력 + 1</b> 이고, 부관 체력이 그보다 크면 <b>부관 체력 그대로</b>(+1 없이)다
+    /// (<c>0x004A494B</c> 의 <c>inc ebx</c> 뒤 <c>0x004A4964</c> 가 <c>0x00468F10(부관, 0)</c> 과 견준다).
     /// </param>
-    public static bool Caught(int myBody, int foeBody, GameRandom dice) =>
-        myBody + 1 + dice.Next(ChaseDice) >= foeBody + dice.Next(ChaseDice) + 1;
+    public static bool Caught(int chase, int foeBody, GameRandom dice) =>
+        chase + dice.Next(ChaseDice) >= foeBody + dice.Next(ChaseDice) + 1;
 
     /// <summary>쫓을 때 섞는 주사위.</summary>
     private const int ChaseDice = 50;

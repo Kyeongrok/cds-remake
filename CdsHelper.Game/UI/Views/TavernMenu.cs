@@ -1447,12 +1447,16 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 : $"{who.Name}{GameUi.Josa(who.Name, "이", "가")} 도망쳤다!";
             TalkDialog.Say(_view, _game.AideFace, "", fled);
 
-            // 쫓는 값은 제독 체력이지만 <b>부관 것이 더 크면 그것</b>이다(0x004A4964).
-            int chase = _player.AbilityOf(Ability.Body);
-            if (_player.MateInfoOf(_player.MateAt(0)) is { } chaser)
-                chase = Math.Max(chase, chaser.Body);
+            // 쫓는 값은 제독 체력 + 1 이지만 <b>부관 것이 더 크면 그것</b>이다(0x004A494B · 0x004A4964) —
+            // 부관 값에는 +1 이 안 붙는다.
+            int chase = _player.AbilityOf(Ability.Body) + 1;
+            if (_player.MateInfoOf(_player.MateAt(0)) is { } chaser && chaser.Body > chase)
+                chase = chaser.Body;
 
-            if (!Engine.Town.Duel.Caught(chase, who.Body, dice))
+            bool caught = Engine.Town.Duel.Caught(chase, who.Body, dice);
+            // 쫓는 동안 MPEFFECT 0 벌이 잡았는지를 인자로 돈다(0x004A4999 → 0x004A6120).
+            (_view as IGateStage)?.PlayEscape(caught);
+            if (!caught)
             {
                 // 0x004A49A6 — 부관이 있으면 부관이 이르고, 없으면 이름 없이 상자만 뜬다.
                 if (_game.AideFace is { } aide)
