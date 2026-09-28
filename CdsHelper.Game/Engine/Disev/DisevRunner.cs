@@ -32,9 +32,11 @@ namespace CdsHelper.Game.Engine.Disev;
 ///
 /// <b>파트 번호가 곧 발견물 번호다</b> — 274개가 발견물 표와 1:1 이다.
 ///
-/// <b>아직 안 하는 것.</b> 외부 분기(<c>STORY0.CDS</c> · <c>STORY1.CDS</c>)는 그 파일을
-/// 안 뜯어서 <b>건너뛴다</b> — 뛰지 않고 다음 줄로 간다. 그 밖에 뜻을 모르는 명령도
-/// 건너뛴다. 대본이 끊기는 것보다 한 줄 빠지는 편이 낫다.
+/// 「외부 분기」(<c>43 6D</c> · <c>43 6E</c>)는 딴 파일로 뛰는 것이 아니다. 조건 6D·6E 가
+/// 이야기 관리자에 걸린 <b>주인공의 이야기 책 이름</b>(<c>[0x0062989C]</c>)을 <c>"C:STORY0.CDS"</c> ·
+/// <c>"C:STORY1.CDS"</c> 와 견줄 뿐이다(<c>0x0040BC5E</c> · <c>0x0040BC98</c>) — 그 주인공이 아니면
+/// 뒤따르는 줄을 뛰어넘는다. 카르낙 거석군의 「드디어 찾아냈군요…」는 라몬만 듣는다.
+/// 뜻을 모르는 명령은 건너뛴다. 대본이 끊기는 것보다 한 줄 빠지는 편이 낫다.
 /// </remarks>
 public sealed class DisevRunner
 {
@@ -77,7 +79,7 @@ public sealed class DisevRunner
     private readonly Window _owner;
     private readonly Game _game;
 
-    /// <summary>지금 돌고 있는 책 이름 — Story0·Story1 조건식(<c>6D</c>·<c>6E</c>)이 이것으로 갈린다.</summary>
+    /// <summary>지금 돌고 있는 책 이름 — 발견 이벤트의 확률 조건을 건너뛸지가 이것으로 갈린다.</summary>
     private readonly string _cache;
 
     /// <summary>지금 들어와 있는 건물 코드. 모르면 -1 — <see cref="DisevCall.InBuilding"/> 이 이것을 본다.</summary>
@@ -132,6 +134,9 @@ public sealed class DisevRunner
     private int _foeMen = -1;
 
     private readonly GameRandom _dice = new(Environment.TickCount);
+
+    /// <summary>암전(<c>48</c>)으로 덮어 둔 검은 창. <c>49</c> 가 걷는다. 안 덮었으면 null.</summary>
+    private Window? _shade;
 
     /// <summary>
     /// 마지막으로 돌린 대본이 <b>게임 오버</b>(<c>4A</c>)로 끝났는지. 부른 쪽이 보고 놀이를 끝낸다.
@@ -223,7 +228,15 @@ public sealed class DisevRunner
         int body = runner.PickBody(part);
         if (body < 0) return false;
 
-        runner.RunChunk(part, body);
+        try
+        {
+            runner.RunChunk(part, body);
+        }
+        finally
+        {
+            // 암전(48)을 걸어 둔 채 대본이 끝나도 화면은 걷는다 — 원본 대본은 늘 49 로 걷지만 멈춤(4A 따위)이 끼면 못 닿는다.
+            runner._shade?.Close();
+        }
         return true;
     }
 
@@ -541,6 +554,8 @@ public sealed class DisevRunner
             case DisevCall.BuildingGone:                                             // 28 10 (0x00407A2C)
                 return !(_game.CityRows?.HasBuilding(I("City"), I("Building")) ?? true);
             // 5F · 60 — 도시 밖(제독 vt+0x2C, 17 08 이 맥락 없이 쓰는 지금 도시)이고 바다·뭍이면(0x00407E38 · 0x00407E5A).
+            // 뭍은 [0x005B61B4] — <b>상륙해 대원이 뭍을 걷는 중</b>인 깃발이다. 성문으로 나서면(0x004936A8) ·
+            // 해안 「상륙」 차림표(0x0048E710 → 0x0048E7B8)에서 1 이 되고 승선하면 0 이 된다(0x004936D4).
             case DisevCall.LeftCityBySea: return player.CityId < 0 && !_event.OnLand;
             case DisevCall.LeftCityOnLand: return player.CityId < 0 && _event.OnLand;
             case DisevCall.NoContract: return player.Contract == null;               // 5A
@@ -548,8 +563,11 @@ public sealed class DisevRunner
             // 짜여 같은 해에서 달을 보는 갈래(0x004077C3)에 영영 안 닿는다 — 달은 읽기만 한다.
             case DisevCall.YearMonthIs:
                 return year >= I("Year");
-            case DisevCall.Story0: return _cache == "이야기0";                        // 6D
-            case DisevCall.Story1: return _cache == "이야기1";                        // 6E
+            // 6D · 6E — 주인공이 든 이야기 책이 STORY0 · STORY1 인가(0x0040BC5E · 0x0040BC98). 새 게임을 열 때
+            // 0x004AB420 이 [0x0062989C] 에 그 이름을 적는다(0x0045E932 · 0x0045EB9F). 돌고 있는 책이 아니다 —
+            // 예전에는 돌고 있는 책과 견주어 발견 대본(DISEV) 안에서는 늘 거짓이라 라몬·에밀리오 대사가 빠졌다.
+            case DisevCall.Story0: return player.ActiveStoryBook == "이야기0";
+            case DisevCall.Story1: return player.ActiveStoryBook == "이야기1";
             case DisevCall.RandomChance:
             {
                 int denominator = I("Denominator");
@@ -577,9 +595,6 @@ public sealed class DisevRunner
             }
             // ── 아직 안 옮긴 명령 ────────────────────────────────────────────────
             // 실제로 쓰이는 것만 적는다(DISEV·이야기0·이야기1 을 앱 파서로 센 값).
-            //   34  Wait(29 1A)          창이 모달이라 멈출 자리가 없다 — 연출이라 건너뛴다
-            //   20  HideDialog(48)       "
-            //   20  ShowDialog(49)       "
             //   10  OccupyCity(23 08)    도시 레코드 +0x04 에 비트 2 를 세운다(0x00409E36, 25 08 이 지운다).
             //                              마을 공략에 이겼을 때(0x00468B20)도 이 비트와 나라를 함께 세운다.
             //                              <b>그 비트를 읽는 곳을 못 찾았다</b> — 나라는 앞의 26 1C 1A 가 넘긴다.
@@ -683,6 +698,20 @@ public sealed class DisevRunner
             // 접을 때가 있어, 안 거두면 엉뚱한 뒷줄에 그 그림이 따라붙는다.
             case DisevCall.CloseImage:
                 _pendingStill = -1;
+                return null;
+
+            // 48 — 화면을 곧장 깜깜하게(팔레트 10~245 를 검정으로, 0x0040B1D5). 49 — 도로 밝힌다(0x0040B220).
+            // 29 1A [n] — n 초 쉰다. 누르거나 키를 치면 곧장 끝난다(0x0040A2C6 → 0x00428000(n x 20, 1)).
+            // 대본은 「일행은 유적 안에 발을 들여놓았다」 뒤에 48 · 29 1A 01 · 49 로 한 초 깜깜하게 한다.
+            case DisevCall.HideDialog:
+                _shade ??= ScriptBlackout.Cover(_owner);
+                return null;
+            case DisevCall.ShowDialog:
+                _shade?.Close();
+                _shade = null;
+                return null;
+            case DisevCall.Wait:
+                ScriptBlackout.Hold(_owner, _shade, (int)Math.Clamp((long)I("Ticks") * 1000, 0, 60_000));
                 return null;
 
             // 66 03 [소리] — 울리던 소리를 멈춘다.
@@ -1830,8 +1859,8 @@ public sealed class DisevRunner
 /// <param name="Kind">갈래(1~5).</param>
 /// <param name="City">도시. 모르면 −1.</param>
 /// <param name="Building">건물 코드. 모르면 −1.</param>
-/// <param name="Command">고른 명령 줄(갈래 4). 모르면 −1.</param>
-/// <param name="OnLand">뭍에 올라 있는지(<c>0x005B61B4</c>) — 조건 5F · 60 이 본다.</param>
+/// <param name="Command">고른 명령 번호(갈래 4) — 숨은 줄까지 센 차림표 표의 자리다(<c>Menu.TownMenu</c>). 모르면 −1.</param>
+/// <param name="OnLand">상륙해 뭍을 걷는 중인지(<c>0x005B61B4</c> — 성문으로 나서면 1, 승선하면 0) — 조건 5F · 60 이 본다.</param>
 public readonly record struct DisevEvent(int Kind, int City = -1, int Building = -1, int Command = -1, bool OnLand = false)
 {
     public const int CityKind = 1, LeftCityKind = 2, BuildingKind = 3, CommandKind = 4, SponsorLeftKind = 5;

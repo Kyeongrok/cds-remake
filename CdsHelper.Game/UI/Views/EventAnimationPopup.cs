@@ -66,7 +66,9 @@ internal sealed class EventAnimationPopup : Window
     /// <param name="area">지도가 화면에서 차지한 자리(WPF 단위).</param>
     /// <param name="scale">게임 한 점이 WPF 몇 단위인지.</param>
     /// <param name="ship">함대 그림 한가운데 — <paramref name="area"/> 왼쪽 위에서 잰 WPF 단위. 모르면 null.</param>
-    public static void Play(Window owner, Engine.Game game, int scene, Rect area, double scale, Point? ship)
+    /// <param name="heading">뱃머리(16방위, 0 이 북 — <c>[0x005B63C8]</c>). 모르면 −1.</param>
+    public static void Play(Window owner, Engine.Game game, int scene, Rect area, double scale, Point? ship,
+                            int heading = -1)
     {
         if (area.Width <= 0 || area.Height <= 0 || scale <= 0) return;
         if (game.EventAnims is not { } anims) return;
@@ -79,7 +81,8 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Tornado => new TornadoScene(),
             EventAnimation.Aurora => new AuroraScene(),
             EventAnimation.Meteor => new MeteorScene(),
-            // 오아시스(0x00497D60) — 물이 비쳤다 사라졌다 한다. 소리가 둘 걸린다.
+            // 오아시스(0x00497D60) — 물이 비쳤다 사라졌다 한다. 소리가 둘 걸린다 — 걸음 11 에 0x3A,
+            // 신기루가 도로 비치는 걸음 23 에 0x3B(0x00497D6B · 0x00497D82).
             EventAnimation.Oasis => new StripScene(6, 0x80, 0x80, 0x22, up: 0x20,
                 soundAt: 0x0B, sound: 0x3A, soundAt2: 0x17, sound2: 0x3B, endAt: 0x3A, pick: c => c switch   // 0x00497D76 · 0x00497D8D
                 {
@@ -109,12 +112,19 @@ internal sealed class EventAnimationPopup : Window
                     _ => 16,
                 }),
             EventAnimation.Iceberg => new IcebergScene(),
+            EventAnimation.Whale => new WhaleScene(),
+            EventAnimation.Dolphin => new DolphinScene(),
+            EventAnimation.FlyingFish => new FlyingFishScene(),
+            EventAnimation.Flamingo => new FlamingoScene(),
+            EventAnimation.Morpho => new MorphoScene(),
+            EventAnimation.GhostShip => new GhostShipScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
 
         int w = (int)(area.Width / scale), h = (int)(area.Height / scale);
         Point? at = ship is { } p ? new Point(p.X / scale, p.Y / scale) : null;
+        play.Heading = heading;
         play.Start(w, h, at, new Random());
 
         // 곡을 끊는 장면은 폭풍 하나다(0x00497768 가 모든 소리를 끄고, 끝에 0x004229F0 이 곡을 되튼다).
@@ -240,6 +250,12 @@ internal sealed class EventAnimationPopup : Window
 
         /// <summary>도는 도중에 소리를 내는 장면이 쓴다(오로라가 열 걸음째에 낸다).</summary>
         public SoundBank? Sfx { get; set; }
+
+        /// <summary>뱃머리(16방위, 0 이 북). 모르면 −1 — 바다 짐승이 뱃길 앞에 설 자리를 고른다.</summary>
+        public int Heading { get; set; } = -1;
+
+        /// <summary>게임 소리 번호(<c>0x004225A0</c> 의 인자)로 낸다 — WAVES 파트는 28 을 뺀 값이다.</summary>
+        protected void Sound(int id) => Sfx?.Play(id - WaveBank.FirstSoundId);
 
         public abstract bool Load(EventAnimation anims);
 
@@ -513,61 +529,766 @@ internal sealed class EventAnimationPopup : Window
     }
 
     /// <summary>
-    /// 14 유빙 — 얼음덩이가 흔들리며 떠 있고 밑동에 물보라가 인다(<c>0x0061D7A8</c>).
+    /// 14 유빙 — 오른쪽에서 얼음덩이가 떠내려와 함대에 부딪히고 물보라가 인다(<c>0x0061D7A8</c>).
     /// </summary>
     /// <remarks>
     /// <code>
     ///   0x00499BC0  파트 15, 192 x 384(192x96 넉 장), 팔레트 0x2A   ; 얼음덩이
     ///   0x00499BDE  파트 16,  32 x 256( 32x32 여덟 장), 팔레트 0x2A ; 물보라
+    ///   0x00499B40  첫자리  얼음 x = W − 0x13 · y = 함대 위(0x0047D050) − 0x1E · 물보라 = 얼음 + (100, 16)
     ///   0x00499C40  여는 참에 소리 0x36
-    ///   0x004998B0  얼음덩이 장 = (걸음 % 8) 이 0·1 → 0 · 4·5 → 2 · 그 밖 → 1
-    ///   0x004999B0  물보라   장 = (걸음 % 4) 이 0 → 0 · 2 → 2 · 그 밖 → 1
+    ///   0x004998B0  얼음덩이 한 걸음
+    ///     안 부딪혔으면  장 = (걸음 % 8) 이 0·1 → 0 · 4·5 → 2 · 그 밖 → 1
+    ///     부딪혔으면     장 3 · 부딪힌 뒤 여섯 걸음 동안 홀수 걸음 +4 · 짝수 걸음 −4 점 흔든다
+    ///     함대 왼쪽(0x0047D020) + 0x20 ≥ 얼음 x 가 되면 부딪힌다 — 그 걸음을 +0x18 에 적고
+    ///                    얼음 x = 함대 왼쪽 + 0x20 · 소리 0x37
+    ///     그린 뒤 안 부딪혔으면 x −= W/40 · 물보라 x = 얼음 x + 100(0x00499A80)
+    ///   0x004999B0  물보라 한 걸음 — 이것이 장면의 끝을 낸다
+    ///     안 부딪혔으면  장 = (걸음 % 4) 이 0 → 0 · 2 → 2 · 그 밖 → 1
+    ///     부딪힌 뒤 d 걸음  장 0(d&lt;2) · 3(&lt;4) · 4(&lt;10) · 5+(d−10)/2(&lt;16), 자리는 0x00499AA0 의 표
+    ///                    d ≥ 16 은 안 그리고 d == 20 에서 끝난다
     /// </code>
-    /// <b>부딪히고 나서의 갈래는 안 옮겼다</b> — 원본은 배가 닿은 걸음(<c>+0x18</c>)을 적어 두고
-    /// 장 3 으로 바꾼 뒤 여섯 걸음 동안 좌우로 4 점씩 흔든다. 우리는 부딪히는 자리가 따로 없어
-    /// 떠 있는 결만 돌린다. <b>도는 길이도 원본에 없다</b> — 원본은 지도가 그만두라 할 때까지
-    /// 도는데, 여기서는 여덟 걸음짜리 한 바퀴를 세 번 돌고 끝낸다.
+    /// 「부딪혔는가」는 원본도 걸음 수 0 을 「아직」으로 본다(<c>test ecx, ecx</c>) — 그대로 둔다.
     /// </remarks>
     private sealed class IcebergScene : Scene
     {
         private const int BergW = 0xC0, BergH = 0x60, SprayW = 0x20, SprayH = 0x20;
 
-        /// <summary>여덟 걸음짜리 한 바퀴를 세 번.</summary>
-        private const int Steps = 8 * 3;
-
         public override int SoundPart => 0x36 - WaveBank.FirstSoundId;   // 사운드 ID 0x36(0x00499C40) — 파트는 28 을 뺀 26
 
         private BitmapSource[] _berg = [], _spray = [];
-        private int _x, _y;
+        private int _w, _shipLeft;
+        private int _bx, _by, _sx, _sy;
+
+        /// <summary>부딪힌 걸음(<c>+0x18</c>). 0 이면 아직이다.</summary>
+        private int _hit;
 
         public override bool Load(EventAnimation anims)
         {
             _berg = Frames(anims, 15, BergW, BergH, 0x2A) ?? [];
             _spray = Frames(anims, 16, SprayW, SprayH, 0x2A) ?? [];
-            return _berg.Length >= 3;
+            return _berg.Length >= 4 && _spray.Length >= 8;
         }
 
         public override void Start(int w, int h, Point? ship, Random rng)
         {
             var at = ship ?? new Point(w / 2.0, h / 2.0);
-            _x = (int)at.X - BergW / 2;
-            _y = (int)at.Y - BergH / 2;
+            _w = w;
+            _shipLeft = (int)at.X - 24;                      // 48x48 함대 그림 왼쪽 위(0x0047D020 · 0x0047D050)
+            _bx = w - 0x13;
+            _by = (int)at.Y - 24 - 0x1E;
+            _sx = _bx + 100;
+            _sy = _by + 0x10;
+            _hit = 0;
         }
 
         public override bool Step(int c, List<Draw> draws)
         {
-            if (c >= Steps) return true;
+            if (c > 2000) return true;                      // 지도가 좁아 안 닿는 일이 없게 — 원본에는 없다
 
-            int m = c % 8;
-            int f = m < 2 ? 0 : m is 4 or 5 ? 2 : 1;
-            draws.Add(new Draw(_berg[Math.Clamp(f, 0, _berg.Length - 1)], _x, _y));
+            // 얼음덩이(0x004998B0)
+            int f;
+            if (_hit == 0)
+            {
+                int m = c % 8;
+                f = m < 2 ? 0 : m is 4 or 5 ? 2 : 1;
+            }
+            else
+            {
+                f = 3;
+                int d = c - _hit;
+                if (d < 6) _bx += d % 2 == 0 ? -4 : 4;
+            }
+            if (_shipLeft + 0x20 >= _bx && _hit == 0)
+            {
+                f = 3;
+                _hit = c;
+                _bx = _shipLeft + 0x20;
+                Sfx?.Play(0x37 - WaveBank.FirstSoundId);
+            }
+            draws.Add(new Draw(_berg[f], _bx, _by));
+            if (_hit == 0)
+            {
+                _bx += _w / -40;                              // 0x00499A80 — idiv 라 0 쪽으로 자른다
+                _sx = _bx + 100;
+            }
 
-            if (_spray.Length == 0) return false;
-            int k = c % 4 switch { 0 => 0, 2 => 2, _ => 1 };
-            draws.Add(new Draw(_spray[Math.Clamp(k, 0, _spray.Length - 1)],
-                               _x + (BergW - SprayW) / 2, _y + BergH - SprayH / 2));
+            // 물보라(0x004999B0)
+            int k;
+            if (_hit == 0)
+            {
+                k = (c % 4) switch { 0 => 0, 2 => 2, _ => 1 };
+            }
+            else
+            {
+                int d = c - _hit;
+                if (d >= 16) return d >= 20;
+                k = d < 2 ? 0 : d < 4 ? 3 : d < 10 ? 4 : 5 + (d - 10) / 2;
+                SprayAt(d);
+            }
+            draws.Add(new Draw(_spray[k], _sx, _sy));
             return false;
         }
+
+        /// <summary>부딪힌 뒤 물보라 자리(<c>0x00499AA0</c>) — 얼음덩이 왼쪽 위에서 잰다.</summary>
+        private void SprayAt(int d)
+        {
+            (int dx, int dy) = d switch
+            {
+                < 2 => (0x64, 0x10),
+                < 4 => (0x66, 0x10),
+                < 6 => (0x6C, 0x08),
+                < 8 => (0x80, 0x0C),
+                < 10 => (0x96, 0x22),
+                _ => (0x9E, 0x38),
+            };
+            _sx = _bx + dx;
+            _sy = _by + dy;
+        }
+    }
+
+    /// <summary>
+    /// 19 백경 — 흰 고래가 솟구쳐 물을 뿜고 꼬리를 치며 잠긴다(<c>0x00418750</c>, 객체 <c>0x0061D7C8</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00418A30  파트 0x15, 480 x 2112(480x96 스물두 장), 팔레트 0x2F
+    ///   0x00418910  첫자리  x = W − 480 · y = 함대 위 ≤ H/2 면 H/2, 아니면 H/2 − 96
+    ///               뱃머리 0~3 · 13~15(북쪽)이고 함대 위 &gt; H/2 면 y = 함대 위 − 96
+    ///               뱃머리 5~11(남쪽)이고 함대 위 ≤ H/2 면 y = 함대 위 + 48      ; 뱃길 앞에 선다
+    ///   한 걸음 c
+    ///     c &lt; 18   장 c/2 (c == 0 에 소리 0x38)
+    ///     18~25    안 그린다 — 앞 장이 화면에 남는다 · x += (480 − W)/50
+    ///     26~31    장 8 + (26 − c)/2 (c == 28 에 소리 0x38)
+    ///     32~43    장 9 + (c − 32)/2 (c == 38 에 소리 0x39 — 물 뿜기)
+    ///     44~53    (c − 40) % 4 &lt; 2 면 장 15, 아니면 16
+    ///     54~63    장 17 + (c − 54)/2 (c == 54 에 0x39 를 끄고 0x38)
+    ///     64       끝
+    ///   그린 뒤 c &lt; 32 면 x += (480 − W)/80, c &lt; 54 면 x += (480 − W)/50
+    /// </code>
+    /// </remarks>
+    private sealed class WhaleScene : Scene
+    {
+        private const int FrameW = 0x1E0, FrameH = 0x60;
+
+        private BitmapSource[] _art = [];
+        private int _w, _x, _y;
+        private Draw? _last;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _art = Frames(anims, 0x15, FrameW, FrameH, 0x2F) ?? [];
+            return _art.Length >= 22;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w;
+            _x = w - FrameW;
+            _y = SeaBeastY(h, ship, Heading, above: FrameH, below: 0x30, upperRange: 3, far: FrameH);
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c >= 0x40) return true;
+
+            int f;
+            if (c < 0x12)
+            {
+                if (c == 0) Sound(0x38);
+                f = c / 2;
+            }
+            else if (c < 0x1A)
+            {
+                _x += (FrameW - _w) / 50;
+                if (_last is { } keep) draws.Add(keep);          // 0x49A050 을 안 불러 앞 장이 남는다
+                return false;
+            }
+            else if (c < 0x20)
+            {
+                f = (0x1A - c) / 2 + 8;
+                if (c == 0x1C) Sound(0x38);
+            }
+            else if (c < 0x2C)
+            {
+                if (c == 0x26) Sound(0x39);
+                f = (c - 0x20) / 2 + 9;
+            }
+            else if (c < 0x36)
+            {
+                f = (c - 0x28) % 4 < 2 ? 0x0F : 0x10;
+            }
+            else
+            {
+                if (c == 0x36) { Sfx?.Stop(); Sound(0x38); }
+                f = (c - 0x36) / 2 + 0x11;
+            }
+
+            var d = new Draw(_art[f], _x, _y);
+            draws.Add(d);
+            _last = d;
+            if (c < 0x20) _x += (FrameW - _w) / 80;
+            else if (c < 0x36) _x += (FrameW - _w) / 50;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 20 돌고래 — 한 마리가 가운데서 뛰어오르고, 이어 떼가 오른쪽에서 왼쪽으로 헤엄쳐 간다
+    /// (<c>0x00418AB0</c>, 객체 <c>0x0061D768</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00418E00  파트 0x17, 128 x 1920(128x160 열두 장) · 파트 0x16, 352 x 2560(352x160 열여섯 장), 팔레트 0x30
+    ///   0x00418D30  첫자리  한 마리 x = (W − 128)/2 · 떼 x = W/2
+    ///               함대 위 ≥ H/2 면 둘 다 y = H/2 − 160, 아니면 한 마리 H/2 − 80 · 떼 H/2 − 32
+    ///               한 마리 자리가 바다인지 본다(0x00425BA0) — 우리는 바다 조우라 보지 않는다
+    ///   한 마리(0x00418AD0) c &lt; 50
+    ///     c &lt; 4   장 c/2 (c == 0 에 소리 0x32)      4~19   2 2 3 3 4 4 3 3 되풀이
+    ///     20~31  5 5 6 6 되풀이                        32~43  7 7 8 8 되풀이
+    ///     44~49  장 9 + (c − 44)/2 (c == 44 에 0x32 끔)
+    ///   떼(0x00418C70) c ≥ 50 — c == 50 에 소리 0x33
+    ///     50~53  장 c + 7 — 띠 밖이라 Blt 가 안 그린다
+    ///     54~81  0~6 되풀이 · 82~85 장 c − 71 · 86 끝
+    ///     그린 뒤 x += W / −90
+    /// </code>
+    /// </remarks>
+    private sealed class DolphinScene : Scene
+    {
+        private const int OneW = 0x80, SchoolW = 0x160, FrameH = 0xA0;
+
+        private BitmapSource[] _one = [], _school = [];
+        private int _w, _x0, _y0, _x1, _y1;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _one = Frames(anims, 0x17, OneW, FrameH, 0x30) ?? [];
+            _school = Frames(anims, 0x16, SchoolW, FrameH, 0x30) ?? [];
+            return _one.Length >= 12 && _school.Length >= 16;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w;
+            int half = h / 2;
+            int top = (int)(ship?.Y ?? half) - 24;
+            if (top >= half) _y0 = _y1 = half - 0xA0;
+            else { _y0 = half - 0x50; _y1 = half - 0x20; }
+            _x0 = (w - OneW) / 2;
+            _x1 = w / 2;
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c < 0x32)
+            {
+                int f;
+                if (c < 4)
+                {
+                    if (c == 0) Sound(0x32);
+                    f = c / 2;
+                }
+                else if (c < 0x14)
+                {
+                    int e = c + (4 - c) / 8 * 8 - 4;
+                    f = (e / 2) switch { 0 => 2, 1 or 3 => 3, _ => 4 };
+                }
+                else if (c < 0x20) f = c + (0x14 - c) / 4 * 4 - 0x14 < 2 ? 5 : 6;
+                else if (c < 0x2C) f = c + (0x20 - c) / 4 * 4 - 0x20 < 2 ? 7 : 8;
+                else
+                {
+                    if (c == 0x2C) Sfx?.Stop();
+                    f = (c - 0x2C) / 2 + 9;
+                }
+                draws.Add(new Draw(_one[f], _x0, _y0));
+                return false;
+            }
+
+            if (c == 0x32) Sound(0x33);
+            int g;
+            if (c < 0x36) g = c + 7;
+            else if (c < 0x52) g = (0x36 - c) / 7 * 7 + c - 0x36;
+            else if (c < 0x56) g = c - 0x47;
+            else
+            {
+                Sfx?.Stop();                                      // 0x0049B197 — 0x33 을 끈다
+                return true;
+            }
+            if (g >= 0 && g < _school.Length) draws.Add(new Draw(_school[g], _x1, _y1));
+            _x1 += _w / -90;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 21 날치 — 날치 떼 둘이 물 위로 튀어 오르며 왼쪽으로 날아간다(<c>0x00418EA0</c>, 객체 <c>0x0061D788</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x004190A0  파트 0x18, 336 x 4700(336x100 마흔일곱 장), 팔레트 0x31 · 여는 참에 소리 0x34
+    ///   0x00418F80  첫자리  앞 떼 x = W − 336 · y = 함대 위 ≤ H/2 면 H/2, 아니면 H/2 − 150
+    ///               뱃머리 0~2 · 14~15 이고 함대 위 &gt; H/2 면 함대 위 − 200 · 5~11 이고 ≤ H/2 면 함대 위 + 48
+    ///               뒤 떼 = 앞 떼 + (−100, 80)
+    ///   떼 한 걸음(0x00418ED0) — 떼마다 제 걸음 n
+    ///     n &lt; 12 장 n + 24 · n &lt; 36 장 n − 12 · n &lt; 47 장 n · 47 이면 안 그리고 끝을 낸다
+    ///     그린 뒤 x += W / −100(앞) · W / −150(뒤)
+    ///   뒤 떼는 걸음 21 부터 나서고, 장면의 끝은 뒤 떼가 낸다 — 끝에 0x34 를 끈다
+    /// </code>
+    /// </remarks>
+    private sealed class FlyingFishScene : Scene
+    {
+        private const int FrameW = 0x150, FrameH = 0x64, Count = 0x2F;
+
+        public override int SoundPart => 0x34 - WaveBank.FirstSoundId;
+
+        private BitmapSource[] _art = [];
+        private int _w;
+        private readonly int[] _x = new int[2], _y = new int[2], _n = new int[2];
+
+        public override bool Load(EventAnimation anims)
+        {
+            _art = Frames(anims, 0x18, FrameW, FrameH, 0x31) ?? [];
+            return _art.Length >= Count;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w;
+            _x[0] = w - FrameW;
+            _y[0] = SeaBeastY(h, ship, Heading, above: 0x96, below: 0x30, upperRange: 2, far: 0xC8);
+            _x[1] = _x[0] - 0x64;
+            _y[1] = _y[0] + 0x50;
+            _n[0] = _n[1] = 0;
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            School(0, draws);
+            return c > 0x14 && School(1, draws);
+        }
+
+        private bool School(int i, List<Draw> draws)
+        {
+            int n = _n[i];
+            if (n >= Count) return true;
+            int f = n < 12 ? n + 24 : n < 36 ? n - 12 : n;
+            draws.Add(new Draw(_art[f], _x[i], _y[i]));
+            _x[i] += _w / (i == 0 ? -100 : -150);
+            _n[i]++;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 22 플라밍고 떼 — 크기가 다른 세 무리가 지도를 가로질러 날아간다(<c>0x00419130</c>, 객체 <c>0x0061DF78</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x004195B0  팔레트 0x32 — 작은 무리 파트 0x19(208x160 다섯 장) · 가운데 0x1A(288x192 아홉 장) ·
+    ///               큰 무리 0x1B(384x288 아홉 장) · 여는 참에 소리 0x3D, 끝에 끈다
+    ///   0x004194E0  첫자리  작은 (41·(W/40), H − 80) · 가운데 (W − W/10, −19) · 큰 ((4W/5)/50·50, 5H/8)
+    ///   한 걸음 — 큰 무리(0x00419290) → c ≥ 6 이면 가운데(0x00419230) → c ≥ 16 이면 작은 무리(0x004191A0)
+    ///     큰·가운데 장 = c % 9 · 작은 무리 장 = 제 걸음 0 1 2 3 4 4 4 3 4 1 1 되풀이
+    ///     작은(0x004192F0)  x −= W/40, 오른쪽 반에서는 곧게 오르고 왼쪽 반에서는 포물선
+    ///     가운데(0x00419400) x −= W/40, y += H/50 − 2 · 4 · 5 (오른쪽 셋째마다)
+    ///     큰(0x00419470)    x −= (4W/5)/50, 포물선으로 내려온다
+    ///   끝(0x00419158) — 작은 무리가 화면을 벗어났고, 큰 무리도 왼쪽이나 위로 나갔으면
+    ///     (가운데 무리는 x 가 안에 있는 채 y ≥ H 일 때만 붙든다 — 원본 셈 그대로)
+    /// </code>
+    /// </remarks>
+    private sealed class FlamingoScene : Scene
+    {
+        private const int AW = 0xD0, AH = 0xA0, BW = 0x120, BH = 0xC0, CW = 0x180, CH = 0x120;
+
+        public override int SoundPart => 0x3D - WaveBank.FirstSoundId;
+
+        private BitmapSource[] _a = [], _b = [], _c = [];
+        private int _w, _h, _xa, _ya, _xb, _yb, _xc, _yc, _na;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _a = Frames(anims, 0x19, AW, AH, 0x32) ?? [];
+            _b = Frames(anims, 0x1A, BW, BH, 0x32) ?? [];
+            _c = Frames(anims, 0x1B, CW, CH, 0x32) ?? [];
+            return _a.Length >= 5 && _b.Length >= 9 && _c.Length >= 9;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w; _h = h;
+            _xa = w / 40 * 41;
+            _ya = h - 0x50;
+            _xb = w + w / -10;
+            _yb = -0x13;
+            _xc = w * 4 / 5 / 50 * 50;
+            _yc = h * 5 / 8;
+            _na = 0;
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c > 2000) return true;                      // 원본에는 없다 — 안 끝나는 일이 없게
+
+            draws.Add(new Draw(_c[c % 9], _xc, _yc));
+            MoveC();
+            if (c >= 6)
+            {
+                draws.Add(new Draw(_b[c % 9], _xb, _yb));
+                MoveB();
+            }
+            if (c >= 0x10)
+            {
+                int n = _na;
+                int f = n < 4 ? n : n < 7 ? 4 : n < 9 ? n - 4 : 1;
+                _na = n >= 10 ? 0 : n + 1;
+                draws.Add(new Draw(_a[f], _xa, _ya));
+                MoveA();
+            }
+
+            // 0x00419158
+            if (_xa + AW >= 0 && _ya + AH >= 0) return false;
+            if (_xb + BW >= 0 && _yb >= _h) return false;
+            return _xc + CW < 0 || _yc + CH < 0;
+        }
+
+        /// <summary>작은 무리(<c>0x004192F0</c>).</summary>
+        private void MoveA()
+        {
+            int d = Math.Max(1, _w / 40);
+            _xa -= d;
+            int h8 = _h / 8;
+            if (_w / 2 < _xa)
+            {
+                _ya = (0x50 - _h * 3 / 4) / 19 * ((_w - _xa) / d) + _h - 0x50;
+                return;
+            }
+            int q = _w / 4;
+            if (q <= _xa)
+            {
+                int t = (_xa - q) / d;
+                _ya = t * t * h8 / 100 + h8;
+            }
+            else if (_w / 8 <= _xa)
+            {
+                int t = (q - _xa) / d;
+                _ya = t * t * h8 / 100 + h8;
+            }
+            else
+            {
+                _ya += d / 2;
+            }
+        }
+
+        /// <summary>가운데 무리(<c>0x00419400</c>).</summary>
+        private void MoveB()
+        {
+            int h50 = _h / 50;
+            _xb += _w / -40;
+            if (_w * 2 / 3 <= _xb) _yb += h50 - 2;
+            else if (_w / 3 <= _xb) _yb += h50 - 4;
+            else _yb += h50 - 5;
+        }
+
+        /// <summary>큰 무리(<c>0x00419470</c>).</summary>
+        private void MoveC()
+        {
+            int s = Math.Max(1, _w * 4 / 5 / 50);
+            _xc -= s;
+            int t = _xc / s;
+            int drop = _h / 2 * t * t / 2500;
+            if (t >= 0 && drop > 0) _yc = _h / 8 + drop;
+            else _yc--;
+        }
+    }
+
+    /// <summary>
+    /// 23 모르포 나비 떼 — 크고 작은 나비 넷이 저마다의 굽이로 지도를 날아 지난다(<c>0x00419670</c>, 객체 <c>0x0061DE58</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00419E00  팔레트 0x33 — 작은 나비 파트 0x1C(128x128 넉 장, 둘이 같이 쓴다) · 가운데 0x1D(256x256 넉 장) ·
+    ///               큰 나비 0x1E(352x352 넉 장) · 여는 참에 소리 0x3E, 끝에 끈다
+    ///   0x00419D20  첫자리  작은1 (41·(W/40), H/2) · 작은2 ((W−128)/2, 41·(H/40)) ·
+    ///               가운데 (41·((W−128)/40), H + 51) · 큰 (W − 35, H − 35)
+    ///   한 걸음 — 큰(0x00419710) → c ≥ 30 가운데(0x00419790) → c ≥ 15 작은1 → c ≥ 20 작은2(0x00419810)
+    ///     장 = (c + i) % 4 가 0 → 0 · 2 → 2 · 그 밖 → 1 (작은2 만 i = 1)
+    ///     큰(0x004198B0)    x += 7·(W/−40)/10, 오른쪽일수록 가파르게 오른다(H/−50 · −60 · −65 · −70)
+    ///     가운데(0x00419960) x −= (W−128)/30, 포물선으로 내렸다 오르고 왼끝에서 H/−20 씩 솟는다
+    ///     작은1(0x00419A30) x −= W/40, 네 토막 포물선으로 물결친다
+    ///     작은2(0x00419BD0) y −= H/40, 아래서 위로 오르며 x 가 굽는다
+    ///   끝(0x004196AC) — 작은1 · 작은2 · 가운데가 다 화면(왼쪽·위)을 벗어났고 큰 나비도 벗어났으면
+    /// </code>
+    /// </remarks>
+    private sealed class MorphoScene : Scene
+    {
+        private const int SW = 0x80, MW = 0x100, LW = 0x160;
+
+        public override int SoundPart => 0x3E - WaveBank.FirstSoundId;
+
+        private BitmapSource[] _s = [], _m = [], _l = [];
+        private int _w, _h, _xa, _ya, _xb, _yb, _xc, _yc, _xd, _yd;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _s = Frames(anims, 0x1C, SW, SW, 0x33) ?? [];
+            _m = Frames(anims, 0x1D, MW, MW, 0x33) ?? [];
+            _l = Frames(anims, 0x1E, LW, LW, 0x33) ?? [];
+            return _s.Length >= 3 && _m.Length >= 3 && _l.Length >= 3;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w; _h = h;
+            _xa = w / 40 * 41;
+            _ya = h / 2;
+            _xb = (w - SW) / 2;
+            _yb = h / 40 * 41;
+            _xc = (w - SW) / 40 * 41;
+            _yc = h + 0x33;
+            _xd = w - 0x23;
+            _yd = h - 0x23;
+        }
+
+        private static int Wing(int n) => (n % 4) switch { 0 => 0, 2 => 2, _ => 1 };
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c > 2000) return true;                      // 원본에는 없다 — 안 끝나는 일이 없게
+
+            draws.Add(new Draw(_l[Wing(c)], _xd, _yd));
+            MoveD();
+            if (c >= 0x1E)
+            {
+                draws.Add(new Draw(_m[Wing(c)], _xc, _yc));
+                MoveC();
+            }
+            if (c >= 0x0F)
+            {
+                draws.Add(new Draw(_s[Wing(c)], _xa, _ya));
+                MoveA();
+            }
+            if (c >= 0x14)
+            {
+                draws.Add(new Draw(_s[Wing(c + 1)], _xb, _yb));
+                MoveB();
+            }
+
+            // 0x004196AC
+            if (_xa + SW >= 0 && _ya + SW >= 0) return false;
+            if (_xb + SW >= 0 && _yb + SW >= 0) return false;
+            if (_xc + MW >= 0 && _yc + MW >= 0) return false;
+            return _xd + LW < 0 || _yd + LW < 0;
+        }
+
+        /// <summary>큰 나비(<c>0x004198B0</c>).</summary>
+        private void MoveD()
+        {
+            _xd += _w / -40 * 7 / 10;
+            _yd += _w * 3 / 4 <= _xd ? _h / -50
+                 : _w / 2 <= _xd ? _h / -60
+                 : _w / 4 <= _xd ? _h / -65
+                 : _h / -70;
+        }
+
+        /// <summary>가운데 나비(<c>0x00419960</c>).</summary>
+        private void MoveC()
+        {
+            int s = Math.Max(1, (_w - SW) / 30);
+            _xc -= s;
+            int k = s * 15;
+            if (_xc >= k)
+            {
+                int t = (_xc - k) / s;
+                _yc = _h / 30 * t * t / 15 + _h / 2;
+            }
+            else if (_xc >= 5)
+            {
+                int t = (k - _xc) / s;
+                _yc = _h / -30 * t * t / 15 + _h / 2;
+            }
+            else
+            {
+                _yc += _h / -20;
+                _xc += s / 2;
+            }
+        }
+
+        /// <summary>작은 나비 1(<c>0x00419A30</c>).</summary>
+        private void MoveA()
+        {
+            int d = Math.Max(1, _w / 40);
+            _xa -= d;
+            int q3 = _w * 3 / 4, h8 = _h / 8;
+            int t;
+            if (q3 <= _xa) { t = (_xa - q3) / d; _ya = h8 * t * t / 100 + _h * 3 / 8; }
+            else if (_w / 2 <= _xa) { t = (q3 - _xa) / d; _ya = h8 * t * t / 100 + _h * 3 / 8; }
+            else if (_w / 4 <= _xa) { t = (_xa - _w / 4) / d; _ya = h8 * t * t / -100 + _h * 5 / 8; }
+            else if (_xa >= 0) { t = 10 - _xa / d; _ya = h8 * t * t / -100 + _h * 5 / 8; }
+            else { t = _xa / d + 10; _ya = h8 * t * t / 100 + _h * 3 / 8; }
+        }
+
+        /// <summary>작은 나비 2(<c>0x00419BD0</c>).</summary>
+        private void MoveB()
+        {
+            int d = Math.Max(1, _h / 40);
+            _yb -= d;
+            int half = _w / 2, hh = Math.Max(1, _h / 2);
+            int bend = (SW - half) * 100 / hh + (_w - SW) / 2 - _w / 8;
+            if (_h * 3 / 4 <= _yb) _xb += _w / -80;
+            else if (_yb >= hh)
+            {
+                int t = (_yb - hh) / d;
+                _xb = (half - SW) * t * t / hh + bend;
+            }
+            else if (_yb >= _h / 4) { }
+            else if (_yb >= 0)
+            {
+                int t = (_h / 4 - _yb) / d;
+                _xb = (half - SW) * t * t / hh / 2 + bend;
+            }
+            else _xb += _w / 80;
+        }
+    }
+
+    /// <summary>
+    /// 9 유령선 — 지도가 어두워지고 안개 속에서 유령선이 나타나 왼쪽으로 지나간다(<c>0x00498840</c>, 객체 <c>0x0061DFA0</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00498BD0  팔레트 0x27 — 배 파트 0x0B(96x64 아홉 장) · 안개 파트 0x0C(384x128 석 장)
+    ///   0x00498C20  여는 참에 소리를 다 끄고(곡까지) 0x35 · 끝에 0x35 를 끄고 곡을 되튼다(0x0049AEF0)
+    ///               제 걸음 n 은 부를 때마다 먼저 오른다 — n = c + 1
+    ///   0x00498AA0  첫자리  배 (W − W/50, (H − 64)/2 − (함대 위 ≥ H/2 − 48 이면 32))
+    ///               안개 넷(0x00498B20) — 0·1 은 왼쪽 밖((−2−k)·192, k·64 − rand 16),
+    ///                                     2·3 은 오른쪽 밖((k−2)·192 + W, rand 16 − k·64 + H)
+    ///   한 걸음
+    ///     c &lt; 4     어두워진다(0x0049A1A0(4 − c))
+    ///     배 장      n &lt; 10 · 12~13 → 7 · 10~11 → 8 · 14 6 · 16 5 · 18 3 · 20~49 0 0 1 1 2 2 1 1 되풀이 ·
+    ///                50 3 · 52 4 · 54 5 · 56 6 · 58 7 · 60 8 (두 걸음씩)
+    ///     62~64     밝아진다(0x0049A1A0(n − 61)) · 65 끝
+    ///     n ≥ 10 이면 배를 그리고 x += W/−50
+    ///     안개 k 는 장 (n + k) % 3 — 0·1 은 오른쪽으로 W/50 의 1·3 배, 2·3 은 왼쪽으로 2·4 배,
+    ///     화면을 넘으면 처음 자리로 돌아간다(0x00498A20)
+    /// </code>
+    /// 어두움은 오로라와 같이 검은 막으로 낸다 — 단계 1 을 가장 어두운 것으로 친다.
+    /// </remarks>
+    private sealed class GhostShipScene : Scene
+    {
+        private const int ShipW = 0x60, ShipH = 0x40, FogW = 0x180, FogH = 0x80;
+        private const double DarkMost = 0.82;
+
+        public override int SoundPart => 0x35 - WaveBank.FirstSoundId;
+        public override bool StopsMusic => true;
+        public override double Dim => _dim;
+
+        private BitmapSource[] _ship = [], _fog = [];
+        private Random _rng = new();
+        private int _w, _h, _x, _y;
+        private readonly int[] _fx = new int[4], _fy = new int[4];
+        private double _dim;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _ship = Frames(anims, 0x0B, ShipW, ShipH, 0x27) ?? [];
+            _fog = Frames(anims, 0x0C, FogW, FogH, 0x27) ?? [];
+            return _ship.Length >= 9 && _fog.Length >= 3;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _rng = rng;
+            _w = w; _h = h;
+            _x = w + w / -50;
+            int top = (int)(ship?.Y ?? h / 2) - 24;
+            _y = (h - ShipH) / 2 - (top >= h / 2 - 0x30 ? 0x20 : 0);
+            for (int k = 0; k < 4; k++) ResetFog(k);
+            _dim = 0;
+        }
+
+        /// <summary>0x0049A1A0 의 단계 — 4 가 제 밝기, 1 이 가장 어둡다.</summary>
+        private void Shade(int level) => _dim = Math.Clamp(DarkMost * (4 - level) / 3, 0, DarkMost);
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c < 4) { Shade(4 - c); return false; }
+
+            int n = c + 1;
+            int f;
+            if (n is >= 10 and < 12) f = 8;
+            else if (n < 14) f = 7;
+            else if (n < 16) f = 6;
+            else if (n < 18) f = 5;
+            else if (n < 20) f = 3;
+            else if (n < 50) f = (n % 8) switch { < 2 => 0, < 4 => 1, < 6 => 2, _ => 1 };
+            else if (n < 62) f = 3 + (n - 50) / 2;                   // 3 4 5 6 7 8
+            else if (n < 65) { Shade(n - 0x3D); return false; }
+            else { _dim = 0; return true; }
+
+            Shade(1);
+            if (n >= 10)
+            {
+                draws.Add(new Draw(_ship[f], _x, _y));
+                _x += _w / -50;
+            }
+            for (int k = 0; k < 4; k++)
+                draws.Add(new Draw(_fog[(n + k) % 3], _fx[k], _fy[k]));
+            MoveFog();
+            return false;
+        }
+
+        /// <summary>안개를 민다(<c>0x00498A20</c>).</summary>
+        private void MoveFog()
+        {
+            int step = _w / 50;
+            for (int k = 0; k < 4; k++)
+            {
+                if (k < 2)
+                {
+                    _fx[k] += (k == 0 ? 1 : 3) * step;
+                    if (_w <= _fx[k]) ResetFog(k);
+                }
+                else
+                {
+                    _fx[k] += (k == 2 ? 2 : 4) * (_w / -50);
+                    if (_fx[k] < -FogW) ResetFog(k);
+                }
+            }
+        }
+
+        /// <summary>안개 하나를 처음 자리로(<c>0x00498B20</c>).</summary>
+        private void ResetFog(int k)
+        {
+            if (k < 2)
+            {
+                _fx[k] = (-2 - k) * 0xC0;
+                _fy[k] = k * 0x40 - _rng.Next(16);
+            }
+            else
+            {
+                _fx[k] = (k - 2) * 0xC0 + _w;
+                _fy[k] = _rng.Next(16) - k * 0x40 + _h;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 바다 짐승이 설 높이(<c>0x00418910</c> · <c>0x00418F80</c>) — 함대가 지도 아래쪽이면 위에, 위쪽이면 가운데에
+    /// 두고, 뱃머리가 그쪽을 보고 있으면 함대 바로 앞으로 당긴다.
+    /// </summary>
+    /// <param name="above">함대가 아래쪽일 때 가운데에서 올리는 만큼.</param>
+    /// <param name="below">남쪽을 볼 때 함대 위에서 내리는 만큼.</param>
+    /// <param name="upperRange">북쪽으로 치는 뱃머리의 끝 — 0~이것과 이것+10(또는 13)~15.</param>
+    /// <param name="far">북쪽을 볼 때 함대 위에서 올리는 만큼.</param>
+    private static int SeaBeastY(int h, Point? ship, int heading, int above, int below, int upperRange, int far)
+    {
+        int half = h / 2;
+        int top = (int)(ship?.Y ?? half) - 24;                   // 48x48 함대 그림 위(0x0047D050)
+        int y = top > half ? half - above : half;
+        bool north = heading >= 0 && (heading <= upperRange || heading >= (upperRange == 3 ? 13 : 14));
+        bool south = heading is >= 5 and <= 11;
+        if (north && top > half) return top - far;
+        if (south && top <= half) return top + below;
+        return y;
     }
 
     /// <summary>
@@ -631,7 +1352,7 @@ internal sealed class EventAnimationPopup : Window
     /// 함대 자리에서 띠 한 벌을 처음부터 끝까지 넘기는 장면.
     /// </summary>
     /// <remarks>
-    /// 오아시스·사태·늪·유사·유빙 다섯이 이것을 쓴다. 그림 파트·크기·팔레트는 EXE 에서 그대로
+    /// 오아시스·늪·유사 셋이 이것을 쓴다. 그림 파트·크기·팔레트는 EXE 에서 그대로
     /// 옮겼다.
     /// <code>
     ///   4  오아시스  0x00497F10  파트 6  128x128 x14  팔레트 0x22   자리는 7 점 위가 아니라 32 점 위
@@ -641,8 +1362,7 @@ internal sealed class EventAnimationPopup : Window
     ///   14 유빙      0x00499BC0  파트 15 192x96  x4   팔레트 0x2A
     /// </code>
     /// 걸음별 장 표는 <paramref name="pick"/> 으로 준다 — 오아시스·늪·유사는 원본 표를 그대로
-    /// 옮겼고, <b>유빙만 아직이라</b> 한 걸음에 한 장씩 곧이 넘긴다. 유빙의 물보라(파트 16,
-    /// 32x32 여덟 장)도 아직 안 얹었다.
+    /// 옮겼다. 사태·유빙은 따로 옮겼다(<see cref="LandslideScene"/> · <see cref="IcebergScene"/>).
     /// </remarks>
     private sealed class StripScene(int part, int frameW, int frameH, int palette, int up = 7,
                                     int soundAt = -1, int sound = -1, int soundOff = -1,

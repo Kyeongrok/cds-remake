@@ -53,8 +53,7 @@ public sealed class EventAnimation
     /// 그림 파트·크기·팔레트는 EXE 그대로다 —
     /// 4 파트 6(128x128 x14, 팔레트 0x22) · 5 파트 7(128x128 x15, 0x23) ·
     /// 6 파트 8(96x96 x18, 0x24) · 7 파트 9(96x96 x17, 0x25) · 14 파트 15(192x96 x4, 0x2A).
-    /// 걸음마다 어느 장을 쓰는지도 옮겼다 — <b>유빙만 빼고</b>다(부딪히고 나서 흔들리는 갈래는
-    /// 우리 쪽에 부딪히는 자리가 없다).
+    /// 걸음마다 어느 장을 쓰는지도 옮겼다 — 유빙은 오른쪽에서 떠내려와 함대에 부딪히고 흔들리는 갈래까지다.
     /// </remarks>
     /// <remarks>
     /// 번호는 EVANIME 만들기 오류 문구 차례 그대로다(<c>0x0056C058</c>~) —
@@ -77,6 +76,15 @@ public sealed class EventAnimation
     /// 이것을 건다. 지도를 <b>깜깜하게 덮고</b> 밤하늘에 빛의 장막을 펼친 뒤 도로 밝힌다.
     /// </remarks>
     public const int Aurora = 11;
+
+    /// <summary>
+    /// 발견 대본의 특수 조우(<c>00 1E</c>)가 부르는 바다 짐승 장면 — 19 백경 · 20 돌고래 · 21 날치 ·
+    /// 22 플라밍고 떼 · 23 모르포 나비 떼(<c>0x0049B2A8</c> 의 19~23 갈래).
+    /// </summary>
+    public const int GhostShip = 9;
+
+    /// <summary>바다 짐승 장면들(아래).</summary>
+    public const int Whale = 19, Dolphin = 20, FlyingFish = 21, Flamingo = 22, Morpho = 23;
 
     /// <summary>얹는 팔레트 색 수(<c>0x56</c>).</summary>
     private const int PaletteColors = 0x56;
