@@ -4040,7 +4040,7 @@ public sealed class ShipMapWindow : Window
     ///   내 기함 퇴각 악명 +200 만
     ///   내 기함 격침 없음(GAME OVER)
     /// </code>
-    /// 곧 명성 220/120 · 악명 180/280(남의 나라/같은 나라), 도망 악명 200/300 이다. 항복은 게임에 없는
+    /// 곧 명성 220/120 · 악명 180/280(남의 나라/같은 나라), 도망 악명 200/300(바다 주사위 조우는 0/100)이다. 항복은 게임에 없는
     /// 앱 차림표라 도망처럼 친다. 나포선 들임(<c>0x00434D30</c>)과 되찾은 배 알림은 나포가 없어 안 낸다.
     /// </remarks>
     /// <param name="raid">보이는 함대를 친 판인지(플래그 0). 바다에서 마주친 판은 거짓이다.</param>
@@ -4075,10 +4075,18 @@ public sealed class ShipMapWindow : Window
                 if (raid) { fame += FleetRaid.WinFame; infamy += FleetRaid.WinInfamy; }
                 else fame += FleetRaid.MetFame;
 
-                player.Fame = Math.Min(FleetRaid.MaxRenown, player.Fame + fame);
-                ConfirmDialog.Tell(board, $"명성이 {fame} 올라갔다{bang}", Title);
-                player.Infamy = Math.Min(FleetRaid.MaxRenown, player.Infamy + infamy);
-                ConfirmDialog.Tell(board, $"악명이 {infamy} 올라갔다{bang}", Title);
+                // 알림은 값이 0 보다 클 때만 낸다(0x00435614 · 0x0043563C · 0x00436038 · 0x00436060) —
+                // 예전에는 남의 나라 배와 싸우고 「악명이 0 올라갔다!」가 떴다.
+                if (fame > 0)
+                {
+                    player.Fame = Math.Min(FleetRaid.MaxRenown, player.Fame + fame);
+                    ConfirmDialog.Tell(board, $"명성이 {fame} 올라갔다{bang}", Title);
+                }
+                if (infamy > 0)
+                {
+                    player.Infamy = Math.Min(FleetRaid.MaxRenown, player.Infamy + infamy);
+                    ConfirmDialog.Tell(board, $"악명이 {infamy} 올라갔다{bang}", Title);
+                }
 
                 if (won && end.EnemyDowned + end.EnemyCaptured > 0)
                 {
@@ -4095,7 +4103,10 @@ public sealed class ShipMapWindow : Window
 
             case SeaCombatDialog.Outcome.Escaped:
             case SeaCombatDialog.Outcome.Surrendered:
-                infamy += FleetRaid.FleeInfamy;
+                // 도망 +200 은 보이는 함대 판(플래그 +0x11C == 0)에만 붙는다(0x00435C6A) — 바다 주사위
+                // 조우에서 달아나면 밑값(같은 나라 100)뿐이고, 0 이면 알리지도 않는다(0x00435C7E).
+                if (raid) infamy += FleetRaid.FleeInfamy;
+                if (infamy <= 0) break;
                 player.Infamy = Math.Min(FleetRaid.MaxRenown, player.Infamy + infamy);
                 ConfirmDialog.Tell(board, $"악명이 {infamy} 올라갔다", Title);                      // 0x0056AD28
                 break;
