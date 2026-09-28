@@ -69,23 +69,45 @@ public sealed class ShipPickDialog : GameWindow
         return b;
     }
 
-    private readonly Player _player;
+    /// <summary>
+    /// 표의 한 줄 — 배와 그 배의 승원, 기함인지, 고를 수 있는지다.
+    /// </summary>
+    /// <param name="Ship">배.</param>
+    /// <param name="Crew">태운 선원(승원수 칸). 맡겨 둔 배는 0 이다.</param>
+    /// <param name="Flagship">기함인지(함대 칸).</param>
+    /// <param name="On">고를 수 있는지. 거짓이면 흐리고 안 눌린다.</param>
+    public readonly record struct Entry(Ship Ship, int Crew, bool Flagship, bool On = true);
+
+    /// <summary>
+    /// 부른 쪽이 넘기는 방식 비트(<c>0x0046BBE0</c> 의 <c>[ebp+0x14]</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0046BCA6  비트 1 — 제독 것이 아닌 배(0x0044C730 ≠ 0x004783C0)를 흐린다   ; 빌린 배
+    ///   0046BCBF  비트 2 — 기함(0x0044C6B0 = 0x00473CD0)을 흐린다
+    /// </code>
+    /// 기함 변경·선박 삭제는 2, 선박 파기는 3, 편입·수리·개조는 0 이다.
+    /// </remarks>
+    public const int NoLent = 1, NoFlagship = 2;
+
+    private readonly IReadOnlyList<Entry> _entries;
     private readonly ItemTable? _items;
     private readonly string _title;
+    private readonly bool _many;
     private readonly StackPanel _table = new();
     private readonly GameButton _decide;
     private readonly List<Border> _rows = [];
+    private readonly HashSet<int> _picked = [];
 
-    private int _picked = -1;
+    /// <summary>고른 줄들(넘겨받은 목록의 자리). 안 골랐으면 비어 있다.</summary>
+    private List<int> _chosen = [];
 
-    /// <summary>고른 배 번호. 안 골랐으면 −1.</summary>
-    public int Chosen { get; private set; } = -1;
-
-    private ShipPickDialog(Player player, ItemTable? items, string title)
+    private ShipPickDialog(IReadOnlyList<Entry> entries, ItemTable? items, string title, bool many)
     {
-        _player = player;
+        _entries = entries;
         _items = items;
         _title = title;
+        _many = many;
 
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -138,13 +160,17 @@ public sealed class ShipPickDialog : GameWindow
         header.MouseRightButtonUp += (_, e) => { e.Handled = true; Turn(-1); };
         _table.Children.Add(header);
 
-        for (int i = 0; i < _player.Ships.Count; i++)
+        for (int i = 0; i < _entries.Count; i++)
         {
             int at = i;
             var row = Row(set, set.Select(c => CellOf(c, at)).ToArray(), header: false);
-            row.Cursor = Cursors.Hand;
-            row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Pick(at); };
-            if (at == _picked) row.Background = PickFill;
+            if (_entries[at].On)
+            {
+                row.Cursor = Cursors.Hand;
+                row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Pick(at); };
+            }
+            else row.Opacity = 0.45;   // 흐린 줄 — 글꼴이 색표 색인이라 칸째 흐린다
+            if (_picked.Contains(at)) row.Background = PickFill;
             _rows.Add(row);
             _table.Children.Add(row);
         }
@@ -153,11 +179,12 @@ public sealed class ShipPickDialog : GameWindow
     /// <summary>칸 하나의 글 — 서식은 칸 표(<c>0x00560D68</c>) 그대로다.</summary>
     private string CellOf(int column, int at)
     {
-        var ship = _player.Ships[at];
+        var entry = _entries[at];
+        var ship = entry.Ship;
         return column switch
         {
             0 => ship.Name,
-            1 => $"{_player.CrewShares.ElementAtOrDefault(at),3}/{ship.Crew,3}",
+            1 => $"{entry.Crew,3}/{ship.Crew,3}",
             2 => $"{ship.Hp,3}/{ship.MaxHp,3}",
             3 => $"{ship.Tonnage,5}",
             4 => $"{ship.UsableCapacity,5}",
@@ -173,7 +200,7 @@ public sealed class ShipPickDialog : GameWindow
             10 => $"{ship.Turrets,6}",
             11 => ship.Lent ? "대출" : "소유",
             12 => string.Concat(ship.Sails.Select(ShipyardMenu.SailMark)),
-            13 => at == _player.Flagship ? "기함" : "",
+            13 => entry.Flagship ? "기함" : "",
             _ => "",
         };
     }
@@ -203,29 +230,76 @@ public sealed class ShipPickDialog : GameWindow
         return new Border { Background = header ? HeadFill : RowFill, Child = grid };
     }
 
+    /// <summary>
+    /// 줄을 고른다. 여럿 고르기(<c>0x0046C3E0</c> 의 여섯째 인자가 있을 때 — 수리)면 눌러 켰다 끈다.
+    /// </summary>
     private void Pick(int at)
     {
-        _picked = at;
-        for (int i = 0; i < _rows.Count; i++) _rows[i].Background = i == at ? PickFill : RowFill;
-        _decide.On = true;
+        if (_many) { if (!_picked.Remove(at)) _picked.Add(at); }
+        else { _picked.Clear(); _picked.Add(at); }
+        for (int i = 0; i < _rows.Count; i++) _rows[i].Background = _picked.Contains(i) ? PickFill : RowFill;
+        _decide.On = _picked.Count > 0;
     }
 
     private void Decide()
     {
-        if (_picked < 0) return;
-        Chosen = _picked;
+        if (_picked.Count == 0) return;
+        _chosen = [.. _picked.Order()];
         Close();
     }
 
     /// <summary>
-    /// 배를 고르게 한다. 고른 번호를 낸다(중단이면 −1).
+    /// 함대의 배를 원본 차례로 늘어놓는다 — <b>기함이 맨 앞</b>, 나머지는 칸 차례다(<c>0x0049D360</c>).
+    /// </summary>
+    /// <param name="mode"><see cref="NoLent"/> · <see cref="NoFlagship"/> 를 겹친 방식 비트.</param>
+    /// <returns>줄과 그 줄의 함대 자리.</returns>
+    public static (List<Entry> Rows, List<int> Slots) Fleet(Player player, int mode)
+    {
+        var slots = new List<int>();
+        int flag = player.Flagship;
+        if (flag >= 0 && flag < player.Ships.Count) slots.Add(flag);
+        for (int i = 0; i < player.Ships.Count; i++) if (i != flag) slots.Add(i);
+
+        var shares = player.CrewShares;
+        var rows = slots.Select(i =>
+        {
+            var ship = player.Ships[i];
+            bool on = !((mode & NoLent) != 0 && ship.Lent) && !((mode & NoFlagship) != 0 && i == flag);
+            return new Entry(ship, shares.ElementAtOrDefault(i), i == flag, on);
+        }).ToList();
+        return (rows, slots);
+    }
+
+    /// <summary>
+    /// 함대의 배 한 척을 고르게 한다(<c>0x0049D3F0</c>). 고른 배의 <b>함대 자리</b>를 낸다(중단이면 −1).
     /// </summary>
     /// <param name="startSet">이 창을 처음 열 때의 묶음 — 원본이 부른 쪽마다 들고 있는 처음 값이다.</param>
-    public static int Pick(Window owner, Player player, ItemTable? items, string title, int startSet)
+    /// <param name="mode">흐릴 줄(<see cref="NoLent"/> · <see cref="NoFlagship"/>).</param>
+    public static int Pick(Window owner, Player player, ItemTable? items, string title, int startSet, int mode = 0)
     {
+        var (rows, slots) = Fleet(player, mode);
+        int at = Pick(owner, rows, items, title, startSet);
+        return at < 0 ? -1 : slots[at];
+    }
+
+    /// <summary>늘어놓은 줄에서 한 줄을 고르게 한다(<c>0x0046C3E0</c>). 고른 줄 자리를 낸다(중단이면 −1).</summary>
+    public static int Pick(Window owner, IReadOnlyList<Entry> rows, ItemTable? items, string title, int startSet)
+    {
+        var chosen = Show(owner, rows, items, title, startSet, many: false);
+        return chosen.Count > 0 ? chosen[0] : -1;
+    }
+
+    /// <summary>여러 줄을 고르게 한다 — 수리처럼 고름표로 받는 자리다. 물렀으면 빈 목록.</summary>
+    public static List<int> PickMany(Window owner, IReadOnlyList<Entry> rows, ItemTable? items, string title, int startSet) =>
+        Show(owner, rows, items, title, startSet, many: true);
+
+    private static List<int> Show(Window owner, IReadOnlyList<Entry> rows, ItemTable? items, string title,
+                                  int startSet, bool many)
+    {
+        if (rows.Count == 0) return [];
         if (!Remembered.ContainsKey(title)) Remembered[title] = Math.Clamp(startSet, 0, Sets.Length - 1);
-        var dialog = new ShipPickDialog(player, items, title) { Owner = owner };
+        var dialog = new ShipPickDialog(rows, items, title, many) { Owner = owner };
         dialog.ShowDialog();
-        return dialog.Chosen;
+        return dialog._chosen;
     }
 }

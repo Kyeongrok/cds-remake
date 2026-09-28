@@ -66,8 +66,13 @@ public static class Shipyard
     {
         var hurt = new List<(Ship Ship, bool Docked)>();
         // 함대 배는 함대가 이 도시에 있을 때만 든다(0x0044BC6B → 0x0040E1C0(도시, 0)).
+        // 차례는 함대 목록(0x0049D360) 그대로 — <b>기함이 맨 앞</b>이다.
         if (player.FleetHere(cityId))
-            foreach (var ship in player.Ships) if (ship.NeedsRepair) hurt.Add((ship, false));
+        {
+            int flag = player.Flagship;
+            var order = Enumerable.Range(0, player.Ships.Count).OrderBy(i => i == flag ? 0 : 1);
+            foreach (int i in order) if (player.Ships[i].NeedsRepair) hurt.Add((player.Ships[i], false));
+        }
         foreach (var ship in player.DockedAt(cityId)) if (ship.NeedsRepair) hurt.Add((ship, true));
         return hurt;
     }

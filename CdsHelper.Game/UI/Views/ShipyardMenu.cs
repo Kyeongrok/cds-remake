@@ -143,7 +143,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             // 동영상은 넘겨받은 창을 가득 채운다 — 명령 창(작다)이 아니라 맨 위 게임 창을 덮는다.
             MoviePlayer.Play(GameUi.RootOf(owner), MovieOf(hull));
 
-            string name = ShipNameDialog.Ask(owner, _player.SuggestShipName(), mustName: true)!;
+            // 선명입력(0x00423BE0) — 중단하면 조선소가 골라 준 이름(0x0044B7B0)으로 산다.
+            string name = ShipNameDialog.Settle(owner, _player.SuggestShipName());
             _player.Buy(hull, name, price);
             _menu.Refresh();
             return;
@@ -169,8 +170,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         foreach (int id in sold)
             if (!list.Any(h => h.Id == id)) list.Add(Hull.FromTable(id));
 
-        // 값이 비싼 쪽이 위다 — Hull.All 과 같은 차례로 다시 세운다.
-        return [.. list.OrderByDescending(h => h.Price)];
+        // 차례는 <b>선체 번호가 큰 쪽이 위</b>다 — 0x00422CA0 이 비트 7 에서 0 으로 훑으며 목록을 짓는다.
+        // 그래서 다우(7)가 맨 위, 코구(0)가 맨 밑이다. 예전에는 값 순이라 다우가 대형카락 밑에 섰다.
+        // 등록해 넣은 배는 원본에 없으니 그 뒤에 값 순으로 둔다.
+        return [.. list.Where(h => h.Id is >= 0 and < 8).OrderByDescending(h => h.Id),
+                .. list.Where(h => h.Id is < 0 or >= 8).OrderByDescending(h => h.Price)];
     }
 
     /// <summary>
@@ -282,10 +286,19 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             return;
         }
 
-        var picked = ShipRepairDialog.Ask(owner,
-            [.. hurt.Select((h, i) => new ShipRepairDialog.Row(
-                i, h.Docked, h.Ship.Name, h.Ship.Hull.Name,
-                h.Ship.Hp, h.Ship.MaxHp, h.Ship.RepairNeed))]);
+        // 「수리선박 선택」은 배 목록 표를 <b>여럿 고르기</b>로 연다(0x0044BA62 → 0x0046C3E0, 묶음 2 0x00549D60 —
+        // 선명 · 선체타입 · 추진력 · 내구력 · 선두상). 맡겨 둔 배는 태운 선원이 없다.
+        var shares = _player.CrewShares;
+        List<ShipPickDialog.Entry> rows =
+        [
+            .. hurt.Select(h =>
+            {
+                int slot = h.Docked ? -1 : _player.Ships.ToList().IndexOf(h.Ship);
+                return new ShipPickDialog.Entry(h.Ship, slot < 0 ? 0 : shares.ElementAtOrDefault(slot),
+                                                slot >= 0 && slot == _player.Flagship);
+            }),
+        ];
+        var picked = ShipPickDialog.PickMany(owner, rows, _game.Items, "수리선박 선택", startSet: 2);
         if (picked.Count == 0) return;
 
         // 손상을 다 더해 한 번만 굴린다(0x0044BA83 → 0x0044BAA1).
@@ -569,6 +582,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private void AddMast(Ship ship)
     {
+        // 사진을 걷고 배 그림을 세운다(0x00494C0C) — 끝나면 걷고 사진을 되살린다(0x00494D9D).
+        var still = OpenStill(ship);
+        try { AddMastOn(ship, still); }
+        finally { CloseStill(still); }
+    }
+
+    private void AddMastOn(Ship ship, ShipStillWindow? still)
+    {
         var owner = Owner;
         int cost = Shipyard.MastCost(ship, _rate);
 
@@ -584,13 +605,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         }
         else
         {
-            // 돛을 고르고 「아니오」면 다시 고르게 한다(0x00494D50 → 0x00494CC5). 목록 끝에 「그만둔다」가 있다(0x005315E8).
+            // 돛을 고르고 「아니오」면 다시 고르게 한다(0x00494D50 → 0x00494CC5). 고르는 창은 목록이 아니라
+            // 제목 없는 <b>명령 창</b>이다(0x00494D1A → 0x00469A70 — 삼각돛 · 사각돛 · 그만둔다 0x005315E8).
             while (true)
             {
                 Say("마스트에 달 돛의 종류를 정해 주게.");
-                int at = HintListDialog.Pick(owner,
-                    [Ship.SailNames[Ship.Lateen], Ship.SailNames[Ship.Square], "그만둔다"], "돛 종류", "");
-                if (at < 0 || at == 2) return;
+                int at = ChoiceDialog.Ask(owner, "",
+                    [Ship.SailNames[Ship.Lateen], Ship.SailNames[Ship.Square]], "그만둔다");
+                if (at < 0) return;
                 sail = at == 0 ? Ship.Lateen : Ship.Square;
                 if (Ask(sail == Ship.Lateen
                         ? "이것은 역풍에 뛰어나네. 이 돛을 달겠네?"
@@ -603,6 +625,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         int mast = ship.AddMast(sail);
         if (mast < 0) return;
+        still?.Redraw(ship);   // 새 마스트와 돛을 그림에 얹는다(0x00494B13 → 0x004949E0)
 
         string where = Ship.MastNames[mast], what = Ship.SailNames[sail];
         NoticeDialog.Show(owner, $"{where}에 {what}{GameUi.Josa(what, "을", "를")} 달았습니다");
@@ -624,6 +647,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private void SwapSail(Ship ship)
     {
+        // 마스트 추가와 같이 배 그림을 세운다(0x00494F4A) — 나갈 때 걷는다(0x0049514D).
+        var still = OpenStill(ship);
+        try { SwapSailOn(ship, still); }
+        finally { CloseStill(still); }
+    }
+
+    private void SwapSailOn(Ship ship, ShipStillWindow? still)
+    {
         var owner = Owner;
 
         // 목록에 나오는 마스트 수는 <b>돛이 달린 가장 높은 마스트</b>다(0x00422CE0) — 그것이
@@ -632,7 +663,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         for (int i = 0; i < Ship.MastSlots; i++) if (ship.Sails[i] != Ship.NoSail) masts = i + 1;
         if (masts == 0) return;
 
-        // 여럿이면 아니오·돈 부족·바꾼 뒤에도 마스트 목록으로 돌아간다(jmp 0x00494F6B) — 물러야 나온다.
+        // 아니오·돈 부족·바꾼 뒤에도 처음으로 돌아간다(jmp 0x00494F6B) — 물러야 나온다.
         bool single = masts <= 1;
         while (true)
         {
@@ -642,38 +673,76 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             {
                 // 줄은 <b>늘 셋</b>이다 — 돛이 없는 마스트도 「없음」으로 나온다(0x00494FA5 의
                 // 되돌이가 0x0056E260 의 세 이름을 다 돈다). 끝에 「그만둔다」가 붙는다(0x005316C8).
+                // 창은 제목 없는 <b>명령 창</b>이고(0x00495055 → 0x00469A70), 줄 글은 「%12s %s」(0x0056E294)다.
+                // 셋째 줄(선미마스트)은 <b>마스트가 셋일 때만</b> 켜진다(0x00495034 — cmp 마스트수, 2 / jle).
+                // 그래서 돛이 없는 마스트는 고를 길이 없다 — 예전에는 빈 선미를 골라 돛 값(/20)에
+                // 사각돛을 달 수 있어, 마스트 추가(/5 · 적재용량 −25 · 승원 +2)를 싸게 건너뛰었다.
                 Say("어느 마스트의 돛을 바꿀건가?");
-                List<string> rows =
+                List<(string Text, bool On)> rows =
                 [
                     .. Enumerable.Range(0, Ship.MastSlots)
-                                 .Select(i => $"{GameUi.Pad(Ship.MastNames[i], 14)}{Ship.SailNames[ship.Sails[i]]}"),
-                    "그만둔다",
+                                 .Select(i => ($"{PadLeft(Ship.MastNames[i], 12)} {Ship.SailNames[ship.Sails[i]]}",
+                                               i < 2 || masts > 2)),
+                    ("그만둔다", true),
                 ];
-                int pick = HintListDialog.Pick(owner, rows, "돛종류 변경", "");
+                int pick = ChoiceDialog.Pick(owner, "", rows);
                 if (pick < 0 || pick >= Ship.MastSlots) break;
                 mast = pick;
             }
 
-            // 물음은 <b>삼각돛일 때만</b> 「삼각→사각」이다 — 돛이 없어도 「사각→삼각」을
-            // 묻고는 사각돛을 단다(0x0049507C 와 0x00495100 이 어긋난 채다).
+            // 물음은 <b>삼각돛일 때만</b> 「삼각→사각」이고, 그 밖이면 「사각→삼각」이다(0x0049507C).
             bool lateen = ship.Sails[mast] == Ship.Lateen;
             int cost = Shipyard.SailCost(ship, _rate);
-            if (Ask(lateen
+            // 첫 물음에 「아니오」면 마스트가 하나인 배는 나가고, 여럿이면 목록으로 돌아간다(0x00495142).
+            // 그 밖(값에 아니오 · 돈 부족 · 바꾼 뒤)은 <b>마스트가 하나여도</b> 처음으로 돌아가 다시 묻는다
+            // (jmp 0x00494F6B) — 바꾼 뒤에는 거꾸로 바꿀지를 묻게 된다.
+            if (!Ask(lateen
                     ? "삼각돛을 순풍에 뛰어난 사각돛으로 바꿀 건가?"
-                    : "사각돛을 역풍에 뛰어난 삼각돛으로 바꿀 건가?")
-                && Ask($"금화 {cost}닢이 드는데, 좋나?"))
+                    : "사각돛을 역풍에 뛰어난 삼각돛으로 바꿀 건가?"))
+            {
+                if (single) break;
+                continue;
+            }
+            if (Ask($"금화 {cost}닢이 드는데, 좋나?"))
             {
                 if (!_player.Pay(cost)) Say("돈이 모자라는 것 같군.");
                 else if (ship.SwapSail(mast))
                 {
+                    still?.Redraw(ship);   // 0x00494E58 → 0x004949E0
                     string where = Ship.MastNames[mast], what = Ship.SailNames[ship.Sails[mast]];
                     NoticeDialog.Show(owner,
                         $"{where}{GameUi.Josa(where, "을", "를")} {what}{GameUi.Josa(what, "으로", "로")} 변경했습니다");
                 }
             }
-            if (single) break;
         }
         _menu.Refresh();
+    }
+
+    /// <summary>
+    /// 배 그림 창(<see cref="ShipStillWindow"/>)을 사진 자리에 세운다. 사진은 그동안 걷는다.
+    /// 그림을 못 읽었으면 null — 사진도 그대로 둔다.
+    /// </summary>
+    private ShipStillWindow? OpenStill(Ship ship)
+    {
+        if (_view is not CityPicView city) return null;
+        var still = ShipStillWindow.Show(_view, _game.Directory, ship, city.Scale, city.StashPhoto());
+        if (still == null) city.UnstashPhoto();
+        return still;
+    }
+
+    /// <summary>배 그림 창을 걷고 사진을 되살린다.</summary>
+    private void CloseStill(ShipStillWindow? still)
+    {
+        if (still == null) return;
+        still.Close();
+        (_view as CityPicView)?.UnstashPhoto();
+    }
+
+    /// <summary>C 의 <c>%Ns</c> 처럼 왼쪽을 채워 오른쪽에 붙인다 — 한글 한 자는 두 칸이다.</summary>
+    private static string PadLeft(string text, int width)
+    {
+        int cells = text.Sum(c => c < 0x80 ? 1 : 2);
+        return cells >= width ? text : new string(' ', width - cells) + text;
     }
 
     /// <summary>
@@ -720,7 +789,9 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         var owner = Owner;
         Say("포탑은 몇 개로 할건가?");
 
-        int want = CountDialog.Ask(owner, "포탑수 결정", "포탑수", "문", ship.MaxTurrets, 1, true,
+        // 수 적기 창(0x00454AA0)에는 「최대」 단추가 없다 — 넷째·여섯째 인자는 처음 값·가장 작은 값(0x00454638 →
+        // +0xC8, 0x00454331)이고, 선원고용과 같이 0·0 을 넘긴다. 「최대」는 보급 창(0x0040F13A)에만 있다.
+        int want = CountDialog.Ask(owner, "포탑수 결정", "포탑수", "문", ship.MaxTurrets, 1, false,
             new CountDialog.Gauge("최대포탑수", ship.MaxTurrets),
             new CountDialog.Gauge("현재의 포탑수", ship.Turrets));
         if (want < 0) return;
@@ -809,7 +880,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             {
                 // 「얼마나 싣겠나?」는 말로 하고, 수 적기 창의 제목은 대포 이름이다(0x004965D2~0x00496617).
                 Say("얼마나 싣겠나?");
-                want = CountDialog.Ask(owner, gun.Name, "대포수", "문", room, 1, true,
+                // 포탑수 결정과 같이 「최대」 단추가 없다(0x00496617 — 인자 1·0·0).
+                want = CountDialog.Ask(owner, gun.Name, "대포수", "문", room, 1, false,
                     new CountDialog.Gauge("최대대포수", room),
                     new CountDialog.Gauge("현재의 포수", same ? ship.Guns : 0));
             }
@@ -882,8 +954,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 단추를 누르면 글자판이 떠서 하나씩 찍어 지을 수 있다 —
     /// <see cref="ShipNameDialog"/> · <see cref="TextInputDialog"/> 가 그 둘이다.
     ///
-    /// 게임은 배를 <b>살 때도</b> 같은 창으로 이름을 받는데 우리 조선소 구입은 아직 안 묻는다 —
-    /// 그때는 안 쓴 이름을 하나 집어 준다(<c>Player.SuggestShipName</c>).
+    /// 게임은 배를 <b>살 때도</b> 같은 창(<c>0x00423BE0</c>)으로 이름을 받는다 — 우리도
+    /// <see cref="ShipNameDialog.Settle"/> 하나를 둘이 같이 쓴다.
     /// </remarks>
     /// <remarks>
     /// 곧장 입력 창이다. 「배의 이름을 정해 주십시오」(<c>0x00531478</c>)는 <b>빈 이름으로 결정했을 때만</b>
@@ -891,17 +963,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private void RenameShip(Ship ship)
     {
-        var owner = Owner;
-        while (ShipNameDialog.Ask(owner, ship.Name) is { } name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                Notice("배의 이름을 정해 주십시오");
-                continue;
-            }
-            if (name != ship.Name) ship.Rename(name);
-            break;
-        }
+        string name = ShipNameDialog.Settle(Owner, ship.Name);
+        if (name != ship.Name) ship.Rename(name);
         _menu.Refresh();
     }
 
@@ -939,9 +1002,6 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         ShowRefit(owner, change, ship);
     }
 
-    /// <summary>
-    /// 배 한 척을 줄로 적는다 — 이름과 내구·추진·적재를 붙인다. 상했으면 내구를 "지금/최대"로 낸다.
-    /// </summary>
     /// <summary>
     /// 개조 목록의 머리글 — 게임 낱말 그대로다(<c>0x00545580</c> 벌: 선명 · 추진력 ·
     /// 「대포명  포문수」 · 돛종류).
@@ -983,13 +1043,5 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         return $"{(flag ? "*" : " ")}{GameUi.Pad(ship.Name, 10)}"
              + $" {ship.MaxSpeed,3}/{ship.Hull.SpeedCeiling,3}"
              + $"  {gun}  {sails}";
-    }
-
-    internal static string ShipLine(Ship ship, bool flag)
-    {
-        string hp = ship.NeedsRepair ? $"{ship.Hp,3}/{ship.MaxHp,-3}" : $"{ship.MaxHp,3}    ";
-        // 추진력도 상했으면 내구처럼 지금/최대로 낸다.
-        string go = ship.Speed < ship.MaxSpeed ? $"{ship.Speed,3}/{ship.MaxSpeed,-3}" : $"{ship.MaxSpeed,3}    ";
-        return $"{(flag ? "*" : " ")}{ship.Name}  내구{hp} 추진{go} 적재{ship.UsableCapacity,4}";
     }
 }

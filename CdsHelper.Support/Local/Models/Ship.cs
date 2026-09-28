@@ -541,7 +541,7 @@ public sealed class Ship
     /// <param name="Capacity">적재용량.</param>
     /// <param name="Tonnage">적재중량.</param>
     /// <param name="Crew">필요승원.</param>
-    /// <param name="Sails">마스트 셋에 달린 돛. 안 주면 메인마스트에 삼각돛 하나다.</param>
+    /// <param name="Sails">마스트 셋에 달린 돛. 안 주면 돛이 하나도 없다 — 새 배는 <see cref="Of"/> 가 선체표 돛을 준다.</param>
     /// <param name="SpeedNow">
     /// 지금 추진력. <b>옛 세이브에는 없는 칸</b>이라 없으면 꽉 찬 채로 연다.
     /// </param>
@@ -552,11 +552,21 @@ public sealed class Ship
     {
         /// <summary>
         /// 선체 기본값 그대로. 포탑은 다 달린 채로 나오고 대포는 안 실려 있으며,
-        /// 마스트는 <b>메인 하나에 삼각돛</b>만 서 있다.
+        /// 돛은 <b>선체표에 적힌 대로</b> 선다.
         /// </summary>
+        /// <remarks>
+        /// 게임은 배를 지을 때(<c>0x00423160</c>) 선체표 <c>+0x3C</c> 를 배 레코드 <c>+0x68</c> 에 그대로
+        /// 넣는다(<c>0x004232AA</c>) — 갤리온·중카락은 사각·사각·삼각, 대형카락 사각·사각, 카락 사각·삼각,
+        /// 대형카라벨 삼각·삼각, 카라벨 삼각 하나다. 예전에는 어느 배나 메인마스트에 삼각돛 하나로 세웠다.
+        /// 등록해 넣은 배(번호 없음)는 표에 줄이 없어 삼각돛 하나로 둔다.
+        /// </remarks>
         public static Stats Of(Hull hull) =>
             new(hull.Hp, hull.Speed, hull.Capacity, hull.Tonnage, hull.Crew, hull.Guns,
-                Sails: [Lateen, NoSail, NoSail]);
+                Sails: SailsOf(hull));
+
+        /// <summary>그 선체가 처음 이는 돛 셋(선체표 <c>+0x3C</c>).</summary>
+        public static int[] SailsOf(Hull hull) =>
+            hull.Id is >= 0 and < 8 ? Hull.Table[hull.Id].Sails : [Lateen, NoSail, NoSail];
     }
 
     /// <summary>지금 값을 통째로.</summary>
