@@ -131,8 +131,9 @@ public static class CityFounding
                 if (done[i]) continue;
                 var rule = Rules[i];
 
+                // 1B 17 은 달을 안 본다 — 원본 0x004077BB 의 jge 가 같은 해의 달 비교를 건너뛴다.
                 bool now = rule.Wait
-                    ? year > rule.Year || (year == rule.Year && month >= rule.Month)
+                    ? year >= rule.Year
                     : year == rule.Year && month == rule.Month;
                 if (!now) continue;
 
@@ -164,7 +165,7 @@ public static class CityFounding
     public static (int Year, int Month)? WhenOf(int city)
     {
         foreach (var rule in Rules)
-            if (rule.Cities.Contains(city)) return (rule.Year, rule.Month);
+            if (rule.Cities.Contains(city)) return (rule.Year, rule.Wait ? 1 : rule.Month);   // 1B 는 달을 안 본다
         return null;
     }
 }

@@ -505,8 +505,10 @@ public sealed class DisevRunner
             case DisevCall.CityNationCheck:
                 return _game.CityRows?.NationOf(I("City")) != I("Nation");
             case DisevCall.NoContract: return player.Contract == null;               // 5A
-            case DisevCall.YearMonthIs:                                              // 1B 17
-                return year == I("Year") && player.Date.Month == I("Month");
+            // 1B 17 [달] 16 [해] — 이름과 달리 <b>그 해부터</b>다. 원본(0x004077B5)이 cmp 해 ; jge 참 ; jne 거짓 으로
+            // 짜여 같은 해에서 달을 보는 갈래(0x004077C3)에 영영 안 닿는다 — 달은 읽기만 한다.
+            case DisevCall.YearMonthIs:
+                return year >= I("Year");
             case DisevCall.Story0: return _cache == "이야기0";                        // 6D
             case DisevCall.Story1: return _cache == "이야기1";                        // 6E
             case DisevCall.RandomChance:

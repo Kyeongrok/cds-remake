@@ -149,8 +149,10 @@ public sealed class CityHistory
                     term = year == U16(p, i + 4) && month == p[i + 2];
                     i += 6;
                     break;
-                case (0x1B, 0x17) when i + 5 < p.Length:                        // 그 해 그 달부터
-                    term = MonthKey(year, month) >= MonthKey(U16(p, i + 4), p[i + 2]);
+                case (0x1B, 0x17) when i + 5 < p.Length:                        // 그 해부터 — 달은 안 본다
+                    // 원본(0x004077B5)은 cmp 해 ; jge 참 ; jne 거짓 이라 같은 해의 달 비교(0x004077C3)에
+                    // 닿지 않는다(0x004077BB 가 7D = jge). 예전에는 그 달부터로 셈해 아카풀코(1522/7) 따위가 늦었다.
+                    term = year >= U16(p, i + 4);
                     once = true;
                     i += 6;
                     break;
