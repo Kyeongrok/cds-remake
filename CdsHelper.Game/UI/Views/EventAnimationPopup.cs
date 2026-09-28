@@ -79,9 +79,10 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Tornado => new TornadoScene(),
             EventAnimation.Aurora => new AuroraScene(),
             EventAnimation.Meteor => new MeteorScene(),
-            // 오아시스(0x00497D60) — 물이 비쳤다 사라졌다 한다. 소리가 둘 걸린다.
+            // 오아시스(0x00497D60) — 물이 비쳤다 사라졌다 한다. 소리가 둘 걸린다 — 걸음 11 에 0x3A,
+            // 신기루가 도로 비치는 걸음 23 에 0x3B(0x00497D6B · 0x00497D82).
             EventAnimation.Oasis => new StripScene(6, 0x80, 0x80, 0x22, up: 0x20,
-                soundAt: 0x0B, sound: 0x3A, endAt: 0x3A, pick: c => c switch
+                soundAt: 0x0B, sound: 0x3A, soundAt2: 0x17, sound2: 0x3B, endAt: 0x3A, pick: c => c switch
                 {
                     < 0x0B => 0,
                     < 0x11 => 1 + (c - 0x0B) / 2,
@@ -669,7 +670,7 @@ internal sealed class EventAnimationPopup : Window
         public override bool Step(int c, List<Draw> draws)
         {
             if (c >= 0x36) return true;
-            if (c == 5) Sfx?.Play(0x3C);
+            if (c == 5) Sfx?.Play(0x3C - WaveBank.FirstSoundId);
             if (c == 0x2B) Sfx?.Stop();
             if (c < 5) return false;
 
@@ -704,6 +705,7 @@ internal sealed class EventAnimationPopup : Window
     /// </remarks>
     private sealed class StripScene(int part, int frameW, int frameH, int palette, int up = 7,
                                     int soundAt = -1, int sound = -1, int soundOff = -1,
+                                    int soundAt2 = -1, int sound2 = -1,
                                     int endAt = -1, Func<int, int>? pick = null)
         : Scene
     {
@@ -726,7 +728,9 @@ internal sealed class EventAnimationPopup : Window
 
         public override bool Step(int count, List<Draw> draws)
         {
-            if (count == soundAt && sound >= 0) Sfx?.Play(sound);
+            // 소리는 게임 소리 번호(0x004225A0 의 인자)로 받는다 — WAVES.CDS 파트는 28 을 뺀 값이다.
+            if (count == soundAt && sound >= 0) Sfx?.Play(sound - WaveBank.FirstSoundId);
+            if (count == soundAt2 && sound2 >= 0) Sfx?.Play(sound2 - WaveBank.FirstSoundId);
             if (count == soundOff) Sfx?.Stop();
 
             // 걸음별 장 표가 있으면 그대로 따르고, 없으면 한 걸음에 한 장씩 곧이 넘긴다.
