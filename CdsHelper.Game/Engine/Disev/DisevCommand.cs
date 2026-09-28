@@ -137,11 +137,11 @@ public static class DisevCalls
 
         S(DisevCall.AddGold, "19 14 u32", "Amount"),
         S(DisevCall.SubGold, "1A 14 u32", "Amount"),
-        // 후원자 친밀도 증감 — 표에 없던 명령이다. 이야기0/1(STORY0/1.CDS)의 "친밀도가
-        // (대폭) 올라갔다/내려갔다!" 대사 앞에서 늘 이 여섯 고정 바이트(12 16 00 1C 1C 00)
-        // 뒤에 값 식이 온다. AddStat(19 1C)·SubStat(1A 1C)와 앞 바이트가 달라 안 섞인다.
-        S(DisevCall.AddAffinity, "19 12 16 00 1C 1C 00 expr", "Value"),
-        S(DisevCall.SubAffinity, "1A 12 16 00 1C 1C 00 expr", "Value"),
+        // 19|1A 12 [u16 후원자] 1C [u16 칸] [값 식] — 그 <b>후원자</b>의 칸을 더하고 뺀다(0x004093CD → 0x004AD810(후원자)).
+        // 칸 0x1C 만 뜻이 있어 친밀도(+0x20)를 0~100 으로 자른다(0x00478530). 예전에는 후원자 자리를 16 00(에란쪼)으로
+        // 못박아 지금 계약한 후원자에게 주었고, 개인 이야기 여덟 책의 딴 후원자(0·1·3·15·18·43·56·60)는 읽지도 못했다.
+        S(DisevCall.AddAffinity, "19 12 u16 1C u16 expr", "Sponsor", "Stat", "Value"),
+        S(DisevCall.SubAffinity, "1A 12 u16 1C u16 expr", "Sponsor", "Stat", "Value"),
         S(DisevCall.AddStat, "19 1C u16 expr", "Stat", "Value"),
         S(DisevCall.SubStat, "1A 1C u16 expr", "Stat", "Value"),
         S(DisevCall.SetStat, "26 1C u16 expr", "Stat", "Value"),

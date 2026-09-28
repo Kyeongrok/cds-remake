@@ -187,6 +187,9 @@ public static class DisevScript
         new(Sig(0x37, 0x12), 4, "후원자 런타임 조건"),
         // 26 1C 1A 00 08 [u16 도시] — 그 도시를 주인공 나라로 바꾼다. 26 1C 보다 먼저 잡아야 9바이트로 안 읽힌다.
         new(Sig(0x26, 0x1C, 0x1A, 0x00, 0x08), 7, "도시 국적 변경"),
+        // 19|1A 12 [u16 후원자] 1C [u16 칸] [값 식] — 후원자 친밀도(0x004093CD). 길이는 값 식에 따라 10·12·16 이다.
+        new(Sig(0x19, 0x12), 12, "친밀도 증가"),
+        new(Sig(0x1A, 0x12), 12, "친밀도 감소"),
         new(Sig(0x19, 0x1C), 9, "능력치 증가"),
         new(Sig(0x1A, 0x1C), 9, "능력치 감소"),
         new(Sig(0x26, 0x1C), 9, "능력치/기한 설정"),
@@ -553,6 +556,12 @@ public static class DisevScript
                     && i + 13 <= end && data[i + 4] == 0x20)
                 {
                     length = 13;
+                }
+                // 친밀도는 일곱 바이트 뒤에 값 식이 온다 — 머리 바이트로 길이를 가른다(CompareLength 와 같은 셈).
+                if (known.Kind is "친밀도 증가" or "친밀도 감소" && i + 7 < end
+                    && CompareLength(data[i + 7]) is > 0 and var compare)
+                {
+                    length = compare;   // 43 2B 1C [u16] [식] [u16] 과 머리·꼬리 길이 합이 같다(2+2+1+2 = 7 + 식)
                 }
                 var raw = span.Slice(i, Math.Min(length, end - i));
                 ops.Add(new Op(i, length, known.Kind, Describe(known, raw, i), Hex(raw), true));

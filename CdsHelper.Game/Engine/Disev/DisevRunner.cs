@@ -888,16 +888,15 @@ public sealed class DisevRunner
                 _game.Player.Pay(I("Amount"));
                 return null;
 
-            // 후원자 친밀도 증감 — 지금 맺은 계약의 후원자가 움직인다. 계약이 없으면
-            // Endear 가 빈 이름을 조용히 지나친다.
+            // 후원자 친밀도 증감 — 대본이 적은 <b>그 후원자</b>가 움직인다(0x004093CD). 칸이 0x1C 가 아니면 아무 일도 없다.
             case DisevCall.AddAffinity:
-                if (ValueOf(args["Value"] as JsonObject) is { } affinityUp)
-                    _game.Player.Endear(_game.Player.Contract?.Sponsor ?? "", (int)affinityUp);
-                return null;
             case DisevCall.SubAffinity:
-                if (ValueOf(args["Value"] as JsonObject) is { } affinityDown)
-                    _game.Player.Endear(_game.Player.Contract?.Sponsor ?? "", -(int)affinityDown);
+            {
+                if (I("Stat") != 0x1C || ValueOf(args["Value"] as JsonObject) is not { } by) return null;
+                string who = _game.Sponsors?.Sponsors.FirstOrDefault(s => s.Index == I("Sponsor")).Name ?? "";
+                _game.Player.Endear(who, line.Call == DisevCall.AddAffinity ? (int)by : -(int)by);
                 return null;
+            }
 
             // 31 — 델포이 신탁(0x0040A4C0). 제독 성미 여덟 칸 가운데 0·2 인 것만 낱말로 잇는다(1 은 건너뜀).
             // 그 뒤에 붙는 자녀 적성·배우자·남은 수명 경고는 Town.Oracle.Words 로 옮겼다.
