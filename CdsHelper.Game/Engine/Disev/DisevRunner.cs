@@ -496,8 +496,11 @@ public sealed class DisevRunner
                 string who = _game.Sponsors?.Sponsors.FirstOrDefault(s => s.Index == I("Sponsor")).Name ?? "";
                 return who.Length > 0 && player.Contract?.Sponsor == who;
             }
-            case DisevCall.CityNationCheck:                                          // 28 00
-                return _game.CityRows?.NationOf(I("City")) == I("Nation");
+            // 28 00 [나라] 08 [도시] — 그 도시가 그 나라 것이 <b>아니면</b> 참이다(본문 0x0040A274 · 조건 0x004079CD:
+            // sub 나라 ; cmp 1 ; sbb ; inc). 잉카(발견 파트 193)의 43 28 00 4D 08 DF 는 쿠스코가 아직 잉카(77)면
+            // 사신 장면(L00F7)으로 뛰고, 공략한 뒤에만 황금·가면을 거둔다. 예전에는 거꾸로 셈해 처음 가자마자 약탈했다.
+            case DisevCall.CityNationCheck:
+                return _game.CityRows?.NationOf(I("City")) != I("Nation");
             case DisevCall.NoContract: return player.Contract == null;               // 5A
             case DisevCall.YearMonthIs:                                              // 1B 17
                 return year == I("Year") && player.Date.Month == I("Month");
