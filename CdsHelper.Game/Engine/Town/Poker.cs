@@ -284,26 +284,29 @@ public sealed class Poker
     ///   k &gt; 3 이고 넷이 같음 → 7 · k &gt; 2 이고 이웃 셋 같음 → 3
     ///   k &gt; 3 이고 투 페어 → 2 · 페어 → 1 · 아니면 0
     /// </code>
-    /// 셈 안에서 끗수로 줄 세운 뒤 이웃을 본다.
+    /// <b>넷·셋은 줄 세우지 않고 연 차례 그대로</b> 본다 — 포카드는 앞 넉 장이 다 같은지
+    /// (<c>0x0045B240</c>), 쓰리카드는 <b>이웃한</b> 셋이 같은지(<c>0x0045B270</c>)다. 그래서 K·5·K·K 로
+    /// 열면 쓰리카드로 못 알아보고 원 페어로 어림한다. 투 페어(<c>0x0045B2C0</c>)·원 페어(<c>0x0045B310</c>)는
+    /// 앞 k 장을 끗수로 줄 세운 뒤 짝을 세는데, 짝을 찾으면 한 칸 건너뛴다.
     /// </remarks>
     public static int Estimate(ReadOnlySpan<byte> cards, int k)
     {
         if (k <= 1) return NoPair;
-        byte[] s = cards[..k].ToArray();
-        SortByRank(s);
+        byte[] open = cards[..k].ToArray();
 
-        int R(int i) => RankOf(s[i]);
-        if (k > 3)
-            for (int i = 0; i + 3 < k; i++)
-                if (R(i) == R(i + 1) && R(i + 1) == R(i + 2) && R(i + 2) == R(i + 3)) return FourOfAKind;
+        int R(byte[] c, int i) => RankOf(c[i]);
+        if (k > 3 && R(open, 0) == R(open, 1) && R(open, 1) == R(open, 2) && R(open, 2) == R(open, 3))
+            return FourOfAKind;
         if (k > 2)
-            for (int i = 0; i + 2 < k; i++)
-                if (R(i) == R(i + 1) && R(i + 1) == R(i + 2)) return ThreeOfAKind;
+            for (int i = 0; i < k - 2; i++)
+                if (R(open, i) == R(open, i + 1) && R(open, i + 1) == R(open, i + 2)) return ThreeOfAKind;
 
+        byte[] s = open.ToArray();
+        SortByRank(s);
         int pairs = 0;
-        for (int i = 0; i + 1 < k; i++)
-            if (R(i) == R(i + 1)) pairs++;
-        if (k > 3 && pairs >= 2) return TwoPair;
+        for (int i = 0; i < k - 1; i++)
+            if (R(s, i) == R(s, i + 1)) { pairs++; i++; }
+        if (k > 3 && pairs > 1) return TwoPair;
         return pairs > 0 ? OnePair : NoPair;
     }
 
