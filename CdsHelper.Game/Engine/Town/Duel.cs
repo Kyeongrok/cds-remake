@@ -225,8 +225,33 @@ public sealed class Duel
     /// <param name="FoeMove">상대의 명령.</param>
     /// <param name="Finisher">필살이 나왔는지.</param>
     /// <param name="Critical">회심의 한 수였는지.</param>
+    /// <param name="Push">
+    /// 이 판에 두 사람이 함께 옮겨 간 쪽(<c>+0x144</c>) — <c>−1</c> 내가 몰아붙임 · <c>+1</c> 내가 물러남 ·
+    /// <c>0</c> 제자리(맞부딪힘이거나 벽에 닿음).
+    /// </param>
+    /// <param name="Again">벽에 몰려 <b>한 번 더 맞았는지</b>(<c>0x004A7E36</c>).</param>
+    /// <param name="AgainHurt">두 번째로 깎인 값.</param>
+    /// <param name="AgainCritical">두 번째가 회심이었는지.</param>
     public readonly record struct Turn(Phase Was, Blow Blow, int Line, int MyMove, int FoeMove,
-                                       int Hurt, bool Finisher, bool Critical);
+                                       int Hurt, bool Finisher, bool Critical,
+                                       int Push = 0, bool Again = false, int AgainHurt = 0,
+                                       bool AgainCritical = false);
+
+    /// <summary>
+    /// 두 사람이 선 자리(<c>+0x14C</c> 나 · <c>+0x150</c> 상대) — 판을 차릴 때 152 · 80 이다
+    /// (<c>0x004A9465</c>). 판마다 <see cref="_push"/> 만큼 마흔 점씩 함께 옮긴다(<c>0x004A6DA6</c>).
+    /// </summary>
+    private int _myX = 152, _foeX = 80;
+
+    /// <summary>
+    /// 이번 판에 옮겨 갈 쪽(<c>+0x144</c>). 판을 넘길 때 <b>새 판 갈래와 지금 자리</b>로 정한다
+    /// (<c>0x004A6EE5</c>) — 내가 칠 판이고 상대 x ≥ 40 이면 −1, 내가 막을 판이고 내 x ≤ 200 이면
+    /// +1, 그 밖(벽에 닿음)은 0 이다. 처음은 0 이다(<c>0x004A854D</c>).
+    /// </summary>
+    private int _push;
+
+    /// <summary>한 번에 옮기는 점 수와 벽 문턱(<c>0x004A6DA0</c> · <c>0x004A6EF0</c> · <c>0x004A6F0A</c>).</summary>
+    private const int PushStep = 40, FoeWall = 40, MyWall = 200;
 
     private readonly GameRandom _dice;
 
@@ -293,14 +318,33 @@ public sealed class Duel
             pick -= Lines;
         }
 
+        // 판이 열리면(틱 8) 두 사람이 함께 옮긴다(0x004A6D9A).
+        int push = _push;
+        _myX += push * PushStep;
+        _foeX += push * PushStep;
+
         var turn = was switch
         {
             Phase.Clash => Clash(pick),
             Phase.Attack => Attack(pick, finisher),
             _ => Guard(pick),
-        };
+        } with { Push = push };
+
+        // 벽에 몰린 판(+0x144 == 0)에서 맞부딪힘이 아니고, 막히지 않았고, 첫 칼에 끝나지 않았으면
+        // 틱 16 에 같은 손으로 <b>한 번 더 친다</b>(0x004A7DD0 → 0x004A7E36). 두 번째는 +0x140 이 서 있어
+        // 필살이 두 배가 되지 않고, 필살이면 회심도 굴리지 않는다(0x004A9B45 · 0x004A9CFD).
+        if (push == 0 && was != Phase.Clash && turn.Blow != Blow.Blocked && !Over)
+        {
+            bool mine = turn.Blow is Blow.FoeHit or Blow.FoeGrazed;
+            var again = Strike(turn.Blow, turn.Line, turn.MyMove, turn.FoeMove, mine, turn.Finisher,
+                               followUp: true);
+            turn = turn with { Again = true, AgainHurt = again.Hurt, AgainCritical = again.Critical };
+        }
 
         Advance(turn.Blow, was);
+        _push = Now == Phase.Attack && _foeX >= FoeWall ? -1
+              : Now == Phase.Guard && _myX <= MyWall ? 1
+              : 0;
         return turn;
     }
 
@@ -364,7 +408,12 @@ public sealed class Duel
     /// <summary>
     /// 아픈 값을 셈해 그 부위에서 깎는다(<c>0x004A9AC2</c> · <c>0x004A9C7A</c>).
     /// </summary>
-    private Turn Strike(Blow blow, int line, int myMove, int foeMove, bool mine, bool finisher)
+    /// <param name="followUp">
+    /// 벽에 몰려 한 번 더 치는 칼인지(<c>+0x140</c> == 1). 그러면 필살이라도 두 배가 되지 않고 회심도
+    /// 안 굴린다 — 필살이 아닌 칼만 회심을 굴린다(<c>0x004A9B3C</c>~<c>0x004A9B57</c>).
+    /// </param>
+    private Turn Strike(Blow blow, int line, int myMove, int foeMove, bool mine, bool finisher,
+                        bool followUp = false)
     {
         var hitter = mine ? Me : Foe;
         var taker = mine ? Foe : Me;
@@ -383,7 +432,7 @@ public sealed class Duel
         bool critical = false;
         if (finisher)
         {
-            hurt *= FinisherMultiplier;
+            if (!followUp) hurt *= FinisherMultiplier;
         }
         else if (hitter.Sword + hitter.Luck / CriticalLuckDivider >= _dice.Next(CriticalDice))
         {
