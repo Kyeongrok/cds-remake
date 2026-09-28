@@ -884,7 +884,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         {
             case Outcome.Defeated:
                 FinishSound(LosePart, LoseTicks);
-                ConfirmDialog.Tell(this, _battle.TauntWord(), BattleTitle, _foeFace);
+                // 괴물에게 지면 비웃음 다섯 벌 대신 얼굴 없는 한 줄뿐이다 — 판 위에서 뜬다(0x004351F0 → 0x004351F9,
+                // 앞 빈칸 둘도 원본 그대로 0x0056A3F8).
+                if (_battle.Monster) NoticeDialog.Show(this, "  괴물이 먹어 버렸습니다", BattleTitle);
+                else ConfirmDialog.Tell(this, _battle.TauntWord(), BattleTitle, _foeFace);
                 _settle?.Invoke(this, report);
                 break;
 
@@ -892,7 +895,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 FinishSound(WinPart, WinTicks);
                 // 괴물은 문구가 따로다(0x004352DC).
                 Say(_battle.Monster ? _battle.MonsterWonWord() : _battle.WonWord(_foe.Name));
-                ConfirmDialog.Tell(this, _battle.BeatenWord(), BattleTitle, _foeFace);
+                // 괴물이면 부관 한 줄로 끝이다 — 적장 말(0x0043539x~)을 건너뛴다(0x00435323 jmp 0x004353EA).
+                if (!_battle.Monster) ConfirmDialog.Tell(this, _battle.BeatenWord(), BattleTitle, _foeFace);
                 WriteBack(Result);
                 _settle?.Invoke(this, report);
                 Muster(Result);
