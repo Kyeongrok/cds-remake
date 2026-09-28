@@ -282,10 +282,19 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             return;
         }
 
-        var picked = ShipRepairDialog.Ask(owner,
-            [.. hurt.Select((h, i) => new ShipRepairDialog.Row(
-                i, h.Docked, h.Ship.Name, h.Ship.Hull.Name,
-                h.Ship.Hp, h.Ship.MaxHp, h.Ship.RepairNeed))]);
+        // 「수리선박 선택」은 배 목록 표를 <b>여럿 고르기</b>로 연다(0x0044BA62 → 0x0046C3E0, 묶음 2 0x00549D60 —
+        // 선명 · 선체타입 · 추진력 · 내구력 · 선두상). 맡겨 둔 배는 태운 선원이 없다.
+        var shares = _player.CrewShares;
+        List<ShipPickDialog.Entry> rows =
+        [
+            .. hurt.Select(h =>
+            {
+                int slot = h.Docked ? -1 : _player.Ships.ToList().IndexOf(h.Ship);
+                return new ShipPickDialog.Entry(h.Ship, slot < 0 ? 0 : shares.ElementAtOrDefault(slot),
+                                                slot >= 0 && slot == _player.Flagship);
+            }),
+        ];
+        var picked = ShipPickDialog.PickMany(owner, rows, _game.Items, "수리선박 선택", startSet: 2);
         if (picked.Count == 0) return;
 
         // 손상을 다 더해 한 번만 굴린다(0x0044BA83 → 0x0044BAA1).
