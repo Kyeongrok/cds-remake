@@ -746,6 +746,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </summary>
     private void Enter(CityBuildingTable.Building building, bool arrived = false)
     {
+        // 건물이 곧 발견물이면 <b>그것이 맨 먼저</b>다 — 게임은 시설을 열기(0x00490AD0) 전에 도시 화면
+        // 쪽에서 발견 대본을 돌리고(0x00492A5E~0x00492AF9), 결과가 밑값 2 로 남으면 건물에 안 든다.
+        if (!Discover(building)) return;
+
         // 초심자 개인 이야기(이야기0/1)가 <b>맨 먼저</b>다 — 게임은 들어서자마자 0x004AB5A0 으로
         // 건물 사건을 보고, 장면이 돌았으면 보복·문간 관문·차림표를 다 건너뛰고 건물을 나선다
         // (0x004A266A → 0x004A26BC). 그래서 명성이 모자라도 이야기의 저택에는 불려 들어간다.
@@ -756,7 +760,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         var facility = Facility.For(building.Kind, building.Code);
         if (!PassFameGate(building, facility)) return;   // 문 앞에서 돌아섰다
-        Discover(building);                              // 이 건물이 곧 발견물일 수 있다
         Greet(facility, building, arrived);
         ShowPhoto(facility.Kind, building.Code);
         if (arrived) facility = ArrivalHarbor(facility);
@@ -1206,14 +1209,23 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 지도에 사각형이 없어(<c>-1</c>) 자리로는 영영 안 잡힌다.
     ///
     /// 힌트로 열리는 것도 있으므로 <see cref="DiscoveryLog.IsOpen"/> 을 거친다.
+    ///
+    /// 게임은 대본의 결과 코드(밑값 2)로 <b>건물에 들지</b>를 가른다(<c>0x00492B06</c>):
+    /// <code>
+    ///   0 · 1   발견물 줄 +0x17 비트 0 을 세우고 건물에 든다
+    ///   2       안 든다 — 발견 장면만 보고 도시 그림으로 돌아간다
+    ///   그 밖   건물에 든다
+    /// </code>
+    /// 예전에는 발견하고 나서 곧장 인사와 차림표로 이어졌다.
     /// </remarks>
-    private void Discover(CityBuildingTable.Building building)
+    /// <returns>건물에 들어가도 되면 true — 발견할 것이 없었으면 늘 true 다.</returns>
+    private bool Discover(CityBuildingTable.Building building)
     {
-        if (!building.IsDiscovery) return;
-        if (_game.Discoveries is not { } log) return;
-        if (log.Table.Find(building.Discovery) is not { } row) return;
-        if (_player.HasFound(row.Id)) return;
-        if (!log.IsOpen(_player, row)) return;
+        if (!building.IsDiscovery) return true;
+        if (_game.Discoveries is not { } log) return true;
+        if (log.Table.Find(building.Discovery) is not { } row) return true;
+        if (_player.HasFound(row.Id)) return true;
+        if (!log.IsOpen(_player, row)) return true;
 
         // 발견 대본(DISEV)이 있으면 <b>그것이 다 한다</b> — 동영상 · 대사 · 육상전까지. 바다·뭍 발견
         // (ShipMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
@@ -1225,7 +1237,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         {
             GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
             if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
-            return;
+            return false;
         }
 
         // 대본이 돌았으면 발견·물건은 대본의 01 0B 가 준다(0x0048D3F0 은 따로 안 적는다).
@@ -1237,6 +1249,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             DiscoveryDialog.Show(this, _game.Stills, building.Picture,
                                  $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");
 
+        // 대본이 없으면 결과가 밑값 2 그대로라 안 든다.
+        return scripted && Engine.Disev.DisevRunner.LastResult != 2;
     }
 
     /// <summary>
