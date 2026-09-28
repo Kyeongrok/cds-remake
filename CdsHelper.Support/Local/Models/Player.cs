@@ -1429,6 +1429,30 @@ public sealed class Player
         Loads++;                                   // 이미 지어 둔 세상이 있으면 새로 지어 덮게 한다
     }
 
+    private readonly Dictionary<string, PatronDock> _patronDocks = [];
+
+    /// <summary>
+    /// 후원자 하나의 배 칸 — 그 해(<paramref name="Year"/>)까지 해 넘김을 먹인 칸 다섯(선체 번호, 빈 칸 −1).
+    /// </summary>
+    /// <remarks>게임은 후원자 런타임 객체 <c>+0x34</c> 의 다섯 칸으로 들고 세이브에 적는다(<c>0x004AD9D0</c>).</remarks>
+    public sealed record PatronDock(int Year, List<int> Slots);
+
+    /// <summary>
+    /// 손댄(배를 빌려주거나 돌려받은) 후원자의 배 칸. 없는 후원자는 날짜로 셈해 낸다
+    /// (<c>CdsHelper.Game.Engine.Town.PatronShips</c>).
+    /// </summary>
+    public IReadOnlyDictionary<string, PatronDock> PatronDocks => _patronDocks;
+
+    /// <summary>그 후원자의 배 칸을 적어 둔다.</summary>
+    public void SetPatronDock(string sponsor, PatronDock dock) => _patronDocks[sponsor] = dock;
+
+    /// <summary>세이브에서 후원자 배 칸을 되돌린다. 이 칸 앞의 세이브는 날짜로만 셈한다.</summary>
+    public void RestorePatronDocks(IReadOnlyDictionary<string, PatronDock>? docks)
+    {
+        _patronDocks.Clear();
+        foreach (var (name, dock) in docks ?? new Dictionary<string, PatronDock>()) _patronDocks[name] = dock;
+    }
+
     /// <summary>
     /// 불러오기 횟수 — <see cref="Restore"/> 마다 하나 오른다. 인물 세상처럼 판 밖에 붙어 있는 것이
     /// 딴 세이브로 갈렸는지 알아보는 데 쓴다.

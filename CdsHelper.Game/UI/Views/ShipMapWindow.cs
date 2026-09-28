@@ -2601,6 +2601,7 @@ public sealed class ShipMapWindow : Window
             // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
             _game.Player.RestoreVisitedCities(saved.VisitedCities);
             _game.Player.RestoreExecuted(saved.Executed);
+            _game.Player.RestorePatronDocks(saved.PatronDocks);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.
             _game.Player.RestoreCloseness(saved.Closeness);
