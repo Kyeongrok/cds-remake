@@ -1261,10 +1261,11 @@ internal static class GameUi
     /// </summary>
     private static Border ThumbBevel()
     {
-        Border inner = new() { Background = ThumbFace };
-        for (int i = ThumbRings.Length - 1; i >= 0; i--)
+        var (rings, face) = ArrowBevel() ?? (ThumbRings, ThumbFace);
+        Border inner = new() { Background = face };
+        for (int i = rings.Length - 1; i >= 0; i--)
         {
-            var (brush, light) = ThumbRings[i];
+            var (brush, light) = rings[i];
             inner = new Border
             {
                 BorderBrush = brush,
@@ -1274,9 +1275,38 @@ internal static class GameUi
         }
         inner.Width = ScrollWidth;
         inner.Cursor = Cursors.Hand;
-        inner.Background = ThumbFace;
+        inner.Background = face;
         return inner;
     }
+
+    /// <summary>
+    /// 위 화살표 조각의 결과 면 색 — 손잡이를 화살표 단추와 같은 색으로 짓는다.
+    /// </summary>
+    /// <remarks>
+    /// 손으로 뜬 <see cref="ThumbRings"/> 는 희끄무레해서 베이지 화살표 단추와 따로 놀았다.
+    /// 면은 조각에서 가장 많은 색이고, 결은 가운데 줄을 양 끝에서 안으로 한 점씩 짚어
+    /// 면 색이 나올 때까지 모은다(왼쪽이 밝은 결, 오른쪽이 어두운 결). 조각을 못 읽으면 null.
+    /// </remarks>
+    private static ((Brush Brush, bool Light)[] Rings, Brush Face)? ArrowBevel()
+    {
+        if (Sprites?.Icon(UiSprites.IconUp) is not { } art) return null;
+
+        const int w = UiSprites.IconWidth, mid = UiSprites.IconHeight / 2;
+        uint face = art.GroupBy(p => p).OrderByDescending(g => g.Count()).First().Key;
+
+        var rings = new List<(Brush, bool)>();
+        for (int d = 0; d < w / 2 - 1; d++)
+        {
+            uint dark = art[mid * w + (w - 1 - d)], light = art[mid * w + d];
+            if (dark == face && light == face) break;
+            rings.Add((Frozen(dark), false));
+            rings.Add((Frozen(light), true));
+        }
+        return rings.Count == 0 ? null : (rings.ToArray(), Frozen(face));
+    }
+
+    private static Brush Frozen(uint bgra) =>
+        Frozen((byte)(bgra >> 16), (byte)(bgra >> 8), (byte)bgra);
 
     /// <summary>굴림대 끝의 화살표 한 칸. 조각이 없으면 빈 칸이다.</summary>
     private static FrameworkElement ScrollArrow(int icon, Action run)
