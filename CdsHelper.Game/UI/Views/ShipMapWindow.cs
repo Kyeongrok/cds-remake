@@ -272,20 +272,58 @@ public sealed class ShipMapWindow : Window
     /// 칸 너비는 글자 수를 따라가므로 <b>서식이 맞으면 너비도 맞는다</b> — 예전에는
     /// "1499년 5월8일" · "1770닢" 처럼 자리를 안 맞춰 칸마다 폭이 어긋났다.
     /// </remarks>
-    private FrameworkElement InfoCell(string name, GameButton cell, bool on)
+    private FrameworkElement InfoCell(string name, GameButton cell)
     {
-        // 지난번에 켜고 끈 것이 있으면 그것이 먼저다. 한 번도 안 건드렸으면(null)
-        // 여기 적힌 기본값으로 선다.
-        var saved = GameSettings.BarCells;
-        cell.Visibility = (saved?.Contains(name) ?? on) ? Visibility.Visible : Visibility.Collapsed;
+        cell.Visibility = Visibility.Collapsed;   // 어느 칸이 설지는 자리가 정해질 때 고른다(SyncBarPlace)
         _infoCells[name] = cell;
         return cell;
     }
 
-    /// <summary>지금 띠에 켜져 있는 칸을 적어 둔다. 다음에 켤 때 이대로 선다.</summary>
-    private void SaveBarCells() =>
-        GameSettings.BarCells =
-            [.. _infoCells.Where(p => p.Value.Visibility == Visibility.Visible).Select(p => p.Key)];
+    /// <summary>
+    /// 띠 갈래마다 처음 켜져 있는 칸 — 도시정보 줄 차례(<see cref="CityInfoMenu.Rows"/>)의 비트다
+    /// (<c>0x0047E167</c>~<c>0x0047E17F</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0 바다  0x000F  날짜 · 선원 · 물·식량 · 위도·경도
+    ///   1 뭍    0x041B  날짜 · 대원 · 위도·경도 · 소지금 · 남은일수
+    ///   2 도시  0x0691  날짜 · 소지금 · 도시명 · 시세 · 남은일수
+    /// </code>
+    /// 갈래는 배에 오르고 내릴 때(<c>0x0048B5E4</c> · <c>0x0048E7BE</c>)와 도시에 들 때(<c>0x00492461</c>, 2)
+    /// <c>0x0047E3A0</c> 이 갈아 끼우고, 도시정보 창은 <b>지금 갈래의 마스크만</b> 뒤집는다(<c>0x0047DB69</c>).
+    /// </remarks>
+    private static readonly int[] BarDefaults = [0x000F, 0x041B, 0x0691];
+
+    /// <summary>지금 띠 갈래 — 0 바다 · 1 뭍 · 2 도시. 아직 안 골랐으면 -1.</summary>
+    private int _barPlace = -1;
+
+    /// <summary>
+    /// 자리가 바뀌었으면 그 자리의 칸들로 띠를 갈아 끼운다. 지난번에 켜고 끈 것이 있으면
+    /// 그것이, 없으면 게임 기본값(<see cref="BarDefaults"/>)이 선다.
+    /// </summary>
+    private void SyncBarPlace()
+    {
+        int place = _host.InCity ? 2 : _host.IsOnLand ? 1 : 0;
+        if (place == _barPlace) return;
+        _barPlace = place;
+
+        var saved = GameSettings.BarCellsAt(place);
+        for (int i = 0; i < CityInfoMenu.Rows.Length; i++)
+        {
+            string name = CityInfoMenu.Rows[i];
+            if (!_infoCells.TryGetValue(name, out var cell)) continue;
+            bool on = saved?.Contains(name) ?? ((BarDefaults[place] >> i) & 1) != 0;
+            cell.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    /// <summary>지금 띠에 켜져 있는 칸을 <b>지금 자리 몫으로</b> 적어 둔다. 다음에 그 자리에 오면 이대로 선다.</summary>
+    private void SaveBarCells()
+    {
+        if (_barPlace < 0) return;
+        GameSettings.SetBarCellsAt(_barPlace,
+            _infoCells.Where(p => p.Value.Visibility == Visibility.Visible).Select(p => p.Key));
+    }
 
     /// <summary>
     /// 실행 파일의 버전 — 릴리즈는 태그 판(<c>1.0.14</c>)이 들어온다(CI 가 <c>-p:Version=</c> 으로 넣는다).
@@ -421,23 +459,24 @@ public sealed class ShipMapWindow : Window
 
         // 게임 상단 띠. 어느 칸을 띄울지는 도시정보 창에서 켜고 끈다(띠를 오른쪽 단추로 누른다).
         // 이동 모드(정박·해상 이동) 칸은 뺐다 — 게임 띠에 없는 칸이다.
+        // 칸은 도시정보 줄 차례 그대로 왼쪽부터 선다 — 게임은 열다섯 칸을 번호 차례로 훑어 켜진 것만
+        // 이어 붙인다(0x0047E3E0~0x0047E436). 어느 칸이 켜지는지는 바다·뭍·도시마다 다르다(SyncBarPlace).
         var gameCells = new StackPanel { Orientation = Orientation.Horizontal };
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Date, _date, on: true));
-        // 선원 칸은 처음부터 켜 둔다 — 게임 띠도 날짜·선원·소지금 셋으로 선다.
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Crew, _crew, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Stores, _stores, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.DaysLeft, _left, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Wind, _windText, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Coord, _coord, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Gold, _purse, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Fame, _fame, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Fatigue, _tired, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Morale, _morale, on: true));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.City, _cityLabel, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Language, _language, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Rate, _rate, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Current, _currentText, on: false));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Vitality, _hpCell, on: false));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Date, _date));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Crew, _crew));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Stores, _stores));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Coord, _coord));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Gold, _purse));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Fatigue, _tired));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Fame, _fame));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.City, _cityLabel));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Language, _language));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Rate, _rate));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.DaysLeft, _left));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Morale, _morale));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Wind, _windText));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Current, _currentText));
+        gameCells.Children.Add(InfoCell(CityInfoMenu.Vitality, _hpCell));
 
         // 게임처럼 액자를 깔고 그 위에 칸들을 얹는다(asset/ui/misc-00.png).
         // 그림이 없으면 예전처럼 민색 띠로 물러선다.
@@ -586,6 +625,7 @@ public sealed class ShipMapWindow : Window
         _statusTimer = new DispatcherTimerLite(TimeSpan.FromMilliseconds(100), () =>
         {
             SyncMouse();
+            SyncBarPlace();
             _host.ShowShip = _game.Player.Ships.Count > 0;
             _status.Text = _focusNote.Length > 0 ? $"{_host.Status}    {_focusNote}"
                                                  : _host.Status;
@@ -851,6 +891,8 @@ public sealed class ShipMapWindow : Window
     private void SetInCity(bool on)
     {
         _host.InCity = on;
+        // 도시에 들면 띠가 도시 갈래로 갈린다(0x00492461 이 0x0047E3A0(2) 을 부른다).
+        SyncBarPlace();
     }
 
     /// <summary>

@@ -108,6 +108,16 @@ public sealed class GameSettingsData
     /// </summary>
     public List<string>? BarCells { get; set; }
 
+    /// <summary>
+    /// 상단 띠에 켜 둔 칸 이름들을 <b>자리마다</b>(0 바다 · 1 뭍 · 2 도시) 따로 든다. 한 번도 안
+    /// 건드린 자리는 빠져 있어 게임 기본값이 선다.
+    /// </summary>
+    /// <remarks>
+    /// 게임도 띠 갈래마다 제 마스크를 든다(<c>[+0xF8]</c> 워드 셋, 레지스트리에 여섯 바이트로 적는다 —
+    /// <c>0x0047E2BD</c>). 예전 <see cref="BarCells"/> 는 한 벌뿐이라 쓰지 않는다.
+    /// </remarks>
+    public Dictionary<int, List<string>>? BarCellsByPlace { get; set; }
+
     /// <summary>지도 위에 바람·해류 화살표를 얹을지.</summary>
     public bool ShowFlowArrows { get; set; }
 
@@ -675,6 +685,18 @@ public static class GameSettings
     {
         get => Get(d => d.BarCells);
         set => Set(d => d.BarCells = value == null ? null : [.. value]);
+    }
+
+    /// <summary>그 자리(0 바다 · 1 뭍 · 2 도시)의 상단 띠에 켜 둔 칸 이름들. 안 건드렸으면 null.</summary>
+    public static IReadOnlyList<string>? BarCellsAt(int place) =>
+        Get<IReadOnlyList<string>?>(d =>
+            d.BarCellsByPlace is { } map && map.TryGetValue(place, out var cells) ? [.. cells] : null);
+
+    /// <summary>그 자리의 상단 띠 칸을 적어 둔다.</summary>
+    public static void SetBarCellsAt(int place, IEnumerable<string> cells)
+    {
+        List<string> copy = [.. cells];
+        Set(d => (d.BarCellsByPlace ??= new())[place] = copy);
     }
 
     /// <summary>
