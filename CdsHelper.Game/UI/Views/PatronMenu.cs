@@ -295,8 +295,13 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             _game.Sfx?.Play(SoundBank.TurnedAwayPart);
             Steward($"죄송하지만, {shown} {sir}께서는 바쁘셔서 만나실 수 없습니다. 다른 날에 와 주십시오.");
 
-            // 명성이 오백만 더 있으면 <b>집사를 매수</b>해 뚫을 수 있다(0x004AE2E1).
-            if (!Palace.BribeAdmits(eye, _player.Fame)) return;
+            // 명성이 오백만 더 있으면 <b>집사를 매수</b>해 뚫을 수 있다(0x004AE2E1). 그마저 모자라면
+            // 「상대해 주지 않았습니다」로 끝난다(0x004AE40F → 0x00545B80).
+            if (!Palace.BribeAdmits(eye, _player.Fame))
+            {
+                GameDialog.Show(_view, "상대해 주지 않았습니다");
+                return;
+            }
             if (ChoiceDialog.Ask(_view, "", ["매수한다", "포기하고 돌아간다"]) != 0) return;
             if (!ConfirmDialog.Ask(_view, "집사에게 뇌물을 주겠습니다. 좋습니까?")) return;   // 0x00545A98
 
@@ -313,8 +318,16 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 return;
             }
 
-            Steward($"......어쩔 수 없군요. {shown}에게 교섭해 보지요. 무기는 여기서 보관하겠습니다.");
+            // 0x00545AC0 의 인자는 <b>경칭</b> 하나다(0x004AE39D 가 0x004A2EA0 만 넘긴다) — 「각하에게 교섭해 보지요」.
+            Steward($"......어쩔 수 없군요. {sir}에게 교섭해 보지요. 무기는 여기서 보관하겠습니다.");
             _player.Pay(fee);
+        }
+        else
+        {
+            // 그냥 통과할 때만 집사가 제 소개를 하고 무기를 맡는다(0x004AE428~0x004AE47A). 매수해 들어온
+            // 판은 위의 한 마디로 갈음하고 곧장 주인 인사(0x004AE490)로 간다 — 인사가 두 번 나오지 않는다.
+            Steward($"오래 기다리셨습니다. 제가 {shown} {sir}의 집사입니다.");
+            Steward("무기는 여기서 보관하겠습니다. 그러면 안으로 들어가십시오.");
         }
 
         // 관문을 넘으면 집사가 맞고, 무기를 맡기고, 안에 들여보낸 뒤 주인에게 알린다.
@@ -340,9 +353,6 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 설득 대사도 말투 세 벌이다(0x004694C0 이 반말 · 존댓말 · 상인 반말 셋을 받는다).
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
-
-        Steward($"오래 기다리셨습니다. 제가 {shown} {sir}의 집사입니다.");
-        Steward("무기는 여기서 보관하겠습니다. 그러면 안으로 들어가십시오.");
 
         // 주인이 용건을 묻는다(0x004AE490) — <b>처음 보는 사이인지</b>로 먼저 갈리고
         // (후원자 <c>+0x28</c> 의 비트 15), 그 다음 말투 셋으로 갈린다.
