@@ -530,6 +530,19 @@ public sealed class DisevRunner
             // 사신 장면(L00F7)으로 뛰고, 공략한 뒤에만 황금·가면을 거둔다. 예전에는 거꾸로 셈해 처음 가자마자 약탈했다.
             case DisevCall.CityNationCheck:
                 return _game.CityRows?.NationOf(I("City")) != I("Nation");
+            case DisevCall.CityNationIs:                                             // 27 00 (0x004078FF)
+                return _game.CityRows?.NationOf(I("City")) == I("Nation");
+            case DisevCall.CityStanding:                                             // 27 08 (0x0040793B)
+                return CityStands(I("City"));
+            case DisevCall.CityGone:                                                 // 28 08 (0x00407A0C)
+                return !CityStands(I("City"));
+            case DisevCall.BuildingStanding:                                         // 27 10 (0x00407962)
+                return _game.CityRows?.HasBuilding(I("City"), I("Building")) ?? true;
+            case DisevCall.BuildingGone:                                             // 28 10 (0x00407A2C)
+                return !(_game.CityRows?.HasBuilding(I("City"), I("Building")) ?? true);
+            // 5F · 60 — 도시 밖(제독 vt+0x2C, 17 08 이 맥락 없이 쓰는 지금 도시)이고 바다·뭍이면(0x00407E38 · 0x00407E5A).
+            case DisevCall.LeftCityBySea: return player.CityId < 0 && !_event.OnLand;
+            case DisevCall.LeftCityOnLand: return player.CityId < 0 && _event.OnLand;
             case DisevCall.NoContract: return player.Contract == null;               // 5A
             // 1B 17 [달] 16 [해] — 이름과 달리 <b>그 해부터</b>다. 원본(0x004077B5)이 cmp 해 ; jge 참 ; jne 거짓 으로
             // 짜여 같은 해에서 달을 보는 갈래(0x004077C3)에 영영 안 닿는다 — 달은 읽기만 한다.
@@ -1791,6 +1804,10 @@ public sealed class DisevRunner
 
     /// <summary>부하 첫 자리의 얼굴. 판이 들고 있는 것을 그대로 쓴다.</summary>
     private uint[]? MateFace() => _game.AideFace;
+
+    /// <summary>그 도시가 지금 서 있는지 — 도시 레코드 +0x04 비트 4 가 꺼져 있는지다(아직 안 섰거나 대본이 없앴으면 켜진다).</summary>
+    private bool CityStands(int city) =>
+        Local.Helpers.CityFounding.Standing(city, _game.Player.Date, _game.Player.ScriptedCities);
 }
 
 /// <summary>
