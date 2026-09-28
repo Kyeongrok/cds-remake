@@ -115,7 +115,7 @@ public static class Persuasion
     ///   자금 = max(힌트 자금, 5000)
     ///        * (친밀도/2 + 50) / 100
     ///        * (두말없이 받으면 125, 마지못해면 75) / 100
-    ///   적어도 20 닢
+    ///   적어도 20 닢, 그러고 나서 10닢 단위로 내린다(0x004AF0C3 의 /10*5*2)
     /// </code>
     /// <b>힌트 자금이 5000 밑이면 5000 으로 친다</b> — 작은 이야기라도 밑돈은 준다.
     /// </remarks>
@@ -124,7 +124,7 @@ public static class Persuasion
         int money = Math.Max(hintFunds, FundsFloor);
         int paid = money * (closeness / 2 + ClosenessBase) / 100;
         paid = paid * (verdict == Verdict.Interested ? EagerPercent : ReluctantPercent) / 100;
-        return Math.Max(paid, MinFunds);
+        return Math.Max(paid, MinFunds) / 10 * 10;
     }
 
     private const int FundsFloor = 5000, ClosenessBase = 50;

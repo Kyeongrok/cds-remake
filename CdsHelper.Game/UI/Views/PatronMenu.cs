@@ -239,19 +239,28 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         // 교회는 들머리에 관문이 하나 더 있다(0x004AE1F0 — 건물 코드 3 일 때만). 아직 못 만난 후원자
         // (비트 15)면 안목 x 80 을 명성과 견주고(0x0044E740(0x50)), 모자라면 교회 사람이 돌려보낸다.
+        // 판정을 내면 설득 때와 같은 명성 판정 그림(5번)이 돈다(0x0044E78A → 0x004A63A0) — 넘든 못 넘든 돈다.
         if (church && !_player.HasMet(patron.Name) && !(sponsor is { } met && _player.HasMet(met.Name))
-            && (sponsor?.Eye ?? patron.Fame / 70) * ChurchEye > _player.Fame)
+            && ChurchGateFails())
         {
             TalkDialog.Say(_view, _game.SpeakerFace(ChurchCode, _culture), "",
                            $"{shown}님은 바쁘셔서 만나실 수 없습니다.");
             return;
         }
 
+        bool ChurchGateFails()
+        {
+            bool pass = (sponsor?.Eye ?? patron.Fame / 70) * ChurchEye <= _player.Fame;
+            (_view as CityPicView)?.PlayFameCheck(pass);
+            return !pass;
+        }
+
         // 기분이 상한 후원자는 문간에서 돌려보낸다(0x004AEFC1, 후원자 비트 14) — 설득을 물렸거나
-        // 계약 결판을 치른 뒤 30일 동안이다(0x004A2AD0 이 푼다).
+        // 계약 결판을 치른 뒤 한동안이다(풀리는 셈은 Player.IsSulking 참고).
         if (_player.IsSulking(patron.Name))
         {
-            Steward($"{shown} {sir}께서는 꽤 기분이 안좋은 상태이니 여기서 일단 돌아가 주십시오.");
+            // 0x00546778 「%s%s 꽤 기분이…」 — 인자는 경칭과 그 조사 은/는 뿐이다(0x004AEFA2 의 0x004281B0(경칭, 1)).
+            Steward($"{sir}{GameUi.Josa(sir, "은", "는")} 꽤 기분이 안좋은 상태이니 여기서 일단 돌아가 주십시오.");
             return;
         }
 
@@ -272,10 +281,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         if (Palace.TreatyWarning(_player.Nation, theirNation, _player.Date.Year))
         {
             string mine = Player.Nations[_player.Nation], theirs = patron.Nationality;
-            string word = $"우리 {mine}{GameUi.Josa(mine, "과", "와")} {theirs}의 사이에는 "
+            // 부관 말(0x00545848)에만 「우리」가 붙고, 부관 없는 말(0x005458F0)은 「현재 …」로 곧장 잇는다.
+            string word = $"{mine}{GameUi.Josa(mine, "과", "와")} {theirs}의 사이에는 "
                         + $"불가침 조약이 맺어져 있습니다. {theirs}의 스폰서와 계약하게 되면, "
                         + "배반자가 되어 모국에 돌아갈 수 없게 됩니다.";
-            if (_game.AideFace is { } aide) TalkDialog.Say(_view, aide, "", $"제독, 알고 계시리라 생각합니다만, {word}");
+            if (_game.AideFace is { } aide) TalkDialog.Say(_view, aide, "", $"제독, 알고 계시리라 생각합니다만, 우리 {word}");
             else GameDialog.Show(_view, $"현재 {word}");
         }
 
@@ -293,10 +303,17 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             // 문 앞에서 돌려보낼 때 소리가 한 번 난다(닻 소리와 같은 파트다).
             _game.Sfx?.Play(SoundBank.TurnedAwayPart);
-            Steward($"죄송하지만, {shown} {sir}께서는 바쁘셔서 만나실 수 없습니다. 다른 날에 와 주십시오.");
+            // 0x00545A28 「죄송하지만, %s%s%s 바쁘셔서…」 — 이름·경칭·은/는 을 <b>띄우지 않고</b> 잇는다
+            // (0x004AE2A1~0x004AE2C4). 표 이름(0x005228B8)에도 경칭(0x0054C7E0~)에도 빈칸이 없다.
+            Steward($"죄송하지만, {shown}{sir}{GameUi.Josa(sir, "은", "는")} 바쁘셔서 만나실 수 없습니다. 다른 날에 와 주십시오.");
 
-            // 명성이 오백만 더 있으면 <b>집사를 매수</b>해 뚫을 수 있다(0x004AE2E1).
-            if (!Palace.BribeAdmits(eye, _player.Fame)) return;
+            // 명성이 오백만 더 있으면 <b>집사를 매수</b>해 뚫을 수 있다(0x004AE2E1). 그마저 모자라면
+            // 「상대해 주지 않았습니다」로 끝난다(0x004AE40F → 0x00545B80).
+            if (!Palace.BribeAdmits(eye, _player.Fame))
+            {
+                GameDialog.Show(_view, "상대해 주지 않았습니다");
+                return;
+            }
             if (ChoiceDialog.Ask(_view, "", ["매수한다", "포기하고 돌아간다"]) != 0) return;
             if (!ConfirmDialog.Ask(_view, "집사에게 뇌물을 주겠습니다. 좋습니까?")) return;   // 0x00545A98
 
@@ -313,8 +330,19 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 return;
             }
 
-            Steward($"......어쩔 수 없군요. {shown}에게 교섭해 보지요. 무기는 여기서 보관하겠습니다.");
+            // 0x00545AC0 의 인자는 <b>경칭</b> 하나다(0x004AE39D 가 0x004A2EA0 만 넘긴다) — 「각하에게 교섭해 보지요」.
+            Steward($"......어쩔 수 없군요. {sir}에게 교섭해 보지요. 무기는 여기서 보관하겠습니다.");
             _player.Pay(fee);
+        }
+        else
+        {
+            // 그냥 통과할 때만 집사가 제 소개를 하고 무기를 맡는다(0x004AE428~0x004AE47A). 매수해 들어온
+            // 판은 위의 한 마디로 갈음하고 곧장 주인 인사(0x004AE490)로 간다 — 인사가 두 번 나오지 않는다.
+            Steward($"오래 기다리셨습니다. 제가 {shown} {sir}의 집사입니다.");
+            // 무기를 맡는 말은 <b>무기를 지녔을 때만</b>이다 — 0x004AE45B 가 소지품 16칸 가운데 분류 3(무기)을
+            // 세고(0x004B0A20(3, 0, 0)), 0 이면 건너뛴다.
+            if (_player.Items.Any(id => _game.Items?.Find(id)?.Category == Duel.WeaponCategory))
+                Steward("무기는 여기서 보관하겠습니다. 그러면 안으로 들어가십시오.");
         }
 
         // 관문을 넘으면 집사가 맞고, 무기를 맡기고, 안에 들여보낸 뒤 주인에게 알린다.
@@ -341,9 +369,6 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
 
-        Steward($"오래 기다리셨습니다. 제가 {shown} {sir}의 집사입니다.");
-        Steward("무기는 여기서 보관하겠습니다. 그러면 안으로 들어가십시오.");
-
         // 주인이 용건을 묻는다(0x004AE490) — <b>처음 보는 사이인지</b>로 먼저 갈리고
         // (후원자 <c>+0x28</c> 의 비트 15), 그 다음 말투 셋으로 갈린다.
         // <code>
@@ -360,8 +385,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
         else
         {
-            // 처음 오면 집사가 나라까지 붙여 이른다(0x004AE53F 이 나라 이름표 0x00560AA8 을 읽는다).
-            Steward($"{sir}. {_player.NationName}의 {me}{Particle(me)} 데리고 왔습니다. 모험의 지원을 신청하고 있습니다.");
+            // 처음 오면 집사가 <b>직업</b>까지 붙여 이른다 — 0x004AE53F 이 제독 vfunc +0x18(직업 번호)로
+            // 직업 이름표 0x00560AA8(탐험가·발굴자·사냥꾼·정복자·해적·전도사·상인·군인)을 읽는다.
+            // 서식 0x00545B98 「%s. %s %s%s 데리고 왔습니다.」 — 「폐하. 탐험가 라몬을 데리고 왔습니다.」
+            Steward($"{sir}. {_player.Work.Name} {me}{Particle(me)} 데리고 왔습니다. 모험의 지원을 신청하고 있습니다.");
             Say(Pick3("호오, 그렇다면 모험 목적을 말해 보게.",
                       "어떤 모험을 하고 싶습니까? 내용에 따라서 거기에 맞는 자금을 드리지요.",
                       "모험 지원인가. 그래, 무엇을 찾으러 갈건가?"));
@@ -380,33 +407,39 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 이 후원자가 좋아하는 갈래의 힌트는 갈색(#DEC6AD) 바탕으로 도드라지게 한다 — 설득이
         // 갈래 취향을 그대로 따지므로(후원자 정보의 「발견물의 취향」) 고르기 전에 보이는 편이 낫다.
         var liked = mine.Select(id => _game.Hints?.Find(id) is { } h && patron.Likes(h.Category)).ToList();
-        int row = HintListDialog.Pick(_view, names, "제안 선택", marks: liked);
-        if (row < 0)
+
+        // 「다른 이야기는 없는가?」면 <b>목록을 다시 띄운다</b>(0x004AE8E0 의 되풀이). 한 번 내민 힌트는
+        // 그 줄을 막아 두고(0x004AE993), 아직 안 내민 것이 남아 있는 동안 되풀이한다(0x004AE99A).
+        // 「더 있는가」는 <b>아직 안 내민 힌트</b>가 둘 이상인지다(0x004AE976 — 내밀기 전 남은 수 &gt; 1).
+        var usable = Enumerable.Repeat(true, mine.Count).ToList();
+        int left = mine.Count;
+        HintTable.Hint it;
+        Persuasion.Verdict verdict;
+        while (true)
         {
-            // 0x004AF415 — 반말 쪽만 제독 이름을 부른다.
-            Say(Pick3($"{me}, 사람을 방문해 놓고 꽤 무례하군. 그만 나가게!",
-                      $"{me}, 용건도 없으면서 무턱대고 방문하는 것은 무례한 일입니다. 다음에 와 주십시오.",
-                      "뭔가, 용건이 없는가? 이쪽은 바쁘네, 빨리 나가주게."));
-            return;
+            int row = HintListDialog.Pick(_view, names, "제안 선택", marks: liked, usable: usable);
+            if (row < 0)
+            {
+                // 0x004AF415 — 반말 쪽만 제독 이름을 부른다. 다시 띄운 목록에서 물러나도 이 말이다.
+                Say(Pick3($"{me}, 사람을 방문해 놓고 꽤 무례하군. 그만 나가게!",
+                          $"{me}, 용건도 없으면서 무턱대고 방문하는 것은 무례한 일입니다. 다음에 와 주십시오.",
+                          "뭔가, 용건이 없는가? 이쪽은 바쁘네, 빨리 나가주게."));
+                return;
+            }
+
+            bool more = left > 1;
+            left--;
+            usable[row] = false;
+            if (_game.Hints?.Find(mine[row]) is not { } hint) return;
+            it = hint;
+
+            // 받아 줄지는 게임 셈 그대로 가린다(Persuasion 참고) — 이야기 크기, 좋아하는
+            // 갈래, 안목·웅변·매력 굴림 차례다.
+            verdict = Decide(it, patron, _game.Sponsors?.FindByName(patron.Name), face, Say, more);
+            if (verdict is not Persuasion.Verdict.AskAnother || left <= 0) break;
         }
 
-        var hint = _game.Hints?.Find(mine[row]);
-        if (hint == null)
-        {
-            // 0x004AF14D — 이야기가 후원자 안목에 벅찰 때의 말이다.
-            Say(Pick3("흠, 원조해 주고 싶은 마음은 많지만.",
-                      "원조해 드리고 싶지만, 그렇게 큰 모험은, 저로서는 도저히...",
-                      "가능한 한 원조해 주고 싶지만, 너무 이야기가 엄청나네."));
-            return;
-        }
-
-        var it = hint.Value;
-
-        // 받아 줄지는 게임 셈 그대로 가린다(Persuasion 참고) — 이야기 크기, 좋아하는
-        // 갈래, 안목·웅변·매력 굴림 차례다.
-        var verdict = Decide(it, patron, _game.Sponsors?.FindByName(patron.Name),
-                             face, Say, mine.Count > 1);
-        // 아주 물리면 후원자가 기분이 상한다(0x004AE72A) — 한 달 동안 문간에서 돌려보낸다.
+        // 아주 물리면 후원자가 기분이 상한다(0x004AE72A · 0x004AE84E 의 비트 14).
         if (verdict is Persuasion.Verdict.Refused) _player.Sulk(patron.Name);
         if (verdict is Persuasion.Verdict.Refused or Persuasion.Verdict.TooBig
                     or Persuasion.Verdict.AskAnother) return;
@@ -427,12 +460,25 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             _game.Sponsors?.FindByName(patron.Name)?.Closeness ?? DefaultCloseness,
             verdict);
 
-        // 재력 판정(0x004AF169) — 견주는 것은 <b>지갑</b>이다. 낼 돈이 모자라도 스무 닢만
-        // 넘으면 있는 만큼으로 깎아 내주고, 그마저 없으면 물린다(0x004AF264).
+        bool keen = verdict is Persuasion.Verdict.Interested;
+
+        // 재력 판정(0x004AF113) — 후원자 재력(표 +0x2C, x10000 — patrons.json 의 wealth 가 그 값이다)이
+        // 낼 돈에 못 미치면 <b>두말없이 받아 준 때가 아니면</b> 물린다(0x004AF136 이 판정 0 이면 건너뛴다).
+        if (patron.Wealth < funds && !keen)
+        {
+            // 0x00546930 · 0x00546958 · 0x00546998
+            Say(Pick3("흠, 원조해 주고 싶은 마음은 많지만.",
+                      "원조해 드리고 싶지만, 그렇게 큰 모험은, 저로서는 도저히...",
+                      "가능한 한 원조해 주고 싶지만, 너무 이야기가 엄청나네."));
+            return;
+        }
+
+        // 지갑 판정(0x004AF169) — 낼 돈이 지갑(+0x24)보다 크면 <b>마지못해 받은 때는 늘 물리고</b>
+        // (0x004AF178), 두말없이 받은 때만 지갑이 스무 닢을 넘으면 있는 만큼으로 깎아 준다(0x004AF183).
         int purse = _player.PurseOf(patron.Name, patron.Wealth);
         if (funds > purse)
         {
-            if (purse <= Palace.PurseFloor)
+            if (!keen || purse <= Palace.PurseFloor)
             {
                 Say(Pick3("흠, 원조 못 할 것은 없지만 요즘 지출이 많아서. 다른 이야기를 가지고 오는 것이 좋겠네.",
                           "자금을 대 드리고 싶지만..., 아무래도..., 안됐지만 힘이 되드릴 수 없군요.",
@@ -464,7 +510,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         if (pick < 0) return;
 
         // 「교섭한다」를 골랐을 때만 한 번 더 묻는다 — <b>되풀이는 없다</b>.
-        if (pick != 0 && !Bargain(patron, face, Say, ref funds, ref years)) return;
+        // 욕심을 부려 쫓겨나면 후원자가 삐진다(0x004AF24B — 비트 14).
+        if (pick != 0 && !Bargain(patron, face, Say, ref funds, ref years))
+        {
+            _player.Sulk(patron.Name);
+            return;
+        }
 
         // 계약을 적어 두고 선금을 받는다. 게임도 이 자리에서 소지금에 계약금의 절반을
         // 더한다(0x004ADF3E).
@@ -479,7 +530,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         _player.SpendPurse(patron.Name, -(funds / 2), patron.Wealth);
 
         // 맺고 나면 배 → 감찰관 → 배웅 차례다(게임 0x004AF2A3 · 0x004AF2B7 · 0x004AF3A4).
-        LendShips(funds, Say, Pick3);
+        // 척수는 계약금이 아니라 <b>힌트 자금 밑값</b>으로 센다 — 0x004AF29C 가 자금 셈에 쓴 것과 같은
+        // 힌트 칸([edi])을 0x00410620 의 둘째 인자로 넘긴다. 흥정·친밀도·마지못해 깎인 것은 안 친다.
+        LendShips(it.Funds, Say, Pick3);
         SendInspector(inspector, me, Say, Pick3);
 
         // 배웅도 신분마다 세 벌이다(0x004AF3A8 이 0x00546D28 · 0x00546D48 · 0x00546DA8 을 넘긴다).
@@ -532,8 +585,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   410798  0x0040FA00 이 배 레코드(0x005A4E18) 의 <b>+0x64 에 1</b> 을 박는다 = 대출 표시
     ///   410763  줄 배가 없으면 "…배가 전부 나가고 없네" (0x55C718 세 벌)
     /// </code>
-    /// 화면에서 본 것은 셋째 벌이라 그것을 쓴다 — 계약금 13,500닢에 1척이 나왔고
-    /// <c>13500 / 60000 + 1 = 1</c> 로 셈이 맞는다.
+    /// 화면에서 본 것은 셋째 벌이라 그것을 쓴다.
+    /// <paramref name="funds"/> 는 <b>힌트 자금 밑값</b>이다 — 설득 자리(<c>0x004AF29C</c>)는 계약금이 아니라
+    /// 힌트 칸의 자금을 넘긴다.
     ///
     /// <b>못 옮긴 것 둘.</b> 스폰서마다 항구에 세워 둔 배 무리가 우리 쪽에 없어 가운데
     /// 상한을 뺐고, 선체도 고를 데가 없어 제일 싼 것으로 세운다.
@@ -664,6 +718,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>10닢 단위로 내린다 — 게임의 <c>/10*10</c> 꼴이다.</summary>
     private static int To10(int coins) => coins / 10 * 10;
 
+    /// <summary>「다른 이야기라도」 굴림을 허락하는 후원자 성미 칸(<c>0x004AE7DF</c> 의 <c>[esp+0x24]</c> = 칸 2).</summary>
+    private const int SoftenFortune = 2;
+
     /// <summary>친밀도를 모를 때 쓰는 밑값. 표를 못 읽었을 때다.</summary>
     private const int DefaultCloseness = 60;
 
@@ -678,7 +735,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   다른 이야기를   0x00546120 · 0x00546158 · 0x00546198
     ///   아주 물림       0x005461F0 · 0x00546218 · 0x00546250
     /// </code>
-    /// 아주 물리면 게임은 후원자의 기분을 상하게 해 한동안 안 만나 주는데, 그 자리는 아직 안 들고 있다.
+    /// 아주 물리면 부른 쪽이 후원자의 기분을 상하게 한다(<c>0x004AE72A</c> · <c>0x004AE84E</c> 의 비트 14,
+    /// <see cref="Player.Sulk"/>) — 그동안은 문간에서 돌려보낸다(<c>0x004AEFC1</c>).
     /// </remarks>
     private Persuasion.Verdict Decide(HintTable.Hint hint, Patron patron,
                                       SponsorTable.Sponsor? sponsor,
@@ -752,8 +810,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
 
         // 4. 못 넘겼다 — 다른 이야기라도 물어볼지, 아주 물릴지. 여기서도 하트가 돈다.
-        bool softened = more && Persuasion.Softens(eye, rhetoric, charm, dice);
-        if (more) stage?.PlayHeart(softened);
+        //    굴림은 후원자 성미 칸 2 가 0 보다 클 때만 한다(0x004AE7DC 가상함수 +0x24 → 0x004AE7DF).
+        //    0 이면 굴림도 하트도 없이 아주 물린다.
+        bool rolls = more && SponsorFortune(sponsor)[SoftenFortune] > 0;
+        bool softened = rolls && Persuasion.Softens(eye, rhetoric, charm, dice);
+        if (rolls) stage?.PlayHeart(softened);
 
         if (softened)
         {
@@ -1296,8 +1357,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 "이런 모조품으로 나를 속이려 했나!",
                 "이런 모조품으로 저를 속일 작정이라고는...용서할 수 없습니다.",
                 "바보녀석, 이런 모조품으로 나를 속일 작정이었나!"));
+            // 죄를 먼저 묻고(0x004123EC → 0x0044F100) 그 뒤에 계약을 깨며 삐진다(0x004123F3 → 0x0044EEA0 의
+            // 비트 14). 거꾸로 하면 Punish 가 삐짐(깃발 14)을 보고 봐줌·위약금 없이 늘 감옥으로 간다.
+            bool over = Punish(patron, sponsorRow, Pick3);
             _player.Sulk(patron.Name);
-            if (Punish(patron, sponsorRow, Pick3)) EndGame();
+            if (over) EndGame();
             broke = true;
         }
         return true;
@@ -1314,7 +1378,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   44f166  친밀도가 0 이하면 감옥
     ///   44f170  문턱(<see cref="Palace.Reckoning"/>) 으로 갈린다
     /// </code>
-    /// 깃발 14 는 삐짐이다(<see cref="Player.IsSulking"/> — 설득을 물렸거나 계약중단을 한 뒤 30일).
+    /// 깃발 14 는 삐짐이다(<see cref="Player.IsSulking"/> — 설득을 물렸거나 계약중단을 한 뒤 한동안).
     /// 말은 신분마다 세 벌씩이고, 위약금을 못 내면 그대로 감옥이다.
     /// </remarks>
     /// <returns>감옥에서 놀이가 끝났으면 true.</returns>
@@ -1487,7 +1551,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
             // 사례는 파란 막이 걷힌 뒤에 받는다. 줄도 갈래마다 다르다
             // (0x005304B0 · 0x00530570 · 0x00530648 · 0x00530788).
-            string him = patron.Name;
+            // 이름은 후원자 객체의 이름(vfunc 0 — 표 0x005228B8, 「페르난·마르틴스」처럼 가운뎃점이 든다)이다
+            // (0x00411C1E · 0x00411C76).
+            string him = _game.Sponsors?.FindByName(patron.Name)?.Name ?? patron.Name;
             GameDialog.Show(_view, grade != Palace.ReportGrade.Poor && !scooped
                 ? $"금화 {paid}닢을 받았다!"
                 : inTime ? $"{him}{GameUi.Josa(him, "은", "는")} 금화 {paid}닢 밖에 지불하지 않았다!"
@@ -1614,7 +1680,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                     ? Pick3(".........", "무슨 일일까요...", "후~, 기대하고 있었건만.")
                     : Pick3("뭐라고...", "뭐라고...", "후~... 계약을 파기하리라고는."));
 
-            // 계약중단은 어느 갈래로 끝나든 후원자가 삐진다(0x0044EEA0 의 비트 14) — 30일 동안 설득을 물린다.
+            // 계약중단은 어느 갈래로 끝나든 후원자가 삐진다(0x0044EEA0 의 비트 14) — 한동안 설득을 물린다.
             // 부관의 「제독, 곤란하게 되었습니다…」(0x00532430)는 여기서 안 나온다 — 감찰관을 처벌했을 때
             // 나서는 말이다(0x0044E6FD 의 +0xBC == 2).
             bool forgiven = Forgiven(patron, overdue);
@@ -2338,20 +2404,20 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>
     /// 숨겨 둔 증거품을 소지품에 넣어 준다(<c>0x0044E6C0</c> → <c>0x0041C480</c>).
     /// </summary>
-    /// <remarks>보고를 마치고 건물을 나설 때다 — 이것이 없으면 매수가 아무 이득이 없다.</remarks>
+    /// <remarks>
+    /// 보고를 마치고 건물을 나설 때다 — 이것이 없으면 매수가 아무 이득이 없다.
+    /// 게임은 숨긴 것을 <b>한 목록으로 모아</b> <c>0x004B1710(목록, n, 0)</c> 에 한 번 넘긴다(<c>0x0041C4BB</c>).
+    /// 「손에 넣었다」 알림은 없다 — 들어가면 말없이 채우고, 넘칠 때만 버리기 창이 뜬다.
+    /// </remarks>
     private void HandHidden()
     {
         if (_player.HiddenDiscoveries.Count == 0) return;
 
+        var got = new List<int>();
         foreach (int id in _player.HiddenDiscoveries.ToList())
-        {
-            if (_game.Discoveries?.Table?.Find(id) is not { GivesItem: true } row) continue;
+            if (_game.Discoveries?.Table?.Find(id) is { GivesItem: true } row) got.Add(row.ItemId);
 
-            // 넘치면 물릴 수 없는 버리기 창이다(0x0041C480 → 0x004B1710).
-            string got = _game.Items?.Find(row.ItemId)?.Name ?? $"아이템 {row.ItemId}";
-            GameDialog.Show(_view, $"[{got}]{GameUi.Josa(got, "을", "를")} 손에 넣었다!");
-            ItemGain.AddForced(_view, _game, [row.ItemId]);
-        }
+        ItemGain.AddForced(_view, _game, got);
         _player.ClearHidden();
     }
 

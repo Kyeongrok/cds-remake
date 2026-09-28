@@ -92,7 +92,8 @@ public sealed class HintListDialog : GameWindow
     private HintListDialog(IReadOnlyList<string> hints, bool choosing, string caption,
                            string header = "", IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null, IReadOnlyList<bool>? marks = null,
-                           bool multi = false, IReadOnlyList<string>? rightTexts = null)
+                           bool multi = false, IReadOnlyList<string>? rightTexts = null,
+                           IReadOnlyList<bool>? usable = null)
     {
         _marks = marks;
         _multi = multi;
@@ -203,7 +204,11 @@ public sealed class HintListDialog : GameWindow
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Child = content,
             };
-            if (choosing) row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Select(index); };
+            // 막힌 줄은 흐리게 두고 눌러도 고르지 않는다 — 설득에서 한 번 내밀었다 물린 힌트다
+            // (0x004AE993 이 그 줄의 사용 가능 칸을 0 으로 두고 목록을 다시 띄운다).
+            bool open = usable == null || i >= usable.Count || usable[i];
+            if (!open) { row.Opacity = 0.45; row.Cursor = Cursors.Arrow; }
+            if (choosing && open) row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Select(index); };
             _rows.Add(row);
             list.Children.Add(row);
         }
@@ -389,6 +394,7 @@ public sealed class HintListDialog : GameWindow
     /// <param name="faces">줄마다 왼쪽에 붙일 초상화(80x96 BGRA). 없으면 글씨만 늘어놓는다.</param>
     /// <param name="subtitles">줄마다 이름 아래에 붙일 한 줄. 빈 글이면 그 줄은 이름만 있다.</param>
     /// <param name="marks">줄마다 <c>#DEC6AD</c> 바탕으로 도드라지게 할지. 없으면 안 칠한다.</param>
+    /// <param name="usable">줄마다 고를 수 있는지. false 인 줄은 흐리고 눌리지 않는다. 없으면 다 고를 수 있다.</param>
     public static int Pick(Window owner, IReadOnlyList<string> items,
                            string caption = "취득 힌트 일람",
                            string whenEmpty = "설득 가능한 힌트가 없습니다",
@@ -396,7 +402,8 @@ public sealed class HintListDialog : GameWindow
                            IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null,
                            IReadOnlyList<bool>? marks = null,
-                           IReadOnlyList<string>? rightTexts = null)
+                           IReadOnlyList<string>? rightTexts = null,
+                           IReadOnlyList<bool>? usable = null)
     {
         if (items.Count == 0)
         {
@@ -405,7 +412,7 @@ public sealed class HintListDialog : GameWindow
         }
 
         var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
-                                     rightTexts: rightTexts) { Owner = owner };
+                                     rightTexts: rightTexts, usable: usable) { Owner = owner };
         dlg.ShowDialog();
         return dlg._picked;
     }
