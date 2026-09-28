@@ -2123,7 +2123,7 @@ public sealed class ShipMapWindow : Window
                         $"[{name}]{GameUi.Josa(name, "은", "는")} 누적 캐릭터를 사용하고 있지 않습니다. "
                         + "이 캐릭터를 은퇴시키기 위해서는 현재 등록되어 있는 누적 캐릭터를 삭제할 필요가 있습니다."
                         + Environment.NewLine
-                        + $"[{name}]{GameUi.Josa(name, "을", "를")} 은퇴시키겠습니까?"))
+                        + $"[{name}]{GameUi.Josa(name, "은", "는")} 은퇴시키겠습니까?"))   // 둘 다 갈래 1(0x0045F795 · 0x0045F7C3)
                     return false;
 
                 // 그 깃발이 선 판은 올리기 앞서 다섯 자리를 비운다(0x0041AD55).
