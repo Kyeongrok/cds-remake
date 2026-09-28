@@ -4496,10 +4496,20 @@ public sealed class ShipMapWindow : Window
         player.Tire(empty ? Foraging.EmptyFatigue : Foraging.TiredFatigue);
         player.Cheer(empty ? -Foraging.EmptyMorale : -Foraging.TiredMorale);
 
-        var mate = MateFace();
-        TalkDialog.Say(this, mate, "", said);
-        TalkDialog.Say(this, mate, "",
-                       empty ? "선원들이 불평을 하고 있습니다!" : "다들 조금씩 지친 것 같습니다!");
+        string after = empty ? "선원들이 불평을 하고 있습니다!" : "다들 조금씩 지친 것 같습니다!";
+        // 부관이 있으면 부관이 말하고, 없으면 얼굴 없는 알림이다 — 뱃사람이 대신 서지 않는다
+        // (0x0048E0CE 의 0x0047CC50(0) == −1 이면 0x0049E3E0).
+        if (_game.Player.MateAt(0).Length > 0)
+        {
+            var mate = MateFace();
+            TalkDialog.Say(this, mate, "", said);
+            TalkDialog.Say(this, mate, "", after);
+        }
+        else
+        {
+            NoticeDialog.Show(this, said);
+            NoticeDialog.Show(this, after);
+        }
     }
 
     /// <summary>
