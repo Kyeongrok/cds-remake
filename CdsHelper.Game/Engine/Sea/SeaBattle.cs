@@ -648,7 +648,7 @@ public sealed class SeaBattle
     public bool Monster { get; set; }
 
     /// <summary>
-    /// 부관 성미 칸 0 — 위임했을 때 아군이 물러서는 잣대다(<c>0x0043B7B1</c>).
+    /// 부관 성미 칸 3 — 위임했을 때 아군이 물러서는 잣대다(<c>0x0043B7B1</c>).
     /// 부관이 없거나 못 찾으면 1(여느 판정)이다.
     /// </summary>
     public int MateTemper { get; set; } = 1;
@@ -731,7 +731,7 @@ public sealed class SeaBattle
         if (!mine && Monster && !MonsterUp)
             return Ships.Any(s => s.Mine && s.State is ShipState.Sunk or ShipState.Captured);
 
-        // 위임했을 때 아군은 <b>부관 성미 칸 0</b> 으로 셋으로 갈린다(0x0043B7B1 · 0x0043B807).
+        // 위임했을 때 아군은 <b>부관 성미 칸 3</b> 으로 셋으로 갈린다(0x0043B7B1 · 0x0043B807).
         //   0        내 배 가운데 격침·나포된 것이 있으면 물러선다(0x0043B7C8)
         //   1        여느 판정(내구·승원·척수)
         //   그 밖    그 배에 대포가 없거나 함대 탄약이 0 이면 물러선다(0x0043B829)
