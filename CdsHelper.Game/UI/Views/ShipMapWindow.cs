@@ -4822,10 +4822,11 @@ public sealed class ShipMapWindow : Window
             for (int i = 0; i < 3; i++) ConfirmDialog.Tell(this, lines[i], face: face);
             PlayEventScene(EventAnimation.Tornado);          // 0x00427E4A — 말 셋 뒤, 말 둘 앞
 
-            int dead = LandEvents.Strike(_game.Player, dice);
-
             for (int i = 3; i < lines.Length; i++) ConfirmDialog.Tell(this, lines[i], face: face);
-            NoticeDialog.Show(this, $"대원 {dead}명이 사망했습니다.");
+
+            // 죽는 수도 다른 뭍 사건과 같은 셈을 탄다 — rand(30)+30 을 0x00426DA0 에 넘겨(0x00427EA4)
+            // 의학으로 더러 돌아온다. 예전에는 그 수를 그대로 빼고 「돌아왔습니다」도 없었다.
+            Casualties(dice, LandEvents.StrikeCount(dice));
         }
         finally
         {
