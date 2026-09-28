@@ -2660,8 +2660,11 @@ public sealed class Player
     /// 게임은 선체 표 <c>+0x34</c> 에 5 를 곱하고 50 을 더한다(<c>0x0044C790</c>).
     /// <c>+0x34</c> 가 필요승인 - 10 이므로 <c>(필요승인-10)*5 + 50 = 필요승인*5</c> 로 같다 —
     /// 카라벨 15명이면 75명, 갤리온 40명이면 200명이다.
+    ///
+    /// 읽는 것은 <b>선체표</b>지 배 레코드(<c>+0x30</c>)가 아니다 — 개조로 필요승원이 늘어도(마스트 +2 ·
+    /// 돛 +1 · 용량 +1) 정원은 그대로다. 예전에는 개조한 필요승원에 5 를 곱해 마스트 하나에 정원이 10 씩 늘었다.
     /// </remarks>
-    public int MaxCrew => _ships.Sum(s => s.Crew) * 5;
+    public int MaxCrew => _ships.Sum(MaxCrewOf);
 
     /// <summary>
     /// 선원을 그만큼 태운다(음수면 내린다). 0 과 정원 사이로 잘린다.
@@ -2709,7 +2712,8 @@ public sealed class Player
     public static int NeedCrewOf(Ship ship) => ship.Crew;
 
     /// <summary>그 배에 태울 수 있는 끝(<c>0x0044C790</c> — 선체표 <c>+0x34</c> x 5 + 50 = 필요 x 5).</summary>
-    public static int MaxCrewOf(Ship ship) => ship.Crew * 5;
+    /// <remarks>개조로 는 필요승원(<see cref="Ship.Crew"/>)이 아니라 선체의 처음 필요승원(<see cref="Hull.Crew"/>)을 쓴다.</remarks>
+    public static int MaxCrewOf(Ship ship) => ship.Hull.Crew * 5;
 
     /// <summary>
     /// 선원을 배마다 고르게 나눈다(<c>0x004744F0</c>) — 한 명씩, 최대에 안 찬 배 가운데
