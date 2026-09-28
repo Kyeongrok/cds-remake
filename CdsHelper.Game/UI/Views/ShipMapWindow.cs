@@ -865,7 +865,7 @@ public sealed class ShipMapWindow : Window
         double perPixel = area.Width / pixelW;                  // 실픽셀 → WPF 단위
         double scale = Math.Clamp(_host.GamePixelScale * perPixel, area.Width / 1280, area.Width / 320);
         Point? ship = _host.ShipOnSurface is { } p ? new Point(p.X * perPixel, p.Y * perPixel) : null;
-        EventAnimationPopup.Play(this, _game, scene, area, scale, ship);
+        EventAnimationPopup.Play(this, _game, scene, area, scale, ship, _host.Heading);
     }
 
     /// <summary>트리에 붙었고 자리도 잡았는가 — <c>PointToScreen</c> 을 부르기 전에 본다.</summary>

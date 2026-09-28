@@ -66,7 +66,9 @@ internal sealed class EventAnimationPopup : Window
     /// <param name="area">지도가 화면에서 차지한 자리(WPF 단위).</param>
     /// <param name="scale">게임 한 점이 WPF 몇 단위인지.</param>
     /// <param name="ship">함대 그림 한가운데 — <paramref name="area"/> 왼쪽 위에서 잰 WPF 단위. 모르면 null.</param>
-    public static void Play(Window owner, Engine.Game game, int scene, Rect area, double scale, Point? ship)
+    /// <param name="heading">뱃머리(16방위, 0 이 북 — <c>[0x005B63C8]</c>). 모르면 −1.</param>
+    public static void Play(Window owner, Engine.Game game, int scene, Rect area, double scale, Point? ship,
+                            int heading = -1)
     {
         if (area.Width <= 0 || area.Height <= 0 || scale <= 0) return;
         if (game.EventAnims is not { } anims) return;
@@ -110,12 +112,14 @@ internal sealed class EventAnimationPopup : Window
                     _ => 16,
                 }),
             EventAnimation.Iceberg => new IcebergScene(),
+            EventAnimation.Whale => new WhaleScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
 
         int w = (int)(area.Width / scale), h = (int)(area.Height / scale);
         Point? at = ship is { } p ? new Point(p.X / scale, p.Y / scale) : null;
+        play.Heading = heading;
         play.Start(w, h, at, new Random());
 
         // 곡을 끊는 장면은 폭풍 하나다(0x00497768 가 모든 소리를 끄고, 끝에 0x004229F0 이 곡을 되튼다).
@@ -239,6 +243,12 @@ internal sealed class EventAnimationPopup : Window
 
         /// <summary>도는 도중에 소리를 내는 장면이 쓴다(오로라가 열 걸음째에 낸다).</summary>
         public SoundBank? Sfx { get; set; }
+
+        /// <summary>뱃머리(16방위, 0 이 북). 모르면 −1 — 바다 짐승이 뱃길 앞에 설 자리를 고른다.</summary>
+        public int Heading { get; set; } = -1;
+
+        /// <summary>게임 소리 번호(<c>0x004225A0</c> 의 인자)로 낸다 — WAVES 파트는 28 을 뺀 값이다.</summary>
+        protected void Sound(int id) => Sfx?.Play(id - WaveBank.FirstSoundId);
 
         public abstract bool Load(EventAnimation anims);
 
@@ -628,6 +638,112 @@ internal sealed class EventAnimationPopup : Window
             _sx = _bx + dx;
             _sy = _by + dy;
         }
+    }
+
+    /// <summary>
+    /// 19 백경 — 흰 고래가 솟구쳐 물을 뿜고 꼬리를 치며 잠긴다(<c>0x00418750</c>, 객체 <c>0x0061D7C8</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00418A30  파트 0x15, 480 x 2112(480x96 스물두 장), 팔레트 0x2F
+    ///   0x00418910  첫자리  x = W − 480 · y = 함대 위 ≤ H/2 면 H/2, 아니면 H/2 − 96
+    ///               뱃머리 0~3 · 13~15(북쪽)이고 함대 위 &gt; H/2 면 y = 함대 위 − 96
+    ///               뱃머리 5~11(남쪽)이고 함대 위 ≤ H/2 면 y = 함대 위 + 48      ; 뱃길 앞에 선다
+    ///   한 걸음 c
+    ///     c &lt; 18   장 c/2 (c == 0 에 소리 0x38)
+    ///     18~25    안 그린다 — 앞 장이 화면에 남는다 · x += (480 − W)/50
+    ///     26~31    장 8 + (26 − c)/2 (c == 28 에 소리 0x38)
+    ///     32~43    장 9 + (c − 32)/2 (c == 38 에 소리 0x39 — 물 뿜기)
+    ///     44~53    (c − 40) % 4 &lt; 2 면 장 15, 아니면 16
+    ///     54~63    장 17 + (c − 54)/2 (c == 54 에 0x39 를 끄고 0x38)
+    ///     64       끝
+    ///   그린 뒤 c &lt; 32 면 x += (480 − W)/80, c &lt; 54 면 x += (480 − W)/50
+    /// </code>
+    /// </remarks>
+    private sealed class WhaleScene : Scene
+    {
+        private const int FrameW = 0x1E0, FrameH = 0x60;
+
+        private BitmapSource[] _art = [];
+        private int _w, _x, _y;
+        private Draw? _last;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _art = Frames(anims, 0x15, FrameW, FrameH, 0x2F) ?? [];
+            return _art.Length >= 22;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w;
+            _x = w - FrameW;
+            _y = SeaBeastY(h, ship, Heading, above: FrameH, below: 0x30, upperRange: 3, far: FrameH);
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c >= 0x40) return true;
+
+            int f;
+            if (c < 0x12)
+            {
+                if (c == 0) Sound(0x38);
+                f = c / 2;
+            }
+            else if (c < 0x1A)
+            {
+                _x += (FrameW - _w) / 50;
+                if (_last is { } keep) draws.Add(keep);          // 0x49A050 을 안 불러 앞 장이 남는다
+                return false;
+            }
+            else if (c < 0x20)
+            {
+                f = (0x1A - c) / 2 + 8;
+                if (c == 0x1C) Sound(0x38);
+            }
+            else if (c < 0x2C)
+            {
+                if (c == 0x26) Sound(0x39);
+                f = (c - 0x20) / 2 + 9;
+            }
+            else if (c < 0x36)
+            {
+                f = (c - 0x28) % 4 < 2 ? 0x0F : 0x10;
+            }
+            else
+            {
+                if (c == 0x36) { Sfx?.Stop(); Sound(0x38); }
+                f = (c - 0x36) / 2 + 0x11;
+            }
+
+            var d = new Draw(_art[f], _x, _y);
+            draws.Add(d);
+            _last = d;
+            if (c < 0x20) _x += (FrameW - _w) / 80;
+            else if (c < 0x36) _x += (FrameW - _w) / 50;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 바다 짐승이 설 높이(<c>0x00418910</c> · <c>0x00418F80</c>) — 함대가 지도 아래쪽이면 위에, 위쪽이면 가운데에
+    /// 두고, 뱃머리가 그쪽을 보고 있으면 함대 바로 앞으로 당긴다.
+    /// </summary>
+    /// <param name="above">함대가 아래쪽일 때 가운데에서 올리는 만큼.</param>
+    /// <param name="below">남쪽을 볼 때 함대 위에서 내리는 만큼.</param>
+    /// <param name="upperRange">북쪽으로 치는 뱃머리의 끝 — 0~이것과 이것+10(또는 13)~15.</param>
+    /// <param name="far">북쪽을 볼 때 함대 위에서 올리는 만큼.</param>
+    private static int SeaBeastY(int h, Point? ship, int heading, int above, int below, int upperRange, int far)
+    {
+        int half = h / 2;
+        int top = (int)(ship?.Y ?? half) - 24;                   // 48x48 함대 그림 위(0x0047D050)
+        int y = top > half ? half - above : half;
+        bool north = heading >= 0 && (heading <= upperRange || heading >= (upperRange == 3 ? 13 : 14));
+        bool south = heading is >= 5 and <= 11;
+        if (north && top > half) return top - far;
+        if (south && top <= half) return top + below;
+        return y;
     }
 
     /// <summary>
