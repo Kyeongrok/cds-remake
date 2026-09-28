@@ -1001,8 +1001,12 @@ internal sealed class LandBattleScene : GameWindow
         }
 
         // 끝맺음 소리 — <b>이김과 물러남에만</b> 있다(0x004499B5 · 0x004499FF). 봐 준 자리는 소리가 없다.
-        else if (won) _game?.Sfx?.Play(LandUnits.Sound.Won);
-        else _game?.Sfx?.Play(LandUnits.Sound.Retreat);
+        // 그 앞에 곡을 끊는다(0x004499A9 · 0x004499F3 의 0x00422A40(-1, 3)).
+        else
+        {
+            _game?.Bgm.Stop();
+            _game?.Sfx?.Play(won ? LandUnits.Sound.Won : LandUnits.Sound.Retreat);
+        }
 
         var spoils = _battle.Finish(won, dice, heldTenTurns);
         var player = game.Player;
