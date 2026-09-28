@@ -4239,10 +4239,11 @@ public sealed class ShipMapWindow : Window
         int before = player.Morale;
         player.Cheer(sailing - drain);
 
-        // 바다 쪽 문구는 「선원」이다 — 뭍의 「대원」과 갈린다(0x0047585E).
-        if (MoraleLine(before, player.Morale) is { Length: > 0 } line)
+        // 바다 쪽 문구는 따로 있다(0x005356B8 · 0x005356E0 · 0x00535708) — 「선원」이고, 둘째에는 느낌표가
+        // 없고 셋째는 「달하고 있습니다!」다. 예전에는 뭍 문구의 「대원」만 갈아 끼웠다.
+        if (SeaMoraleLine(before, player.Morale, player.Fatigue) is { Length: > 0 } line)
         {
-            Say(line.Replace("대원", "선원"));
+            Say(line);
             _game.Sfx?.Play(SoundBank.BandNoticePart);   // 띠 알림 소리(0x0040E0B6)
         }
 
@@ -4250,6 +4251,25 @@ public sealed class ShipMapWindow : Window
         // 이전 값을 보는 것은 뭍 쪽(0x00475569)뿐이다.
         if (player.Morale == 0) Mutiny();
     }
+
+    /// <summary>
+    /// 바다에서 규율이 문턱을 넘어 내려갔을 때의 한 줄(<c>0x00475847</c>~). 아니면 빈 글이다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   50 넘던 것이 50 이하로, <b>피로도</b> &gt; 30   「선원들이 불만을 품기 시작했습니다!」           0x005356B8
+    ///   30 넘던 것이 11~30 으로                  「선원들의 불만이 심해지고 있습니다」             0x005356E0
+    ///   10 넘던 것이  1~10 으로                  「선원들의 불만이 한계에 달하고 있습니다! …」     0x00535708
+    /// </code>
+    /// 첫 줄의 셋째 조건은 원본이 <c>cmp ebp,0x1E</c> 로 <b>피로도 새 값</b>을 본다(<c>0x00475851</c>) — 뭍 쪽은
+    /// 규율 새 값이다. 원본 버릇 그대로 둔다.
+    /// </remarks>
+    private static string SeaMoraleLine(int before, int after, int fatigue) =>
+        before > 50 && after <= 50 && fatigue > 30 ? "선원들이 불만을 품기 시작했습니다!"
+      : before > 30 && after is > 10 and <= 30 ? "선원들의 불만이 심해지고 있습니다"
+      : before > 10 && after is > 0 and <= 10
+            ? "선원들의 불만이 한계에 달하고 있습니다! 일단 아무 마을로나 철수합시다."
+      : "";
 
     /// <summary>바다에서 하루에 빠지는 규율의 밑값(<c>0x00475838</c> 의 3, 부류 1 이면 두 배).</summary>
     private const int SeaMoraleStep = 3;
@@ -4826,8 +4846,7 @@ public sealed class ShipMapWindow : Window
     ///   10 넘던 것이  1~10 으로  "대원들의 불만이 한계에 달했습니다! …"       0x00535508
     ///   0 이 되면                반란(0x004751E0)
     /// </code>
-    /// 바다 쪽은 같은 손의 <c>0x00475840</c> 갈래고 문구가 「선원」이다
-    /// (<c>0x005356B8</c> · <c>0x005356E0</c> · <c>0x00535708</c>).
+    /// 바다 쪽은 같은 손의 <c>0x00475840</c> 갈래고 문구가 따로 있다(<see cref="SeaMoraleLine"/>).
     /// 어느 갈래로 가는지는 <c>0x005B61B4</c>(뭍이냐 바다냐)가 가른다.
     /// </remarks>
     private static string MoraleLine(int before, int after) =>
