@@ -33,12 +33,16 @@ public static class ShoreRepair
     public static int PerBarrel(int shipwright) => shipwright + 1;
 
     /// <summary>
-    /// 그 배를 다 고치는 데 드는 통 수(<c>0x0048E447</c>) — 모자란 만큼을 올려 나눈다.
+    /// 그 배를 다 고치는 데 드는 통 수(<c>0x0048E447</c>~<c>0x0048E482</c>) — 내구와 추진력 가운데
+    /// 더 모자란 쪽을 올림값으로 올려 나눈다. 통 수 판은 이 값에서 시작한다(실은 자재에서 잘린다).
     /// </summary>
     public static int BarrelsFor(Ship ship, int shipwright)
     {
         int per = PerBarrel(shipwright);
-        return per <= 0 ? 0 : (ship.MaxHp - ship.Hp + per - 1) / per;
+        if (per <= 0) return 0;
+        int hp = (ship.MaxHp - ship.Hp + per - 1) / per;
+        int speed = (ship.MaxSpeed - ship.Speed + per - 1) / per;
+        return Math.Max(hp, speed);
     }
 
     /// <summary>고칠 데가 있는 배인지 — 성한 배는 목록에 안 오른다(<c>0x0048E284</c>).</summary>

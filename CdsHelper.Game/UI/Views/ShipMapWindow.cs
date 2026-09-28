@@ -4364,8 +4364,10 @@ public sealed class ShipMapWindow : Window
 
                 TalkDialog.Say(this, mate, "", "자재를 몇 통 쓰겠습니까?");
                 int have = player.SupplyOf(SupplyKind.Material);
-                // 통 수는 계산기 판으로 받는다(0x0048E4C5 → 0x00481FE0, 1~실은 자재).
-                if (have <= 0 || NumberPadDialog.Ask(this, 1, 1, have) is not { } barrels || barrels <= 0) continue;
+                // 통 수는 계산기 판으로 받는다(0x0048E4C5 → 0x00481FE0, 1~실은 자재). 처음 값은 그 배를 다 고치는
+                // 데 드는 통 수이고 실은 자재에서 잘린다(0x0048E484). 예전에는 늘 1 에서 시작했다.
+                int start = Math.Clamp(ShoreRepair.BarrelsFor(ship, skill), 1, Math.Max(1, have));
+                if (have <= 0 || NumberPadDialog.Ask(this, start, 1, have) is not { } barrels || barrels <= 0) continue;
 
                 player.AddSupply(SupplyKind.Material, -barrels);
                 int was = ship.Hp;
