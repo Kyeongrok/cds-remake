@@ -2402,20 +2402,20 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>
     /// 숨겨 둔 증거품을 소지품에 넣어 준다(<c>0x0044E6C0</c> → <c>0x0041C480</c>).
     /// </summary>
-    /// <remarks>보고를 마치고 건물을 나설 때다 — 이것이 없으면 매수가 아무 이득이 없다.</remarks>
+    /// <remarks>
+    /// 보고를 마치고 건물을 나설 때다 — 이것이 없으면 매수가 아무 이득이 없다.
+    /// 게임은 숨긴 것을 <b>한 목록으로 모아</b> <c>0x004B1710(목록, n, 0)</c> 에 한 번 넘긴다(<c>0x0041C4BB</c>).
+    /// 「손에 넣었다」 알림은 없다 — 들어가면 말없이 채우고, 넘칠 때만 버리기 창이 뜬다.
+    /// </remarks>
     private void HandHidden()
     {
         if (_player.HiddenDiscoveries.Count == 0) return;
 
+        var got = new List<int>();
         foreach (int id in _player.HiddenDiscoveries.ToList())
-        {
-            if (_game.Discoveries?.Table?.Find(id) is not { GivesItem: true } row) continue;
+            if (_game.Discoveries?.Table?.Find(id) is { GivesItem: true } row) got.Add(row.ItemId);
 
-            // 넘치면 물릴 수 없는 버리기 창이다(0x0041C480 → 0x004B1710).
-            string got = _game.Items?.Find(row.ItemId)?.Name ?? $"아이템 {row.ItemId}";
-            GameDialog.Show(_view, $"[{got}]{GameUi.Josa(got, "을", "를")} 손에 넣었다!");
-            ItemGain.AddForced(_view, _game, [row.ItemId]);
-        }
+        ItemGain.AddForced(_view, _game, got);
         _player.ClearHidden();
     }
 
