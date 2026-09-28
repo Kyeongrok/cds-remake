@@ -114,14 +114,21 @@ public sealed class SupplyDialog : GameWindow
     /// <summary>이 도시가 탄약을 파는지(도시 형편 비트 8, <c>0x00493FB0</c> · <c>0x0040EC40</c>).</summary>
     private readonly bool _ammoSold;
 
+    /// <summary>도시 형편 낱말 — 탄약을 파는지(비트 8), 물이 공짜인지(비트 0x40)를 가른다.</summary>
+    private readonly int _cityFlags;
+
     /// <summary>교역품 이름과 산지(「세빌리아산」). 없으면 번호로 적는다.</summary>
     private readonly Func<Player.Cargo, (string Name, string Origin)>? _cargoText;
 
-    private SupplyDialog(Player player, int rate, bool ammoSold,
+    /// <summary>탄약을 파는 도시의 형편 비트.</summary>
+    private const int AmmoBit = 8;
+
+    private SupplyDialog(Player player, int rate, int cityFlags,
                          Func<Player.Cargo, (string Name, string Origin)>? cargoText = null)
     {
         _cargoText = cargoText;
-        _ammoSold = ammoSold;
+        _cityFlags = cityFlags;
+        _ammoSold = (cityFlags & AmmoBit) != 0;
         _mate = player.MateAt(0).Length > 0;
         _player = player;
         _rate = rate;
@@ -242,7 +249,7 @@ public sealed class SupplyDialog : GameWindow
         spin.Children.Add(Arrow("↓", () => Bump(index, -1)));
 
         return Row(Label(supply.Name),
-                   Cell(Label(Sold(supply) ? $"{supply.UnitWeight,3}/{supply.PriceAt(_rate),4}"
+                   Cell(Label(Sold(supply) ? $"{supply.UnitWeight,3}/{supply.PriceAt(_rate, _cityFlags),4}"
                                            : $"{supply.UnitWeight,3}/ ---"), UnitWidth),
                    Cell(Label($"{_player.SupplyOf(supply.Kind),5}통"), HaveWidth),
                    Cell(spin, AddWidth),
@@ -377,7 +384,7 @@ public sealed class SupplyDialog : GameWindow
                           + Supply.All.Sum(s => _add[(int)s.Kind] * s.UnitWeight);
 
     /// <summary>줄 값. 덜어 내는 것(음수)은 값을 쳐 주지 않는다 — 버리는 것이다.</summary>
-    private int Cost(int index) => Math.Max(0, _add[index]) * Supply.All[index].PriceAt(_rate);
+    private int Cost(int index) => Math.Max(0, _add[index]) * Supply.All[index].PriceAt(_rate, _cityFlags);
 
     private int Total => Enumerable.Range(0, Supply.Count).Sum(Cost);
 
@@ -403,7 +410,7 @@ public sealed class SupplyDialog : GameWindow
         if (!Sold(supply) && _add[index] >= 0) return "-";
         if (Barrels + 1 > _player.Capacity) return "용량 오버입니다.";
         if (Weight + supply.UnitWeight > _player.Tonnage) return "중량 오버입니다.";
-        if (Total + supply.PriceAt(_rate) > _player.Gold)
+        if (Total + supply.PriceAt(_rate, _cityFlags) > _player.Gold)
             return _player.Gold == 0
                 ? _mate ? "제독, 안됐지만 빈털터리입니다!" : "소지금이 없습니다"
                 : _mate ? "제독, 금화가 모자랍니다!" : "소지금이 모자랍니다.";
@@ -486,7 +493,7 @@ public sealed class SupplyDialog : GameWindow
         int byWeight = free / (food.UnitWeight + water.UnitWeight);
         int pair = Math.Max(0, Math.Min(room, byWeight));
 
-        int foodPrice = food.PriceAt(_rate), waterPrice = water.PriceAt(_rate);
+        int foodPrice = food.PriceAt(_rate, _cityFlags), waterPrice = water.PriceAt(_rate, _cityFlags);
         int foodTo = pair, waterTo = pair;
         int gold = _player.Gold;
         int cost = Math.Max(0, pair - haveFood) * foodPrice + Math.Max(0, pair - haveWater) * waterPrice;
@@ -619,14 +626,16 @@ public sealed class SupplyDialog : GameWindow
     }
 
     /// <summary>보급 화면을 연다. 배가 없으면 실을 데가 없다.</summary>
-    /// <param name="ammoSold">그 도시가 탄약을 파는지 — 도시 형편 비트 8.</param>
+    /// <param name="cityFlags">
+    /// 그 도시 형편 낱말 — 비트 8 이면 탄약을 팔고(<c>0x0040EC40</c>), 비트 0x40 이면 물이 0 닢이다(<c>0x00493F27</c>).
+    /// </param>
     /// <remarks>
     /// 여는 차례(<c>0x0040F38B</c>): 먼저 <b>전회분</b>을 채워 두고(<c>0x0040EC60</c>), 그것이 남은 중량·용량을
     /// 넘으면 「최대」로 다시 맞춘다(<c>0x0040F3C9</c>). 그러고도 더 실을 여유가 전혀 없으면 부관이(없으면
     /// 알림으로) 「이 이상 실을 여유가 없습니다.」(<c>0x00545678</c>) 하고 창이 곧 닫힌다(<c>0x0040F3F5</c>).
     /// </remarks>
     /// <param name="cargoText">실은 교역품의 이름과 산지 — 교역품 줄에 적고, 산지는 마우스를 올리면 뜬다.</param>
-    public static void Show(Window owner, Player player, int rate = 100, bool ammoSold = true,
+    public static void Show(Window owner, Player player, int rate = 100, int cityFlags = AmmoBit,
                             uint[]? mateFace = null, Func<Player.Cargo, (string Name, string Origin)>? cargoText = null)
     {
         if (player.Ships.Count == 0)
@@ -634,7 +643,7 @@ public sealed class SupplyDialog : GameWindow
             GameDialog.Show(owner, "실을 배가 없지 않은가.");
             return;
         }
-        var dialog = new SupplyDialog(player, rate, ammoSold, cargoText) { Owner = owner };
+        var dialog = new SupplyDialog(player, rate, cityFlags, cargoText) { Owner = owner };
         dialog.Last();
         if (dialog.Weight > player.Tonnage || dialog.Barrels > player.Capacity) dialog.Fill();
 

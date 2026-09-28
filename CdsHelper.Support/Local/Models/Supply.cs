@@ -20,23 +20,36 @@ public enum SupplyKind
 public sealed record Supply(SupplyKind Kind, string Name, int UnitWeight, int BasePrice)
 {
     /// <summary>
-    /// 넷. 단중량과 단가는 게임 보급 화면에서 읽은 값이다.
+    /// 넷. 단중량은 게임 보급 화면에서 읽은 값이고, 밑값은 EXE 에 박힌 값이다.
     /// </summary>
     /// <remarks>
     /// 게임은 이름을 <c>0x004208A0</c> 의 갈래별 분기로 낸다(0 식량 · 1 물 · 2 자재 · 3 탄약).
     /// 그 뒤 칸(4번부터)은 실어 둔 교역품이라 보급 화면에는 안 나온다.
     ///
-    /// <b>단가는 도시마다 다르다.</b> 화면에서 잰 값(19·12·31·31)을 밑값으로 두고 도시 시세를
-    /// 곱한다 — 교역품이 <see cref="Game.Engine.Market"/> 에서 하는 것과 같은 길이다.
-    /// 게임이 어느 표에서 밑값을 꺼내는지는 아직 못 찾았다.
+    /// <b>단가는 밑값 x 도시 시세 / 100</b> 이다(<c>0x00429DC0</c>). 밑값은 갈래표 <c>0x0040EB80</c> 이
+    /// 부르는 넷이 그대로 들고 있다.
+    /// <code>
+    ///   0 식량  0x0040E8E0 → 0x00493F50   15
+    ///   1 물    0x0040E8C0 → 0x00493F10   10   도시 형편 비트 0x40 이면 0 닢
+    ///   2 자재  0x0040E900 → 0x00493F80   25
+    ///   3 탄약  0x0040E920 → 0x00493FB0   25   도시 형편 비트 8 이 없으면 안 판다(−1)
+    /// </code>
+    /// 예전에는 시세 127 쯤인 도시 화면에서 잰 19·12·31·31 을 밑값으로 두고 시세를 또 곱해
+    /// 어디서나 두 할 반쯤 비쌌다.
     /// </remarks>
     public static readonly Supply[] All =
     [
-        new(SupplyKind.Food, "식량", 5, 19),
-        new(SupplyKind.Water, "물", 10, 12),
-        new(SupplyKind.Material, "자재", 5, 31),
-        new(SupplyKind.Ammo, "탄약", 20, 31),
+        new(SupplyKind.Food, "식량", 5, 15),
+        new(SupplyKind.Water, "물", 10, 10),
+        new(SupplyKind.Material, "자재", 5, 25),
+        new(SupplyKind.Ammo, "탄약", 20, 25),
     ];
+
+    /// <summary>
+    /// 물이 공짜인 도시의 형편 비트(<c>0x00493F27</c> 의 <c>test [도시+4], 0x40</c>) — 동남아 · 동아시아 ·
+    /// 신대륙 42곳이다.
+    /// </summary>
+    public const int FreeWaterBit = 0x40;
 
     /// <summary>갈래 수.</summary>
     public static int Count => All.Length;
@@ -44,8 +57,11 @@ public sealed record Supply(SupplyKind Kind, string Name, int UnitWeight, int Ba
     /// <summary>갈래로 찾는다.</summary>
     public static Supply Of(SupplyKind kind) => All[(int)kind];
 
-    /// <summary>한 통을 사는 값. 시세는 100 이 제값이다.</summary>
-    public int PriceAt(int rate) => Math.Max(1, BasePrice * rate / 100);
+    /// <summary>한 통을 사는 값. 시세는 100 이 제값이다(<c>0x00429DC0</c> — 밑값이 있으면 최소 1).</summary>
+    /// <param name="rate">도시 시세.</param>
+    /// <param name="cityFlags">도시 형편 낱말 — 비트 <see cref="FreeWaterBit"/> 가 서면 물이 0 닢이다.</param>
+    public int PriceAt(int rate, int cityFlags = 0) =>
+        Kind == SupplyKind.Water && (cityFlags & FreeWaterBit) != 0 ? 0 : Math.Max(1, BasePrice * rate / 100);
 
     /// <summary>한 통에 든 단위 수. 식량·물은 속으로 이만큼씩 들고 있다.</summary>
     /// <remarks>
