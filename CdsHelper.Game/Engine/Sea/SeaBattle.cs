@@ -799,13 +799,10 @@ public sealed class SeaBattle
     public static int RangeOf(int gun) => gun switch { 1 => 4, 3 => 2, _ => 3 };
 
     /// <summary>
-    /// 모드 3 — 끝 칸에서 노릴 자리가 <b>뱃전</b>(이물·고물 줄이 아닌 쪽) 거리 2~사거리에 들어오는
-    /// 첫 길을 고른다. 없으면 노릴 자리 쪽으로 가장 가까이 가는 길이다.
+    /// 모드 3 — 끝 칸에서 노릴 자리가 <b>뱃전</b> 거리 2~사거리에 들어오는 첫 길을 고른다
+    /// (<c>0x0043AF72</c>~<c>0x0043B1E6</c>). 판정은 <see cref="AimInBroadside"/> 다.
+    /// 없으면 노릴 자리 쪽으로 가장 가까이 가는 길이다.
     /// </summary>
-    /// <remarks>
-    /// 원본 뱃전 줄(<c>0x0043AFF4</c>~<c>0x0043B1CA</c>)은 끝 방향마다 두 줄을 따로 셈하는데,
-    /// 여기서는 「이물 줄·고물 줄 위가 아닌 거리 d 칸」으로 갈음했다.
-    /// </remarks>
     private List<Move>? Broadside(Ship ship, int ax, int ay)
     {
         int range = RangeOf(ship.Gun);
@@ -814,26 +811,82 @@ public sealed class SeaBattle
 
         foreach (var (plan, x, y, way) in Paths(ship, avoidReserved: true, avoidDanger: false))
         {
-            int d = BfsDistance(x, y, ax, ay);
-            if (d >= 2 && d <= range && !OnBowLine(x, y, way, ax, ay)) return plan;
-            if (d < best) { best = d; closest = plan; }
+            for (int d = 2; d <= range; d++)
+                if (AimInBroadside(x, y, way, ax, ay, d)) return plan;
+            int dist = BfsDistance(x, y, ax, ay);
+            if (dist < best) { best = dist; closest = plan; }
         }
         return closest;
     }
 
-    /// <summary>그 자리가 끝 방향의 이물 줄이나 고물 줄 위인지.</summary>
-    private static bool OnBowLine(int x, int y, int way, int ax, int ay)
+    /// <summary>
+    /// 포격 과녁 칸(<c>0x004369E0</c>~<c>0x00436D99</c>) — 쏘는 배에서 걸음 거리 <paramref name="d"/> 인 고리 가운데
+    /// <b>옆면 두 변</b>이다. 뱃머리가 w 면 (w+1)·(w+2) 모서리 사이 변과 (w+4)·(w+5) 모서리 사이 변이고 칸은 2(d+1) 이다.
+    /// </summary>
+    /// <remarks>
+    /// 셈은 원본 그대로 옮긴다(나눗셈은 0 쪽 버림, 홀짝은 <b>쏘는 배 X</b>).
+    /// <code>
+    ///   뱃머리 0·3   X = sx ± d ,  Y = (sx 짝수 ? sy − d/2 : sy + (−1−d)/2) + k      k 0..d
+    ///   그 밖        X = sx + k*e (e = ±1) ,  q = (sx &amp; 1) + e
+    ///     뱃머리 1·4   q 가 −1·2 면 Y = (d + (−1−k)/2)*e + sy , 아니면 (d − k/2)*e + sy
+    ///     뱃머리 2·5   q 가 −1·2 면 Y = (k/2 − d)*e + sy ,     아니면 ((k+1)/2 − d)*e + sy
+    /// </code>
+    /// 예전에는 고리에서 이물·고물 줄만 뺀 6d−2 칸을 과녁으로 삼아 앞뒤 사선의 배도 쐈다.
+    /// </remarks>
+    public static bool InBroadside(int sx, int sy, int way, int tx, int ty, int d)
     {
-        foreach (int w in new[] { way, (way + 3) % Ways })
-        {
-            int cx = x, cy = y;
-            for (int i = 0; i < 6; i++)
+        int w = ((way % Ways) + Ways) % Ways;
+        for (int e = -1; e <= 1; e += 2)
+            for (int k = 0; k <= d; k++)
             {
-                (cx, cy) = Step(cx, cy, w);
-                if (!OnBoard(cx, cy)) break;
-                if (cx == ax && cy == ay) return true;
+                int x, y;
+                if (w is 0 or 3)
+                {
+                    x = sx + e * d;
+                    y = ((sx & 1) == 0 ? sy - d / 2 : sy + (-1 - d) / 2) + k;
+                }
+                else
+                {
+                    x = sx + k * e;
+                    bool q = ((sx & 1) + e) is -1 or 2;
+                    y = w % 3 == 1
+                        ? (q ? (d + (-1 - k) / 2) * e + sy : (d - k / 2) * e + sy)
+                        : (q ? (k / 2 - d) * e + sy : ((k + 1) / 2 - d) * e + sy);
+                }
+                if (x == tx && y == ty) return true;
             }
-        }
+        return false;
+    }
+
+    /// <summary>
+    /// AI 모드 3 의 뱃전 판정(<c>0x0043AFF4</c>~<c>0x0043B1CA</c>) — 끝 칸(ex, ey, 방향 w)에서 노릴 자리가 거리 d 뱃전에 드는지.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="InBroadside"/> 와 같은 꼴이지만 <b>노릴 자리에서 끝 칸 쪽으로</b> 셈하고 홀짝은 <b>끝 칸 X</b> 로 본다.
+    /// 그래서 대각 방향이면 홀수 열에서 Y 가 한 칸 어긋난 칸이 섞인다 — 원본 버릇 그대로 옮긴다.
+    /// </remarks>
+    private static bool AimInBroadside(int ex, int ey, int way, int ax, int ay, int d)
+    {
+        int w = ((way % Ways) + Ways) % Ways;
+        for (int e = -1; e <= 1; e += 2)
+            for (int k = 0; k <= d; k++)
+            {
+                int x, y;
+                if (w is 0 or 3)
+                {
+                    x = ax + e * d;
+                    y = ((ex & 1) == 0 ? ay - d / 2 : ay + (-1 - d) / 2) + k;
+                }
+                else
+                {
+                    x = ax + k * e;
+                    bool q = ((ex & 1) + e) is -1 or 2;
+                    y = w % 3 == 1
+                        ? (q ? (d + (-1 - k) / 2) * e + ay : (d - k / 2) * e + ay)
+                        : (q ? (k / 2 - d) * e + ay : ((k + 1) / 2 - d) * e + ay);
+                }
+                if (x == ex && y == ey) return true;
+            }
         return false;
     }
 
@@ -1244,17 +1297,15 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 과녁 — 거리 2 부터 사거리까지 <b>뱃전</b> 쪽(이물·고물 줄이 아닌) 맞은편 산 배를 찾아, 그 거리에서
-    /// 기함이면 곧장, 아니면 내구가 가장 낮은 배(<c>0x004369E0</c>~).
+    /// 과녁 — 거리 2 부터 사거리까지 <b>뱃전</b> 칸(<see cref="InBroadside"/>, 고리의 옆면 두 변)의 맞은편 산 배를
+    /// 찾아, 그 거리에서 기함이면 곧장, 아니면 내구가 가장 낮은 배(<c>0x004369E0</c>~).
     /// </summary>
-    /// <remarks>원본의 대각 방향 뱃전 줄 셈을 다 못 풀어 「이물·고물 줄 위가 아닌 거리 d」로 갈음한다.</remarks>
     private Ship? FireTarget(Ship ship, int range)
     {
         for (int d = 2; d <= range; d++)
         {
             var hits = Ships.Where(s => s.CanAct && s.Mine != ship.Mine
-                                        && BfsDistance(ship.X, ship.Y, s.X, s.Y) == d
-                                        && !OnBowLine(ship.X, ship.Y, ship.Way, s.X, s.Y))
+                                        && InBroadside(ship.X, ship.Y, ship.Way, s.X, s.Y, d))
                             .ToList();
             if (hits.Count == 0) continue;
             return hits.FirstOrDefault(s => s.Flagship) ?? hits.OrderBy(s => s.Hp).First();
