@@ -773,9 +773,6 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (TalkDialog.Ask(_view, null, "", "아름다운 여성이 있다",
                                "한잔 산다", "무시한다") != 0) return;
             if (!BuyDrink()) return;
-
-            _player.AddLiking(her.Id, Barmaids.FirstMeet(_player, her));
-            _player.MeetBarmaid(her.Id);
         }
 
         var face = FaceOfMaid(her);
@@ -787,8 +784,23 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (TongueWith(her) <= 0)
         {
             TalkDialog.Say(_view, face, "", Barmaids.StrangerWord(first, destined));
-            if (first && destined) _player.AddLiking(her.Id, Barmaids.StrangerLike);
+            // 말이 안 통하면 첫 만남 몫(+50·+3)은 없다 — 궁합이 맞을 때만 +20 을 받고 낯을 트고(0x00466501),
+            // 아니면 친밀도도 그대로, 모르는 사이로 남는다(0x0046652D).
+            if (first && destined)
+            {
+                _player.AddLiking(her.Id, Barmaids.StrangerLike);
+                _player.MeetBarmaid(her.Id);
+            }
             return;
+        }
+
+        // 첫 만남 친밀도는 <b>말이 통하고 나서</b> 첫 인사와 함께 오른다(0x00466730 — 궁합 +50 · 보통 +3)
+        // 그리고 그 자리에서 낯을 튼다([여급+0x28] = 0). 예전에는 한잔 사자마자 올려서 말이 안 통해도
+        // 궁합이면 70, 아니어도 3 이 붙고 이름까지 드러났다.
+        if (first)
+        {
+            _player.AddLiking(her.Id, Barmaids.FirstMeet(_player, her));
+            _player.MeetBarmaid(her.Id);
         }
 
         // 첫 인사는 궁합과 술로 넷, 다시 왔을 때는 친밀도로 다섯이 갈린다
