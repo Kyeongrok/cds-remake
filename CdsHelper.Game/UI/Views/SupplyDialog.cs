@@ -608,11 +608,34 @@ public sealed class SupplyDialog : GameWindow
         _decide.On = _add.Any(a => a != 0);
     }
 
+    /// <summary>
+    /// 결정할 수 있는지 — 게임 <c>0x0040F470</c> 의 차례대로 용량 · 중량 · 소지금을 본다. 되면 빈 문자열이다.
+    /// </summary>
+    /// <remarks>
+    /// 「10일분」·「일지정」·「전회분」은 한도를 안 보고 채우므로 여기서 막아야 한다. 막히면 창은 그대로 남는다.
+    /// </remarks>
+    private string WhyNotDecide()
+    {
+        if (Barrels > _player.Capacity) return "용량 오버입니다.";
+        if (Weight > _player.Tonnage) return "중량 오버입니다.";
+        if (Total > _player.Gold)
+            return _player.Gold == 0
+                ? _mate ? "제독, 안됐지만 빈털터리입니다!" : "소지금이 없습니다"
+                : _mate ? "제독, 금화가 모자랍니다!" : "소지금이 모자랍니다.";
+        return "";
+    }
+
     /// <summary>산 것을 싣고 값을 치른다. 덜어 낸 것은 내린다(값은 안 돌려준다).</summary>
     private void Decide()
     {
         int total = Total;
-        if (_add.All(a => a == 0) || total > _player.Gold) return;
+        if (_add.All(a => a == 0)) return;
+        // 넘치거나 모자라면 알리고 창을 둔다(0x0040F500 → 0x0040F470).
+        if (WhyNotDecide() is { Length: > 0 } why)
+        {
+            GameDialog.Show(Owner ?? this, why);
+            return;
+        }
 
         // 맞춘 총량을 「전회분」으로 적어 둔다(0x0040F541 → 0x0040ECA0).
         _player.SetLastSupply([.. Enumerable.Range(0, Supply.Count)
