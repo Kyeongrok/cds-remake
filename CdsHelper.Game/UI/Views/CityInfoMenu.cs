@@ -43,6 +43,22 @@ internal static class CityInfoMenu
         Fame, City, Language, Rate, DaysLeft, Morale, Wind, Current, Vitality,
     ];
 
+    /// <summary>
+    /// 창 제목(<c>0x005691C0</c>) — 띠의 <c>[+0xB8]</c> 로 고른다(<c>0x0047DB38</c>).
+    /// </summary>
+    /// <remarks>
+    /// 띠 자리는 <c>0x0047E3A0</c> 이 적는다 — 바다 커맨드 창(<c>0x0048B5E4</c>)이 0, 상륙·승선
+    /// (<c>0x0048E9D1</c> · <c>0x0048EB54</c>)이 뭍이면 1, 도시 화면(<c>0x00492461</c>)이 2 다.
+    /// 창을 여는 <c>0x0047DBC0</c> 은 자리를 안 가리므로 바다·뭍에서도 뜬다.
+    /// </remarks>
+    private static readonly string[] Titles = ["양상정보", "탐험정보", "도시정보"];
+
+    /// <summary>
+    /// 창에 찍는 줄 이름. 바람 줄만 게임 글(<c>0x00569200</c> 「풍향/풍속」)과 열쇠가 다르다 —
+    /// 열쇠 「풍향·풍속」은 설정에 적혀 있어 그대로 둔다.
+    /// </summary>
+    private static string Shown(string name) => name == Wind ? "풍향/풍속" : name;
+
     private const string OnMark = ":ON", OffMark = ":OFF";
 
     /// <summary>
@@ -53,7 +69,8 @@ internal static class CityInfoMenu
     /// </param>
     /// <param name="toggle">그 줄을 뒤집는다. 부른 쪽이 창을 다시 지어 글자를 새로 찍는다.</param>
     /// <param name="close">"취소" 를 눌렀을 때.</param>
-    public static GameMenu Build(Func<string, bool?> state, Action<string> toggle, Action close)
+    /// <param name="place">띠가 선 자리 — 0 바다 · 1 뭍 탐험 · 2 도시(띠 <c>[+0xB8]</c>). 창 제목을 가른다.</param>
+    public static GameMenu Build(Func<string, bool?> state, Action<string> toggle, Action close, int place = 2)
     {
         int width = RowWidth();
         var items = new List<(string Text, Action? Run)>();
@@ -64,7 +81,7 @@ internal static class CityInfoMenu
         }
         items.Add(("취소", close));
 
-        return new GameMenu("도시정보", null, [.. items]);
+        return new GameMenu(Titles[Math.Clamp(place, 0, Titles.Length - 1)], null, [.. items]);
     }
 
     /// <summary>
@@ -78,6 +95,7 @@ internal static class CityInfoMenu
     /// </remarks>
     private static string Label(string name, bool on, int width)
     {
+        name = Shown(name);
         string value = on ? OnMark : OffMark;
 
         var font = GameUi.Font;
@@ -95,7 +113,7 @@ internal static class CityInfoMenu
         if (font == null) return 0;
 
         int name = 0;
-        foreach (var row in Rows) name = Math.Max(name, font.TextWidth(row));
+        foreach (var row in Rows) name = Math.Max(name, font.TextWidth(Shown(row)));
         return name + font.TextWidth(" ") * 2 + font.TextWidth(OffMark);
     }
 }
