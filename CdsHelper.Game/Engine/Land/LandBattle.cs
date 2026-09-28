@@ -493,6 +493,11 @@ public sealed class LandBattle
     /// </remarks>
     private int FoeSkill(int slot)
     {
+        // 신학(+0x6C)은 규모로 안 매긴다 — 0x00449E50 은 인물 0x113(275)을 떠 와 검술·포술·사격술만 고치므로
+        // 마을 공략의 신학은 275 번 값 그대로인 0 이다. 대본 판은 그 인물의 신학이다. 예전에는 신학에도 규모
+        // 등급을 주어 주술사·고승·표범의 방어와 행동 빠르기가 부풀었다.
+        if (slot == Skill.Theology) return Math.Clamp(FoeTheology, 0, Skill.MaxLevel);
+
         // 적 대장 인물을 알면(발견 대본의 2F 0D [인물]) 그 사람의 기능 자리를 그대로 본다.
         // 파르테논 신전의 206번에게 사격술 3 을 주면 화승총병이 아니라 머스켓총병이 선다.
         if (FoeSkills is { } known)
@@ -512,6 +517,9 @@ public sealed class LandBattle
     /// </summary>
     /// <remarks>게임은 <c>0x00446F70(기능, 6)</c> 으로 적 대장 인물 레코드를 본다.</remarks>
     public (int Sword, int Gunnery, int Shooting)? FoeSkills { get; init; }
+
+    /// <summary>적 대장의 신학. 대본 판은 그 인물 것이고, 마을 공략·들싸움은 0 이다(<c>0x00449E50</c>).</summary>
+    public int FoeTheology { get; init; }
 
     /// <summary>적장 얼굴 — 몰살한 뒤 봐 줄 때 적장이 한마디 한다(<c>0x00446DD9</c> 가 <c>[+0x9C]</c> 의 얼굴을 쓴다).</summary>
     public uint[]? FoeFace { get; init; }

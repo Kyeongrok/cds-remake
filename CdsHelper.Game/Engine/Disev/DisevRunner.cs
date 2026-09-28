@@ -1274,6 +1274,7 @@ public sealed class DisevRunner
         // 적 대장 능력 — 인물 표의 능력 여섯(0 체력 · 1 지력 · 2 무력 · 4 운).
         var foe = (Might: 75, Mind: 70, Luck: 65, Body: 85);
         (int Sword, int Gunnery, int Shooting)? foeSkills = null;
+        int foeTheology = 0;
         try
         {
             if (PersonTable.Open().Find(person) is { } row && row.Stats.Length >= 5)
@@ -1284,6 +1285,8 @@ public sealed class DisevRunner
                     foeSkills = (row.Skills[Support.Local.Models.Skill.Sword],
                                  row.Skills[Support.Local.Models.Skill.Gunnery],
                                  row.Skills[Support.Local.Models.Skill.Shooting]);
+                if (row.Skills.Length > Support.Local.Models.Skill.Theology)
+                    foeTheology = row.Skills[Support.Local.Models.Skill.Theology];
             }
         }
         catch (Exception)
@@ -1306,6 +1309,7 @@ public sealed class DisevRunner
         return new LandBattle(Deploy(aide), myMen, foeMen, player, aide, culture, terrain, foe, _dice,
                               foeSkills, scale: scale, nation: foeNation)
         {
+            FoeTheology = foeTheology,
             KeepsCrew = _borrowedMen >= 0,
             MyCulture = _game.MyCulture,
         };
