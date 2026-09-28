@@ -606,6 +606,8 @@ public sealed class DisevRunner
             case DisevCall.AskChoice:
             case DisevCall.AskChoiceWide:
                 _choice = Choose(line.Raw, wide: line.Call == DisevCall.AskChoiceWide);
+                // 18 0A 는 끝에 결과를 1 로 둔다(0x00409346) — 밑값을 결과 칸([ebp-0x1C])에 잠시 담았다가 덮는다.
+                if (line.Call == DisevCall.AskChoiceWide) _result = true;
                 return null;
 
             case DisevCall.PlayVideo:
@@ -1067,14 +1069,19 @@ public sealed class DisevRunner
         var choices = text.Split('/').Select(c => c.Trim()).Where(c => c.Length > 0).ToArray();
         if (choices.Length == 0) return baseValue;
 
-        int picked = ChoiceDialog.Ask(_owner, "", choices[..^1], choices[^1]);
-        int value = (picked >= 0 ? picked : choices.Length - 1) + baseValue;
+        while (true)
+        {
+            int picked = ChoiceDialog.Ask(_owner, "", choices[..^1], choices[^1]);
+            int value = (picked >= 0 ? picked : choices.Length - 1) + baseValue;
 
-        // 18 0A 에서 고른 값이 0 이면 <b>교섭</b>이다(0x00409204) — 금이나 물건을 바쳐야 이야기가 이어진다.
-        // 10 0A 는 값이 0 이어도 교섭이 없다 — 예전에는 「싸운다/교섭한다/도망간다」의 「싸운다」 따위
-        // 첫 줄만 골라도 「뭔가 우호의 증표를 줍시다」가 떴다.
-        if (wide && value == 0) Appease();
-        return value;
+            // 18 0A 에서 고른 값이 0 이면 <b>교섭</b>이다(0x00409204) — 금이나 물건을 바쳐야 이야기가 이어진다.
+            // 10 0A 는 값이 0 이어도 교섭이 없다 — 예전에는 「싸운다/교섭한다/도망간다」의 「싸운다」 따위
+            // 첫 줄만 골라도 「뭔가 우호의 증표를 줍시다」가 떴다.
+            // 교섭이 안 되면(물리거나 백 닢이 안 되면) <b>선택지 차림표로 돌아간다</b>(0x004091E7) — 공격·철수로
+            // 바꿀 수 있다.
+            if (wide && value == 0 && !Appease()) continue;
+            return value;
+        }
     }
 
     /// <summary>
@@ -1085,30 +1092,31 @@ public sealed class DisevRunner
     ///   0x00538618  「뭔가 우호의 증표를 줍시다」
     ///   0x00538658  차림표 「교섭」 — 「금을 준다」 · 「아이템을 준다」
     ///   금을 준다   계산판으로 얼마를 줄지 적는다(0x00481FE0) → 그만큼 소지금에서 빠진다
-    ///               <b>백 닢이 안 되면</b> 「아무래도 마음에 들지 않았던 모양입니다」(0x00538660) 하고 다시 묻는다
+    ///               <b>백 닢이 안 되면</b> 「아무래도 마음에 들지 않았던 모양입니다」(0x00538660) — 준 돈은 빠진 채
+    ///               선택지 차림표로 돌아간다(0x00409335 → 0x004091E7)
     ///   아이템을 준다  그 자리에서 받아들인다(원본도 무엇을 줄지는 안 묻는다)
-    ///   물리면       다시 묻는다 — 주지 않고는 못 지나간다
+    ///   물리면       선택지 차림표로 돌아간다(0x004092B0 · 계산판을 물려도 0x004092FD)
     /// </code>
+    /// 예전에는 교섭 차림표만 되풀이해 물어 주지 않고는 빠져나갈 길이 없었다.
     /// </remarks>
-    private void Appease()
+    /// <returns>받아들였으면 true, 선택지로 돌아가야 하면 false.</returns>
+    private bool Appease()
     {
         var player = _game.Player;
         NoticeDialog.Show(_owner, "뭔가 우호의 증표를 줍시다");
 
-        while (true)
-        {
-            int at = ChoiceDialog.Ask(_owner, "교섭", ["금을 준다", "아이템을 준다"]);
-            if (at == 1) return;                       // 물건을 주면 그것으로 끝난다
-            if (at < 0) continue;                      // 물러도 다시 묻는다(0x004092B0)
+        int at = ChoiceDialog.Ask(_owner, "교섭", ["금을 준다", "아이템을 준다"]);
+        if (at == 1) return true;                      // 물건을 주면 그것으로 끝난다
+        if (at < 0) return false;
 
-            // 금액은 계산기 판으로 받는다(0x004092D2 → 0x00481FE0, 1~소지금). 물리면 다시 고르기로.
-            if (player.Gold <= 0 || NumberPadDialog.Ask(_owner, 1, 1, player.Gold) is not { } gold || gold <= 0)
-                continue;
+        // 금액은 계산기 판으로 받는다(0x004092D2 → 0x00481FE0, 1~소지금).
+        if (player.Gold <= 0 || NumberPadDialog.Ask(_owner, 1, 1, player.Gold) is not { } gold || gold <= 0)
+            return false;
 
-            player.SetGold(player.Gold - gold);
-            if (gold >= AppeaseLeast) return;
-            NoticeDialog.Show(_owner, "아무래도 마음에 들지 않았던 모양입니다");
-        }
+        player.SetGold(player.Gold - gold);
+        if (gold >= AppeaseLeast) return true;
+        NoticeDialog.Show(_owner, "아무래도 마음에 들지 않았던 모양입니다");
+        return false;
     }
 
     /// <summary>이만큼은 줘야 마음에 들어 한다(<c>0x00409312</c> 의 <c>cmp 0x64</c>).</summary>
