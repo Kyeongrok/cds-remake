@@ -27,8 +27,17 @@ public sealed class TownFolkTable
     /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\마을사람표.json</c>).</summary>
     private const string CacheName = "마을사람표";
 
-    /// <summary>알맹이 모양 판.</summary>
-    private const int Version = 1;
+    /// <summary>알맹이 모양 판. 판 2 는 64바이트가 넘는 말 14줄을 되살렸다.</summary>
+    private const int Version = 2;
+
+    /// <summary>
+    /// 말 한 줄을 읽을 때 NUL 을 찾는 한도. 가장 긴 말이 84바이트다.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="PeImage.Text"/> 의 밑값 64 로 읽으면 NUL 을 못 찾아 null 이 되고, 그 줄이
+    /// <c>words.Length == 0</c> 으로 통째로 빠진다 — 판 1 이 275줄 가운데 261줄뿐이던 까닭이다.
+    /// </remarks>
+    private const int TextLimit = 256;
 
     private const int TableVa = 0x005152F8, RowSize = 0x20;
 
@@ -92,13 +101,13 @@ public sealed class TownFolkTable
             int city = exe.Int(row + 0x00), kind = exe.Int(row + 0x04);
             if (city < 0 || city >= CityExeTable.Count || !Kinds.Contains(kind)) continue;
 
-            string words = exe.Text(exe.Word(row + 0x18)) ?? "";
+            string words = exe.Text(exe.Word(row + 0x18), TextLimit) ?? "";
             if (words.Length == 0) continue;
             uint later = exe.Word(row + 0x1C);
 
             folk.Add(new Folk(city, kind, exe.Int(row + 0x08), exe.Int(row + 0x0C),
                               exe.Int(row + 0x10), exe.Int(row + 0x14),
-                              words, later != 0 ? exe.Text(later) ?? "" : ""));
+                              words, later != 0 ? exe.Text(later, TextLimit) ?? "" : ""));
         }
 
         if (folk.Count < Count / 2)
