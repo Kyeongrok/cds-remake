@@ -169,8 +169,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         foreach (int id in sold)
             if (!list.Any(h => h.Id == id)) list.Add(Hull.FromTable(id));
 
-        // 값이 비싼 쪽이 위다 — Hull.All 과 같은 차례로 다시 세운다.
-        return [.. list.OrderByDescending(h => h.Price)];
+        // 차례는 <b>선체 번호가 큰 쪽이 위</b>다 — 0x00422CA0 이 비트 7 에서 0 으로 훑으며 목록을 짓는다.
+        // 그래서 다우(7)가 맨 위, 코구(0)가 맨 밑이다. 예전에는 값 순이라 다우가 대형카락 밑에 섰다.
+        // 등록해 넣은 배는 원본에 없으니 그 뒤에 값 순으로 둔다.
+        return [.. list.Where(h => h.Id is >= 0 and < 8).OrderByDescending(h => h.Id),
+                .. list.Where(h => h.Id is < 0 or >= 8).OrderByDescending(h => h.Price)];
     }
 
     /// <summary>
