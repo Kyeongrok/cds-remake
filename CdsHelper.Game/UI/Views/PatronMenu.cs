@@ -327,7 +327,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 그냥 통과할 때만 집사가 제 소개를 하고 무기를 맡는다(0x004AE428~0x004AE47A). 매수해 들어온
             // 판은 위의 한 마디로 갈음하고 곧장 주인 인사(0x004AE490)로 간다 — 인사가 두 번 나오지 않는다.
             Steward($"오래 기다리셨습니다. 제가 {shown} {sir}의 집사입니다.");
-            Steward("무기는 여기서 보관하겠습니다. 그러면 안으로 들어가십시오.");
+            // 무기를 맡는 말은 <b>무기를 지녔을 때만</b>이다 — 0x004AE45B 가 소지품 16칸 가운데 분류 3(무기)을
+            // 세고(0x004B0A20(3, 0, 0)), 0 이면 건너뛴다.
+            if (_player.Items.Any(id => _game.Items?.Find(id)?.Category == Duel.WeaponCategory))
+                Steward("무기는 여기서 보관하겠습니다. 그러면 안으로 들어가십시오.");
         }
 
         // 관문을 넘으면 집사가 맞고, 무기를 맡기고, 안에 들여보낸 뒤 주인에게 알린다.
