@@ -1186,14 +1186,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     void SeaBattle.IStage.Moved() => Redraw();
 
     /// <remarks>
-    /// 원본 알림(<c>0x0049E3E0(0, "해전", 글)</c>)은 얼굴 없는 게임 창이다. 적끼리 부딪힌 것은 원본 갈래를 다 못 짚어
-    /// (「아군끼리」 말이 적에게 뜨게 된다) 아군이 낄 때만 알린다 — 소리는 적이 끼면 난다.
+    /// 원본 알림(<c>0x0049E3E0(0, "해전", 글)</c>)은 얼굴 없는 게임 창이다. 적끼리 부딪혀도 「충돌했다!」를 낸다
+    /// (<c>0x00439986</c> — 둘 다 8 미만일 때만 「아군끼리」 말이다). 소리 0x2C 는 적이 끼면 난다(<c>0x0043995C</c>).
     /// </remarks>
     void SeaBattle.IStage.Crash(SeaBattle.Ship mover, SeaBattle.Ship hit, bool friendly)
     {
         Redraw();
         if (!friendly) _sfx?.Play(CrashPart);
-        if (mover.Mine || hit.Mine) ConfirmDialog.Tell(this, SeaBattle.CrashWord(mover, hit), BattleTitle);
+        ConfirmDialog.Tell(this, SeaBattle.CrashWord(mover, hit), BattleTitle);
     }
 
     void SeaBattle.IStage.HullLoss(SeaBattle.Ship mover, int moverLoss, SeaBattle.Ship hit, int hitLoss)

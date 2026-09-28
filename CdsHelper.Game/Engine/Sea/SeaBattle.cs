@@ -1353,11 +1353,13 @@ public sealed class SeaBattle
     /// </code>
     /// 「정면」은 자리 관계가 아니라 <b>뱃머리 방향만</b> 본다. 방향차는 mod 가 아니라 절댓값이다(0·3, 1·4, 2·5).
     /// 굴림·선수상·능력이 없고 최소 1 도 없다(용량 25 밑이면 0). 밑값은 최대 내구가 아니라 <b>적재용량</b>이다.
-    /// 편을 가리는 것은 같은 편인지다 — 원본은 적끼리 부딪혀도 알림을 낸다.
+    /// 멈추고 끝내는 것은 <b>둘 다 아군</b>일 때뿐이다(<c>0x00439986</c> — 두 번호가 다 8 미만). 적끼리 부딪히면
+    /// 소리 0x2C · 「충돌했다!」 · 선체 피해 · 백병전(<c>0x004399F7</c>)을 다 치른다 — 백병전과 나포(<c>0x0043A200</c>)도
+    /// 번호로만 편을 가르므로 들이받은 적은 적 쪽 셈을 탄다. 예전에는 적끼리도 아군처럼 그냥 섰다.
     /// </remarks>
     private void Collide(Ship m, Ship t)
     {
-        bool friendly = m.Mine == t.Mine;
+        bool friendly = m.Mine && t.Mine;
         _stage?.Crash(m, t, friendly);
         m.Bump = 3;
         if (t.Bump != 3) t.Bump = 2;
@@ -1788,7 +1790,7 @@ public sealed class SeaBattle
     /// 끊어 빈칸으로 둔다.
     /// </summary>
     public static string CrashWord(Ship mover, Ship hit) =>
-        mover.Mine == hit.Mine ? "위험하다! 정지!\n·····하마터면 아군끼리 부딪칠 뻔 했다." : "충돌했다!";   // 0x0056AFF8
+        mover.Mine && hit.Mine ? "위험하다! 정지!\n·····하마터면 아군끼리 부딪칠 뻔 했다." : "충돌했다!";   // 0x0056AFF8
 
     private string One(string[] lines) => lines[_rng.Next(lines.Length)];
 
