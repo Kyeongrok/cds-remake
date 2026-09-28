@@ -913,7 +913,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 break;
 
             default:
-                Say(_battle.EscapedWord(_foe.Name));
+                // 괴물 판이면 이름 자리에 인물 이름이 아니라 「괴물」(0x0056AD18)이 든다(0x00435B04 · 0x00435B9A).
+                Say(_battle.EscapedWord(_battle.Monster ? "괴물" : _foe.Name));
                 WriteBack(Result);
                 _settle?.Invoke(this, report);
                 CheckCrew();
