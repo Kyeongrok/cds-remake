@@ -4347,7 +4347,11 @@ public sealed class ShipMapWindow : Window
                     return;
                 }
 
-                var hurt = player.Ships.Where(ShoreRepair.Damaged).Take(ShoreRepair.MaxListed).ToList();
+                // 상한 기함이 맨 앞이고 나머지는 함대 차례다(0x0048E284 · 0x0048E2E0) — 줄은 배 이름뿐이다.
+                var flag = player.FlagshipHull;
+                var hurt = player.Ships.Where(ShoreRepair.Damaged)
+                                 .OrderBy(sh => ReferenceEquals(sh, flag) ? 0 : 1)
+                                 .Take(ShoreRepair.MaxListed).ToList();
                 if (hurt.Count == 0)
                 {
                     TalkDialog.Say(this, mate, "", "어느 배도 다 완전합니다. 수리할 필요는 없습니다.");
@@ -4356,7 +4360,7 @@ public sealed class ShipMapWindow : Window
 
                 TalkDialog.Say(this, mate, "", "어느 배를 수리하겠습니까?");
                 int at = ChoiceDialog.Pick(this, "선박 일람",
-                    [.. hurt.Select(sh => $"{sh.Name} ({sh.Hp}/{sh.MaxHp})")]);
+                    [.. hurt.Select(sh => sh.Name)]);
                 if (at < 0 || at >= hurt.Count) return;
 
                 var ship = hurt[at];
