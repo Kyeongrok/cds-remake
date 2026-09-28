@@ -826,10 +826,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         Say(_battle.OrderPrompt());
         if (_battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
-
-        // 지난 턴에 부딪혀 이번 턴에 못 움직이는 배만 남았으면 그대로 다음 계획으로 넘어간다.
-        if (_battle.Ships.Where(s => s.Mine && s.CanAct).All(s => s.Stuck))
-            Say("충돌 영향으로 다음 지시를 받을 때까지 이동할 수 없습니다.");
+        // 「충돌 영향으로…」는 턴 끝에 내지 않는다 — 원본은 부딪힌 배를 <b>눌렀을 때</b>만 낸다(0x0043E299 한 곳).
     }
 
     private void Surrender()
