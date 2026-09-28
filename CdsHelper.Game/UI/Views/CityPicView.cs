@@ -1059,13 +1059,18 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
 
         // 나) 현상금 사냥꾼.
-        if (dice.Next(100) <= _player.AbilityOf(Ability.Luck) + 1) return false;
+        // 운 굴림은 동전으로 보인다 — 비켜 가도 돈다(0x0044FEE1 → 0x004A6380).
+        bool dodged = dice.Next(100) <= _player.AbilityOf(Ability.Luck) + 1;
+        PlayMpEffect(EffectAnim.Coin, dodged);
+        if (dodged) return false;
 
         GameDialog.Show(this, "어이... 저 자, 벽보의...");
         GameDialog.Show(this, "확실히...");
         TalkDialog.Say(this, aide, "", "왠지 분위기가 않좋군요, 도망칩시다.");
 
         int r = dice.Next(100);
+        // 달아나는 굴림은 짐 싣기 벌(0번)로 보인다(0x0044FF7F → 0x004A6120).
+        PlayMpEffect(EffectAnim.Load, r <= 96 && _player.AbilityOf(Ability.Body) + 1 > r);
         if (r <= 96 && _player.AbilityOf(Ability.Body) + 1 > r)
         {
             TalkDialog.Say(this, aide, "", "후우~, 더 이상 쫓아오지 않는군요. 제독, 여긴 너무 위험합니다. 빨리 마을을 떠납시다.");
