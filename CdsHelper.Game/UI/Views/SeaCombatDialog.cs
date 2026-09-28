@@ -617,7 +617,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
             if (here.Stuck)
             {
-                Say("충돌 영향으로 다음 지시를 받을 때까지 이동할 수 없습니다.");
+                // 얼굴 없는 「해전」 창이다(0x0043E2A5 → 0x0049E3E0).
+                ConfirmDialog.Tell(this, "충돌 영향으로 다음 지시를 받을 때까지 이동할 수 없습니다.", BattleTitle);
                 return;
             }
 
@@ -749,9 +750,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 「해전」 창에 YES/NO — 얼굴 없이 묻는다(0x0056B5A0).
         if (!ConfirmDialog.Ask(this, "이동 계획을 종료하겠습니까?", BattleTitle))
         {
-            // 물리면 부관이 한 번 더 권한다(0x0043DEEB) — 맡기면 짜던 계획은 버려진다.
+            // 물리면 한 번 더 권한다(0x0043DEEB) — 얼굴 없는 「해전」 YES/NO 창이다(0x0049E3E0).
+            // 맡기면 짜던 계획은 버려진다.
             if (!_battle.Delegated && HasMate
-                && ConfirmDialog.Ask(this, SeaBattle.OfferAgain, BattleTitle, _face))
+                && ConfirmDialog.Ask(this, SeaBattle.OfferAgain, BattleTitle))
             {
                 _battle.Delegated = true;
                 foreach (var ship in _battle.Ships.Where(s => s.Mine && s.CanAct))
