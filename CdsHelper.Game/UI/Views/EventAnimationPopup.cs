@@ -116,6 +116,7 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Dolphin => new DolphinScene(),
             EventAnimation.FlyingFish => new FlyingFishScene(),
             EventAnimation.Flamingo => new FlamingoScene(),
+            EventAnimation.Morpho => new MorphoScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
@@ -994,6 +995,155 @@ internal sealed class EventAnimationPopup : Window
             int drop = _h / 2 * t * t / 2500;
             if (t >= 0 && drop > 0) _yc = _h / 8 + drop;
             else _yc--;
+        }
+    }
+
+    /// <summary>
+    /// 23 모르포 나비 떼 — 크고 작은 나비 넷이 저마다의 굽이로 지도를 날아 지난다(<c>0x00419670</c>, 객체 <c>0x0061DE58</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00419E00  팔레트 0x33 — 작은 나비 파트 0x1C(128x128 넉 장, 둘이 같이 쓴다) · 가운데 0x1D(256x256 넉 장) ·
+    ///               큰 나비 0x1E(352x352 넉 장) · 여는 참에 소리 0x3E, 끝에 끈다
+    ///   0x00419D20  첫자리  작은1 (41·(W/40), H/2) · 작은2 ((W−128)/2, 41·(H/40)) ·
+    ///               가운데 (41·((W−128)/40), H + 51) · 큰 (W − 35, H − 35)
+    ///   한 걸음 — 큰(0x00419710) → c ≥ 30 가운데(0x00419790) → c ≥ 15 작은1 → c ≥ 20 작은2(0x00419810)
+    ///     장 = (c + i) % 4 가 0 → 0 · 2 → 2 · 그 밖 → 1 (작은2 만 i = 1)
+    ///     큰(0x004198B0)    x += 7·(W/−40)/10, 오른쪽일수록 가파르게 오른다(H/−50 · −60 · −65 · −70)
+    ///     가운데(0x00419960) x −= (W−128)/30, 포물선으로 내렸다 오르고 왼끝에서 H/−20 씩 솟는다
+    ///     작은1(0x00419A30) x −= W/40, 네 토막 포물선으로 물결친다
+    ///     작은2(0x00419BD0) y −= H/40, 아래서 위로 오르며 x 가 굽는다
+    ///   끝(0x004196AC) — 작은1 · 작은2 · 가운데가 다 화면(왼쪽·위)을 벗어났고 큰 나비도 벗어났으면
+    /// </code>
+    /// </remarks>
+    private sealed class MorphoScene : Scene
+    {
+        private const int SW = 0x80, MW = 0x100, LW = 0x160;
+
+        public override int SoundPart => 0x3E - WaveBank.FirstSoundId;
+
+        private BitmapSource[] _s = [], _m = [], _l = [];
+        private int _w, _h, _xa, _ya, _xb, _yb, _xc, _yc, _xd, _yd;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _s = Frames(anims, 0x1C, SW, SW, 0x33) ?? [];
+            _m = Frames(anims, 0x1D, MW, MW, 0x33) ?? [];
+            _l = Frames(anims, 0x1E, LW, LW, 0x33) ?? [];
+            return _s.Length >= 3 && _m.Length >= 3 && _l.Length >= 3;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w; _h = h;
+            _xa = w / 40 * 41;
+            _ya = h / 2;
+            _xb = (w - SW) / 2;
+            _yb = h / 40 * 41;
+            _xc = (w - SW) / 40 * 41;
+            _yc = h + 0x33;
+            _xd = w - 0x23;
+            _yd = h - 0x23;
+        }
+
+        private static int Wing(int n) => (n % 4) switch { 0 => 0, 2 => 2, _ => 1 };
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c > 2000) return true;                      // 원본에는 없다 — 안 끝나는 일이 없게
+
+            draws.Add(new Draw(_l[Wing(c)], _xd, _yd));
+            MoveD();
+            if (c >= 0x1E)
+            {
+                draws.Add(new Draw(_m[Wing(c)], _xc, _yc));
+                MoveC();
+            }
+            if (c >= 0x0F)
+            {
+                draws.Add(new Draw(_s[Wing(c)], _xa, _ya));
+                MoveA();
+            }
+            if (c >= 0x14)
+            {
+                draws.Add(new Draw(_s[Wing(c + 1)], _xb, _yb));
+                MoveB();
+            }
+
+            // 0x004196AC
+            if (_xa + SW >= 0 && _ya + SW >= 0) return false;
+            if (_xb + SW >= 0 && _yb + SW >= 0) return false;
+            if (_xc + MW >= 0 && _yc + MW >= 0) return false;
+            return _xd + LW < 0 || _yd + LW < 0;
+        }
+
+        /// <summary>큰 나비(<c>0x004198B0</c>).</summary>
+        private void MoveD()
+        {
+            _xd += _w / -40 * 7 / 10;
+            _yd += _w * 3 / 4 <= _xd ? _h / -50
+                 : _w / 2 <= _xd ? _h / -60
+                 : _w / 4 <= _xd ? _h / -65
+                 : _h / -70;
+        }
+
+        /// <summary>가운데 나비(<c>0x00419960</c>).</summary>
+        private void MoveC()
+        {
+            int s = Math.Max(1, (_w - SW) / 30);
+            _xc -= s;
+            int k = s * 15;
+            if (_xc >= k)
+            {
+                int t = (_xc - k) / s;
+                _yc = _h / 30 * t * t / 15 + _h / 2;
+            }
+            else if (_xc >= 5)
+            {
+                int t = (k - _xc) / s;
+                _yc = _h / -30 * t * t / 15 + _h / 2;
+            }
+            else
+            {
+                _yc += _h / -20;
+                _xc += s / 2;
+            }
+        }
+
+        /// <summary>작은 나비 1(<c>0x00419A30</c>).</summary>
+        private void MoveA()
+        {
+            int d = Math.Max(1, _w / 40);
+            _xa -= d;
+            int q3 = _w * 3 / 4, h8 = _h / 8;
+            int t;
+            if (q3 <= _xa) { t = (_xa - q3) / d; _ya = h8 * t * t / 100 + _h * 3 / 8; }
+            else if (_w / 2 <= _xa) { t = (q3 - _xa) / d; _ya = h8 * t * t / 100 + _h * 3 / 8; }
+            else if (_w / 4 <= _xa) { t = (_xa - _w / 4) / d; _ya = h8 * t * t / -100 + _h * 5 / 8; }
+            else if (_xa >= 0) { t = 10 - _xa / d; _ya = h8 * t * t / -100 + _h * 5 / 8; }
+            else { t = _xa / d + 10; _ya = h8 * t * t / 100 + _h * 3 / 8; }
+        }
+
+        /// <summary>작은 나비 2(<c>0x00419BD0</c>).</summary>
+        private void MoveB()
+        {
+            int d = Math.Max(1, _h / 40);
+            _yb -= d;
+            int half = _w / 2, hh = Math.Max(1, _h / 2);
+            int bend = (SW - half) * 100 / hh + (_w - SW) / 2 - _w / 8;
+            if (_h * 3 / 4 <= _yb) _xb += _w / -80;
+            else if (_yb >= hh)
+            {
+                int t = (_yb - hh) / d;
+                _xb = (half - SW) * t * t / hh + bend;
+            }
+            else if (_yb >= _h / 4) { }
+            else if (_yb >= 0)
+            {
+                int t = (_h / 4 - _yb) / d;
+                _xb = (half - SW) * t * t / hh / 2 + bend;
+            }
+            else _xb += _w / 80;
         }
     }
 
