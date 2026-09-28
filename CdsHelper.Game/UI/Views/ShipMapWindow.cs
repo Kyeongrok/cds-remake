@@ -4044,12 +4044,26 @@ public sealed class ShipMapWindow : Window
     /// 앱 차림표라 도망처럼 친다. 나포선 들임(<c>0x00434D30</c>)과 되찾은 배 알림은 나포가 없어 안 낸다.
     /// </remarks>
     /// <param name="raid">보이는 함대를 친 판인지(플래그 0). 바다에서 마주친 판은 거짓이다.</param>
+    /// <param name="monster">
+    /// 괴물 판(<c>+0x8FC</c> &gt; 0)이면 이 사람의 번호. 괴물 판은 명성·악명·전리품을 <b>통째로 건너뛴다</b> —
+    /// 이기면 퇴치 삯(능력치) 한 줄만 내고(<c>0x0043550C</c> → <c>0x004356D1</c>), 적이 물러나도
+    /// (<c>0x00436012</c>) 도망쳐도(<c>0x00435C62</c>) 명성·악명이 안 움직인다. 무력 오름(<c>0x00455CA0</c>)은
+    /// 그대로 돈다.
+    /// </param>
     private void SettleRaid(Window board, SeaCombatDialog.Report end, int nation, int capital, Random rng,
-                            bool raid)
+                            bool raid, int? monster = null)
     {
         const string Title = "해전";
         var player = _game.Player;
         var (fame, infamy) = FleetRaid.BaseOf(nation == player.Nation);
+
+        if (monster is { } beast)
+        {
+            if (end.Outcome == SeaCombatDialog.Outcome.Won) RewardMonster(board, beast);
+            if (end.Outcome is SeaCombatDialog.Outcome.Won or SeaCombatDialog.Outcome.EnemyRetreated)
+                RaiseMight(board, rng);
+            return;
+        }
 
         switch (end.Outcome)
         {
@@ -5057,23 +5071,17 @@ public sealed class ShipMapWindow : Window
 
         EndWeather();   // 해전이 열리면 비가 그친다(0x00443822)
 
-        // 괴물 판도 같은 값 치르기를 거친다 — 나라가 없으므로 명성 쪽이다(플래그는 대본 것이라 0 이 아니라고 본다).
-        int beastNation = _game.PersonTemplates?.Find(person)?.Nation ?? -1;
+        // 괴물 판은 명성·악명·전리품이 없다 — 이기면 퇴치 삯 한 줄과 무력 오름뿐이다(0x0043550C).
         var outcome = SeaCombatDialog.Engage(this, _game.Player, foe, rng, MateFace(),
                                             (_host.LastWind.Dir, _host.LastWind.Speed), _game.Sfx,
                                             foeFace,
-                                            (board, end) => SettleRaid(board, end, beastNation,
-                                                                       _game.Nations?.Find(beastNation)?.Capital ?? -1,
-                                                                       rng, raid: false),
+                                            (board, end) => SettleRaid(board, end, -1, -1, rng, raid: false,
+                                                                       monster: person),
                                             SeaDuel(person, name, foeFace), _game.Bgm,
                                             monster: true).Outcome;
 
         if (outcome != SeaCombatDialog.Outcome.Defeated)
-        {
-            // 괴물을 잡으면 그 자리에서 능력치가 오른다(0x0043553C).
-            if (outcome == SeaCombatDialog.Outcome.Won) RewardMonster(person);
             return (outcome == SeaCombatDialog.Outcome.Won, false);
-        }
 
         // 괴물에게 지면 여느 패배와 딴 말이다(0x004351F9).
         NoticeDialog.Show(this, "  괴물이 먹어 버렸습니다", "해전");   // 앞 빈칸 둘도 원본 그대로다(0x0056A3F8)
@@ -5082,8 +5090,8 @@ public sealed class ShipMapWindow : Window
         return (false, true);
     }
 
-    /// <summary>괴물을 퇴치한 삯 — 능력치를 올리고 그 말을 낸다(<c>0x0043553C</c>).</summary>
-    private void RewardMonster(int person)
+    /// <summary>괴물을 퇴치한 삯 — 능력치를 올리고 그 말을 판 위에 낸다(<c>0x0043553C</c>, 제목 「해전」).</summary>
+    private void RewardMonster(Window board, int person)
     {
         var (words, gains) = EnemyFleet.MonsterPrize(person);
         if (words.Length == 0) return;
@@ -5092,7 +5100,7 @@ public sealed class ShipMapWindow : Window
         foreach (var (ability, by) in gains)
             stats[ability] = Math.Clamp(stats[ability] + by, Ability.Min, Ability.Max);
         _game.Player.SetAbilities(stats);
-        NoticeDialog.Show(this, words);
+        NoticeDialog.Show(board, words, "해전");
     }
 
     private Captain? CaptainOf(int id)
