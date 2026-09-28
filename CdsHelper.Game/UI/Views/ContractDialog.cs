@@ -119,7 +119,9 @@ public sealed class ContractDialog : GameWindow
 
         Put(board, Label(title), 0, 8);
 
-        var close = CloseBox();
+        // 닫기는 게임 조각으로 그린 공용 것이다 — 창마다 손으로 짓지 않는다.
+        var close = GameUi.CloseBox(Close);
+        close.Margin = new Thickness(0);
         Put(board, close, BoardWidth - 21, 3);
 
         Put(board, Label($"스폰서  {sponsorShown}"), RowLeft, 40);
@@ -161,32 +163,6 @@ public sealed class ContractDialog : GameWindow
         if (years > 0) text += $" {years,2}년";
         if (years == 0 || months > 0) text += $" {months,2}개월";
         return text;
-    }
-
-    /// <summary>제목 줄 오른쪽 끝의 닫기(X). 게임 창들도 그 자리에 있다.</summary>
-    private FrameworkElement CloseBox()
-    {
-        var box = new Border
-        {
-            Background = GameUi.ItemFill,
-            BorderBrush = GameUi.ItemEdge,
-            BorderThickness = new Thickness(2),
-            Padding = new Thickness(5, 0, 5, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-            Cursor = Cursors.Hand,
-            ToolTip = "닫기",
-            Child = new TextBlock
-            {
-                Text = "✕",
-                Foreground = Brushes.Black,
-                FontWeight = FontWeights.Bold,
-                FontSize = 13,
-            },
-        };
-        // 누름은 삼킨다 — 판 끌기가 먼저 걸리면 마우스를 잡아 버려 뗌이 안 온다.
-        box.MouseLeftButtonDown += (_, e) => e.Handled = true;
-        box.MouseLeftButtonUp += (_, e) => { e.Handled = true; Close(); };
-        return box;
     }
 
     /// <summary>속 좌표로 캔버스에 놓는다.</summary>

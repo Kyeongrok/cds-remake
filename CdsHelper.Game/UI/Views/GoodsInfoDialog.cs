@@ -74,9 +74,12 @@ public sealed class GoodsInfoDialog : GameWindow
         close.VerticalAlignment = VerticalAlignment.Top;
         close.Margin = new Thickness(0, 12, 12, 0);
 
-        var cancel = GameUi.PushButton("취소", Close, 78);
-        cancel.HorizontalAlignment = HorizontalAlignment.Right;
-        cancel.Margin = new Thickness(0, 0, 14, 12);
+        // 취소는 게임 띠 단추다 — 도시 정보 창의 취소(0x004707AB, 48x24)와 같은 것이다.
+        var cancel = new GameButton("취소", Close, width: 48)
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 0, 14, 12),
+        };
 
         var right = new DockPanel { LastChildFill = true };
         DockPanel.SetDock(close, Dock.Top);

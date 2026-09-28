@@ -92,13 +92,8 @@ public sealed class HullSelectDialog : GameWindow
         {
             Margin = new Thickness(8, 4, 8, 0),
             // 배를 등록해 넣으면 줄이 얼마든 늘 수 있다 — 화면 밖으로 자라지 않게 굴린다.
-            Child = new ScrollViewer
-            {
-                Content = BuildTable(),
-                MaxHeight = TableMaxHeight,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            },
+            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+            Child = GameUi.Scroller(BuildTable(), TableMaxHeight),
         });
         stack.Children.Add(buttons);
 

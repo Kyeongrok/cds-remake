@@ -2467,7 +2467,7 @@ public sealed class ShipMapWindow : Window
             // 대본으로 지어 준 발견물 이름을 표에 도로 덧씌운다 — 게임은 레코드에 직접 쓴다.
             _game.Player.RestoreNamedDiscoveries(saved.NamedDiscoveries);
             // 남이 먼저 발표한 발견물. 이 칸 앞의 세이브는 아무도 안 앞지른 판으로 연다.
-            _game.Player.RestoreScooped(saved.Scooped);
+            _game.Player.RestoreScooped(saved.Scooped, saved.ScoopedOn);
             _game.Player.Drinking = saved.Drinking ?? 0;
             Local.Helpers.DiscoveryTable.ResetNames(_game.Player.NamedDiscoveries);
             _game.Player.RestoreRumors(saved.Rumors, saved.PersonLines);

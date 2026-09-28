@@ -17,7 +17,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 확인만, <c>2</c> 면 YES/NO 다 — 부르는 자리 146 곳 가운데 117 곳이 확인, 21 곳이 YES/NO 다.
 /// YES 를 고르면 <c>2</c> 가 나온다.
 ///
-/// 게임은 말하는 사람 얼굴을 왼쪽에 같이 띄우지만 초상화는 아직 안 꺼내 오므로 글만 낸다.
+/// 얼굴은 부르는 쪽이 넘길 때만 선다(<c>face</c>). 게임도 그렇다 — 여느 물음·알림(<c>0x00469060</c>)은
+/// 얼굴 자리에 <c>-1</c> 을 넘겨(<c>0x0049E44A</c>) 글만 내고, 사람이 말하는 창만 <c>0x004691F0</c> →
+/// <c>0x00478280</c> 으로 그 사람 얼굴을 붙인다(<see cref="TalkDialog"/>).
 /// 입항 물음도 이 창이다 — 예전에는 손으로 지은 딴 창(PortDialog)이 따로 있었다.
 ///
 /// <b>자리는 재지 않고 게임 코드에서 그대로 옮겼다</b> — 창을 짓는 곳이 <c>0x0049D7B0</c>,
@@ -161,33 +163,44 @@ public sealed class ConfirmDialog : GameWindow
     }
 
     /// <summary>
-    /// 본문을 <see cref="MaxTextWidth"/> 안에 들도록 띄어쓰기에서 끊는다. 게임 글꼴이 아직
-    /// 없으면 재 볼 것이 없어 통째로 한 줄이다.
+    /// 본문을 줄로 가른다 — 게임 셈 그대로다(<c>0x0049D851</c> ~ <c>0x0049D9AF</c>).
     /// </summary>
+    /// <remarks>
+    /// 칸은 반각 한 자가 1, 한글·전각이 2 다. <b>두 칸짜리 글자 앞에서만</b> 끊는다 — 그 자리까지 찬 칸이
+    /// <see cref="MaxCells"/>(예순) 이상이면 그 글자부터 다음 줄이다. 낱말은 가리지 않는다(「이동합 / 니다.」).
+    /// 반각 글자(띄어쓰기·「!」「?」 따위)는 칸만 세고 그 앞에서는 안 끊는다.
+    /// 줄 머리에 못 오는 글자(<c>0x0049DDF0</c> — 한국어판에서 뜻이 있는 것은 전각 「！」 하나)면 한 자 앞에서 끊는다.
+    /// 줄바꿈 글자는 그대로 줄을 가른다.
+    /// </remarks>
     private static List<string> Wrap(string text)
     {
-        var font = GameUi.Font;
-        if (font == null) return [text];
-
         var lines = new List<string>();
-        var line = new StringBuilder();
-        foreach (string word in text.Split(' '))
+        foreach (string raw in text.Replace("\r\n", "\n").Split('\n'))
         {
-            string joined = line.Length == 0 ? word : $"{line} {word}";
-            if (line.Length > 0 && font.TextWidth(joined) > MaxTextWidth)
+            var line = new StringBuilder();
+            int cells = 0;
+            foreach (char c in raw)
             {
-                lines.Add(line.ToString());
-                line.Clear();
-                line.Append(word);
+                bool wide = c > 0x7F;
+                if (wide && cells >= MaxCells)
+                {
+                    // 줄 머리에 못 오는 글자면 앞 글자를 데리고 내려간다(0x0049D896 의 되짚기).
+                    string carry = "";
+                    if (c == '！' && line.Length > 1)
+                    {
+                        carry = line[^1].ToString();
+                        line.Length--;
+                    }
+                    lines.Add(line.ToString());
+                    line.Clear().Append(carry);
+                    cells = carry.Length == 0 ? 0 : carry[0] > 0x7F ? 2 : 1;
+                }
+                line.Append(c);
+                cells += wide ? 2 : 1;
             }
-            else
-            {
-                line.Clear();
-                line.Append(joined);
-            }
+            lines.Add(line.ToString());
         }
-        if (line.Length > 0) lines.Add(line.ToString());
-        return lines.Count > 0 ? lines : [text];
+        return lines;
     }
 
     // ── 게임 화면에서 잰 자리(그림 점) ──────────────────────────────────────
@@ -258,12 +271,8 @@ public sealed class ConfirmDialog : GameWindow
         return image;
     }
 
-    /// <summary>
-    /// 한 줄이 이보다 길면 끊는다. 예전 480(예순 칸)은 짧았다 — 출항 물음 「준비 만반입니다. 언제라도
-    /// 출항할 수 있습니다! 출항하겠습니까?」가 원본은 한 줄(얼굴 옆 약 490점)인데 우리는 두 줄로 끊겼다.
-    /// 여든 칸(640)까지 한 줄로 둔다.
-    /// </summary>
-    private const double MaxTextWidth = 640;
+    /// <summary>한 줄에 드는 칸 수(<c>0x0049D876</c> 의 <c>cmp esi,0x3C</c>). 반각 한 자가 한 칸이다.</summary>
+    private const int MaxCells = 60;
 
     /// <summary>단추 크기와 사이. 폭은 마구리 둘에 가운데 넉 칸이다(16+8*4+16).</summary>
     private const double ButtonWidth = 64, ButtonHeight = UiSprites.BandHeight, ButtonGap = 16;

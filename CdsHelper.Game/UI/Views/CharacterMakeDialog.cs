@@ -41,10 +41,8 @@ namespace CdsHelper.Game.UI.Views;
 /// 이름 칸 오른쪽 작은 단추는 <see cref="TextInputDialog"/> 를, 숫자 칸 것은
 /// <see cref="NumberPadDialog"/> 를 연다. "일람" 은 미리 갖춰 둔 이름을 늘어놓는다.
 ///
-/// <b>이름 일람은 게임 것이 아니다.</b> 게임은 그 목록을 파일에서 읽어 오는데
-/// (<c>0x0045C9DD</c> 가 클래스 <c>0x004FD0D8</c> 을 세운다) 그 파일을 아직 안 짚었다.
-/// 그래서 EXE 의 <b>후원자 이름 여든하나</b>(<see cref="SponsorTable"/>)를 가운뎃점에서
-/// 갈라 명·성 목록으로 쓴다 — 같은 시대의 진짜 이름들이다.
+/// 「일람」 목록은 EXE 에 박힌 주인공 이름 표다(<see cref="PlayerNameTable"/>, <c>0x0045C9DD</c> 가 세우는
+/// 클래스 <c>0x004FD0D8</c>) — 성 마흔여덟, 명 서른일곱.
 /// </remarks>
 internal sealed class CharacterMakeDialog : GameWindow
 {
@@ -561,9 +559,6 @@ internal sealed class CharacterMakeDialog : GameWindow
         return true;
     }
 
-    /// <summary>
-    /// 고를 수 있는 명·성. 후원자 여든하나의 이름을 가운뎃점에서 가른 것이다.
-    /// </summary>
     /// <summary>
     /// 고를 수 있는 이름들. <b>EXE 에 박힌 표</b>다(<see cref="PlayerNameTable"/>) —
     /// 성 마흔여덟, 명 서른일곱이고 명은 국적에 따라 표기가 갈린다.

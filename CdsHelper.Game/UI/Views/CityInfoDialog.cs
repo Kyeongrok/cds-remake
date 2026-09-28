@@ -16,14 +16,15 @@ namespace CdsHelper.Game.UI.Views;
 ///   런던
 ///   잉글랜드 왕국                      X
 ///
-///      규모   ■■■■■□□□
-///      상태   통상
-///      시세   127
-///      언어   게르만어
-///      특산품  [ 대포 ]
-///              [ 철광석 ]
+///     규모    ■■■■■□□
+///     상태    통상
+///     시세     127
+///     언어    게르만어
+///     특산품 [ 대포 ]
+///            [ 철광석 ]
 ///                              [취소]
 /// </code>
+/// 줄은 16 점마다 딱 붙여 찍고, 단추는 모두 게임 띠 단추다.
 /// 값이 어디서 오는지가 제각각이다.
 /// <list type="bullet">
 /// <item>나라·언어 — 나라 표(<see cref="NationTable"/>). 도시에는 나라 번호만 있고 말은
@@ -39,16 +40,33 @@ public sealed class CityInfoDialog : GameWindow
     private static readonly Brush Back = GameUi.InfoBack;
     private static readonly Brush Ink = Freeze(Color.FromRgb(0x10, 0x10, 0x18));
 
-    /// <summary>규모 막대 — 찬 쪽은 붉고 빈 쪽은 검다. 게임 화면에서 뽑았다.</summary>
-    private static readonly Brush BarFull = Freeze(Color.FromRgb(0xA8, 0x20, 0x20));
-    private static readonly Brush BarEmpty = Freeze(Color.FromRgb(0x10, 0x10, 0x10));
+    /// <summary>
+    /// 규모 막대 — 찬 쪽은 붉고 빈 쪽은 검다. 게임 갈무리에서 뽑은 값이다(볼트 28:
+    /// 찬 쪽 <c>#87150A</c> · 빈 쪽 <c>#000000</c>). 게임은 색표 <c>0x3B</c> · <c>0x49</c> 로 칠한다(<c>0x004704F5</c>).
+    /// </summary>
+    private static readonly Brush BarFull = Freeze(Color.FromRgb(0x87, 0x15, 0x0A));
+    private static readonly Brush BarEmpty = Freeze(Color.FromRgb(0x00, 0x00, 0x00));
+
+    /// <summary>글색 — 창 전체가 색표 <c>0x49</c> 한 빛이다(<c>0x0047040A</c>).</summary>
+    private const byte InkColor = 0x49;
 
     /// <summary>규모가 다 찼을 때의 값. 막대를 이 값에 맞춰 채운다.</summary>
     /// <remarks>
-    /// EXE 도시 표의 규모가 0~7 이다. 게임 화면(런던, 규모 5)에서 막대를 재니 붉은 칸이
-    /// 전체의 71% 였다 — 5/7 이지 5/8 이 아니다.
+    /// EXE 도시 표의 규모가 0~7 이다. 막대를 그리는 <c>0x0046C8E0</c> 에도 만점 <c>7</c> 이 넘어간다(<c>0x00470500</c>).
     /// </remarks>
     private const int MaxScale = 7;
+
+    /// <summary>
+    /// 창 속 크기와 자리 — 게임 코드에서 옮겼다(<c>0x004706C6</c> 창 336x256, 테 8 을 뺀 속, <c>0x004703C0</c> 글).
+    /// <code>
+    ///   도시 이름 (8,8) · 나라 (8,24)
+    ///   "규모" (24,56) — 막대 (88,58) 112x12
+    ///   "상태    %s" (24,72) · "시세    %4d" (24,88) · "언어    %s" (24,104) · "특산품" (24,120)
+    ///   특산품 단추 (96, 120 + 24i) 144x24 — 제 것 뒤로 딸린 내륙 도시 것
+    ///   취소 (264,208) 48x24
+    /// </code>
+    /// </remarks>
+    private const double BoardWidth = 320, BoardHeight = 240;
 
     private static SolidColorBrush Freeze(Color c)
     {
@@ -74,49 +92,53 @@ public sealed class CityInfoDialog : GameWindow
             ? LanguageName(n.Language)
             : "";
 
-        var head = new StackPanel { Margin = new Thickness(16, 12, 0, 0) };
-        head.Children.Add(Text(cityName, 16));
-        head.Children.Add(Text(nation?.Name ?? "", 16));
+        var board = new Canvas { Width = BoardWidth, Height = BoardHeight, Background = Back };
 
-        // 닫기는 게임 조각으로 그린 공용 것이다 — 창마다 손으로 짓지 않는다.
-        var close = GameUi.CloseBox(Close);
+        Put(board, Text(cityName), 8, 8);
+        Put(board, Text(nation?.Name ?? ""), 8, 24);
 
-        var top = new DockPanel { LastChildFill = true };
-        DockPanel.SetDock(close, Dock.Right);
-        top.Children.Add(close);
-        top.Children.Add(head);
+        // 줄 글은 게임 서식 그대로 이름과 값이 한 줄이다(0x005714A8 「상태    %s」 벌).
+        Put(board, Text("규모"), 24, 56);
+        Put(board, ScaleBar(cities?.ScaleOf(cityId) ?? 0), 88, 58);
+        Put(board, Text($"상태    {CityState.NameOf(rates.StateOf(cityId))}"), 24, 72);
+        Put(board, Text($"시세    {rates.Of(cityId),4}"), 24, 88);
+        Put(board, Text($"언어    {language}"), 24, 104);
 
-        var rows = new StackPanel { Margin = new Thickness(36, 18, 24, 6) };
-        rows.Children.Add(Row("규모", ScaleBar(cities?.ScaleOf(cityId) ?? 0)));
-        rows.Children.Add(Row("상태", Text(CityState.NameOf(rates.StateOf(cityId)), 15)));
-        rows.Children.Add(Row("시세", Text($"{rates.Of(cityId)}", 15)));
-        rows.Children.Add(Row("언어", Text(language, 15)));
-
-        // 특산품은 줄마다 단추다. 누르면 그 교역품 창이 뜬다.
-        var specials = new StackPanel();
+        // 특산품은 줄마다 띠 단추다(0x00470855 → 0x00413450). 누르면 그 교역품 창이 뜬다.
+        int row = 0;
         foreach (int id in cities?.SpecialsOf(cityId) ?? [])
         {
             if (goods?.Find(id) is not { } g) continue;
-            var button = GameUi.PushButton(g.Name, () =>
-                GoodsInfoDialog.Show(this, g, goods.CategoryName(g.Category), art), 190);
-            button.HorizontalAlignment = HorizontalAlignment.Left;
-            button.Margin = new Thickness(0, 0, 0, 4);
-            specials.Children.Add(button);
+            var button = new GameButton(g.Name, () =>
+                GoodsInfoDialog.Show(this, g, goods.CategoryName(g.Category), art), width: 144)
+            {
+                Margin = new Thickness(0),
+            };
+            Put(board, button, 96, 120 + 24 * row++);
         }
-        if (specials.Children.Count > 0) rows.Children.Add(Row("특산품", specials));
+        if (row > 0) Put(board, Text("특산품"), 24, 120);
 
-        var cancel = GameUi.PushButton("취소", Close, 78);
-        cancel.HorizontalAlignment = HorizontalAlignment.Right;
-        cancel.Margin = new Thickness(0, 6, 16, 14);
+        // 취소도 띠 단추다(0x004707AB).
+        Put(board, new GameButton("취소", Close, width: 48) { Margin = new Thickness(0) }, 264, 208);
 
-        var stack = new StackPanel { MinWidth = 400 };
-        stack.Children.Add(top);
-        stack.Children.Add(rows);
-        stack.Children.Add(cancel);
-        Content = GameUi.InfoFrame(stack, Back);
+        // 닫기는 게임 조각으로 그린 공용 것이다 — 창마다 손으로 짓지 않는다.
+        var close = GameUi.CloseBox(Close);
+        close.Margin = new Thickness(0);
+        Canvas.SetRight(close, 4);
+        Canvas.SetTop(close, 4);
+        board.Children.Add(close);
 
-        GameUi.EnableDrag(this, top);
+        Content = GameUi.InfoFrame(board, Back);
+
+        GameUi.EnableDrag(this, board);
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+    }
+
+    private static void Put(Canvas board, UIElement element, double x, double y)
+    {
+        Canvas.SetLeft(element, x);
+        Canvas.SetTop(element, y);
+        board.Children.Add(element);
     }
 
     /// <summary>언어 이름. 표를 못 읽었으면 번호로 물러선다.</summary>
@@ -134,40 +156,21 @@ public sealed class CityInfoDialog : GameWindow
         "동남아시아토착어", "동아시아토착어",
     ];
 
-    /// <summary>줄 하나 — 이름과 값.</summary>
-    private static FrameworkElement Row(string name, FrameworkElement value)
-    {
-        var line = new DockPanel { LastChildFill = true, Margin = new Thickness(0, 0, 0, 6) };
-        var label = Text(name, 15);
-        label.Width = 76;
-        DockPanel.SetDock(label, Dock.Left);
-        line.Children.Add(label);
-        value.HorizontalAlignment = HorizontalAlignment.Left;
-        value.VerticalAlignment = VerticalAlignment.Center;
-        line.Children.Add(value);
-        return line;
-    }
-
     /// <summary>
-    /// 판 위의 글씨. <b>게임 글꼴</b>로 찍는다 — 바탕이 밝아 검은 글씨다.
+    /// 판 위의 글씨. <b>게임 글꼴</b>로 찍는다.
     /// </summary>
-    /// <remarks>
-    /// 게임 글꼴은 크기가 한 가지라 <paramref name="size"/> 는 <b>물러설 때만</b> 든다 —
-    /// 글꼴을 못 읽었을 때의 WPF 글자 크기다.
-    /// </remarks>
-    private static GameUi.GameLabel Text(string text, double size) => new(GameFont.BlackColor)
+    private static GameUi.GameLabel Text(string text) => new(InkColor)
     {
         Text = text,
         Bold = false,
         FallbackBrush = Ink,
-        VerticalAlignment = VerticalAlignment.Center,
     };
 
-    /// <summary>규모 막대. 찬 만큼 붉고 나머지는 검다.</summary>
+    /// <summary>규모 막대 112x12(<c>0x0047050C</c>). 찬 만큼 붉고 나머지는 검다.</summary>
     private static FrameworkElement ScaleBar(int scale)
     {
         int full = Math.Clamp(scale, 0, MaxScale);
-        var bar = new Grid { Width = 210, Height = 16 };
+        var bar = new Grid { Width = 112, Height = 12, ToolTip = $"규모 {scale}" };
         bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(full, GridUnitType.Star) });
         bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(MaxScale - full, GridUnitType.Star) });
 
@@ -178,14 +181,7 @@ public sealed class CityInfoDialog : GameWindow
         var right = new Border { Background = BarEmpty };
         Grid.SetColumn(right, 1);
         bar.Children.Add(right);
-
-        return new Border
-        {
-            BorderBrush = Ink,
-            BorderThickness = new Thickness(1),
-            Child = bar,
-            ToolTip = $"규모 {scale}",
-        };
+        return bar;
     }
 
     /// <summary>도시 정보 창을 연다.</summary>

@@ -252,14 +252,13 @@ public sealed class HintListDialog : GameWindow
             // <b>가로로 넓고 세로는 줄 수를 따라간다.</b> 게임 창이 그렇다 — 두 줄이면
             // 두 줄만큼만 높고, 길어지면 그때 늘어나다 스무 줄쯤에서 멎고 굴러간다.
             // 예전에는 280x300 으로 박아 두어 줄이 몇 없어도 아래가 텅 비었다.
-            Child = new ScrollViewer
+            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+            Child = GameUi.Scroller(new Border
             {
                 // 얼굴을 붙이면 그만큼 넓힌다 — 이름 칸 폭은 그대로 둔다.
                 Width = faces == null ? ListWidth : ListWidth + FaceWidth + FaceGap,
-                MaxHeight = ListMaxHeight,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Content = list,
-            },
+                Child = list,
+            }, ListMaxHeight),
         });
         stack.Children.Add(buttons);
 

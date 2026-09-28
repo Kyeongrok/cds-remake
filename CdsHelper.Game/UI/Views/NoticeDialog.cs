@@ -43,8 +43,11 @@ public static class NoticeDialog
     /// 게임 화면이 640점이고 설명 창이 그 안에 드는지라 한 줄이 예순 자 남짓이다.
     /// <b>접지 않으면 창이 가로로 한없이 길어진다</b> — 미궁 64의 설명은 한 줄이 백 자를
     /// 넘어, 우리 창이 화면을 꽉 채웠다.
+    ///
+    /// 물음창이 한 줄을 예순 칸에서 끊으므로(<c>0x0049D876</c>) 여기서도 예순에서 접는다 — 더 길게 두면
+    /// 물음창이 다시 끊어 두어 자짜리 토막 줄이 생긴다.
     /// </remarks>
-    private const int ExplainWidth = 62;
+    private const int ExplainWidth = 60;
 
     /// <summary>
     /// 글을 반각 <paramref name="cells"/> 자에서 접는다. 한글·기호는 두 칸으로 센다 —

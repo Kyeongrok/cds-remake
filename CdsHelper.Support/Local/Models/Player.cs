@@ -1718,13 +1718,27 @@ public sealed class Player
     {
         if (who.Length == 0 || HasAnnounced(discovery) || _scooped.ContainsKey(discovery)) return false;
         _scooped[discovery] = who;
+        // 칸 2 에는 이름과 함께 그 연월이 적힌다(0x004AACA0) — 연표가 이 날짜로 「보고」 줄을 세운다.
+        _scoopedOn[discovery] = Date;
         return true;
     }
 
+    private readonly Dictionary<int, DateTime> _scoopedOn = [];
+
+    /// <summary>남이 발표한 날. 날짜를 안 적던 세이브에서 온 것이면 null 이다.</summary>
+    public DateTime? ScoopedOn(int discovery) =>
+        _scoopedOn.TryGetValue(discovery, out var on) ? on : null;
+
+    /// <summary>남이 발표한 날들 — 세이브에 적는다.</summary>
+    public IReadOnlyDictionary<int, DateTime> ScoopedDates => _scoopedOn;
+
     /// <summary>세이브를 되돌릴 때 남이 발표한 것을 그대로 채운다.</summary>
-    public void RestoreScooped(IReadOnlyDictionary<int, string>? taken)
+    public void RestoreScooped(IReadOnlyDictionary<int, string>? taken,
+                               IReadOnlyDictionary<int, DateTime>? on = null)
     {
         _scooped.Clear();
+        _scoopedOn.Clear();
+        if (on != null) foreach (var (discovery, when) in on) _scoopedOn[discovery] = when;
         if (taken == null) return;
         foreach (var (discovery, who) in taken) _scooped[discovery] = who;
     }
