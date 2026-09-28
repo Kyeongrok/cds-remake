@@ -404,6 +404,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
         if (!ConfirmDialog.Ask(this, "한발 앞의 상태로 돌아가겠습니까?", "앞으로 돌아간다")) return;
 
         _game.Undo();
+        _sfx?.Play(0x1D - 28);   // 한 발 되돌리면 사운드 0x1D(파트 1)를 낸다(0x0042ABAC)
         Sync();
     }
 
