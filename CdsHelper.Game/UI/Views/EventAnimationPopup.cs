@@ -122,7 +122,9 @@ internal sealed class EventAnimationPopup : Window
         if (track >= 0) game.Bgm.Stop();
         var sfx = game.Sfx;
         play.Sfx = sfx;
-        if (play.SoundPart >= 0) sfx?.Play(play.SoundPart);
+        // 여는 참의 소리(0x40·0x41·0x42·0x36)는 소리 표 0x004C3810 의 +0x10 이 2 라 <b>되풀이한다</b>
+        // (0x004229A9 가 그 값이 2 면 되풀이로 튼다) — 장면 끝에 끌 때까지 돈다.
+        if (play.SoundPart >= 0) sfx?.PlayLoop(play.SoundPart);
 
         var popup = new EventAnimationPopup(area, scale) { Owner = owner };
         popup.Show();
@@ -133,7 +135,7 @@ internal sealed class EventAnimationPopup : Window
         finally
         {
             popup.Close();
-            if (play.SoundPart >= 0) sfx?.Stop();          // 끝에 제 소리를 끈다(0x00422A40(소리, 3))
+            if (play.SoundPart >= 0) sfx?.StopLoop();      // 끝에 제 소리를 끈다(0x00422A40(소리, 3))
             if (track >= 0) game.Bgm.Play(track);
         }
     }
@@ -425,12 +427,12 @@ internal sealed class EventAnimationPopup : Window
             if (step >= SoundStep && !_rang)
             {
                 _rang = true;
-                Sfx?.Play(0x45 - WaveBank.FirstSoundId);
+                Sfx?.PlayLoop(0x45 - WaveBank.FirstSoundId);   // 표 0x004C3810 에서 되풀이하는 소리다
             }
             if (step >= HushStep && !_hushed)
             {
                 _hushed = true;
-                Sfx?.Stop();                       // 0x00422A40(0x45, 3)
+                Sfx?.StopLoop();                   // 0x00422A40(0x45, 3)
             }
 
             int frame = step switch
@@ -608,8 +610,8 @@ internal sealed class EventAnimationPopup : Window
         public override bool Step(int c, List<Draw> draws)
         {
             if (c >= 0x36) return true;
-            if (c == 5) Sfx?.Play(0x3C - WaveBank.FirstSoundId);   // 사운드 ID 0x3C(0x00497FAC) — 파트는 28 을 뺀 32
-            if (c == 0x2B) Sfx?.Stop();
+            if (c == 5) Sfx?.PlayLoop(0x3C - WaveBank.FirstSoundId);   // 사운드 ID 0x3C(0x00497FAC) — 파트는 28 을 뺀 32, 되풀이한다
+            if (c == 0x2B) Sfx?.StopLoop();
             if (c < 5) return false;
 
             int f = c switch
@@ -668,9 +670,14 @@ internal sealed class EventAnimationPopup : Window
         public override bool Step(int count, List<Draw> draws)
         {
             // sound·sound2 는 사운드 ID 다 — 파트는 28 을 뺀 값이다(0x3A → 30).
-            if (count == soundAt && sound >= 0) Sfx?.Play(sound - WaveBank.FirstSoundId);
+            // 끄는 걸음이 있는 소리(늪 0x43 · 유사 0x44)는 표 0x004C3810 에서 되풀이하는 소리라 끌 때까지 돈다.
+            if (count == soundAt && sound >= 0)
+            {
+                if (soundOff >= 0) Sfx?.PlayLoop(sound - WaveBank.FirstSoundId);
+                else Sfx?.Play(sound - WaveBank.FirstSoundId);
+            }
             if (count == soundAt2 && sound2 >= 0) Sfx?.Play(sound2 - WaveBank.FirstSoundId);
-            if (count == soundOff) Sfx?.Stop();
+            if (count == soundOff) Sfx?.StopLoop();
 
             // 걸음별 장 표가 있으면 그대로 따르고, 없으면 한 걸음에 한 장씩 곧이 넘긴다.
             if (count >= (endAt >= 0 ? endAt : _art.Length)) return true;
