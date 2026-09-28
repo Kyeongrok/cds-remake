@@ -256,7 +256,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
 
         // 기분이 상한 후원자는 문간에서 돌려보낸다(0x004AEFC1, 후원자 비트 14) — 설득을 물렸거나
-        // 계약 결판을 치른 뒤 30일 동안이다(0x004A2AD0 이 푼다).
+        // 계약 결판을 치른 뒤 한동안이다(풀리는 셈은 Player.IsSulking 참고).
         if (_player.IsSulking(patron.Name))
         {
             // 0x00546778 「%s%s 꽤 기분이…」 — 인자는 경칭과 그 조사 은/는 뿐이다(0x004AEFA2 의 0x004281B0(경칭, 1)).
@@ -735,7 +735,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   다른 이야기를   0x00546120 · 0x00546158 · 0x00546198
     ///   아주 물림       0x005461F0 · 0x00546218 · 0x00546250
     /// </code>
-    /// 아주 물리면 게임은 후원자의 기분을 상하게 해 한동안 안 만나 주는데, 그 자리는 아직 안 들고 있다.
+    /// 아주 물리면 부른 쪽이 후원자의 기분을 상하게 한다(<c>0x004AE72A</c> · <c>0x004AE84E</c> 의 비트 14,
+    /// <see cref="Player.Sulk"/>) — 그동안은 문간에서 돌려보낸다(<c>0x004AEFC1</c>).
     /// </remarks>
     private Persuasion.Verdict Decide(HintTable.Hint hint, Patron patron,
                                       SponsorTable.Sponsor? sponsor,
@@ -1377,7 +1378,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   44f166  친밀도가 0 이하면 감옥
     ///   44f170  문턱(<see cref="Palace.Reckoning"/>) 으로 갈린다
     /// </code>
-    /// 깃발 14 는 삐짐이다(<see cref="Player.IsSulking"/> — 설득을 물렸거나 계약중단을 한 뒤 30일).
+    /// 깃발 14 는 삐짐이다(<see cref="Player.IsSulking"/> — 설득을 물렸거나 계약중단을 한 뒤 한동안).
     /// 말은 신분마다 세 벌씩이고, 위약금을 못 내면 그대로 감옥이다.
     /// </remarks>
     /// <returns>감옥에서 놀이가 끝났으면 true.</returns>
@@ -1677,7 +1678,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                     ? Pick3(".........", "무슨 일일까요...", "후~, 기대하고 있었건만.")
                     : Pick3("뭐라고...", "뭐라고...", "후~... 계약을 파기하리라고는."));
 
-            // 계약중단은 어느 갈래로 끝나든 후원자가 삐진다(0x0044EEA0 의 비트 14) — 30일 동안 설득을 물린다.
+            // 계약중단은 어느 갈래로 끝나든 후원자가 삐진다(0x0044EEA0 의 비트 14) — 한동안 설득을 물린다.
             // 부관의 「제독, 곤란하게 되었습니다…」(0x00532430)는 여기서 안 나온다 — 감찰관을 처벌했을 때
             // 나서는 말이다(0x0044E6FD 의 +0xBC == 2).
             bool forgiven = Forgiven(patron, overdue);
