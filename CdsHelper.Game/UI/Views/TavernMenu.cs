@@ -1015,8 +1015,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         PlayLove();
         try
         {
-            if (TalkDialog.Ask(_view, face, "", Barmaids.Invitations[dice.Next(Barmaids.Invitations.Length)],
-                               "그러겠소", "미안하오") == 0)
+            // 대답은 여느 예/아니오 물음이다(0x00465B3F 의 0x004692E0(여급, 2, …)) — 예전의 「그러겠소 / 미안하오」
+            // 단추 글은 원본에 없다.
+            if (ConfirmDialog.Ask(_view, Barmaids.Invitations[dice.Next(Barmaids.Invitations.Length)],
+                                  face: face))
             {
                 Wed(her, face);
                 return;
