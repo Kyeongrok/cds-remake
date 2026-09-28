@@ -37,7 +37,8 @@ public sealed class SkillLearnDialog : GameWindow
     /// <summary>이 창에서 하나라도 배웠는지. 조합장이 나가는 말을 고르는 데 쓴다.</summary>
     private bool _learned;
 
-    private SkillLearnDialog(IReadOnlyList<string> skills, Func<string, int> levelOf, Func<string, bool> learn)
+    private SkillLearnDialog(IReadOnlyList<string> skills, Func<string, int> levelOf, Func<string, bool> learn,
+                             string heading)
     {
         _levelOf = levelOf;
         _learn = learn;
@@ -69,7 +70,7 @@ public sealed class SkillLearnDialog : GameWindow
         buttons.Children.Add(_decide);
         buttons.Children.Add(new GameButton("종료", Close, width: ButtonWidth));
 
-        var title = GameUi.TitleBar("습득가능 기술", Close);
+        var title = GameUi.TitleBar(heading, Close);
         GameUi.EnableDrag(this, title);
 
         var stack = new StackPanel { MinWidth = ListWidth };
@@ -123,13 +124,20 @@ public sealed class SkillLearnDialog : GameWindow
     /// 습득가능 기술 창을 띄운다. <paramref name="skills"/> 는 그 건물이 가르치는 것이다 —
     /// 게임은 건물 표의 비트마스크로 도시마다 다르게 준다.
     /// </summary>
+    /// <remarks>
+    /// 자택 「교육」도 같은 창이다 — 게임은 수련(<c>0x00491421</c>)과 교육(<c>0x004618E6</c>)이 한 함수
+    /// <c>0x0040D590(사람, 목록, 개수, 제목)</c> 을 부르고, 교육은 첫 인자로 <b>아이</b>를 넘겨 아이 수준을 찍으며
+    /// 제목이 「교육 가능 기능」(<c>0x0053A0E8</c>)이다.
+    /// </remarks>
+    /// <param name="heading">창 제목. 수련은 「습득가능 기술」(<c>0x0055A890</c>)이다.</param>
     /// <returns>하나라도 배웠으면 true. 부르는 쪽이 나가는 말을 고르는 데 쓴다.</returns>
     public static bool Show(Window owner, IReadOnlyList<string> skills,
-                            Func<string, int> levelOf, Func<string, bool> learn)
+                            Func<string, int> levelOf, Func<string, bool> learn,
+                            string heading = "습득가능 기술")
     {
         if (skills.Count == 0) return false;
 
-        var dlg = new SkillLearnDialog(skills, levelOf, learn) { Owner = owner };
+        var dlg = new SkillLearnDialog(skills, levelOf, learn, heading) { Owner = owner };
         dlg.ShowDialog();
         return dlg._learned;
     }

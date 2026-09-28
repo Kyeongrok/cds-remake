@@ -407,10 +407,16 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             return;
         }
 
-        var rows = teachable.Select(t => t.Skill
-            ? $"{Skill.Names[t.Index]}  {son.Skills[t.Index]}"
-            : $"{Skill.Languages[t.Index]}  {son.Tongues[t.Index]}").ToList();
-        int pick = ChoiceDialog.Ask(owner, "교육 가능 기능", rows, "취소");
+        // 고르는 창은 수련과 같은 「습득가능 기술」 벌이다 — 게임은 둘 다 0x0040D590 을 부르고, 교육은
+        // 아이를 넘겨(0x004618E5) 줄마다 <b>아이 수준</b>을 「이름 ( LVn )」으로 찍는다. 하나 고르면 창을 닫는다.
+        var names = teachable.Select(t => t.Skill ? Skill.Names[t.Index] : Skill.Languages[t.Index]).ToList();
+        int pick = -1;
+        SkillLearnDialog.Show(owner, names,
+                              name => names.IndexOf(name) is >= 0 and var i
+                                  ? (teachable[i].Skill ? son.Skills[teachable[i].Index] : son.Tongues[teachable[i].Index])
+                                  : 0,
+                              name => { pick = names.IndexOf(name); return true; },
+                              "교육 가능 기능");
         if (pick < 0 || pick >= teachable.Count) return;
         var (isSkill, index) = teachable[pick];
 
