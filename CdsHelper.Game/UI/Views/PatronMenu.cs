@@ -688,6 +688,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>10닢 단위로 내린다 — 게임의 <c>/10*10</c> 꼴이다.</summary>
     private static int To10(int coins) => coins / 10 * 10;
 
+    /// <summary>「다른 이야기라도」 굴림을 허락하는 후원자 성미 칸(<c>0x004AE7DF</c> 의 <c>[esp+0x24]</c> = 칸 2).</summary>
+    private const int SoftenFortune = 2;
+
     /// <summary>친밀도를 모를 때 쓰는 밑값. 표를 못 읽었을 때다.</summary>
     private const int DefaultCloseness = 60;
 
@@ -776,8 +779,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
 
         // 4. 못 넘겼다 — 다른 이야기라도 물어볼지, 아주 물릴지. 여기서도 하트가 돈다.
-        bool softened = more && Persuasion.Softens(eye, rhetoric, charm, dice);
-        if (more) stage?.PlayHeart(softened);
+        //    굴림은 후원자 성미 칸 2 가 0 보다 클 때만 한다(0x004AE7DC 가상함수 +0x24 → 0x004AE7DF).
+        //    0 이면 굴림도 하트도 없이 아주 물린다.
+        bool rolls = more && SponsorFortune(sponsor)[SoftenFortune] > 0;
+        bool softened = rolls && Persuasion.Softens(eye, rhetoric, charm, dice);
+        if (rolls) stage?.PlayHeart(softened);
 
         if (softened)
         {
