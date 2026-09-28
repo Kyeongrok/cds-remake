@@ -2973,9 +2973,13 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>함대정보 판의 함대좌표 줄. 게임 말투 그대로 "북위 38도 서경 9도" 다.</summary>
+    /// <remarks>
+    /// 좌표는 <b>육분의</b>(아이템 <c>0x22</c>)를 지녀야 적힌다 — <c>0x0046F0F3</c> 이 <c>0x0047CE20(0x22)</c> 로 보고,
+    /// 없으면 「함대좌표  위도 ---도  경도 ---도」(<c>0x00571320</c>)다. 빈 글을 넘기면 판이 그 줄을 세운다.
+    /// </remarks>
     private string CoordLine()
     {
-        if (_host.SeaBlocked) return "";
+        if (_host.SeaBlocked || !_game.Player.Items.Contains(SextantItem)) return "";
         var (lat, lon) = _host.ShipLatLon;
         return $"{(lat >= 0 ? "북위" : "남위")} {Math.Abs(lat),3:F0}도" +
                $"  {(lon >= 0 ? "동경" : "서경")} {Math.Abs(lon),3:F0}도";

@@ -27,6 +27,10 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 바꾼 것은 <b>결정을 눌러야</b> 들어간다. 중단하면 들어올 때 그대로 되돌린다 —
 /// 게임도 두 단추를 그렇게 가른다.
+///
+/// 결정을 누르면 <b>부관·통역 자리의 사람이 제독과 말이 3 이상 통하는지</b> 본다
+/// (<c>0x00453F6D</c> ~ <c>0x00453FCD</c>, <c>0x00478050(제독, 그 사람)</c>). 안 통하면
+/// 「말이 통하지 않는 자는 부관(통역)이 될 수 없습니다!」를 내고 창으로 되돌아간다 — 창을 안 닫는다.
 /// </remarks>
 public sealed class MateRosterDialog : GameWindow
 {
@@ -40,14 +44,21 @@ public sealed class MateRosterDialog : GameWindow
 
     private readonly Player _player;
 
+    /// <summary>말을 잴 인물 표. 없으면 막지 않는다.</summary>
+    private readonly IReadOnlyList<PersonTable.Row>? _people;
+
+    /// <summary>부관 · 통역 자리와, 거기 앉는 데 드는 말 수준(<c>0x00453F8B</c> 의 <c>cmp eax, 3</c>).</summary>
+    private const int FirstMateSlot = 0, InterpreterSlot = 3, FluentTongue = 3;
+
     /// <summary>들어올 때의 자리. 중단하면 이대로 되돌린다.</summary>
     private readonly string[] _before;
 
     private readonly GameList _list;
 
-    private MateRosterDialog(Player player)
+    private MateRosterDialog(Player player, IReadOnlyList<PersonTable.Row>? people)
     {
         _player = player;
+        _people = people;
         _before = [.. player.Mates];
 
         Title = "부하편성";
@@ -95,7 +106,32 @@ public sealed class MateRosterDialog : GameWindow
     private IReadOnlyList<string> Cells(int slot) =>
         [Player.MateRoles[slot], ":", _player.MateAt(slot)];
 
-    private void Decide() => Close();
+    /// <summary>부관 · 통역 차례로 말을 재고(<c>0x00453F6D</c> · <c>0x00453FA1</c>), 다 되면 닫는다.</summary>
+    private void Decide()
+    {
+        foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+        {
+            if (Tongue(_player.MateAt(slot)) >= FluentTongue) continue;
+            GameDialog.Show(this, slot == FirstMateSlot
+                ? "말이 통하지 않는 자는 부관이 될 수 없습니다!"      // 0x0055AB40
+                : "말이 통하지 않는 자는 통역이 될 수 없습니다!");    // 0x0055AB70
+            return;
+        }
+        Close();
+    }
+
+    /// <summary>
+    /// 제독과 그 사람이 함께 잘하는 말의 수준 — 언어 열넷마다 낮은 쪽의 가장 큰 값(<c>0x00478050</c>).
+    /// 빈 자리거나 표에 없으면 막지 않는다.
+    /// </summary>
+    private int Tongue(string name)
+    {
+        if (name.Length == 0 || _people?.FirstOrDefault(r => r.Name == name) is not { } row) return FluentTongue;
+        int best = 0;
+        for (int i = 0; i < Math.Min(row.Languages.Length, Skill.Languages.Length); i++)
+            best = Math.Max(best, Math.Min(row.Languages[i], _player.TongueOf(Skill.Languages[i])));
+        return best;
+    }
 
     /// <summary>들어올 때 자리로 되돌리고 닫는다.</summary>
     private void Cancel()
@@ -105,6 +141,7 @@ public sealed class MateRosterDialog : GameWindow
     }
 
     /// <summary>부하편성 창을 연다.</summary>
-    public static void Show(Window owner, Player player) =>
-        new MateRosterDialog(player) { Owner = owner }.ShowDialog();
+    /// <param name="people">부관·통역의 말을 잴 인물 표(<c>Game.World.People</c>). 없으면 막지 않는다.</param>
+    public static void Show(Window owner, Player player, IReadOnlyList<PersonTable.Row>? people = null) =>
+        new MateRosterDialog(player, people) { Owner = owner }.ShowDialog();
 }

@@ -124,15 +124,7 @@ public sealed class BelongingsDialog : GameWindow
             _rows.Add(row);
             leftList.Items.Children.Add(row.Row);
         }
-        if (_rows.Count == 0)
-            leftList.Items.Children.Add(new TextBlock
-            {
-                Text = "  지닌 것이 없다.",
-                Foreground = Ink,
-                FontWeight = FontWeights.Bold,
-                FontSize = 15,
-                Margin = new Thickness(6, 8, 6, 6),
-            });
+        // 지닌 것이 없고 발견물만 있으면 왼쪽 칸은 빈 채로 둔다 — 원본은 소지품 줄만 찍고 따로 알리지 않는다.
 
         _decide = new GameButton("결정", Decide, width: 130) { On = false };
 

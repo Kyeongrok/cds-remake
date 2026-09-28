@@ -675,6 +675,22 @@ public sealed class Player
         _mateBook[who.Name] = who with { Might = Math.Min(who.Might + by, Ability.Max - 1) };
     }
 
+    /// <summary>
+    /// 그 자리의 부하를 내보낸다(<c>0x00453470</c>) — 자리를 비우고 행적에 해고를 적는다.
+    /// </summary>
+    /// <param name="person">그 사람의 인물 번호. 모르면 -1 이고 그때는 행적에 안 적는다.</param>
+    /// <remarks>
+    /// 원본은 자리를 비운 뒤(<c>0x0047CC30(자리, -1)</c>) <c>0x0041A070(갈래 0x12, 인물 번호)</c> 로
+    /// 행적에 한 줄 남긴다(<c>0x004534D0</c>). 부르는 곳은 계약 끝의 재계약 거절·선금 모자람
+    /// (<c>0x004541A2</c> · <c>0x004541C1</c>)과 모두 내보내기(<c>0x004534E0</c> — 감옥·세대교체) 넷이다.
+    /// </remarks>
+    public void Dismiss(int slot, int person)
+    {
+        if (slot < 0 || slot >= _mates.Length || _mates[slot].Length == 0) return;
+        _mates[slot] = "";
+        if (person >= 0) Note(TraceDismiss, person);
+    }
+
     /// <summary>두 자리를 맞바꾼다. 빈 자리와도 바꿀 수 있다.</summary>
     public void SwapMates(int a, int b)
     {
@@ -1529,6 +1545,9 @@ public sealed class Player
     /// 여급과 맺어졌다(<c>0x004658F0</c>, 낱말: 여급 번호). 번호는 원본 갈래 그대로다.
     /// </summary>
     public const int TraceInnStay = 5, TraceHire = 6, TraceMarriage = 0x13;
+
+    /// <summary>행적 갈래 — 부하를 내보냈다(<c>0x004534D0</c>, 낱말: 인물 번호). 번호는 원본 갈래 그대로다.</summary>
+    public const int TraceDismiss = 0x12;
 
     /// <summary>발견한 것으로 적는다. 처음 발견하는 것이면 true.</summary>
     /// <remarks>
@@ -2863,8 +2882,13 @@ public sealed class Player
     public int LoadedBarrels => Supply.All.Sum(s => SupplyOf(s.Kind)) + CargoCount;
 
     /// <summary>
-    /// 지금 실은 무게 — 보급품과 <b>대포</b>를 센다. 소지품 무게는 아직 안 센다.
+    /// 지금 실은 무게 — 보급품과 <b>대포</b>와 교역품을 센다.
     /// </summary>
+    /// <remarks>
+    /// 원본 적재 무게(<c>0x00474330</c>)는 짐 여덟 칸 x 교역품 표 <c>+0x7C</c> 에 함대 <c>+0x34~+0x40</c>
+    /// 보급품 넷만 더한다 — <b>소지품은 세지 않는다</b>. 아이템 표(<c>0x004FD558</c>, 28바이트)에는
+    /// 무게 칸이 아예 없다. 한도(<c>0x004743F0</c>)도 배마다의 중량(<c>0x0044C8B0</c>)을 더할 뿐이다.
+    /// </remarks>
     public int LoadedWeight =>
         Supply.All.Sum(s => SupplyOf(s.Kind) * s.UnitWeight) + GunWeight + CargoWeight;
 

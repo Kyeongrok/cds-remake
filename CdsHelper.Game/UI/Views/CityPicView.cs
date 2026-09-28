@@ -2628,7 +2628,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     void ITownScreen.Stay() => Stay();
 
     void ITownScreen.OddJob() => OddJob();
-    void ITownScreen.ShowMates() => MateRosterDialog.Show(this, _player);
+    void ITownScreen.ShowMates() => MateRosterDialog.Show(this, _player, _game.World?.People);
 
     void ITownScreen.LeaveHeir() => HomeRooms.LeaveHeir();
     void ITownScreen.Succeed() => HomeRooms.Succeed();

@@ -511,8 +511,9 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         _player.Fame = Home.InheritedFame(_player.Fame);
         _player.Infamy = Home.InheritedInfamy(_player.Infamy);
 
-        // 부하를 다 내보낸다.
-        for (int slot = 0; slot < _player.Mates.Count; slot++) _player.SetMate(slot, "");
+        // 부하를 다 내보낸다(0x004534E0) — 자리마다 행적에 해고(갈래 0x12)를 적는다.
+        for (int slot = 0; slot < _player.Mates.Count; slot++)
+            _player.Dismiss(slot, _game.World?.People.FirstOrDefault(r => r.Name == _player.MateAt(slot))?.Id ?? -1);
 
         // 제독 자리를 아들로.
         _player.Given = son.Name;
