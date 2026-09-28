@@ -389,16 +389,16 @@ public sealed class LandBattle
     }
 
     /// <summary>
-    /// 그 자리 부대의 무력 — 아군은 <b>제독과 부관 가운데 큰 쪽 + 1</b> 이다
-    /// (<c>0x00446FF0</c>, 기능과 같은 규칙이다).
+    /// 그 자리 부대의 무력 — 아군은 <b>제독과 부관 가운데 큰 쪽 + 1</b>, 적은 적 대장 값 + 1 이다
+    /// (<c>0x00446FF0</c>, 기능과 같은 규칙이다). 피해 셈(<c>0x00444AB0</c>)은 이 값을 그대로 쓴다.
     /// </summary>
     public int MightAt(int slot) =>
-        slot >= FirstFoe ? FoeMight
+        slot >= FirstFoe ? FoeMight + 1
         : Math.Max(_me.AbilityOf(Ability.Might), _aide?.Might ?? 0) + 1;
 
-    /// <summary>그 자리 부대의 지력 — 아군은 제독과 부관 가운데 큰 쪽 + 1 이다(<c>0x00446FF0</c>).</summary>
+    /// <summary>그 자리 부대의 지력 — 아군은 제독과 부관 가운데 큰 쪽 + 1, 적은 적 대장 값 + 1 이다(<c>0x00446FF0</c>).</summary>
     public int MindAt(int slot) =>
-        slot >= FirstFoe ? FoeMind
+        slot >= FirstFoe ? FoeMind + 1
         : Math.Max(_me.AbilityOf(Ability.Mind), _aide?.Mind ?? 0) + 1;
 
     // ── 아군 ───────────────────────────────────────────────────────────────────

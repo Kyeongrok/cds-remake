@@ -578,11 +578,12 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         var a = battle.Units[from];
         var d = battle.Units[to];
 
-        int atk = LandUnits.Attack(a.Kind, battle.MightAt(from) + 1,
+        // 무력·지력은 이미 +1 한 값이다(0x00446FF0) — 예전에는 여기서 또 더해 아군만 +2 가 되었다.
+        int atk = LandUnits.Attack(a.Kind, battle.MightAt(from),
                                    battle.SkillAt(from, Skill.Sword),
                                    battle.SkillAt(from, Skill.Gunnery),
                                    battle.SkillAt(from, Skill.Shooting));
-        int def = LandUnits.Defence(d.Kind, battle.MindAt(to) + 1,
+        int def = LandUnits.Defence(d.Kind, battle.MindAt(to),
                                     battle.SkillAt(to, Skill.Sword),
                                     battle.SkillAt(to, Skill.Gunnery),
                                     battle.SkillAt(to, Skill.Shooting),
