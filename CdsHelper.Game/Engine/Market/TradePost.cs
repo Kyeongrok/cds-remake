@@ -210,8 +210,13 @@ public sealed class TradePost
     /// 특산품 자랑의 갈래(<c>0x00481AEB</c>) — 도시 번호와 (해-1480)/8 을 씨로 삼아 0~3 을 굴린다.
     /// 같은 도시에서는 8년 동안 같은 말이 나온다.
     /// </summary>
+    /// <remarks>
+    /// 게임 주사위(<see cref="GameRandom"/>)라야 원본과 같은 갈래가 나온다 — <c>srand</c>(<c>0x004B7BFB</c>) 뒤
+    /// <c>rand % 4</c>(<c>0x004B7C0F</c>)다. <see cref="Random"/> 으로 굴리던 때는 같은 도시 같은 해에 딴 말이 나왔다.
+    /// 게임은 굴린 뒤 씨를 되돌려 놓는데(<c>0x00481B27</c>) 우리는 새로 지어 쓰므로 흔들 것이 없다.
+    /// </remarks>
     public static int BoastKind(int city, int year) =>
-        new Random(city + (year - 1480) / 8).Next(4);
+        new GameRandom(city + (year - 1480) / 8).Next(4);
 
     /// <summary>구입 단가 — 매각가의 3/2.</summary>
     public int BuyPrice(Player player, int city, int kind) => SellPrice(player, city, kind) * 3 / 2;
