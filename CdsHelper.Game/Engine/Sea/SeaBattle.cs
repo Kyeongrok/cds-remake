@@ -79,7 +79,7 @@ public sealed class SeaBattle
         public int MaxHp { get; init; }
         /// <summary>승원(<c>+0x308</c>).</summary>
         public int Crew { get; internal set; }
-        /// <summary>필요승원 — 적이 물러설지 볼 때 <c>선박표[0x4FC214]+10</c> 과 견준다.</summary>
+        /// <summary>필요승원 = <c>선박표[0x4FC214]+10</c>(선체표 +0x34 + 10) — 적이 물러설지 볼 때 승원과 견준다.</summary>
         public int MinCrew { get; init; }
         /// <summary>대포 갈래(−1 없음 · 0 세이커 · 1 캘버린 · 2 페리에 · 3 카논).</summary>
         public int Gun { get; init; } = -1;
@@ -579,12 +579,14 @@ public sealed class SeaBattle
             if (ship.Stuck) { ship.Ordered = true; continue; }       // 지난 턴 충돌 — 걸음 0
 
             List<Move>? plan = null;
+            bool aimed = false;                                      // 노릴 자리(+0x8C4)를 채웠는지
 
             if (WantsRetreat(ship, mine))
             {
-                if (IsRetreatCell(ship.X, ship.Y) && !mine)
+                if (IsRetreatCell(ship.X, ship.Y))
                 {
-                    // 적도 퇴각 지대에 서 있으면 판을 뜬다(원본은 편을 가리지 않고 +0x8DC 로 본다).
+                    // 퇴각 지대에 서 있으면 판을 뜬다 — 편을 가리지 않는다(+0x8DC 로 보고, 0x0043B91C 의
+                    // cmp edx,8 ; jl 0x43BA19 로 위임한 아군도 상태 3 이 된다). 예전에는 적만 떴다.
                     ship.State = ShipState.Retreated;
                     ship.Ordered = true;
                     NoteFlag(ship);
@@ -603,7 +605,7 @@ public sealed class SeaBattle
                             _marks[cx, cy] |= 4;
                         }
 
-                plan = BestTowardEdge(ship, avoidDanger: true) ?? BestTowardEdge(ship, avoidDanger: false);
+                plan = TowardEdge(ship);
 
                 for (int x = 0; x < Cols; x++)
                     for (int y = 0; y < Rows; y++)
@@ -612,6 +614,7 @@ public sealed class SeaBattle
             else if (PickTarget(ship, foes) is { } target)
             {
                 var (ax, ay) = AimPoint(target, aimer: ship);
+                aimed = true;
                 plan = Broadside(ship, ax, ay);
             }
             else
@@ -619,10 +622,14 @@ public sealed class SeaBattle
                 plan = TowardFlagship(ship, foes);
             }
 
-            // 길을 못 찾으면 선회 하나만 굴리고 걸음은 0 이다.
+            // 길을 못 찾으면 걸음은 0 이고 선회 하나만 굴린다 — rand(3) 을 첫 걸음 칸에 넣고 걸음 수 0
+            // (0x0043BC92~0x0043BCC4)이라 틱 0 에 제자리 선회가 된다(0x0043CCD7). 이 굴림은 노릴 자리 +0x8C4 가
+            // −1 로 남았을 때, 곧 물러서기·기함 쪽 길(모드 2·4·5)에서만 탄다 — 뱃전 모드 3 은 노릴 자리를 채워 두어
+            // 안 탄다. 예전에는 선회도 없이 섰다.
             if (plan == null)
             {
                 ship.Plan.Clear();
+                if (!aimed) ship.Pivot = (Move)_rng.Next(3);
             }
             else
             {
@@ -648,7 +655,7 @@ public sealed class SeaBattle
     public bool Monster { get; set; }
 
     /// <summary>
-    /// 부관 성미 칸 0 — 위임했을 때 아군이 물러서는 잣대다(<c>0x0043B7B1</c>).
+    /// 부관 성미 칸 3 — 위임했을 때 아군이 물러서는 잣대다(<c>0x0043B7B1</c>).
     /// 부관이 없거나 못 찾으면 1(여느 판정)이다.
     /// </summary>
     public int MateTemper { get; set; } = 1;
@@ -716,20 +723,22 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 물러설 배인지 — 내구 10 이하, 승원이 필요승원+10 이하, 또는 아군 수/3 이 적 수 이상.
+    /// 물러설 배인지 — 내구 10 이하, 승원이 필요승원(선체표 +0x34 + 10) 이하, 또는 아군 수/3 이 적 수 이상.
     /// </summary>
     /// <remarks>
     /// <b>괴물은 잠수해 있을 때만</b> 물러설 마음을 먹는다 — 내 배 가운데 격침·나포된 것이
     /// 하나라도 있으면 가장자리로 간다(<c>0x0043B7A1</c>: <c>+0x8FC == 1</c> 이고 내 배
     /// 1~7 에 상태 1·2 가 있을 때). 떠 있을 때(<c>+0x8FC == 2</c>)는 여느 내구·승원·척수
-    /// 판정을 그대로 탄다.
+    /// 판정을 그대로 탄다(<c>0x0043B79A</c> → <c>0x0043B7AA</c> → <c>0x0043B7F5</c> → <c>0x0043B84E</c>).
+    /// 다만 괴물 판의 적 척수는 <c>[0x848] = 7</c>(<c>0x00440EB5</c>)이라 척수 판정은 걸리지 않는다.
+    /// 예전에는 떠 있는 괴물은 아예 물러서지 않았다.
     /// </remarks>
     private bool WantsRetreat(Ship ship, bool mine)
     {
-        if (!mine && Monster)
-            return !MonsterUp && Ships.Any(s => s.Mine && s.State is ShipState.Sunk or ShipState.Captured);
+        if (!mine && Monster && !MonsterUp)
+            return Ships.Any(s => s.Mine && s.State is ShipState.Sunk or ShipState.Captured);
 
-        // 위임했을 때 아군은 <b>부관 성미 칸 0</b> 으로 셋으로 갈린다(0x0043B7B1 · 0x0043B807).
+        // 위임했을 때 아군은 <b>부관 성미 칸 3</b> 으로 셋으로 갈린다(0x0043B7B1 · 0x0043B807).
         //   0        내 배 가운데 격침·나포된 것이 있으면 물러선다(0x0043B7C8)
         //   1        여느 판정(내구·승원·척수)
         //   그 밖    그 배에 대포가 없거나 함대 탄약이 0 이면 물러선다(0x0043B829)
@@ -743,9 +752,12 @@ public sealed class SeaBattle
 
         int ours = Ships.Count(s => s.Mine && s.CanAct);
         int theirs = Ships.Count(s => !s.Mine && s.CanAct);
+        if (!mine && Monster) theirs = 7;           // 괴물 판 적 척수 [0x848] = 7(0x00440EB5)
         int enemyCount = mine ? ours : theirs;      // 배의 편
         int opposing = mine ? theirs : ours;        // 상대 편
-        return ship.Hp <= 10 || ship.Crew <= ship.MinCrew + 10 || opposing / 3 >= enemyCount;
+        // 승원 문턱은 선체표 +0x34 에 10 을 더한 값이다(0x0043B866~0x0043B88A 의 [0x4FC214+종류*64]+10 >= 승원).
+        // MinCrew 가 이미 그 값(필요승원 = +0x34 + 10)이라 더 얹지 않는다 — 예전에는 10 을 또 더해 필요승원보다 10명 많을 때 벌써 물러섰다.
+        return ship.Hp <= 10 || ship.Crew <= ship.MinCrew || opposing / 3 >= enemyCount;
     }
 
     /// <summary>
@@ -799,48 +811,104 @@ public sealed class SeaBattle
     public static int RangeOf(int gun) => gun switch { 1 => 4, 3 => 2, _ => 3 };
 
     /// <summary>
-    /// 모드 3 — 끝 칸에서 노릴 자리가 <b>뱃전</b>(이물·고물 줄이 아닌 쪽) 거리 2~사거리에 들어오는
-    /// 첫 길을 고른다. 없으면 노릴 자리 쪽으로 가장 가까이 가는 길이다.
+    /// 모드 3 — 끝 칸에서 노릴 자리가 <b>뱃전</b> 거리 2~사거리에 들어오는 첫 길을 고른다
+    /// (<c>0x0043AF72</c>~<c>0x0043B1E6</c>). 판정은 <see cref="AimInBroadside"/> 다.
     /// </summary>
     /// <remarks>
-    /// 원본 뱃전 줄(<c>0x0043AFF4</c>~<c>0x0043B1CA</c>)은 끝 방향마다 두 줄을 따로 셈하는데,
-    /// 여기서는 「이물 줄·고물 줄 위가 아닌 거리 d 칸」으로 갈음했다.
+    /// 그런 길이 없으면 <b>아무것도 적지 않는다</b> — 모드 3 은 가장 좋은 길을 따로 쥐지 않고 그냥 끝난다
+    /// (<c>0x0043B1E6</c> → <c>0x0043B4F6</c>). 걸음 수는 턴 끝(<c>0x0043D80C</c>)에 비워 둔 0 이고, 노릴 자리
+    /// <c>+0x8C4</c> 가 채워져 있어 선회 굴림(<c>0x0043BC92</c>)도 안 탄다 — 그 배는 가만히 선다.
+    /// 예전에는 노릴 자리에 가장 가까워지는 길로 다가갔다.
     /// </remarks>
     private List<Move>? Broadside(Ship ship, int ax, int ay)
     {
         int range = RangeOf(ship.Gun);
-        List<Move>? closest = null;
-        int best = int.MaxValue;
-
         foreach (var (plan, x, y, way) in Paths(ship, avoidReserved: true, avoidDanger: false))
-        {
-            int d = BfsDistance(x, y, ax, ay);
-            if (d >= 2 && d <= range && !OnBowLine(x, y, way, ax, ay)) return plan;
-            if (d < best) { best = d; closest = plan; }
-        }
-        return closest;
+            for (int d = 2; d <= range; d++)
+                if (AimInBroadside(x, y, way, ax, ay, d)) return plan;
+        return null;
     }
 
-    /// <summary>그 자리가 끝 방향의 이물 줄이나 고물 줄 위인지.</summary>
-    private static bool OnBowLine(int x, int y, int way, int ax, int ay)
+    /// <summary>
+    /// 포격 과녁 칸(<c>0x004369E0</c>~<c>0x00436D99</c>) — 쏘는 배에서 걸음 거리 <paramref name="d"/> 인 고리 가운데
+    /// <b>옆면 두 변</b>이다. 뱃머리가 w 면 (w+1)·(w+2) 모서리 사이 변과 (w+4)·(w+5) 모서리 사이 변이고 칸은 2(d+1) 이다.
+    /// </summary>
+    /// <remarks>
+    /// 셈은 원본 그대로 옮긴다(나눗셈은 0 쪽 버림, 홀짝은 <b>쏘는 배 X</b>).
+    /// <code>
+    ///   뱃머리 0·3   X = sx ± d ,  Y = (sx 짝수 ? sy − d/2 : sy + (−1−d)/2) + k      k 0..d
+    ///   그 밖        X = sx + k*e (e = ±1) ,  q = (sx &amp; 1) + e
+    ///     뱃머리 1·4   q 가 −1·2 면 Y = (d + (−1−k)/2)*e + sy , 아니면 (d − k/2)*e + sy
+    ///     뱃머리 2·5   q 가 −1·2 면 Y = (k/2 − d)*e + sy ,     아니면 ((k+1)/2 − d)*e + sy
+    /// </code>
+    /// 예전에는 고리에서 이물·고물 줄만 뺀 6d−2 칸을 과녁으로 삼아 앞뒤 사선의 배도 쐈다.
+    /// </remarks>
+    public static bool InBroadside(int sx, int sy, int way, int tx, int ty, int d)
     {
-        foreach (int w in new[] { way, (way + 3) % Ways })
-        {
-            int cx = x, cy = y;
-            for (int i = 0; i < 6; i++)
+        int w = ((way % Ways) + Ways) % Ways;
+        for (int e = -1; e <= 1; e += 2)
+            for (int k = 0; k <= d; k++)
             {
-                (cx, cy) = Step(cx, cy, w);
-                if (!OnBoard(cx, cy)) break;
-                if (cx == ax && cy == ay) return true;
+                int x, y;
+                if (w is 0 or 3)
+                {
+                    x = sx + e * d;
+                    y = ((sx & 1) == 0 ? sy - d / 2 : sy + (-1 - d) / 2) + k;
+                }
+                else
+                {
+                    x = sx + k * e;
+                    bool q = ((sx & 1) + e) is -1 or 2;
+                    y = w % 3 == 1
+                        ? (q ? (d + (-1 - k) / 2) * e + sy : (d - k / 2) * e + sy)
+                        : (q ? (k / 2 - d) * e + sy : ((k + 1) / 2 - d) * e + sy);
+                }
+                if (x == tx && y == ty) return true;
             }
-        }
         return false;
     }
 
-    /// <summary>모드 4 — 노릴 배가 없으면 상대 기함(0번)에 |dX|+|dY| 가 가장 작아지는 길.</summary>
+    /// <summary>
+    /// AI 모드 3 의 뱃전 판정(<c>0x0043AFF4</c>~<c>0x0043B1CA</c>) — 끝 칸(ex, ey, 방향 w)에서 노릴 자리가 거리 d 뱃전에 드는지.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="InBroadside"/> 와 같은 꼴이지만 <b>노릴 자리에서 끝 칸 쪽으로</b> 셈하고 홀짝은 <b>끝 칸 X</b> 로 본다.
+    /// 그래서 대각 방향이면 홀수 열에서 Y 가 한 칸 어긋난 칸이 섞인다 — 원본 버릇 그대로 옮긴다.
+    /// </remarks>
+    private static bool AimInBroadside(int ex, int ey, int way, int ax, int ay, int d)
+    {
+        int w = ((way % Ways) + Ways) % Ways;
+        for (int e = -1; e <= 1; e += 2)
+            for (int k = 0; k <= d; k++)
+            {
+                int x, y;
+                if (w is 0 or 3)
+                {
+                    x = ax + e * d;
+                    y = ((ex & 1) == 0 ? ay - d / 2 : ay + (-1 - d) / 2) + k;
+                }
+                else
+                {
+                    x = ax + k * e;
+                    bool q = ((ex & 1) + e) is -1 or 2;
+                    y = w % 3 == 1
+                        ? (q ? (d + (-1 - k) / 2) * e + ay : (d - k / 2) * e + ay)
+                        : (q ? (k / 2 - d) * e + ay : ((k + 1) / 2 - d) * e + ay);
+                }
+                if (x == ex && y == ey) return true;
+            }
+        return false;
+    }
+
+    /// <summary>모드 4 — 노릴 배가 없으면 <b>0번 배</b>(아군 기함)에 |dX|+|dY| 가 가장 작아지는 길.</summary>
+    /// <remarks>
+    /// 셈 자리가 <c>[해전+0x2E8]</c>·<c>[+0x2EC]</c>, 곧 0번 배 자리로 박혀 있다(<c>0x0043B2E1</c>~<c>0x0043B329</c>).
+    /// 적에게는 상대 기함이지만 위임한 아군에게는 <b>제 기함</b>이다 — 원본 그대로 옮긴다. 상태도 안 본다.
+    /// 예전에는 위임한 아군이 적 기함(8번) 쪽으로 갔다.
+    /// </remarks>
     private List<Move>? TowardFlagship(Ship ship, IReadOnlyList<Ship> foes)
     {
-        var flag = foes.FirstOrDefault(f => f.Flagship) ?? foes.FirstOrDefault();
+        var flag = At(0);
         if (flag == null) return null;
         List<Move>? pick = null;
         int best = int.MaxValue;
@@ -853,23 +921,64 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 모드 2·5 — 퇴각 가장자리에 가장 가까워지는 길. 바람 0: Y 작게, |X−10| · 1·2: X 크게, |Y−7| ·
-    /// 3: Y 크게, |X−10| · 4·5: X 작게, |Y−7|.
+    /// 모드 2·5 — 퇴각 가장자리에 가장 가까워지는 길(<c>0x0043B336</c>~<c>0x0043B414</c> · <c>0x0043B4A6</c>).
     /// </summary>
-    private List<Move>? BestTowardEdge(Ship ship, bool avoidDanger)
+    /// <remarks>
+    /// 모드 2 는 위험 칸(+4)도 피한다. 한 걸음 수를 다 늘어놓은 뒤 <b>마지막 조합이 실패했고 그때까지 위험 칸에
+    /// 한 번이라도 막혔으면</b> 모드 5(위험 무시)로 바꿔 걸음 수 1 부터 다시 센다 — 그때까지 쥔 가장 좋은 길은 그대로 둔다
+    /// (<c>0x0043B4A6</c>~<c>0x0043B4CD</c>). 새 길은 아래가 참일 때만 갈아 든다(처음 찾은 길은 그냥 든다).
+    /// <code>
+    ///   바람 0     새 Y &lt; 쥔 Y ,  또는 새 Y == 0  이고 |새X−10| &lt; |쥔X−10|
+    ///   바람 1·2   새 X &gt; 쥔 X ,  또는 새 X == 22 이고 |새Y−7|  &lt; |쥔Y−7|
+    ///   바람 3     새 Y &gt; 쥔 Y ,  또는 새 Y == 16 이고 |새X−10| &lt; |쥔X−10|
+    ///   바람 4·5   새 X &lt; 쥔 X ,  또는 새 X == 0  이고 |새Y−7|  &lt; |<b>쥔X</b>−7|    ← 원본이 쥔 X 를 쓴다(0x0043B3FF)
+    /// </code>
+    /// 예전에는 안전한 길이 하나도 없을 때만 위험을 무시했고, 버금 잣대를 가장자리 줄이 아니어도 썼다.
+    /// </remarks>
+    private List<Move>? TowardEdge(Ship ship)
     {
         List<Move>? pick = null;
-        (int, int) best = (int.MaxValue, int.MaxValue);
-        foreach (var (plan, x, y, _) in Paths(ship, avoidReserved: true, avoidDanger: avoidDanger))
+        int bx = 0, by = 0;
+        bool avoidDanger = true, dangerHit = false;
+
+        for (int len = 1; len <= ship.Power; len++)
         {
-            var score = RetreatWind switch
+            bool lastFailed = false;
+            int total = (int)Math.Pow(3, len);
+            for (int code = 0; code < total; code++)
             {
-                0 => (y, Math.Abs(x - 10)),
-                1 or 2 => (-x, Math.Abs(y - 7)),
-                3 => (-y, Math.Abs(x - 10)),
-                _ => (x, Math.Abs(y - 7)),
-            };
-            if (score.CompareTo(best) < 0) { best = score; pick = plan; }
+                var plan = new List<Move>(new Move[len]);
+                int rest = code;
+                for (int i = len - 1; i >= 0; i--) { plan[i] = (Move)(rest % 3); rest /= 3; }
+
+                int x = ship.X, y = ship.Y, way = ship.Way;
+                bool ok = true;
+                foreach (var move in plan)
+                {
+                    way = Turn(way, move);
+                    (x, y) = Step(x, y, way);
+                    if (!OnBoard(x, y) || (_marks[x, y] & 8) != 0 || ShipAt(x, y) is not null) { ok = false; break; }
+                    if (avoidDanger && (_marks[x, y] & 4) != 0) { dangerHit = true; ok = false; break; }
+                }
+                lastFailed = !ok;
+                if (!ok) continue;
+
+                bool better = pick == null || RetreatWind switch
+                {
+                    0 => y < by || (y == 0 && Math.Abs(x - 10) < Math.Abs(bx - 10)),
+                    1 or 2 => x > bx || (x == Cols - 1 && Math.Abs(y - 7) < Math.Abs(by - 7)),
+                    3 => y > by || (y == Rows - 1 && Math.Abs(x - 10) < Math.Abs(bx - 10)),
+                    _ => x < bx || (x == 0 && Math.Abs(y - 7) < Math.Abs(bx - 7)),
+                };
+                if (better) { pick = plan; bx = x; by = y; }
+            }
+
+            if (avoidDanger && lastFailed && dangerHit)
+            {
+                avoidDanger = false;
+                dangerHit = false;
+                len = 0;
+            }
         }
         return pick;
     }
@@ -1244,17 +1353,15 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 과녁 — 거리 2 부터 사거리까지 <b>뱃전</b> 쪽(이물·고물 줄이 아닌) 맞은편 산 배를 찾아, 그 거리에서
-    /// 기함이면 곧장, 아니면 내구가 가장 낮은 배(<c>0x004369E0</c>~).
+    /// 과녁 — 거리 2 부터 사거리까지 <b>뱃전</b> 칸(<see cref="InBroadside"/>, 고리의 옆면 두 변)의 맞은편 산 배를
+    /// 찾아, 그 거리에서 기함이면 곧장, 아니면 내구가 가장 낮은 배(<c>0x004369E0</c>~).
     /// </summary>
-    /// <remarks>원본의 대각 방향 뱃전 줄 셈을 다 못 풀어 「이물·고물 줄 위가 아닌 거리 d」로 갈음한다.</remarks>
     private Ship? FireTarget(Ship ship, int range)
     {
         for (int d = 2; d <= range; d++)
         {
             var hits = Ships.Where(s => s.CanAct && s.Mine != ship.Mine
-                                        && BfsDistance(ship.X, ship.Y, s.X, s.Y) == d
-                                        && !OnBowLine(ship.X, ship.Y, ship.Way, s.X, s.Y))
+                                        && InBroadside(ship.X, ship.Y, ship.Way, s.X, s.Y, d))
                             .ToList();
             if (hits.Count == 0) continue;
             return hits.FirstOrDefault(s => s.Flagship) ?? hits.OrderBy(s => s.Hp).First();
@@ -1443,7 +1550,7 @@ public sealed class SeaBattle
     /// </summary>
     /// <remarks>
     /// <code>
-    ///   맞은편이 이미 불이면 안 붙음
+    ///   맞은편이 이미 불이면 안 붙음 · 괴물 판에서 맞은편이 적(괴물)이면 안 붙음(0x00437E5F)
     ///   c = max(0, 무력 / (4 − 검술) − 상대 지력/2)      ; 들이받은 편 무력·검술, 받힌 편 지력
     ///   rand(100) ≤ c (부호 없는 비교) → 상태 5, 소리 0x30, blast-03~05
     /// </code>
@@ -1452,6 +1559,7 @@ public sealed class SeaBattle
     private void Ignite(Ship m, Ship t)
     {
         if (t.Burning) return;
+        if (!t.Mine && Monster) return;                   // 괴물에게는 불이 안 붙는다 — 예전에는 붙었다
         var (me, them) = m.Mine ? (MineSide, EnemySide) : (EnemySide, MineSide);
         int c = Math.Max(0, me.Might / Math.Max(1, 4 - me.Sword) - them.Mind / 2);
         if ((uint)_rng.Next(100) > (uint)c) return;

@@ -668,14 +668,22 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     }
 
     /// <summary>
-    /// 부관의 성미 칸 0. 부관이 없거나 밑표에서 못 찾으면 1(여느 판정)이다.
+    /// 부관의 성미 <b>칸 3</b>. 부관이 없거나 밑표에서 못 찾으면 1(여느 판정)이다.
     /// </summary>
-    private static int MateTemperOf(Engine.Game? game, string mateName)
+    /// <remarks>
+    /// 원본은 <c>[+0x124]-&gt;vtbl+0x24(buf)</c>(<c>0x00477FE0</c>, <c>ret 4</c>) 뒤 <c>[esp+0x30]</c> 곧 <c>buf+0xC</c> 를 본다
+    /// (<c>0x0043B7C1</c> · <c>0x0043B817</c>) — 칸[3] 이다. 예전에는 칸[0] 을 봤다.
+    /// </remarks>
+    private static int MateTemperOf(Engine.Game? game, string mateName) =>
+        MateFortuneOf(game, mateName)?[3] ?? 1;
+
+    /// <summary>부관의 운세 여덟 칸(<c>0x00477FE0</c>). 부관이 없거나 밑표에서 못 찾으면 null.</summary>
+    private static int[]? MateFortuneOf(Engine.Game? game, string mateName)
     {
-        if (game == null || mateName.Length == 0) return 1;
-        if (game.World?.People.FirstOrDefault(r => r.Name == mateName) is not { } row) return 1;
-        if (game.PersonTemplates?.Find(row.Id) is not { } who) return 1;
-        return FleetRaid.FortuneOf(who.Face, who.Blood, who.Nation)[0];
+        if (game == null || mateName.Length == 0) return null;
+        if (game.World?.People.FirstOrDefault(r => r.Name == mateName) is not { } row) return null;
+        if (game.PersonTemplates?.Find(row.Id) is not { } who) return null;
+        return FleetRaid.FortuneOf(who.Face, who.Blood, who.Nation);
     }
 
     /// <summary>해전 창 제목.</summary>
@@ -1435,7 +1443,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         battle.MonsterPerson = monster ? foe.Leader?.Id ?? -1 : -1;
 
         // 제독 값(0x00441D8A) — 제독·부관(부하 첫 자리) 가운데 큰 값이다. 능력은 +1, 기능은 그대로,
-        // 운세칸[0] 은 제독 것(0x00477FE0). 무력도 +1 이다(예전에는 +1 을 안 먹였다).
+        // 무력도 +1 이다(예전에는 +1 을 안 먹였다). 운세칸[0](+0x920)도 부관 것과 제독 것 가운데 큰 값이다
+        // (0x00441D78 · 0x00441E77 — 부관 값이 제독 값 이상이면 부관 것). 예전에는 제독 것만 썼다.
         var mate = player.MateInfoOf(player.MateAt(0));
         int Best(int mine, int? theirs) => Math.Max(mine, theirs ?? 0);
         int SkillOf(int k) => player.LevelOf(Skill.Names[k]);
@@ -1447,7 +1456,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             Charm: Best(player.AbilityOf(Ability.Charm), mate?.Charm) + 1,
             Sword: Best(SkillOf(Skill.Sword), mate?.Sword),
             Shooting: Best(SkillOf(Skill.Shooting), mate?.Shooting),
-            Fortune: FleetRaid.AdmiralFortuneOf(player)[0]);
+            Fortune: Best(FleetRaid.AdmiralFortuneOf(player)[0], MateFortuneOf(game, player.MateAt(0))?[0]));
         // 적장 값(0x00440F23) — 적장 한 사람 값 그대로다(능력은 이미 +1 된 날값).
         var leader = foe.Leader ?? Encounter.CaptainOf(Encounter.PirateLeader);
         battle.EnemySide = new SeaBattle.Side(leader.Gunnery, leader.Might, leader.Luck,
@@ -1455,7 +1464,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                                               leader.FortuneAt(0));
         battle.LeaderFortune = leader.FortuneAt(3);
 
-        // 위임했을 때 아군 AI 가 보는 부관 성미 칸 0(0x0043B7B1) — 부관을 인물 밑표에서 찾아
+        // 위임했을 때 아군 AI 가 보는 부관 성미 칸 3(0x0043B7B1) — 부관을 인물 밑표에서 찾아
         // 얼굴·혈액형·나라로 센다. 못 찾으면 1(여느 판정)로 둔다.
         battle.MateTemper = MateTemperOf(game, player.MateAt(0));
         // 탄약 = 함대 보급품 탄약 x 10(볼트 85). 잠수폭탄은 소지품 칸마다 굴린다(볼트 94 3.1).
@@ -1478,7 +1487,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                          hp: ship.Hp, crew: shares.ElementAtOrDefault(at), minCrew: ship.Crew,
                          gun: ship.Guns > 0 ? ship.Gun : -1, figurehead: ship.Figurehead,
                          formation: player.Formation,
-                         hullName: ship.Hull.Name, cargo: ship.Capacity, guns: ship.Guns, maxHp: ship.MaxHp);
+                         // 배 칸 +0x300 은 포탑을 뺀 적재다(0x0044C910 = [+0x44] − [+0x54]) — 충돌 피해가 이 값을 쓴다.
+                         hullName: ship.Hull.Name, cargo: ship.UsableCapacity, guns: ship.Guns, maxHp: ship.MaxHp);
             ours.Add((placed, ship));
         }
 
@@ -1503,7 +1513,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             var e = fleet[slot];
             battle.Place(false, slot, foe.Name, e.Speed, e.Sails,
                          art: e.Hull, hp: e.Hp, crew: e.Crew, minCrew: e.MinCrew, gun: e.Gun,
-                         hullName: e.HullName, cargo: e.Capacity, guns: e.Guns,
+                         // 적 배도 +0x300 은 적재 − 포탑이고, 포탑 수 [+0x54] 에는 대포 수가 든다(0x00441674).
+                         hullName: e.HullName, cargo: Math.Max(0, e.Capacity - e.Guns), guns: e.Guns,
                          formation: enemyFormation, maxHp: e.Hp);
         }
 
