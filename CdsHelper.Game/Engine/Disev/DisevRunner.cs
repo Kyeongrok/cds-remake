@@ -1310,6 +1310,7 @@ public sealed class DisevRunner
                               foeSkills, scale: scale, nation: foeNation)
         {
             FoeTheology = foeTheology,
+            FoePerson = person,
             KeepsCrew = _borrowedMen >= 0,
             MyCulture = _game.MyCulture,
         };

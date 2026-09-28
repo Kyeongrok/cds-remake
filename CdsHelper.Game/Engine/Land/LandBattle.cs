@@ -69,6 +69,21 @@ public sealed class LandBattle
     /// <summary>싸움터 그림 번호 — 0 도시 · 1 초지 · 2 숲 · 3 황무지.</summary>
     public int Terrain { get; }
 
+    /// <summary>
+    /// 일기토에 나서는 적 대장 인물 — 대본 인물전은 그 인물, 마을 공략·대본 도시전은 인물 0x113(275)이다
+    /// (<c>0x004478A0</c>). 모르면 −1.
+    /// </summary>
+    public int FoePerson
+    {
+        get => _foePerson >= 0 ? _foePerson : CityFight ? TownDuelist : -1;
+        init => _foePerson = value;
+    }
+
+    private readonly int _foePerson = -1;
+
+    /// <summary>마을 공략의 일기토 상대 인물(<c>0x004478C5</c> 의 <c>mov eax, 0x113</c>).</summary>
+    public const int TownDuelist = 0x113;
+
     /// <summary>상대 도시의 문화권. 적 진형과 그림이 이것으로 갈린다.</summary>
     public int Culture { get; }
 

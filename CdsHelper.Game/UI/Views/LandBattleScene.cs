@@ -393,14 +393,23 @@ internal sealed class LandBattleScene : GameWindow
                                     me.AbilityOf(Ability.Body), me.AbilityOf(Ability.Might),
                                     me.LevelOf(Skill.Names[Skill.Sword]),
                                     me.AbilityOf(Ability.Luck), 0, 0);
-        var foe = new Duel.Fighter("적장", _battle.FoeBody, _battle.FoeMight,
+        // 상대는 적 대장 인물이다(0x004478A0 → 0x004AA700(인물, 무대, 마을 여부, −1)) — 마을 공략이면 인물 275.
+        // 이름과 얼굴은 그 인물 <b>레코드</b>의 것이다. 예전에는 「적장」에 얼굴 없이 섰다.
+        var foeRow = _battle.FoePerson >= 0 ? PersonTable.Open()?.Find(_battle.FoePerson) : null;
+        var foe = new Duel.Fighter(foeRow is { Name.Length: > 0 } named ? named.Name : "적장",
+                                   _battle.FoeBody, _battle.FoeMight,
                                    _battle.SkillAt(LandBattle.FirstFoe, Skill.Sword),
                                    _battle.FoeLuck, 0, 0);
+        var foeFace = foeRow is { } r ? game.Faces?.TryGetBgra(r.Face, female: false) : null;
+
+        // 무대는 싸움터(+0xA8)다 — 0(도시)이면 1(초원), 2 숲, 3 모래(0x004478CA). 예전에는 늘 초원이었다.
+        string arena = _battle.Terrain switch { 2 => "duel-wood", 3 => "duel-sand", _ => DuelArt.Field };
 
         var duel = new Duel(mine, foe, shield: false, dice.Next());
         // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
         var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
-        if (DuelDialog.Show(this, duel, dice, null, myFace: myFace, bgm: _game?.Bgm)) return DuelEnd.Won;
+        if (DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm))
+            return DuelEnd.Won;
 
         // 지면 여느 일기토와 같이 갈린다 — 도망·용서면 퇴각한 셈이고, 베이면 그대로 GAME OVER 다.
         return duel.FateOf(me.Fame) == Duel.Fate.Slain ? DuelEnd.Slain : DuelEnd.Lost;
