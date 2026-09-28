@@ -589,19 +589,54 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <paramref name="funds"/> 는 <b>힌트 자금 밑값</b>이다 — 설득 자리(<c>0x004AF29C</c>)는 계약금이 아니라
     /// 힌트 칸의 자금을 넘긴다.
     ///
-    /// <b>못 옮긴 것 둘.</b> 스폰서마다 항구에 세워 둔 배 무리가 우리 쪽에 없어 가운데
-    /// 상한을 뺐고, 선체도 고를 데가 없어 제일 싼 것으로 세운다.
+    /// 가운데 상한과 선체는 후원자마다의 <b>배 칸</b>에서 온다 — 칸 수는 해와 권력으로 1~5,
+    /// 칸은 새 판과 해마다 그 도시 조선소 선체로 차고, 빌려주면 비고 돌려받으면 찬다
+    /// (<see cref="PatronShips"/>, <c>0x004ADB50</c> · <c>0x004AD850</c> · <c>0x004ADE50</c> · <c>0x0040FC60</c>).
     /// 계약이 끝나면 <see cref="ReturnLentShips"/> 가 거둬 간다(<c>0x0040FE40</c>) — 다만
     /// 후원자 나라가 멸망해 바다에서 계약이 깨질 때는 아직 안 거둔다(그 자리는 도시 밖이다).
     /// </remarks>
+    /// <summary>그 후원자의 정적 줄. 표를 못 읽었으면 null.</summary>
+    private SponsorTable.Sponsor? LenderOf(string sponsor) => _game.Sponsors?.FindByName(sponsor);
+
+    /// <summary>
+    /// 빌려줄 수 있는 척수(<c>0x004105C0</c>) — 자금 / 60000 + 1 을 그 후원자 배 칸의 찬 칸 수와
+    /// 함대 빈자리로 자른다(<see cref="PatronShips"/>). 표를 못 읽으면 칸 상한 없이 센다.
+    /// </summary>
+    private int LendableCount(string sponsor, int funds) =>
+        LenderOf(sponsor) is { } lender && _game.CityRows is { } rows
+            ? PatronShips.CountFor(_player, lender, rows, funds)
+            : Math.Min(funds / GoldPerShip + 1, Player.MaxShips - _player.Ships.Count);
+
+    /// <summary>
+    /// 그 후원자 배 칸에서 <paramref name="ships"/> 척을 꺼내 항구에 「대출 · 계류」로 대 놓는다
+    /// (<c>0x0040FC60</c> · <c>0x0040FA00</c>) — 선체 번호가 큰 것부터다. 대 놓은 척수를 돌려준다.
+    /// </summary>
+    private int GiveLent(string sponsor, int ships)
+    {
+        List<Hull> hulls;
+        if (LenderOf(sponsor) is { } lender && _game.CityRows is { } rows)
+        {
+            // 항구 자리가 모자라 못 대 놓는 배는 칸에 되돌린다(0x0040FDC0).
+            int room = Math.Max(0, Player.MaxDocked - _player.DockedAt(_cityId).Count);
+            hulls = [.. PatronShips.Take(_player, lender, rows, Math.Min(ships, room)).Select(Hull.FromTable)];
+        }
+        else if (Hull.All.MinBy(h => h.Price) is { } cheapest)
+            hulls = [.. Enumerable.Repeat(cheapest, ships)];
+        else return 0;
+
+        int given = 0;
+        foreach (var hull in hulls) if (_player.Give(hull, _cityId)) given++;
+        return given;
+    }
+
     private void LendShips(int funds, Action<string> Say, Func<string, string, string, string> Pick3)
     {
         // 모드에서 「배 빌림 묻기」를 끄면 배를 빌리는 대화와 지급 자체를 모두 건너뛴다.
         if (!Local.Settings.GameSettings.AskLendShips) return;
 
         // 함대가 이 도시에 없으면(걸어 들어온 마을) 한 척도 못 빌린다(0x004105D7 → 0x0040E1C0(도시, 0)).
-        int ships = !_player.FleetHere(_cityId) ? 0
-                  : Math.Min(funds / GoldPerShip + 1, Player.MaxShips - _player.Ships.Count);
+        string lender = _player.Contract?.Sponsor ?? "";
+        int ships = !_player.FleetHere(_cityId) ? 0 : LendableCount(lender, funds);
         if (ships <= 0)
         {
             // 0x0055C718 · 0x0055C760 · 0x0055C7A8
@@ -634,11 +669,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             return;
         }
 
-        if (Hull.All.MinBy(h => h.Price) is not { } hull) return;
-
         // 함대에 곧장 들어가지 않는다 — 항구에 「대출 · 계류」로 대 놓인다.
-        int given = 0;
-        for (int i = 0; i < ships; i++) if (_player.Give(hull, _cityId)) given++;
+        int given = GiveLent(lender, ships);
         if (given == 0) return;
 
         if (_player.Contract is { } deal) deal.ShipsLent = true;
@@ -2059,7 +2091,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     {
         bool mate = _player.MateAt(0).Length > 0;
         bool hadCargo = _player.CargoHold.Count > 0;
+        // 거둔 배는 그 후원자의 배 칸으로 돌아간다(0x0040FE00 → 0x004ADBF0).
+        var back = _player.Ships.Concat(_player.Docked.Values.SelectMany(list => list))
+                          .Where(s => s.Lent).Select(s => s.Hull.GameId).ToList();
         if (_player.TakeBackLentShips() == 0) return;
+        if (_player.Contract is { } deal && LenderOf(deal.Sponsor) is { } lender && _game.CityRows is { } rows)
+            PatronShips.Return(_player, lender, rows, back);
 
         // 계약을 파기했으면 짐까지 가져간다(0x0040FE5C) — 빌린 배가 있었을 때만이다.
         if (broken && hadCargo)
@@ -2245,8 +2282,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
 
-        int ships = !_player.FleetHere(_cityId) ? 0
-                  : Math.Min(contract.Amount / GoldPerShip + 1, Player.MaxShips - _player.Ships.Count);
+        int ships = !_player.FleetHere(_cityId) ? 0 : LendableCount(contract.Sponsor, contract.Amount);
         if (ships <= 0)
         {
             Say(Pick3("흐음, 빌려주고 싶은 마음은 굴뚝같지만 배가 전부 나가고 없네. 다시 오게.",
@@ -2273,10 +2309,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             return;
         }
 
-        if (Hull.All.MinBy(h => h.Price) is not { } hull) return;
-
-        int given = 0;
-        for (int i = 0; i < ships; i++) if (_player.Give(hull, _cityId)) given++;
+        int given = GiveLent(contract.Sponsor, ships);
         if (given > 0) contract.ShipsLent = true;
         _menu.Refresh();
     }

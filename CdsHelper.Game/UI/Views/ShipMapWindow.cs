@@ -1821,8 +1821,7 @@ public sealed class ShipMapWindow : Window
         {
             case 0:
                 TalkDialog.Say(owner, face, "", TavernMenu.Executed[dice.Next(TavernMenu.Executed.Length)]);
-                if (_game.World?.People.FirstOrDefault(r => r.Id == leaderId) is { } person)
-                    person.Appear = 0;                                            // 0x00432180(0)
+                _game.Execute(leaderId);                                          // 0x00432180(0)
                 break;
 
             case 2:
@@ -2601,6 +2600,8 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreKnownCities(saved.KnownCities);
             // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
             _game.Player.RestoreVisitedCities(saved.VisitedCities);
+            _game.Player.RestoreExecuted(saved.Executed);
+            _game.Player.RestorePatronDocks(saved.PatronDocks);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.
             _game.Player.RestoreCloseness(saved.Closeness);
@@ -5121,6 +5122,12 @@ public sealed class ShipMapWindow : Window
             // 추격대면 적장이 먼저 이름을 댄다(0x00455690) — 뒤쫓는 후원자 하나를 골라 그 명령이라 한다.
             if (foe.Kind == EnemyKind.Chaser && _game.Player.Pursuers.ToList() is { Count: > 0 } chasers)
             {
+                // 현역인 후원자 가운데서 먼저 고르고, 없을 때만 물러난 이까지 넣는다(0x0044FD60 이 0x0044FE10 을
+                // 「현역만」으로 한 번, 비었으면 「물러난 이도」로 한 번 더 부른다).
+                int year = _game.Player.Date.Year;
+                var seated = chasers.Where(c => _game.Sponsors?.FindByName(c.Sponsor) is { } s
+                                                && _game.Sponsors.IsSeated(s, year)).ToList();
+                if (seated.Count > 0) chasers = seated;
                 var who = chasers[rng.Next(chasers.Count)];
                 var boss = _game.Sponsors?.FindByName(who.Sponsor);
                 // 서식 0x0055F6A8 「네가 %s%s군. 찾고 있었다! %s%s 너를 토벌하라는 명령이다. 각오해라.」 —

@@ -1764,8 +1764,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         {
             case 0:
                 TalkDialog.Say(_view, face, "", Executed[dice.Next(Executed.Length)]);
-                if (_game.World?.People.FirstOrDefault(r => r.Id == person) is { } row)
-                    row.Appear = 0;
+                _game.Execute(person);                                   // 0x00432180(0)
                 break;
 
             case 2:

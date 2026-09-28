@@ -185,6 +185,10 @@ public sealed class PersonWorld
 
             Walk((step - at).Days);
             at = step;
+            // 굴림이 보는 나이 문(Active)과 세워진 도시(NotFoundedYet)는 _asOf 로 센다 — 끊는 날마다
+            // 먼저 옮겨야 몇 해를 한꺼번에 따라잡을 때(세이브를 불러와 1480년부터 되짚을 때) 그 해 나이로
+            // 가린다. 예전에는 고리가 끝난 뒤에야 옮겨 마흔 해 굴림이 죄다 시작 해 나이로 돌았다.
+            _asOf = at;
             if (at == nextRoll) Roll(at);
         }
         _asOf = today;
@@ -333,7 +337,7 @@ public sealed class PersonWorld
     {
         foreach (var row in _rows)
         {
-            if (!Active(row) && row.Id >= PersonTable.VoyagerCount) continue;
+            if (row.Id < PersonTable.VoyagerCount ? row.Appear == 0 : !Active(row)) continue;
             if (CellOf(row, dayPart) is not { } at) continue;
             yield return (row, at.X, at.Y, HeadingOf(row));
         }
@@ -412,6 +416,20 @@ public sealed class PersonWorld
     private void Sail(PersonTable.Row row, DateTime when)
     {
         if (_script is not { } script) return;
+        if (row.Appear == 0) return;
+
+        // 대본이 그 사람을 지우는 달이다(3E, 0x0040AEDD → 0x00432190) — 등장 칸을 0 으로 두면
+        // 술집·지도·대본 어디에도 안 나온다. 길 위였으면 그 자리에서 사라진다.
+        if (script.GoneBy(row.Id, when))
+        {
+            row.Appear = 0;
+            row.Dest = -1;
+            row.From = -1;
+            row.City = -1;
+            _bound.Remove(row.Id);
+            Revision++;
+            return;
+        }
 
         foreach (var move in script.MovesOn(row.Id, when.Year, when.Month))
         {

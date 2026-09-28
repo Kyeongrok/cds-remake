@@ -235,7 +235,8 @@ public sealed class Player
 
     /// <summary>악명치 — 인물정보 판의 명성 맞은편 칸이다.</summary>
     /// <remarks>
-    /// 게임은 나쁜 짓(해적질·약탈)으로 올린다. 우리 쪽에는 아직 올릴 길이 없어 늘 0 이다.
+    /// 게임은 나쁜 짓(해적질·약탈·흥정)으로 올리고, 매달 1일에 30 씩 깎는다(<c>0x0047CFD0</c>,
+    /// <see cref="InfamyDecayPerMonth"/>).
     /// </remarks>
     public int Infamy { get; set; }
 
@@ -878,7 +879,7 @@ public sealed class Player
     public void AdvanceMonths(int months)
     {
         if (months <= 0) return;
-        Date = Date.AddMonths(months);
+        MoveDate(Date.AddMonths(months));
         Recover(months * DaysPerMonth);
         AgeCargo(months * DaysPerMonth);
     }
@@ -896,6 +897,44 @@ public sealed class Player
         Date = new DateTime(year, Date.Month, Math.Min(Date.Day, DateTime.DaysInMonth(year, Date.Month)));
     }
 
+    /// <summary>
+    /// 놀이 안에서 날짜를 앞으로 옮긴다 — 달이 넘어갈 때마다 달 넘김을 먹인다.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 일이 1 이 되는 날마다 <c>0x0044B2A0</c> 을 돌고, 그 첫 줄이 제독 달 넘김
+    /// <c>0x0047CFD0</c> 이다 — <c>0x004800E0(1, −30)</c> 으로 <b>악명을 30 깎는다</b>(0 밑으로는 안 간다).
+    /// 명성은 저절로 안 바뀐다. 날·달·해 고리 어디에도 명성을 만지는 곳이 없다.
+    ///
+    /// 같은 함수에 이스터에그가 하나 있다 — 이름·성이 둘 다 「울컥」(<c>0x00539258</c> · <c>0x00539260</c>)이면
+    /// 달마다 금화 10000 닢(<c>0x0047CBC0(0x2710)</c>). 그것도 옮긴다.
+    ///
+    /// 달력은 그레고리력(<see cref="DateTime"/>)이라 원본(율리우스력, <c>0x0044B131</c> 의 <c>y % 4</c>)에 있는
+    /// 1500-02-29 가 없다 — 그 뒤 날짜가 하루 어긋나지만 달 넘김 차례는 같다.
+    /// </remarks>
+    private void MoveDate(DateTime to)
+    {
+        int months = (to.Year * 12 + to.Month) - (Date.Year * 12 + Date.Month);
+        Date = to;
+        for (int i = 0; i < months; i++) PassMonth();
+    }
+
+    /// <summary>제독 달 넘김(<c>0x0047CFD0</c>).</summary>
+    private void PassMonth()
+    {
+        Infamy = Math.Clamp(Infamy - InfamyDecayPerMonth, 0, MaxRenown);
+        if (Given == Rage && Family == Rage) Gold = Math.Clamp(Gold + RageGold, 0, MaxGold);
+    }
+
+    /// <summary>매달 1일 줄어드는 악명(<c>0x0047CFD1</c> 의 <c>push -0x1e</c>).</summary>
+    public const int InfamyDecayPerMonth = 30;
+
+    /// <summary>명성·악명의 끝(<c>0x004800E0</c> 이 0..99999 로 자른다).</summary>
+    private const int MaxRenown = 99_999;
+
+    /// <summary>이스터에그 이름(<c>0x00539258</c>)과 달마다 주는 금화(<c>0x0047D00C</c> 의 <c>push 0x2710</c>).</summary>
+    private const string Rage = "울컥";
+    private const int RageGold = 10_000;
+
     /// <summary>게임이 달을 날로 셀 때 쓰는 날수. 달력 달이 아니라 서른 날이다.</summary>
     public const int DaysPerMonth = 30;
 
@@ -908,7 +947,7 @@ public sealed class Player
     public void AdvanceDays(int days)
     {
         if (days <= 0) return;
-        Date = Date.AddDays(days);
+        MoveDate(Date.AddDays(days));
         Recover(days);
         AgeCargo(days);
     }
@@ -1205,7 +1244,7 @@ public sealed class Player
     public void PassDayAtSea()
     {
         DaysAtSea++;
-        Date = Date.AddDays(1);
+        MoveDate(Date.AddDays(1));
         AgeCargo(1);
     }
 
@@ -1363,6 +1402,62 @@ public sealed class Player
         foreach (int city in cities ?? []) _visitedCities.Add(city);
         if (CityId >= 0) _visitedCities.Add(CityId);
     }
+
+    private readonly HashSet<int> _executed = [];
+
+    /// <summary>
+    /// 일기토에 이겨 <b>처형한</b> 인물 번호들.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 인물 레코드의 등장 칸(<c>+0xF4</c>)을 0 으로 두어(<c>0x004AA35D</c> 의 <c>0x00432180(0)</c>)
+    /// 세이브에 그대로 남긴다. 우리 인물 세상은 날짜로 다시 셈해 짓는 것이라 이 칸에 따로 적어 두고,
+    /// 세상을 지을 때마다 덮는다. 이 칸 앞의 세이브는 아무도 안 죽인 것으로 연다.
+    /// </remarks>
+    public IReadOnlyCollection<int> Executed => _executed;
+
+    /// <summary>그 인물을 처형했다고 적는다.</summary>
+    public void Execute(int person)
+    {
+        if (person >= 0) _executed.Add(person);
+    }
+
+    /// <summary>세이브에서 처형한 인물을 되돌린다.</summary>
+    public void RestoreExecuted(IEnumerable<int>? people)
+    {
+        _executed.Clear();
+        foreach (int person in people ?? []) Execute(person);
+        Loads++;                                   // 이미 지어 둔 세상이 있으면 새로 지어 덮게 한다
+    }
+
+    private readonly Dictionary<string, PatronDock> _patronDocks = [];
+
+    /// <summary>
+    /// 후원자 하나의 배 칸 — 그 해(<paramref name="Year"/>)까지 해 넘김을 먹인 칸 다섯(선체 번호, 빈 칸 −1).
+    /// </summary>
+    /// <remarks>게임은 후원자 런타임 객체 <c>+0x34</c> 의 다섯 칸으로 들고 세이브에 적는다(<c>0x004AD9D0</c>).</remarks>
+    public sealed record PatronDock(int Year, List<int> Slots);
+
+    /// <summary>
+    /// 손댄(배를 빌려주거나 돌려받은) 후원자의 배 칸. 없는 후원자는 날짜로 셈해 낸다
+    /// (<c>CdsHelper.Game.Engine.Town.PatronShips</c>).
+    /// </summary>
+    public IReadOnlyDictionary<string, PatronDock> PatronDocks => _patronDocks;
+
+    /// <summary>그 후원자의 배 칸을 적어 둔다.</summary>
+    public void SetPatronDock(string sponsor, PatronDock dock) => _patronDocks[sponsor] = dock;
+
+    /// <summary>세이브에서 후원자 배 칸을 되돌린다. 이 칸 앞의 세이브는 날짜로만 셈한다.</summary>
+    public void RestorePatronDocks(IReadOnlyDictionary<string, PatronDock>? docks)
+    {
+        _patronDocks.Clear();
+        foreach (var (name, dock) in docks ?? new Dictionary<string, PatronDock>()) _patronDocks[name] = dock;
+    }
+
+    /// <summary>
+    /// 불러오기 횟수 — <see cref="Restore"/> 마다 하나 오른다. 인물 세상처럼 판 밖에 붙어 있는 것이
+    /// 딴 세이브로 갈렸는지 알아보는 데 쓴다.
+    /// </summary>
+    public int Loads { get; private set; }
 
     /// <summary>그 적대 도시의 문이 이미 열렸는지.</summary>
     public bool IsGateOpen(int city) => _openedGates.Contains(city);
@@ -1950,6 +2045,8 @@ public sealed class Player
                         int? savings = null,
                         bool supplyInBarrels = false)
     {
+        Loads++;
+        _executed.Clear();
         Gold = gold;
         Date = date;
         EnterCity(cityId, cityName);
@@ -2989,7 +3086,7 @@ public sealed class Player
         int next = LevelOf(skill) + 1;
         Gold -= Skill.Price;
         _skills[skill] = next;
-        Date = Date.AddMonths(Skill.MonthsFor(next));
+        MoveDate(Date.AddMonths(Skill.MonthsFor(next)));
         AgeCargo(Skill.MonthsFor(next) * DaysPerMonth);
         return LearnResult.Ok;
     }
