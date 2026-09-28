@@ -4360,7 +4360,8 @@ public sealed class ShipMapWindow : Window
                 if (at < 0 || at >= hurt.Count) return;
 
                 var ship = hurt[at];
-                if (!ConfirmDialog.Ask(this, $"{ship.Name}호로 좋습니까?")) continue;
+                // 묻는 것도 부관(아니면 뱃사람)이다 — YES/NO 말 창(0x0048E3E3 → 0x00478280).
+                if (!ConfirmDialog.Ask(this, $"{ship.Name}호로 좋습니까?", face: mate)) continue;
 
                 TalkDialog.Say(this, mate, "", "자재를 몇 통 쓰겠습니까?");
                 int have = player.SupplyOf(SupplyKind.Material);
@@ -4377,7 +4378,8 @@ public sealed class ShipMapWindow : Window
                 ship.SpeedUp(gain);
                 ship.SetHp(ship.Hp + gain);
 
-                NoticeDialog.Show(this, ShoreRepair.RepairWord(ship.Hp - was, ship.Speed - wasSpeed));
+                // 결과 말도 부관(아니면 뱃사람)이 한다(0x0048E59D · 0x0048E1D8 · 0x0048E1FF · 0x0048E226 · 0x0048E248).
+                TalkDialog.Say(this, mate, "", ShoreRepair.RepairWord(ship.Hp - was, ship.Speed - wasSpeed));
             }
         }
         finally
