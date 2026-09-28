@@ -1180,7 +1180,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                    ? DuelArt.TavernFor(_cultureNo) : DuelArt.Field,
                         bgm: _game.Bgm);
         _huntSlain = false;
-        if (duel.Won != true && TavernMenu.LostDuel(this, _player, duel, face, dice, mateFought: false))
+        if (duel.Won != true && TavernMenu.LostDuel(this, _player, duel, face, dice, mateFought: false, game: _game))
         {
             _huntSlain = true;
             return false;

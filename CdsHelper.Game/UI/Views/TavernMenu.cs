@@ -1550,7 +1550,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </remarks>
     private bool LostDuel(Engine.Town.Duel duel, uint[]? face, GameRandom dice, bool mateFought,
                           bool canFlee = true, bool canSpare = true) =>
-        LostDuel(_view, _player, duel, face, dice, mateFought, canFlee, canSpare);
+        LostDuel(_view, _player, duel, face, dice, mateFought, canFlee, canSpare, _game);
 
     /// <inheritdoc cref="LostDuel(Engine.Town.Duel, uint[], GameRandom, bool)"/>
     /// <param name="canFlee">
@@ -1560,11 +1560,17 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 용서를 굴릴 수 있는 판인지 — 갑판(무대 0)과 종류 0·3·8 이 아닌 판은 곧바로 죽는다
     /// (<c>0x004A9EBE</c>).
     /// </param>
+    /// <param name="game">굴린 결과의 동전을 돌리는 데 쓴다. 없으면 안 돌린다.</param>
     internal static bool LostDuel(Window view, Player player, Engine.Town.Duel duel, uint[]? face,
                                   GameRandom dice, bool mateFought,
-                                  bool canFlee = true, bool canSpare = true)
+                                  bool canFlee = true, bool canSpare = true, Engine.Game? game = null)
     {
-        switch (duel.FateOf(player.Fame, canFlee, canSpare, player.Crew))
+        var fate = duel.FateOf(player.Fame, canFlee, canSpare, player.Crew);
+        // 동전은 도망이 <b>됐을 때</b>(0x004A9F1C, 못 달아났으면 안 돈다) · 봐줄 때(0x004A9FF7) · 용서를
+        // 굴리는 판에서 베일 때(0x004AA089, 결과 0) 돈다. 용서를 안 굴리는 판(종류 0·3·8 밖)은 동전이 없다.
+        if (game != null && (fate != Engine.Town.Duel.Fate.Slain || canSpare))
+            EffectPopup.PlayOn(view, game, EffectAnim.Coin, fate != Engine.Town.Duel.Fate.Slain);
+        switch (fate)
         {
             case Engine.Town.Duel.Fate.Fled:
                 NoticeDialog.Show(view, "안되겠다. 이길 수가 없군! 틈을 봐서 도망쳐야겠다!", "일기토");
