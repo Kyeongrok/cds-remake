@@ -127,6 +127,16 @@ public sealed class SeaBattle
     /// <summary>풍향 0~5(<c>+0x0860</c>). 0 이 북풍이다.</summary>
     public int Wind { get; private set; }
 
+    /// <summary>
+    /// 판을 열 때의 풍향 — 퇴각 지대가 이것으로 정해진다(<c>+0x08DC</c>, <c>0x0044200A</c> 에서 한 번 적는다).
+    /// </summary>
+    /// <remarks>
+    /// 턴 끝에 바람이 돌아도(<c>0x0043DA5F</c> 는 <c>+0x860</c> 만 바꾼다) 퇴각 판정(<c>0x0043E0B2</c>) ·
+    /// E 표시(<c>0x004403DB</c>) · 적의 퇴각 길(<c>0x0043B336</c> · <c>0x0043B8CB</c>)은 이 값을 본다.
+    /// 예전에는 지금 바람을 봐서 바람이 돌면 퇴각 칸이 다른 가장자리로 옮겨 갔다.
+    /// </remarks>
+    public int RetreatWind { get; }
+
     /// <summary>바람 세기(<c>+0x0864</c>).</summary>
     public int WindStrength { get; private set; }
 
@@ -138,6 +148,7 @@ public sealed class SeaBattle
     {
         _rng = rng;
         Wind = ((wind % Ways) + Ways) % Ways;
+        RetreatWind = Wind;
         WindStrength = Math.Max(0, windStrength);
     }
 
@@ -851,7 +862,7 @@ public sealed class SeaBattle
         (int, int) best = (int.MaxValue, int.MaxValue);
         foreach (var (plan, x, y, _) in Paths(ship, avoidReserved: true, avoidDanger: avoidDanger))
         {
-            var score = Wind switch
+            var score = RetreatWind switch
             {
                 0 => (y, Math.Abs(x - 10)),
                 1 or 2 => (-x, Math.Abs(y - 7)),
@@ -1655,8 +1666,8 @@ public sealed class SeaBattle
 
     // ── 퇴각 ──────────────────────────────────────────────────────────────
 
-    /// <summary>그 칸이 퇴각 지대인지(<c>0x0043E090</c>).</summary>
-    public bool IsRetreatCell(int x, int y) => Wind switch
+    /// <summary>그 칸이 퇴각 지대인지(<c>0x0043E090</c>) — 판을 열 때의 풍향(<see cref="RetreatWind"/>)으로 본다.</summary>
+    public bool IsRetreatCell(int x, int y) => RetreatWind switch
     {
         0 => x is >= 9 and <= 13 && y == 0,
         1 or 2 => x == Cols - 1 && y is >= 5 and <= 10,
