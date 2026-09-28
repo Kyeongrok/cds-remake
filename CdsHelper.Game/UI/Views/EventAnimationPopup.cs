@@ -113,6 +113,7 @@ internal sealed class EventAnimationPopup : Window
                 }),
             EventAnimation.Iceberg => new IcebergScene(),
             EventAnimation.Whale => new WhaleScene(),
+            EventAnimation.Dolphin => new DolphinScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
@@ -722,6 +723,93 @@ internal sealed class EventAnimationPopup : Window
             _last = d;
             if (c < 0x20) _x += (FrameW - _w) / 80;
             else if (c < 0x36) _x += (FrameW - _w) / 50;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 20 돌고래 — 한 마리가 가운데서 뛰어오르고, 이어 떼가 오른쪽에서 왼쪽으로 헤엄쳐 간다
+    /// (<c>0x00418AB0</c>, 객체 <c>0x0061D768</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x00418E00  파트 0x17, 128 x 1920(128x160 열두 장) · 파트 0x16, 352 x 2560(352x160 열여섯 장), 팔레트 0x30
+    ///   0x00418D30  첫자리  한 마리 x = (W − 128)/2 · 떼 x = W/2
+    ///               함대 위 ≥ H/2 면 둘 다 y = H/2 − 160, 아니면 한 마리 H/2 − 80 · 떼 H/2 − 32
+    ///               한 마리 자리가 바다인지 본다(0x00425BA0) — 우리는 바다 조우라 보지 않는다
+    ///   한 마리(0x00418AD0) c &lt; 50
+    ///     c &lt; 4   장 c/2 (c == 0 에 소리 0x32)      4~19   2 2 3 3 4 4 3 3 되풀이
+    ///     20~31  5 5 6 6 되풀이                        32~43  7 7 8 8 되풀이
+    ///     44~49  장 9 + (c − 44)/2 (c == 44 에 0x32 끔)
+    ///   떼(0x00418C70) c ≥ 50 — c == 50 에 소리 0x33
+    ///     50~53  장 c + 7 — 띠 밖이라 Blt 가 안 그린다
+    ///     54~81  0~6 되풀이 · 82~85 장 c − 71 · 86 끝
+    ///     그린 뒤 x += W / −90
+    /// </code>
+    /// </remarks>
+    private sealed class DolphinScene : Scene
+    {
+        private const int OneW = 0x80, SchoolW = 0x160, FrameH = 0xA0;
+
+        private BitmapSource[] _one = [], _school = [];
+        private int _w, _x0, _y0, _x1, _y1;
+
+        public override bool Load(EventAnimation anims)
+        {
+            _one = Frames(anims, 0x17, OneW, FrameH, 0x30) ?? [];
+            _school = Frames(anims, 0x16, SchoolW, FrameH, 0x30) ?? [];
+            return _one.Length >= 12 && _school.Length >= 16;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w;
+            int half = h / 2;
+            int top = (int)(ship?.Y ?? half) - 24;
+            if (top >= half) _y0 = _y1 = half - 0xA0;
+            else { _y0 = half - 0x50; _y1 = half - 0x20; }
+            _x0 = (w - OneW) / 2;
+            _x1 = w / 2;
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            if (c < 0x32)
+            {
+                int f;
+                if (c < 4)
+                {
+                    if (c == 0) Sound(0x32);
+                    f = c / 2;
+                }
+                else if (c < 0x14)
+                {
+                    int e = c + (4 - c) / 8 * 8 - 4;
+                    f = (e / 2) switch { 0 => 2, 1 or 3 => 3, _ => 4 };
+                }
+                else if (c < 0x20) f = c + (0x14 - c) / 4 * 4 - 0x14 < 2 ? 5 : 6;
+                else if (c < 0x2C) f = c + (0x20 - c) / 4 * 4 - 0x20 < 2 ? 7 : 8;
+                else
+                {
+                    if (c == 0x2C) Sfx?.Stop();
+                    f = (c - 0x2C) / 2 + 9;
+                }
+                draws.Add(new Draw(_one[f], _x0, _y0));
+                return false;
+            }
+
+            if (c == 0x32) Sound(0x33);
+            int g;
+            if (c < 0x36) g = c + 7;
+            else if (c < 0x52) g = (0x36 - c) / 7 * 7 + c - 0x36;
+            else if (c < 0x56) g = c - 0x47;
+            else
+            {
+                Sfx?.Stop();                                      // 0x0049B197 — 0x33 을 끈다
+                return true;
+            }
+            if (g >= 0 && g < _school.Length) draws.Add(new Draw(_school[g], _x1, _y1));
+            _x1 += _w / -90;
             return false;
         }
     }
