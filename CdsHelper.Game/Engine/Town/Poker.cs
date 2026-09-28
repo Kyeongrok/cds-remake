@@ -427,20 +427,21 @@ public sealed class Poker
     }
 
     /// <summary>
-    /// 상대가 버릴 카드(<c>0x004048C0</c>). 상대 패를 오름차순으로 두고 표시를 낸다. 난수는 없다.
+    /// 상대가 버릴 카드(<c>0x004048C0</c>). 상대 패를 <b>돌린 차례 그대로</b> 두고 표시를 낸다 — 부르는
+    /// <c>0x00402970</c> 도 줄 세우지 않는다. 난수는 없다.
     /// </summary>
     /// <remarks>
     /// <code>
     ///   노 페어    끗수 &lt; 8 (2~9) 전부
     ///   원 페어    짝 없는 카드 중 끗수 ≤ 8 (2~10)
     ///   투 페어    곁패 한 장
-    ///   쓰리카드   곁패 둘 중 <b>높은 것</b> (둘째 찾기가 자기 자신과 견주는 버그 — 그대로 둔다)
+    ///   쓰리카드   곁패 둘 중 <b>돌린 차례로 뒤에 온 것</b> (0x0040497E 의 둘째 찾기가 첫째 자리에서
+    ///              다시 시작해 자기 자신과 견주므로 첫째 표시만 지워진다 — 그대로 둔다)
     ///   그 위      안 바꾼다
     /// </code>
     /// </remarks>
     public bool[] TheirDiscards()
     {
-        SortByKey(Theirs);
         int hand = Evaluate(Theirs);
         var marks = new bool[HandSize];
 
@@ -466,7 +467,7 @@ public sealed class Poker
                 for (int i = 0; i < HandSize; i++) marks[i] = single[i];
                 break;
             case ThreeOfAKind:
-                // 오름차순이라 뒤에 선 곁패가 높다 — 그것을 버린다.
+                // 뒤에 선 곁패를 버린다. 쓰리카드는 곁패를 안 보므로 승패에는 닿지 않는다.
                 for (int i = HandSize - 1; i >= 0; i--)
                     if (single[i]) { marks[i] = true; break; }
                 break;
