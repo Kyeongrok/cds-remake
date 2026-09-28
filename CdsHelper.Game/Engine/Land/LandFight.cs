@@ -335,13 +335,20 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// 그 편에서 아무 부대 하나. 없으면 −1.
     /// </summary>
     /// <param name="leader">총대장 부대도 고를지(<c>0x004476C0</c> 의 둘째 인자) — 암살자는 안 고른다.</param>
+    /// <remarks>
+    /// 고르게 뽑는 것이 아니다 — <c>rand(6)</c> 자리에서 시작해 <b>앞으로 훑어</b> 처음 선 부대를 집는다
+    /// (<c>0x004476C0</c>~<c>0x0044774F</c>, 여섯째 뒤는 첫 자리로 감긴다). 그래서 빈 자리 바로 뒤 부대가 더 잘 걸린다.
+    /// </remarks>
     private int Any(bool mine, GameRandom dice, bool leader)
     {
         int side = mine ? 0 : LandBattle.FirstFoe;
-        var live = new List<int>();
-        for (int i = side; i < side + LandBattle.PerSide; i++)
-            if (Alive(i) && (leader || !battle.Units[i].IsLeader)) live.Add(i);
-        return live.Count == 0 ? -1 : live[dice.Next(live.Count)];
+        int start = dice.Next(LandBattle.PerSide);
+        for (int k = 0; k < LandBattle.PerSide; k++)
+        {
+            int i = side + (start + k) % LandBattle.PerSide;
+            if (Alive(i) && (leader || !battle.Units[i].IsLeader)) return i;
+        }
+        return -1;
     }
 
     /// <summary>그 편에 선 부대 수.</summary>
