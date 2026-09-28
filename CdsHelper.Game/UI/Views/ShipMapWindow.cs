@@ -6021,7 +6021,7 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void PlainNotice(in DiscoveryTable.Record row)
     {
-        MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+        MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
 
         string found = $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!";
 

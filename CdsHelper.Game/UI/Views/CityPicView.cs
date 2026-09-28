@@ -1274,7 +1274,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             {
                 log.Discover(_player, row.Id);
                 string found = $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!";
-                MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+                MoviePlayer.Play(this, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
                 if (row.Movie >= 0) NoticeDialog.Show(this, found);
                 else DiscoveryDialog.Show(this, _game.Stills, row.Picture, found);
             }

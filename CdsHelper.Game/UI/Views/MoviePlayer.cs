@@ -26,7 +26,9 @@ public static class MoviePlayer
     /// </summary>
     /// <param name="owner">덮을 창. 이 창의 화면을 가득 채운다.</param>
     /// <param name="path">틀 파일. 없으면 아무 일도 없다.</param>
-    public static void Play(Window owner, string? path)
+    /// <param name="bgm">도는 동안 멈춰 둘 곡 — 게임은 AVI 를 틀기 전에 CDAudioPause, 끝나면 CDAudioResume 을 부른다
+    /// (<c>0x00408359</c>~<c>0x00408372</c> · <c>0x0047373C</c> · <c>0x004AAFC0</c>).</param>
+    public static void Play(Window owner, string? path, Local.Helpers.BgmPlayer? bgm = null)
     {
         if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
 
@@ -74,7 +76,9 @@ public static class MoviePlayer
         screen.Loaded += (_, _) => player.Play();
         screen.Closed += (_, _) => player.Close();
 
+        bgm?.Pause();
         screen.ShowDialog();
+        bgm?.Resume();
     }
 
     /// <summary>주인 창이 놓인 자리를 그대로 덮는다.</summary>

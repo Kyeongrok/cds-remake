@@ -655,7 +655,7 @@ public sealed class DisevRunner
                 return null;
 
             case DisevCall.PlayVideo:
-                MoviePlayer.Play(_owner, DiscoveryDialog.MovieOf(_game.Directory, I("Id")));
+                MoviePlayer.Play(_owner, DiscoveryDialog.MovieOf(_game.Directory, I("Id")), _game.Bgm);
                 return null;
 
             case DisevCall.PlaySound:

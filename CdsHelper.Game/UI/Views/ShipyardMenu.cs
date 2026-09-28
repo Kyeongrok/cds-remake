@@ -141,7 +141,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             }
 
             // 동영상은 넘겨받은 창을 가득 채운다 — 명령 창(작다)이 아니라 맨 위 게임 창을 덮는다.
-            MoviePlayer.Play(GameUi.RootOf(owner), MovieOf(hull));
+            MoviePlayer.Play(GameUi.RootOf(owner), MovieOf(hull), _game.Bgm);
 
             // 선명입력(0x00423BE0) — 중단하면 조선소가 골라 준 이름(0x0044B7B0)으로 산다.
             string name = ShipNameDialog.Settle(owner, _player.SuggestShipName());

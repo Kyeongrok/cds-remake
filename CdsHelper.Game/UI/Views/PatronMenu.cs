@@ -1013,7 +1013,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
             // 그림은 동영상 → 움직이는 그림(DISCOVER.CDS) → 스틸 차례다(0x004AAF30) — 발표와 같은 함수다.
             if (row.Movie >= 0)
-                MoviePlayer.Play(_view, DiscoveryDialog.MovieOf(_game.Directory, row.Movie));
+                MoviePlayer.Play(_view, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
             else if (row.Clip >= 0)
                 DiscoveryClipPlayer.Play(_view, _game.Clips, row.Clip);
             else if (row.Picture >= 0)
@@ -1148,7 +1148,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             : $"{on.Year}년 {on.Month}월, {me}{GameUi.Josa(me, "은", "는")} 기한은 넘었지만 역사 최초로 세계일주를 달성했다!");
 
         // 엔딩 동영상(0x0045B8F0). 파일이 없으면 조용히 넘어간다.
-        MoviePlayer.Play(_view, MovieFiles.Resolve(_game.Directory, MovieFiles.EndingStem));
+        MoviePlayer.Play(_view, MovieFiles.Resolve(_game.Directory, MovieFiles.EndingStem), _game.Bgm);
     }
 
     /// <summary>
