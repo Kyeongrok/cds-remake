@@ -311,7 +311,9 @@ public sealed class MazePuzzle
 
         if (!all)
         {
-            if (Restarted >= MaxRestart - 1)
+            // 0x0042B03C 는 다시 한 횟수(+0x308)가 3 일 때만 끝으로 간다 — 세 번까지 다시 깔고 네 번째에
+            // 끝난다(설명 글도 「이것도 3회까지입니다」). 예전에는 두 번만 다시 깔았다.
+            if (Restarted >= MaxRestart)
             {
                 Restarted++;
                 Over = Result.Failed;
