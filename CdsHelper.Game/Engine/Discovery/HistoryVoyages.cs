@@ -54,7 +54,7 @@ public sealed class HistoryVoyages
     public const string CacheName = "역사항해자";
 
     /// <summary>알맹이 모양 판.</summary>
-    private const int SnapshotVersion = 2;
+    private const int SnapshotVersion = 3;
 
     /// <summary>역사 항해자 수. 파일 파트 수이자 인물 번호 0~13 이다.</summary>
     public const int Count = 14;
@@ -105,7 +105,22 @@ public sealed class HistoryVoyages
         public bool ToCity => City >= 0;
     }
 
-    internal sealed record Snapshot(List<Voyage> Voyages, List<Move>? Moves = null);
+    /// <summary>
+    /// 대본이 그 사람을 <b>지우는</b> 달 — <c>3E</c> 한 수뿐인 칸이다.
+    /// </summary>
+    /// <remarks>
+    /// 오피코드 <c>0x3E</c>(<c>0x0040AEDD</c>)는 대본 주인이 인물(<c>+4 == 1</c>)이면 <c>0x00432190</c> 으로
+    /// 등장 칸(<c>+0xF4</c>)을 0 으로 만든다 — 그 뒤로는 활동 판정(<c>0x004322B0</c>)에 걸려 술집·지도·대본
+    /// 어디에도 안 나온다. HISTCHR 에 다섯 칸이다 — 1 카브랄 1518.04 · 2 아르메이다 1511.05 · 5 코론 1506.05 ·
+    /// 6 베스풋치 1512(조건이 <c>1C 16</c> 해만이라 그 해 1월에 든다) · 12 캐벗 1498.10.
+    /// </remarks>
+    public readonly record struct Death(int Voyager, int Year, int Month)
+    {
+        /// <summary>대본이 도는 날 — 달의 첫날이다.</summary>
+        public DateTime On => new(Year, Month, 1);
+    }
+
+    internal sealed record Snapshot(List<Voyage> Voyages, List<Move>? Moves = null, List<Death>? Deaths = null);
 
     /// <summary>사람 차례, 그 다음 날짜 차례.</summary>
     /// <summary>사람 차례 · 날짜 차례로 세우는 견줌.</summary>
@@ -123,9 +138,12 @@ public sealed class HistoryVoyages
     private readonly List<Move> _moves;
     private int _stamp = -1;
 
-    private HistoryVoyages(List<Voyage> original, List<Move> moves)
+    private readonly List<Death> _deaths;
+
+    private HistoryVoyages(List<Voyage> original, List<Move> moves, List<Death> deaths)
     {
         _moves = moves;
+        _deaths = deaths;
         _original = original;
         _voyages = original;
     }
@@ -163,6 +181,17 @@ public sealed class HistoryVoyages
     /// </remarks>
     public IReadOnlyList<Move> Moves => _moves;
 
+    /// <summary>대본이 사람을 지우는 달들(<see cref="Death"/>).</summary>
+    public IReadOnlyList<Death> Deaths => _deaths;
+
+    /// <summary>그 사람이 그 날까지 대본에서 지워졌는가(<c>3E</c>, <c>0x0040AEDD</c>).</summary>
+    public bool GoneBy(int voyager, DateTime date)
+    {
+        foreach (var death in _deaths)
+            if (death.Voyager == voyager && death.On <= date) return true;
+        return false;
+    }
+
     /// <summary>그 사람이 그 달에 떠나는 수들. 없으면 빈 목록.</summary>
     public IEnumerable<Move> MovesOn(int voyager, int year, int month)
     {
@@ -184,15 +213,17 @@ public sealed class HistoryVoyages
         LastError = "";
 
         var moves = new List<Move>();
-        var voyages = FromFile(gameDirectory, moves);
+        var deaths = new List<Death>();
+        var voyages = FromFile(gameDirectory, moves, deaths);
         if (voyages != null)
             TableCache.Write(CacheName, new TableCache.Cached<Snapshot>(
-                $"{Count}명 {voyages.Count}건 · 이동 {moves.Count}수",
-                new Snapshot(voyages, moves), FileName, SnapshotVersion));
+                $"{Count}명 {voyages.Count}건 · 이동 {moves.Count}수 · 퇴장 {deaths.Count}",
+                new Snapshot(voyages, moves, deaths), FileName, SnapshotVersion));
         else if (TableCache.Read<Snapshot>(CacheName)?.Data is { } kept)
         {
             voyages = kept.Voyages;
             moves = kept.Moves ?? [];
+            deaths = kept.Deaths ?? [];
         }
 
         if (voyages == null || voyages.Count == 0)
@@ -202,11 +233,11 @@ public sealed class HistoryVoyages
         }
 
         LastError = "";
-        return new HistoryVoyages(voyages, moves);
+        return new HistoryVoyages(voyages, moves, deaths);
     }
 
     /// <summary><c>HISTCHR.CDS</c> 에서 읽어 낸다. 못 읽으면 null 이고 까닭이 남는다.</summary>
-    private static List<Voyage>? FromFile(string gameDirectory, List<Move> moves)
+    private static List<Voyage>? FromFile(string gameDirectory, List<Move> moves, List<Death> deaths)
     {
         if (gameDirectory.Length == 0) { LastError = "게임 폴더를 모릅니다"; return null; }
 
@@ -221,7 +252,7 @@ public sealed class HistoryVoyages
 
         var voyages = new List<Voyage>();
         for (int who = 0; who < Count; who++)
-            if (archive.Decode(who) is { } part) Read(who, part, voyages, moves);
+            if (archive.Decode(who) is { } part) Read(who, part, voyages, moves, deaths);
 
         if (voyages.Count == 0) { LastError = $"{FileName} 에서 발견 기록을 못 찾았습니다"; return null; }
 
@@ -250,7 +281,7 @@ public sealed class HistoryVoyages
         voyager >= 0 && voyager < Names.Length ? Names[voyager] : "";
 
     /// <summary>대본 하나에서 날짜 붙은 발견 기록과 이동을 뽑는다.</summary>
-    private static void Read(int who, byte[] part, List<Voyage> into, List<Move> moves)
+    private static void Read(int who, byte[] part, List<Voyage> into, List<Move> moves, List<Death> deaths)
     {
         if (part.Length < 4) return;
 
@@ -266,6 +297,15 @@ public sealed class HistoryVoyages
             int cond = U16(part, at) + 4;
             int body = U16(part, at + 2) + 4;
             if (cond + 6 >= part.Length || body >= part.Length) continue;
+
+            // 3E FF 한 수뿐인 칸 — 그 사람을 지운다. 조건이 1C 16 <해>(해만)이면 그 해 1월에 든다.
+            if (body + 1 < part.Length && part[body] == 0x3E && part[body + 1] == 0xFF && part[cond] == 0x1C)
+            {
+                if (part[cond + 1] == 0x17 && part[cond + 3] == 0x16)
+                    deaths.Add(new Death(who, U16(part, cond + 4), part[cond + 2]));
+                else if (part[cond + 1] == 0x16)
+                    deaths.Add(new Death(who, U16(part, cond + 2), 1));
+            }
 
             // 1C 17 <달> 16 <u16 해> FF
             if (part[cond] != 0x1C || part[cond + 1] != 0x17 || part[cond + 3] != 0x16) continue;
