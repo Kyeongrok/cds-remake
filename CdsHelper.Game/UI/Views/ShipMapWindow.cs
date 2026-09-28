@@ -963,9 +963,8 @@ public sealed class ShipMapWindow : Window
     /// 상단 띠를 오른쪽 단추로 눌렀을 때 — 띠에 <b>무엇을 띄울지</b> 켜고 끄는 창이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 안에서만 이 창을 내지만 우리는 <b>바다에서도</b> 낸다 — 띠는 어디서나
-    /// 서 있는데 바다에서만 못 고치면 칸을 켜려고 도시에 들어가야 한다. 바다에서는 창이
-    /// 떠 있는 동안 배를 세운다.
+    /// 게임도 바다·뭍·도시 어디서나 낸다(<c>0x0047DBC0</c>) — 제목만 「양상정보」·「탐험정보」·
+    /// 「도시정보」로 다르다(<see cref="CityInfoMenu"/>). 바다에서는 창이 떠 있는 동안 배를 세운다.
     /// </remarks>
     private void ShowCityInfoMenu(FrameworkElement bar, Point at)
     {
@@ -992,7 +991,8 @@ public sealed class ShipMapWindow : Window
             SaveBarCells();
             InfoMenu.Refresh();
         },
-        InfoMenu.Close);
+        InfoMenu.Close,
+        _host.InCity ? 2 : _host.IsOnLand ? 1 : 0);
 
     /// <summary>
     /// 커서가 지금 지도 위 어디에 있는지 다시 잰다.
