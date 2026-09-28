@@ -1551,7 +1551,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
             // 사례는 파란 막이 걷힌 뒤에 받는다. 줄도 갈래마다 다르다
             // (0x005304B0 · 0x00530570 · 0x00530648 · 0x00530788).
-            string him = patron.Name;
+            // 이름은 후원자 객체의 이름(vfunc 0 — 표 0x005228B8, 「페르난·마르틴스」처럼 가운뎃점이 든다)이다
+            // (0x00411C1E · 0x00411C76).
+            string him = _game.Sponsors?.FindByName(patron.Name)?.Name ?? patron.Name;
             GameDialog.Show(_view, grade != Palace.ReportGrade.Poor && !scooped
                 ? $"금화 {paid}닢을 받았다!"
                 : inTime ? $"{him}{GameUi.Josa(him, "은", "는")} 금화 {paid}닢 밖에 지불하지 않았다!"
