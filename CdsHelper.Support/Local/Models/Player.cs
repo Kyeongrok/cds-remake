@@ -1375,7 +1375,8 @@ public sealed class Player
     /// </summary>
     /// <remarks>
     /// 게임은 발견물마다 164바이트 칸을 두고 발견자·발표자 이름과 그 연월까지 적는다.
-    /// 여기서는 주인공이 하나뿐이라 번호만 든다 — 발표(왕궁 보고)는 아직 흉내내지 않는다.
+    /// 여기서는 주인공이 하나뿐이라 번호만 든다. 보고·발표(<c>0x0047E680</c> — 왕궁 보고와 모항 항구 발표)는
+    /// 따로 든다 — <see cref="Announced"/> · <see cref="AnnouncedOn"/>, 남이 먼저 발표한 것은 <see cref="Scoop"/>.
     /// </remarks>
     public IReadOnlyCollection<int> Discoveries => _found;
 
