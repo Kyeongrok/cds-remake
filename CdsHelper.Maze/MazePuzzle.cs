@@ -278,10 +278,20 @@ public sealed class MazePuzzle
     public bool CanUndo => Over == Result.Playing && _path.Count > 1 && Undone < MaxUndo;
 
     /// <summary>「앞으로 돌아간다」 — 한 발 물린다.</summary>
+    /// <remarks>
+    /// 물러나는 방의 상자를 열었으면 <b>도로 닫고 연 수를 하나 뺀다</b>(<c>0x0042AB4C</c>~<c>0x0042AB6D</c>:
+    /// 상자 방이 지금 방이고 상태가 2 이상이면 <c>[+0x2F8]--</c>, 상태 0). 예전에는 연 채로 남아 차례 판정·
+    /// 「실수 없이」 판정·놀이 속 삯이 어긋났다.
+    /// </remarks>
     public bool Undo()
     {
         if (!CanUndo) return false;
 
+        if (ChestAt(_path[^1]) is > 0 and var chest && _opened[chest - 1])
+        {
+            _opened[chest - 1] = false;
+            Opened--;
+        }
         _step[_path[^1]] = 0;
         _path.RemoveAt(_path.Count - 1);
         Here = _path[^1];
