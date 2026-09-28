@@ -1865,19 +1865,28 @@ public sealed class ShipMapWindow : Window
         var all = Engine.AccData.Load();
         if (all.Count == 0) return true;
 
-        string names = string.Join("\n", all.Select(c => c.Name));
-        string body = $"{names}\n{all.Count}명의 누적캐릭터가 등록되어 있습니다.\n"
+        // 이름은 한 사람마다 「%s\n」(0x00537664)로 이어 붙여, 본문의 「%s\n」과 겹쳐 빈 줄이 하나 선다.
+        // 다섯이 다 찼을 때의 글(0x0055DFE8)만 「%d 명의」로 띄어 쓴다.
+        string names = string.Concat(all.Select(c => c.Name + "\n"));
+        bool full = all.Count >= Engine.AccData.Slots;
+        string body = $"{names}\n{all.Count}{(full ? " 명의" : "명의")} 누적캐릭터가 등록되어 있습니다.\n"
                     + "이 캐릭터들을 게임 속에 등장시킬 수 있습니다만, 어떻게 하시겠습니까?"
-                    + (all.Count >= Engine.AccData.Slots
-                        ? "\n또, 이 캐릭터들을 등장시키면 지금부터 시작하는 캐릭터로는 은퇴할 수 없게 됩니다."
-                        : "");
+                    + (full ? "\n또, 이 캐릭터들을 등장시키면 지금부터 시작하는 캐릭터로는 은퇴할 수 없게 됩니다." : "");
 
-        int at = ChoiceDialog.Ask(this, body,
-            ["누적캐릭터를 등장시킨다", "누적캐릭터를 등장시키지 않는다"]);
-        if (at < 0) return false;
+        // 본문은 단추 없는 창(종류 3)으로 띄워 둔 채 두 줄 차림표를 낸다(0x0041AEA0 → 0x0041AEB9 → 0x0049E510).
+        // 줄은 둘뿐이고 「취소」가 없다 — 「등장시키지 않는다」가 끝 줄이라 나가기 띠로 서고, 물려도(ESC)
+        // 0 이 아니므로 그 줄을 고른 것과 같다(0x0041AECA). 물러서 NEW GAME 차림표로 가는 길은 없다.
+        var held = ConfirmDialog.Hold(this, body);
+        int at;
+        try
+        {
+            at = ChoiceDialog.Ask(this, "", ["누적캐릭터를 등장시킨다"], "누적캐릭터를 등장시키지 않는다",
+                                  under: held);
+        }
+        finally { held.Close(); }
 
         // 「등장시키지 않는다」면 깃발만 세운다 — 비우는 것은 은퇴할 때다(0x0041AD55).
-        if (at == 1) { _game.Player.SkipsCumulative = true; return true; }
+        if (at != 0) { _game.Player.SkipsCumulative = true; return true; }
 
         // 등장시키면 인물 276~280 자리에 앉고(0x0041AF00), 옛 발자취를 날마다 되짚는다.
         if (_game.World is { } world)
