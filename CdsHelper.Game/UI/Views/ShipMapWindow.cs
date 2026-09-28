@@ -4336,9 +4336,6 @@ public sealed class ShipMapWindow : Window
                 return;
             }
 
-            // 부관이 더 잘하면 부관이 나선다(0x0048E408).
-            if (his > mine) TalkDialog.Say(this, mate, "", "제가 수리하겠습니다.");
-
             while (true)
             {
                 if (player.SupplyOf(SupplyKind.Material) <= 0)
@@ -4366,6 +4363,9 @@ public sealed class ShipMapWindow : Window
                 var ship = hurt[at];
                 // 묻는 것도 부관(아니면 뱃사람)이다 — YES/NO 말 창(0x0048E3E3 → 0x00478280).
                 if (!ConfirmDialog.Ask(this, $"{ship.Name}호로 좋습니까?", face: mate)) continue;
+
+                // 부관이 더 잘하면 부관이 나선다 — 배를 정할 때마다 한다(0x0048E3F4 · 0x0048E408, 되돌이 안).
+                if (his > mine) TalkDialog.Say(this, mate, "", "제가 수리하겠습니다.");
 
                 TalkDialog.Say(this, mate, "", "자재를 몇 통 쓰겠습니까?");
                 int have = player.SupplyOf(SupplyKind.Material);
