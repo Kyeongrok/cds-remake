@@ -185,6 +185,10 @@ public sealed class PersonWorld
 
             Walk((step - at).Days);
             at = step;
+            // 굴림이 보는 나이 문(Active)과 세워진 도시(NotFoundedYet)는 _asOf 로 센다 — 끊는 날마다
+            // 먼저 옮겨야 몇 해를 한꺼번에 따라잡을 때(세이브를 불러와 1480년부터 되짚을 때) 그 해 나이로
+            // 가린다. 예전에는 고리가 끝난 뒤에야 옮겨 마흔 해 굴림이 죄다 시작 해 나이로 돌았다.
+            _asOf = at;
             if (at == nextRoll) Roll(at);
         }
         _asOf = today;
