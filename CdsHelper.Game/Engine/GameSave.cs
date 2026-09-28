@@ -221,7 +221,8 @@ public static class GameSave
         Dictionary<int, DateTime>? ScoopedOn = null,
         List<int>? VisitedCities = null,
         List<int>? Executed = null,
-        Dictionary<string, Player.PatronDock>? PatronDocks = null);
+        Dictionary<string, Player.PatronDock>? PatronDocks = null,
+        Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -351,7 +352,10 @@ public static class GameSave
                             // 처형한 인물. 이 칸 앞의 세이브는 아무도 안 죽인 것으로 연다.
                             Executed: [.. player.Executed],
                             // 후원자 배 칸. 이 칸 앞의 세이브는 날짜로만 셈한다(빌려준 배가 칸에 도로 찬 것으로 연다).
-                            PatronDocks: player.PatronDocks.ToDictionary(e => e.Key, e => e.Value));
+                            PatronDocks: player.PatronDocks.ToDictionary(e => e.Key, e => e.Value),
+                            // 찾은 사람·보고한 사람 이름(발견물 칸 0·2). 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
+                            FoundBy: player.FoundBy.ToDictionary(e => e.Key, e => e.Value),
+                            AnnouncedBy: player.AnnouncedBy.ToDictionary(e => e.Key, e => e.Value));
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
