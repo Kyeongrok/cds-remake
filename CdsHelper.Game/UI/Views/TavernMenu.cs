@@ -1872,15 +1872,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             ? $"상대는 {w}{NameToken.Of(w, 3)} {a}{NameToken.Of(a, 2)} 장비하고 있다"
             : $"상대는 {w}{NameToken.Of(w, 2)} 장비하고 있다", "일기토");
 
+        // 하나씩 0x004B1710(&번호, 1, 1) 로 넣는다(0x004AA55C · 0x004AA580) — 넘치면 물릴 수 있는 버리기 창이 뜨고,
+        // 무기를 물려도 방어구 차례는 그대로 돈다.
         foreach (int id in a.Length > 0 ? new[] { weapon, armor } : [weapon])
-        {
-            if (_player.IsBagFull)
-            {
-                NoticeDialog.Show(_view, "더 이상 가질 수 없습니다! 소지품을 삭제해 주십시오", "일기토");
-                return;
-            }
-            _player.Take(id);
-        }
+            ItemGain.TryAdd(_view, _game, id);
     }
 
     /// <summary>내 몫 — 능력치와 검술, 그리고 지닌 무기·방어구 가운데 가장 센 것.</summary>
