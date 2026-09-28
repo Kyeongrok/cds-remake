@@ -1949,7 +1949,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 말을 조금 배우고(0x0047FAE0), 모항이면 능력이 오를 때가 있고(0x0047FB80), 일어난 말, HP 다.
         DayPass.Blackout(this, () => inn.Stay(_player, _cityId));
         _player.Note(Player.TraceInnStay);   // 0x0047FCA8 — 행적에 숙박을 적는다
-        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
+        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
         HomeInnBonus();
         NoticeDialog.Show(this, Lodging.WakeWord(_random));
         // 한 달 묵으면 HP 가 30~59 찬다(0x0047FCFF).
@@ -1991,7 +1991,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 한 해가 가는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
         DayPass.Blackout(this, () => _player.PassTownDays(Lodging.OddJobDays));
         _player.SetCondition(_player.Condition + Lodging.OddJobRest(_random));
-        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
+        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
 
         ConfirmDialog.Tell(this, Lodging.OddJobDone, face: face);
         NoticeDialog.Show(this, $"금화 {pay}닢을 손에 넣었다!");
