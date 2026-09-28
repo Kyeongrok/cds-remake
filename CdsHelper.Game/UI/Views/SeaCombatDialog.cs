@@ -108,6 +108,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private readonly uint[]? _face;
     private readonly SoundBank? _sfx;
 
+    /// <summary>배경음악 — 승패 소리를 내는 동안 멈춘다(<see cref="FinishSound"/>).</summary>
+    private BgmPlayer? _bgm;
+
     /// <summary>포격 연출(포탄·폭발·물기둥·피해 숫자)을 얹는 층.</summary>
     private readonly Canvas _fx = new() { IsHitTestVisible = false };
 
@@ -306,7 +309,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             if (_running) return;
             if (e.Key == Key.PageUp)
             {
-                SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader);
+                SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader, _foe.Name);
                 e.Handled = true;
             }
             else if (e.Key == Key.PageDown && _picked is { } shown)
@@ -614,7 +617,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
             if (here.Stuck)
             {
-                Say("충돌 영향으로 다음 지시를 받을 때까지 이동할 수 없습니다.");
+                // 얼굴 없는 「해전」 창이다(0x0043E2A5 → 0x0049E3E0).
+                ConfirmDialog.Tell(this, "충돌 영향으로 다음 지시를 받을 때까지 이동할 수 없습니다.", BattleTitle);
                 return;
             }
 
@@ -746,9 +750,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 「해전」 창에 YES/NO — 얼굴 없이 묻는다(0x0056B5A0).
         if (!ConfirmDialog.Ask(this, "이동 계획을 종료하겠습니까?", BattleTitle))
         {
-            // 물리면 부관이 한 번 더 권한다(0x0043DEEB) — 맡기면 짜던 계획은 버려진다.
+            // 물리면 한 번 더 권한다(0x0043DEEB) — 얼굴 없는 「해전」 YES/NO 창이다(0x0049E3E0).
+            // 맡기면 짜던 계획은 버려진다.
             if (!_battle.Delegated && HasMate
-                && ConfirmDialog.Ask(this, SeaBattle.OfferAgain, BattleTitle, _face))
+                && ConfirmDialog.Ask(this, SeaBattle.OfferAgain, BattleTitle))
             {
                 _battle.Delegated = true;
                 foreach (var ship in _battle.Ships.Where(s => s.Mine && s.CanAct))
@@ -797,7 +802,6 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         _options = [];
         _pivots = [];
         _path.Children.Clear();
-        int windBefore = _battle.Wind;
         try
         {
             _battle.EndPlanning();
@@ -818,15 +822,13 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         if (_player is { } admiral)
             _battle.TurnMonster(admiral.AbilityOf(Ability.Luck), admiral.AbilityOf(Ability.Mind));
 
-        if (_battle.Wind != windBefore) Say(_battle.WindNotice());
+        // 바람이 돌아도 바람 알림은 다시 안 낸다 — 알림은 판을 열 때 한 번뿐이다(0x0043C514 의 +0x830 == −1 걸쇠).
+        // 턴 끝(0x0043D9D2~0x0043DA7C)은 바람만 돌리고 이동 지시 재촉(0x0043BEB0)으로 간다.
         if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 재촉도 안내도 없이 다음 턴으로
 
         Say(_battle.OrderPrompt());
         if (_battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
-
-        // 지난 턴에 부딪혀 이번 턴에 못 움직이는 배만 남았으면 그대로 다음 계획으로 넘어간다.
-        if (_battle.Ships.Where(s => s.Mine && s.CanAct).All(s => s.Stuck))
-            Say("충돌 영향으로 다음 지시를 받을 때까지 이동할 수 없습니다.");
+        // 「충돌 영향으로…」는 턴 끝에 내지 않는다 — 원본은 부딪힌 배를 <b>눌렀을 때</b>만 낸다(0x0043E299 한 곳).
     }
 
     private void Surrender()
@@ -854,8 +856,24 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     ///                      → 되찾은 배(레코드는 싸움 전 값) · 나포선이 있으면 들임 차림표   → 적이 달아남
     /// </code>
     /// 값 치르기(<see cref="_settle"/>)와 들임·편성 창을 판 위에서 돌리고 닫는다 — 게임도 판을 닫기 전에 띄운다.
-    /// 짐 창(<c>0x004879A0</c>, 빼앗은 보급품·교역품)은 들임 차림표 뒤에 뜬다(<see cref="LootDialog"/>). 음악을 끄고 켜는 것은 없다.
+    /// 짐 창(<c>0x004879A0</c>, 빼앗은 보급품·교역품)은 들임 차림표 뒤에 뜬다(<see cref="LootDialog"/>).
+    /// 승패 소리를 내는 동안은 곡을 멈췄다 잇는다(<see cref="FinishSound"/>).
     /// </remarks>
+    /// <summary>
+    /// 승패 소리 — 곡을 멈추고(CDAudioPause) 소리를 낸 뒤 기다렸다가 곡을 잇는다(CDAudioResume).
+    /// </summary>
+    /// <remarks>
+    /// 패배 <c>0x004351BF</c>~<c>0x004351E8</c>, 승리 <c>0x004352A5</c>~<c>0x004352CB</c>,
+    /// 적 퇴각 <c>0x00435F36</c>~<c>0x00435F5C</c>. 예전에는 곡이 그대로 돌아 소리에 겹쳤다.
+    /// </remarks>
+    private void FinishSound(int part, int ticks)
+    {
+        _bgm?.Pause();
+        _sfx?.Play(part);
+        Wait(Tick * ticks);
+        _bgm?.Resume();
+    }
+
     private void Finish()
     {
         Result = OutcomeOf(_battle);
@@ -864,18 +882,20 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         switch (Result)
         {
             case Outcome.Defeated:
-                _sfx?.Play(LosePart);
-                Wait(Tick * LoseTicks);
-                ConfirmDialog.Tell(this, _battle.TauntWord(), BattleTitle, _foeFace);
+                FinishSound(LosePart, LoseTicks);
+                // 괴물에게 지면 비웃음 다섯 벌 대신 얼굴 없는 한 줄뿐이다 — 판 위에서 뜬다(0x004351F0 → 0x004351F9,
+                // 앞 빈칸 둘도 원본 그대로 0x0056A3F8).
+                if (_battle.Monster) NoticeDialog.Show(this, "  괴물이 먹어 버렸습니다", BattleTitle);
+                else ConfirmDialog.Tell(this, _battle.TauntWord(), BattleTitle, _foeFace);
                 _settle?.Invoke(this, report);
                 break;
 
             case Outcome.Won:
-                _sfx?.Play(WinPart);
-                Wait(Tick * WinTicks);
+                FinishSound(WinPart, WinTicks);
                 // 괴물은 문구가 따로다(0x004352DC).
                 Say(_battle.Monster ? _battle.MonsterWonWord() : _battle.WonWord(_foe.Name));
-                ConfirmDialog.Tell(this, _battle.BeatenWord(), BattleTitle, _foeFace);
+                // 괴물이면 부관 한 줄로 끝이다 — 적장 말(0x0043539x~)을 건너뛴다(0x00435323 jmp 0x004353EA).
+                if (!_battle.Monster) ConfirmDialog.Tell(this, _battle.BeatenWord(), BattleTitle, _foeFace);
                 WriteBack(Result);
                 _settle?.Invoke(this, report);
                 Muster(Result);
@@ -883,8 +903,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 break;
 
             case Outcome.EnemyRetreated:
-                _sfx?.Play(WinPart);
-                Wait(Tick * WinTicks);
+                FinishSound(WinPart, WinTicks);
                 Say(_battle.FoeFledWord(_foe.Name));
                 _settle?.Invoke(this, report);
                 WriteBack(Result);
@@ -893,7 +912,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 break;
 
             default:
-                Say(_battle.EscapedWord(_foe.Name));
+                // 괴물 판이면 이름 자리에 인물 이름이 아니라 「괴물」(0x0056AD18)이 든다(0x00435B04 · 0x00435B9A).
+                Say(_battle.EscapedWord(_battle.Monster ? "괴물" : _foe.Name));
                 WriteBack(Result);
                 _settle?.Invoke(this, report);
                 CheckCrew();
@@ -1166,14 +1186,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     void SeaBattle.IStage.Moved() => Redraw();
 
     /// <remarks>
-    /// 원본 알림(<c>0x0049E3E0(0, "해전", 글)</c>)은 얼굴 없는 게임 창이다. 적끼리 부딪힌 것은 원본 갈래를 다 못 짚어
-    /// (「아군끼리」 말이 적에게 뜨게 된다) 아군이 낄 때만 알린다 — 소리는 적이 끼면 난다.
+    /// 원본 알림(<c>0x0049E3E0(0, "해전", 글)</c>)은 얼굴 없는 게임 창이다. 적끼리 부딪혀도 「충돌했다!」를 낸다
+    /// (<c>0x00439986</c> — 둘 다 8 미만일 때만 「아군끼리」 말이다). 소리 0x2C 는 적이 끼면 난다(<c>0x0043995C</c>).
     /// </remarks>
     void SeaBattle.IStage.Crash(SeaBattle.Ship mover, SeaBattle.Ship hit, bool friendly)
     {
         Redraw();
         if (!friendly) _sfx?.Play(CrashPart);
-        if (mover.Mine || hit.Mine) ConfirmDialog.Tell(this, SeaBattle.CrashWord(mover, hit), BattleTitle);
+        ConfirmDialog.Tell(this, SeaBattle.CrashWord(mover, hit), BattleTitle);
     }
 
     void SeaBattle.IStage.HullLoss(SeaBattle.Ship mover, int moverLoss, SeaBattle.Ship hit, int hitLoss)
@@ -1480,6 +1500,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                                          player, ours, duel, game, rng)
         {
             Owner = owner,
+            _bgm = bgm,
         };
         // 싸우는 동안은 전투 곡(28)이 돈다 — 육상전과 같은 곡이다. 끝나면 돌던 곡으로 되돌린다.
         int was = bgm?.Track ?? -1;

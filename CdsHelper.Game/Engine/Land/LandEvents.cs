@@ -295,19 +295,17 @@ public static class LandEvents
         year % 3 != 0 && ground == BeastGround && dice.Next(TornadoOdds) == 0;
 
     /// <summary>
-    /// 회오리에 휩쓸린다 — <b>가릴 것도 고를 것도 없다</b>. 죽은 대원 수를 낸다.
+    /// 회오리에 휩쓸린다 — <b>가릴 것도 고를 것도 없다</b>. 당한 대원 수를 낸다.
     /// </summary>
     /// <remarks>
     /// <c>0x00427E8F</c> 가 <c>rand(30) + 30</c> 이다 — <b>서른에서 쉰아홉</b>이 한 번에
-    /// 죽는다. 짐승에 물려 서넛 잃는 것과는 자릿수가 다르다. 술집 소문이 「회오리를 만난
+    /// 당한다. 짐승에 물려 서넛 잃는 것과는 자릿수가 다르다. 술집 소문이 「회오리를 만난
     /// 탐험가를 만났다네. 그 동료가 말려들어 죽었다는군」(<c>0x00550888</c>) 인 까닭이다.
+    ///
+    /// 이 수는 곧바로 빼지 않는다 — 다른 뭍 사건처럼 사상자 셈(<c>0x00426DA0</c>, <c>0x00427EA4</c>)에
+    /// 넘겨 의학으로 더러 돌아온다.
     /// </remarks>
-    public static int Strike(Player player, GameRandom dice)
-    {
-        int dead = Math.Min(dice.Next(30) + 30, player.Crew);
-        player.AddCrew(-dead);
-        return dead;
-    }
+    public static int StrikeCount(GameRandom dice) => dice.Next(30) + 30;
 
     /// <summary>회오리가 치는 동안 나오는 말 다섯(<c>0x00533C78</c> 부터).</summary>
     public static readonly string[] TornadoLines =

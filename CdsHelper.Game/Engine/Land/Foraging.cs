@@ -11,21 +11,21 @@ namespace CdsHelper.Game.Engine.Land;
 /// 안 나와도, 보물을 얻어도, 소굴에 당해도 마찬가지다.
 /// <code>
 ///   0048dec6  선원 수로 보정값을 잡는다     30 이하 −10 · 100 위 +10 · 그 사이 0
-///   0048def2  지금 선 칸의 지형 부류로 물·식량 등급을 꺼낸다(0x004CCFE0 · 0x004CD014)
+///   0048def2  지금 자리의 <b>기후대</b>로 물·식량 등급을 꺼낸다(0x00425000 → 0x004CCFE0 · 0x004CD014)
 ///   0048df08  rand(100) &lt; 등급 x 25 + 보정  이면 그것이 나온다
 ///   0048df51  나온 통 수 = rand(3) + 등급 x 2
 ///   0048df9a  실을 수 있는 데까지 번갈아 담는다(모자란 쪽부터)
 ///   0048e08d  하나도 못 찾으면 피로 +10 · 규율 −10, 찾았으면 +5 · −5
 /// </code>
-/// 지형 부류는 <c>ShipMapHost.TerrainClass</c> 가 주는 0~6 과 같은 값이다(표는 열셋 칸이지만
-/// 뒤 여섯은 바다 쪽이라 뭍에서는 안 걸린다).
+/// 기후대는 바람 표 낱말의 비트 8~11(<c>0x00424FA0</c>, 0~12)이라 표가 열셋 칸이다.
+/// 예전에는 발밑 지형 부류(0~6)로 찾아 엉뚱한 등급이 나왔다.
 /// </remarks>
 public static class Foraging
 {
-    /// <summary>지형 부류별 <b>물</b> 등급(<c>0x004CCFE0</c>).</summary>
+    /// <summary>기후대별 <b>물</b> 등급(<c>0x004CCFE0</c>).</summary>
     public static readonly int[] WaterLevels = [4, 2, 1, 0, 1, 4, 3, 2, 2, 1, 1, 0, 1];
 
-    /// <summary>지형 부류별 <b>식량</b> 등급(<c>0x004CD014</c>).</summary>
+    /// <summary>기후대별 <b>식량</b> 등급(<c>0x004CD014</c>).</summary>
     public static readonly int[] FoodLevels = [4, 2, 1, 0, 2, 3, 3, 2, 1, 1, 0, 0, 1];
 
     /// <summary>
@@ -36,7 +36,7 @@ public static class Foraging
     /// </remarks>
     public static int CrewBonus(int crew) => crew <= 30 ? -10 : crew >= 100 ? 10 : 0;
 
-    /// <summary>등급을 꺼낸다. 부류를 모르면(-1) 0 으로 본다.</summary>
+    /// <summary>등급을 꺼낸다. 기후대를 모르면(-1) 0 으로 본다.</summary>
     public static int LevelOf(int[] table, int ground) =>
         ground >= 0 && ground < table.Length ? table[ground] : 0;
 

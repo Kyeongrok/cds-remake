@@ -20,7 +20,7 @@ namespace CdsHelper.Game.Engine.Sea;
 ///     효율 = 돛효율표[조합(배+0x68) * 16 + rel]
 ///     v = 추진력(배+0x38) * (풍속 + 1) * 효율 / 100
 ///     if 필요선원(배+0x30 + 10) &gt; 선원(배+0x34):
-///         v = min(선원 * v / 필요, (v+1)/2)            ; 반토막 아래로
+///         v = max(선원 * v / 필요, (v+1)/2)            ; 반토막 밑으로는 안 떨어진다
 ///     합 += v ; 수 += 1
 ///     기함이면 기함v = v
 ///
@@ -85,8 +85,8 @@ public static class Sailing
     }
 
     /// <summary>
-    /// 바닥 속도. 무풍에 셈이 0 으로 떨어졌을 때 이 값으로 받쳐 준다
-    /// (<c>0x0048BE22</c>) — 표도 함대도 없어 셀 것이 없을 때도 이 값이다.
+    /// 바닥 속도. 무풍이면 함대 속도가 곧 이 값이다(<c>0x0048BD22</c>) — 표도 함대도 없어
+    /// 셀 것이 없을 때도 이 값이다.
     /// </summary>
     public const int CalmSpeed = 1;
 
@@ -96,14 +96,17 @@ public static class Sailing
     /// <param name="player">함대.</param>
     /// <param name="sails">돛 효율표. 못 읽었으면 null — 그때는 돛이 없는 셈 친다.</param>
     /// <param name="windDir">풍향(16방위).</param>
-    /// <param name="windSpeed">풍속. 0(무풍)이어도 셈은 그대로 돈다 — 게임은 여기서
-    /// 물러서지 않고 <c>추진력 x 1 x 돛효율 / 100</c> 을 그대로 낸다.</param>
+    /// <param name="windSpeed">풍속. 0(무풍)이면 셈 없이 <see cref="CalmSpeed"/> 다 — 게임은
+    /// <c>0x00424F40</c> 이 적어 준 풍속(<c>[esp+0x18]</c>)이 0 이면 곧바로 1 을 돌려준다(<c>0x0048BD22</c>).</param>
     /// <param name="heading">뱃머리(16방위).</param>
     /// <param name="onLand">뭍에 있는지.</param>
     public static int SpeedOf(Player player, SailTable? sails,
                               int windDir, int windSpeed, int heading, bool onLand)
     {
         if (onLand) return LandSpeed;
+        // 무풍이면 함대가 통째로 1 이다(0x0048BD22 — 풍속 0 이면 mov eax,1 ; ret).
+        // 예전에는 (0+1) 을 곱해 셈을 돌려 카라벨이 무풍에도 2~4 를 냈다.
+        if (windSpeed == 0) return CalmSpeed;
         if (sails == null || player.Ships.Count == 0) return CalmSpeed;
 
         int relative = (windDir - heading) & 0xF;
@@ -114,14 +117,15 @@ public static class Sailing
             var ship = player.Ships[i];
             int v = ship.Speed * (windSpeed + 1) * sails.Efficiency(ship.Sails, relative) / 100;
 
-            // 사람이 모자라면 반토막 아래로 떨어진다.
+            // 사람이 모자라면 느려지되 <b>반토막 밑으로는 안 떨어진다</b> — 게임은 두 값 가운데 큰 쪽을
+            // 남긴다(0x0048BE1C: 선원비례값 < (v+1)/2 이면 (v+1)/2). 예전에는 작은 쪽을 골라
+            // 모자랄수록 반보다 더 느려졌다.
             int need = ship.Crew;
             int aboard = CrewOn(player, i);
-            if (need > aboard) v = Math.Min(aboard * v / Math.Max(1, need), (v + 1) / 2);
+            if (need > aboard) v = Math.Max(aboard * v / Math.Max(1, need), (v + 1) / 2);
 
-            // 무풍에 0 으로 떨어진 배만 한 칸 받쳐 준다(0x0048BE22). 바람이 있으면
-            // 받쳐 주지 않는다 — 돛 효율이 0 인 각도(정면 역풍)에서는 정말 안 나간다.
-            if (windSpeed == 0 && v == 0) v = CalmSpeed;
+            // 0x0048BE22 의 「풍속 0 이고 v 0 이면 1」 받침은 위에서 무풍이 먼저 빠져나가 닿지 않는다.
+            // 바람이 있으면 받쳐 주지 않는다 — 돛 효율이 0 인 각도(정면 역풍)에서는 정말 안 나간다.
 
             sum += v;
             count++;

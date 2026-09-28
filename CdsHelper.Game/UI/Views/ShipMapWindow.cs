@@ -1068,13 +1068,23 @@ public sealed class ShipMapWindow : Window
         _peopleText.Text = string.Join(Environment.NewLine, lines);
     }
 
+    /// <summary>
+    /// 지금 자리의 기후대(0~12) — 바람 표 낱말의 비트 8~11(<c>0x00424FA0</c>)이다. 표를 못 읽으면 -1.
+    /// </summary>
+    /// <param name="latRaw">원본 위도 값(0~20000)을 함께 내준다.</param>
+    private int ClimateZone(out int latRaw)
+    {
+        var (lat, lon) = _host.ShipLatLon;
+        latRaw = (int)((90 - lat) / 180 * 20000);
+        int lonRaw = (int)((lon + 180) / 360 * 40000);
+        _weatherWind ??= WindTable.Open(_game.Directory);
+        return _weatherWind?.ZoneAt(WindTable.CellOf(lonRaw, latRaw)) ?? -1;
+    }
+
     /// <summary>바다에서 하루 — 비·눈을 굴린다(<see cref="SeaWeather"/>). 비가 오면 빗소리를 되풀이한다.</summary>
     private void RollWeather()
     {
-        var (lat, lon) = _host.ShipLatLon;
-        int latRaw = (int)((90 - lat) / 180 * 20000), lonRaw = (int)((lon + 180) / 360 * 40000);
-        _weatherWind ??= WindTable.Open(_game.Directory);
-        int zone = _weatherWind?.ZoneAt(WindTable.CellOf(lonRaw, latRaw)) ?? -1;
+        int zone = ClimateZone(out int latRaw);
         if (_seaWeather.Roll(zone, _game.Player.Date.Month, latRaw, _game.Random) is not { } now) return;
 
         if (now == SeaWeather.Kind.None)
@@ -4030,16 +4040,30 @@ public sealed class ShipMapWindow : Window
     ///   내 기함 퇴각 악명 +200 만
     ///   내 기함 격침 없음(GAME OVER)
     /// </code>
-    /// 곧 명성 220/120 · 악명 180/280(남의 나라/같은 나라), 도망 악명 200/300 이다. 항복은 게임에 없는
+    /// 곧 명성 220/120 · 악명 180/280(남의 나라/같은 나라), 도망 악명 200/300(바다 주사위 조우는 0/100)이다. 항복은 게임에 없는
     /// 앱 차림표라 도망처럼 친다. 나포선 들임(<c>0x00434D30</c>)과 되찾은 배 알림은 나포가 없어 안 낸다.
     /// </remarks>
     /// <param name="raid">보이는 함대를 친 판인지(플래그 0). 바다에서 마주친 판은 거짓이다.</param>
+    /// <param name="monster">
+    /// 괴물 판(<c>+0x8FC</c> &gt; 0)이면 이 사람의 번호. 괴물 판은 명성·악명·전리품을 <b>통째로 건너뛴다</b> —
+    /// 이기면 퇴치 삯(능력치) 한 줄만 내고(<c>0x0043550C</c> → <c>0x004356D1</c>), 적이 물러나도
+    /// (<c>0x00436012</c>) 도망쳐도(<c>0x00435C62</c>) 명성·악명이 안 움직인다. 무력 오름(<c>0x00455CA0</c>)은
+    /// 그대로 돈다.
+    /// </param>
     private void SettleRaid(Window board, SeaCombatDialog.Report end, int nation, int capital, Random rng,
-                            bool raid)
+                            bool raid, int? monster = null)
     {
         const string Title = "해전";
         var player = _game.Player;
         var (fame, infamy) = FleetRaid.BaseOf(nation == player.Nation);
+
+        if (monster is { } beast)
+        {
+            if (end.Outcome == SeaCombatDialog.Outcome.Won) RewardMonster(board, beast);
+            if (end.Outcome is SeaCombatDialog.Outcome.Won or SeaCombatDialog.Outcome.EnemyRetreated)
+                RaiseMight(board, rng);
+            return;
+        }
 
         switch (end.Outcome)
         {
@@ -4051,10 +4075,18 @@ public sealed class ShipMapWindow : Window
                 if (raid) { fame += FleetRaid.WinFame; infamy += FleetRaid.WinInfamy; }
                 else fame += FleetRaid.MetFame;
 
-                player.Fame = Math.Min(FleetRaid.MaxRenown, player.Fame + fame);
-                ConfirmDialog.Tell(board, $"명성이 {fame} 올라갔다{bang}", Title);
-                player.Infamy = Math.Min(FleetRaid.MaxRenown, player.Infamy + infamy);
-                ConfirmDialog.Tell(board, $"악명이 {infamy} 올라갔다{bang}", Title);
+                // 알림은 값이 0 보다 클 때만 낸다(0x00435614 · 0x0043563C · 0x00436038 · 0x00436060) —
+                // 예전에는 남의 나라 배와 싸우고 「악명이 0 올라갔다!」가 떴다.
+                if (fame > 0)
+                {
+                    player.Fame = Math.Min(FleetRaid.MaxRenown, player.Fame + fame);
+                    ConfirmDialog.Tell(board, $"명성이 {fame} 올라갔다{bang}", Title);
+                }
+                if (infamy > 0)
+                {
+                    player.Infamy = Math.Min(FleetRaid.MaxRenown, player.Infamy + infamy);
+                    ConfirmDialog.Tell(board, $"악명이 {infamy} 올라갔다{bang}", Title);
+                }
 
                 if (won && end.EnemyDowned + end.EnemyCaptured > 0)
                 {
@@ -4071,7 +4103,10 @@ public sealed class ShipMapWindow : Window
 
             case SeaCombatDialog.Outcome.Escaped:
             case SeaCombatDialog.Outcome.Surrendered:
-                infamy += FleetRaid.FleeInfamy;
+                // 도망 +200 은 보이는 함대 판(플래그 +0x11C == 0)에만 붙는다(0x00435C6A) — 바다 주사위
+                // 조우에서 달아나면 밑값(같은 나라 100)뿐이고, 0 이면 알리지도 않는다(0x00435C7E).
+                if (raid) infamy += FleetRaid.FleeInfamy;
+                if (infamy <= 0) break;
                 player.Infamy = Math.Min(FleetRaid.MaxRenown, player.Infamy + infamy);
                 ConfirmDialog.Tell(board, $"악명이 {infamy} 올라갔다", Title);                      // 0x0056AD28
                 break;
@@ -4204,10 +4239,11 @@ public sealed class ShipMapWindow : Window
         int before = player.Morale;
         player.Cheer(sailing - drain);
 
-        // 바다 쪽 문구는 「선원」이다 — 뭍의 「대원」과 갈린다(0x0047585E).
-        if (MoraleLine(before, player.Morale) is { Length: > 0 } line)
+        // 바다 쪽 문구는 따로 있다(0x005356B8 · 0x005356E0 · 0x00535708) — 「선원」이고, 둘째에는 느낌표가
+        // 없고 셋째는 「달하고 있습니다!」다. 예전에는 뭍 문구의 「대원」만 갈아 끼웠다.
+        if (SeaMoraleLine(before, player.Morale, player.Fatigue) is { Length: > 0 } line)
         {
-            Say(line.Replace("대원", "선원"));
+            Say(line);
             _game.Sfx?.Play(SoundBank.BandNoticePart);   // 띠 알림 소리(0x0040E0B6)
         }
 
@@ -4215,6 +4251,25 @@ public sealed class ShipMapWindow : Window
         // 이전 값을 보는 것은 뭍 쪽(0x00475569)뿐이다.
         if (player.Morale == 0) Mutiny();
     }
+
+    /// <summary>
+    /// 바다에서 규율이 문턱을 넘어 내려갔을 때의 한 줄(<c>0x00475847</c>~). 아니면 빈 글이다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   50 넘던 것이 50 이하로, <b>피로도</b> &gt; 30   「선원들이 불만을 품기 시작했습니다!」           0x005356B8
+    ///   30 넘던 것이 11~30 으로                  「선원들의 불만이 심해지고 있습니다」             0x005356E0
+    ///   10 넘던 것이  1~10 으로                  「선원들의 불만이 한계에 달하고 있습니다! …」     0x00535708
+    /// </code>
+    /// 첫 줄의 셋째 조건은 원본이 <c>cmp ebp,0x1E</c> 로 <b>피로도 새 값</b>을 본다(<c>0x00475851</c>) — 뭍 쪽은
+    /// 규율 새 값이다. 원본 버릇 그대로 둔다.
+    /// </remarks>
+    private static string SeaMoraleLine(int before, int after, int fatigue) =>
+        before > 50 && after <= 50 && fatigue > 30 ? "선원들이 불만을 품기 시작했습니다!"
+      : before > 30 && after is > 10 and <= 30 ? "선원들의 불만이 심해지고 있습니다"
+      : before > 10 && after is > 0 and <= 10
+            ? "선원들의 불만이 한계에 달하고 있습니다! 일단 아무 마을로나 철수합시다."
+      : "";
 
     /// <summary>바다에서 하루에 빠지는 규율의 밑값(<c>0x00475838</c> 의 3, 부류 1 이면 두 배).</summary>
     private const int SeaMoraleStep = 3;
@@ -4281,9 +4336,6 @@ public sealed class ShipMapWindow : Window
                 return;
             }
 
-            // 부관이 더 잘하면 부관이 나선다(0x0048E408).
-            if (his > mine) TalkDialog.Say(this, mate, "", "제가 수리하겠습니다.");
-
             while (true)
             {
                 if (player.SupplyOf(SupplyKind.Material) <= 0)
@@ -4292,7 +4344,11 @@ public sealed class ShipMapWindow : Window
                     return;
                 }
 
-                var hurt = player.Ships.Where(ShoreRepair.Damaged).Take(ShoreRepair.MaxListed).ToList();
+                // 상한 기함이 맨 앞이고 나머지는 함대 차례다(0x0048E284 · 0x0048E2E0) — 줄은 배 이름뿐이다.
+                var flag = player.FlagshipHull;
+                var hurt = player.Ships.Where(ShoreRepair.Damaged)
+                                 .OrderBy(sh => ReferenceEquals(sh, flag) ? 0 : 1)
+                                 .Take(ShoreRepair.MaxListed).ToList();
                 if (hurt.Count == 0)
                 {
                     TalkDialog.Say(this, mate, "", "어느 배도 다 완전합니다. 수리할 필요는 없습니다.");
@@ -4301,16 +4357,22 @@ public sealed class ShipMapWindow : Window
 
                 TalkDialog.Say(this, mate, "", "어느 배를 수리하겠습니까?");
                 int at = ChoiceDialog.Pick(this, "선박 일람",
-                    [.. hurt.Select(sh => $"{sh.Name} ({sh.Hp}/{sh.MaxHp})")]);
+                    [.. hurt.Select(sh => sh.Name)]);
                 if (at < 0 || at >= hurt.Count) return;
 
                 var ship = hurt[at];
-                if (!ConfirmDialog.Ask(this, $"{ship.Name}호로 좋습니까?")) continue;
+                // 묻는 것도 부관(아니면 뱃사람)이다 — YES/NO 말 창(0x0048E3E3 → 0x00478280).
+                if (!ConfirmDialog.Ask(this, $"{ship.Name}호로 좋습니까?", face: mate)) continue;
+
+                // 부관이 더 잘하면 부관이 나선다 — 배를 정할 때마다 한다(0x0048E3F4 · 0x0048E408, 되돌이 안).
+                if (his > mine) TalkDialog.Say(this, mate, "", "제가 수리하겠습니다.");
 
                 TalkDialog.Say(this, mate, "", "자재를 몇 통 쓰겠습니까?");
                 int have = player.SupplyOf(SupplyKind.Material);
-                // 통 수는 계산기 판으로 받는다(0x0048E4C5 → 0x00481FE0, 1~실은 자재).
-                if (have <= 0 || NumberPadDialog.Ask(this, 1, 1, have) is not { } barrels || barrels <= 0) continue;
+                // 통 수는 계산기 판으로 받는다(0x0048E4C5 → 0x00481FE0, 1~실은 자재). 처음 값은 그 배를 다 고치는
+                // 데 드는 통 수이고 실은 자재에서 잘린다(0x0048E484). 예전에는 늘 1 에서 시작했다.
+                int start = Math.Clamp(ShoreRepair.BarrelsFor(ship, skill), 1, Math.Max(1, have));
+                if (have <= 0 || NumberPadDialog.Ask(this, start, 1, have) is not { } barrels || barrels <= 0) continue;
 
                 player.AddSupply(SupplyKind.Material, -barrels);
                 int was = ship.Hp;
@@ -4320,7 +4382,8 @@ public sealed class ShipMapWindow : Window
                 ship.SpeedUp(gain);
                 ship.SetHp(ship.Hp + gain);
 
-                NoticeDialog.Show(this, ShoreRepair.RepairWord(ship.Hp - was, ship.Speed - wasSpeed));
+                // 결과 말도 부관(아니면 뱃사람)이 한다(0x0048E59D · 0x0048E1D8 · 0x0048E1FF · 0x0048E226 · 0x0048E248).
+                TalkDialog.Say(this, mate, "", ShoreRepair.RepairWord(ship.Hp - was, ship.Speed - wasSpeed));
             }
         }
         finally
@@ -4373,7 +4436,8 @@ public sealed class ShipMapWindow : Window
             TalkDialog.Say(this, mate, "", "제독, 원주민의 보물을 발견했습니다!");
             int gold = LandEvents.CaveGold(player.AbilityOf(Ability.Luck), dice);
             player.Earn(gold);
-            NoticeDialog.Show(this, $"제독, 금화 {gold}닢에 해당하는 보물을 발견했습니다!");
+            // 「금화 %ld 닢」 — 닢 앞에 빈칸이 있고, 부관(아니면 뱃사람)이 말한다(0x00570938 → 0x0048DEAB).
+            TalkDialog.Say(this, mate, "", $"제독, 금화 {gold} 닢에 해당하는 보물을 발견했습니다!");
             return;
         }
 
@@ -4385,8 +4449,9 @@ public sealed class ShipMapWindow : Window
         int back = LandEvents.Returned(MateMedicine(), hurt, dice);
         player.SetCrew(player.Crew - (hurt - back));
 
-        NoticeDialog.Show(this, $"{hurt}명이 당했습니다!");
-        if (back > 0) NoticeDialog.Show(this, $"{back}명의 선원이 되돌아왔습니다");
+        // 두 말 다 부관(아니면 뱃사람) 얼굴이다(0x0048DE8C · 0x0048DEB8 → 0x00478280).
+        TalkDialog.Say(this, mate, "", $"{hurt}명이 당했습니다!");
+        if (back > 0) TalkDialog.Say(this, mate, "", $"{back}명의 선원이 되돌아왔습니다");
     }
 
     /// <summary>제독과 부관 가운데 높은 의학(<c>0x0047CCA0(5,0,-1,-1,-1)</c>).</summary>
@@ -4410,7 +4475,9 @@ public sealed class ShipMapWindow : Window
     private void Gather(GameRandom dice)
     {
         var player = _game.Player;
-        int ground = _host.TerrainClass;
+        // 등급 표는 <b>기후대</b>로 찾는다 — 발밑 지형 부류가 아니다(0x0048DF01 → 0x00425000 → 0x00424FA0).
+        // 표가 열세 칸인 것도 기후대가 0~12 이기 때문이다.
+        int ground = ClimateZone(out _);
         int bonus = Foraging.CrewBonus(player.Crew);
 
         int waterLevel = Foraging.LevelOf(Foraging.WaterLevels, ground);
@@ -4437,10 +4504,20 @@ public sealed class ShipMapWindow : Window
         player.Tire(empty ? Foraging.EmptyFatigue : Foraging.TiredFatigue);
         player.Cheer(empty ? -Foraging.EmptyMorale : -Foraging.TiredMorale);
 
-        var mate = MateFace();
-        TalkDialog.Say(this, mate, "", said);
-        TalkDialog.Say(this, mate, "",
-                       empty ? "선원들이 불평을 하고 있습니다!" : "다들 조금씩 지친 것 같습니다!");
+        string after = empty ? "선원들이 불평을 하고 있습니다!" : "다들 조금씩 지친 것 같습니다!";
+        // 부관이 있으면 부관이 말하고, 없으면 얼굴 없는 알림이다 — 뱃사람이 대신 서지 않는다
+        // (0x0048E0CE 의 0x0047CC50(0) == −1 이면 0x0049E3E0).
+        if (_game.Player.MateAt(0).Length > 0)
+        {
+            var mate = MateFace();
+            TalkDialog.Say(this, mate, "", said);
+            TalkDialog.Say(this, mate, "", after);
+        }
+        else
+        {
+            NoticeDialog.Show(this, said);
+            NoticeDialog.Show(this, after);
+        }
     }
 
     /// <summary>
@@ -4482,7 +4559,8 @@ public sealed class ShipMapWindow : Window
             var band = Encounter.OfPerson(CaptainOf(bandLeader) ?? Encounter.CaptainOf(bandLeader), party.Name)
                        with { Kind = EnemyKind.Raider };
             var talkFace = MateFace();
-            switch (ChoiceDialog.Ask(this, Encounter.TitleOf(EnemyKind.Raider), Encounter.Choices))
+            // 고르기 창은 제목 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
+            switch (ChoiceDialog.Pick(this, "", Encounter.Choices))
             {
                 case 0 when Talked(band, dice, talkFace, weight: foeMen): return;
                 case 1:
@@ -4661,8 +4739,10 @@ public sealed class ShipMapWindow : Window
         int back = LandEvents.Returned(MateMedicine(), hurt, dice);
         player.SetCrew(player.Crew - (hurt - back));
 
-        NoticeDialog.Show(this, $"대원 {hurt}명이 사망했습니다.");
-        if (back > 0) NoticeDialog.Show(this, $"{back}명의 대원이 돌아왔습니다.");
+        // 두 말 다 부관(없으면 뱃사람) 얼굴로 한다(0x00426E45 · 0x00426E6A → 0x00478280).
+        var face = MateFace();
+        ConfirmDialog.Tell(this, $"대원 {hurt}명이 사망했습니다.", face: face);
+        if (back > 0) ConfirmDialog.Tell(this, $"{back}명의 대원이 돌아왔습니다.", face: face);
     }
 
     /// <summary>
@@ -4671,7 +4751,7 @@ public sealed class ShipMapWindow : Window
     /// <remarks>
     /// 셈은 <see cref="LandEvents"/> 가 다 하고 여기서는 말만 낸다. 문구는 게임
     /// <c>0x005338E0</c> 덩이에서 그대로 옮겼다 — 짐승은 조사가 하나 더 붙는 서식이라
-    /// (「큰일이다! %s%s다!」) 이름 뒤에 은/는을 넣는다.
+    /// (「큰일이다! %s%s다!」) 이름 뒤에 갈래 16 조사(없음/이)를 넣는다.
     ///
     /// 말보다 먼저 덤불 장면(<c>0x0048E820(8)</c>)이 함대 자리에서 돈다 — 독충
     /// (<c>0x00427866</c>)과 짐승(<c>0x00427B4C</c>)이 같은 8 이다.
@@ -4687,7 +4767,9 @@ public sealed class ShipMapWindow : Window
             PlayEventScene(EventAnimation.Bush);   // 게임도 말보다 먼저 튼다
             string what = met.Venomous
                 ? $"큰일이다! {met.Name}다!"
-                : $"큰일이다! {met.Name}{GameUi.Josa(met.Name, "이", "가")}다!";
+                // 조사는 갈래 16(받침이 있으면 「이」, 없으면 없음)이다(0x00427B57 push 0x10) — 「늑대다!」.
+                // 예전에는 이/가를 붙여 「늑대가다!」가 되었다.
+                : $"큰일이다! {met.Name}{NameToken.Of(met.Name, 16)}다!";
 
             ConfirmDialog.Tell(this, what, face: face);
             ConfirmDialog.Tell(this, "제독, 어떻게 하시겠습니까?", face: face);
@@ -4765,10 +4847,11 @@ public sealed class ShipMapWindow : Window
             for (int i = 0; i < 3; i++) ConfirmDialog.Tell(this, lines[i], face: face);
             PlayEventScene(EventAnimation.Tornado);          // 0x00427E4A — 말 셋 뒤, 말 둘 앞
 
-            int dead = LandEvents.Strike(_game.Player, dice);
-
             for (int i = 3; i < lines.Length; i++) ConfirmDialog.Tell(this, lines[i], face: face);
-            NoticeDialog.Show(this, $"대원 {dead}명이 사망했습니다.");
+
+            // 죽는 수도 다른 뭍 사건과 같은 셈을 탄다 — rand(30)+30 을 0x00426DA0 에 넘겨(0x00427EA4)
+            // 의학으로 더러 돌아온다. 예전에는 그 수를 그대로 빼고 「돌아왔습니다」도 없었다.
+            Casualties(dice, LandEvents.StrikeCount(dice));
         }
         finally
         {
@@ -4789,8 +4872,7 @@ public sealed class ShipMapWindow : Window
     ///   10 넘던 것이  1~10 으로  "대원들의 불만이 한계에 달했습니다! …"       0x00535508
     ///   0 이 되면                반란(0x004751E0)
     /// </code>
-    /// 바다 쪽은 같은 손의 <c>0x00475840</c> 갈래고 문구가 「선원」이다
-    /// (<c>0x005356B8</c> · <c>0x005356E0</c> · <c>0x00535708</c>).
+    /// 바다 쪽은 같은 손의 <c>0x00475840</c> 갈래고 문구가 따로 있다(<see cref="SeaMoraleLine"/>).
     /// 어느 갈래로 가는지는 <c>0x005B61B4</c>(뭍이냐 바다냐)가 가른다.
     /// </remarks>
     private static string MoraleLine(int before, int after) =>
@@ -4958,17 +5040,23 @@ public sealed class ShipMapWindow : Window
             {
                 var who = chasers[rng.Next(chasers.Count)];
                 var boss = _game.Sponsors?.FindByName(who.Sponsor);
-                string me = _game.Player.Name, lord = $"{boss?.Name ?? who.Sponsor} {boss?.Honorific ?? "각하"}";
+                // 서식 0x0055F6A8 「네가 %s%s군. 찾고 있었다! %s%s 너를 토벌하라는 명령이다. 각오해라.」 —
+                // 제독 이름 조사는 갈래 10(로/으로, 0x004556CD), 후원자 이름 조사는 갈래 13(로부터/으로부터,
+                // 0x004556AD)이고, 후원자 자리는 그 인물 객체의 이름(가상 함수 0)이다. 창 제목은 「해적」(0x0055F6A0).
+                // 예전에는 「…이군」 · 「{이름} {경칭}께서」 · 제목 「해전」이었다.
+                string me = _game.Player.Name, lord = boss?.Name ?? who.Sponsor;
                 ConfirmDialog.Tell(this,
-                    $"네가 {me}{GameUi.Josa(me, "이", "")}군. 찾고 있었다! {lord}께서 너를 토벌하라는 명령이다. 각오해라.",
-                    Encounter.TitleOf(foe.Kind), PersonFace(Encounter.ChaserLeader));
+                    $"네가 {me}{NameToken.Of(me, 10)}군. 찾고 있었다! {lord}{NameToken.Of(lord, 13)} " +
+                    "너를 토벌하라는 명령이다. 각오해라.",
+                    "해적", PersonFace(Encounter.ChaserLeader));
             }
 
             // 조우의 말은 모두 한 사람이 한다 — 부관, 없으면 뱃사람(0x004555BC 가 처음에 집는다).
             var face = MateFace();
             ConfirmDialog.Tell(this, Encounter.GreetOf(foe, rng), Encounter.TitleOf(foe.Kind), face);
 
-            int pick = ChoiceDialog.Ask(this, Encounter.TitleOf(foe.Kind), Encounter.Choices);
+            // 고르기 창은 제목도 「취소」 줄도 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
+            int pick = ChoiceDialog.Pick(this, "", Encounter.Choices);
             switch (pick)
             {
                 case 0 when Talked(foe, rng, face): return;  // 교섭이 되면 그대로 끝난다
@@ -5045,33 +5133,25 @@ public sealed class ShipMapWindow : Window
 
         EndWeather();   // 해전이 열리면 비가 그친다(0x00443822)
 
-        // 괴물 판도 같은 값 치르기를 거친다 — 나라가 없으므로 명성 쪽이다(플래그는 대본 것이라 0 이 아니라고 본다).
-        int beastNation = _game.PersonTemplates?.Find(person)?.Nation ?? -1;
+        // 괴물 판은 명성·악명·전리품이 없다 — 이기면 퇴치 삯 한 줄과 무력 오름뿐이다(0x0043550C).
         var outcome = SeaCombatDialog.Engage(this, _game.Player, foe, rng, MateFace(),
                                             (_host.LastWind.Dir, _host.LastWind.Speed), _game.Sfx,
                                             foeFace,
-                                            (board, end) => SettleRaid(board, end, beastNation,
-                                                                       _game.Nations?.Find(beastNation)?.Capital ?? -1,
-                                                                       rng, raid: false),
+                                            (board, end) => SettleRaid(board, end, -1, -1, rng, raid: false,
+                                                                       monster: person),
                                             SeaDuel(person, name, foeFace), _game.Bgm,
                                             monster: true).Outcome;
 
         if (outcome != SeaCombatDialog.Outcome.Defeated)
-        {
-            // 괴물을 잡으면 그 자리에서 능력치가 오른다(0x0043553C).
-            if (outcome == SeaCombatDialog.Outcome.Won) RewardMonster(person);
             return (outcome == SeaCombatDialog.Outcome.Won, false);
-        }
 
-        // 괴물에게 지면 여느 패배와 딴 말이다(0x004351F9).
-        NoticeDialog.Show(this, "  괴물이 먹어 버렸습니다", "해전");   // 앞 빈칸 둘도 원본 그대로다(0x0056A3F8)
-
+        // 「괴물이 먹어 버렸습니다」는 판 위에서 이미 떴다(SeaCombatDialog.Finish, 0x004351F9).
         GameOver(GameOverDialog.FleetLost);
         return (false, true);
     }
 
-    /// <summary>괴물을 퇴치한 삯 — 능력치를 올리고 그 말을 낸다(<c>0x0043553C</c>).</summary>
-    private void RewardMonster(int person)
+    /// <summary>괴물을 퇴치한 삯 — 능력치를 올리고 그 말을 판 위에 낸다(<c>0x0043553C</c>, 제목 「해전」).</summary>
+    private void RewardMonster(Window board, int person)
     {
         var (words, gains) = EnemyFleet.MonsterPrize(person);
         if (words.Length == 0) return;
@@ -5080,7 +5160,7 @@ public sealed class ShipMapWindow : Window
         foreach (var (ability, by) in gains)
             stats[ability] = Math.Clamp(stats[ability] + by, Ability.Min, Ability.Max);
         _game.Player.SetAbilities(stats);
-        NoticeDialog.Show(this, words);
+        NoticeDialog.Show(board, words, "해전");
     }
 
     private Captain? CaptainOf(int id)

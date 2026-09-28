@@ -127,6 +127,16 @@ public sealed class SeaBattle
     /// <summary>풍향 0~5(<c>+0x0860</c>). 0 이 북풍이다.</summary>
     public int Wind { get; private set; }
 
+    /// <summary>
+    /// 판을 열 때의 풍향 — 퇴각 지대가 이것으로 정해진다(<c>+0x08DC</c>, <c>0x0044200A</c> 에서 한 번 적는다).
+    /// </summary>
+    /// <remarks>
+    /// 턴 끝에 바람이 돌아도(<c>0x0043DA5F</c> 는 <c>+0x860</c> 만 바꾼다) 퇴각 판정(<c>0x0043E0B2</c>) ·
+    /// E 표시(<c>0x004403DB</c>) · 적의 퇴각 길(<c>0x0043B336</c> · <c>0x0043B8CB</c>)은 이 값을 본다.
+    /// 예전에는 지금 바람을 봐서 바람이 돌면 퇴각 칸이 다른 가장자리로 옮겨 갔다.
+    /// </remarks>
+    public int RetreatWind { get; }
+
     /// <summary>바람 세기(<c>+0x0864</c>).</summary>
     public int WindStrength { get; private set; }
 
@@ -138,6 +148,7 @@ public sealed class SeaBattle
     {
         _rng = rng;
         Wind = ((wind % Ways) + Ways) % Ways;
+        RetreatWind = Wind;
         WindStrength = Math.Max(0, windStrength);
     }
 
@@ -851,7 +862,7 @@ public sealed class SeaBattle
         (int, int) best = (int.MaxValue, int.MaxValue);
         foreach (var (plan, x, y, _) in Paths(ship, avoidReserved: true, avoidDanger: avoidDanger))
         {
-            var score = Wind switch
+            var score = RetreatWind switch
             {
                 0 => (y, Math.Abs(x - 10)),
                 1 or 2 => (-x, Math.Abs(y - 7)),
@@ -1342,11 +1353,13 @@ public sealed class SeaBattle
     /// </code>
     /// 「정면」은 자리 관계가 아니라 <b>뱃머리 방향만</b> 본다. 방향차는 mod 가 아니라 절댓값이다(0·3, 1·4, 2·5).
     /// 굴림·선수상·능력이 없고 최소 1 도 없다(용량 25 밑이면 0). 밑값은 최대 내구가 아니라 <b>적재용량</b>이다.
-    /// 편을 가리는 것은 같은 편인지다 — 원본은 적끼리 부딪혀도 알림을 낸다.
+    /// 멈추고 끝내는 것은 <b>둘 다 아군</b>일 때뿐이다(<c>0x00439986</c> — 두 번호가 다 8 미만). 적끼리 부딪히면
+    /// 소리 0x2C · 「충돌했다!」 · 선체 피해 · 백병전(<c>0x004399F7</c>)을 다 치른다 — 백병전과 나포(<c>0x0043A200</c>)도
+    /// 번호로만 편을 가르므로 들이받은 적은 적 쪽 셈을 탄다. 예전에는 적끼리도 아군처럼 그냥 섰다.
     /// </remarks>
     private void Collide(Ship m, Ship t)
     {
-        bool friendly = m.Mine == t.Mine;
+        bool friendly = m.Mine && t.Mine;
         _stage?.Crash(m, t, friendly);
         m.Bump = 3;
         if (t.Bump != 3) t.Bump = 2;
@@ -1655,8 +1668,8 @@ public sealed class SeaBattle
 
     // ── 퇴각 ──────────────────────────────────────────────────────────────
 
-    /// <summary>그 칸이 퇴각 지대인지(<c>0x0043E090</c>).</summary>
-    public bool IsRetreatCell(int x, int y) => Wind switch
+    /// <summary>그 칸이 퇴각 지대인지(<c>0x0043E090</c>) — 판을 열 때의 풍향(<see cref="RetreatWind"/>)으로 본다.</summary>
+    public bool IsRetreatCell(int x, int y) => RetreatWind switch
     {
         0 => x is >= 9 and <= 13 && y == 0,
         1 or 2 => x == Cols - 1 && y is >= 5 and <= 10,
@@ -1727,14 +1740,23 @@ public sealed class SeaBattle
     // ── 말 ────────────────────────────────────────────────────────────────
 
     /// <summary>「바람은 %s풍입니다. 퇴각지점은 바람이 부는 %s쪽에 있습니다.」(<c>0x0056B4E8</c>).</summary>
+    /// <remarks>
+    /// 게임은 방위 넷 [북·동·남·서](<c>0x0056B4D0</c>~)에서 <c>push ecx ; push eax ; push 서식</c> 으로 넣는다
+    /// (<c>0x0043C5EB</c>~<c>0x0043C64C</c>) — 첫 %s(풍향)가 eax, 둘째(퇴각 쪽)가 ecx 다.
+    /// <code>
+    ///   바람 0     남풍 / 북쪽        바람 3     북풍 / 남쪽
+    ///   바람 1·2   서풍 / 동쪽        바람 4·5   동풍 / 서쪽
+    /// </code>
+    /// 예전에는 둘을 맞바꿔 읽어 네 경우가 다 거꾸로였다 — 퇴각 지대(<see cref="IsRetreatCell"/>)와도 어긋났다.
+    /// </remarks>
     public string WindNotice()
     {
         (string from, string to) = Wind switch
         {
-            0 => ("북", "남"),
-            1 or 2 => ("동", "서"),
-            3 => ("남", "북"),
-            _ => ("서", "동"),
+            0 => ("남", "북"),
+            1 or 2 => ("서", "동"),
+            3 => ("북", "남"),
+            _ => ("동", "서"),
         };
         return $"바람은 {from}풍입니다. 퇴각지점은 바람이 부는 {to}쪽에 있습니다.";
     }
@@ -1768,7 +1790,7 @@ public sealed class SeaBattle
     /// 끊어 빈칸으로 둔다.
     /// </summary>
     public static string CrashWord(Ship mover, Ship hit) =>
-        mover.Mine == hit.Mine ? "위험하다! 정지!\n·····하마터면 아군끼리 부딪칠 뻔 했다." : "충돌했다!";   // 0x0056AFF8
+        mover.Mine && hit.Mine ? "위험하다! 정지!\n·····하마터면 아군끼리 부딪칠 뻔 했다." : "충돌했다!";   // 0x0056AFF8
 
     private string One(string[] lines) => lines[_rng.Next(lines.Length)];
 
@@ -1792,20 +1814,31 @@ public sealed class SeaBattle
             "적함 1척 격침! 꼴좋군!",
         ]);
 
+    /// <summary>우리 배를 잃은 말 열 줄(<c>0x0056A9B8</c>~).</summary>
+    private static readonly string[] LostLines =
+    [
+        "배를 빼앗겼습니다.",
+        "제독, 죄송합니다. 배를 빼앗겼습니다.",
+        "어찌 된 일인가! 배를 빼앗겼습니다.",
+        "어찌 된 일인가! {0}호가 당했습니다.",
+        "{0}호의 선원이 당했습니다!",
+        "제독, {0}호가 당했습니다!",
+        "큰일입니다. 배를 빼앗겼습니다!",
+        "적에게 빈틈을 보여 배를 빼앗겼습니다!",
+        "앗! {0}호를 빼앗겼습니다!",
+        "제독, {0}호가 적의 손에 들어갔습니다!",
+    ];
+
+    /// <summary>앞 <paramref name="count"/> 줄에서만 고른다.</summary>
+    private string OneOf(string[] lines, int count) => lines[_rng.Next(Math.Min(count, lines.Length))];
+
     /// <summary>나포·승원 0 말(<c>0x004358EE</c>, rand(10)) — 빼앗김 <c>0x0056A9B8</c>~ · 빼앗음 <c>0x0056AB28</c>~.</summary>
+    /// <remarks>
+    /// 괴물 판에서 배를 잃으면 <b>앞 여섯 줄</b>에서만 고른다(<c>0x0043594C</c> → <c>0x0043597B</c> 의 rand(6)).
+    /// 예전에는 괴물 판에도 열 줄에서 골랐다.
+    /// </remarks>
     public string CapturedWord(Ship ship) => ship.Mine
-        ? string.Format(One([
-            "배를 빼앗겼습니다.",
-            "제독, 죄송합니다. 배를 빼앗겼습니다.",
-            "어찌 된 일인가! 배를 빼앗겼습니다.",
-            "어찌 된 일인가! {0}호가 당했습니다.",
-            "{0}호의 선원이 당했습니다!",
-            "제독, {0}호가 당했습니다!",
-            "큰일입니다. 배를 빼앗겼습니다!",
-            "적에게 빈틈을 보여 배를 빼앗겼습니다!",
-            "앗! {0}호를 빼앗겼습니다!",
-            "제독, {0}호가 적의 손에 들어갔습니다!",
-        ]), ship.Name)
+        ? string.Format(Monster ? OneOf(LostLines, 6) : One(LostLines), ship.Name)
         : One([
             "적함을 빼앗았습니다.",
             "적함을 빼앗았다! 꼴 좋군.",

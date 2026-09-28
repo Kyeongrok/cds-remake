@@ -34,16 +34,26 @@ internal sealed class SeaBattleInfoDialog : InfoDialog
     /// <summary>값 글자색 — 앞선 쪽은 0x29, 여느 때는 0x0A 다.</summary>
     private const byte AheadColor = 0x29, PlainColor = 0x0A;
 
-    private SeaBattleInfoDialog(int[] mine, int[] theirs)
+    private SeaBattleInfoDialog(string admiral, string foe, int[] mine, int[] theirs)
     {
         var rows = new StackPanel();
+        // 맨 윗줄은 두 제독 이름이다 — 왼쪽 칸에 내 이름(0x005B60A0 가상 함수 0), 0x98 오른쪽에 적장 이름
+        // (0x004319D0([+0x1008]) 가상 함수 0)을 「%s」로 찍고, 여섯 줄은 그 아래 +0x18 부터다(0x0043421C~0x00434363).
+        var head = new StackPanel { Orientation = Orientation.Horizontal, Height = RowHeight };
+        foreach (string who in new[] { admiral, foe })
+        {
+            var name = Label(who);
+            name.HorizontalAlignment = HorizontalAlignment.Left;
+            head.Children.Add(new Grid { Width = ColumnWidth, Children = { name } });
+        }
+        rows.Children.Add(head);
         for (int i = 0; i < Labels.Length; i++)
         {
             // 마지막 줄(총함대수)은 도드라지지 않는다(0x004343B4 의 je).
             bool ahead = i < Labels.Length - 1 && mine[i] >= theirs[i];
             rows.Children.Add(Row(Labels[i], mine[i], theirs[i], ahead));
         }
-        Build("해전전황정보(제독·함대수)", rows, BoardWidth, RowHeight * Labels.Length + 16);
+        Build("해전전황정보(제독·함대수)", rows, BoardWidth, RowHeight * (Labels.Length + 1) + 16);
     }
 
     /// <summary>한 줄 — 같은 이름을 칸마다 적고 그 오른쪽에 값을 놓는다.</summary>
@@ -71,7 +81,7 @@ internal sealed class SeaBattleInfoDialog : InfoDialog
     /// <summary>
     /// 그 판의 값을 모아 창을 띄운다. 적장을 모르면 적 쪽 능력은 0 이다.
     /// </summary>
-    public static void Show(Window owner, SeaBattle battle, Player? player, Captain? leader)
+    public static void Show(Window owner, SeaBattle battle, Player? player, Captain? leader, string foeName = "")
     {
         int[] mine =
         [
@@ -91,6 +101,6 @@ internal sealed class SeaBattleInfoDialog : InfoDialog
             leader?.Gunnery ?? 0,
             battle.Ships.Count(s => !s.Mine),
         ];
-        new SeaBattleInfoDialog(mine, theirs) { Owner = owner }.ShowDialog();
+        new SeaBattleInfoDialog(player?.Name ?? "", foeName, mine, theirs) { Owner = owner }.ShowDialog();
     }
 }

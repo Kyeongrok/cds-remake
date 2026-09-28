@@ -206,9 +206,15 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
                 : "준비 만반입니다. 언제라도 출항할 수 있습니다! 출항하겠습니까?", face: face))
             return false;
 
-        // 모항에서 나설 때는 아내가 배웅한다(0x00477181 — 도시 +0x1D 비트 8 과 아내가 있을 때).
-        if (_cityId == _player.HomePort && _player.Spouse.Length > 0)
-            TalkDialog.Say(owner, null, _player.Spouse, Farewells[_game.Random.Next(Farewells.Length)]);
+        // 모항에서 나설 때는 아내가 배웅한다(0x00477160 — 도시 +0x1D 비트 8 과 아내가 있을 때).
+        // <b>셋에 한 번</b>이다 — 첫머리 rand(3) 이 0 이어야 한다(0x00477169). 말은 아내 인물을 넘겨
+        // 얼굴과 함께 낸다(0x004771DD → 0x00469540). 예전에는 늘, 얼굴 없이 말했다.
+        if (_cityId == _player.HomePort && _player.Spouse.Length > 0 && _game.Random.Next(3) == 0)
+        {
+            var wife = _game.Barmaids?.Find(_player.SpouseId) is { } her
+                ? _game.Faces?.TryGetBgra(her.Face, female: true) : null;
+            TalkDialog.Say(owner, wife, _player.Spouse, Farewells[_game.Random.Next(Farewells.Length)]);
+        }
 
         return true;
     }
