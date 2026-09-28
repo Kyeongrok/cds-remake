@@ -2316,17 +2316,31 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <summary>「포카를 권한다」 — 술집 주인과 카드 도박을 한다(<see cref="PokerDialog.Play"/>).</summary>
     public void PlayPoker() => Alone(() => PokerDialog.Play(_view, _game, _cultureNo));
 
+    /// <remarks>
+    /// 값은 <b>그 고장이 파는 술 가운데 하나를 무작위로</b> 골라 시세를 먹인 것이다(<c>0x0042F268</c> 의
+    /// <c>rand(술 수)</c> → <c>0x00429DC0</c> = 시세 x 술값 / 100, 적어도 1). 파는 술이 없으면 공짜다
+    /// (<c>0x0042F2D6</c>). 이 길은 술집의 「마셨다」 칸(<c>+0xB4</c>)을 안 세우므로 「정보를 듣는다」는
+    /// 여전히 제 술을 시켜야 열린다. 예전에는 늘 10닢에 그 칸까지 세웠다.
+    /// </remarks>
     public bool BuyDrink()
     {
-        if (_player.Gold < Tavern.DrinkPrice)
+        var drinks = _game.Drinks is { } table && _game.CityRows is { } rows
+            ? table.InRegion(rows.RegionOf(_cityId))
+            : [];
+        if (drinks.Count == 0) return true;
+
+        var drink = drinks[_game.Random.Next(drinks.Count)];
+        int price = _game.Rates.Of(_cityId) * drink.Price / 100;
+        if (drink.Price > 0 && price < 1) price = 1;
+
+        if (_player.Gold < price)
         {
-            // 한잔 사 주는 자리는 말이 다르다(0x0042F2A6) — 「돈 먼저 지불하게.」(0x0054AC98)는
+            // 한잔 사 주는 자리는 말이 다르다(0x0042F2A6, 0x0054AB68) — 「돈 먼저 지불하게.」(0x0054AC98)는
             // 제 술을 시킬 때의 말이다(0x0042F638).
             ConfirmDialog.Tell(_view, "공짜로 마시게 할 술은 없다!", face: HostFace());
             return false;
         }
-        _player.SetGold(_player.Gold - Tavern.DrinkPrice);
-        _drank = true;
+        _player.SetGold(_player.Gold - price);
         return true;
     }
 
