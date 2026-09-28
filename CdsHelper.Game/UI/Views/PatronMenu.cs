@@ -1962,8 +1962,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         _player.Infamy += (dice.Next(300) + 500) * Math.Max(0, 199 - charm) / 100;
         _player.Endear(patron.Name, -Player.MaxCloseness);
 
-        // 부하는 말없이 다 흩어지고(0x004534E0), 아내와 아이도 사라진다(0x00465900 · 0x0047D640).
-        for (int slot = 0; slot < _player.Mates.Count; slot++) _player.SetMate(slot, "");
+        // 부하는 말없이 다 흩어지고(0x004534E0 — 자리마다 행적에 해고를 적는다), 아내와 아이도 사라진다(0x00465900 · 0x0047D640).
+        for (int slot = 0; slot < _player.Mates.Count; slot++) _player.Dismiss(slot, PersonIdOf(_player.MateAt(slot)));
         _player.Marry(null);
         _player.ClearChildren();
 
@@ -1973,6 +1973,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         TalkDialog.Say(_view, FaceOf(patron), "", "용케도 살아 있었군. 끈질긴 놈이군.");
         return false;
     }
+
+    /// <summary>그 이름의 인물 번호. 표에 없으면 -1.</summary>
+    private int PersonIdOf(string name) =>
+        _game.World?.People.FirstOrDefault(r => r.Name == name)?.Id ?? -1;
 
     /// <summary>놀이를 끝낸다 — 도시 발견 대본이 게임 오버로 끝날 때와 같은 차례다.</summary>
     private void EndGame()
@@ -2023,7 +2027,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
             if (fee > _player.Gold)
             {
-                _player.SetMate(slot, "");
+                _player.Dismiss(slot, PersonIdOf(name));
                 TalkDialog.Say(_view, face, "", "이것으로 제독과의 계약을 달성했군요. 또 일이 있으면 불러 주십시오.");
                 continue;
             }
@@ -2036,7 +2040,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 continue;
             }
 
-            _player.SetMate(slot, "");
+            _player.Dismiss(slot, PersonIdOf(name));
             TalkDialog.Say(_view, face, "", "또 일이 있으면 불러 주십시오!");
         }
     }
