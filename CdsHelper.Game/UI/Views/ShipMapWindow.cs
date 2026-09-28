@@ -2710,7 +2710,8 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>
     /// 게임 커맨드 창을 흉내낸 우클릭 메뉴. 떠 있는 동안 <b>게임이 멈춘다</b> —
-    /// 배도 시간도 그 자리에 선다(닻을 내리는 것과는 다르다. 닻은 그대로 두고 멈추기만 한다).
+    /// 배도 시간도 그 자리에 선다. 여는 김에 <b>닻도 내린다</b> — 원본이 창을 지으며 닻을 놓고
+    /// 되돌리지 않아(<c>0x0048B1C2</c>) 닫은 뒤에도 배가 선 채로 있다.
     /// </summary>
     /// <remarks>
     /// 제 창(HWND)으로 띄운다 — D3D 자식 창 위에 제대로 뜨고(airspace 를 안 탄다),
@@ -2728,6 +2729,8 @@ public sealed class ShipMapWindow : Window
 
         CommandMenu.Open(CommandMenuBox, ToScreen(anchor, at));
         _host.Paused = true;
+        // 커맨드 창을 열면 닻이 내려진다 — 닫아도 선 채로 남는다(0x0048B1C2).
+        _host.HoldForCommand();
     }
 
     /// <summary>
