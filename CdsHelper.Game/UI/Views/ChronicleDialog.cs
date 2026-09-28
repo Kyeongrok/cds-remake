@@ -128,7 +128,6 @@ public sealed class ChronicleDialog : GameWindow
             Put(Words(row), TextX, y, TextW);
         }
 
-        Put($"{_page + 1} / {Math.Max(1, (_rows.Count + Lines - 1) / Lines)}", DateX, 418, 90);
         // 앞장은 첫 쪽이 아닐 때만, 다음장은 뒤에 쪽이 남았을 때만 눌린다(0x00424437 ~ 0x0042446A 의 켜짐 비트 4).
         Button("앞장", 360, 416, 80, () => Turn(-1), _page > 0);
         Button("다음장", 448, 416, 80, () => Turn(1), Start + Lines < _rows.Count);
