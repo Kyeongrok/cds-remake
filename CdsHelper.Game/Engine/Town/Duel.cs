@@ -97,9 +97,14 @@ public sealed class Duel
     /// 이긴 뒤 「모두 뺏는다」를 고르면 이 둘을 그대로 얻는다(<c>0x004AA4B3</c>).
     /// </remarks>
     /// <param name="set">복장 갈래(1~8).</param>
-    /// <param name="might">상대의 무력.</param>
+    /// <param name="might">
+    /// 상대의 무력 — <b>담은 값</b>이다. 게임은 판에 넣은 <c>+0x174</c>(담은 값 + 1)를 90·80·70 과
+    /// 견주므로(<c>0x004A8A04</c> · <c>0x004A8AB6</c>) 담은 값이 딱 90·80·70 이어도 윗급이 된다. 여기서
+    /// 1 을 더해 견준다.
+    /// </param>
     public static (int Weapon, int Armor) GearOf(int set, int might, GameRandom dice)
     {
+        might++;                                  // 판에 넣는 값(+0x174)으로 견준다
         if (set == 6) return (might > 90 ? 0x3A : 0x39, might > 70 ? 0x4B : 0x4A);
         if (set == 7) return (might > 90 ? 0x3C : 0x3B, might > 70 ? 0x4D : 0x4C);
         if (set is not (1 or 3)) return (0x40, 0x42);
