@@ -503,7 +503,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         _player.SpendPurse(patron.Name, -(funds / 2), patron.Wealth);
 
         // 맺고 나면 배 → 감찰관 → 배웅 차례다(게임 0x004AF2A3 · 0x004AF2B7 · 0x004AF3A4).
-        LendShips(funds, Say, Pick3);
+        // 척수는 계약금이 아니라 <b>힌트 자금 밑값</b>으로 센다 — 0x004AF29C 가 자금 셈에 쓴 것과 같은
+        // 힌트 칸([edi])을 0x00410620 의 둘째 인자로 넘긴다. 흥정·친밀도·마지못해 깎인 것은 안 친다.
+        LendShips(it.Funds, Say, Pick3);
         SendInspector(inspector, me, Say, Pick3);
 
         // 배웅도 신분마다 세 벌이다(0x004AF3A8 이 0x00546D28 · 0x00546D48 · 0x00546DA8 을 넘긴다).
@@ -556,8 +558,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   410798  0x0040FA00 이 배 레코드(0x005A4E18) 의 <b>+0x64 에 1</b> 을 박는다 = 대출 표시
     ///   410763  줄 배가 없으면 "…배가 전부 나가고 없네" (0x55C718 세 벌)
     /// </code>
-    /// 화면에서 본 것은 셋째 벌이라 그것을 쓴다 — 계약금 13,500닢에 1척이 나왔고
-    /// <c>13500 / 60000 + 1 = 1</c> 로 셈이 맞는다.
+    /// 화면에서 본 것은 셋째 벌이라 그것을 쓴다.
+    /// <paramref name="funds"/> 는 <b>힌트 자금 밑값</b>이다 — 설득 자리(<c>0x004AF29C</c>)는 계약금이 아니라
+    /// 힌트 칸의 자금을 넘긴다.
     ///
     /// <b>못 옮긴 것 둘.</b> 스폰서마다 항구에 세워 둔 배 무리가 우리 쪽에 없어 가운데
     /// 상한을 뺐고, 선체도 고를 데가 없어 제일 싼 것으로 세운다.
