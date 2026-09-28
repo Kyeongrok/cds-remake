@@ -5025,6 +5025,10 @@ public sealed class ShipMapWindow : Window
         if (_asking || _host.Paused) return;
         if (_game.Player.Ships.Count == 0) return;          // 배가 없으면 붙을 일이 없다
 
+        // 근해(지형 부류 0)에서만 굴린다(0x0048CAA0 call 0x00426740 · test eax,eax · je).
+        // 지형 표를 못 읽어 −1 이면 막지 않는다.
+        if (_host.TerrainClass > 0) return;
+
         var (lat, lon) = _host.ShipLatLon;
         if (Encounter.AtSea(lat, lon, steps, _game.Random, CaptainOf,
                             chased: _game.Player.Pursuers.Any()) is not { } foe) return;
