@@ -361,6 +361,7 @@ internal sealed class CubePuzzleDialog : GameWindow
         image.MouseLeftButtonUp += (_, e) =>
         {
             e.Handled = true;
+            _sfx?.Play(0x1C - 28);   // 화살표를 누르면 사운드 0x1C(파트 0)를 낸다(단추 0x0049B7C0 → 0x0049B7D7)
             int way = TurnWay[at];
             if (way >= 0) Roll(way); else DoSpin();
         };
@@ -537,6 +538,9 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// <summary>금괴를 밟을 때 나는 소리 — 사운드 0x27(<c>0x0049C918</c>), WAVE 파트 11 이다.</summary>
     private const int GoldSoundPart = 0x27 - 28;
 
+    /// <summary>화살표 소리를 낼 효과음 묶음.</summary>
+    private Local.Helpers.SoundBank? _sfx;
+
     /// <returns>출구로 나갔으면 true — 0x0049B388 이 판 상태가 0 이 아니면 1 을 낸다. 두 번 다 떨어지면 false.</returns>
     public static bool Play(Window owner, Player player, Random rng, Local.Helpers.SoundBank? sfx = null)
     {
@@ -547,7 +551,7 @@ internal sealed class CubePuzzleDialog : GameWindow
         // 그대로 돌려준다. 예전에는 떨어질 때마다 「마지막 찬스다!」를 띄우고 끝없이 다시 깔았다.
         for (int round = 0; ; round++)
         {
-            var dialog = new CubePuzzleDialog(rng) { Owner = owner };
+            var dialog = new CubePuzzleDialog(rng) { Owner = owner, _sfx = sfx };
 
             // 금괴를 밟으면 <b>그 자리에서는 글만</b> 뜬다(0x0049C91F, 0x0056DDF8) — 돈은 판을 마쳤을 때
             // 0x0049B366 이 <b>이번 판 상태가 2</b>(금괴 들고 나감)일 때 넣는다. 금괴 수(+0x28)는 판을 깔 때
