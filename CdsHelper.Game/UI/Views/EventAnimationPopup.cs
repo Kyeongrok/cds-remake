@@ -511,60 +511,121 @@ internal sealed class EventAnimationPopup : Window
     }
 
     /// <summary>
-    /// 14 유빙 — 얼음덩이가 흔들리며 떠 있고 밑동에 물보라가 인다(<c>0x0061D7A8</c>).
+    /// 14 유빙 — 오른쪽에서 얼음덩이가 떠내려와 함대에 부딪히고 물보라가 인다(<c>0x0061D7A8</c>).
     /// </summary>
     /// <remarks>
     /// <code>
     ///   0x00499BC0  파트 15, 192 x 384(192x96 넉 장), 팔레트 0x2A   ; 얼음덩이
     ///   0x00499BDE  파트 16,  32 x 256( 32x32 여덟 장), 팔레트 0x2A ; 물보라
+    ///   0x00499B40  첫자리  얼음 x = W − 0x13 · y = 함대 위(0x0047D050) − 0x1E · 물보라 = 얼음 + (100, 16)
     ///   0x00499C40  여는 참에 소리 0x36
-    ///   0x004998B0  얼음덩이 장 = (걸음 % 8) 이 0·1 → 0 · 4·5 → 2 · 그 밖 → 1
-    ///   0x004999B0  물보라   장 = (걸음 % 4) 이 0 → 0 · 2 → 2 · 그 밖 → 1
+    ///   0x004998B0  얼음덩이 한 걸음
+    ///     안 부딪혔으면  장 = (걸음 % 8) 이 0·1 → 0 · 4·5 → 2 · 그 밖 → 1
+    ///     부딪혔으면     장 3 · 부딪힌 뒤 여섯 걸음 동안 홀수 걸음 +4 · 짝수 걸음 −4 점 흔든다
+    ///     함대 왼쪽(0x0047D020) + 0x20 ≥ 얼음 x 가 되면 부딪힌다 — 그 걸음을 +0x18 에 적고
+    ///                    얼음 x = 함대 왼쪽 + 0x20 · 소리 0x37
+    ///     그린 뒤 안 부딪혔으면 x −= W/40 · 물보라 x = 얼음 x + 100(0x00499A80)
+    ///   0x004999B0  물보라 한 걸음 — 이것이 장면의 끝을 낸다
+    ///     안 부딪혔으면  장 = (걸음 % 4) 이 0 → 0 · 2 → 2 · 그 밖 → 1
+    ///     부딪힌 뒤 d 걸음  장 0(d&lt;2) · 3(&lt;4) · 4(&lt;10) · 5+(d−10)/2(&lt;16), 자리는 0x00499AA0 의 표
+    ///                    d ≥ 16 은 안 그리고 d == 20 에서 끝난다
     /// </code>
-    /// <b>부딪히고 나서의 갈래는 안 옮겼다</b> — 원본은 배가 닿은 걸음(<c>+0x18</c>)을 적어 두고
-    /// 장 3 으로 바꾼 뒤 여섯 걸음 동안 좌우로 4 점씩 흔든다. 우리는 부딪히는 자리가 따로 없어
-    /// 떠 있는 결만 돌린다. <b>도는 길이도 원본에 없다</b> — 원본은 지도가 그만두라 할 때까지
-    /// 도는데, 여기서는 여덟 걸음짜리 한 바퀴를 세 번 돌고 끝낸다.
+    /// 「부딪혔는가」는 원본도 걸음 수 0 을 「아직」으로 본다(<c>test ecx, ecx</c>) — 그대로 둔다.
     /// </remarks>
     private sealed class IcebergScene : Scene
     {
         private const int BergW = 0xC0, BergH = 0x60, SprayW = 0x20, SprayH = 0x20;
 
-        /// <summary>여덟 걸음짜리 한 바퀴를 세 번.</summary>
-        private const int Steps = 8 * 3;
-
-        public override int SoundPart => 0x36;
+        public override int SoundPart => 0x36 - WaveBank.FirstSoundId;
 
         private BitmapSource[] _berg = [], _spray = [];
-        private int _x, _y;
+        private int _w, _shipLeft;
+        private int _bx, _by, _sx, _sy;
+
+        /// <summary>부딪힌 걸음(<c>+0x18</c>). 0 이면 아직이다.</summary>
+        private int _hit;
 
         public override bool Load(EventAnimation anims)
         {
             _berg = Frames(anims, 15, BergW, BergH, 0x2A) ?? [];
             _spray = Frames(anims, 16, SprayW, SprayH, 0x2A) ?? [];
-            return _berg.Length >= 3;
+            return _berg.Length >= 4 && _spray.Length >= 8;
         }
 
         public override void Start(int w, int h, Point? ship, Random rng)
         {
             var at = ship ?? new Point(w / 2.0, h / 2.0);
-            _x = (int)at.X - BergW / 2;
-            _y = (int)at.Y - BergH / 2;
+            _w = w;
+            _shipLeft = (int)at.X - 24;                      // 48x48 함대 그림 왼쪽 위(0x0047D020 · 0x0047D050)
+            _bx = w - 0x13;
+            _by = (int)at.Y - 24 - 0x1E;
+            _sx = _bx + 100;
+            _sy = _by + 0x10;
+            _hit = 0;
         }
 
         public override bool Step(int c, List<Draw> draws)
         {
-            if (c >= Steps) return true;
+            if (c > 2000) return true;                      // 지도가 좁아 안 닿는 일이 없게 — 원본에는 없다
 
-            int m = c % 8;
-            int f = m < 2 ? 0 : m is 4 or 5 ? 2 : 1;
-            draws.Add(new Draw(_berg[Math.Clamp(f, 0, _berg.Length - 1)], _x, _y));
+            // 얼음덩이(0x004998B0)
+            int f;
+            if (_hit == 0)
+            {
+                int m = c % 8;
+                f = m < 2 ? 0 : m is 4 or 5 ? 2 : 1;
+            }
+            else
+            {
+                f = 3;
+                int d = c - _hit;
+                if (d < 6) _bx += d % 2 == 0 ? -4 : 4;
+            }
+            if (_shipLeft + 0x20 >= _bx && _hit == 0)
+            {
+                f = 3;
+                _hit = c;
+                _bx = _shipLeft + 0x20;
+                Sfx?.Play(0x37 - WaveBank.FirstSoundId);
+            }
+            draws.Add(new Draw(_berg[f], _bx, _by));
+            if (_hit == 0)
+            {
+                _bx += _w / -40;                              // 0x00499A80 — idiv 라 0 쪽으로 자른다
+                _sx = _bx + 100;
+            }
 
-            if (_spray.Length == 0) return false;
-            int k = c % 4 switch { 0 => 0, 2 => 2, _ => 1 };
-            draws.Add(new Draw(_spray[Math.Clamp(k, 0, _spray.Length - 1)],
-                               _x + (BergW - SprayW) / 2, _y + BergH - SprayH / 2));
+            // 물보라(0x004999B0)
+            int k;
+            if (_hit == 0)
+            {
+                k = (c % 4) switch { 0 => 0, 2 => 2, _ => 1 };
+            }
+            else
+            {
+                int d = c - _hit;
+                if (d >= 16) return d >= 20;
+                k = d < 2 ? 0 : d < 4 ? 3 : d < 10 ? 4 : 5 + (d - 10) / 2;
+                SprayAt(d);
+            }
+            draws.Add(new Draw(_spray[k], _sx, _sy));
             return false;
+        }
+
+        /// <summary>부딪힌 뒤 물보라 자리(<c>0x00499AA0</c>) — 얼음덩이 왼쪽 위에서 잰다.</summary>
+        private void SprayAt(int d)
+        {
+            (int dx, int dy) = d switch
+            {
+                < 2 => (0x64, 0x10),
+                < 4 => (0x66, 0x10),
+                < 6 => (0x6C, 0x08),
+                < 8 => (0x80, 0x0C),
+                < 10 => (0x96, 0x22),
+                _ => (0x9E, 0x38),
+            };
+            _sx = _bx + dx;
+            _sy = _by + dy;
         }
     }
 
@@ -629,7 +690,7 @@ internal sealed class EventAnimationPopup : Window
     /// 함대 자리에서 띠 한 벌을 처음부터 끝까지 넘기는 장면.
     /// </summary>
     /// <remarks>
-    /// 오아시스·사태·늪·유사·유빙 다섯이 이것을 쓴다. 그림 파트·크기·팔레트는 EXE 에서 그대로
+    /// 오아시스·늪·유사 셋이 이것을 쓴다. 그림 파트·크기·팔레트는 EXE 에서 그대로
     /// 옮겼다.
     /// <code>
     ///   4  오아시스  0x00497F10  파트 6  128x128 x14  팔레트 0x22   자리는 7 점 위가 아니라 32 점 위
@@ -639,8 +700,7 @@ internal sealed class EventAnimationPopup : Window
     ///   14 유빙      0x00499BC0  파트 15 192x96  x4   팔레트 0x2A
     /// </code>
     /// 걸음별 장 표는 <paramref name="pick"/> 으로 준다 — 오아시스·늪·유사는 원본 표를 그대로
-    /// 옮겼고, <b>유빙만 아직이라</b> 한 걸음에 한 장씩 곧이 넘긴다. 유빙의 물보라(파트 16,
-    /// 32x32 여덟 장)도 아직 안 얹었다.
+    /// 옮겼다. 사태·유빙은 따로 옮겼다(<see cref="LandslideScene"/> · <see cref="IcebergScene"/>).
     /// </remarks>
     private sealed class StripScene(int part, int frameW, int frameH, int palette, int up = 7,
                                     int soundAt = -1, int sound = -1, int soundOff = -1,
