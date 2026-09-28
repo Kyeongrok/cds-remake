@@ -137,9 +137,17 @@ public sealed class CityHistory
                               CityExeTable? cities, FoundCheck found, ref bool once)
     {
         bool all = true, orMode = false, orAcc = false;
+        // 나라 조건(27/28 00)이 붙은 칸은 <b>한 번 돈 것으로 적지 않는다</b>. 원본은 끝남 깃발이 아예 없어
+        // (칸 고르기 0x00407390, 매달 모든 파트를 도는 0x0044B383 어디에도 없다) 조건이 다시 참이 되면 또 돈다 —
+        // 파트 30(도시 106)·54(도시 171)는 주인공이 빼앗아도 다음 달에 포르투갈로 도로 넘긴다.
+        bool nationGate = false;
         while (i < p.Length)
         {
-            if (p[i] == 0xFF) return all;
+            if (p[i] == 0xFF)
+            {
+                if (nationGate) once = false;
+                return all;
+            }
             if (i + 1 >= p.Length) return null;
 
             bool term;
@@ -177,6 +185,7 @@ public sealed class CityHistory
                     int now = player.HistoryNations.TryGetValue(city, out int changed)
                         ? changed : cities?.StartNationOf(city) ?? -1;
                     term = p[i] == 0x27 ? now == nation : now != nation;
+                    nationGate = true;
                     i += 7;
                     break;
                 }
