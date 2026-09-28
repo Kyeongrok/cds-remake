@@ -251,7 +251,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 계약 결판을 치른 뒤 30일 동안이다(0x004A2AD0 이 푼다).
         if (_player.IsSulking(patron.Name))
         {
-            Steward($"{shown} {sir}께서는 꽤 기분이 안좋은 상태이니 여기서 일단 돌아가 주십시오.");
+            // 0x00546778 「%s%s 꽤 기분이…」 — 인자는 경칭과 그 조사 은/는 뿐이다(0x004AEFA2 의 0x004281B0(경칭, 1)).
+            Steward($"{sir}{GameUi.Josa(sir, "은", "는")} 꽤 기분이 안좋은 상태이니 여기서 일단 돌아가 주십시오.");
             return;
         }
 
@@ -293,7 +294,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             // 문 앞에서 돌려보낼 때 소리가 한 번 난다(닻 소리와 같은 파트다).
             _game.Sfx?.Play(SoundBank.TurnedAwayPart);
-            Steward($"죄송하지만, {shown} {sir}께서는 바쁘셔서 만나실 수 없습니다. 다른 날에 와 주십시오.");
+            // 0x00545A28 「죄송하지만, %s%s%s 바쁘셔서…」 — 이름·경칭·은/는 을 <b>띄우지 않고</b> 잇는다
+            // (0x004AE2A1~0x004AE2C4). 표 이름(0x005228B8)에도 경칭(0x0054C7E0~)에도 빈칸이 없다.
+            Steward($"죄송하지만, {shown}{sir}{GameUi.Josa(sir, "은", "는")} 바쁘셔서 만나실 수 없습니다. 다른 날에 와 주십시오.");
 
             // 명성이 오백만 더 있으면 <b>집사를 매수</b>해 뚫을 수 있다(0x004AE2E1). 그마저 모자라면
             // 「상대해 주지 않았습니다」로 끝난다(0x004AE40F → 0x00545B80).
