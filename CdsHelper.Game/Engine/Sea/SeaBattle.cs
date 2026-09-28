@@ -1812,20 +1812,31 @@ public sealed class SeaBattle
             "적함 1척 격침! 꼴좋군!",
         ]);
 
+    /// <summary>우리 배를 잃은 말 열 줄(<c>0x0056A9B8</c>~).</summary>
+    private static readonly string[] LostLines =
+    [
+        "배를 빼앗겼습니다.",
+        "제독, 죄송합니다. 배를 빼앗겼습니다.",
+        "어찌 된 일인가! 배를 빼앗겼습니다.",
+        "어찌 된 일인가! {0}호가 당했습니다.",
+        "{0}호의 선원이 당했습니다!",
+        "제독, {0}호가 당했습니다!",
+        "큰일입니다. 배를 빼앗겼습니다!",
+        "적에게 빈틈을 보여 배를 빼앗겼습니다!",
+        "앗! {0}호를 빼앗겼습니다!",
+        "제독, {0}호가 적의 손에 들어갔습니다!",
+    ];
+
+    /// <summary>앞 <paramref name="count"/> 줄에서만 고른다.</summary>
+    private string OneOf(string[] lines, int count) => lines[_rng.Next(Math.Min(count, lines.Length))];
+
     /// <summary>나포·승원 0 말(<c>0x004358EE</c>, rand(10)) — 빼앗김 <c>0x0056A9B8</c>~ · 빼앗음 <c>0x0056AB28</c>~.</summary>
+    /// <remarks>
+    /// 괴물 판에서 배를 잃으면 <b>앞 여섯 줄</b>에서만 고른다(<c>0x0043594C</c> → <c>0x0043597B</c> 의 rand(6)).
+    /// 예전에는 괴물 판에도 열 줄에서 골랐다.
+    /// </remarks>
     public string CapturedWord(Ship ship) => ship.Mine
-        ? string.Format(One([
-            "배를 빼앗겼습니다.",
-            "제독, 죄송합니다. 배를 빼앗겼습니다.",
-            "어찌 된 일인가! 배를 빼앗겼습니다.",
-            "어찌 된 일인가! {0}호가 당했습니다.",
-            "{0}호의 선원이 당했습니다!",
-            "제독, {0}호가 당했습니다!",
-            "큰일입니다. 배를 빼앗겼습니다!",
-            "적에게 빈틈을 보여 배를 빼앗겼습니다!",
-            "앗! {0}호를 빼앗겼습니다!",
-            "제독, {0}호가 적의 손에 들어갔습니다!",
-        ]), ship.Name)
+        ? string.Format(Monster ? OneOf(LostLines, 6) : One(LostLines), ship.Name)
         : One([
             "적함을 빼앗았습니다.",
             "적함을 빼앗았다! 꼴 좋군.",
