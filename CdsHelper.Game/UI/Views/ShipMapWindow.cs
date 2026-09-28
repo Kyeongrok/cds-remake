@@ -4428,7 +4428,8 @@ public sealed class ShipMapWindow : Window
             TalkDialog.Say(this, mate, "", "제독, 원주민의 보물을 발견했습니다!");
             int gold = LandEvents.CaveGold(player.AbilityOf(Ability.Luck), dice);
             player.Earn(gold);
-            NoticeDialog.Show(this, $"제독, 금화 {gold}닢에 해당하는 보물을 발견했습니다!");
+            // 「금화 %ld 닢」 — 닢 앞에 빈칸이 있고, 부관(아니면 뱃사람)이 말한다(0x00570938 → 0x0048DEAB).
+            TalkDialog.Say(this, mate, "", $"제독, 금화 {gold} 닢에 해당하는 보물을 발견했습니다!");
             return;
         }
 
@@ -4440,8 +4441,9 @@ public sealed class ShipMapWindow : Window
         int back = LandEvents.Returned(MateMedicine(), hurt, dice);
         player.SetCrew(player.Crew - (hurt - back));
 
-        NoticeDialog.Show(this, $"{hurt}명이 당했습니다!");
-        if (back > 0) NoticeDialog.Show(this, $"{back}명의 선원이 되돌아왔습니다");
+        // 두 말 다 부관(아니면 뱃사람) 얼굴이다(0x0048DE8C · 0x0048DEB8 → 0x00478280).
+        TalkDialog.Say(this, mate, "", $"{hurt}명이 당했습니다!");
+        if (back > 0) TalkDialog.Say(this, mate, "", $"{back}명의 선원이 되돌아왔습니다");
     }
 
     /// <summary>제독과 부관 가운데 높은 의학(<c>0x0047CCA0(5,0,-1,-1,-1)</c>).</summary>
