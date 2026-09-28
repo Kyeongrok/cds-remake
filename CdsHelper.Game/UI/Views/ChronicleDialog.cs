@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -129,9 +129,10 @@ public sealed class ChronicleDialog : GameWindow
         }
 
         Put($"{_page + 1} / {Math.Max(1, (_rows.Count + Lines - 1) / Lines)}", DateX, 418, 90);
-        Button("앞장", 360, 416, 80, () => Turn(-1));
-        Button("다음장", 448, 416, 80, () => Turn(1));
-        Button("취소", 536, 416, 48, Close);
+        // 앞장은 첫 쪽이 아닐 때만, 다음장은 뒤에 쪽이 남았을 때만 눌린다(0x00424437 ~ 0x0042446A 의 켜짐 비트 4).
+        Button("앞장", 360, 416, 80, () => Turn(-1), _page > 0);
+        Button("다음장", 448, 416, 80, () => Turn(1), Start + Lines < _rows.Count);
+        Button("취소", 536, 416, 48, Close, true);
     }
 
     /// <summary>줄 글 — 항해일지는 사람 이름이 없다.</summary>
@@ -151,9 +152,12 @@ public sealed class ChronicleDialog : GameWindow
         _sheet.Children.Add(box);
     }
 
-    private void Button(string text, double x, double y, double width, Action run)
+    /// <summary>
+    /// 창 아래 단추 — 게임 띠 단추다(<c>0x00413450</c>, <c>0x00424372</c> ~ <c>0x0042440A</c>). 높이는 띠 그대로 24.
+    /// </summary>
+    private void Button(string text, double x, double y, double width, Action run, bool on)
     {
-        var button = GameUi.PushButton(text, run, width);
+        var button = new GameButton(text, run, width: width) { Margin = new Thickness(0), On = on };
         Canvas.SetLeft(button, x);
         Canvas.SetTop(button, y);
         _sheet.Children.Add(button);
