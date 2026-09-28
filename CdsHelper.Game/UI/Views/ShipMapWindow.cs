@@ -5019,10 +5019,15 @@ public sealed class ShipMapWindow : Window
             {
                 var who = chasers[rng.Next(chasers.Count)];
                 var boss = _game.Sponsors?.FindByName(who.Sponsor);
-                string me = _game.Player.Name, lord = $"{boss?.Name ?? who.Sponsor} {boss?.Honorific ?? "각하"}";
+                // 서식 0x0055F6A8 「네가 %s%s군. 찾고 있었다! %s%s 너를 토벌하라는 명령이다. 각오해라.」 —
+                // 제독 이름 조사는 갈래 10(로/으로, 0x004556CD), 후원자 이름 조사는 갈래 13(로부터/으로부터,
+                // 0x004556AD)이고, 후원자 자리는 그 인물 객체의 이름(가상 함수 0)이다. 창 제목은 「해적」(0x0055F6A0).
+                // 예전에는 「…이군」 · 「{이름} {경칭}께서」 · 제목 「해전」이었다.
+                string me = _game.Player.Name, lord = boss?.Name ?? who.Sponsor;
                 ConfirmDialog.Tell(this,
-                    $"네가 {me}{GameUi.Josa(me, "이", "")}군. 찾고 있었다! {lord}께서 너를 토벌하라는 명령이다. 각오해라.",
-                    Encounter.TitleOf(foe.Kind), PersonFace(Encounter.ChaserLeader));
+                    $"네가 {me}{NameToken.Of(me, 10)}군. 찾고 있었다! {lord}{NameToken.Of(lord, 13)} " +
+                    "너를 토벌하라는 명령이다. 각오해라.",
+                    "해적", PersonFace(Encounter.ChaserLeader));
             }
 
             // 조우의 말은 모두 한 사람이 한다 — 부관, 없으면 뱃사람(0x004555BC 가 처음에 집는다).
