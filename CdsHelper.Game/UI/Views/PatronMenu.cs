@@ -380,33 +380,39 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 이 후원자가 좋아하는 갈래의 힌트는 갈색(#DEC6AD) 바탕으로 도드라지게 한다 — 설득이
         // 갈래 취향을 그대로 따지므로(후원자 정보의 「발견물의 취향」) 고르기 전에 보이는 편이 낫다.
         var liked = mine.Select(id => _game.Hints?.Find(id) is { } h && patron.Likes(h.Category)).ToList();
-        int row = HintListDialog.Pick(_view, names, "제안 선택", marks: liked);
-        if (row < 0)
+
+        // 「다른 이야기는 없는가?」면 <b>목록을 다시 띄운다</b>(0x004AE8E0 의 되풀이). 한 번 내민 힌트는
+        // 그 줄을 막아 두고(0x004AE993), 아직 안 내민 것이 남아 있는 동안 되풀이한다(0x004AE99A).
+        // 「더 있는가」는 <b>아직 안 내민 힌트</b>가 둘 이상인지다(0x004AE976 — 내밀기 전 남은 수 &gt; 1).
+        var usable = Enumerable.Repeat(true, mine.Count).ToList();
+        int left = mine.Count;
+        HintTable.Hint it;
+        Persuasion.Verdict verdict;
+        while (true)
         {
-            // 0x004AF415 — 반말 쪽만 제독 이름을 부른다.
-            Say(Pick3($"{me}, 사람을 방문해 놓고 꽤 무례하군. 그만 나가게!",
-                      $"{me}, 용건도 없으면서 무턱대고 방문하는 것은 무례한 일입니다. 다음에 와 주십시오.",
-                      "뭔가, 용건이 없는가? 이쪽은 바쁘네, 빨리 나가주게."));
-            return;
+            int row = HintListDialog.Pick(_view, names, "제안 선택", marks: liked, usable: usable);
+            if (row < 0)
+            {
+                // 0x004AF415 — 반말 쪽만 제독 이름을 부른다. 다시 띄운 목록에서 물러나도 이 말이다.
+                Say(Pick3($"{me}, 사람을 방문해 놓고 꽤 무례하군. 그만 나가게!",
+                          $"{me}, 용건도 없으면서 무턱대고 방문하는 것은 무례한 일입니다. 다음에 와 주십시오.",
+                          "뭔가, 용건이 없는가? 이쪽은 바쁘네, 빨리 나가주게."));
+                return;
+            }
+
+            bool more = left > 1;
+            left--;
+            usable[row] = false;
+            if (_game.Hints?.Find(mine[row]) is not { } hint) return;
+            it = hint;
+
+            // 받아 줄지는 게임 셈 그대로 가린다(Persuasion 참고) — 이야기 크기, 좋아하는
+            // 갈래, 안목·웅변·매력 굴림 차례다.
+            verdict = Decide(it, patron, _game.Sponsors?.FindByName(patron.Name), face, Say, more);
+            if (verdict is not Persuasion.Verdict.AskAnother || left <= 0) break;
         }
 
-        var hint = _game.Hints?.Find(mine[row]);
-        if (hint == null)
-        {
-            // 0x004AF14D — 이야기가 후원자 안목에 벅찰 때의 말이다.
-            Say(Pick3("흠, 원조해 주고 싶은 마음은 많지만.",
-                      "원조해 드리고 싶지만, 그렇게 큰 모험은, 저로서는 도저히...",
-                      "가능한 한 원조해 주고 싶지만, 너무 이야기가 엄청나네."));
-            return;
-        }
-
-        var it = hint.Value;
-
-        // 받아 줄지는 게임 셈 그대로 가린다(Persuasion 참고) — 이야기 크기, 좋아하는
-        // 갈래, 안목·웅변·매력 굴림 차례다.
-        var verdict = Decide(it, patron, _game.Sponsors?.FindByName(patron.Name),
-                             face, Say, mine.Count > 1);
-        // 아주 물리면 후원자가 기분이 상한다(0x004AE72A) — 한 달 동안 문간에서 돌려보낸다.
+        // 아주 물리면 후원자가 기분이 상한다(0x004AE72A · 0x004AE84E 의 비트 14).
         if (verdict is Persuasion.Verdict.Refused) _player.Sulk(patron.Name);
         if (verdict is Persuasion.Verdict.Refused or Persuasion.Verdict.TooBig
                     or Persuasion.Verdict.AskAnother) return;
