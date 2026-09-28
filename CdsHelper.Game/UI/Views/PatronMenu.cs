@@ -360,8 +360,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
         else
         {
-            // 처음 오면 집사가 나라까지 붙여 이른다(0x004AE53F 이 나라 이름표 0x00560AA8 을 읽는다).
-            Steward($"{sir}. {_player.NationName}의 {me}{Particle(me)} 데리고 왔습니다. 모험의 지원을 신청하고 있습니다.");
+            // 처음 오면 집사가 <b>직업</b>까지 붙여 이른다 — 0x004AE53F 이 제독 vfunc +0x18(직업 번호)로
+            // 직업 이름표 0x00560AA8(탐험가·발굴자·사냥꾼·정복자·해적·전도사·상인·군인)을 읽는다.
+            // 서식 0x00545B98 「%s. %s %s%s 데리고 왔습니다.」 — 「폐하. 탐험가 라몬을 데리고 왔습니다.」
+            Steward($"{sir}. {_player.Work.Name} {me}{Particle(me)} 데리고 왔습니다. 모험의 지원을 신청하고 있습니다.");
             Say(Pick3("호오, 그렇다면 모험 목적을 말해 보게.",
                       "어떤 모험을 하고 싶습니까? 내용에 따라서 거기에 맞는 자금을 드리지요.",
                       "모험 지원인가. 그래, 무엇을 찾으러 갈건가?"));
