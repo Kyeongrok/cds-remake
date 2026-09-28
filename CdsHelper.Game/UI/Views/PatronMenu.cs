@@ -483,7 +483,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         if (pick < 0) return;
 
         // 「교섭한다」를 골랐을 때만 한 번 더 묻는다 — <b>되풀이는 없다</b>.
-        if (pick != 0 && !Bargain(patron, face, Say, ref funds, ref years)) return;
+        // 욕심을 부려 쫓겨나면 후원자가 삐진다(0x004AF24B — 비트 14).
+        if (pick != 0 && !Bargain(patron, face, Say, ref funds, ref years))
+        {
+            _player.Sulk(patron.Name);
+            return;
+        }
 
         // 계약을 적어 두고 선금을 받는다. 게임도 이 자리에서 소지금에 계약금의 절반을
         // 더한다(0x004ADF3E).
