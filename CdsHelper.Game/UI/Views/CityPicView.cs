@@ -1411,8 +1411,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 한 번 만난 뒤에는 게임도 관문을 건너뛴다(후원자 비트 15) — <see cref="PassFameGate"/> 가
     /// 그것을 보므로 이 애니메이션도 <b>첫 알현 때만</b> 돈다.
     /// </remarks>
-    public void PlayFameCheck(bool passed) =>
-        PlayEffect(EffectAnim.Persuade, [.. Plead, passed ? Granted : Refused]);
+    public void PlayFameCheck(bool passed) => PlayMpEffect(EffectAnim.Persuade, passed);
 
     /// <summary>
     /// 자택 "후손을 남긴다" 의 애니메이션 — <b>MPEFFECT 2번(대포)</b>이다.
@@ -1420,10 +1419,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <remarks>
     /// 게임도 그렇다(<c>0x004613E3</c> 이 <c>0x004A6340</c> 을 부른다). 그 껍데기는 인자가
     /// 1 이면 소리 <c>0x2A</c>, 아니면 <c>0x2B</c> 를 함께 낸다 — 되고 안 되고가 곧 소리다.
+    /// 장은 0 → 1 → 결말 셋뿐이고 한 장이 하트의 다섯 배 머문다(<c>0x004A5D20</c>, 장 간격 10).
     /// </remarks>
-    public void PlayHeir(bool born) =>
-        PlayEffect(EffectAnim.Cannon, [.. Plead, born ? Granted : Refused],
-                   sound: (born ? 0x2A : 0x2B) - Support.Local.Helpers.WaveBank.FirstSoundId);
+    public void PlayHeir(bool born) => PlayMpEffect(EffectAnim.Cannon, born);
 
     /// <summary>
     /// 후원자의 마음이 동하는지 — <b>MPEFFECT 3번(하트)</b>이다.
@@ -1432,8 +1430,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 이야기를 고르고 나서 돈다(<c>0x004AE7B7</c> · <c>0x004AE815</c>). 굴림에 이기면
     /// 하트가 커지고, 지면 깨진다 — 넷째 장이 곧 깨진 하트다.
     /// </remarks>
-    public void PlayHeart(bool won) =>
-        PlayEffect(EffectAnim.Heart, [.. Plead, won ? Granted : Refused]);
+    public void PlayHeart(bool won) => PlayMpEffect(EffectAnim.Heart, won);
 
     /// <summary>
     /// 굴린 결과대로 MPEFFECT 한 벌을 원본 차례(<see cref="EffectAnim.Frames"/>)와 참으로 돌린다
@@ -1517,11 +1514,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (wasShown) HideMenu(false);
         }
     }
-
-    /// <summary>
-    /// 청하는 두 장. 이것을 두 번 되풀이해 흔든 뒤 결말 장으로 넘어간다(모두 0부터 센다).
-    /// </summary>
-    private static readonly int[] Plead = [0, 1, 0, 1];
 
     /// <summary>결말 장 — 받아 드는 셋째 장과 엎어지는 넷째 장.</summary>
     private const int Granted = 2, Refused = 3;
