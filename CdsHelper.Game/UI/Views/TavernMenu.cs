@@ -179,7 +179,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         TalkDialog.Say(_view, face, "", Challenges[k]);
         if (hasMate) TalkDialog.Say(_view, mate, "", ChallengeAdvice[k]);
 
-        if (ChoiceDialog.Ask(_view, "", ["도전을 받는다", "무시한다"]) != 0)
+        // 고를 줄은 둘뿐이다(0x0042FCC5 의 줄 수 2) — 「취소」 줄을 덧붙이지 않는다.
+        if (ChoiceDialog.Pick(_view, "", ["도전을 받는다", "무시한다"]) != 0)
         {
             TalkDialog.Say(_view, face, "", Jeers[k]);
             return true;
@@ -696,7 +697,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var maid = kind == FacilityKind.Tavern ? Standing() : null;
         bool maidSeated = false;
 
-        foreach (var seat in book.Seat(_culture, _cityId, keys, withMaid: maid != null))
+        foreach (var seat in book.Seat(_culture, _cityId, keys, withMaid: maid != null,
+                                       scale: _game.CityRows?.ScaleOf(_cityId) ?? -1))
         {
             var bgra = book.TryGetBgra(seat.Art);
             if (bgra == null) continue;
@@ -706,7 +708,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             {
                 maidSeated = true;
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
-                            _player.LikingOf(her.Id) > 0 ? her.Name : "여",
+                            _player.HasMetBarmaid(her.Id) ? her.Name : "여",
                             () => Alone(() => MeetBarmaid(her))));
                 continue;
             }
@@ -763,7 +765,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private void MeetBarmaid(BarmaidTable.Barmaid her)
     {
         bool destined = Barmaids.Destined(_player, her);
-        bool first = _player.LikingOf(her.Id) == 0;
+        // 낯을 텄는지는 친밀도가 아니라 따로 든 깃발로 본다(여급 칸 +0x28, vtbl[0x34]) — 퇴짜를 맞아 친밀도가
+        // 0 이 되어도 아는 사람으로 남는다. 예전에는 친밀도 0 을 모르는 사이로 쳐서 다시 처음 보는 여자가 되었다.
+        bool first = !_player.HasMetBarmaid(her.Id);
 
         // 낯 트기 전에는 얼굴도 이름도 없다.
         if (first)
@@ -771,8 +775,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (TalkDialog.Ask(_view, null, "", "아름다운 여성이 있다",
                                "한잔 산다", "무시한다") != 0) return;
             if (!BuyDrink()) return;
-
-            _player.AddLiking(her.Id, Barmaids.FirstMeet(_player, her));
+        }
+        else
+        {
+            // 아는 여급도 곧장 차림표로 가지 않는다 — 「[%s]%s 있다」(0x0054ABC0)를 띄우고
+            // 말을 건다(0x0054ABD0) · 무시한다를 고르게 한다(0x0042F338). 술은 안 산다.
+            if (TalkDialog.Ask(_view, null, "", $"[{her.Name}]{Subject(her.Name)} 있다",
+                               "말을 건다", "무시한다") != 0) return;
         }
 
         var face = FaceOfMaid(her);
@@ -784,8 +793,23 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (TongueWith(her) <= 0)
         {
             TalkDialog.Say(_view, face, "", Barmaids.StrangerWord(first, destined));
-            if (first && destined) _player.AddLiking(her.Id, Barmaids.StrangerLike);
+            // 말이 안 통하면 첫 만남 몫(+50·+3)은 없다 — 궁합이 맞을 때만 +20 을 받고 낯을 트고(0x00466501),
+            // 아니면 친밀도도 그대로, 모르는 사이로 남는다(0x0046652D).
+            if (first && destined)
+            {
+                _player.AddLiking(her.Id, Barmaids.StrangerLike);
+                _player.MeetBarmaid(her.Id);
+            }
             return;
+        }
+
+        // 첫 만남 친밀도는 <b>말이 통하고 나서</b> 첫 인사와 함께 오른다(0x00466730 — 궁합 +50 · 보통 +3)
+        // 그리고 그 자리에서 낯을 튼다([여급+0x28] = 0). 예전에는 한잔 사자마자 올려서 말이 안 통해도
+        // 궁합이면 70, 아니어도 3 이 붙고 이름까지 드러났다.
+        if (first)
+        {
+            _player.AddLiking(her.Id, Barmaids.FirstMeet(_player, her));
+            _player.MeetBarmaid(her.Id);
         }
 
         // 첫 인사는 궁합과 술로 넷, 다시 왔을 때는 친밀도로 다섯이 갈린다
@@ -794,26 +818,44 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             ? Barmaids.FirstWord(destined, boughtDrink: true, her.Name)
             : Barmaids.AgainWord(_player.LikingOf(her.Id), _player.Name);
 
+        // 차림표는 다섯 줄 표에 줄마다 <b>보임</b> 칸을 둔다(0x0046656C~0x004665F7) — 조건이 어긋난 줄은 감춘다.
+        //   이야기한다     한 번 하면 감춘다(0x00466644)
+        //   설득한다       제독 <b>본인</b>이 그 여급 말을 3 이상 한다(0x00466850 = 0x00478050(제독, 여급) >= 3)
+        //   선물을 보낸다  위 조건 + 선물감을 지녔다(0x00466870). 한 번 주면 감춘다(0x00466676)
+        //   프로포즈 한다  위 조건 + 친밀도 80 · 아내 없음 · 퇴짜 안 맞음(0x004668A0)
+        // 이야기나 선물 뒤에 앞 네 줄이 다 감춰졌으면 창을 닫는다(0x004666A3~0x004666CB).
+        // 예전에는 설득·선물 줄이 늘 서 있고 잡담은 몇 번이고 되었다.
+        bool talked = false, gave = false;
         while (true)
         {
-            // 「프로포즈 한다」는 친밀도 80 이 넘고, 아내가 없고, 퇴짜를 안 맞았을 때만 선다(0x004668A0).
-            bool canPropose = _player.LikingOf(her.Id) >= Barmaids.ProposeNeeded
-                              && _player.Spouse.Length == 0 && !_player.WasRefusedBy(her.Id);
-            var rows = canPropose
-                ? (string[])["이야기한다", "설득한다", "선물을 보낸다", "프로포즈 한다", "떠난다"]
-                : ["이야기한다", "설득한다", "선물을 보낸다", "떠난다"];
+            bool own = OwnTongueWith(her) >= FluentTongue;
+            bool[] on =
+            [
+                !talked,
+                own,
+                own && !gave && GiftSlots(out _, out _),
+                own && _player.LikingOf(her.Id) >= Barmaids.ProposeNeeded
+                    && _player.Spouse.Length == 0 && !_player.WasRefusedBy(her.Id),
+            ];
+            string[] names = ["이야기한다", "설득한다", "선물을 보낸다", "프로포즈 한다"];
+            var rows = new List<string>();
+            var map = new List<int>();
+            for (int i = 0; i < names.Length; i++)
+                if (on[i]) { rows.Add(names[i]); map.Add(i); }
+            rows.Add("떠난다");
 
-            int pick = TalkDialog.Ask(_view, face, "", words, rows);
-            if (pick == 0) { Chat(her, destined); }
-            else if (pick == 1)
+            int pick = TalkDialog.Ask(_view, face, "", words, [.. rows]);
+            int row = pick >= 0 && pick < map.Count ? map[pick] : -1;
+            if (row == 0) { Chat(her, destined); talked = true; }
+            else if (row == 1)
             {
                 // 설득은 한 번 하고 창을 접는다(0x0046664E 가 줄을 끄고 돌아간다).
                 Persuade(her, face);
                 _leave?.Invoke();
                 return;
             }
-            else if (pick == 2) Gift(her, face);
-            else if (pick == 3 && canPropose)
+            else if (row == 2) { if (Gift(her, face)) gave = true; }
+            else if (row == 3)
             {
                 Propose(her, face);
                 _leave?.Invoke();
@@ -825,10 +867,42 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 TalkDialog.Say(_view, face, "", Barmaids.ByeWord(_player.LikingOf(her.Id)));
                 return;
             }
+
+            // 이야기·선물을 하고 나서 남은 줄이 「떠난다」뿐이면 창을 닫는다(0x004666BF).
+            bool any = !talked || OwnTongueWith(her) >= FluentTongue;
+            if (!any) return;
+
             // 한 번 인사를 나눈 뒤로는 <b>줄만 다시 뜬다</b> — 게임은 "무슨 일이시죠?" 를
             // 되풀이하지 않는다. 빈 글이면 대사 창을 건너뛴다(TalkDialog.Ask).
             words = "";
         }
+    }
+
+    /// <summary>
+    /// 제독 <b>혼자서</b> 그 여급과 통하는 말 수준(<c>0x00478050(제독, 여급)</c>) — 부관·통역은 안 센다.
+    /// 설득·선물·프로포즈 줄이 이것이 3 이상이어야 선다(<c>0x00466850</c>).
+    /// </summary>
+    private int OwnTongueWith(in BarmaidTable.Barmaid her)
+    {
+        var theirs = new int[Skill.Languages.Length];
+        for (int i = 0; i < theirs.Length; i++)
+            theirs[i] = (her.Tongues & (1 << i)) != 0 ? FluentTongue : 0;
+        return Shared(theirs, i => _player.TongueOf(Skill.Languages[i]));
+    }
+
+    /// <summary>소지품 가운데 선물감(<see cref="Barmaids.GiftCategory"/>)을 모은다(<c>0x004B0A20(1, …)</c>). 하나라도 있으면 참.</summary>
+    private bool GiftSlots(out List<int> slots, out List<string> names)
+    {
+        slots = [];
+        names = [];
+        if (_game.Items is not { } table) return false;
+        foreach (int id in _player.Items)
+        {
+            if (table.Find(id) is not { } item || item.Category != Barmaids.GiftCategory) continue;
+            slots.Add(id);
+            names.Add(item.Name);
+        }
+        return slots.Count > 0;
     }
 
     /// <summary>
@@ -839,28 +913,23 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 고르면 그 물건이 소지품에서 빠지고 친밀도가 <c>친밀도 x (값/200) / 100</c> 만큼 오른 뒤,
     /// 오른 자리에 맞는 말이 나온다(<c>0x00466B70</c>).
     /// </remarks>
-    private void Gift(in BarmaidTable.Barmaid her, uint[]? face)
+    /// <returns>정말 건넸으면 참 — 그러면 이 줄이 감춰진다(<c>0x00466676</c>).</returns>
+    private bool Gift(in BarmaidTable.Barmaid her, uint[]? face)
     {
-        if (_game.Items is not { } table) return;
-
-        var slots = new List<int>();
-        var names = new List<string>();
-        foreach (int id in _player.Items)
-        {
-            if (table.Find(id) is not { } item || item.Category != Barmaids.GiftCategory) continue;
-            slots.Add(id);
-            names.Add(item.Name);
-        }
-        if (slots.Count == 0) return;
+        if (_game.Items is not { } table || !GiftSlots(out var slots, out var names)) return false;
 
         NoticeDialog.Show(_view, "무엇을 보내시겠습니까?");
         int at = ChoiceDialog.Ask(_view, "선물 선택", names);
-        if (at < 0 || at >= slots.Count) return;
+        if (at < 0 || at >= slots.Count) return false;
 
         int price = table.Find(slots[at])?.BuyList ?? 0;
         _player.Drop(slots[at]);
         _player.AddLiking(her.Id, Barmaids.GiftGain(_player.LikingOf(her.Id), price));
+        // 선물을 받았다는 표시를 세운다(0x00466B45 의 [여급+0x34] = 1) — 설득 60~89 구간(0x00465D49)과
+        // 청혼 밑점수 +10(0x00465E44)이 이것을 본다.
+        _player.MarkGifted(her.Id);
         TalkDialog.Say(_view, face, "", Barmaids.GiftWord(_player.LikingOf(her.Id)));
+        return true;
     }
 
     /// <summary>
@@ -936,24 +1005,46 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                   && Barmaids.Score(_player, her, Barmaids.Destined(_player, her),
                                     Barmaids.Suits(_player, her))
                      >= dice.Next(Barmaids.WooRoll);
+        // 굴린 결과대로 하트가 커지거나 깨진다(0x00465B05 → 0x004A6360).
+        PlayHeart(ok);
         if (!ok)
         {
             TalkDialog.Say(_view, face, "", Barmaids.Fond);
             return;
         }
 
-        if (TalkDialog.Ask(_view, face, "", Barmaids.Invitations[dice.Next(Barmaids.Invitations.Length)],
-                           "그러겠소", "미안하오") == 0)
+        // 여급이 먼저 물어 오는 동안은 사랑 곡이고(0x00465B1E), 끝나면 술집 곡으로 돌린다(0x00465BBA).
+        PlayLove();
+        try
         {
-            Wed(her, face);
-            return;
-        }
+            // 대답은 여느 예/아니오 물음이다(0x00465B3F 의 0x004692E0(여급, 2, …)) — 예전의 「그러겠소 / 미안하오」
+            // 단추 글은 원본에 없다.
+            if (ConfirmDialog.Ask(_view, Barmaids.Invitations[dice.Next(Barmaids.Invitations.Length)],
+                                  face: face))
+            {
+                Wed(her, face);
+                return;
+            }
 
-        // 물리면 그 여급과는 끝이다 — 친밀도가 0 이 되고 프로포즈 줄도 다시 안 선다(0x00465B9E).
-        TalkDialog.Say(_view, face, "", Barmaids.Jilted[dice.Next(Barmaids.Jilted.Length)]);
-        GameDialog.Show(_view, Barmaids.JiltedNotice);
-        _player.MarkRefused(her.Id);
+            // 물리면 그 여급과는 끝이다 — 친밀도가 0 이 되고 프로포즈 줄도 다시 안 선다(0x00465B9E).
+            TalkDialog.Say(_view, face, "", Barmaids.Jilted[dice.Next(Barmaids.Jilted.Length)]);
+            GameDialog.Show(_view, Barmaids.JiltedNotice);
+            _player.MarkRefused(her.Id);
+        }
+        finally { EndLove(); }
     }
+
+    /// <summary>하트(MPEFFECT 3)를 돌린다 — 되면 커지고 안 되면 깨진다(<c>0x004A6360</c>).</summary>
+    private void PlayHeart(bool won) => (_view as CityPicView)?.PlayHeart(won);
+
+    /// <summary>사랑 곡(소리 1)을 튼다(<c>0x004225A0(1, 0)</c>).</summary>
+    private void PlayLove() => _game.Bgm?.Play(BgmPlayer.LoveTrack);
+
+    /// <summary>
+    /// 술집 곡(소리 <c>0x14</c>)으로 돌린다(<c>0x00465BBA</c> · <c>0x00466231</c>) — 원본은 문화권을 안 가리고
+    /// 늘 이 곡을 튼다.
+    /// </summary>
+    private void EndLove() => _game.Bgm?.Play(BgmPlayer.TavernTrack);
 
     /// <summary>
     /// 「프로포즈 한다」(<c>0x00466150</c>) — 소지품의 유혹어를 골라 읊고 한 번에 판가름한다.
@@ -966,6 +1057,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     {
         var dice = _game.Random;
         int bonus = 0;
+
+        // 프로포즈 들머리에서 사랑 곡을 튼다(0x00466162).
+        PlayLove();
 
         // 유혹어를 지녔으면 어느 것을 쓸지 고른다(0x00466250) — 안 쓰면 보너스도 말도 없다.
         var wooItems = _player.Items
@@ -985,16 +1079,23 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         int score = bonus + Barmaids.Score(_player, her, Barmaids.Destined(_player, her),
                                            Barmaids.Suits(_player, her));
-        if (score >= dice.Next(Barmaids.WooRoll))
+        bool won = score >= dice.Next(Barmaids.WooRoll);
+        // 판가름 뒤에 하트가 돈다(0x004661A6 → 0x004A6360).
+        PlayHeart(won);
+        try
         {
-            Wed(her, face);
-            return;
-        }
+            if (won)
+            {
+                Wed(her, face);
+                return;
+            }
 
-        // 모항에서는 「이 마을을 떠날 수는 없어요」가 안 나온다(0x004661F6).
-        int rows = _cityId == _player.HomePort ? 2 : Barmaids.Refusals.Length;
-        TalkDialog.Say(_view, face, "", Barmaids.Refusals[dice.Next(rows)]);
-        _player.MarkRefused(her.Id);
+            // 모항에서는 「이 마을을 떠날 수는 없어요」가 안 나온다(0x004661F6).
+            int rows = _cityId == _player.HomePort ? 2 : Barmaids.Refusals.Length;
+            TalkDialog.Say(_view, face, "", Barmaids.Refusals[dice.Next(rows)]);
+            _player.MarkRefused(her.Id);
+        }
+        finally { EndLove(); }   // 되든 안 되든 술집 곡으로 돌린다(0x00466231)
     }
 
     /// <summary>
@@ -1005,8 +1106,11 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var dice = _game.Random;
         if (dice.Next(4) == 0 && !RivalBeaten(new GameRandom(dice.Next()))) return;
 
+        // 혼인 대답도 사랑 곡 위에서 한다(0x00465921) — 연적 일기토가 곡을 바꿔 놓았으면 되돌린다.
+        PlayLove();
         TalkDialog.Say(_view, face, "", Barmaids.Yeses[dice.Next(Barmaids.Yeses.Length)]);
         _player.Marry(her.Name, her.Id);
+        _player.Note(Player.TraceMarriage, her.Id);   // 0x004658F0 — 행적에 혼인을 적는다
         DiscoveryDialog.Show(_view, _game.EventStills, Barmaids.WeddingStill,
                              string.Format(Barmaids.Married, _player.Name, her.Name));
     }
@@ -1241,8 +1345,31 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         bool hireable = who.Hire == TavernRoster.Hireable;
         bool duelable = who.Index < PersonTable.VoyagerCount;
 
-        // 말이 전혀 안 통하면 용건도 못 묻는다(0x004A4BB0 → 0x00468F70).
-        if (TongueWith(who.Index) <= 0)
+        bool fluent = TongueWith(who.Index) > 0;
+
+        // <b>일기토를 걸 수 있는 사람(갈래 0)은 차림표가 따로다</b>(0x004A4AA0) — 한 번 내고 끝나는 창이다.
+        //   말이 안 통해도 「무슨 말을 하는 건지…」(0x00551708) 뒤에 차림표를 내고 「정보를 듣는다」 줄만 감춘다
+        //   (0x004A4AFC). 그래서 말이 안 통해도 일기토는 걸 수 있다.
+        //   「정보를 듣는다」를 고르면 한 마디 듣고 창이 닫힌다(0x004A4B53).
+        if (duelable && !hireable)
+        {
+            TalkDialog.Say(_view, face, "", fluent ? "무슨 용건인가?" : "무슨 말을 하는 건지, 전혀 모르겠군.");
+            _player.Meet(who.Name);   // 0x004A4B26 → 0x004321C0
+
+            var rows = new List<string>();
+            int hearAt = -1;
+            if (fluent) { hearAt = rows.Count; rows.Add("정보를 듣는다"); }
+            int duelAt = rows.Count;
+            rows.Add("일기토를 신청한다");
+
+            int at = ChoiceDialog.Ask(_view, "", rows, "떠난다");
+            if (at == duelAt) Duel(who, face);
+            else if (at == hearAt) HearFrom(who, face);
+            return;
+        }
+
+        // 고용 쪽(0x004A4BB0) — 말이 전혀 안 통하면 용건도 못 묻는다(0x00468F70).
+        if (!fluent)
         {
             TalkDialog.Say(_view, face, "", "무슨 말을 하는 건지, 전혀 모르겠군.");
             return;
@@ -1252,9 +1379,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         _player.Meet(who.Name);
 
         // 게임은 차림표를 <b>되풀이해</b> 낸다. 「정보를 듣는다」는 한 번 들으면 줄이 사라지고,
-        // 인물 판에서 중단하거나 자리·말 검사에서 물리면 차림표로 돌아온다.
+        // 자리·말 검사에서 물리면 차림표로 돌아온다. 인물 판을 물리면 창이 닫힌다(0x004A4D73).
+        // 앞 두 줄(정보 · 고용)이 다 감춰지면 창을 닫는다(0x004A4D8C).
         bool heard = false;
-        while (true)
+        while (!heard || hireable)
         {
             var rows = new List<string>();
             int hearAt = -1, hireAt = -1, duelAt = -1;
@@ -1269,17 +1397,24 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (at == duelAt) { Duel(who, face); return; }
             if (at == hearAt)
             {
-                // 게임은 이 사람 몫으로 대본이 넣어 둔 말(0x005AA278, 역사 항해자 대본 26 0A)이 살아 있으면 그것을,
-                // 없으면 <b>그 사람 고향 문화권의 소문</b>을 한 마디 한다(0x004A45E0 → 0x004A4790
-                // → 0x004A4630 갈래 0 → 0x004A3740).
-                _game.CatchUpMonths();
-                TalkDialog.Say(_view, face, "", _player.PersonLineOf(who.Index)
-                                                ?? TavernRumors.Of(HomeCulture(who.Index), _game.Random));
+                HearFrom(who, face);
                 heard = true;
                 continue;
             }
             if (at == hireAt && Hire(who, face)) return;
         }
+    }
+
+    /// <summary>
+    /// 인물에게 「정보를 듣는다」(<c>0x004A45E0</c>) — 이 사람 몫으로 대본이 넣어 둔 말(<c>0x005AA278</c>, 역사 항해자
+    /// 대본 26 0A)이 살아 있으면 그것을, 없으면 <b>그 사람 고향 문화권의 소문</b>을 한 마디 한다
+    /// (<c>0x004A4790</c> → <c>0x004A4630</c> 갈래 0 → <c>0x004A3740</c>).
+    /// </summary>
+    private void HearFrom(TavernRoster.Person who, uint[]? face)
+    {
+        _game.CatchUpMonths();
+        TalkDialog.Say(_view, face, "", _player.PersonLineOf(who.Index)
+                                        ?? TavernRumors.Of(HomeCulture(who.Index), _game.Random));
     }
 
     /// <summary>
@@ -1346,12 +1481,16 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 : $"{who.Name}{GameUi.Josa(who.Name, "이", "가")} 도망쳤다!";
             TalkDialog.Say(_view, _game.AideFace, "", fled);
 
-            // 쫓는 값은 제독 체력이지만 <b>부관 것이 더 크면 그것</b>이다(0x004A4964).
-            int chase = _player.AbilityOf(Ability.Body);
-            if (_player.MateInfoOf(_player.MateAt(0)) is { } chaser)
-                chase = Math.Max(chase, chaser.Body);
+            // 쫓는 값은 제독 체력 + 1 이지만 <b>부관 것이 더 크면 그것</b>이다(0x004A494B · 0x004A4964) —
+            // 부관 값에는 +1 이 안 붙는다.
+            int chase = _player.AbilityOf(Ability.Body) + 1;
+            if (_player.MateInfoOf(_player.MateAt(0)) is { } chaser && chaser.Body > chase)
+                chase = chaser.Body;
 
-            if (!Engine.Town.Duel.Caught(chase, who.Body, dice))
+            bool caught = Engine.Town.Duel.Caught(chase, who.Body, dice);
+            // 쫓는 동안 MPEFFECT 0 벌이 잡았는지를 인자로 돈다(0x004A4999 → 0x004A6120).
+            (_view as IGateStage)?.PlayEscape(caught);
+            if (!caught)
             {
                 // 0x004A49A6 — 부관이 있으면 부관이 이르고, 없으면 이름 없이 상자만 뜬다.
                 if (_game.AideFace is { } aide)
@@ -1809,8 +1948,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private const string Dumpling = "수수경단";
 
     /// <summary>
-    /// 「부하로 고용한다」. 인물 판에서 <b>결정</b>하고 자리·말 검사를 넘어 판정까지 갔으면 true —
-    /// 게임은 그때 붙든 못 붙든 차림표를 닫는다(<c>0x004A4BB0</c>).
+    /// 「부하로 고용한다」. 인물 판을 물렸거나, <b>결정</b>하고 자리·말 검사를 넘어 판정까지 갔으면 true —
+    /// 게임은 그때 붙든 못 붙든 차림표를 닫는다(<c>0x004A4BB0</c>). 자리·말 검사에서 물리면 false 라 차림표로 돌아간다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -1825,7 +1964,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private bool Hire(TavernRoster.Person who, uint[]? face)
     {
         var row = RowOf(who.Index);
-        if (!PersonInfoDialog.AskHire(_view, SheetOf(who), face)) return false;
+        // 인물 판에서 물리면 차림표째 닫는다(0x004A4D73 이 [ebp-0x10] 을 0 으로 둔다).
+        if (!PersonInfoDialog.AskHire(_view, SheetOf(who), face)) return true;
 
         if (!HasOpenSlot(row, anySlot: true))
         {
@@ -1878,6 +2018,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             _player.Spend(fee);
             // 됨됨이를 지금 베껴 둔다 — 나중에 인물정보를 낼 때 게임 세이브를 다시 안 뒤지게.
             _player.RememberMate(Tavern.MateInfoOf(who));
+            _player.Note(Player.TraceHire, who.Index);    // 0x0045345E — 행적에 고용을 적는다
             PlaceMate(who.Name);
             // 부하가 되면 술집 자리에서 빠진다(Sitting) — 사진 앞 손님도 다시 세운다.
             (_view as CityPicView)?.RefreshPhoto();
@@ -2215,17 +2356,31 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <summary>「포카를 권한다」 — 술집 주인과 카드 도박을 한다(<see cref="PokerDialog.Play"/>).</summary>
     public void PlayPoker() => Alone(() => PokerDialog.Play(_view, _game, _cultureNo));
 
+    /// <remarks>
+    /// 값은 <b>그 고장이 파는 술 가운데 하나를 무작위로</b> 골라 시세를 먹인 것이다(<c>0x0042F268</c> 의
+    /// <c>rand(술 수)</c> → <c>0x00429DC0</c> = 시세 x 술값 / 100, 적어도 1). 파는 술이 없으면 공짜다
+    /// (<c>0x0042F2D6</c>). 이 길은 술집의 「마셨다」 칸(<c>+0xB4</c>)을 안 세우므로 「정보를 듣는다」는
+    /// 여전히 제 술을 시켜야 열린다. 예전에는 늘 10닢에 그 칸까지 세웠다.
+    /// </remarks>
     public bool BuyDrink()
     {
-        if (_player.Gold < Tavern.DrinkPrice)
+        var drinks = _game.Drinks is { } table && _game.CityRows is { } rows
+            ? table.InRegion(rows.RegionOf(_cityId))
+            : [];
+        if (drinks.Count == 0) return true;
+
+        var drink = drinks[_game.Random.Next(drinks.Count)];
+        int price = _game.Rates.Of(_cityId) * drink.Price / 100;
+        if (drink.Price > 0 && price < 1) price = 1;
+
+        if (_player.Gold < price)
         {
-            // 한잔 사 주는 자리는 말이 다르다(0x0042F2A6) — 「돈 먼저 지불하게.」(0x0054AC98)는
+            // 한잔 사 주는 자리는 말이 다르다(0x0042F2A6, 0x0054AB68) — 「돈 먼저 지불하게.」(0x0054AC98)는
             // 제 술을 시킬 때의 말이다(0x0042F638).
             ConfirmDialog.Tell(_view, "공짜로 마시게 할 술은 없다!", face: HostFace());
             return false;
         }
-        _player.SetGold(_player.Gold - Tavern.DrinkPrice);
-        _drank = true;
+        _player.SetGold(_player.Gold - price);
         return true;
     }
 

@@ -1907,6 +1907,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 차례는 원본 그대로다(0x0047FC78~): 화면을 덮고 값을 치르고 서른 날을 보낸 뒤 밝히고,
         // 말을 조금 배우고(0x0047FAE0), 모항이면 능력이 오를 때가 있고(0x0047FB80), 일어난 말, HP 다.
         DayPass.Blackout(this, () => inn.Stay(_player, _cityId));
+        _player.Note(Player.TraceInnStay);   // 0x0047FCA8 — 행적에 숙박을 적는다
         TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
         HomeInnBonus();
         NoticeDialog.Show(this, Lodging.WakeWord(_random));

@@ -39,6 +39,13 @@ public sealed class BgmPlayer : IDisposable
     public const int TavernTrack = 22;
 
     /// <summary>
+    /// 여급과 맺어지는 자리의 곡 — 소리 1 이라 트랙으로는 3 이다. 설득이 90 을 넘어 여급이 먼저 물어 올 때
+    /// (<c>0x00465B1E</c>), 프로포즈(<c>0x00466162</c>), 혼인(<c>0x00465921</c>)이 틀고, 끝나면 술집 곡
+    /// (소리 <c>0x14</c>)으로 돌린다(<c>0x00465BBA</c> · <c>0x00466231</c>).
+    /// </summary>
+    public const int LoveTrack = 1 + SoundToTrack;
+
+    /// <summary>
     /// 일기토가 도는 동안의 곡 — 반란도 이 판으로 치르므로 반란 곡이기도 하다.
     /// </summary>
     /// <remarks>
@@ -209,6 +216,7 @@ public sealed class BgmPlayer : IDisposable
         (BattleTrack, "전투(해전·육상전)"),
         (GameOverTrack, "게임 오버"),
         (TavernTrack, "술집"),
+        (LoveTrack, "여급 청혼 · 혼인"),
         (DuelTrack, "일기토 · 반란"),
         (ChurchTrack, "교회"),
         (PalaceTrack, "왕궁(유럽 문화권)"),

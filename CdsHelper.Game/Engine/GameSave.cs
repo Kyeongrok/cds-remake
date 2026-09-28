@@ -209,6 +209,7 @@ public static class GameSave
         List<Support.Local.Models.Player.Rumor>? PersonLines = null,
         Dictionary<int, int>? CityBuildings = null, Dictionary<int, int>? NationStatus = null,
         List<int>? GiftedBarmaids = null, List<int>? RefusedBarmaids = null,
+        List<int>? MetBarmaids = null,
         int? Laps = null, Dictionary<string, int>? Purses = null,
         List<int>? Hidden = null,
         List<Player.Trace>? Traces = null,
@@ -317,6 +318,8 @@ public static class GameSave
                             // 여급 형편 — 선물을 받아 봤는지, 퇴짜를 놓았는지.
                             GiftedBarmaids: [.. player.GiftedBarmaids],
                             RefusedBarmaids: [.. player.RefusedBarmaids],
+                            // 낯을 튼 여급. 이 칸 앞의 세이브는 친밀도가 0 보다 큰 여급을 아는 사이로 연다.
+                            MetBarmaids: [.. player.MetBarmaids],
                             // 지구를 몇 바퀴 돌았는지. 이 칸 앞의 세이브는 0 바퀴로 연다.
                             Laps: player.Laps,
                             // 후원자 지갑. 이 칸 앞의 세이브는 재력 가득으로 연다.

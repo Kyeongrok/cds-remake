@@ -677,6 +677,20 @@ public sealed class DuelDialog : GameWindow
     /// </remarks>
     private void Clang() => Sound(SoundBank.ClashPart);
 
+    /// <summary>
+    /// 칼이 닿는 눈금(11, <c>[0x00572A74]</c>)에 나는 소리 — 회심의 한 수(<c>[+0x13C] == 1</c>)면 사운드 <b>0x49</b>,
+    /// 여느 맞힘이면 <b>0x4C</b> 다(<c>0x004A7984</c> · <c>0x004A7BF2</c>). 막힌 판(<c>[+0xD0] == 2</c>)은 소리가 없고,
+    /// 판을 끝내는 한 수(<c>[+0x148]</c> 에 진 쪽이 선 판)도 여기서는 안 내고 이기고 지는 소리에 맡긴다.
+    /// </summary>
+    private void HitSound(in Duel.Turn turn)
+    {
+        if (turn.Blow == Duel.Blow.Blocked || _duel.Over) return;
+        Sound((turn.Critical ? CriticalSoundId : HitSoundId) - CdsHelper.Support.Local.Helpers.WaveBank.FirstSoundId);
+    }
+
+    /// <summary>맞힘 소리(<c>0x4C</c>)와 회심 소리(<c>0x49</c>)의 사운드 ID.</summary>
+    private const int HitSoundId = 0x4C, CriticalSoundId = 0x49;
+
     /// <summary>효과음 한 자락. 묶음을 못 열면 조용히 넘어간다.</summary>
     private static void Sound(int part)
     {
@@ -732,7 +746,7 @@ public sealed class DuelDialog : GameWindow
 
         _stage.Play(mine, theirs, way, ticks,
                     onSay: () => { _myMove.Text = myName; _foeMove.Text = foeName; },
-                    onHurt: StartHurt,
+                    onHurt: () => { HitSound(turn); StartHurt(); },
                     onDone: () => Settle(turn));
     }
 
