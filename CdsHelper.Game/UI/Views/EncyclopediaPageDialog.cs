@@ -154,8 +154,11 @@ public sealed class EncyclopediaPageDialog : GameWindow
                                     LeftPageX, PageY));
         _layer.Children.Add(Picture(EncyclopediaArt.RightPage, RightPageX, PageY));
 
+        // 가운데 맞춤 폭은 글자 수가 아니라 <b>쪽 색인</b>으로 정한다 — 색인 10 밑이면 24, 아니면 32 다
+        // (0x004629D5 의 cmp [+0x1C0], 0xA). 그래서 10쪽(색인 9, 「-10-」)만 4점 오른쪽으로 치우친다.
         string number = $"-{_index + 1}-";
-        Ink(number, LeftPageX + (256 - number.Length * CellWidth) / 2, NumberY);
+        int numberWidth = _index < 10 ? 24 : 32;
+        Ink(number, LeftPageX + (256 - numberWidth) / 2, NumberY);
 
         bool reported = player.HasAnnounced(row.Id);
         bool hasArt = row.Movie >= 0 || row.Clip >= 0 || row.Picture >= 0;
