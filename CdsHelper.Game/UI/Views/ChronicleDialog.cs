@@ -176,7 +176,7 @@ public sealed class ChronicleDialog : GameWindow
                 rows.Add(new Row(found, player.Name, name, Reported: false));
             rows.Add(new Row(told, player.Name, name, Reported: true));
         }
-        Open(owner, rows, "연표", "아직 연표에 적을 것이 없다.");
+        Open(owner, rows, "연표");
     }
 
     /// <summary>
@@ -191,18 +191,17 @@ public sealed class ChronicleDialog : GameWindow
             if (player.FoundDateOf(id) is { } found) rows.Add(new Row(found, "", name, Reported: false));
             if (player.AnnouncedDateOf(id) is { } told) rows.Add(new Row(told, "", name, Reported: true));
         }
-        Open(owner, rows, "항해일지", "항해일지에 아직 적은 것이 없다.");
+        Open(owner, rows, "항해일지");
     }
 
     private static string NameOf(DiscoveryTable? table, int id) => table?.NameOf(id) ?? $"발견물 {id}";
 
-    private static void Open(Window owner, List<Row> rows, string caption, string whenEmpty)
+    /// <summary>
+    /// 창을 연다. <b>줄이 없어도 빈 책을 그대로 연다</b> — 게임은 줄 수를 안 보고 창을 세운다
+    /// (<c>0x00424590</c> · <c>0x004246C0</c> → <c>0x004241D0</c>). 따로 알리는 말도 없다.
+    /// </summary>
+    private static void Open(Window owner, List<Row> rows, string caption)
     {
-        if (rows.Count == 0)
-        {
-            NoticeDialog.Show(owner, whenEmpty);
-            return;
-        }
         new ChronicleDialog(rows, caption) { Owner = owner }.ShowDialog();
     }
 }
