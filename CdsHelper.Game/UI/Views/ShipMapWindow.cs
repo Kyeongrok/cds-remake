@@ -2527,6 +2527,8 @@ public sealed class ShipMapWindow : Window
             // 항해하다 알게 된 도시들. 판 27 앞의 세이브에는 없어 유럽 101곳만 아는 채로
             // 시작한다 — 원본을 처음 켠 것과 같다.
             _game.Player.RestoreKnownCities(saved.KnownCities);
+            // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
+            _game.Player.RestoreVisitedCities(saved.VisitedCities);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.
             _game.Player.RestoreCloseness(saved.Closeness);
@@ -6031,8 +6033,19 @@ public sealed class ShipMapWindow : Window
     /// 「도시좌표」(<c>0x004269F0</c>) — 가 본 도시를 골라 위도·경도를 듣는다.
     /// </summary>
     /// <remarks>
-    /// 가 본 곳이 열여섯 곳이 넘으면 문화권부터 고르고(맨 끝에 「전도시 일람」), 그 밑이면 바로 도시 목록이다.
+    /// 가 본 곳(도시 레코드 <c>+0x04</c> 의 <c>0x80</c>, <see cref="Support.Local.Models.Player.Visited"/>)이
+    /// 열여섯 곳 이상이면 문화권부터 고르고(맨 끝에 「전도시 일람」), 그 밑이면 바로 도시 목록이다.
     /// 측량사 자리에 사람이 있으면 <b>그 사람이 말하고</b>, 없으면 얼굴 없는 알림이다(<c>0x00426C6E</c>).
+    ///
+    /// 한 번 듣고 끝나지 않는다 — 좌표를 말한 뒤 <b>고르던 목록으로 돌아가</b> 취소할 때까지 돈다
+    /// (<c>0x00426D50</c> 이 <c>0x00426AC3</c> 으로 되돌린다).
+    /// <list type="bullet">
+    /// <item>도시 목록만 낼 때 — 목록을 다시 낸다. 취소하면 끝난다.</item>
+    /// <item>문화권의 도시 목록 — 문화권 창으로 돌아간다. 도시 목록을 취소해도 그렇다(<c>0x00426B78</c>).</item>
+    /// <item>「전도시 일람」 — 그 뒤로는 <b>전도시 목록에 머문다</b>(<c>[esp+0x1C]</c> = 1, <c>0x00426B8A</c>).
+    ///   거기서 취소하면 문화권 창으로 안 돌아가고 끝난다.</item>
+    /// </list>
+    /// 안내 글(<c>0x005333E0</c>)은 들어설 때 한 번만 낸다(<c>0x00426AB4</c>).
     /// </remarks>
     private void ShowCityCoordinates()
     {
@@ -6040,7 +6053,7 @@ public sealed class ShipMapWindow : Window
         var rows = _game.CityRows;
         var seen = new List<int>();
         for (int city = 0; city < CityExeTable.Count; city++)
-            if (player.Knows(city) && CityCoordinates.Of(rows, city) != null) seen.Add(city);
+            if (player.Visited(city) && CityCoordinates.Of(rows, city) != null) seen.Add(city);
 
         // 고를 도시가 없으면 말없이 물린다 — 원본(0x004269F0)에는 빈 목록을 알리는 말이 없다.
         if (seen.Count == 0) return;
@@ -6049,14 +6062,14 @@ public sealed class ShipMapWindow : Window
         _host.Paused = true;
         try
         {
-            bool guided = false;
+            bool byRegion = seen.Count >= CityCoordinates.AskRegionFrom;
+            if (byRegion) NoticeDialog.Show(this, CityCoordinates.Guide);
+
             while (true)
             {
                 var list = seen;
-                if (seen.Count >= CityCoordinates.AskRegionFrom)
+                if (byRegion)
                 {
-                    if (!guided) { guided = true; NoticeDialog.Show(this, CityCoordinates.Guide); }
-
                     var regions = seen.Select(c => rows?.CultureOf(c) ?? -1)
                                       .Where(r => r >= 0 && r < CityCoordinates.Regions.Length)
                                       .Distinct().Order().ToList();
@@ -6065,15 +6078,19 @@ public sealed class ShipMapWindow : Window
 
                     int at = ChoiceDialog.Ask(this, "", names);
                     if (at < 0) return;
-                    if (at < regions.Count)
-                        list = [.. seen.Where(c => rows?.CultureOf(c) == regions[at])];
+                    if (at >= regions.Count)
+                    {
+                        byRegion = false;           // 전도시 일람 — 이제부터는 전도시 목록에 머문다
+                        continue;
+                    }
+                    list = [.. seen.Where(c => rows?.CultureOf(c) == regions[at])];
                 }
 
                 int pick = ChoiceDialog.Ask(this, CityCoordinates.CityListTitle,
                                             [.. list.Select(_game.CityName)]);
                 if (pick < 0)
                 {
-                    if (seen.Count >= CityCoordinates.AskRegionFrom) continue;    // 도시 목록만 낼 때는 그대로 끝난다
+                    if (byRegion) continue;         // 문화권 창으로 돌아간다
                     return;
                 }
 
@@ -6086,8 +6103,6 @@ public sealed class ShipMapWindow : Window
                     TalkDialog.Say(this, _game.Faces?.TryGetBgra(who.Face, female: false), "",
                                    $"{name}{NameToken.Of(name, 9)} {spot.Words}");
                 else NoticeDialog.Show(this, $"{name}  {spot.Words}");
-
-                if (seen.Count < CityCoordinates.AskRegionFrom) return;
             }
         }
         finally

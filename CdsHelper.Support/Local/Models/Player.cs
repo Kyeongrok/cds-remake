@@ -1322,6 +1322,32 @@ public sealed class Player
         foreach (int city in cities ?? []) _knownCities.Add(city);
     }
 
+    private readonly HashSet<int> _visitedCities = [];
+
+    /// <summary>
+    /// <b>들어가 본 도시</b> — 바다 커맨드 「도시좌표」가 고르게 하는 도시들.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 도시 레코드 <c>+0x04</c> 의 비트 <c>0x80</c> 으로 든다. 도시 화면을 열 때
+    /// 켜고(<c>0x004928B5</c>) 「도시좌표」(<c>0x00426A29</c> · <c>0x00426B3E</c>)만 읽는다.
+    /// 도시 표의 처음 낱말(<c>+0x62</c>)에는 이 비트가 선 곳이 하나도 없다 — 알기만 하는 도시
+    /// (비트 0)와 다르다.
+    /// </remarks>
+    public IReadOnlyCollection<int> VisitedCities => _visitedCities;
+
+    /// <summary>들어가 본 도시인지.</summary>
+    public bool Visited(int city) => _visitedCities.Contains(city);
+
+    /// <summary>
+    /// 세이브에서 들어가 본 도시를 되돌린다. 이 칸 앞의 세이브는 없으므로 지금 들어 있는 도시만 남는다.
+    /// </summary>
+    public void RestoreVisitedCities(IEnumerable<int>? cities)
+    {
+        _visitedCities.Clear();
+        foreach (int city in cities ?? []) _visitedCities.Add(city);
+        if (CityId >= 0) _visitedCities.Add(CityId);
+    }
+
     /// <summary>그 적대 도시의 문이 이미 열렸는지.</summary>
     public bool IsGateOpen(int city) => _openedGates.Contains(city);
 
@@ -1944,6 +1970,8 @@ public sealed class Player
         CityName = cityId >= 0 ? cityName : "";
         // 마을에 들면 항해일이 끊긴다 — 게임도 입항하면 0x5A4D40 을 도로 0 으로 둔다.
         if (cityId >= 0) DaysAtSea = 0;
+        // 들어가 본 도시로 적는다 — 게임도 도시 화면을 열며 레코드 +0x04 에 0x80 을 켠다(0x004928B5).
+        if (cityId >= 0) _visitedCities.Add(cityId);
     }
 
     /// <summary>소지금(닢).</summary>
