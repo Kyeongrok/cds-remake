@@ -644,19 +644,23 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
                 // 줄은 <b>늘 셋</b>이다 — 돛이 없는 마스트도 「없음」으로 나온다(0x00494FA5 의
                 // 되돌이가 0x0056E260 의 세 이름을 다 돈다). 끝에 「그만둔다」가 붙는다(0x005316C8).
                 // 창은 제목 없는 <b>명령 창</b>이고(0x00495055 → 0x00469A70), 줄 글은 「%12s %s」(0x0056E294)다.
+                // 셋째 줄(선미마스트)은 <b>마스트가 셋일 때만</b> 켜진다(0x00495034 — cmp 마스트수, 2 / jle).
+                // 그래서 돛이 없는 마스트는 고를 길이 없다 — 예전에는 빈 선미를 골라 돛 값(/20)에
+                // 사각돛을 달 수 있어, 마스트 추가(/5 · 적재용량 −25 · 승원 +2)를 싸게 건너뛰었다.
                 Say("어느 마스트의 돛을 바꿀건가?");
-                List<string> rows =
+                List<(string Text, bool On)> rows =
                 [
                     .. Enumerable.Range(0, Ship.MastSlots)
-                                 .Select(i => $"{PadLeft(Ship.MastNames[i], 12)} {Ship.SailNames[ship.Sails[i]]}"),
+                                 .Select(i => ($"{PadLeft(Ship.MastNames[i], 12)} {Ship.SailNames[ship.Sails[i]]}",
+                                               i < 2 || masts > 2)),
+                    ("그만둔다", true),
                 ];
-                int pick = ChoiceDialog.Ask(owner, "", rows, "그만둔다");
-                if (pick < 0) break;
+                int pick = ChoiceDialog.Pick(owner, "", rows);
+                if (pick < 0 || pick >= Ship.MastSlots) break;
                 mast = pick;
             }
 
-            // 물음은 <b>삼각돛일 때만</b> 「삼각→사각」이다 — 돛이 없어도 「사각→삼각」을
-            // 묻고는 사각돛을 단다(0x0049507C 와 0x00495100 이 어긋난 채다).
+            // 물음은 <b>삼각돛일 때만</b> 「삼각→사각」이고, 그 밖이면 「사각→삼각」이다(0x0049507C).
             bool lateen = ship.Sails[mast] == Ship.Lateen;
             int cost = Shipyard.SailCost(ship, _rate);
             if (Ask(lateen
