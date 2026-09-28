@@ -1487,7 +1487,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                          hp: ship.Hp, crew: shares.ElementAtOrDefault(at), minCrew: ship.Crew,
                          gun: ship.Guns > 0 ? ship.Gun : -1, figurehead: ship.Figurehead,
                          formation: player.Formation,
-                         hullName: ship.Hull.Name, cargo: ship.Capacity, guns: ship.Guns, maxHp: ship.MaxHp);
+                         // 배 칸 +0x300 은 포탑을 뺀 적재다(0x0044C910 = [+0x44] − [+0x54]) — 충돌 피해가 이 값을 쓴다.
+                         hullName: ship.Hull.Name, cargo: ship.UsableCapacity, guns: ship.Guns, maxHp: ship.MaxHp);
             ours.Add((placed, ship));
         }
 
@@ -1512,7 +1513,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             var e = fleet[slot];
             battle.Place(false, slot, foe.Name, e.Speed, e.Sails,
                          art: e.Hull, hp: e.Hp, crew: e.Crew, minCrew: e.MinCrew, gun: e.Gun,
-                         hullName: e.HullName, cargo: e.Capacity, guns: e.Guns,
+                         // 적 배도 +0x300 은 적재 − 포탑이고, 포탑 수 [+0x54] 에는 대포 수가 든다(0x00441674).
+                         hullName: e.HullName, cargo: Math.Max(0, e.Capacity - e.Guns), guns: e.Guns,
                          formation: enemyFormation, maxHp: e.Hp);
         }
 
