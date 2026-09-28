@@ -20,7 +20,7 @@ namespace CdsHelper.Game.Engine.Sea;
 ///     효율 = 돛효율표[조합(배+0x68) * 16 + rel]
 ///     v = 추진력(배+0x38) * (풍속 + 1) * 효율 / 100
 ///     if 필요선원(배+0x30 + 10) &gt; 선원(배+0x34):
-///         v = min(선원 * v / 필요, (v+1)/2)            ; 반토막 아래로
+///         v = max(선원 * v / 필요, (v+1)/2)            ; 반토막 밑으로는 안 떨어진다
 ///     합 += v ; 수 += 1
 ///     기함이면 기함v = v
 ///
@@ -117,10 +117,12 @@ public static class Sailing
             var ship = player.Ships[i];
             int v = ship.Speed * (windSpeed + 1) * sails.Efficiency(ship.Sails, relative) / 100;
 
-            // 사람이 모자라면 반토막 아래로 떨어진다.
+            // 사람이 모자라면 느려지되 <b>반토막 밑으로는 안 떨어진다</b> — 게임은 두 값 가운데 큰 쪽을
+            // 남긴다(0x0048BE1C: 선원비례값 &lt; (v+1)/2 이면 (v+1)/2). 예전에는 작은 쪽을 골라
+            // 모자랄수록 반보다 더 느려졌다.
             int need = ship.Crew;
             int aboard = CrewOn(player, i);
-            if (need > aboard) v = Math.Min(aboard * v / Math.Max(1, need), (v + 1) / 2);
+            if (need > aboard) v = Math.Max(aboard * v / Math.Max(1, need), (v + 1) / 2);
 
             // 0x0048BE22 의 「풍속 0 이고 v 0 이면 1」 받침은 위에서 무풍이 먼저 빠져나가 닿지 않는다.
             // 바람이 있으면 받쳐 주지 않는다 — 돛 효율이 0 인 각도(정면 역풍)에서는 정말 안 나간다.
