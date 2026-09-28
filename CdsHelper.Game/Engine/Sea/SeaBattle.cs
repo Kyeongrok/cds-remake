@@ -900,10 +900,15 @@ public sealed class SeaBattle
         return false;
     }
 
-    /// <summary>모드 4 — 노릴 배가 없으면 상대 기함(0번)에 |dX|+|dY| 가 가장 작아지는 길.</summary>
+    /// <summary>모드 4 — 노릴 배가 없으면 <b>0번 배</b>(아군 기함)에 |dX|+|dY| 가 가장 작아지는 길.</summary>
+    /// <remarks>
+    /// 셈 자리가 <c>[해전+0x2E8]</c>·<c>[+0x2EC]</c>, 곧 0번 배 자리로 박혀 있다(<c>0x0043B2E1</c>~<c>0x0043B329</c>).
+    /// 적에게는 상대 기함이지만 위임한 아군에게는 <b>제 기함</b>이다 — 원본 그대로 옮긴다. 상태도 안 본다.
+    /// 예전에는 위임한 아군이 적 기함(8번) 쪽으로 갔다.
+    /// </remarks>
     private List<Move>? TowardFlagship(Ship ship, IReadOnlyList<Ship> foes)
     {
-        var flag = foes.FirstOrDefault(f => f.Flagship) ?? foes.FirstOrDefault();
+        var flag = At(0);
         if (flag == null) return null;
         List<Move>? pick = null;
         int best = int.MaxValue;
