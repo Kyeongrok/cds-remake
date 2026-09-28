@@ -108,6 +108,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private readonly uint[]? _face;
     private readonly SoundBank? _sfx;
 
+    /// <summary>배경음악 — 승패 소리를 내는 동안 멈춘다(<see cref="FinishSound"/>).</summary>
+    private BgmPlayer? _bgm;
+
     /// <summary>포격 연출(포탄·폭발·물기둥·피해 숫자)을 얹는 층.</summary>
     private readonly Canvas _fx = new() { IsHitTestVisible = false };
 
@@ -854,8 +857,24 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     ///                      → 되찾은 배(레코드는 싸움 전 값) · 나포선이 있으면 들임 차림표   → 적이 달아남
     /// </code>
     /// 값 치르기(<see cref="_settle"/>)와 들임·편성 창을 판 위에서 돌리고 닫는다 — 게임도 판을 닫기 전에 띄운다.
-    /// 짐 창(<c>0x004879A0</c>, 빼앗은 보급품·교역품)은 들임 차림표 뒤에 뜬다(<see cref="LootDialog"/>). 음악을 끄고 켜는 것은 없다.
+    /// 짐 창(<c>0x004879A0</c>, 빼앗은 보급품·교역품)은 들임 차림표 뒤에 뜬다(<see cref="LootDialog"/>).
+    /// 승패 소리를 내는 동안은 곡을 멈췄다 잇는다(<see cref="FinishSound"/>).
     /// </remarks>
+    /// <summary>
+    /// 승패 소리 — 곡을 멈추고(CDAudioPause) 소리를 낸 뒤 기다렸다가 곡을 잇는다(CDAudioResume).
+    /// </summary>
+    /// <remarks>
+    /// 패배 <c>0x004351BF</c>~<c>0x004351E8</c>, 승리 <c>0x004352A5</c>~<c>0x004352CB</c>,
+    /// 적 퇴각 <c>0x00435F36</c>~<c>0x00435F5C</c>. 예전에는 곡이 그대로 돌아 소리에 겹쳤다.
+    /// </remarks>
+    private void FinishSound(int part, int ticks)
+    {
+        _bgm?.Pause();
+        _sfx?.Play(part);
+        Wait(Tick * ticks);
+        _bgm?.Resume();
+    }
+
     private void Finish()
     {
         Result = OutcomeOf(_battle);
@@ -864,15 +883,13 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         switch (Result)
         {
             case Outcome.Defeated:
-                _sfx?.Play(LosePart);
-                Wait(Tick * LoseTicks);
+                FinishSound(LosePart, LoseTicks);
                 ConfirmDialog.Tell(this, _battle.TauntWord(), BattleTitle, _foeFace);
                 _settle?.Invoke(this, report);
                 break;
 
             case Outcome.Won:
-                _sfx?.Play(WinPart);
-                Wait(Tick * WinTicks);
+                FinishSound(WinPart, WinTicks);
                 // 괴물은 문구가 따로다(0x004352DC).
                 Say(_battle.Monster ? _battle.MonsterWonWord() : _battle.WonWord(_foe.Name));
                 ConfirmDialog.Tell(this, _battle.BeatenWord(), BattleTitle, _foeFace);
@@ -883,8 +900,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 break;
 
             case Outcome.EnemyRetreated:
-                _sfx?.Play(WinPart);
-                Wait(Tick * WinTicks);
+                FinishSound(WinPart, WinTicks);
                 Say(_battle.FoeFledWord(_foe.Name));
                 _settle?.Invoke(this, report);
                 WriteBack(Result);
@@ -1480,6 +1496,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                                          player, ours, duel, game, rng)
         {
             Owner = owner,
+            _bgm = bgm,
         };
         // 싸우는 동안은 전투 곡(28)이 돈다 — 육상전과 같은 곡이다. 끝나면 돌던 곡으로 되돌린다.
         int was = bgm?.Track ?? -1;

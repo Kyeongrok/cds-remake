@@ -352,6 +352,21 @@ public sealed class BgmPlayer : IDisposable
 
     private double _volume = 1;
 
+    /// <summary>
+    /// 곡을 그 자리에서 멈춘다 — <see cref="Resume"/> 이 멈춘 자리부터 잇는다. 게임의 CDAudioPause
+    /// (<c>0x00422B50</c> → koeicda.dll)다. 해전이 끝나 승패 소리를 낼 동안 쓴다.
+    /// </summary>
+    public void Pause()
+    {
+        if (_track >= 0) _player.Pause();
+    }
+
+    /// <summary>멈춘 곡을 잇는다 — 게임의 CDAudioResume(<c>0x00422B90</c>).</summary>
+    public void Resume()
+    {
+        if (_track >= 0 && _enabled) _player.Play();
+    }
+
     public void Stop()
     {
         _player.Stop();
