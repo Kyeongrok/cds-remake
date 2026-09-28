@@ -554,6 +554,8 @@ public sealed class DisevRunner
             case DisevCall.BuildingGone:                                             // 28 10 (0x00407A2C)
                 return !(_game.CityRows?.HasBuilding(I("City"), I("Building")) ?? true);
             // 5F · 60 — 도시 밖(제독 vt+0x2C, 17 08 이 맥락 없이 쓰는 지금 도시)이고 바다·뭍이면(0x00407E38 · 0x00407E5A).
+            // 뭍은 [0x005B61B4] — <b>상륙해 대원이 뭍을 걷는 중</b>인 깃발이다. 성문으로 나서면(0x004936A8) ·
+            // 해안 「상륙」 차림표(0x0048E710 → 0x0048E7B8)에서 1 이 되고 승선하면 0 이 된다(0x004936D4).
             case DisevCall.LeftCityBySea: return player.CityId < 0 && !_event.OnLand;
             case DisevCall.LeftCityOnLand: return player.CityId < 0 && _event.OnLand;
             case DisevCall.NoContract: return player.Contract == null;               // 5A
@@ -1857,8 +1859,8 @@ public sealed class DisevRunner
 /// <param name="Kind">갈래(1~5).</param>
 /// <param name="City">도시. 모르면 −1.</param>
 /// <param name="Building">건물 코드. 모르면 −1.</param>
-/// <param name="Command">고른 명령 줄(갈래 4). 모르면 −1.</param>
-/// <param name="OnLand">뭍에 올라 있는지(<c>0x005B61B4</c>) — 조건 5F · 60 이 본다.</param>
+/// <param name="Command">고른 명령 번호(갈래 4) — 숨은 줄까지 센 차림표 표의 자리다(<c>Menu.TownMenu</c>). 모르면 −1.</param>
+/// <param name="OnLand">상륙해 뭍을 걷는 중인지(<c>0x005B61B4</c> — 성문으로 나서면 1, 승선하면 0) — 조건 5F · 60 이 본다.</param>
 public readonly record struct DisevEvent(int Kind, int City = -1, int Building = -1, int Command = -1, bool OnLand = false)
 {
     public const int CityKind = 1, LeftCityKind = 2, BuildingKind = 3, CommandKind = 4, SponsorLeftKind = 5;
