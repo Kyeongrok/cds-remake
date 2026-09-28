@@ -53,11 +53,23 @@ public sealed class TowerPuzzle
 
         // 판자마다 기둥을 굴린다. 큰 것이 밑에 가게 기둥마다 추려 쌓는다 —
         // 안 그러면 처음부터 규칙을 어긴 판이 나온다.
-        for (int plank = 1; plank <= Planks; plank++)
-            _peg[rng.Next(Pegs)].Add(plank);
+        //
+        // <b>쉬운 판은 다시 굴린다</b> — 0x004312D5~0x00431385 가 최소 수를 [+0x14C] 에 세고, 10 수가 안 되면
+        // (이미 다 모인 판 포함) 0x0043138E 에서 걸려 0x00431284 로 돌아간다. 예전에는 한 번 굴린 판을 그대로 써
+        // 판자 넷이면 처음부터 다 모인 판이나 몇 수면 끝나는 판이 흔했다.
+        do
+        {
+            foreach (var peg in _peg) peg.Clear();
+            for (int plank = 1; plank <= Planks; plank++)
+                _peg[rng.Next(Pegs)].Add(plank);
 
-        foreach (var peg in _peg) peg.Sort((a, b) => b.CompareTo(a));
+            foreach (var peg in _peg) peg.Sort((a, b) => b.CompareTo(a));
+        }
+        while (Shortest() < LeastShortest);
     }
+
+    /// <summary>이보다 적은 수로 풀리는 판은 다시 굴린다(<c>0x0043138E</c> 의 <c>cmp 0xA</c>).</summary>
+    private const int LeastShortest = 10;
 
     /// <summary>그 기둥에 쌓인 판자. 앞이 밑(큰 것)이다.</summary>
     public IReadOnlyList<int> Stack(int peg) => _peg[peg];
