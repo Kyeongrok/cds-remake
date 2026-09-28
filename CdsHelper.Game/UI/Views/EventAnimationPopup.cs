@@ -114,6 +114,7 @@ internal sealed class EventAnimationPopup : Window
             EventAnimation.Iceberg => new IcebergScene(),
             EventAnimation.Whale => new WhaleScene(),
             EventAnimation.Dolphin => new DolphinScene(),
+            EventAnimation.FlyingFish => new FlyingFishScene(),
             _ => null,
         };
         if (play == null || !play.Load(anims)) return;
@@ -810,6 +811,65 @@ internal sealed class EventAnimationPopup : Window
             }
             if (g >= 0 && g < _school.Length) draws.Add(new Draw(_school[g], _x1, _y1));
             _x1 += _w / -90;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 21 날치 — 날치 떼 둘이 물 위로 튀어 오르며 왼쪽으로 날아간다(<c>0x00418EA0</c>, 객체 <c>0x0061D788</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x004190A0  파트 0x18, 336 x 4700(336x100 마흔일곱 장), 팔레트 0x31 · 여는 참에 소리 0x34
+    ///   0x00418F80  첫자리  앞 떼 x = W − 336 · y = 함대 위 ≤ H/2 면 H/2, 아니면 H/2 − 150
+    ///               뱃머리 0~2 · 14~15 이고 함대 위 &gt; H/2 면 함대 위 − 200 · 5~11 이고 ≤ H/2 면 함대 위 + 48
+    ///               뒤 떼 = 앞 떼 + (−100, 80)
+    ///   떼 한 걸음(0x00418ED0) — 떼마다 제 걸음 n
+    ///     n &lt; 12 장 n + 24 · n &lt; 36 장 n − 12 · n &lt; 47 장 n · 47 이면 안 그리고 끝을 낸다
+    ///     그린 뒤 x += W / −100(앞) · W / −150(뒤)
+    ///   뒤 떼는 걸음 21 부터 나서고, 장면의 끝은 뒤 떼가 낸다 — 끝에 0x34 를 끈다
+    /// </code>
+    /// </remarks>
+    private sealed class FlyingFishScene : Scene
+    {
+        private const int FrameW = 0x150, FrameH = 0x64, Count = 0x2F;
+
+        public override int SoundPart => 0x34 - WaveBank.FirstSoundId;
+
+        private BitmapSource[] _art = [];
+        private int _w;
+        private readonly int[] _x = new int[2], _y = new int[2], _n = new int[2];
+
+        public override bool Load(EventAnimation anims)
+        {
+            _art = Frames(anims, 0x18, FrameW, FrameH, 0x31) ?? [];
+            return _art.Length >= Count;
+        }
+
+        public override void Start(int w, int h, Point? ship, Random rng)
+        {
+            _w = w;
+            _x[0] = w - FrameW;
+            _y[0] = SeaBeastY(h, ship, Heading, above: 0x96, below: 0x30, upperRange: 2, far: 0xC8);
+            _x[1] = _x[0] - 0x64;
+            _y[1] = _y[0] + 0x50;
+            _n[0] = _n[1] = 0;
+        }
+
+        public override bool Step(int c, List<Draw> draws)
+        {
+            School(0, draws);
+            return c > 0x14 && School(1, draws);
+        }
+
+        private bool School(int i, List<Draw> draws)
+        {
+            int n = _n[i];
+            if (n >= Count) return true;
+            int f = n < 12 ? n + 24 : n < 36 ? n - 12 : n;
+            draws.Add(new Draw(_art[f], _x[i], _y[i]));
+            _x[i] += _w / (i == 0 ? -100 : -150);
+            _n[i]++;
             return false;
         }
     }
