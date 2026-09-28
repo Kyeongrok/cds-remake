@@ -1430,6 +1430,13 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     public void PlayHeart(bool won) =>
         PlayEffect(EffectAnim.Heart, [.. Plead, won ? Granted : Refused]);
 
+    /// <summary>
+    /// 굴린 결과대로 MPEFFECT 한 벌을 원본 차례(<see cref="EffectAnim.Frames"/>)와 참으로 돌린다
+    /// (<c>0x004A6140(벌, 결과, 소리)</c>).
+    /// </summary>
+    public void PlayMpEffect(int anim, bool won) =>
+        PlayEffect(anim, EffectAnim.Frames(anim, won), EffectPopup.SpanOf(anim), EffectPopup.SoundOf(anim, won));
+
     // ── 성문 앞 무대 — 배로 닿아 항구에서 마을로 들다 막혔을 때, 성문 장면 대신 이 그림 위에서 돈다 ──
 
     /// <summary>교섭하는 하트 — 성문 쪽 차례(<see cref="EffectAnim.HeartFrames"/>)와 참(<see cref="GateScene.HeartSpan"/>)이다.</summary>

@@ -860,6 +860,10 @@ public sealed class DisevRunner
                     _ => null,
                 };
                 if (value is { } v) _result = _game.Random.Next(100) <= v + 1;
+                // 굴린 결과를 MPEFFECT 로 보인다(0x0040A8F4 뜀표 0x0040C394) — 무력 6 은 대포(0x0040A932,
+                // 소리 0x2A·0x2B), 운 18 은 동전(0x0040A95F), 지력 21 은 서기(0x0040A98C). 신앙심 23 은 없다.
+                int anim = I("Stat") switch { 6 => EffectAnim.Cannon, 18 => EffectAnim.Coin, 21 => EffectAnim.Scribe, _ => -1 };
+                if (anim >= 0 && value != null) EffectPopup.PlayOn(_owner, _game, anim, _result);
                 return null;
             }
 
