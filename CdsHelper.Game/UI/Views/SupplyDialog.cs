@@ -648,7 +648,7 @@ public sealed class SupplyDialog : GameWindow
         Close();
     }
 
-    /// <summary>보급 화면을 연다. 배가 없으면 실을 데가 없다.</summary>
+    /// <summary>보급 화면을 연다. 배가 없으면 아무것도 안 한다.</summary>
     /// <param name="cityFlags">
     /// 그 도시 형편 낱말 — 비트 8 이면 탄약을 팔고(<c>0x0040EC40</c>), 비트 0x40 이면 물이 0 닢이다(<c>0x00493F27</c>).
     /// </param>
@@ -661,11 +661,9 @@ public sealed class SupplyDialog : GameWindow
     public static void Show(Window owner, Player player, int rate = 100, int cityFlags = AmmoBit,
                             uint[]? mateFace = null, Func<Player.Cargo, (string Name, string Origin)>? cargoText = null)
     {
-        if (player.Ships.Count == 0)
-        {
-            GameDialog.Show(owner, "실을 배가 없지 않은가.");
-            return;
-        }
+        // 배가 없으면 조용히 물린다. 게임은 항구 차림표의 보급 줄을 배 · 선원이 있어야 켜므로(0x00476CE0)
+        // 여기 닿는 말이 없다 — EXE 에 없는 말을 지어내지 않는다.
+        if (player.Ships.Count == 0) return;
         var dialog = new SupplyDialog(player, rate, cityFlags, cargoText) { Owner = owner };
         dialog.Last();
         if (dialog.Weight > player.Tonnage || dialog.Barrels > player.Capacity) dialog.Fill();
