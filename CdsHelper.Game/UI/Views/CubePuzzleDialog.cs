@@ -543,7 +543,9 @@ internal sealed class CubePuzzleDialog : GameWindow
         Explain(owner);
 
         bool paid = false;
-        while (true)
+        // 떨어지면 <b>한 판만</b> 더 준다 — 0x0049B3C0 이 알림 뒤 0x0049B310 으로 jmp 해 두 번째 판의 결과를
+        // 그대로 돌려준다. 예전에는 떨어질 때마다 「마지막 찬스다!」를 띄우고 끝없이 다시 깔았다.
+        for (int round = 0; ; round++)
         {
             var dialog = new CubePuzzleDialog(rng) { Owner = owner };
 
@@ -567,6 +569,7 @@ internal sealed class CubePuzzleDialog : GameWindow
                 if (paid && dialog._game.Over == true) player.Earn(CubePuzzle.Prize);
                 return;
             }
+            if (round > 0) return;   // 두 번째 판에서도 떨어졌다
 
             // 떨어져도 끝이 아니다 — 아래층이 있었다며 판을 새로 깔아 준다(0x0049B3C0).
             NoticeDialog.Show(owner,
