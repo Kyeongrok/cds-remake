@@ -79,7 +79,7 @@ public sealed class SeaBattle
         public int MaxHp { get; init; }
         /// <summary>승원(<c>+0x308</c>).</summary>
         public int Crew { get; internal set; }
-        /// <summary>필요승원 — 적이 물러설지 볼 때 <c>선박표[0x4FC214]+10</c> 과 견준다.</summary>
+        /// <summary>필요승원 = <c>선박표[0x4FC214]+10</c>(선체표 +0x34 + 10) — 적이 물러설지 볼 때 승원과 견준다.</summary>
         public int MinCrew { get; init; }
         /// <summary>대포 갈래(−1 없음 · 0 세이커 · 1 캘버린 · 2 페리에 · 3 카논).</summary>
         public int Gun { get; init; } = -1;
@@ -716,7 +716,7 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 물러설 배인지 — 내구 10 이하, 승원이 필요승원+10 이하, 또는 아군 수/3 이 적 수 이상.
+    /// 물러설 배인지 — 내구 10 이하, 승원이 필요승원(선체표 +0x34 + 10) 이하, 또는 아군 수/3 이 적 수 이상.
     /// </summary>
     /// <remarks>
     /// <b>괴물은 잠수해 있을 때만</b> 물러설 마음을 먹는다 — 내 배 가운데 격침·나포된 것이
@@ -745,7 +745,9 @@ public sealed class SeaBattle
         int theirs = Ships.Count(s => !s.Mine && s.CanAct);
         int enemyCount = mine ? ours : theirs;      // 배의 편
         int opposing = mine ? theirs : ours;        // 상대 편
-        return ship.Hp <= 10 || ship.Crew <= ship.MinCrew + 10 || opposing / 3 >= enemyCount;
+        // 승원 문턱은 선체표 +0x34 에 10 을 더한 값이다(0x0043B866~0x0043B88A 의 [0x4FC214+종류*64]+10 >= 승원).
+        // MinCrew 가 이미 그 값(필요승원 = +0x34 + 10)이라 더 얹지 않는다 — 예전에는 10 을 또 더해 필요승원보다 10명 많을 때 벌써 물러섰다.
+        return ship.Hp <= 10 || ship.Crew <= ship.MinCrew || opposing / 3 >= enemyCount;
     }
 
     /// <summary>
