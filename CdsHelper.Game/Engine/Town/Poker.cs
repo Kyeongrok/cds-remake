@@ -251,17 +251,23 @@ public sealed class Poker
     /// 없으면 <see cref="NoCard"/>.
     /// </summary>
     /// <remarks>
-    /// 오름차순으로 놓고 꼭대기부터 짝을 찾는다. 짝 둘 중 <b>무늬가 높은 쪽</b>을 낸다 —
-    /// 원본이 어느 장을 내는지는 확인하지 못했다(무승부 가르기의 무늬 비교에만 영향이 있다).
+    /// <b>끗수만 보는</b> 선택 정렬(<c>0x0045A630</c>)로 오름차순에 놓고 꼭대기부터 짝을 찾아
+    /// 짝의 <b>윗장</b>(<c>[i+1]</c>)을 낸다. 같은 끗수 둘의 앞뒤는 무늬가 아니라 패가 놓인 차례로
+    /// 갈리므로, 같은 끗수 페어끼리 무늬로 가를 때(<c>0x00403142</c>) 어느 무늬가 나올지도 차례에 달린다.
+    /// 두 장 아래면 <c>0x0045A8B0</c> 이 0 을 낸다.
+    /// <para>
+    /// 원본의 흠 하나는 옮기지 않는다 — <c>0x0045A8B0</c> 은 앞 k 장만 줄 세워야 할 안쪽 고리를 5 까지 돌려,
+    /// 부른 쪽이 k 장만 베껴 둔 버퍼 뒤의 <b>스택 쓰레기 바이트</b>까지 끌어들인다(<c>0x00403E61</c> ·
+    /// <c>0x004058CE</c>). 값이 그때그때 달라 옮길 수 없으므로 앞 k 장만 줄 세운다.
+    /// </para>
     /// </remarks>
     public static byte HighestPair(ReadOnlySpan<byte> cards, int k)
     {
-        Span<byte> c = stackalloc byte[HandSize];
-        cards[..k].CopyTo(c);
-        var s = c[..k];
-        SortByKey(s);
-        for (int i = k - 1; i > 0; i--)
-            if (RankOf(s[i]) == RankOf(s[i - 1])) return s[i];
+        if (k < 2) return 0;
+        byte[] s = cards[..k].ToArray();
+        SortByRank(s);
+        for (int i = k - 2; i >= 0; i--)
+            if (RankOf(s[i]) == RankOf(s[i + 1])) return s[i + 1];
         return NoCard;
     }
 
