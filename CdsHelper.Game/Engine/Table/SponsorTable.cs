@@ -171,6 +171,13 @@ public sealed class SponsorTable
     }
 
     /// <summary>
+    /// 그 해에 그 사람이 제 자리의 <b>현역</b>인지(<c>vtbl[0x38]</c> = <c>0x004ADD70</c>) — 나와 있고, 같은 자리에
+    /// 더 늦게 나온 사람이 없다. 물러났거나 아직 안 나왔으면 거짓이다.
+    /// </summary>
+    public bool IsSeated(Sponsor sponsor, int year) =>
+        SeatedAt(sponsor.City, SeatOf(sponsor), year)?.Name == sponsor.Name;
+
+    /// <summary>
     /// 앉는 건물 — 표 값(<c>+0x28</c>)에 우리가 고친 자리를 덮는다.
     /// </summary>
     /// <remarks>
