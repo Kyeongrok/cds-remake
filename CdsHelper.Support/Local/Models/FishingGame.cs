@@ -257,8 +257,10 @@ public sealed class FishingGame
 
             // <b>가는 쪽은 굴리지 않는다</b> — 한쪽으로 두고 그 줄의 걸음 수만큼 미리
             // 걷힌다(0x0047B961~0x0047B9E8). 벽이나 오징어·낙지에 닿으면 돌아선다.
+            // 미리 걷힐 때는 <b>상태 1 이 왼쪽</b>이다(0x0047B976 이 칸−1 을 보고 dec) — 헤엄칠 때(0x0047B3EC,
+            // 칸+1 · inc)와 거꾸로다. 예전에는 헤엄과 같은 쪽으로 걷혀 바늘이 닿을 때 잡어 자리가 어긋났다.
             var fish = new Swimmer(at, 1, rng.Next(5) >= 4 ? 0 : 1);
-            for (int step = 0; step < lead[at / Columns]; step++) fish = Ahead(fish);
+            for (int step = 0; step < lead[at / Columns]; step++) fish = Lead(fish);
 
             _swim[k] = fish;
         }
@@ -284,6 +286,22 @@ public sealed class FishingGame
     private void Swim()
     {
         for (int k = 0; k < Swimmers; k++) _swim[k] = Ahead(_swim[k]);
+    }
+
+    /// <summary>
+    /// 놓을 때 미리 걷히는 한 걸음(<c>0x0047B971</c>~<c>0x0047B9E8</c>) — <see cref="Ahead"/> 와 쪽이 거꾸로다.
+    /// 상태 1 은 왼쪽(칸−1), 2 는 오른쪽이고, 막히면 자리는 두고 돌아선다.
+    /// </summary>
+    private Swimmer Lead(Swimmer fish)
+    {
+        int next = fish.Cell + (fish.Way == 1 ? -1 : 1);
+
+        bool wall = fish.Way == 1 ? fish.Cell % Columns == 0
+                                  : next % Columns == 0;
+        if (wall || next < 0 || next >= Cells || _cell[next] >= Squid)
+            return fish with { Way = fish.Way == 1 ? 2 : 1 };
+
+        return fish with { Cell = next };
     }
 
     /// <summary>한 마리를 한 걸음 옮긴다. 막혔으면 자리는 두고 돌아선다.</summary>
