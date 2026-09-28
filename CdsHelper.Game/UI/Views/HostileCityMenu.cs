@@ -182,9 +182,18 @@ internal static class HostileCityMenu
                     else
                         NoticeDialog.Show(owner, Standoff.RaidWonNews, "");
                     // 조약을 깨고 쳐서 이겼을 때만 부관이 걱정한다(0x0046A78E → 0x004696B0, 부관이 없으면 말 없음).
-                    // 교섭·침입으로 들어갔을 때는 이 말이 없다. 이어지는 굴림(0x0046A79D)이 무엇을 바꾸는지는 아직 모른다.
+                    // 교섭·침입으로 들어갔을 때는 이 말이 없다.
                     if (byTreaty && Standoff.HasAide(player))
                         TalkDialog.Say(owner, game.AideFace, "", Standoff.TreatyBrokenWord);
+                    // 이어서 <b>제 나라가 눈감아 주는지</b>를 굴려 설득 벌(5번)로 보인다(0x0046A79D ~ 0x0046A7D8) —
+                    // rand(150) ≤ ((운 + 1) x 100 + 명성) / 100 이면 통과다. 게임은 굴리기 전에 그 도시 나라 형편
+                    // 칸 +0x08 에 1 을 박고(0x0046A787), 못 넘으면 제 나라 형편 칸 +0x08 에도 1 을 박는다(0x0046A7F2).
+                    // 그 칸을 읽는 곳은 아직 못 짚어 깃발은 옮기지 않는다.
+                    if (byTreaty)
+                    {
+                        int pull = ((player.AbilityOf(Ability.Luck) + 1) * 100 + player.Fame) / 100;
+                        EffectPopup.PlayOn(owner, game, EffectAnim.Persuade, dice.Next(150) <= pull);
+                    }
                     return new Outcome(true, false);
 
                 case Standoff.Sneak:
