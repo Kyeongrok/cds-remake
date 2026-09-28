@@ -513,8 +513,8 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                 int was = battle.Units[who].Men;
                 int now = Math.Min(room, was + room * 2 / 10);
                 battle.SetMen(who, now);
-                if (now > was)
-                    Say(slot, Prayers[dice.Next(Prayers.Length)], LandUnits.Sound.Heal);
+                // 고칠 것이 없어도(이미 가득) 말풍선·몸짓·회복 연출은 늘 낸다(0x00448D30~0x00448D7F 에 조건이 없다).
+                Say(slot, Prayers[dice.Next(Prayers.Length)], LandUnits.Sound.Heal);
                 break;
 
             case LandUnits.Leopard:
