@@ -605,7 +605,7 @@ public sealed class DisevRunner
 
             case DisevCall.AskChoice:
             case DisevCall.AskChoiceWide:
-                _choice = Choose(line.Raw);
+                _choice = Choose(line.Raw, wide: line.Call == DisevCall.AskChoiceWide);
                 return null;
 
             case DisevCall.PlayVideo:
@@ -1055,7 +1055,9 @@ public sealed class DisevRunner
     /// 게임은 앞 대사 창 밑에 세로 메뉴를 세운다(<c>0x004878A0</c>). 물러나면 마지막 줄을 고른 것으로 친다 —
     /// 대본의 마지막 선택지가 늘 「도망간다」·「떠난다」 쪽은 아니지만, 메뉴를 그냥 닫을 길을 막을 수는 없다.
     /// </remarks>
-    private int Choose(byte[] raw)
+    /// <param name="wide"><c>18 0A</c> 인지 — 교섭은 이 명령에만 붙어 있다(<c>0x0040914F</c>). <c>10 0A</c>
+    /// (<c>0x00408EF4</c>)는 고른 값만 적고 끝난다.</param>
+    private int Choose(byte[] raw, bool wide)
     {
         int term = Array.IndexOf(raw, (byte)0, 2);
         if (term < 0) return -1;
@@ -1068,8 +1070,10 @@ public sealed class DisevRunner
         int picked = ChoiceDialog.Ask(_owner, "", choices[..^1], choices[^1]);
         int value = (picked >= 0 ? picked : choices.Length - 1) + baseValue;
 
-        // 고른 값이 0 이면 <b>교섭</b>이다(0x00409204) — 금이나 물건을 바쳐야 이야기가 이어진다.
-        if (value == 0) Appease();
+        // 18 0A 에서 고른 값이 0 이면 <b>교섭</b>이다(0x00409204) — 금이나 물건을 바쳐야 이야기가 이어진다.
+        // 10 0A 는 값이 0 이어도 교섭이 없다 — 예전에는 「싸운다/교섭한다/도망간다」의 「싸운다」 따위
+        // 첫 줄만 골라도 「뭔가 우호의 증표를 줍시다」가 떴다.
+        if (wide && value == 0) Appease();
         return value;
     }
 
