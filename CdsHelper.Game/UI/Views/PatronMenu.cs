@@ -1296,8 +1296,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 "이런 모조품으로 나를 속이려 했나!",
                 "이런 모조품으로 저를 속일 작정이라고는...용서할 수 없습니다.",
                 "바보녀석, 이런 모조품으로 나를 속일 작정이었나!"));
+            // 죄를 먼저 묻고(0x004123EC → 0x0044F100) 그 뒤에 계약을 깨며 삐진다(0x004123F3 → 0x0044EEA0 의
+            // 비트 14). 거꾸로 하면 Punish 가 삐짐(깃발 14)을 보고 봐줌·위약금 없이 늘 감옥으로 간다.
+            bool over = Punish(patron, sponsorRow, Pick3);
             _player.Sulk(patron.Name);
-            if (Punish(patron, sponsorRow, Pick3)) EndGame();
+            if (over) EndGame();
             broke = true;
         }
         return true;
