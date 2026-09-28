@@ -630,7 +630,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             if (row.Movie >= 0)
                 MoviePlayer.Play(owner, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
             else if (row.Clip >= 0)
-                DiscoveryClipPlayer.Play(owner, _game.Clips, row.Clip);
+                DiscoveryClipPlayer.Play(owner, _game.Clips, row.Clip, _game.Bgm);
             else if (row.Picture >= 0)
                 DiscoveryDialog.ShowPicture(owner, _game.Stills, row.Picture);   // 그림만(0x004AD640)
 

@@ -664,7 +664,7 @@ public sealed class DisevRunner
 
             // 00 0C [u16 n] — DISCOVER.CDS 파트 n 을 가운데에 틀고 돌아온다(0x00408429).
             case DisevCall.PlayCgAnimation:
-                DiscoveryClipPlayer.Play(_owner, _game.Clips, I("Id"));
+                DiscoveryClipPlayer.Play(_owner, _game.Clips, I("Id"), _game.Bgm);
                 return null;
 
             // 그림은 바로 안 낸다 — 다음 대사와 한 창에 함께 낸다.

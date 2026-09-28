@@ -1015,7 +1015,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             if (row.Movie >= 0)
                 MoviePlayer.Play(_view, DiscoveryDialog.MovieOf(_game.Directory, row.Movie), _game.Bgm);
             else if (row.Clip >= 0)
-                DiscoveryClipPlayer.Play(_view, _game.Clips, row.Clip);
+                DiscoveryClipPlayer.Play(_view, _game.Clips, row.Clip, _game.Bgm);
             else if (row.Picture >= 0)
                 DiscoveryDialog.ShowPicture(_view, _game.Stills, row.Picture);   // 그림만 — 이름 창은 안 붙는다(0x004AD640)
 

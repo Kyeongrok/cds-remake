@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -26,7 +26,9 @@ public static class DiscoveryClipPlayer
     /// 올려 둔 편(<see cref="DiscoveryClipFiles"/>)이 먼저고, 없으면 원본(<paramref name="clips"/>)
     /// 이다 — 올려 둔 것은 <b>240x176 이 아닐 수 있어</b> 그 크기로 편다.
     /// </remarks>
-    public static void Play(Window owner, DiscoveryClips? clips, int clip)
+    /// <param name="bgm">도는 동안 멈춰 둘 곡 — 게임은 DISCOVER.CDS 편을 틀기 전에 CDAudioPause, 끝나면 CDAudioResume 을
+    /// 부른다(<c>0x0040846B</c>~<c>0x004085B1</c> · <c>0x004AB038</c>~<c>0x004AB154</c>).</param>
+    public static void Play(Window owner, DiscoveryClips? clips, int clip, BgmPlayer? bgm = null)
     {
         int width = DiscoveryClips.Width, height = DiscoveryClips.Height;
         var frames = DiscoveryClipFiles.Frames(clip, out int uw, out int uh);
@@ -86,6 +88,8 @@ public static class DiscoveryClipPlayer
         screen.Loaded += (_, _) => clock.Start();
         screen.Closed += (_, _) => clock.Stop();
 
+        bgm?.Pause();
         screen.ShowDialog();
+        bgm?.Resume();
     }
 }
