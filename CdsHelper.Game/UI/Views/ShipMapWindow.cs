@@ -4730,7 +4730,7 @@ public sealed class ShipMapWindow : Window
     /// <remarks>
     /// 셈은 <see cref="LandEvents"/> 가 다 하고 여기서는 말만 낸다. 문구는 게임
     /// <c>0x005338E0</c> 덩이에서 그대로 옮겼다 — 짐승은 조사가 하나 더 붙는 서식이라
-    /// (「큰일이다! %s%s다!」) 이름 뒤에 은/는을 넣는다.
+    /// (「큰일이다! %s%s다!」) 이름 뒤에 갈래 16 조사(없음/이)를 넣는다.
     ///
     /// 말보다 먼저 덤불 장면(<c>0x0048E820(8)</c>)이 함대 자리에서 돈다 — 독충
     /// (<c>0x00427866</c>)과 짐승(<c>0x00427B4C</c>)이 같은 8 이다.
@@ -4746,7 +4746,9 @@ public sealed class ShipMapWindow : Window
             PlayEventScene(EventAnimation.Bush);   // 게임도 말보다 먼저 튼다
             string what = met.Venomous
                 ? $"큰일이다! {met.Name}다!"
-                : $"큰일이다! {met.Name}{GameUi.Josa(met.Name, "이", "가")}다!";
+                // 조사는 갈래 16(받침이 있으면 「이」, 없으면 없음)이다(0x00427B57 push 0x10) — 「늑대다!」.
+                // 예전에는 이/가를 붙여 「늑대가다!」가 되었다.
+                : $"큰일이다! {met.Name}{NameToken.Of(met.Name, 16)}다!";
 
             ConfirmDialog.Tell(this, what, face: face);
             ConfirmDialog.Tell(this, "제독, 어떻게 하시겠습니까?", face: face);
