@@ -29,8 +29,8 @@ namespace CdsHelper.Game.UI.Views;
 /// 제대로 뜬다(airspace 를 안 탄다). 그림은 400x320 도트 그림이라 정수배로만 늘린다.
 ///
 /// 건물 자리·이름·가르치는 기능은 게임 EXE 의 건물 표(<see cref="CityBuildingTable"/>)에서
-/// 그대로 온다. 표에 항구가 없는 도시라면 그림 아무 데나 눌러도 항구 명령 창이 열리게 해
-/// 두었다 — 출항할 길은 어디서나 있어야 한다.
+/// 그대로 온다. 표에 항구가 없는데 함대가 닻을 내린 도시라면 그림 아무 데나 눌러도 항구 명령 창이
+/// 열리게 해 두었다 — 배를 두고 갇히지 않게 하는 비상구다. 뭍 마을은 성문으로 나선다.
 /// </remarks>
 public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 {
@@ -475,9 +475,13 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (building.Kind == "항구") harborPlaced = true;
         }
 
-        // 표에 항구가 없는 도시는 아무 데나 눌러도 항구 명령 창이 열린다(건물 판이 먼저 먹는다).
+        // 표에 항구가 없는데 함대가 여기 닻을 내렸으면 아무 데나 눌러도 항구 명령 창이 열린다(건물 판이
+        // 먼저 먹는다) — 배를 두고 갇히지 않게 둔 우리 쪽 비상구다. 게임은 항구 줄이 없으면 시설을 아예
+        // 안 연다(0x004A2566) — <b>뭍 한가운데 마을</b>(항구 없는 90곳)에서 빈 자리를 눌러 항구가 뜨던 것은
+        // 원본에 없는 길이라 막는다. 그 마을은 성문으로 나선다.
         _harborPlaced = harborPlaced;
-        if (!harborPlaced)
+        bool bareHarbor = !harborPlaced && _player.FleetHere(cityId, 1);
+        if (bareHarbor)
         {
             picBox.Cursor = Cursors.Hand;
             picBox.MouseLeftButtonUp += (_, _) =>
@@ -495,7 +499,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 제목 줄이 없어도 옮길 수는 있어야 한다 — 그림의 아무 데나 잡으면 끌린다.
         // 건물 판과 명령 창은 누르는 자리라 제 몫으로 삼키므로 여기까지 오지 않는다.
         // 항구를 못 찾은 그림은 그림 전체가 누르는 자리라 끌기를 달지 않는다.
-        if (harborPlaced)
+        if (!bareHarbor)
             picBox.MouseLeftButtonDown += (_, _) =>
             {
                 if (Mouse.LeftButton == MouseButtonState.Pressed) DragMove();
