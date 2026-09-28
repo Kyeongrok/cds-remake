@@ -1343,8 +1343,31 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         bool hireable = who.Hire == TavernRoster.Hireable;
         bool duelable = who.Index < PersonTable.VoyagerCount;
 
-        // 말이 전혀 안 통하면 용건도 못 묻는다(0x004A4BB0 → 0x00468F70).
-        if (TongueWith(who.Index) <= 0)
+        bool fluent = TongueWith(who.Index) > 0;
+
+        // <b>일기토를 걸 수 있는 사람(갈래 0)은 차림표가 따로다</b>(0x004A4AA0) — 한 번 내고 끝나는 창이다.
+        //   말이 안 통해도 「무슨 말을 하는 건지…」(0x00551708) 뒤에 차림표를 내고 「정보를 듣는다」 줄만 감춘다
+        //   (0x004A4AFC). 그래서 말이 안 통해도 일기토는 걸 수 있다.
+        //   「정보를 듣는다」를 고르면 한 마디 듣고 창이 닫힌다(0x004A4B53).
+        if (duelable && !hireable)
+        {
+            TalkDialog.Say(_view, face, "", fluent ? "무슨 용건인가?" : "무슨 말을 하는 건지, 전혀 모르겠군.");
+            _player.Meet(who.Name);   // 0x004A4B26 → 0x004321C0
+
+            var rows = new List<string>();
+            int hearAt = -1;
+            if (fluent) { hearAt = rows.Count; rows.Add("정보를 듣는다"); }
+            int duelAt = rows.Count;
+            rows.Add("일기토를 신청한다");
+
+            int at = ChoiceDialog.Ask(_view, "", rows, "떠난다");
+            if (at == duelAt) Duel(who, face);
+            else if (at == hearAt) HearFrom(who, face);
+            return;
+        }
+
+        // 고용 쪽(0x004A4BB0) — 말이 전혀 안 통하면 용건도 못 묻는다(0x00468F70).
+        if (!fluent)
         {
             TalkDialog.Say(_view, face, "", "무슨 말을 하는 건지, 전혀 모르겠군.");
             return;
@@ -1354,9 +1377,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         _player.Meet(who.Name);
 
         // 게임은 차림표를 <b>되풀이해</b> 낸다. 「정보를 듣는다」는 한 번 들으면 줄이 사라지고,
-        // 인물 판에서 중단하거나 자리·말 검사에서 물리면 차림표로 돌아온다.
+        // 자리·말 검사에서 물리면 차림표로 돌아온다. 인물 판을 물리면 창이 닫힌다(0x004A4D73).
+        // 앞 두 줄(정보 · 고용)이 다 감춰지면 창을 닫는다(0x004A4D8C).
         bool heard = false;
-        while (true)
+        while (!heard || hireable)
         {
             var rows = new List<string>();
             int hearAt = -1, hireAt = -1, duelAt = -1;
@@ -1371,17 +1395,24 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (at == duelAt) { Duel(who, face); return; }
             if (at == hearAt)
             {
-                // 게임은 이 사람 몫으로 대본이 넣어 둔 말(0x005AA278, 역사 항해자 대본 26 0A)이 살아 있으면 그것을,
-                // 없으면 <b>그 사람 고향 문화권의 소문</b>을 한 마디 한다(0x004A45E0 → 0x004A4790
-                // → 0x004A4630 갈래 0 → 0x004A3740).
-                _game.CatchUpMonths();
-                TalkDialog.Say(_view, face, "", _player.PersonLineOf(who.Index)
-                                                ?? TavernRumors.Of(HomeCulture(who.Index), _game.Random));
+                HearFrom(who, face);
                 heard = true;
                 continue;
             }
             if (at == hireAt && Hire(who, face)) return;
         }
+    }
+
+    /// <summary>
+    /// 인물에게 「정보를 듣는다」(<c>0x004A45E0</c>) — 이 사람 몫으로 대본이 넣어 둔 말(<c>0x005AA278</c>, 역사 항해자
+    /// 대본 26 0A)이 살아 있으면 그것을, 없으면 <b>그 사람 고향 문화권의 소문</b>을 한 마디 한다
+    /// (<c>0x004A4790</c> → <c>0x004A4630</c> 갈래 0 → <c>0x004A3740</c>).
+    /// </summary>
+    private void HearFrom(TavernRoster.Person who, uint[]? face)
+    {
+        _game.CatchUpMonths();
+        TalkDialog.Say(_view, face, "", _player.PersonLineOf(who.Index)
+                                        ?? TavernRumors.Of(HomeCulture(who.Index), _game.Random));
     }
 
     /// <summary>
@@ -1915,8 +1946,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private const string Dumpling = "수수경단";
 
     /// <summary>
-    /// 「부하로 고용한다」. 인물 판에서 <b>결정</b>하고 자리·말 검사를 넘어 판정까지 갔으면 true —
-    /// 게임은 그때 붙든 못 붙든 차림표를 닫는다(<c>0x004A4BB0</c>).
+    /// 「부하로 고용한다」. 인물 판을 물렸거나, <b>결정</b>하고 자리·말 검사를 넘어 판정까지 갔으면 true —
+    /// 게임은 그때 붙든 못 붙든 차림표를 닫는다(<c>0x004A4BB0</c>). 자리·말 검사에서 물리면 false 라 차림표로 돌아간다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -1931,7 +1962,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private bool Hire(TavernRoster.Person who, uint[]? face)
     {
         var row = RowOf(who.Index);
-        if (!PersonInfoDialog.AskHire(_view, SheetOf(who), face)) return false;
+        // 인물 판에서 물리면 차림표째 닫는다(0x004A4D73 이 [ebp-0x10] 을 0 으로 둔다).
+        if (!PersonInfoDialog.AskHire(_view, SheetOf(who), face)) return true;
 
         if (!HasOpenSlot(row, anySlot: true))
         {
