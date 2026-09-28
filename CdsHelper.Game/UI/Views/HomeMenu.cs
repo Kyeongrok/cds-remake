@@ -420,7 +420,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         int next = (isSkill ? son.Skills[index] : son.Tongues[index]) + 1;
         int days = Home.EducateDays(son, next);
         // 가르치는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
-        DayPass.Blackout(_view, () => _player.AdvanceDays(days));
+        DayPass.Blackout(_view, () => _player.PassTownDays(days));   // 0x0046154C 의 0x004A2AD0(날, 1)
         // 가르치는 동안 쉰 셈으로 컨디션이 찬다(0x0046155B 의 날/10).
         _player.SetCondition(_player.Condition + days / 10);
 
@@ -638,7 +638,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     private void Rest(int months)
     {
         // 쉬는 동안 화면을 덮는다(0x004606EB — 0x004A59F0 · 0x004A5AE0 · 0x004A5AA0).
-        DayPass.Blackout(Owner, () => _player.AdvanceDays(Home.RestDays(months)));
+        DayPass.Blackout(Owner, () => _player.PassTownDays(Home.RestDays(months)));
 
         // 쉬는 사이에 아이가 태어났으면 그 자리에서 소개하고, 그때는 쉰 말을 건너뛴다(0x00460727 →
         // 0x00460150 → 0x0045FFC0). HP 는 그대로 찬다.

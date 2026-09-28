@@ -893,6 +893,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 배로 닿아 항구에서 마을로 드는 문 — 출입여부 1 은 항구까지만 열고 마을은 막는다.
         if (harbor && !PassTownGate()) return;
 
+        // 뭍으로 닿아 성문을 지나 마을에 들면 성문 칸 5(0x004686F0)가 0x004A2AD0(10, 2)를 돌려 삐짐을
+        // 다 푼다. 배로 닿은 항구는 닿을 때 0x004A2AD0(10, 1)(0x004770F2)이라 안 푼다.
+        if (!harbor) _player.ClearSulks();
+
         if (_game.AideFace is { } aideFace)
             TalkDialog.Say(this, aideFace, "",
                 harbor && _cityId == _player.HomePort
@@ -1952,7 +1956,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         int pay = inn.OddJobPay(_cityId);
         // 한 해가 가는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
-        DayPass.Blackout(this, () => _player.AdvanceDays(Lodging.OddJobDays));
+        DayPass.Blackout(this, () => _player.PassTownDays(Lodging.OddJobDays));
         _player.SetCondition(_player.Condition + Lodging.OddJobRest(_random));
         TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random));
 
@@ -2532,6 +2536,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!Port.ConfirmSail()) return;
         Sailed = true;
         SailedOnArrival = _arrived;
+        // 마을에서 걸어 나와 출항하면 항구 칸 6(0x00477310)이 0x004A2AD0(10, 2)를 돌려 삐짐을 다 푼다.
+        // 닿자마자 곧장 떠나면(+0x98) 그 칸이 아무것도 안 한다. 열흘은 지도 창이 보낸다.
+        if (!_arrived) _player.ClearSulks();
         _gateway = null;
         Close();
     }
@@ -2548,6 +2555,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 : "탐험하러 출발하십니까?")) return;
 
         Explored = true;
+        // 성문 칸 6(0x00468770)이 0x004A2AD0(10, 2) — 탐험을 떠나면 삐짐이 다 풀린다.
+        _player.ClearSulks();
         _gateway = null;
         Close();
     }
