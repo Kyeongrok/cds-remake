@@ -584,13 +584,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         }
         else
         {
-            // 돛을 고르고 「아니오」면 다시 고르게 한다(0x00494D50 → 0x00494CC5). 목록 끝에 「그만둔다」가 있다(0x005315E8).
+            // 돛을 고르고 「아니오」면 다시 고르게 한다(0x00494D50 → 0x00494CC5). 고르는 창은 목록이 아니라
+            // 제목 없는 <b>명령 창</b>이다(0x00494D1A → 0x00469A70 — 삼각돛 · 사각돛 · 그만둔다 0x005315E8).
             while (true)
             {
                 Say("마스트에 달 돛의 종류를 정해 주게.");
-                int at = HintListDialog.Pick(owner,
-                    [Ship.SailNames[Ship.Lateen], Ship.SailNames[Ship.Square], "그만둔다"], "돛 종류", "");
-                if (at < 0 || at == 2) return;
+                int at = ChoiceDialog.Ask(owner, "",
+                    [Ship.SailNames[Ship.Lateen], Ship.SailNames[Ship.Square]], "그만둔다");
+                if (at < 0) return;
                 sail = at == 0 ? Ship.Lateen : Ship.Square;
                 if (Ask(sail == Ship.Lateen
                         ? "이것은 역풍에 뛰어나네. 이 돛을 달겠네?"
@@ -642,15 +643,15 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             {
                 // 줄은 <b>늘 셋</b>이다 — 돛이 없는 마스트도 「없음」으로 나온다(0x00494FA5 의
                 // 되돌이가 0x0056E260 의 세 이름을 다 돈다). 끝에 「그만둔다」가 붙는다(0x005316C8).
+                // 창은 제목 없는 <b>명령 창</b>이고(0x00495055 → 0x00469A70), 줄 글은 「%12s %s」(0x0056E294)다.
                 Say("어느 마스트의 돛을 바꿀건가?");
                 List<string> rows =
                 [
                     .. Enumerable.Range(0, Ship.MastSlots)
-                                 .Select(i => $"{GameUi.Pad(Ship.MastNames[i], 14)}{Ship.SailNames[ship.Sails[i]]}"),
-                    "그만둔다",
+                                 .Select(i => $"{PadLeft(Ship.MastNames[i], 12)} {Ship.SailNames[ship.Sails[i]]}"),
                 ];
-                int pick = HintListDialog.Pick(owner, rows, "돛종류 변경", "");
-                if (pick < 0 || pick >= Ship.MastSlots) break;
+                int pick = ChoiceDialog.Ask(owner, "", rows, "그만둔다");
+                if (pick < 0) break;
                 mast = pick;
             }
 
@@ -674,6 +675,13 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             if (single) break;
         }
         _menu.Refresh();
+    }
+
+    /// <summary>C 의 <c>%Ns</c> 처럼 왼쪽을 채워 오른쪽에 붙인다 — 한글 한 자는 두 칸이다.</summary>
+    private static string PadLeft(string text, int width)
+    {
+        int cells = text.Sum(c => c < 0x80 ? 1 : 2);
+        return cells >= width ? text : new string(' ', width - cells) + text;
     }
 
     /// <summary>
