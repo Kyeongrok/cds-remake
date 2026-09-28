@@ -1684,6 +1684,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 부관의 「제독, 곤란하게 되었습니다…」(0x00532430)는 여기서 안 나온다 — 감찰관을 처벌했을 때
             // 나서는 말이다(0x0044E6FD 의 +0xBC == 2).
             bool forgiven = Forgiven(patron, overdue);
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, forgiven);   // 봐주는지는 동전이다(0x0044F7E1)
             if (!forgiven)
             {
                 // 용서받지 못하면 곧바로 죄를 묻는다(0x0044F7EB → 0x0044F87D 의 0x0044F100) —
@@ -1846,8 +1847,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             int luck = _player.AbilityOf(Ability.Luck), mind = _player.AbilityOf(Ability.Mind),
                 charm = _player.AbilityOf(Ability.Charm);
 
-            bool mercy = (inTime ? kindness > 0 : kindness == 2)
-                         && dice.Next(inTime ? 150 : 200) < _player.ClosenessOf(patron.Name) + luck + 1;
+            bool rolls = inTime ? kindness > 0 : kindness == 2;
+            bool mercy = rolls && dice.Next(inTime ? 150 : 200) < _player.ClosenessOf(patron.Name) + luck + 1;
+            // 봐줄지를 굴리는 후원자면 동전이 돈다(0x0044F96C) — 굴리지도 않는 후원자는 동전 없이 죄를 묻는다.
+            if (rolls) EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, mercy);
             if (!mercy)
             {
                 // 못 넘으면 죄를 묻는 본체로 간다(0x0044F100) — 친밀도 −20 뒤, 배신 깃발(13)이 서 있으니
@@ -1866,7 +1869,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                         "그렇게 무능하리라고는... 나도 보는 눈이 없어졌나 보군 후~, 어쩔 수 없군. 계약일은 잊어버려 주지\n응? 감찰관은 어떻게 됐나?"));
             string word = ChoiceDialog.Pick(_view, "", ["병에 걸려 죽었다", "도망쳤다"]) == 1 ? "도망쳤다" : "죽었다";
 
-            if (dice.Next(inTime ? 120 : 150) > mind + 1)
+            bool caughtLying = dice.Next(inTime ? 120 : 150) > mind + 1;
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Scribe, !caughtLying);   // 거짓말이 먹히는지는 서기다(0x0044FA19)
+            if (caughtLying)
             {
                 // 「%s%s」는 「죽었다·도망쳤다」에 조사 라면/이라면 을 붙인 것이다(0x0044FB67 의 0x004281B0(말, 9)).
                 TalkDialog.Say(_view, _game.Faces?.TryGetBgra(Inspector.Face, female: false), "",
@@ -1880,7 +1885,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 return;
             }
 
-            if ((sponsor?.Closeness ?? 60) >= dice.Next(luck + 1))
+            bool suspects = (sponsor?.Closeness ?? 60) >= dice.Next(luck + 1);
+            EffectPopup.PlayOn(_view, _game, EffectAnim.Coin, !suspects);   // 감찰관을 없앴다고 의심하는지는 동전이다(0x0044FA52)
+            if (suspects)
             {
                 // 0x0054C188 · 0x0054C1F8 · 0x0054C270
                 Say(Pick3("감찰관이 돌아오지 않을 이유가 없다! 자네, 뭔가 불리한 일이 있어 없앤게 아닌가! 그 녀석을 감옥에 쳐 넣어라.",
