@@ -1068,13 +1068,23 @@ public sealed class ShipMapWindow : Window
         _peopleText.Text = string.Join(Environment.NewLine, lines);
     }
 
+    /// <summary>
+    /// 지금 자리의 기후대(0~12) — 바람 표 낱말의 비트 8~11(<c>0x00424FA0</c>)이다. 표를 못 읽으면 -1.
+    /// </summary>
+    /// <param name="latRaw">원본 위도 값(0~20000)을 함께 내준다.</param>
+    private int ClimateZone(out int latRaw)
+    {
+        var (lat, lon) = _host.ShipLatLon;
+        latRaw = (int)((90 - lat) / 180 * 20000);
+        int lonRaw = (int)((lon + 180) / 360 * 40000);
+        _weatherWind ??= WindTable.Open(_game.Directory);
+        return _weatherWind?.ZoneAt(WindTable.CellOf(lonRaw, latRaw)) ?? -1;
+    }
+
     /// <summary>바다에서 하루 — 비·눈을 굴린다(<see cref="SeaWeather"/>). 비가 오면 빗소리를 되풀이한다.</summary>
     private void RollWeather()
     {
-        var (lat, lon) = _host.ShipLatLon;
-        int latRaw = (int)((90 - lat) / 180 * 20000), lonRaw = (int)((lon + 180) / 360 * 40000);
-        _weatherWind ??= WindTable.Open(_game.Directory);
-        int zone = _weatherWind?.ZoneAt(WindTable.CellOf(lonRaw, latRaw)) ?? -1;
+        int zone = ClimateZone(out int latRaw);
         if (_seaWeather.Roll(zone, _game.Player.Date.Month, latRaw, _game.Random) is not { } now) return;
 
         if (now == SeaWeather.Kind.None)
@@ -4410,7 +4420,9 @@ public sealed class ShipMapWindow : Window
     private void Gather(GameRandom dice)
     {
         var player = _game.Player;
-        int ground = _host.TerrainClass;
+        // 등급 표는 <b>기후대</b>로 찾는다 — 발밑 지형 부류가 아니다(0x0048DF01 → 0x00425000 → 0x00424FA0).
+        // 표가 열세 칸인 것도 기후대가 0~12 이기 때문이다.
+        int ground = ClimateZone(out _);
         int bonus = Foraging.CrewBonus(player.Crew);
 
         int waterLevel = Foraging.LevelOf(Foraging.WaterLevels, ground);
