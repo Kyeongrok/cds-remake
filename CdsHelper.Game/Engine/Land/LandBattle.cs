@@ -145,7 +145,9 @@ public sealed class LandBattle
         Muster(scale, dice);
         for (int i = FirstFoe; i < Slots; i++) FoeFirst += _units[i].Men;
         FoeRoom = FoeUnits > 0 ? FoeFirst / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         MyRoom = MyUnits > 0 ? MyFirst / MyUnits : MyFirst;
+        MySpare = MyUnits > 0 ? MyFirst % MyUnits : 0;
     }
 
     /// <summary>
@@ -184,7 +186,9 @@ public sealed class LandBattle
 
         for (int i = FirstFoe; i < Slots; i++) FoeFirst += _units[i].Men;
         FoeRoom = FoeUnits > 0 ? FoeFirst / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         MyRoom = MyUnits > 0 ? MyFirst / MyUnits : MyFirst;
+        MySpare = MyUnits > 0 ? MyFirst % MyUnits : 0;
     }
 
     /// <summary>
@@ -239,7 +243,9 @@ public sealed class LandBattle
         Deal(Math.Max(1, foeMen), dice);
         for (int i = FirstFoe; i < Slots; i++) FoeFirst += _units[i].Men;
         FoeRoom = FoeUnits > 0 ? FoeFirst / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         MyRoom = MyUnits > 0 ? MyFirst / MyUnits : MyFirst;
+        MySpare = MyUnits > 0 ? MyFirst % MyUnits : 0;
     }
 
     /// <summary>
@@ -340,6 +346,7 @@ public sealed class LandBattle
         // 적 처음 인원은 새 편성으로 <b>다시</b> 센다(0x004A1320 — 더하지 않는다).
         FoeFirst = MenOn(foe: true);
         FoeRoom = FoeUnits > 0 ? MenOn(foe: true) / FoeUnits : FoeFirst;
+        FoeSpare = FoeUnits > 0 ? FoeFirst % FoeUnits : 0;
         return true;
     }
 
@@ -374,6 +381,22 @@ public sealed class LandBattle
 
     /// <summary>부대 하나의 정원.</summary>
     public int RoomPerUnit(int side) => side >= FirstFoe ? FoeRoom : MyRoom;
+
+    /// <summary>
+    /// 그 자리 부대의 정원 — 총대장 부대는 나누고 남은 나머지를 더 갖는다(<c>0x00448280</c> 이 슬롯 6 이면
+    /// 나머지를 더한다 · 적 일기토 문 <c>0x004479E1</c> 의 <c>+0x40</c> 도 대장 처음 인원이다).
+    /// </summary>
+    public int RoomAt(int slot)
+    {
+        bool foe = slot >= FirstFoe;
+        int room = foe ? FoeRoom : MyRoom;
+        return slot >= 0 && slot < Slots && _units[slot].IsLeader ? room + (foe ? FoeSpare : MySpare) : room;
+    }
+
+    /// <summary>처음 인원을 부대 수로 나누고 남은 것 — 총대장 부대 몫이다.</summary>
+    private int FoeSpare { get; set; }
+
+    private int MySpare { get; set; }
 
     /// <summary>그 부대의 병사수를 고쳐 넣는다. 0 이 되면 쓰러진 것이다.</summary>
     public void SetMen(int slot, int men)
@@ -962,7 +985,7 @@ public sealed class LandBattle
         if (CityFight) return false;        // 0x004479D7 도 갈래 2·4 만 거른다
 
         // 적 첫 칸이 아직 성하면 부대 수까지 본다.
-        if (_units[FirstFoe].Men >= RoomPerUnit(FirstFoe) * 4 / 10
+        if (_units[FirstFoe].Men >= RoomAt(FirstFoe) * 4 / 10
             && Standing(FirstFoe) > 3) return false;
 
         if (MenOn(foe: true) >= MenOn(foe: false)) return false;

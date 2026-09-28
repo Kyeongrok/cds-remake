@@ -500,16 +500,16 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                 // <b>한 부대만</b> 고친다(0x00448CFE) — 총대장 부대의 병사수가 처음 인원의 4할
                 // <b>이하</b>로 줄었으면 그 대장을(cmp 4할, 병사수 ; jge), 아니면 제 편에서 병사수가 가장 적은
                 // 부대를 고른다(0x004475E0(1,1)). 예전에는 거꾸로 대장이 멀쩡할 때 대장을 고쳤다.
-                // 되살리는 만큼은 min(정원, 병사수 + 정원*2/10) 이다(0x00448280).
+                // 되살리는 만큼은 min(정원, 병사수 + 정원*2/10) 이다(0x00448280). 정원은 대장 부대면
+                // 나머지까지 더한 값이다(0x00448295 · 대장 처음 인원 +0x40) — 예전에는 나눈 몫만 썼다.
                 bool monkFoe = slot >= LandBattle.FirstFoe;
-                int side = monkFoe ? LandBattle.FirstFoe : 0;
-                int room = battle.RoomPerUnit(side);
 
                 int who = LeaderOf(monkFoe);
-                if (who < 0 || battle.Units[who].Men > room * 4 / 10)
+                if (who < 0 || battle.Units[who].Men > battle.RoomAt(who) * 4 / 10)
                     who = Pick(foe: monkFoe, frontOnly: false);
                 if (who < 0) break;
 
+                int room = battle.RoomAt(who);
                 int was = battle.Units[who].Men;
                 int now = Math.Min(room, was + room * 2 / 10);
                 battle.SetMen(who, now);
