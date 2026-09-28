@@ -141,8 +141,15 @@ internal sealed class LandBattleScene : GameWindow
                 return false;
             }
 
-            // 「애니메이션」은 켜고 끄는 것이라 턴이 안 간다(0x00449190).
-            if (order == LandBattle.Animate) { _quick = !_quick; continue; }
+            // 「애니메이션」은 켜고 끄는 것이라 턴이 안 간다(0x00449190). 누르면 바로 뒤집지 않고
+            // 차림표 「애니메이션」(0x0056D470)에 「O N」·「O F F」(0x00549CD8)를 세워 고르게 한다 —
+            // ON 이면 깃발 비트 0 을 끄고, OFF 면 켠다. 물리면 그대로다.
+            if (order == LandBattle.Animate)
+            {
+                int pick = ChoiceDialog.Ask(this, "애니메이션", ["O N", "O F F"]);
+                if (pick >= 0) _quick = pick == 1;
+                continue;
+            }
 
             // 「일기토」는 판을 한 판에 가른다 — 이기면 그대로 이긴다(0x004478A0).
             if (order == LandBattle.Duel)
