@@ -205,12 +205,9 @@ public sealed class BelongingsDialog : GameWindow
         var host = new Border
         {
             Background = GameUi.PageFill,
-            Child = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                Content = items,
-            },
+            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+            // 칸 높이는 창이 정하므로 높이 한도는 두지 않는다.
+            Child = GameUi.Scroller(items, double.PositiveInfinity),
         };
         return (host, items);
     }
