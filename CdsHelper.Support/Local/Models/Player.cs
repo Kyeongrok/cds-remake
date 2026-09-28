@@ -1498,6 +1498,12 @@ public sealed class Player
     /// </remarks>
     public const int TraceShipIn = 0x15, TraceShipOut = 0x16;
 
+    /// <summary>
+    /// 행적 갈래 — 여관에 묵었다(<c>0x0047FCA8</c>, 낱말 없음) · 부하를 들였다(<c>0x0045345E</c>, 낱말: 인물 번호) ·
+    /// 여급과 맺어졌다(<c>0x004658F0</c>, 낱말: 여급 번호). 번호는 원본 갈래 그대로다.
+    /// </summary>
+    public const int TraceInnStay = 5, TraceHire = 6, TraceMarriage = 0x13;
+
     /// <summary>발견한 것으로 적는다. 처음 발견하는 것이면 true.</summary>
     /// <remarks>
     /// 계약 중이면 그 계약에도 얹는다 — 계약 정보 창의 "발견물" 칸이 그것이다.

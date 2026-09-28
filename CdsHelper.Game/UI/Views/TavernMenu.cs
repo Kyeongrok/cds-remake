@@ -1110,6 +1110,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         PlayLove();
         TalkDialog.Say(_view, face, "", Barmaids.Yeses[dice.Next(Barmaids.Yeses.Length)]);
         _player.Marry(her.Name, her.Id);
+        _player.Note(Player.TraceMarriage, her.Id);   // 0x004658F0 — 행적에 혼인을 적는다
         DiscoveryDialog.Show(_view, _game.EventStills, Barmaids.WeddingStill,
                              string.Format(Barmaids.Married, _player.Name, her.Name));
     }
@@ -2017,6 +2018,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             _player.Spend(fee);
             // 됨됨이를 지금 베껴 둔다 — 나중에 인물정보를 낼 때 게임 세이브를 다시 안 뒤지게.
             _player.RememberMate(Tavern.MateInfoOf(who));
+            _player.Note(Player.TraceHire, who.Index);    // 0x0045345E — 행적에 고용을 적는다
             PlaceMate(who.Name);
             // 부하가 되면 술집 자리에서 빠진다(Sitting) — 사진 앞 손님도 다시 세운다.
             (_view as CityPicView)?.RefreshPhoto();
