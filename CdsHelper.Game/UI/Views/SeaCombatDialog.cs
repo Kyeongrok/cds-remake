@@ -1443,7 +1443,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         battle.MonsterPerson = monster ? foe.Leader?.Id ?? -1 : -1;
 
         // 제독 값(0x00441D8A) — 제독·부관(부하 첫 자리) 가운데 큰 값이다. 능력은 +1, 기능은 그대로,
-        // 운세칸[0] 은 제독 것(0x00477FE0). 무력도 +1 이다(예전에는 +1 을 안 먹였다).
+        // 무력도 +1 이다(예전에는 +1 을 안 먹였다). 운세칸[0](+0x920)도 부관 것과 제독 것 가운데 큰 값이다
+        // (0x00441D78 · 0x00441E77 — 부관 값이 제독 값 이상이면 부관 것). 예전에는 제독 것만 썼다.
         var mate = player.MateInfoOf(player.MateAt(0));
         int Best(int mine, int? theirs) => Math.Max(mine, theirs ?? 0);
         int SkillOf(int k) => player.LevelOf(Skill.Names[k]);
@@ -1455,7 +1456,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             Charm: Best(player.AbilityOf(Ability.Charm), mate?.Charm) + 1,
             Sword: Best(SkillOf(Skill.Sword), mate?.Sword),
             Shooting: Best(SkillOf(Skill.Shooting), mate?.Shooting),
-            Fortune: FleetRaid.AdmiralFortuneOf(player)[0]);
+            Fortune: Best(FleetRaid.AdmiralFortuneOf(player)[0], MateFortuneOf(game, player.MateAt(0))?[0]));
         // 적장 값(0x00440F23) — 적장 한 사람 값 그대로다(능력은 이미 +1 된 날값).
         var leader = foe.Leader ?? Encounter.CaptainOf(Encounter.PirateLeader);
         battle.EnemySide = new SeaBattle.Side(leader.Gunnery, leader.Might, leader.Luck,
