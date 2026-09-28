@@ -545,7 +545,8 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             if (pick == 0) PersonInfoDialog.Show(owner, _player, _game.Directory);
             else if (pick == 1)
             {
-                int job = ChoiceDialog.Ask(owner, "직업 변경",
+                // 창 제목은 「직업 선택」이다(0x004AB715 의 0x0057B430) — 줄 이름 「직업 변경」과 다르다.
+                int job = ChoiceDialog.Ask(owner, "직업 선택",
                                            [.. Job.All.Take(Job.Choosable).Select(j => j.Name)], "취소");
                 if (job >= 0 && job < Job.Choosable) _player.JobIndex = job;
             }
