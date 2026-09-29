@@ -96,7 +96,43 @@ internal sealed class LandBattleScene : GameWindow
         Cover(this);
         MouseLeftButtonUp += (_, e) => ClickUnit(e.GetPosition(_board));
         MouseRightButtonUp += (_, _) => Functions();
+        // 판을 눌러도 판 창이 앞으로 나오지 않게 한다 — 차림표가 키(방향키·ESC)를 계속 받아야 한다.
+        SourceInitialized += (_, _) =>
+            System.Windows.Interop.HwndSource.FromHwnd(new System.Windows.Interop.WindowInteropHelper(this).Handle)
+                ?.AddHook(NoActivateWhileLive);
     }
+
+    /// <summary>
+    /// 차림표를 띄우고 <b>판 창만</b> 다시 켠다 — WPF 의 <c>ShowDialog</c> 는 같은 스레드의 창을 모두 꺼
+    /// (<c>EnableWindow(false)</c>) 차림표가 떠 있는 동안 판이 누름을 못 받았다. 지도 창 따위는 꺼 둔 채다.
+    /// 차림표가 닫히면 WPF 가 꺼 두었던 창을 도로 켜므로 판 창도 그대로 켜진 채 남는다.
+    /// </summary>
+    private void Live(Window box)
+    {
+        Corner(box);
+        box.Loaded += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            if (!_boardLive) return;
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (hwnd != IntPtr.Zero) EnableWindow(hwnd, true);
+        });
+    }
+
+    /// <summary>판 위 창(부대 정보·전황정보)이 닫히면 떠 있는 차림표에 키를 돌려준다.</summary>
+    private void BackToMenu(Window box) =>
+        box.Closed += (_, _) => OwnedWindows.OfType<ChoiceDialog>().FirstOrDefault(w => w.IsVisible)?.Activate();
+
+    /// <summary>차림표가 떠 있는 동안 판을 눌러도 판 창을 앞으로 올리지 않는다(<c>WM_MOUSEACTIVATE</c> → <c>MA_NOACTIVATE</c>).</summary>
+    private IntPtr NoActivateWhileLive(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        const int WmMouseActivate = 0x0021, MaNoActivate = 3;
+        if (msg != WmMouseActivate || !_boardLive) return IntPtr.Zero;
+        handled = true;
+        return MaNoActivate;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool EnableWindow(IntPtr hwnd, bool enable);
 
     /// <summary>판이 열리기 직전 — 바다 지도가 비·눈을 거둔다(<c>0x0044AA31</c>).</summary>
     public static event Action? Opening;
@@ -308,6 +344,7 @@ internal sealed class LandBattleScene : GameWindow
             Top = Top + corner.Y,
         };
         _unitInfo = box;
+        BackToMenu(box);
         box.Show();
     }
 
@@ -355,6 +392,7 @@ internal sealed class LandBattleScene : GameWindow
             {
                 var box = new LandBattleInfoDialog(_battle) { Owner = this };
                 _fieldInfo = box;
+                BackToMenu(box);
                 box.Show();
             }
         }
@@ -425,7 +463,7 @@ internal sealed class LandBattleScene : GameWindow
             return ChoiceDialog.Pick(this, $" {LandBattle.OrderTitle} ",
                                      _battle.OrderRows(canDuel: _duelRow,
                                                        canRuse: !_ruseThisTurn),
-                                     Corner, exitRow: false);
+                                     Live, exitRow: false);
         }
         finally
         {
@@ -467,7 +505,7 @@ internal sealed class LandBattleScene : GameWindow
         bool scroll = _game?.Player.Items.Contains(LandBattle.JudgementItem) ?? false;
         _boardLive = true;
         try { pick = ChoiceDialog.Pick(this, $" {LandBattle.RuseTitle} ", _battle.RuseRows(scroll),
-                                       Corner, exitRow: false); }
+                                       Live, exitRow: false); }
         finally { _boardLive = false; _showMen = false; Redraw(); }
 
         if (pick < 0) return;

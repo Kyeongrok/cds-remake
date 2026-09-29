@@ -740,6 +740,9 @@ public sealed class ShipMapWindow : Window
             {
                 _overlay.IsOpen = false;
                 _game.Bgm.Stop();
+                // 그림이 도는 동안(6초쯤) 항해·날짜·조우가 뒤에서 돌지 않게 판을 세운다 — 원본은 판 고리를 빠져나와 부른다.
+                _host.Paused = true;
+                _statusTimer.Stop();
                 ExitSplash.Show(this, _game.Directory);
                 Close();
             });

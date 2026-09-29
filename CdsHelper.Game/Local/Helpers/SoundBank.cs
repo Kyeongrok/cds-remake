@@ -201,7 +201,7 @@ public sealed class SoundBank : IDisposable
     }
 
     /// <summary>
-    /// 내고 있던 효과음을 끊는다. 사건 애니메이션이 끝날 때 제 소리를 끄는 자리
+    /// 내고 있던 효과음을 끊는다 — 되풀이 소리(<see cref="PlayLoop"/>)는 안 끊는다(<see cref="StopLoop"/> 가 끊는다). 사건 애니메이션이 끝날 때 제 소리를 끄는 자리
     /// (<c>0x00422A40(소리, 3)</c>)에 쓴다.
     /// </summary>
     public void Stop()
@@ -216,7 +216,15 @@ public sealed class SoundBank : IDisposable
     /// <summary>WAV 머리 길이와 8비트 소리의 무음 자리.</summary>
     private const int WavHeader = 44, Silence = 128;
 
-    private readonly SoundPlayer _loop = new();
+    /// <summary>
+    /// 되풀이 소리를 트는 손 — <see cref="SoundPlayer"/> 가 아니다. SoundPlayer 는 Win32 <c>PlaySound</c> 라
+    /// 한 프로세스에 <b>한 소리만</b> 난다 — 효과음 하나(<see cref="Play"/>)가 빗소리·사건 장면 소리를 대신하며
+    /// 끊고, <see cref="Stop"/> 도 되풀이를 함께 껐다. MediaPlayer 는 따로 섞여 나므로 둘이 겹쳐 난다.
+    /// </summary>
+    private System.Windows.Media.MediaPlayer? _loop;
+
+    /// <summary>되풀이할 소리를 풀어 두는 곳 — MediaPlayer 는 메모리 스트림을 못 받아 파일로 넘긴다.</summary>
+    private static readonly string LoopDirectory = Path.Combine(Path.GetTempPath(), "CostaDelSol-sfx");
 
     /// <summary>
     /// 되풀이해 내는 소리 — 지도 위 빗소리(<c>0x004225A0(0x3F, 0)</c>)가 이것이다. 효과음과 따로 돈다.
@@ -228,8 +236,28 @@ public sealed class SoundBank : IDisposable
         {
             var wav = _bank?.Wav(part) ?? AssetWav(part);
             if (wav == null) return;
-            _loop.Stream = new MemoryStream(Scaled(wav, GameSettings.SfxVolume));
-            _loop.PlayLooping();
+
+            // 크기를 줄인 벌마다 따로 적는다 — 돌고 있는 파일을 덮어쓰지 않는다.
+            int volume = GameSettings.SfxVolume;
+            Directory.CreateDirectory(LoopDirectory);
+            string path = Path.Combine(LoopDirectory, $"loop-{part:D2}-{volume}-{wav.Length}.wav");
+            if (!File.Exists(path)) File.WriteAllBytes(path, Scaled(wav, volume));
+
+            if (_loop == null)
+            {
+                _loop = new System.Windows.Media.MediaPlayer { Volume = 1.0 };
+                // 끝에 닿으면 처음으로 되감아 다시 튼다.
+                _loop.MediaEnded += (_, _) =>
+                {
+                    if (_loop == null) return;
+                    _loop.Position = TimeSpan.Zero;
+                    _loop.Play();
+                };
+            }
+            _loop.Stop();
+            _loop.Open(new Uri(path));
+            _loop.Volume = 1.0;          // 크기는 소리 알맹이에 이미 먹였다(Scaled)
+            _loop.Play();
         }
         catch (Exception ex)
         {
@@ -237,15 +265,24 @@ public sealed class SoundBank : IDisposable
         }
     }
 
-    /// <summary>되풀이하던 소리를 끊는다.</summary>
+    /// <summary>되풀이하던 소리만 끊는다 — 나고 있는 효과음은 그대로 둔다.</summary>
     public void StopLoop()
     {
-        try { _loop.Stop(); } catch { }
+        try
+        {
+            _loop?.Stop();
+            _loop?.Close();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SoundBank] 되풀이 소리를 끊지 못했습니다 — {ex.Message}");
+        }
     }
 
     public void Dispose()
     {
         _player.Dispose();
-        _loop.Dispose();
+        StopLoop();
+        _loop = null;
     }
 }

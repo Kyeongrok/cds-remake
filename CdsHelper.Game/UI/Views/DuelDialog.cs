@@ -898,6 +898,9 @@ public sealed class DuelDialog : GameWindow
         {
             // 앞 곡으로 곧바로 돌린다 — 해상 곡 맞추기(PlayWhenDone)에 맡기면 일기토 곡이 끝까지 돈다.
             if (bgm != null && before >= 0) bgm.Play(before);
+            // 승패 소리 앞에서 멈춘 곡(CDAudioPause)을 잇는다(0x00422B90 CDAudioResume). 일기토 곡을 못 틀어
+            // 앞 곡이 그대로 멈춰 있었다면 위 Play 는 같은 곡이라 곧장 돌아가 버린다.
+            bgm?.Resume();
         }
         return duel.Won == true;
     }

@@ -80,12 +80,10 @@ internal static class ExitSplash
             Background = Brushes.Transparent,
             ShowInTaskbar = false,
             WindowStartupLocation = WindowStartupLocation.Manual,
-            Left = owner.Left,
-            Top = owner.Top,
-            Width = owner.ActualWidth > 0 ? owner.ActualWidth : owner.Width,
-            Height = owner.ActualHeight > 0 ? owner.ActualHeight : owner.Height,
             Content = new Grid { Children = { black, image } },
         };
+        // 최대화된 창은 Left·Top 이 복원 자리를 내므로 동영상 창과 같은 갈래로 덮는다.
+        MoviePlayer.Cover(splash, owner);
 
         var frame = new DispatcherFrame();
         int step = 0;
@@ -121,12 +119,11 @@ internal static class ExitSplash
                     if (step >= FadeOutSteps) frame.Continue = false;
                     break;
             }
-        }, splash.Dispatcher);
+        }, splash.Dispatcher);                // 이 생성자는 만들자마자 돈다 — 따로 Start 하지 않는다
 
         splash.Closed += (_, _) => frame.Continue = false;
         splash.Show();
         splash.Activate();
-        clock.Start();
         try
         {
             Dispatcher.PushFrame(frame);
