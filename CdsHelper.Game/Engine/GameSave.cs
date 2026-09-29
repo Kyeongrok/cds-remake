@@ -168,6 +168,42 @@ public static class GameSave
         }
     }
 
+    /// <summary>
+    /// 그 판의 <b>자동저장 칸</b>을 지운다 — 「모험 중단」에서 은퇴시키거나 삭제한 뒤다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 세이브가 한 파일뿐이라 그것만 지우면 끝이다(<c>0x0045F8F2</c>). 우리는 자동저장 칸이 따로 있어
+    /// 남겨 두면 CONTINUE 로 은퇴한 제독을 계속 놀고, 그 판에서 제 자신이 누적 캐릭터로 여관에 앉았다.
+    /// 둘 다 판 표지(<c>GameId</c>)가 있으면 그것으로, 아니면 이름(이름 · 성 · 명)으로 가린다.
+    /// </remarks>
+    /// <returns>지운 칸 수.</returns>
+    public static int DeleteAutoSavesOf(Data saved) =>
+        DeleteAutoSavesOf(saved.GameId, saved.Name, saved.Family, saved.Given);
+
+    /// <summary>지금 판의 자동저장 칸을 지운다 — 자택 「은퇴」가 부른다.</summary>
+    public static int DeleteAutoSavesOf(Player player) =>
+        DeleteAutoSavesOf(player.GameId, player.Name, player.Family, player.Given);
+
+    private static int DeleteAutoSavesOf(string? gameId, string? name, string? family, string? given)
+    {
+        static string Key(string? s) => (s ?? "").Trim();
+        bool Same(Data d) =>
+            !string.IsNullOrEmpty(gameId) && !string.IsNullOrEmpty(d.GameId)
+                ? d.GameId == gameId
+                : (Key(name).Length > 0 || Key(family).Length > 0 || Key(given).Length > 0)
+                  && Key(d.Name) == Key(name) && Key(d.Family) == Key(family)
+                  && Key(d.Given) == Key(given);
+
+        int gone = 0;
+        foreach (var slot in AutoSaves())
+        {
+            if (!Same(slot.Save)) continue;
+            try { File.Delete(slot.File); gone++; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        return gone;
+    }
+
     /// <summary>적어 두는 것.</summary>
     /// <param name="Version">형식 판. 나중에 늘릴 때 본다.</param>
     /// <param name="SavedAt">적은 때(현실 시각).</param>
@@ -290,7 +326,8 @@ public static class GameSave
         DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
         List<Player.Recall>? Recalls = null,
         int? DayTicks = null, int? Heading = null, List<int>? Wind = null,
-        double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null);
+        double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null,
+        Dictionary<int, int>? AccPlayed = null, string? GameId = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -450,7 +487,11 @@ public static class GameSave
                             // 바다에서 적을 때만 적는다. 이 칸 앞의 세이브는 대 둔 배 위에서 연다.
                             AshoreX: player.CityId < 0 ? player.Ashore?.X : null,
                             AshoreY: player.CityId < 0 ? player.Ashore?.Y : null,
-                            MooredHeading: player.CityId < 0 && player.Ashore != null ? player.MooredHeading : null);
+                            MooredHeading: player.CityId < 0 && player.Ashore != null ? player.MooredHeading : null,
+                            // 누적 캐릭터마다 튼 행적 줄 수(인물 +0x114). 이 칸 앞의 세이브는 불러온 날로 가늠한다.
+                            AccPlayed: player.AccPlayed.Count > 0 ? player.AccPlayed.ToDictionary(e => e.Key, e => e.Value) : null,
+                            // 이 판의 표지 — 은퇴·삭제할 때 그 판의 자동저장 칸을 가린다. 이 칸 앞의 세이브는 이름으로 가린다.
+                            GameId: player.GameId.Length > 0 ? player.GameId : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

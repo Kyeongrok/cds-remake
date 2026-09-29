@@ -40,6 +40,11 @@ public sealed class AccReplay
         public int Next { get; set; }
 
         /// <summary>
+        /// 이미 튼 줄 수 — 세이브에서 되돌린 값(인물 <c>+0x114</c>). 이 앞의 줄은 알리지 않는다. 모르면 −1.
+        /// </summary>
+        public int Played { get; set; } = -1;
+
+        /// <summary>
         /// 함대 목록 — 선체 번호 여덟 칸, 빈 칸은 −1(<c>0x00589C70 + 인물 x 32</c>, 처음엔 다 비었다 <c>0x00431C4C</c>).
         /// </summary>
         public int[] Hulls { get; } = [-1, -1, -1, -1, -1, -1, -1, -1];
@@ -85,6 +90,24 @@ public sealed class AccReplay
     /// </remarks>
     public Action<int, int>? Announced { get; set; }
 
+    /// <summary>그 사람이 이미 튼 줄 수를 박는다 — 세이브를 불러와 다시 걸 때 쓴다(<see cref="QuietThrough"/> 보다 앞선다).</summary>
+    public void SetPlayed(int person, int lines)
+    {
+        foreach (var run in _runners)
+            if (run.Person == person) run.Played = Math.Max(0, lines);
+    }
+
+    /// <summary>줄을 틀 때마다 부른다 — (인물, 지금까지 튼 줄 수). 주인공 쪽에 적어 세이브에 남긴다.</summary>
+    public Action<int, int>? Advanced { get; set; }
+
+    /// <summary>
+    /// 그 사람이 세상에서 지워졌는지 — 처형한 사람이다(<c>0x00432180(0)</c>). 참이면 그 행적은 더 틀지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 도착 줄마다 등장 칸을 1 로 세워, 술집 일기토에서 처형한 누적 캐릭터가 다음 도착에서 되살아났다.
+    /// </remarks>
+    public Func<int, bool>? Gone { get; set; }
+
     /// <summary>걸린 대본이 하나라도 있는지.</summary>
     public bool Any => _runners.Count > 0;
 
@@ -115,6 +138,12 @@ public sealed class AccReplay
         foreach (var run in _runners)
         {
             if (run.Done || run.Person >= people.Count) continue;
+            if (Gone?.Invoke(run.Person) == true)
+            {
+                people[run.Person].Appear = 0;
+                run.Done = true;
+                continue;
+            }
 
             // 판이 열린 날부터 흐른 날수에서 늦어진 만큼을 뺀다.
             int gone = (int)(today - _opened).TotalDays - run.Late;
@@ -124,9 +153,11 @@ public sealed class AccReplay
             int step = Array.FindLastIndex(run.Track, t => t.On <= at);
             if (step < 0) continue;
 
-            // 조용히 지나갈 끝 — 불러온 날까지 이미 일어난 줄이다(QuietThrough).
-            var quiet = QuietThrough is { } q
+            // 조용히 지나갈 끝 — 불러온 날까지 이미 일어난 줄이다(QuietThrough). 튼 줄 수를 알면(Played) 그것으로 가른다 —
+            // 날로 가늠하면 일기토로 늦어진 뒤 불러왔을 때 이미 튼 공략·보고가 다시 돌았다(늦어짐만큼 경계가 당겨진다).
+            var quiet = run.Played < 0 && QuietThrough is { } q
                 ? run.From.AddDays((int)(q - _opened).TotalDays - run.Late) : DateTime.MinValue;
+            int before = run.Next;
 
             // 그날까지의 줄을 차례로 튼다 — 배가 드나든 줄은 함대 목록을 채우고 지운다.
             int arrival = -1;
@@ -136,10 +167,12 @@ public sealed class AccReplay
                 if (line.Kind == Player.TraceArrival) arrival = run.Next;
                 else if (line.Kind == Player.TraceShipIn) AddHull(run.Hulls, line.A);
                 else if (line.Kind == Player.TraceShipOut) RemoveHull(run.Hulls, line.A);
-                else if (line.On <= quiet) continue;
+                else if (line.On <= quiet || run.Next < run.Played) continue;
                 else if (line.Kind == Player.TraceCapture) Captured?.Invoke(run.Person, line.A, line.B);
                 else if (line.Kind == Player.TraceDiscovery) Announced?.Invoke(run.Person, line.A);
             }
+
+            if (run.Next > before) Advanced?.Invoke(run.Person, run.Next);
 
             // 마지막 줄까지 갔고 그날도 지났으면 세상에서 사라진다.
             if (step == run.Track.Length - 1 && at > run.Track[^1].On)

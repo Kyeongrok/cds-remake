@@ -2256,6 +2256,8 @@ public sealed class ShipMapWindow : Window
                     return false;
                 }
 
+                // 그 판의 자동저장 칸도 걷는다 — 남기면 CONTINUE 로 은퇴한 제독이 되살아난다.
+                GameSave.DeleteAutoSavesOf(saved);
                 if (GameSave.Delete()) return true;
                 NoticeDialog.Show(this, "적어 둔 것을 지우지 못했습니다.");
                 return false;
@@ -2266,6 +2268,7 @@ public sealed class ShipMapWindow : Window
             if (!ConfirmDialog.Ask(this, $"[{name}]{GameUi.Josa(name, "을", "를")} 삭제합니다. 좋습니까?"))
                 return false;
 
+            GameSave.DeleteAutoSavesOf(saved);
             if (GameSave.Delete()) return true;
 
             NoticeDialog.Show(this, "적어 둔 것을 지우지 못했습니다.");
@@ -2604,6 +2607,7 @@ public sealed class ShipMapWindow : Window
             _host.ShowShip = false;
             _host.ResetToLisbon();
             _host.RestoreHeldWind(null);   // 새 판은 바람을 새로 흔든다 — 앞 판 것이 남지 않게
+            _host.SetHeading(0);           // 뱃머리도 처음 값(북, 지도를 처음 켤 때와 같다)으로 — 앞 판 쪽을 보고 서지 않게
         }
         else if (saved != null)
         {
@@ -2707,7 +2711,9 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreExecuted(saved.Executed);
             // 누적 캐릭터를 앉힌 날과 늦어짐 — 세상을 새로 지을 때 AttachCumulative 가 다시 앉힌다.
             // 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
-            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate);
+            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate, saved.AccPlayed);
+            // 판 표지. 이 칸 앞의 세이브는 새로 뽑는다 — 앞 칸들은 은퇴·삭제 때 이름으로 가린다.
+            _game.Player.GameId = !string.IsNullOrEmpty(saved.GameId) ? saved.GameId : Guid.NewGuid().ToString("N");
             // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
             _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);
@@ -6402,8 +6408,6 @@ public sealed class ShipMapWindow : Window
         _game.Bgm.Play(track);
         SetInCity(true);          // 지도에 남색 막을 씌운다(그림 창과는 따로 논다)
         _game.Player.EnterCity(city, name);
-        // 도시 상태를 반영한 뒤 저장해야 CONTINUE가 실제 입항 도시에서 시작한다.
-        AutoSaveHere();
         // 건물 조건 없이 도시·연도·명성만으로 여는 이야기 장면(장의 첫머리)은 여기서 잡는다 —
         // 건물 안에서 여는 것은 CityPicView.CheckStory 가 따로 본다.
         CheckStory(-1);
@@ -6423,6 +6427,11 @@ public sealed class ShipMapWindow : Window
         }
         if (Vitality.EntryWarning(_game.Player) is { } warn)
             TalkDialog.Say(dialog, MateFace(), "", warn);
+
+        // 자동저장은 <b>실제로 들어섰을 때만</b> — 도시 상태를 반영한 뒤라야 CONTINUE 가 그 도시에서 시작한다.
+        // 불러온 판을 여는 길(resumed)과 새 판 자택(enterHome)은 건너뛴다. 예전에는 CONTINUE 로 열 때마다 같은 판이
+        // 새 칸에 또 적혀 옛 칸을 밀어냈고, 쓰러질 판(체력 0)도 적어 두어 그 칸을 열면 또 쓰러지며 칸이 늘었다.
+        if (!resumed && !enterHome) AutoSaveHere();
 
         // 그 다음이 도시에 들어서면 발견되는 것 넷이다(0x004928BB) — 인도·향료제도·중국·지팡그 따위.
         if (dialog.DiscoverOnEntry()) return true;

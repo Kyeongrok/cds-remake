@@ -108,6 +108,15 @@ public sealed class Player
     /// </remarks>
     public string Name { get; set; } = "";
 
+    /// <summary>
+    /// 이 판의 표지 — NEW GAME 으로 주인공을 새로 앉힐 때 새로 뽑는다. 원본에는 없다(세이브가 한 파일뿐이라 쓸 데가 없다).
+    /// </summary>
+    /// <remarks>
+    /// 자동저장 칸이 여럿이라, 은퇴·삭제한 판의 칸을 가려 지우는 데 쓴다(<c>GameSave.DeleteAutoSavesOf</c>).
+    /// 이 칸 앞의 세이브를 불러오면 새로 뽑는다 — 그 앞 칸들은 이름으로 가린다.
+    /// </remarks>
+    public string GameId { get; set; } = Guid.NewGuid().ToString("N");
+
     // ── 신상 (NEW GAME 첫 걸음) ────────────────────────────────────────────────
 
     /// <summary>성. 게임 화면의 첫 칸이다.</summary>
@@ -1540,12 +1549,31 @@ public sealed class Player
         _accLate[person] = (_accLate.TryGetValue(person, out int was) ? was : 0) + days;
     }
 
+    private readonly Dictionary<int, int> _accPlayed = [];
+
+    /// <summary>
+    /// 누적 캐릭터마다 이미 튼 행적 줄 수 — 인물 번호 → 줄 수. 원본은 대본 위치(인물 <c>+0x114</c>)를 세이브에 적는다
+    /// (<c>0x00431E90</c>). 불러와 세상을 새로 지으면 이 줄들은 알리지 않고 지난다.
+    /// </summary>
+    public IReadOnlyDictionary<int, int> AccPlayed => _accPlayed;
+
+    /// <summary>그 누적 캐릭터가 그만큼 줄을 틀었다고 적는다(줄지는 않는다).</summary>
+    public void SetAccPlayed(int person, int lines)
+    {
+        if (person < 0 || lines <= 0) return;
+        if (!_accPlayed.TryGetValue(person, out int was) || lines > was) _accPlayed[person] = lines;
+    }
+
     /// <summary>세이브에서 누적 캐릭터를 되돌린다. 이 칸 앞의 세이브는 등장시키지 않은 판이다.</summary>
-    public void RestoreAcc(DateTime? opened, IReadOnlyDictionary<int, int>? late)
+    /// <param name="played">튼 줄 수. 이 칸 앞의 세이브면 null — 그때는 불러온 날로 가늠한다.</param>
+    public void RestoreAcc(DateTime? opened, IReadOnlyDictionary<int, int>? late,
+                           IReadOnlyDictionary<int, int>? played = null)
     {
         AccOpened = opened;
         _accLate.Clear();
         foreach (var (person, days) in late ?? new Dictionary<int, int>()) AddAccLate(person, days);
+        _accPlayed.Clear();
+        foreach (var (person, lines) in played ?? new Dictionary<int, int>()) SetAccPlayed(person, lines);
         Loads++;                                   // 세상을 새로 지어 다시 앉히게 한다
     }
 
