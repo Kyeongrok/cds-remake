@@ -238,9 +238,16 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         int paid = picked.Sum(at => _player.Ships[at].Lent ? 0 : Shipyard.SellPrice(_player.Ships[at], _rate));
         if (!ConfirmDialog.Ask(owner, $"{paid}닢입니다. 좋습니까?")) return;
 
-        // 뒤에서부터 뺀다 — 앞을 먼저 빼면 뒤 자리가 하나씩 밀린다.
-        foreach (int at in picked.OrderByDescending(i => i)) _player.Scrap(at);
-        _player.Earn(paid);
+        // 뒤에서부터 뺀다 — 앞을 먼저 빼면 뒤 자리가 하나씩 밀린다. 값은 <b>정말 뺀 배</b>만 받는다 —
+        // 함대를 다 골랐으면 마지막 한 척은 Scrap 이 물리므로 그 배 값까지 받으면 배와 돈을 둘 다 쥔다.
+        int earned = 0;
+        foreach (int at in picked.OrderByDescending(i => i))
+        {
+            var ship = _player.Ships[at];
+            int price = ship.Lent ? 0 : Shipyard.SellPrice(ship, _rate);
+            if (_player.Scrap(at)) earned += price;
+        }
+        _player.Earn(earned);
 
         // 배가 줄어 짐이 넘치면 짐 덜기 창이다(0x0044B968).
         CargoDropDialog.Force(owner, _game, _cityId);
