@@ -6475,16 +6475,28 @@ public sealed class ShipMapWindow : Window
             // 예전에는 그때도 버려질 판으로 이야기 대본이 돌고 갈매기가 날았다.
             if (!dialog.Sailed && !dialog.Explored) return;
 
-            // 도시를 나선 사건(갈래 2, 0x0048EBA8 → 0x004AB560(나선 도시))을 이야기 대본에 올린다 —
-            // 조건 5F(바다)·60(뭍)이 이것을 본다. 출항하자마자 붙는 해적·이슬람 함대가 이 자리다.
-            CheckStory(DisevEvent.LeaveCity(city, _host.IsOnLand));
-
-            // 판을 열거나 불러온 뒤 <b>처음 도시를 나설 때</b>만 — 배로 나섰으면 갈매기가 난다(0x0048EBC2 ·
-            // 0x0048EBE5, 뭍이면 [0x005B61B4] 라 없다). 깃발은 어느 쪽으로 나서든 한 번에 내린다.
-            if (!_gullsShown)
+            // 대본 대사와 갈매기가 떠 있는 동안은 지도를 세운다 — 상자는 모달이 아니라(GameWindow) 상태 타이머가
+            // 그 밑에서 계속 돈다. 안 세우면 대사를 읽는 사이 날이 가고(PassTime) 조우(MeetFolk)가 겹쳐 떴다.
+            _asking = true;
+            _host.Paused = true;
+            try
             {
-                _gullsShown = true;
-                if (!walking) PlayEventScene(EventAnimation.Gulls);
+                // 도시를 나선 사건(갈래 2, 0x0048EBA8 → 0x004AB560(나선 도시))을 이야기 대본에 올린다 —
+                // 조건 5F(바다)·60(뭍)이 이것을 본다. 출항하자마자 붙는 해적·이슬람 함대가 이 자리다.
+                CheckStory(DisevEvent.LeaveCity(city, _host.IsOnLand));
+
+                // 판을 열거나 불러온 뒤 <b>처음 도시를 나설 때</b>만 — 배로 나섰으면 갈매기가 난다(0x0048EBC2 ·
+                // 0x0048EBE5, 뭍이면 [0x005B61B4] 라 없다). 깃발은 어느 쪽으로 나서든 한 번에 내린다.
+                if (!_gullsShown)
+                {
+                    _gullsShown = true;
+                    if (!walking) PlayEventScene(EventAnimation.Gulls);
+                }
+            }
+            finally
+            {
+                _host.Paused = false;
+                _asking = false;
             }
         };
         return true;
