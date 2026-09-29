@@ -152,12 +152,18 @@ internal sealed class TowerPuzzleDialog : InfoDialog
         Sync();
     }
 
-    /// <summary>오른쪽 단추가 부르는 차림표. 예전 아래 단추 줄이 그대로 여기로 왔다.</summary>
+    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 게임 그대로다.</summary>
+    /// <remarks>
+    /// <c>0x00430A71</c> 이 «포기»(<c>0x0056BAE0</c>) · «게임 설명»(<c>0x0056BAE8</c>) ·
+    /// «게임 재개»(<c>0x0056BAF8</c>) 셋을 이 차례로 <c>0x004878A0</c> 에 넘기고, 0 이 포기 물음
+    /// (<c>0x00430AB6</c>), 1 이 설명(<c>0x00430B0F</c>)이다. 예전에는 설명을 맨 위에 두고
+    /// «포기한다» · «게임 복귀» 로 딴 미니 게임의 말을 빌려 썼다.
+    /// </remarks>
     private IReadOnlyList<(string, Action?)> Commands() =>
     [
+        ("포기", GiveUp),
         ("게임 설명", Explain),
-        ("포기한다", GiveUp),
-        ("게임 복귀", () => { }),   // 차림표만 닫는다
+        ("게임 재개", () => { }),   // 차림표만 닫는다
     ];
 
     /// <summary>「포기?」 — 물은 뒤 그때까지의 회수를 알리고 닫는다(0x004308CB · 0x004308F6).</summary>
