@@ -1195,11 +1195,35 @@ public sealed class Player
         _metBarmaids.Add(barmaid);
     }
 
+    private readonly HashSet<int> _goneBarmaids = [];
+
+    /// <summary>
+    /// 마을을 떠난 여급(여급 칸 <c>+0x24</c> 도시 번호가 -1 이 된 것). 어느 술집에도 다시 서지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 세대교체 때 옛 아내가 이렇게 된다 — 원본은 <c>0x00461C04</c> 에서 아내 칸의 <c>+0x38</c>(배 속 아이 달 수)와
+    /// <c>+0x24</c>(서는 도시, 새 판에 여급 표 <c>+0x24</c> 로 채움 <c>0x0047960E</c>, 읽기 <c>vtbl+0x2C</c> = <c>0x00479590</c>)를
+    /// -1 로 지운다. 술집은 도시가 맞는 여급만 세우므로(<c>0x004A18D4</c>) 그 뒤로는 어디에도 안 선다.
+    /// </remarks>
+    public IReadOnlyCollection<int> GoneBarmaids => _goneBarmaids;
+
+    /// <summary>그 여급이 마을을 떠났는지.</summary>
+    public bool HasLeftTown(int barmaid) => _goneBarmaids.Contains(barmaid);
+
+    /// <summary>그 여급을 마을에서 떠나보낸다(<c>0x00461C0C</c> 의 <c>[여급+0x24] = -1</c>).</summary>
+    public void SendAway(int barmaid)
+    {
+        if (barmaid >= 0) _goneBarmaids.Add(barmaid);
+    }
+
     /// <summary>세이브에서 여급 형편을 되돌린다.</summary>
     /// <param name="met">낯을 튼 여급. 이 칸이 없던 세이브면 null — 친밀도로 가늠한다.</param>
+    /// <param name="gone">마을을 떠난 여급. 이 칸이 없던 세이브면 null — 아무도 안 떠났다.</param>
     public void RestoreBarmaidFlags(IEnumerable<int>? gifted, IEnumerable<int>? refused,
-                                    IEnumerable<int>? met = null)
+                                    IEnumerable<int>? met = null, IEnumerable<int>? gone = null)
     {
+        _goneBarmaids.Clear();
+        foreach (int id in gone ?? []) _goneBarmaids.Add(id);
         _giftedBarmaids.Clear();
         foreach (int id in gifted ?? []) _giftedBarmaids.Add(id);
         _refusedBarmaids.Clear();

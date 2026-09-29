@@ -749,7 +749,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>이 마을 술집에 지금 서 있는 여급. 표를 못 읽었거나 없으면 null.</summary>
     private BarmaidTable.Barmaid? Standing() =>
-        _game.Barmaids?.Standing(_cityId, _player.Date.Year);
+        _game.Barmaids?.Standing(_cityId, _player.Date.Year,
+                                 id => id == _player.SpouseId || _player.HasLeftTown(id));
 
     /// <summary>여급 얼굴. FEMALE.CDS 에서 낸다.</summary>
     private uint[]? FaceOfMaid(in BarmaidTable.Barmaid her) =>
@@ -1262,8 +1263,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (dice.Next(2) != 0 && _game.Nations?.Find(nationId) is { Capital: >= 0 } nation)
             culture = _game.CityRows?.CultureOf(nation.Capital) ?? culture;
 
-        (string, int)? woman = _game.Barmaids?.Standing(_cityId, _player.Date.Year) is { } her
-                               && her.Id != _player.SpouseId
+        (string, int)? woman = Standing() is { } her
             ? (her.Name, her.Personality) : null;
         string? line = StrangerTalk.Pick(culture, _cultureNo, _player.RumorsOf(_cityId), woman,
                                          () => TavernRumors.Of(culture, dice, inn), dice);

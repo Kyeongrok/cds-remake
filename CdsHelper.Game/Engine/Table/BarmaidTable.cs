@@ -147,12 +147,16 @@ public sealed class BarmaidTable
     /// (1498) · 루치아(1522) 셋이다. 해가 갈수록 뒷사람으로 갈리므로 <b>나온 사람 가운데
     /// 가장 늦게 나온 이</b>를 세운다.
     /// </remarks>
-    public Barmaid? Standing(int cityId, int year)
+    /// <param name="away">
+    /// 그 자리에 안 서는 여급 — 아내와 마을을 떠난 옛 아내다. 원본 술집은 아내를 건너뛰고(<c>0x004A18CA</c>)
+    /// 도시 칸(<c>+0x24</c>)이 맞는 여급만 세운다(<c>0x004A18D4</c>).
+    /// </param>
+    public Barmaid? Standing(int cityId, int year, Func<int, bool>? away = null)
     {
         Barmaid? found = null;
         foreach (var b in Barmaids)
         {
-            if (b.City != cityId || b.Year > year) continue;
+            if (b.City != cityId || b.Year > year || away?.Invoke(b.Id) == true) continue;
             if (found is not { } had || b.Year >= had.Year) found = b;
         }
         return found;

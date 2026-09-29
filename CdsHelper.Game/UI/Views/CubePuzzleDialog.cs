@@ -496,7 +496,8 @@ internal sealed class CubePuzzleDialog : GameWindow
         Spin(4, () => { _game.Spin(); Sync(); });
     }
 
-    /// <summary>게임 EXE 의 설명 글 그대로(<c>0x0056BB60</c>).</summary>
+    /// <summary>게임 EXE 의 설명 글 그대로(<c>0x0056E2B8</c>, 정적 초기화 <c>0x0049C620</c> 가 전역 <c>0x0056DC88</c> 에 담는다).
+    /// <c>0x0056BB60</c> 은 탑 퍼즐 설명이다.</summary>
     private static readonly string Rules =
         "성공조건 [자기가 타고 있는 좌대를 움직여서 출구로 이동한다]" + Environment.NewLine +
         Environment.NewLine +
