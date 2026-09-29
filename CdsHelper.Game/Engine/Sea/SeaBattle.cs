@@ -293,7 +293,7 @@ public sealed class SeaBattle
             Name = name,
             X = x,
             Y = y,
-            Way = mine ? _rng.Next(2) + 4 : _rng.Next(2) + 1,
+            Way = SideWay(mine),
             Speed = speed,
             Sails = sails,
             Art = art,
@@ -310,6 +310,20 @@ public sealed class SeaBattle
         _ships[index] = ship;
         ship.Power = PowerOf(ship);
         return ship;
+    }
+
+    /// <summary>편마다 한 번 굴린 처음 방향 — [0] 아군 · [1] 적.</summary>
+    private readonly int?[] _sideWay = new int?[2];
+
+    /// <summary>
+    /// 그 편의 처음 방향. 원본은 편마다 기함 자리를 정할 때 방향을 <b>한 번만</b> 굴려 <c>[edi+4]</c> 에 두고
+    /// (<c>0x00442279</c> · <c>0x004422DC</c>), 호위선은 그 값을 베낀다(<c>0x00442B3B</c> → <c>[ebx+8]</c>) —
+    /// 한 편의 배는 모두 같은 쪽을 보고 선다. 예전에는 배마다 따로 굴렸다.
+    /// </summary>
+    private int SideWay(bool mine)
+    {
+        int k = mine ? 0 : 1;
+        return _sideWay[k] ??= mine ? _rng.Next(2) + 4 : _rng.Next(2) + 1;
     }
 
     // ── 괴물 놓기 ─────────────────────────────────────────────────────────
