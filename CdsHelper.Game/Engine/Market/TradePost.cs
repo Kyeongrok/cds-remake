@@ -90,14 +90,16 @@ public sealed class TradePost
     /// 그 도시의 특산품(<c>0x0042A030</c>) — 세워져 있고 파는 품목이어야 한다.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 형편 비트 0(아는 도시)도 본다. 그 비트는 항해하다 다가서면 켜지는데 우리 쪽은
-    /// 판 첫값만 들고 있어, 그대로 보면 나중에 알게 된 도시의 특산품이 영영 안 나온다. 그래서 뺐다.
+    /// 게임은 <b>살아 있는</b> 도시 레코드 <c>+0x04</c> 의 비트 2(아직 안 세움)를 본다(<c>0x0042A038</c>).
+    /// 식민 도시 스물셋은 이 비트를 켠 채 시작하고, 도시를 세우는 대본이 끈다
+    /// (<c>0x0040A038</c> · <c>0x0040A074</c>: <c>and word [eax+4], 0xFFFB</c>). 그래서 EXE 첫값이 아니라
+    /// 지금 서 있는지(<see cref="CityFounding.Standing"/>)로 가린다.
     /// </remarks>
     public int SpecialOf(Player player, int city)
     {
         int kind = _table.SpecialOf(city);
         if (kind < 0 || !OnSale(player, kind)) return -1;
-        if (_cities is { } rows && (rows.FlagsOf(city) & CityExeTable.UnfoundedBit) != 0) return -1;
+        if (!CityFounding.Standing(city, player.Date, player.ScriptedCities)) return -1;
         return kind;
     }
 
