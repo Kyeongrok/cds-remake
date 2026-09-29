@@ -13,7 +13,7 @@ namespace CdsHelper.Game.Engine.Market;
 ///   0x481070  매각 목록(내 짐)          — 짐 여덟 칸 그대로, 품목 제한 없음
 ///   0x480890  매각가(종류) — 구입 단가는 그 3/2
 ///   0x481430  거래 성립 — 팔고 사고, 재고를 빼고, 오간 돈만큼 시세가 움직인다
-///   0x4811E0  흥정 — 한 번에 90%, 성공 셋째면 그대로 성립, 실패 둘째면 결렬
+///   0x4811E0  흥정 — 한 번에 95%, 성공 셋째면 그대로 성립, 실패 둘째면 결렬
 /// </code>
 /// 창(<see cref="UI.Views.TradePostDialog"/>)은 cds95-mod 의 MarketUtilKR 매매 창을 옮긴 것이고,
 /// 규칙은 모두 여기서만 정한다.
@@ -90,16 +90,42 @@ public sealed class TradePost
     /// 그 도시의 특산품(<c>0x0042A030</c>) — 세워져 있고 파는 품목이어야 한다.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 형편 비트 0(아는 도시)도 본다. 그 비트는 항해하다 다가서면 켜지는데 우리 쪽은
-    /// 판 첫값만 들고 있어, 그대로 보면 나중에 알게 된 도시의 특산품이 영영 안 나온다. 그래서 뺐다.
+    /// 게임은 <b>살아 있는</b> 도시 레코드 <c>+0x04</c> 의 비트 2(아직 안 세움)를 본다(<c>0x0042A038</c>).
+    /// 식민 도시 스물셋은 이 비트를 켠 채 시작하고, 도시를 세우는 대본이 끈다
+    /// (<c>0x0040A038</c> · <c>0x0040A074</c>: <c>and word [eax+4], 0xFFFB</c>). 그래서 EXE 첫값이 아니라
+    /// 지금 서 있는지(<see cref="CityFounding.Standing"/>)로 가린다.
+    /// <para>
+    /// 비트 0(아는 도시)이 꺼져 있어도 -1 이다(<c>0x0042A034</c>). 이 비트를 켜는 것은 항해 중 시야 판정
+    /// (<c>0x0048D98F</c>)뿐이라, 멀리 떨어진 내륙 도시(호르무즈 ← 사마르칸트 따위)는 알기 전까지 항구에
+    /// 그 특산품이 안 들어온다. 유럽·지중해 101곳은 처음부터 알고(<see cref="CityExeTable.KnownAtStart"/>),
+    /// 나머지는 배가 다가서며 안다(<see cref="Player.Knows"/>). 들어와 있는 도시는 다가서며 이미 알았다.
+    /// </para>
     /// </remarks>
     public int SpecialOf(Player player, int city)
     {
         int kind = _table.SpecialOf(city);
         if (kind < 0 || !OnSale(player, kind)) return -1;
-        if (_cities is { } rows && (rows.FlagsOf(city) & CityExeTable.UnfoundedBit) != 0) return -1;
+        if (!CityFounding.Standing(city, player.Date, player.ScriptedCities)) return -1;
+        if (!Known(player, city)) return -1;
         return kind;
     }
+
+    /// <summary>
+    /// 도시정보 창에 늘어놓는 특산품(<c>0x004706C6</c>) — 제 것, 그 뒤로 딸린 내륙 도시 것. 둘 다 <see cref="SpecialOf"/>
+    /// (<c>0x0042A030</c>)를 거쳐 판매 게이트 · 세움 · 아는 도시에 걸린 것은 빠진다(<c>0x004707CE</c> · <c>0x004708C9</c>).
+    /// </summary>
+    public List<int> ShownSpecials(Player player, int city)
+    {
+        var list = new List<int>();
+        if (SpecialOf(player, city) is var own and >= 0) list.Add(own);
+        foreach (int inland in _table.InlandOf(city))
+            if (SpecialOf(player, inland) is var kind and >= 0) list.Add(kind);
+        return list;
+    }
+
+    /// <summary>그 도시를 아는지 — 도시 레코드 <c>+0x04</c> 비트 0.</summary>
+    private bool Known(Player player, int city) =>
+        city == player.CityId || player.Knows(city) || (_cities?.KnownAtStart(city) ?? true);
 
     /// <summary>
     /// 그 도시가 파는 것(<c>0x00480CC0</c>). 교역소가 없는 곳이면 빈 목록이다.
@@ -135,13 +161,42 @@ public sealed class TradePost
     {
         int kind = SpecialOf(player, from);
         if (kind < 0) return;
-        rows.Add(new Row(kind, from, SpecialCell, BuyPrice(player, here, kind), StockOf(player, from)[SpecialCell]));
+        // 특산품 줄은 대는 도시의 특산가(+0x14)를 기준가로 <b>그대로</b> 넘긴다(0x00480E3C · 0x00480ED5) —
+        // 지역 기준가와 견주지 않는다. 값 셈은 이 도시(시세 · 문화권 · 상태)로 한다.
+        int price = PriceOf(player, here, kind, _table.SpecialPriceOf(from)) * 3 / 2;
+        rows.Add(new Row(kind, from, SpecialCell, price, StockOf(player, from)[SpecialCell]));
     }
 
     /// <summary>
     /// 그 교역품을 파는지 — 판매 게이트 <c>0x0058BAB0[교역품]</c>. 처음부터 켜졌거나 발견 대본(<c>01 15</c>)이 켰으면 참.
     /// </summary>
     public bool OnSale(Player player, int kind) => _table.OnSale(kind) || player.IsGoodsActive(kind);
+
+    /// <summary>
+    /// 남은 공급이 있는지(<c>0x00480F70</c>) — 흥정만 걸고 나갈 때 상인 말을 가른다.
+    /// </summary>
+    /// <remarks>
+    /// 공통품 칸은 <b>판매 게이트와 상관없이</b> 다 더한다(<c>0x00480FCE</c>, <c>0x0042A100</c>). 제 특산품과
+    /// 내륙 도시 특산품은 <c>0x0042A030</c> 을 거친 것만 더한다(<c>0x00480FFF</c> · <c>0x0048103E</c>).
+    /// </remarks>
+    public bool HasSupply(Player player, int city)
+    {
+        int region = _table.RegionOf(city);
+        var stock = StockOf(player, city);
+        int special = SpecialOf(player, city);
+        int total = 0, cell = 0;
+        if (region >= 0)
+            foreach (int kind in _table.CommonOf(region))
+            {
+                if (kind == special) continue;
+                if (cell >= TradeTable.CommonSlots) break;
+                total += stock[cell++];
+            }
+        if (special >= 0) total += stock[SpecialCell];
+        foreach (int inland in _table.InlandOf(city))
+            if (SpecialOf(player, inland) >= 0) total += StockOf(player, inland)[SpecialCell];
+        return total > 0;
+    }
 
     /// <summary>그 도시에 교역소 물건이 하나라도 있는지.</summary>
     public bool HasGoods(Player player, int city) => RowsOf(player, city).Count > 0;
@@ -173,7 +228,14 @@ public sealed class TradePost
                 basis = Math.Min(basis, _table.SpecialPriceOf(inland));
                 break;
             }
+        return PriceOf(player, city, kind, basis);
+    }
 
+    /// <summary>
+    /// 기준가를 받은 매각가 셈(<c>0x00480890</c> 에 기준가를 넘긴 길, <c>0x00480A44</c> 부터) — 특산가 min 은 건너뛴다.
+    /// </summary>
+    private int PriceOf(Player player, int city, int kind, int basis)
+    {
         if (_goods.Find(kind) is not { } goods) return Math.Max(1, basis);
 
         int price;
@@ -389,16 +451,20 @@ public sealed class TradePost
     /// 흥정 메뉴가 뜨는지(<c>0x00481400</c>) — 값이 있고, 그 도시를 가진 <b>나라의 말</b>이 2 이상.
     /// </summary>
     /// <remarks>
-    /// 게임은 주인공과 동승 인물 가운데 가장 높은 자리를 본다(<c>0x00468FE0</c>). 우리 부하 자료에는
-    /// 언어가 없어 주인공 것만 본다.
+    /// 게임은 주인공 · 부관(<c>0x0047CC60(0, 0)</c>) · 통역(<c>0x0047CC60(3, 0)</c>) 셋 가운데 가장 높은 수준을
+    /// 본다(<c>0x00468FE0</c>).
     /// </remarks>
-    public bool CanBargain(Player player, int city, int cost)
+    /// <param name="crewTongue">
+    /// 부관·통역 가운데 그 언어(나라 표 언어 번호)를 가장 잘하는 수준. 없으면 주인공 것만 본다.
+    /// </param>
+    public bool CanBargain(Player player, int city, int cost, Func<int, int>? crewTongue = null)
     {
         if (cost <= 0 || _cities == null || _nations?.Find(_cities.NationOf(city)) is not { } nation)
             return false;
         int language = nation.Language;
-        return language >= 0 && language < Skill.Languages.Length
-               && player.TongueOf(Skill.Languages[language]) >= BargainTongue;
+        if (language < 0 || language >= Skill.Languages.Length) return false;
+        int best = Math.Max(player.TongueOf(Skill.Languages[language]), crewTongue?.Invoke(language) ?? 0);
+        return best >= BargainTongue;
     }
 
     /// <summary>

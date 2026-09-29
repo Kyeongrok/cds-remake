@@ -1923,7 +1923,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private void ShowCityInfo() => KeepCityMenu(() =>
         CityInfoDialog.Show(this, _cityName, _cityId, _game.CityRows,
                             _game.Nations, _game.Goods, _game.ItemPictures,
-                            Market?.Rates ?? _game.Rates));
+                            Market?.Rates ?? _game.Rates,
+                            TradeRules?.ShownSpecials(_player, _cityId)));
 
     /// <summary>
     /// 여관에 묵는다. 게임 차례 그대로 — 값을 부르고, YES 면 그때서야 돈을 본다.
