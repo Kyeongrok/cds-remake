@@ -363,6 +363,8 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             Engine.AccData.Register(player);
         }
 
+        // 이 판의 자동저장 칸도 걷는다 — 남기면 CONTINUE 로 은퇴한 제독이 되살아난다.
+        Engine.GameSave.DeleteAutoSavesOf(player);
         Engine.GameSave.Delete();
         return true;
     }

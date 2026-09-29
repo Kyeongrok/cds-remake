@@ -108,6 +108,15 @@ public sealed class Player
     /// </remarks>
     public string Name { get; set; } = "";
 
+    /// <summary>
+    /// 이 판의 표지 — NEW GAME 으로 주인공을 새로 앉힐 때 새로 뽑는다. 원본에는 없다(세이브가 한 파일뿐이라 쓸 데가 없다).
+    /// </summary>
+    /// <remarks>
+    /// 자동저장 칸이 여럿이라, 은퇴·삭제한 판의 칸을 가려 지우는 데 쓴다(<c>GameSave.DeleteAutoSavesOf</c>).
+    /// 이 칸 앞의 세이브를 불러오면 새로 뽑는다 — 그 앞 칸들은 이름으로 가린다.
+    /// </remarks>
+    public string GameId { get; set; } = Guid.NewGuid().ToString("N");
+
     // ── 신상 (NEW GAME 첫 걸음) ────────────────────────────────────────────────
 
     /// <summary>성. 게임 화면의 첫 칸이다.</summary>
