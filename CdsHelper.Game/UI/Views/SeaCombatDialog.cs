@@ -765,7 +765,19 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private bool TookBack()
     {
         if (!_battle.Delegated) return true;
-        if (!ConfirmDialog.Ask(this, SeaBattle.TakeBack, BattleTitle, _face)) return false;
+
+        // 묻는 동안은 다음 턴을 굴리지 않는다 — 물음 창(ShowDialog)의 중첩 루프에서도 타이머 틱이 와서,
+        // 예전에는 대답을 기다리는 사이 턴이 계속 돌고 판이 끝나 창이 닫히기도 했다.
+        _autoTimer?.Stop();
+        _askingTakeBack = true;
+        bool yes;
+        try { yes = ConfirmDialog.Ask(this, SeaBattle.TakeBack, BattleTitle, _face); }
+        finally { _askingTakeBack = false; }
+        if (!yes)
+        {
+            AutoTurn();                                  // 계속 맡긴다 — 멈춰 둔 턴을 다시 건다
+            return false;
+        }
 
         _battle.Delegated = false;
         foreach (var ship in _battle.Ships.Where(s => s.Mine && s.CanAct))
@@ -846,14 +858,25 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private void AutoTurn()
     {
         if (!_battle.Delegated) return;
-        var timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = AutoTurnPause };
-        timer.Tick += (_, _) =>
+        if (_autoTimer == null)
         {
-            timer.Stop();
-            if (_battle.Delegated && !_running && !_battle.Over && IsLoaded) RunTurn();
-        };
-        timer.Start();
+            _autoTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = AutoTurnPause };
+            _autoTimer.Tick += (_, _) =>
+            {
+                _autoTimer.Stop();
+                if (_battle.Delegated && !_running && !_askingTakeBack && !_battle.Over && IsLoaded) RunTurn();
+            };
+            Closed += (_, _) => _autoTimer.Stop();
+        }
+        _autoTimer.Stop();                               // 틈을 새로 센다 — 두 번 걸려도 한 번만 돈다
+        _autoTimer.Start();
     }
+
+    /// <summary>위임 중 다음 턴을 거는 눈금 — 되찾기를 물을 때 멈춘다(<see cref="TookBack"/>).</summary>
+    private DispatcherTimer? _autoTimer;
+
+    /// <summary>「제독이 명령하시겠습니까?」를 묻는 중인지 — 그 사이 틱은 턴을 안 굴린다.</summary>
+    private bool _askingTakeBack;
 
     /// <summary>한 턴을 굴린다(<c>0x0043CA60</c>) — 계획을 마친 뒤든 위임 중이든 같은 길이다.</summary>
     private void RunTurn()
