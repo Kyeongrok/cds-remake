@@ -353,6 +353,8 @@ public sealed class ShipMapWindow : Window
         Loaded += (_, _) => SettingsDialog.Apply(this);
         Background = Brushes.Black;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        // 인물 세상을 새로 지을 때마다(불러오기 포함) 누적 캐릭터를 다시 앉힌다.
+        _game.WorldBuilt = AttachCumulative;
 
         // HwndHost 자체는 WPF 에 아무것도 그리지 않아 히트테스트에 안 걸린다.
         // 같은 자리에 투명 Border 를 겹쳐 두고 마우스는 그쪽에서 받는다.
@@ -1940,34 +1942,55 @@ public sealed class ShipMapWindow : Window
         // 「등장시키지 않는다」면 깃발만 세운다 — 비우는 것은 은퇴할 때다(0x0041AD55).
         if (at != 0) { _game.Player.SkipsCumulative = true; return true; }
 
-        // 등장시키면 인물 276~280 자리에 앉고(0x0041AF00), 옛 발자취를 날마다 되짚는다.
-        if (_game.World is { } world)
-        {
-            Engine.AccData.Place(world.People);
-            var replay = new Engine.AccReplay(_game.Player.Date);
-            // 누적 캐릭터가 옛 공략을 되짚으면 그 도시가 그 나라로 넘어가고 알림이 뜬다(0x00409A7E).
-            replay.Captured = (person, city, nation) =>
-            {
-                Engine.Market.CityHistory.ChangeNation(_game.Player, _game.CityRows, _game.Nations, city, nation);
-                string who = world.People.FirstOrDefault(r => r.Id == person)?.Name ?? "";
-                string town = _game.CityName(city);
-                if (who.Length > 0)
-                    NoticeDialog.Show(this, $"{who}{GameUi.Josa(who, "이", "가")} [{town}]{GameUi.Josa(town, "을", "를")} 공략했습니다");
-            };
-            // 옛 발견 보고를 되짚으면 그 발견물이 그 사람 이름으로 세상에 알려진다
-            // (0x0040B916 — 아무도 발표하지 않은 것에만 이름이 올라간다).
-            replay.Announced = (person, discovery) =>
-            {
-                string who = world.People.FirstOrDefault(r => r.Id == person)?.Name ?? "";
-                if (!_game.Player.Scoop(discovery, who)) return;
-                string what = _game.Discoveries?.Table.Find(discovery)?.Name ?? "";
-                if (what.Length == 0) return;
-                NoticeDialog.Show(this, $"{who}{GameUi.Josa(who, "이", "가")} [{what}]{GameUi.Josa(what, "을", "를")} 보고했습니다");
-            };
-            replay.Load();
-            world.Replay = replay.Any ? replay : null;
-        }
+        // 등장시키면 인물 276~280 자리에 앉고(0x0041AF00), 옛 발자취를 날마다 되짚는다. 앉힌 날을 적어 두면
+        // 세상을 새로 지을 때마다(불러오기 포함) AttachCumulative 가 다시 앉힌다 — 여기서는 세상을 새로 짓게만 한다.
+        _game.Player.SetAccOpened(_game.Player.Date);
+        _game.ResetWorld();
         return true;
+    }
+
+    /// <summary>
+    /// 인물 세상을 새로 지을 때마다 누적 캐릭터를 다시 앉히고 행적 되짚기를 건다(<see cref="Engine.Game.WorldBuilt"/>).
+    /// </summary>
+    /// <remarks>
+    /// 원본은 NEW GAME 에서 한 번 앉히고(<c>0x0041AF00</c>) 인물 레코드째로 세이브에 적는다 — 지난 날수 <c>+0x110</c> ·
+    /// 대본 위치 <c>+0x114</c> · 늦어짐(<c>0x00432290</c>) · 함대 선체 여덟 칸(<c>0x00432160</c>)이다(<c>0x00431E90</c>).
+    /// 우리 인물 세상은 날짜로 다시 짓는 것이라 불러오면 276~280 이 표의 기본값으로 돌아가고 되짚기도 끊겼다.
+    /// 그래서 앉힌 날(<see cref="Support.Local.Models.Player.AccOpened"/>)과 늦어짐을 세이브에 두고, 지을 때마다
+    /// 다시 앉혀 그날부터 되짚는다. 지금 날짜까지의 줄은 <b>조용히</b> 튼다 — 그 사이의 공략·보고는 이미
+    /// 세이브(도시 나라 · 남이 앞지른 발견물)에 들어 있다.
+    /// </remarks>
+    private void AttachCumulative(PersonWorld world)
+    {
+        var player = _game.Player;
+        if (player.AccOpened is not { } opened || player.SkipsCumulative) return;
+
+        Engine.AccData.Place(world.People);
+        var replay = new Engine.AccReplay(opened);
+        // 누적 캐릭터가 옛 공략을 되짚으면 그 도시가 그 나라로 넘어가고 알림이 뜬다(0x00409A7E).
+        replay.Captured = (person, city, nation) =>
+        {
+            Engine.Market.CityHistory.ChangeNation(_game.Player, _game.CityRows, _game.Nations, city, nation);
+            string who = world.People.FirstOrDefault(r => r.Id == person)?.Name ?? "";
+            string town = _game.CityName(city);
+            if (who.Length > 0)
+                NoticeDialog.Show(this, $"{who}{GameUi.Josa(who, "이", "가")} [{town}]{GameUi.Josa(town, "을", "를")} 공략했습니다");
+        };
+        // 옛 발견 보고를 되짚으면 그 발견물이 그 사람 이름으로 세상에 알려진다
+        // (0x0040B916 — 아무도 발표하지 않은 것에만 이름이 올라간다).
+        replay.Announced = (person, discovery) =>
+        {
+            string who = world.People.FirstOrDefault(r => r.Id == person)?.Name ?? "";
+            if (!_game.Player.Scoop(discovery, who)) return;
+            string what = _game.Discoveries?.Table.Find(discovery)?.Name ?? "";
+            if (what.Length == 0) return;
+            NoticeDialog.Show(this, $"{who}{GameUi.Josa(who, "이", "가")} [{what}]{GameUi.Josa(what, "을", "를")} 보고했습니다");
+        };
+        replay.Load();
+        foreach (var (person, days) in player.AccLate) replay.SetLate(person, days);
+        // 지금 날짜까지는 이미 지난 일이다 — 알리지 않고 함대 목록·자리만 되살린다(막 앉힌 날이면 조용할 것이 없다).
+        replay.QuietThrough = player.Date > opened ? player.Date : null;
+        world.Replay = replay.Any ? replay : null;
     }
 
     private void NewGame()
@@ -2610,6 +2633,9 @@ public sealed class ShipMapWindow : Window
             // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
             _game.Player.RestoreVisitedCities(saved.VisitedCities);
             _game.Player.RestoreExecuted(saved.Executed);
+            // 누적 캐릭터를 앉힌 날과 늦어짐 — 세상을 새로 지을 때 AttachCumulative 가 다시 앉힌다.
+            // 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
+            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate);
             _game.Player.RestorePatronDocks(saved.PatronDocks);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.

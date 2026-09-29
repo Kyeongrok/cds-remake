@@ -526,9 +526,17 @@ public sealed class Game
             // 처형한 사람은 세상을 새로 지어도 안 돌아온다(0x00432180(0) 이 세이브에 남는 것과 같다).
             foreach (var row in _world.People)
                 if (Player.Executed.Contains(row.Id)) row.Appear = 0;
+            // 판에 딸린 사람들(누적 캐릭터 276~280)을 다시 앉힌다 — 원본은 그 인물 레코드를 세이브에
+            // 그대로 적어(0x00431E90) 불러와도 남는데, 우리는 세상을 새로 지으므로 지을 때마다 다시 건다.
+            WorldBuilt?.Invoke(_world);
             return _world;
         }
     }
+
+    /// <summary>
+    /// 인물 세상을 새로 지은 직후에 부른다(아직 날짜를 따라잡기 전이다). 누적 캐릭터를 다시 앉히는 자리다.
+    /// </summary>
+    public Action<PersonWorld>? WorldBuilt { get; set; }
 
     /// <summary>
     /// 일기토에 이긴 뒤 그 인물을 <b>처형한다</b> — 등장 칸을 0 으로 두고(<c>0x004AA35D</c> 의

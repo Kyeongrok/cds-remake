@@ -1467,6 +1467,46 @@ public sealed class Player
         Loads++;                                   // 이미 지어 둔 세상이 있으면 새로 지어 덮게 한다
     }
 
+    // ── 누적 캐릭터(인물 276~280) ────────────────────────────────────────────
+
+    /// <summary>
+    /// 누적 캐릭터를 <b>등장시킨</b> 판이면 그 판을 연 날, 아니면 null.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 NEW GAME 에서 은퇴한 제독을 인물 276~280 에 앉히고(<c>0x0041AF00</c>) 그 인물 레코드를 통째로
+    /// 세이브에 적는다 — 지난 날수 <c>+0x110</c> · 대본 위치 <c>+0x114</c> · 늦어짐(<c>0x00432290</c>) ·
+    /// 함대 선체 여덟 칸(<c>0x00432160</c>, 인물 <c>0x114</c>~<c>0x118</c> 만 — <c>0x00432034</c>)이다.
+    /// 우리 인물 세상은 날짜로 다시 짓는 것이라 앉힌 날만 적어 두고, 세상을 지을 때마다 다시 앉혀
+    /// 그날부터 행적을 되짚는다. 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
+    /// </remarks>
+    public DateTime? AccOpened { get; private set; }
+
+    /// <summary>누적 캐릭터를 앉힌 날을 적는다(없애려면 null).</summary>
+    public void SetAccOpened(DateTime? on) => AccOpened = on;
+
+    private readonly Dictionary<int, int> _accLate = [];
+
+    /// <summary>
+    /// 누적 캐릭터마다 늦어진 날수 — 인물 번호 → 날수(<c>0x00432290</c>). 술집 일기토에 지면 밀린다(<c>0x004A4A3D</c>).
+    /// </summary>
+    public IReadOnlyDictionary<int, int> AccLate => _accLate;
+
+    /// <summary>그 누적 캐릭터를 그만큼 더 늦춘다.</summary>
+    public void AddAccLate(int person, int days)
+    {
+        if (person < 0 || days <= 0) return;
+        _accLate[person] = (_accLate.TryGetValue(person, out int was) ? was : 0) + days;
+    }
+
+    /// <summary>세이브에서 누적 캐릭터를 되돌린다. 이 칸 앞의 세이브는 등장시키지 않은 판이다.</summary>
+    public void RestoreAcc(DateTime? opened, IReadOnlyDictionary<int, int>? late)
+    {
+        AccOpened = opened;
+        _accLate.Clear();
+        foreach (var (person, days) in late ?? new Dictionary<int, int>()) AddAccLate(person, days);
+        Loads++;                                   // 세상을 새로 지어 다시 앉히게 한다
+    }
+
     private readonly Dictionary<string, PatronDock> _patronDocks = [];
 
     /// <summary>
