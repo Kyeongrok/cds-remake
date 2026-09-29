@@ -687,6 +687,17 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     {
         if (kind is not (FacilityKind.Tavern or FacilityKind.Inn)) return [];
 
+        // 고용해 한 사람이 나갔으면 <b>그 칸만</b> 지운다(0x004A5100 → 0x004A1C60 → 0x004A1840) —
+        // 남은 손님은 무명 손님까지 모습·할 이야기 그대로다. 보이는 다섯 자리가 다 비면 뒤에 선 손님을
+        // 당겨 오는데(0x004A1C99~), 줄을 지을 때부터 다섯을 넘지 않으니(0x004A1ABF 의 cmp 5) 당길 손님이 없다.
+        bool keep = _keepLine;
+        _keepLine = false;
+        if (keep && _line is { } line && _lineKind == kind && _lineCity == _cityId)
+        {
+            line.RemoveAll(g => g.Person is { } name && _player.HasMate(name));
+            return [.. line.Select(g => g.Art)];
+        }
+
         var book = _game.Guests;
         if (book == null) return [];
 
@@ -701,6 +712,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         }
 
         var art = new List<BuildingPhotoWindow.GuestArt>(TavernGuests.MaxOnScreen);
+        var owners = new List<string?>(TavernGuests.MaxOnScreen);
         var maid = kind == FacilityKind.Tavern ? Standing() : null;
         bool maidSeated = false;
 
@@ -717,6 +729,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
                             _player.HasMetBarmaid(her.Id) ? her.Name : "여",
                             () => Alone(() => MeetBarmaid(her))));
+                owners.Add(null);
                 continue;
             }
 
@@ -728,6 +741,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 var talk = seat.Art.Female ? null : SeatStranger(inn);
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height, label,
                             () => Alone(() => MeetStranger(seat.Art.Female, talk, inn))));
+                owners.Add(null);
             }
             else
             {
@@ -740,10 +754,29 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                             () => Alone(() => MeetPerson(who, seat.Art.Female,
                                                          inn: kind == FacilityKind.Inn)),
                             () => Known(who) ? who.ShortName : female ? "여" : "남"));
+                owners.Add(who.Name);
             }
         }
+        _line = [.. art.Zip(owners, (a, o) => (a, o))];
+        _lineKind = kind;
+        _lineCity = _cityId;
         return art;
     }
+
+    /// <summary>지금 사진 앞에 선 손님 줄 — 그림과, 인물이면 그 이름(여급·무명 손님은 null).</summary>
+    private List<(BuildingPhotoWindow.GuestArt Art, string? Person)>? _line;
+
+    /// <summary><see cref="_line"/> 이 어느 시설 것인지.</summary>
+    private FacilityKind _lineKind;
+
+    /// <summary><see cref="_line"/> 이 어느 도시 것인지.</summary>
+    private int _lineCity = -1;
+
+    /// <summary>
+    /// 다음 <see cref="GuestArt"/> 한 번은 줄을 새로 짓지 않고 <see cref="_line"/> 에서 나간 사람만 뺀다 —
+    /// 고용한 뒤 사진을 다시 세울 때 켠다.
+    /// </summary>
+    private bool _keepLine;
 
     // ── 여급 ────────────────────────────────────────────────────────────────
 
@@ -2029,7 +2062,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             _player.RememberMate(Tavern.MateInfoOf(who));
             _player.Note(Player.TraceHire, who.Index);    // 0x0045345E — 행적에 고용을 적는다
             PlaceMate(who.Name);
-            // 부하가 되면 술집 자리에서 빠진다(Sitting) — 사진 앞 손님도 다시 세운다.
+            // 부하가 되면 술집 자리에서 빠진다(Sitting) — 사진 앞 줄에서는 그 칸만 지운다(0x004A4D3B 가
+            // 나감 깃발을 세우면 0x004A5100 이 0x004A1C60 을 부른다).
+            _keepLine = true;
             (_view as CityPicView)?.RefreshPhoto();
         }
         return true;
