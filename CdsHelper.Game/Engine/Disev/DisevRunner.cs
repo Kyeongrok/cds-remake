@@ -494,8 +494,11 @@ public sealed class DisevRunner
             case DisevCall.HintInactive: return !HintHeld(I("Hint"));                // 12 0E (0x0040902F)
             case DisevCall.HasItem: return player.HasItem(I("Item"));                // 0F 05 (0x00408EC8)
             case DisevCall.LacksItem: return !player.HasItem(I("Item"));             // 12 05 (0x00409022)
-            case DisevCall.Discovered: return player.HasFound(I("Discovery"));       // 02 0B (0x004089C2)
-            case DisevCall.NotDiscovered: return !player.HasFound(I("Discovery"));   // 3A 0B (0x0040AB27)
+            // 02 0B · 3A 0B — 0x004AAD80 은 사람 칸 0(내가 찾음)뿐 아니라 칸 1(역사 항해자가 먼저 찾음,
+            // 0x004AAC65 가 채운다)도 본다. 이야기0 파트 10 의 「아프리카 남단이 발견되었다 합니다」는 디아스가 찾은 것을 알린다 —
+            // 예전에는 주인공이 찾은 것만 보아 1498 년 전에는 이 칸이 안 열렸다.
+            case DisevCall.Discovered: return FoundByAnyone(I("Discovery"));         // 02 0B (0x004089C2)
+            case DisevCall.NotDiscovered: return !FoundByAnyone(I("Discovery"));     // 3A 0B (0x0040AB27)
             case DisevCall.DiscoveryDone: return player.HasFound(I("Discovery"));
             // 5E 0B — 이름과 달리 <b>내가 보고했는지</b>다(0x00407E06: 인스턴스 +0x16 &amp; 0x80, 보고 0x004AACA0 ·
             // 발표 0x0047E651 이 세운다). 예전에는 「아직 못 찾았다」로 셈해 개인 이야기(PDG 10 · PHT 16 ·
@@ -1125,6 +1128,13 @@ public sealed class DisevRunner
     /// <summary>그 힌트를 얻었거나 이미 보고까지 했는지.</summary>
     private bool HintHeld(int hint) =>
         _game.Player.HasHint(hint) || (_game.Discoveries?.IsHintDone(_game.Player, hint) ?? false);
+
+    /// <summary>
+    /// 그 발견물의 사람 칸 0·1 에 이름이 있는지(<c>0x004AAD80</c>) — 주인공이 찾았거나, 오늘까지 역사 항해자가 찾았거나.
+    /// </summary>
+    /// <remarks>칸 1 은 게임이 들고 있지만 앱은 대본 날짜로 셈한다(<see cref="Discovery.HistoryVoyages.TakenBy"/>).</remarks>
+    private bool FoundByAnyone(int discovery) =>
+        _game.Player.HasFound(discovery) || (_game.Voyagers?.TakenBy(discovery, _game.Player.Date) ?? -1) >= 0;
 
     /// <summary>
     /// 다중 선택지를 띄우고 고른 값(자리 + 밑값)을 낸다. 선택지는 <c>81 5E</c>(여기서는 「/」)로 갈린다.
