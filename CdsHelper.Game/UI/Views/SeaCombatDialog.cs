@@ -1059,10 +1059,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <remarks>
     /// 적 기함을 격침·나포하면 <b>살아 있는 호위선까지</b> 모두 후보다. 적 기함이 퇴각했으면 나포해 둔 배가 하나라도
     /// 있어야 차림표가 뜨고, 그때도 산 호위선이 함께 후보가 된다. 이름은 선체 이름, 승원 0, 내구·대포는 판 끝 값이다.
+    ///
+    /// 괴물 판은 들일 배가 없다 — 칸 8~14 는 괴물 머리와 몸 조각이다. 머리를 이겨도 몸 여섯은 상태 4(떠 있음)
+    /// 그대로 남아, 예전에는 괴물 그림 번호(0~3)를 선체 번호로 읽은 이름 없는 배 여섯·일곱 척이 편입 후보로 떴다.
     /// </remarks>
     private void Muster(Outcome outcome)
     {
         if (_player is not { } player || _fleet.Count == 0) return;
+        if (_battle.Monster) return;
         var enemies = _battle.Ships.Where(s => !s.Mine).ToList();
         if (outcome == Outcome.EnemyRetreated && enemies.All(s => s.State != SeaBattle.ShipState.Captured)) return;
 
