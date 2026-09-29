@@ -1195,16 +1195,15 @@ internal sealed class LandBattleScene : GameWindow
         // 제독이 이미 끝이면 부관이 못 올라도 「부관의 무력이 0 올라갔다!」가 나온다 — 원본 그대로다.
         if (spoils.Might > 0)
         {
-            var stats = player.Abilities.ToArray();
-            int was = stats[Ability.Might];
-            stats[Ability.Might] = Math.Min(Ability.Max, was + spoils.Might);
-            player.SetAbilities(stats);
-            int up = stats[Ability.Might] - was;
+            // 0x00432C50 은 보이는 값 1~100 으로 자른다 — 담는 값으로는 99 가 끝이다.
+            int was = player.AbilityOf(Ability.Might);
+            player.AdjustAbility(Ability.Might, spoils.Might);
+            int up = player.AbilityOf(Ability.Might) - was;
 
             string mateName = player.MateAt(0);
             if (mateName.Length > 0 && game.MateInfo(mateName) is { } mate)
             {
-                int mateUp = Math.Min(Ability.Max, mate.Might + spoils.Might) - mate.Might;
+                int mateUp = Math.Min(Ability.Max - 1, mate.Might + spoils.Might) - mate.Might;
                 player.RememberMate(mate with { Might = mate.Might + mateUp });
                 NoticeDialog.Show(this, up > 0
                     ? mateUp > 0 ? $"{player.Name}, 부관의 무력이 {up} 올라갔다!" : $"{player.Name}의 무력이 {up} 올라갔다!"
