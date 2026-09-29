@@ -14,7 +14,8 @@ namespace CdsHelper.Game.Engine.Sea;
 ///     걸리면 셈 = 1
 ///   안 걸리면 셈이 0 이 아닐 때 하나 줄이고, 0 이 되면 비·눈이 그친다(흐려지며 사라진다)
 /// </code>
-/// 반기를 가르는 위도 비교가 <c>625</c>(원래 적도 10000 이었을 것)라 남반구에서도 뒤집히지 않는다 —
+/// 반기를 가르는 위도 비교가 <c>625</c>(원래 적도 10000 이었을 것)라 남반구에서도 뒤집히지 않고,
+/// 거꾸로 <c>y &lt; 625</c>(북위 약 84도 위)에서만 1~6월 줄과 7~12월 줄이 맞바뀐다(<c>0x00424FCD</c>) —
 /// 원본 버릇 그대로 둔다. 비·눈은 <b>놀이에 아무 영향이 없다</b> — 그림과 빗소리(WAVES 35)뿐이다.
 /// 기후대는 원본이 이레마다 새로 뜬 바람 칸의 것을 쓰는데 여기서는 지금 칸의 것을 쓴다.
 /// </remarks>
@@ -30,6 +31,9 @@ public sealed class SeaWeather
     private static readonly int[] FirstHalf = [4, 20, 0, 0, 10, 4, 10, 10, 20, 10, 20, 4, 20];
     private static readonly int[] SecondHalf = [4, 4, 20, 0, 20, 20, 10, 10, 10, 0, 10, 4, 20];
 
+    /// <summary>이 위도(원본 y) 밑이면 반기를 맞바꾼다(<c>0x00424FCD cmp [0x005B63B4], 0x271</c>).</summary>
+    private const int HalfFlipY = 0x271;
+
     /// <summary>비가 오는 위도 폭(원본 위도 0~20000).</summary>
     private const int RainFrom = 0x0ADA, RainTo = 0x4346;
 
@@ -38,7 +42,10 @@ public sealed class SeaWeather
     /// </summary>
     public Kind? Roll(int zone, int month, int latRaw, Random random)
     {
-        int[] row = month is >= 1 and <= 6 ? FirstHalf : SecondHalf;
+        // 0x00424FB0: 1~6월이면 0, 아니면 1 을 두고, y ≥ 625 면 뒤집는다 — 줄 0 이 7~12월 줄이다.
+        bool firstHalf = month is >= 1 and <= 6;
+        if (latRaw < HalfFlipY) firstHalf = !firstHalf;
+        int[] row = firstHalf ? FirstHalf : SecondHalf;
         int n = zone >= 0 && zone < row.Length ? row[zone] : 20;
         bool hit = n < 2 || random.Next(n) == 0;
 
