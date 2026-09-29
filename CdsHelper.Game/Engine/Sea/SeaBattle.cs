@@ -23,6 +23,8 @@ namespace CdsHelper.Game.Engine.Sea;
 /// 원본 결함(적이 걸 때 곱하는 승원이 뒤바뀜 · 적이 나포할 때 막는 매력만 적 것)도 그대로 옮기고 그 자리에 적었다.
 /// 괴물 싸움(<c>+0x8FC</c>)과 부관 위임(<c>+0x944</c>)도 옮겼다 —
 /// <see cref="Monster"/> · <see cref="MonsterUp"/> · <see cref="Delegated"/>.
+/// 괴물은 머리(칸 8)와 둘레 몸 여섯(칸 9~14)으로 일곱 칸을 차지하고(<see cref="PlaceMonster"/>),
+/// 입는 피해는 모두 머리 내구로 간다.
 /// </remarks>
 public sealed class SeaBattle
 {
@@ -114,6 +116,12 @@ public sealed class SeaBattle
         /// 불이 붙었는지(상태 5, <c>0x00437E3A</c>). <b>꺼지지 않는다</b> — 턴마다 내구 3 을 깎는다. 이동·총격·포격은 그대로 한다.
         /// </summary>
         public bool Burning { get; internal set; }
+
+        /// <summary>
+        /// 괴물의 <b>몸 조각</b>(칸 9~14)인지 — 머리(칸 8) 둘레 여섯 칸을 차지할 뿐 스스로는 움직이지도 싸우지도 않는다
+        /// (<c>0x00440EBF</c> 가 칸 8 값을 베끼고, 판 되돌이 <c>0x0043CB2D</c> 가 칸 8 뒤를 건너뛴다).
+        /// </summary>
+        public bool Body { get; init; }
 
         public bool CanAct => State == ShipState.Afloat;
     }
@@ -303,6 +311,113 @@ public sealed class SeaBattle
         ship.Power = PowerOf(ship);
         return ship;
     }
+
+    // ── 괴물 놓기 ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 괴물 네 마리의 값(<c>0x00440DC1</c>~<c>0x00440E56</c>) — 무력(<c>+0x924</c>) · 내구(<c>+0x5A4</c>) · 적재(<c>+0x5A0</c>).
+    /// 그림 벌(<c>+0x900</c>, SCOMBAT 파트 13+벌, <c>0x0044307B</c>)도 함께 둔다.
+    /// </summary>
+    public static (int Might, int Hp, int Cargo, int Art) MonsterStats(int person) => person switch
+    {
+        0x111 => (100, 250, 250, 0),     // 식인 상어
+        0x110 => (90, 280, 300, 2),      // 시서펜트
+        0x112 => (70, 260, 350, 3),      // 맨터
+        _ => (80, 300, 400, 1),          // 크라켄(0x10F)
+    };
+
+    /// <summary>
+    /// 괴물 몸 여섯 조각의 자리 — 머리 둘레 육각 이웃이다(<c>0x00442D00</c> · <c>0x00439440</c> 의 스택 표).
+    /// 짝수 X 면 뒤 두 쌍의 Y 에 2 를 더한다(<c>0x00442D60</c> — 짝수 줄은 반 칸 아래로 밀렸다).
+    /// </summary>
+    private static readonly (int Dx, int Dy)[] BodyCells = [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (1, -1)];
+
+    /// <summary>
+    /// 괴물을 판에 올린다 — 머리는 칸 8, 몸은 칸 9~14 이고 칸 15 는 빈다(<c>0x00440D90</c> · <c>0x00442B8E</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   값        무력·내구·적재는 <see cref="MonsterStats"/> , 승원 = 내구/5 , 상태 4
+    ///   적 제독   방어(+0x930) 20 · 검술(+0x938)·사격술(+0x93C)·운세(+0x940) 1 · 적 척수 [0x848] 7
+    ///   몸        칸 8 의 선체·내구·적재·승원·상태를 베끼고 걸음은 0(0x00440EBF~0x00440F02)
+    ///   자리      적 판종류 k = (아군 판종류 + 2) % 4 (0x004421CB)
+    ///     k 0   X = rand(21)+1 ,  Y = 7 − rand(7) ,   방향 3
+    ///     k 1   X = rand(12)+10 , Y = rand(15)+1 ,  방향 rand(2)+4
+    ///     k 2   X = rand(21)+1 ,  Y = rand(7)+9 ,   방향 0
+    ///     k 3   X = 12 − rand(12) , Y = rand(15)+1 , 방향 rand(2)+1
+    ///   몸 조각의 방향은 늘 2 다(0x00442D43)
+    /// </code>
+    /// 원본은 아군 판종류를 rand(4) 로 굴리지만(<c>0x004421B9</c>) 앱은 아군을 늘 오른쪽(판종류 1)에 세우므로
+    /// 괴물은 판종류 3(왼쪽 절반)에 선다.
+    /// </remarks>
+    public Ship PlaceMonster(int person, int ourSide = 1)
+    {
+        var (might, hp, cargo, art) = MonsterStats(person);
+        int x, y, way;
+        switch (((ourSide + 2) % 4 + 4) % 4)
+        {
+            case 0: x = _rng.Next(21) + 1; y = 7 - _rng.Next(7); way = 3; break;
+            case 1: x = _rng.Next(12) + 10; y = _rng.Next(15) + 1; way = _rng.Next(2) + 4; break;
+            case 2: x = _rng.Next(21) + 1; y = _rng.Next(7) + 9; way = 0; break;
+            default: x = 12 - _rng.Next(12); y = _rng.Next(15) + 1; way = _rng.Next(2) + 1; break;
+        }
+
+        MonsterPerson = person;
+        EnemySide = new Side(Gunnery: 0, Might: might, Defense: 20, Mind: 0, Charm: 0,
+                             Sword: 1, Shooting: 1, Fortune: 1);
+        // 선체 칸(+0x5B4)은 괴물 판에서 안 채워 0 으로 본다 — 물러설 때 견주는 필요승원이 그 줄 값이다.
+        int minCrew = Hull.Table[0].Crew;
+
+        Ship Make(int index, int px, int py, int pway, bool body) => new()
+        {
+            Index = index,
+            Name = "괴물",
+            X = px,
+            Y = py,
+            Way = pway,
+            Speed = 0,
+            Sails = new int[3],
+            Art = art,
+            Hp = hp,
+            MaxHp = hp,
+            Crew = hp / 5,
+            MinCrew = minCrew,
+            Gun = -1,
+            Cargo = cargo,
+            Body = body,
+        };
+
+        var head = Make(PerSide, x, y, way, body: false);
+        _ships[PerSide] = head;
+        for (int k = 0; k < BodyCells.Length; k++)
+            _ships[PerSide + 1 + k] = Make(PerSide + 1 + k, x, y, 2, body: true);
+        _ships[PerSide * 2 - 1] = null;
+        LayMonsterBody();
+        foreach (var s in Ships.Where(s => !s.Mine)) s.Power = PowerOf(s);
+        return head;
+    }
+
+    /// <summary>괴물 머리(칸 8). 괴물 판이 아니면 null.</summary>
+    public Ship? MonsterHead => Monster ? At(PerSide) : null;
+
+    /// <summary>
+    /// 몸 여섯 조각을 머리 둘레에 다시 깐다 — 머리가 한 칸 옮길 때마다다(<c>0x00439425</c>~<c>0x004394DF</c>).
+    /// </summary>
+    private void LayMonsterBody()
+    {
+        if (At(PerSide) is not { } head) return;
+        bool even = (head.X & 1) == 0;
+        for (int k = 0; k < BodyCells.Length; k++)
+        {
+            if (At(PerSide + 1 + k) is not { Body: true } part) continue;
+            var (dx, dy) = BodyCells[k];
+            part.X = head.X + dx;
+            part.Y = head.Y + dy + (even && k >= 4 ? 2 : 0);
+        }
+    }
+
+    /// <summary>괴물 판에서 칸 8 이상(머리·몸)인지 — 피해가 모두 머리 내구로 간다.</summary>
+    private bool IsMonster(Ship s) => Monster && !s.Mine && _ships[PerSide] is not null;
 
     // ── 대열 ──────────────────────────────────────────────────────────────
 
@@ -570,7 +685,9 @@ public sealed class SeaBattle
     private void PlanSide(bool mine)
     {
         Array.Clear(_marks);
-        var side = Ships.Where(s => s.Mine == mine && s.CanAct).OrderBy(s => s.Index).ToList();
+        // 괴물 몸은 따로 짜지 않는다 — 원본은 머리 길을 몸 칸 9~15 에 베끼지만(0x0043BD0C) 몸은 판 되돌이에서
+        // 건너뛰고(0x0043CB2D) 머리가 옮길 때 둘레에 다시 깔 뿐이다(LayMonsterBody).
+        var side = Ships.Where(s => s.Mine == mine && s.CanAct && !s.Body).OrderBy(s => s.Index).ToList();
         var foes = Ships.Where(s => s.Mine != mine && s.CanAct).ToList();
 
         foreach (var ship in side)
@@ -827,6 +944,28 @@ public sealed class SeaBattle
             for (int d = 2; d <= range; d++)
                 if (AimInBroadside(x, y, way, ax, ay, d)) return plan;
         return null;
+    }
+
+    /// <summary>
+    /// 괴물 머리에서 (dX, dY) 가 <b>몸 바깥 한 겹</b>(열두 칸)인지 — 괴물이 총격으로 붙잡는 칸이다
+    /// (<c>0x0043634F</c>~<c>0x004363E2</c> · 모드 6 의 <c>0x0043B1F6</c>~<c>0x0043B28C</c>, 두 곳이 같은 셈이다).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   |dX·dY| == 4 는 뺀다(네 귀퉁이)
+    ///   짝수 X   |dX|&lt;2 · |dY|&lt;2 면 (±1, −1) 만 남긴다 ; dY == 2 이고 dX ≠ 0 이면 뺀다
+    ///   홀수 X   |dX|&lt;2 · |dY|&lt;2 면 (±1, +1) 만 남긴다 ; dY == −2 이고 dX ≠ 0 이면 뺀다
+    /// </code>
+    /// 걸음 거리 2 고리와 꼭 같지는 않다 — 짝수 X 에서 (±1, −2)(거리 3)를 들이고 (±1, +2)(거리 2)를 빼며,
+    /// 홀수 X 는 그 거울이다. 원본 셈 그대로 옮긴다.
+    /// </remarks>
+    public static bool InMonsterReach(int dx, int dy, bool evenX)
+    {
+        if (Math.Abs(dx * dy) == 4) return false;
+        int adx = Math.Abs(dx);
+        if (adx < 2 && Math.Abs(dy) < 2 && !(adx == 1 && dy == (evenX ? -1 : 1))) return false;
+        if (dy == (evenX ? 2 : -2) && dx != 0) return false;
+        return true;
     }
 
     /// <summary>
@@ -1095,7 +1234,7 @@ public sealed class SeaBattle
             foreach (var ship in Ships.ToList())
             {
                 if (Over) break;
-                if (!ship.CanAct || ship.Halted || ship.Blocked) continue;
+                if (!ship.CanAct || ship.Halted || ship.Blocked || ship.Body) continue;
                 int steps = ship.Plan.Count;
                 if (steps == 0 || (tick + 1) * steps % Ticks != 0) continue;
                 int k = (tick + 1) * steps / Ticks - 1;
@@ -1105,6 +1244,7 @@ public sealed class SeaBattle
                 int way = Turn(ship.Way, ship.Plan[k]);
                 var (nx, ny) = Step(ship.X, ship.Y, way);
                 ship.Way = way;                                   // 돌기는 이미 먹었다
+                if (Monster && ship.Index == PerSide) { MonsterStep(ship, nx, ny); continue; }
                 if (!OnBoard(nx, ny)) { ship.Blocked = true; continue; }
                 if (ShipAt(nx, ny) is { } hit)
                 {
@@ -1124,7 +1264,7 @@ public sealed class SeaBattle
             foreach (var ship in Ships.ToList())
             {
                 if (Over) break;
-                if (!ship.CanAct || ship.Halted || !Fires(ship)) continue;
+                if (!ship.CanAct || ship.Halted || ship.Body || !Fires(ship)) continue;
                 stirred = true;
                 Gunfight(ship);
             }
@@ -1133,7 +1273,7 @@ public sealed class SeaBattle
             foreach (var ship in Ships.ToList())
             {
                 if (Over) break;
-                if (!ship.CanAct || !Fires(ship)) continue;
+                if (!ship.CanAct || ship.Body || !Fires(ship)) continue;
                 stirred = true;
                 if (Fire(ship) is not { } volley) continue;
                 _stage?.Volley(volley);
@@ -1146,6 +1286,64 @@ public sealed class SeaBattle
         EndTurn();
         _stage = null;
     }
+
+    /// <summary>
+    /// 괴물 머리가 한 칸 딛는다(<c>0x0043CF65</c>~<c>0x0043D4C5</c>) — 일곱 칸짜리 몸이 나아갈 때 <b>새로 덮는 앞 세 칸</b>
+    /// (새 머리의 방향−1 · 방향 · 방향+1 이웃)을 본다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   앞 세 칸에 선 산 배마다(칸 차례 0~5, 배 번호 차례) 충돌 — 여느 배와 달리 한 척에 걸려도 멈추지 않고 다 친다
+    ///   부딪히지 않았으면(지시상태 1 그대로) 머리가 옮기고 몸 여섯이 그 둘레에 다시 깔린다(0x00439425)
+    ///   잠수 중(+0x8FC == 1)에 부딪히면 잠깐 떠올라 보인다(0x0043D389 → 4, 연출이 끝나면 0x00439524 가 1 로 되돌린다)
+    /// </code>
+    /// 괴물 몸 칸은 괴물 제 몸이라 안 부딪힌다(<c>0x0043D356</c>).
+    /// </remarks>
+    private void MonsterStep(Ship head, int nx, int ny)
+    {
+        var cells = new List<(int X, int Y)>();
+        for (int w = 0; w < Ways; w++)
+        {
+            int rel = ((w - head.Way) % Ways + Ways) % Ways;
+            if (rel is 0 or 1 or 5) cells.Add(Step(nx, ny, w));
+        }
+        var hits = cells.SelectMany(c => Ships.Where(s => s.CanAct && s.Mine && s.X == c.X && s.Y == c.Y)).ToList();
+        // 원본은 칸 차지 격자(+0x96C)로 칸을 먼저 추리고 그 칸 수를 [0x880] 에 센다 — 둘 이상이면 괴물이 입는
+        // 선체 피해를 따로 모아 두는 갈래를 탄다(0x00439ABC).
+        _monsterCrowd = cells.Count(c => Ships.Any(s => s.CanAct && s.X == c.X && s.Y == c.Y && !IsMonster(s)));
+        foreach (var hit in hits)
+        {
+            if (Over || !head.CanAct) break;
+            if (!hit.CanAct) continue;
+            Collide(head, hit);
+        }
+        _monsterCrowd = 0;
+        if (hits.Count > 0 || !head.CanAct) return;
+
+        head.X = nx;
+        head.Y = ny;
+        LayMonsterBody();
+    }
+
+    /// <summary>괴물이 한 걸음에 부딪힌 칸 수(<c>[+0x880]</c>) — 충돌 피해 갈래가 본다.</summary>
+    private int _monsterCrowd;
+
+    /// <summary>
+    /// 괴물이 여러 척을 한꺼번에 들이받을 때 따로 모아 두는 제 선체 피해(<c>[+0x884]</c>).
+    /// </summary>
+    /// <remarks>
+    /// 원본은 과녁 X·Y 가 칸 목록의 <b>칸 수 번째</b>(쓰지 않은 빈 자리) 값과 같을 때만 모은 것을 머리 내구에서 깎는다
+    /// (<c>0x00439AC1</c>~<c>0x00439B10</c>) — 사실상 안 깎인다. 그대로 옮긴다.
+    /// </remarks>
+    private int _monsterPooled;
+
+    /// <summary>
+    /// 잠수한 괴물이 부딪히거나 총격을 주고받는 동안 잠깐 보이는지(<c>+0x8FC</c> 4) — 연출이 끝나면 도로 잠긴다.
+    /// </summary>
+    private bool _monsterPeek;
+
+    /// <summary>괴물 그림을 판에 찍을지 — 떠 있거나(2) 잠깐 떠오른 때(4)다(<c>0x0044073F</c> 의 짝수 판정).</summary>
+    public bool MonsterShown => Monster && (MonsterUp || _monsterPeek);
 
     // ── 포격 — 0x00436900 ─────────────────────────────────────────────────
 
@@ -1256,6 +1454,8 @@ public sealed class SeaBattle
         }
 
         if (FireTarget(ship, RangeOf(ship.Gun)) is not { } target) return null;
+        // 괴물 몸 조각을 맞혀도 깎이는 것은 머리 내구다(0x00437116 — 과녁 > 8 이면 [+0x5A4]).
+        if (IsMonster(target)) target = MonsterHead!;
 
         var me = ship.Mine ? MineSide : EnemySide;
         var them = ship.Mine ? EnemySide : MineSide;
@@ -1467,6 +1667,15 @@ public sealed class SeaBattle
     private void Collide(Ship m, Ship t)
     {
         bool friendly = m.Mine && t.Mine;
+        // 잠수한 괴물이 부딪히면 잠깐 떠올라 보인다(0x0043D380 → 0x0043D389).
+        bool peek = Monster && !friendly && !MonsterUp;
+        if (peek) _monsterPeek = true;
+        try { CollideCore(m, t, friendly); }
+        finally { if (peek) _monsterPeek = false; }
+    }
+
+    private void CollideCore(Ship m, Ship t, bool friendly)
+    {
         _stage?.Crash(m, t, friendly);
         m.Bump = 3;
         if (t.Bump != 3) t.Bump = 2;
@@ -1484,13 +1693,28 @@ public sealed class SeaBattle
             mLoss = b * 8 / 10;
             tLoss = b * 13 / 10;
         }
-        m.Hp = Math.Max(0, m.Hp - mLoss);
-        t.Hp = Math.Max(0, t.Hp - tLoss);
+        if (Monster && MonsterHead is { } head)
+        {
+            // 괴물 판 — 칸 8 이상(머리·몸)이 입는 피해는 모두 머리 내구로 간다(0x00439AA9~0x00439BC9).
+            // 괴물이 한 걸음에 둘 이상을 들이받으면 제 피해는 따로 모아 두고 안 깎는다(_monsterPooled).
+            // 몸 조각을 받으면 판정할 배도 머리로 옮긴다(0x00439BA1).
+            if (IsMonster(m) && _monsterCrowd > 1) _monsterPooled += mLoss;
+            else if (IsMonster(m)) head.Hp = Math.Max(0, head.Hp - mLoss);
+            else m.Hp = Math.Max(0, m.Hp - mLoss);
+            if (IsMonster(t)) head.Hp = Math.Max(0, head.Hp - tLoss);
+            else t.Hp = Math.Max(0, t.Hp - tLoss);
+        }
+        else
+        {
+            m.Hp = Math.Max(0, m.Hp - mLoss);
+            t.Hp = Math.Max(0, t.Hp - tLoss);
+        }
         _stage?.HullLoss(m, mLoss, t, tLoss);
 
         var sunk = new List<Ship>();
-        if (m.Hp <= 0) sunk.Add(m);
-        if (t.Hp <= 0) sunk.Add(t);
+        Ship mm = IsMonster(m) ? MonsterHead! : m, tt = IsMonster(t) ? MonsterHead! : t;
+        if (mm.Hp <= 0) sunk.Add(mm);
+        if (tt.Hp <= 0) sunk.Add(tt);
         if (sunk.Count > 0)
         {
             foreach (var s in sunk) s.State = ShipState.Sunk;
@@ -1536,6 +1760,20 @@ public sealed class SeaBattle
 
         _stage?.Melee(m, t, mLoss, tLoss);
         Ignite(m, t);                                     // 연출 갈래 3 끝 — 승원 셈 전이다
+
+        if (MonsterHead is { } head && (IsMonster(m) || IsMonster(t)))
+        {
+            // 괴물 판 — 괴물 쪽 몫은 승원이 아니라 <b>머리 내구</b>에서 깎는다(0x00439EE9~0x00439F7F).
+            if (IsMonster(m)) { head.Hp = Math.Max(0, head.Hp - mLoss); t.Crew = Math.Max(0, t.Crew - tLoss); }
+            else { m.Crew = Math.Max(0, m.Crew - mLoss); head.Hp = Math.Max(0, head.Hp - tLoss); }
+
+            // 내 기함 승원이 다하면 짐, 괴물 내구가 다하면 이김 — 둘 다 상태 2 다(0x00439FFA~0x0043A03B).
+            if (At(0) is { Crew: <= 0 } flag) { flag.Crew = 0; CloseBy(flag); return; }
+            if (head.Hp <= 0) { CloseBy(head); return; }
+            CrewOut(IsMonster(t) ? m : t);
+            // 괴물과는 나포·일기토가 없다(0x0043A1E3).
+            return;
+        }
 
         m.Crew = Math.Max(0, m.Crew - mLoss);
         t.Crew = Math.Max(0, t.Crew - tLoss);
@@ -1689,7 +1927,17 @@ public sealed class SeaBattle
     /// </remarks>
     private void Gunfight(Ship s)
     {
+        if (s.Body) return;                                   // 몸 조각은 안 건다(0x0043630C)
         if (GunTarget(s) is not { } t) return;
+        if (MonsterHead is { } head && (IsMonster(s) || IsMonster(t)))
+        {
+            // 잠수한 괴물도 총격을 주고받는 동안은 떠올라 보인다(0x00436575 — 1 이면 4).
+            bool peek = !MonsterUp;
+            if (peek) _monsterPeek = true;
+            try { MonsterGunfight(s, t, head); }
+            finally { if (peek) _monsterPeek = false; }
+            return;
+        }
 
         int sLoss, tLoss;
         if (s.Mine && t.Index == PerSide && MineHits())
@@ -1726,6 +1974,77 @@ public sealed class SeaBattle
         CrewOut(t, s);
     }
 
+    /// <summary>
+    /// 괴물 판의 총격전(<c>0x0043661D</c>~<c>0x00436821</c> · <c>0x0043D51E</c>) — 셈은 여느 때와 같고 괴물 쪽 몫만
+    /// <b>머리 내구</b>에서 깎는다. 잠수폭탄은 괴물에게 안 쓴다(<c>0x00436588</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   머리 승원이 0 이면 안 건다(0x0043662E) — 괴물 승원은 안 줄어 늘 걸린다
+    ///   A = ((사격술p+1) * 아군 승원 + 무력p − 50)/10 ,  E = ((사격술e+1) * … + 무력e − 50)/10 , 둘 다 최소 1
+    ///   아군이 걸음   쏜 배 승원 −E ,  괴물 내구 −A
+    ///   괴물이 걸음   괴물 내구 −A(쏜 괴물 승원으로 셈) ,  과녁 승원 −E
+    ///   끝           내 기함 승원 0 → 짐(상태 2) ; 괴물 내구 0 → 이김(상태 2) ; 그 밖은 여느 승원 0 뒤처리
+    /// </code>
+    /// </remarks>
+    private void MonsterGunfight(Ship s, Ship t, Ship head)
+    {
+        if (IsMonster(t) && head.Crew <= 0) return;
+        var p = MineSide;
+        var e = EnemySide;
+        int Ours(int crew) => ((p.Shooting + 1) * crew + p.Might - 50) / 10;
+        int Theirs(int crew) => ((e.Shooting + 1) * crew + e.Might - 50) / 10;
+
+        int sLoss, tLoss;
+        if (s.Mine)
+        {
+            tLoss = Ours(s.Crew);
+            sLoss = Theirs(t.Crew);
+            if (s.Figurehead is BlueDragon or DemonKing) tLoss = tLoss * 3 / 2;
+        }
+        else
+        {
+            tLoss = Theirs(t.Crew);
+            sLoss = Ours(s.Crew);
+            if (t.Figurehead == SeaGod) tLoss /= 2;
+        }
+        tLoss = Math.Max(1, tLoss);
+        sLoss = Math.Max(1, sLoss);
+
+        if (s.Mine)
+        {
+            s.Crew = Math.Max(0, s.Crew - sLoss);
+            head.Hp = Math.Max(0, head.Hp - tLoss);
+        }
+        else
+        {
+            head.Hp = Math.Max(0, head.Hp - sLoss);
+            t.Crew = Math.Max(0, t.Crew - tLoss);
+        }
+        _stage?.Gunfight(s, t, sLoss, tLoss);
+
+        if (At(0) is { Crew: <= 0 } flag) { flag.Crew = 0; CloseBy(flag); return; }
+        if (head.Hp <= 0) { CloseBy(head); return; }
+        CrewOut(s.Mine ? s : t);
+    }
+
+    /// <summary>
+    /// 괴물 머리의 총격 과녁(<c>0x0043632C</c>~<c>0x00436459</c>) — 내 배 0~7 가운데 머리에서 <see cref="InMonsterReach"/> 칸에
+    /// 선 배, 기함이면 곧장 아니면 번호 낮은 배다. 홀짝은 머리 X 로 본다.
+    /// </summary>
+    private Ship? MonsterGunTarget(Ship head)
+    {
+        bool even = (head.X & 1) == 0;
+        Ship? pick = null;
+        for (int j = 0; j < PerSide; j++)
+        {
+            if (At(j) is not { CanAct: true } o || !InMonsterReach(o.X - head.X, o.Y - head.Y, even)) continue;
+            if (j == 0) return o;
+            pick ??= o;
+        }
+        return pick;
+    }
+
     /// <summary>잠수폭탄 굴림 — 든 칸마다 <c>rand(100) &lt; rand(운)</c>. 맞으면 하나 쓰고 말한다.</summary>
     private bool MineHits()
     {
@@ -1742,11 +2061,14 @@ public sealed class SeaBattle
     /// <summary>총격 과녁 — 맞은편 편 칸 차례로 이웃한 산 배, 기함이면 곧장(<c>0x004362E0</c>).</summary>
     private Ship? GunTarget(Ship s)
     {
+        if (Monster && s.Index == PerSide && MonsterHead is not null) return MonsterGunTarget(s);
         int first = s.Mine ? PerSide : 0;
         Ship? pick = null;
         for (int j = first; j < first + PerSide; j++)
         {
             if (At(j) is not { CanAct: true } o || !Adjacent(s.X, s.Y, o.X, o.Y)) continue;
+            // 괴물 판에서 내 배가 괴물 몸 어디에 붙든 과녁은 머리다(0x00436508 → 0x00436524).
+            if (IsMonster(o)) return MonsterHead;
             if (j == first) return o;
             pick ??= o;
         }

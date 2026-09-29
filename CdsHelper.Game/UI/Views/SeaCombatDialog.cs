@@ -1506,8 +1506,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 적 배 — 적장의 나라와 그 해로 선체를, 적장 능력으로 척수·승원·대포를 짓는다(0x00440D90).
         // 이름은 게임이 일본 군함명 자리 채움(0x549A34)을 굴리는데 화면에는 선체 이름이 찍혀 무리 이름을 쓴다.
         // 적의 대열은 굴린다(0x004421F6 의 rand(8)).
-        int enemyFormation = rng.Next(SeaBattle.FormationCount);
-        var fleet = EnemyFleet.Build(leader, player.Date.Year, rng, hulls);
+        // 괴물이면 배를 짓지 않고 머리(칸 8)와 몸 여섯(칸 9~14)을 올린다(0x00440D90 · 0x00442B8E).
+        if (monster) battle.PlaceMonster(battle.MonsterPerson);
+        int enemyFormation = monster ? 0 : rng.Next(SeaBattle.FormationCount);
+        var fleet = monster ? [] : EnemyFleet.Build(leader, player.Date.Year, rng, hulls);
         for (int slot = 0; slot < fleet.Count; slot++)
         {
             var e = fleet[slot];
