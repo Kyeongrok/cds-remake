@@ -188,6 +188,22 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>바람을 다시 흔든다 — 이레째 날이 넘어갔을 때와 배에 오를 때 부른다(<c>0x0044B27D</c> · <c>0x0048EB94</c>).</summary>
     public void ShiftWind() => _heldWind = null;
 
+    /// <summary>
+    /// 쥐고 있는 바람 — <c>[칸, 달, 방위, 세기, 기후대]</c>. 없으면 null. 원본은 바람 물건 <c>0x00586168</c> 의
+    /// 두 워드를 세이브에 적는다(<c>0x00424E20</c>).
+    /// </summary>
+    public int[]? HeldWindState =>
+        _heldWind is { } h ? [h.Cell, h.Month, h.Wind.Dir, h.Wind.Speed, h.Wind.Zone] : null;
+
+    /// <summary>
+    /// 쥐고 있던 바람을 되돌린다 — 적어 둔 판을 열 때 쓴다. 칸이나 달이 다르면 어차피 새로 읽는다(<see cref="HeldWind"/>).
+    /// 모자라면(옛 세이브) 버리고 새로 흔든다.
+    /// </summary>
+    public void RestoreHeldWind(IReadOnlyList<int>? state) =>
+        _heldWind = state is { Count: >= 5 }
+            ? (state[0], state[1], new WindTable.Flow(state[2] & 0xF, state[3], state[4]))
+            : null;
+
     /// <summary>물결이 흐른 틱 수. 게임의 <c>0x00569554</c> 자리다.</summary>
     private int _rippleTick;
     private double _rippleAccum;
@@ -267,6 +283,16 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>지금 뱃머리(16방위, 0 이 북) — 게임의 <c>[0x005B63C8]</c>. 사건 연출이 자리를 고를 때 본다.</summary>
     public int Heading => _heading & 0xF;
+
+    /// <summary>
+    /// 뱃머리를 박는다 — 적어 둔 판을 열 때 쓴다. 원본은 제독 <c>+0x328</c>(<c>0x005B63C8</c>)을 세이브에 적는다
+    /// (<c>0x0047CA21</c>). 바라는 쪽도 같이 두어 열자마자 돌지 않게 한다.
+    /// </summary>
+    public void SetHeading(int heading)
+    {
+        _heading = _desired = heading & 0xF;
+        _dirty = true;
+    }
 
     private int _heading;                  // 지금 뱃머리(반시계, 16방위). 그림도 이동도 이것이다
     private int _desired;                  // 커서가 바라는 쪽(8방위라 늘 짝수)
@@ -2221,6 +2247,53 @@ public sealed class ShipMapHost : HwndHost
         if (dx < -w / 2) dx += w;
         else if (dx > w / 2) dx -= w;
         return Math.Abs(dx) <= radiusCells && Math.Abs(_shipY - _mooredY) <= radiusCells;
+    }
+
+    /// <summary>
+    /// 뭍에 올라 걷는 자리. 배에 타 있으면 null — 적을 때 쓴다(제독 <c>+0x114</c> 뭍 깃발 · <c>+0x310</c>/<c>+0x314</c> 지금 자리).
+    /// </summary>
+    public (double X, double Y)? AshoreSpot => _shipKnown && _onLand ? (_shipX, _shipY) : null;
+
+    /// <summary>대 둔 배의 뱃머리. 적을 때 쓴다.</summary>
+    public int MooredHeading => _mooredHeading & 0xF;
+
+    /// <summary>
+    /// 뭍에 오른 채로 판을 연다 — 배는 <paramref name="mooredX"/>·<paramref name="mooredY"/> 에 대 두고 사람은 걷던 칸에 선다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 제독 <c>+0x114</c>(뭍 깃발 <c>0x005B61B4</c>) · <c>+0x310</c>/<c>+0x314</c>(지금 자리) ·
+    /// <c>+0x318</c>/<c>+0x31C</c>(대 둔 배 자리)를 세이브에 적어(<c>0x0047C90C</c>~<c>0x0047C9C5</c>) 뭍에서 중단한
+    /// 판을 뭍에서 잇는다. 대 둔 자리가 물이 아니면 가까운 물칸으로, 걷던 칸이 뭍이 아니면 가까운 뭍칸으로 민다.
+    /// </remarks>
+    public bool PlaceAshore(double x, double y, double mooredX, double mooredY, int mooredHeading)
+    {
+        if (!_ready) return false;
+        StopAutoSail();
+        (mooredX, mooredY) = NearestWater(mooredX, Math.Clamp(mooredY, 0, WorldMapRenderer.CellH - 1));
+        y = Math.Clamp(y, 0, WorldMapRenderer.CellH - 1);
+        var spot = NearestCell(x, y, wantLand: true, maxRing: 3);
+        if (spot == null) return false;
+
+        _mooredX = mooredX;
+        _mooredY = mooredY;
+        _mooredHeading = mooredHeading & 0xF;
+        _moored = true;
+        (_shipX, _shipY) = spot.Value;
+        _targetX = _shipX;
+        _targetY = _shipY;
+        _shipKnown = true;
+        _onLand = true;
+        _blocked = false;
+        _anchored = false;
+        SteerArmed = false;
+        _tickAccum = 0;
+        _making = false;
+        _desired = _heading;
+        _centerX = _shipX;
+        _centerY = _shipY;
+        _follow = true;
+        _dirty = true;
+        return true;
     }
 
     /// <summary>

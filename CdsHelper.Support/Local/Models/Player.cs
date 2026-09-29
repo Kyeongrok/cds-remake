@@ -462,6 +462,40 @@ public sealed class Player
     /// <summary>하루 눈금을 적어 둔다.</summary>
     public void SetDayTicks(int ticks) => DayTicks = Math.Clamp(ticks, 0, 47);
 
+    /// <summary>
+    /// 뱃머리(16방위, 0 이 북) — 제독 <c>+0x328</c>(<c>0x005B63C8</c>). 세이브에 적는다(<c>0x0047CA21</c>).
+    /// 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public int Heading { get; private set; }
+
+    /// <summary>뱃머리를 적어 둔다.</summary>
+    public void SetHeading(int heading) => Heading = heading & 0xF;
+
+    /// <summary>
+    /// 쥐고 있던 바람 — <c>[칸, 달, 방위, 세기, 기후대]</c>, 모르면 null. 원본은 바람 물건 <c>0x00586168</c> 의 두 워드를
+    /// 세이브에 적는다(<c>0x00424E20</c>). 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public int[]? HeldWind { get; private set; }
+
+    /// <summary>쥐고 있던 바람을 적어 둔다.</summary>
+    public void SetHeldWind(int[]? wind) => HeldWind = wind;
+
+    /// <summary>
+    /// 뭍에 올라 걷던 자리(칸), 배에 타 있었으면 null — 제독 <c>+0x114</c> 뭍 깃발과 <c>+0x310</c>/<c>+0x314</c>.
+    /// 그때 <see cref="SeaCell"/> 은 대 둔 배 자리(<c>+0x318</c>/<c>+0x31C</c>)다. 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public (double X, double Y)? Ashore { get; private set; }
+
+    /// <summary>뭍에 올라 있을 때 대 둔 배의 뱃머리.</summary>
+    public int MooredHeading { get; private set; }
+
+    /// <summary>뭍 자리와 대 둔 배의 뱃머리를 적어 둔다.</summary>
+    public void SetAshore((double X, double Y)? spot, int mooredHeading)
+    {
+        Ashore = spot;
+        MooredHeading = mooredHeading & 0xF;
+    }
+
     /// <summary>배운 기술과 그 자리.</summary>
     public IReadOnlyDictionary<string, int> Skills => _skills;
 
