@@ -25,7 +25,7 @@ namespace CdsHelper.Game.Local.Helpers;
 public sealed class SponsorTable
 {
     /// <summary>알맹이 모양 판. 안목·친밀도·취향 칸을 더하면서 올렸고, 앉는 자리(도시·건물)를 더하며 5 가 됐다.</summary>
-    private const int SnapshotVersion = 5;
+    private const int SnapshotVersion = 6;
 
     private const int TableVa = 0x005228B8;
     private const int RowCount = 81;
@@ -64,7 +64,8 @@ public sealed class SponsorTable
     /// (<see cref="Engine.Town.Persuasion.Likes"/>).
     /// </param>
     /// <param name="Nation">나라(<c>+0x0C</c>). 추격이 이 나라 도시에서 벌어진다(<c>0x00450140</c>).</param>
-    /// <param name="Blood">혈액형으로 보이는 칸(<c>+0x1C</c>, 0~3). 성미를 셀 때 쓴다 — 짝이 확실하지는 않다.</param>
+    /// <param name="Blood">혈액형(<c>+0x1C</c>, 0~3). 후원자 vtbl+0x1C(<c>0x004AD7A0</c>)가 이 칸을 주고, 성미 셈
+    /// <c>0x00477FE0</c> 이 혈액형 표 <c>0x005686F8</c> 의 줄로 쓴다.</param>
     /// <param name="Languages">
     /// 하는 말(<c>+0x3A</c> 워드의 비트, 언어 열넷 차례). 비트가 선 말은 <b>수준 3</b>으로 친다
     /// (vtbl+0x20 = <c>0x004AD7B0</c>) — 설득 들머리의 말 관문이 이것을 본다(<c>0x004AE0B0</c>).
@@ -74,11 +75,16 @@ public sealed class SponsorTable
     /// 바르톨로메우·말키오니는 13(말키오니 상회)이다. 시설이 후원자를 물리는 루프(<c>0x0044E5C0</c>)가
     /// 이 둘을 시설의 도시(<c>+0x90</c>)·건물 코드(<c>vtbl[0x48]</c>)와 견준다.</param>
     /// <param name="Appear">나오는 해 − 1480(<c>+0x14</c>). <c>patrons.json</c> 의 등장 해와 81명 모두 같다.</param>
+    /// <param name="Zodiac">
+    /// 별자리(<c>+0x18</c>, 0~11). 후원자 vtbl+0x28(<c>0x004AD790</c>)이 이 칸을 그대로 주어, 성미 셈 <c>0x00477FE0</c> 이
+    /// 별자리 표 <c>0x00568578</c> 의 줄로 쓴다 — 인물처럼 (얼굴 + 혈액형 + 나라) % 12(<c>0x004780B0</c>)로 짓지 않는다.
+    /// 판 5 로 적어 둔 옛 JSON 이면 −1 이다.
+    /// </param>
     public readonly record struct Sponsor(int Index, string Name, int Face, bool IsFemale,
                                           int JobCode, int Eye = 0, int Closeness = 0,
                                           int Tastes = 0, int Nation = -1, int Blood = 0,
                                           int Languages = 0, int City = -1, int Building = -1,
-                                          int Appear = 0)
+                                          int Appear = 0, int Zodiac = -1)
     {
         /// <summary>
         /// 그 해에 이 사람이 나와 있은 햇수(<c>vtbl[0x0C]</c> = <c>0x004ADA80</c>: 해 − 1480 − <c>+0x14</c>). 음수면 아직 안 나왔다.
@@ -232,7 +238,8 @@ public sealed class SponsorTable
                 Languages: (exe.Int(row + 0x38) >> 16) & 0xFFFF,
                 City: exe.Int(row + 0x24),
                 Building: exe.Int(row + 0x28),
-                Appear: exe.Int(row + 0x14)));
+                Appear: exe.Int(row + 0x14),
+                Zodiac: exe.Int(row + 0x18)));
         }
 
         // 판이 다른 EXE 를 잘못 읽지 않도록 첫 줄을 확인한다.
