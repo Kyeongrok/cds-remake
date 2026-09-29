@@ -5358,7 +5358,7 @@ public sealed class ShipMapWindow : Window
                                             (board, end) => SettleRaid(board, end, -1, -1, rng, raid: false,
                                                                        monster: person),
                                             SeaDuel(person, name, foeFace), _game.Bgm,
-                                            monster: true).Outcome;
+                                            monster: true, game: _game).Outcome;
 
         if (outcome != SeaCombatDialog.Outcome.Defeated)
             return (outcome == SeaCombatDialog.Outcome.Won, false);
