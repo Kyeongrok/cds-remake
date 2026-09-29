@@ -63,6 +63,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <summary>가까운 싸움 소리 — 0x2C 충돌 · 0x2D 백병전 · 0x30 불 · 0x1E 총격(WAVE 파트 = ID − 28).</summary>
     private const int CrashPart = 0x2C - 28, MeleePart = 0x2D - 28, IgnitePart = 0x30 - 28, GunfightPart = 0x1E - 28;
 
+    /// <summary>괴물이 가라앉는 소리 — 격침 0x2E 대신 0x2F 다(<c>0x004375F5</c>~<c>0x0043761F</c>).</summary>
+    private const int MonsterSinkPart = 0x2F - 28;
+
     /// <summary>원본 기다림 한 눈(<c>0x00428000(n, 끊기)</c> = n × 50ms).</summary>
     private static readonly TimeSpan Tick = TimeSpan.FromMilliseconds(50);
 
@@ -201,7 +204,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         _flameTimer = new DispatcherTimer(DispatcherPriority.Render) { Interval = Tick };
         _flameTimer.Tick += (_, _) =>
         {
-            if (++_fireTick % FlameTicks == 0) UpdateFlames();
+            if (++_fireTick % FlameTicks == 0) { UpdateFlames(); UpdateMonster(); }
         };
         Loaded += (_, _) => _flameTimer.Start();
         Closed += (_, _) => _flameTimer.Stop();
@@ -260,7 +263,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         foreach (var ship in battle.Ships)
         {
-            var image = new Image { Width = CombatArt.ShipSize, Height = CombatArt.ShipSize, IsHitTestVisible = false };
+            // 괴물 머리는 96x96 한 장이 몸 일곱 칸을 덮는다(0x004407C6 의 push 0x60 둘).
+            int size = battle.Monster && !ship.Mine ? CombatArt.MonsterSize : CombatArt.ShipSize;
+            var image = new Image { Width = size, Height = size, IsHitTestVisible = false };
             RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
             Panel.SetZIndex(image, 10);
             _field.Children.Add(image);
@@ -430,6 +435,11 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             var image = _shipArt[ship.Index];
             image.Visibility = ship.CanAct ? Visibility.Visible : Visibility.Collapsed;
             if (!ship.CanAct) continue;
+            if (_battle.Monster && !ship.Mine)
+            {
+                DrawMonster(ship, image);
+                continue;
+            }
 
             image.Source = Bitmap(_art.Ship(ship.Art, FrameOf(ship.Way)));
             var (sx, sy) = ScreenOf(ship.X, ship.Y);
@@ -450,6 +460,38 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 Put(_marks, _art.Path_("dot-02"), sx + 32, sy + 24, 8, 8, z: 0);
         }
         UpdateFlames();
+    }
+
+    /// <summary>
+    /// 괴물 — 머리 칸(8)에만 96x96 한 장을 찍고 몸 조각(9~14)은 안 찍는다(<c>0x0044073F</c>~<c>0x004407C6</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   +0x8FC 가 짝수(2 떠 있음 · 4 잠깐 떠오름)일 때만 찍는다 — 잠수(1·3) 중에는 안 보인다
+    ///   조각 = 3 + 방향*5 + ([+0x8F0] % 32)/16      ; 파트 13+괴물종류, 96x96 서른 장
+    ///   자리 = ((X+1)*32 − 스크롤, Y*32 − 스크롤 + (X 짝수 ? 16 : 0))  — 배 자리보다 왼쪽으로 24, 위로 32
+    /// </code>
+    /// 기함 표시 A · 적 표시 E 도 안 붙는다(<c>0x00440815</c>).
+    /// </remarks>
+    private void DrawMonster(SeaBattle.Ship ship, Image image)
+    {
+        if (ship.Body || !_battle.MonsterShown)
+        {
+            image.Visibility = Visibility.Collapsed;
+            return;
+        }
+        int frame = 3 + ship.Way * 5 + _fireTick % (FlameTicks * 2) / FlameTicks;
+        image.Source = Bitmap(_art.Monster(ship.Art, frame));
+        var (sx, sy) = ScreenOf(ship.X, ship.Y);
+        Canvas.SetLeft(image, sx - 24);
+        Canvas.SetTop(image, sy - 32);
+    }
+
+    /// <summary>괴물 그림만 다시 고른다 — 두 장을 16 눈마다 번갈아 찍는다.</summary>
+    private void UpdateMonster()
+    {
+        if (_battle.MonsterHead is { CanAct: true } head && _shipArt.TryGetValue(head.Index, out var image))
+            DrawMonster(head, image);
     }
 
     /// <summary>
@@ -1276,7 +1318,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// </remarks>
     void SeaBattle.IStage.Sink(IReadOnlyList<SeaBattle.Ship> ships)
     {
-        _sfx?.Play(SinkPart);
+        _sfx?.Play(_battle.Monster && ships.Any(s => !s.Mine) ? MonsterSinkPart : SinkPart);
         Wait(Tick * 3);
         Blast(12, ships.Select(BlastAt).ToArray());
         foreach (var ship in ships.Where(s => !s.Flagship)) Say(_battle.SinkWord(ship));
