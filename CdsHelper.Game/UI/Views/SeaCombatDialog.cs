@@ -63,6 +63,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <summary>가까운 싸움 소리 — 0x2C 충돌 · 0x2D 백병전 · 0x30 불 · 0x1E 총격(WAVE 파트 = ID − 28).</summary>
     private const int CrashPart = 0x2C - 28, MeleePart = 0x2D - 28, IgnitePart = 0x30 - 28, GunfightPart = 0x1E - 28;
 
+    /// <summary>괴물이 가라앉는 소리 — 격침 0x2E 대신 0x2F 다(<c>0x004375F5</c>~<c>0x0043761F</c>).</summary>
+    private const int MonsterSinkPart = 0x2F - 28;
+
     /// <summary>원본 기다림 한 눈(<c>0x00428000(n, 끊기)</c> = n × 50ms).</summary>
     private static readonly TimeSpan Tick = TimeSpan.FromMilliseconds(50);
 
@@ -201,7 +204,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         _flameTimer = new DispatcherTimer(DispatcherPriority.Render) { Interval = Tick };
         _flameTimer.Tick += (_, _) =>
         {
-            if (++_fireTick % FlameTicks == 0) UpdateFlames();
+            if (++_fireTick % FlameTicks == 0) { UpdateFlames(); UpdateMonster(); }
         };
         Loaded += (_, _) => _flameTimer.Start();
         Closed += (_, _) => _flameTimer.Stop();
@@ -260,7 +263,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         foreach (var ship in battle.Ships)
         {
-            var image = new Image { Width = CombatArt.ShipSize, Height = CombatArt.ShipSize, IsHitTestVisible = false };
+            // 괴물 머리는 96x96 한 장이 몸 일곱 칸을 덮는다(0x004407C6 의 push 0x60 둘).
+            int size = battle.Monster && !ship.Mine ? CombatArt.MonsterSize : CombatArt.ShipSize;
+            var image = new Image { Width = size, Height = size, IsHitTestVisible = false };
             RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
             Panel.SetZIndex(image, 10);
             _field.Children.Add(image);
@@ -430,6 +435,11 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             var image = _shipArt[ship.Index];
             image.Visibility = ship.CanAct ? Visibility.Visible : Visibility.Collapsed;
             if (!ship.CanAct) continue;
+            if (_battle.Monster && !ship.Mine)
+            {
+                DrawMonster(ship, image);
+                continue;
+            }
 
             image.Source = Bitmap(_art.Ship(ship.Art, FrameOf(ship.Way)));
             var (sx, sy) = ScreenOf(ship.X, ship.Y);
@@ -450,6 +460,38 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 Put(_marks, _art.Path_("dot-02"), sx + 32, sy + 24, 8, 8, z: 0);
         }
         UpdateFlames();
+    }
+
+    /// <summary>
+    /// 괴물 — 머리 칸(8)에만 96x96 한 장을 찍고 몸 조각(9~14)은 안 찍는다(<c>0x0044073F</c>~<c>0x004407C6</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   +0x8FC 가 짝수(2 떠 있음 · 4 잠깐 떠오름)일 때만 찍는다 — 잠수(1·3) 중에는 안 보인다
+    ///   조각 = 3 + 방향*5 + ([+0x8F0] % 32)/16      ; 파트 13+괴물종류, 96x96 서른 장
+    ///   자리 = ((X+1)*32 − 스크롤, Y*32 − 스크롤 + (X 짝수 ? 16 : 0))  — 배 자리보다 왼쪽으로 24, 위로 32
+    /// </code>
+    /// 기함 표시 A · 적 표시 E 도 안 붙는다(<c>0x00440815</c>).
+    /// </remarks>
+    private void DrawMonster(SeaBattle.Ship ship, Image image)
+    {
+        if (ship.Body || !_battle.MonsterShown)
+        {
+            image.Visibility = Visibility.Collapsed;
+            return;
+        }
+        int frame = 3 + ship.Way * 5 + _fireTick % (FlameTicks * 2) / FlameTicks;
+        image.Source = Bitmap(_art.Monster(ship.Art, frame));
+        var (sx, sy) = ScreenOf(ship.X, ship.Y);
+        Canvas.SetLeft(image, sx - 24);
+        Canvas.SetTop(image, sy - 32);
+    }
+
+    /// <summary>괴물 그림만 다시 고른다 — 두 장을 16 눈마다 번갈아 찍는다.</summary>
+    private void UpdateMonster()
+    {
+        if (_battle.MonsterHead is { CanAct: true } head && _shipArt.TryGetValue(head.Index, out var image))
+            DrawMonster(head, image);
     }
 
     /// <summary>
@@ -836,17 +878,18 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         if (_battle.Over) { Finish(); return; }
 
-        // 괴물은 턴 끝마다 한 번 굴려 떠오르거나 잠긴다(0x0043DA81). 막 잠겼으면
-        // 아래 MonsterHidWord 가 그때부터 한마디씩 붙는다.
-        if (_player is { } admiral)
-            _battle.TurnMonster(admiral.AbilityOf(Ability.Luck), admiral.AbilityOf(Ability.Mind));
-
         // 바람이 돌아도 바람 알림은 다시 안 낸다 — 알림은 판을 열 때 한 번뿐이다(0x0043C514 의 +0x830 == −1 걸쇠).
-        // 턴 끝(0x0043D9D2~0x0043DA7C)은 바람만 돌리고 이동 지시 재촉(0x0043BEB0)으로 간다.
-        if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 재촉도 안내도 없이 다음 턴으로
+        // 턴 끝(0x0043D9D2~0x0043DA7C)은 바람만 돌리고 이동 지시 재촉(0x0043BEB0(0))으로 간다 — 맡긴 동안은 재촉이 없다.
+        if (!_battle.Delegated) Say(_battle.OrderPrompt());
 
-        Say(_battle.OrderPrompt());
-        if (_battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
+        // 그다음 괴물이 한 번 굴려 떠오르거나 잠긴다(0x0043DA81). 부관의 「잠수해 버렸다」 한마디는
+        // <b>막 잠긴 턴에만</b> 붙고 맡긴 동안에도 나온다(0x0043DB96 — 새 값이 1 일 때만 0x0043BEB0(1)).
+        // 예전에는 잠겨 있는 턴마다 붙였고, 재촉보다 굴림이 먼저였다.
+        bool dived = _battle.TurnMonster();
+        Redraw();
+        if (dived && _battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
+
+        if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 안내 없이 다음 턴으로
         // 「충돌 영향으로…」는 턴 끝에 내지 않는다 — 원본은 부딪힌 배를 <b>눌렀을 때</b>만 낸다(0x0043E299 한 곳).
     }
 
@@ -1276,7 +1319,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// </remarks>
     void SeaBattle.IStage.Sink(IReadOnlyList<SeaBattle.Ship> ships)
     {
-        _sfx?.Play(SinkPart);
+        _sfx?.Play(_battle.Monster && ships.Any(s => !s.Mine) ? MonsterSinkPart : SinkPart);
         Wait(Tick * 3);
         Blast(12, ships.Select(BlastAt).ToArray());
         foreach (var ship in ships.Where(s => !s.Flagship)) Say(_battle.SinkWord(ship));
@@ -1506,8 +1549,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 적 배 — 적장의 나라와 그 해로 선체를, 적장 능력으로 척수·승원·대포를 짓는다(0x00440D90).
         // 이름은 게임이 일본 군함명 자리 채움(0x549A34)을 굴리는데 화면에는 선체 이름이 찍혀 무리 이름을 쓴다.
         // 적의 대열은 굴린다(0x004421F6 의 rand(8)).
-        int enemyFormation = rng.Next(SeaBattle.FormationCount);
-        var fleet = EnemyFleet.Build(leader, player.Date.Year, rng, hulls);
+        // 괴물이면 배를 짓지 않고 머리(칸 8)와 몸 여섯(칸 9~14)을 올린다(0x00440D90 · 0x00442B8E).
+        if (monster) battle.PlaceMonster(battle.MonsterPerson);
+        int enemyFormation = monster ? 0 : rng.Next(SeaBattle.FormationCount);
+        var fleet = monster ? [] : EnemyFleet.Build(leader, player.Date.Year, rng, hulls);
         for (int slot = 0; slot < fleet.Count; slot++)
         {
             var e = fleet[slot];
