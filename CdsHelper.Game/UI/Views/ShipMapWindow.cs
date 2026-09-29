@@ -2541,6 +2541,18 @@ public sealed class ShipMapWindow : Window
         return at >= 0 && at < slots.Count ? slots[at].File : null;
     }
 
+    /// <summary>
+    /// 세이브의 도시 이름 — 도시는 <b>번호</b>로 되살리므로 이름도 지금 표에서 다시 뽑는다.
+    /// 표에 없으면(번호로 물러서면) 적어 둔 이름을 쓴다. 표의 이름을 EXE 에 맞춰 고친 18곳을
+    /// 옛 세이브에서 열어도 옛 이름이 뜨지 않게 한다.
+    /// </summary>
+    private string SavedCityName(GameSave.Data saved)
+    {
+        if (saved.CityId < 0) return saved.CityName;
+        string name = _game.CityName(saved.CityId);
+        return name.Length == 0 || name == $"도시 {saved.CityId}" ? saved.CityName : name;
+    }
+
     /// <param name="path">
     /// 열 세이브 파일. 안 주면 손으로 적은 세이브(<see cref="GameSave.Path"/>)다 — 첫 화면의
     /// <b>CONTINUE</b> 가 고른 자동저장 칸을 준다.
@@ -2614,7 +2626,7 @@ public sealed class ShipMapWindow : Window
         }
         else if (saved != null)
         {
-            _game.Player.Restore(saved.Gold, saved.Date, saved.CityId, saved.CityName,
+            _game.Player.Restore(saved.Gold, saved.Date, saved.CityId, SavedCityName(saved),
                             saved.Skills, saved.Hints, saved.Mates, saved.Met, saved.Items,
                             saved.Supplies, saved.Discoveries, saved.Crew, saved.Announced,
                             saved.Stored, saved.Savings,
@@ -2770,7 +2782,7 @@ public sealed class ShipMapWindow : Window
             // 0x00424E50) 불러오기만 해도 바람이 한 칸 돌 수 있었다. 이 칸 앞의 세이브는 새로 흔든다.
             _host.RestoreHeldWind(saved.Wind);
             _status.Text = saved.CityId >= 0
-                ? $"[{saved.CityName}] 에서 이어 간다 — {saved.Date:yyyy년 M월 d일}"
+                ? $"[{SavedCityName(saved)}] 에서 이어 간다 — {saved.Date:yyyy년 M월 d일}"
                 : $"바다에서 이어 간다 — {saved.Date:yyyy년 M월 d일}";
         }
 
@@ -2791,7 +2803,7 @@ public sealed class ShipMapWindow : Window
         if (!fresh && saved is { CityId: >= 0 })
         {
             int city = saved.CityId;
-            string name = saved.CityName.Length > 0 ? saved.CityName : _game.CityName(city);
+            string name = SavedCityName(saved);
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (ShowCityPicture(city, name, resumed: true)) _host.Paused = true;
