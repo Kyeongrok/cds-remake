@@ -669,6 +669,7 @@ public sealed class Game
     /// <summary>지금 판을 적는다. 적히는 자리는 <see cref="GameSave"/> 참고.</summary>
     public string Save(bool suspended = false)
     {
+        BeforeSave?.Invoke();
         Aging.OnSave(Player, Random);   // 원본은 제독을 적는 첫머리에서 늙는다(0x0047C680)
         string error = GameSave.Save(Player, suspended);
         // 적고 나면 「아직 저장 안 됨」이 풀린다(0x00479174 · 0x004794A2).
@@ -683,7 +684,16 @@ public sealed class Game
     /// 원본에 없는 것이라 「아직 저장 안 됨」도 안 푼다 — 그 비트는 손으로 적었을 때만
     /// 풀리는 것이 맞다.
     /// </remarks>
-    public string AutoSave() => GameSave.Save(Player, suspended: false, path: GameSave.AutoPath);
+    public string AutoSave()
+    {
+        BeforeSave?.Invoke();
+        return GameSave.Save(Player, suspended: false, path: GameSave.AutoPath);
+    }
+
+    /// <summary>
+    /// 적기 바로 앞에 부른다 — 지도 창이 들고 있는 것(하루 눈금·뱃머리·바람·뭍 자리)을 주인공 쪽에 옮겨 둔다.
+    /// </summary>
+    public Action? BeforeSave { get; set; }
 
     /// <summary>
     /// 아직 저장하지 않은 판인지(<c>0x005A4D18</c> 비트 <c>0x80</c>) — 중단저장을 불러오면 서고, 저장하면 풀린다.

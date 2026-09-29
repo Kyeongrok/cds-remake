@@ -355,6 +355,8 @@ public sealed class ShipMapWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         // 인물 세상을 새로 지을 때마다(불러오기 포함) 누적 캐릭터를 다시 앉힌다.
         _game.WorldBuilt = AttachCumulative;
+        // 적기 바로 앞에 지도가 들고 있는 것을 주인공 쪽에 옮긴다.
+        _game.BeforeSave = CaptureMap;
 
         // HwndHost 자체는 WPF 에 아무것도 그리지 않아 히트테스트에 안 걸린다.
         // 같은 자리에 투명 Border 를 겹쳐 두고 마우스는 그쪽에서 받는다.
@@ -1993,6 +1995,15 @@ public sealed class ShipMapWindow : Window
         world.Replay = replay.Any ? replay : null;
     }
 
+    /// <summary>
+    /// 적기 바로 앞에 지도 창이 들고 있는 것을 주인공 쪽에 옮긴다(<see cref="Engine.Game.BeforeSave"/>).
+    /// </summary>
+    private void CaptureMap()
+    {
+        // 하루 안의 눈금 — 원본은 머리 +0x14(0x005A4D2C)에 들고 세이브에 적는다(0x0044AE60).
+        _game.Player.SetDayTicks(_ticks);
+    }
+
     private void NewGame()
     {
         // 게임도 여기부터는 메인메뉴를 걷는다 — 고르는 창이 그 자리에 뜬다.
@@ -2528,6 +2539,10 @@ public sealed class ShipMapWindow : Window
         // 비·눈도 판을 열 때마다 그친다 — 원본은 비 물건(0x005B6840)을 세이브에 안 적고 남은 셈(머리 +0x2C)만
         // 적는다(0x0044AE60). 안 그치면 앞 판의 비가 불러온 판에서 그대로 내리고 빗소리가 이어졌다.
         EndWeather();
+
+        // 하루 안의 눈금도 판마다 제 것으로 — 새 판은 0, 불러온 판은 적어 둔 값(머리 +0x14, 0x0044AE60).
+        // 예전에는 적지도 되돌리지도 않아 앞 판 눈금이 새어 첫 날이 최대 하루 어긋났다.
+        _ticks = saved?.DayTicks is { } dayTicks ? Math.Clamp(dayTicks, 0, TerrainTable.TicksPerDay - 1) : 0;
 
         // 발견물 이름 덧씌우기는 판을 열 때마다 비운다 — 안 그러면 앞 판에서 지은 이름이 남는다.
         Local.Helpers.DiscoveryTable.ResetNames(null);

@@ -227,7 +227,8 @@ public static class GameSave
         int? Infamy = null, int? AgingYear = null, List<int>? AgingSteps = null,
         List<int>? Settled = null, List<int>? Unresolved = null,
         DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
-        List<Player.Recall>? Recalls = null);
+        List<Player.Recall>? Recalls = null,
+        int? DayTicks = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -376,7 +377,9 @@ public static class GameSave
                             AccOpened: player.AccOpened,
                             AccLate: player.AccLate.Count > 0 ? player.AccLate.ToDictionary(e => e.Key, e => e.Value) : null,
                             // 해전 뒤 수도로 돌려보낸 사람(0x00432400). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
-                            Recalls: player.Recalls.Count > 0 ? [.. player.Recalls] : null);
+                            Recalls: player.Recalls.Count > 0 ? [.. player.Recalls] : null,
+                            // 하루 안의 눈금(머리 +0x14 = 0x005A4D2C). 이 칸 앞의 세이브는 0 눈금으로 연다.
+                            DayTicks: player.DayTicks);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

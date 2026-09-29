@@ -453,6 +453,15 @@ public sealed class Player
     /// <summary>바다의 배 자리를 적어 둔다.</summary>
     public void SetSeaCell((double X, double Y)? cell) => SeaCell = cell;
 
+    /// <summary>
+    /// 오늘 하루 가운데 지난 눈금(0~47) — 게임 머리 <c>+0x14</c>(<c>0x005A4D2C</c>, 48 눈금이면 하루가 간다
+    /// <c>0x0044AF90</c>). 세이브에 적는다(<c>0x0044AE60</c>). 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public int DayTicks { get; private set; }
+
+    /// <summary>하루 눈금을 적어 둔다.</summary>
+    public void SetDayTicks(int ticks) => DayTicks = Math.Clamp(ticks, 0, 47);
+
     /// <summary>배운 기술과 그 자리.</summary>
     public IReadOnlyDictionary<string, int> Skills => _skills;
 
