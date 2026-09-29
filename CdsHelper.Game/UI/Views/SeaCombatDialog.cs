@@ -1025,7 +1025,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             .Select(PrizeOf)
             .ToList();
         if (prizes.Count == 0) return;
-        PrizeFleetMenu.Run(this, player, prizes);
+        PrizeFleetMenu.Run(this, player, prizes, _game?.Items);
 
         // 편성 뒤에 짐 창이 뜬다(0x00434D30 → 0x004879A0). 괴물과의 판에는 없다. 빼앗는 양은 편입과
         // 상관없이 잡은 배 전부로 센다 — 빈 용량(포탑 뺀 적재량)과 선체 중량 한도의 합이다.
