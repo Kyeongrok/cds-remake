@@ -518,7 +518,11 @@ public sealed class DisevRunner
                 return _event.Kind is DisevEvent.CommandKind or DisevEvent.SponsorLeftKind
                     ? false
                     : (_event.City >= 0 ? _event.City : player.CityId) == I("City");
-            case DisevCall.InNation: return player.Nation == I("Nation");            // 17 00
+            // 17 00 — 주인공 국적이 아니라 <b>지금 있는 도시의 나라</b>다(0x00407525: 0x00477EB0 이 지금 도시 레코드를 내고
+            // 그 +0x00 과 견준다, 도시 밖이면 거짓). 개인 이야기의 「포르투갈/에스파니아 왕께서 찾고 있었네」 술집 칸과
+            // EHT 16 · ECQ 18 의 「딸의 감사」가 이것으로 제 나라 도시에서만 뜬다 — 예전에는 어느 나라 술집·바다에서나 떴다.
+            case DisevCall.InNation:
+                return player.CityId >= 0 && _game.CityRows?.NationOf(player.CityId) == I("Nation");
             // 17 10 — 건물에 들어선 사건(갈래 3)의 건물(+0x1C)일 때만 참이다(0x004075CF).
             case DisevCall.InBuilding: return _event.Kind == DisevEvent.BuildingKind && _building == I("Building");
             case DisevCall.NotInCity: return player.CityId != I("City");             // 41 08 (0x00407C7E)
