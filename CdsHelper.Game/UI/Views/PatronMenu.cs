@@ -2133,7 +2133,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 배가 한 척도 안 남으면 짐을 대신 팔아 준다 — <b>그 도시 매각가의 절반</b>이다
     /// (<see cref="Palace.DistressPrice"/>).
     /// </remarks>
-    private void ReturnLentShips(bool broken = false)
+    /// <param name="lender">
+    /// 배를 빌려준 후원자. 안 주면 지금 계약의 후원자다 — 감찰관을 처벌한 자리는 계약을 먼저 지우므로(0x0044FC76)
+    /// 옛 후원자를 따로 넘긴다. 원본은 배마다 빌려준 이를 적어 두어 계약과 상관없이 돌려준다(0x0040FE00).
+    /// </param>
+    private void ReturnLentShips(bool broken = false, string? lender = null)
     {
         bool mate = _player.MateAt(0).Length > 0;
         bool hadCargo = _player.CargoHold.Count > 0;
@@ -2141,8 +2145,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var back = _player.Ships.Concat(_player.Docked.Values.SelectMany(list => list))
                           .Where(s => s.Lent).Select(s => s.Hull.GameId).ToList();
         if (_player.TakeBackLentShips() == 0) return;
-        if (_player.Contract is { } deal && LenderOf(deal.Sponsor) is { } lender && _game.CityRows is { } rows)
-            PatronShips.Return(_player, lender, rows, back);
+        if ((lender ?? _player.Contract?.Sponsor) is { } from && LenderOf(from) is { } owner
+            && _game.CityRows is { } rows)
+            PatronShips.Return(_player, owner, rows, back);
 
         // 계약을 파기했으면 짐까지 가져간다(0x0040FE5C) — 빌린 배가 있었을 때만이다.
         if (broken && hadCargo)
@@ -2195,7 +2200,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private bool MutinousLentShips(string sponsor)
     {
         var lent = _player.Ships.Where(s => s.Lent).ToList();
-        if (lent.Count == 0) { ReturnLentShips(); return true; }
+        if (lent.Count == 0) { ReturnLentShips(lender: sponsor); return true; }
 
         var dice = _random;
         var sir = _game.Sponsors?.FindByName(sponsor);
