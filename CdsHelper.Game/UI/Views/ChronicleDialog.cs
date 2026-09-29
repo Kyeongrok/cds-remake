@@ -53,6 +53,9 @@ public sealed class ChronicleDialog : GameWindow
     private readonly Canvas _sheet = new() { Width = PanelW, Height = PanelH };
     private int _page;
 
+    /// <summary>바탕 그림(파트 8)이 판의 첫 아이로 깔렸는지.</summary>
+    private bool _hasBackdrop;
+
     private ChronicleDialog(IEnumerable<Row> rows, string caption)
     {
         // 날짜 차례다 — 게임도 그린 뒤가 아니라 목록을 세울 때 정렬한다(0x004241D0).
@@ -71,6 +74,7 @@ public sealed class ChronicleDialog : GameWindow
             var image = new Image { Source = paper, Width = PanelW, Height = PanelH };
             RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
             _sheet.Children.Add(image);
+            _hasBackdrop = true;
         }
 
         Content = _sheet;
@@ -117,8 +121,10 @@ public sealed class ChronicleDialog : GameWindow
 
     private void Paint()
     {
-        // 바탕 그림(첫 아이)만 남기고 다시 앉힌다.
-        while (_sheet.Children.Count > 1) _sheet.Children.RemoveAt(1);
+        // 바탕 그림만 남기고 다시 앉힌다. 그림을 못 읽었으면 남길 것이 없다 — 예전에는 늘 첫 아이를 남겨
+        // 그림이 없을 때 앞 쪽의 첫 글이 쪽을 넘겨도 그대로 남았다.
+        int keep = _hasBackdrop ? 1 : 0;
+        while (_sheet.Children.Count > keep) _sheet.Children.RemoveAt(keep);
 
         int year = -1, month = -1;
         for (int i = 0; i < Lines && Start + i < _rows.Count; i++)

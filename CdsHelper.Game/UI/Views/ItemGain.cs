@@ -72,6 +72,11 @@ public static class ItemGain
         IReadOnlyList<int> picked = [];
         while (true)
         {
+            // 주인 창이 닫혔으면(게임 창을 닫는 중 따위) 더 띄울 데가 없다 — 닫힌 창을 주인으로 새 창을 지으면
+            // 터진다. 물릴 수 있으면 물리고, 아니면 앞에서부터 열여섯만 남긴다(새로 든 것이 뒤에 붙어 있다).
+            if (Gone(owner))
+                return cancellable ? null : [.. all.Take(Support.Local.Models.Player.MaxItems)];
+
             var got = HintListDialog.PickMany(owner, names, "삭제 아이템의 선택", [.. picked]);
             if (got.Count == 0)
             {
@@ -88,4 +93,7 @@ public static class ItemGain
             return all.Where((_, i) => !got.Contains(i)).ToList();
         }
     }
+
+    /// <summary>창이 이미 닫혔는지 — 닫힌 창은 제 HWND 원천이 없다.</summary>
+    private static bool Gone(Window window) => PresentationSource.FromVisual(window) == null;
 }

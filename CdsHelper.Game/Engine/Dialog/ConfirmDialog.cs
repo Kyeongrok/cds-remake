@@ -176,6 +176,7 @@ public sealed class ConfirmDialog : GameWindow
     /// 반각 글자(띄어쓰기·「!」「?」 따위)는 칸만 세고 그 앞에서는 안 끊는다.
     /// 줄 머리에 못 오는 글자(<c>0x0049DDF0</c> — 한국어판에서 뜻이 있는 것은 전각 「！」 하나)면 한 자 앞에서 끊는다.
     /// 줄바꿈 글자는 그대로 줄을 가른다.
+    /// 대리쌍(원본 글꼴에는 없는 글자)은 두 낱 char 를 한 자로 쳐 두 칸만 세고 그 사이에서는 안 끊는다.
     /// </remarks>
     private static List<string> Wrap(string text)
     {
@@ -186,15 +187,21 @@ public sealed class ConfirmDialog : GameWindow
             int cells = 0;
             foreach (char c in raw)
             {
+                // 대리쌍의 뒤 낱은 앞 낱에 딸린다 — 칸도 안 세고 그 앞에서 끊지도 않는다.
+                if (char.IsLowSurrogate(c)) { line.Append(c); continue; }
+
                 bool wide = c > 0x7F;
                 if (wide && cells >= MaxCells)
                 {
                     // 줄 머리에 못 오는 글자면 앞 글자를 데리고 내려간다(0x0049D896 의 되짚기).
+                    // 앞 글자가 대리쌍이면 두 낱을 함께 데려간다.
                     string carry = "";
-                    if (c == '！' && line.Length > 1)
+                    int last = line.Length >= 2 && char.IsLowSurrogate(line[^1]) && char.IsHighSurrogate(line[^2])
+                        ? 2 : 1;
+                    if (c == '！' && line.Length > last)
                     {
-                        carry = line[^1].ToString();
-                        line.Length--;
+                        carry = line.ToString(line.Length - last, last);
+                        line.Length -= last;
                     }
                     lines.Add(line.ToString());
                     line.Clear().Append(carry);
