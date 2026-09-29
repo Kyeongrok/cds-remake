@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 internal static class PrizeFleetMenu
 {
-    public static void Run(Window owner, Player player, List<Ship> prizes)
+    public static void Run(Window owner, Player player, List<Ship> prizes, ItemTable? items = null)
     {
         int pool = 0;
         while (true)
@@ -41,13 +41,13 @@ internal static class PrizeFleetMenu
             switch (ChoiceDialog.Pick(owner, "", rows))
             {
                 case 0:
-                    ChangeFlagship(owner, player);
+                    ChangeFlagship(owner, player, items);
                     break;
                 case 1:
-                    Enlist(owner, player, prizes);
+                    Enlist(owner, player, prizes, items);
                     break;
                 case 2:
-                    pool += Delete(owner, player, prizes);
+                    pool += Delete(owner, player, prizes, items);
                     break;
                 case 3:
                     player.AddCrew(pool);                   // 최대승원에서 잘린다
@@ -59,17 +59,19 @@ internal static class PrizeFleetMenu
         }
     }
 
-    private static List<string> Names(Player player) => player.Ships.Select(s => s.Name).ToList();
+    // 셋 다 배 목록 표다 — 기함변경·선박 삭제는 0x0049D3F0(묶음, 제목, 방식 0), 편입은 후보를 모아
+    // 0x0046C3E0 여럿 고르기로 연다. 묶음은 모두 0(선명·승원수·내구력·중량·용적·함대)에서 시작한다.
 
-    private static void ChangeFlagship(Window owner, Player player)
+    private static void ChangeFlagship(Window owner, Player player, ItemTable? items)
     {
-        int at = ChoiceDialog.Ask(owner, "기함변경", Names(player));
+        // 0x00488ADA → 0x0049D3F0(묶음 0, 「기함변경」 0x0055F4D8, 0) — 이름만 늘어놓은 차림 창이 아니다.
+        int at = ShipPickDialog.Pick(owner, player, items, "기함변경", startSet: 0);
         if (at < 0) return;
         if (!ConfirmDialog.Ask(owner, $"기함을 {player.Ships[at].Name}호로 변경하겠습니다. 좋습니까?")) return;
         player.SetFlagship(at);
     }
 
-    private static void Enlist(Window owner, Player player, List<Ship> prizes)
+    private static void Enlist(Window owner, Player player, List<Ship> prizes, ItemTable? items)
     {
         if (player.IsFleetFull)
         {
@@ -77,7 +79,11 @@ internal static class PrizeFleetMenu
             return;
         }
 
-        var picked = PrizePickDialog.Ask(owner, "편입 선박의 선택", prizes);
+        // 0x00488B9C → 0x0046C3E0(후보 수, 후보, 묶음 0x00569518, 「편입 선박의 선택」 0x0055F518, 0, 고름표) —
+        // 여섯째 인자가 있으니 여럿 고르기다. 후보는 아직 승원이 없다.
+        var rows = prizes.Select(s => new ShipPickDialog.Entry(s, 0, false)).ToList();
+        var picked = ShipPickDialog.PickMany(owner, rows, items, "편입 선박의 선택", startSet: 0)
+            .Select(i => prizes[i]).ToList();
         if (picked.Count == 0) return;
 
         int room = Player.MaxShips - player.Ships.Count;
@@ -98,7 +104,7 @@ internal static class PrizeFleetMenu
     }
 
     /// <returns>웅덩이로 옮긴 승원.</returns>
-    private static int Delete(Window owner, Player player, List<Ship> prizes)
+    private static int Delete(Window owner, Player player, List<Ship> prizes, ItemTable? items)
     {
         if (player.Ships.Count <= 1)
         {
@@ -106,7 +112,8 @@ internal static class PrizeFleetMenu
             return 0;
         }
 
-        int at = ChoiceDialog.Ask(owner, "선박 삭제", Names(player));
+        // 0x00488CAF → 0x0049D3F0(묶음 0x0056951C, 「선박 삭제」 0x0055F5A8, 0).
+        int at = ShipPickDialog.Pick(owner, player, items, "선박 삭제", startSet: 0);
         if (at < 0) return 0;
 
         var shares = player.CrewShares.ToList();
@@ -133,55 +140,5 @@ internal static class PrizeFleetMenu
         }
         player.AddCrew(room);
         return pool - room;
-    }
-}
-
-/// <summary>
-/// 여러 줄 고르기(<c>0x0046C3E0</c>) — 줄을 누를 때마다 표시(*)가 켜지고 꺼진다. 줄 모양은 원본을 못 짚어 이름·내구·대포를 적었다.
-/// </summary>
-internal sealed class PrizePickDialog : InfoDialog
-{
-    private readonly List<Ship> _picked = [];
-    private bool _ok;
-
-    private PrizePickDialog(string title, IReadOnlyList<Ship> ships)
-    {
-        var rows = new StackPanel();
-        foreach (var ship in ships)
-        {
-            var label = Label(RowText(ship,false));
-            var row = new Border
-            {
-                Background = Brushes.Transparent,
-                Child = label,
-                Cursor = Cursors.Hand,
-                Margin = new Thickness(0, 1, 0, 1),
-            };
-            row.MouseLeftButtonDown += (_, e) => e.Handled = true;
-            row.MouseLeftButtonUp += (_, e) =>
-            {
-                e.Handled = true;
-                bool on = !_picked.Contains(ship);
-                if (on) _picked.Add(ship);
-                else _picked.Remove(ship);
-                label.Text = RowText(ship,on);
-            };
-            rows.Children.Add(row);
-        }
-
-        Build(title, rows, 360, 22 * ships.Count + 30,
-              new GameButton("결정", () => { _ok = true; Close(); }, width: 64),
-              new GameButton("중지", Close, width: 64));
-    }
-
-    private static string RowText(Ship ship, bool on) =>
-        $"{(on ? "*" : " ")} {ship.Name,-10} 내구 {ship.Hp,3}/{ship.MaxHp,3}  대포 {ship.Guns,2}";
-
-    /// <summary>고른 배들. 물렀으면 빈 목록.</summary>
-    public static List<Ship> Ask(Window owner, string title, IReadOnlyList<Ship> ships)
-    {
-        var dialog = new PrizePickDialog(title, ships) { Owner = owner };
-        dialog.ShowDialog();
-        return dialog._ok ? dialog._picked : [];
     }
 }
