@@ -31,6 +31,11 @@ namespace CdsHelper.Game.UI.Views;
 /// 결정을 누르면 <b>부관·통역 자리의 사람이 제독과 말이 3 이상 통하는지</b> 본다
 /// (<c>0x00453F6D</c> ~ <c>0x00453FCD</c>, <c>0x00478050(제독, 그 사람)</c>). 안 통하면
 /// 「말이 통하지 않는 자는 부관(통역)이 될 수 없습니다!」를 내고 창으로 되돌아간다 — 창을 안 닫는다.
+///
+/// 사람이 앉은 줄을 <b>오른쪽 단추</b>로 누르면 그 이름을 제목으로 「정보를 본다 / 그만둔다」
+/// (<c>0x0055AB10</c> · <c>0x0055AB20</c>) 두 줄 창이 뜨고, 「정보를 본다」면 그 사람의 인물정보 판
+/// (<c>0x0046DBC0</c>)이 열린다(<c>0x00453970</c> — 목록 틀 <c>0x004B52D8</c> 이 사건 2 에 부른다).
+/// 빈 자리는 아무 일도 없다.
 /// </remarks>
 public sealed class MateRosterDialog : GameWindow
 {
@@ -55,9 +60,13 @@ public sealed class MateRosterDialog : GameWindow
 
     private readonly GameList _list;
 
-    private MateRosterDialog(Player player, IReadOnlyList<PersonTable.Row>? people)
+    /// <summary>인물정보 판을 찾을 게임. 없으면 오른쪽 단추가 아무 일도 안 한다.</summary>
+    private readonly Engine.Game? _game;
+
+    private MateRosterDialog(Player player, IReadOnlyList<PersonTable.Row>? people, Engine.Game? game)
     {
         _player = player;
+        _game = game;
         _people = people;
         _before = [.. player.Mates];
 
@@ -72,6 +81,7 @@ public sealed class MateRosterDialog : GameWindow
         // 두 줄을 눌러 자리를 맞바꾼다. 자료를 바꾸는 것은 여기 몫이라 바뀐 뒤에 다시 그린다.
         _list = new GameList(Columns, Cells, Player.MaxMates) { Pick = GameListPick.Swap };
         _list.Swapped += (a, b) => { _player.SwapMates(a, b); _list.Refresh(); };
+        if (_game != null) _list.RowRightClicked += AskInfo;
 
         var buttons = new StackPanel
         {
@@ -133,6 +143,23 @@ public sealed class MateRosterDialog : GameWindow
         return best;
     }
 
+    /// <summary>
+    /// 오른쪽 단추 — 「정보를 본다 / 그만둔다」를 묻고 인물정보 판을 연다(<c>0x00453970</c>).
+    /// 제목은 그 사람 이름이다(<c>0x004539ED</c> 가 이름을 <c>0x00469C40</c> 에 넘긴다).
+    /// </summary>
+    private void AskInfo(int slot)
+    {
+        if (_game == null) return;
+        string name = _player.MateAt(slot);
+        if (name.Length == 0) return;                                   // 0x004539B3 — 빈 자리
+        if (ChoiceDialog.Pick(this, name, ["정보를 본다", "그만둔다"]) != 0) return;
+
+        if (_game.MateInfo(name) is { } mate)
+            PersonInfoDialog.ShowMate(this, mate, Engine.GameInfo.SheetOf(_game, mate), _game.Directory);
+        else
+            NoticeDialog.Show(this, $"{name}의 자료를 찾지 못했다");
+    }
+
     /// <summary>들어올 때 자리로 되돌리고 닫는다.</summary>
     private void Cancel()
     {
@@ -142,6 +169,8 @@ public sealed class MateRosterDialog : GameWindow
 
     /// <summary>부하편성 창을 연다.</summary>
     /// <param name="people">부관·통역의 말을 잴 인물 표(<c>Game.World.People</c>). 없으면 막지 않는다.</param>
-    public static void Show(Window owner, Player player, IReadOnlyList<PersonTable.Row>? people = null) =>
-        new MateRosterDialog(player, people) { Owner = owner }.ShowDialog();
+    /// <param name="game">오른쪽 단추의 인물정보 판을 찾을 게임. 없으면 그 단추가 쉰다.</param>
+    public static void Show(Window owner, Player player, IReadOnlyList<PersonTable.Row>? people = null,
+                            Engine.Game? game = null) =>
+        new MateRosterDialog(player, people, game) { Owner = owner }.ShowDialog();
 }
