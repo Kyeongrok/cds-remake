@@ -310,6 +310,17 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             }
             if (_battle.ShipAt(x, y) is { } ship)
             {
+                // 괴물 칸(8~14)이면 — 잠수 중에는 제독·함대수 창(0x0043EBE2)이라 숨은 자리가 안 드러나고,
+                // 떠 있으면 몸 조각을 눌러도 머리 값을 보인다(피해는 머리 내구로만 가고 몸 칸 값은 처음 그대로다).
+                if (_battle.Monster && !ship.Mine)
+                {
+                    if (!_battle.MonsterShown)
+                    {
+                        SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader, _foe.Name);
+                        return;
+                    }
+                    ship = _battle.MonsterHead ?? ship;
+                }
                 SeaShipInfoDialog.Show(this, ship);
                 return;
             }
