@@ -1937,13 +1937,19 @@ public sealed class Player
     public bool HasAnnounced(int discovery) => _announced.Contains(discovery);
 
     /// <summary>발표한 것으로 적는다. 발견한 적 없거나 이미 발표했으면 false.</summary>
-    public bool Announce(int discovery)
+    /// <param name="discovery">발견물 번호.</param>
+    /// <param name="trace">
+    /// 행적에 적는지. 도장 <c>0x0047E630</c> 은 <b>남이 먼저 발표한 것</b>(<c>0x004AADB0</c>)이면 깃발 <c>0x80</c> 만
+    /// 세우고 곧장 돌아가고, 아니어도 깃발 <c>0x04</c>(표 <c>+0x20</c> 이 0 — 자리로 잡히는 것)가 서 있어야
+    /// 행적을 남긴다(<c>0x0047E656</c>). 부르는 쪽이 그 둘을 보고 넘긴다.
+    /// </param>
+    public bool Announce(int discovery, bool trace = true)
     {
         if (!HasFound(discovery) || !_announced.Add(discovery)) return false;
         _announcedOn[discovery] = Date;
         _announcedBy[discovery] = Name;   // 칸 2 의 이름(0x004AACA0) — 백과사전 「발견자」가 이것이다
         // 행적에도 한 줄 남는다(0x0047E630 끝의 0x0041A070(…, 9, 발견물번호)) — 은퇴하면 누적 캐릭터의 발자취가 된다.
-        Note(TraceDiscovery, discovery);
+        if (trace) Note(TraceDiscovery, discovery);
         return true;
     }
 

@@ -1052,7 +1052,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             else if (row.Picture >= 0)
                 DiscoveryDialog.ShowPicture(_view, _game.Stills, row.Picture);   // 그림만 — 이름 창은 안 붙는다(0x004AD640)
 
-            _player.Announce(row.Id);
+            _player.Announce(row.Id, trace: !row.Indirect && !scoopedRows.Contains(row.Id));   // 0x0047E630
 
             // 좋아하는 갈래를 물어다 주면 덤이 붙는다(0x004ADAE0 이 후원자 표 +0x38 을 본다).
             bool scooped = scoopedRows.Contains(row.Id);
