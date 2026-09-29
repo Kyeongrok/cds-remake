@@ -32,6 +32,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                                  int culture, int cityId)
 {
     private readonly int _cityTrack = cityTrack;
+
+    /// <summary>
+    /// 이번에 든 건물에서 계약을 맺었는지(시설 <c>+0xC0</c>, <c>0x004AF3C9</c> 가 세운다). 서 있으면 건물을 나설 때
+    /// 이야기 대본의 「후원자 건물 나섬」(갈래 5)을 올린다(<c>0x0044E721</c> → <c>0x004AB640</c>). 들 때마다 도시 창이 끈다.
+    /// </summary>
+    public bool SignedHere { get; set; }
     private readonly int _culture = culture;
     private readonly int _cityId = cityId;
     private readonly Window _view = view;
@@ -525,6 +531,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         _player.Sign(new Contract(it.Id, patron.Name, _cityName, funds,
                                   _player.Date, years, inspector));
         WorldRouteScene.OnSign(_game, it.Id);   // 0x004ADFF6 — 세계일주를 맡으면 바퀴 수를 0 으로
+        SignedHere = true;                      // 0x004AF3C9 — 나설 때 갈래 5 를 올린다
 
         // 선금은 <b>후원자 지갑에서</b> 나간다(0x004ADF4A) — 저절로 차지 않으므로
         // 같은 사람에게 잇달아 계약을 맺으면 점점 적게 받는다.

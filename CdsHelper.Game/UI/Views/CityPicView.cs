@@ -763,6 +763,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (Ambushed()) return;
 
         var facility = Facility.For(building.Kind, building.Code);
+        if (_patronMenu != null) _patronMenu.SignedHere = false;   // 건물에 들 때마다 [+0xC0] 은 0 이다(0x0044E6AA)
         if (!PassFameGate(building, facility)) return;   // 문 앞에서 돌아섰다
         Greet(facility, building, arrived);
         ShowPhoto(facility.Kind, building.Code);
@@ -1789,6 +1790,15 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _photoWindow = null;
             _bgm?.Play(_cityTrack);
 
+            // 이번에 든 후원자 건물에서 계약을 맺었으면 나설 때 「후원자 건물 나섬」(갈래 5)을 올린다 — 원본의
+            // 나서기(0x0044E6C0)는 나가기 줄 · ESC · 설득 끝 어느 길로 나서든 돌고, [+0xC0](계약을 맺음, 0x004AF3C9)이
+            // 서 있을 때만 0x004AB640 을 부른다(0x0044E721).
+            if (_patronMenu is { SignedHere: true } signed)
+            {
+                signed.SignedHere = false;
+                RunStory(Engine.Disev.DisevEvent.LeaveSponsor(_pickedCode));
+            }
+
             // 항구·성문을 마지막 줄(ESC 도 같다)로 나서 마을에 들면 부관이 한마디 한다 — 출항·탐험은
             // 그 줄에서 먼저 지워 여기 안 온다.
             if (_gateway is { } kind)
@@ -2510,13 +2520,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     bool ITownScreen.CanSucceed => Home.EldestSon(_player) != null;
     bool ITownScreen.CanEducate => _player.Children.Count > 0;
 
-    void ITownScreen.CloseMenu()
-    {
-        // 후원자가 앉은 건물을 나서면 이야기 대본의 「후원자 건물 나섬」 사건(갈래 5)을 올린다(0x0044E72F).
-        bool patronHere = BuildingAt(_pickedCode) is { } here && PatronAt(here.Code, here.Kind) != null;
-        CloseMenu();
-        if (patronHere) RunStory(Engine.Disev.DisevEvent.LeaveSponsor(_pickedCode));
-    }
+    // 「후원자 건물 나섬」(갈래 5)은 창이 닫힐 때(Menus 의 onFacilityClosed) 올린다 — 나가기 줄만이 아니라
+    // ESC · 설득 끝으로 나서도 돌아야 한다.
+    void ITownScreen.CloseMenu() => CloseMenu();
 
     /// <summary>명령 줄을 고르기 전에 「건물 명령 고름」 사건(갈래 4, <c>0x004A248C</c>)을 본다. 막아야 하면 true.</summary>
     bool ITownScreen.StoryCommand(int code, int row) => RunStory(Engine.Disev.DisevEvent.PickCommand(code, row));
