@@ -188,6 +188,22 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>바람을 다시 흔든다 — 이레째 날이 넘어갔을 때와 배에 오를 때 부른다(<c>0x0044B27D</c> · <c>0x0048EB94</c>).</summary>
     public void ShiftWind() => _heldWind = null;
 
+    /// <summary>
+    /// 쥐고 있는 바람 — <c>[칸, 달, 방위, 세기, 기후대]</c>. 없으면 null. 원본은 바람 물건 <c>0x00586168</c> 의
+    /// 두 워드를 세이브에 적는다(<c>0x00424E20</c>).
+    /// </summary>
+    public int[]? HeldWindState =>
+        _heldWind is { } h ? [h.Cell, h.Month, h.Wind.Dir, h.Wind.Speed, h.Wind.Zone] : null;
+
+    /// <summary>
+    /// 쥐고 있던 바람을 되돌린다 — 적어 둔 판을 열 때 쓴다. 칸이나 달이 다르면 어차피 새로 읽는다(<see cref="HeldWind"/>).
+    /// 모자라면(옛 세이브) 버리고 새로 흔든다.
+    /// </summary>
+    public void RestoreHeldWind(IReadOnlyList<int>? state) =>
+        _heldWind = state is { Count: >= 5 }
+            ? (state[0], state[1], new WindTable.Flow(state[2] & 0xF, state[3], state[4]))
+            : null;
+
     /// <summary>물결이 흐른 틱 수. 게임의 <c>0x00569554</c> 자리다.</summary>
     private int _rippleTick;
     private double _rippleAccum;

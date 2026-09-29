@@ -471,6 +471,15 @@ public sealed class Player
     /// <summary>뱃머리를 적어 둔다.</summary>
     public void SetHeading(int heading) => Heading = heading & 0xF;
 
+    /// <summary>
+    /// 쥐고 있던 바람 — <c>[칸, 달, 방위, 세기, 기후대]</c>, 모르면 null. 원본은 바람 물건 <c>0x00586168</c> 의 두 워드를
+    /// 세이브에 적는다(<c>0x00424E20</c>). 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public int[]? HeldWind { get; private set; }
+
+    /// <summary>쥐고 있던 바람을 적어 둔다.</summary>
+    public void SetHeldWind(int[]? wind) => HeldWind = wind;
+
     /// <summary>배운 기술과 그 자리.</summary>
     public IReadOnlyDictionary<string, int> Skills => _skills;
 
