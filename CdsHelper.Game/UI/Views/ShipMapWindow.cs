@@ -4185,7 +4185,7 @@ public sealed class ShipMapWindow : Window
 
                 if (won && end.EnemyDowned + end.EnemyCaptured > 0)
                 {
-                    // 규모는 EXE 의 처음 규모로 갈음한다(도시가 자라는 셈은 아직 없다).
+                    // 규모는 지금 도시 규모다 — ScaleOf 가 역사 대본이 바꾼 값(Player.CityScales)을 먼저 본다.
                     int scale = _game.CityRows?.ScaleOf(capital) ?? 0;
                     int gold = FleetRaid.Loot(scale, end.EnemyDowned + end.EnemyCaptured, rng);
                     ConfirmDialog.Tell(board, $"전리품으로서 금화 {gold} 닢을 손에 넣었다!", Title);   // 0x0056A828
