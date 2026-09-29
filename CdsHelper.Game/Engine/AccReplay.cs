@@ -85,6 +85,14 @@ public sealed class AccReplay
     /// </remarks>
     public Action<int, int>? Announced { get; set; }
 
+    /// <summary>
+    /// 그 사람이 세상에서 지워졌는지 — 처형한 사람이다(<c>0x00432180(0)</c>). 참이면 그 행적은 더 틀지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 도착 줄마다 등장 칸을 1 로 세워, 술집 일기토에서 처형한 누적 캐릭터가 다음 도착에서 되살아났다.
+    /// </remarks>
+    public Func<int, bool>? Gone { get; set; }
+
     /// <summary>걸린 대본이 하나라도 있는지.</summary>
     public bool Any => _runners.Count > 0;
 
@@ -115,6 +123,12 @@ public sealed class AccReplay
         foreach (var run in _runners)
         {
             if (run.Done || run.Person >= people.Count) continue;
+            if (Gone?.Invoke(run.Person) == true)
+            {
+                people[run.Person].Appear = 0;
+                run.Done = true;
+                continue;
+            }
 
             // 판이 열린 날부터 흐른 날수에서 늦어진 만큼을 뺀다.
             int gone = (int)(today - _opened).TotalDays - run.Late;

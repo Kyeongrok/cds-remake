@@ -523,14 +523,18 @@ public sealed class Game
             _world = new PersonWorld(table, CityRows, Buildings,
                                      Support.Local.Models.Player.StartDate,
                                      Voyagers, Discoveries?.Table, Cells);
-            // 처형한 사람은 세상을 새로 지어도 안 돌아온다(0x00432180(0) 이 세이브에 남는 것과 같다).
-            foreach (var row in _world.People)
-                if (Player.Executed.Contains(row.Id)) row.Appear = 0;
             // 판에 딸린 사람들(누적 캐릭터 276~280)을 다시 앉힌다 — 원본은 그 인물 레코드를 세이브에
             // 그대로 적어(0x00431E90) 불러와도 남는데, 우리는 세상을 새로 지으므로 지을 때마다 다시 건다.
             // 해전 뒤 수도로 돌려보낸 일도 따라잡을 때 그날마다 다시 한다(0x00432400).
             _world.Recalls = Player.Recalls;
             WorldBuilt?.Invoke(_world);
+            // 처형한 사람은 세상을 새로 지어도 안 돌아온다(0x00432180(0) 이 세이브에 남는 것과 같다).
+            // <b>누적 캐릭터를 앉힌 뒤에</b> 덮는다 — 앞에서 덮으면 AccData.Place 가 등장 칸을 1 로 되돌려
+            // 술집 일기토에서 처형한 옛 제독이 불러올 때마다 여관에 다시 앉았다. 행적 되짚기도 그 사람은 건너뛴다.
+            var player = Player;
+            foreach (var row in _world.People)
+                if (player.Executed.Contains(row.Id)) row.Appear = 0;
+            if (_world.Replay is { } replay) replay.Gone = id => player.Executed.Contains(id);
             return _world;
         }
     }
