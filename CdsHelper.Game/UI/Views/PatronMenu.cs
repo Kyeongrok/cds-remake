@@ -1644,7 +1644,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 나설 때의 차례 그대로다(0x0044E6C0) — 부하 재계약(0x00454160) · 빌린 배 돌려주기(0x004105A0) 다음이
         // 숨겨 둔 증거품(0x0041C480)이다. 감옥(항구 도시)에 다녀와도 숨긴 목록은 그대로라(0x0044EF20 이 안 지운다)
         // 증거품은 여전히 손에 들어온다.
-        RecontractMates();
+        // 재계약은 계약이 정말 끝났을 때만이다 — 원본은 계약을 끝내는 0x0044EE30 이 [+0xBC] 를 3 밖으로 바꿀 때만
+        // 0x00454160 을 부른다(0x0044E6CC). 모조품을 봐줘 계약이 남았으면 부하가 떠나거나 선금을 다시 받지 않는다.
+        if (_player.Contract == null) RecontractMates();
 
         // 숨겨 둔 증거품은 보고를 마치고 나설 때 손에 들어온다.
         HandHidden();
