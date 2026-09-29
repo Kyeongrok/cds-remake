@@ -334,7 +334,7 @@ public sealed class TradePostDialog : GameWindow
     {
         if (_settled || _tries <= 0) return false;
         _settled = true;
-        if (_post.RowsOf(_player, _city).Sum(r => r.Supply) == 0)
+        if (!_post.HasSupply(_player, _city))
         {
             TalkDialog.Say(this, _face, "", "미안하지만, 자네에게 팔 물건은 아무것도 없네.");
             return false;

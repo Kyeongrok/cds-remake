@@ -13,7 +13,7 @@ namespace CdsHelper.Game.Engine.Market;
 ///   0x481070  매각 목록(내 짐)          — 짐 여덟 칸 그대로, 품목 제한 없음
 ///   0x480890  매각가(종류) — 구입 단가는 그 3/2
 ///   0x481430  거래 성립 — 팔고 사고, 재고를 빼고, 오간 돈만큼 시세가 움직인다
-///   0x4811E0  흥정 — 한 번에 90%, 성공 셋째면 그대로 성립, 실패 둘째면 결렬
+///   0x4811E0  흥정 — 한 번에 95%, 성공 셋째면 그대로 성립, 실패 둘째면 결렬
 /// </code>
 /// 창(<see cref="UI.Views.TradePostDialog"/>)은 cds95-mod 의 MarketUtilKR 매매 창을 옮긴 것이고,
 /// 규칙은 모두 여기서만 정한다.
@@ -171,6 +171,32 @@ public sealed class TradePost
     /// 그 교역품을 파는지 — 판매 게이트 <c>0x0058BAB0[교역품]</c>. 처음부터 켜졌거나 발견 대본(<c>01 15</c>)이 켰으면 참.
     /// </summary>
     public bool OnSale(Player player, int kind) => _table.OnSale(kind) || player.IsGoodsActive(kind);
+
+    /// <summary>
+    /// 남은 공급이 있는지(<c>0x00480F70</c>) — 흥정만 걸고 나갈 때 상인 말을 가른다.
+    /// </summary>
+    /// <remarks>
+    /// 공통품 칸은 <b>판매 게이트와 상관없이</b> 다 더한다(<c>0x00480FCE</c>, <c>0x0042A100</c>). 제 특산품과
+    /// 내륙 도시 특산품은 <c>0x0042A030</c> 을 거친 것만 더한다(<c>0x00480FFF</c> · <c>0x0048103E</c>).
+    /// </remarks>
+    public bool HasSupply(Player player, int city)
+    {
+        int region = _table.RegionOf(city);
+        var stock = StockOf(player, city);
+        int special = SpecialOf(player, city);
+        int total = 0, cell = 0;
+        if (region >= 0)
+            foreach (int kind in _table.CommonOf(region))
+            {
+                if (kind == special) continue;
+                if (cell >= TradeTable.CommonSlots) break;
+                total += stock[cell++];
+            }
+        if (special >= 0) total += stock[SpecialCell];
+        foreach (int inland in _table.InlandOf(city))
+            if (SpecialOf(player, inland) >= 0) total += StockOf(player, inland)[SpecialCell];
+        return total > 0;
+    }
 
     /// <summary>그 도시에 교역소 물건이 하나라도 있는지.</summary>
     public bool HasGoods(Player player, int city) => RowsOf(player, city).Count > 0;
