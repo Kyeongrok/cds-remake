@@ -46,7 +46,8 @@ internal static class WorldRouteScene
         if (player.Contract is not { } contract) return false;
         if (player.Laps == 0) return false;
         if (contract.City != game.CityName(cityId)) return false;
-        if (player.HasAnnounced(Discovery)) return false;
+        // 칸 2 가 비어야 한다(0x00492099) — 누적 캐릭터가 먼저 발표해 남의 이름이 올라도 막힌다.
+        if (player.HasAnnounced(Discovery) || player.ScoopedBy(Discovery) != null) return false;
         if (!hasMate) return false;
 
         // 맡은 이야기가 세계일주항로를 가리키는가 — 힌트의 유적 번호로 견준다(0x00493E60).
