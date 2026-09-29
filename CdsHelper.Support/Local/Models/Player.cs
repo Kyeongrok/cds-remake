@@ -1953,6 +1953,33 @@ public sealed class Player
         return true;
     }
 
+    private readonly HashSet<int> _unresolved = [];
+
+    /// <summary>
+    /// 발표 도장만 찍히고 <b>힌트 매듭은 안 지어진</b> 발견물 — 모조품을 들켰을 때다.
+    /// </summary>
+    /// <remarks>
+    /// 보고에서 모조품을 들키면(<c>0x004122C6</c>) 가져온 것마다 도장 <c>0x0047E630</c> 만 부른다 — 여느 보고·발표가
+    /// 부르는 <c>0x0047E680</c> 과 달리 같은 유적의 힌트를 「보고까지 끝남」(<c>0x0047E5D0</c> → <c>or [힌트+4], 3</c>)으로
+    /// 올리지 않는다. 그래서 힌트는 살아 남고, 발견물은 다시 보고할 수 없다.
+    /// </remarks>
+    public IReadOnlyCollection<int> Unresolved => _unresolved;
+
+    /// <summary>도장만 찍는다(<c>0x0047E630</c>) — 발표한 것으로 적되 힌트 매듭에는 안 친다.</summary>
+    public bool Stamp(int discovery, bool trace)
+    {
+        if (!Announce(discovery, trace)) return false;
+        _unresolved.Add(discovery);
+        return true;
+    }
+
+    /// <summary>세이브를 되돌릴 때 도장만 찍힌 것을 채운다.</summary>
+    public void RestoreUnresolved(IEnumerable<int>? unresolved)
+    {
+        _unresolved.Clear();
+        if (unresolved != null) foreach (int id in unresolved) _unresolved.Add(id);
+    }
+
     /// <summary>행적 갈래 — 발견물을 보고·발표했다(낱말: 발견물 번호). 원본도 갈래 <b>9</b> 다.</summary>
     public const int TraceDiscovery = 9;
 

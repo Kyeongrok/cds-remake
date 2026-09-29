@@ -2562,6 +2562,7 @@ public sealed class ShipMapWindow : Window
             // 찾은 사람·보고한 사람 이름. 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
             _game.Player.RestoreDiscoverers(saved.FoundBy, saved.AnnouncedBy);
             _game.Player.RestoreSettled(saved.Settled);
+            _game.Player.RestoreUnresolved(saved.Unresolved);
             if (saved.Fatigue is { } tired) _game.Player.SetFatigue(tired);
             if (saved.DaysAtSea is { } atSea) _game.Player.SetDaysAtSea(atSea);
             // 컨디션. 이 판 앞의 세이브에는 없어 성한 채로 연다.

@@ -223,7 +223,7 @@ public static class GameSave
         List<int>? Executed = null,
         Dictionary<string, Player.PatronDock>? PatronDocks = null,
         Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null,
-        List<int>? Settled = null);
+        List<int>? Settled = null, List<int>? Unresolved = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -358,7 +358,9 @@ public static class GameSave
                             FoundBy: player.FoundBy.ToDictionary(e => e.Key, e => e.Value),
                             AnnouncedBy: player.AnnouncedBy.ToDictionary(e => e.Key, e => e.Value),
                             // 자리 사건을 매듭지은 발견물(깃발 0x0100). 이 칸 앞의 세이브는 찾은 것으로 채운다.
-                            Settled: [.. player.Settled]);
+                            Settled: [.. player.Settled],
+                            // 모조품을 들켜 도장만 찍힌 발견물. 이 칸 앞의 세이브는 없는 것으로 연다.
+                            Unresolved: [.. player.Unresolved]);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

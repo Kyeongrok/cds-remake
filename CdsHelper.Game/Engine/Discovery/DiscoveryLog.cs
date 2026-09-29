@@ -131,7 +131,8 @@ public sealed class DiscoveryLog
         if (_hints?.Find(hintId) is not { } hint) return false;
 
         foreach (int id in player.Announced)
-            if (_table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
+            if (!player.Unresolved.Contains(id)   // 모조품을 들켜 도장만 찍힌 것은 안 친다(0x0047E630)
+                && _table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
         return false;
     }
 
