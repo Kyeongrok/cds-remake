@@ -132,9 +132,10 @@ public static class AccData
             row.Face = who.Face;
             row.Fame = who.Fame;
             row.City = who.City;
-            row.Building = who.City >= 0 ? Local.Helpers.PersonTable.Tavern : -1;
+            // 여관에 앉힌다 — 0x004321E0 이 +0xB8(건물) 을 5, +0xE8(갈래) 를 4 로 둔다(0x00432260 · 0x0043226A).
+            row.Building = who.City >= 0 ? Local.Helpers.PersonTable.Inn : -1;
             row.Grade = 3;
-            row.Hire = Local.Helpers.PersonTable.TalkOnly;   // 옛 제독을 부하로 삼을 수는 없다
+            row.Hire = Local.Helpers.PersonTable.Retired;    // 갈래 4 — 부하로는 못 삼고 일기토 차림표가 뜬다(0x004A4860)
             row.Kind = 2;                            // 안 움직인다
             row.Dest = -1;
             row.From = -1;

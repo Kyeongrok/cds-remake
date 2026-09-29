@@ -17,8 +17,13 @@ namespace CdsHelper.Game.UI.Views;
 ///   00434367  이름은 칸 왼쪽 +8                 004343a0  값은 칸 왼쪽 +0x78(120)
 ///   004343b6  앞 다섯 줄 · 첫 칸만 색 0x29 로 도드라진다(총함대수 줄은 안 도드라진다)
 /// </code>
-/// 도드라지는 조건은 <b>내 값이 적 값 이상</b>일 때다. (원본은 줄마다 견주는 차례가 서로
-/// 뒤바뀌어 있어 뒤 세 줄은 거꾸로 걸릴 수 있다 — 불확실이라 한 가지로 맞춰 둔다.)
+/// 값은 판의 싸움 값 그대로다(<c>0x0043F895</c> 가 <c>[+0x904]</c>~ 아군 · <c>[+0x924]</c>~ 적을 넘긴다) — 아군은
+/// 제독·부관 가운데 큰 값이고 무력·지력은 능력+1 이다.
+/// <b>도드라지는 것은 부관 값이 쓰인 줄</b>이다 — 적과 견주지 않고 판 값이 제독 제 값과 다른지를 본다(<c>0x004342C3</c>~).
+/// <code>
+///   무력   [0x005B60C8] + 1 − 판 무력  ≠ 0      지력   [0x005B60C4] + 1 − 판 지력 ≠ 0
+///   검술   판 검술 − [0x005B60E8] ≠ 0          사격술 판 사격술 − [0x005B60F0] ≠ 0     포술 판 포술 − [0x005B60EC] ≠ 0
+/// </code>
 ///
 /// 뜨는 자리는 둘이다 — <c>PgUp</c>(<c>0x0043F895</c>)과, 괴물이 잠수한 판에서 적 칸을
 /// 누를 때(<c>0x0043EBE2</c>)다.
@@ -34,7 +39,7 @@ internal sealed class SeaBattleInfoDialog : InfoDialog
     /// <summary>값 글자색 — 앞선 쪽은 0x29, 여느 때는 0x0A 다.</summary>
     private const byte AheadColor = 0x29, PlainColor = 0x0A;
 
-    private SeaBattleInfoDialog(string admiral, string foe, int[] mine, int[] theirs)
+    private SeaBattleInfoDialog(string admiral, string foe, int[] mine, int[] theirs, int[] own)
     {
         var rows = new StackPanel();
         // 맨 윗줄은 두 제독 이름이다 — 왼쪽 칸에 내 이름(0x005B60A0 가상 함수 0), 0x98 오른쪽에 적장 이름
@@ -50,7 +55,7 @@ internal sealed class SeaBattleInfoDialog : InfoDialog
         for (int i = 0; i < Labels.Length; i++)
         {
             // 마지막 줄(총함대수)은 도드라지지 않는다(0x004343B4 의 je).
-            bool ahead = i < Labels.Length - 1 && mine[i] >= theirs[i];
+            bool ahead = i < Labels.Length - 1 && mine[i] != own[i];
             rows.Children.Add(Row(Labels[i], mine[i], theirs[i], ahead));
         }
         Build("해전전황정보(제독·함대수)", rows, BoardWidth, RowHeight * (Labels.Length + 1) + 16);
@@ -79,28 +84,24 @@ internal sealed class SeaBattleInfoDialog : InfoDialog
     }
 
     /// <summary>
-    /// 그 판의 값을 모아 창을 띄운다. 적장을 모르면 적 쪽 능력은 0 이다.
+    /// 그 판의 값을 모아 창을 띄운다 — 판의 싸움 값(<see cref="SeaBattle.MineSide"/> · <see cref="SeaBattle.EnemySide"/>)이다.
     /// </summary>
     public static void Show(Window owner, SeaBattle battle, Player? player, Captain? leader, string foeName = "")
     {
-        int[] mine =
+        var me = battle.MineSide;
+        var them = battle.EnemySide;
+        int[] mine = [me.Might, me.Mind, me.Sword, me.Shooting, me.Gunnery, battle.Ships.Count(s => s.Mine)];
+        int[] theirs = [them.Might, them.Mind, them.Sword, them.Shooting, them.Gunnery, battle.Ships.Count(s => !s.Mine)];
+        // 제독 제 값 — 이것과 다르면 부관 값이 쓰인 줄이라 도드라진다.
+        int[] own =
         [
-            player?.AbilityOf(Ability.Might) ?? 0,
-            player?.AbilityOf(Ability.Mind) ?? 0,
+            (player?.AbilityOf(Ability.Might) ?? 0) + 1,
+            (player?.AbilityOf(Ability.Mind) ?? 0) + 1,
             player?.LevelOf("검술") ?? 0,
             player?.LevelOf("사격술") ?? 0,
             player?.LevelOf("포술") ?? 0,
-            battle.Ships.Count(s => s.Mine),
+            0,
         ];
-        int[] theirs =
-        [
-            leader?.Might ?? 0,
-            leader?.Mind ?? 0,
-            leader?.Sword ?? 0,
-            leader?.Shooting ?? 0,
-            leader?.Gunnery ?? 0,
-            battle.Ships.Count(s => !s.Mine),
-        ];
-        new SeaBattleInfoDialog(player?.Name ?? "", foeName, mine, theirs) { Owner = owner }.ShowDialog();
+        new SeaBattleInfoDialog(player?.Name ?? "", foeName, mine, theirs, own) { Owner = owner }.ShowDialog();
     }
 }

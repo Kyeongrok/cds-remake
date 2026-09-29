@@ -61,7 +61,12 @@ public sealed class PersonTable
     public const int Tavern = 4, Inn = 5;
 
     /// <summary>고용 상태. 2 라야 부하로 삼을 수 있다.</summary>
-    public const int TalkOnly = 1, Hireable = 2, Hired = 3;
+    /// <remarks>
+    /// 게임의 인물 갈래 <c>+0xE8</c>(세이브 <c>+0x62</c>)다. 말을 걸면 <c>0x004A4DE0</c> 이 뜀표 <c>0x004A4E40</c> 으로
+    /// 가른다 — <b>0 역사 항해자 · 4 누적 캐릭터</b>는 일기토 차림표(<c>0x004A4AA0</c>), 1·2 는 고용 쪽(<c>0x004A4BB0</c>),
+    /// 3 은 <c>0x004A45E0</c> 이다.
+    /// </remarks>
+    public const int Voyager = 0, TalkOnly = 1, Hireable = 2, Hired = 3, Retired = 4;
 
     /// <summary>
     /// 인물 한 명. 고치는 창이 이것을 그대로 묶으므로 <b>갈아 끼울 수 있는 칸</b>이다.

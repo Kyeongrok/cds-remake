@@ -1851,8 +1851,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///              내면 악명 +(rand100 + 150)×(199 − 매력)/100 · 친밀도 −20
     ///   끝에 배신 표시를 지우고(0x0044FBE7) 기분을 상하게 둔다
     /// </code>
-    /// 후원자 성미는 NPC 셈(얼굴·혈액형·나라, <see cref="Sea.FleetRaid.FortuneOf"/>)으로 센다 — 후원자 객체의
-    /// 가상 함수가 같은 셈인지는 확인하지 못했다. 대사는 신분마다 세 벌인데 한 벌만 쓴다.
+    /// 후원자 성미는 <see cref="SponsorFortune"/> 이다 — 표의 별자리(<c>+0x18</c>)와 혈액형(<c>+0x1C</c>)으로 센다.
     /// </remarks>
     private void Reckon(Patron patron)
     {
@@ -2050,8 +2049,16 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     }
 
     /// <summary>후원자 성미 여덟 칸. 표를 못 읽었으면 다 보통(1)이다.</summary>
+    /// <remarks>
+    /// 후원자 vtable <c>0x00524EB8</c> 의 +0x24 는 인물과 같은 <c>0x00477FE0</c>(별자리표 + 혈액형표, 0~2 로 자름)이지만
+    /// 그 안에서 부르는 +0x28 을 <c>0x004AD790</c> 이 덮어 <b>표 +0x18 의 별자리를 그대로</b> 준다. 인물 식
+    /// (얼굴 + 혈액형 + 나라) % 12(<c>0x004780B0</c>)는 후원자에게 안 쓴다. 운명 코드 보정도 없다.
+    /// </remarks>
     internal static int[] SponsorFortune(SponsorTable.Sponsor? sponsor) =>
-        sponsor is { } s ? Engine.Sea.FleetRaid.FortuneOf(s.Face, s.Blood, s.Nation) : [1, 1, 1, 1, 1, 1, 1, 1];
+        sponsor is { } s
+            ? s.Zodiac >= 0 ? Engine.Sea.FleetRaid.FortuneOfZodiac(s.Zodiac, s.Blood)
+                            : Engine.Sea.FleetRaid.FortuneOf(s.Face, s.Blood, s.Nation)
+            : [1, 1, 1, 1, 1, 1, 1, 1];
 
     /// <summary>
     /// 계약이 끝나면 <b>부하마다 다시 태울지</b> 묻는다(게임 <c>0x00454160</c>).

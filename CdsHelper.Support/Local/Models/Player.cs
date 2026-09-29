@@ -1362,9 +1362,8 @@ public sealed class Player
     /// 그대로 쓰인다</b>(<c>Standoff.EntryOf</c>) — 표를 고치면 놀이에 곧장 먹는다.
     /// 1 은 마을만 막고 항구는 열며, 2 라야 항구까지 막힌다(<c>Standoff.Barred</c>).
     ///
-    /// <b>아직 이 값을 올리는 데는 없다.</b> <see cref="Anger"/> 와 <see cref="Calm"/> 는
-    /// 갖춰만 두었다 — 마을을 치거나 숨어들다 잡혔을 때 올리는 것은 앞으로 할 일이다.
-    /// 지금은 문을 하나씩 여는 쪽으로 갈음한다(<see cref="IsGateOpen"/>).
+    /// <b>원본도 놀이 중에 이 값을 안 바꾼다</b> — 나라 레코드 <c>+0x0C</c> 에 쓰는 곳은 판 열기(<c>0x0041B320</c>)와
+    /// 로더(<c>0x0041B3B9</c>)뿐이다. <see cref="Anger"/> 와 <see cref="Calm"/> 는 편집 · 시험용으로만 둔다.
     /// </remarks>
     public IReadOnlyDictionary<int, int> Hostility => _hostility;
 
