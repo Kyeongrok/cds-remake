@@ -5259,10 +5259,8 @@ public sealed class ShipMapWindow : Window
         var (words, gains) = EnemyFleet.MonsterPrize(person);
         if (words.Length == 0) return;
 
-        var stats = _game.Player.Abilities.ToArray();
-        foreach (var (ability, by) in gains)
-            stats[ability] = Math.Clamp(stats[ability] + by, Ability.Min, Ability.Max);
-        _game.Player.SetAbilities(stats);
+        // 0x00435545 · 0x0043556C … 가 0x00432C50 으로 올린다 — 보이는 값 1~100 으로 자른다.
+        foreach (var (ability, by) in gains) _game.Player.AdjustAbility(ability, by);
         NoticeDialog.Show(board, words, "해전");
     }
 
