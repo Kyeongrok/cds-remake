@@ -412,10 +412,15 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     /// <remarks>
     /// 대본 <c>0E 14|1A [u32 판자] 04 05 00</c> 이 <c>0x00431740(판자, 1)</c> 을 부른다 — 묻지 않는다.
     /// 돌려준 값이 1 이어야 이긴 것이다(<c>0x00408E71</c>).
+    ///
+    /// 판자 수가 0 이면 게임이 <c>rand(5) + 4</c> 로 넷에서 여덟 가운데 굴린다(<c>0x00431247</c> ·
+    /// <c>0x00431251</c>). 예전에는 0 을 넷으로 눌러 늘 네 장이었다.
     /// </remarks>
     public static bool Play(Window owner, Random rng, int planks)
     {
-        int count = Math.Clamp(planks, TowerPuzzle.LeastPlanks, TowerPuzzle.MostPlanks);
+        int count = planks == 0
+            ? rng.Next(TowerPuzzle.MostPlanks - TowerPuzzle.LeastPlanks + 1) + TowerPuzzle.LeastPlanks
+            : Math.Clamp(planks, TowerPuzzle.LeastPlanks, TowerPuzzle.MostPlanks);
         Explain(owner);
         var dialog = new TowerPuzzleDialog(count, rng) { Owner = owner };
         dialog.ShowDialog();
