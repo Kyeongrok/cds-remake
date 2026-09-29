@@ -52,6 +52,9 @@ internal sealed class FishingGameDialog : InfoDialog
     /// </remarks>
     private const int Step = 40;
 
+    /// <summary>화살표 둘의 높이(<c>0x0047AFFF</c> 의 <c>push 0x16</c>). 판은 y 0 에서 찍히므로 그대로 쓴다.</summary>
+    private const int ArrowY = 0x16;
+
     private const int BeastSize = 32, HookSize = 16, FishW = 32, FishH = 16, BigW = 64, BigH = 32;
 
     /// <summary>한 틱에 얼마나 쉴지. 게임은 안 쉬고 그리는 대로 돈다.</summary>
@@ -121,14 +124,14 @@ internal sealed class FishingGameDialog : InfoDialog
         Panel.SetZIndex(_hook, 50);
         _scene.Children.Add(_hook);
 
-        // 왼쪽·오른쪽 화살표. 게임도 오른쪽 위에 나란히 둔다.
+        // 왼쪽·오른쪽 화살표. <b>배 위에 붙어 다닌다</b> — 자리는 Sync 가 잡는다.
         for (int i = 0; i < 2; i++)
         {
             int way = i == 0 ? -1 : +1;
             var image = new Image { Width = FishW, Height = FishH, Cursor = Cursors.Hand };
             Ready(image, Picture($"fish-arrow-{i}.png"));
-            Canvas.SetLeft(image, 224 + i * FishW);
-            Canvas.SetTop(image, 14);
+            Canvas.SetTop(image, ArrowY);
+            Panel.SetZIndex(image, 45);
             image.MouseLeftButtonDown += (_, e) => e.Handled = true;
             image.MouseLeftButtonUp += (_, e) => { e.Handled = true; Steer(way); };
             _scene.Children.Add(image);
@@ -320,6 +323,19 @@ internal sealed class FishingGameDialog : InfoDialog
 
         // 배도 바늘과 같이 옆으로 간다 — 칸*40+0x38 ± 틱(0x0047B0AC · 0x0047B0F0).
         Canvas.SetLeft(_boat, 0x38 - 8 + _game.DrawX);
+
+        // 화살표는 배 위 (칸*40+0x18, 0x16)·(칸*40+0x38, 0x16) 에 32x16 으로 찍힌다(0x0047AFD4 ·
+        // 0x0047B018). 곧장 내려갈 때([0x1F0] = 0)만 찍고, 낚았거나 바닥이면 안 찍는다(0x0047AFB1 ·
+        // 0x0047AFBE). 한쪽을 적어 두면 <b>반대쪽 화살표는 지운다</b> — 오른쪽을 적었으면 왼쪽을,
+        // 왼쪽을 적었으면 오른쪽을(0x0047AFCB · 0x0047B00F). 누르는 칸도 이 자리다(0x0047A8F4).
+        // 예전에는 오른쪽 위 한 자리에 늘 붙박아 두었다.
+        bool arrows = _game.Lean == 0 && _game.Got == FishingGame.Catch.None && _game.At < FishingGame.Cells;
+        for (int i = 0; i < _arrow.Length; i++)
+        {
+            int side = i == 0 ? -1 : +1;
+            Canvas.SetLeft(_arrow[i], _game.Column * Step + (i == 0 ? 0x18 : 0x38) - 8);
+            _arrow[i].Visibility = arrows && _game.Wish != -side ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         // 걸린 순간, 무엇이 걸렸는지 붙잡아 둔다 — 감아 올릴 때 함께 딸려 온다.
         if (_catch == null && _game.Got != FishingGame.Catch.None) Hooked();

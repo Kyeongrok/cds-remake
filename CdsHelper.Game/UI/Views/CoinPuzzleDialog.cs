@@ -258,25 +258,30 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         Content = GameUi.GoldFrame(_scene, Close);
         GameUi.EnableDrag(this, _scene);
 
-        // 오른쪽 단추는 <b>두 가지</b>를 한다 — 접시에 올린 금화를 내리고, 차림표를 편다.
-        // 예전에는 내리기만 했다.
+        // 오른쪽 단추는 차림표만 편다 — 0x004510E3 이 글쇠(3)가 아닌 것을 곧장 0x00451BBB 로 보내고,
+        // 거기서 2 면 접시는 건드리지 않고 차림표를 낸다. 예전에는 접시부터 비웠는데, 그러면
+        // 차림표의 «무게를 단다» 가 늘 «접시 위에는 아무 것도 없습니다» 로 막힌다.
         MouseRightButtonUp += (_, e) =>
-        {
-            _game.Clear();
-            Sync();
             GameUi.ContextMenuAt(this, e.GetPosition(this), Commands());
-        };
         KeyDown += (_, e) => { if (e.Key is Key.Escape) { _game.Clear(); Sync(); } };
 
         Sync();
     }
 
-    /// <summary>오른쪽 단추가 부르는 차림표. 예전 아래 단추 줄이 그대로 여기로 왔다.</summary>
+    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 게임 그대로다.</summary>
+    /// <remarks>
+    /// <c>0x00451BCA</c> 가 «무게를 단다(WEIGH)» · «금화를 내린다(CLEAR)» · «가짜 금화 선택(DECIDE)» ·
+    /// «게임 설명» · «게임 속행»(<c>0x0053B048</c>~<c>0x0053B0A0</c>) 다섯을 넘긴다 — 판의 단추 셋이
+    /// 차림표에도 그대로 있다. <b>포기 줄은 없다</b> — 천칭은 가려낼 때까지 못 빠져나간다.
+    /// 예전에는 설명 · «포기한다»(원본에 없는 «천칭 퍼즐을 포기하겠습니까?» 를 물었다) · «게임 복귀» 였다.
+    /// </remarks>
     private IReadOnlyList<(string, Action?)> Commands() =>
     [
+        ("무게를 단다(WEIGH)", DoWeigh),
+        ("금화를 내린다(CLEAR)", () => { _game.Clear(); Sync(); }),
+        ("가짜 금화 선택(DECIDE)", DoDecide),
         ("게임 설명", Explain),
-        ("포기한다", AskGiveUp),
-        ("게임 복귀", () => { }),   // 차림표만 닫는다
+        ("게임 속행", () => { }),   // 차림표만 닫는다
     ];
 
     /// <summary>단추 하나. 그림은 게임 것을 그대로 쓴다.</summary>
@@ -507,13 +512,6 @@ internal sealed class CoinPuzzleDialog : InfoDialog
             "금화를 가려내고 천칭이 평형을 이루게 해야 합니다." + Environment.NewLine +
             " 나무 천칭을 3번까지 쓰고 무게가 다른 금화를 선택해 주십시오." + Environment.NewLine +
             " 금화 위에서 마우스 왼쪽을 클릭하여 버튼을 누른 체 금화를 이동하면 움직일 수 있습니다.");
-
-    private void AskGiveUp()
-    {
-        if (!ConfirmDialog.Ask(this, "천칭 퍼즐을 포기하겠습니까?", "포기한다")) return;
-        _game.GiveUp();
-        Close();
-    }
 
     private void Sync()
     {

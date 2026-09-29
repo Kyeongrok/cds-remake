@@ -152,12 +152,18 @@ internal sealed class TowerPuzzleDialog : InfoDialog
         Sync();
     }
 
-    /// <summary>오른쪽 단추가 부르는 차림표. 예전 아래 단추 줄이 그대로 여기로 왔다.</summary>
+    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 게임 그대로다.</summary>
+    /// <remarks>
+    /// <c>0x00430A71</c> 이 «포기»(<c>0x0056BAE0</c>) · «게임 설명»(<c>0x0056BAE8</c>) ·
+    /// «게임 재개»(<c>0x0056BAF8</c>) 셋을 이 차례로 <c>0x004878A0</c> 에 넘기고, 0 이 포기 물음
+    /// (<c>0x00430AB6</c>), 1 이 설명(<c>0x00430B0F</c>)이다. 예전에는 설명을 맨 위에 두고
+    /// «포기한다» · «게임 복귀» 로 딴 미니 게임의 말을 빌려 썼다.
+    /// </remarks>
     private IReadOnlyList<(string, Action?)> Commands() =>
     [
+        ("포기", GiveUp),
         ("게임 설명", Explain),
-        ("포기한다", GiveUp),
-        ("게임 복귀", () => { }),   // 차림표만 닫는다
+        ("게임 재개", () => { }),   // 차림표만 닫는다
     ];
 
     /// <summary>「포기?」 — 물은 뒤 그때까지의 회수를 알리고 닫는다(0x004308CB · 0x004308F6).</summary>
@@ -406,10 +412,15 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     /// <remarks>
     /// 대본 <c>0E 14|1A [u32 판자] 04 05 00</c> 이 <c>0x00431740(판자, 1)</c> 을 부른다 — 묻지 않는다.
     /// 돌려준 값이 1 이어야 이긴 것이다(<c>0x00408E71</c>).
+    ///
+    /// 판자 수가 0 이면 게임이 <c>rand(5) + 4</c> 로 넷에서 여덟 가운데 굴린다(<c>0x00431247</c> ·
+    /// <c>0x00431251</c>). 예전에는 0 을 넷으로 눌러 늘 네 장이었다.
     /// </remarks>
     public static bool Play(Window owner, Random rng, int planks)
     {
-        int count = Math.Clamp(planks, TowerPuzzle.LeastPlanks, TowerPuzzle.MostPlanks);
+        int count = planks == 0
+            ? rng.Next(TowerPuzzle.MostPlanks - TowerPuzzle.LeastPlanks + 1) + TowerPuzzle.LeastPlanks
+            : Math.Clamp(planks, TowerPuzzle.LeastPlanks, TowerPuzzle.MostPlanks);
         Explain(owner);
         var dialog = new TowerPuzzleDialog(count, rng) { Owner = owner };
         dialog.ShowDialog();

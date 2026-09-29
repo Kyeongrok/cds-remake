@@ -351,7 +351,9 @@ internal sealed class GrailPuzzleDialog : InfoDialog
     /// <summary>오른쪽 단추 차림표의 줄. 게임 갈무리 차례 그대로다.</summary>
     private IReadOnlyList<(string, Action?)> Commands() =>
     [
-        ("한 수 되돌림", _game.CanUndo ? AskUndo : null),
+        // 되돌릴 수 없어도 줄은 살아 있다 — 고르면 0x00467930 이 「경고 / 다시 할 수 없습니다」를 낸다
+        // (0x00467986). 예전에는 흐리게 막아 두어 그 경고가 안 떴다.
+        ("한 수 되돌림", AskUndo),
         ("포기한다", AskGiveUp),
         ("게임 설명", Explain),
         ("게임 복귀", () => { }),   // 차림표만 닫는다
