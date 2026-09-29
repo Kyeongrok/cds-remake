@@ -275,6 +275,20 @@ public sealed class Player
     public int AbilityOf(int which) =>
         which >= 0 && which < Abilities.Length ? Abilities[which] : 0;
 
+    /// <summary>다음에 늙는 해(제독 <c>+0x304</c>). NEW GAME 은 0 이라 마흔을 넘긴 첫 저장에서 곧 늙는다(<c>0x0047C324</c>).</summary>
+    public int AgingYear { get; set; }
+
+    /// <summary>다음에 늙을 때 능력치 여섯에 얹을 값(제독 <c>+0x2EC</c>~<c>+0x300</c>). NEW GAME 은 다 0 이다.</summary>
+    public int[] AgingSteps { get; private set; } = new int[6];
+
+    /// <summary>늙음 칸을 통째로 박는다 — 적어 둔 판을 열 때 쓴다. 없으면 NEW GAME 처럼 0 이다.</summary>
+    public void RestoreAging(int? year, IReadOnlyList<int>? steps)
+    {
+        AgingYear = year ?? 0;
+        AgingSteps = new int[6];
+        for (int i = 0; i < AgingSteps.Length && steps != null && i < steps.Count; i++) AgingSteps[i] = steps[i];
+    }
+
     /// <summary>능력치를 통째로 박는다.</summary>
     public void SetAbilities(IReadOnlyList<int> values)
     {

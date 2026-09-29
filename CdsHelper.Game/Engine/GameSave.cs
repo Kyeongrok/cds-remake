@@ -223,7 +223,8 @@ public static class GameSave
         List<int>? Executed = null,
         Dictionary<string, Player.PatronDock>? PatronDocks = null,
         Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null,
-        List<int>? GoneBarmaids = null);
+        List<int>? GoneBarmaids = null,
+        int? Infamy = null, int? AgingYear = null, List<int>? AgingSteps = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -358,7 +359,11 @@ public static class GameSave
                             FoundBy: player.FoundBy.ToDictionary(e => e.Key, e => e.Value),
                             AnnouncedBy: player.AnnouncedBy.ToDictionary(e => e.Key, e => e.Value),
                             // 마을을 떠난 여급(세대교체한 옛 아내). 이 칸 앞의 세이브는 아무도 안 떠난 것으로 연다.
-                            GoneBarmaids: [.. player.GoneBarmaids]);
+                            GoneBarmaids: [.. player.GoneBarmaids],
+                            // 악명 — 원본은 명성과 나란히 적는다(0x00480060 이 +0xAC · +0xB0 을 적는다). 이 칸 앞의 세이브는 0 으로 연다.
+                            Infamy: player.Infamy,
+                            // 늙음(제독 +0x304 · +0x2EC). 이 칸 앞의 세이브는 NEW GAME 처럼 0 으로 연다.
+                            AgingYear: player.AgingYear, AgingSteps: [.. player.AgingSteps]);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

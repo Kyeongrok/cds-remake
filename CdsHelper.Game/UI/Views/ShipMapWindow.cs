@@ -2640,6 +2640,8 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreActiveGoods(saved.ActiveGoods ??
                 _game.Player.Discoveries.SelectMany(id => Engine.Disev.DisevRunner.GoodsActivatedBy(_game, id)));
             if (saved.Fame is { } fame) _game.Player.Fame = fame;
+            _game.Player.Infamy = saved.Infamy ?? 0;
+            _game.Player.RestoreAging(saved.AgingYear, saved.AgingSteps);
             // 적어 둔 도시 앞바다에 배를 놓는다. 그 도시는 이미 들렀으니 곧바로 다시 묻지 않는다.
             if (saved.CityId >= 0 && _host.PlaceAtCity(saved.CityId)) _askedCity = saved.CityId;
             // 바다에서 적은 판은 적어 둔 칸에 닻을 내린 채로 연다.
@@ -5258,10 +5260,8 @@ public sealed class ShipMapWindow : Window
         var (words, gains) = EnemyFleet.MonsterPrize(person);
         if (words.Length == 0) return;
 
-        var stats = _game.Player.Abilities.ToArray();
-        foreach (var (ability, by) in gains)
-            stats[ability] = Math.Clamp(stats[ability] + by, Ability.Min, Ability.Max);
-        _game.Player.SetAbilities(stats);
+        // 0x00435545 · 0x0043556C … 가 0x00432C50 으로 올린다 — 보이는 값 1~100 으로 자른다.
+        foreach (var (ability, by) in gains) _game.Player.AdjustAbility(ability, by);
         NoticeDialog.Show(board, words, "해전");
     }
 
