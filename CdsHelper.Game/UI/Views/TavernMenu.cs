@@ -2052,22 +2052,16 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             for (int i = 0; i < Player.MaxMates; i++)
             {
                 string role = Player.MateRoles[i], sitting = _player.MateAt(i);
-                // <b>줄은 다 살아 있다</b> — 게임도 고르게 두고 나서 물린다(0x00453F8E).
-                rows.Add((sitting.Length > 0 ? $"{role} ({sitting})" : role, true));
+                // 줄 글은 「%6s (%s)」(0x00549E70), 빈 자리는 자리 이름만이다. 줄의 <b>켜짐 칸(+8)</b>에
+                // 0x00453530(사람, 자리)를 넣는다(0x0045386D ~ 0x0045387E) — 부관·통역은 제독과 말이
+                // 3 이상 통해야 눌리고, 아니면 흐리다. 고른 뒤에 물리는 「말이 통하지 않는 자는 …」은
+                // 부하편성 창(0x00453F8E) 것이지 이 차림표 것이 아니다.
+                rows.Add((sitting.Length > 0 ? $"{role} ({sitting})" : role, CanSit(row, i)));
             }
 
             int slot = ChoiceDialog.Pick(_view, "", rows, exitRow: false);
             if (slot < 0 || slot >= Player.MaxMates) continue;    // 물릴 수 없다 — 다시 묻는다
-
-            // 부관·통역은 <b>제독과 말이 3 이상</b>이라야 앉는다(0x00453F86).
-            // 안 되면 한 줄 내고 고르기로 되돌아간다.
-            if (!CanSit(row, slot))
-            {
-                GameDialog.Show(_view, slot == FirstMateSlot
-                    ? "말이 통하지 않는 자는 부관이 될 수 없습니다!"
-                    : "말이 통하지 않는 자는 통역이 될 수 없습니다!");
-                continue;
-            }
+            if (!CanSit(row, slot)) continue;                      // 흐린 줄 — 눌리지 않는다
 
             string old = _player.MateAt(slot);
             if (old.Length > 0)
