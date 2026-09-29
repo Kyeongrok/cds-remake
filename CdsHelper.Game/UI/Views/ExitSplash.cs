@@ -119,12 +119,11 @@ internal static class ExitSplash
                     if (step >= FadeOutSteps) frame.Continue = false;
                     break;
             }
-        }, splash.Dispatcher);
+        }, splash.Dispatcher);                // 이 생성자는 만들자마자 돈다 — 따로 Start 하지 않는다
 
         splash.Closed += (_, _) => frame.Continue = false;
         splash.Show();
         splash.Activate();
-        clock.Start();
         try
         {
             Dispatcher.PushFrame(frame);
