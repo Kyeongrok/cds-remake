@@ -2561,6 +2561,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreFoundDates(saved.FoundOn);
             // 찾은 사람·보고한 사람 이름. 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
             _game.Player.RestoreDiscoverers(saved.FoundBy, saved.AnnouncedBy);
+            _game.Player.RestoreSettled(saved.Settled);
             if (saved.Fatigue is { } tired) _game.Player.SetFatigue(tired);
             if (saved.DaysAtSea is { } atSea) _game.Player.SetDaysAtSea(atSea);
             // 컨디션. 이 판 앞의 세이브에는 없어 성한 채로 연다.
@@ -6084,10 +6085,9 @@ public sealed class ShipMapWindow : Window
             // 발견물 아이템은 여기서 안 든다 — 발표할 때 들어온다(GameInfo.VirtualItems).
             if (!over && !scripted) log.Discover(_game.Player, id);
 
-            // 게임은 대본 결과가 0 이나 1 이면 그 발견물 줄의 +0x17 에 비트 0 을 세운다
-            // (0x0048D569 · 0x0049294A · 0x00492B49). 그런데 <b>그 비트를 읽는 데가 EXE
-            // 어디에도 없다</b> — 세우기만 하는 죽은 깃발이라 옮길 것이 없다. 「한 번 본
-            // 사건은 다시 안 뜬다」로 쓰려던 자리로 보인다.
+            // 대본 결과가 0 이나 1 이면 그 발견물 줄의 +0x17 에 비트 0(깃발 0x0100)을 세운다(0x0048D569) —
+            // 발견 판정 0x004AAD20 이 첫 줄에서 그것을 보고 막으므로 그 자리 사건은 다시 안 뜬다.
+            if (!over) DiscoveryLog.Settle(_game.Player, id, scripted);
         }
         finally
         {

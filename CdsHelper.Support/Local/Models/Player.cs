@@ -1520,6 +1520,39 @@ public sealed class Player
     /// <summary>그것을 이미 발견했는지.</summary>
     public bool HasFound(int discovery) => _found.Contains(discovery);
 
+    private readonly HashSet<int> _settled = [];
+
+    /// <summary>
+    /// 자리 사건을 <b>매듭지은</b> 발견물 — 발견물 칸 <c>+0x16</c> 의 비트 <c>0x0100</c> 이다.
+    /// </summary>
+    /// <remarks>
+    /// 발견 대본이 결과 0(<c>4C</c>)이나 1(<c>4D</c>)로 끝나면 세운다(<c>0x0048D578</c> · 도시 입장
+    /// <c>0x0049294A</c> · 건물 <c>0x00492B49</c>). 서면 발견 판정 <c>0x004AAD20</c> 이 첫 줄
+    /// (<c>0x004AAD27 test ah, 1</c>)에서 막아 그 자리 사건은 <b>다시는 안 뜬다</b> — 괴물 해전에 져서
+    /// 「놓쳤다」(<c>4D</c>)로 끝나도 마찬가지다. 지우는 코드는 없다. 결과 2(<c>4E</c> · 밑값)면 안 서서
+    /// 다음에 또 뜬다.
+    /// </remarks>
+    public IReadOnlyCollection<int> Settled => _settled;
+
+    /// <summary>그 발견물의 자리 사건을 매듭지었는지(비트 <c>0x0100</c>).</summary>
+    public bool IsSettled(int discovery) => _settled.Contains(discovery);
+
+    /// <summary>그 발견물의 자리 사건을 매듭지은 것으로 적는다(<c>or byte [+0x17], 1</c>).</summary>
+    public void Settle(int discovery)
+    {
+        if (discovery >= 0) _settled.Add(discovery);
+    }
+
+    /// <summary>
+    /// 세이브를 되돌릴 때 매듭지은 것을 채운다. 이 칸이 없던 옛 세이브는 <b>찾은 것</b>을 다 넣는다 —
+    /// 그때까지는 찾은 것이면 다시 안 떴으므로 그대로 이어진다.
+    /// </summary>
+    public void RestoreSettled(IEnumerable<int>? settled)
+    {
+        _settled.Clear();
+        foreach (int id in settled ?? _found) _settled.Add(id);
+    }
+
     /// <summary>
     /// 감찰관을 매수해 <b>숨겨 둔</b> 발견물(발견물 칸 <c>+0x16</c> 의 비트 <c>0x20</c>).
     /// </summary>
