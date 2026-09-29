@@ -1990,7 +1990,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             return true;
         }
 
-        int luck = _player.AbilityOf(Ability.Luck), charm = _player.AbilityOf(Ability.Charm);
+        int luck = _player.AbilityOf(Ability.Luck);
         int years = dice.Next(2) + (109 - luck) / 10;
         GameDialog.Show(_view, $"그리고 {years}년의 세월이 흘렀다");
 
@@ -2003,7 +2003,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         _player.AdjustAbility(Ability.Charm, -5 * years);
         _player.SetGold(0);
         _player.Fame = Math.Max(0, _player.Fame - 2000);
-        _player.Infamy += (dice.Next(300) + 500) * Math.Max(0, 199 - charm) / 100;
+        // 악명은 <b>깎인 뒤의</b> 매력으로 센다(0x0044F00A 가 0x0044EFC8 뒤에 [0x005B60CC] 를 읽는다).
+        _player.Infamy += (dice.Next(300) + 500) * Math.Max(0, 199 - _player.AbilityOf(Ability.Charm)) / 100;
         _player.Endear(patron.Name, -Player.MaxCloseness);
 
         // 부하는 말없이 다 흩어지고(0x004534E0 — 자리마다 행적에 해고를 적는다), 아내와 아이도 사라진다(0x00465900 · 0x0047D640).
