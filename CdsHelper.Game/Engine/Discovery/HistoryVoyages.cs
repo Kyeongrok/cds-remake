@@ -60,8 +60,9 @@ public sealed class HistoryVoyages
     public const int Count = 14;
 
     /// <summary>
-    /// 열넷의 이름. EXE 의 <c>0x005498E0</c>~<c>0x005499DC</c> 에 성·이름이 짝지어 있고,
-    /// 차례는 <c>HISTCHR.CDS</c> 의 파트 차례와 같다.
+    /// 열넷의 이름. 인물 밑표(<c>0x004DF3F0</c>, 한 줄 <c>0xCC</c>)의 0~13 번이 이 이름·차례이고,
+    /// 차례는 <c>HISTCHR.CDS</c> 의 파트 차례와 같다. 글은 <c>0x005498C8</c>~<c>0x005499DC</c> 에 있다
+    /// (열넷째 「하산·분·무하마드」 가 <c>0x005498D8</c> · <c>0x005498C8</c> 이다).
     /// </summary>
     /// <remarks>
     /// 파일에는 이름이 없어 여기 적어 둔다. 짝이 맞는지는 대본의 날짜로 확인했다 —

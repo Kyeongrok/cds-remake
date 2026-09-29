@@ -106,12 +106,13 @@ public static class LandFormations
             new(LandUnits.HeavyHorse, LandUnits.Horse, Skill.Sword),
         ]),
 
-        // 6 — 0x004A0D50
+        // 6 — 0x004A0D50. 닌자는 한 번만 선다(0x004A0DFA) — 남는 자리는 rand(2) 로
+        // 닌자와 하타모토/사무라이를 반반 고른다(0x004A0E0D).
         new("일본 무가군", "일본", true,
         [
             new(LandUnits.Lord),
             new(LandUnits.Hatamoto, LandUnits.Samurai, Skill.Sword),
-            new(LandUnits.Ninja), new(LandUnits.Ninja),
+            new(LandUnits.Ninja),
         ]),
 
         // 7 — 0x004A0E70
@@ -158,17 +159,17 @@ public static class LandFormations
         var line = new int[Math.Max(1, units)];
         if (set.Units.Length == 0) return line;
 
-        // 자리마다 기능을 한 번씩만 굴린다 — 되풀이해도 같은 병종이 나오게.
-        var picked = new int[set.Units.Length];
-        for (int i = 0; i < picked.Length; i++)
-            picked[i] = Resolve(set, set.Units[i], sword, gunnery, shooting, dice);
-
-        line[0] = picked[0];
-        for (int i = 1; i < line.Length; i++)
-            line[i] = i < picked.Length
-                ? picked[i]
-                // 늘어놓을 것이 다 떨어지면 대장을 뺀 것 가운데 하나를 굴린다.
-                : picked.Length > 1 ? picked[1 + dice.Next(picked.Length - 1)] : picked[0];
+        // 원본 그대로 세우는 그때 기능을 가른다 — 세우지 않을 자리는 굴리지 않고, 되풀이로 한
+        // 부대를 더 세울 때마다 새로 굴린다(0x004A0911 · 0x004A0E25 따위, 기능이 2 일 때 rand(2)).
+        int slots = set.Units.Length;
+        for (int i = 0; i < line.Length; i++)
+        {
+            Slot slot = i < slots
+                ? set.Units[i]
+                // 늘어놓을 것이 다 떨어지면 대장을 뺀 것 가운데 하나를 굴린다(rand(자리 수 − 1)).
+                : set.Units[slots > 1 ? 1 + dice.Next(slots - 1) : 0];
+            line[i] = Resolve(set, slot, sword, gunnery, shooting, dice);
+        }
         return line;
     }
 
@@ -186,7 +187,8 @@ public static class LandFormations
             _ => sword,
         };
         bool big = level >= Skill.MaxLevel
-                   || (set.Coin && level == Skill.MaxLevel - 1 && dice.Next(2) == 0);
+                   // 원본은 rand(2) 가 0 이 아니면 큰 것이다(0x004A0DC8 test eax,eax · jne).
+                   || (set.Coin && level == Skill.MaxLevel - 1 && dice.Next(2) != 0);
         return big ? slot.Big : slot.Small;
     }
 

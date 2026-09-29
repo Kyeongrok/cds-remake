@@ -25,11 +25,11 @@ public static class CityCoordinates
     /// <summary>측량사가 앉는 부하 자리(<c>0x00560AD0</c> 의 셋째 — 0 부관 · 1 항해사 · 2 측량사 · 3 통역).</summary>
     public const int SurveyorSlot = 2;
 
-    /// <summary>문화권을 먼저 묻기 시작하는 도시 수(<c>0x00426A6B</c> 의 <c>cmp 0x10</c>).</summary>
+    /// <summary>문화권을 먼저 묻기 시작하는 도시 수(<c>0x00426AA5</c> 의 <c>cmp 0x10</c>).</summary>
     public const int AskRegionFrom = 16;
 
     /// <summary>안내 글(<c>0x005333E0</c>) — 문화권을 물을 때 한 번 낸다.</summary>
-    public const string Guide = "알고 싶은 도시의 문화권 좌표를 선택해 주십시오. "
+    public const string Guide = "알고 싶은 도시의 문화권 좌표를 선택해 주십시오.\n"
                               + "전도시 일람으로, 전도시를 표시해 선택할 수도 있습니다";
 
     /// <summary>문화권 목록 끝에 붙는 줄(<c>0x005333D0</c>)과 도시 목록의 제목(<c>0x005333C0</c>).</summary>

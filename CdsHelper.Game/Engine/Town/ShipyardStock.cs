@@ -9,7 +9,8 @@ namespace CdsHelper.Game.Engine.Town;
 /// 게임은 도시 레코드 <c>+0x1E</c> 낱말에 비트로 든다(비트 n = 선체 n). 세이브에도 들어간다
 /// (<c>0x00429B9A</c>). 켜는 곳은 둘이다.
 /// <code>
-///   판을 열 때  0x00429A2F   도시 표 +0x18 비트 가운데  규모 x 5 + 5  &gt;  선체 문턱  인 것 모두
+///   판을 열 때  0x00429A2F   조선소가 있는 도시(표 +0x60 비트 6, 0x00429A25)만,
+///                            도시 표 +0x18 비트 가운데  규모 x 5 + 5  &gt;  선체 문턱  인 것 모두
 ///   해마다      0x0042A340   조선소가 있는 도시(+0x1C 비트 6)만,
 ///                            도시 표 +0x18 비트 가운데  규모 x 5 − 1475 + 해  &gt;  선체 문턱  인 것 중
 ///                            <b>번호가 가장 큰 하나</b>를 더한다 (해 넘김 0x0044B3D0 의 0x0044B42C 가 226곳을 돈다)
@@ -33,6 +34,9 @@ public static class ShipyardStock
     public static int ThresholdOf(int hull) =>
         hull >= 0 && hull < Thresholds.Length ? Thresholds[hull] : int.MaxValue;
 
+    /// <summary>건물 낱말에서 조선소 비트(<c>0x40</c>).</summary>
+    private const int ShipyardBit = 6;
+
     /// <summary>놀이 첫 해 — 해 값에서 빼는 수(<c>0x0042A383</c> 의 <c>−0x5C3</c>)와 짝이다.</summary>
     private const int FirstYear = 1480, YearBase = 1475;
 
@@ -50,16 +54,20 @@ public static class ShipyardStock
     /// </summary>
     /// <remarks>
     /// 해마다의 셈(<c>0x0042A340</c>)은 조선소가 있는 도시(<c>+0x1C</c> 비트 6)만 돈다 — 후원자가 앉은
-    /// 도시처럼 조선소가 없는 데서 이 낱말을 읽을 때는 거짓을 넘긴다.
+    /// 도시처럼 조선소가 없는 데서 이 낱말을 읽을 때는 거짓을 넘긴다. 판을 열 때의 셈도 처음 조선소 비트가
+    /// 없으면 안 돈다(<c>0x00429A25</c>).
     /// </remarks>
     public static IReadOnlySet<int> HullsAt(CityExeTable cities, int city, DateTime date, bool yearly)
     {
         int mask = cities.HullMaskOf(city), scale = cities.ScaleOf(city);
         var got = new HashSet<int>();
 
-        // 판을 열 때의 셈.
-        for (int h = 0; h < Thresholds.Length; h++)
-            if ((mask & 1 << h) != 0 && scale * 5 + 5 > Thresholds[h]) got.Add(h);
+        // 판을 열 때의 셈 — 처음 건물 낱말에 조선소(비트 6)가 있는 도시만 돈다(0x00429A25 test al, 0x40).
+        // 없으면 +0x1E 가 0 으로 남는다 — 후원자가 앉은 톨레도 · 파리 · 로마 같은 데가 그렇다.
+        // 모르는 표(-1)면 있다고 본다.
+        if ((cities.StartBuildingsOf(city) & 1 << ShipyardBit) != 0)
+            for (int h = 0; h < Thresholds.Length; h++)
+                if ((mask & 1 << h) != 0 && scale * 5 + 5 > Thresholds[h]) got.Add(h);
 
         // 해마다의 셈(1월 1일, 0x0044B3D0) — 1481년부터 돈다. 1480년 셈은 판을 열 때의 셈과 같은 값이라 넣어도 달라지지 않는다.
         int lastYear = !yearly ? FirstYear - 1

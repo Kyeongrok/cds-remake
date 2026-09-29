@@ -290,13 +290,13 @@ public static class Home
     ///   언어      아버지가 3 인 것은 3 (0x00460EB8)
     /// </code>
     /// 능력치 폭은 칸마다 다르고(운·신앙심만 <c>rand(30) − 15</c>), 딸이면 체력·무력이 −10, 나머지 넷이 +5 다.
-    /// 거기에 <b>아내 운명 코드 줄</b>(<c>0x0051B0A0</c>, <see cref="Oracle.WifeSlope"/>)이 얹힌다.
+    /// 거기에 <b>아내 얼굴 줄</b>(<c>0x0051B0A0</c>, <see cref="Oracle.WifeSlope"/>)이 얹힌다.
     /// </remarks>
-    /// <param name="wifeFortune">아내 운명 코드. 모르면 −1 이라 보정이 없다.</param>
+    /// <param name="wifeFace">아내 얼굴 번호(여급 표 <c>+0x04</c>). 모르면 −1 이라 보정이 없다.</param>
     /// <param name="wifeBlood">아내 혈액형. 모르면 −1 이라 아버지 것만 본다.</param>
     /// <param name="daughter">딸인지. 안 주면 여기서 굴린다(이미 아이가 있으면 그 반대 성별이다).</param>
     public static Player.Child Conceive(Player father, Random random, string name,
-                                        int wifeFortune = -1, int wifeBlood = -1, bool? daughter = null,
+                                        int wifeFace = -1, int wifeBlood = -1, bool? daughter = null,
                                         int nationLanguage = -1, int wifeTongues = 0)
     {
         daughter ??= father.Children.Count > 0 ? !father.Children[^1].Daughter : random.Next(2) == 0;
@@ -305,7 +305,7 @@ public static class Home
 
         var abilities = new int[6];
         for (int i = 0; i < abilities.Length; i++)
-            abilities[i] = AbilityOfChild(father.AbilityOf(i), i, daughter.Value, wifeFortune, random);
+            abilities[i] = AbilityOfChild(father.AbilityOf(i), i, daughter.Value, wifeFace, random);
 
         var child = new Player.Child(name, daughter.Value, due, abilities,
                                      new int[Skill.Names.Length], new int[Skill.Languages.Length],
@@ -373,11 +373,11 @@ public static class Home
     /// 우리도 원본과 같은 담는 값을 쓴다. 그래서 식이 <c>+1</c> 한 뒤 1~100 으로 자르고
     /// (<c>0x004611A6</c>) 다시 1 을 빼는 것까지 그대로다(<c>0x00460E26</c>의 <c>dec eax</c>).
     /// </remarks>
-    public static int AbilityOfChild(int fathers, int ability, bool daughter, int wifeFortune, Random random)
+    public static int AbilityOfChild(int fathers, int ability, bool daughter, int wifeFace, Random random)
     {
         int value = fathers + random.Next(Spread[ability]) + Floor[ability]
                     + (daughter ? DaughterBonus[ability] : 0)
-                    + Oracle.WifeSlope(wifeFortune, ability) + 1;
+                    + Oracle.WifeSlope(wifeFace, ability) + 1;
         return Math.Clamp(value, 1, 100) - 1;
     }
 

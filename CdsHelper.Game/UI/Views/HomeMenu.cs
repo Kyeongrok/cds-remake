@@ -271,14 +271,14 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         // 됐으면 조용히 아이를 들일 뿐이다(0x004613F4 → 0x00460C50, 말이 없다).
         if (!born) { PassHeirDays(); return; }
 
-        // 아내의 운명 코드와 혈액형이 아이 능력치·혈액형에 든다(0x00461139 · 0x00460FA0).
+        // 아내의 얼굴 번호(여급 표 +0x04 — 기울기 줄 0x0051B0A0 을 고른다)와 혈액형이 아이 능력치·혈액형에 든다(0x00461139 · 0x00460FA0).
         var wife = _player.SpouseId >= 0 ? _game.Barmaids?.Find(_player.SpouseId) : null;
         // 성별이 먼저 정해져야 이름을 뽑는다 — 이미 아이가 있으면 그 반대다(0x00460CA1).
         bool daughter = _player.Children.Count > 0 ? !_player.Children[^1].Daughter : _random.Next(2) == 0;
         // 아이가 물려받는 언어는 아버지 것뿐이 아니다 — 제독 나라의 언어와 아내가 가르치는
         // 언어도 3 으로 들어온다(0x00460EB8).
         var child = Home.Conceive(_player, _random, HeirName(daughter),
-                                  wife?.Fortune ?? -1, wife?.Blood ?? -1, daughter,
+                                  wife?.Face ?? -1, wife?.Blood ?? -1, daughter,
                                   _game.Nations?.Find(_player.Nation)?.Language ?? -1,
                                   wife?.Tongues ?? 0);
         _player.AddChild(child);

@@ -13,7 +13,7 @@
   },
   {
     "id": 1,
-    "name": "오포르트",
+    "name": "오포르토",
     "latitude": 41,
     "longitude": -8,
     "hasLibrary": false,
@@ -277,7 +277,7 @@
   },
   {
     "id": 23,
-    "name": "엔트워프",
+    "name": "앤트워프",
     "latitude": 52,
     "longitude": 4,
     "hasLibrary": false,
@@ -421,7 +421,7 @@
   },
   {
     "id": 35,
-    "name": "칼리아스",
+    "name": "칼리아리",
     "latitude": 39,
     "longitude": 9,
     "hasLibrary": false,
@@ -469,7 +469,7 @@
   },
   {
     "id": 39,
-    "name": "사우셈프턴",
+    "name": "사우샘프턴",
     "latitude": 51,
     "longitude": -1,
     "hasLibrary": false,
@@ -769,7 +769,7 @@
   },
   {
     "id": 64,
-    "name": "스톡홀롬",
+    "name": "스톡홀름",
     "latitude": 59,
     "longitude": 18,
     "hasLibrary": false,
@@ -1081,7 +1081,7 @@
   },
   {
     "id": 90,
-    "name": "베르덴곶",
+    "name": "베르데 곶",
     "latitude": 14,
     "longitude": -17,
     "hasLibrary": false,
@@ -1129,7 +1129,7 @@
   },
   {
     "id": 94,
-    "name": "카노",
+    "name": "가오",
     "latitude": 17,
     "longitude": -3,
     "hasLibrary": false,
@@ -1153,7 +1153,7 @@
   },
   {
     "id": 96,
-    "name": "가노",
+    "name": "카노",
     "latitude": 14,
     "longitude": -14,
     "hasLibrary": false,
@@ -1165,7 +1165,7 @@
   },
   {
     "id": 97,
-    "name": "산호르해",
+    "name": "산호르헤",
     "latitude": 5,
     "longitude": 0,
     "hasLibrary": false,
@@ -1177,7 +1177,7 @@
   },
   {
     "id": 98,
-    "name": "아페",
+    "name": "이페",
     "latitude": 6,
     "longitude": -3,
     "hasLibrary": false,
@@ -1465,7 +1465,7 @@
   },
   {
     "id": 122,
-    "name": "메디아",
+    "name": "메디나",
     "latitude": 24,
     "longitude": 39,
     "hasLibrary": false,
@@ -1597,7 +1597,7 @@
   },
   {
     "id": 133,
-    "name": "타슈겐트",
+    "name": "타슈켄트",
     "latitude": 41,
     "longitude": 69,
     "hasLibrary": false,
@@ -1705,7 +1705,7 @@
   },
   {
     "id": 142,
-    "name": "사빌",
+    "name": "시빌",
     "latitude": 57,
     "longitude": 72,
     "hasLibrary": false,
@@ -1729,7 +1729,7 @@
   },
   {
     "id": 144,
-    "name": "카라코룸",
+    "name": "카라코름",
     "latitude": 49,
     "longitude": 100,
     "hasLibrary": false,
@@ -1933,7 +1933,7 @@
   },
   {
     "id": 161,
-    "name": "리콜",
+    "name": "리골",
     "latitude": null,
     "longitude": null,
     "hasLibrary": false,
@@ -2005,7 +2005,7 @@
   },
   {
     "id": 167,
-    "name": "파렌바",
+    "name": "파렌반",
     "latitude": -2,
     "longitude": 104,
     "hasLibrary": false,
@@ -2389,7 +2389,7 @@
   },
   {
     "id": 199,
-    "name": "베라클루즈",
+    "name": "베라크루스",
     "latitude": 19,
     "longitude": -96,
     "hasLibrary": false,
@@ -2401,7 +2401,7 @@
   },
   {
     "id": 200,
-    "name": "테노치티클란",
+    "name": "테노치티틀란",
     "latitude": 20,
     "longitude": -101,
     "hasLibrary": true,

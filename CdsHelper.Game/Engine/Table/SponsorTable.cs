@@ -24,8 +24,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class SponsorTable
 {
-    /// <summary>알맹이 모양 판. 안목·친밀도·취향 칸을 더하면서 올렸고, 앉는 자리(도시·건물)를 더하며 5 가 됐다.</summary>
-    private const int SnapshotVersion = 6;
+    /// <summary>알맹이 모양 판. 안목·친밀도·취향 칸을 더하면서 올렸고, 앉는 자리(도시·건물)를 더하며 5, 재력(<c>+0x2C</c>)을 더하며 7 이 됐다.</summary>
+    private const int SnapshotVersion = 7;
 
     private const int TableVa = 0x005228B8;
     private const int RowCount = 81;
@@ -80,11 +80,15 @@ public sealed class SponsorTable
     /// 별자리 표 <c>0x00568578</c> 의 줄로 쓴다 — 인물처럼 (얼굴 + 혈액형 + 나라) % 12(<c>0x004780B0</c>)로 짓지 않는다.
     /// 판 5 로 적어 둔 옛 JSON 이면 −1 이다.
     /// </param>
+    /// <param name="Wealth">
+    /// 재력(닢) — 표 <c>+0x2C</c> 의 <b>10000배</b>다(<c>0x004AF11E</c> 가 <c>[후원자+0x2C]</c> 를 읽어 x10000 한다).
+    /// 설득의 재력 판정(<c>0x004AF113</c>)과 후원자 지갑이 이 값이다.
+    /// </param>
     public readonly record struct Sponsor(int Index, string Name, int Face, bool IsFemale,
                                           int JobCode, int Eye = 0, int Closeness = 0,
                                           int Tastes = 0, int Nation = -1, int Blood = 0,
                                           int Languages = 0, int City = -1, int Building = -1,
-                                          int Appear = 0, int Zodiac = -1)
+                                          int Appear = 0, int Zodiac = -1, int Wealth = 0)
     {
         /// <summary>
         /// 그 해에 이 사람이 나와 있은 햇수(<c>vtbl[0x0C]</c> = <c>0x004ADA80</c>: 해 − 1480 − <c>+0x14</c>). 음수면 아직 안 나왔다.
@@ -242,7 +246,8 @@ public sealed class SponsorTable
                 City: exe.Int(row + 0x24),
                 Building: exe.Int(row + 0x28),
                 Appear: exe.Int(row + 0x14),
-                Zodiac: exe.Int(row + 0x18)));
+                Zodiac: exe.Int(row + 0x18),
+                Wealth: exe.Int(row + 0x2C) * 10000));
         }
 
         // 판이 다른 EXE 를 잘못 읽지 않도록 첫 줄을 확인한다.

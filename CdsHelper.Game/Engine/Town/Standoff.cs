@@ -386,7 +386,7 @@ public static class Standoff
     public static bool HasAide(Player player) =>
         player.Mates.Count > 0 && player.Mates[0].Length > 0;
 
-    /// <summary>교섭이 됐을 때(<c>0x005220A0</c> · <c>0x005220C0</c> · <c>0x005220F0</c>).</summary>
+    /// <summary>교섭이 됐을 때(<c>0x005520A0</c> · <c>0x005520C0</c> · <c>0x005520F0</c>).</summary>
     /// <remarks>돈 이야기는 <c>0x00469060</c> 이라 부관이 없어도 늘 나온다.</remarks>
     public const string PaidWord = "금화 {0}닢을 건네었습니다.";
 
