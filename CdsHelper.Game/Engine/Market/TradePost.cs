@@ -161,7 +161,10 @@ public sealed class TradePost
     {
         int kind = SpecialOf(player, from);
         if (kind < 0) return;
-        rows.Add(new Row(kind, from, SpecialCell, BuyPrice(player, here, kind), StockOf(player, from)[SpecialCell]));
+        // 특산품 줄은 대는 도시의 특산가(+0x14)를 기준가로 <b>그대로</b> 넘긴다(0x00480E3C · 0x00480ED5) —
+        // 지역 기준가와 견주지 않는다. 값 셈은 이 도시(시세 · 문화권 · 상태)로 한다.
+        int price = PriceOf(player, here, kind, _table.SpecialPriceOf(from)) * 3 / 2;
+        rows.Add(new Row(kind, from, SpecialCell, price, StockOf(player, from)[SpecialCell]));
     }
 
     /// <summary>
@@ -199,7 +202,14 @@ public sealed class TradePost
                 basis = Math.Min(basis, _table.SpecialPriceOf(inland));
                 break;
             }
+        return PriceOf(player, city, kind, basis);
+    }
 
+    /// <summary>
+    /// 기준가를 받은 매각가 셈(<c>0x00480890</c> 에 기준가를 넘긴 길, <c>0x00480A44</c> 부터) — 특산가 min 은 건너뛴다.
+    /// </summary>
+    private int PriceOf(Player player, int city, int kind, int basis)
+    {
         if (_goods.Find(kind) is not { } goods) return Math.Max(1, basis);
 
         int price;
