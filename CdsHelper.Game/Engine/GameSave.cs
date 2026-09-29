@@ -97,15 +97,76 @@ public static class GameSave
         "CdsHelper", "SAVEDATA.CDS");
 
     /// <summary>
-    /// <b>자동저장</b> 파일 자리 — 손으로 적은 것과 <b>따로</b> 둔다.
+    /// 예전 <b>자동저장</b> 파일 자리 — 한 칸을 덮어쓰던 때의 것이다.
     /// </summary>
     /// <remarks>
-    /// 원본에 없는 것이다. 입항할 때마다 덮어쓰므로 손으로 적어 둔 <see cref="Path"/> 를
-    /// 건드리지 않게 이름을 달리한다. 첫 화면의 <b>CONTINUE</b> 가 이 파일을 연다.
+    /// 지금은 <see cref="AutoDirectory"/> 에 열 칸을 돌려 적는다. 이 파일이 남아 있으면 목록에
+    /// 한 칸으로 끼워 보여 주고, 칸 수를 넘으면 가장 오래된 것처럼 지운다.
     /// </remarks>
     public static string AutoPath => System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "CdsHelper", "AUTOSAVE.CDS");
+
+    /// <summary>
+    /// <b>자동저장</b> 칸들을 두는 폴더 — 손으로 적은 <see cref="Path"/> 와 따로 둔다.
+    /// </summary>
+    /// <remarks>
+    /// 원본에 없는 것이다. 입항할 때마다 새 칸에 적고, <see cref="AutoSlots"/> 개를 넘으면
+    /// 가장 오래된 칸부터 지운다. 첫 화면의 <b>CONTINUE</b> 가 이 칸들을 목록으로 보여 준다.
+    /// </remarks>
+    public static string AutoDirectory => System.IO.Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "CdsHelper", "autosave");
+
+    /// <summary>자동저장을 들고 있는 칸 수.</summary>
+    public const int AutoSlots = 10;
+
+    /// <summary>새 자동저장 칸의 자리 — 적는 시각을 이름에 넣어 겹치지 않게 한다.</summary>
+    public static string NewAutoPath() => System.IO.Path.Combine(
+        AutoDirectory, $"AUTO_{DateTime.Now:yyyyMMdd_HHmmss_fff}.CDS");
+
+    /// <summary>자동저장 칸 하나 — 파일 자리와 읽은 알맹이.</summary>
+    public sealed record AutoSlot(string File, Data Save);
+
+    /// <summary>
+    /// 자동저장 칸을 <b>새것부터</b> 낸다. 깨졌거나 못 읽는 파일은 뺀다.
+    /// </summary>
+    public static List<AutoSlot> AutoSaves()
+    {
+        var files = new List<string>();
+        try
+        {
+            if (Directory.Exists(AutoDirectory))
+                files.AddRange(Directory.GetFiles(AutoDirectory, "*.CDS"));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        if (File.Exists(AutoPath)) files.Add(AutoPath);
+
+        return [.. files.Select(f => Load(f) is { } d ? new AutoSlot(f, d) : null)
+                        .OfType<AutoSlot>()
+                        .OrderByDescending(s => s.Save.SavedAt)];
+    }
+
+    /// <summary>자동저장이 하나라도 있는지 — 파일만 보고 열지는 않는다.</summary>
+    public static bool HasAutoSave()
+    {
+        try
+        {
+            return File.Exists(AutoPath)
+                || (Directory.Exists(AutoDirectory) && Directory.EnumerateFiles(AutoDirectory, "*.CDS").Any());
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    /// <summary><see cref="AutoSlots"/> 개를 넘는 오래된 자동저장을 지운다.</summary>
+    public static void PruneAutoSaves()
+    {
+        foreach (var old in AutoSaves().Skip(AutoSlots))
+        {
+            try { File.Delete(old.File); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+    }
 
     /// <summary>적어 두는 것.</summary>
     /// <param name="Version">형식 판. 나중에 늘릴 때 본다.</param>

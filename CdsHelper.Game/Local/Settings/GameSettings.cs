@@ -648,7 +648,7 @@ public static class GameSettings
     /// </summary>
     /// <remarks>
     /// 배로 입항하든 뭍으로 성문을 지나든 같은 자리를 거치므로(<c>EnterCity</c>) <b>항구가
-    /// 없는 내륙 마을</b>에서도 적힌다. 적는 자리는 <see cref="Engine.GameSave.AutoPath"/> 라
+    /// 없는 내륙 마을</b>에서도 적힌다. 적는 자리는 <see cref="Engine.GameSave.AutoDirectory"/> 의 칸들이라
     /// 손으로 적어 둔 것과 따로다. 첫 화면의 <b>CONTINUE</b> 가 그 파일을 연다.
     /// </remarks>
     public static bool AutoSaveOnPort

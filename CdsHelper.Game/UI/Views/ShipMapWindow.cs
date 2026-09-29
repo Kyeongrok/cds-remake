@@ -1456,15 +1456,14 @@ public sealed class ShipMapWindow : Window
             }
             StartMap(fresh: false);
         } : null));
-        // CONTINUE — 원본에 없는 줄이다. 입항 자동저장(모드 창)이 적어 둔 파일을 연다.
-        // 적어 둔 것이 없으면 <b>줄이 흐리다</b>(눌러도 안 먹는다) — LOAD GAME 과 달리
+        // CONTINUE — 원본에 없는 줄이다. 입항 자동저장(모드 창)이 적어 둔 칸들을 목록으로 보여 주고
+        // 고른 칸을 연다. 적어 둔 것이 없으면 <b>줄이 흐리다</b>(눌러도 안 먹는다) — LOAD GAME 과 달리
         // 원본에 없는 줄이라 「없습니다」를 띄울 자리가 아니다.
         items.Children.Add(TitleMenuItem("CONTINUE",
-            System.IO.File.Exists(Engine.GameSave.AutoPath)
+            Engine.GameSave.HasAutoSave()
                 ? () =>
                 {
-                    if (!ConfirmDialog.Ask(this, "자동저장한 데이터를 로드합니다", "게임 로드")) return;
-                    StartMap(fresh: false, auto: true);
+                    if (PickAutoSave() is { } file) StartMap(fresh: false, path: file);
                 }
                 : null));
         items.Children.Add(TitleMenuItem("MINI GAME", MiniGames));
@@ -2508,10 +2507,39 @@ public sealed class ShipMapWindow : Window
         StartMap(fresh: false);
     }
 
-    /// <param name="auto">
-    /// 자동저장 파일(<see cref="GameSave.AutoPath"/>)을 열지 — 첫 화면의 <b>CONTINUE</b> 다.
+    /// <summary>
+    /// 자동저장 칸을 새것부터 늘어놓고 하나를 고르게 한다 — 첫 화면의 <b>CONTINUE</b> 다.
+    /// </summary>
+    /// <remarks>
+    /// 원본에 없는 창이다. 줄마다 캐릭터 이름 · 도시 · 저장한 시각 · 찾은 발견물 수를 적는다.
+    /// 칸은 <see cref="GameSave.AutoSlots"/> 개까지 들고 있다.
+    /// </remarks>
+    /// <returns>고른 칸의 파일 자리. 그만두었으면 null.</returns>
+    private string? PickAutoSave()
+    {
+        var slots = GameSave.AutoSaves();
+        static string Row(string name, string city, string at, string found) =>
+            GameUi.Pad(name, 16) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + found;
+
+        var rows = slots.Select(s =>
+        {
+            var d = s.Save;
+            string name = !string.IsNullOrEmpty(d.Name) ? d.Name
+                        : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } full ? full : "이름 없는 제독";
+            string city = string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName;
+            return Row(name, city, $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
+        }).ToList();
+
+        int at = HintListDialog.Pick(this, rows, "자동저장 불러오기", "자동저장한 데이터가 없습니다",
+                                     header: Row("캐릭터", "도시", "저장한 시각", "발견물"));
+        return at >= 0 && at < slots.Count ? slots[at].File : null;
+    }
+
+    /// <param name="path">
+    /// 열 세이브 파일. 안 주면 손으로 적은 세이브(<see cref="GameSave.Path"/>)다 — 첫 화면의
+    /// <b>CONTINUE</b> 가 고른 자동저장 칸을 준다.
     /// </param>
-    private void StartMap(bool fresh, bool auto = false)
+    private void StartMap(bool fresh, string? path = null)
     {
         _barReady = false;
         if (_gameBar != null) _gameBar.Visibility = Visibility.Collapsed;
@@ -2520,7 +2548,7 @@ public sealed class ShipMapWindow : Window
         GameSave.Data? saved = null;
         if (!fresh)
         {
-            saved = GameSave.Load(auto ? GameSave.AutoPath : null);
+            saved = GameSave.Load(path);
             if (saved == null)
             {
                 NoticeDialog.Show(this, "적어 둔 기록이 없다.");
@@ -3412,7 +3440,7 @@ public sealed class ShipMapWindow : Window
     /// </summary>
     /// <remarks>
     /// 원본에 없는 것이다. 배로 입항하든 뭍으로 성문을 지나든 이 자리를 거치므로 <b>항구가
-    /// 없는 내륙 마을</b>에서도 적힌다. 적는 자리는 <see cref="Engine.GameSave.AutoPath"/> 라
+    /// 없는 내륙 마을</b>에서도 적힌다. 적는 자리는 <see cref="Engine.GameSave.AutoDirectory"/> 의 칸들이라
     /// 손으로 적어 둔 <c>SAVEDATA.CDS</c> 는 안 건드린다. 적다 넘어져도 놀이는 그대로
     /// 굴러가야 하므로 띠에 한 줄만 남기고 지나간다.
     /// </remarks>

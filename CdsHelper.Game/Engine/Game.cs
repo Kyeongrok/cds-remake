@@ -682,12 +682,14 @@ public sealed class Game
     /// </summary>
     /// <remarks>
     /// 원본에 없는 것이라 「아직 저장 안 됨」도 안 푼다 — 그 비트는 손으로 적었을 때만
-    /// 풀리는 것이 맞다.
+    /// 풀리는 것이 맞다. 새 칸에 적고 <see cref="GameSave.AutoSlots"/> 개를 넘으면 가장 오래된 칸을 지운다.
     /// </remarks>
     public string AutoSave()
     {
         BeforeSave?.Invoke();
-        return GameSave.Save(Player, suspended: false, path: GameSave.AutoPath);
+        string error = GameSave.Save(Player, suspended: false, path: GameSave.NewAutoPath());
+        if (error.Length == 0) GameSave.PruneAutoSaves();
+        return error;
     }
 
     /// <summary>
