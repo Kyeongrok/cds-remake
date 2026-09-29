@@ -30,10 +30,14 @@ public sealed class ShipNameDialog : GameWindow
 {
     private readonly GameUi.GameLabel _name;
     private readonly List<Border> _rows = [];
+    private readonly IReadOnlyList<string> _names;
+    private readonly int _maxLength;
     private string? _result;
 
-    private ShipNameDialog(string current)
+    private ShipNameDialog(string current, IReadOnlyList<string> names, string heading, int maxLength)
     {
+        _names = names;
+        _maxLength = maxLength;
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -55,7 +59,7 @@ public sealed class ShipNameDialog : GameWindow
         top.Children.Add(_name);
 
         var list = new StackPanel();
-        foreach (string name in ShipNames.All)
+        foreach (string name in names)
         {
             string pick = name;
             var row = new Border
@@ -79,7 +83,7 @@ public sealed class ShipNameDialog : GameWindow
         buttons.Children.Add(new GameButton("결정", Decide, width: 110));
         buttons.Children.Add(new GameButton("중단", Cancel, width: 110));
 
-        var title = GameUi.TitleBar("선명입력", Cancel);
+        var title = GameUi.TitleBar(heading, Cancel);
         GameUi.EnableDrag(this, title);
 
         var stack = new StackPanel();
@@ -129,13 +133,13 @@ public sealed class ShipNameDialog : GameWindow
     private void Mark(string name)
     {
         for (int i = 0; i < _rows.Count; i++)
-            _rows[i].Background = ShipNames.All[i] == name ? GameUi.ItemFill : Brushes.Transparent;
+            _rows[i].Background = _names[i] == name ? GameUi.ItemFill : Brushes.Transparent;
     }
 
     /// <summary>글자판을 열어 손으로 짓는다.</summary>
     private void TypeIt()
     {
-        if (TextInputDialog.Ask(this, _name.Text, ShipNames.MaxLength) is { } typed)
+        if (TextInputDialog.Ask(this, _name.Text, _maxLength) is { } typed)
         {
             _name.Text = typed;
             Mark(typed);
@@ -180,9 +184,17 @@ public sealed class ShipNameDialog : GameWindow
     /// </remarks>
     /// <param name="owner">주인 창.</param>
     /// <param name="current">지금 이름. 창을 열 때 위 줄에 올려 둔다.</param>
-    public static string? Ask(Window owner, string current)
+    public static string? Ask(Window owner, string current) =>
+        Ask(owner, current, ShipNames.All, "선명입력", ShipNames.MaxLength);
+
+    /// <summary>
+    /// 같은 창(<c>0x00454D30</c>)을 딴 목록 · 제목으로 낸다 — 아이 이름 다시 짓기(<c>0x004ABDD0</c>)가
+    /// 걸러진 이름 후보를 「아들의 이름」 · 「딸의 이름」 으로 이 창에 넘긴다.
+    /// </summary>
+    /// <returns>정한 이름. 중단했으면 null, 빈 채로 결정했으면 빈 글이다.</returns>
+    public static string? Ask(Window owner, string current, IReadOnlyList<string> names, string heading, int maxLength)
     {
-        var dialog = new ShipNameDialog(current) { Owner = owner };
+        var dialog = new ShipNameDialog(current, names, heading, maxLength) { Owner = owner };
         dialog.ShowDialog();
         return dialog._result;
     }

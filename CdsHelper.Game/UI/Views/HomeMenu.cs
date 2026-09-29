@@ -182,10 +182,16 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         var named = child;
         if (ConfirmDialog.Ask(owner, "새로운 이름을 짓겠습니까?"))
         {
-            GameDialog.Show(owner, "아이의 이름을 결정해 주십시오!");
-            if (TextInputDialog.Ask(owner, child.Name, Home.ChildNameMaxLength,
-                                    child.Daughter ? "딸의 이름" : "아들의 이름") is { Length: > 0 } name)
-                named = named with { Name = name };
+            // 이름 다시 짓기(0x004ABDD0) — 선명입력과 같은 창(0x00454D30)에 걸러진 이름 후보를 붙여
+            // 「아들의 이름」 · 「딸의 이름」 으로 낸다. 빈 채로 결정하면 「아이의 이름을 결정해 주십시오!」
+            // 를 내고 다시 묻는다(0x004ABF7C). 중단하면 이름이 그대로 남는다.
+            string title = child.Daughter ? "딸의 이름" : "아들의 이름";
+            while (ShipNameDialog.Ask(owner, child.Name, FreeNames(NamesFor(child.Daughter)), title,
+                                      Home.ChildNameMaxLength) is { } name)
+            {
+                if (name.Length > 0) { named = named with { Name = name }; break; }
+                GameDialog.Show(owner, "아이의 이름을 결정해 주십시오!");
+            }
         }
         _player.ReplaceChild(child, named with { Introduced = true });
     }
@@ -587,10 +593,10 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     }
 
     /// <summary>
-    /// 아이 이름. 게임은 이름 표에서 뽑는데(<c>0x004611E0</c>) 우리는 <b>제독의 이름</b>에 차례를 붙인다.
+    /// 아이 이름 — 이름 표에서 <b>쓰이지 않는 이름</b>을 하나 굴린다(<c>0x004611E0</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 이름 표에서 <b>아무거나 하나 뽑는다</b>(<c>0x004611E0</c>) — 아들은 주인공 이름 목록 서른일곱,
+    /// 게임은 이름 표에서 제독·아내·아이들이 쓰는 이름을 빼고 하나 뽑는다(<c>0x004611E0</c>) — 아들은 주인공 이름 목록 서른일곱,
     /// 딸은 여자 이름 열여섯(<see cref="PlayerNameTable.Girls"/>)이다. 성은 아버지 것을 그대로 붙인다.
     /// 표를 못 읽으면 예전처럼 「제 이름 N세」로 물러선다.
     /// </remarks>
@@ -599,16 +605,43 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
 
     private string HeirName(bool daughter)
     {
-        var names = daughter
-            ? Local.Helpers.PlayerNameTable.Girls
-            : _boyNames ??= Local.Helpers.PlayerNameTable.Open(_game.Directory)?.GivenFor(_player.Nation) ?? [];
+        var names = NamesFor(daughter);
         if (names.Count == 0)
         {
             string given = _player.Given.Length > 0 ? _player.Given
                          : _player.Name.Length > 0 ? _player.Name : "이름 없는";
             return $"{given} {_player.Children.Count + 2}세";
         }
-        return names[_random.Next(names.Count)];
+
+        // 쓰이는 이름을 뺀 후보에서 굴린다(0x00455220(-1) — rand(남은 수) 째 켜진 이름).
+        // 다 빠졌으면 표 전체에서 굴린다(0x00455261).
+        var free = FreeNames(names);
+        return free.Count > 0 ? free[_random.Next(free.Count)] : names[_random.Next(names.Count)];
+    }
+
+    /// <summary>이름 표 — 아들은 제독 나라의 명 서른일곱(<c>0x004ABA90</c>), 딸은 여자 이름 열여섯(<c>0x004ABCC0</c>).</summary>
+    private IReadOnlyList<string> NamesFor(bool daughter) => daughter
+        ? Local.Helpers.PlayerNameTable.Girls
+        : _boyNames ??= Local.Helpers.PlayerNameTable.Open(_game.Directory)?.GivenFor(_player.Nation) ?? [];
+
+    /// <summary>
+    /// 이름 표에서 <b>이미 쓰이는 이름</b>을 뺀다 — 게임은 표를 세울 때 이름마다 <c>0x004ABBB0</c> 에
+    /// 물어 참이면 끈다(<c>0x00455150</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   0x004ABBB0  제독 이름과 같으면 참
+    ///               아내(0x005B61B0 이 −1 이 아니면 그 인물) 이름과 같으면 참
+    ///               가족 레코드 0x005B5A28 ~ 0x005B60A0(0x33C 간격, +0x334 ≠ −1)의 이름과 같으면 참
+    /// </code>
+    /// 가족 레코드는 아이들이라 이름을 다시 짓는 그 아이의 지금 이름도 빠진다.
+    /// </remarks>
+    private List<string> FreeNames(IReadOnlyList<string> names)
+    {
+        var used = new HashSet<string>(StringComparer.Ordinal) { _player.Given, _player.Name, _player.Spouse };
+        foreach (var c in _player.Children) used.Add(c.Name);
+        used.Remove("");
+        return [.. names.Where(n => !used.Contains(n))];
     }
 
     /// <summary>
