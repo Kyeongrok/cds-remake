@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -17,6 +18,14 @@ namespace CdsHelper.Game.UI.Views;
 ///   │  그림   │  분류     무기
 ///   │120x120 │  개체중량  20
 ///   └────────┘                 [취소]
+/// </code>
+/// 함대정보 짐 판에서 열면(0x0046FD1E — 짐 칸의 기한을 창 +0xAC 에 넘긴다) 썩는 짐일 때
+/// 「내구도」 줄이 더 붙는다(0x0046D3A2 ~ 0x0046D4D3). 기한이 −1(도시 특산품, 0x004709B1)이거나
+/// 0xD2(안 썩음)면 안 붙는다.
+/// <code>
+///   (0x88, 0x38)   내구도
+///   (0x88, 0x5C)   막대 128x8 — 기한 / (수명 x 30)          0x0046C8E0
+///   (0x110, 0x58)  "%d/%d" — 기한 / 30 , 수명(달)            0x00560F64
 /// </code>
 /// 그림은 아이템과 한 파일에 있다(<see cref="ItemArt"/>) — 교역품 70가지가 134~203 에
 /// 이름 차례 그대로 놓여 있다.
@@ -35,7 +44,13 @@ public sealed class GoodsInfoDialog : GameWindow
         return b;
     }
 
-    private GoodsInfoDialog(GoodsTable.Goods goods, string category, ItemArt? art)
+    /// <summary>막대 크기(0x0046D440 의 0x80 x 8).</summary>
+    private const double BarWidth = 128, BarHeight = 8;
+
+    private static readonly Brush BarBack = Freeze(Color.FromRgb(0, 0, 0));
+    private static readonly Brush BarFill = Freeze(Color.FromRgb(135, 21, 10));
+
+    private GoodsInfoDialog(GoodsTable.Goods goods, string category, ItemArt? art, int shelf)
     {
         Title = goods.Name;
         WindowStyle = WindowStyle.None;
@@ -67,6 +82,7 @@ public sealed class GoodsInfoDialog : GameWindow
         rows.Children.Add(Row(goods.Name, ""));
         rows.Children.Add(Row("분류", category));
         rows.Children.Add(Row("개체중량", $"{goods.Weight}"));
+        if (shelf >= 0 && shelf != Player.NeverSpoils) rows.Children.Add(Shelf(shelf, goods.Life));
 
         // 닫기는 게임 조각으로 그린 공용 것이다 — 창마다 손으로 짓지 않는다.
         var close = GameUi.CloseBox(Close);
@@ -98,6 +114,39 @@ public sealed class GoodsInfoDialog : GameWindow
         KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter or Key.Space) Close(); };
     }
 
+    /// <summary>
+    /// 「내구도」 두 줄 — 이름, 그 아래 막대와 「기한/30 / 수명」(0x0046D3F1 ~ 0x0046D4D3).
+    /// 막대는 기한을 수명 x 30 에 견준다(0x0046D41E ~ 0x0046D460). 달수는 내림이다(<c>idiv 0x1E</c>).
+    /// </summary>
+    private static FrameworkElement Shelf(int shelf, int life)
+    {
+        int full = Math.Max(1, life * Player.DaysPerMonth);
+        var bar = new Border
+        {
+            Width = BarWidth,
+            Height = BarHeight,
+            Background = BarBack,
+            VerticalAlignment = VerticalAlignment.Center,
+            Child = new Border
+            {
+                Width = BarWidth * Math.Clamp((double)shelf / full, 0, 1),
+                Background = BarFill,
+                HorizontalAlignment = HorizontalAlignment.Left,
+            },
+        };
+        var number = Label($"{shelf / Player.DaysPerMonth}/{life}");
+        number.Margin = new Thickness(8, 0, 0, 0);
+
+        var gauge = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+        gauge.Children.Add(bar);
+        gauge.Children.Add(number);
+
+        var both = new StackPanel();
+        both.Children.Add(Row("내구도", " "));
+        both.Children.Add(gauge);
+        return both;
+    }
+
     /// <summary>줄 하나 — 이름과 값. 값이 없으면 이름만 굵게 낸다(맨 윗줄).</summary>
     private static FrameworkElement Row(string name, string value)
     {
@@ -126,12 +175,13 @@ public sealed class GoodsInfoDialog : GameWindow
 
     /// <summary>교역품 하나를 보여 준다.</summary>
     /// <summary>교역품 번호로 띄운다 — 표에 없으면 아무것도 안 한다.</summary>
-    public static void Show(Window owner, Engine.Game game, int kind)
+    /// <param name="shelf">짐 칸의 기한(날). 함대정보 짐 판에서만 넘긴다 — −1 이면 「내구도」가 없다.</param>
+    public static void Show(Window owner, Engine.Game game, int kind, int shelf = -1)
     {
         if (game.Goods is not { } table || table.Find(kind) is not { } goods) return;
-        Show(owner, goods, table.CategoryName(goods.Category), game.ItemPictures);
+        Show(owner, goods, table.CategoryName(goods.Category), game.ItemPictures, shelf);
     }
 
-    public static void Show(Window owner, GoodsTable.Goods goods, string category, ItemArt? art) =>
-        new GoodsInfoDialog(goods, category, art) { Owner = owner }.ShowDialog();
+    public static void Show(Window owner, GoodsTable.Goods goods, string category, ItemArt? art, int shelf = -1) =>
+        new GoodsInfoDialog(goods, category, art, shelf) { Owner = owner }.ShowDialog();
 }
