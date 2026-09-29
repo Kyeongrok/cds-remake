@@ -320,7 +320,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 GameDialog.Show(_view, "상대해 주지 않았습니다");
                 return;
             }
-            if (ChoiceDialog.Ask(_view, "", ["매수한다", "포기하고 돌아간다"]) != 0) return;
+            // 두 줄뿐인 창이다(0x004AE328 의 0x00469A70(줄, 2, …)) — 「취소」 줄을 덧붙이지 않는다.
+            if (ChoiceDialog.Pick(_view, "", ["매수한다", "포기하고 돌아간다"]) != 0) return;
             if (!ConfirmDialog.Ask(_view, "집사에게 뇌물을 주겠습니다. 좋습니까?")) return;   // 0x00545A98
 
             int fee = Palace.StewardFee(eye);
