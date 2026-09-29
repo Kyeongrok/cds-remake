@@ -98,14 +98,25 @@ public static class LandEvents
     /// <summary>
     /// 얼어붙을 만큼 춥다가 불빛을 보고 오두막에 든다(<c>0x00427424</c>).
     /// </summary>
-    /// <remarks>초원이고 <b>북위 60~70도 · 서경 10~25도</b>(아이슬란드 언저리)라야 난다.</remarks>
+    /// <remarks>
+    /// 초원이고 <b>북위 60~70도 · 서경 10~25도</b>(아이슬란드 언저리)라야 난다. 도는 원본처럼 정수로
+    /// 자른 값이다 — <c>(10000 − y) x 9 / 1000</c> · <c>(20000 − x) x 18 / 2000</c>(<c>0x00427424</c>) 라
+    /// 북위 70.9도 · 서경 25.9도까지 든다.
+    /// </remarks>
     public static bool Cold(GameRandom dice, int ground, double lat, double lon) =>
-        ground == Grass && lat >= 60 && lat <= 70 && lon >= -25 && lon <= -10
+        ground == Grass && Degree(lat) is >= 60 and <= 70 && Degree(-lon) is >= 10 and <= 25
         && dice.Next(GroundOdds) == 0;
 
-    /// <summary>온천을 만난다(<c>0x0042756D</c>) — 초원이고 북위 40~50도다.</summary>
+    /// <summary>온천을 만난다(<c>0x0042756D</c>) — 초원이고 북위 40~50도다(정수로 자른 도, <see cref="Cold"/> 와 같다).</summary>
     public static bool HotSpring(GameRandom dice, int ground, double lat) =>
-        ground == Grass && lat >= 40 && lat <= 50 && dice.Next(GroundOdds) == 0;
+        ground == Grass && Degree(lat) is >= 40 and <= 50 && dice.Next(GroundOdds) == 0;
+
+    /// <summary>
+    /// 원본이 쓰는 정수 도 — 나눗셈(<c>idiv</c>)이라 0 쪽으로 자른다. 좌표를 도로 바꾸며 생긴 부동소수 찌꺼기에
+    /// 70.0 이 69 로 떨어지지 않게 아주 조금 밀어 준다.
+    /// </summary>
+    private static int Degree(double value) =>
+        (int)Math.Truncate(value + (value >= 0 ? 1e-9 : -1e-9));
 
     /// <summary>산에서 돌이 굴러떨어진다(<c>0x00427672</c>).</summary>
     public static bool Rockfall(GameRandom dice, int ground) =>
