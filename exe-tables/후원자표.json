@@ -18,6 +18,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 4,
+        "Wealth": 900000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -37,6 +38,7 @@
         "Building": 2,
         "Appear": 15,
         "Zodiac": 3,
+        "Wealth": 950000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -56,6 +58,7 @@
         "Building": 3,
         "Appear": 0,
         "Zodiac": 4,
+        "Wealth": 220000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -75,6 +78,7 @@
         "Building": 12,
         "Appear": 18,
         "Zodiac": 2,
+        "Wealth": 500000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -94,6 +98,7 @@
         "Building": 13,
         "Appear": 24,
         "Zodiac": 3,
+        "Wealth": 380000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -113,6 +118,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 0,
+        "Wealth": 220000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -132,6 +138,7 @@
         "Building": 14,
         "Appear": 0,
         "Zodiac": 8,
+        "Wealth": 110000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -151,6 +158,7 @@
         "Building": 15,
         "Appear": 0,
         "Zodiac": 7,
+        "Wealth": 200000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -170,6 +178,7 @@
         "Building": 12,
         "Appear": 24,
         "Zodiac": 11,
+        "Wealth": 300000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -189,6 +198,7 @@
         "Building": 13,
         "Appear": 16,
         "Zodiac": 8,
+        "Wealth": 340000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -208,6 +218,7 @@
         "Building": 14,
         "Appear": 4,
         "Zodiac": 3,
+        "Wealth": 170000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -227,6 +238,7 @@
         "Building": 15,
         "Appear": 30,
         "Zodiac": 7,
+        "Wealth": 120000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -246,6 +258,7 @@
         "Building": 12,
         "Appear": 34,
         "Zodiac": 0,
+        "Wealth": 450000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -265,6 +278,7 @@
         "Building": 12,
         "Appear": 41,
         "Zodiac": 2,
+        "Wealth": 400000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -284,6 +298,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 6,
+        "Wealth": 930000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -303,6 +318,7 @@
         "Building": 2,
         "Appear": 36,
         "Zodiac": 1,
+        "Wealth": 990000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -322,6 +338,7 @@
         "Building": 3,
         "Appear": 0,
         "Zodiac": 7,
+        "Wealth": 150000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -341,6 +358,7 @@
         "Building": 12,
         "Appear": 36,
         "Zodiac": 10,
+        "Wealth": 420000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -360,6 +378,7 @@
         "Building": 13,
         "Appear": 36,
         "Zodiac": 2,
+        "Wealth": 480000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -379,6 +398,7 @@
         "Building": 14,
         "Appear": 36,
         "Zodiac": 3,
+        "Wealth": 320000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -398,6 +418,7 @@
         "Building": 15,
         "Appear": 0,
         "Zodiac": 6,
+        "Wealth": 140000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -417,6 +438,7 @@
         "Building": 3,
         "Appear": 18,
         "Zodiac": 11,
+        "Wealth": 160000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -436,6 +458,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 5,
+        "Wealth": 250000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -455,6 +478,7 @@
         "Building": 12,
         "Appear": 36,
         "Zodiac": 8,
+        "Wealth": 420000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -474,6 +498,7 @@
         "Building": 13,
         "Appear": 0,
         "Zodiac": 5,
+        "Wealth": 230000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -493,6 +518,7 @@
         "Building": 14,
         "Appear": 0,
         "Zodiac": 2,
+        "Wealth": 270000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -512,6 +538,7 @@
         "Building": 15,
         "Appear": 0,
         "Zodiac": 11,
+        "Wealth": 90000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -531,6 +558,7 @@
         "Building": 3,
         "Appear": 41,
         "Zodiac": 7,
+        "Wealth": 240000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -550,6 +578,7 @@
         "Building": 3,
         "Appear": 25,
         "Zodiac": 6,
+        "Wealth": 380000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -569,6 +598,7 @@
         "Building": 12,
         "Appear": 30,
         "Zodiac": 4,
+        "Wealth": 110000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -588,6 +618,7 @@
         "Building": 13,
         "Appear": 34,
         "Zodiac": 0,
+        "Wealth": 410000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -607,6 +638,7 @@
         "Building": 14,
         "Appear": 17,
         "Zodiac": 6,
+        "Wealth": 460000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -626,6 +658,7 @@
         "Building": 3,
         "Appear": 11,
         "Zodiac": 3,
+        "Wealth": 320000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -645,6 +678,7 @@
         "Building": 12,
         "Appear": 42,
         "Zodiac": 8,
+        "Wealth": 130000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -664,6 +698,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 5,
+        "Wealth": 170000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -683,6 +718,7 @@
         "Building": 12,
         "Appear": 21,
         "Zodiac": 1,
+        "Wealth": 200000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -702,6 +738,7 @@
         "Building": 12,
         "Appear": 35,
         "Zodiac": 11,
+        "Wealth": 250000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -721,6 +758,7 @@
         "Building": 12,
         "Appear": 48,
         "Zodiac": 0,
+        "Wealth": 400000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -740,6 +778,7 @@
         "Building": 12,
         "Appear": 40,
         "Zodiac": 3,
+        "Wealth": 290000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -759,6 +798,7 @@
         "Building": 3,
         "Appear": 40,
         "Zodiac": 10,
+        "Wealth": 180000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -778,6 +818,7 @@
         "Building": 13,
         "Appear": 40,
         "Zodiac": 9,
+        "Wealth": 190000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -797,6 +838,7 @@
         "Building": 2,
         "Appear": 52,
         "Zodiac": 3,
+        "Wealth": 350000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -816,6 +858,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 8,
+        "Wealth": 650000,
         "Job": "교황",
         "Honorific": "예하"
       },
@@ -835,6 +878,7 @@
         "Building": 2,
         "Appear": 33,
         "Zodiac": 4,
+        "Wealth": 450000,
         "Job": "교황",
         "Honorific": "예하"
       },
@@ -854,6 +898,7 @@
         "Building": 12,
         "Appear": 13,
         "Zodiac": 4,
+        "Wealth": 360000,
         "Job": "관리",
         "Honorific": "각하"
       },
@@ -873,6 +918,7 @@
         "Building": 12,
         "Appear": 27,
         "Zodiac": 9,
+        "Wealth": 250000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -892,6 +938,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 10,
+        "Wealth": 800000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -911,6 +958,7 @@
         "Building": 2,
         "Appear": 12,
         "Zodiac": 5,
+        "Wealth": 200000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -930,6 +978,7 @@
         "Building": 2,
         "Appear": 23,
         "Zodiac": 1,
+        "Wealth": 450000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -949,6 +998,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 10,
+        "Wealth": 200000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -968,6 +1018,7 @@
         "Building": 12,
         "Appear": 10,
         "Zodiac": 11,
+        "Wealth": 250000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -987,6 +1038,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 7,
+        "Wealth": 700000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -1006,6 +1058,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 0,
+        "Wealth": 450000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -1025,6 +1078,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 2,
+        "Wealth": 550000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1044,6 +1098,7 @@
         "Building": 2,
         "Appear": 35,
         "Zodiac": 6,
+        "Wealth": 200000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1063,6 +1118,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 8,
+        "Wealth": 650000,
         "Job": "총독",
         "Honorific": "각하"
       },
@@ -1082,6 +1138,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 11,
+        "Wealth": 450000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -1101,6 +1158,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 4,
+        "Wealth": 450000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1120,6 +1178,7 @@
         "Building": 2,
         "Appear": 39,
         "Zodiac": 1,
+        "Wealth": 350000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -1139,6 +1198,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 3,
+        "Wealth": 300000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -1158,6 +1218,7 @@
         "Building": 13,
         "Appear": 0,
         "Zodiac": 10,
+        "Wealth": 710000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -1177,6 +1238,7 @@
         "Building": 14,
         "Appear": 0,
         "Zodiac": 2,
+        "Wealth": 450000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -1196,6 +1258,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 4,
+        "Wealth": 420000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -1215,6 +1278,7 @@
         "Building": 12,
         "Appear": 0,
         "Zodiac": 2,
+        "Wealth": 380000,
         "Job": "상인",
         "Honorific": "회장님"
       },
@@ -1234,6 +1298,7 @@
         "Building": 13,
         "Appear": 0,
         "Zodiac": 7,
+        "Wealth": 200000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -1253,6 +1318,7 @@
         "Building": 12,
         "Appear": 30,
         "Zodiac": 3,
+        "Wealth": 280000,
         "Job": "귀족",
         "Honorific": "각하"
       },
@@ -1272,6 +1338,7 @@
         "Building": 13,
         "Appear": 0,
         "Zodiac": 0,
+        "Wealth": 150000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -1291,6 +1358,7 @@
         "Building": 12,
         "Appear": 15,
         "Zodiac": 8,
+        "Wealth": 170000,
         "Job": "학자",
         "Honorific": "박사님"
       },
@@ -1310,6 +1378,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 6,
+        "Wealth": 740000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1329,6 +1398,7 @@
         "Building": 2,
         "Appear": 29,
         "Zodiac": 2,
+        "Wealth": 850000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1348,6 +1418,7 @@
         "Building": 0,
         "Appear": 6,
         "Zodiac": 11,
+        "Wealth": 200000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1367,6 +1438,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 11,
+        "Wealth": 480000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1386,6 +1458,7 @@
         "Building": 2,
         "Appear": 18,
         "Zodiac": 9,
+        "Wealth": 550000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1405,6 +1478,7 @@
         "Building": 2,
         "Appear": 35,
         "Zodiac": 4,
+        "Wealth": 640000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1424,6 +1498,7 @@
         "Building": 3,
         "Appear": 40,
         "Zodiac": 5,
+        "Wealth": 150000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1443,6 +1518,7 @@
         "Building": 3,
         "Appear": 25,
         "Zodiac": 1,
+        "Wealth": 120000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1462,6 +1538,7 @@
         "Building": 3,
         "Appear": 26,
         "Zodiac": 3,
+        "Wealth": 170000,
         "Job": "신부",
         "Honorific": "신부님"
       },
@@ -1481,6 +1558,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 10,
+        "Wealth": 350000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1500,6 +1578,7 @@
         "Building": 2,
         "Appear": 40,
         "Zodiac": 5,
+        "Wealth": 300000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1519,6 +1598,7 @@
         "Building": 2,
         "Appear": 0,
         "Zodiac": 4,
+        "Wealth": 640000,
         "Job": "국왕",
         "Honorific": "폐하"
       },
@@ -1538,11 +1618,12 @@
         "Building": 2,
         "Appear": 26,
         "Zodiac": 1,
+        "Wealth": 680000,
         "Job": "국왕",
         "Honorific": "폐하"
       }
     ]
   },
   "Source": "CDS_95.EXE",
-  "Version": 6
+  "Version": 7
 }
