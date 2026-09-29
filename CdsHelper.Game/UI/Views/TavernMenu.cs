@@ -1346,12 +1346,11 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             if (TalkDialog.Ask(_view, null, "", line, "말을 건다", "무시한다") != 0) return;
         }
 
-        // 일기토는 <b>역사 항해자 열넷에게만</b> 건다. 게임도 차림표를 짓고 나서
-        // 조건이 안 맞으면 그 줄을 지운다(0x004A4AA0 이 0x00468F70 의 답을 보고
-        // [esp+0x18] 을 0 으로 눕힌다). 그 조건은 아직 못 밝혔고, 실제 놀이에서
-        // 역사 인물에게만 뜨는 것을 보고 그대로 맞춘다.
+        // 일기토 차림표는 인물 갈래(+0xE8, 우리 Hire)가 <b>0(역사 항해자) · 4(누적 캐릭터)</b>인 사람에게 뜬다 —
+        // 0x004A4DE0 이 뜀표 0x004A4E40 으로 0 → 0x004A4880, 4 → 0x004A4860 을 거쳐 둘 다 0x004A4AA0 으로 보낸다.
+        // 1·2 는 고용 쪽(0x004A4BB0)이다. 대본이 항해자를 2 로 바꾸면 고용 쪽으로 간다.
         bool hireable = who.Hire == TavernRoster.Hireable;
-        bool duelable = who.Index < PersonTable.VoyagerCount;
+        bool duelable = who.Hire is TavernRoster.Voyager or TavernRoster.Retired;
 
         bool fluent = TongueWith(who.Index) > 0;
 

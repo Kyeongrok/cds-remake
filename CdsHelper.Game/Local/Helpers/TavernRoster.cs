@@ -19,9 +19,11 @@ public sealed class TavernRoster
     public const byte Tavern = PersonTable.Tavern, Inn = PersonTable.Inn;
 
     /// <summary>고용 상태. 2 라야 부하로 삼을 수 있다.</summary>
-    public const byte TalkOnly = PersonTable.TalkOnly,
+    public const byte Voyager = PersonTable.Voyager,
+                      TalkOnly = PersonTable.TalkOnly,
                       Hireable = PersonTable.Hireable,
-                      Hired = PersonTable.Hired;
+                      Hired = PersonTable.Hired,
+                      Retired = PersonTable.Retired;
 
     /// <summary>술집·여관에 앉아 있는 사람 하나.</summary>
     /// <param name="Index">인물 번호. 그림을 고르는 씨앗으로도 쓴다.</param>
