@@ -237,6 +237,10 @@ public sealed class DisevRunner
             // 암전(48)을 걸어 둔 채 대본이 끝나도 화면은 걷는다 — 원본 대본은 늘 49 로 걷지만 멈춤(4A 따위)이 끼면 못 닿는다.
             runner._shade?.Close();
         }
+        // 도시에 들어선 사건(갈래 1, 0x004AB4D0)은 단계를 <b>늘 한 칸만</b> 올린다 — +4 가 1 이면 카운터를 inc 할 뿐
+        // +0x10 을 안 본다(0x004AB53C). 딴 갈래는 0x004AB460 이 +0x10(58 n 이면 n+1)을 더한다(0x004AB49E).
+        // 그래서 1500 년 뒤 개인 이야기 첫 파트의 「58 02」가 도시에 들며 걸리면 장을 건너뛰지 않고 다음 파트로 간다.
+        if (ev.Kind == DisevEvent.CityKind && LastAdvancedStep) LastStepsAdvanced = 1;
         return true;
     }
 
