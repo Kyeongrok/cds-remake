@@ -33,7 +33,8 @@ SCOMBAT.CDS — 해전 화면 그림을 떠서 asset/scombat/*.png 로 저장한
     파트 4        800 화면 테두리    위 띠 800x32 @0 · 아래 띠 @0x6400 · 왼 기둥 64x504 @0xC800 · 오른 기둥 @0x14600
                                      (아래 띠 오른쪽 끝에 Set · Cancel 이 그려져 있다)
     파트 5~12     48x48 x 12         배 여덟 벌 — 열두 방향
-    파트 13~16    276,480 씩 넷      괴물 그림 — 13+괴물종류(0x004430E4)
+    파트 13~16    96x96 x 30 씩 넷   괴물 그림 — 13+괴물종류(0x00443111), 0 식인 상어 · 1 크라켄 · 2 시서펜트 · 3 맨터
+                                     찍는 조각 = 3 + 방향*5 + 0·1 (0x00440788 의 (9n+0x1B)<<10)
     파트 17       261바이트  87색 제 팔레트
     파트 18       768바이트  256색 (앞쪽만 값이 있다)
     파트 19       112x112 x 7        나침반 — 0 풍배도, 1~6 풍향마다 얹는 백합(0x004337C0), 비침 0xA0
@@ -98,6 +99,10 @@ PIECES = [
 # 배 여덟 벌 — 한 벌이 열두 방향이다.
 SHIP_PARTS = range(5, 13)
 SHIP_W = SHIP_H = 48
+
+# 괴물 네 마리 — 파트 13~16, 96x96 서른 장씩(0x004407C6 의 push 0x60 둘). monster<벌>-<장>.
+MONSTER_PARTS = range(13, 17)
+MONSTER_W = MONSTER_H = 96
 
 # 통짜 그림 — 비침이 없다(색인 160 도 색으로 친다).
 FLATS = [
@@ -202,6 +207,12 @@ def main():
         data = archive.decode(part)
         for i, im in enumerate(frames(data, SHIP_W, SHIP_H, banks, shared)):
             im.save(os.path.join(out_dir, "ship%d-%02d.png" % (k, i)))
+            made += 1
+
+    for k, part in enumerate(MONSTER_PARTS):
+        data = archive.decode(part)
+        for i, im in enumerate(frames(data, MONSTER_W, MONSTER_H, banks, shared)):
+            im.save(os.path.join(out_dir, "monster%d-%02d.png" % (k, i)))
             made += 1
 
     # 통짜 그림 — 비침 없이 그대로 뜬다.

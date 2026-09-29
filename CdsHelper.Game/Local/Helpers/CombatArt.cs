@@ -15,6 +15,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   blast-00 ~ 17     48x48    폭발 · 불길 · 잔해
 ///   mark-00 ~ 09      32x32    방향 화살표 · 작은 배 · 문장
 ///   bar-a-00 …        640x32   상단 정보 띠
+///   monster0-00 ~ 3-29 96x96   괴물 네 마리 x 서른 장(파트 13~16)
 /// </code>
 /// <b>격자 한 칸은 32점</b>이다 — 게임이 칸 좌표에 <c>shl eax, 5</c> 를 먹인다.
 /// </remarks>
@@ -31,6 +32,12 @@ public sealed class CombatArt
 
     /// <summary>배 벌 수 — 파트 5~12 여덟이다.</summary>
     public const int Fleets = 8;
+
+    /// <summary>
+    /// 괴물 한 장의 크기와 벌 수 — 파트 13+괴물종류(<c>0x00443111</c>)를 <c>+0x298</c> 에 풀어 96x96 으로 찍는다
+    /// (<c>0x004407C6</c>). 벌은 0 식인 상어 · 1 크라켄 · 2 시서펜트 · 3 맨터다(<c>+0x900</c>, <c>0x0044307B</c>).
+    /// </summary>
+    public const int MonsterSize = 96, Monsters = 4, MonsterFrames = 30;
 
     /// <summary>격자 한 칸(<c>shl eax, 5</c>).</summary>
     public const int Cell = 32;
@@ -66,6 +73,10 @@ public sealed class CombatArt
     /// <summary>배 한 장 — 벌 <paramref name="fleet"/> 의 <paramref name="way"/> 번째 방향.</summary>
     public string? Ship(int fleet, int way) =>
         Path_($"ship{Math.Clamp(fleet, 0, Fleets - 1)}-{((way % Ways) + Ways) % Ways:D2}");
+
+    /// <summary>괴물 한 장 — 벌 <paramref name="kind"/> 의 <paramref name="frame"/> 번째(3 + 방향*5 + 0·1).</summary>
+    public string? Monster(int kind, int frame) =>
+        Path_($"monster{Math.Clamp(kind, 0, Monsters - 1)}-{Math.Clamp(frame, 0, MonsterFrames - 1):D2}");
 
     /// <summary>바다 바탕.</summary>
     public string? Sea() => Path_("sea-00");
