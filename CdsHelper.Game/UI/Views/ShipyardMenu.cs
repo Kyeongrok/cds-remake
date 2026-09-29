@@ -798,10 +798,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         // 수 적기 창(0x00454AA0)에는 「최대」 단추가 없다 — 넷째·여섯째 인자는 처음 값·가장 작은 값(0x00454638 →
         // +0xC8, 0x00454331)이고, 선원고용과 같이 0·0 을 넘긴다. 「최대」는 보급 창(0x0040F13A)에만 있다.
-        int want = CountDialog.Ask(owner, "포탑수 결정", "포탑수", "문", ship.MaxTurrets, 1, false,
-            new CountDialog.Gauge("최대포탑수", ship.MaxTurrets),
-            new CountDialog.Gauge("현재의 포탑수", ship.Turrets));
-        if (want < 0) return;
+        // 0 문(포탑을 다 뗀다)도 고를 수 있어야 하므로 중단을 null 로 가르는 Set 을 쓴다 — Ask 는 중단도 0 이라
+        // 중단하면 「뗄 거라면…」으로 흘러 예 한 번에 포탑이 다 떨어졌다.
+        if (CountDialog.Set(owner, "포탑수 결정", "포탑수", "문", 0, ship.MaxTurrets,
+                new CountDialog.Gauge("최대포탑수", ship.MaxTurrets),
+                new CountDialog.Gauge("현재의 포탑수", ship.Turrets)) is not { } want) return;
         if (want == ship.Turrets) { Say("자네와 장난칠 여유없네."); return; }
 
         int cost = Math.Max(0, want - ship.Turrets) * Cannon.TurretPrice;
