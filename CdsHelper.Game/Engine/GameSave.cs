@@ -226,7 +226,8 @@ public static class GameSave
         List<int>? GoneBarmaids = null,
         int? Infamy = null, int? AgingYear = null, List<int>? AgingSteps = null,
         List<int>? Settled = null, List<int>? Unresolved = null,
-        DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null);
+        DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
+        List<Player.Recall>? Recalls = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -373,7 +374,9 @@ public static class GameSave
                             // 누적 캐릭터를 앉힌 날과 사람마다 늦어짐 — 원본은 인물 276~280 레코드째로 적는다
                             // (0x00431E90). 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
                             AccOpened: player.AccOpened,
-                            AccLate: player.AccLate.Count > 0 ? player.AccLate.ToDictionary(e => e.Key, e => e.Value) : null);
+                            AccLate: player.AccLate.Count > 0 ? player.AccLate.ToDictionary(e => e.Key, e => e.Value) : null,
+                            // 해전 뒤 수도로 돌려보낸 사람(0x00432400). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
+                            Recalls: player.Recalls.Count > 0 ? [.. player.Recalls] : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

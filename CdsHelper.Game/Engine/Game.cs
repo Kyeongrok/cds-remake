@@ -528,6 +528,8 @@ public sealed class Game
                 if (Player.Executed.Contains(row.Id)) row.Appear = 0;
             // 판에 딸린 사람들(누적 캐릭터 276~280)을 다시 앉힌다 — 원본은 그 인물 레코드를 세이브에
             // 그대로 적어(0x00431E90) 불러와도 남는데, 우리는 세상을 새로 지으므로 지을 때마다 다시 건다.
+            // 해전 뒤 수도로 돌려보낸 일도 따라잡을 때 그날마다 다시 한다(0x00432400).
+            _world.Recalls = Player.Recalls;
             WorldBuilt?.Invoke(_world);
             return _world;
         }

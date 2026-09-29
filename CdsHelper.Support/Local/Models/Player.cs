@@ -1507,6 +1507,35 @@ public sealed class Player
         Loads++;                                   // 세상을 새로 지어 다시 앉히게 한다
     }
 
+    /// <summary>해전 뒤 제 나라 수도로 돌려보낸 사람 — 누구를(인물 번호), 어느 수도로, 언제.</summary>
+    public sealed record Recall(int Person, int Capital, DateTime On);
+
+    private readonly List<Recall> _recalls = [];
+
+    /// <summary>
+    /// 해전 뒤끝에 수도로 돌려보낸 사람들(<c>0x00432400</c> — <c>0x0048CCD7</c> 이 부른다).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 인물 레코드의 소재·목적지·날 셈을 세이브에 그대로 적는다(<c>0x00431E90</c>). 우리 인물 세상은
+    /// 날짜로 다시 짓는 것이라 돌려보낸 일을 여기 적어 두고, 세상을 따라잡을 때 그날에 다시 돌려보낸다
+    /// (<c>PersonWorld.Advance</c>). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
+    /// </remarks>
+    public IReadOnlyList<Recall> Recalls => _recalls;
+
+    /// <summary>그 사람을 그날 그 수도로 돌려보냈다고 적는다.</summary>
+    public void AddRecall(int person, int capital, DateTime on)
+    {
+        if (person >= 0) _recalls.Add(new Recall(person, capital, on.Date));
+    }
+
+    /// <summary>세이브에서 돌려보낸 사람들을 되돌린다.</summary>
+    public void RestoreRecalls(IEnumerable<Recall>? recalls)
+    {
+        _recalls.Clear();
+        foreach (var r in recalls ?? []) AddRecall(r.Person, r.Capital, r.On);
+        Loads++;                                   // 세상을 새로 지어 그날들에 다시 돌려보내게 한다
+    }
+
     private readonly Dictionary<string, PatronDock> _patronDocks = [];
 
     /// <summary>

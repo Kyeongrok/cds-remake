@@ -2636,6 +2636,8 @@ public sealed class ShipMapWindow : Window
             // 누적 캐릭터를 앉힌 날과 늦어짐 — 세상을 새로 지을 때 AttachCumulative 가 다시 앉힌다.
             // 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
             _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate);
+            // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
+            _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);
 
             // 후원자 친밀도. 판 26 앞의 세이브에는 없어 다들 0 에서 시작한다 — 게임도 그렇다.
@@ -4141,6 +4143,8 @@ public sealed class ShipMapWindow : Window
 
         // 판이 어떻게 끝났든 상대는 제 나라 수도로 돌아가 예순 날 쉰다 — 곧바로 다시 못 만난다.
         world.SendHome(who, capital);
+        // 세이브에도 남긴다 — 원본은 인물 레코드째로 적는다(0x00431E90). 세상을 새로 지으면 그날 다시 돌려보낸다.
+        player.AddRecall(who.Id, capital, player.Date);
 
         if (report.Outcome != SeaCombatDialog.Outcome.Defeated) return false;
 
