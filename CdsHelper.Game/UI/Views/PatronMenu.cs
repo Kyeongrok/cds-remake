@@ -1998,10 +1998,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 다시 삐진다(0x0044EF9F 의 0x004ADAA0(0xE)).
         _player.PassTownDays(years * 365);
         _player.Sulk(patron.Name);
-        var stats = _player.Abilities.ToArray();
-        stats[Ability.Body] = Math.Max(Ability.Min, stats[Ability.Body] - 5 * years);
-        stats[Ability.Charm] = Math.Max(Ability.Min, stats[Ability.Charm] - 5 * years);
-        _player.SetAbilities(stats);
+        // 0x0044EFBB · 0x0044EFC8 이 0x00432C50 으로 깎는다 — 보이는 값 1 에서 멈춘다.
+        _player.AdjustAbility(Ability.Body, -5 * years);
+        _player.AdjustAbility(Ability.Charm, -5 * years);
         _player.SetGold(0);
         _player.Fame = Math.Max(0, _player.Fame - 2000);
         _player.Infamy += (dice.Next(300) + 500) * Math.Max(0, 199 - charm) / 100;
