@@ -1031,10 +1031,13 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 if (!won) continue;
             }
             // 판에서 깎인 <b>추진력</b>도 배에 되쓴다(0x0043570D 가 0x0044C810 을 부른다) —
-            // 뱃전으로 부딪히면 그 배는 그 뒤로도 느리다.
-            record.SetSpeed(slot.Speed);
+            // 뱃전으로 부딪히면 그 배는 그 뒤로도 느리다. 다만 괴물 판을 <b>이기면</b> 대포 문수·추진력은
+            // 되쓰지 않는다 — 승리 갈래가 +0x8FC 를 보고 그 고리를 건너뛴다(0x004356E7 jne 0x004357A4).
+            // 퇴각·적 퇴각 갈래(0x00435DB9 · 0x004360E9)는 괴물 판이라도 되쓴다.
+            bool keepHull = won && _battle.Monster;
+            if (!keepHull) record.SetSpeed(slot.Speed);
             record.SetHp(slot.Hp);
-            if (record.Gun >= 0 && slot.Guns != record.Guns) record.Load(record.Gun, slot.Guns);
+            if (!keepHull && record.Gun >= 0 && slot.Guns != record.Guns) record.Load(record.Gun, slot.Guns);
             crew[record] = slot.Crew;
         }
 
@@ -1480,7 +1483,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             ? SeaBattle.FromSeaWind(rng, w.Dir, w.Strength)
             : new SeaBattle(rng, rng.Next(SeaBattle.Ways), rng.Next(3) + 1);
 
-        // 바다 괴물과의 판은 달아나는 길이 없다(원본 판 종류 0).
+        // 아군 판종류(위·오른쪽·아래·왼쪽)는 해전마다 rand(4) 로 굴리고 적은 맞은편에 선다(0x004421B9 · 0x004421CB) —
+        // 괴물 판도 같다. 배를 놓기 전에 매긴다.
+        battle.OurSide = rng.Next(4);
         battle.Monster = monster;
         // 괴물이 누구인지로 이동력이 갈린다(0x00434CB5) — 적장 번호가 곧 괴물 번호다.
         battle.MonsterPerson = monster ? foe.Leader?.Id ?? -1 : -1;
