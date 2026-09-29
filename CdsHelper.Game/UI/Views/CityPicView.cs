@@ -856,6 +856,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!bySea)
         {
             _pickedCode = GateCode;   // 글쇠 고르기는 들어온 성문에서 시작한다(0x00492CCA)
+            // 뭍으로 닿으면 성문에 든 사건(갈래 3, 건물 10)을 이야기 대본에 먼저 올린다(0x004A2612 → 0x004AB5A0(도시, 10)) —
+            // 결과 1 이면 성문을 지나지 못한다(0x004A262C). 「이국인을 들여보낼 수는 없다!」(PCQ 8 · PHT 10) 따위다.
+            if (CheckStory(GateCode)) return;
             LeaveGateway(FacilityKind.Gate, arrived: true);
             return;
         }

@@ -72,10 +72,10 @@ public sealed class DisevBook
     /// 8 은 나무를 버리고 원본 차례 그대로 <b>평평한 줄 배열 + 라벨</b>(<c>Label</c>·<c>Goto</c>)로 적은 것이다.
     /// 9 는 분류(<c>Category</c>)를 빼고 <c>00</c> 무리 명령 이름(<c>Command</c>)을 붙인 것이다.
     /// 10 은 줄을 <b>함수 호출</b>로 적은 것이다 — <c>Call</c>·<c>Args</c>, 분기는 <c>GotoIf</c>·<c>GotoUnless</c>·<c>Target</c>(<see cref="DisevCalls"/>).
-    /// 11 은 조건 41 08 · 41 10 · 42 10 · 65 · 59 와 06 한 바이트를, 12 는 40 0D(부관 앉힘)를, 13 은 04 한 바이트(이야기 끝)를, 14 는 38 12(후원자 소개)를 읽게 되어 다시 적는다.
+    /// 11 은 조건 41 08 · 41 10 · 42 10 · 65 · 59 와 06 한 바이트를, 12 는 40 0D(부관 앉힘)를, 13 은 04 한 바이트(이야기 끝)를, 14 는 38 12(후원자 소개)를, 15 는 슬롯 조건 02 0B · 3A 0B(발견됨·발견 안 됨)를 읽게 되어 다시 적는다.
     /// 옛 판도 읽어서 새 판으로 옮겨 적는다.
     /// </summary>
-    private const int SnapshotVersion = 14;
+    private const int SnapshotVersion = 15;
 
     /// <summary>대본 한 파트.</summary>
     /// <param name="Index">발견물 번호이자 파트 번호(0~273).</param>

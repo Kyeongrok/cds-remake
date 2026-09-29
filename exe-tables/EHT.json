@@ -64,11 +64,12 @@
           ],
           [
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 02"
+                "Skip": 2
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 3칸 앞으로, 결과 2 로 끝"
             },
             {
               "OpCode": "FF",
@@ -111,7 +112,7 @@
               "Args": {
                 "Culture": 1
               },
-              "Note": "문화권 조건: 값 1"
+              "Note": "문화권 조건: 1(북유럽)"
             },
             {
               "OpCode": "50",
@@ -124,7 +125,7 @@
               "Args": {
                 "Culture": 0
               },
-              "Note": "문화권 조건: 값 0"
+              "Note": "문화권 조건: 0(이베리아)"
             },
             {
               "OpCode": "5A",
@@ -137,7 +138,7 @@
               "Args": {
                 "Building": 4
               },
-              "Note": "건물 조건: 값 4"
+              "Note": "건물 조건: 4(술집)"
             },
             {
               "OpCode": "FF",
@@ -152,7 +153,7 @@
               "Args": {
                 "City": 7
               },
-              "Note": "도시 조건: 값 7"
+              "Note": "도시 조건: 7"
             },
             {
               "OpCode": "17 10",
@@ -160,7 +161,7 @@
               "Args": {
                 "Building": 9
               },
-              "Note": "건물 조건: 값 9"
+              "Note": "건물 조건: 9(조합)"
             },
             {
               "OpCode": "FF",
@@ -278,11 +279,12 @@
               "Note": "악명 + 5"
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 01"
+                "Skip": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 2칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L028B",
@@ -366,7 +368,7 @@
               "Args": {
                 "City": 7
               },
-              "Note": "도시 조건: 값 7"
+              "Note": "도시 조건: 7"
             },
             {
               "OpCode": "17 10",
@@ -374,7 +376,7 @@
               "Args": {
                 "Building": 9
               },
-              "Note": "건물 조건: 값 9"
+              "Note": "건물 조건: 9(조합)"
             },
             {
               "OpCode": "FF",
@@ -436,11 +438,12 @@
               "Note": "악명 + 80"
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 00"
+                "Skip": 0
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 1칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L0092",
@@ -602,11 +605,12 @@
           ],
           [
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 02"
+                "Skip": 2
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 3칸 앞으로, 결과 2 로 끝"
             },
             {
               "OpCode": "FF",
@@ -649,7 +653,7 @@
               "Args": {
                 "Culture": 1
               },
-              "Note": "문화권 조건: 값 1"
+              "Note": "문화권 조건: 1(북유럽)"
             },
             {
               "OpCode": "50",
@@ -662,7 +666,7 @@
               "Args": {
                 "Culture": 0
               },
-              "Note": "문화권 조건: 값 0"
+              "Note": "문화권 조건: 0(이베리아)"
             },
             {
               "OpCode": "5A",
@@ -675,7 +679,7 @@
               "Args": {
                 "Building": 4
               },
-              "Note": "건물 조건: 값 4"
+              "Note": "건물 조건: 4(술집)"
             },
             {
               "OpCode": "FF",
@@ -690,7 +694,7 @@
               "Args": {
                 "City": 12
               },
-              "Note": "도시 조건: 값 12"
+              "Note": "도시 조건: 12"
             },
             {
               "OpCode": "17 10",
@@ -698,7 +702,7 @@
               "Args": {
                 "Building": 1
               },
-              "Note": "건물 조건: 값 1"
+              "Note": "건물 조건: 1(교역소)"
             },
             {
               "OpCode": "FF",
@@ -849,11 +853,12 @@
               "Note": "악명 + 10"
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 01"
+                "Skip": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 2칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L0309",
@@ -881,7 +886,7 @@
               "Args": {
                 "City": 12
               },
-              "Note": "도시 조건: 값 12"
+              "Note": "도시 조건: 12"
             },
             {
               "OpCode": "17 10",
@@ -889,7 +894,7 @@
               "Args": {
                 "Building": 1
               },
-              "Note": "건물 조건: 값 1"
+              "Note": "건물 조건: 1(교역소)"
             },
             {
               "OpCode": "FF",
@@ -1006,11 +1011,13 @@
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "5B 08",
+              "Call": "BuyCargoFrom",
               "Args": {
-                "Bytes": "5B 08 1E 00 15 27 00"
+                "City": 30,
+                "Goods": 39
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "교역품 인수: 30산 39 전부를 정가로"
             },
             {
               "OpCode": "00 0A",
@@ -1106,11 +1113,12 @@
           ],
           [
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 02"
+                "Skip": 2
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 3칸 앞으로, 결과 2 로 끝"
             },
             {
               "OpCode": "FF",
@@ -1153,7 +1161,7 @@
               "Args": {
                 "Culture": 1
               },
-              "Note": "문화권 조건: 값 1"
+              "Note": "문화권 조건: 1(북유럽)"
             },
             {
               "OpCode": "50",
@@ -1166,7 +1174,7 @@
               "Args": {
                 "Culture": 0
               },
-              "Note": "문화권 조건: 값 0"
+              "Note": "문화권 조건: 0(이베리아)"
             },
             {
               "OpCode": "5A",
@@ -1179,7 +1187,7 @@
               "Args": {
                 "Building": 4
               },
-              "Note": "건물 조건: 값 4"
+              "Note": "건물 조건: 4(술집)"
             },
             {
               "OpCode": "FF",
@@ -1194,7 +1202,7 @@
               "Args": {
                 "City": 52
               },
-              "Note": "도시 조건: 값 52"
+              "Note": "도시 조건: 52"
             },
             {
               "OpCode": "17 10",
@@ -1202,7 +1210,7 @@
               "Args": {
                 "Building": 13
               },
-              "Note": "건물 조건: 값 13"
+              "Note": "건물 조건: 13"
             },
             {
               "OpCode": "FF",
@@ -1392,33 +1400,31 @@
               "Note": "악명 + 20"
             },
             {
-              "Call": "Raw",
+              "OpCode": "1A 12",
+              "Call": "SubAffinity",
               "Args": {
-                "Bytes": "1A 12 3C 00 1C 1C 00"
+                "Sponsor": 60,
+                "Stat": 28,
+                "Value": {
+                  "Const": 20
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 감소"
             },
             {
-              "OpCode": "1A 14",
-              "Call": "SubGold",
-              "Args": {
-                "Amount": 0
-              },
-              "Note": "금화 -0"
-            },
-            {
-              "OpCode": "0A",
-              "Call": "SayBare",
+              "OpCode": "00 0A",
+              "Call": "Say",
               "Args": {
                 "Text": "친밀도가 내려갔다！"
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 01"
+                "Skip": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 2칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L045E",
@@ -1450,7 +1456,7 @@
               "Args": {
                 "City": 52
               },
-              "Note": "도시 조건: 값 52"
+              "Note": "도시 조건: 52"
             },
             {
               "OpCode": "17 10",
@@ -1458,7 +1464,7 @@
               "Args": {
                 "Building": 13
               },
-              "Note": "건물 조건: 값 13"
+              "Note": "건물 조건: 13"
             },
             {
               "OpCode": "FF",
@@ -1473,7 +1479,7 @@
               "Args": {
                 "City": 44
               },
-              "Note": "도시 조건: 값 44"
+              "Note": "도시 조건: 44"
             },
             {
               "OpCode": "17 10",
@@ -1481,7 +1487,7 @@
               "Args": {
                 "Building": 9
               },
-              "Note": "건물 조건: 값 9"
+              "Note": "건물 조건: 9(조합)"
             },
             {
               "OpCode": "FF",
@@ -1543,33 +1549,31 @@
               "Note": "악명 + 50"
             },
             {
-              "Call": "Raw",
+              "OpCode": "1A 12",
+              "Call": "SubAffinity",
               "Args": {
-                "Bytes": "1A 12 3C 00 1C 1C 00"
+                "Sponsor": 60,
+                "Stat": 28,
+                "Value": {
+                  "Const": 20
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 감소"
             },
             {
-              "OpCode": "1A 14",
-              "Call": "SubGold",
-              "Args": {
-                "Amount": 0
-              },
-              "Note": "금화 -0"
-            },
-            {
-              "OpCode": "0A",
-              "Call": "SayBare",
+              "OpCode": "00 0A",
+              "Call": "Say",
               "Args": {
                 "Text": "친밀도가 내려갔다！"
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 00"
+                "Skip": 0
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 1칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L00C2",
@@ -1645,33 +1649,31 @@
               "Note": "악명 + 50"
             },
             {
-              "Call": "Raw",
+              "OpCode": "1A 12",
+              "Call": "SubAffinity",
               "Args": {
-                "Bytes": "1A 12 3C 00 1C 1C 00"
+                "Sponsor": 60,
+                "Stat": 28,
+                "Value": {
+                  "Const": 20
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 감소"
             },
             {
-              "OpCode": "1A 14",
-              "Call": "SubGold",
-              "Args": {
-                "Amount": 0
-              },
-              "Note": "금화 -0"
-            },
-            {
-              "OpCode": "0A",
-              "Call": "SayBare",
+              "OpCode": "00 0A",
+              "Call": "Say",
               "Args": {
                 "Text": "야코브·풋거와의 친밀도가 내려갔다！"
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 00"
+                "Skip": 0
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 1칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L01BB",
@@ -1716,52 +1718,20 @@
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "5B 08",
+              "Call": "BuyCargoFrom",
               "Args": {
-                "Bytes": "5B 08"
+                "City": 78,
+                "Goods": 34
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "교역품 인수: 78산 34 전부를 정가로"
             },
             {
-              "OpCode": "4E",
-              "Call": "EndUnhandled",
-              "Note": "이벤트 결과 코드 2"
-            },
-            {
-              "Call": "Raw",
+              "OpCode": "00 0A",
+              "Call": "Say",
               "Args": {
-                "Bytes": "00 15"
-              },
-              "Note": "미확인 명령/데이터"
-            },
-            {
-              "OpCode": "22 00",
-              "Call": "DestroyNation",
-              "Args": {
-                "Nation": 2560
-              },
-              "Note": "국가 멸망 처리: 나라 2560"
-            },
-            {
-              "Call": "Raw",
-              "Args": {
-                "Bytes": "BE CB B7 BA BB EA B5 E5 B8 AE BE C6 BB EA A1 A1"
-              },
-              "Note": "미확인 명령/데이터"
-            },
-            {
-              "Call": "Raw",
-              "Args": {
-                "Bytes": "B8 E9 C8 AD B8 A6 A1 A1 C0 FC BA CE A1 A1 C6 C8"
-              },
-              "Note": "미확인 명령/데이터"
-            },
-            {
-              "Call": "Raw",
-              "Args": {
-                "Bytes": "BE D2 B4 D9 00"
-              },
-              "Note": "미확인 명령/데이터"
+                "Text": "알렉산드리아산 면화를 전부 팔았다"
+              }
             },
             {
               "OpCode": "19 14",
@@ -1791,11 +1761,16 @@
               "Note": "명성 + 500"
             },
             {
-              "Call": "Raw",
+              "OpCode": "19 12",
+              "Call": "AddAffinity",
               "Args": {
-                "Bytes": "19 12 3C 00 1C 1C 00 1A 19 00 00 00"
+                "Sponsor": 60,
+                "Stat": 28,
+                "Value": {
+                  "Const": 25
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 증가"
             },
             {
               "OpCode": "00 0A",
@@ -1901,7 +1876,7 @@
               "Args": {
                 "Nation": 1
               },
-              "Note": "국가 조건: 값 1"
+              "Note": "국가 조건: 1"
             },
             {
               "OpCode": "5A",
@@ -1914,7 +1889,7 @@
               "Args": {
                 "Building": 4
               },
-              "Note": "건물 조건: 값 4"
+              "Note": "건물 조건: 4(술집)"
             },
             {
               "OpCode": "FF",
@@ -1929,7 +1904,7 @@
               "Args": {
                 "City": 4
               },
-              "Note": "도시 조건: 값 4"
+              "Note": "도시 조건: 4"
             },
             {
               "OpCode": "17 10",
@@ -1937,7 +1912,7 @@
               "Args": {
                 "Building": 13
               },
-              "Note": "건물 조건: 값 13"
+              "Note": "건물 조건: 13"
             },
             {
               "OpCode": "FF",
@@ -2078,11 +2053,16 @@
               "Note": "악명 + 5"
             },
             {
-              "Call": "Raw",
+              "OpCode": "1A 12",
+              "Call": "SubAffinity",
               "Args": {
-                "Bytes": "1A 12 12 00 1C 1C 00 1A 0F 00 00 00"
+                "Sponsor": 18,
+                "Stat": 28,
+                "Value": {
+                  "Const": 15
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 감소"
             },
             {
               "OpCode": "00 0A",
@@ -2092,11 +2072,12 @@
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 01"
+                "Skip": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 2칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L04B4",
@@ -2188,7 +2169,7 @@
               "Args": {
                 "City": 4
               },
-              "Note": "도시 조건: 값 4"
+              "Note": "도시 조건: 4"
             },
             {
               "OpCode": "17 10",
@@ -2196,7 +2177,7 @@
               "Args": {
                 "Building": 13
               },
-              "Note": "건물 조건: 값 13"
+              "Note": "건물 조건: 13"
             },
             {
               "OpCode": "FF",
@@ -2282,11 +2263,16 @@
               "Note": "악명 + 100"
             },
             {
-              "Call": "Raw",
+              "OpCode": "1A 12",
+              "Call": "SubAffinity",
               "Args": {
-                "Bytes": "1A 12 12 00 1C 1C 00 1A 1E 00 00 00"
+                "Sponsor": 18,
+                "Stat": 28,
+                "Value": {
+                  "Const": 30
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 감소"
             },
             {
               "OpCode": "00 0A",
@@ -2296,11 +2282,12 @@
               }
             },
             {
-              "Call": "Raw",
+              "OpCode": "58",
+              "Call": "SkipSteps",
               "Args": {
-                "Bytes": "58 00"
+                "Skip": 0
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "단계 건너뛰기: 1칸 앞으로, 결과 2 로 끝"
             },
             {
               "Label": "L0163",
@@ -2396,11 +2383,16 @@
               "Note": "명성 + 500"
             },
             {
-              "Call": "Raw",
+              "OpCode": "19 12",
+              "Call": "AddAffinity",
               "Args": {
-                "Bytes": "19 12 12 00 1C 1C 00 1A 23 00 00 00"
+                "Sponsor": 18,
+                "Stat": 28,
+                "Value": {
+                  "Const": 35
+                }
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "친밀도 증가"
             },
             {
               "OpCode": "00 0A",
@@ -2498,7 +2490,7 @@
               "Args": {
                 "Nation": 1
               },
-              "Note": "국가 조건: 값 1"
+              "Note": "국가 조건: 1"
             },
             {
               "OpCode": "5A",
@@ -2511,7 +2503,7 @@
               "Args": {
                 "Building": 4
               },
-              "Note": "건물 조건: 값 4"
+              "Note": "건물 조건: 4(술집)"
             },
             {
               "OpCode": "FF",
@@ -2526,7 +2518,7 @@
               "Args": {
                 "City": 7
               },
-              "Note": "도시 조건: 값 7"
+              "Note": "도시 조건: 7"
             },
             {
               "OpCode": "17 10",
@@ -2534,7 +2526,7 @@
               "Args": {
                 "Building": 9
               },
-              "Note": "건물 조건: 값 9"
+              "Note": "건물 조건: 9(조합)"
             },
             {
               "OpCode": "FF",
@@ -2853,7 +2845,7 @@
               "Args": {
                 "City": 7
               },
-              "Note": "도시 조건: 값 7"
+              "Note": "도시 조건: 7"
             },
             {
               "OpCode": "17 10",
@@ -2861,7 +2853,7 @@
               "Args": {
                 "Building": 9
               },
-              "Note": "건물 조건: 값 9"
+              "Note": "건물 조건: 9(조합)"
             },
             {
               "OpCode": "FF",
@@ -2876,7 +2868,7 @@
               "Args": {
                 "City": 51
               },
-              "Note": "도시 조건: 값 51"
+              "Note": "도시 조건: 51"
             },
             {
               "OpCode": "17 10",
@@ -2884,7 +2876,7 @@
               "Args": {
                 "Building": 3
               },
-              "Note": "건물 조건: 값 3"
+              "Note": "건물 조건: 3(교회)"
             },
             {
               "OpCode": "FF",
@@ -3629,7 +3621,7 @@
               "Args": {
                 "Building": 3
               },
-              "Note": "건물 조건: 값 3"
+              "Note": "건물 조건: 3(교회)"
             },
             {
               "OpCode": "FF",
@@ -3639,11 +3631,9 @@
           ],
           [
             {
-              "Call": "Raw",
-              "Args": {
-                "Bytes": "60"
-              },
-              "Note": "미확인 명령/데이터"
+              "OpCode": "60",
+              "Call": "LeftCityOnLand",
+              "Note": "뭍으로 나섬 조건"
             },
             {
               "OpCode": "FF",
@@ -3796,7 +3786,7 @@
               "Args": {
                 "Nation": 1
               },
-              "Note": "국가 조건: 값 1"
+              "Note": "국가 조건: 1"
             },
             {
               "OpCode": "FF",
@@ -4034,7 +4024,7 @@
               "Args": {
                 "City": 7
               },
-              "Note": "도시 조건: 값 7"
+              "Note": "도시 조건: 7"
             },
             {
               "OpCode": "17 10",
@@ -4042,7 +4032,7 @@
               "Args": {
                 "Building": 9
               },
-              "Note": "건물 조건: 값 9"
+              "Note": "건물 조건: 9(조합)"
             },
             {
               "OpCode": "FF",
@@ -4234,5 +4224,5 @@
     ]
   },
   "Source": "EHT.CDS",
-  "Version": 14
+  "Version": 15
 }
