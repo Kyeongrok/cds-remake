@@ -1789,6 +1789,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _photoWindow?.Close();
             _photoWindow = null;
             _bgm?.Play(_cityTrack);
+            _guests?.Left();
 
             // 이번에 든 후원자 건물에서 계약을 맺었으면 나설 때 「후원자 건물 나섬」(갈래 5)을 올린다 — 원본의
             // 나서기(0x0044E6C0)는 나가기 줄 · ESC · 설득 끝 어느 길로 나서든 돌고, [+0xC0](계약을 맺음, 0x004AF3C9)이
