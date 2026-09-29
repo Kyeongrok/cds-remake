@@ -848,12 +848,10 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 배가 괴물 칸으로 들어서면 <b>억지로 떠오른다</b>(<c>0x00436575</c> · <c>0x0043D389</c>).
+    /// 턴 끝 굴림을 판의 아군 값으로 한다 — <c>[+0x910]</c>(운+1) 과 <c>[+0x908]</c>(지력+1), 둘 다 제독·부관 가운데 큰 값이다.
     /// </summary>
-    public void SurfaceMonster()
-    {
-        if (Monster) MonsterUp = true;
-    }
+    /// <remarks>예전에는 창이 제독 날값(+1 도, 부관 견주기도 없이)을 넘겼다.</remarks>
+    public bool TurnMonster() => TurnMonster(MineSide.Defense, MineSide.Mind);
 
     /// <summary>
     /// 물러설 배인지 — 내구 10 이하, 승원이 필요승원(선체표 +0x34 + 10) 이하, 또는 아군 수/3 이 적 수 이상.

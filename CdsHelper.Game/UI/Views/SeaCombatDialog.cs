@@ -878,17 +878,18 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         if (_battle.Over) { Finish(); return; }
 
-        // 괴물은 턴 끝마다 한 번 굴려 떠오르거나 잠긴다(0x0043DA81). 막 잠겼으면
-        // 아래 MonsterHidWord 가 그때부터 한마디씩 붙는다.
-        if (_player is { } admiral)
-            _battle.TurnMonster(admiral.AbilityOf(Ability.Luck), admiral.AbilityOf(Ability.Mind));
-
         // 바람이 돌아도 바람 알림은 다시 안 낸다 — 알림은 판을 열 때 한 번뿐이다(0x0043C514 의 +0x830 == −1 걸쇠).
-        // 턴 끝(0x0043D9D2~0x0043DA7C)은 바람만 돌리고 이동 지시 재촉(0x0043BEB0)으로 간다.
-        if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 재촉도 안내도 없이 다음 턴으로
+        // 턴 끝(0x0043D9D2~0x0043DA7C)은 바람만 돌리고 이동 지시 재촉(0x0043BEB0(0))으로 간다 — 맡긴 동안은 재촉이 없다.
+        if (!_battle.Delegated) Say(_battle.OrderPrompt());
 
-        Say(_battle.OrderPrompt());
-        if (_battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
+        // 그다음 괴물이 한 번 굴려 떠오르거나 잠긴다(0x0043DA81). 부관의 「잠수해 버렸다」 한마디는
+        // <b>막 잠긴 턴에만</b> 붙고 맡긴 동안에도 나온다(0x0043DB96 — 새 값이 1 일 때만 0x0043BEB0(1)).
+        // 예전에는 잠겨 있는 턴마다 붙였고, 재촉보다 굴림이 먼저였다.
+        bool dived = _battle.TurnMonster();
+        Redraw();
+        if (dived && _battle.MonsterHidWord() is { Length: > 0 } hid) Say(hid);
+
+        if (_battle.Delegated) { AutoTurn(); return; }      // 맡긴 동안은 안내 없이 다음 턴으로
         // 「충돌 영향으로…」는 턴 끝에 내지 않는다 — 원본은 부딪힌 배를 <b>눌렀을 때</b>만 낸다(0x0043E299 한 곳).
     }
 
