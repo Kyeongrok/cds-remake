@@ -283,16 +283,27 @@ internal sealed class MazePuzzleDialog : InfoDialog
         return near <= 40 * 40 ? best : -1;
     }
 
+    /// <summary>배경 오른쪽 아래 「GIVE UP」 쪽지(<c>0x0042B86D</c> — x 0x122~0x151 · y 0x17A~0x1A1).</summary>
+    private static readonly Rect GiveUpNote = new(0x122, 0x17A, 0x151 - 0x122 + 1, 0x1A1 - 0x17A + 1);
+
     private void SceneUp(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
-        int room = RoomAt(e.GetPosition(_scene));
+        var at = e.GetPosition(_scene);
+        // 쪽지를 누르면 셋째 갈래 포기다(0x0042B895).
+        if (GiveUpNote.Contains(at))
+        {
+            if (_game.Over == MazePuzzle.Result.Playing) AskGiveUp(GiveUpWay.Note);
+            return;
+        }
+        int room = RoomAt(at);
         if (room >= 0) Step(room);
     }
 
     private void OnKey(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Space) { AskUndo(); return; }
+        if (e.Key == Key.Escape) { e.Handled = true; Escape(); return; }
 
         int step = e.Key switch
         {
@@ -353,7 +364,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
             rows.Add(("보물 상자를 연다", OpenChest));
 
         rows.Add(("ＵＮＤＯ(취소)", _game.CanUndo ? AskUndo : null));
-        rows.Add(("포기한다", AskGiveUp));
+        rows.Add(("포기한다", () => AskGiveUp(GiveUpWay.Menu)));
         rows.Add(("게임 설명", Explain));
         rows.Add(("게임으로 돌아간다", () => { }));   // 차림표만 닫는다
         return rows;
@@ -432,12 +443,64 @@ internal sealed class MazePuzzleDialog : InfoDialog
         "[U N D O(취소)]는 스페이스키를 누릅니다." + Environment.NewLine +
         "보물 상자는 숫자가 적은 순서로 밖에 열지 못합니다만 열지 않아도 밖으로 나갈 수 있습니다. 바닥을 전부 통과하지 않고 출구로 가면 처음으로 돌아갑니다. 이것도 3회까지입니다.";
 
-    private void AskGiveUp()
+    /// <summary>
+    /// 포기는 세 군데서 걸리고 <b>갈래마다 글이 조금씩 다르다</b>.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   Esc     0x0042B43C  「미궁으로부터 탈출을 포기합니까?」       → 「포기하자 바닥이 …시작했다!」 / 「…다음번엔…」
+    ///   차림표   0x0042B7D2  「미궁으로부터의 탈출을 포기하겠습니까?」 → 「포기하자, 바닥이 …시작했다!」 / 「…다음 번엔…」
+    ///   쪽지     0x0042B895  「미궁으로부터의 탈출을 포기하겠습니까?」 → 「포기하자, 바닥이 …시작했다.」 / 「…다음 번엔…」
+    /// </code>
+    /// 물음 창 제목은 셋 다 「포기한다」, 맺음 창 제목은 「게임 오버」다.
+    /// </remarks>
+    private enum GiveUpWay { Escape, Menu, Note }
+
+    /// <summary>어느 갈래로 포기했는지 — 맺음 말이 갈린다.</summary>
+    private GiveUpWay _gaveUpBy = GiveUpWay.Menu;
+
+    private void AskGiveUp(GiveUpWay way)
     {
-        if (!ConfirmDialog.Ask(this, "미궁으로부터의 탈출을 포기하겠습니까?", "포기한다")) return;
+        string ask = way == GiveUpWay.Escape
+            ? "미궁으로부터 탈출을 포기합니까?"
+            : "미궁으로부터의 탈출을 포기하겠습니까?";
+        if (!ConfirmDialog.Ask(this, ask, "포기한다")) return;
+        _gaveUpBy = way;
         _game.GiveUp();
         Close();
     }
+
+    /// <summary>
+    /// Esc(<c>0x0042B3B1</c>) — 발밑에 안 연 상자가 있으면 그것을 열고, 없으면 포기를 묻는다(첫째 갈래).
+    /// </summary>
+    /// <remarks>
+    /// 상자를 열고 난 뒤에도 그 상자가 열린 채(<c>+0x2AC</c> ≥ 2)가 아니면 게임은 그대로 포기 물음으로
+    /// 흘러든다(<c>0x0042B414</c>) — 판이 끝났으면 물을 것이 없다.
+    /// </remarks>
+    private void Escape()
+    {
+        if (_game.Over != MazePuzzle.Result.Playing) return;
+        int chest = _game.ChestAt(_game.Here);
+        if (chest != 0 && !_game.ChestOpen(chest))
+        {
+            OpenChest();
+            if (_game.Over != MazePuzzle.Result.Playing || _game.ChestOpen(chest)) return;
+        }
+        AskGiveUp(GiveUpWay.Escape);
+    }
+
+    /// <summary>
+    /// 포기의 맺음 말 — 게임은 <b>둘 가운데 하나만</b> 낸다. 상금 갈래(<c>[+0x310] != 0</c>)면 바닥이 울리고,
+    /// 미니 게임이면 「게임 오버입니다」다(<c>0x0042B459</c> · <c>0x0042B7EB</c> · <c>0x0042B8AE</c>).
+    /// </summary>
+    private static string GaveUpWords(GiveUpWay way, bool stakes) => (way, stakes) switch
+    {
+        (GiveUpWay.Escape, true) => "포기하자 바닥이 차츰 웅웅거리기 시작했다!",          // 0x00559B48
+        (GiveUpWay.Escape, false) => "게임 오버입니다. 다음번엔 노력합시다.",              // 0x00559B88
+        (GiveUpWay.Menu, true) => "포기하자, 바닥이 차츰 웅웅거리기 시작했다!",           // 0x00559CC8
+        (GiveUpWay.Note, true) => "포기하자, 바닥이 차츰 웅웅거리기 시작했다.",           // 0x00559FB8
+        _ => "게임 오버입니다. 다음 번엔 노력합시다.",                                      // 0x00559D08 · 0x00559FF8
+    };
 
     private void Sync()
     {
@@ -524,8 +587,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
                 break;
 
             case MazePuzzle.Result.GaveUp:
-                NoticeDialog.Show(owner, "포기하자, 바닥이 차츰 웅웅거리기 시작했다!", "게임 오버");
-                NoticeDialog.Show(owner, "게임 오버입니다. 다음 번엔 노력합시다.", "게임 오버");
+                NoticeDialog.Show(owner, GaveUpWords(dialog._gaveUpBy, stakes), "게임 오버");
                 break;
 
             // 상금 갈래는 <b>실수를 안 따진다</b> — 다 밟고 나가면 한 가지 말이고,
