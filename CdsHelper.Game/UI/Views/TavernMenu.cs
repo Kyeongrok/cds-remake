@@ -1404,7 +1404,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
             int at = ChoiceDialog.Ask(_view, "", rows, "떠난다");
             if (at == duelAt) Duel(who, face);
-            else if (at == hearAt) HearFrom(who, face, inn);
+            // 말이 안 통하면 정보 줄이 없어 hearAt 이 −1 이다 — 「떠난다」(−1)와 맞아떨어지지 않게 가린다.
+            else if (hearAt >= 0 && at == hearAt) HearFrom(who, face, inn);
             return;
         }
 
