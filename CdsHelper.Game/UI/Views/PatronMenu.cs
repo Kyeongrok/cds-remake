@@ -193,8 +193,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 자리(+0xBC == 2)에서도 그대로 돈다.
         _player.EndContract();
         RecontractMates();
-        MutinousLentShips(deal.Sponsor);
-        return true;
+        // 선장과의 일기토에서 베였으면 놀이가 끝났다 — 설득으로 넘어가지 않는다(0x0044AF40(4) 뒤에는 나서기만 남는다).
+        return MutinousLentShips(deal.Sponsor);
     }
 
     /// <summary>
@@ -2190,10 +2190,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 사람의 배만 고르는데, 우리 배는 빌린 것인지 아닌지만 안다. 처벌은 <b>지금 계약</b>의
     /// 후원자에게만 할 수 있으니 빌린 배도 그 사람 것뿐이라 보고 다 건다.
     /// </remarks>
-    private void MutinousLentShips(string sponsor)
+    /// <returns>놀이가 이어지면 true — 선장에게 베여 게임 오버면 false.</returns>
+    private bool MutinousLentShips(string sponsor)
     {
         var lent = _player.Ships.Where(s => s.Lent).ToList();
-        if (lent.Count == 0) { ReturnLentShips(); return; }
+        if (lent.Count == 0) { ReturnLentShips(); return true; }
 
         var dice = _random;
         var sir = _game.Sponsors?.FindByName(sponsor);
@@ -2208,7 +2209,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
             if (_view.Owner is ShipMapWindow map)
                 _view.Dispatcher.BeginInvoke(map.ReturnToTitle);
-            return;
+            return false;
         }
 
         // 함대가 온통 빌린 배면 그래도 한 척은 남는다(0x004104B0).
@@ -2231,6 +2232,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         // <b>떠난다는 말은 없다.</b> 원본도 그 자리에서 아무 말을 안 한다 — 「%s호가
         // 탈주했습니다!」는 조건이 뒤집혀 절대 안 뜨는 죽은 가지다(LentShips 주석).
+        return true;
     }
 
     /// <summary>
