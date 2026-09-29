@@ -207,7 +207,7 @@ public sealed class TradePostDialog : GameWindow
         var why = _post.Check(_player, _city, DealNow());
         if (why != TradePost.Outcome.Ok) { Block(why); return; }
         int cost = Cost;
-        if (!_post.CanBargain(_player, _city, cost)) { Apply(close: true); return; }
+        if (!_post.CanBargain(_player, _city, cost, CrewTongue)) { Apply(close: true); return; }
         _bargainOn = true;
         Paint();
     }
@@ -273,6 +273,21 @@ public sealed class TradePostDialog : GameWindow
         if (mate.Length == 0) return -1;
         if (_game.World?.People.FirstOrDefault(r => r.Name == mate) is not { } row) return -1;
         return Skill.Accounting < row.Skills.Length ? row.Skills[Skill.Accounting] : -1;
+    }
+
+    /// <summary>
+    /// 부관(자리 0)·통역(자리 3) 가운데 그 언어를 가장 잘하는 수준 — 흥정 게이트가 주인공 것과 견준다(<c>0x00468FE0</c>).
+    /// </summary>
+    private int CrewTongue(int language)
+    {
+        int best = 0;
+        foreach (int slot in (int[])[0, 3])
+        {
+            string mate = _player.MateAt(slot);
+            if (mate.Length == 0 || _game.World?.People.FirstOrDefault(r => r.Name == mate) is not { } row) continue;
+            if (language < row.Languages.Length) best = Math.Max(best, row.Languages[language]);
+        }
+        return best;
     }
 
     /// <summary>판에서 고른 것 — 0 결정, 1 값을 깎는다, 2 돌아간다.</summary>

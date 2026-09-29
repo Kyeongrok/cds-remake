@@ -391,16 +391,20 @@ public sealed class TradePost
     /// 흥정 메뉴가 뜨는지(<c>0x00481400</c>) — 값이 있고, 그 도시를 가진 <b>나라의 말</b>이 2 이상.
     /// </summary>
     /// <remarks>
-    /// 게임은 주인공과 동승 인물 가운데 가장 높은 자리를 본다(<c>0x00468FE0</c>). 우리 부하 자료에는
-    /// 언어가 없어 주인공 것만 본다.
+    /// 게임은 주인공 · 부관(<c>0x0047CC60(0, 0)</c>) · 통역(<c>0x0047CC60(3, 0)</c>) 셋 가운데 가장 높은 수준을
+    /// 본다(<c>0x00468FE0</c>).
     /// </remarks>
-    public bool CanBargain(Player player, int city, int cost)
+    /// <param name="crewTongue">
+    /// 부관·통역 가운데 그 언어(나라 표 언어 번호)를 가장 잘하는 수준. 없으면 주인공 것만 본다.
+    /// </param>
+    public bool CanBargain(Player player, int city, int cost, Func<int, int>? crewTongue = null)
     {
         if (cost <= 0 || _cities == null || _nations?.Find(_cities.NationOf(city)) is not { } nation)
             return false;
         int language = nation.Language;
-        return language >= 0 && language < Skill.Languages.Length
-               && player.TongueOf(Skill.Languages[language]) >= BargainTongue;
+        if (language < 0 || language >= Skill.Languages.Length) return false;
+        int best = Math.Max(player.TongueOf(Skill.Languages[language]), crewTongue?.Invoke(language) ?? 0);
+        return best >= BargainTongue;
     }
 
     /// <summary>
