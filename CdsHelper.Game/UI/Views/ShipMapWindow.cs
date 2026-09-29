@@ -2525,6 +2525,10 @@ public sealed class ShipMapWindow : Window
         // 있었고, 입항·날짜 흐름·발견 판정도 함께 섰다. 이미 돌고 있으면 다시 켜도 그대로다.
         _statusTimer.Start();
 
+        // 비·눈도 판을 열 때마다 그친다 — 원본은 비 물건(0x005B6840)을 세이브에 안 적고 남은 셈(머리 +0x2C)만
+        // 적는다(0x0044AE60). 안 그치면 앞 판의 비가 불러온 판에서 그대로 내리고 빗소리가 이어졌다.
+        EndWeather();
+
         // 발견물 이름 덧씌우기는 판을 열 때마다 비운다 — 안 그러면 앞 판에서 지은 이름이 남는다.
         Local.Helpers.DiscoveryTable.ResetNames(null);
 
