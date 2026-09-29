@@ -238,9 +238,16 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         int paid = picked.Sum(at => _player.Ships[at].Lent ? 0 : Shipyard.SellPrice(_player.Ships[at], _rate));
         if (!ConfirmDialog.Ask(owner, $"{paid}닢입니다. 좋습니까?")) return;
 
-        // 뒤에서부터 뺀다 — 앞을 먼저 빼면 뒤 자리가 하나씩 밀린다.
-        foreach (int at in picked.OrderByDescending(i => i)) _player.Scrap(at);
-        _player.Earn(paid);
+        // 뒤에서부터 뺀다 — 앞을 먼저 빼면 뒤 자리가 하나씩 밀린다. 값은 <b>정말 뺀 배</b>만 받는다 —
+        // 함대를 다 골랐으면 마지막 한 척은 Scrap 이 물리므로 그 배 값까지 받으면 배와 돈을 둘 다 쥔다.
+        int earned = 0;
+        foreach (int at in picked.OrderByDescending(i => i))
+        {
+            var ship = _player.Ships[at];
+            int price = ship.Lent ? 0 : Shipyard.SellPrice(ship, _rate);
+            if (_player.Scrap(at)) earned += price;
+        }
+        _player.Earn(earned);
 
         // 배가 줄어 짐이 넘치면 짐 덜기 창이다(0x0044B968).
         CargoDropDialog.Force(owner, _game, _cityId);
@@ -791,10 +798,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         // 수 적기 창(0x00454AA0)에는 「최대」 단추가 없다 — 넷째·여섯째 인자는 처음 값·가장 작은 값(0x00454638 →
         // +0xC8, 0x00454331)이고, 선원고용과 같이 0·0 을 넘긴다. 「최대」는 보급 창(0x0040F13A)에만 있다.
-        int want = CountDialog.Ask(owner, "포탑수 결정", "포탑수", "문", ship.MaxTurrets, 1, false,
-            new CountDialog.Gauge("최대포탑수", ship.MaxTurrets),
-            new CountDialog.Gauge("현재의 포탑수", ship.Turrets));
-        if (want < 0) return;
+        // 0 문(포탑을 다 뗀다)도 고를 수 있어야 하므로 중단을 null 로 가르는 Set 을 쓴다 — Ask 는 중단도 0 이라
+        // 중단하면 「뗄 거라면…」으로 흘러 예 한 번에 포탑이 다 떨어졌다.
+        if (CountDialog.Set(owner, "포탑수 결정", "포탑수", "문", 0, ship.MaxTurrets,
+                new CountDialog.Gauge("최대포탑수", ship.MaxTurrets),
+                new CountDialog.Gauge("현재의 포탑수", ship.Turrets)) is not { } want) return;
         if (want == ship.Turrets) { Say("자네와 장난칠 여유없네."); return; }
 
         int cost = Math.Max(0, want - ship.Turrets) * Cannon.TurretPrice;

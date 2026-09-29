@@ -778,6 +778,12 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </summary>
     private bool _keepLine;
 
+    /// <summary>
+    /// 건물을 나섰다 — 고용 뒤 사진을 다시 못 세우고 나왔으면 <see cref="_keepLine"/> 이 남아, 다음에 들어설 때
+    /// 줄을 새로 안 짓고 옛 손님을 그대로 세운다. 나설 때 끈다(원본도 들어설 때마다 자리를 새로 짓는다).
+    /// </summary>
+    public void Left() => _keepLine = false;
+
     // ── 여급 ────────────────────────────────────────────────────────────────
 
     /// <summary>이 마을 술집에 지금 서 있는 여급. 표를 못 읽었거나 없으면 null.</summary>
@@ -1404,7 +1410,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
             int at = ChoiceDialog.Ask(_view, "", rows, "떠난다");
             if (at == duelAt) Duel(who, face);
-            else if (at == hearAt) HearFrom(who, face, inn);
+            // 말이 안 통하면 정보 줄이 없어 hearAt 이 −1 이다 — 「떠난다」(−1)와 맞아떨어지지 않게 가린다.
+            else if (hearAt >= 0 && at == hearAt) HearFrom(who, face, inn);
             return;
         }
 

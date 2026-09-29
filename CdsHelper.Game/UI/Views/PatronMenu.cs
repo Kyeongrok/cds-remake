@@ -32,6 +32,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                                  int culture, int cityId)
 {
     private readonly int _cityTrack = cityTrack;
+
+    /// <summary>
+    /// 이번에 든 건물에서 계약을 맺었는지(시설 <c>+0xC0</c>, <c>0x004AF3C9</c> 가 세운다). 서 있으면 건물을 나설 때
+    /// 이야기 대본의 「후원자 건물 나섬」(갈래 5)을 올린다(<c>0x0044E721</c> → <c>0x004AB640</c>). 들 때마다 도시 창이 끈다.
+    /// </summary>
+    public bool SignedHere { get; set; }
     private readonly int _culture = culture;
     private readonly int _cityId = cityId;
     private readonly Window _view = view;
@@ -187,8 +193,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 자리(+0xBC == 2)에서도 그대로 돈다.
         _player.EndContract();
         RecontractMates();
-        MutinousLentShips(deal.Sponsor);
-        return true;
+        // 선장과의 일기토에서 베였으면 놀이가 끝났다 — 설득으로 넘어가지 않는다(0x0044AF40(4) 뒤에는 나서기만 남는다).
+        return MutinousLentShips(deal.Sponsor);
     }
 
     /// <summary>
@@ -314,7 +320,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 GameDialog.Show(_view, "상대해 주지 않았습니다");
                 return;
             }
-            if (ChoiceDialog.Ask(_view, "", ["매수한다", "포기하고 돌아간다"]) != 0) return;
+            // 두 줄뿐인 창이다(0x004AE328 의 0x00469A70(줄, 2, …)) — 「취소」 줄을 덧붙이지 않는다.
+            if (ChoiceDialog.Pick(_view, "", ["매수한다", "포기하고 돌아간다"]) != 0) return;
             if (!ConfirmDialog.Ask(_view, "집사에게 뇌물을 주겠습니다. 좋습니까?")) return;   // 0x00545A98
 
             int fee = Palace.StewardFee(eye);
@@ -525,6 +532,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         _player.Sign(new Contract(it.Id, patron.Name, _cityName, funds,
                                   _player.Date, years, inspector));
         WorldRouteScene.OnSign(_game, it.Id);   // 0x004ADFF6 — 세계일주를 맡으면 바퀴 수를 0 으로
+        SignedHere = true;                      // 0x004AF3C9 — 나설 때 갈래 5 를 올린다
 
         // 선금은 <b>후원자 지갑에서</b> 나간다(0x004ADF4A) — 저절로 차지 않으므로
         // 같은 사람에게 잇달아 계약을 맺으면 점점 적게 받는다.
@@ -1106,7 +1114,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 없다(0x0041243D 로 곧장 빠진다).
             if (broke)
             {
-                ReturnLentShips(broken: true);
+                // 감옥에서 일생을 마쳤으면 빌린 배·짐을 거둬 가는 알림도 없다 — 놀이가 이미 끝났다.
+                if (!_reportOver) ReturnLentShips(broken: true);
                 _player.EndContract();
             }
             return (0, Palace.ReportGrade.Poor, scoopedHead, true);
@@ -1371,7 +1380,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 "믿고 있었건만... 배신하리라고는. 이 정도는 누구라도 알 수 있다!! 이 자들을 감옥에 집어 넣어라!"));
             TalkDialog.Say(_view, spy, "", $"오~ , 오, 용서를. {sir}, 우, 저는 아무것도...");
 
-            if (Jail(patron, new GameRandom(Environment.TickCount))) EndGame();
+            if (Jail(patron, new GameRandom(Environment.TickCount))) { _reportOver = true; EndGame(); }
             broke = true;
             return true;
         }
@@ -1403,7 +1412,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 비트 14). 거꾸로 하면 Punish 가 삐짐(깃발 14)을 보고 봐줌·위약금 없이 늘 감옥으로 간다.
             bool over = Punish(patron, sponsorRow, Pick3);
             _player.Sulk(patron.Name);
-            if (over) EndGame();
+            if (over) { _reportOver = true; EndGame(); }
             broke = true;
         }
         return true;
@@ -1505,8 +1514,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private bool KnownByOthers(DiscoveryTable.Record row) =>
         !_player.HasAnnounced(row.Id) && _player.ScoopedBy(row.Id) != null;
 
+    /// <summary>이번 보고에서 모조품을 들켜 감옥에서 놀이가 끝났는지 — 그러면 나설 때의 뒷처리를 다 건너뛴다.</summary>
+    private bool _reportOver;
+
     private void ReportNow(Patron patron)
     {
+        _reportOver = false;
         var contract = _player.Contract;
         var rows = ReportTargets(patron);
         if (contract == null || rows.Count == 0) return;
@@ -1626,9 +1639,15 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             _game.Bgm.Play(_cityTrack);
         }
 
+        // 감옥에서 일생을 마쳤으면(게임 오버) 나설 일도 없다 — 재계약 물음·증거품이 게임 오버 창 뒤에 뜨던 것.
+        if (_reportOver) return;
+
         // 나설 때의 차례 그대로다(0x0044E6C0) — 부하 재계약(0x00454160) · 빌린 배 돌려주기(0x004105A0) 다음이
-        // 숨겨 둔 증거품(0x0041C480)이다.
-        RecontractMates();
+        // 숨겨 둔 증거품(0x0041C480)이다. 감옥(항구 도시)에 다녀와도 숨긴 목록은 그대로라(0x0044EF20 이 안 지운다)
+        // 증거품은 여전히 손에 들어온다.
+        // 재계약은 계약이 정말 끝났을 때만이다 — 원본은 계약을 끝내는 0x0044EE30 이 [+0xBC] 를 3 밖으로 바꿀 때만
+        // 0x00454160 을 부른다(0x0044E6CC). 모조품을 봐줘 계약이 남았으면 부하가 떠나거나 선금을 다시 받지 않는다.
+        if (_player.Contract == null) RecontractMates();
 
         // 숨겨 둔 증거품은 보고를 마치고 나설 때 손에 들어온다.
         HandHidden();
@@ -2114,7 +2133,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 배가 한 척도 안 남으면 짐을 대신 팔아 준다 — <b>그 도시 매각가의 절반</b>이다
     /// (<see cref="Palace.DistressPrice"/>).
     /// </remarks>
-    private void ReturnLentShips(bool broken = false)
+    /// <param name="lender">
+    /// 배를 빌려준 후원자. 안 주면 지금 계약의 후원자다 — 감찰관을 처벌한 자리는 계약을 먼저 지우므로(0x0044FC76)
+    /// 옛 후원자를 따로 넘긴다. 원본은 배마다 빌려준 이를 적어 두어 계약과 상관없이 돌려준다(0x0040FE00).
+    /// </param>
+    private void ReturnLentShips(bool broken = false, string? lender = null)
     {
         bool mate = _player.MateAt(0).Length > 0;
         bool hadCargo = _player.CargoHold.Count > 0;
@@ -2122,8 +2145,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var back = _player.Ships.Concat(_player.Docked.Values.SelectMany(list => list))
                           .Where(s => s.Lent).Select(s => s.Hull.GameId).ToList();
         if (_player.TakeBackLentShips() == 0) return;
-        if (_player.Contract is { } deal && LenderOf(deal.Sponsor) is { } lender && _game.CityRows is { } rows)
-            PatronShips.Return(_player, lender, rows, back);
+        if ((lender ?? _player.Contract?.Sponsor) is { } from && LenderOf(from) is { } owner
+            && _game.CityRows is { } rows)
+            PatronShips.Return(_player, owner, rows, back);
 
         // 계약을 파기했으면 짐까지 가져간다(0x0040FE5C) — 빌린 배가 있었을 때만이다.
         if (broken && hadCargo)
@@ -2172,10 +2196,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 사람의 배만 고르는데, 우리 배는 빌린 것인지 아닌지만 안다. 처벌은 <b>지금 계약</b>의
     /// 후원자에게만 할 수 있으니 빌린 배도 그 사람 것뿐이라 보고 다 건다.
     /// </remarks>
-    private void MutinousLentShips(string sponsor)
+    /// <returns>놀이가 이어지면 true — 선장에게 베여 게임 오버면 false.</returns>
+    private bool MutinousLentShips(string sponsor)
     {
         var lent = _player.Ships.Where(s => s.Lent).ToList();
-        if (lent.Count == 0) { ReturnLentShips(); return; }
+        if (lent.Count == 0) { ReturnLentShips(lender: sponsor); return true; }
 
         var dice = _random;
         var sir = _game.Sponsors?.FindByName(sponsor);
@@ -2190,7 +2215,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
             if (_view.Owner is ShipMapWindow map)
                 _view.Dispatcher.BeginInvoke(map.ReturnToTitle);
-            return;
+            return false;
         }
 
         // 함대가 온통 빌린 배면 그래도 한 척은 남는다(0x004104B0).
@@ -2213,6 +2238,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         // <b>떠난다는 말은 없다.</b> 원본도 그 자리에서 아무 말을 안 한다 — 「%s호가
         // 탈주했습니다!」는 조건이 뒤집혀 절대 안 뜨는 죽은 가지다(LentShips 주석).
+        return true;
     }
 
     /// <summary>
