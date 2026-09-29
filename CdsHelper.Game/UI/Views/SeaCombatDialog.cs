@@ -310,6 +310,17 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             }
             if (_battle.ShipAt(x, y) is { } ship)
             {
+                // 괴물 칸(8~14)이면 — 잠수 중에는 제독·함대수 창(0x0043EBE2)이라 숨은 자리가 안 드러나고,
+                // 떠 있으면 몸 조각을 눌러도 머리 값을 보인다(피해는 머리 내구로만 가고 몸 칸 값은 처음 그대로다).
+                if (_battle.Monster && !ship.Mine)
+                {
+                    if (!_battle.MonsterShown)
+                    {
+                        SeaBattleInfoDialog.Show(this, _battle, _player, _foe.Leader, _foe.Name);
+                        return;
+                    }
+                    ship = _battle.MonsterHead ?? ship;
+                }
                 SeaShipInfoDialog.Show(this, ship);
                 return;
             }
@@ -765,7 +776,19 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private bool TookBack()
     {
         if (!_battle.Delegated) return true;
-        if (!ConfirmDialog.Ask(this, SeaBattle.TakeBack, BattleTitle, _face)) return false;
+
+        // 묻는 동안은 다음 턴을 굴리지 않는다 — 물음 창(ShowDialog)의 중첩 루프에서도 타이머 틱이 와서,
+        // 예전에는 대답을 기다리는 사이 턴이 계속 돌고 판이 끝나 창이 닫히기도 했다.
+        _autoTimer?.Stop();
+        _askingTakeBack = true;
+        bool yes;
+        try { yes = ConfirmDialog.Ask(this, SeaBattle.TakeBack, BattleTitle, _face); }
+        finally { _askingTakeBack = false; }
+        if (!yes)
+        {
+            AutoTurn();                                  // 계속 맡긴다 — 멈춰 둔 턴을 다시 건다
+            return false;
+        }
 
         _battle.Delegated = false;
         foreach (var ship in _battle.Ships.Where(s => s.Mine && s.CanAct))
@@ -846,14 +869,25 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private void AutoTurn()
     {
         if (!_battle.Delegated) return;
-        var timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = AutoTurnPause };
-        timer.Tick += (_, _) =>
+        if (_autoTimer == null)
         {
-            timer.Stop();
-            if (_battle.Delegated && !_running && !_battle.Over && IsLoaded) RunTurn();
-        };
-        timer.Start();
+            _autoTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = AutoTurnPause };
+            _autoTimer.Tick += (_, _) =>
+            {
+                _autoTimer.Stop();
+                if (_battle.Delegated && !_running && !_askingTakeBack && !_battle.Over && IsLoaded) RunTurn();
+            };
+            Closed += (_, _) => _autoTimer.Stop();
+        }
+        _autoTimer.Stop();                               // 틈을 새로 센다 — 두 번 걸려도 한 번만 돈다
+        _autoTimer.Start();
     }
+
+    /// <summary>위임 중 다음 턴을 거는 눈금 — 되찾기를 물을 때 멈춘다(<see cref="TookBack"/>).</summary>
+    private DispatcherTimer? _autoTimer;
+
+    /// <summary>「제독이 명령하시겠습니까?」를 묻는 중인지 — 그 사이 틱은 턴을 안 굴린다.</summary>
+    private bool _askingTakeBack;
 
     /// <summary>한 턴을 굴린다(<c>0x0043CA60</c>) — 계획을 마친 뒤든 위임 중이든 같은 길이다.</summary>
     private void RunTurn()
@@ -1059,10 +1093,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <remarks>
     /// 적 기함을 격침·나포하면 <b>살아 있는 호위선까지</b> 모두 후보다. 적 기함이 퇴각했으면 나포해 둔 배가 하나라도
     /// 있어야 차림표가 뜨고, 그때도 산 호위선이 함께 후보가 된다. 이름은 선체 이름, 승원 0, 내구·대포는 판 끝 값이다.
+    ///
+    /// 괴물 판은 들일 배가 없다 — 칸 8~14 는 괴물 머리와 몸 조각이다. 머리를 이겨도 몸 여섯은 상태 4(떠 있음)
+    /// 그대로 남아, 예전에는 괴물 그림 번호(0~3)를 선체 번호로 읽은 이름 없는 배 여섯·일곱 척이 편입 후보로 떴다.
     /// </remarks>
     private void Muster(Outcome outcome)
     {
         if (_player is not { } player || _fleet.Count == 0) return;
+        if (_battle.Monster) return;
         var enemies = _battle.Ships.Where(s => !s.Mine).ToList();
         if (outcome == Outcome.EnemyRetreated && enemies.All(s => s.State != SeaBattle.ShipState.Captured)) return;
 

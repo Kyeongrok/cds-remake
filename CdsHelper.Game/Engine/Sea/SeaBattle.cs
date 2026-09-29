@@ -571,8 +571,11 @@ public sealed class SeaBattle
 
         int e;
         if (angle == 3) e = 0;
+        // 둘째·셋째 돛이 없으면 첫 돛이 <b>꼭 1(삼각)</b>일 때만 낮은 값이다 — dec ebx ; cmp ebx,1 ; sbb 로
+        // a == 1 을 본다(0x00434BD1 · 0x00434BF7 · 0x00434C1A). 돛이 하나도 없는 배(a 0)는 사각돛 값(9·6·1)을 탄다.
+        // 예전에는 a ≤ 1 로 봐 돛 없는 배가 삼각돛 값을 받았다.
         else if (b == 0 && c == 0)
-            e = band switch { 0 => a <= 1 ? 6 : 9, 1 => a <= 1 ? 5 : 6, _ => a <= 1 ? 3 : 1 };
+            e = band switch { 0 => a == 1 ? 6 : 9, 1 => a == 1 ? 5 : 6, _ => a == 1 ? 3 : 1 };
         // 원본은 첨자를 <b>안 자른다</b>(0x00434BE9) — 돛 값이 크면 표 밖 스택을 읽는다.
         // 우리는 떨어지지 않게 자른다(돛 값이 0~2 면 어차피 같다).
         else e = SailTable[Math.Clamp(a + 2 * b + 4 * c, 3, 14) - 3, band];
@@ -752,7 +755,8 @@ public sealed class SeaBattle
     {
         Array.Clear(_marks);
         // 괴물 몸은 따로 짜지 않는다 — 원본은 머리 길을 몸 칸 9~15 에 베끼지만(0x0043BD0C) 몸은 판 되돌이에서
-        // 건너뛰고(0x0043CB2D) 머리가 옮길 때 둘레에 다시 깔 뿐이다(LayMonsterBody).
+        // 건너뛰고(0x0043CB2D) 머리가 옮길 때 둘레에 다시 깔 뿐이다(LayMonsterBody). 몸 칸의 퇴각 판정만은
+        // 따로 본다(MonsterBodyRetreat).
         var side = Ships.Where(s => s.Mine == mine && s.CanAct && !s.Body).OrderBy(s => s.Index).ToList();
         var foes = Ships.Where(s => s.Mine != mine && s.CanAct).ToList();
 
@@ -826,7 +830,32 @@ public sealed class SeaBattle
             ship.Ordered = true;
         }
 
+        if (!mine) MonsterBodyRetreat();
         Array.Clear(_marks);
+    }
+
+    /// <summary>
+    /// 괴물은 <b>몸 조각이 퇴각 지대에 닿으면</b> 판을 뜬다(<c>0x0043B91C</c> → <c>0x0043BE37</c>~<c>0x0043BE88</c>).
+    /// </summary>
+    /// <remarks>
+    /// 적의 길 짜기(<c>0x0043B710</c>)는 칸 8~15 를 차례로 다 돈다 — 몸 칸도 상태 4 라 걸린다(<c>0x0043B773</c>).
+    /// 칸마다 물러설 마음(<see cref="WantsRetreat"/>, 몸 칸은 머리의 처음 값을 베낀 내구·승원으로 본다)이 서고
+    /// <b>그 칸 자리</b>가 퇴각 지대면, 번호가 8 이상이고 괴물 판(<c>+0x8FC</c> &gt; 0)일 때 머리 상태(<c>+0x5AC</c>)를
+    /// 3 으로 적고 <c>0x004350F0(8)</c> 으로 판을 닫은 뒤 길 짜기를 그대로 끝낸다.
+    /// 머리는 X 1~21 · Y 1~15 안에만 있어(<see cref="StepFree"/>) 스스로는 퇴각 칸에 못 닿고, 둘레 몸이 가장자리 줄에
+    /// 걸릴 때 뜬다. 예전에는 몸 칸을 안 봐서 괴물이 가장자리에 붙어 영영 못 떴다.
+    /// </remarks>
+    private void MonsterBodyRetreat()
+    {
+        if (!Monster || MonsterHead is not { CanAct: true } head) return;
+        foreach (var part in Ships.Where(s => s.Body && s.CanAct && !s.Stuck).OrderBy(s => s.Index))
+        {
+            if (!WantsRetreat(part, mine: false) || !IsRetreatCell(part.X, part.Y)) continue;
+            head.State = ShipState.Retreated;
+            head.Ordered = true;
+            NoteFlag(head);
+            return;
+        }
     }
 
     /// <summary>
