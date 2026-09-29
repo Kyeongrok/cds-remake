@@ -2461,7 +2461,7 @@
               "Args": {
                 "Discovery": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "발견 안 됨 조건: 발견물 ID 1"
             },
             {
               "OpCode": "FF",
@@ -2476,7 +2476,7 @@
               "Args": {
                 "Discovery": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "발견됨 조건: 발견물 ID 1"
             },
             {
               "OpCode": "FF",
@@ -2578,7 +2578,7 @@
               "Args": {
                 "Discovery": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "발견됨 조건: 발견물 ID 1"
             },
             {
               "OpCode": "12 0E",
@@ -2609,7 +2609,7 @@
               "Args": {
                 "Discovery": 1
               },
-              "Note": "미확인 명령/데이터"
+              "Note": "발견 안 됨 조건: 발견물 ID 1"
             },
             {
               "OpCode": "FF",
@@ -4038,5 +4038,5 @@
     ]
   },
   "Source": "STORY1.CDS",
-  "Version": 14
+  "Version": 15
 }

@@ -95,6 +95,8 @@ public static class DisevForm
 
             case "발견 완료 조건":
             case "미발견 조건":
+            case "발견됨 조건":
+            case "발견 안 됨 조건":
                 return F(new Field("발견물", 2, 2, Lookup.Discovery));
 
             case "아이템 소지 조건":

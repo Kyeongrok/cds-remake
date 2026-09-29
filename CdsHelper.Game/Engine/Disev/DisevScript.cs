@@ -155,6 +155,11 @@ public static class DisevScript
         new(Sig(0x36, 0x16), 7, "연도 범위 조건"),
         new(Sig(0x1B, 0x0B), 4, "발견 완료 조건"),
         new(Sig(0x5E, 0x0B), 4, "미발견 조건"),
+        // 02 0B · 3A 0B — 슬롯 조건 칸에도 43 없이 온다(칸 고르기 뜀표 0x00407F3C: 02 → 0x0040740E, 3A → 0x00407C2F).
+        // 둘 다 0x004AAD80(칸 0·1 에 이름이 있나)을 보고 02 는 그대로, 3A 는 뒤집는다. 이야기0·이야기1 파트 10·11 이
+        // 「아프리카 남단/인도 항로가 발견되었다」 칸의 문으로 쓴다 — 길이를 몰라 미확인으로 떨어져 칸이 늘 거짓이었다.
+        new(Sig(0x02, 0x0B), 4, "발견됨 조건"),
+        new(Sig(0x3A, 0x0B), 4, "발견 안 됨 조건"),
         new(Sig(0x2A, 0x1C), 9, "수치 비교 (초과)"),
         new(Sig(0x2B, 0x1C), 9, "능력치 조건"),
         new(Sig(0x2C, 0x1C), 9, "수치 비교 (미만)"),
@@ -646,6 +651,8 @@ public static class DisevScript
                 return $"{kind}: 번호 {U16(raw, 2)}";
             case "발견 완료 조건":
             case "미발견 조건":
+            case "발견됨 조건":
+            case "발견 안 됨 조건":
                 return $"{kind}: 발견물 ID {U16(raw, 2)}";
             case "능력치 조건":
             case "수치 비교 (초과)":
