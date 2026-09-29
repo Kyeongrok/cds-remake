@@ -559,6 +559,13 @@ internal sealed class LandBattleScene : GameWindow
         // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
         var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
         bool won = DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm);
+        // 이기면 승리 차림표가 뜨고 무력 성장 굴림이 붙는다 — 판 종류(+0x1C4)가 0(들판)·1(마을 공략)이라
+        // 2·5·7 이상을 거르는 0x004AA2B1 을 지나 0x004AA2D2 의 0x004A8380(3) 에 닿고, 끝에 0x004AA592 가 돈다.
+        if (won)
+        {
+            Triumph(_battle.FoePerson, foeFace, dice);
+            TavernMenu.GrowMight(this, me, mateFought: false, dice);
+        }
         // 이기든 지든 부위 평균만큼 컨디션이 준다(0x004AA5BB).
         me.Hurt(duel.BodyLost);
         if (won) return DuelEnd.Won;
@@ -570,6 +577,28 @@ internal sealed class LandBattleScene : GameWindow
         bool siege = _battle.Sort is LandBattle.Town or LandBattle.ScriptCity;
         return duel.FateOf(me.Fame, canFlee: false, canSpare: !siege, crew: me.Crew) == Duel.Fate.Slain
             ? DuelEnd.Slain : DuelEnd.Lost;
+    }
+
+    /// <summary>
+    /// 일기토에 이긴 뒤 — 무대가 지형(1~3)이라 4 아래여서 줄이 「처형한다」 하나뿐이다(<c>0x004A8470</c>).
+    /// </summary>
+    /// <remarks>
+    /// 처형하면 「죽어야 하나...? 내가...」 다섯 가운데 하나를 말하고 그 인물이 사라진다(<c>0x004AA2E9</c> ·
+    /// <c>0x004AA35D</c> 의 <c>0x00432180(0)</c>). 마을 공략이면 그 인물은 275 다 — 원본도 그렇다.
+    /// 창을 물리면 해전 일기토처럼 놓아 준 것으로 친다.
+    /// </remarks>
+    private void Triumph(int person, uint[]? face, GameRandom dice)
+    {
+        if (_game is not { } game) return;
+        if (ChoiceDialog.Pick(this, "", ["처형한다"]) == 0)
+        {
+            TalkDialog.Say(this, face, "", TavernMenu.Executed[dice.Next(TavernMenu.Executed.Length)]);
+            if (person >= 0) game.Execute(person);                     // 0x00432180(0)
+            return;
+        }
+        TalkDialog.Say(this, face, "", TavernMenu.Beaten[dice.Next(TavernMenu.Beaten.Length)]);
+        game.Player.Fame += TavernMenu.SpareFame;
+        NoticeDialog.Show(this, $"명성이 {TavernMenu.SpareFame} 올라갔다", "일기토");
     }
 
     /// <summary>
