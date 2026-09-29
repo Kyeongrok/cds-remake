@@ -93,9 +93,10 @@ public sealed class HintListDialog : GameWindow
                            string header = "", IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null, IReadOnlyList<bool>? marks = null,
                            bool multi = false, IReadOnlyList<string>? rightTexts = null,
-                           IReadOnlyList<bool>? usable = null)
+                           IReadOnlyList<bool>? usable = null, Func<int, ImageSource?>? preview = null)
     {
         _marks = marks;
+        _preview = preview;
         _multi = multi;
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -240,7 +241,7 @@ public sealed class HintListDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(new Border
+        var page = new Border
         {
             Background = GameUi.PageFill,
             BorderBrush = GameUi.ItemEdge,
@@ -259,7 +260,24 @@ public sealed class HintListDialog : GameWindow
                 Width = faces == null ? ListWidth : ListWidth + FaceWidth + FaceGap,
                 Child = list,
             }, ListMaxHeight),
-        });
+        };
+        if (preview == null) stack.Children.Add(page);
+        else
+        {
+            // 고른 줄의 그림을 목록 오른쪽에 둔다 — 「선두상 선택」(0x00443920 이 +0xAC 의 선수상을
+            // 0x00465850(6, 번호)로 아이템에 옮겨 0x00406870 으로 찍는다).
+            var side = new StackPanel { Orientation = Orientation.Horizontal };
+            side.Children.Add(page);
+            side.Children.Add(new Border
+            {
+                Width = ItemArt.Width,
+                Height = ItemArt.Height,
+                Margin = new Thickness(6, 3, 3, 0),
+                VerticalAlignment = VerticalAlignment.Top,
+                Child = _previewImage,
+            });
+            stack.Children.Add(side);
+        }
         stack.Children.Add(buttons);
 
         // 창은 <b>두 겹</b>이다 — 바깥 검은 줄 하나와 그 안의 배경 판이다.
@@ -289,9 +307,21 @@ public sealed class HintListDialog : GameWindow
         MouseRightButtonUp += (_, _) => Cancel();
     }
 
+    /// <summary>줄 번호로 곁 그림을 내는 것. 없으면 곁 그림 칸이 없다.</summary>
+    private readonly Func<int, ImageSource?>? _preview;
+
+    /// <summary>곁 그림 — 고른 줄이 바뀔 때마다 갈아 끼운다.</summary>
+    private readonly Image _previewImage = new()
+    {
+        Width = ItemArt.Width,
+        Height = ItemArt.Height,
+        SnapsToDevicePixels = true,
+    };
+
     /// <summary>한 줄을 고른다. 고르고 나야 결정이 살아난다.</summary>
     private void Select(int index)
     {
+        if (_preview != null) _previewImage.Source = _preview(index);
         if (_multi)
         {
             if (!_chosen.Remove(index)) _chosen.Add(index);
@@ -394,6 +424,7 @@ public sealed class HintListDialog : GameWindow
     /// <param name="subtitles">줄마다 이름 아래에 붙일 한 줄. 빈 글이면 그 줄은 이름만 있다.</param>
     /// <param name="marks">줄마다 <c>#DEC6AD</c> 바탕으로 도드라지게 할지. 없으면 안 칠한다.</param>
     /// <param name="usable">줄마다 고를 수 있는지. false 인 줄은 흐리고 눌리지 않는다. 없으면 다 고를 수 있다.</param>
+    /// <param name="preview">줄 번호로 목록 오른쪽에 얹을 120x120 그림을 낸다. 없으면 곁 그림 칸이 없다.</param>
     public static int Pick(Window owner, IReadOnlyList<string> items,
                            string caption = "취득 힌트 일람",
                            string whenEmpty = "설득 가능한 힌트가 없습니다",
@@ -402,7 +433,8 @@ public sealed class HintListDialog : GameWindow
                            IReadOnlyList<string>? subtitles = null,
                            IReadOnlyList<bool>? marks = null,
                            IReadOnlyList<string>? rightTexts = null,
-                           IReadOnlyList<bool>? usable = null)
+                           IReadOnlyList<bool>? usable = null,
+                           Func<int, ImageSource?>? preview = null)
     {
         if (items.Count == 0)
         {
@@ -411,7 +443,7 @@ public sealed class HintListDialog : GameWindow
         }
 
         var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
-                                     rightTexts: rightTexts, usable: usable) { Owner = owner };
+                                     rightTexts: rightTexts, usable: usable, preview: preview) { Owner = owner };
         dlg.ShowDialog();
         return dlg._picked;
     }

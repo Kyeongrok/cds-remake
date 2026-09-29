@@ -23,10 +23,16 @@ namespace CdsHelper.Game.UI.Views;
 ///                        80/ 80
 ///   최대중량  1250
 ///   최대용량  128
+///   탑재대포  컬버린                 ← 대포를 실었을 때만(0x0046CF17)
+///   대포수  12
 ///                              [영상] [뒤로]
 /// </code>
 /// 줄 사이는 18점, 이름 칸은 왼쪽 20 · 값은 78 부터, 마스트는 218 · 돛 표시는 275 부터다.
-/// 예전 판(선종·포·선수상을 글줄로 적은 것)은 원본에 없어 걷었다 — 대포·선수상은 조선소 개조 목록이 보인다.
+/// 선수상을 달았으면 승원수 줄 오른쪽에 「뱃머리 %s」(0x00570E48, 짧은 이름 표 0x0054A0A0)를 쓰고
+/// 그 아래에 선수상 아이템 그림(아이템 213 + 선수상)을 찍는다(0x0046CBF7 ~ 0x0046CC77 — 0x00406870 이
+/// 원본 (0xF0, 0x70)에 120x120 한 장). 대포를 실었고 문수가 1 이상이면 맨 아래에 「탑재대포 %s」(0x00570E88)와
+/// 「대포수 %d」(0x00570E98)를 더한다(0x0046CF17 ~ 0x0046CFD9). 둘 다 조건부라 선수상도 대포도 없는 배의
+/// 갈무리에는 안 보였다.
 /// </remarks>
 internal sealed class ShipInfoDialog : InfoDialog
 {
@@ -53,10 +59,17 @@ internal sealed class ShipInfoDialog : InfoDialog
     /// <inheritdoc/>
     protected override Brush BoardEdge => SteelEdge;
 
+    /// <summary>선수상 그림 자리 — 원본 (0xF0, 0x70)을 이 판의 잣대로 옮긴 것(승원수 줄에서 24 아래).</summary>
+    private const double FigureheadLeft = 206, FigureheadTop = 96;
+
+    /// <summary>「뱃머리」가 서는 자리 — 원본 0xD8 은 마스트(0xE8)보다 16 왼쪽이다.</summary>
+    private const double BowLeft = MastLeft - 16;
+
     private ShipInfoDialog(Player player, int at, Engine.Game? game)
     {
         var ship = player.Ships[at];
         var rows = new StackPanel();
+        var overlay = new Canvas { IsHitTestVisible = false };
 
         rows.Children.Add(Line("선명", ship.Name));
         var hull = Line("선체", ship.Hull.Name);
@@ -67,18 +80,54 @@ internal sealed class ShipInfoDialog : InfoDialog
         rows.Children.Add(Line("소유자", player.Given.Length > 0 ? player.Given : player.Name));
 
         rows.Children.Add(Gap(LineHeight));
-        rows.Children.Add(Line("승원수", $"{ship.Crew}"));
+        var crew = Line("승원수", $"{ship.Crew}");
+        bool carved = Engine.Sea.Figureheads.Known(ship.Figurehead);
+        if (carved)
+        {
+            // 0x0046CC46 — 「뱃머리 %s」, 0x0046CC77 — 0x00406870(x+0xF0, y+0x70, 0xD5 + 선수상).
+            Place(crew, Label($"뱃머리  {Engine.Sea.Figureheads.ShortName(ship.Figurehead)}"), BowLeft);
+            int item = Engine.Sea.Figureheads.ToItem(ship.Figurehead);
+            if (game?.Items?.Find(item) is { HasPic: true } record
+                && game.ItemPictures?.TryGetImage(record.Pic) is { } picture)
+            {
+                var image = new Image
+                {
+                    Source = picture,
+                    Width = ItemArt.Width,
+                    Height = ItemArt.Height,
+                    SnapsToDevicePixels = true,
+                };
+                Canvas.SetLeft(image, FigureheadLeft);
+                Canvas.SetTop(image, FigureheadTop);
+                overlay.Children.Add(image);
+            }
+        }
+        rows.Children.Add(crew);
         rows.Children.Add(Gauge("내구도", ship.Hp, ship.MaxHp));
         rows.Children.Add(Gauge("추진력", ship.Speed, ship.MaxSpeed));
         rows.Children.Add(Line("최대중량", $"{ship.Tonnage}", valueLeft: ValueLeft + 16));
         // 함대정보 짐용량과 같은 잣대다 — 포탑이 먹은 자리를 뺀 것(갈무리: 함대 10/128 · 이 판 128).
         rows.Children.Add(Line("최대용량", $"{ship.UsableCapacity}", valueLeft: ValueLeft + 16));
 
+        // 대포를 실었고 문수가 1 이상일 때만 두 줄을 더한다(0x0046CF17 · 0x0046CF26).
+        bool armed = Cannon.Of(ship.Gun) is not null && ship.Guns > 0;
+        if (armed)
+        {
+            rows.Children.Add(Line("탑재대포", Cannon.Of(ship.Gun)!.Name, valueLeft: ValueLeft + 16));   // 0x0046CF79
+            rows.Children.Add(Line("대포수", $"{ship.Guns}"));                                          // 0x0046CFCF
+        }
+
+        double height = BoardHeight + (armed ? LineHeight * 2 : 0);
+        if (carved) height = Math.Max(height, FigureheadTop + ItemArt.Height + 4);
+        var board = new Grid();
+        board.Children.Add(rows);
+        board.Children.Add(overlay);
+
         // 「영상」은 그 선체의 동영상 AVI\S%02d_0001.AVI 를 튼다 — 배 레코드 +0x28(선체)을 0x00422C10 에 넘기고
         // (0x0046D146 ~ 0x0046D15F), 누를 때마다 다시 튼다. 선체 0~7 에만 동영상이 있고 그 밖이면 아무 일도 없다
         // (0x00422C1B). 못 트는 배(등록해 넣은 배 · 파일 없음)면 단추를 흐려 둔다.
         string? movie = game == null ? null : MovieOf(game, ship.Hull);
-        Build("", rows, BoardWidth, BoardHeight,
+        Build("", board, BoardWidth, height,
               new GameButton("영상", () => MoviePlayer.Play(GameUi.RootOf(this), movie, game?.Bgm)) { On = movie != null },
               new GameButton("뒤로", Close));
     }

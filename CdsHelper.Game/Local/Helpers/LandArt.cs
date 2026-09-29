@@ -253,6 +253,36 @@ public sealed class LandArt
         return bgra;
     }
 
+    /// <summary>
+    /// 주술사가 부른 비의 <b>빗줄기 한 장</b>(32x32) — 파트 51 의 <c>0xB00</c> 자리다. 못 읽으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 비 연출 <c>0x00445990</c> 이 뱅크 <c>0x005A4A8C</c> 의 <c>+0xB00</c> 을 32x32 로 찍는다
+    /// (<c>0x00445A73</c> 의 <c>0x004B6637(0xB00)</c> · <c>0x00445A96</c> 의 <c>0x20 x 0x20</c>).
+    /// 파트 51 이 3,840바이트라 <c>0xB00</c> ~ <c>0xEFF</c> 가 그 끝 한 장이다 — 왼아래로 기운 빗금이다.
+    /// </remarks>
+    public uint[]? TryGetRaindrop()
+    {
+        var pixels = _archive.Decode(BubblePart);
+        int side = RaindropSide * RaindropSide;
+        if (pixels == null || pixels.Length < RaindropAt + side) return null;
+
+        var bgra = new uint[side];
+        for (int i = 0; i < bgra.Length; i++)
+        {
+            byte v = pixels[RaindropAt + i];
+            if (Clear(_unitColors, v)) continue;
+            bgra[i] = Argb(_unitColors, v);
+        }
+        return bgra;
+    }
+
+    /// <summary>빗줄기 한 장의 자리(파트 51 안)와 한 변.</summary>
+    private const int RaindropAt = 0xB00;
+
+    /// <summary>빗줄기 한 장의 한 변.</summary>
+    public const int RaindropSide = 32;
+
     /// <summary>말풍선 조각이 든 파트와 한 장의 한 변.</summary>
     private const int BubblePart = 51;
 

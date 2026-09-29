@@ -201,6 +201,9 @@ internal sealed class GameList : Border
     /// <summary>맞바꾸기에서 두 줄이 정해졌을 때. 자료를 바꾸는 것은 받는 쪽 몫이다.</summary>
     public event Action<int, int>? Swapped;
 
+    /// <summary>줄을 오른쪽 단추로 눌렀을 때 — 게임 목록 틀은 사건 2 를 줄 번호와 함께 넘긴다(<c>0x004B52D8</c> 의 칸 +0xF4).</summary>
+    public event Action<int>? RowRightClicked;
+
     /// <summary>그 줄을 고른다. 범위 밖이면 아무 일도 없다.</summary>
     public void Select(int index)
     {
@@ -259,6 +262,13 @@ internal sealed class GameList : Border
         // 누름도 여기서 삼킨다 — 창 끌기가 먼저 걸리면 마우스를 잡아 버려 뗌이 안 온다.
         row.MouseLeftButtonDown += (_, e) => e.Handled = true;
         row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Touch(index); };
+        // 받는 쪽이 없으면 삼키지 않는다 — 창의 「오른쪽 단추 = 닫기」가 그대로 가야 한다.
+        row.MouseRightButtonUp += (_, e) =>
+        {
+            if (RowRightClicked is not { } handler) return;
+            e.Handled = true;
+            handler(index);
+        };
         return row;
     }
 

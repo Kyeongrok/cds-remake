@@ -76,17 +76,27 @@ internal sealed class FormationDialog : InfoDialog
               new GameButton("실행", Run, width: 64),
               new GameButton("취소", Close, width: 64));
 
-        KeyDown += (_, e) =>
+        // 글쇠(0x00433AD0) — 위·아래(0x4800·0x5000, 키패드 8·2)는 한 열 네 줄 안에서 돌아 감기고,
+        // 왼·오른쪽(0x4B00·0x4D00, 키패드 4·6)은 두 열을 오간다. Enter·Space 는 실행(+0x9C = 1),
+        // Esc 는 취소다. 판 기본 처리(Enter = 닫기)보다 먼저 잡는다.
+        PreviewKeyDown += (_, e) =>
         {
-            int next = e.Key switch
+            int row = _pick % 4;
+            int? next = e.Key switch
             {
-                Key.Left => _pick - 4,
-                Key.Right => _pick + 4,
-                Key.Up => _pick - 1,
-                Key.Down => _pick + 1,
-                _ => _pick,
+                Key.Up or Key.NumPad8 => row == 0 ? _pick + 3 : _pick - 1,
+                Key.Down or Key.NumPad2 => row == 3 ? _pick - 3 : _pick + 1,
+                Key.Left or Key.Right or Key.NumPad4 or Key.NumPad6 => _pick < 4 ? _pick + 4 : _pick - 4,
+                _ => null,
             };
-            if (next != _pick && next is >= 0 and < SeaBattle.FormationCount) Pick(next);
+            if (next is { } to)
+            {
+                e.Handled = true;
+                Pick(to);
+                return;
+            }
+            if (e.Key is Key.Enter or Key.Space) { e.Handled = true; Run(); }
+            else if (e.Key is Key.Escape) { e.Handled = true; Close(); }
         };
 
         Sync();
