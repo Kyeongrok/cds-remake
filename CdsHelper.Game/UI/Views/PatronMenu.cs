@@ -524,6 +524,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         _player.Sign(new Contract(it.Id, patron.Name, _cityName, funds,
                                   _player.Date, years, inspector));
+        WorldRouteScene.OnSign(_game, it.Id);   // 0x004ADFF6 — 세계일주를 맡으면 바퀴 수를 0 으로
 
         // 선금은 <b>후원자 지갑에서</b> 나간다(0x004ADF4A) — 저절로 차지 않으므로
         // 같은 사람에게 잇달아 계약을 맺으면 점점 적게 받는다.
