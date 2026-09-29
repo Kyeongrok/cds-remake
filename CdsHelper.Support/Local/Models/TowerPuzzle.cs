@@ -34,6 +34,9 @@ public sealed class TowerPuzzle
     /// <summary>판자 수.</summary>
     public int Planks { get; }
 
+    /// <summary>이동회수의 끝(<c>0x00430257</c> 의 <c>0x3E7</c>).</summary>
+    public const int MostMoves = 999;
+
     /// <summary>몇 번 옮겼는지.</summary>
     public int Moves { get; private set; }
 
@@ -102,7 +105,8 @@ public sealed class TowerPuzzle
         if (top != 0 && top < Held) return false;      // 작은 것 위에는 못 놓는다
 
         _peg[peg].Add(Held);
-        if (peg != HeldFrom) Moves++;
+        // 이동회수는 999 에서 멎는다(0x00430257 의 cmp 0x3E7 — 넘으면 999 로 되눌러 둔다). 「%3d」 칸에 맞춘 것이다.
+        if (peg != HeldFrom && Moves < MostMoves) Moves++;
 
         Held = -1;
         HeldFrom = -1;
