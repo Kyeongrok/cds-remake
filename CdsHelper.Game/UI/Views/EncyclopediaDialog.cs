@@ -127,7 +127,25 @@ public sealed class EncyclopediaDialog : GameWindow
         GameUi.EnableDrag(this, box);
 
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
-        MouseRightButtonUp += (_, _) => Close();
+        // 오른쪽 단추는 닫지 않고 「서적 선택」 차림표를 낸다(0x00471DD0 — 사건 2 이면 0x00471C10).
+        // 바탕 처리기(0x00459B20)는 사건 2 를 거들떠보지 않는다.
+        MouseRightButtonUp += (_, e) => { e.Handled = true; PickBook(); };
+    }
+
+    /// <summary>서가에 꽂힌 갈래 책들 — 꽂은 차례 그대로다(<c>0x00471870(0)</c> 이 빈 책등을 빼고 모은다).</summary>
+    private readonly List<int> _books = [];
+
+    /// <summary>
+    /// 「서적 선택」 — 갈래 책 이름(책등 풍선과 같은 「백과사전 (갈래)」, <c>0x00471B30</c>)에 「취소」를 붙여
+    /// 차림표로 내고(<c>0x00469C40</c>), 고른 책을 곧장 편다(<c>0x00471FB0</c>).
+    /// </summary>
+    private void PickBook()
+    {
+        if (_books.Count == 0) return;
+        _tag.Visibility = Visibility.Collapsed;
+        var rows = _books.Select(c => $"백과사전 ({DiscoveryTable.CategoryNames[c]})").ToList();
+        int at = ChoiceDialog.Ask(this, "서적 선택", rows);
+        if (at >= 0 && at < _books.Count) Read(_books[at]);
     }
 
     /// <summary>갈래 한 권을 서가에 꽂는다.</summary>
@@ -151,6 +169,7 @@ public sealed class EncyclopediaDialog : GameWindow
 
         // 빈 책등(-1)은 눌리지 않는다(0x00470F60 이 -1 을 거른다).
         if (category < 0) return;
+        _books.Add(category);
         image.Cursor = Cursors.Hand;
         image.MouseEnter += (_, _) => ShowTag(category, x, top);
         image.MouseLeave += (_, _) => _tag.Visibility = Visibility.Collapsed;
