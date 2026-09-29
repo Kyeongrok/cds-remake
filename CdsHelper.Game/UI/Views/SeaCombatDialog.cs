@@ -1480,7 +1480,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             ? SeaBattle.FromSeaWind(rng, w.Dir, w.Strength)
             : new SeaBattle(rng, rng.Next(SeaBattle.Ways), rng.Next(3) + 1);
 
-        // 바다 괴물과의 판은 달아나는 길이 없다(원본 판 종류 0).
+        // 아군 판종류(위·오른쪽·아래·왼쪽)는 해전마다 rand(4) 로 굴리고 적은 맞은편에 선다(0x004421B9 · 0x004421CB) —
+        // 괴물 판도 같다. 배를 놓기 전에 매긴다.
+        battle.OurSide = rng.Next(4);
         battle.Monster = monster;
         // 괴물이 누구인지로 이동력이 갈린다(0x00434CB5) — 적장 번호가 곧 괴물 번호다.
         battle.MonsterPerson = monster ? foe.Leader?.Id ?? -1 : -1;
