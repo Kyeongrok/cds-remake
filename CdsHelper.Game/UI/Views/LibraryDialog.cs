@@ -220,9 +220,10 @@ public sealed class LibraryDialog : GameWindow
         string title = readable ? book.Title : Masked(book.Title);
         string author = readable ? book.Author : Masked(book.Author);
         _tagText.Text = $"「{title}」{author}";
-        _say?.Invoke(readable
-            ? ""
-            : $"{LanguageOf(book)}{GameUi.Josa(LanguageOf(book), "으로", "로")} 표기되어 있습니다");
+        // 못 읽는 책의 「%s로 표기되어 있습니다」는 원본에서 힌트 패널 글이다
+        // (0x004719B7 에서 짜서 0x004719CE 가 push 5 · 0x00580C48 로 0x0040E0C0 에 넘긴다).
+        // 힌트 패널 글은 옮기지 않는다는 방침대로 아래 띠에 띄우지 않고 띠만 비운다.
+        _say?.Invoke("");
         _tag.Visibility = Visibility.Visible;
         _tag.UpdateLayout();
         double w = _tag.ActualWidth > 0 ? _tag.ActualWidth : 160;
