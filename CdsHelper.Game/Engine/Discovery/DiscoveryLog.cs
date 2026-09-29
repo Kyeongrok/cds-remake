@@ -57,6 +57,17 @@ public sealed class DiscoveryLog
     public int TakenBy(in DiscoveryTable.Record row, DateTime date) =>
         row.Once && _history != null ? _history.TakenBy(row.Id, date) : -1;
 
+    /// <summary>
+    /// 사람 칸 0·1 에 <b>누구 이름이든</b> 올라 있는지 — 게임의 <c>0x004AAD80</c> 이다.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="TakenBy"/> 와 달리 한 번짜리만 보지 않는다. 역사 항해자가 거듭 찾는 것(하마·후추 따위)을
+    /// 찾아도 칸 1 이 차고(<c>0x004AAC65</c> — 칸 1 이 비었을 때만 적는다), 지도 지우기
+    /// (<c>0x004AADD0</c>)가 이것으로 그 자리를 드러낸다.
+    /// </remarks>
+    public bool Named(Player player, int id, DateTime date) =>
+        player.HasFound(id) || (_history?.TakenBy(id, date) ?? -1) >= 0;
+
     /// <summary>발견물 표.</summary>
     public DiscoveryTable Table => _table;
 

@@ -3646,7 +3646,7 @@ public sealed class ShipMapWindow : Window
     /// 건너뛴다.
     ///
     /// <c>0x004AADD0</c> 이 안 덮는 것은 셋이다 — 내가 찾은 것(사람 칸 0), 역사 항해자가
-    /// 먼저 찾은 것(칸 1), 그리고 <b>계약 목표</b>다. 계약 힌트가 가리키는 일련번호와
+    /// 먼저 찾은 것(칸 1 — 거듭 찾는 것이어도 드러난다), 그리고 <b>계약 목표</b>다. 계약 힌트가 가리키는 일련번호와
     /// 발견물 <c>+0x08</c> 을 맞대므로, 계약을 맺으면 아직 못 찾은 유적 그림이 지도에 드러난다.
     /// 같은 번호를 쓰는 것(기제의 피라미드·스핑크스)은 함께 드러난다.
     /// </remarks>
@@ -3661,8 +3661,7 @@ public sealed class ShipMapWindow : Window
         foreach (var row in log.Table.Discoveries)
         {
             if (!row.HasPlace || row.Erase is not { Length: > 0 } block) continue;
-            if (player.HasFound(row.Id)) continue;
-            if (log.TakenBy(row, player.Date) >= 0) continue;
+            if (log.Named(player, row.Id, player.Date)) continue;   // 0x004AAD80 — 한 번짜리가 아니어도
             if (target >= 0 && row.Hint == target) continue;
 
             yield return (row.X1, row.Y1, block);
