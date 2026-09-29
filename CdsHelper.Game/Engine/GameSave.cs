@@ -228,7 +228,7 @@ public static class GameSave
         List<int>? Settled = null, List<int>? Unresolved = null,
         DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
         List<Player.Recall>? Recalls = null,
-        int? DayTicks = null);
+        int? DayTicks = null, int? Heading = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -379,7 +379,9 @@ public static class GameSave
                             // 해전 뒤 수도로 돌려보낸 사람(0x00432400). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
                             Recalls: player.Recalls.Count > 0 ? [.. player.Recalls] : null,
                             // 하루 안의 눈금(머리 +0x14 = 0x005A4D2C). 이 칸 앞의 세이브는 0 눈금으로 연다.
-                            DayTicks: player.DayTicks);
+                            DayTicks: player.DayTicks,
+                            // 뱃머리(제독 +0x328 = 0x005B63C8). 이 칸 앞의 세이브는 지도가 들고 있던 쪽으로 연다.
+                            Heading: player.Heading);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

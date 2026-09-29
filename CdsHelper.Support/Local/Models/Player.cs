@@ -462,6 +462,15 @@ public sealed class Player
     /// <summary>하루 눈금을 적어 둔다.</summary>
     public void SetDayTicks(int ticks) => DayTicks = Math.Clamp(ticks, 0, 47);
 
+    /// <summary>
+    /// 뱃머리(16방위, 0 이 북) — 제독 <c>+0x328</c>(<c>0x005B63C8</c>). 세이브에 적는다(<c>0x0047CA21</c>).
+    /// 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public int Heading { get; private set; }
+
+    /// <summary>뱃머리를 적어 둔다.</summary>
+    public void SetHeading(int heading) => Heading = heading & 0xF;
+
     /// <summary>배운 기술과 그 자리.</summary>
     public IReadOnlyDictionary<string, int> Skills => _skills;
 

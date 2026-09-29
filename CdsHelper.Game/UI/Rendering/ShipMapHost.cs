@@ -268,6 +268,16 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>지금 뱃머리(16방위, 0 이 북) — 게임의 <c>[0x005B63C8]</c>. 사건 연출이 자리를 고를 때 본다.</summary>
     public int Heading => _heading & 0xF;
 
+    /// <summary>
+    /// 뱃머리를 박는다 — 적어 둔 판을 열 때 쓴다. 원본은 제독 <c>+0x328</c>(<c>0x005B63C8</c>)을 세이브에 적는다
+    /// (<c>0x0047CA21</c>). 바라는 쪽도 같이 두어 열자마자 돌지 않게 한다.
+    /// </summary>
+    public void SetHeading(int heading)
+    {
+        _heading = _desired = heading & 0xF;
+        _dirty = true;
+    }
+
     private int _heading;                  // 지금 뱃머리(반시계, 16방위). 그림도 이동도 이것이다
     private int _desired;                  // 커서가 바라는 쪽(8방위라 늘 짝수)
     private bool _making;                  // 나아가는 중인지. 입항·자리 옮김에서 세워 둔다

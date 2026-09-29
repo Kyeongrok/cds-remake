@@ -2002,6 +2002,8 @@ public sealed class ShipMapWindow : Window
     {
         // 하루 안의 눈금 — 원본은 머리 +0x14(0x005A4D2C)에 들고 세이브에 적는다(0x0044AE60).
         _game.Player.SetDayTicks(_ticks);
+        // 뱃머리 — 원본은 제독 +0x328(0x005B63C8)에 들고 세이브에 적는다(0x0047CA21).
+        _game.Player.SetHeading(_host.Heading);
     }
 
     private void NewGame()
@@ -2696,6 +2698,8 @@ public sealed class ShipMapWindow : Window
             // 바다에서 적은 판은 적어 둔 칸에 닻을 내린 채로 연다.
             else if (saved.CityId < 0 && saved.SeaX is { } sx && saved.SeaY is { } sy)
                 _host.PlaceAtSea(sx, sy);
+            // 뱃머리도 적어 둔 쪽으로(제독 +0x328). 예전에는 앞 판이나 처음 값 그대로라 엉뚱한 쪽을 보고 섰다.
+            if (saved.Heading is { } heading) _host.SetHeading(heading);
             _status.Text = saved.CityId >= 0
                 ? $"[{saved.CityName}] 에서 이어 간다 — {saved.Date:yyyy년 M월 d일}"
                 : $"바다에서 이어 간다 — {saved.Date:yyyy년 M월 d일}";
