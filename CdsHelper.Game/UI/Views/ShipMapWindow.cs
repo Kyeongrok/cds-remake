@@ -722,6 +722,24 @@ public sealed class ShipMapWindow : Window
         Action endWeather = () => Dispatcher.Invoke(EndWeather);
         LandBattleScene.Opening += endWeather;
         DuelDialog.Opening += endWeather;
+
+        // 게임을 끝낼 때는 늘 마지막 그림(MISC.CDS 파트 9)을 띄우고 닫는다(0x00410F90 → 0x004068E0).
+        // END GAME · CONTINUE? 아니오 · 창 닫기가 모두 이 창을 닫으므로 여기 한 자리에서 건다.
+        // 원본도 그림 앞에서 소리를 끈다(0x00410FC4 · 0x00410FD8).
+        bool farewell = false;
+        Closing += (_, e) =>
+        {
+            if (farewell || e.Cancel) return;
+            farewell = true;
+            e.Cancel = true;
+            Dispatcher.BeginInvoke(() =>
+            {
+                _overlay.IsOpen = false;
+                _game.Bgm.Stop();
+                ExitSplash.Show(this, _game.Directory);
+                Close();
+            });
+        };
         Closed += (_, _) =>
         {
             LandBattleScene.Opening -= endWeather;

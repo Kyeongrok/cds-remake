@@ -544,12 +544,37 @@ public sealed class TradePostDialog : GameWindow
         dock.Children.Add(buttons);
         dock.Children.Add(lines);
 
-        return new Border
+        var border = new Border
         {
             Height = RowHeight,
             Background = index % 2 == 1 ? RowAlt : Brushes.Transparent,
             Child = dock,
         };
+        border.MouseRightButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            AskGoodsInfo(kind);
+        };
+        return border;
+    }
+
+    /// <summary>
+    /// 줄을 오른쪽 단추로 누르면 교역품 이름을 제목으로 「정보를 본다 / 그만둔다」를 묻고, 「정보를 본다」면
+    /// 교역품 정보창을 띄운다(<c>0x00415510</c>). 사는 목록·파는 목록이 한 클래스라(vtable <c>0x004C9FC8</c> 의
+    /// <c>+0xF4</c>, 목록 바탕이 오른쪽 단추일 때 <c>0x004B52D8</c> 에서 부른다) 두 쪽 다 이렇다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   41558f  제목 = 0x0042E310(교역품) — 교역품 이름
+    ///   41559c  0x00469C40(["정보를 본다" 0x00532F10, "그만둔다" 0x00532F20]) — 첫 줄(0)이라야 연다
+    ///   41560f  0x0046D520 — 교역품 정보창(320x160, [취소])
+    /// </code>
+    /// </remarks>
+    private void AskGoodsInfo(int kind)
+    {
+        if (_game.Goods?.Find(kind) is null) return;
+        if (ChoiceDialog.Pick(this, _post.NameOf(kind), ["정보를 본다", "그만둔다"]) == 0)
+            GoodsInfoDialog.Show(this, _game, kind);
     }
 
     private StackPanel StepButtons(Action<int> add, Action all)
