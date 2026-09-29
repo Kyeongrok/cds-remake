@@ -576,13 +576,28 @@ public sealed class SeaBattle
                 {
                     way = Turn(way, move);
                     (x, y) = Step(x, y, way);
-                    if (!OnBoard(x, y)) { ok = false; break; }
-                    if (avoidReserved && ((_marks[x, y] & 8) != 0 || ShipAt(x, y) is not null)) { ok = false; break; }
+                    if (!StepFree(ship, x, y, avoidReserved)) { ok = false; break; }
                     if (avoidDanger && (_marks[x, y] & 4) != 0) { ok = false; break; }
                 }
                 if (ok) yield return (plan, x, y, way);
             }
         }
+    }
+
+    /// <summary>
+    /// 길 후보의 한 칸이 들어갈 만한지(<c>0x0043AD91</c>~<c>0x0043AE8A</c>) — 판 안이고, 모드 2 이상이면 먼저 짠 배가
+    /// 지나갈 칸(+8)과 배가 선 칸을 피한다.
+    /// </summary>
+    /// <remarks>
+    /// <b>괴물 머리</b>(괴물 판의 칸 8)는 다르다 — 칸 차지를 안 보고(<c>0x0043ADC6</c>) 몸 여섯 조각이 판 밖으로
+    /// 안 나가게 X 1~21 · Y 1~15 안에 머문다. Y 15 에서는 짝수 X 를 뺀다 — 그 아래 칸(Y 16)이 짝수 줄에 없다(<c>0x0043AE25</c>).
+    /// </remarks>
+    private bool StepFree(Ship ship, int x, int y, bool avoidReserved)
+    {
+        if (Monster && ship.Index == PerSide)
+            return x is >= 1 and <= Cols - 2 && y is >= 1 and <= Rows - 2 && !(y == Rows - 2 && (x & 1) == 0);
+        if (!OnBoard(x, y)) return false;
+        return !avoidReserved || ((_marks[x, y] & 8) == 0 && ShipAt(x, y) is null);
     }
 
     /// <summary>사람이 찍을 수 있는 끝 칸들 — 같은 칸이면 가장 짧은 길 하나만 남긴다(모드 0).</summary>
@@ -732,7 +747,8 @@ public sealed class SeaBattle
             {
                 var (ax, ay) = AimPoint(target, aimer: ship);
                 aimed = true;
-                plan = Broadside(ship, ax, ay);
+                // 괴물 머리는 뱃전(모드 3) 대신 모드 6 이다(0x0043BC68 — 칸 8 이고 +0x8FC > 0 이면 push 6).
+                plan = Monster && ship.Index == PerSide ? MonsterApproach(ship, ax, ay) : Broadside(ship, ax, ay);
             }
             else
             {
@@ -947,6 +963,25 @@ public sealed class SeaBattle
     }
 
     /// <summary>
+    /// 모드 6 — 괴물 머리가 끝 칸에서 노릴 자리를 <b>제 손 닿는 고리</b>(<see cref="InMonsterReach"/>)에 두는 첫 길을 고른다
+    /// (<c>0x0043B1EB</c>~<c>0x0043B2C4</c>). 고르면 걸음을 칸 8~15 에 베낀다(<c>0x0043B568</c>).
+    /// </summary>
+    /// <remarks>
+    /// 끝 칸 + (dX, dY) 가 노릴 자리와 같으면 된다. 고리의 홀짝은 끝 칸이 아니라 <b>괴물의 지금 X</b>(<c>[+0x588]</c>)로 본다 —
+    /// 원본 버릇 그대로 옮긴다. 길 후보는 칸 차지를 안 보고 X 1~21 · Y 1~15 안에서만 센다(<see cref="StepFree"/>).
+    /// 그런 길이 없으면 아무것도 안 적는다 — 노릴 자리가 채워져 있어 선회 굴림도 안 탄다.
+    /// </remarks>
+    private List<Move>? MonsterApproach(Ship ship, int ax, int ay)
+    {
+        bool even = (ship.X & 1) == 0;
+        foreach (var (plan, x, y, _) in Paths(ship, avoidReserved: true, avoidDanger: false))
+            for (int dx = -2; dx <= 2; dx++)
+                for (int dy = -2; dy <= 2; dy++)
+                    if (InMonsterReach(dx, dy, even) && x + dx == ax && y + dy == ay) return plan;
+        return null;
+    }
+
+    /// <summary>
     /// 괴물 머리에서 (dX, dY) 가 <b>몸 바깥 한 겹</b>(열두 칸)인지 — 괴물이 총격으로 붙잡는 칸이다
     /// (<c>0x0043634F</c>~<c>0x004363E2</c> · 모드 6 의 <c>0x0043B1F6</c>~<c>0x0043B28C</c>, 두 곳이 같은 셈이다).
     /// </summary>
@@ -1096,7 +1131,7 @@ public sealed class SeaBattle
                 {
                     way = Turn(way, move);
                     (x, y) = Step(x, y, way);
-                    if (!OnBoard(x, y) || (_marks[x, y] & 8) != 0 || ShipAt(x, y) is not null) { ok = false; break; }
+                    if (!StepFree(ship, x, y, avoidReserved: true)) { ok = false; break; }
                     if (avoidDanger && (_marks[x, y] & 4) != 0) { dangerHit = true; ok = false; break; }
                 }
                 lastFailed = !ok;
