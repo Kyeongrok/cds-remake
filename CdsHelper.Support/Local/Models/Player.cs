@@ -1558,6 +1558,39 @@ public sealed class Player
     /// <summary>그것을 이미 발견했는지.</summary>
     public bool HasFound(int discovery) => _found.Contains(discovery);
 
+    private readonly HashSet<int> _settled = [];
+
+    /// <summary>
+    /// 자리 사건을 <b>매듭지은</b> 발견물 — 발견물 칸 <c>+0x16</c> 의 비트 <c>0x0100</c> 이다.
+    /// </summary>
+    /// <remarks>
+    /// 발견 대본이 결과 0(<c>4C</c>)이나 1(<c>4D</c>)로 끝나면 세운다(<c>0x0048D578</c> · 도시 입장
+    /// <c>0x0049294A</c> · 건물 <c>0x00492B49</c>). 서면 발견 판정 <c>0x004AAD20</c> 이 첫 줄
+    /// (<c>0x004AAD27 test ah, 1</c>)에서 막아 그 자리 사건은 <b>다시는 안 뜬다</b> — 괴물 해전에 져서
+    /// 「놓쳤다」(<c>4D</c>)로 끝나도 마찬가지다. 지우는 코드는 없다. 결과 2(<c>4E</c> · 밑값)면 안 서서
+    /// 다음에 또 뜬다.
+    /// </remarks>
+    public IReadOnlyCollection<int> Settled => _settled;
+
+    /// <summary>그 발견물의 자리 사건을 매듭지었는지(비트 <c>0x0100</c>).</summary>
+    public bool IsSettled(int discovery) => _settled.Contains(discovery);
+
+    /// <summary>그 발견물의 자리 사건을 매듭지은 것으로 적는다(<c>or byte [+0x17], 1</c>).</summary>
+    public void Settle(int discovery)
+    {
+        if (discovery >= 0) _settled.Add(discovery);
+    }
+
+    /// <summary>
+    /// 세이브를 되돌릴 때 매듭지은 것을 채운다. 이 칸이 없던 옛 세이브는 <b>찾은 것</b>을 다 넣는다 —
+    /// 그때까지는 찾은 것이면 다시 안 떴으므로 그대로 이어진다.
+    /// </summary>
+    public void RestoreSettled(IEnumerable<int>? settled)
+    {
+        _settled.Clear();
+        foreach (int id in settled ?? _found) _settled.Add(id);
+    }
+
     /// <summary>
     /// 감찰관을 매수해 <b>숨겨 둔</b> 발견물(발견물 칸 <c>+0x16</c> 의 비트 <c>0x20</c>).
     /// </summary>
@@ -1942,14 +1975,47 @@ public sealed class Player
     public bool HasAnnounced(int discovery) => _announced.Contains(discovery);
 
     /// <summary>발표한 것으로 적는다. 발견한 적 없거나 이미 발표했으면 false.</summary>
-    public bool Announce(int discovery)
+    /// <param name="discovery">발견물 번호.</param>
+    /// <param name="trace">
+    /// 행적에 적는지. 도장 <c>0x0047E630</c> 은 <b>남이 먼저 발표한 것</b>(<c>0x004AADB0</c>)이면 깃발 <c>0x80</c> 만
+    /// 세우고 곧장 돌아가고, 아니어도 깃발 <c>0x04</c>(표 <c>+0x20</c> 이 0 — 자리로 잡히는 것)가 서 있어야
+    /// 행적을 남긴다(<c>0x0047E656</c>). 부르는 쪽이 그 둘을 보고 넘긴다.
+    /// </param>
+    public bool Announce(int discovery, bool trace = true)
     {
         if (!HasFound(discovery) || !_announced.Add(discovery)) return false;
         _announcedOn[discovery] = Date;
         _announcedBy[discovery] = Name;   // 칸 2 의 이름(0x004AACA0) — 백과사전 「발견자」가 이것이다
         // 행적에도 한 줄 남는다(0x0047E630 끝의 0x0041A070(…, 9, 발견물번호)) — 은퇴하면 누적 캐릭터의 발자취가 된다.
-        Note(TraceDiscovery, discovery);
+        if (trace) Note(TraceDiscovery, discovery);
         return true;
+    }
+
+    private readonly HashSet<int> _unresolved = [];
+
+    /// <summary>
+    /// 발표 도장만 찍히고 <b>힌트 매듭은 안 지어진</b> 발견물 — 모조품을 들켰을 때다.
+    /// </summary>
+    /// <remarks>
+    /// 보고에서 모조품을 들키면(<c>0x004122C6</c>) 가져온 것마다 도장 <c>0x0047E630</c> 만 부른다 — 여느 보고·발표가
+    /// 부르는 <c>0x0047E680</c> 과 달리 같은 유적의 힌트를 「보고까지 끝남」(<c>0x0047E5D0</c> → <c>or [힌트+4], 3</c>)으로
+    /// 올리지 않는다. 그래서 힌트는 살아 남고, 발견물은 다시 보고할 수 없다.
+    /// </remarks>
+    public IReadOnlyCollection<int> Unresolved => _unresolved;
+
+    /// <summary>도장만 찍는다(<c>0x0047E630</c>) — 발표한 것으로 적되 힌트 매듭에는 안 친다.</summary>
+    public bool Stamp(int discovery, bool trace)
+    {
+        if (!Announce(discovery, trace)) return false;
+        _unresolved.Add(discovery);
+        return true;
+    }
+
+    /// <summary>세이브를 되돌릴 때 도장만 찍힌 것을 채운다.</summary>
+    public void RestoreUnresolved(IEnumerable<int>? unresolved)
+    {
+        _unresolved.Clear();
+        if (unresolved != null) foreach (int id in unresolved) _unresolved.Add(id);
     }
 
     /// <summary>행적 갈래 — 발견물을 보고·발표했다(낱말: 발견물 번호). 원본도 갈래 <b>9</b> 다.</summary>

@@ -524,6 +524,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         _player.Sign(new Contract(it.Id, patron.Name, _cityName, funds,
                                   _player.Date, years, inspector));
+        WorldRouteScene.OnSign(_game, it.Id);   // 0x004ADFF6 — 세계일주를 맡으면 바퀴 수를 0 으로
 
         // 선금은 <b>후원자 지갑에서</b> 나간다(0x004ADF4A) — 저절로 차지 않으므로
         // 같은 사람에게 잇달아 계약을 맺으면 점점 적게 받는다.
@@ -1025,8 +1026,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 그림이 있으면 그것을 튼 뒤 친밀도 · 아이템 · 명성 차례로 낸다(<c>0x004111D0</c>).
     /// 사례는 다 끝나고 한 번이다.
     /// </remarks>
-    /// <returns>받은 사례(닢) · 후원자가 본 갈래 · 남이 먼저 발표해 버렸는지.</returns>
-    private (int Paid, Palace.ReportGrade Grade, bool Scooped) ReportEach(
+    /// <returns>받은 사례(닢) · 후원자가 본 갈래 · 남이 먼저 발표해 버렸는지 · 모조품을 들켰는지.</returns>
+    private (int Paid, Palace.ReportGrade Grade, bool Scooped, bool Caught) ReportEach(
         Patron patron, Contract contract,
         IReadOnlyList<DiscoveryTable.Record> rows, bool inTime)
     {
@@ -1051,7 +1052,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             else if (row.Picture >= 0)
                 DiscoveryDialog.ShowPicture(_view, _game.Stills, row.Picture);   // 그림만 — 이름 창은 안 붙는다(0x004AD640)
 
-            _player.Announce(row.Id);
+            _player.Announce(row.Id, trace: !row.Indirect && !scoopedRows.Contains(row.Id));   // 0x0047E630
 
             // 좋아하는 갈래를 물어다 주면 덤이 붙는다(0x004ADAE0 이 후원자 표 +0x38 을 본다).
             bool scooped = scoopedRows.Contains(row.Id);
@@ -1095,21 +1096,23 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             Harbor.Celebrate(_player);
         }
 
-        foreach (var row in rows)
+        // 모조품인지 가늠하는 것은 <b>가져온 것 가운데 자리로 잡히는 진짜(깃발 0x04)가 하나도 없을 때</b>뿐이다
+        // (0x004120AB 가 0x0044E880(0, 1) 로 그런 것을 세어 0 일 때만 0x00412460 을 굴린다). 진짜가 하나라도
+        // 끼어 있으면 모조품도 진짜와 똑같이 하나씩 보고된다.
+        if (rows.All(r => r.Indirect) && ReportCounterfeit(patron, rows, inTime, out bool broke))
         {
-            // 모조품(0x00412460)은 들키지 않으면 진짜와 똑같이 통과된다 — 들켰을 때만
-            // 따로 간다(Report(Patron) 의 볼트 주석 참고).
-            if (!row.IsCounterfeit) { Credit(row); continue; }
-            if (!ReportCounterfeit(patron, row, inTime, out bool broke)) { Credit(row); continue; }
-
             // 못 봐주면 그 자리에서 <b>계약이 파기된다</b>(0x004123F1 이 0x0044EEA0 을 부른다).
-            // 남은 보고도, 사례도, 가늠도 없다 — 봐주는 갈래만 0x0041243D 로 그냥 빠진다.
-            if (!broke) continue;
-
-            ReturnLentShips(broken: true);
-            _player.EndContract();
-            return (0, Palace.ReportGrade.Poor, scoopedHead);
+            // 봐주면 계약은 그대로 남는다 — 「기한까지 진짜를 발견해 오게」. 어느 쪽이든 사례·가늠·마무리 말이
+            // 없다(0x0041243D 로 곧장 빠진다).
+            if (broke)
+            {
+                ReturnLentShips(broken: true);
+                _player.EndContract();
+            }
+            return (0, Palace.ReportGrade.Poor, scoopedHead, true);
         }
+
+        foreach (var row in rows) Credit(row);
 
         // 다 보고하고 나면 후원자가 <b>성과를 가늠해</b> 한 마디 하고 사례를 친다(0x00411AA0).
         // 세계일주는 가늠 없이 딴 갈래로 빠진다(0x00411FC0 이 먼저 그것을 본다).
@@ -1132,7 +1135,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 계약이 끝나면 빌린 배를 거둬 간다(0x0040FE40).
         ReturnLentShips();
         _player.EndContract();
-        return (paid, grade, scoopedHead);
+        return (paid, grade, scoopedHead, false);
     }
 
     /// <summary>
@@ -1335,14 +1338,18 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 운으로 다시 가늠해 봐줄지 정한다 — 봐주면 다음 기회를 주고 악명만 조금 오르고,
     /// 못 봐주면 사이가 상한다.
     /// </remarks>
-    /// <returns>이 발견물의 사례를 건너뛰어야 하면 true.</returns>
-    private bool ReportCounterfeit(Patron patron, DiscoveryTable.Record row, bool inTime,
+    /// <returns>들켰으면 true — 가져온 것에는 도장만 찍히고 사례가 없다.</returns>
+    private bool ReportCounterfeit(Patron patron, IReadOnlyList<DiscoveryTable.Record> rows, bool inTime,
                                    out bool broke)
     {
         broke = false;
         var sponsorRow = _game.Sponsors?.FindByName(patron.Name);
         int luck = _player.AbilityOf(Ability.Luck);
         if (!Palace.CounterfeitCaught(sponsorRow?.Closeness ?? 0, luck, _random)) return false;
+
+        // 들켰으면 가져온 것마다 <b>도장만</b> 찍는다(0x004122F2 → 0x0047E630) — 다시 보고할 수 없게 되지만
+        // 명성·사례·힌트 매듭은 없다. 모조품은 자리로 잡히는 것(깃발 0x04)이 아니라 행적도 안 남는다.
+        foreach (var row in rows) _player.Stamp(row.Id, trace: false);
 
         string me = _player.Name;
         int style = StyleOf(patron);
@@ -1572,12 +1579,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             var stage = _view as CityPicView;
             int paid;
             Palace.ReportGrade grade;
-            bool scooped;
+            bool scooped, caught;
             try
             {
                 // 보고하는 동안 도시 그림이 파래진다 — 바다에서 발견할 때와 같다.
                 stage?.Shade(true);
-                (paid, grade, scooped) = ReportEach(patron, contract, rows, inTime);
+                (paid, grade, scooped, caught) = ReportEach(patron, contract, rows, inTime);
             }
             finally
             {
@@ -1589,10 +1596,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 이름은 후원자 객체의 이름(vfunc 0 — 표 0x005228B8, 「페르난·마르틴스」처럼 가운뎃점이 든다)이다
             // (0x00411C1E · 0x00411C76).
             string him = _game.Sponsors?.FindByName(patron.Name)?.Name ?? patron.Name;
-            GameDialog.Show(_view, grade != Palace.ReportGrade.Poor && !scooped
-                ? $"금화 {paid}닢을 받았다!"
-                : inTime ? $"{him}{GameUi.Josa(him, "은", "는")} 금화 {paid}닢 밖에 지불하지 않았다!"
-                         : $"{him}{GameUi.Josa(him, "은", "는")} 돈을 지불하지 않았다!");
+            // 모조품을 들켰으면 사례 줄도 마무리 말도 없다(0x0041243D 로 곧장 빠진다).
+            if (!caught)
+                GameDialog.Show(_view, grade != Palace.ReportGrade.Poor && !scooped
+                    ? $"금화 {paid}닢을 받았다!"
+                    : inTime ? $"{him}{GameUi.Josa(him, "은", "는")} 금화 {paid}닢 밖에 지불하지 않았다!"
+                             : $"{him}{GameUi.Josa(him, "은", "는")} 돈을 지불하지 않았다!");
 
             // 마무리 대사(0x00411010 — 기한 · 세계일주인가 · 남이 먼저 발표했는가 셋을 받는다).
             // <code>
@@ -1602,7 +1611,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             //   0041119a  → 짧은 벌 — 0x0052FB08 · 0x0052FB28 · 0x0052FB58
             // </code>
             // 남이 먼저 발표해 버렸어도 짧은 벌이다(0x00411165).
-            if (world) WorldFinale(patron, inTime, Pick3);
+            if (caught) { }
+            else if (world) WorldFinale(patron, inTime, Pick3);
             else Say(inTime && !scooped
                 ? Pick3("잘 했네. 무슨 일이 있으면 또 오게나.",
                         "수고하셨습니다. 다시 모험을 하게 되신다면 여기에 와 주십시오.",

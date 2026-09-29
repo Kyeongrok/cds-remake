@@ -224,7 +224,8 @@ public static class GameSave
         Dictionary<string, Player.PatronDock>? PatronDocks = null,
         Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null,
         List<int>? GoneBarmaids = null,
-        int? Infamy = null, int? AgingYear = null, List<int>? AgingSteps = null);
+        int? Infamy = null, int? AgingYear = null, List<int>? AgingSteps = null,
+        List<int>? Settled = null, List<int>? Unresolved = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -363,7 +364,11 @@ public static class GameSave
                             // 악명 — 원본은 명성과 나란히 적는다(0x00480060 이 +0xAC · +0xB0 을 적는다). 이 칸 앞의 세이브는 0 으로 연다.
                             Infamy: player.Infamy,
                             // 늙음(제독 +0x304 · +0x2EC). 이 칸 앞의 세이브는 NEW GAME 처럼 0 으로 연다.
-                            AgingYear: player.AgingYear, AgingSteps: [.. player.AgingSteps]);
+                            AgingYear: player.AgingYear, AgingSteps: [.. player.AgingSteps],
+                            // 자리 사건을 매듭지은 발견물(깃발 0x0100). 이 칸 앞의 세이브는 찾은 것으로 채운다.
+                            Settled: [.. player.Settled],
+                            // 모조품을 들켜 도장만 찍힌 발견물. 이 칸 앞의 세이브는 없는 것으로 연다.
+                            Unresolved: [.. player.Unresolved]);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

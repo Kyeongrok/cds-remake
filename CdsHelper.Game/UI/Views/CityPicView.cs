@@ -1229,7 +1229,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     ///
     /// 게임은 대본의 결과 코드(밑값 2)로 <b>건물에 들지</b>를 가른다(<c>0x00492B06</c>):
     /// <code>
-    ///   0 · 1   발견물 줄 +0x17 비트 0 을 세우고 건물에 든다
+    ///   0 · 1   발견물 줄 +0x17 비트 0(깃발 0x0100)을 세우고 건물에 든다 — 그 사건은 다시 안 뜬다
     ///   2       안 든다 — 발견 장면만 보고 도시 그림으로 돌아간다
     ///   그 밖   건물에 든다
     /// </code>
@@ -1241,8 +1241,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!building.IsDiscovery) return true;
         if (_game.Discoveries is not { } log) return true;
         if (log.Table.Find(building.Discovery) is not { } row) return true;
-        if (_player.HasFound(row.Id)) return true;
-        if (!log.IsOpen(_player, row)) return true;
+        if (!log.CanFire(_player, row)) return true;   // 0x00492A79 → 0x004AAD20
 
         // 발견 대본(DISEV)이 있으면 <b>그것이 다 한다</b> — 동영상 · 대사 · 육상전까지. 바다·뭍 발견
         // (ShipMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
@@ -1259,6 +1258,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         // 대본이 돌았으면 발견·물건은 대본의 01 0B 가 준다(0x0048D3F0 은 따로 안 적는다).
         if (!scripted) log.Discover(_player, row.Id);
+        Engine.Discovery.DiscoveryLog.Settle(_player, row.Id, scripted);   // 0x00492B49
 
         // 대본이 없을 때만 그림 한 장으로 알린다.
         // 게임 문구는 "%s%s 발견했다!"(0x00544720) 다 — 이름 뒤에 을/를 이 붙는다.
@@ -1280,8 +1280,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 아직 못 찾은 것(<c>0x004AAD20</c>)이면 그 번호의 발견 대본을 튼다. 이런 발견물은 지도에 사각형이
     /// 없어(<c>-1</c>) 바다 판정(<see cref="DiscoveryLog.At"/>)으로는 영영 안 잡힌다 — 예전에는 인도항로
     /// 계약을 맺고 캘리컷에 들어가도 아무 일이 없었다. 대본이 결과 0·1 로 끝나면 게임은 발견물 줄의
-    /// <c>+0x17</c> 비트 0 을 세우는데(<c>0x0049294A</c>) 그것을 읽는 데가 없어 옮기지 않는다.
-    /// 역사가 먼저 가져간 것은 바다 판정과 같이 미리 뺀다(<see cref="DiscoveryLog.TakenBy"/>).
+    /// <c>+0x17</c> 비트 0(깃발 <c>0x0100</c>)을 세워(<c>0x0049294A</c>) 그 사건을 다시 안 튼다.
+    /// 거르는 것은 바다 판정과 같은 <see cref="DiscoveryLog.CanFire"/> 다.
     /// </remarks>
     public bool DiscoverOnEntry()
     {
@@ -1291,9 +1291,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         foreach (int id in rows.DiscoveriesOf(_cityId))
         {
             if (log.Table.Find(id) is not { } row) continue;
-            if (_player.HasFound(row.Id)) continue;
-            if (!log.IsOpen(_player, row)) continue;
-            if (log.TakenBy(row, _player.Date) >= 0) continue;
+            if (!log.CanFire(_player, row)) continue;   // 0x004928D8 → 0x004AAD20
 
             // 대본이 있으면 그것이 다 한다 — 대사 · 음원 · 아이템 · 발견까지(바다·건물 발견과 같은 길이다).
             bool scripted = Engine.Disev.DisevRunner.Run(this, _game, row.Id);
@@ -1313,6 +1311,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 if (row.Movie >= 0) NoticeDialog.Show(this, found);
                 else DiscoveryDialog.Show(this, _game.Stills, row.Picture, found);
             }
+            Engine.Discovery.DiscoveryLog.Settle(_player, row.Id, scripted);   // 0x0049294A
         }
         return false;
     }

@@ -57,6 +57,17 @@ public sealed class DiscoveryLog
     public int TakenBy(in DiscoveryTable.Record row, DateTime date) =>
         row.Once && _history != null ? _history.TakenBy(row.Id, date) : -1;
 
+    /// <summary>
+    /// 사람 칸 0·1 에 <b>누구 이름이든</b> 올라 있는지 — 게임의 <c>0x004AAD80</c> 이다.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="TakenBy"/> 와 달리 한 번짜리만 보지 않는다. 역사 항해자가 거듭 찾는 것(하마·후추 따위)을
+    /// 찾아도 칸 1 이 차고(<c>0x004AAC65</c> — 칸 1 이 비었을 때만 적는다), 지도 지우기
+    /// (<c>0x004AADD0</c>)가 이것으로 그 자리를 드러낸다.
+    /// </remarks>
+    public bool Named(Player player, int id, DateTime date) =>
+        player.HasFound(id) || (_history?.TakenBy(id, date) ?? -1) >= 0;
+
     /// <summary>발견물 표.</summary>
     public DiscoveryTable Table => _table;
 
@@ -120,7 +131,8 @@ public sealed class DiscoveryLog
         if (_hints?.Find(hintId) is not { } hint) return false;
 
         foreach (int id in player.Announced)
-            if (_table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
+            if (!player.Unresolved.Contains(id)   // 모조품을 들켜 도장만 찍힌 것은 안 친다(0x0047E630)
+                && _table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
         return false;
     }
 
@@ -145,14 +157,13 @@ public sealed class DiscoveryLog
     ///
     /// <b>후보는 하나만 뽑는다.</b> 게임의 <c>0x00425640</c> 은 <b>자리와 너비만</b> 보고
     /// 한 줄을 고르고, 받은 <c>0x0048D462</c> 가 그 <b>한 줄에만</b> 관문을 건다 —
-    /// 열렸는지(<c>0x08</c>) · 이미 찾았는지(<c>0x0100</c>) · 바다뭍(<c>+0x28</c>)이
+    /// 열렸는지(<c>0x08</c>) · 사건을 매듭지었는지(<c>0x0100</c>) · 바다뭍(<c>+0x28</c>)이
     /// 안 맞으면 <b>그냥 아무 일도 안 일어난다</b>. 다른 후보로 물러서지 않는다.
     /// 예전에는 관문을 통과하는 것 가운데 가장 좁은 것을 골라, 겹친 자리에서 이미 찾은
     /// 발견물을 건너뛰고 넓은 쪽이 잡히곤 했다.
     ///
-    /// <b>한 가지 다르게 한다</b> — 역사가 가져간 것은 여기서 미리 뺀다. 게임은 그래도
-    /// 사건을 틀어 놓고 <c>0x004AAC10</c> 이 조용히 안 적는 쪽인데, 그러면 그 자리를 지날
-    /// 때마다 아무것도 안 남는 연출만 되풀이된다.
+    /// 역사가 가져간 한 번짜리는 사건부터 안 뜬다 — <c>0x004AAD20</c> 이 칸 1 에 이름이 있으면
+    /// 막는다(<see cref="CanFire"/>).
     /// </remarks>
     public int At(Player player, int cellX, int cellY, bool onLand)
     {
@@ -171,12 +182,45 @@ public sealed class DiscoveryLog
         if (found < 0 || _table.Find(found) is not { } picked) return -1;
 
         // ② 그 한 줄에만 관문을 건다(0x0048D462 → 0x004AAD20).
+        if (!CanFire(player, picked)) return -1;
         if (picked.OnLand != onLand) return -1;      // 표 +0x28 과 0x5B61B4 를 견주는 자리
-        if (player.HasFound(picked.Id)) return -1;   // 깃발 0x0100
-        if (!IsOpen(player, picked)) return -1;      // 깃발 0x08
-        if (TakenBy(picked, player.Date) >= 0) return -1;   // 역사가 먼저 가져갔다
 
         return found;
+    }
+
+    /// <summary>
+    /// 그 발견물의 사건이 뜰 수 있는지 — 게임의 <c>0x004AAD20</c> 이다. 바다·뭍 자리, 도시 입장,
+    /// 발견물이 된 건물 셋이 모두 이것으로 거른다(<c>0x0048D462</c> · <c>0x004928D8</c> · <c>0x00492A79</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   4AAD27  깃발 0x0100 이 서 있으면 0        매듭지은 사건(Player.Settled)
+    ///   4AAD30  깃발 0x08 이 안 서 있으면 0       열림(IsOpen)
+    ///   4AAD47  표 +0x2C 가 1(한 번짜리)이면      칸 0·1 이 비어야 1 — 내가 찾았거나 역사가 가져갔으면 0
+    ///   4AAD61  표 +0x2C 가 0(거듭 찾는 것)이면   칸 2 가 비어야 1 — 보고·발표했거나 남이 발표했으면 0
+    /// </code>
+    /// 거듭 찾는 것(생물·교역품 따위)은 찾기만 해서는 안 막힌다 — 대본 밖에서(교역소 따위) 먼저 찾아도
+    /// 보고하기 전이면 자리 사건이 뜬다. 한 번 돌고 나면 0x0100 이 막는다.
+    /// </remarks>
+    public bool CanFire(Player player, in DiscoveryTable.Record row)
+    {
+        if (player.IsSettled(row.Id)) return false;
+        if (!IsOpen(player, row)) return false;
+        if (row.Once) return !player.HasFound(row.Id) && TakenBy(row, player.Date) < 0;
+        return !player.HasAnnounced(row.Id) && player.ScoopedBy(row.Id) == null;
+    }
+
+    /// <summary>
+    /// 사건을 돌린 뒤 매듭을 짓는다 — 대본 결과가 0 이나 1 이면 깃발 <c>0x0100</c> 을 세운다
+    /// (<c>0x0048D569</c> · <c>0x0049294A</c> · <c>0x00492B06</c>).
+    /// </summary>
+    /// <param name="scripted">
+    /// 대본이 돌았는지. 대본이 없어 여기서 곧장 적은 것은 끝난 것으로 본다 — 안 그러면 거듭 찾는 것이
+    /// 그 자리를 지날 때마다 또 뜬다.
+    /// </param>
+    public static void Settle(Player player, int id, bool scripted)
+    {
+        if (!scripted || Disev.DisevRunner.LastResult is 0 or 1) player.Settle(id);
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using CdsHelper.Game.Engine;
 using CdsHelper.Game.Engine.Town;
 using CdsHelper.Game.Local.Helpers;
@@ -46,12 +46,31 @@ internal static class WorldRouteScene
         if (player.Contract is not { } contract) return false;
         if (player.Laps == 0) return false;
         if (contract.City != game.CityName(cityId)) return false;
-        if (player.HasAnnounced(Discovery)) return false;
+        // 칸 2 가 비어야 한다(0x00492099) — 누적 캐릭터가 먼저 발표해 남의 이름이 올라도 막힌다.
+        if (player.HasAnnounced(Discovery) || player.ScoopedBy(Discovery) != null) return false;
         if (!hasMate) return false;
 
         // 맡은 이야기가 세계일주항로를 가리키는가 — 힌트의 유적 번호로 견준다(0x00493E60).
-        if (game.Hints?.Find(contract.Hint) is not { } hint) return false;
-        return game.Discoveries?.Table?.Find(Discovery)?.Hint == hint.Discovery;
+        return Targets(game, contract.Hint);
+    }
+
+    /// <summary>그 힌트가 세계일주항로(발견물 7번)를 가리키는지 — 유적 번호로 견준다.</summary>
+    public static bool Targets(Engine.Game game, int hintId) =>
+        game.Hints?.Find(hintId) is { } hint
+        && game.Discoveries?.Table?.Find(Discovery)?.Hint == hint.Discovery;
+
+    /// <summary>
+    /// 계약을 맺을 때 — 세계일주항로를 맡았으면 <b>바퀴 수를 0 으로 되돌린다</b>.
+    /// </summary>
+    /// <remarks>
+    /// 계약 맺는 본체 끝(<c>0x004ADFF6</c>)이 <c>0x004AE040</c> 으로 그 힌트의 유적에 딸린 발견물
+    /// (<c>0x005B0948</c> 목록)에 7번이 있는지 보고, 있으면 <c>0x0047D450(0)</c> 으로 제독 <c>+0x330</c> 을
+    /// 0 으로 둔다. 그래서 계약 전에 돌아 둔 바퀴는 안 쳐 준다 — 맺은 뒤 다시 한 바퀴 돌아야 장면이 돈다.
+    /// 놀이 중에 바퀴 수를 0 으로 되돌리는 자리는 이것뿐이다.
+    /// </remarks>
+    public static void OnSign(Engine.Game game, int hintId)
+    {
+        if (Targets(game, hintId)) game.Player.Laps = 0;
     }
 
     /// <summary>

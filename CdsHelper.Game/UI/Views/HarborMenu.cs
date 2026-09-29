@@ -618,7 +618,8 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         foreach (int at in picked)
         {
             var row = rows[at];
-            if (!_player.Announce(row.Id)) continue;
+            // 행적은 자리로 잡히는 것(깃발 0x04)이고 남이 먼저 발표하지 않은 것만 남는다(0x0047E630).
+            if (!_player.Announce(row.Id, trace: !row.Indirect && _player.ScoopedBy(row.Id) == null)) continue;
             if (row.GivesItem) found.Add(row.ItemId);
 
             // 어느 것이든 먼저 「%s의 발견을 발표했다!」와 동영상이다(0x0047E953 · 0x0047E96F) — 그 다음에
