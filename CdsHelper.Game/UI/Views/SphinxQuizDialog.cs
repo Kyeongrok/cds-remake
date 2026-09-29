@@ -15,6 +15,10 @@ namespace CdsHelper.Game.UI.Views;
 internal static class SphinxQuizDialog
 {
     /// <summary>문제 글(<c>0x0056EFC8</c> · <c>0x0056F078</c> · <c>0x0056F1A8</c>).</summary>
+    /// <remarks>
+    /// 줄바꿈 자리도 원문 그대로다 — 둘째·셋째 문제는 «…2개가 되고, » · «…2개로 성장하고, » 뒤에서
+    /// 한 번 꺾는다(<c>0x0056F078</c> · <c>0x0056F1A8</c> 의 줄바꿈).
+    /// </remarks>
     private static string Ask(SphinxQuiz.Riddled it, int step) => step switch
     {
         0 => "〈스핑크스〉 그럼 그대에게 묻겠다." + Environment.NewLine +
@@ -24,7 +28,7 @@ internal static class SphinxQuizDialog
 
         1 => "다시 그대에게 묻겠다." + Environment.NewLine +
              $"다리가 4개와 2개 있는 괴물의 다리를 합쳐서 {it.Legs}개가 있다. " +
-             "세월이 지나서 다리 4개의 괴물은 모두 다리가 2개가 되고, " +
+             "세월이 지나서 다리 4개의 괴물은 모두 다리가 2개가 되고, " + Environment.NewLine +
              $"2개의 다리를 가지고 있는 것 중 {it.Grown}마리는 3개의 다리가 되었다." +
              Environment.NewLine +
              $"괴물들의 다리를 모두 합치니 {it.Aged}개가 되었다. " +
@@ -32,7 +36,7 @@ internal static class SphinxQuizDialog
 
         _ => "〈스핑크스〉 마지막으로 그대에게 묻겠다." + Environment.NewLine +
              $"다리가 4개와 2개 있는 괴물의 다리를 합쳐 {it.Legs}개가 있다. " +
-             "세월이 지나서 4개의 다리를 가진 괴물은 모두 다리가 2개로 성장하고, " +
+             "세월이 지나서 4개의 다리를 가진 괴물은 모두 다리가 2개로 성장하고, " + Environment.NewLine +
              $"다리가 2개 있는 괴물중 {it.Grown}마리는 다리가 3개가 되었다. " +
              Environment.NewLine +
              "게다가 다리가 4개였던 괴물의 2배가 되는 4개의 다리를 가지는 괴물이 " +
