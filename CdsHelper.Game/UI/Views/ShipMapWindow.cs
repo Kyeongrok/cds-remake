@@ -2707,7 +2707,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreExecuted(saved.Executed);
             // 누적 캐릭터를 앉힌 날과 늦어짐 — 세상을 새로 지을 때 AttachCumulative 가 다시 앉힌다.
             // 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
-            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate);
+            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate, saved.AccPlayed);
             // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
             _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);

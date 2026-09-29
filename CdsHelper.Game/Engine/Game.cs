@@ -534,7 +534,13 @@ public sealed class Game
             var player = Player;
             foreach (var row in _world.People)
                 if (player.Executed.Contains(row.Id)) row.Appear = 0;
-            if (_world.Replay is { } replay) replay.Gone = id => player.Executed.Contains(id);
+            if (_world.Replay is { } replay)
+            {
+                replay.Gone = id => player.Executed.Contains(id);
+                // 이미 튼 줄 수를 되돌리고, 새로 튼 것을 주인공 쪽에 적는다 — 원본은 대본 위치(인물 +0x114)를 세이브에 적는다.
+                foreach (var (person, lines) in player.AccPlayed) replay.SetPlayed(person, lines);
+                replay.Advanced = player.SetAccPlayed;
+            }
             return _world;
         }
     }

@@ -290,7 +290,8 @@ public static class GameSave
         DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
         List<Player.Recall>? Recalls = null,
         int? DayTicks = null, int? Heading = null, List<int>? Wind = null,
-        double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null);
+        double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null,
+        Dictionary<int, int>? AccPlayed = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -450,7 +451,9 @@ public static class GameSave
                             // 바다에서 적을 때만 적는다. 이 칸 앞의 세이브는 대 둔 배 위에서 연다.
                             AshoreX: player.CityId < 0 ? player.Ashore?.X : null,
                             AshoreY: player.CityId < 0 ? player.Ashore?.Y : null,
-                            MooredHeading: player.CityId < 0 && player.Ashore != null ? player.MooredHeading : null);
+                            MooredHeading: player.CityId < 0 && player.Ashore != null ? player.MooredHeading : null,
+                            // 누적 캐릭터마다 튼 행적 줄 수(인물 +0x114). 이 칸 앞의 세이브는 불러온 날로 가늠한다.
+                            AccPlayed: player.AccPlayed.Count > 0 ? player.AccPlayed.ToDictionary(e => e.Key, e => e.Value) : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
