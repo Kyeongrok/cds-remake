@@ -352,7 +352,9 @@ internal sealed class MazePuzzleDialog : InfoDialog
         if (_game.ChestAt(_game.Here) != 0 && !_game.ChestOpen(_game.ChestAt(_game.Here)))
             rows.Add(("보물 상자를 연다", OpenChest));
 
-        rows.Add(("ＵＮＤＯ(취소)", _game.CanUndo ? AskUndo : null));
+        // 「ＵＮＤＯ」 줄은 한 발이라도 걸었을 때만 끼운다(0x0042B6E0 이 [+0x2E0] 을 본다) — 세 번을 다 써도
+        // 줄은 남고, 고르면 물은 뒤에 「횟수 오버」 가 뜬다. 예전에는 늘 두고 못 쓸 때 흐리게 막았다.
+        if (_game.Walked > 1) rows.Add(("ＵＮＤＯ(취소)", AskUndo));
         rows.Add(("포기한다", AskGiveUp));
         rows.Add(("게임 설명", Explain));
         rows.Add(("게임으로 돌아간다", () => { }));   // 차림표만 닫는다
@@ -394,14 +396,16 @@ internal sealed class MazePuzzleDialog : InfoDialog
 
     private void AskUndo()
     {
+        // 먼저 묻고, 「예」 뒤에야 횟수를 본다 — 0x0042B4AD · 0x0042B7A8 이 물은 다음 0x0042AB20 을 부르고,
+        // 거기서 [+0x304] 가 3 이면 「횟수 오버」 로 끝난다(0x0042AB28). 예전에는 횟수부터 보았다.
+        if (_game.Over != MazePuzzle.Result.Playing || _game.Walked <= 1) return;
+        if (!ConfirmDialog.Ask(this, "한발 앞의 상태로 돌아가겠습니까?", "앞으로 돌아간다")) return;
         if (_game.Undone >= MazePuzzle.MaxUndo)
         {
             NoticeDialog.Show(this,
                 "[U N D O (취소) ] 는 3회까지입니다. 더 이상 사용할 수 없습니다.", "횟수 오버");
             return;
         }
-        if (!_game.CanUndo) return;
-        if (!ConfirmDialog.Ask(this, "한발 앞의 상태로 돌아가겠습니까?", "앞으로 돌아간다")) return;
 
         _game.Undo();
         _sfx?.Play(0x1D - 28);   // 한 발 되돌리면 사운드 0x1D(파트 1)를 낸다(0x0042ABAC)
