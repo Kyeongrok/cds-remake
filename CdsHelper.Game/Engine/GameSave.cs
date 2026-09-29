@@ -222,7 +222,8 @@ public static class GameSave
         List<int>? VisitedCities = null,
         List<int>? Executed = null,
         Dictionary<string, Player.PatronDock>? PatronDocks = null,
-        Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null);
+        Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null,
+        List<int>? GoneBarmaids = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -355,7 +356,9 @@ public static class GameSave
                             PatronDocks: player.PatronDocks.ToDictionary(e => e.Key, e => e.Value),
                             // 찾은 사람·보고한 사람 이름(발견물 칸 0·2). 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
                             FoundBy: player.FoundBy.ToDictionary(e => e.Key, e => e.Value),
-                            AnnouncedBy: player.AnnouncedBy.ToDictionary(e => e.Key, e => e.Value));
+                            AnnouncedBy: player.AnnouncedBy.ToDictionary(e => e.Key, e => e.Value),
+                            // 마을을 떠난 여급(세대교체한 옛 아내). 이 칸 앞의 세이브는 아무도 안 떠난 것으로 연다.
+                            GoneBarmaids: [.. player.GoneBarmaids]);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
