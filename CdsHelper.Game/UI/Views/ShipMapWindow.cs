@@ -2607,6 +2607,7 @@ public sealed class ShipMapWindow : Window
             _host.ShowShip = false;
             _host.ResetToLisbon();
             _host.RestoreHeldWind(null);   // 새 판은 바람을 새로 흔든다 — 앞 판 것이 남지 않게
+            _host.SetHeading(0);           // 뱃머리도 처음 값(북, 지도를 처음 켤 때와 같다)으로 — 앞 판 쪽을 보고 서지 않게
         }
         else if (saved != null)
         {
