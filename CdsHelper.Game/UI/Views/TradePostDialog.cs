@@ -207,7 +207,7 @@ public sealed class TradePostDialog : GameWindow
         var why = _post.Check(_player, _city, DealNow());
         if (why != TradePost.Outcome.Ok) { Block(why); return; }
         int cost = Cost;
-        if (!_post.CanBargain(_player, _city, cost)) { Apply(close: true); return; }
+        if (!_post.CanBargain(_player, _city, cost, CrewTongue)) { Apply(close: true); return; }
         _bargainOn = true;
         Paint();
     }
@@ -275,6 +275,21 @@ public sealed class TradePostDialog : GameWindow
         return Skill.Accounting < row.Skills.Length ? row.Skills[Skill.Accounting] : -1;
     }
 
+    /// <summary>
+    /// 부관(자리 0)·통역(자리 3) 가운데 그 언어를 가장 잘하는 수준 — 흥정 게이트가 주인공 것과 견준다(<c>0x00468FE0</c>).
+    /// </summary>
+    private int CrewTongue(int language)
+    {
+        int best = 0;
+        foreach (int slot in (int[])[0, 3])
+        {
+            string mate = _player.MateAt(slot);
+            if (mate.Length == 0 || _game.World?.People.FirstOrDefault(r => r.Name == mate) is not { } row) continue;
+            if (language < row.Languages.Length) best = Math.Max(best, row.Languages[language]);
+        }
+        return best;
+    }
+
     /// <summary>판에서 고른 것 — 0 결정, 1 값을 깎는다, 2 돌아간다.</summary>
     private void Pick(int k)
     {
@@ -319,7 +334,7 @@ public sealed class TradePostDialog : GameWindow
     {
         if (_settled || _tries <= 0) return false;
         _settled = true;
-        if (_post.RowsOf(_player, _city).Sum(r => r.Supply) == 0)
+        if (!_post.HasSupply(_player, _city))
         {
             TalkDialog.Say(this, _face, "", "미안하지만, 자네에게 팔 물건은 아무것도 없네.");
             return false;
@@ -544,12 +559,37 @@ public sealed class TradePostDialog : GameWindow
         dock.Children.Add(buttons);
         dock.Children.Add(lines);
 
-        return new Border
+        var border = new Border
         {
             Height = RowHeight,
             Background = index % 2 == 1 ? RowAlt : Brushes.Transparent,
             Child = dock,
         };
+        border.MouseRightButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            AskGoodsInfo(kind);
+        };
+        return border;
+    }
+
+    /// <summary>
+    /// 줄을 오른쪽 단추로 누르면 교역품 이름을 제목으로 「정보를 본다 / 그만둔다」를 묻고, 「정보를 본다」면
+    /// 교역품 정보창을 띄운다(<c>0x00415510</c>). 사는 목록·파는 목록이 한 클래스라(vtable <c>0x004C9FC8</c> 의
+    /// <c>+0xF4</c>, 목록 바탕이 오른쪽 단추일 때 <c>0x004B52D8</c> 에서 부른다) 두 쪽 다 이렇다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   41558f  제목 = 0x0042E310(교역품) — 교역품 이름
+    ///   41559c  0x00469C40(["정보를 본다" 0x00532F10, "그만둔다" 0x00532F20]) — 첫 줄(0)이라야 연다
+    ///   41560f  0x0046D520 — 교역품 정보창(320x160, [취소])
+    /// </code>
+    /// </remarks>
+    private void AskGoodsInfo(int kind)
+    {
+        if (_game.Goods?.Find(kind) is null) return;
+        if (ChoiceDialog.Pick(this, _post.NameOf(kind), ["정보를 본다", "그만둔다"]) == 0)
+            GoodsInfoDialog.Show(this, _game, kind);
     }
 
     private StackPanel StepButtons(Action<int> add, Action all)

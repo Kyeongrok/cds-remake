@@ -76,7 +76,8 @@ public sealed class CityInfoDialog : GameWindow
     }
 
     private CityInfoDialog(string cityName, CityExeTable? cities, NationTable? nations,
-                           GoodsTable? goods, ItemArt? art, MarketRates rates, int cityId)
+                           GoodsTable? goods, ItemArt? art, MarketRates rates, int cityId,
+                           IReadOnlyList<int>? specials)
     {
         Title = cityName;
         WindowStyle = WindowStyle.None;
@@ -105,8 +106,9 @@ public sealed class CityInfoDialog : GameWindow
         Put(board, Text($"언어    {language}"), 24, 104);
 
         // 특산품은 줄마다 띠 단추다(0x00470855 → 0x00413450). 누르면 그 교역품 창이 뜬다.
+        // 교역소 규칙이 거른 것(TradePost.ShownSpecials, 0x0042A030)을 쓰고, 규칙이 없을 때만 표 그대로다.
         int row = 0;
-        foreach (int id in cities?.SpecialsOf(cityId) ?? [])
+        foreach (int id in specials ?? cities?.SpecialsOf(cityId) ?? [])
         {
             if (goods?.Find(id) is not { } g) continue;
             var button = new GameButton(g.Name, () =>
@@ -186,6 +188,7 @@ public sealed class CityInfoDialog : GameWindow
 
     /// <summary>도시 정보 창을 연다.</summary>
     public static void Show(Window owner, string cityName, int cityId, CityExeTable? cities,
-                            NationTable? nations, GoodsTable? goods, ItemArt? art, MarketRates rates) =>
-        new CityInfoDialog(cityName, cities, nations, goods, art, rates, cityId) { Owner = owner }.ShowDialog();
+                            NationTable? nations, GoodsTable? goods, ItemArt? art, MarketRates rates,
+                            IReadOnlyList<int>? specials = null) =>
+        new CityInfoDialog(cityName, cities, nations, goods, art, rates, cityId, specials) { Owner = owner }.ShowDialog();
 }

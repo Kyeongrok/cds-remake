@@ -10,7 +10,7 @@ namespace CdsHelper.Game.Engine.Sea;
 /// <code>
 ///   격자        23 x 17 육각 — 짝수 X 줄에는 Y=16 이 없다(0x00441C5F)
 ///   배          열여섯 — 0~7 아군 · 8~15 적
-///   처음 자리   아군 X=17 · 적 X=5, Y=7·8·9, 방향 아군 rand(2)+4 · 적 rand(2)+1(0x00442244)
+///   처음 자리   아군 판종류 k = rand(4)(0x004421B9) · 적 (k+2)%4 — 위 · 오른쪽 · 아래 · 왼쪽(<see cref="Place"/>)
 ///   걸음 하나   먼저 돈다(0 그대로 · 1 오른쪽 · 2 왼쪽) → <b>그리고 한 칸 나아간다</b>(0x0043AC00)
 ///   이동력      0x004349A0 — (바람세기+1) * 추진력 * 돛효율 / 100 + 1, 최대 6, 정면 역풍이면 1
 ///   한 턴       계획 → 결정 → 적의 길(0x0043B710) → 모든 배가 걸음 하나씩 나란히(0x0043CA60)
@@ -252,38 +252,33 @@ public sealed class SeaBattle
     /// 배를 판에 올린다. <paramref name="slot"/> 은 그 편 안의 차례(0~7), 0 이 기함이다.
     /// </summary>
     /// <remarks>
-    /// 원본 <c>0x00442244</c> 은 아군 X=17 · 적 X=5 에 Y=7·8·9 로 세운다. 넷째부터의 자리는
-    /// 아직 못 짚어 옆 줄(X∓1, X∓2 …)로 벌려 세운다.
+    /// 편의 판종류(<see cref="SideOf"/>)로 기함 자리와 대열 벌·부호를 가른다(<c>0x00442219</c>~<c>0x00442B38</c>).
+    /// <code>
+    ///   k 0 위       기함 (11, 3)   방향 3             호위 (11 − ΔX, 3 − ΔY)   첫 벌
+    ///   k 1 오른쪽   기함 (17, R)   방향 rand(2)+4     호위 (17 − ΔX, R − ΔY)   둘째 벌
+    ///   k 2 아래     기함 (11, 13)  방향 0             호위 (11 + ΔX, 13 + ΔY)  첫 벌
+    ///   k 3 왼쪽     기함 (5, L)    방향 rand(2)+1     호위 (5 + ΔX, L + ΔY)    둘째 벌
+    ///   R = 대열 0·4·6 이면 7 · 5 면 9 · 그 밖 8 ,  L = 대열 0·4·6 이면 9 · 5 면 7 · 그 밖 8
+    /// </code>
+    /// 부호는 짝수 k 가 (k − 1), 홀수 k 가 (k − 2) 이고 <b>ΔX 와 ΔY 둘 다</b>에 곱한다(<c>0x00442B12</c> · <c>0x00442B22</c>).
+    /// 그래서 맞선 두 편의 대열은 판 가운데에서 점대칭한 꼴로 마주 본다. 대열이 없으면(모의해전 연습선) 대열 0 으로 친다.
     /// </remarks>
     public Ship Place(bool mine, int slot, string name, int speed, int[] sails, int art,
                       int hp = 50, int crew = 30, int minCrew = 10, int gun = -1, int figurehead = -1,
                       int formation = -1, string hullName = "", int cargo = 0, int guns = 0, int maxHp = 0)
     {
         int index = (mine ? 0 : PerSide) + Math.Clamp(slot, 0, PerSide - 1);
-        int baseX = mine ? 17 : 5;
-        int x, y;
-        if (formation is >= 0 and < FormationCount)
+        int side = SideOf(mine);
+        int f = formation is >= 0 and < FormationCount ? formation : 0;
+        var (fx, fy) = FlagshipCell(side, f);
+        int x = fx, y = fy;
+        if (slot > 0)
         {
-            // 대열 — 기함 자리에 호위 (ΔX, ΔY) 를 더한다(0x004421F6). 곱하는 부호는 판종류−2 다
-            // (0x00442B22 — 아군 1 이면 −1, 적 3 이면 +1)고 <b>ΔX 와 ΔY 둘 다</b>에 곱한다(0x00442B28 · 0x00442B33).
-            // 기함 줄도 적은 거울상이라(0x004422AE) 적 대열은 아군 대열을 (11, 8) 에서 점대칭한 꼴이다 —
-            // 아군은 오른쪽 끝(X=17)에서 왼쪽으로, 적은 왼쪽 끝(X=5)에서 오른쪽으로 펼쳐 서로 마주 본다.
-            // 예전에는 ΔX 만 뒤집고 적 기함 줄도 아군 것을 써서 적 대열이 위아래로 어긋났다.
-            int sign = mine ? -1 : 1;
-            int flagY = FlagshipRow(formation, mine);
-            if (slot == 0) { x = baseX; y = flagY; }
-            else
-            {
-                var (dx, dy) = Formations[formation][Math.Min(slot, 7) - 1];
-                x = baseX + sign * dx;
-                y = flagY + sign * dy;
-            }
-        }
-        else
-        {
-            int rank = slot / 3, file = slot % 3;
-            x = baseX + (mine ? rank : -rank);
-            y = 7 + file;
+            bool vertical = (side & 1) == 0;
+            int sign = vertical ? side - 1 : side - 2;
+            var (dx, dy) = (vertical ? FormationsTopBottom : Formations)[f][Math.Min(slot, 7) - 1];
+            x = fx + sign * dx;
+            y = fy + sign * dy;
         }
         (x, y) = FreeCellNear(x, y);
 
@@ -293,7 +288,7 @@ public sealed class SeaBattle
             Name = name,
             X = x,
             Y = y,
-            Way = mine ? _rng.Next(2) + 4 : _rng.Next(2) + 1,
+            Way = SideWay(mine),
             Speed = speed,
             Sails = sails,
             Art = art,
@@ -311,6 +306,54 @@ public sealed class SeaBattle
         ship.Power = PowerOf(ship);
         return ship;
     }
+
+    /// <summary>편마다 한 번 굴린 처음 방향 — [0] 아군 · [1] 적.</summary>
+    private readonly int?[] _sideWay = new int?[2];
+
+    /// <summary>
+    /// 그 편의 처음 방향. 원본은 편마다 기함 자리를 정할 때 방향을 <b>한 번만</b> 정해 <c>[edi+4]</c> 에 두고
+    /// (<c>0x0044222F</c> · <c>0x00442279</c> · <c>0x0044229E</c> · <c>0x004422DC</c>), 호위선은 그 값을 베낀다
+    /// (<c>0x00442B3B</c> → <c>[ebx+8]</c>) — 한 편의 배는 모두 같은 쪽을 보고 선다. 위 편은 3, 아래 편은 0,
+    /// 오른쪽 편은 rand(2)+4, 왼쪽 편은 rand(2)+1 이다.
+    /// </summary>
+    private int SideWay(bool mine)
+    {
+        int k = mine ? 0 : 1;
+        return _sideWay[k] ??= SideOf(mine) switch
+        {
+            0 => 3,
+            1 => _rng.Next(2) + 4,
+            2 => 0,
+            _ => _rng.Next(2) + 1,
+        };
+    }
+
+    /// <summary>
+    /// 아군 판종류 0~3 — 0 위 · 1 오른쪽 · 2 아래 · 3 왼쪽. 원본은 해전마다 rand(4) 로 굴린다(<c>0x004421B9</c>,
+    /// 괴물 판도 같다). 배를 놓기 전에 매겨야 한다. 굴리지 않으면 오른쪽이다.
+    /// </summary>
+    public int OurSide
+    {
+        get => _ourSide;
+        set => _ourSide = ((value % 4) + 4) % 4;
+    }
+
+    private int _ourSide = 1;
+
+    /// <summary>그 편의 판종류 — 적은 아군의 맞은편 (k+2)%4 다(<c>0x004421CB</c>).</summary>
+    public int SideOf(bool mine) => mine ? OurSide : (OurSide + 2) % 4;
+
+    /// <summary>
+    /// 그 판종류의 기함 칸(<c>0x00442219</c>~<c>0x004422D6</c>) — 위 (11, 3) · 아래 (11, 13) 은 대열과 상관없고,
+    /// 오른쪽 (17, R) · 왼쪽 (5, L) 의 줄은 대열로 가른다(<see cref="Place"/>).
+    /// </summary>
+    public static (int X, int Y) FlagshipCell(int side, int formation) => (((side % 4) + 4) % 4) switch
+    {
+        0 => (11, 3),
+        1 => (17, formation is 0 or 4 or 6 ? 7 : formation == 5 ? 9 : 8),
+        2 => (11, 13),
+        _ => (5, formation is 0 or 4 or 6 ? 9 : formation == 5 ? 7 : 8),
+    };
 
     // ── 괴물 놓기 ─────────────────────────────────────────────────────────
 
@@ -347,14 +390,13 @@ public sealed class SeaBattle
     ///     k 3   X = 12 − rand(12) , Y = rand(15)+1 , 방향 rand(2)+1
     ///   몸 조각의 방향은 늘 2 다(0x00442D43)
     /// </code>
-    /// 원본은 아군 판종류를 rand(4) 로 굴리지만(<c>0x004421B9</c>) 앱은 아군을 늘 오른쪽(판종류 1)에 세우므로
-    /// 괴물은 판종류 3(왼쪽 절반)에 선다.
+    /// 괴물 판도 아군 판종류를 rand(4) 로 굴리므로(<c>0x004421B9</c>) 괴물은 <see cref="SideOf"/>(적) 쪽 표로 선다.
     /// </remarks>
-    public Ship PlaceMonster(int person, int ourSide = 1)
+    public Ship PlaceMonster(int person)
     {
         var (might, hp, cargo, art) = MonsterStats(person);
         int x, y, way;
-        switch (((ourSide + 2) % 4 + 4) % 4)
+        switch (SideOf(mine: false))
         {
             case 0: x = _rng.Next(21) + 1; y = 7 - _rng.Next(7); way = 3; break;
             case 1: x = _rng.Next(12) + 10; y = _rng.Next(15) + 1; way = _rng.Next(2) + 4; break;
@@ -429,7 +471,7 @@ public sealed class SeaBattle
         ["세로 한 줄", "둘러싸기", "넓게 감싸기", "흩어짐", "빗금 쐐기", "오른빗금", "왼빗금", "부채"];
 
     /// <summary>
-    /// 호위함 일곱의 (ΔX, ΔY) — 대열마다(볼트 84, <c>0x0044231E</c>~ 앞 벌).
+    /// 호위함 일곱의 (ΔX, ΔY) 둘째 벌 — 오른쪽·왼쪽 편이 쓴다(볼트 84, <c>0x0044231E</c>~).
     /// </summary>
     /// <remarks>
     /// 원본 스택 표는 <b>대열 여덟 x 벌 둘</b>(한 대열이 112바이트 = 일곱 쌍 x 두 벌)이고,
@@ -437,15 +479,17 @@ public sealed class SeaBattle
     /// <code>
     ///   ecx = 표 + 대열 * 112
     ///   판종류 &amp; 1
-    ///     짝(0 괴물 · 2)    첫 벌 [ecx]        · ΔX x (판종류 − 1)
-    ///     홀(1 아군 · 3 적) 둘째 벌 [ecx+0x38] · ΔX x (판종류 − 2)   ; 아군 −1 · 적 +1
+    ///     짝(0 위 · 2 아래)     첫 벌 [ecx]        · ΔX·ΔY x (판종류 − 1)   ; 위 −1 · 아래 +1
+    ///     홀(1 오른쪽 · 3 왼쪽) 둘째 벌 [ecx+0x38] · ΔX·ΔY x (판종류 − 2)   ; 오른쪽 −1 · 왼쪽 +1
     /// </code>
-    /// 곧 <b>아군도 적도 둘째 벌</b>을 쓰고, 가로만 서로 뒤집혀 마주 본다. 여기 옮긴 것이
-    /// 그 둘째 벌이다 — 예전에는 볼트에 적힌 앞 여덟 줄(대열 0~3 의 두 벌)을 여덟 대열로
-    /// 늘어놓아, 아군이 안 쓰는 벌이 절반이고 대열 4~7 은 아예 빠져 있었다.
+    /// 곧 오른쪽(1)·왼쪽(3) 편은 둘째 벌을, 위(0)·아래(2) 편은 첫 벌(<see cref="FormationsTopBottom"/>)을 쓴다.
+    /// 여기 옮긴 것이 그 둘째 벌이다 — 예전에는 볼트에 적힌 앞 여덟 줄(대열 0~3 의 두 벌)을 여덟 대열로
+    /// 늘어놓아, 쓰이지 않는 벌이 절반이고 대열 4~7 은 아예 빠져 있었다.
     ///
     /// 표는 스택에 상수로 깔리는 것이라 코드에서 떠냈다. <b>대열 7 의 다섯째 ΔY</b> 하나만
-    /// 레지스터로 들어가 못 읽어, 넷째(−4)의 짝으로 보아 4 로 둔다.
+    /// 레지스터로 들어가는데(<c>0x00442AA3 mov [ebp-0x68], ebx</c>), 그 ebx 는 <c>0x0044244A</c> 에서
+    /// 3 으로 한 번 채워지고 그 사이에 안 바뀌므로 3 이다. 홀수 ΔX 짝은 육각 격자에서 (1,−4)·(1,3) 이
+    /// 위아래로 맞선다(대열 1 의 (1,−2)·(1,1) 과 같은 꼴) — 예전에는 넷째의 짝으로 보아 4 로 뒀다.
     /// </remarks>
     public static readonly (int Dx, int Dy)[][] Formations =
     [
@@ -456,18 +500,25 @@ public sealed class SeaBattle
         [(0, -2), (1, 1), (1, -4), (2, 3), (2, -5), (3, 4), (3, -7)],
         [(2, 2), (-2, -2), (2, 4), (-2, -4), (2, 6), (-2, -6), (2, 8)],
         [(2, -2), (-2, 2), (2, -4), (-2, 4), (2, -6), (-2, 6), (2, -8)],
-        [(2, 0), (0, -1), (0, 1), (1, -4), (1, 4), (-2, -2), (-2, 2)],
+        [(2, 0), (0, -1), (0, 1), (1, -4), (1, 3), (-2, -2), (-2, 2)],
     ];
 
     /// <summary>
-    /// 기함 Y — 아군은 대열 0·4·6 이 7, 5 가 9, 그 밖은 8(<c>0x0044224B</c>)이고, 적은 그 거울상으로
-    /// 0·4·6 이 9, 5 가 7, 그 밖은 8 이다(<c>0x004422AE</c>).
+    /// 호위함 일곱의 (ΔX, ΔY) 첫 벌 — 위(판종류 0)·아래(2) 편이 쓴다(<c>0x0044231E</c>~ 스택 표의 대열마다 앞 56바이트,
+    /// <c>0x00442B12</c> 가 <c>[ecx]</c> · <c>[ecx+4]</c> 를 읽는다). 둘째 벌(<see cref="Formations"/>)을 가로세로로
+    /// 눕힌 꼴이다.
     /// </summary>
-    public static int FlagshipRow(int formation, bool mine = true)
-    {
-        int row = formation is 0 or 4 or 6 ? 7 : formation == 5 ? 9 : 8;
-        return mine ? row : 16 - row;
-    }
+    public static readonly (int Dx, int Dy)[][] FormationsTopBottom =
+    [
+        [(-2, 0), (2, 0), (-4, 0), (4, 0), (-6, 0), (6, 0), (-8, 0)],
+        [(0, -3), (-2, -2), (2, -2), (-3, -1), (3, -1), (-1, 1), (1, 1)],
+        [(0, -3), (2, -2), (-2, -2), (3, 0), (-3, -2), (5, 1), (-5, 1)],
+        [(-1, -3), (1, -3), (-2, 1), (2, 1), (-4, -1), (4, -1), (0, 2)],
+        [(-2, 0), (2, -1), (-4, -1), (4, -2), (-6, -2), (6, -3), (-8, -3)],
+        [(1, -3), (-1, 1), (3, -3), (-3, 1), (5, -3), (-5, 1), (7, -3)],
+        [(-1, -3), (1, 1), (-3, -3), (3, 1), (-5, -3), (5, 1), (-7, -3)],
+        [(0, -3), (-1, 0), (1, 0), (-3, -2), (3, -2), (-3, 1), (3, 1)],
+    ];
 
     /// <summary>
     /// 판 안에서 비어 있는 가장 가까운 칸. 원본이 판 밖·겹침을 비키는 셈(<c>0x00442B0A</c> 뒤)은 아직

@@ -464,8 +464,8 @@ public sealed class LandBattle
     /// 그 자리 부대가 쓰는 <b>기능</b> 자리(0~3).
     /// </summary>
     /// <remarks>
-    /// 아군은 제독과 부관 중 큰 쪽이고(<c>0x00446F70</c>), 적은 대장 인물을 아직 안
-    /// 들고 있어 능력에서 어림한다.
+    /// 아군은 제독과 부관 중 큰 쪽이고(<c>0x00446F70</c>), 적은 <see cref="FoeSkill"/> 이다 — 대본이 준 대장
+    /// 인물이 있으면 그 사람 기능, 없으면 판을 세울 때 도시 규모로 매긴 등급이다(<c>0x00449FBB</c>).
     /// </remarks>
     public int SkillAt(int slot, int skill)
     {
@@ -696,7 +696,7 @@ public sealed class LandBattle
     }
 
     /// <summary>
-    /// 적 대장의 실제 기능(검술 · 포술 · 사격술). 인물을 아는 판만 준다 — 없으면 능력에서 어림한다.
+    /// 적 대장의 실제 기능(검술 · 포술 · 사격술). 인물을 아는 판만 준다 — 없으면 도시 규모 등급을 쓴다(<c>0x00449FBB</c>).
     /// </summary>
     /// <remarks>게임은 <c>0x00446F70(기능, 6)</c> 으로 적 대장 인물 레코드를 본다.</remarks>
     public (int Sword, int Gunnery, int Shooting)? FoeSkills { get; init; }

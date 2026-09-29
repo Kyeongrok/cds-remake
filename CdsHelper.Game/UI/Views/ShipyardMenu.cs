@@ -476,7 +476,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         Say("어느 상을 달겠나?");                                   // 0x00531C10
         int at = HintListDialog.Pick(owner,
             [.. offer.Select((i, k) => $"{NameOf(i),-12}{CostOf(i, k < stock.Count),7}닢")],
-            "선수상 선택", "달 수 있는 선수상이 없습니다", CarveHead);
+            "선수상 선택", "달 수 있는 선수상이 없습니다", CarveHead, preview: k => FigureheadPicture(offer[k]));
         if (at < 0) return;
 
         int pick = offer[at];
@@ -1017,6 +1017,15 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 안 쓰이는 벌 <c>0x0053C078</c> 도 "선수상     가격" 으로 적어 두고 있다.
     /// </remarks>
     private const string CarveHead = " 선수상 명    가격";
+
+    /// <summary>
+    /// 선수상 그림 — 아이템 213 + 선수상 번호의 그림이다(0x00443920 이 0x00465850(6, 번호)로 찾아
+    /// 0x00406870 으로 찍는다). 못 찾으면 null.
+    /// </summary>
+    private System.Windows.Media.ImageSource? FigureheadPicture(int figurehead) =>
+        _game.Items?.Find(Figureheads.ToItem(figurehead)) is { HasPic: true } record
+            ? _game.ItemPictures?.TryGetImage(record.Pic)
+            : null;
 
     /// <summary>대포 고르는 목록의 머리글(<c>0x005323A8</c>, <c>0x004441FD</c>).</summary>
     private const string GunHead = "    대포명   단가   중량";

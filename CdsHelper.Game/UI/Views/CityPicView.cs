@@ -1856,7 +1856,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>함대 정보 판.</summary>
     private void ShowFleet() => KeepCityMenu(() => FleetInfoDialog.Show(this, _player, items: _game.Items,
                                                                     cargoName: c => GameInfo.CargoLabel(_game, c),
-                                                                    cargoInfo: (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind), game: _game));
+                                                                    cargoInfo: (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind, c.Shelf), game: _game));
 
     /// <summary>
     /// 정보 판 하나를 띄우는 동안 도시 커맨드 창을 감춰 두었다가 <b>도로 편다</b> — 게임은 판을 닫으면 차림표를
@@ -1923,7 +1923,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private void ShowCityInfo() => KeepCityMenu(() =>
         CityInfoDialog.Show(this, _cityName, _cityId, _game.CityRows,
                             _game.Nations, _game.Goods, _game.ItemPictures,
-                            Market?.Rates ?? _game.Rates));
+                            Market?.Rates ?? _game.Rates,
+                            TradeRules?.ShownSpecials(_player, _cityId)));
 
     /// <summary>
     /// 여관에 묵는다. 게임 차례 그대로 — 값을 부르고, YES 면 그때서야 돈을 본다.
@@ -2384,7 +2385,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <remarks>
     /// 후원자는 도시·건물 코드로 앉는다(<see cref="PatronMenu.At"/>). <b>항구에는 안 앉힌다</b> — 후원자 표에서 에라스무스만
     /// 런던 건물 0(런던항)을 가리키는데, 항구 차림표에는 설득 줄이 없고 문간 관문(0x0040D370)도 후원자 건물 다섯 벌에만
-    /// 있어, 앉혀 봐야 항구 문에서 명성을 재고 집사 얼굴이 바뀌는 탈만 난다. 원본에서 그를 어디서 만나는지는 아직 못 밝혔다.
+    /// 있어, 앉혀 봐야 항구 문에서 명성을 재고 집사 얼굴이 바뀌는 탈만 난다. 원본은 코드 0 시설에 후원자를 물리지 않아
+    /// (<c>0x0044E5C0</c> 을 가진 시설 코드는 2·3·12·13·14·15뿐) 그를 아무 데서도 못 만난다 — 우리는 런던 교회에 앉힌다
+    /// (<see cref="Engine.Table.SponsorTable.SeatedAt"/>).
     /// </remarks>
     private Patron? PatronAt(int code, string kind) =>
         kind == "항구" || code == HarborCode ? null : Patrons.At(code, kind, KindsHere);
@@ -2645,7 +2648,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     void ITownScreen.Stay() => Stay();
 
     void ITownScreen.OddJob() => OddJob();
-    void ITownScreen.ShowMates() => MateRosterDialog.Show(this, _player, _game.World?.People);
+    void ITownScreen.ShowMates() => MateRosterDialog.Show(this, _player, _game.World?.People, _game);
 
     void ITownScreen.LeaveHeir() => HomeRooms.LeaveHeir();
     void ITownScreen.Succeed() => HomeRooms.Succeed();

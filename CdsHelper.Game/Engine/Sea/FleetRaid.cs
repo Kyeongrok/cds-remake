@@ -114,8 +114,8 @@ public static class FleetRaid
     /// 별자리 번호를 이미 아는 사람의 운세 여덟 칸(<c>0x00477FE0</c> 의 뒷부분).
     /// </summary>
     /// <remarks>
-    /// 아내처럼 <b>생월·생일</b>로 별자리를 쥔 사람(<c>vtbl+0x28</c> = <c>0x0047CB50</c>)은 얼굴로
-    /// 별자리를 지어내지 않는다. 여급 표는 별자리 번호를 그대로 들고 있다.
+    /// 여급(아내, vtbl+0x28 = <c>0x00479560</c> — 여급 표 <c>+0x0C</c>)과 후원자(vtbl+0x28 = <c>0x004AD790</c> —
+    /// 후원자 표 <c>+0x18</c>)는 얼굴로 별자리를 지어내지 않고 표의 별자리 번호를 그대로 쓴다.
     /// </remarks>
     public static int[] FortuneOfZodiac(int zodiac, int blood)
     {
@@ -160,8 +160,9 @@ public static class FleetRaid
     ///   규모 = 도시[ 나라형편[적장.나라].수도 ].+0x08
     ///   금화 = (100*(규모+1) + rand(100)) * 꺾음
     /// </code>
-    /// 규모는 살아 있는 도시 레코드 값인데, 우리는 도시가 자라는 셈을 안 들고 있어
-    /// <b>EXE 의 처음 규모</b>(<c>도시표 +0x28</c>)로 갈음한다.
+    /// 규모는 살아 있는 도시 레코드 <c>+0x08</c> 이다 — 부르는 쪽이 <c>CityExeTable.ScaleOf</c> 로 주는데, 그 값은
+    /// 역사 대본이 바꾼 규모(<c>Player.CityScales</c>)가 도시표 첫값을 덮은 것이다.
+    /// 수도(나라 레코드 <c>+0x00</c>)는 로더(<c>0x0041B430</c>)와 판 열기(<c>0x0041B320</c>) 말고 쓰는 데가 없어 나라 표 값이다.
     /// </remarks>
     public static int Loot(int scale, int downed, Random rng) =>
         downed <= 0 ? 0 : (100 * (Math.Max(0, scale) + 1) + rng.Next(100)) * downed;

@@ -652,7 +652,13 @@ internal sealed class LandBattleScene : GameWindow
             foreach (var line in bout)
             {
                 if (line.Damage > 0 || line.Text.Length == 0) continue;
-                if (line.Actor >= 0) { Balloon(line.Actor, line.Text); continue; }
+                if (line.Actor >= 0)
+                {
+                    Balloon(line.Actor, line.Text);
+                    // 주술사가 비를 부르면 말풍선 뒤에 빗줄기를 뿌린다(0x00448CCF → 0x00448CEB).
+                    if (line.Sound == LandUnits.Sound.Rain) Rain();
+                    continue;
+                }
                 Redraw();
                 NoticeDialog.Show(this, line.Text, "");
             }
@@ -833,6 +839,67 @@ internal sealed class LandBattleScene : GameWindow
     {
         double wide = text.Sum(c => c < 0x80 ? 0.5 : 1.0);
         return Math.Max(1, (int)Math.Ceiling(wide));
+    }
+
+    /// <summary>
+    /// 주술사가 부른 비 — 빗줄기 일흔다섯 줄기가 스무 눈금 동안 왼아래로 쏟아진다(<c>0x00445990</c>).
+    /// </summary>
+    /// <remarks>
+    /// 「애니메이션」을 끄면 안 돈다(<c>0x00448CDC</c> 가 <c>[0x005A4874] &amp; 1</c> 을 본다).
+    /// <code>
+    ///   자리 짓기(0x004458F0)   k = 0..74 , W = 판 폭
+    ///     x = rand(W/20) + (k%10) * (W/10)
+    ///     y = −96 * (k/10) − rand(16) − (k%2) * 64
+    ///   빗소리 0x3F 를 되풀이해 틀고(0x004459DB) 스무 번(0x004459E0) —
+    ///     m = k%3 ;  x −= (m+1)*16 ,  x &lt; 0 이면  x = W − rand(16) , y += rand(16)   (0x00445880)
+    ///                y += (m+2)*16 ,  y ≥ H 이면  x += rand(16)     , y = −rand(16)   (0x004458C0)
+    ///     빗줄기 32x32 를 (x, y)에 찍고 한 눈금 쉰다(0x00428000(1, 0))
+    ///   빗소리를 끊는다(0x00445ACB 의 0x00422A40(0x3F, 3))
+    /// </code>
+    /// </remarks>
+    private void Rain()
+    {
+        if (_quick || _art?.TryGetRaindrop() is not { } drop) return;
+
+        const int Drops = 75, Frames = 20, Side = LandArt.RaindropSide;
+        int w = LandArt.FieldWidth, h = LandArt.FieldHeight;
+        var dice = _game?.Random ?? new Random();
+        var x = new int[Drops];
+        var y = new int[Drops];
+        var shown = new Image[Drops];
+        for (int k = 0; k < Drops; k++)
+        {
+            x[k] = dice.Next(w / 20) + k % 10 * (w / 10);
+            y[k] = -96 * (k / 10) - dice.Next(16) - k % 2 * 64;
+            shown[k] = Picture(drop, Side, Side);
+            shown[k].IsHitTestVisible = false;
+            Panel.SetZIndex(shown[k], BubbleDepth);
+            _board.Children.Add(At(shown[k], x[k], y[k]));
+        }
+
+        _game?.Sfx?.PlayLoop(LandUnits.Sound.Rain);
+        try
+        {
+            for (int frame = 0; frame < Frames; frame++)
+            {
+                for (int k = 0; k < Drops; k++)
+                {
+                    int m = k % 3;
+                    x[k] -= (m + 1) * 16;
+                    if (x[k] < 0) { x[k] = w - dice.Next(16); y[k] += dice.Next(16); }
+                    y[k] += (m + 2) * 16;
+                    if (y[k] >= h) { x[k] += dice.Next(16); y[k] = -dice.Next(16); }
+                    Canvas.SetLeft(shown[k], x[k]);
+                    Canvas.SetTop(shown[k], y[k]);
+                }
+                Rest(Tick);
+            }
+        }
+        finally
+        {
+            _game?.Sfx?.StopLoop();
+            foreach (var one in shown) _board.Children.Remove(one);
+        }
     }
 
     /// <summary>말풍선이 머무는 밀리초와 그것을 얹는 높이.</summary>

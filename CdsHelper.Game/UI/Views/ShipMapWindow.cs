@@ -726,6 +726,24 @@ public sealed class ShipMapWindow : Window
         Action endWeather = () => Dispatcher.Invoke(EndWeather);
         LandBattleScene.Opening += endWeather;
         DuelDialog.Opening += endWeather;
+
+        // 게임을 끝낼 때는 늘 마지막 그림(MISC.CDS 파트 9)을 띄우고 닫는다(0x00410F90 → 0x004068E0).
+        // END GAME · CONTINUE? 아니오 · 창 닫기가 모두 이 창을 닫으므로 여기 한 자리에서 건다.
+        // 원본도 그림 앞에서 소리를 끈다(0x00410FC4 · 0x00410FD8).
+        bool farewell = false;
+        Closing += (_, e) =>
+        {
+            if (farewell || e.Cancel) return;
+            farewell = true;
+            e.Cancel = true;
+            Dispatcher.BeginInvoke(() =>
+            {
+                _overlay.IsOpen = false;
+                _game.Bgm.Stop();
+                ExitSplash.Show(this, _game.Directory);
+                Close();
+            });
+        };
         Closed += (_, _) =>
         {
             LandBattleScene.Opening -= endWeather;
@@ -3006,7 +3024,7 @@ public sealed class ShipMapWindow : Window
         // 바다에서는 함대좌표 칸에 지금 자리를 적는다. 도시 안이라면 게임처럼 "---" 다.
         ("함대정보", () => Info(() => FleetInfoDialog.Show(this, _game.Player, CoordLine(), _game.Items,
                                                         c => GameInfo.CargoLabel(_game, c),
-                                                        (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind), _game))),
+                                                        (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind, c.Shelf), _game))),
         // 부하가 있으면 게임처럼 누구를 볼지 먼저 묻는다 — 도시 창과 한 벌이다.
         ("인물정보", PersonInfo),
         // 설명문과 그림을 <b>같이 넘긴다</b> — null 로 두어 바다에서 연 소지품 창만
@@ -4238,7 +4256,7 @@ public sealed class ShipMapWindow : Window
 
                 if (won && end.EnemyDowned + end.EnemyCaptured > 0)
                 {
-                    // 규모는 EXE 의 처음 규모로 갈음한다(도시가 자라는 셈은 아직 없다).
+                    // 규모는 지금 도시 규모다 — ScaleOf 가 역사 대본이 바꾼 값(Player.CityScales)을 먼저 본다.
                     int scale = _game.CityRows?.ScaleOf(capital) ?? 0;
                     int gold = FleetRaid.Loot(scale, end.EnemyDowned + end.EnemyCaptured, rng);
                     ConfirmDialog.Tell(board, $"전리품으로서 금화 {gold} 닢을 손에 넣었다!", Title);   // 0x0056A828
