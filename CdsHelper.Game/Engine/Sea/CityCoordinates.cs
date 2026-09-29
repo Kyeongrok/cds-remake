@@ -29,7 +29,7 @@ public static class CityCoordinates
     public const int AskRegionFrom = 16;
 
     /// <summary>안내 글(<c>0x005333E0</c>) — 문화권을 물을 때 한 번 낸다.</summary>
-    public const string Guide = "알고 싶은 도시의 문화권 좌표를 선택해 주십시오. "
+    public const string Guide = "알고 싶은 도시의 문화권 좌표를 선택해 주십시오.\n"
                               + "전도시 일람으로, 전도시를 표시해 선택할 수도 있습니다";
 
     /// <summary>문화권 목록 끝에 붙는 줄(<c>0x005333D0</c>)과 도시 목록의 제목(<c>0x005333C0</c>).</summary>
