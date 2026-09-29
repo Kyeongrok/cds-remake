@@ -526,9 +526,19 @@ public sealed class Game
             // 처형한 사람은 세상을 새로 지어도 안 돌아온다(0x00432180(0) 이 세이브에 남는 것과 같다).
             foreach (var row in _world.People)
                 if (Player.Executed.Contains(row.Id)) row.Appear = 0;
+            // 판에 딸린 사람들(누적 캐릭터 276~280)을 다시 앉힌다 — 원본은 그 인물 레코드를 세이브에
+            // 그대로 적어(0x00431E90) 불러와도 남는데, 우리는 세상을 새로 지으므로 지을 때마다 다시 건다.
+            // 해전 뒤 수도로 돌려보낸 일도 따라잡을 때 그날마다 다시 한다(0x00432400).
+            _world.Recalls = Player.Recalls;
+            WorldBuilt?.Invoke(_world);
             return _world;
         }
     }
+
+    /// <summary>
+    /// 인물 세상을 새로 지은 직후에 부른다(아직 날짜를 따라잡기 전이다). 누적 캐릭터를 다시 앉히는 자리다.
+    /// </summary>
+    public Action<PersonWorld>? WorldBuilt { get; set; }
 
     /// <summary>
     /// 일기토에 이긴 뒤 그 인물을 <b>처형한다</b> — 등장 칸을 0 으로 두고(<c>0x004AA35D</c> 의
@@ -659,6 +669,7 @@ public sealed class Game
     /// <summary>지금 판을 적는다. 적히는 자리는 <see cref="GameSave"/> 참고.</summary>
     public string Save(bool suspended = false)
     {
+        BeforeSave?.Invoke();
         Aging.OnSave(Player, Random);   // 원본은 제독을 적는 첫머리에서 늙는다(0x0047C680)
         string error = GameSave.Save(Player, suspended);
         // 적고 나면 「아직 저장 안 됨」이 풀린다(0x00479174 · 0x004794A2).
@@ -673,7 +684,16 @@ public sealed class Game
     /// 원본에 없는 것이라 「아직 저장 안 됨」도 안 푼다 — 그 비트는 손으로 적었을 때만
     /// 풀리는 것이 맞다.
     /// </remarks>
-    public string AutoSave() => GameSave.Save(Player, suspended: false, path: GameSave.AutoPath);
+    public string AutoSave()
+    {
+        BeforeSave?.Invoke();
+        return GameSave.Save(Player, suspended: false, path: GameSave.AutoPath);
+    }
+
+    /// <summary>
+    /// 적기 바로 앞에 부른다 — 지도 창이 들고 있는 것(하루 눈금·뱃머리·바람·뭍 자리)을 주인공 쪽에 옮겨 둔다.
+    /// </summary>
+    public Action? BeforeSave { get; set; }
 
     /// <summary>
     /// 아직 저장하지 않은 판인지(<c>0x005A4D18</c> 비트 <c>0x80</c>) — 중단저장을 불러오면 서고, 저장하면 풀린다.

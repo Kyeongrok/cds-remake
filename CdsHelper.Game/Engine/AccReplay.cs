@@ -89,6 +89,23 @@ public sealed class AccReplay
     public bool Any => _runners.Count > 0;
 
     /// <summary>
+    /// 이 날까지의 줄은 <b>조용히</b> 튼다 — 공략·보고를 알리지 않는다(<see cref="Captured"/> · <see cref="Announced"/> 를 안 부른다).
+    /// </summary>
+    /// <remarks>
+    /// 세이브를 불러와 세상을 새로 지으면 판을 연 날부터 다시 되짚는다. 그 사이의 공략(도시 나라)과
+    /// 보고(남이 앞지른 발견물)는 이미 세이브에 들어 있으므로 되풀이해 알리면 안 된다 — 원본은 인물 레코드의
+    /// 대본 위치(<c>+0x114</c>)를 적어 두어 애초에 되짚지 않는다(<c>0x00431E90</c>). 함대 목록·자리는 그대로 되살린다.
+    /// </remarks>
+    public DateTime? QuietThrough { get; set; }
+
+    /// <summary>그 사람의 늦어짐을 박는다 — 세이브를 불러와 다시 걸 때 쓴다.</summary>
+    public void SetLate(int person, int days)
+    {
+        foreach (var run in _runners)
+            if (run.Person == person) run.Late = Math.Max(0, days);
+    }
+
+    /// <summary>
     /// 하루를 넘긴다 — 사람마다 그날 있어야 할 자리로 옮긴다.
     /// </summary>
     /// <param name="today">놀이 날짜.</param>
@@ -107,6 +124,10 @@ public sealed class AccReplay
             int step = Array.FindLastIndex(run.Track, t => t.On <= at);
             if (step < 0) continue;
 
+            // 조용히 지나갈 끝 — 불러온 날까지 이미 일어난 줄이다(QuietThrough).
+            var quiet = QuietThrough is { } q
+                ? run.From.AddDays((int)(q - _opened).TotalDays - run.Late) : DateTime.MinValue;
+
             // 그날까지의 줄을 차례로 튼다 — 배가 드나든 줄은 함대 목록을 채우고 지운다.
             int arrival = -1;
             for (; run.Next <= step; run.Next++)
@@ -115,6 +136,7 @@ public sealed class AccReplay
                 if (line.Kind == Player.TraceArrival) arrival = run.Next;
                 else if (line.Kind == Player.TraceShipIn) AddHull(run.Hulls, line.A);
                 else if (line.Kind == Player.TraceShipOut) RemoveHull(run.Hulls, line.A);
+                else if (line.On <= quiet) continue;
                 else if (line.Kind == Player.TraceCapture) Captured?.Invoke(run.Person, line.A, line.B);
                 else if (line.Kind == Player.TraceDiscovery) Announced?.Invoke(run.Person, line.A);
             }

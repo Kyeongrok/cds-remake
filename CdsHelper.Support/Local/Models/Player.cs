@@ -453,6 +453,15 @@ public sealed class Player
     /// <summary>바다의 배 자리를 적어 둔다.</summary>
     public void SetSeaCell((double X, double Y)? cell) => SeaCell = cell;
 
+    /// <summary>
+    /// 오늘 하루 가운데 지난 눈금(0~47) — 게임 머리 <c>+0x14</c>(<c>0x005A4D2C</c>, 48 눈금이면 하루가 간다
+    /// <c>0x0044AF90</c>). 세이브에 적는다(<c>0x0044AE60</c>). 적을 때 지도 창이 채워 넣는다.
+    /// </summary>
+    public int DayTicks { get; private set; }
+
+    /// <summary>하루 눈금을 적어 둔다.</summary>
+    public void SetDayTicks(int ticks) => DayTicks = Math.Clamp(ticks, 0, 47);
+
     /// <summary>배운 기술과 그 자리.</summary>
     public IReadOnlyDictionary<string, int> Skills => _skills;
 
@@ -1465,6 +1474,75 @@ public sealed class Player
         _executed.Clear();
         foreach (int person in people ?? []) Execute(person);
         Loads++;                                   // 이미 지어 둔 세상이 있으면 새로 지어 덮게 한다
+    }
+
+    // ── 누적 캐릭터(인물 276~280) ────────────────────────────────────────────
+
+    /// <summary>
+    /// 누적 캐릭터를 <b>등장시킨</b> 판이면 그 판을 연 날, 아니면 null.
+    /// </summary>
+    /// <remarks>
+    /// 게임은 NEW GAME 에서 은퇴한 제독을 인물 276~280 에 앉히고(<c>0x0041AF00</c>) 그 인물 레코드를 통째로
+    /// 세이브에 적는다 — 지난 날수 <c>+0x110</c> · 대본 위치 <c>+0x114</c> · 늦어짐(<c>0x00432290</c>) ·
+    /// 함대 선체 여덟 칸(<c>0x00432160</c>, 인물 <c>0x114</c>~<c>0x118</c> 만 — <c>0x00432034</c>)이다.
+    /// 우리 인물 세상은 날짜로 다시 짓는 것이라 앉힌 날만 적어 두고, 세상을 지을 때마다 다시 앉혀
+    /// 그날부터 행적을 되짚는다. 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
+    /// </remarks>
+    public DateTime? AccOpened { get; private set; }
+
+    /// <summary>누적 캐릭터를 앉힌 날을 적는다(없애려면 null).</summary>
+    public void SetAccOpened(DateTime? on) => AccOpened = on;
+
+    private readonly Dictionary<int, int> _accLate = [];
+
+    /// <summary>
+    /// 누적 캐릭터마다 늦어진 날수 — 인물 번호 → 날수(<c>0x00432290</c>). 술집 일기토에 지면 밀린다(<c>0x004A4A3D</c>).
+    /// </summary>
+    public IReadOnlyDictionary<int, int> AccLate => _accLate;
+
+    /// <summary>그 누적 캐릭터를 그만큼 더 늦춘다.</summary>
+    public void AddAccLate(int person, int days)
+    {
+        if (person < 0 || days <= 0) return;
+        _accLate[person] = (_accLate.TryGetValue(person, out int was) ? was : 0) + days;
+    }
+
+    /// <summary>세이브에서 누적 캐릭터를 되돌린다. 이 칸 앞의 세이브는 등장시키지 않은 판이다.</summary>
+    public void RestoreAcc(DateTime? opened, IReadOnlyDictionary<int, int>? late)
+    {
+        AccOpened = opened;
+        _accLate.Clear();
+        foreach (var (person, days) in late ?? new Dictionary<int, int>()) AddAccLate(person, days);
+        Loads++;                                   // 세상을 새로 지어 다시 앉히게 한다
+    }
+
+    /// <summary>해전 뒤 제 나라 수도로 돌려보낸 사람 — 누구를(인물 번호), 어느 수도로, 언제.</summary>
+    public sealed record Recall(int Person, int Capital, DateTime On);
+
+    private readonly List<Recall> _recalls = [];
+
+    /// <summary>
+    /// 해전 뒤끝에 수도로 돌려보낸 사람들(<c>0x00432400</c> — <c>0x0048CCD7</c> 이 부른다).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 인물 레코드의 소재·목적지·날 셈을 세이브에 그대로 적는다(<c>0x00431E90</c>). 우리 인물 세상은
+    /// 날짜로 다시 짓는 것이라 돌려보낸 일을 여기 적어 두고, 세상을 따라잡을 때 그날에 다시 돌려보낸다
+    /// (<c>PersonWorld.Advance</c>). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
+    /// </remarks>
+    public IReadOnlyList<Recall> Recalls => _recalls;
+
+    /// <summary>그 사람을 그날 그 수도로 돌려보냈다고 적는다.</summary>
+    public void AddRecall(int person, int capital, DateTime on)
+    {
+        if (person >= 0) _recalls.Add(new Recall(person, capital, on.Date));
+    }
+
+    /// <summary>세이브에서 돌려보낸 사람들을 되돌린다.</summary>
+    public void RestoreRecalls(IEnumerable<Recall>? recalls)
+    {
+        _recalls.Clear();
+        foreach (var r in recalls ?? []) AddRecall(r.Person, r.Capital, r.On);
+        Loads++;                                   // 세상을 새로 지어 그날들에 다시 돌려보내게 한다
     }
 
     private readonly Dictionary<string, PatronDock> _patronDocks = [];

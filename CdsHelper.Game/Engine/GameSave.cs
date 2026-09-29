@@ -225,7 +225,10 @@ public static class GameSave
         Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null,
         List<int>? GoneBarmaids = null,
         int? Infamy = null, int? AgingYear = null, List<int>? AgingSteps = null,
-        List<int>? Settled = null, List<int>? Unresolved = null);
+        List<int>? Settled = null, List<int>? Unresolved = null,
+        DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
+        List<Player.Recall>? Recalls = null,
+        int? DayTicks = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -368,7 +371,15 @@ public static class GameSave
                             // 자리 사건을 매듭지은 발견물(깃발 0x0100). 이 칸 앞의 세이브는 찾은 것으로 채운다.
                             Settled: [.. player.Settled],
                             // 모조품을 들켜 도장만 찍힌 발견물. 이 칸 앞의 세이브는 없는 것으로 연다.
-                            Unresolved: [.. player.Unresolved]);
+                            Unresolved: [.. player.Unresolved],
+                            // 누적 캐릭터를 앉힌 날과 사람마다 늦어짐 — 원본은 인물 276~280 레코드째로 적는다
+                            // (0x00431E90). 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
+                            AccOpened: player.AccOpened,
+                            AccLate: player.AccLate.Count > 0 ? player.AccLate.ToDictionary(e => e.Key, e => e.Value) : null,
+                            // 해전 뒤 수도로 돌려보낸 사람(0x00432400). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
+                            Recalls: player.Recalls.Count > 0 ? [.. player.Recalls] : null,
+                            // 하루 안의 눈금(머리 +0x14 = 0x005A4D2C). 이 칸 앞의 세이브는 0 눈금으로 연다.
+                            DayTicks: player.DayTicks);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

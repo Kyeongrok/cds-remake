@@ -1776,7 +1776,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     private void Setback(TavernRoster.Person who, uint[]? face, GameRandom dice)
     {
         TalkDialog.Say(_view, face, "", Retreat[dice.Next(Retreat.Length)]);
-        _game.World?.Replay?.Delay(who.Index, _game.Random);
+        // 늦어짐은 주인공 쪽에도 적어 세이브에 남긴다 — 원본은 인물 레코드째로 적는다(0x00431E90 의 0x00432290).
+        int late = _game.World?.Replay?.Delay(who.Index, _game.Random) ?? 0;
+        _player.AddAccLate(who.Index, late);
         NoticeDialog.Show(_view, Engine.AccReplay.Delayed(who.Name));
         _player.Infamy = Math.Min(Engine.Sea.FleetRaid.MaxRenown, _player.Infamy + Engine.AccReplay.DelayInfamy);
     }

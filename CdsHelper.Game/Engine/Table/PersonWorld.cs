@@ -182,6 +182,8 @@ public sealed class PersonWorld
         {
             var nextRoll = NextRollDay(at);
             var step = nextRoll <= today ? nextRoll : today;
+            // 돌려보낸 날(Recalls)에서도 끊는다 — 그날 굴림 뒤에 돌려보내야 놀이 때와 차례가 같다.
+            if (NextRecall(at) is { } recall && recall < step) step = recall;
 
             Walk((step - at).Days);
             at = step;
@@ -190,10 +192,39 @@ public sealed class PersonWorld
             // 가린다. 예전에는 고리가 끝난 뒤에야 옮겨 마흔 해 굴림이 죄다 시작 해 나이로 돌았다.
             _asOf = at;
             if (at == nextRoll) Roll(at);
+            ApplyRecalls(at);
         }
         _asOf = today;
 
         Replay?.PassDay(today, People);
+    }
+
+    /// <summary>
+    /// 해전 뒤 수도로 돌려보낸 일들(<see cref="Support.Local.Models.Player.Recalls"/>) — 세상을 새로 지어 따라잡을 때
+    /// 그날마다 <see cref="SendHome"/> 를 다시 한다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 돌려보낸 뒤의 인물 레코드(소재·목적지·날 셈)를 세이브에 그대로 적는다(<c>0x00431E90</c>). 우리는
+    /// 세상을 날짜로 다시 짓는 것이라 이것 없이는 불러오면 돌려보낸 일이 잊혀, 격파한 사람이 가던 길에 그대로 있었다.
+    /// 놀이 중에 막 돌려보낸 것은 그날이 이미 지나 있어(<see cref="AsOf"/>) 다시 하지 않는다.
+    /// </remarks>
+    public IReadOnlyList<Support.Local.Models.Player.Recall>? Recalls { get; set; }
+
+    /// <summary>그 날 뒤 첫 돌려보낸 날. 없으면 null.</summary>
+    private DateTime? NextRecall(DateTime after)
+    {
+        DateTime? first = null;
+        foreach (var r in Recalls ?? [])
+            if (r.On > after && (first == null || r.On < first)) first = r.On;
+        return first;
+    }
+
+    /// <summary>그날 돌려보낸 사람들을 다시 돌려보낸다(<c>0x00432400</c>).</summary>
+    private void ApplyRecalls(DateTime day)
+    {
+        foreach (var r in Recalls ?? [])
+            if (r.On == day && _rows.FirstOrDefault(row => row.Id == r.Person) is { } row)
+                SendHome(row, r.Capital);
     }
 
     /// <summary>
