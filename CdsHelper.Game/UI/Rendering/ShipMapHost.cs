@@ -2250,6 +2250,53 @@ public sealed class ShipMapHost : HwndHost
     }
 
     /// <summary>
+    /// 뭍에 올라 걷는 자리. 배에 타 있으면 null — 적을 때 쓴다(제독 <c>+0x114</c> 뭍 깃발 · <c>+0x310</c>/<c>+0x314</c> 지금 자리).
+    /// </summary>
+    public (double X, double Y)? AshoreSpot => _shipKnown && _onLand ? (_shipX, _shipY) : null;
+
+    /// <summary>대 둔 배의 뱃머리. 적을 때 쓴다.</summary>
+    public int MooredHeading => _mooredHeading & 0xF;
+
+    /// <summary>
+    /// 뭍에 오른 채로 판을 연다 — 배는 <paramref name="mooredX"/>·<paramref name="mooredY"/> 에 대 두고 사람은 걷던 칸에 선다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 제독 <c>+0x114</c>(뭍 깃발 <c>0x005B61B4</c>) · <c>+0x310</c>/<c>+0x314</c>(지금 자리) ·
+    /// <c>+0x318</c>/<c>+0x31C</c>(대 둔 배 자리)를 세이브에 적어(<c>0x0047C90C</c>~<c>0x0047C9C5</c>) 뭍에서 중단한
+    /// 판을 뭍에서 잇는다. 대 둔 자리가 물이 아니면 가까운 물칸으로, 걷던 칸이 뭍이 아니면 가까운 뭍칸으로 민다.
+    /// </remarks>
+    public bool PlaceAshore(double x, double y, double mooredX, double mooredY, int mooredHeading)
+    {
+        if (!_ready) return false;
+        StopAutoSail();
+        (mooredX, mooredY) = NearestWater(mooredX, Math.Clamp(mooredY, 0, WorldMapRenderer.CellH - 1));
+        y = Math.Clamp(y, 0, WorldMapRenderer.CellH - 1);
+        var spot = NearestCell(x, y, wantLand: true, maxRing: 3);
+        if (spot == null) return false;
+
+        _mooredX = mooredX;
+        _mooredY = mooredY;
+        _mooredHeading = mooredHeading & 0xF;
+        _moored = true;
+        (_shipX, _shipY) = spot.Value;
+        _targetX = _shipX;
+        _targetY = _shipY;
+        _shipKnown = true;
+        _onLand = true;
+        _blocked = false;
+        _anchored = false;
+        SteerArmed = false;
+        _tickAccum = 0;
+        _making = false;
+        _desired = _heading;
+        _centerX = _shipX;
+        _centerY = _shipY;
+        _follow = true;
+        _dirty = true;
+        return true;
+    }
+
+    /// <summary>
     /// 상륙. 가장 가까운 뭍으로 한 칸 올라서고 말로 바뀐다. 지날 수 있는 칸도 뒤집힌다.
     /// </summary>
     public bool Land()

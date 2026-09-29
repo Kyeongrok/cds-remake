@@ -228,7 +228,8 @@ public static class GameSave
         List<int>? Settled = null, List<int>? Unresolved = null,
         DateTime? AccOpened = null, Dictionary<int, int>? AccLate = null,
         List<Player.Recall>? Recalls = null,
-        int? DayTicks = null, int? Heading = null, List<int>? Wind = null);
+        int? DayTicks = null, int? Heading = null, List<int>? Wind = null,
+        double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -383,7 +384,12 @@ public static class GameSave
                             // 뱃머리(제독 +0x328 = 0x005B63C8). 이 칸 앞의 세이브는 지도가 들고 있던 쪽으로 연다.
                             Heading: player.Heading,
                             // 쥐고 있던 바람(0x00586168, 0x00424E20). 이 칸 앞의 세이브는 열 때 새로 흔든다.
-                            Wind: player.HeldWind is { } wind ? [.. wind] : null);
+                            Wind: player.HeldWind is { } wind ? [.. wind] : null,
+                            // 뭍에 올라 걷던 자리(제독 +0x114 · +0x310/+0x314) — 그때 SeaX/SeaY 는 대 둔 배 자리(+0x318/+0x31C)다.
+                            // 바다에서 적을 때만 적는다. 이 칸 앞의 세이브는 대 둔 배 위에서 연다.
+                            AshoreX: player.CityId < 0 ? player.Ashore?.X : null,
+                            AshoreY: player.CityId < 0 ? player.Ashore?.Y : null,
+                            MooredHeading: player.CityId < 0 && player.Ashore != null ? player.MooredHeading : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
