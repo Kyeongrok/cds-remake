@@ -25,7 +25,7 @@ public static class CityCoordinates
     /// <summary>측량사가 앉는 부하 자리(<c>0x00560AD0</c> 의 셋째 — 0 부관 · 1 항해사 · 2 측량사 · 3 통역).</summary>
     public const int SurveyorSlot = 2;
 
-    /// <summary>문화권을 먼저 묻기 시작하는 도시 수(<c>0x00426A6B</c> 의 <c>cmp 0x10</c>).</summary>
+    /// <summary>문화권을 먼저 묻기 시작하는 도시 수(<c>0x00426AA5</c> 의 <c>cmp 0x10</c>).</summary>
     public const int AskRegionFrom = 16;
 
     /// <summary>안내 글(<c>0x005333E0</c>) — 문화권을 물을 때 한 번 낸다.</summary>

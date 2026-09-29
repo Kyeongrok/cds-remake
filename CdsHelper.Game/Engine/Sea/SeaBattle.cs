@@ -2304,7 +2304,7 @@ public sealed class SeaBattle
     /// 끊어 빈칸으로 둔다.
     /// </summary>
     public static string CrashWord(Ship mover, Ship hit) =>
-        mover.Mine && hit.Mine ? "위험하다! 정지!\n·····하마터면 아군끼리 부딪칠 뻔 했다." : "충돌했다!";   // 0x0056AFF8
+        mover.Mine && hit.Mine ? "위험하다! 정지!\n·····하마터면 아군끼리 부딪칠 뻔 했다." : "충돌했다!";   // 0x0056AFF0 · 0x0056B038
 
     private string One(string[] lines) => lines[_rng.Next(lines.Length)];
 

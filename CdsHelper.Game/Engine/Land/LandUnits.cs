@@ -238,7 +238,7 @@ public static class LandUnits
         _ => -1,
     };
 
-    /// <summary>부대 자리 여섯의 이름(<c>0x00559444</c> 부터 열여섯 바이트씩).</summary>
+    /// <summary>부대 자리 여섯의 이름(<c>0x00559448</c> 부터 열여섯 바이트씩).</summary>
     public static readonly string[] Places =
     [
         "전열 왼측", "전열 중앙", "전열 우측", "후열 왼측", "후열 중앙", "후열 우측",
