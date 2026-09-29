@@ -110,6 +110,19 @@ public sealed class TradePost
         return kind;
     }
 
+    /// <summary>
+    /// 도시정보 창에 늘어놓는 특산품(<c>0x004706C6</c>) — 제 것, 그 뒤로 딸린 내륙 도시 것. 둘 다 <see cref="SpecialOf"/>
+    /// (<c>0x0042A030</c>)를 거쳐 판매 게이트 · 세움 · 아는 도시에 걸린 것은 빠진다(<c>0x004707CE</c> · <c>0x004708C9</c>).
+    /// </summary>
+    public List<int> ShownSpecials(Player player, int city)
+    {
+        var list = new List<int>();
+        if (SpecialOf(player, city) is var own and >= 0) list.Add(own);
+        foreach (int inland in _table.InlandOf(city))
+            if (SpecialOf(player, inland) is var kind and >= 0) list.Add(kind);
+        return list;
+    }
+
     /// <summary>그 도시를 아는지 — 도시 레코드 <c>+0x04</c> 비트 0.</summary>
     private bool Known(Player player, int city) =>
         city == player.CityId || player.Knows(city) || (_cities?.KnownAtStart(city) ?? true);
