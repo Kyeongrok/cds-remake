@@ -1106,7 +1106,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 없다(0x0041243D 로 곧장 빠진다).
             if (broke)
             {
-                ReturnLentShips(broken: true);
+                // 감옥에서 일생을 마쳤으면 빌린 배·짐을 거둬 가는 알림도 없다 — 놀이가 이미 끝났다.
+                if (!_reportOver) ReturnLentShips(broken: true);
                 _player.EndContract();
             }
             return (0, Palace.ReportGrade.Poor, scoopedHead, true);
@@ -1371,7 +1372,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 "믿고 있었건만... 배신하리라고는. 이 정도는 누구라도 알 수 있다!! 이 자들을 감옥에 집어 넣어라!"));
             TalkDialog.Say(_view, spy, "", $"오~ , 오, 용서를. {sir}, 우, 저는 아무것도...");
 
-            if (Jail(patron, new GameRandom(Environment.TickCount))) EndGame();
+            if (Jail(patron, new GameRandom(Environment.TickCount))) { _reportOver = true; EndGame(); }
             broke = true;
             return true;
         }
@@ -1403,7 +1404,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 비트 14). 거꾸로 하면 Punish 가 삐짐(깃발 14)을 보고 봐줌·위약금 없이 늘 감옥으로 간다.
             bool over = Punish(patron, sponsorRow, Pick3);
             _player.Sulk(patron.Name);
-            if (over) EndGame();
+            if (over) { _reportOver = true; EndGame(); }
             broke = true;
         }
         return true;
@@ -1505,8 +1506,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private bool KnownByOthers(DiscoveryTable.Record row) =>
         !_player.HasAnnounced(row.Id) && _player.ScoopedBy(row.Id) != null;
 
+    /// <summary>이번 보고에서 모조품을 들켜 감옥에서 놀이가 끝났는지 — 그러면 나설 때의 뒷처리를 다 건너뛴다.</summary>
+    private bool _reportOver;
+
     private void ReportNow(Patron patron)
     {
+        _reportOver = false;
         var contract = _player.Contract;
         var rows = ReportTargets(patron);
         if (contract == null || rows.Count == 0) return;
@@ -1626,8 +1631,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             _game.Bgm.Play(_cityTrack);
         }
 
+        // 감옥에서 일생을 마쳤으면(게임 오버) 나설 일도 없다 — 재계약 물음·증거품이 게임 오버 창 뒤에 뜨던 것.
+        if (_reportOver) return;
+
         // 나설 때의 차례 그대로다(0x0044E6C0) — 부하 재계약(0x00454160) · 빌린 배 돌려주기(0x004105A0) 다음이
-        // 숨겨 둔 증거품(0x0041C480)이다.
+        // 숨겨 둔 증거품(0x0041C480)이다. 감옥(항구 도시)에 다녀와도 숨긴 목록은 그대로라(0x0044EF20 이 안 지운다)
+        // 증거품은 여전히 손에 들어온다.
         RecontractMates();
 
         // 숨겨 둔 증거품은 보고를 마치고 나설 때 손에 들어온다.
