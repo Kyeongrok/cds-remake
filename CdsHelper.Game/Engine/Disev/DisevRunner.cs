@@ -1031,7 +1031,7 @@ public sealed class DisevRunner
             // 04 4D — 이야기 장(章)을 완전히 끝낸다. 부른 쪽(StoryLog)이
             // LastStoryArcCompleted 를 보고 그 장을 닫아 다시 트리거되지 않게 한다.
             case DisevCall.EndEventCompletely:
-                LastStoryArcCompleted = true;
+                CloseBook();
                 LastResult = 1;                       // 04 다음의 4D
                 return Stop;
 
@@ -1088,34 +1088,53 @@ public sealed class DisevRunner
 
             case DisevCall.NextStep:
                 // 06 다음의 4D 는 결과 1 을 적고 끝낸다(0x0040BDF5) — 그 건물에는 안 들어간다.
-                LastAdvancedStep = true;
-                LastStepsAdvanced++;
+                AdvanceBy(1);
                 LastResult = 1;
                 return Stop;
             case DisevCall.CloseStory:
-                LastStoryArcCompleted = true;
+                CloseBook();
                 return null;
             case DisevCall.AdvanceStep:
-                LastAdvancedStep = true;
-                LastStepsAdvanced++;
+                AdvanceBy(1);
                 return null;
             // 58 [n] — 맥락 +4 = 1 · +0x10 = n+1 · +8 = 2 를 적고 대본을 끝낸다(0x0040BE5C).
             // 대본이 끝나면 0x004AB495 가 「+4 == 1 이면 단계 += [+0x10]」으로 거둔다 — 06 은 +0x10 = 1 이라
             // 한 칸이고, 이것은 n+1 칸이다. 칸 수는 <b>더하지 않고 박는다</b>(원본도 +0x10 을 덮는다).
             // EEX 견직물 의뢰를 거절하면 58 01 로 납품 장면(2)을 건너 3 으로 가고, 기한을 넘기면 58 00 이다.
             case DisevCall.SkipSteps:
-                LastAdvancedStep = true;
-                LastStepsAdvanced = I("Skip") + 1;
+                AdvanceBy(I("Skip") + 1);
                 LastResult = 2;
                 return Stop;
             case DisevCall.NextStepFF:
-                LastAdvancedStep = true;
-                LastStepsAdvanced++;
+                AdvanceBy(1);
                 return Stop;
 
             default:
                 return null;
         }
+    }
+
+    /// <summary>
+    /// 06 · 58 — 맥락 <c>+4</c> 를 1(단계 올림)로, <c>+0x10</c> 을 그 칸 수로 <b>덮어 적는다</b>(0x00408B3D · 0x0040BE72).
+    /// </summary>
+    /// <remarks>
+    /// 더하지 않는다 — 한 대본에서 06 을 두 번 밟아도 0x004AB49B 는 카운터에 <c>+0x10</c>(=1)을 한 번 더할 뿐이다.
+    /// 이야기1 파트 1(에란쪼 저택)이 06 뒤에 06 4D 를 또 밟는데, 예전에는 둘을 더해 파트 2(「일단 도서관으로」)를 건너뛰었다.
+    /// 04 가 먼저 +4 = 2 를 적었어도 뒤의 06 이 도로 1 로 덮는다.
+    /// </remarks>
+    private static void AdvanceBy(int steps)
+    {
+        LastStoryArcCompleted = false;
+        LastAdvancedStep = true;
+        LastStepsAdvanced = steps;
+    }
+
+    /// <summary>04 — 맥락 <c>+4</c> 를 2(책 닫음)로 덮어 적는다(0x004089FA). 앞의 06 은 없던 일이 된다(0x004AB4A6 이 카운터를 −1 로).</summary>
+    private static void CloseBook()
+    {
+        LastStoryArcCompleted = true;
+        LastAdvancedStep = false;
+        LastStepsAdvanced = 0;
     }
 
     /// <summary>성미 여덟 칸의 낱말 짝(0 · 2) — <c>0x00538A28</c> 부터다.</summary>
