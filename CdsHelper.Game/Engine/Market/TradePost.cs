@@ -94,14 +94,25 @@ public sealed class TradePost
     /// 식민 도시 스물셋은 이 비트를 켠 채 시작하고, 도시를 세우는 대본이 끈다
     /// (<c>0x0040A038</c> · <c>0x0040A074</c>: <c>and word [eax+4], 0xFFFB</c>). 그래서 EXE 첫값이 아니라
     /// 지금 서 있는지(<see cref="CityFounding.Standing"/>)로 가린다.
+    /// <para>
+    /// 비트 0(아는 도시)이 꺼져 있어도 -1 이다(<c>0x0042A034</c>). 이 비트를 켜는 것은 항해 중 시야 판정
+    /// (<c>0x0048D98F</c>)뿐이라, 멀리 떨어진 내륙 도시(호르무즈 ← 사마르칸트 따위)는 알기 전까지 항구에
+    /// 그 특산품이 안 들어온다. 유럽·지중해 101곳은 처음부터 알고(<see cref="CityExeTable.KnownAtStart"/>),
+    /// 나머지는 배가 다가서며 안다(<see cref="Player.Knows"/>). 들어와 있는 도시는 다가서며 이미 알았다.
+    /// </para>
     /// </remarks>
     public int SpecialOf(Player player, int city)
     {
         int kind = _table.SpecialOf(city);
         if (kind < 0 || !OnSale(player, kind)) return -1;
         if (!CityFounding.Standing(city, player.Date, player.ScriptedCities)) return -1;
+        if (!Known(player, city)) return -1;
         return kind;
     }
+
+    /// <summary>그 도시를 아는지 — 도시 레코드 <c>+0x04</c> 비트 0.</summary>
+    private bool Known(Player player, int city) =>
+        city == player.CityId || player.Knows(city) || (_cities?.KnownAtStart(city) ?? true);
 
     /// <summary>
     /// 그 도시가 파는 것(<c>0x00480CC0</c>). 교역소가 없는 곳이면 빈 목록이다.
