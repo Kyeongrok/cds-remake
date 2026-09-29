@@ -80,12 +80,10 @@ internal static class ExitSplash
             Background = Brushes.Transparent,
             ShowInTaskbar = false,
             WindowStartupLocation = WindowStartupLocation.Manual,
-            Left = owner.Left,
-            Top = owner.Top,
-            Width = owner.ActualWidth > 0 ? owner.ActualWidth : owner.Width,
-            Height = owner.ActualHeight > 0 ? owner.ActualHeight : owner.Height,
             Content = new Grid { Children = { black, image } },
         };
+        // 최대화된 창은 Left·Top 이 복원 자리를 내므로 동영상 창과 같은 갈래로 덮는다.
+        MoviePlayer.Cover(splash, owner);
 
         var frame = new DispatcherFrame();
         int step = 0;

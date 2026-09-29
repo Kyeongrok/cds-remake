@@ -36,11 +36,9 @@ internal static class ScriptBlackout
             ShowInTaskbar = false,
             ShowActivated = false,
             WindowStartupLocation = WindowStartupLocation.Manual,
-            Left = root.Left,
-            Top = root.Top,
-            Width = root.ActualWidth > 0 ? root.ActualWidth : root.Width,
-            Height = root.ActualHeight > 0 ? root.ActualHeight : root.Height,
         };
+        // 최대화된 창은 Left·Top 이 복원 자리를 내므로 동영상 창과 같은 갈래로 덮는다.
+        MoviePlayer.Cover(shade, root);
         shade.Show();
         return shade;
     }

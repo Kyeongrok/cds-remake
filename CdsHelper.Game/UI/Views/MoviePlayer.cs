@@ -81,8 +81,8 @@ public static class MoviePlayer
         bgm?.Resume();
     }
 
-    /// <summary>주인 창이 놓인 자리를 그대로 덮는다.</summary>
-    private static void Cover(Window screen, Window owner)
+    /// <summary>주인 창이 놓인 자리를 그대로 덮는다 — 대본 암전(<see cref="ScriptBlackout"/>)·끝 그림(<see cref="ExitSplash"/>)도 쓴다.</summary>
+    internal static void Cover(Window screen, Window owner)
     {
         if (owner.WindowState == WindowState.Maximized)
         {
