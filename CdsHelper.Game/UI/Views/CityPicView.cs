@@ -1242,6 +1242,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </code>
     /// 예전에는 발견하고 나서 곧장 인사와 차림표로 이어졌다.
     /// </remarks>
+    /// <summary>발견 대본을 도시 그림을 파랗게 덮은 채로 돌린다. 대본이 있었으면 true.</summary>
+    private bool RunShaded(int discovery)
+    {
+        Shade(true);
+        try { return Engine.Disev.DisevRunner.Run(this, _game, discovery); }
+        finally { Shade(false); }
+    }
+
     /// <returns>건물에 들어가도 되면 true — 발견할 것이 없었으면 늘 true 다.</returns>
     private bool Discover(CityBuildingTable.Building building)
     {
@@ -1253,7 +1261,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 발견 대본(DISEV)이 있으면 <b>그것이 다 한다</b> — 동영상 · 대사 · 육상전까지. 바다·뭍 발견
         // (ShipMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
         // 파르테논 신전에서 동영상도 육상전도 안 났다.
-        bool scripted = Engine.Disev.DisevRunner.Run(this, _game, row.Id);
+        // 대본이 도는 동안 도시 그림이 파래진다 — 바다·뭍 발견의 지도(ShipMapWindow.Tint)와 같은 몫이다.
+        bool scripted = RunShaded(row.Id);
         // 대본이 게임 오버로 끝났으면(파르테논 육상전에서 전멸하거나 물러나 저주를 받으면) 발견을
         // 적지 않고 놀이를 끝낸다 — 바다·뭍 발견과 같은 차례다(ShipMapWindow.CheckDiscovery).
         if (Engine.Disev.DisevRunner.LastEndedInGameOver)
@@ -1301,7 +1310,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (!log.CanFire(_player, row)) continue;   // 0x004928D8 → 0x004AAD20
 
             // 대본이 있으면 그것이 다 한다 — 대사 · 음원 · 아이템 · 발견까지(바다·건물 발견과 같은 길이다).
-            bool scripted = Engine.Disev.DisevRunner.Run(this, _game, row.Id);
+            bool scripted = RunShaded(row.Id);
             if (Engine.Disev.DisevRunner.LastEndedInGameOver)
             {
                 GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
