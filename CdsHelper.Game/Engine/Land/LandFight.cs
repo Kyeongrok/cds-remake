@@ -31,10 +31,15 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// </param>
     /// <param name="Felled">이 일로 <b>쓰러진</b> 부대. 없으면 −1 이다.</param>
     /// <param name="Fell">쓰러지며 남기는 말(<c>0x00446C00</c>). 없으면 빈 글이다.</param>
+    /// <param name="Places">
+    /// 그 일이 일어난 바로 뒤의 자리 열둘(<see cref="LandBattle.PlaceOf"/>). <see cref="Men"/> 과 같은 까닭이다 —
+    /// 이것이 없으면 그 턴 뒤에 앞으로 당겨질 후열이 그림이 시작될 때 이미 앞열 자리에 겹쳐 서서 사라진 것처럼 보인다.
+    /// </param>
     public readonly record struct Line(string Text, int Actor = -1, int Target = -1,
                                        int Damage = 0, int Sound = -1,
                                        IReadOnlyList<int>? Men = null,
-                                       int Felled = -1, string Fell = "");
+                                       int Felled = -1, string Fell = "",
+                                       IReadOnlyList<int>? Places = null);
 
     private readonly List<Line> _log = [];
 
@@ -74,6 +79,17 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// <summary>턴이 열릴 때의 병사수 열둘 — 그림은 여기서 시작한다.</summary>
     public IReadOnlyList<int> Opening { get; private set; } = [];
 
+    /// <summary>턴이 열릴 때의 자리 열둘 — 그림은 여기서 시작한다.</summary>
+    public IReadOnlyList<int> OpeningPlaces { get; private set; } = [];
+
+    /// <summary>지금 자리 열둘을 떠 둔다.</summary>
+    private int[] PlaceSnapshot()
+    {
+        var places = new int[LandBattle.Slots];
+        for (int i = 0; i < places.Length; i++) places[i] = battle.PlaceOf(i);
+        return places;
+    }
+
     /// <summary>지금 병사수 열둘을 떠 둔다.</summary>
     private int[] Snapshot()
     {
@@ -83,7 +99,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     }
 
     /// <summary>줄 하나를 적는다 — 적는 그 시점의 병사수를 같이 담는다.</summary>
-    private void Log(Line line) => _log.Add(line with { Men = Snapshot() });
+    private void Log(Line line) => _log.Add(line with { Men = Snapshot(), Places = PlaceSnapshot() });
 
     /// <summary>
     /// 쓰러지며 남기는 말을 고른다(<c>0x00446C00</c>).
@@ -198,6 +214,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     {
         _log.Clear();
         Opening = Snapshot();
+        OpeningPlaces = PlaceSnapshot();
         (_myOrder, _foeOrder) = (mine, theirs);
         Dances = 0;                      // 춤 겹수는 턴마다 지운다(0x00449D5E)
 
@@ -311,7 +328,8 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                     int men = battle.Units[slot].Men;
                     hurt = Math.Min(hurt, men);
                     battle.SetMen(slot, men - hurt);
-                    said.Add(new Line("", Actor: slot, Target: slot, Damage: hurt, Men: Snapshot()));
+                    said.Add(new Line("", Actor: slot, Target: slot, Damage: hurt, Men: Snapshot(),
+                                       Places: PlaceSnapshot()));
                     Done();
                     if (Over != null) { Struck = true; break; }
                 }

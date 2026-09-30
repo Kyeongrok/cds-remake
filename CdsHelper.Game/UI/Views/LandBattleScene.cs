@@ -52,8 +52,17 @@ internal sealed class LandBattleScene : GameWindow
     /// 그 부대가 선 칸 — 슬롯이 아니라 <b>자리</b>(<see cref="LandBattle.PlaceOf"/>)로 찾는다. 앞열이 비어 후열이
     /// 앞으로 나오면 그림도 앞줄로 옮긴다(<c>0x004470D0</c>).
     /// </summary>
+    /// <remarks>
+    /// 그림을 도는 동안에는 줄이 담아 온 그때그때의 자리(<see cref="_placesNow"/>)로 본다 — 한 턴을 다 굴린 뒤라
+    /// 판은 <b>턴 끝</b>의 자리를 들고 있어, 그 턴에 앞으로 당겨질 후열이 첫머리부터 앞열 자리에 겹쳐 섰다.
+    /// 원본은 한 대 칠 때마다 당기고 그 자리에서 그림도 옮긴다(<c>0x0044886D</c> → <c>0x004484F0</c> → <c>0x004470D0</c>).
+    /// </remarks>
     private (int X, int Y) SpotOf(int slot) =>
-        StandAt[(slot >= LandBattle.FirstFoe ? LandBattle.FirstFoe : 0) + _battle.PlaceOf(slot)];
+        StandAt[(slot >= LandBattle.FirstFoe ? LandBattle.FirstFoe : 0)
+                + (_placesNow is { } now && slot < now.Count ? now[slot] : _battle.PlaceOf(slot))];
+
+    /// <summary>그림을 도는 동안 쓸 자리 열둘. null 이면 판이 든 지금 자리를 그대로 쓴다.</summary>
+    private IReadOnlyList<int>? _placesNow;
 
     /// <summary>판을 늘려 건 배수 — 차림표를 판 구석에 붙일 때 여백을 이만큼 곱한다.</summary>
     private readonly double _scale;
@@ -249,7 +258,7 @@ internal sealed class LandBattleScene : GameWindow
                 }
 
                 var lines = fight.Turn(order, _battle.FoeOrder(dice));
-                Play(lines, fight.Opening);
+                Play(lines, fight.Opening, fight.OpeningPlaces);
             }
 
             if (fight.Over is { } won)
@@ -650,8 +659,10 @@ internal sealed class LandBattleScene : GameWindow
     /// 그 한 묶음의 차례가 셋이다 — <b>나가서 (여러 번) 치고</b>, 나간 그 자리에 선 채로
     /// <b>숫자가 떴다 지고</b>, 그러고 나서 <b>돌아온다</b>.
     /// </remarks>
-    private void Play(IReadOnlyList<LandFight.Line> lines, IReadOnlyList<int> opening)
+    private void Play(IReadOnlyList<LandFight.Line> lines, IReadOnlyList<int> opening,
+                      IReadOnlyList<int>? openingPlaces = null)
     {
+        _placesNow = openingPlaces;
         // 한 턴은 이미 다 굴려 놓은 것이라 판은 <b>끝난 뒤</b>의 병사수를 들고 있다.
         // 그림을 도는 동안에는 줄이 담아 온 그때그때의 병사수로 그린다.
         _menNow = opening;
@@ -682,6 +693,7 @@ internal sealed class LandBattleScene : GameWindow
                 if (line.Felled >= 0 && line.Fell.Length > 0) Balloon(line.Felled, line.Fell);
 
             _menNow = bout[^1].Men ?? _menNow;
+            _placesNow = bout[^1].Places ?? _placesNow;
             Redraw();
             Home();
 
@@ -703,6 +715,7 @@ internal sealed class LandBattleScene : GameWindow
         }
 
         _menNow = null;
+        _placesNow = null;
         Redraw();
     }
 
