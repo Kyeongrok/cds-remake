@@ -329,12 +329,19 @@ public sealed class LibraryDialog : GameWindow
     /// <summary>
     /// 힌트의 <b>필요 기능</b>을 채웠는지(<c>0x00463E50</c>) — 없으면 된 것으로 친다.
     /// </summary>
-    /// <remarks>필요 기능은 힌트 줄 <c>+0x20</c>, 그 자리는 <c>+0x28</c> 이다(<c>0x00463E72</c>).</remarks>
+    /// <remarks>필요 기능은 힌트 줄 <c>+0x20</c>, 그 자리는 <c>+0x28</c> 이다(<c>0x00463E72</c>). 수준은 제독과 부하 넷 가운데 가장 높은 값이다.</remarks>
     private bool KnowsSkill(int hint)
     {
         var need = _books.NeedFor(hint);
         if (need.Skill < 0 || need.Skill >= _names.SkillNames.Count) return true;
-        return _player.LevelOf(_names.SkillNames[need.Skill]) >= need.Level;
+
+        // 제독과 부하 네 자리 가운데 <b>가장 잘 아는 사람</b>의 수준이다 — 0x00463E00 이 0x0047CCA0(기능, 0, 1, 2, 3) 으로
+        // 다섯을 다 본다(언어 0x0047CD20 과 같은 셈). 예전에는 제독 것만 봐서 역사학 3 부하를 태워도 책이 안 읽혔다.
+        int best = _player.LevelOf(_names.SkillNames[need.Skill]);
+        foreach (var mate in MateRows())
+            if (need.Skill < mate.Skills.Length)
+                best = Math.Max(best, mate.Skills[need.Skill]);
+        return best >= need.Level;
     }
 
     /// <summary>힌트가 요구하는 기능 이름(기능 이름표 <c>0x00560A10</c>).</summary>
