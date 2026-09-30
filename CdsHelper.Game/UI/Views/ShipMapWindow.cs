@@ -191,12 +191,6 @@ public sealed class ShipMapWindow : Window
     /// <summary>만난 사람 상자를 켜 두었는지.</summary>
     private bool _peopleWanted = GameSettings.ShowPeopleOverlay;
 
-    /// <summary>제독 컨디션(HP) 상자 — 지도 왼쪽 아래. 개발 창의 「컨디션」으로 켠다.</summary>
-    private Popup _vital = null!;
-
-    /// <summary>컨디션 상자를 켜 두었는지.</summary>
-    private bool _vitalWanted = GameSettings.ShowConditionOverlay;
-
     /// <summary>미니맵 — 지도 오른쪽 아래. 개발 창의 「미니맵」으로 켠다.</summary>
     private Popup _miniPopup = null!;
 
@@ -218,18 +212,6 @@ public sealed class ShipMapWindow : Window
     /// <summary>이벤트 없이 조용해진 때. 이벤트 중이면 null.</summary>
     private DateTime? _miniCalmSince;
 
-    /// <summary>컨디션 글 한 줄.</summary>
-    private readonly TextBlock _vitalText = new()
-    {
-        Foreground = Brushes.White,
-        FontFamily = new FontFamily("Consolas"),
-        FontSize = 12,
-    };
-
-    /// <summary>컨디션 막대 — 판 폭이 2000 이다.</summary>
-    private readonly Canvas _vitalBar = new() { Width = VitalBarWidth, Height = 10, Margin = new Thickness(0, 4, 0, 0) };
-
-    private const double VitalBarWidth = 220;
 
     /// <summary>좌표 상자를 켜 두었는지. 실제로 뜨는지는 <see cref="SyncOverlay"/> 가 정한다.</summary>
     private bool _overlayWanted = GameSettings.ShowCoordOverlay;
@@ -421,27 +403,6 @@ public sealed class ShipMapWindow : Window
         };
         surface.Children.Add(_people);
 
-        // 컨디션 상자는 지도 왼쪽 아래다. 높이가 늘 같으므로 아래 끝에서 그만큼 끌어올린다.
-        _vital = new Popup
-        {
-            PlacementTarget = input,
-            Placement = PlacementMode.Bottom,
-            HorizontalOffset = 10,
-            VerticalOffset = -56,
-            AllowsTransparency = true,
-            StaysOpen = true,
-            IsHitTestVisible = false,
-            Child = new Border
-            {
-                Background = new SolidColorBrush(Color.FromArgb(0xB4, 0x10, 0x10, 0x10)),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(0xC8, 0x0B, 0x05, 0x05)),
-                BorderThickness = new Thickness(1),
-                Padding = new Thickness(10, 5, 10, 6),
-                IsHitTestVisible = false,
-                Child = new StackPanel { Children = { _vitalText, _vitalBar } },
-            },
-        };
-        surface.Children.Add(_vital);
 
         // 비·눈은 지도 전체를 덮는 층이다 — 미니맵보다 먼저 연다(아래에 깔린다).
         _weatherPopup = new Popup
@@ -658,7 +619,6 @@ public sealed class ShipMapWindow : Window
                 if (_gameBar != null) _gameBar.Visibility = Visibility.Visible;
             }
             if (_overlay.IsOpen) { var (lat, lon) = _host.ShipLatLon; FillOverlay(lat, lon); }
-            if (_vital.IsOpen) FillVital();
             if (_miniWanted) SyncMiniMap();
             SyncWeather();
             SyncSeaMusic();
@@ -1068,10 +1028,6 @@ public sealed class ShipMapWindow : Window
         if (people) FillPeople();
         _people.IsOpen = people;
 
-        bool vital = _vitalWanted && up;
-        if (vital) FillVital();
-        _vital.IsOpen = vital;
-
         SyncMiniMap();
     }
 
@@ -1231,31 +1187,6 @@ public sealed class ShipMapWindow : Window
             && y + ShipHalf >= top && y - ShipHalf <= top + MiniMapView.ViewH;
     }
 
-    /// <summary>
-    /// 컨디션 상자를 채운다 — 「컨디션 1520 / 2000 · 괜찮음」과 막대. 막대에는 300·100 문턱을 금으로 긋는다
-    /// (<see cref="Vitality.Pale"/> · <see cref="Vitality.Faint"/>).
-    /// </summary>
-    private void FillVital()
-    {
-        int hp = _game.Player.Condition;
-        string state = hp <= 0 ? "쓰러짐" : hp < Vitality.Faint ? "위험" : hp < Vitality.Pale ? "창백" : "괜찮음";
-        _vitalText.Text = $"컨디션 {hp,4} / {Player.ConditionMax} · {state}";
-
-        var fill = hp < Vitality.Faint ? Color.FromRgb(0xD0, 0x40, 0x30)
-                 : hp < Vitality.Pale ? Color.FromRgb(0xE0, 0xA0, 0x30)
-                 : Color.FromRgb(0x50, 0xB0, 0x60);
-        double Scale(int v) => VitalBarWidth * Math.Clamp(v, 0, Player.ConditionMax) / Player.ConditionMax;
-
-        _vitalBar.Children.Clear();
-        _vitalBar.Children.Add(new System.Windows.Shapes.Rectangle { Width = VitalBarWidth, Height = 10, Fill = new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) });
-        _vitalBar.Children.Add(new System.Windows.Shapes.Rectangle { Width = Scale(hp), Height = 10, Fill = new SolidColorBrush(fill) });
-        foreach (int mark in new[] { Vitality.Faint, Vitality.Pale })
-        {
-            var tick = new System.Windows.Shapes.Rectangle { Width = 1, Height = 10, Fill = Brushes.Gold };
-            Canvas.SetLeft(tick, Scale(mark));
-            _vitalBar.Children.Add(tick);
-        }
-    }
 
     /// <summary>여급 칸의 너비(글자 칸). 한글 한 자를 두 칸으로 센다.</summary>
     private const int PeopleColumn = 34;
@@ -2896,13 +2827,6 @@ public sealed class ShipMapWindow : Window
             GameSettings.MiniMapOpacity = opacity;
             _mini.SetOpacity(opacity);
         },
-        ConditionOn = () => _vitalWanted,
-        SetCondition = on =>
-        {
-            _vitalWanted = on;
-            GameSettings.ShowConditionOverlay = on;   // 다음에 켤 때도 그대로
-            SyncOverlay();
-        },
         ArrowsOn = () => _host.ShowFlowArrows,
         SetArrows = on =>
         {
@@ -3443,6 +3367,9 @@ public sealed class ShipMapWindow : Window
             // 막힌 도시면 여기서 공격·잠입·교섭·떠난다가 뜬다(0x00468804).
             if (!PassGate(city, name, byLand)) return;
 
+            // 다가가서 들어가는 길도 커맨드로 들어가는 길(EnterCity)과 같이 도착을 치른다 — 예전에는 이 길이
+            // 재해를 안 풀어 쥐가 남아 있다가 다음 상륙 때에야 「없어졌다」고 떴다.
+            Arrive(city);
             _host.EnterPort(name);
             inCity = ShowCityPicture(city, name);
         }
@@ -3485,13 +3412,7 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void EnterCity(int city)
     {
-        // 전염병 걸린 함대가 통상인 마을에 들면 마을에 옮는다(0x00477124) — 병이 풀리기 전에 본다.
-        if (_game.Player.Has(SeaAilment.Plague)) SpreadPlague(city);
-        // 그 다음, 후원자의 나라가 멸망했으면 이 항구에서 소문을 듣고 계약이 깨진다(0x00476F50).
-        CheckSponsorFallen(city);
-
-        // 마을에 닿으면 항해가 끝난다 — 쥐·병이 풀리고 부관이 알린다.
-        EndVoyage();
+        Arrive(city);
         if (_asking) return;
 
         _askedCity = city;
@@ -3780,11 +3701,28 @@ public sealed class ShipMapWindow : Window
     /// 세 자리 가운데 어느 것이 상륙·입항인지는 아직 이름표를 안 붙여, 둘 다 말하게 둔다.
     /// </remarks>
     /// <returns>부관이 한 마디라도 했으면 참 — 서 있던 재해가 있었다는 뜻이다.</returns>
-    private bool EndVoyage()
+    /// <summary>
+    /// 마을에 닿았다 — 입항·성문 어느 길로 들든 한 번 치른다. 전염병을 옮기고, 멸망한 후원자 소식을 듣고,
+    /// 항해가 끝나 쥐·병이 <b>말 없이</b> 풀린다.
+    /// </summary>
+    private void Arrive(int city)
+    {
+        // 전염병 걸린 함대가 통상인 마을에 들면 마을에 옮는다(0x00477124) — 병이 풀리기 전에 본다.
+        if (_game.Player.Has(SeaAilment.Plague)) SpreadPlague(city);
+        // 그 다음, 후원자의 나라가 멸망했으면 이 항구에서 소문을 듣고 계약이 깨진다(0x00476F50).
+        CheckSponsorFallen(city);
+        // 마을에 닿으면 항해가 끝난다 — 쥐·병이 풀린다. 입항에서는 부관이 말하지 않는다.
+        EndVoyage(speak: false);
+    }
+
+    private bool EndVoyage(bool speak = true)
     {
         var player = _game.Player;
         var was = player.CureAilments();
         player.SetDaysAtSea(0);
+
+        // 입항이면 말 없이 풀린다 — 부관이 알리는 것은 상륙 차림표(0x0048E5E0)뿐이다.
+        if (!speak) return false;
 
         bool said = false;
         foreach (string line in SeaEvents.CureWords(was))
@@ -6253,6 +6191,9 @@ public sealed class ShipMapWindow : Window
         }
     }
 
+    /// <summary>조건이 안 맞아 넘긴 발견물 — 그 자리를 벗어나기 전에는 다시 안 본다.</summary>
+    private int _heldDiscovery = -1;
+
     private void CheckDiscovery()
     {
         if (_asking || _host.Paused || _host.SeaBlocked) return;
@@ -6270,8 +6211,15 @@ public sealed class ShipMapWindow : Window
             if (id >= 0) break;
         }
 
-        if (id < 0) return;
+        if (id < 0) { _heldDiscovery = -1; return; }
         if (log.Table.Find(id) is not { } row) return;
+
+        // 대본이 있는데 조건이 안 맞으면(힌트가 없으면) <b>아무 일도 없다</b> — 원본은 대본만 틀고 대본이 고를 몸통이
+        // 없으니 발견도 안 된다. 같은 자리에 있는 동안은 다시 안 본다(0x0048D495 가 [+0x124] 에 그 번호를 적어 둔다).
+        // 예전에는 이것을 「대본 없음」으로 보고 그냥 발견 처리해, 힌트 없이도 존왕의 술잔이 손에 들어왔다.
+        if (id == _heldDiscovery) return;
+        if (DisevRunner.Probe(this, _game, id) == DisevRunner.ScriptState.Held) { _heldDiscovery = id; return; }
+        _heldDiscovery = -1;
 
         // 알리는 동안 배가 계속 가면 다음 칸에서 또 뜬다.
         _asking = true;
@@ -6480,8 +6428,8 @@ public sealed class ShipMapWindow : Window
         if (_game.CityPics == null || _game.Buildings == null) return false;
 
         // 새 판의 모항·도시에서 재개하는 길은 EnterCity 를 거치지 않는다.
-        // 이때도 항해가 끝난 것이므로 해상재해를 풀고 부관의 회복 말을 낸다.
-        if (enterHome || resumed) EndVoyage();
+        // 이때도 항해가 끝난 것이므로 해상재해를 푼다 — 입항이라 말은 없다.
+        if (enterHome || resumed) EndVoyage(speak: false);
 
         // 도는 곡은 문화권마다 다르다 — 세우타 같은 중근동 도시는 딴 곡이다.
         // 문화권은 건물에 들어갈 때 뜨는 타원 사진을 고르는 데도 쓴다(BuildingPhoto).

@@ -78,8 +78,6 @@ public sealed class GameSettingsData
     /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPeopleOverlay { get; set; }
 
-    /// <summary>지도 위에 제독 컨디션(HP) 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
-    public bool ShowConditionOverlay { get; set; }
 
     /// <summary>항해·뭍 이동 중에 지도 오른쪽 아래에 미니맵을 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowMiniMap { get; set; }
@@ -571,14 +569,6 @@ public static class GameSettings
         set => Set(d => d.ShowPeopleOverlay = value);
     }
 
-    /// <summary>
-    /// 지도 위에 <b>제독 컨디션(HP)</b> 상자를 겹쳐 보일지. 개발 창의 「컨디션」이 켜고 끈다.
-    /// </summary>
-    public static bool ShowConditionOverlay
-    {
-        get => Get(d => d.ShowConditionOverlay);
-        set => Set(d => d.ShowConditionOverlay = value);
-    }
 
     /// <summary>
     /// 햄버거에 <b>발견물 지도</b> 줄을 낼지. 모드 창의 「발견물 지도」가 켜고 끈다.

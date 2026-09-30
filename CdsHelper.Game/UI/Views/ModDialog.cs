@@ -22,8 +22,6 @@ public sealed class ModDialog : GameWindow
     public sealed class Options
     {
         /// <summary>제독 컨디션(HP) 상자.</summary>
-        public Func<bool> ConditionOn { get; init; } = () => false;
-        public Action<bool> SetCondition { get; init; } = _ => { };
 
         /// <summary>미니맵 — 발견물 지도를 작게 잘라 배를 따라간다.</summary>
         public Func<bool> MiniMapOn { get; init; } = () => false;
@@ -75,9 +73,6 @@ public sealed class ModDialog : GameWindow
 
         var rows = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
 
-        // 컨디션 — 제독 HP(0x005B60D8)를 지도 왼쪽 아래에 막대로 띄운다. 300·100 문턱도 같이 그린다.
-        rows.Children.Add(Toggle("컨디션", options.ConditionOn(), options.SetCondition,
-            "제독 컨디션(HP, 0~2000)을 지도 왼쪽 아래에 띄웁니다. 300·100 아래면 부관이 쉬라고 하고, 0 이면 쓰러집니다."));
 
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
         rows.Children.Add(MiniMapControls(options));

@@ -1257,6 +1257,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (_game.Discoveries is not { } log) return true;
         if (log.Table.Find(building.Discovery) is not { } row) return true;
         if (!log.CanFire(_player, row)) return true;   // 0x00492A79 → 0x004AAD20
+        // 대본 조건이 안 맞으면(힌트가 없으면) 아무 일도 없다 — 그냥 발견으로 넘기지 않는다(바다 발견과 같다).
+        if (Engine.Disev.DisevRunner.Probe(this, _game, row.Id) == Engine.Disev.DisevRunner.ScriptState.Held) return true;
 
         // 발견 대본(DISEV)이 있으면 <b>그것이 다 한다</b> — 동영상 · 대사 · 육상전까지. 바다·뭍 발견
         // (ShipMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
@@ -1308,6 +1310,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         {
             if (log.Table.Find(id) is not { } row) continue;
             if (!log.CanFire(_player, row)) continue;   // 0x004928D8 → 0x004AAD20
+            // 대본 조건이 안 맞으면 넘긴다 — 그냥 발견으로 넘기지 않는다.
+            if (Engine.Disev.DisevRunner.Probe(this, _game, row.Id) == Engine.Disev.DisevRunner.ScriptState.Held) continue;
 
             // 대본이 있으면 그것이 다 한다 — 대사 · 음원 · 아이템 · 발견까지(바다·건물 발견과 같은 길이다).
             bool scripted = RunShaded(row.Id);

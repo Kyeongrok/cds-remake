@@ -197,6 +197,27 @@ public sealed class DisevRunner
         Run(owner, game, DisevBook.CacheName, discoveryId, building: -1);
 
     /// <summary>
+    /// 그 발견물 대본이 <b>있는지, 지금 돌 수 있는지</b>만 본다 — 돌리지는 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 대본이 있는데 조건 덩이가 다 거짓이면(존왕의 술잔 — 힌트 80 이 없으면) 원본 발견 판정(<c>0x0048D3F0</c>)은
+    /// <b>아무 일도 안 한다</b> — 대본을 틀어도 고를 몸통이 없어 발견도 안 적힌다. 그런 발견물을 「대본 없음」으로
+    /// 보고 그냥 발견 처리하면 안 된다.
+    /// </remarks>
+    public static ScriptState Probe(Window owner, Game game, int discoveryId)
+    {
+        if (Open(game.Directory, DisevBook.CacheName) is not { } book) return ScriptState.None;
+        if (discoveryId < 0 || discoveryId >= book.Count) return ScriptState.None;
+        var raw = book.Part(discoveryId);
+        if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return ScriptState.None;
+        var runner = new DisevRunner(owner, game, DisevBook.CacheName, EventOf(game, -1));
+        return runner.PickBody(part) >= 0 ? ScriptState.Ready : ScriptState.Held;
+    }
+
+    /// <summary>발견물 대본의 형편 — 없음 · 조건이 안 맞아 못 돎 · 돌 수 있음.</summary>
+    public enum ScriptState { None, Held, Ready }
+
+    /// <summary>
     /// 그 책의 그 파트를 돌린다. 발견 이벤트만이 아니라 이야기0·이야기1(STORY0/1.CDS)의
     /// 장면도 같은 길로 돈다 — 그릇도 명령도 같다(<see cref="DisevBook.Books"/>).
     /// </summary>
