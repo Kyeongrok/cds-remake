@@ -50,13 +50,16 @@ public sealed class BuildingPhotoWindow : GameWindow
         photoImage.IsHitTestVisible = false;      // 사진은 커서를 안 받는다
         canvas.Children.Add(photoImage);
 
-        // 손님은 발끝을 사진 아래 끝에 맞추고 가로로 고르게 벌린다 — 게임도 그렇게 놓는다
-        // (0x0042DBCE 가 y 를 "바닥 - 제 높이" 로, x 를 "왼쪽 + 간격 x i" 로 잡는다).
-        // 키가 72~104 로 제각각인데도 한 줄에 서는 것이 그 셈이다.
+        // 손님은 발끝을 사진 아래 끝에 맞추고 <b>왼쪽부터 같은 간격으로</b> 붙여 세운다
+        // (0x0042DBCE 가 y 를 "바닥 - 제 높이" 로, x 를 "왼쪽 + (320 − 손님 폭) x i / 4" 로 잡는다).
+        // 간격은 손님 수와 상관없이 다섯 자리 몫이라 셋이면 왼쪽 셋 자리에 모여 선다 — 예전에는 폭을
+        // 손님 수로 나눠 벌려서 셋이면 띄엄띄엄 섰다. 키가 72~104 로 제각각인데도 한 줄에 서는 것이 그 셈이다.
+        double widest = guests.Count > 0 ? guests.Max(g => g.Width) * scale : 0;
+        double gap = Math.Max(0, w - widest) / 4;
         for (int i = 0; i < guests.Count; i++)
         {
             var g = guests[i];
-            double left = (i + 0.5) * w / guests.Count - g.Width * scale / 2.0;
+            double left = i * gap;
 
             var image = Pixels(g.Bgra, g.Width, g.Height, scale);
             Canvas.SetLeft(image, left);
