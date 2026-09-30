@@ -5,7 +5,6 @@
         <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/FigureheadContent.xaml" />
         <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/ItemContent.xaml" />
         <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/PlayerContent.xaml" />
-        <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/SphinxCalculatorContent.xaml" />
         <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/DiscoveryStillContent.xaml" />
         <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/AutoPlayContent.xaml" />
         <ResourceDictionary Source="/CdsHelper.Main;component/Themes/Views/WorldMapContent.xaml" />

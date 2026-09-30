@@ -119,6 +119,9 @@ public sealed class GameSettingsData
     /// <summary>정보 창·상단 띠에 「생명력」 줄을 낼지. 원본 탐험정보에는 없어 꺼 두고 시작한다.</summary>
     public bool ShowVitalityInfo { get; set; }
 
+    /// <summary>스핑크스 퀴즈에서 정답 줄에 표를 달지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool SphinxHelper { get; set; }
+
     /// <summary>켤 때 로고·오프닝 동영상을 틀지. 원본은 늘 트므로 켜 두고 시작한다.</summary>
     public bool PlayOpeningMovie { get; set; } = true;
 
@@ -722,6 +725,13 @@ public static class GameSettings
     {
         get => Get(d => d.ShowVitalityInfo);
         set => Set(d => d.ShowVitalityInfo = value);
+    }
+
+    /// <summary>스핑크스 퀴즈 도우미 — 켜면 고르는 창의 정답 줄에 「← 답」을 단다. 모드 창에서 켜고 끈다.</summary>
+    public static bool SphinxHelper
+    {
+        get => Get(d => d.SphinxHelper);
+        set => Set(d => d.SphinxHelper = value);
     }
 
     /// <summary>

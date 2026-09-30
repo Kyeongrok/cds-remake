@@ -144,6 +144,12 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
 
+        // 스핑크스 퀴즈 도우미 — 개발도구에 있던 계산기를 놀이 안으로 옮겼다.
+        rows.Children.Add(Toggle("스핑크스 퀴즈 도우미", GameSettings.SphinxHelper,
+            on => GameSettings.SphinxHelper = on,
+            "원본에 없는 것입니다 — 스핑크스 퀴즈에서 고르는 창의 정답 줄에 「← 답」을 붙입니다."
+            + " 셈 문제의 답은 늘 다리 넷 달린 괴물의 수입니다."));
+
         // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
         rows.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
             on => GameSettings.PlayOpeningMovie = on,

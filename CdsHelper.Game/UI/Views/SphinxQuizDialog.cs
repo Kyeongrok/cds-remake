@@ -59,7 +59,7 @@ internal static class SphinxQuizDialog
             "밤에는 3개의 다리로 걷는 괴물은?", "스핑크스");
 
         // 고르는 창은 <b>제목이 없다</b> — 원본이 0x004878A0 에 제목 인자로 0 을 넘긴다.
-        int said = MapPointDialog.Ask(owner, SphinxQuiz.Riddle, "");
+        int said = MapPointDialog.Ask(owner, Helped(SphinxQuiz.Riddle, SphinxQuiz.RiddleAnswer), "");
         if (said < 0) return false;
         if (said != SphinxQuiz.RiddleAnswer) { Away(owner); return false; }
 
@@ -71,7 +71,8 @@ internal static class SphinxQuizDialog
         {
             NoticeDialog.Show(owner, Ask(quiz.Now, quiz.Step), "스핑크스");
 
-            int pick = MapPointDialog.Ask(owner, lines, "");
+            // 답은 다리 넷 달린 괴물 수다 — 줄 0 이 1마리라 한 칸 앞이다.
+            int pick = MapPointDialog.Ask(owner, Helped(lines, quiz.Now.Four - 1), "");
             var done = quiz.Answer(pick);
 
             if (done == null) continue;
@@ -83,6 +84,13 @@ internal static class SphinxQuizDialog
             Away(owner);
             return false;
         }
+    }
+
+    /// <summary>모드 「스핑크스 퀴즈 도우미」를 켰으면 정답 줄에 표를 단다. 끄면 줄 그대로다.</summary>
+    private static IReadOnlyList<string> Helped(IReadOnlyList<string> lines, int answer)
+    {
+        if (!Local.Settings.GameSettings.SphinxHelper) return lines;
+        return [.. lines.Select((line, i) => i == answer ? $"{line} ← 답" : line)];
     }
 
     /// <summary><c>0x0056EF80</c> — 틀렸을 때.</summary>

@@ -19,7 +19,6 @@ using CdsHelper.Game.Local.Settings;
 namespace CdsHelper.Form.UI.Views;
 
 [TemplatePart(Name = PART_SettingsMenu, Type = typeof(MenuItem))]
-[TemplatePart(Name = PART_SphinxMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_EventQueueMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_DbTableViewerMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WaveBankMenu, Type = typeof(MenuItem))]
@@ -58,7 +57,6 @@ namespace CdsHelper.Form.UI.Views;
 public class CdsHelperWindow : CdsWindow
 {
     private const string PART_SettingsMenu = "PART_SettingsMenu";
-    private const string PART_SphinxMenu = "PART_SphinxMenu";
     private const string PART_EventQueueMenu = "PART_EventQueueMenu";
     private const string PART_DbTableViewerMenu = "PART_DbTableViewerMenu";
     private const string PART_WaveBankMenu = "PART_WaveBankMenu";
@@ -146,11 +144,6 @@ public class CdsHelperWindow : CdsWindow
         if (GetTemplateChild(PART_SettingsMenu) is MenuItem settingsMenu)
         {
             settingsMenu.Click += OnSettingsMenuClick;
-        }
-
-        if (GetTemplateChild(PART_SphinxMenu) is MenuItem sphinxMenu)
-        {
-            sphinxMenu.Click += OnSphinxMenuClick;
         }
 
         if (GetTemplateChild(PART_EventQueueMenu) is MenuItem eventQueueMenu)
@@ -379,11 +372,6 @@ public class CdsHelperWindow : CdsWindow
             Owner = this
         };
         dialog.ShowDialog();
-    }
-
-    private void OnSphinxMenuClick(object sender, RoutedEventArgs e)
-    {
-        _viewModel?.NavigateToContent("SphinxCalculatorContent");
     }
 
     private void OnEventQueueMenuClick(object sender, RoutedEventArgs e)
