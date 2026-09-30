@@ -891,7 +891,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 if (on[i]) { rows.Add(names[i]); map.Add(i); }
             rows.Add("떠난다");
 
-            int pick = TalkDialog.Ask(_view, face, "", words, [.. rows]);
+            int pick = TalkDialog.Ask(_view, face, "", Heard(her, words), [.. rows]);
             int row = pick >= 0 && pick < map.Count ? map[pick] : -1;
             if (row == 0) { Chat(her, destined); talked = true; }
             else if (row == 1)
@@ -911,7 +911,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             else
             {
                 // 자리를 뜨면 친밀도에 맞는 인사를 한다(0x004668E0).
-                TalkDialog.Say(_view, face, "", Barmaids.ByeWord(_player.LikingOf(her.Id)));
+                TalkDialog.Say(_view, face, "", Heard(her, Barmaids.ByeWord(_player.LikingOf(her.Id))));
                 return;
             }
 
@@ -924,6 +924,16 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             words = "";
         }
     }
+
+    /// <summary>
+    /// 여급이 하는 말 — 제독 <b>본인</b>이 그 여급 말을 하는 수준(<see cref="OwnTongueWith"/>)으로 뭉갠다. 3 이면 그대로다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 여급 말을 안 뭉갠다(뭉개는 0x004780E0 을 여급 대화 코드가 안 부른다) — 무명 손님·성문처럼 말이 서툴면
+    /// 알아듣기 어렵게 하라는 요청으로 넣었다. 설득·선물·프로포즈 줄이 서는 기준과 같다.
+    /// </remarks>
+    private string Heard(in BarmaidTable.Barmaid her, string words) =>
+        words.Length == 0 ? words : StrangerTalk.Garble(words, OwnTongueWith(her), _game.Random);
 
     /// <summary>
     /// 제독 <b>혼자서</b> 그 여급과 통하는 말 수준(<c>0x00478050(제독, 여급)</c>) — 부관·통역은 안 센다.
@@ -975,7 +985,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         // 선물을 받았다는 표시를 세운다(0x00466B45 의 [여급+0x34] = 1) — 설득 60~89 구간(0x00465D49)과
         // 청혼 밑점수 +10(0x00465E44)이 이것을 본다.
         _player.MarkGifted(her.Id);
-        TalkDialog.Say(_view, face, "", Barmaids.GiftWord(_player.LikingOf(her.Id)));
+        TalkDialog.Say(_view, face, "", Heard(her, Barmaids.GiftWord(_player.LikingOf(her.Id))));
         return true;
     }
 
@@ -992,7 +1002,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                        && StrangerTalk.OwnTasteOf(her.Personality) is { } taste
             ? taste
             : Chats[_game.Random.Next(Chats.Length)];
-        TalkDialog.Say(_view, FaceOfMaid(her), "", words);
+        TalkDialog.Say(_view, FaceOfMaid(her), "", Heard(her, words));
     }
 
     /// <summary>여급이 건네는 잡담 스물여덟(<c>0x00466972</c>, <c>0x0055B0A8</c>~<c>0x0055B530</c>).</summary>
@@ -1043,7 +1053,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (!talk.Proposes)
         {
             _player.AddLiking(her.Id, talk.Liking - _player.LikingOf(her.Id));
-            TalkDialog.Say(_view, face, "", talk.Words);
+            TalkDialog.Say(_view, face, "", Heard(her, talk.Words));
             return;
         }
 
@@ -1056,7 +1066,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         PlayHeart(ok);
         if (!ok)
         {
-            TalkDialog.Say(_view, face, "", Barmaids.Fond);
+            TalkDialog.Say(_view, face, "", Heard(her, Barmaids.Fond));
             return;
         }
 
@@ -1074,7 +1084,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             }
 
             // 물리면 그 여급과는 끝이다 — 친밀도가 0 이 되고 프로포즈 줄도 다시 안 선다(0x00465B9E).
-            TalkDialog.Say(_view, face, "", Barmaids.Jilted[dice.Next(Barmaids.Jilted.Length)]);
+            TalkDialog.Say(_view, face, "", Heard(her, Barmaids.Jilted[dice.Next(Barmaids.Jilted.Length)]));
             GameDialog.Show(_view, Barmaids.JiltedNotice);
             _player.MarkRefused(her.Id);
         }
@@ -1139,7 +1149,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
             // 모항에서는 「이 마을을 떠날 수는 없어요」가 안 나온다(0x004661F6).
             int rows = _cityId == _player.HomePort ? 2 : Barmaids.Refusals.Length;
-            TalkDialog.Say(_view, face, "", Barmaids.Refusals[dice.Next(rows)]);
+            TalkDialog.Say(_view, face, "", Heard(her, Barmaids.Refusals[dice.Next(rows)]));
             _player.MarkRefused(her.Id);
         }
         finally { EndLove(); }   // 되든 안 되든 술집 곡으로 돌린다(0x00466231)
@@ -1155,7 +1165,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         // 혼인 대답도 사랑 곡 위에서 한다(0x00465921) — 연적 일기토가 곡을 바꿔 놓았으면 되돌린다.
         PlayLove();
-        TalkDialog.Say(_view, face, "", Barmaids.Yeses[dice.Next(Barmaids.Yeses.Length)]);
+        TalkDialog.Say(_view, face, "", Heard(her, Barmaids.Yeses[dice.Next(Barmaids.Yeses.Length)]));
         _player.Marry(her.Name, her.Id);
         _player.Note(Player.TraceMarriage, her.Id);   // 0x004658F0 — 행적에 혼인을 적는다
         DiscoveryDialog.Show(_view, _game.EventStills, Barmaids.WeddingStill,
