@@ -68,8 +68,11 @@ public sealed class GameSettingsData
     /// <summary>게임 창 크기 — <see cref="GameSettings.Resolutions"/> 의 몇째인지.</summary>
     public int Resolution { get; set; } = GameSettings.DefaultResolution;
 
-    /// <summary>지도 위에 좌표 상자를 겹쳐 보일지.</summary>
-    public bool ShowCoordOverlay { get; set; } = true;
+    /// <summary>지도 위에 좌표 상자를 겹쳐 보일지. 개발용이라 꺼 두고 시작한다(내놓은 판을 처음 깔면 꺼져 있다).</summary>
+    public bool ShowCoordOverlay { get; set; }
+
+    /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    public bool ShowDiscoveryCount { get; set; }
 
     /// <summary>저장·발견물 지도 단축키(글쇠 이름). 비면 기본값을 쓴다.</summary>
     public string SaveKey { get; set; } = "V";
@@ -554,6 +557,13 @@ public static class GameSettings
     }
 
     /// <summary>지도 위에 좌표 상자를 겹쳐 보일지. 개발 창에서 켜고 끈다.</summary>
+    /// <summary>발견물 수 상자 — 모드 창에서 켜고 끈다.</summary>
+    public static bool ShowDiscoveryCount
+    {
+        get => Get(d => d.ShowDiscoveryCount);
+        set => Set(d => d.ShowDiscoveryCount = value);
+    }
+
     public static bool ShowCoordOverlay
     {
         get => Get(d => d.ShowCoordOverlay);

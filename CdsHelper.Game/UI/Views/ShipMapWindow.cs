@@ -191,6 +191,20 @@ public sealed class ShipMapWindow : Window
     /// <summary>만난 사람 상자를 켜 두었는지.</summary>
     private bool _peopleWanted = GameSettings.ShowPeopleOverlay;
 
+    /// <summary>발견물 수 상자 — 지도 왼쪽 아래. 모드 창의 「발견물 수」로 켠다.</summary>
+    private Popup _found = null!;
+
+    /// <summary>발견물 수 상자의 글.</summary>
+    private readonly TextBlock _foundText = new()
+    {
+        Foreground = Brushes.White,
+        FontFamily = new FontFamily("Consolas"),
+        FontSize = 13,
+    };
+
+    /// <summary>발견물 수 상자를 켜 두었는지.</summary>
+    private bool _foundWanted = GameSettings.ShowDiscoveryCount;
+
     /// <summary>미니맵 — 지도 오른쪽 아래. 개발 창의 「미니맵」으로 켠다.</summary>
     private Popup _miniPopup = null!;
 
@@ -402,6 +416,28 @@ public sealed class ShipMapWindow : Window
             },
         };
         surface.Children.Add(_people);
+
+        // 발견물 수 상자는 지도 왼쪽 아래다. 높이가 늘 같으므로 아래 끝에서 그만큼 끌어올린다.
+        _found = new Popup
+        {
+            PlacementTarget = input,
+            Placement = PlacementMode.Bottom,
+            HorizontalOffset = 10,
+            VerticalOffset = -40,
+            AllowsTransparency = true,
+            StaysOpen = true,
+            IsHitTestVisible = false,
+            Child = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(0xB4, 0x10, 0x10, 0x10)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(0xC8, 0x0B, 0x05, 0x05)),
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(10, 5, 10, 6),
+                IsHitTestVisible = false,
+                Child = _foundText,
+            },
+        };
+        surface.Children.Add(_found);
 
 
         // 비·눈은 지도 전체를 덮는 층이다 — 미니맵보다 먼저 연다(아래에 깔린다).
@@ -620,6 +656,7 @@ public sealed class ShipMapWindow : Window
             }
             if (_overlay.IsOpen) { var (lat, lon) = _host.ShipLatLon; FillOverlay(lat, lon); }
             if (_miniWanted) SyncMiniMap();
+            if (_found.IsOpen) FillFound();
             SyncWeather();
             SyncSeaMusic();
         });
@@ -1028,6 +1065,10 @@ public sealed class ShipMapWindow : Window
         if (people) FillPeople();
         _people.IsOpen = people;
 
+        bool found = _foundWanted && up;
+        if (found) FillFound();
+        _found.IsOpen = found;
+
         SyncMiniMap();
     }
 
@@ -1187,6 +1228,16 @@ public sealed class ShipMapWindow : Window
             && y + ShipHalf >= top && y - ShipHalf <= top + MiniMapView.ViewH;
     }
 
+
+    /// <summary>
+    /// 발견물 수 상자를 채운다 — 「발견물 N / 전체」. 전체는 발견물 표의 줄 수(모조품까지 든 274)다.
+    /// </summary>
+    private void FillFound()
+    {
+        int total = _game.Discoveries?.Table.Discoveries.Count ?? 0;
+        int found = _game.Player.Discoveries.Distinct().Count();
+        _foundText.Text = total > 0 ? $"발견물 {found} / {total}" : $"발견물 {found}";
+    }
 
     /// <summary>여급 칸의 너비(글자 칸). 한글 한 자를 두 칸으로 센다.</summary>
     private const int PeopleColumn = 34;
@@ -2814,6 +2865,13 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void ShowModDialog() => ModDialog.Show(this, new ModDialog.Options
     {
+        DiscoveryCountOn = () => _foundWanted,
+        SetDiscoveryCount = on =>
+        {
+            _foundWanted = on;
+            GameSettings.ShowDiscoveryCount = on;   // 다음에 켤 때도 그대로
+            SyncOverlay();
+        },
         MiniMapOn = () => _miniWanted,
         SetMiniMap = on =>
         {
