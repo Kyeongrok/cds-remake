@@ -85,8 +85,11 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// </summary>
     private static readonly TimeSpan BallStepTime = TimeSpan.FromMilliseconds(15);
 
-    /// <summary>원본 화면 크기.</summary>
-    private const int ScreenWidth = CombatArt.SeaWidth, ScreenHeight = CombatArt.SeaHeight;
+    /// <summary>
+    /// 판 크기. 폭은 원본 넓은 화면(800) 그대로고, 키는 <b>틀이 끝나는 자리</b>(아래 띠 560 + 32 = 592)까지다 —
+    /// 600 으로 두면 아래 띠 밑 8점이 창 바탕(검정)으로 비쳐 까만 줄이 섰다.
+    /// </summary>
+    private const int ScreenWidth = CombatArt.SeaWidth, ScreenHeight = BottomBandTop + BandHeight;
 
     /// <summary>위아래 띠 높이.</summary>
     private const int BandHeight = 32;
