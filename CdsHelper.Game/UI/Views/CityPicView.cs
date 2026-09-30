@@ -397,15 +397,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 도트 그림이라 늘릴 때 섞으면 뭉개진다 — 게임 화면처럼 각을 살린다.
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
 
-        // 사건이 도는 동안 그림을 파랗게 덮는 막. 지도 쪽의 ShipMapHost.Shaded 와 같은 몫이다.
-        _shade.Width = image.Width;
-        _shade.Height = image.Height;
-
         var picBox = new Grid
         {
             Width = image.Width,
             Height = image.Height,
-            Children = { image, _layer, _shade },
+            Children = { image, _layer },
         };
 
         // 틀 위에 그림을 여덟 점 안쪽으로 얹는다. 건물 자리 셈은 그림(picBox) 기준이라 그대로다.
@@ -427,6 +423,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         picBox.VerticalAlignment = VerticalAlignment.Top;
         picBox.Margin = new Thickness(_frameBorder * scale);
         frameBox.Children.Add(picBox);
+
+        // 사건이 도는 동안 그림을 파랗게 덮는 막. 지도 쪽의 ShipMapHost.Shaded 와 같은 몫이다.
+        // <b>금테까지</b> 덮는다 — 그림 칸에만 깔았더니 나중에 두른 테만 밝게 남았다.
+        _shade.Width = fullW;
+        _shade.Height = fullH;
+        frameBox.Children.Add(_shade);
 
         // 함대 쪽지는 이 창이 자리를 잡은 뒤에야 옆에 붙일 수 있다.
         Loaded += (_, _) =>
