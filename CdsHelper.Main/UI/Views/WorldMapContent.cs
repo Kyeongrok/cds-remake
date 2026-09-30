@@ -677,9 +677,12 @@ public class WorldMapContent : ContentControl
 
                 // 게임 발견물 표(274개)를 기준으로 돈다 — DB 는 232개뿐이라 42개가 빠져 있고
                 // 불국사·돌고래처럼 Id 가 어긋난 것도 있다. DB 는 힌트/서적 같은 덤을 얹을 때만 본다.
-                for (int gi = 0; gi < GameMapCoords.DiscoveryCount; gi++)
+                // 이름·좌표는 <b>발견물 표 한 곳</b>(exe-tables/발견물표.json)에서 온다 — 예전에는 GameMapCoords 에
+                // 이름 274개와 좌표를 따로 박아 두어, 이름을 고치면(푸아티에 · 서튼후) 두 곳을 손대야 했다.
+                var table = Discoveries;
+                for (int gi = 0; table != null && gi < table.Discoveries.Count; gi++)
                 {
-                    if (!GameMapCoords.TryDiscoveryCells(gi, out var gx1, out var gy1, out var gx2, out var gy2))
+                    if (!TryDiscoveryCells(gi, out var gx1, out var gy1, out var gx2, out var gy2))
                         continue;   // 좌표로 찾는 발견물이 아니다(항로·인물·비보 등)
 
                     int dbId = GameMapCoords.DbIdFromIndex(gi);
@@ -687,7 +690,7 @@ public class WorldMapContent : ContentControl
                     var d = discoveries.TryGetValue(dbId, out var row)
                         ? row
                         : new DiscoveryEntity { Id = dbId };
-                    d.Name = GameMapCoords.DiscoveryNames[gi];
+                    d.Name = table.Discoveries[gi].Name;
 
                     // 세이브 슬롯 번호 = 게임 발견물 번호
                     bool isFound = _foundDiscoveryIds?.Contains(gi) == true;
@@ -846,12 +849,30 @@ public class WorldMapContent : ContentControl
         return pen;
     }
 
+    /// <summary>발견물 표 — 이름·좌표를 여기서만 읽는다. 게임 폴더를 모르면 적어 둔 표를 연다.</summary>
+    private static CdsHelper.Game.Local.Helpers.DiscoveryTable? Discoveries =>
+        _discoveries ??= CdsHelper.Game.Local.Helpers.DiscoveryTable.Open(
+            System.IO.Path.GetDirectoryName(AppSettings.LastSaveFilePath) ?? "");
+
+    private static CdsHelper.Game.Local.Helpers.DiscoveryTable? _discoveries;
+
+    /// <summary>그 발견물(게임 번호)의 칸 범위. 좌표가 없는 발견물이면 false.</summary>
+    private static bool TryDiscoveryCells(int index, out double x1, out double y1, out double x2, out double y2)
+    {
+        x1 = y1 = x2 = y2 = 0;
+        if (Discoveries is not { } table || index < 0 || index >= table.Discoveries.Count) return false;
+        var row = table.Discoveries[index];
+        if (!row.HasPlace) return false;
+        (x1, y1, x2, y2) = (row.X1, row.Y1, row.X2, row.Y2);
+        return true;
+    }
+
     private void AddDiscoveryPoint(DiscoveryEntity d, bool isFound = false)
     {
         if (_overlayCanvas == null || _discoveryVisualHost == null) return;
 
         // 게임 원본 좌표표가 먼저다. 없을 때만 DB 의 도 단위 값을 쓴다.
-        var (px, py) = GameMapCoords.TryDiscoveryCells(GameMapCoords.IndexFromDbId(d.Id), out var gx1, out var gy1, out var gx2, out var gy2)
+        var (px, py) = TryDiscoveryCells(GameMapCoords.IndexFromDbId(d.Id), out var gx1, out var gy1, out var gx2, out var gy2)
             ? CellToPixel((gx1 + gx2 + 1) / 2.0, (gy1 + gy2 + 1) / 2.0)
             : LatLonToPixel(d.LatFrom!.Value, d.LonFrom!.Value);
 
@@ -883,7 +904,7 @@ public class WorldMapContent : ContentControl
         if (_overlayCanvas == null || _discoveryVisualHost == null) return;
 
         double x1, y1, x2, y2;
-        if (GameMapCoords.TryDiscoveryCells(GameMapCoords.IndexFromDbId(d.Id), out var gx1, out var gy1, out var gx2, out var gy2))
+        if (TryDiscoveryCells(GameMapCoords.IndexFromDbId(d.Id), out var gx1, out var gy1, out var gx2, out var gy2))
         {
             // 게임 원본 좌표표. 칸 끝을 포함해야 하므로 오른쪽/아래를 한 칸 늘린다.
             var (cx1, cy1, cx2, cy2) = ClampSpan(Math.Min(gx1, gx2), Math.Min(gy1, gy2),
