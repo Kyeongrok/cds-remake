@@ -254,6 +254,7 @@ public sealed class DisevEditorDialog : GameWindow
         page.Children.Add(bar);
         page.Children.Add(_status);
         page.Children.Add(body);
+        _page = page;
         Content = page;
 
         Loaded += (_, _) => OpenDefault();
@@ -262,6 +263,25 @@ public sealed class DisevEditorDialog : GameWindow
 
     /// <summary>임자 창 가운데에 띄운다.</summary>
     /// <param name="book">처음에 펼 책(<see cref="DisevBook.Books"/> 의 첫 칸, 「PEX」 따위). 없으면 발견 이벤트다.</param>
+    /// <summary>
+    /// 창 없이 편집기 화면만 떼어 낸다 — 개발도구 본문 칸(첫 화면)에 싣는다. 딸린 창들은 그 화면이 든 창을 주인으로 삼는다.
+    /// </summary>
+    public static FrameworkElement CreateView()
+    {
+        var editor = new DisevEditorDialog();
+        var page = editor._page;
+        editor.Content = null;
+        bool opened = false;
+        page.Loaded += (_, _) => { if (!opened) { opened = true; editor.OpenDefault(); } };
+        return page;
+    }
+
+    /// <summary>편집기 화면. 창에 든 채면 창이, 본문 칸에 실렸으면 그 칸이 든 창이 딸린 창의 주인이다.</summary>
+    private DockPanel _page = null!;
+
+    /// <summary>딸린 창을 띄울 주인 — 본문 칸에 실렸으면 이 창은 안 떠 있으므로 화면이 든 창을 쓴다.</summary>
+    private Window Host => Window.GetWindow(_page) ?? this;
+
     public static void Show(Window owner, string? book = null)
     {
         var dialog = new DisevEditorDialog { Owner = owner };
@@ -331,7 +351,7 @@ public sealed class DisevEditorDialog : GameWindow
             Title = "게임 폴더 고르기 (CDS_95.EXE 가 있는 곳)",
             InitialDirectory = GameFolder(),
         };
-        if (dialog.ShowDialog(this) == true) Load(dialog.FolderName);
+        if (dialog.ShowDialog(Host) == true) Load(dialog.FolderName);
     }
 
     /// <summary>세이브를 연 폴더가 곧 게임 폴더다 — 앱의 다른 데도 그렇게 잡는다.</summary>
@@ -668,7 +688,7 @@ public sealed class DisevEditorDialog : GameWindow
 
         _itemDescriptions ??= ItemDescriptions.Open(_gameDir);
         _itemArt ??= ItemArt.Open(_gameDir);
-        ItemInfoDialog.Show(this, item, _itemDescriptions?.Of(id) ?? "", _itemArt);
+        ItemInfoDialog.Show(Host, item, _itemDescriptions?.Of(id) ?? "", _itemArt);
     }
 
     /// <summary>편집기가 따로 드는 배경음악 — 창을 닫으면 멈추고 놓는다.</summary>
@@ -711,7 +731,7 @@ public sealed class DisevEditorDialog : GameWindow
         var window = new Window
         {
             Title = $"동영상 {movie} — {Path.GetFileName(path)}",
-            Owner = this,
+            Owner = Host,
             Width = 520,
             Height = 420,
             ShowInTaskbar = false,
@@ -774,7 +794,7 @@ public sealed class DisevEditorDialog : GameWindow
         new Window
         {
             Title = $"EVSTILL {picture}",
-            Owner = this,
+            Owner = Host,
             SizeToContent = SizeToContent.WidthAndHeight,
             ResizeMode = ResizeMode.NoResize,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -1233,7 +1253,7 @@ public sealed class DisevEditorDialog : GameWindow
     /// <summary>적어 둔 것을 통째로 버리고 원본에서 다시 뜬다.</summary>
     private void RevertAll()
     {
-        if (!ConfirmDialog.Ask(this,
+        if (!ConfirmDialog.Ask(Host,
                 "적어 둔 대본을 버리고 앱에 실린 원본 대본으로 되돌립니다. 고친 것이 다 사라집니다. 좋습니까?",
                 "원본에서 다시 뜨기"))
             return;

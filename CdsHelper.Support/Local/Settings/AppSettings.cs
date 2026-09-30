@@ -65,7 +65,8 @@ public static class AppSettings
 {
     public const double DefaultMarkerSize = 11.0;
 
-    public const string DefaultDefaultView = "PlayerContent";
+    /// <summary>첫 화면 — 「개발 → 대본 편집」이다.</summary>
+    public const string DefaultDefaultView = "DisevEditorContent";
 
     private static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -199,11 +200,11 @@ public static class AppSettings
 
     public static readonly List<ViewOption> AvailableViews = new()
     {
+        new() { Name = "DisevEditorContent", DisplayName = "대본 편집" },
         new() { Name = "PlayerContent", DisplayName = "플레이어" },
         new() { Name = "CharacterContent", DisplayName = "항해사" },
         new() { Name = "ItemContent", DisplayName = "아이템" },
-        new() { Name = "WorldMapContent", DisplayName = "세계지도" },
-        new() { Name = "SphinxCalculatorContent", DisplayName = "스핑크스" }
+        new() { Name = "WorldMapContent", DisplayName = "세계지도" }
     };
 
     private static void LoadSettings()

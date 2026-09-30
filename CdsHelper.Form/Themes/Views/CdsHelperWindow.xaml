@@ -210,7 +210,6 @@
                                         ToolTip="함대 보기 (Direct3D)" />
                                     <MenuItem Header="도구">
                                         <MenuItem x:Name="PART_WorldMapMenu" Header="세계지도" />
-                                        <MenuItem x:Name="PART_SphinxMenu" Header="스핑크스" />
                                         <MenuItem x:Name="PART_EventQueueMenu" Header="이벤트 큐 보기" />
                                         <MenuItem x:Name="PART_DbTableViewerMenu" Header="DB 테이블 보기" />
                                         <MenuItem
@@ -354,9 +353,10 @@
                                 </Popup>
                             </Grid>
 
-                            <!--  세이브 파일 정보 바  -->
+                            <!--  세이브 파일 정보 바 — 쓰지 않아 감췄다. 게임 폴더는 설정에 적힌 마지막 세이브 자리로 안다.  -->
                             <Border
                                 Grid.Row="2"
+                                Visibility="Collapsed"
                                 Padding="10,5"
                                 Background="#E3F2FD"
                                 BorderBrush="#90CAF9"

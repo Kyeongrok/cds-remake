@@ -80,8 +80,8 @@ internal class App : PrismApplication
         containerRegistry.RegisterForNavigation<FigureheadContent>();
         containerRegistry.RegisterForNavigation<ItemContent>();
         containerRegistry.RegisterForNavigation<PlayerContent>();
-        containerRegistry.RegisterForNavigation<SphinxCalculatorContent>();
         containerRegistry.RegisterForNavigation<DiscoveryStillContent>();
+        containerRegistry.RegisterForNavigation<DisevEditorContent>();
         containerRegistry.RegisterForNavigation<AutoPlayContent>();
         containerRegistry.RegisterForNavigation<WorldMapContent>();
     }
