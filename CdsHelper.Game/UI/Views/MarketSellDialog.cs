@@ -157,6 +157,9 @@ public sealed class MarketSellDialog : GameWindow
         }
 
         TalkDialog.Say(owner, face, "", "팔고 싶은 물건이 있으면 어디 보여주게!");
-        new MarketSellDialog(player, market, items, cityId) { Owner = owner, _face = face }.ShowDialog();
+        var dialog = new MarketSellDialog(player, market, items, cityId) { Owner = owner, _face = face };
+        // 사는 창과 같이, 시장 차림표를 덮으면 그 위로 비켜 선다.
+        dialog.ContentRendered += (_, _) => MarketBuyDialog.StepAside(dialog, owner);
+        dialog.ShowDialog();
     }
 }

@@ -254,8 +254,27 @@ public sealed class MarketBuyDialog : GameWindow
             TalkDialog.Say(owner, face, "", "미안하네, 지금 물건이 떨어지고 없네.");
             return;
         }
-        new MarketBuyDialog(player, market, cityId, descriptions, art, found, face, game,
-                            GameUi.CityScaleOf(owner))
-            { Owner = owner }.ShowDialog();
+        var dialog = new MarketBuyDialog(player, market, cityId, descriptions, art, found, face, game,
+                                         GameUi.CityScaleOf(owner)) { Owner = owner };
+        // 도시 그림 한가운데에 서면 그 아래의 시장 차림표를 덮는다 — 자리를 잡은 뒤 차림표 위로 비켜 세운다.
+        dialog.ContentRendered += (_, _) => StepAside(dialog, owner);
+        dialog.ShowDialog();
+    }
+
+    /// <summary>
+    /// 떠 있는 명령 창(시장 차림표)과 겹치면 그 위로 올린다. 위에 자리가 모자라면 도시 그림 위 끝에 붙인다.
+    /// </summary>
+    internal static void StepAside(Window dialog, Window owner)
+    {
+        var menu = Application.Current.Windows.OfType<MenuWindow>()
+            .FirstOrDefault(w => w.IsVisible && w != dialog);
+        if (menu == null) return;
+
+        var mine = new Rect(dialog.Left, dialog.Top, dialog.ActualWidth, dialog.ActualHeight);
+        var theirs = new Rect(menu.Left, menu.Top, menu.ActualWidth, menu.ActualHeight);
+        if (!mine.IntersectsWith(theirs)) return;
+
+        const double Gap = 4;
+        dialog.Top = Math.Max(owner.Top, menu.Top - dialog.ActualHeight - Gap);
     }
 }
