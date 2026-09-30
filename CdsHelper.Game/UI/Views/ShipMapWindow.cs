@@ -316,6 +316,8 @@ public sealed class ShipMapWindow : Window
             string name = CityInfoMenu.Rows[i];
             if (!_infoCells.TryGetValue(name, out var cell)) continue;
             bool on = saved?.Contains(name) ?? ((BarDefaults[place] >> i) & 1) != 0;
+            // 「생명력」은 모드 창에서 켰을 때만 띠에 선다 — 예전에 켜 둔 판이어도 끄면 걷힌다.
+            if (name == CityInfoMenu.Vitality && !GameSettings.ShowVitalityInfo) on = false;
             cell.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
         }
     }
@@ -749,6 +751,7 @@ public sealed class ShipMapWindow : Window
         };
         Closed += (_, _) =>
         {
+            _closed = true;
             LandBattleScene.Opening -= endWeather;
             DuelDialog.Opening -= endWeather;
             _overlay.IsOpen = false;
@@ -1216,7 +1219,6 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void SyncMiniMap()
     {
-        _mini.SetOpacity(GameSettings.MiniMapOpacity);
         bool calm = !_asking && !_host.Paused
                     && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible);
         var now = DateTime.UtcNow;
@@ -1243,7 +1245,25 @@ public sealed class ShipMapWindow : Window
             _miniPopup.HorizontalOffset = Math.Max(0, _input.ActualWidth - MiniMapView.ViewW - 10);
             _miniPopup.VerticalOffset = Math.Max(0, _input.ActualHeight - MiniMapView.ViewH - 10);
         }
+        // 배가 미니맵 밑으로 들어가면 <b>두 배 더 투명하게</b>(불투명도를 반으로) 해 배와 둘레가 보이게 한다.
+        _mini.SetOpacity(GameSettings.MiniMapOpacity * (room && ShipUnderMiniMap() ? 0.5 : 1));
         _miniPopup.IsOpen = room;
+    }
+
+    /// <summary>배 그림 반 폭(48점 그림의 반) — 배 가장자리가 미니맵에 걸리기만 해도 겹친 것으로 친다.</summary>
+    private const double ShipHalf = 24;
+
+    /// <summary>배(뭍이면 말)가 미니맵 자리에 들어와 있는지 — 둘 다 지도 입력 판(<c>_input</c>) 좌표로 견준다.</summary>
+    private bool ShipUnderMiniMap()
+    {
+        var (pixelW, _) = _host.SurfaceSize;
+        if (pixelW <= 0 || _input.ActualWidth <= 0 || _host.ShipOnSurface is not { } p) return false;
+
+        double perPixel = _input.ActualWidth / pixelW;          // 실픽셀 → WPF 단위
+        double x = p.X * perPixel, y = p.Y * perPixel;
+        double left = _miniPopup.HorizontalOffset, top = _miniPopup.VerticalOffset;
+        return x + ShipHalf >= left && x - ShipHalf <= left + MiniMapView.ViewW
+            && y + ShipHalf >= top && y - ShipHalf <= top + MiniMapView.ViewH;
     }
 
     /// <summary>
@@ -2030,6 +2050,9 @@ public sealed class ShipMapWindow : Window
         _game.Player.SetAshore(_host.AshoreSpot, _host.MooredHeading);
     }
 
+    /// <summary>창이 닫혔는지 — 닫힌 뒤에 풀려난 모달 고리가 창을 다시 띄우지 않게 본다.</summary>
+    private bool _closed;
+
     private void NewGame()
     {
         // 게임도 여기부터는 메인메뉴를 걷는다 — 고르는 창이 그 자리에 뜬다.
@@ -2048,6 +2071,9 @@ public sealed class ShipMapWindow : Window
             // 0x0045EBF5 로 뛰어 주인공을 다시 비우고(0x00478550) 차림표를 다시 낸다. 첫 화면으로는 차림표에서 물릴 때만 간다.
             while (!made)
             {
+                // 신상·능력치 창을 띄운 채 게임 창을 닫으면 그 창이 물린 것으로 돌아와 여기로 되돌아온다 —
+                // 닫힌 창을 주인으로 NEW GAME 차림표를 다시 띄우면 WPF 가 던지므로 그만둔다.
+                if (_closed) return;
                 int at = ChoiceDialog.Ask(this, "NEW GAME",
                     ["초심자용 주인공으로 시작한다(EASY)", "새로운 주인공으로 시작한다(NORMAL)"]);
                 if (at < 0) return;
@@ -2525,7 +2551,7 @@ public sealed class ShipMapWindow : Window
     {
         var slots = GameSave.AutoSaves();
         static string Row(string name, string city, string at, string found) =>
-            GameUi.Pad(name, 16) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + found;
+            GameUi.Pad(name, 28) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + found;
 
         var rows = slots.Select(s =>
         {
@@ -2537,7 +2563,9 @@ public sealed class ShipMapWindow : Window
         }).ToList();
 
         int at = HintListDialog.Pick(this, rows, "자동저장 불러오기", "자동저장한 데이터가 없습니다",
-                                     header: Row("캐릭터", "도시", "저장한 시각", "발견물"));
+                                     header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
+                                     // 「바르토로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
+                                     listWidth: 580);
         return at >= 0 && at < slots.Count ? slots[at].File : null;
     }
 
@@ -2973,8 +3001,10 @@ public sealed class ShipMapWindow : Window
             items.Add(("도시좌표", () => { Close(); ShowCityCoordinates(); }));
 
         items.Add(("항해일지를 본다", () => { Close(); ShowLogbook(); }));
-        // 줄은 「기능」에서 끝난다(0x0048B4B5) — 「취소」는 기능 아래에만 있고 커맨드는 오른쪽 단추로 닫는다.
         items.Add(("기능", () => CommandMenu.Push(SeaSystemMenuBox)));
+        // 줄 표는 「기능」에서 끝나지만(0x0048B4B5) 창을 짓는 0x004878A0(인자 2)이 끝에 「취소」를 붙인다 —
+        // 원본 갈무리에서 바다·뭍 모두 「기능」 아래에 「취소」(회녹색 띠)가 있다.
+        items.Add(("취소", Close));
 
         // 넓히는 것은 GameUi 가 창을 지으며 한다 — 커맨드 창만이 아니라 도시 창·시설 창도
         // 같이 넓어야 모양이 맞는다.
@@ -6597,8 +6627,12 @@ public sealed class ShipMapWindow : Window
         }
 
         // 켜면 로고와 오프닝 동영상을 튼 뒤 메인메뉴로 간다(0x00410AE3 · 0x00410B22). 누르면 건너뛴다.
-        MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.LogoStem));
-        MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.OpeningStem));
+        // 모드 창에서 끄면 둘 다 건너뛰고 곧장 메인메뉴다.
+        if (GameSettings.PlayOpeningMovie)
+        {
+            MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.LogoStem));
+            MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.OpeningStem));
+        }
 
         if (!BgmPlayer.IsAvailable(dir))
         {

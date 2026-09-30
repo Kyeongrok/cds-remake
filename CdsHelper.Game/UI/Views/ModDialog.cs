@@ -138,6 +138,23 @@ public sealed class ModDialog : GameWindow
             "계약을 맺을 때 내 배가 한 척이라도 있으면 후원자가 「배를 빌리겠습니까?」를 묻습니다(원본 그대로)."
             + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖춘 판에서 물음이 성가실 때 씁니다."));
 
+        // 생명력 — 원본 탐험정보에 없는 줄이다.
+        rows.Children.Add(Toggle("생명력 정보", GameSettings.ShowVitalityInfo,
+            on => GameSettings.ShowVitalityInfo = on,
+            "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
+            + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
+
+        // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
+        rows.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
+            on => GameSettings.PlayOpeningMovie = on,
+            "켤 때 로고(LOGO.AVI)와 오프닝(OPEN.AVI) 동영상을 틉니다(원본 그대로). 끄면 둘 다 건너뛰고 곧장 메인메뉴로 갑니다."));
+
+        // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
+        rows.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
+            on => GameSettings.RerollOnJob = on,
+            "원본에 없는 것입니다 — 새 주인공(NORMAL) 능력치 창에서 직업 단추를 누를 때마다 능력치와 보너스를 새로 굴립니다."
+            + " 넣어 둔 보너스는 도로 걷힙니다. 끄면 원본처럼 직업은 기본 기술만 정합니다."));
+
         // 자동저장 — 원본에 없다. 손으로 적는 자리(SAVEDATA.CDS)는 안 건드리고 따로 적는다.
         rows.Children.Add(Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
             on => GameSettings.AutoSaveOnPort = on,

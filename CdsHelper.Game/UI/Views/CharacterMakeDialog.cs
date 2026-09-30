@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
@@ -153,6 +154,9 @@ internal sealed class CharacterMakeDialog : GameWindow
 
     private readonly List<GameButton> _bloods = [], _nations = [];
 
+    /// <summary>새 주인공(NORMAL)의 생일 기본값 — 1월 11일. 원본과 상관없이 우리가 정한 규칙이다.</summary>
+    private const int FreshBirthMonth = 1, FreshBirthDay = 11;
+
     private int _face, _blood, _nation;
     private bool _ok;
 
@@ -166,7 +170,7 @@ internal sealed class CharacterMakeDialog : GameWindow
 
         _face = player.Face;
 
-        // 새 사람은 A형·포르투갈 왕국을 기본으로 고른다. 기존 주인공을 다시 열 때는 저장된
+        // 새 사람은 A형·포르투갈 왕국·생일 1월 11일을 기본으로 고른다. 기존 주인공을 다시 열 때는 저장된
         // 값을 그대로 보여 준다.
         bool fresh = player.Family.Length == 0 && player.Given.Length == 0;
         _blood = fresh ? 0 : player.Blood;
@@ -174,8 +178,21 @@ internal sealed class CharacterMakeDialog : GameWindow
         _family.Text = player.Family;
         _given.Text = player.Given;
         _age.Text = $"{player.Age}";
-        _month.Text = $"{player.BirthMonth}";
-        _day.Text = $"{player.BirthDay}";
+        _month.Text = $"{(fresh ? FreshBirthMonth : player.BirthMonth)}";
+        _day.Text = $"{(fresh ? FreshBirthDay : player.BirthDay)}";
+
+        // 세 시간 안에 새 주인공을 짓다 「다음」을 눌렀으면 그때 적은 것을 그대로 채운다(원본에 없다).
+        if (fresh && GameSettings.CharacterDraft is { } draft)
+        {
+            _family.Text = draft.Family;
+            _given.Text = draft.Given;
+            _age.Text = $"{draft.Age}";
+            _month.Text = $"{draft.BirthMonth}";
+            _day.Text = $"{draft.BirthDay}";
+            _blood = draft.Blood;
+            _nation = draft.Nation;
+            _face = draft.Face;
+        }
 
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -522,6 +539,15 @@ internal sealed class CharacterMakeDialog : GameWindow
             NoticeDialog.Show(this, "같은 성명을 쓰는 누적 캐릭터가 있습니다", InputError);
             return;
         }
+
+        // 다음에 새로 지을 때 채우게 적어 둔다 — 세 시간 들고 있는다(GameSettings.CharacterDraftKeep).
+        GameSettings.EditCharacterDraft(d =>
+        {
+            d.Family = _family.Text;
+            d.Given = _given.Text;
+            (d.Age, d.BirthMonth, d.BirthDay) = (age, month, day);
+            (d.Blood, d.Nation, d.Face) = (_blood, _nation, _face);
+        });
 
         _ok = true;
         Close();

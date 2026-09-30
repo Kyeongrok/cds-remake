@@ -3,9 +3,34 @@ using System.Text.Json;
 
 namespace CdsHelper.Game.Local.Settings;
 
+/// <summary>
+/// 새 주인공을 짓다 「다음」을 누를 때 적어 두는 것 — 다음에 새로 지을 때 그대로 채운다.
+/// <see cref="GameSettings.CharacterDraftKeep"/> 가 지나면 버린다.
+/// </summary>
+public sealed class CharacterDraft
+{
+    public string Family { get; set; } = "";
+    public string Given { get; set; } = "";
+    public int Age { get; set; }
+    public int BirthMonth { get; set; }
+    public int BirthDay { get; set; }
+    public int Blood { get; set; }
+    public int Nation { get; set; }
+    public int Face { get; set; }
+
+    /// <summary>능력치 창에서 계산기로 적은 바라는 값(모드 「직업 누르면 다시 굴림」). 안 적은 칸은 null.</summary>
+    public int?[]? Targets { get; set; }
+
+    /// <summary>마지막으로 적은 때(UTC).</summary>
+    public DateTime SavedAt { get; set; }
+}
+
 /// <summary>이대로 <c>game-settings.json</c> 이 된다.</summary>
 public sealed class GameSettingsData
 {
+    /// <summary>새 주인공을 짓다 적어 둔 것. 없으면 null.</summary>
+    public CharacterDraft? CharacterDraft { get; set; }
+
     /// <summary>앱을 켤 때 함대 보기(Direct3D) 창을 바로 띄울지. 기본은 켬.</summary>
     public bool AutoOpenShipMap { get; set; } = true;
 
@@ -87,6 +112,15 @@ public sealed class GameSettingsData
     /// 안 빌린다. 원본에는 늘 묻는 자리라 켜 두고 시작한다.
     /// </summary>
     public bool AskLendShips { get; set; } = true;
+
+    /// <summary>정보 창·상단 띠에 「생명력」 줄을 낼지. 원본 탐험정보에는 없어 꺼 두고 시작한다.</summary>
+    public bool ShowVitalityInfo { get; set; }
+
+    /// <summary>켤 때 로고·오프닝 동영상을 틀지. 원본은 늘 트므로 켜 두고 시작한다.</summary>
+    public bool PlayOpeningMovie { get; set; } = true;
+
+    /// <summary>새 주인공 능력치 창에서 직업 단추를 누르면 능력치를 다시 굴릴지. 원본에는 없어 꺼 두고 시작한다.</summary>
+    public bool RerollOnJob { get; set; }
 
     /// <summary>
     /// <b>도시에 들어설 때마다</b> 자동저장 파일에 적을지. 놀이에는 없는 것이라 꺼 두고 시작한다.
@@ -310,6 +344,26 @@ public static class GameSettings
             // 못 적어도 이번 판은 굴러간다.
         }
     }
+
+    /// <summary>새 주인공 적어 둔 것을 들고 있는 동안 — 세 시간이다.</summary>
+    public static readonly TimeSpan CharacterDraftKeep = TimeSpan.FromHours(3);
+
+    /// <summary>
+    /// 적어 둔 새 주인공. 없거나 <see cref="CharacterDraftKeep"/> 가 지났으면 null.
+    /// </summary>
+    public static CharacterDraft? CharacterDraft =>
+        Get(d => d.CharacterDraft is { } draft && DateTime.UtcNow - draft.SavedAt <= CharacterDraftKeep ? draft : null);
+
+    /// <summary>
+    /// 새 주인공 적어 둔 것을 고친다 — 지난 것이면 빈 것에서 시작한다. 적은 때는 지금으로 갈린다.
+    /// </summary>
+    public static void EditCharacterDraft(Action<CharacterDraft> edit) => Set(d =>
+    {
+        var draft = d.CharacterDraft is { } old && DateTime.UtcNow - old.SavedAt <= CharacterDraftKeep ? old : new();
+        edit(draft);
+        draft.SavedAt = DateTime.UtcNow;
+        d.CharacterDraft = draft;
+    });
 
     private static T Get<T>(Func<GameSettingsData, T> read)
     {
@@ -641,6 +695,35 @@ public static class GameSettings
     {
         get => Get(d => d.AskLendShips);
         set => Set(d => d.AskLendShips = value);
+    }
+
+    /// <summary>
+    /// 정보 창(양상·탐험·도시정보)과 상단 띠에 「생명력」(제독 HP) 줄을 낼지 — 모드 창에서 켜고 끈다.
+    /// </summary>
+    public static bool ShowVitalityInfo
+    {
+        get => Get(d => d.ShowVitalityInfo);
+        set => Set(d => d.ShowVitalityInfo = value);
+    }
+
+    /// <summary>
+    /// 켤 때 로고(<c>LOGO.AVI</c>)와 오프닝(<c>OPEN.AVI</c>)을 틀지 — 모드 창에서 켜고 끈다.
+    /// 원본은 늘 튼다(<c>0x00410AE3</c> · <c>0x00410B22</c>).
+    /// </summary>
+    public static bool PlayOpeningMovie
+    {
+        get => Get(d => d.PlayOpeningMovie);
+        set => Set(d => d.PlayOpeningMovie = value);
+    }
+
+    /// <summary>
+    /// 새 주인공 능력치 창에서 직업 단추를 누를 때마다 능력치를 다시 굴릴지 — 모드 창에서 켜고 끈다.
+    /// 원본은 직업을 바꿔도 안 굴린다(<c>0x0045D8DA</c>).
+    /// </summary>
+    public static bool RerollOnJob
+    {
+        get => Get(d => d.RerollOnJob);
+        set => Set(d => d.RerollOnJob = value);
     }
 
     /// <summary>

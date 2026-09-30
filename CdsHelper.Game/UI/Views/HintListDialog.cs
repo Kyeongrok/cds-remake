@@ -93,7 +93,8 @@ public sealed class HintListDialog : GameWindow
                            string header = "", IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null, IReadOnlyList<bool>? marks = null,
                            bool multi = false, IReadOnlyList<string>? rightTexts = null,
-                           IReadOnlyList<bool>? usable = null, Func<int, ImageSource?>? preview = null)
+                           IReadOnlyList<bool>? usable = null, Func<int, ImageSource?>? preview = null,
+                           double listWidth = ListWidth)
     {
         _marks = marks;
         _preview = preview;
@@ -107,7 +108,7 @@ public sealed class HintListDialog : GameWindow
 
         var list = new StackPanel
         {
-            Width = faces == null ? ListWidth : ListWidth + FaceWidth + FaceGap,
+            Width = faces == null ? listWidth : listWidth + FaceWidth + FaceGap,
         };
 
         // 머리글 — 고를 수 없는 줄 하나를 맨 위에 둔다(조선소 개조 목록이 쓴다).
@@ -257,7 +258,7 @@ public sealed class HintListDialog : GameWindow
             Child = GameUi.Scroller(new Border
             {
                 // 얼굴을 붙이면 그만큼 넓힌다 — 이름 칸 폭은 그대로 둔다.
-                Width = faces == null ? ListWidth : ListWidth + FaceWidth + FaceGap,
+                Width = faces == null ? listWidth : listWidth + FaceWidth + FaceGap,
                 Child = list,
             }, ListMaxHeight),
         };
@@ -425,6 +426,7 @@ public sealed class HintListDialog : GameWindow
     /// <param name="marks">줄마다 <c>#DEC6AD</c> 바탕으로 도드라지게 할지. 없으면 안 칠한다.</param>
     /// <param name="usable">줄마다 고를 수 있는지. false 인 줄은 흐리고 눌리지 않는다. 없으면 다 고를 수 있다.</param>
     /// <param name="preview">줄 번호로 목록 오른쪽에 얹을 120x120 그림을 낸다. 없으면 곁 그림 칸이 없다.</param>
+    /// <param name="listWidth">목록 폭. 줄이 길어 잘리면 넓힌다.</param>
     public static int Pick(Window owner, IReadOnlyList<string> items,
                            string caption = "취득 힌트 일람",
                            string whenEmpty = "설득 가능한 힌트가 없습니다",
@@ -434,7 +436,8 @@ public sealed class HintListDialog : GameWindow
                            IReadOnlyList<bool>? marks = null,
                            IReadOnlyList<string>? rightTexts = null,
                            IReadOnlyList<bool>? usable = null,
-                           Func<int, ImageSource?>? preview = null)
+                           Func<int, ImageSource?>? preview = null,
+                           double listWidth = ListWidth)
     {
         if (items.Count == 0)
         {
@@ -443,7 +446,8 @@ public sealed class HintListDialog : GameWindow
         }
 
         var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
-                                     rightTexts: rightTexts, usable: usable, preview: preview) { Owner = owner };
+                                     rightTexts: rightTexts, usable: usable, preview: preview,
+                                     listWidth: listWidth) { Owner = owner };
         dlg.ShowDialog();
         return dlg._picked;
     }

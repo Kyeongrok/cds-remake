@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
@@ -60,6 +61,21 @@ internal sealed class AbilityMakeDialog : InfoDialog
     /// </remarks>
     private const double BoardWidth = 272, BoardHeight = 192;
 
+    /// <summary>모드에서 계산기(16)와 바라는 값 세 칸(24)이 들어갈 만큼 판을 넓히는 폭.</summary>
+    private const double TargetRoom = 40;
+
+    /// <summary>모드 쓰는 법. 판 폭(312점 = 반각 39칸)에 들게 줄을 끊었다.</summary>
+    private static readonly string[] HelpLines =
+    [
+        "[모드] 직업을 누르면 다시 굴린다.",
+        "계산기로 바라는 값을 적는다.",
+        "적은 값을 다 채운 판이면 멈춘다.",
+        "적은 값과 신상은 3시간 기억한다.",
+    ];
+
+    /// <summary>설명 줄 사이와 설명이 차지하는 높이.</summary>
+    private const double HelpStep = 18, HelpRoom = 8 + 4 * HelpStep;
+
     /// <summary>원본 좌표에서 뺄 값. 원본 자리가 이미 테 안쪽 기준이라 0 이다.</summary>
     private const double Frame = 0;
 
@@ -89,7 +105,7 @@ internal sealed class AbilityMakeDialog : InfoDialog
 
     /// <summary>직업을 바꿀 때 다시 굴리려고 들고 있는 것들.</summary>
     private readonly Random _rng;
-    private readonly int _birthMonth, _birthDay;
+    private readonly int _birthMonth, _birthDay, _fortune;
 
     /// <param name="spare">
     /// 0 이상이면 <b>다시 굴리지 않는다</b> — 앞서 손본 능력치를 그대로 이어받고 남은
@@ -102,6 +118,7 @@ internal sealed class AbilityMakeDialog : InfoDialog
         _rng = rng;
         _birthMonth = player.BirthMonth;
         _birthDay = player.BirthDay;
+        _fortune = player.Fortune;
 
         // 되돌아온 걸음이면 굴리지 않는다 — 굴려 버리면 손본 것이 죄다 날아간다.
         bool again = spare >= 0;
@@ -109,6 +126,11 @@ internal sealed class AbilityMakeDialog : InfoDialog
             ? [.. player.Abilities]
             : Ability.Roll(Ability.BiasOf(player.Fortune), _age, player.BirthMonth, player.BirthDay, rng);
         _left = again ? spare : Ability.BonusFor(_stats, rng);
+        _initial = [.. _stats];
+
+        // 세 시간 안에 적어 둔 바라는 값이 있으면 그대로 채운다(CharacterMakeDialog 와 한 벌).
+        if (GameSettings.RerollOnJob && GameSettings.CharacterDraft?.Targets is { } saved)
+            for (int i = 0; i < Math.Min(saved.Length, _targets.Length); i++) _targets[i] = saved[i];
 
         // 굴리는 자리(0x0045D450)에서 컨디션·소지금·명성·악명도 함께 정해 둔다 — 컨디션은 보너스를 얹기 전 체력이다.
         if (again)
@@ -121,7 +143,10 @@ internal sealed class AbilityMakeDialog : InfoDialog
             _infamy = Ability.InfamyRoll(_age, rng);
         }
 
-        var body = new Canvas { Width = BoardWidth, Height = BoardHeight };
+        // 모드 「직업 누르면 다시 굴림」이면 계산기와 바라는 값 칸이 들어갈 만큼 판을 넓히고 오른쪽 것들을 민다.
+        double wide = GameSettings.RerollOnJob ? TargetRoom : 0;
+        double tall = GameSettings.RerollOnJob ? HelpRoom : 0;
+        var body = new Canvas { Width = BoardWidth + wide, Height = BoardHeight + tall };
 
         for (int i = 0; i < Ability.Shown; i++)
         {
@@ -137,6 +162,16 @@ internal sealed class AbilityMakeDialog : InfoDialog
             // 게임은 화살표 둘을 세로로 쌓지 않고 나란히 놓는다.
             Put(body, Arrow(up: true, () => Move(which, +1)), 104, y);
             Put(body, Arrow(up: false, () => Move(which, -1)), 120, y);
+
+            // 모드 「직업 누르면 다시 굴림」이면 화살표 오른쪽에 계산기와 적어 둔 바라는 값을 단다 —
+            // 바라는 값을 다 채운 판이 나오면 직업을 또 눌러도 안 굴린다(ChooseJob). 원본에 없는 칸이다.
+            if (GameSettings.RerollOnJob)
+            {
+                Put(body, GameUi.CalcButton(() => AskTarget(which), ArrowWidth), 140, y);
+                _targetLabels[i] = Text("");
+                _targetLabels[i].HorizontalAlignment = HorizontalAlignment.Right;
+                Put(body, new Grid { Width = 3 * Cell, Children = { _targetLabels[i] } }, 160, y);
+            }
         }
 
         // 보너스 상자는 글씨보다 먼저 깐다 — 글씨가 테 위에 올라앉는다(원본도 테에 붙어 있다).
@@ -159,13 +194,18 @@ internal sealed class AbilityMakeDialog : InfoDialog
                 Margin = new Thickness(0),
             };
             _jobs.Add(cell);
-            Put(body, cell, 168, FirstRow + i * JobStep);
+            Put(body, cell, 168 + wide, FirstRow + i * JobStep);
         }
 
-        Put(body, new GameButton("취소", Close, width: FootWidth) { Margin = new Thickness(0) }, 288 - 112, 208 - 40);
-        Put(body, new GameButton("다음", Next, width: FootWidth) { Margin = new Thickness(0) }, 288 - 64, 208 - 40);
+        Put(body, new GameButton("취소", Close, width: FootWidth) { Margin = new Thickness(0) }, 288 - 112 + wide, 208 - 40);
+        Put(body, new GameButton("다음", Next, width: FootWidth) { Margin = new Thickness(0) }, 288 - 64 + wide, 208 - 40);
 
-        Build("", body, BoardWidth, BoardHeight);
+        // 모드를 켰으면 판 아래에 쓰는 법을 적는다 — 원본에 없는 칸이라 무엇을 하는지 모르면 못 쓴다.
+        if (GameSettings.RerollOnJob)
+            for (int i = 0; i < HelpLines.Length; i++)
+                Put(body, Text(HelpLines[i]), 8, BoardHeight + 8 + i * HelpStep);
+
+        Build("", body, BoardWidth + wide, BoardHeight + tall);
 
         Sync();
     }
@@ -289,16 +329,61 @@ internal sealed class AbilityMakeDialog : InfoDialog
         Sync();
     }
 
+    /// <summary>이 창을 열 때의 능력치 — 계산기가 처음 보여 줄 값이다.</summary>
+    private readonly int[] _initial;
+
+    /// <summary>칸마다 바라는 값. 계산기로 적은 칸만 있다 — 적은 칸이 다 이만큼 나온 판이면 더 안 굴린다.</summary>
+    private readonly int?[] _targets = new int?[Ability.Names.Length];
+
+    /// <summary>계산기 옆에 적어 둔 바라는 값을 보이는 글. 모드를 안 켰으면 비어 있다.</summary>
+    private readonly GameUi.GameLabel?[] _targetLabels = new GameUi.GameLabel?[Ability.Shown];
+
+    /// <summary>그 칸의 바라는 값을 계산기로 받는다. 처음에는 창을 열 때의 값이 들어 있다.</summary>
+    private void AskTarget(int which)
+    {
+        if (NumberPadDialog.Ask(this, _targets[which] ?? _initial[which], Ability.Min, Ability.Max) is { } n)
+        {
+            _targets[which] = n;
+            Sync();
+        }
+    }
+
+    /// <summary>
+    /// 적어 둔 바라는 값을 다 채웠는지 — 보너스로 넣은 것은 빼고 굴린 값으로 잰다. 하나도 안 적었으면 거짓이다.
+    /// </summary>
+    private bool TargetsMet()
+    {
+        bool any = false;
+        for (int i = 0; i < _targets.Length; i++)
+        {
+            if (_targets[i] is not { } want) continue;
+            any = true;
+            if (_stats[i] - _added[i] < want) return false;
+        }
+        return any;
+    }
+
     /// <summary>칸마다 보너스로 넣은 수.</summary>
     private readonly int[] _added = new int[Ability.Names.Length];
 
     /// <summary>
-    /// 직업을 고른다 — 능력치는 <b>다시 안 굴린다</b>(<c>0x0045D8DA</c>). 굴림은 이 화면에 들어오기 전에
+    /// 직업을 고른다 — 원본은 능력치를 <b>다시 안 굴린다</b>(<c>0x0045D8DA</c>). 굴림은 이 화면에 들어오기 전에
     /// 한 번(<c>0x0045D450</c>)이고 보정 줄은 직업이 아니라 얼굴 자리다(<see cref="Ability.FaceBias"/>).
+    /// 모드 창의 「직업 누르면 다시 굴림」을 켜면 누를 때마다 같은 식으로 통째로 새로 굴린다 — 넣은 보너스도 도로 걷힌다.
+    /// 계산기로 적은 바라는 값을 다 채운 판이 나오면 그때부터는 안 굴린다(<see cref="TargetsMet"/>).
     /// </summary>
     private void ChooseJob(int pick)
     {
         _job = pick;
+        // 바라는 값을 다 채운 판이면 <b>주사위를 아예 안 굴린다</b> — 칸마다 굳히면 값을 높게 적는 것이
+        // 곧 손으로 정하는 것과 같아지므로, 여섯을 한 판으로 통째로 굴려 한꺼번에 채워야 멎는다.
+        if (GameSettings.RerollOnJob && !TargetsMet())
+        {
+            _stats = Ability.Roll(Ability.BiasOf(_fortune), _age, _birthMonth, _birthDay, _rng);
+            _left = Ability.BonusFor(_stats, _rng);
+            Array.Clear(_added);
+            _condition = Ability.ConditionFor(_stats[Ability.Body]);
+        }
         Sync();
     }
 
@@ -306,6 +391,8 @@ internal sealed class AbilityMakeDialog : InfoDialog
     {
         for (int i = 0; i < Ability.Shown; i++) _values[i].Text = $"{_stats[i]}";
         _bonus.Text = $"{_left}";
+        for (int i = 0; i < _targetLabels.Length; i++)
+            if (_targetLabels[i] is { } label) label.Text = _targets[i] is { } want ? $"{want}" : "";
 
         // 고른 직업은 <b>띠 무늬를 갈아</b> 알린다. 게임은 <b>고른 것이 밝은 베이지</b>고
         // 안 고른 것이 어두운 쪽이다 — 우리가 거꾸로 걸고 있었다.
@@ -320,6 +407,10 @@ internal sealed class AbilityMakeDialog : InfoDialog
                 $"보너스 포인트가 {_left} 남아 있습니다만{Environment.NewLine}" +
                 "다음 설정으로 이동해도 괜찮습니까?"))
             return;
+
+        // 바라는 값도 다음에 새로 지을 때 채우게 적어 둔다.
+        if (GameSettings.RerollOnJob)
+            GameSettings.EditCharacterDraft(d => d.Targets = [.. _targets]);
 
         _ok = true;
         Close();

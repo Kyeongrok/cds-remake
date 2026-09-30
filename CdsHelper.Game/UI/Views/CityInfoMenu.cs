@@ -1,5 +1,6 @@
 ﻿using System.Windows.Controls;
 using CdsHelper.Game.Engine.Menu;
+using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -76,6 +77,8 @@ internal static class CityInfoMenu
         var items = new List<(string Text, Action? Run)>();
         foreach (var row in Rows)
         {
+            // 「생명력」은 원본 탐험정보에 없는 줄이라 모드 창에서 켰을 때만 낸다.
+            if (row == Vitality && !GameSettings.ShowVitalityInfo) continue;
             bool? on = state(row);
             items.Add((Label(row, on == true, width), on == null ? null : () => toggle(row)));
         }
