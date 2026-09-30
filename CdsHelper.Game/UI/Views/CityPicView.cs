@@ -591,7 +591,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private void AskEnter(CityBuildingTable.Building building)
     {
         string title = building.Name.Length > 0 ? building.Name : building.Kind;
-        if (ChoiceDialog.Pick(this, title, ["안으로 들어간다", "도시로 돌아간다"]) == 0) Enter(building);
+        // 「도시로 돌아간다」는 나가기 줄이라 「취소」와 같은 회녹색 띠로 낸다.
+        if (ChoiceDialog.Ask(this, title, ["안으로 들어간다"], "도시로 돌아간다") == 0) Enter(building);
     }
 
     /// <summary>그림에 올린 건물들 — 글쇠로 고를 때 차례와 이름표 자리를 여기서 찾는다.</summary>
@@ -1406,8 +1407,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 같은 얼굴을 쓴다(0x0040D385 가 +0x84 를 넘긴다).
         ConfirmDialog.Tell(this, "너 같은 녀석이 들어올 장소가 아니다! 꺼지지 못할까!",
                            face: _game.SpeakerFace(building.Code, _cultureNo));
-        // 「명성치가 모자랍니다」(0x00544BF0 · 0x00544BA0)는 힌트 패널(0x0040E0A0)로만 가는 안 보이는 기록이라
-        // 화면에 내지 않는다(0x0040D39B · 0x00470AE3 — 디버그 깃발 [0x00580C6C]&2 뒤).
+        // 「명성치가 모자랍니다.」(0x00544BA0 · 왕궁 0x00544BF0)는 아래 띠로 간다(0x0040D3B0 → 0x0040E0A0 — 소리 0x1D 가 같이 난다).
+        // 0x00580C48 은 화면 맨 아래 31점 높이로 지어지는 띠 창이다(0x0040DF80). 예전에는 [0x00580C6C]&2 를
+        // 디버그 깃발로 보고 안 냈는데, 그 칸은 띠 창 자신의 깃발(+0x24)이다.
+        (Owner as ShipMapWindow)?.Say(building.Code == PalaceCode ? "명성치가 모자랍니다!" : "명성치가 모자랍니다.");
+        _game.Sfx?.Play(SoundBank.BandNoticePart);
         return false;
     }
 
