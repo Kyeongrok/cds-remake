@@ -27,12 +27,19 @@ public sealed class FleetLabelWindow : Window
     /// <summary>도시 창과 쪽지 사이. 처음에는 그림 오른쪽에 이만큼 띄워 붙인다.</summary>
     private const double Gap = 10;
 
+    /// <summary>발견물 수 쪽지의 처음 자리 — 지도 창 왼쪽에서, 아래 끝에서(아래 띠를 비킨다) 띄우는 거리.</summary>
+    private const double FoundInset = 16, FoundBottom = 60;
+
     /// <summary>
     /// 주인 창 왼쪽 위에서 잰 쪽지 자리. 한 번 옮겨 두면 앱이 도는 동안 그대로다 —
     /// 도시에 드나들 때마다 쪽지가 제자리로 돌아가면 옮긴 뜻이 없다.
     /// </summary>
-    private static double _dx = double.NaN, _dy;
-    private static double _hintDx = double.NaN, _hintDy;
+    private static readonly Dictionary<Slot, (double Dx, double Dy)> Moved = [];
+
+    /// <summary>
+    /// 쪽지 갈래 — 갈래마다 옮긴 자리를 따로 기억한다. 함대·힌트는 도시 창 옆, 발견물 수는 지도 창 왼쪽 아래가 처음 자리다.
+    /// </summary>
+    public enum Slot { Fleet, Hint, Found }
 
     private readonly TextBlock _text = new()
     {
@@ -48,12 +55,12 @@ public sealed class FleetLabelWindow : Window
     };
 
     private readonly Window _anchor;
-    private readonly bool _belowFleet;
+    private readonly Slot _slot;
 
-    private FleetLabelWindow(Window anchor, double fontSize, bool belowFleet)
+    private FleetLabelWindow(Window anchor, double fontSize, Slot slot)
     {
         _anchor = anchor;
-        _belowFleet = belowFleet;
+        _slot = slot;
         _text.FontSize = fontSize;
 
         Title = "함대";
@@ -101,9 +108,13 @@ public sealed class FleetLabelWindow : Window
     private void OnAnchorMoved(object? sender, EventArgs e) => Place();
 
     /// <summary>주인 창 옆에 쪽지를 띄운다. 글이 비면 안 뜬다.</summary>
-    public static FleetLabelWindow Attach(Window anchor, double fontSize, bool belowFleet = false)
+    public static FleetLabelWindow Attach(Window anchor, double fontSize, bool belowFleet = false) =>
+        Attach(anchor, fontSize, belowFleet ? Slot.Hint : Slot.Fleet);
+
+    /// <summary>그 갈래의 쪽지를 주인 창에 붙여 띄운다.</summary>
+    public static FleetLabelWindow Attach(Window anchor, double fontSize, Slot slot)
     {
-        var note = new FleetLabelWindow(anchor, fontSize, belowFleet);
+        var note = new FleetLabelWindow(anchor, fontSize, slot);
         note.Show();
         note.Place();
         return note;
@@ -126,19 +137,7 @@ public sealed class FleetLabelWindow : Window
     }
 
     /// <summary>지금 자리를 주인 창에서 잰 거리로 적어 둔다.</summary>
-    private void Remember()
-    {
-        if (_belowFleet)
-        {
-            _hintDx = Left - _anchor.Left;
-            _hintDy = Top - _anchor.Top;
-        }
-        else
-        {
-            _dx = Left - _anchor.Left;
-            _dy = Top - _anchor.Top;
-        }
-    }
+    private void Remember() => Moved[_slot] = (Left - _anchor.Left, Top - _anchor.Top);
 
     /// <summary>
     /// 적어 둔 거리대로 자리를 잡는다. 아직 옮긴 적이 없으면 <b>그림 오른쪽</b>에 붙이고,
@@ -151,9 +150,16 @@ public sealed class FleetLabelWindow : Window
         double width = ActualWidth > 0 ? ActualWidth : Width;
         if (double.IsNaN(width)) width = 0;
 
-        ref double dx = ref (_belowFleet ? ref _hintDx : ref _dx);
-        ref double dy = ref (_belowFleet ? ref _hintDy : ref _dy);
-        if (double.IsNaN(dx))
+        double height = ActualHeight > 0 ? ActualHeight : 0;
+        double dx, dy;
+        if (Moved.TryGetValue(_slot, out var moved)) (dx, dy) = moved;
+        else if (_slot == Slot.Found)
+        {
+            // 지도 창 안쪽 왼쪽 아래 — 아래 띠 위에 얹는다. 옮기기 전에는 창 크기가 바뀌면 따라간다.
+            dx = FoundInset;
+            dy = _anchor.ActualHeight - height - FoundBottom;
+        }
+        else
         {
             dx = _anchor.ActualWidth + Gap;
             dy = 0;
@@ -161,7 +167,8 @@ public sealed class FleetLabelWindow : Window
             // 오른쪽이 화면 밖이면 그림 왼쪽에 붙인다.
             double right = SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth;
             if (_anchor.Left + dx + width > right) dx = -(width + Gap);
-            if (_belowFleet) dy = _anchor.ActualHeight + Gap;
+            if (_slot == Slot.Hint) dy = _anchor.ActualHeight + Gap;
+            Moved[_slot] = (dx, dy);
         }
 
         Left = _anchor.Left + dx;
