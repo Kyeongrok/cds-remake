@@ -53,8 +53,9 @@ public static class MoviePlayer
             Content = new Grid { Background = Brushes.Black, Children = { player } },
         };
 
-        // 주인 창을 그대로 덮는다. 주인이 최대화·전체화면이면 그 크기 그대로다.
-        Cover(screen, owner);
+        // <b>게임 본창</b>을 그대로 덮는다 — 도시 그림 창처럼 작은 딸 창에서 불러도 바다에서 튼 것(카르낙 거석군)과
+        // 같은 크기로 튼다. 예전에는 부른 창만 덮어 도시 발견물 동영상이 작게 나왔다. 주인이 최대화·전체화면이면 그 크기다.
+        Cover(screen, GameUi.RootOf(owner));
 
         bool done = false;
         void Finish()
