@@ -115,7 +115,7 @@
   {"id": 113, "name": "석봉인", "category": "발견물", "effect": 10, "sellPrice": 300, "buyPrice": 100, "hint": "", "relatedDiscovery": "모헨죠다로"},
   {"id": 114, "name": "오라관의 금화", "category": "복식품", "effect": 25, "sellPrice": 50000, "buyPrice": 28000, "hint": "", "relatedDiscovery": ""},
   {"id": 115, "name": "황금귀걸이", "category": "복식품", "effect": 10, "sellPrice": 10000, "buyPrice": 5500, "hint": "", "relatedDiscovery": "티아와나코"},
-  {"id": 116, "name": "은십자가", "category": "복식품", "effect": 15, "sellPrice": 7000, "buyPrice": 3200, "hint": "", "relatedDiscovery": "포아체 대성당"},
+  {"id": 116, "name": "은십자가", "category": "복식품", "effect": 15, "sellPrice": 7000, "buyPrice": 3200, "hint": "", "relatedDiscovery": "푸아티에 대성당"},
   {"id": 117, "name": "순례십자가", "category": "복식품", "effect": 3, "sellPrice": 3200, "buyPrice": 1500, "hint": "", "relatedDiscovery": "몽생미셀"},
   {"id": 118, "name": "그리스정교의 십자가", "category": "복식품", "effect": 7, "sellPrice": 4500, "buyPrice": 2200, "hint": "", "relatedDiscovery": "우스펜스키교회"},
   {"id": 119, "name": "비잔틴 금화", "category": "복식품", "effect": 12, "sellPrice": 120, "buyPrice": 50, "hint": "", "relatedDiscovery": ""},
