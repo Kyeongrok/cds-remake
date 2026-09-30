@@ -418,12 +418,14 @@ internal sealed class FishingGameDialog : InfoDialog
     /// </returns>
     public static bool Play(Window owner, Random rng)
     {
-        // 판을 열기 전에 설명부터 낸다 — 게임도 그렇다(0x0047BD7E).
-        NoticeDialog.Explain(owner, Rules);
-
         var dialog = new FishingGameDialog(rng) { Owner = owner };
+        // 낚시 판이 먼저 뜨고 <b>그 위에</b> 설명이 얹힌다 — 설명만 덩그러니 먼저 뜨면 무슨 판인지 몰라 당황스럽다.
         // 설명에서 확인을 누르면 <b>그 길로 내려간다</b> — 「떨어뜨린다」를 따로 안 누른다.
-        dialog.Loaded += (_, _) => dialog.LetGo();
+        dialog.ContentRendered += (_, _) =>
+        {
+            NoticeDialog.Explain(dialog, Rules);
+            dialog.LetGo();
+        };
         dialog.ShowDialog();
 
         switch (dialog._game.Got)

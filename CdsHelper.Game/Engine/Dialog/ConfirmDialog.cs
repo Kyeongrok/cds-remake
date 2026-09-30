@@ -92,7 +92,8 @@ public sealed class ConfirmDialog : GameWindow
         foreach (string line in lines) widest = Math.Max(widest, GameUi.Font?.TextWidth(line) ?? 0);
         int cells = Math.Max(MinCells, (int)Math.Ceiling(widest / CellWidth));
         // 얼굴이 서면 그만큼 창이 넓어진다 — 게임도 96 을 더한다(0x0049DA18 의 and eax,0x60).
-        double barWidth = cells * CellWidth + CellWidth * 2 + (face != null ? FaceColumn : 0);
+        // 설명 글처럼 왼쪽을 들인 글은 그만큼 넓혀야 오른쪽 끝 글자가 안 잘린다 — 예전에는 들인 폭을 안 셈했다.
+        double barWidth = cells * CellWidth + CellWidth * 2 + (face != null ? FaceColumn : indent);
 
         var stack = new StackPanel { Width = barWidth };
 
