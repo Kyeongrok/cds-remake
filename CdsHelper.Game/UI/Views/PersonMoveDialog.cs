@@ -248,7 +248,9 @@ public sealed class PersonMoveDialog : GameWindow
     {
         if (_gridScroll is not { ScrollableHeight: > 0 } scroll) return;
 
-        const double wheelStep = 24;
+        // 목록은 항목 단위로 굴러간다(CanContentScroll — StackPanel 이 스크롤을 맡는다). 그래서 한 칸이 카드 한 장이다 —
+        // 예전 24 는 점 단위인 줄 알고 넣은 값이라 한 번에 카드 스물네 장씩 넘어갔다. 점 단위면 카드 키(112 + 여백 10)만큼 간다.
+        double wheelStep = scroll.CanContentScroll ? 1 : 122;
         double next = scroll.VerticalOffset - Math.Sign(e.Delta) * wheelStep;
         next = Math.Clamp(next, 0, scroll.ScrollableHeight);
         if (next == scroll.VerticalOffset) return;
