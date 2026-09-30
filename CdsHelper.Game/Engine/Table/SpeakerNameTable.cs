@@ -41,6 +41,11 @@ public sealed class SpeakerNameTable
     /// <summary>그 이름의 후원자·인물. 없으면 null.</summary>
     public Entry? Find(string name) => _byName.TryGetValue(name, out var e) ? e : null;
 
+    /// <summary>적어 둔 표 — 대본을 풀 때(게임 폴더를 모르는 자리) 쓴다. 표를 못 열면 null.</summary>
+    public static SpeakerNameTable? Shared => _shared ??= Open("");
+
+    private static SpeakerNameTable? _shared;
+
     public static SpeakerNameTable? Open(string gameDirectory)
     {
         var snapshot = ExeTable.Open<Snapshot>(CacheName, gameDirectory, ReadFromExe, out _, SnapshotVersion);

@@ -1822,7 +1822,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "우르그·백：큰 사냥감이 나타났다！ 출격하라！"
               }
             },
@@ -1970,7 +1970,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "거기 있는 상선대！ 목숨과 짐을 두고 가라！"
               }
             },
@@ -1978,7 +1978,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "어？ 뭔가 이상한데？"
               }
             },
@@ -1986,7 +1986,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "서， 설마···군함인가！！"
               }
             },
@@ -1994,7 +1994,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "이， 이런！ 속았다！ 배짱이 크군！"
               }
             },
@@ -2002,7 +2002,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "기다려라， 두목이 없는 것을 노리고 왔다면···큰일이다！"
               }
             },
@@ -2010,7 +2010,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "제２함대， 제３함대는 적을 막아라！ 나는 일단 항구로 돌아가겠다！"
               }
             },
@@ -2018,7 +2018,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "이 빈틈에 본거지를 빼앗긴다면 큰일이다！"
               }
             },
@@ -2042,7 +2042,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "쳇！ 역시 그럴 줄 알았지！ 후방에서 협공할 계획이었군！"
               }
             },
@@ -2050,7 +2050,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "다들， １척도 남기지 말고 해치워라！"
               }
             },
@@ -2098,7 +2098,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "우르그 벡",
+                "Person": 235,
                 "Text": "하하하， 체념해라！"
               }
             },
@@ -3676,7 +3676,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "병사",
+                "Person": 231,
                 "Text": "아니， 이 녀석들！ 신성한 수도원에서 이게 무슨 짓이냐！"
               }
             },
@@ -3925,7 +3925,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "다， 당신은···？"
               }
             },
@@ -3941,7 +3941,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "나를？"
               }
             },
@@ -4024,7 +4024,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "병사",
+                "Person": 231,
                 "Text": "아니！ 마녀를 풀어주다니． 네 놈도 악마편이냐！"
               }
             },
@@ -4040,7 +4040,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "병사",
+                "Person": 231,
                 "Text": "뭐라고！ 이 녀석들을 붙잡아라！"
               }
             },
@@ -4165,7 +4165,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "아아！ 어떻게 감사의 말을 드려야 할지！ 정말로 감사합니다！"
               }
             },
@@ -4173,7 +4173,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "그런데 도대체 무엇 때문에 위험을 무릅쓰고 저를？"
               }
             },
@@ -4200,7 +4200,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "아！ 세빌리아 조합 분들이？"
               }
             },
@@ -4208,7 +4208,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "하지만 우리 집은 가난해서 충분한 사례금을 드릴 수가 없습니다．"
               }
             },
@@ -4216,7 +4216,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "참． 이 케이프를 드리겠습니다． 아라비아 지방에서 산 것입니다．"
               }
             },
@@ -4240,7 +4240,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "생명의 사례로서는 변변치 못합니다만 받아 주십시오．"
               }
             },
@@ -4260,7 +4260,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "아！ 당신 같은 분이 귀족이나 신관이라면 좋은 세상이 되련마는．"
               }
             },
@@ -4304,7 +4304,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "아！···뵌 적이 없는 것 같은데요？"
               }
             },
@@ -4312,7 +4312,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "그렇게 해서 많은 여자들을 설득하셨군요？ 하지만 기뻐요！"
               }
             },
@@ -4340,7 +4340,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "조합 분들께도 감사한다는 말을 전해 주세요．"
               }
             },
@@ -4348,7 +4348,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "저는 이 근처 교외에서 몸을 숨기고 조용히 살겠습니다．"
               }
             },
@@ -4356,7 +4356,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "딸",
+                "Person": 232,
                 "Text": "두 번 다시 만날 일은 없겠죠． 안녕히 가세요．"
               }
             },

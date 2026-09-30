@@ -670,7 +670,7 @@ public sealed class DisevRunner
             case DisevCall.Say:
             case DisevCall.AskYesNo:
             case DisevCall.SayBare:
-                Speak(line.Raw);
+                Speak(line.Raw, line.Args);
                 return null;
 
             case DisevCall.AskChoice:
@@ -1184,7 +1184,8 @@ public sealed class DisevRunner
 
         while (true)
         {
-            int picked = ChoiceDialog.Ask(_owner, "", choices[..^1], choices[^1]);
+            // 줄이 모두 같은 띠다 — 원본 차림표에 나가기 띠가 따로 없어 「철수」도 위 줄과 같은 색이다. 물리면 마지막 줄이다.
+            int picked = ChoiceDialog.Pick(_owner, "", choices);
             int value = (picked >= 0 ? picked : choices.Length - 1) + baseValue;
 
             // 18 0A 에서 고른 값이 0 이면 <b>교섭</b>이다(0x00409204) — 금이나 물건을 바쳐야 이야기가 이어진다.
@@ -1203,11 +1204,10 @@ public sealed class DisevRunner
     /// <remarks>
     /// <code>
     ///   0x00538618  「뭔가 우호의 증표를 줍시다」
-    ///   0x00538658  차림표 「교섭」 — 「금을 준다」 · 「아이템을 준다」
+    ///   0x00538658  차림표 「교섭」 — 「금을 준다」 하나와 「취소」(「아이템을 준다」 0x00538648 은 안 쓰는 글이다)
     ///   금을 준다   계산판으로 얼마를 줄지 적는다(0x00481FE0) → 그만큼 소지금에서 빠진다
     ///               <b>백 닢이 안 되면</b> 「아무래도 마음에 들지 않았던 모양입니다」(0x00538660) — 준 돈은 빠진 채
     ///               선택지 차림표로 돌아간다(0x00409335 → 0x004091E7)
-    ///   아이템을 준다  그 자리에서 받아들인다(원본도 무엇을 줄지는 안 묻는다)
     ///   물리면       선택지 차림표로 돌아간다(0x004092B0 · 계산판을 물려도 0x004092FD)
     /// </code>
     /// 예전에는 교섭 차림표만 되풀이해 물어 주지 않고는 빠져나갈 길이 없었다.
@@ -1218,9 +1218,10 @@ public sealed class DisevRunner
         var player = _game.Player;
         NoticeDialog.Show(_owner, "뭔가 우호의 증표를 줍시다");
 
-        int at = ChoiceDialog.Ask(_owner, "교섭", ["금을 준다", "아이템을 준다"]);
-        if (at == 1) return true;                      // 물건을 주면 그것으로 끝난다
-        if (at < 0) return false;
+        // 줄은 「금을 준다」 하나에 「취소」가 붙는다(0x00409221 — 차림표 표가 한 줄뿐이고 0x00487820 의 인자 2 가 취소를 단다).
+        // 「아이템을 준다」(0x00538648)는 EXE 에 글만 있고 차림표에 안 들어간다 — 예전에는 그 줄을 내고 고르면 그냥 받아들였다.
+        int at = ChoiceDialog.Ask(_owner, "교섭", ["금을 준다"]);
+        if (at != 0) return false;
 
         // 금액은 계산기 판으로 받는다(0x004092D2 → 0x00481FE0, 1~소지금).
         if (player.Gold <= 0 || NumberPadDialog.Ask(_owner, 1, 1, player.Gold) is not { } gold || gold <= 0)
@@ -1705,7 +1706,7 @@ public sealed class DisevRunner
         if (part >= 0) _game.Sfx?.Play(part);
     }
 
-    private void Speak(byte[] raw)
+    private void Speak(byte[] raw, JsonObject args)
     {
         // 창 플래그 한 바이트가 앞에 붙을 수 있다. 0A 부터가 알맹이다.
         int textStart = raw.Length > 0 && raw[0] == 0x0A ? 1 : 2;
@@ -1732,7 +1733,8 @@ public sealed class DisevRunner
         // 보고 그냥 대사로 흘려 묻지도 않고 지나갔다.
         if (raw.Length > 1 && raw[0] == 0x0B && raw[1] == 0x0A)
         {
-            _result = ConfirmDialog.Ask(_owner, body, face: FaceOf(speaker));
+            var (askFace, askTitle) = Portrait(speaker, args);
+            _result = ConfirmDialog.Ask(_owner, body, askTitle, face: askFace);
             return;
         }
 
@@ -1742,12 +1744,44 @@ public sealed class DisevRunner
             int still = _pendingStill;
             _pendingStill = -1;
             DiscoveryDialog.Show(_owner, _pendingIsEvent ? _game.EventStills : _game.Stills,
-                                 still, body, face: FaceOf(speaker));
+                                 still, body, face: Portrait(speaker, args).Face);
             return;
         }
 
-        TalkDialog.Say(_owner, FaceOf(speaker), "", body);
+        var (face, title) = Portrait(speaker, args);
+        TalkDialog.Say(_owner, face, title ?? "", body);
     }
+
+    /// <summary>
+    /// 대사 화자의 초상 — 인물·후원자는 <b>번호</b>(<c>Person</c> · <c>Sponsor</c>)로 찾고, 부관·시설 같은 자리 화자는 이름으로 찾는다.
+    /// </summary>
+    /// <remarks>
+    /// 화자가 있는데 얼굴을 못 찾으면 <b>숨기지 않는다</b> — 자홍색 빈 초상과 「[초상화 없음] …」 제목을 띄워
+    /// 테스터가 알아차리게 한다. 예전에는 얼굴 없이 글만 나와 빠진 줄 모르고 지나갔다.
+    /// </remarks>
+    private (uint[]? Face, string? Title) Portrait(string? speaker, JsonObject args)
+    {
+        if (args["Person"] is { } p)
+        {
+            int id = p.GetValue<int>();
+            var face = _game.PersonTemplates?.Find(id) is { } person
+                ? _game.Faces?.TryGetBgra(person.Face, female: false) : null;
+            return face != null ? (face, null) : (MissingFace, $"[초상화 없음] 인물 {id}");
+        }
+        if (args["Sponsor"] is { } s)
+        {
+            int id = s.GetValue<int>();
+            var face = _game.Sponsors?.Sponsors.FirstOrDefault(x => x.Index == id) is { Name.Length: > 0 } sponsor
+                ? _game.Faces?.TryGetBgra(sponsor.Face, sponsor.IsFemale) : null;
+            return face != null ? (face, null) : (MissingFace, $"[초상화 없음] 후원자 {id}");
+        }
+        if (string.IsNullOrEmpty(speaker)) return (null, null);
+        return FaceOf(speaker) is { } named ? (named, null) : (MissingFace, $"[초상화 없음] {speaker}");
+    }
+
+    /// <summary>얼굴을 못 찾았을 때 대신 띄우는 자홍색 초상 — 눈에 띄라고 일부러 튀는 색이다.</summary>
+    private static readonly uint[] MissingFace =
+        Enumerable.Repeat(0xFFFF00FFu, Local.Helpers.Portraits.Width * Local.Helpers.Portraits.Height).ToArray();
 
     /// <summary>
     /// 그 화자의 얼굴. 모르는 화자면 null 이고, 그러면 얼굴 없이 글만 나온다.
@@ -1761,6 +1795,9 @@ public sealed class DisevRunner
     {
         null or "" => null,
         Aide => MateFace(),
+        // 主人公 — 제독 제 얼굴(나이 든 얼굴까지 따른다).
+        Hero => _game.Faces?.TryGetBgra(
+            Local.Helpers.PortraitAges.At(_game.Player.Face, _game.Player.Age, false, _game.Faces), female: false),
         Inspector or "검사관" => _game.Faces?.TryGetBgra(Town.Inspector.Face, female: false),
         // 執事 — 게임은 인물 275 를 세우고 얼굴을 229 로 박는다(0x0040CA16~0x0040CA40).
         Butler => _game.Faces?.TryGetBgra(ButlerFace, female: false),
@@ -1840,6 +1877,9 @@ public sealed class DisevRunner
 
     /// <summary>부관 화자 이름. 대본에는 CP932 로 <c>副官</c> 이라 적혀 있다.</summary>
     private const string Aide = "부관";
+
+    /// <summary>主人公 — 제독.</summary>
+    private const string Hero = "주인공";
 
     /// <summary>집사 화자 이름. 대본에는 CP932 로 <c>執事</c> 다.</summary>
     private const string Butler = "집사";

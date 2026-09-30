@@ -978,7 +978,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "오， 오랜만에 보는 유럽인！ 자네 포르투갈인인가？"
               }
             },
@@ -994,7 +994,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "응？ 조안·팔로스는 난데···나를 찾아왔다고？"
               }
             },
@@ -1002,7 +1002,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "아， 연구에 몰두하느라 꽤 연락을 하지 못했었군．"
               }
             },
@@ -1010,7 +1010,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "일단락 지어졌으니 일단 돌아가 대학에 얼굴을 내밀어 볼까．"
               }
             },
@@ -1018,7 +1018,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "자， 태워주게． 일부러 오게 해서 미안하네．"
               }
             },
@@ -1164,7 +1164,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "꽤 소동을 일으킨 것 같군．"
               }
             },
@@ -1241,7 +1241,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "조안 바로스",
+                "Person": 233,
                 "Text": "꽤 소동을 일으킨 것 같군．"
               }
             },
@@ -1496,7 +1496,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "오오， <제독>인가． 실은 자네에게 부탁할 일이 있네．"
               }
             },
@@ -1504,7 +1504,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "우리 가문은 대대로 실크로드를 경유해 향료장사를 해왔네．"
               }
             },
@@ -1512,7 +1512,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "그런데 터키가 무역을 봉쇄해 전혀 손에 들어오지 않게 되었다네．"
               }
             },
@@ -1520,7 +1520,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "그러나 어떤 주문에도 응하는 것이 나의 철칙．"
               }
             },
@@ -1528,7 +1528,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "그래서 시급히 안티오키아산의 육두구를 사 와 주었으면 하네．"
               }
             },
@@ -1536,7 +1536,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "재고가 없어지기 전에 적어도 앞으로 １００통은 필요하네．"
               }
             },
@@ -1544,7 +1544,7 @@
               "OpCode": "0B 0A",
               "Call": "AskYesNo",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "부탁하네． １년 안에 어떻게 안되겠나？"
               }
             },
@@ -1560,7 +1560,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "오오， 그런가！ 물론 사례는 하겠네．"
               }
             },
@@ -1568,7 +1568,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "선금으로 ８０００닢 주겠네． 부탁하네．"
               }
             },
@@ -1591,7 +1591,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "좋은가？ 안티오키아산이네． 안티오키아는 지중해의 동쪽으로 맞닿는 곳이네．"
               }
             },
@@ -1625,7 +1625,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "그런가····그렇다면 물러가게．"
               }
             },
@@ -1737,7 +1737,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "이미 기한이 지났네． 선금은 돌려 받겠네．"
               }
             },
@@ -1819,7 +1819,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "안티오키아산 육두구 １００통을 서둘러 사와주게．"
               }
             },
@@ -1833,7 +1833,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "오오！ 역시 내가 기대한 대로군！"
               }
             },
@@ -1841,7 +1841,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "미켈레 스피놀라",
+                "Sponsor": 56,
                 "Text": "그럼 사례금을 받아주게．"
               }
             },
@@ -2715,7 +2715,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "오오， <제독>． 자네에게 꼭 부탁하고 싶은 일이 있네．"
               }
             },
@@ -2723,7 +2723,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "자네 중국의 명 제국을 알고 있나？ 동방 최대의 대국이네．"
               }
             },
@@ -2731,7 +2731,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "전부터 나는 그 명과 친교를 맺으려고 생각하고 있었네．"
               }
             },
@@ -2739,7 +2739,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "그러나 명황제는 해금 정책을 펴， 다른 나라와의 교역을 거부하고 있네．"
               }
             },
@@ -2747,7 +2747,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "그래서 자네에게 외교 사자를 맡기고자 하네． 우리 나라와의 통상을 허락받는 일이네．"
               }
             },
@@ -2755,7 +2755,7 @@
               "OpCode": "0B 0A",
               "Call": "AskYesNo",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "자네밖에 맡길 사람이 없네． 부디 허락해 주지 않겠나？"
               }
             },
@@ -2771,7 +2771,7 @@
               "OpCode": "0B 0A",
               "Call": "AskYesNo",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "뭐라고！ 이것은 왕명이다！ 한번 더 묻겠다． 해주겠나？"
               }
             },
@@ -2788,7 +2788,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "···물러가도 좋다···물러가게！！"
               }
             },
@@ -2836,7 +2836,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "오오， 그런가！！"
               }
             },
@@ -2844,7 +2844,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "선금으로 금화 ３００００닢을 주겠네．"
               }
             },
@@ -2852,7 +2852,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "４년 안에 교섭을 성립시키고 귀환해 주게．"
               }
             },
@@ -2887,7 +2887,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "그럼 부탁하네．"
               }
             },
@@ -2993,7 +2993,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "남만의 사자가 대체 무슨 볼일인가？"
               }
             },
@@ -3001,7 +3001,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "뭐라고···으으으！ 우리 나라를 개국하라고！？"
               }
             },
@@ -3009,7 +3009,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "그렇게는 못하네！ 해금은 선제로부터 이어져온 정책이네！"
               }
             },
@@ -3017,7 +3017,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "뭐라고？ 아직 할 말이 남았는가？ 무슨 말이 하고 싶은 건가？"
               }
             },
@@ -3044,7 +3044,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "그런 일， 내가 알 바가 아니네．"
               }
             },
@@ -3052,7 +3052,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "그러나 참으로 우직한 자로군．"
               }
             },
@@ -3079,7 +3079,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "나도 솔직히 말하자면···"
               }
             },
@@ -3099,7 +3099,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "하하하， 대단한 자로군． 내가 타국의 협박에 굴하리라고 생각했나？"
               }
             },
@@ -3107,7 +3107,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "힘을 믿고 덤빈다면 받아주지！ 아하하！"
               }
             },
@@ -3134,7 +3134,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "···그러나 나로서는 무턱대고 타국과 문제를 일으키려는 것은 아니겠지．"
               }
             },
@@ -3154,7 +3154,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "음， 확실히 교역에 대한 이익은 생각해 볼만하지만···"
               }
             },
@@ -3182,7 +3182,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "왜구 무리들로 고심할 것을 생각하면 개항은 할 수 없네．"
               }
             },
@@ -3190,7 +3190,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "으음， 기다리게． 이렇게 하는 것은 어떤가？ 그러니까···"
               }
             },
@@ -3198,7 +3198,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "명의 항구는 개항하지 않는다． 대신 그대 나라에 항구를 조성할 땅을 유상으로 빌려 주겠소．"
               }
             },
@@ -3206,7 +3206,7 @@
               "OpCode": "0B 0A",
               "Call": "AskYesNo",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "그 항구에서의 무역세는 명이 징수하는 것으로 하겠네． 이것으로 어떤가？"
               }
             },
@@ -3222,7 +3222,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "음， 그럼 하는 수 없군． 무상으로 빌려주도록 하지．"
               }
             },
@@ -3255,7 +3255,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "음， 얘기는 끝났네！ 남만의 왕에게 이 뜻을 전하게．"
               }
             },
@@ -3263,7 +3263,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "가정제",
+                "Person": 237,
                 "Text": "물러가도 좋네．"
               }
             },
@@ -3316,7 +3316,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "<제독>！ 기한이 지나지 않았는가！"
               }
             },
@@ -3324,7 +3324,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "도대체 어디를 헤매고 왔는가！"
               }
             },
@@ -3332,7 +3332,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "선금을 돌려주고 빨리 물러가게！"
               }
             },
@@ -3480,7 +3480,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "<제독>！ 기한이 지나지 않았는가！"
               }
             },
@@ -3488,7 +3488,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "하지만， 성공했다면 됐네．"
               }
             },
@@ -3496,7 +3496,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "보수를 받게나．"
               }
             },
@@ -3584,7 +3584,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "오오， 어땠는가？ 뭐라고！！ 잘 되었는가！！"
               }
             },
@@ -3592,7 +3592,7 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
-                "Speaker": "마누엘 1세",
+                "Sponsor": 1,
                 "Text": "수고했네． 사례금을 받게나．"
               }
             },

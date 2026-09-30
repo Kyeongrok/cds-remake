@@ -857,6 +857,44 @@ public static class DisevScript
     /// <b>거짓이면 아무것도 안 고른다</b> — 그래야 다시 구웠을 때 바이트가 같다.
     /// 자리표도 <c>&lt;제독&gt;</c> 처럼 되돌릴 수 있는 꼴로 적는다.
     /// </param>
+    /// <summary>
+    /// 화자를 <b>번호</b>로 적은 태그 — 인물은 <c>#213</c>, 후원자는 <c>$5</c>(ASCII)다. 원본 대본은 이름 글자(CP932)만
+    /// 들고 있지만 우리 대본은 번호로 적는다 — 이름으로 얼굴을 대 보다 못 찾아 초상화가 빠지는 일을 없앤다.
+    /// </summary>
+    public static byte[] SpeakerTagOf(bool sponsor, int id) =>
+        System.Text.Encoding.ASCII.GetBytes((sponsor ? "$" : "#") + id);
+
+    /// <summary>화자 태그가 번호(<c>#213</c> · <c>$5</c>)면 그 번호. 아니면 false.</summary>
+    public static bool TrySpeakerId(ReadOnlySpan<byte> tag, out bool sponsor, out int id)
+    {
+        sponsor = false;
+        id = -1;
+        if (tag.Length < 2 || (tag[0] != (byte)'#' && tag[0] != (byte)'$')) return false;
+        sponsor = tag[0] == (byte)'$';
+        int n = 0;
+        foreach (byte b in tag[1..])
+        {
+            if (b is < (byte)'0' or > (byte)'9') return false;
+            n = n * 10 + (b - '0');
+        }
+        id = n;
+        return true;
+    }
+
+    /// <summary>
+    /// 원본 이름 글자(CP932)로 선 화자를 인물·후원자 번호로 바꾼다 — 원본 CDS 를 처음 읽을 때 한 번만 쓴다.
+    /// 인물·후원자 표에 없는 이름(부관·시설 따위)이면 false.
+    /// </summary>
+    public static bool TryResolveSpeaker(ReadOnlySpan<byte> tag, out bool sponsor, out int id)
+    {
+        sponsor = false;
+        id = -1;
+        if (Engine.Table.SpeakerNameTable.Shared?.Find(Cp932.GetString(tag)) is not { } who) return false;
+        sponsor = who.Sponsor >= 0;
+        id = sponsor ? who.Sponsor : who.Person;
+        return id >= 0;
+    }
+
     public static (string? Speaker, string Body) DecodeDialogue(ReadOnlySpan<byte> data, bool normalize,
                                                                string? player = null)
     {

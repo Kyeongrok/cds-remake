@@ -341,9 +341,11 @@ public static class DisevTree
 
             if (line.Say is { } say)
             {
-                byte[]? tag = line.Speaker != null
-                    ? SpeakerTags.TryGetValue(line.Speaker, out var known) ? Convert.FromHexString(known) : null
-                    : line.SpeakerTag != null ? DisevScript.ParseHex(line.SpeakerTag) : [];
+                byte[]? tag = line.Person is { } person ? DisevScript.SpeakerTagOf(false, person)
+                    : line.Sponsor is { } sponsor ? DisevScript.SpeakerTagOf(true, sponsor)
+                    : line.Speaker != null
+                        ? SpeakerTags.TryGetValue(line.Speaker, out var known) ? Convert.FromHexString(known) : null
+                        : line.SpeakerTag != null ? DisevScript.ParseHex(line.SpeakerTag) : [];
                 if (tag == null)
                 {
                     error = $"화자를 모릅니다: {line.Speaker ?? line.SpeakerTag}";
@@ -467,8 +469,14 @@ public sealed class DisevLine
     /// <summary>대사 본문 — 무손실로 푼 글(<see cref="DisevForm.BuildDialogue"/> 가 되돌린다).</summary>
     public string? Say { get; set; }
 
-    /// <summary>대사 화자 이름(<see cref="DisevScript.SpeakerNames"/>).</summary>
+    /// <summary>대사 화자 이름(<see cref="DisevScript.SpeakerNames"/>) — 부관·시설 같은 자리 화자만 이름으로 적는다.</summary>
     public string? Speaker { get; set; }
+
+    /// <summary>대사 화자 인물 번호 — 인물은 이름이 아니라 번호로 적는다.</summary>
+    public int? Person { get; set; }
+
+    /// <summary>대사 화자 후원자 번호.</summary>
+    public int? Sponsor { get; set; }
 
     /// <summary>이름을 모르는 화자 태그 16진.</summary>
     public string? SpeakerTag { get; set; }
@@ -536,6 +544,8 @@ public sealed class DisevLineConverter : JsonConverter<DisevLine>
                 case "Sub": line.Sub = reader.GetInt64(); break;
                 case "Say": line.Say = reader.GetString(); break;
                 case "Speaker": line.Speaker = reader.GetString(); break;
+                case "Person": line.Person = reader.GetInt32(); break;
+                case "Sponsor": line.Sponsor = reader.GetInt32(); break;
                 case "SpeakerTag": line.SpeakerTag = reader.GetString(); break;
                 case "Flag": line.Flag = reader.TokenType == JsonTokenType.Null ? null : reader.GetInt32(); break;
                 case "If": line.If = reader.GetString(); break;
@@ -628,6 +638,8 @@ public sealed class DisevLineConverter : JsonConverter<DisevLine>
         }
         if (value.Say is { } say)
         {
+            if (value.Person is { } person) writer.WriteNumber("Person", person);
+            if (value.Sponsor is { } sponsor) writer.WriteNumber("Sponsor", sponsor);
             if (value.Speaker != null) writer.WriteString("Speaker", value.Speaker);
             if (value.SpeakerTag != null) writer.WriteString("SpeakerTag", value.SpeakerTag);
             writer.WriteString("Say", say);

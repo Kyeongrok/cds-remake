@@ -309,7 +309,15 @@ public sealed class DisevBook
             part.Slots.Select(s => new SlotEntry(IndexOf(starts, s.Condition), IndexOf(starts, s.Body))).ToList(),
             DisevTree.BuildPart(part));
 
-        return Join(entry, out _) is { } back && back.AsSpan().SequenceEqual(data) ? entry : whole;
+        if (Join(entry, out _) is not { } back) return whole;
+        if (back.AsSpan().SequenceEqual(data)) return entry;
+
+        // 원본과 바이트가 다른 것은 <b>화자를 번호로 바꿔서</b>일 수 있다(이름 글자 → #213 · $5) — 그건 일부러 잃는 것이다.
+        // 다시 구운 것을 한 번 더 풀어 구워도 그대로면(더 잃는 것이 없으면) 덩이로 적는다. 아니면 원본을 통째로 남긴다.
+        return DisevPart.Parse(back, out _) is { } again
+               && Join(entry with { Chunks = DisevTree.BuildPart(again) }, out _) is { } twice
+               && twice.AsSpan().SequenceEqual(back)
+            ? entry : whole;
     }
 
     /// <summary>

@@ -338,9 +338,15 @@ public static class DisevCalls
                         int tag = FindSpeaker(text);
                         if (tag >= 0)
                         {
-                            string key = Convert.ToHexString(text[..tag]);
-                            if (DisevScript.SpeakerNames.TryGetValue(key, out var who)) args["Speaker"] = who;
-                            else args["SpeakerTag"] = DisevScript.Hex(text[..tag]);
+                            // 인물·후원자는 <b>번호</b>로 적는다 — 우리가 구운 것은 이미 번호 태그(#213 · $5)고,
+                            // 원본 CDS 의 이름 글자는 여기서 한 번 표에 대 번호로 바꾼다. 부관·시설 같은 자리 화자만 이름이다.
+                            var head = text[..tag];
+                            string key = Convert.ToHexString(head);
+                            if (DisevScript.TrySpeakerId(head, out bool sponsor, out int id)
+                                || DisevScript.TryResolveSpeaker(head, out sponsor, out id))
+                                args[sponsor ? "Sponsor" : "Person"] = id;
+                            else if (DisevScript.SpeakerNames.TryGetValue(key, out var who)) args["Speaker"] = who;
+                            else args["SpeakerTag"] = DisevScript.Hex(head);
                             text = text[(tag + 2)..];
                         }
                         args["Text"] = BodyOf(text);
@@ -524,7 +530,11 @@ public static class DisevCalls
                     case "say":
                     {
                         byte[] tag = [];
-                        if (args["Speaker"]?.GetValue<string>() is { } who)
+                        if (args["Person"] is { } person)
+                            tag = DisevScript.SpeakerTagOf(false, person.GetValue<int>());
+                        else if (args["Sponsor"] is { } sponsor)
+                            tag = DisevScript.SpeakerTagOf(true, sponsor.GetValue<int>());
+                        else if (args["Speaker"]?.GetValue<string>() is { } who)
                         {
                             if (DisevTree.SpeakerTagOf(who) is not { } known)
                             {
