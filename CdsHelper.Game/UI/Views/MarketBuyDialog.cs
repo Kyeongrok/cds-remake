@@ -90,7 +90,7 @@ public sealed class MarketBuyDialog : GameWindow
 
         // 이 마을이 파는 <b>모조품</b>이 목록 맨 앞에 선다(0x004B38C7 이 그쪽을 먼저 채운다).
         // 이미 찾은 것은 빠진다 — 게임은 깃발 0x44 로 거른다(0x004B0BA5).
-        (_stock, _asDiscovery) = Offer(player, market, cityId, found);
+        (_stock, _asDiscovery) = Offer(player, market, cityId, found, game?.Hints);
         _list = new GameList(Columns, Cells, _stock.Length, "  지금 내놓은 물건이 없다.  ")
         {
             // 게임은 한 번에 여럿을 산다 — 고른 줄이 여럿이면 값도 한꺼번에 부른다.
@@ -216,13 +216,21 @@ public sealed class MarketBuyDialog : GameWindow
     private readonly Engine.Game? _game;
 
     /// <summary>늘어놓을 줄 — 모조품(발견물 번호) 먼저, 그 다음 재고. 재고 줄의 발견물 번호는 −1.</summary>
+    /// <remarks>
+    /// 모조품은 <b>지금 계약한 유적의 것만</b> 나온다(<c>0x004B0AD0</c>) — 계약이 없으면 하나도 없고, 있으면 계약 힌트의
+    /// 유적 번호(<c>0x00493E60</c>)와 같은 번호의 발견물만 모아(<c>0x0046AE90</c>) 그중 이 도시가 파는 것을 낸다.
+    /// 예전에는 계약을 안 봐서 베오울프의 투구를 안 맡았는데도 「깨어진 투구」가 떴다.
+    /// </remarks>
     private static (ItemTable.Record[] Rows, int[] Marks) Offer(Player player, Market market, int cityId,
-                                                               Engine.Discovery.DiscoveryLog? found)
+                                                               Engine.Discovery.DiscoveryLog? found,
+                                                               HintTable? hints)
     {
         var rows = new List<ItemTable.Record>();
         var marks = new List<int>();
+        int ruin = player.Contract is { } deal && hints?.Find(deal.Hint) is { } hint ? hint.Discovery : -1;
         foreach (var one in found?.Table.SoldAt(cityId) ?? [])
         {
+            if (ruin < 0 || one.Hint != ruin) continue;
             if (player.Discoveries.Contains(one.Id)) continue;
             if (market.Find(one.ItemId) is not { } sold) continue;
             rows.Add(sold);
@@ -249,7 +257,7 @@ public sealed class MarketBuyDialog : GameWindow
             GameDialog.Show(owner, "이 이상 가질 수 없습니다!");
             return;
         }
-        if (Offer(player, market, cityId, found).Rows.Length == 0)
+        if (Offer(player, market, cityId, found, game?.Hints).Rows.Length == 0)
         {
             TalkDialog.Say(owner, face, "", "미안하네, 지금 물건이 떨어지고 없네.");
             return;
