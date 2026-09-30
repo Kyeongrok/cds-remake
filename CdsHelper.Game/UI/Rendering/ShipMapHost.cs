@@ -700,10 +700,11 @@ public sealed class ShipMapHost : HwndHost
     /// 지도는 인물 표를 모르는 편이 낫다. 게임도 지도 객체가 인물 배열을 훑어 가까운
     /// 열여섯을 채운다(<c>0x00426790</c>).
     /// </remarks>
-    public Func<IReadOnlyList<(double X, double Y, int Heading, int Person)>>? FolkAt { get; set; }
+    /// <remarks>Skin 은 그 사람 기함의 배 그림 벌(0 코구 · 1 카라벨 · 2 카락 · 3 갤리온)이다.</remarks>
+    public Func<IReadOnlyList<(double X, double Y, int Heading, int Person, int Skin)>>? FolkAt { get; set; }
 
     /// <summary>이번 프레임에 실제로 그린 사람들 — 가까운 차례다.</summary>
-    private readonly List<(double X, double Y, int Heading, int Person)> _folk = [];
+    private readonly List<(double X, double Y, int Heading, int Person, int Skin)> _folk = [];
 
     private readonly MapD3DRenderer.FolkDraw[] _folkDraw =
         new MapD3DRenderer.FolkDraw[MapD3DRenderer.MaxFolk];
@@ -724,12 +725,13 @@ public sealed class ShipMapHost : HwndHost
         int one = MapD3DRenderer.FolkSize * MapD3DRenderer.FolkSize;
         var atlas = new uint[one * MapD3DRenderer.FolkFrames];
 
-        // 16방위에서 북(0) · 서(4) · 남(8) · 동(12) 을 뽑는다. 앞 넉 장이 배, 뒤 넉 장이 말이다.
+        // 16방위에서 북(0) · 서(4) · 남(8) · 동(12) 을 뽑는다. 앞 열여섯 장이 배 벌 넷(벌마다 넉 장), 뒤 넉 장이 말이다.
         for (int i = 0; i < MapD3DRenderer.FolkFrames; i++)
         {
             bool land = i >= MapD3DRenderer.FolkLandFrame;
-            int heading = (i % MapD3DRenderer.FolkLandFrame) * 4;
-            var frame = ShipSprites.Frame(heading, onLand: land);
+            int heading = (i % MapD3DRenderer.FolkWays) * 4;
+            var frame = land ? ShipSprites.Frame(heading, onLand: true)
+                             : ShipSprites.SkinFrame(i / MapD3DRenderer.FolkWays, heading) ?? ShipSprites.Frame(heading);
             if (frame.Length != one) return;                 // 그림 벌이 아직 안 열렸다
             frame.CopyTo(atlas.AsSpan(i * one));
         }
@@ -766,7 +768,7 @@ public sealed class ShipMapHost : HwndHost
         {
             double x = Fold(one.X, origin.X);
             if (x < left || x > right || one.Y < top || one.Y > bottom) continue;
-            _folk.Add((x, one.Y, one.Heading, one.Person));
+            _folk.Add((x, one.Y, one.Heading, one.Person, one.Skin));
         }
 
         if (_folk.Count > MapD3DRenderer.MaxFolk)
@@ -783,8 +785,11 @@ public sealed class ShipMapHost : HwndHost
         {
             var one = _folk[i];
             // 16방위 → 넉 장. 뭍 칸에 서 있으면 말 쪽 넉 장으로 내린다(0x0048A799).
+            // 바다면 그 사람 기함 벌의 넉 장에서 고른다.
             int frame = (one.Heading & 0xF) >> 2;
-            if (FolkOnLand(one.X, one.Y)) frame += MapD3DRenderer.FolkLandFrame;
+            frame += FolkOnLand(one.X, one.Y)
+                ? MapD3DRenderer.FolkLandFrame
+                : Math.Clamp(one.Skin, 0, MapD3DRenderer.FolkSkins - 1) * MapD3DRenderer.FolkWays;
 
             var draw = new MapD3DRenderer.FolkDraw(
                 (float)((one.X - origin.X) / _cellsPerPixel - size / 2),
@@ -822,7 +827,7 @@ public sealed class ShipMapHost : HwndHost
     private const double FolkMargin = 3;
 
     /// <summary>내 배에서 그 사람까지 칸 거리의 제곱.</summary>
-    private double Near((double X, double Y, int Heading, int Person) one)
+    private double Near((double X, double Y, int Heading, int Person, int Skin) one)
     {
         double dx = one.X - _shipX, dy = one.Y - _shipY;
         return dx * dx + dy * dy;

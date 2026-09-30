@@ -147,6 +147,46 @@ public static class ShipSprites
         }
     }
 
+    /// <summary>벌마다 따로 읽어 둔 배 그림 — 남의 배를 그 사람 기함 벌로 그릴 때 쓴다. [벌][방향].</summary>
+    private static readonly uint[]?[][] SkinFrames =
+        [new uint[Directions][], new uint[Directions][], new uint[Directions][], new uint[Directions][]];
+
+    /// <summary>
+    /// 그 벌(<c>asset/ship-g{벌}</c>)의 배 그림 한 장. 지금 내 벌(<see cref="Skin"/>)과 상관없다. 파일이 없으면 null.
+    /// </summary>
+    public static uint[]? SkinFrame(int skin, int heading16)
+    {
+        if (skin < 0 || skin >= SkinCount) return null;
+        int i = (heading16 & 0xF) >> 1;
+        lock (Gate)
+        {
+            if (SkinFrames[skin][i] is { } cached) return cached.Length > 0 ? cached : null;
+            string path = Path.Combine(AppContext.BaseDirectory, $"asset/ship-g{skin}", $"ship_{i}.png");
+            var px = File.Exists(path) ? LoadPng(path) : null;
+            SkinFrames[skin][i] = px ?? [];
+            return px;
+        }
+    }
+
+    /// <summary>48x48 PNG 한 장을 BGRA 로 읽는다. 크기가 다르거나 못 읽으면 null.</summary>
+    private static uint[]? LoadPng(string path)
+    {
+        try
+        {
+            using var fs = File.OpenRead(path);
+            var decoder = new PngBitmapDecoder(fs, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var src = new FormatConvertedBitmap(decoder.Frames[0], PixelFormats.Bgra32, null, 0);
+            if (src.PixelWidth != Width || src.PixelHeight != Width) return null;
+            var px = new uint[Size];
+            src.CopyPixels(px, Width * 4, 0);
+            return px;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// 걷는 그림 한 장. 방향과 걸음으로 고른다. 그림이 없으면 null 이라 낱장으로 물러선다.
     /// </summary>

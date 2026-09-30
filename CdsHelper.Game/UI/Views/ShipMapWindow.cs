@@ -3916,7 +3916,7 @@ public sealed class ShipMapWindow : Window
     /// 하루 안의 눈금(<see cref="_ticks"/>)을 함께 넘긴다. 예전에는 날짜만 넘겨 배가 하루에
     /// 스물네 칸씩 <b>순간이동</b>하듯 뛰었다 — 게임은 눈금마다 조금씩 옮긴다.
     /// </remarks>
-    private IReadOnlyList<(double X, double Y, int Heading, int Person)> FolkAfloat()
+    private IReadOnlyList<(double X, double Y, int Heading, int Person, int Skin)> FolkAfloat()
     {
         if (_game.World is not { } world) return [];
 
@@ -3929,11 +3929,24 @@ public sealed class ShipMapWindow : Window
         double dayPart = (double)_ticks / TerrainTable.TicksPerDay;
         _folkList.Clear();
         foreach (var (who, x, y, heading) in world.Afloat(dayPart))
-            _folkList.Add((x, y, heading, who.Id));
+            _folkList.Add((x, y, heading, who.Id, FolkSkin(world, who.Id)));
         return _folkList;
     }
 
-    private readonly List<(double X, double Y, int Heading, int Person)> _folkList = [];
+    private readonly List<(double X, double Y, int Heading, int Person, int Skin)> _folkList = [];
+
+    /// <summary>
+    /// 그 사람 기함의 배 그림 벌 — 누적 캐릭터면 적어 둔 함대의 첫 척, 아니면 나라·해로 고르는 기함 선체
+    /// (<see cref="EnemyFleet.HullOf"/>, 슬롯 0)의 벌(선체→그림 표 <c>0x005695D8</c>)이다. 원본은 남의 배도 내 기함 벌로
+    /// 그리지만(<c>0x00569FE4</c>) 우리는 그 사람 배로 그린다.
+    /// </summary>
+    private int FolkSkin(PersonWorld world, int person)
+    {
+        int hull = world.Replay?.FleetOf(person) is [var first, ..]
+            ? first
+            : EnemyFleet.HullOf(_game.PersonTemplates?.Find(person)?.Nation ?? 0, _game.Player.Date.Year, 0);
+        return Hull.FromTable(hull).Skin;
+    }
     private (DateTime Day, int Revision, int Tick) _folkStamp = (default, -1, -1);
 
     /// <summary>

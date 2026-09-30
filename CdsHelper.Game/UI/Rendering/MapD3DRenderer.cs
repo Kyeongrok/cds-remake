@@ -285,7 +285,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     }
 
     /// <summary>
-    /// 남의 그림 장수 — 배 넉 장(북·서·남·동)에 말 넉 장을 이어 붙인 여덟 장이다.
+    /// 남의 그림 장수 — 배 그림 벌 넷(코구·카라벨·카락·갤리온)마다 넉 장(북·서·남·동)에 말 넉 장을 이어 붙인 스무 장이다.
+    /// 원본은 남의 배도 내 기함 벌 하나로 그리지만(<c>0x00569FE4</c>), 우리는 그 사람 기함 선체의 벌로 그린다.
     /// </summary>
     /// <remarks>
     /// 게임은 사람 자리의 부류가 2 이상(뭍)이면 배 대신 <b>말</b>을 그린다(<c>0x0048A799</c> 의
@@ -293,10 +294,13 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// 다시 바다로 나오면 배로 바뀐다. 셰이더는 <c>Folk[k].z * 48</c> 로 줄을 내리므로 장수를
     /// 모른다 — 여기 값만 맞추면 된다.
     /// </remarks>
-    public const int FolkFrames = 8;
+    public const int FolkFrames = FolkSkins * FolkWays + FolkWays;
 
-    /// <summary>말 그림이 시작하는 장. 배 넉 장 다음이다.</summary>
-    public const int FolkLandFrame = 4;
+    /// <summary>배 그림 벌 수와 벌마다의 방향 장수.</summary>
+    public const int FolkSkins = 4, FolkWays = 4;
+
+    /// <summary>말 그림이 시작하는 장. 배 열여섯 장 다음이다.</summary>
+    public const int FolkLandFrame = FolkSkins * FolkWays;
 
     /// <summary>남의 배 그림 한 변. 내 배와 같은 48이다.</summary>
     public const int FolkSize = 48;
