@@ -126,16 +126,21 @@ public sealed class ItemInfoDialog : GameWindow
         DockPanel.SetDock(close, Dock.Right);
         row.Children.Add(close);
 
-        var effect = new StackPanel { Margin = new Thickness(0, 0, 12, 0) };
-        effect.Children.Add(Label($"효과  {item.Effect}"));
-        if (equipped)
+        // 효과와 「장비중」은 <b>무기(3)·방어구(4)만</b> 찍는다 — 원본은 갈래(0x004656A0, 표 +0x14)가
+        // 3 이나 4 가 아니면 둘 다 건너뛴다(0x0046E65E ~ 0x0046E66D → 0x0046E78C).
+        if (item.Category is Weapon or Armor)
         {
-            var worn = Label("장비중");
-            worn.HorizontalAlignment = HorizontalAlignment.Right;
-            effect.Children.Add(worn);
+            var effect = new StackPanel { Margin = new Thickness(0, 0, 12, 0) };
+            effect.Children.Add(Label($"효과  {item.Effect}"));
+            if (equipped)
+            {
+                var worn = Label("장비중");
+                worn.HorizontalAlignment = HorizontalAlignment.Right;
+                effect.Children.Add(worn);
+            }
+            DockPanel.SetDock(effect, Dock.Right);
+            row.Children.Add(effect);
         }
-        DockPanel.SetDock(effect, Dock.Right);
-        row.Children.Add(effect);
 
         var kind = Label($"속성/{item.CategoryName}");
         kind.Margin = new Thickness(0, 0, 24, 0);
@@ -145,6 +150,9 @@ public sealed class ItemInfoDialog : GameWindow
         row.Children.Add(Label(item.Name));
         return row;
     }
+
+    /// <summary>효과를 보이는 갈래 — 무기 · 방어구(<see cref="ItemTable.CategoryNames"/> 3 · 4).</summary>
+    private const int Weapon = 3, Armor = 4;
 
     /// <summary>창 안 폭(게임 점) — 도시 창 틀 폭(<see cref="CityFrame.Width"/>)과 같다.</summary>
     private const double InnerWidth = CityFrame.Width;
