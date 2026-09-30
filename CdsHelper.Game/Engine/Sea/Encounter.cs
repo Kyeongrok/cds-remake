@@ -379,9 +379,14 @@ public static class Encounter
     {
         if (RollOf(lat, lon) is not { } roll) return null;
 
+        // 모드 창의 「해적 조우 확률」 배수 — 주사위 폭을 그만큼 나눈다. 0 이면 아예 안 붙는다(원본은 x1).
+        double scale = Local.Settings.GameSettings.SeaRaidScales[Local.Settings.GameSettings.SeaRaidScale];
+        if (scale <= 0) return null;
+        int width = Math.Max(1, (int)Math.Round(roll / scale));
+
         for (int i = 0; i < steps; i++)
         {
-            if (rng.Next(roll) != 0) continue;
+            if (rng.Next(width) != 0) continue;
             return roll == LevantRoll
                 ? Make(EnemyKind.Islam, IslamLeader, rng, lookup)
                 : chased ? Make(EnemyKind.Chaser, ChaserLeader, rng, lookup)

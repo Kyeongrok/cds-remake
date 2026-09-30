@@ -163,6 +163,16 @@ public sealed class ModDialog : GameWindow
             + " 손으로 적어 둔 세이브(SAVEDATA.CDS)는 건드리지 않습니다."
             + " 첫 화면의 「CONTINUE」가 이 파일을 엽니다."));
 
+        // 해적 조우 확률 — 바다 주사위 폭(유럽 700 · 동쪽 400)을 배수로 나눈다(0x0048CABA).
+        rows.Children.Add(Select("해적 조우 확률",
+            [.. GameSettings.SeaRaidScales.Select((s, i) =>
+                s == 0 ? "안 만남" : i == GameSettings.DefaultSeaRaidScale ? $"x{s} (원본)" : $"x{s}")],
+            GameSettings.SeaRaidScale,
+            i => GameSettings.SeaRaidScale = i,
+            "바다에서 해적(유럽 바다)·이슬람 함대(동지중해~아라비아해)가 붙는 확률의 배수입니다."
+            + " 원본은 걸음마다 유럽 700분의 1, 동쪽 400분의 1입니다. 「안 만남」이면 아예 붙지 않습니다."
+            + " 지도에 보이는 적 함대와 마주치는 것은 따로라 바뀌지 않습니다."));
+
         // 마을·항구에 들고 날 때 보내는 날수. 원본은 열흘씩이라 오가는 시험이 더디다.
         rows.Children.Add(Select("출입 일수",
             [.. Enumerable.Range(GameSettings.MinPortDays,

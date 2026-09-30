@@ -113,6 +113,9 @@ public sealed class GameSettingsData
     /// </summary>
     public bool AskLendShips { get; set; } = true;
 
+    /// <summary>바다에서 해적·이슬람 함대가 붙는 확률 배수의 차례(<see cref="GameSettings.SeaRaidScales"/>). 원본은 x1.</summary>
+    public int SeaRaidScale { get; set; } = GameSettings.DefaultSeaRaidScale;
+
     /// <summary>정보 창·상단 띠에 「생명력」 줄을 낼지. 원본 탐험정보에는 없어 꺼 두고 시작한다.</summary>
     public bool ShowVitalityInfo { get; set; }
 
@@ -695,6 +698,21 @@ public static class GameSettings
     {
         get => Get(d => d.AskLendShips);
         set => Set(d => d.AskLendShips = value);
+    }
+
+    /// <summary>해적 조우 확률 배수 — 모드 창의 고르기 칸 차례다. 0 이면 아예 안 붙는다.</summary>
+    public static readonly double[] SeaRaidScales = [0, 0.25, 0.5, 1, 2, 4, 8];
+
+    /// <summary>원본(x1)의 차례.</summary>
+    public const int DefaultSeaRaidScale = 3;
+
+    /// <summary>
+    /// 바다 주사위(유럽 해적 rand(700) · 동쪽 이슬람 rand(400), <c>0x0048CABA</c>)에 거는 배수의 차례 — 모드 창에서 고른다.
+    /// </summary>
+    public static int SeaRaidScale
+    {
+        get => Math.Clamp(Get(d => d.SeaRaidScale), 0, SeaRaidScales.Length - 1);
+        set => Set(d => d.SeaRaidScale = Math.Clamp(value, 0, SeaRaidScales.Length - 1));
     }
 
     /// <summary>
