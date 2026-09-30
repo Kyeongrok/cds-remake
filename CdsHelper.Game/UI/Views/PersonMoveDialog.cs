@@ -122,7 +122,7 @@ public sealed class PersonMoveDialog : GameWindow
     /// <summary>표 한 줄.</summary>
     private sealed record Row(int Id, string Name, int Age, string Now, string To, string Left,
                               string State, string Kind, string Skills, string Languages,
-                              PersonTable.Row Source);
+                              PersonTable.Row Source, string HireFame = "");
 
     private PersonMoveDialog(Engine.Game game, PersonWorld world)
     {
@@ -330,6 +330,7 @@ public sealed class PersonMoveDialog : GameWindow
         AddCardText(text, nameof(Row.Now), "현재: {0}");
         AddCardText(text, nameof(Row.To), "목적지: {0}");
         AddCardText(text, nameof(Row.State), fontSize: 12);
+        AddCardText(text, nameof(Row.HireFame), fontSize: 12);
         body.AppendChild(text);
 
         var abilities = new FrameworkElementFactory(typeof(StackPanel));
@@ -403,9 +404,17 @@ public sealed class PersonMoveDialog : GameWindow
             string skills = Levels(person.Skills, Skill.Names, "기능");
             string languages = Levels(person.Languages, Skill.Languages, "언어");
 
+            // 고용할 수 있는 사람이면 고용에 드는 명성을 붙인다 — 지금 제독 매력으로 센 값이다(TavernMenu.HireFame).
+            string hireFame = "";
+            if (person.Id < PersonTable.MovingEnd && person.Hire == PersonTable.Hireable)
+            {
+                int need = TavernMenu.HireFame(_game.Player, person.Fame);
+                hireFame = $"고용 가능 명성 {need} (지금 {_game.Player.Fame}{(_game.Player.Fame >= need ? " · 충분" : " · 모자람")})";
+            }
+
             rows.Add(new Row(person.Id, person.Name, _world.Table.AgeOn(person, date.Year),
                              CityOf(person.City), onRoad ? to : "", left,
-                             StateOf(person, active, onRoad), kind, skills, languages, person));
+                             StateOf(person, active, onRoad), kind, skills, languages, person, hireFame));
         }
 
         _grid.ItemsSource = rows;

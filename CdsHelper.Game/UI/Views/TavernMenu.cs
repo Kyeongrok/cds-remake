@@ -1994,6 +1994,16 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <summary>명성 셈에서 매력이 이 값을 넘는 만큼 보탠다(<c>0x00453600</c>).</summary>
     private const int CharmFloor = 69;
 
+    /// <summary>
+    /// 그 사람을 고용하려면 있어야 하는 제독 명성(<c>0x00453600</c>) — <c>(매력 − 69, 0 밑은 0) + 100</c> 에
+    /// 명성을 곱한 것이 그 사람 명성 x 100 보다 커야 하므로, 그걸 넘는 가장 작은 명성이다. 매력이 오르면 내려간다.
+    /// </summary>
+    internal static int HireFame(Player player, int theirFame)
+    {
+        long charm = Math.Max(0, player.AbilityOf(Ability.Charm) - CharmFloor) + 100;
+        return (int)((long)theirFame * 100 / charm + 1);
+    }
+
     /// <summary>명성이 모자랄 때 대신 내밀 수 있는 소지품.</summary>
     private const string Dumpling = "수수경단";
 
@@ -2028,8 +2038,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             return false;
         }
 
-        int charm = Math.Max(0, _player.AbilityOf(Ability.Charm) - CharmFloor) + 100;
-        bool famous = (long)charm * _player.Fame > (long)who.Fame * 100;
+        bool famous = _player.Fame >= HireFame(_player, who.Fame);
 
         // 판정 결과를 <b>설득 애니메이션(5번)</b>으로 보인다 — 무릎 꿇고 청하다가 이기면
         // 받아들여지고 지면 엎어진다(0x00453600 → 0x004A63A0). 후원자 설득과 같은 연출이다.
