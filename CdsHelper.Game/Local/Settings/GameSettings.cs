@@ -89,6 +89,18 @@ public sealed class GameSettingsData
     /// <summary>구름을 부드럽게(바둑판 반투명을 참 반투명으로 풀어 매끈하게 늘려) 그릴지. 켜 두고 시작한다.</summary>
     public bool SmoothClouds { get; set; } = true;
 
+    /// <summary>고해상도 바다(물 점을 화면 해상도로 새로 그리고 해안선을 곡선으로). 꺼 두고 시작한다.</summary>
+    public bool HiResSea { get; set; }
+
+    /// <summary>도트 확대 필터(대각선 계단을 사선으로). 꺼 두고 시작한다.</summary>
+    public bool PixelFilter { get; set; }
+
+    /// <summary>뭍 세부 질감(지형마다 화면 해상도 잔무늬). 꺼 두고 시작한다.</summary>
+    public bool LandDetail { get; set; }
+
+    /// <summary>도시 분리(바탕 지도 위에 도시 그림을 따로 얹기). 꺼 두고 시작한다.</summary>
+    public bool CitySprites { get; set; }
+
     /// <summary>미니맵 풍향 화살표. 꺼 두고 시작한다.</summary>
     public bool MiniMapWind { get; set; }
 
@@ -912,6 +924,34 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.SeaBrightness), 0.6, 1.6);
         set => Set(d => d.SeaBrightness = Math.Clamp(value, 0.6, 1.6));
+    }
+
+    /// <summary>도시 분리 — 모드 창 「실험」에서 켜고 끈다.</summary>
+    public static bool CitySprites
+    {
+        get => Get(d => d.CitySprites);
+        set => Set(d => d.CitySprites = value);
+    }
+
+    /// <summary>뭍 세부 질감 — 모드 창 「실험」에서 켜고 끈다.</summary>
+    public static bool LandDetail
+    {
+        get => Get(d => d.LandDetail);
+        set => Set(d => d.LandDetail = value);
+    }
+
+    /// <summary>도트 확대 필터 — 모드 창 「실험」에서 켜고 끈다.</summary>
+    public static bool PixelFilter
+    {
+        get => Get(d => d.PixelFilter);
+        set => Set(d => d.PixelFilter = value);
+    }
+
+    /// <summary>고해상도 바다 — 모드 창 「실험」에서 켜고 끈다.</summary>
+    public static bool HiResSea
+    {
+        get => Get(d => d.HiResSea);
+        set => Set(d => d.HiResSea = value);
     }
 
     /// <summary>부드러운 구름 — 모드 창 「실험」에서 켜고 끈다.</summary>

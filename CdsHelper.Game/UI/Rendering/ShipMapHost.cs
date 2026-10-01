@@ -244,11 +244,221 @@ public sealed class ShipMapHost : HwndHost
         }
     }
 
+    /// <summary>올려 둔 OCEAN.CDS 타일 그림.</summary>
+    private OceanTiles? _ocean;
+
     /// <summary>바다 입체 효과의 밝기 배수.</summary>
     public double SeaBrightness
     {
         get => _renderer.SeaBrightness;
         set { _renderer.SeaBrightness = (float)value; _dirty = true; }
+    }
+
+    /// <summary>고해상도 바다를 그릴지. 켜 둔 동안은 잔물결이 흐르도록 프레임마다 다시 그린다.</summary>
+    public bool HiResSea
+    {
+        get => _renderer.HiResSea;
+        set
+        {
+            // 물 칸 표(깊이 표)와 물 색 표를 같이 쓴다 — 바다 입체 효과를 안 켰어도 여기서 짓는다.
+            if (value && !_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);
+            if (value && !_renderer.WaterPaletteReady && BuildWaterPalette() is { } water) _renderer.SetWaterPalette(water);
+            _renderer.HiResSea = value;
+            _dirty = true;
+        }
+    }
+
+    /// <summary>
+    /// 팔레트 색마다 물인지 — 지도 전체에서 그 색이 <b>물 칸(부류 0·1)·강 칸(5) 타일에 쓰인 수</b>가 뭍 칸의 네 배를 넘고,
+    /// 흙빛(빨강이 파랑보다 뚜렷이 큰 색)이 아니면 물이다. 강 물빛(#5A6967 · #94A199)과 해안 물결의 짙은 점도
+    /// 여기 든다 — 파란 기만으로 가르면 그것들이 원본 도트로 남아 고해상도 바다와 어긋났다.
+    /// </summary>
+    /// <summary>지형표에서 강 칸의 부류.</summary>
+    private const int RiverClass = 5;
+
+    private byte[]? BuildWaterPalette()
+    {
+        if (_terrain == null || _world == null || _ocean == null) return null;
+        var uses = new Dictionary<int, int>();
+        for (int i = 0; i + 1 < _world.Length; i += 2)
+        {
+            int tile = (_world[i] | (_world[i + 1] << 8)) & OceanTiles.TileMask;
+            uses[tile] = uses.GetValueOrDefault(tile) + 1;
+        }
+        var wet = new long[256];
+        var dry = new long[256];
+        var data = _ocean.TileData;
+        foreach (var (tile, n) in uses)
+        {
+            // 강 칸(부류 5)도 물 쪽에 센다 — 강물 빛(#5F7887)은 바다 타일에는 안 나오고 강 타일에만 쓰인다.
+            int kind = _terrain.ClassOfCell(tile);
+            bool water = kind <= TerrainTable.WaterMax || kind == RiverClass;
+            int at = tile * OceanTiles.TilePixels;
+            for (int k = 0; k < OceanTiles.TilePixels; k++)
+                if (water) wet[data[at + k]] += n; else dry[data[at + k]] += n;
+        }
+        var table = new byte[256];
+        for (int c = 0; c < 256; c++)
+        {
+            int rgb = _ocean.PaletteRgb[c];
+            int red = (rgb >> 16) & 0xFF, blue = rgb & 0xFF;
+            bool earthy = red - blue > 5;
+            table[c] = (byte)(wet[c] > 0 && wet[c] > dry[c] * 4 && !earthy ? 1 : 0);
+        }
+        return table;
+    }
+
+    /// <summary>도시 분리 — 바탕 지도 위에 뽑아 둔 도시 그림을 따로 얹는다. 켜면 도시 그림 판을 한 번 짓는다.</summary>
+    public bool CitySprites
+    {
+        get => _renderer.CitySprites;
+        set
+        {
+            if (value && !_renderer.CityArtReady) BuildCityArt();
+            _renderer.SetCitySprites(value);
+            _dirty = true;
+        }
+    }
+
+    /// <summary>마지막으로 받은 「안 선 도시」와 「못 찾은 발견물 자리」 — 그림 판을 나중에 지어도 다시 건다.</summary>
+    private List<int> _lastHiddenCities = [];
+    private List<(int X, int Y, ushort[] Block)> _lastHiddenPlaces = [];
+
+    /// <summary>발견물 그림 블록의 자리 → 블록 번호(도시 226 뒤).</summary>
+    private readonly Dictionary<(int X, int Y), int> _placeSprite = [];
+
+    private void ApplyHiddenSprites()
+    {
+        var ids = new List<int>(_lastHiddenCities);
+        foreach (var (x, y, _) in _lastHiddenPlaces)
+            if (_placeSprite.TryGetValue((x, y), out int id)) ids.Add(id);
+        _renderer.SetHiddenCities(ids);
+    }
+
+    private string _gameDir = "";
+
+    /// <summary>
+    /// 도시 그림과 발견물 마커를 뽑아 한 판으로 건다 — 그 칸 타일과 바탕 타일(도시 표 <c>+0x74</c> 3x3 ·
+    /// 발견물 표 <c>+0x54</c> 2x2)을 점마다 견주어 색 번호가 다른 점만 남긴다(개발도구 「도시 그림 뽑기」와 같은 셈).
+    /// 48x48 칸을 16장씩 줄지어 놓고, 앞 226 이 도시 · 그 뒤가 발견물이다.
+    /// </summary>
+    private void BuildCityArt()
+    {
+        if (_cities == null || _world == null || _ocean == null) return;
+        const int side = MapD3DRenderer.CitySpriteSide, perRow = MapD3DRenderer.CitySpritesPerRow;
+
+        var list = new List<(int X, int Y, ushort[] Block, int Width)>();
+        for (int id = 0; id < GameMapCoords.CityCount; id++)
+            list.Add(_cities.TryCell(id, out int cx, out int cy, out _)
+                ? (cx, cy, _cities.EraseOf(id), CityExeTable.EraseWidth) : (0, 0, [], 0));
+        _placeSprite.Clear();
+        if (DiscoveryTable.Open(_gameDir) is { } finds)
+            foreach (var row in finds.Discoveries)
+            {
+                if (!row.HasPlace || row.Erase is not { Length: DiscoveryTable.EraseWidth * DiscoveryTable.EraseWidth } erase) continue;
+                _placeSprite[(row.X1, row.Y1)] = list.Count;
+                list.Add((row.X1, row.Y1, erase, DiscoveryTable.EraseWidth));
+            }
+
+        int count = list.Count;
+        int atlasW = side * perRow, atlasH = side * ((count + perRow - 1) / perRow);
+        var atlas = new uint[atlasW * atlasH];
+        var blocks = list.ToArray();
+        var tiles = _ocean.TileData;
+        var pal = _ocean.PaletteRgb;
+        for (int id = 0; id < count; id++)
+        {
+            var (cx, cy, block, width) = blocks[id];
+            if (width <= 0 || block.Length != width * width) continue;
+            int ox = id % perRow * side, oy = id / perRow * side;
+            for (int k = 0; k < block.Length; k++)
+            {
+                if (block[k] == CityExeTable.Keep) continue;
+                int dx = k % width, dy = k / width;
+                int tile = CellValue(cx + dx + 0.5, cy + dy + 0.5) & OceanTiles.TileMask;
+                int under = block[k] & OceanTiles.TileMask;
+                for (int p = 0; p < OceanTiles.TilePixels; p++)
+                {
+                    byte a = tiles[tile * OceanTiles.TilePixels + p], b = tiles[under * OceanTiles.TilePixels + p];
+                    if (a == b) continue;
+                    int px = ox + dx * OceanTiles.TileW + p % OceanTiles.TileW;
+                    int py = oy + dy * OceanTiles.TileW + p / OceanTiles.TileW;
+                    atlas[py * atlasW + px] = 0xFF000000u | (uint)pal[a];
+                }
+            }
+        }
+        _renderer.SetCityArt(atlas, atlasW, atlasH, blocks);
+        BuildCityHiRes(count);
+        ApplyHiddenSprites();
+    }
+
+    /// <summary>
+    /// 고해상도 도시 그림 — 디자인(<see cref="CityDesigns"/>)마다 <c>asset/citysprite/design_N.png</c> 가 있으면 그것을 판에 늘어놓고,
+    /// 그 디자인을 쓰는 도시 블록마다 판 자리·배율·블록 안 자리를 적는다. 그림이 없는 디자인의 도시는 원본 그림 그대로다.
+    /// </summary>
+    private void BuildCityHiRes(int spriteCount)
+    {
+        if (_cities == null || _ocean == null) return;
+        var designs = CityDesigns.Find((x, y) => CellValue(x + 0.5, y + 0.5), _ocean, _cities);
+        var info = new float[spriteCount * 8];
+        var images = new List<(CityDesigns.Design D, uint[] Px, int Scale)>();
+        foreach (var d in designs)
+            if (CityDesigns.LoadHiRes(d, out int scale) is { } px) images.Add((d, px, scale));
+
+        // 판은 한 줄로 늘어놓는다 — 디자인이 아홉뿐이라 넉넉하다.
+        int atlasW = images.Sum(i => i.D.Width * i.Scale), atlasH = images.Count == 0 ? 1 : images.Max(i => i.D.Height * i.Scale);
+        var atlas = new uint[Math.Max(1, atlasW) * atlasH];
+        int x0 = 0;
+        foreach (var (d, px, scale) in images)
+        {
+            int w = d.Width * scale, h = d.Height * scale;
+            for (int y = 0; y < h; y++) Array.Copy(px, y * w, atlas, y * atlasW + x0, w);
+            foreach (var (city, offX, offY) in d.Members)
+            {
+                if (city >= spriteCount) continue;
+                int at = city * 8;
+                info[at] = x0; info[at + 1] = 0; info[at + 2] = scale; info[at + 3] = 1;
+                info[at + 4] = offX; info[at + 5] = offY; info[at + 6] = d.Width; info[at + 7] = d.Height;
+            }
+            x0 += w;
+        }
+        _renderer.SetCityHiRes(atlas, Math.Max(1, atlasW), atlasH, info, spriteCount);
+    }
+
+    /// <summary>뭍 세부 질감을 얹을지. 켜면 타일 부류 표를 한 번 짓는다.</summary>
+    public bool LandDetail
+    {
+        get => _renderer.LandDetail;
+        set
+        {
+            if (value && !_renderer.TileKindsReady && BuildTileKinds() is { } kinds) _renderer.SetTileKinds(kinds);
+            _renderer.LandDetail = value;
+            _dirty = true;
+        }
+    }
+
+    /// <summary>
+    /// 타일마다 지형 부류(지형표 값). 지도에서 그림 비트(0x8000)가 선 칸에 쓰인 타일은 7(도시·발견물 그림)로 둔다 —
+    /// 세부 질감이 그림을 흐리지 않게.
+    /// </summary>
+    private byte[]? BuildTileKinds()
+    {
+        if (_terrain == null || _world == null) return null;
+        var kinds = new byte[OceanTiles.TileCount];
+        for (int t = 0; t < kinds.Length; t++) kinds[t] = (byte)_terrain.ClassOfCell(t);
+        for (int i = 0; i + 1 < _world.Length; i += 2)
+        {
+            int word = _world[i] | (_world[i + 1] << 8);
+            if ((word & 0x8000) != 0) kinds[word & OceanTiles.TileMask] = 7;
+        }
+        return kinds;
+    }
+
+    /// <summary>도트 확대 필터를 쓸지.</summary>
+    public bool PixelFilter
+    {
+        get => _renderer.PixelFilter;
+        set { _renderer.PixelFilter = value; _dirty = true; }
     }
 
     /// <summary>구름을 부드럽게 그릴지.</summary>
@@ -291,6 +501,31 @@ public sealed class ShipMapHost : HwndHost
             }
         }
         for (int i = 0; i < depth.Length; i++) if (depth[i] == 255) depth[i] = 15;   // 뭍이 없는 줄(극지 밖)
+
+        // 위 네 비트에는 <b>강 칸까지의 걸음 수</b>(0~15)를 싣는다 — 고해상도 바다가 강과 강 어귀는 원본 도트로 두고,
+        // 강에서 멀어질수록 서서히 새 바다로 넘어가게 한다(강을 매끈한 물로 바꾸면 둑이 뭉개지고 색도 어긋났다).
+        var river = new byte[w * h];
+        Array.Fill(river, (byte)255);
+        head = tail = 0;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (_terrain.ClassOfCell(CellValue(x, y)) == RiverClass) { river[y * w + x] = 0; queue[tail++] = y * w + x; }
+        while (head < tail)
+        {
+            int i = queue[head++];
+            int x = i % w, y = i / w;
+            byte next = (byte)Math.Min(15, river[i] + 1);
+            Span<int> around = [y * w + (x + 1) % w, y * w + (x + w - 1) % w,
+                                y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
+            foreach (int j in around)
+            {
+                if (j < 0 || river[j] != 255) continue;
+                river[j] = next;
+                if (next < 15) queue[tail++] = j;
+            }
+        }
+        for (int i = 0; i < depth.Length; i++)
+            depth[i] = (byte)(depth[i] | (Math.Min((int)river[i], 15) << 4));
         return depth;
     }
 
@@ -578,6 +813,7 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>WORLD.CDS / OCEAN.CDS 를 올리고 스왑체인을 건다. 실패하면 까닭을 남기고 false.</summary>
     public bool Start(string gameDir)
     {
+        _gameDir = gameDir;
         // 편집기에서 고친 지도(asset/cds/WORLD.CDS)가 있으면 그것을 먼저 쓴다.
         var world = WorldMapRenderer.LoadWorldData(CdsAssetPath.Resolve(gameDir, "WORLD.CDS"));
         if (world == null) { Status = "WORLD.CDS 를 읽지 못했습니다"; return false; }
@@ -593,6 +829,7 @@ public sealed class ShipMapHost : HwndHost
 
         var ocean = OceanTiles.LoadFromDirectory(gameDir);
         if (ocean == null) { Status = $"OCEAN.CDS 를 읽지 못했습니다 ({OceanTiles.LastError})"; return false; }
+        _ocean = ocean;   // 고해상도 바다의 물 색 표를 지을 때 다시 본다
 
         _renderer.Initialize(world, ocean);
 
@@ -742,7 +979,7 @@ public sealed class ShipMapHost : HwndHost
         SyncRoute(origin);
 
         // 바다 입체 효과를 켜 두면 물결이 흐르므로 프레임마다 다시 그린다.
-        if (_renderer.SeaEffect)
+        if (_renderer.SeaEffect || _renderer.HiResSea)
         {
             _renderer.SeaTime = (float)now.TotalSeconds;
             _dirty = true;
@@ -2565,14 +2802,19 @@ public sealed class ShipMapHost : HwndHost
             }
         }
 
-        foreach (int city in hidden)
+        var hiddenList = hidden.ToList();
+        var placeList = (places ?? []).ToList();
+        _lastHiddenCities = hiddenList;
+        _lastHiddenPlaces = placeList;
+        ApplyHiddenSprites();   // 도시 분리일 때 그림을 얹지 않을 도시 · 발견물
+        foreach (int city in hiddenList)
         {
             if (!cities.TryCell(city, out int cx, out int cy, out _)) continue;
             Lay(cx, cy, cities.EraseOf(city), CityExeTable.EraseWidth, CityExeTable.Keep);
         }
 
         // 아직 못 찾은 발견물도 같은 손으로 가린다 — 그쪽은 2×2 다.
-        foreach (var (x, y, block) in places ?? [])
+        foreach (var (x, y, block) in placeList)
             Lay(x, y, block, DiscoveryTable.EraseWidth, DiscoveryTable.Keep);
 
         _renderer.Erase(patch);

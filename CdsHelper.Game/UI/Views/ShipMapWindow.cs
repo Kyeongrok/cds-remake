@@ -2681,6 +2681,10 @@ public sealed class ShipMapWindow : Window
             _host.SeaEffect = GameSettings.SeaEffect;
             _host.SeaBrightness = GameSettings.SeaBrightness;
             _host.SmoothClouds = GameSettings.SmoothClouds;
+            _host.HiResSea = GameSettings.HiResSea;
+            _host.PixelFilter = GameSettings.PixelFilter;
+            _host.LandDetail = GameSettings.LandDetail;
+            _host.CitySprites = GameSettings.CitySprites;
             _started = true;
         }
 
@@ -2948,6 +2952,30 @@ public sealed class ShipMapWindow : Window
         {
             GameSettings.SeaBrightness = v;
             _host.SeaBrightness = GameSettings.SeaBrightness;
+        },
+        HiResSeaOn = () => _host.HiResSea,
+        SetHiResSea = on =>
+        {
+            _host.HiResSea = on;
+            GameSettings.HiResSea = on;
+        },
+        CitySpritesOn = () => _host.CitySprites,
+        SetCitySprites = on =>
+        {
+            _host.CitySprites = on;
+            GameSettings.CitySprites = on;
+        },
+        LandDetailOn = () => _host.LandDetail,
+        SetLandDetail = on =>
+        {
+            _host.LandDetail = on;
+            GameSettings.LandDetail = on;
+        },
+        PixelFilterOn = () => _host.PixelFilter,
+        SetPixelFilter = on =>
+        {
+            _host.PixelFilter = on;
+            GameSettings.PixelFilter = on;
         },
         SmoothCloudsOn = () => _host.SmoothClouds,
         SetSmoothClouds = on =>

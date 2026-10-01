@@ -41,6 +41,22 @@ public sealed class ModDialog : GameWindow
         public Func<double> SeaBrightness { get; init; } = () => 1.0;
         public Action<double> SetSeaBrightness { get; init; } = _ => { };
 
+        /// <summary>고해상도 바다.</summary>
+        public Func<bool> HiResSeaOn { get; init; } = () => false;
+        public Action<bool> SetHiResSea { get; init; } = _ => { };
+
+        /// <summary>도시 분리.</summary>
+        public Func<bool> CitySpritesOn { get; init; } = () => false;
+        public Action<bool> SetCitySprites { get; init; } = _ => { };
+
+        /// <summary>뭍 세부 질감.</summary>
+        public Func<bool> LandDetailOn { get; init; } = () => false;
+        public Action<bool> SetLandDetail { get; init; } = _ => { };
+
+        /// <summary>도트 확대 필터.</summary>
+        public Func<bool> PixelFilterOn { get; init; } = () => false;
+        public Action<bool> SetPixelFilter { get; init; } = _ => { };
+
         /// <summary>부드러운 구름.</summary>
         public Func<bool> SmoothCloudsOn { get; init; } = () => true;
         public Action<bool> SetSmoothClouds { get; init; } = _ => { };
@@ -185,6 +201,20 @@ public sealed class ModDialog : GameWindow
 
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
         lab.Children.Add(SeaControls(options));
+        lab.Children.Add(Toggle("고해상도 바다", options.HiResSeaOn(), options.SetHiResSea,
+            "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로"
+            + " 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다."
+            + " 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다."));
+        lab.Children.Add(Toggle("도시 분리", options.CitySpritesOn(), options.SetCitySprites,
+            "도시 칸을 바탕 지형으로 깔고, 지형 타일에서 뽑아 둔 도시 그림을 그 위에 따로 얹습니다 — 겉모습은 원본과 같습니다."
+            + " 고해상도 바다·뭍 세부 질감·도트 필터가 도시 그림을 건드리지 않게 됩니다. 아직 안 선 도시는 그림을 얹지 않습니다."));
+        lab.Children.Add(Toggle("뭍 세부 질감", options.LandDetailOn(), options.SetLandDetail,
+            "지도를 키웠을 때 원본 도트는 그대로 두고, 지형마다 화면 해상도의 잔무늬를 얇게 얹습니다 —"
+            + " 사막은 모래 결, 산은 바위 결, 숲은 잎 덩이, 평지는 풀 결. 도시·발견물 그림과 물은 건드리지 않습니다."
+            + " 키울수록 짙어집니다."));
+        lab.Children.Add(Toggle("도트 확대 필터", options.PixelFilterOn(), options.SetPixelFilter,
+            "지도를 키웠을 때(칸이 화면 네 점보다 클 때) 원본 도트의 대각선 계단을 사선으로 깎아 매끈하게 그립니다."
+            + " 바다·뭍·해안·도시 그림 모두에 듭니다. 바둑판 잔무늬는 그대로 둡니다."));
         lab.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
             "원본 구름은 한 점 걸러 찍은 바둑판 무늬로 반투명을 흉내 내서, 지도를 키우면 격자가 그대로 커집니다."
             + " 켜면 그 무늬를 참 반투명으로 풀어 매끈하게 늘려 그립니다. 비치는 정도는 원본과 같습니다."));

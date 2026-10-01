@@ -207,6 +207,10 @@
                                     <MenuItem Header="도구">
                                         <MenuItem x:Name="PART_WorldMapMenu" Header="세계지도" />
                                         <MenuItem
+                                            x:Name="PART_CitySpriteMenu"
+                                            Header="도시 그림 뽑기"
+                                            ToolTip="지도 타일에 박힌 도시 그림을 바탕과 갈라 도시마다 한 장으로 뽑아 본다 — PNG 로 저장할 수 있다" />
+                                        <MenuItem
                                             x:Name="PART_WorldEditMenu"
                                             Header="세계지도 편집 (WORLD.CDS)"
                                             ToolTip="지도 칸을 붓으로 칠한다 — 고친 것은 asset/cds/WORLD.CDS 에 적고 놀이가 먼저 읽는다" />

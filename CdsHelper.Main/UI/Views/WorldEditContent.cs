@@ -78,6 +78,20 @@ public class WorldEditContent : ContentControl
     /// <summary>손바닥 — 켜 두면 왼쪽 단추로 끌어 화면을 옮기고 칠하지 않는다.</summary>
     private bool _hand;
 
+    /// <summary>
+    /// 도시 숨김 — 도시(3x3)·발견물(2x2) 칸을 그 바탕 타일(도시 표 <c>+0x74</c> · 발견물 표 <c>+0x54</c>)로 보이고 칠하지 않는다.
+    /// 그 칸의 파일 값은 도시 그림 타일이고 바탕은 표 쪽 자료라, 칠하면 도시 그림이 깨진다. 게임의 「도시 분리」와 같은 바탕이다.
+    /// </summary>
+    private bool _hideCities = true;
+    private readonly System.Windows.Controls.Primitives.ToggleButton _hideButton = new()
+    {
+        Content = "도시 숨김", IsChecked = true, Padding = new Thickness(6, 0, 6, 0), Margin = new Thickness(2, 0, 2, 0),
+        ToolTip = "도시·발견물 칸을 바탕 지형으로 보이고 칠하지 않게 막는다 (C)",
+    };
+
+    /// <summary>도시·발견물 칸 → 그 바탕 타일과 누구 칸인지. 칸 번호는 y*2500+x.</summary>
+    private readonly Dictionary<int, (ushort Under, string Owner)> _covered = [];
+
     /// <summary>칸 격자 — 키웠을 때(x4 위) 칸 경계를 어둡게 긋는다.</summary>
     private bool _grid = true;
     private readonly System.Windows.Controls.Primitives.ToggleButton _gridButton = new()
@@ -157,6 +171,7 @@ public class WorldEditContent : ContentControl
                 if (e.Key == Key.H) { _handButton.IsChecked = true; e.Handled = true; return; }
                 if (e.Key == Key.B) { _handButton.IsChecked = false; e.Handled = true; return; }
                 if (e.Key == Key.G) { _gridButton.IsChecked = !_gridButton.IsChecked; e.Handled = true; return; }
+                if (e.Key == Key.C) { _hideButton.IsChecked = !_hideButton.IsChecked; e.Handled = true; return; }
             }
             if (Keyboard.Modifiers != ModifierKeys.Control) return;
             if (e.Key == Key.Z) { Undo(); e.Handled = true; }
@@ -191,6 +206,9 @@ public class WorldEditContent : ContentControl
         bar.Children.Add(_zoomText);
         bar.Children.Add(Btn("+", () => ZoomAt(1, null), "키우기 (휠)"));
         bar.Children.Add(_gridButton);
+        bar.Children.Add(_hideButton);
+        _hideButton.Checked += (_, _) => { _hideCities = true; Redraw(); };
+        _hideButton.Unchecked += (_, _) => { _hideCities = false; Redraw(); };
         bar.Children.Add(Gap());
         bar.Children.Add(Btn("되돌리기", Undo, "Ctrl+Z"));
         bar.Children.Add(Btn("다시하기", Redo, "Ctrl+Y"));
@@ -259,20 +277,58 @@ public class WorldEditContent : ContentControl
         _ocean ??= OceanTiles.LoadFromDirectory(GameDirectory);
         _avg = _ocean?.GetAverages(1);
         _undo.Clear(); _redo.Clear(); _unsaved = 0;
+        LoadCovered();
 
         _bitmap = new WriteableBitmap(W, H, 96, 96, PixelFormats.Bgr32, null);
-        var pixels = new int[W * H];
-        for (int y = 0; y < H; y++)
-            for (int x = 0; x < W; x++)
-                pixels[y * W + x] = ColorOf(Read(x, y));
-        _bitmap.WritePixels(new Int32Rect(0, 0, W, H), pixels, W * 4, 0);
         _image.Source = _bitmap;
         _image.Width = W; _image.Height = H;
-        ApplyZoom();
+        Redraw();
         Pick(_paint);
 
         bool edited = CdsAssetPath.Edited("WORLD.CDS") != null;
         _status.Text = (edited ? "고친 판: " : "원본: ") + path;
+    }
+
+    /// <summary>도시·발견물 블록이 덮는 칸을 모은다(<see cref="_covered"/>).</summary>
+    private void LoadCovered()
+    {
+        _covered.Clear();
+        void Lay(int x0, int y0, ushort[] block, int side, string owner)
+        {
+            for (int k = 0; k < block.Length; k++)
+            {
+                if (block[k] == CityExeTable.Keep) continue;
+                int x = ((x0 + k % side) % W + W) % W, y = y0 + k / side;
+                if (y >= 0 && y < H) _covered[y * W + x] = ((ushort)(block[k] & OceanTiles.TileMask), owner);
+            }
+        }
+        if (CityExeTable.Open(GameDirectory) is { } cities)
+        {
+            var names = CityTable.Open();
+            for (int id = 0; id < GameMapCoords.CityCount; id++)
+                if (cities.TryCell(id, out int cx, out int cy, out _))
+                    Lay(cx, cy, cities.EraseOf(id), CityExeTable.EraseWidth, $"도시 {names.NameOf(id)}");
+        }
+        if (DiscoveryTable.Open(GameDirectory) is { } finds)
+            foreach (var row in finds.Discoveries)
+                if (row.HasPlace && row.Erase is { Length: DiscoveryTable.EraseWidth * DiscoveryTable.EraseWidth } erase)
+                    Lay(row.X1, row.Y1, erase, DiscoveryTable.EraseWidth, $"발견물 {row.Name}");
+    }
+
+    /// <summary>그 칸을 화면에 무엇으로 보일지 — 도시 숨김이면 도시·발견물 칸은 바탕 타일이다.</summary>
+    private ushort Shown(int x, int y) =>
+        _hideCities && _covered.TryGetValue(y * W + x, out var c) ? c.Under : Read(x, y);
+
+    /// <summary>바탕 그림을 통째로 다시 칠한다 — 도시 숨김을 켜고 끌 때.</summary>
+    private void Redraw()
+    {
+        if (_world == null || _bitmap == null) return;
+        var pixels = new int[W * H];
+        for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++)
+                pixels[y * W + x] = ColorOf(Shown(x, y));
+        _bitmap.WritePixels(new Int32Rect(0, 0, W, H), pixels, W * 4, 0);
+        ApplyZoom();
     }
 
     private void Save()
@@ -359,6 +415,7 @@ public class WorldEditContent : ContentControl
                 for (int x = c.X - r; x <= c.X + r; x++)
                 {
                     if (x < 0 || x >= W || y < 0 || y >= H) continue;
+                    if (_hideCities && _covered.ContainsKey(y * W + x)) { _blocked = true; continue; }   // 도시 그림 칸은 칠하지 않는다
                     Write(x, y, _paint, _stroke);
                 }
             int left = Math.Max(0, c.X - r), top = Math.Max(0, c.Y - r);
@@ -379,11 +436,16 @@ public class WorldEditContent : ContentControl
         if (log != null)
             log[at] = log.TryGetValue(at, out var was) ? (was.Old, value) : (old, value);
         System.Runtime.InteropServices.Marshal.WriteInt32(
-            _bitmap!.BackBuffer, y * _bitmap.BackBufferStride + x * 4, ColorOf(value));
+            _bitmap!.BackBuffer, y * _bitmap.BackBufferStride + x * 4, ColorOf(Shown(x, y)));
     }
+
+    /// <summary>이번 획에서 도시·발견물 칸을 건너뛰었는지 — 끝나면 한 번 알린다.</summary>
+    private bool _blocked;
 
     private void EndStroke()
     {
+        if (_blocked) _status.Text = "도시·발견물 칸은 칠하지 않습니다 — 「도시 숨김」을 끄면 원본 칸을 직접 고칠 수 있습니다";
+        _blocked = false;
         if (_stroke is { Count: > 0 })
         {
             _undo.Push(_stroke);
@@ -534,7 +596,7 @@ public class WorldEditContent : ContentControl
         for (int y = 0; y < H; y++)
             for (int x = 0; x < W; x++)
             {
-                ushort v = Read(x, y);
+                ushort v = Shown(x, y);   // 도시 숨김이면 도시·발견물 칸은 바탕 타일로 센다 — 그림 타일이 목록에서 빠진다
                 int tile = v & OceanTiles.TileMask;
                 if (!values.TryGetValue(tile, out var byValue)) values[tile] = byValue = [];
                 byValue[v] = byValue.GetValueOrDefault(v) + 1;
@@ -692,11 +754,13 @@ public class WorldEditContent : ContentControl
         if (_world == null || CellAt(e) is not { } c) return;
         ushort v = Read(c.X, c.Y);
         var (lat, lon) = WorldMapRenderer.PixelToLatLon(c.X + 0.5, c.Y + 0.5);
+        string owner = _covered.TryGetValue(c.Y * W + c.X, out var cov)
+            ? $"\n{cov.Owner} 칸" + (_hideCities ? $" (바탕 타일 {cov.Under} 로 보임 · 칠 안 됨)" : "") : "";
         _hover.Text = $"칸 ({c.X}, {c.Y})\n" +
                       $"{Math.Abs(lat):0.0}°{(lat >= 0 ? "N" : "S")} {Math.Abs(lon):0.0}°{(lon >= 0 ? "E" : "W")}\n" +
                       $"값 0x{v:X4} · 타일 {v & OceanTiles.TileMask}\n" +
                       ((v & 0x4000) != 0 ? "뭍" : "바다") +
-                      $" · 파일 0x{Offset(c.X, c.Y):X6}";
+                      $" · 파일 0x{Offset(c.X, c.Y):X6}" + owner;
         _hoverPreview.Source = TileImage(v & OceanTiles.TileMask);
     }
 
@@ -767,7 +831,7 @@ public class WorldEditContent : ContentControl
         for (int cy = 0; cy < rows; cy++)
             for (int cx = 0; cx < cols; cx++)
             {
-                int tile = Read(x0 + cx, y0 + cy) & OceanTiles.TileMask;
+                int tile = Shown(x0 + cx, y0 + cy) & OceanTiles.TileMask;
                 int src = tile * per;
                 for (int qy = 0; qy < z; qy++)
                 {

@@ -59,6 +59,12 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         Texture2D<float4> FolkTex  : register(t12);
         Texture2D<uint>   SeaDepth : register(t13);
         Texture2D<float4> CloudSoft: register(t14);
+        Texture2D<uint>   PalWater : register(t15);
+        Texture2D<uint>   TileKind : register(t16);
+        Texture2D<uint>   CityMap  : register(t17);
+        Texture2D<float4> CityTex  : register(t18);
+        Texture2D<float4> CityHi   : register(t19);
+        Texture2D<float4> SpriteHi : register(t20);
         SamplerState      Lin      : register(s0);
 
         cbuffer Frame : register(b0)
@@ -77,6 +83,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float4 Folk[16];
             float4 Route[32];
             float4 Sea;
+            float4 Extra;
         };
 
         struct VSOut { float4 pos : SV_Position; };
@@ -190,7 +197,15 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             int w = int(MapCells.x);
             q.x = int(uint(q.x + w) % uint(w));
             q.y = clamp(q.y, 0, int(MapCells.y) - 1);
-            return float(SeaDepth.Load(int3(q, 0)));
+            return float(SeaDepth.Load(int3(q, 0)) & 15u);
+        }
+
+        float RiverAt(int2 q)
+        {
+            int w = int(MapCells.x);
+            q.x = int(uint(q.x + w) % uint(w));
+            q.y = clamp(q.y, 0, int(MapCells.y) - 1);
+            return float(SeaDepth.Load(int3(q, 0)) >> 4);
         }
 
         float Hash(float2 p)
@@ -221,9 +236,116 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             return h;
         }
 
+        uint PalAt(int2 gi)
+        {
+            int w16 = int(MapCells.x) * 16;
+            gi.x = int(uint(gi.x + w16) % uint(w16));
+            gi.y = clamp(gi.y, 0, int(MapCells.y) * 16 - 1);
+            int2 c = gi / 16;
+            uint tile = CellMap.Load(int3(c, 0));
+            int2 org = int2(tile % 128u, tile / 128u);
+            return Atlas.Load(int3(org * 16 + (gi - c * 16), 0));
+        }
+
+        uint PixelArt(float2 cell, uint e)
+        {
+            float2 g  = cell * 16.0;
+            int2   gi = int2(floor(g));
+            float2 f  = g - floor(g);
+            uint B = PalAt(gi + int2(0, -1));
+            uint D = PalAt(gi + int2(-1, 0));
+            uint F = PalAt(gi + int2(1, 0));
+            uint H = PalAt(gi + int2(0, 1));
+            if (B == H || D == F) return e;
+            if (f.x + f.y < 0.5 && D == B) return D;
+            if ((1.0 - f.x) + f.y < 0.5 && B == F) return F;
+            if (f.x + (1.0 - f.y) < 0.5 && D == H) return D;
+            if ((1.0 - f.x) + (1.0 - f.y) < 0.5 && H == F) return F;
+            return e;
+        }
+
+        uint TexelPal(float2 g)
+        {
+            return PalAt(int2(floor(g)));
+        }
+
+        float WaterOf(uint pal)
+        {
+            return float(PalWater.Load(int3(int(pal), 0, 0)));
+        }
+
+        float4 BSpline(float t)
+        {
+            float t2 = t * t, t3 = t2 * t;
+            return float4((1.0 - t) * (1.0 - t) * (1.0 - t),
+                          3.0 * t3 - 6.0 * t2 + 4.0,
+                          -3.0 * t3 + 3.0 * t2 + 3.0 * t + 1.0,
+                          t3) / 6.0;
+        }
+
+        float3 HiResSeaCore(float3 col, float2 cell, uint pal)
+        {
+            float2 g = cell * 16.0 - 0.5;
+            float2 b = floor(g);
+            float2 f = g - b;
+
+            float4 wx = BSpline(f.x);
+            float4 wy = BSpline(f.y);
+            float m = 0.0;
+            float3 landSum = float3(0, 0, 0);
+            float landW = 0.0;
+            [unroll] for (int y = 0; y < 4; y++)
+            {
+                [unroll] for (int x = 0; x < 4; x++)
+                {
+                    uint p = TexelPal(b + float2(x - 1, y - 1));
+                    float w = wx[x] * wy[y];
+                    float wet = WaterOf(p);
+                    m += wet * w;
+                    if (x >= 1 && x <= 2 && y >= 1 && y <= 2 && wet < 0.5)
+                    {
+                        landSum += Palette.Load(int3(int(p), 0, 0)).rgb * w;
+                        landW += w;
+                    }
+                }
+            }
+            if (m <= 0.02) return col;
+
+            float edge = smoothstep(0.42, 0.58, m);
+
+            float3 land = col;
+            if (WaterOf(pal) > 0.5 && landW > 1e-4) land = landSum / landW;
+
+            float2 cb = cell - 0.5;
+            int2   cq = int2(floor(cb));
+            float2 ct = cb - floor(cb);
+            float d = lerp(lerp(DepthAt(cq), DepthAt(cq + int2(1, 0)), ct.x),
+                           lerp(DepthAt(cq + int2(0, 1)), DepthAt(cq + int2(1, 1)), ct.x), ct.y);
+            float3 tone = lerp(float3(0.31, 0.44, 0.52), float3(0.21, 0.34, 0.43), saturate((d - 1.0) / 5.0));
+
+            float t = Sea.x;
+            float grain = 0.55 * Noise(cell * 21.0 + float2(t * 0.35, t * 0.10))
+                        + 0.45 * Noise(cell * 8.5 - float2(t * 0.15, t * 0.22) + 7.0);
+            float3 sea = tone * (0.92 + 0.16 * grain);
+
+            return lerp(land, sea, edge);
+        }
+
+        float3 HiResSea(float3 col, float2 cell, uint pal)
+        {
+            float2 rb = cell - 0.5;
+            int2   rq = int2(floor(rb));
+            float2 rt = rb - floor(rb);
+            float river = lerp(lerp(RiverAt(rq), RiverAt(rq + int2(1, 0)), rt.x),
+                               lerp(RiverAt(rq + int2(0, 1)), RiverAt(rq + int2(1, 1)), rt.x), rt.y);
+            float keep = saturate((river - 0.5) / 3.0);
+            if (keep <= 0.0) return col;
+            return lerp(col, HiResSeaCore(col, cell, pal), keep);
+        }
+
         float3 SeaShade(float3 col, float2 cell)
         {
-            if (SeaDepth.Load(int3(int2(cell), 0)) == 0u) return col;
+            if ((SeaDepth.Load(int3(int2(cell), 0)) & 15u) == 0u) return col;
 
             float water = saturate((col.b - max(col.r, col.g) + 0.01) * 14.0);
             if (water <= 0.0) return col;
@@ -268,6 +390,40 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             return lerp(base, saturate(col), water);
         }
 
+        float3 LandDetail(float3 col, float2 cell, uint tile)
+        {
+            if (col.b - max(col.r, col.g) > 0.01) return col;
+            uint kind = TileKind.Load(int3(int2(tile % 128u, tile / 128u), 0));
+            if (kind <= 1u || kind == 7u) return col;
+
+            float px = 1.0 / max(CellPerPixel.x, 1e-4);
+            float amount = saturate((px - 4.0) / 12.0);
+            if (amount <= 0.0) return col;
+
+            float2 p = cell;
+            float m;
+            if (kind == 4u)
+            {
+                float dune = 0.5 + 0.5 * sin(dot(p, float2(0.8, 0.6)) * 14.0 + Noise(p * 3.0) * 6.0);
+                m = 0.96 + 0.05 * dune + 0.04 * (Noise(p * 90.0) - 0.5);
+            }
+            else if (kind == 3u)
+            {
+                float r = 1.0 - abs(Noise(p * 26.0) * 2.0 - 1.0);
+                m = 0.86 + 0.22 * r * r + 0.08 * (Noise(p * 95.0) - 0.5);
+            }
+            else if (kind == 6u)
+            {
+                float leaf = smoothstep(0.30, 0.80, Noise(p * 48.0));
+                m = 0.84 + 0.26 * leaf + 0.06 * (Noise(p * 120.0) - 0.5);
+            }
+            else
+            {
+                m = 0.96 + 0.06 * Noise(p * 14.0) + 0.04 * (Noise(p * 70.0) - 0.5);
+            }
+            return saturate(col * lerp(1.0, m, amount));
+        }
+
         float4 PS(VSOut i) : SV_Target
         {
             if (OverlayRect.z > 0)
@@ -298,28 +454,64 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             int2 c    = int2(cell);
             uint tile = CellMap.Load(int3(c, 0));
 
+            bool swapped = false;
             if (Ripple.z > 0)
             {
                 float p = (Ripple.x * float(c.x) + Ripple.y * float(c.y)
                            - Ripple.z * Ripple.w * 16.0) / 64.0;
                 if ((int(floor(p)) & 15) < 8)
-                    tile = NextTile.Load(int3(int2(tile % 128u, tile / 128u), 0));
+                {
+                    uint next = NextTile.Load(int3(int2(tile % 128u, tile / 128u), 0));
+                    swapped = next != tile;
+                    tile = next;
+                }
             }
 
             int2 org  = int2(tile % 128u, tile / 128u);
             float2 f  = frac(cell);
 
             float4 col;
+            uint pal = 0u;
             if (Detail < 0.5)      col = Avg1.Load(int3(org, 0));
             else if (Detail < 1.5) col = Avg2.Load(int3(org * 2 + int2(f * 2.0), 0));
             else if (Detail < 2.5) col = Avg4.Load(int3(org * 4 + int2(f * 4.0), 0));
             else
             {
-                uint pal = Atlas.Load(int3(org * 16 + int2(f * 16.0), 0));
+                pal = Atlas.Load(int3(org * 16 + int2(f * 16.0), 0));
+                if (Extra.x > 0.5 && !swapped) pal = PixelArt(cell, pal);
                 col = Palette.Load(int3(int(pal), 0, 0));
             }
 
+            if (Extra.y > 0.5 && Detail > 2.5) col.rgb = LandDetail(col.rgb, cell, tile);
+            if (Sea.w > 0.5 && Detail > 2.5) col.rgb = HiResSea(col.rgb, cell, pal);
             if (SeaOn > 0.5) col.rgb = SeaShade(col.rgb, cell);
+
+            if (Extra.z > 0.5)
+            {
+                uint v = CityMap.Load(int3(c, 0));
+                if (v != 0u)
+                {
+                    uint id = (v & 511u) - 1u;
+                    float2 tf = float2(float((v >> 9) & 3u) * 16.0 + f.x * 16.0,
+                                       float((v >> 11) & 3u) * 16.0 + f.y * 16.0);
+                    float4 h0 = SpriteHi.Load(int3(int(id), 0, 0));
+                    if (h0.w > 0.5)
+                    {
+                        float4 h1 = SpriteHi.Load(int3(int(id), 1, 0));
+                        float2 local = tf - h1.xy;
+                        if (all(local >= 0.0) && all(local < h1.zw))
+                        {
+                            float4 s = CityHi.Load(int3(int2(h0.xy + local * h0.z), 0));
+                            if (s.a > 0.5) col.rgb = s.rgb;
+                        }
+                    }
+                    else
+                    {
+                        float4 s = CityTex.Load(int3(int2(int(id % 16u) * 48, int(id / 16u) * 48) + int2(tf), 0));
+                        if (s.a > 0.0) col.rgb = s.rgb;
+                    }
+                }
+            }
 
             if (Arrows.x > 0.5)
             {
@@ -347,7 +539,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public fixed float Clouds[MaxClouds * 4];   // x, y, 그림번호, 보일지
         public fixed float Folk[MaxFolk * 4];       // x, y, 뱃머리(0~3), 배수
         public fixed float Route[MaxRoutePoints * 4]; // x, y, (안 씀), 켜졌는지
-        public float SeaTime, CloudSmooth, SeaBright, SeaPad3;
+        public float SeaTime, CloudSmooth, SeaBright, HiSea;
+        public float PixelOn, LandOn, CityOn, ExtraPad3;
     }
 
     /// <summary>
@@ -503,6 +696,148 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     public bool SmoothClouds { get; set; } = true;
 
     private ID3D11ShaderResourceView _cloudSoftSrv = null!;
+
+    /// <summary>
+    /// 고해상도 바다 — 물 점(파랑이 빨강·초록보다 큰 점)을 원본 16x16 타일 대신 화면 해상도로 새로 그린다.
+    /// 바탕색은 해안 거리로 정하는 부드러운 물빛(얕으면 밝고 멀면 짙다)이고 그 위에 잔물결 무늬를 얹는다.
+    /// 해안선은 타일 점 넷의 물·뭍을 보간해 문턱을 매끈하게 넘겨 계단 대신 곡선이 된다. 뭍 점은 원본 그대로다.
+    /// 칸이 화면 네 점보다 클 때(세부 3)만 든다.
+    /// </summary>
+    public bool HiResSea { get; set; }
+
+    /// <summary>
+    /// 도트 확대 필터 — 키운 원본 도트의 대각선 계단을 사선으로 깎는다. Scale2x 의 규칙(위·왼쪽이 같고 오른쪽·아래와
+    /// 다르면 그 모서리를 이웃 색으로)을 연속 배율로 옮겨, 한 점 안에서 모서리 삼각형만 이웃 색으로 채운다.
+    /// 색 번호가 같은지로만 보므로 바둑판 잔무늬(디더)는 그대로 남는다. 칸이 화면 네 점보다 클 때만 든다.
+    /// </summary>
+    public bool PixelFilter { get; set; }
+
+    /// <summary>
+    /// 뭍 세부 질감 — 키웠을 때 원본 도트는 그대로 두고 지형마다 화면 해상도의 잔무늬를 얇게 얹는다
+    /// (사막 모래 결 · 산 바위 결 · 숲 잎 덩이 · 평지 풀 결). 지형은 타일 부류 표(<see cref="SetTileKinds"/>)로 가르고,
+    /// 도시·발견물 그림 타일과 물 점은 건드리지 않는다. 칸이 화면 네 점보다 클 때부터 배율에 따라 짙어진다.
+    /// </summary>
+    public bool LandDetail { get; set; }
+
+    private ID3D11ShaderResourceView _tileKindSrv = null!;
+    private bool _tileKindsReady;
+
+    /// <summary>
+    /// 도시 분리 — 도시 칸을 모두 <b>바탕 타일</b>(도시 표 <c>+0x74</c>)로 깔고, 선 도시만 그 위에 뽑아 둔 도시 그림을 얹는다.
+    /// 도시 그림은 고해상도 바다·세부 질감·도트 필터를 다 거친 뒤에 얹으므로 그 효과들이 도시를 건드리지 않는다.
+    /// 게임 규칙(뭍·물 판정)은 지도 원본을 그대로 보므로 바뀌지 않는다.
+    /// </summary>
+    public bool CitySprites { get; private set; }
+
+    /// <summary>
+    /// 그림 블록마다의 칸 자리 · 바탕 블록 · 블록 한 변 — 앞 226 이 도시(3x3), 그 뒤가 발견물(2x2)이고 번호가 곧 판 자리다.
+    /// 그림을 안 걸었으면 빈 배열.
+    /// </summary>
+    private (int X, int Y, ushort[] Block, int Width)[] _cityBlocks = [];
+    private readonly HashSet<int> _hiddenCities = [];
+    private ID3D11ShaderResourceView _cityMapSrv = null!;
+    private ID3D11ShaderResourceView _cityTexSrv = null!;
+
+    /// <summary>도시 그림 판(48x48 x 226장, 16장씩 줄)과 도시 블록을 이미 걸었는지.</summary>
+    public bool CityArtReady { get; private set; }
+
+    /// <summary>도시 그림 한 장의 변(3칸 x 16점)과 판 한 줄에 놓는 장 수.</summary>
+    public const int CitySpriteSide = 48, CitySpritesPerRow = 16;
+
+    /// <summary>그림 판과 그림 블록(도시 · 발견물)을 건다. 블록 번호가 판 자리(16장씩 줄)다.</summary>
+    public void SetCityArt(uint[] atlas, int atlasW, int atlasH, (int X, int Y, ushort[] Block, int Width)[] blocks)
+    {
+        var old = _cityTexSrv;
+        _cityTexSrv = CreateImmutable(atlas, atlasW, atlasH, Format.B8G8R8A8_UNorm, sizeof(uint));
+        old?.Dispose();
+        _cityBlocks = blocks;
+        CityArtReady = true;
+        if (CitySprites) RebuildCells();
+    }
+
+    private ID3D11ShaderResourceView _cityHiSrv = null!;
+    private ID3D11ShaderResourceView _spriteHiSrv = null!;
+
+    /// <summary>
+    /// 고해상도 도시 그림을 건다 — <paramref name="atlas"/> 는 디자인 그림들을 늘어놓은 판, <paramref name="info"/> 는 그림 블록마다
+    /// 여덟 값(판 x · 판 y · 배율 · 쓸지 / 블록 안 x · y · 디자인 폭 · 높이)이다. 쓸지가 0 인 블록은 원본 그림을 쓴다.
+    /// </summary>
+    public void SetCityHiRes(uint[] atlas, int atlasW, int atlasH, float[] info, int count)
+    {
+        var oldA = _cityHiSrv;
+        _cityHiSrv = CreateImmutable(atlas, Math.Max(1, atlasW), Math.Max(1, atlasH), Format.B8G8R8A8_UNorm, sizeof(uint));
+        oldA?.Dispose();
+        // 두 줄짜리 float4 표 — 0 줄이 판 자리·배율·쓸지, 1 줄이 블록 안 자리·디자인 크기.
+        var table = new float[Math.Max(1, count) * 2 * 4];
+        for (int i = 0; i < count; i++)
+        {
+            Array.Copy(info, i * 8, table, i * 4, 4);
+            Array.Copy(info, i * 8 + 4, table, (count + i) * 4, 4);
+        }
+        var oldI = _spriteHiSrv;
+        _spriteHiSrv = CreateImmutable(table, Math.Max(1, count), 2, Format.R32G32B32A32_Float, sizeof(float) * 4);
+        oldI?.Dispose();
+    }
+
+    /// <summary>도시 분리를 켜고 끈다 — 칸 지도를 다시 짓는다.</summary>
+    public void SetCitySprites(bool on)
+    {
+        if (CitySprites == on) return;
+        CitySprites = on;
+        RebuildCells();
+    }
+
+    /// <summary>그림을 얹지 않을 블록들 — 아직 안 선 도시, 아직 못 찾은 발견물. 도시 분리를 켰을 때만 칸 지도를 다시 짓는다.</summary>
+    public void SetHiddenCities(IEnumerable<int> hidden)
+    {
+        var next = new HashSet<int>(hidden);
+        if (next.SetEquals(_hiddenCities)) return;
+        _hiddenCities.Clear();
+        _hiddenCities.UnionWith(next);
+        if (CitySprites) RebuildCells();
+    }
+
+    private void RebuildCells()
+    {
+        if (_world is not { } world) return;
+        var old = _cellSrv;
+        CreateCellMap(world);
+        old?.Dispose();
+    }
+
+    /// <summary>타일 부류 표를 이미 올렸는지.</summary>
+    public bool TileKindsReady => _tileKindsReady;
+
+    /// <summary>
+    /// 타일마다의 지형 부류(16,384바이트, 지형표 값 · 그림 타일은 7)를 아틀라스와 같은 128x128 격자로 올린다.
+    /// </summary>
+    public void SetTileKinds(byte[] kinds)
+    {
+        if (kinds.Length != OceanTiles.TileCount) return;
+        var old = _tileKindSrv;
+        _tileKindSrv = CreateImmutable(kinds, AtlasTiles, AtlasTiles, Format.R8_UInt, sizeof(byte));
+        old?.Dispose();
+        _tileKindsReady = true;
+    }
+
+    /// <summary>팔레트 색마다 물인지(1)·아닌지(0) — 256x1. <see cref="SetWaterPalette"/> 로 건다.</summary>
+    private ID3D11ShaderResourceView _palWaterSrv = null!;
+
+    /// <summary>
+    /// 팔레트 색마다 물 색인지를 건다(256바이트, 1 이 물). 물 칸 타일에 주로 쓰이고 흙빛이 아닌 색이 물이다 —
+    /// 강·해안·물결 점이 다 같은 물로 다시 그려진다.
+    /// </summary>
+    public void SetWaterPalette(byte[] water)
+    {
+        if (water.Length != 256) return;
+        var old = _palWaterSrv;
+        _palWaterSrv = CreateImmutable(water, 256, 1, Format.R8_UInt, sizeof(byte));
+        old?.Dispose();
+        WaterPaletteReady = true;
+    }
+
+    /// <summary>물 색 표를 이미 걸었는지.</summary>
+    public bool WaterPaletteReady { get; private set; }
     private ID3D11SamplerState _linear = null!;
 
     private ID3D11ShaderResourceView _seaSrv = null!;
@@ -599,6 +934,11 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         CreateFlowTextures();
         // 깊이 표는 켤 때 짓는다 — 그때까지는 모두 뭍(0)인 한 칸짜리를 걸어 둔다.
         _seaSrv = CreateImmutable(new byte[] { 0 }, 1, 1, Format.R8_UInt, sizeof(byte));
+        _tileKindSrv = CreateImmutable(new byte[] { 0 }, 1, 1, Format.R8_UInt, sizeof(byte));
+        _palWaterSrv = CreateImmutable(new byte[256], 256, 1, Format.R8_UInt, sizeof(byte));
+        _cityTexSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
+        _cityHiSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
+        _spriteHiSrv = CreateImmutable(new float[4], 1, 1, Format.R32G32B32A32_Float, sizeof(float) * 4);
     }
 
     /// <summary>
@@ -788,6 +1128,28 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                     (ushort)((world[odd + cx * 2] | (world[odd + cx * 2 + 1] << 8)) & OceanTiles.TileMask);
             }
         }
+        // 도시 분리면 모든 도시 칸을 바탕으로 깔고, 선 도시 칸에는 「몇 번 도시의 어느 칸」을 적는다.
+        var cityCells = new ushort[w * h];
+        if (CitySprites && CityArtReady)
+            for (int id = 0; id < _cityBlocks.Length; id++)
+            {
+                var (x0, y0, block, side) = _cityBlocks[id];
+                if (side <= 0 || block.Length != side * side) continue;
+                bool shown = !_hiddenCities.Contains(id);
+                for (int k = 0; k < block.Length; k++)
+                {
+                    if (block[k] == CityExeTable.Keep) continue;
+                    int dx = k % side, dy = k / side;
+                    int cx = ((x0 + dx) % w + w) % w, cy = y0 + dy;
+                    if (cy < 0 || cy >= h) continue;
+                    cells[cy * w + cx] = (ushort)(block[k] & OceanTiles.TileMask);
+                    if (shown) cityCells[cy * w + cx] = (ushort)((id + 1) | (dx << 9) | (dy << 11));
+                }
+            }
+        var oldCityMap = _cityMapSrv;
+        _cityMapSrv = CreateImmutable(cityCells, w, h, Format.R16_UInt, sizeof(ushort));
+        oldCityMap?.Dispose();
+
         // 아직 안 선 도시를 지운다 — 도시 표 +0x74 의 바탕 타일로 덮는다.
         if (_erase is { } erase)
             foreach (var spot in erase)
@@ -814,6 +1176,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                            atlas, (ay + y) * AtlasSize + ax, OceanTiles.TileW);
         }
         _atlasSrv = CreateImmutable(atlas, AtlasSize, AtlasSize, Format.R8_UInt, 1);
+
     }
 
     private void CreatePalette(OceanTiles ocean)
@@ -989,6 +1352,10 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             SeaOn = SeaEffect && _seaReady ? 1 : 0,
             SeaTime = SeaTime,
             CloudSmooth = SmoothClouds ? 1 : 0,
+            HiSea = HiResSea && WaterPaletteReady ? 1 : 0,
+            PixelOn = PixelFilter ? 1 : 0,
+            LandOn = LandDetail && _tileKindsReady ? 1 : 0,
+            CityOn = CitySprites && CityArtReady ? 1 : 0,
             SeaBright = SeaBrightness,
             OverlayX = overlayRect.X,
             OverlayY = overlayRect.Y,
@@ -1024,7 +1391,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _ctx.PSSetConstantBuffer(0, _cb);
         _ctx.PSSetShaderResources(0, [_cellSrv, _atlasSrv, _paletteSrv, _spriteSrv,
                                       _avgSrv[0], _avgSrv[1], _avgSrv[2], _overlaySrv,
-                                      _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv, _cloudSoftSrv]);
+                                      _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv, _cloudSoftSrv, _palWaterSrv, _tileKindSrv,
+                                      _cityMapSrv, _cityTexSrv, _cityHiSrv, _spriteHiSrv]);
         _ctx.PSSetSampler(0, _linear);
         _ctx.Draw(3, 0);
     }
@@ -1065,6 +1433,12 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _target?.Dispose();
         _seaSrv?.Dispose();
         _cloudSoftSrv?.Dispose();
+        _palWaterSrv?.Dispose();
+        _cityMapSrv?.Dispose();
+        _cityTexSrv?.Dispose();
+        _cityHiSrv?.Dispose();
+        _spriteHiSrv?.Dispose();
+        _tileKindSrv?.Dispose();
         _linear?.Dispose();
         _folkSrv?.Dispose();
         _cloudSrv?.Dispose();

@@ -201,6 +201,7 @@ public sealed class BuildingListDialog : Window
         // 오른쪽: 표 쪽과 JSON 쪽.
         _tabs.Items.Add(new TabItem { Header = "표", Content = _grid });
         _tabs.Items.Add(new TabItem { Header = "JSON", Content = JsonPage() });
+        _tabs.Items.Add(new TabItem { Header = "건물 그림", Content = SpritePage() });
         _tabs.SelectionChanged += (_, e) =>
         {
             if (e.OriginalSource == _tabs && _tabs.SelectedIndex == 1) ShowJson();
@@ -271,6 +272,99 @@ public sealed class BuildingListDialog : Window
             Width = new DataGridLength(width),
             SortMemberPath = path,
         });
+
+    // ── 건물 그림 ─────────────────────────────────────────────────────────
+
+    private readonly ListBox _spriteList = new() { Width = 300 };
+    private readonly Image _spriteImage = new() { Width = BuildingSprites.BoxW * 3, Height = BuildingSprites.BoxH * 3 };
+    private readonly TextBlock _spriteNote = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(8, 6, 0, 0) };
+    private readonly TextBlock _spriteStatus = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) };
+    private List<BuildingSprites.Sprite> _sprites = [];
+
+    /// <summary>
+    /// 건물 그림 쪽 — 도시 그림에 박힌 건물을 문화권·갈래·변형마다 뽑아 보여 주고 PNG 로 적는다(<see cref="BuildingSprites"/>).
+    /// 뽑는 데 몇 초 걸려 「뽑기」를 눌러야 시작한다.
+    /// </summary>
+    private UIElement SpritePage()
+    {
+        var run = new Button { Content = "뽑기", Padding = new Thickness(10, 3, 10, 3) };
+        var save = new Button { Content = "PNG 로 모두 저장", Padding = new Thickness(10, 3, 10, 3), Margin = new Thickness(6, 0, 0, 0), IsEnabled = false };
+        run.Click += async (_, _) =>
+        {
+            if (_pictures == null || _table == null) { _spriteStatus.Text = "게임 폴더의 도시 그림을 못 읽었습니다"; return; }
+            run.IsEnabled = false;
+            _spriteStatus.Text = "도시 그림 226장을 견주는 중…";
+            // 그림 읽개는 마지막 한 장을 들고 있어 화면 쪽과 같이 쓰면 부딪친다 — 뽑기용으로 따로 연다.
+            var pictures = CityPictures.Open(Path.GetDirectoryName(AppSettings.LastSaveFilePath) ?? "") ?? _pictures;
+            var table = _table; var cities = _cities;
+            string Culture(int id) => cities?.CultureOf(id) is { Length: > 0 } c ? c : "기타";
+            _sprites = await Task.Run(() => BuildingSprites.Extract(pictures, table, Culture));
+            _spriteList.ItemsSource = _sprites;
+            _spriteList.SelectedIndex = 0;
+            _spriteStatus.Text = $"건물 그림 {_sprites.Count}가지 — 문화권·갈래마다 모양이 다른 것은 변형 번호로 갈랐습니다";
+            run.IsEnabled = true;
+            save.IsEnabled = _sprites.Count > 0;
+        };
+        save.Click += (_, _) =>
+        {
+            try
+            {
+                string folder = BuildingSprites.SaveDirectory();
+                BuildingSprites.Export(folder, _sprites, NameOf);
+                _spriteStatus.Text = $"{_sprites.Count}장을 적었습니다: {folder}";
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                MessageBox.Show(this, $"저장하지 못했습니다:\n{ex.Message}", "건물 그림");
+            }
+        };
+        _spriteList.SelectionChanged += (_, _) => ShowSprite();
+        RenderOptions.SetBitmapScalingMode(_spriteImage, BitmapScalingMode.NearestNeighbor);
+
+        var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+        bar.Children.Add(run);
+        bar.Children.Add(save);
+        bar.Children.Add(_spriteStatus);
+
+        // 뽑은 그림은 비침이 보이게 바둑판 위에 얹는다.
+        var frame = new Grid
+        {
+            Background = new DrawingBrush
+            {
+                TileMode = TileMode.Tile, Viewport = new Rect(0, 0, 16, 16), ViewportUnits = BrushMappingMode.Absolute,
+                Drawing = new GeometryDrawing(Brushes.LightGray, null, Geometry.Parse("M0,0 H8 V8 H0Z M8,8 H16 V16 H8Z")),
+            },
+            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top,
+        };
+        frame.Children.Add(_spriteImage);
+        var right = new StackPanel { Margin = new Thickness(10, 0, 0, 0) };
+        right.Children.Add(new Border { BorderBrush = Brushes.Gray, BorderThickness = new Thickness(1), Child = frame,
+                                        HorizontalAlignment = HorizontalAlignment.Left });
+        right.Children.Add(_spriteNote);
+
+        var body = new DockPanel();
+        DockPanel.SetDock(_spriteList, Dock.Left);
+        body.Children.Add(_spriteList);
+        body.Children.Add(new ScrollViewer { Content = right, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+
+        var page = new DockPanel { Margin = new Thickness(6) };
+        DockPanel.SetDock(bar, Dock.Top);
+        page.Children.Add(bar);
+        page.Children.Add(body);
+        return page;
+    }
+
+    private void ShowSprite()
+    {
+        if (_spriteList.SelectedItem is not BuildingSprites.Sprite s) { _spriteImage.Source = null; _spriteNote.Text = ""; return; }
+        var bmp = BitmapSource.Create(BuildingSprites.BoxW, BuildingSprites.BoxH, 96, 96, PixelFormats.Bgra32, null,
+                                      s.Bgra, BuildingSprites.BoxW * 4);
+        bmp.Freeze();
+        _spriteImage.Source = bmp;
+        _spriteNote.Text = $"{s.Culture} · {s.Kind} 변형 {s.Variant + 1} — 건물 점 {s.Points}개\n"
+                         + $"쓰는 도시 {s.Members.Count}곳: " + string.Join(", ", s.Members.Select(m => $"{NameOf(m.City)}({m.X},{m.Y})"))
+                         + "\n색은 기준 도시(첫 도시)의 것입니다. 도시가 두세 곳뿐인 변형은 바탕 땅이 비슷해 땅 무늬가 섞여 남을 수 있습니다.";
+    }
 
     /// <summary>JSON 쪽 — 위에 단추 줄, 아래에 날 값.</summary>
     private UIElement JsonPage()
