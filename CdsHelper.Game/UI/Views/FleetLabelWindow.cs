@@ -99,12 +99,16 @@ public sealed class FleetLabelWindow : Window
         anchor.SizeChanged += OnAnchorMoved;
         Closed += (_, _) =>
         {
+            IsClosed = true;
             anchor.LocationChanged -= OnAnchorMoved;
             anchor.SizeChanged -= OnAnchorMoved;
         };
 
         SizeChanged += (_, _) => Place();
     }
+
+    /// <summary>창이 닫혔는지 — 닫힌 창에 글을 갈거나 보이게 하면 WPF 가 오류를 낸다.</summary>
+    public bool IsClosed { get; private set; }
 
     private void OnAnchorMoved(object? sender, EventArgs e) => Place();
 
@@ -124,6 +128,8 @@ public sealed class FleetLabelWindow : Window
     /// <summary>적을 글을 갈아 준다. 빈 글이면 쪽지를 감춘다.</summary>
     public void Set(string text)
     {
+        // 주인 창을 닫으며 딸린 창을 먼저 닫은 뒤에도 주인이 활성화되며 이리로 올 수 있다 — 닫힌 창은 못 띄운다.
+        if (IsClosed) return;
         _text.Text = text;
         Visibility = text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -133,7 +139,7 @@ public sealed class FleetLabelWindow : Window
     /// </summary>
     public void Shade(bool on)
     {
-        if (_text.Text.Length == 0) return;
+        if (IsClosed || _text.Text.Length == 0) return;
         Visibility = on ? Visibility.Collapsed : Visibility.Visible;
     }
 

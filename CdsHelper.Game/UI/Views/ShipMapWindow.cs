@@ -1228,6 +1228,8 @@ public sealed class ShipMapWindow : Window
         bool show = GameSettings.ShowShipSpeed && _started && WindowState != WindowState.Minimized
                     && ReferenceEquals(_screen.Content, _mapRoot) && !_host.IsOnLand && !_host.InCity;
         if (!show) { _speedNote?.Set(""); return; }
+        if (ShuttingDown) return;
+        if (_speedNote is { IsClosed: true }) _speedNote = null;
         _speedNote ??= FleetLabelWindow.Attach(this, SpeedFontSize, FleetLabelWindow.Slot.Speed);
         _speedNote.Set($"{KnotsOf(_host.LastSpeed):0.00} kn");
     }

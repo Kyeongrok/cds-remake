@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Engine.Land;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -82,11 +83,22 @@ internal sealed class LandDeployDialog : GameWindow
     /// 지난번 배치 — 게임의 <c>0x0056EAB8</c> 여섯 칸이다.
     /// </summary>
     /// <remarks>
-    /// 게임도 정적 자리에 들고 있어 한 판 안에서만 살아 있다. 병종 번호가 아니라
+    /// 게임은 정적 자리에 들고 있어 한 판 안에서만 살아 있지만, 여기서는 설정 파일
+    /// (<see cref="GameSettings.LandDeployLast"/>)에도 적어 <b>껐다 켜도</b> 남긴다. 병종 번호가 아니라
     /// <b>고르는 넉 칸의 번호</b>로 적어 둔다 — 기능이 오르면 같은 자리라도 병종이
     /// 달라지는데, 게임의 <c>0x0049F370</c> 이 되놓을 때 바로 그 옮김을 한다.
     /// </remarks>
-    private static readonly int[] LastPicked = [-1, -1, -1, -1, -1, -1];
+    private static readonly int[] LastPicked = LoadLast();
+
+    /// <summary>설정 파일에 적어 둔 지난번 배치를 읽는다 — 칸 수나 번호가 어긋나면 빈 것으로 본다.</summary>
+    private static int[] LoadLast()
+    {
+        var last = new[] { -1, -1, -1, -1, -1, -1 };
+        if (GameSettings.LandDeployLast is { Length: LandRoster.SlotCount } saved)
+            for (int i = 0; i < saved.Length; i++)
+                last[i] = saved[i] >= 0 && saved[i] < LandRoster.ChoiceCount ? saved[i] : -1;
+        return last;
+    }
 
     private readonly LandArt? _art;
     private readonly LandRoster _roster;
@@ -594,6 +606,7 @@ internal sealed class LandDeployDialog : GameWindow
         }
 
         Array.Copy(_picked, LastPicked, LandRoster.SlotCount);
+        GameSettings.LandDeployLast = LastPicked;
         DialogResult = true;
         Close();
     }

@@ -183,6 +183,9 @@ public sealed class GameSettingsData
     /// <summary>육상전 모의전 창이 지난번에 차렸던 짜임. 한 번도 안 차렸으면 null.</summary>
     public LandSparData? LandSpar { get; set; }
 
+    /// <summary>부대배치 「전회」 — 지난번 여섯 칸의 고른 번호. 한 번도 안 정했으면 null.</summary>
+    public int[]? LandDeployLast { get; set; }
+
     /// <summary>
     /// 곡 번호별로 갈아 끼운 파일(전체 경로). 비어 있으면 아무것도 안 바꾼 것이다.
     /// 원본에 없는 것이라 <see cref="CustomBgmEnabled"/> 가 꺼져 있으면 등록해 두어도 안 쓴다.
@@ -920,5 +923,18 @@ public static class GameSettings
     {
         get => Get(d => d.LandSpar);
         set => Set(d => d.LandSpar = value);
+    }
+
+    /// <summary>
+    /// 부대배치 「전회」가 되펼 지난번 배치 — 여섯 칸, 고르는 넉 칸의 번호(−1 빈 자리).
+    /// </summary>
+    /// <remarks>
+    /// 게임은 정적 자리(<c>0x0056EAB8</c>)에만 들고 있어 끄면 사라지는데, 다시 켤 때마다 새로
+    /// 놓기가 번거로워 여기 적어 둔다.
+    /// </remarks>
+    public static int[]? LandDeployLast
+    {
+        get => Get(d => d.LandDeployLast is { } last ? (int[])last.Clone() : null);
+        set => Set(d => d.LandDeployLast = value is null ? null : (int[])value.Clone());
     }
 }
