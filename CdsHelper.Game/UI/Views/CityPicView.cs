@@ -1140,7 +1140,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         var (body, might, sword, luck) = Standoff.SoldierOf(dice);
         var foe = new Engine.Town.Duel.Fighter(Standoff.SoldierName(harbor), body, might, sword, luck, 0, 0);
-        var mine = new Engine.Town.Duel.Fighter(_player.Name.Length > 0 ? _player.Name : "제독",
+        var mine = new Engine.Town.Duel.Fighter(_player.CallName.Length > 0 ? _player.CallName : "제독",
             _player.AbilityOf(Ability.Body), _player.AbilityOf(Ability.Might),
             _player.LevelOf(Skill.Names[Skill.Sword]), _player.AbilityOf(Ability.Luck), 0, 0);
 
@@ -1186,7 +1186,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         int sword = row.Skills.Length > Skill.Sword ? row.Skills[Skill.Sword] : 0;
         var foe = new Engine.Town.Duel.Fighter(row.Name, row.Stats[0], row.Stats[2], sword, row.Stats[4], 0, 0);
-        var mine = new Engine.Town.Duel.Fighter(_player.Name.Length > 0 ? _player.Name : "제독",
+        var mine = new Engine.Town.Duel.Fighter(_player.CallName.Length > 0 ? _player.CallName : "제독",
             _player.AbilityOf(Ability.Body), _player.AbilityOf(Ability.Might),
             _player.LevelOf(Skill.Names[Skill.Sword]), _player.AbilityOf(Ability.Luck), 0, 0);
 

@@ -584,7 +584,7 @@ internal sealed class LandBattleScene : GameWindow
         if (_game is not { } game) return DuelEnd.Lost;
 
         var me = game.Player;
-        var mine = new Duel.Fighter(me.Name.Length > 0 ? me.Name : "제독",
+        var mine = new Duel.Fighter(me.CallName.Length > 0 ? me.CallName : "제독",
                                     me.AbilityOf(Ability.Body), me.AbilityOf(Ability.Might),
                                     me.LevelOf(Skill.Names[Skill.Sword]),
                                     me.AbilityOf(Ability.Luck), 0, 0);
@@ -1353,10 +1353,10 @@ internal sealed class LandBattleScene : GameWindow
                 int mateUp = Math.Min(Ability.Max - 1, mate.Might + spoils.Might) - mate.Might;
                 player.RememberMate(mate with { Might = mate.Might + mateUp });
                 NoticeDialog.Show(this, up > 0
-                    ? mateUp > 0 ? $"{player.Name}, 부관의 무력이 {up} 올라갔다!" : $"{player.Name}의 무력이 {up} 올라갔다!"
+                    ? mateUp > 0 ? $"{player.CallName}, 부관의 무력이 {up} 올라갔다!" : $"{player.CallName}의 무력이 {up} 올라갔다!"
                     : $"부관의 무력이 {mateUp} 올라갔다!", "");
             }
-            else if (up > 0) NoticeDialog.Show(this, $"{player.Name}의 무력이 {up} 올라갔다!", "");
+            else if (up > 0) NoticeDialog.Show(this, $"{player.CallName}의 무력이 {up} 올라갔다!", "");
         }
     }
 

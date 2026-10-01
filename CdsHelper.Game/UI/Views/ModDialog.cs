@@ -73,7 +73,9 @@ public sealed class ModDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
+        // 줄이 길어 두 탭으로 가른다 — 「편의성」은 보기를 거들고 손을 덜어 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것.
         var rows = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
 
 
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
@@ -112,13 +114,6 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.PlaceShipByCtrlClick = on,
             "Ctrl 을 짚고 지도를 찍으면 배를 그 자리에 놓습니다. 끄면 여느 클릭처럼 닻만 오르내립니다."));
 
-        // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 등록은 햄버거의 「BGM」 창에서 하는데,
-        // 그 줄도 이 스위치를 켜야 뜬다(다른 원본에 없는 줄과 같은 규칙).
-        rows.Children.Add(Toggle("커스텀 BGM", GameSettings.CustomBgmEnabled,
-            on => GameSettings.CustomBgmEnabled = on,
-            "원본에 없는 기능입니다 — 햄버거에 「BGM」 줄을 내고, 거기서 곡 번호마다 등록해 둔 파일이 있으면"
-            + " 그걸로 갈아 낍니다. 꺼도 등록은 그대로 남고, 다시 켜면 그대로 씁니다."));
-
         // 계약 힌트 — 기능·언어 쪽지 위에 현재 계약의 힌트 이름을 띄운다.
         rows.Children.Add(Toggle("현재 계약 힌트", GameSettings.ShowContractHintOverlay,
             on => GameSettings.ShowContractHintOverlay = on,
@@ -155,17 +150,6 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 스핑크스 퀴즈에서 고르는 창의 정답 줄에 「← 답」을 붙입니다."
             + " 셈 문제의 답은 늘 다리 넷 달린 괴물의 수입니다."));
 
-        // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
-        rows.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
-            on => GameSettings.PlayOpeningMovie = on,
-            "켤 때 로고(LOGO.AVI)와 오프닝(OPEN.AVI) 동영상을 틉니다(원본 그대로). 끄면 둘 다 건너뛰고 곧장 메인메뉴로 갑니다."));
-
-        // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
-        rows.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
-            on => GameSettings.RerollOnJob = on,
-            "원본에 없는 것입니다 — 새 주인공(NORMAL) 능력치 창에서 직업 단추를 누를 때마다 능력치와 보너스를 새로 굴립니다."
-            + " 넣어 둔 보너스는 도로 걷힙니다. 끄면 원본처럼 직업은 기본 기술만 정합니다."));
-
         // 자동저장 — 원본에 없다. 손으로 적는 자리(SAVEDATA.CDS)는 안 건드리고 따로 적는다.
         rows.Children.Add(Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
             on => GameSettings.AutoSaveOnPort = on,
@@ -174,8 +158,22 @@ public sealed class ModDialog : GameWindow
             + " 손으로 적어 둔 세이브(SAVEDATA.CDS)는 건드리지 않습니다."
             + " 첫 화면의 「CONTINUE」가 이 파일을 엽니다."));
 
+        // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 곡 등록 창은 햄버거에 있던 것을 이 줄 밑 단추로 옮겼다.
+        general.Children.Add(CustomBgmControls());
+
+        // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
+        general.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
+            on => GameSettings.PlayOpeningMovie = on,
+            "켤 때 로고(LOGO.AVI)와 오프닝(OPEN.AVI) 동영상을 틉니다(원본 그대로). 끄면 둘 다 건너뛰고 곧장 메인메뉴로 갑니다."));
+
+        // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
+        general.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
+            on => GameSettings.RerollOnJob = on,
+            "원본에 없는 것입니다 — 새 주인공(NORMAL) 능력치 창에서 직업 단추를 누를 때마다 능력치와 보너스를 새로 굴립니다."
+            + " 넣어 둔 보너스는 도로 걷힙니다. 끄면 원본처럼 직업은 기본 기술만 정합니다."));
+
         // 해적 조우 확률 — 바다 주사위 폭(유럽 700 · 동쪽 400)을 배수로 나눈다(0x0048CABA).
-        rows.Children.Add(Select("해적 조우 확률",
+        general.Children.Add(Select("해적 조우 확률",
             [.. GameSettings.SeaRaidScales.Select((s, i) =>
                 s == 0 ? "안 만남" : i == GameSettings.DefaultSeaRaidScale ? $"x{s} (원본)" : $"x{s}")],
             GameSettings.SeaRaidScale,
@@ -185,7 +183,7 @@ public sealed class ModDialog : GameWindow
             + " 지도에 보이는 적 함대와 마주치는 것은 따로라 바뀌지 않습니다."));
 
         // 마을·항구에 들고 날 때 보내는 날수. 원본은 열흘씩이라 오가는 시험이 더디다.
-        rows.Children.Add(Select("출입 일수",
+        general.Children.Add(Select("출입 일수",
             [.. Enumerable.Range(GameSettings.MinPortDays,
                                  GameSettings.MaxPortDays - GameSettings.MinPortDays + 1)
                           .Select(n => n == GameSettings.DefaultPortDays ? $"{n}일 (원본)" : $"{n}일")],
@@ -196,13 +194,13 @@ public sealed class ModDialog : GameWindow
 
         // 인물 이동 — 떠날지 굴리는 때와 확률. 원본은 매월 1일 5분의 1이다.
         // 첫 줄(0)이 원본 「매월 1일」이고, 그 뒤 줄 번호가 곧 날수다.
-        rows.Children.Add(Select("이동 주기",
+        general.Children.Add(Select("이동 주기",
             ["매월 1일 (원본)", .. Enumerable.Range(1, GameSettings.MaxPersonRollDays).Select(n => $"{n}일마다")],
             GameSettings.PersonRollDays,
             i => GameSettings.PersonRollDays = i,
             "인물(14~200번)이 떠날지 굴리는 때. 원본은 매월 1일입니다. N일마다는 1480년 1월 1일부터 셉니다."
             + " 역사 항해자 대본은 늘 매월 1일입니다."));
-        rows.Children.Add(Select("떠날 확률",
+        general.Children.Add(Select("떠날 확률",
             [.. Enumerable.Range(GameSettings.MinPersonMoveOdds,
                                  GameSettings.MaxPersonMoveOdds - GameSettings.MinPersonMoveOdds + 1)
                           .Select(n => n == 1 ? "1분의 1 (반드시)" : $"{n}분의 1")],
@@ -237,12 +235,19 @@ public sealed class ModDialog : GameWindow
             Child = tip,
         };
 
+        // 두 판을 한 칸에 겹쳐 두고 안 보이는 쪽은 Hidden 으로 — 자리를 지켜 탭을 넘겨도 창 크기가 안 바뀐다.
+        var pages = new Grid();
+        pages.Children.Add(rows);
+        pages.Children.Add(general);
+        general.Visibility = Visibility.Hidden;
+
         var body = new StackPanel { Orientation = Orientation.Horizontal };
-        body.Children.Add(rows);
+        body.Children.Add(pages);
         body.Children.Add(side);
 
         var stack = new StackPanel();
         stack.Children.Add(title);
+        stack.Children.Add(Tabs(rows, general));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -256,6 +261,70 @@ public sealed class ModDialog : GameWindow
         };
 
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+    }
+
+    /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
+    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement general)
+    {
+        var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
+        var heads = new List<(Border Head, FrameworkElement Page)>();
+
+        void Select(FrameworkElement page)
+        {
+            foreach (var (head, p) in heads)
+            {
+                bool on = ReferenceEquals(p, page);
+                p.Visibility = on ? Visibility.Visible : Visibility.Hidden;
+                head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
+                ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
+            }
+            _tipName.Text = "";
+            _tipText.Text = Greeting;
+        }
+
+        void Add(string text, FrameworkElement page)
+        {
+            var head = new Border
+            {
+                BorderBrush = GameUi.Edge,
+                BorderThickness = new Thickness(1, 1, 1, 0),
+                Padding = new Thickness(16, 4, 16, 4),
+                Margin = new Thickness(0, 0, 4, 0),
+                Cursor = Cursors.Hand,
+                Child = new TextBlock { Text = text, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15 },
+            };
+            head.MouseLeftButtonDown += (_, _) => Select(page);
+            heads.Add((head, page));
+            bar.Children.Add(head);
+        }
+
+        Add("편의성", convenience);
+        Add("일반", general);
+        Select(convenience);
+        return bar;
+    }
+
+    /// <summary>커스텀 BGM 켜고 끄기와 그 밑의 「곡 등록」 단추. 끄면 단추도 흐려진다.</summary>
+    private UIElement CustomBgmControls()
+    {
+        var box = Toggle("커스텀 BGM", GameSettings.CustomBgmEnabled,
+            on => GameSettings.CustomBgmEnabled = on,
+            "원본에 없는 기능입니다 — 곡 번호마다 등록해 둔 파일이 있으면 그걸로 갈아 낍니다."
+            + " 등록은 아래 「곡 등록」 단추로 합니다. 꺼도 등록은 그대로 남고, 다시 켜면 그대로 씁니다.");
+
+        var open = GameUi.PushButton("곡 등록…", () => CustomBgmDialog.Show(this), 120);
+        open.HorizontalAlignment = HorizontalAlignment.Left;
+        open.Margin = new Thickness(18, 2, 0, 2);
+        open.IsEnabled = box.IsChecked == true;
+        open.Opacity = open.IsEnabled ? 1 : 0.4;
+        box.Checked += (_, _) => { open.IsEnabled = true; open.Opacity = 1; };
+        box.Unchecked += (_, _) => { open.IsEnabled = false; open.Opacity = 0.4; };
+        Watch(open, "곡 등록", "곡 번호마다 틀 파일을 고릅니다. 커스텀 BGM 을 켜야 누를 수 있습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(open);
+        return group;
     }
 
     /// <summary>그 줄의 설명을 오른쪽 칸에 건다. 커서가 떠나도 마지막 것을 남긴다.</summary>

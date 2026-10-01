@@ -81,7 +81,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         deal.LoanAnnounced = true;
 
         var face = _game.SpeakerFace(BuildingCode, _culture);
-        ConfirmDialog.Tell(_view, $"{_player.Name}님이시지요?", face: face);
+        ConfirmDialog.Tell(_view, $"{_player.CallName}님이시지요?", face: face);
 
         var sponsor = _game.Sponsors?.FindByName(deal.Sponsor);
         string name = sponsor?.Name ?? deal.Sponsor;

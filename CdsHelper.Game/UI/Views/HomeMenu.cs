@@ -344,7 +344,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     public bool Retire()
     {
         var player = _game.Player;
-        string me = player.Name;
+        string me = player.CallName;
         bool novice = Engine.Beginner.IsBeginnerBook(player.ActiveStoryBook);
         string first = novice
             ? $"{me}{GameUi.Josa(me, "을", "를")} 은퇴시키겠습니다. 단, 초심자용 캐릭터는 "
@@ -529,7 +529,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         }
         if (!ConfirmDialog.Ask(owner, $"{son.Name}에게 뒤를 잇게 하겠습니까?")) return;
 
-        string father = _player.Name;
+        string father = _player.CallName;
 
         // 명성·악명만 깎여 물려진다. <b>소지금과 저금은 그대로 간다</b> — 게임도 아들 칸에 2/3·4/5 를 적어 두지만
         // 제독 자리로 옮길 때 그 두 칸(+0xF4·+0xF8)을 안 베껴 원래 값이 그대로 남는다(0x0047D4B0).

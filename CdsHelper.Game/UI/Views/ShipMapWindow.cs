@@ -514,7 +514,6 @@ public sealed class ShipMapWindow : Window
                 DiscoveryMapRow => GameSettings.ShowDiscoveryMapMenu,
                 BarmaidBookRow => GameSettings.ShowBarmaidBookMenu,
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
-                CustomBgmRow => GameSettings.CustomBgmEnabled,
                 _ => true,
             },
             // 설정은 게임 띠에 두었다가 햄버거로 옮겼다 — 게임 띠에 없는 칸이라
@@ -534,8 +533,6 @@ public sealed class ShipMapWindow : Window
             // 「도구 앱」은 개발 창으로 옮겼다 — 표를 손보는 길이라 개발 쪽이 맞다.
             // 원본에 없는 편의 기능(컨디션·미니맵·바람 화살표·기능·언어·출입 일수)은 모드 창에 모아 두었다.
             ("모드", ShowModDialog),
-            // 곡 번호마다 파일을 갈아 끼운다 — 모드 창의 「커스텀 BGM」 스위치를 켜야 줄이 뜬다.
-            (CustomBgmRow, () => CustomBgmDialog.Show(this)),
             ("개발", ShowDevDialog));
         DockPanel.SetDock(titleBar, Dock.Top);
         shell.Children.Add(titleBar);
@@ -720,9 +717,6 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>햄버거의 인물 이동 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string PersonMoveRow = "인물 이동";
-
-    /// <summary>햄버거의 BGM 줄 이름. 모드 창의 「커스텀 BGM」 스위치가 이 줄을 켜고 끈다.</summary>
-    internal const string CustomBgmRow = "BGM";
 
     private void ShowDiscoveryMap()
     {
@@ -2617,7 +2611,7 @@ public sealed class ShipMapWindow : Window
 
         int at = HintListDialog.Pick(this, rows, "자동저장 불러오기", "자동저장한 데이터가 없습니다",
                                      header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
-                                     // 「바르토로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
+                                     // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
                                      listWidth: 580);
         return at >= 0 && at < slots.Count ? slots[at].File : null;
     }
@@ -4473,8 +4467,8 @@ public sealed class ShipMapWindow : Window
 
         string text = (admiral, raiseMate) switch
         {
-            (true, true) => $"{player.Name}, 부관의 무력이 {amount} 상승했다!",   // 0x005602A8
-            (true, false) => $"{player.Name}의 무력이 {amount} 상승했다!",        // 0x00560258
+            (true, true) => $"{player.CallName}, 부관의 무력이 {amount} 상승했다!",   // 0x005602A8
+            (true, false) => $"{player.CallName}의 무력이 {amount} 상승했다!",        // 0x00560258
             _ => $"부관의 무력이 {amount} 상승했다!",                              // 0x00560280
         };
         ConfirmDialog.Tell(board, text, "성장");
@@ -5398,7 +5392,7 @@ public sealed class ShipMapWindow : Window
                 // 제독 이름 조사는 갈래 10(로/으로, 0x004556CD), 후원자 이름 조사는 갈래 13(로부터/으로부터,
                 // 0x004556AD)이고, 후원자 자리는 그 인물 객체의 이름(가상 함수 0)이다. 창 제목은 「해적」(0x0055F6A0).
                 // 예전에는 「…이군」 · 「{이름} {경칭}께서」 · 제목 「해전」이었다.
-                string me = _game.Player.Name, lord = boss?.Name ?? who.Sponsor;
+                string me = _game.Player.CallName, lord = boss?.Name ?? who.Sponsor;
                 ConfirmDialog.Tell(this,
                     $"네가 {me}{NameToken.Of(me, 10)}군. 찾고 있었다! {lord}{NameToken.Of(lord, 13)} " +
                     "너를 토벌하라는 명령이다. 각오해라.",
@@ -6134,7 +6128,7 @@ public sealed class ShipMapWindow : Window
     private Engine.Town.Duel.Fighter MyFighter()
     {
         var me = _game.Player;
-        return new(me.Name.Length > 0 ? me.Name : "제독",
+        return new(me.CallName.Length > 0 ? me.CallName : "제독",
                    me.AbilityOf(Ability.Body), me.AbilityOf(Ability.Might),
                    me.LevelOf(Skill.Names[Skill.Sword]), me.AbilityOf(Ability.Luck),
                    BestItem(Engine.Town.Duel.WeaponCategory),

@@ -837,7 +837,7 @@ public sealed class DisevRunner
                 int zero = Array.IndexOf(raw, (byte)0, 2);
                 if (zero < 0) return null;
                 string text = DisevScript.DecodeDialogue(raw.AsSpan(2, zero - 2), normalize: true,
-                                                         player: _game.Player.Name).Body;
+                                                         player: _game.Player.CallName).Body;
                 _game.Player.AddRumor(I("City"), text, _game.Player.Date);
                 return null;
             }
@@ -855,7 +855,7 @@ public sealed class DisevRunner
                 int zero = Array.IndexOf(raw, (byte)0, 2);
                 if (zero < 0) return null;
                 string text = DisevScript.DecodeDialogue(raw.AsSpan(2, zero - 2), normalize: true,
-                                                         player: _game.Player.Name).Body;
+                                                         player: _game.Player.CallName).Body;
                 if (_game.CityRows is not { } rows) return null;
 
                 int want = I("Culture");
@@ -1199,7 +1199,7 @@ public sealed class DisevRunner
         if (term < 0) return -1;
         int baseValue = term + 1 < raw.Length ? raw[term + 1] : 0;
 
-        var (_, text) = DisevScript.DecodeDialogue(raw.AsSpan(2, term - 2), _game.Player.Name);
+        var (_, text) = DisevScript.DecodeDialogue(raw.AsSpan(2, term - 2), _game.Player.CallName);
         var choices = text.Split('/').Select(c => c.Trim()).Where(c => c.Length > 0).ToArray();
         if (choices.Length == 0) return baseValue;
 
@@ -1323,7 +1323,7 @@ public sealed class DisevRunner
     private bool DuelWith(int person)
     {
         var me = _game.Player;
-        var mine = new Town.Duel.Fighter(me.Name.Length > 0 ? me.Name : "제독",
+        var mine = new Town.Duel.Fighter(me.CallName.Length > 0 ? me.CallName : "제독",
             me.AbilityOf(Support.Local.Models.Ability.Body), me.AbilityOf(Support.Local.Models.Ability.Might),
             me.LevelOf(Support.Local.Models.Skill.Names[Support.Local.Models.Skill.Sword]), me.AbilityOf(Support.Local.Models.Ability.Luck), 0, 0);
 
@@ -1738,7 +1738,7 @@ public sealed class DisevRunner
 
         // 자리표(※ｓ·※Ｈ …)에 제독 이름과 조사를 채워 넣는다.
         var (speaker, body) = DisevScript.DecodeDialogue(raw.AsSpan(textStart, end - textStart),
-                                                        _game.Player.Name);
+                                                        _game.Player.CallName);
         if (body.Length == 0) return;
 
         // <b>감찰관이 없으면 감찰관 대사는 통째로 건너뛴다</b> — 화자 해석기 0x0040C880 이 감찰관 객체를 못 찾으면

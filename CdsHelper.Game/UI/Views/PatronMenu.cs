@@ -237,7 +237,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var sponsor = _game.Sponsors?.FindByName(patron.Name);
         string shown = sponsor?.Name ?? patron.Name;             // 게임 이름은 가운뎃점이 들어간다
         string sir = sponsor?.Honorific ?? "각하";
-        string me = _player.Name;
+        string me = _player.CallName;
 
         var face = FaceOf(patron);
         void Say(string words) => TalkDialog.Say(_view, face, "", words);
@@ -1018,7 +1018,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         string sir = now?.Honorific ?? "각하";
         string newName = $"{now?.Name ?? patron.Name} {sir}";
 
-        string me = _player.Name;
+        string me = _player.CallName;
         void Steward(string words) => TalkDialog.Say(_view, StewardFace(), "", words);
 
         Steward($"그런데, {me}님이 모험을 하고 있는 사이에, {oldName}께서 은퇴해, "
@@ -1045,7 +1045,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         Patron patron, Contract contract,
         IReadOnlyList<DiscoveryTable.Record> rows, bool inTime)
     {
-        string me = _player.Name;
+        string me = _player.CallName;
         int fame = 0, closer = 0;
 
         // 남이 앞질렀는지는 <b>보고를 시작하기 전에</b> 다 적어 둔다 — 원본도 사례 갈림길
@@ -1187,11 +1187,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private void WorldFinale(Patron patron, bool inTime, Func<string, string, string, string> Pick3)
     {
         TalkDialog.Say(_view, FaceOf(patron), "", Pick3(
-            $"{_player.Name}, 정말 잘 했네. 자네의 위업을 역사에 기리고 자자손손 전하겠네. 자네야 말로 최고의 모험가네.",
+            $"{_player.CallName}, 정말 잘 했네. 자네의 위업을 역사에 기리고 자자손손 전하겠네. 자네야 말로 최고의 모험가네.",
             "정말 잘 하셨습니다. 상상도 못할 고난을 넘어 오셨군요... 당신의 영광스러움을 나라안에 전합시다.",
             "정말로 대단하다. 아무도 성공 못한 모험을 잘 달성해 주었네. 자네야말로 영웅이네."));
 
-        string me = _player.Name;
+        string me = _player.CallName;
         var on = _player.Date;
         GameDialog.Show(_view, inTime
             ? $"{on.Year}년 {on.Month}월, {me}{GameUi.Josa(me, "은", "는")} 역사 최초로 세계일주를 달성했다!"
@@ -1240,7 +1240,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
 
-        string me = _player.Name;
+        string me = _player.CallName;
         string what = row.Name;
         string who = _player.ScoopedBy(row.Id) ?? "";
         string ga = GameUi.Josa(what, "이", "가");
@@ -1274,7 +1274,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
 
-        string me = _player.Name;
+        string me = _player.CallName;
         string what = row.Name;
         string who = _player.ScoopedBy(row.Id) ?? "";
         string eun = GameUi.Josa(what, "은", "는");
@@ -1366,7 +1366,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 명성·사례·힌트 매듭은 없다. 모조품은 자리로 잡히는 것(깃발 0x04)이 아니라 행적도 안 남는다.
         foreach (var row in rows) _player.Stamp(row.Id, trace: false);
 
-        string me = _player.Name;
+        string me = _player.CallName;
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
 
@@ -1554,7 +1554,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 계약한 사람이 아직 그 자리에 앉아 있는지(0x0044E590)와 기한을 지켰는지로 갈린다.
         // 앉은 사람이 그대로면 그 사람의 <b>경칭</b>을 부른다(0x004A2EA0 — 폐하·예하·각하·
         // 신부님·회장님·박사님·변호사 가운데 하나). 은퇴했으면 이름도 경칭도 안 부른다.
-        string me = _player.Name;
+        string me = _player.CallName;
         string rank = _game.Sponsors?.FindByName(contract.Sponsor)?.Honorific ?? "각하";
         bool seated = contract.Sponsor == patron.Name;
         void Steward(string words) => TalkDialog.Say(_view, StewardFace(), "", words);
@@ -1640,23 +1640,32 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                         "다시 모험을 하게 되신다면 여기에 와 주십시오.",
                         "또 흥미있는 이야기가 있을 때는 원조하겠네. 부담없이 와 주게나."));
         }
+        catch
+        {
+            _game.Bgm.Play(_cityTrack);
+            throw;
+        }
+
+        // 감옥에서 일생을 마쳤으면(게임 오버) 나설 일도 없다 — 재계약 물음·증거품이 게임 오버 창 뒤에 뜨던 것.
+        if (_reportOver) { _game.Bgm.Play(_cityTrack); return; }
+
+        // 도시 곡은 부하 재계약·증거품까지 다 끝나고 건물을 나설 때 돌아온다 — 재계약 물음 동안은 알현 곡 그대로다.
+        try
+        {
+            // 나설 때의 차례 그대로다(0x0044E6C0) — 부하 재계약(0x00454160) · 빌린 배 돌려주기(0x004105A0) 다음이
+            // 숨겨 둔 증거품(0x0041C480)이다. 감옥(항구 도시)에 다녀와도 숨긴 목록은 그대로라(0x0044EF20 이 안 지운다)
+            // 증거품은 여전히 손에 들어온다.
+            // 재계약은 계약이 정말 끝났을 때만이다 — 원본은 계약을 끝내는 0x0044EE30 이 [+0xBC] 를 3 밖으로 바꿀 때만
+            // 0x00454160 을 부른다(0x0044E6CC). 모조품을 봐줘 계약이 남았으면 부하가 떠나거나 선금을 다시 받지 않는다.
+            if (_player.Contract == null) RecontractMates();
+
+            // 숨겨 둔 증거품은 보고를 마치고 나설 때 손에 들어온다.
+            HandHidden();
+        }
         finally
         {
             _game.Bgm.Play(_cityTrack);
         }
-
-        // 감옥에서 일생을 마쳤으면(게임 오버) 나설 일도 없다 — 재계약 물음·증거품이 게임 오버 창 뒤에 뜨던 것.
-        if (_reportOver) return;
-
-        // 나설 때의 차례 그대로다(0x0044E6C0) — 부하 재계약(0x00454160) · 빌린 배 돌려주기(0x004105A0) 다음이
-        // 숨겨 둔 증거품(0x0041C480)이다. 감옥(항구 도시)에 다녀와도 숨긴 목록은 그대로라(0x0044EF20 이 안 지운다)
-        // 증거품은 여전히 손에 들어온다.
-        // 재계약은 계약이 정말 끝났을 때만이다 — 원본은 계약을 끝내는 0x0044EE30 이 [+0xBC] 를 3 밖으로 바꿀 때만
-        // 0x00454160 을 부른다(0x0044E6CC). 모조품을 봐줘 계약이 남았으면 부하가 떠나거나 선금을 다시 받지 않는다.
-        if (_player.Contract == null) RecontractMates();
-
-        // 숨겨 둔 증거품은 보고를 마치고 나설 때 손에 들어온다.
-        HandHidden();
 
         // 보고가 끝나면 그 줄이 사라져야 한다 — 계약이 없어졌으니 「보고」 줄도 없다.
         // 줄 목록을 다시 지어 그리게 한다(TownWorks.LinesOf 가 후원자 줄을 다시 고른다).
@@ -1722,7 +1731,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             GreetAtDoor(patron, contract, overdue);
 
             // 집사가 먼저 알린다. 기한을 넘겼으면 말이 달라진다.
-            string me = _player.Name;
+            string me = _player.CallName;
             // 계약을 맺은 사람이 은퇴하고 뒷사람이 앉았으면 집사가 <b>선대의 계약</b>이라 이른다
             // (0x0054B7A0 · 0x0054B7F0) — 주인의 대꾸도 따로 있다(0x0054B860 · 0x0054B878 · 0x0054B8A0).
             bool handed = contract.Sponsor != patron.Name;
@@ -1834,7 +1843,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var sponsor = _game.Sponsors?.FindByName(patron.Name);
         string shown = sponsor?.Name ?? patron.Name;
         string sir = sponsor?.Honorific ?? "각하";
-        string me = _player.Name;
+        string me = _player.CallName;
 
         var old = _game.Sponsors?.FindByName(contract.Sponsor);
         string oldName = $"{old?.Name ?? contract.Sponsor} {old?.Honorific ?? "각하"}";
@@ -1885,7 +1894,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var sponsor = _game.Sponsors?.FindByName(patron.Name);
         string shown = sponsor?.Name ?? patron.Name;
         string sir = sponsor?.Honorific ?? "각하";
-        string me = _player.Name;
+        string me = _player.CallName;
         var dice = new GameRandom(Environment.TickCount);
 
         var face = FaceOf(patron);
@@ -2016,7 +2025,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// </remarks>
     private bool Jail(Patron patron, GameRandom dice)
     {
-        string me = _player.Name;
+        string me = _player.CallName;
         bool harbor = _game.Buildings?.InCity(_cityId).Any(b => b.Kind == "항구") ?? true;
         if (!harbor)
         {
@@ -2280,7 +2289,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
     /// <summary>일기토에 나서는 내 몫.</summary>
     private Duel.Fighter Mine() =>
-        new(_player.Name.Length > 0 ? _player.Name : "제독",
+        new(_player.CallName.Length > 0 ? _player.CallName : "제독",
             _player.AbilityOf(Ability.Body),
             _player.AbilityOf(Ability.Might),
             _player.LevelOf(Skill.Names[Skill.Sword]),

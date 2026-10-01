@@ -242,7 +242,7 @@ public sealed class CityHistory
                     if (zero < 0 || zero + 3 >= p.Length) return;
                     // 제독 이름 자리표는 적을 때 편다(0x004099CB → 0x0040C410).
                     string text = DisevScript.DecodeDialogue(p.AsSpan(i + 2, zero - i - 2), normalize: true,
-                                                             player: player.Name).Body;
+                                                             player: player.CallName).Body;
                     int where = U16(p, zero + 2);
                     if (p[zero + 1] == 0x08) player.AddRumor(where, text, when);
                     else if (p[zero + 1] == 0x19)
@@ -312,7 +312,7 @@ public sealed class CityHistory
             int zero = Array.IndexOf(p, (byte)0, i + 2);
             if (zero < 0 || zero > end) return;
             string text = DisevScript.DecodeDialogue(p.AsSpan(i + 2, zero - i - 2), normalize: true,
-                                                     player: player.Name).Body;
+                                                     player: player.CallName).Body;
             player.SetPersonLine(who, text, when);
             i = zero;
         }

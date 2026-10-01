@@ -86,6 +86,7 @@ internal class App : PrismApplication
         containerRegistry.RegisterForNavigation<DisevEditorContent>();
         containerRegistry.RegisterForNavigation<AutoPlayContent>();
         containerRegistry.RegisterForNavigation<WorldMapContent>();
+        containerRegistry.RegisterForNavigation<WorldEditContent>();
     }
 
     /// <summary>

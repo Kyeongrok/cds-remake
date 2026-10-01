@@ -62,7 +62,7 @@ public static class Vitality
     public static string? DiseaseDeath(Player player)
     {
         if (player.Condition > 0) return null;
-        string name = player.Name;
+        string name = player.CallName;
         string topic = GameUiJosa(name, "은", "는");
         if (player.Has(SeaAilment.Scurvy)) return $"{name}{topic} 괴혈병에 걸려, 돌아올 수 없는 사람이 되었다...";
         if (player.Has(SeaAilment.Plague)) return $"{name}{topic} 전염병으로 인해, 돌아올 수 없는 사람이 되었다...";
@@ -80,7 +80,7 @@ public static class Vitality
     /// <summary>입항 때 HP 가 0 이면 이어지는 말 넷(<c>0x00492735</c>~). 부관 말은 짝수 자리다.</summary>
     public static string[] CollapseWords(Player player)
     {
-        string name = player.Name;
+        string name = player.CallName;
         string topic = GameUiJosa(name, "은", "는");
         return
         [

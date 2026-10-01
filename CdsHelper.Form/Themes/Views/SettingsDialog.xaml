@@ -57,7 +57,7 @@
                                 <CheckBox x:Name="PART_AutoOpenShipMapCheckBox"
                                           Content="앱을 켤 때 함대 보기(Direct3D) 바로 열기"
                                           VerticalContentAlignment="Center" />
-                                <TextBlock Text="끄면 메뉴의 '렌더링' 을 눌러야 열립니다."
+                                <TextBlock Text="게임은 CostaDelSol.exe 로 따로 켭니다."
                                            Foreground="Gray" FontSize="11" Margin="20,4,0,0"
                                            TextWrapping="Wrap" />
                             </StackPanel>

@@ -863,7 +863,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         // (0x00466730 · 0x004667B0). 우리는 늘 한잔을 사고 들어간다.
         string words = first
             ? Barmaids.FirstWord(destined, boughtDrink: true, her.Name)
-            : Barmaids.AgainWord(_player.LikingOf(her.Id), _player.Name);
+            : Barmaids.AgainWord(_player.LikingOf(her.Id), _player.CallName);
 
         // 차림표는 다섯 줄 표에 줄마다 <b>보임</b> 칸을 둔다(0x0046656C~0x004665F7) — 조건이 어긋난 줄은 감춘다.
         //   이야기한다     한 번 하면 감춘다(0x00466644)
@@ -1169,7 +1169,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         _player.Marry(her.Name, her.Id);
         _player.Note(Player.TraceMarriage, her.Id);   // 0x004658F0 — 행적에 혼인을 적는다
         DiscoveryDialog.Show(_view, _game.EventStills, Barmaids.WeddingStill,
-                             string.Format(Barmaids.Married, _player.Name, her.Name));
+                             string.Format(Barmaids.Married, _player.CallName, her.Name));
     }
 
     /// <summary>
@@ -1871,7 +1871,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (theirs && mate is { } who) player.GrowMate(who.Name, by);
 
         // 0x00560258 · 0x00560280 · 0x005602A8 — 제독만 · 부관만 · 둘 다.
-        string me = player.Name;
+        string me = player.CallName;
         NoticeDialog.Show(view, (mine, theirs) switch
         {
             (true, true) => $"{me}, 부관의 무력이 {by} 상승했다!",
@@ -1945,7 +1945,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>내 몫 — 능력치와 검술, 그리고 지닌 무기·방어구 가운데 가장 센 것.</summary>
     private Engine.Town.Duel.Fighter Mine() =>
-        new(_player.Name.Length > 0 ? _player.Name : "제독",
+        new(_player.CallName.Length > 0 ? _player.CallName : "제독",
             _player.AbilityOf(Ability.Body),
             _player.AbilityOf(Ability.Might),
             _player.LevelOf(Skill.Names[Skill.Sword]),

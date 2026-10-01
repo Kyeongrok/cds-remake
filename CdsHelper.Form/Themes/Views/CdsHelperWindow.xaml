@@ -204,12 +204,12 @@
                                     BorderBrush="#E0E0E0"
                                     BorderThickness="0,0,0,1">
                                     <MenuItem x:Name="PART_SettingsMenu" Header="설정" />
-                                    <MenuItem
-                                        x:Name="PART_ShipMapMenu"
-                                        Header="렌더링"
-                                        ToolTip="함대 보기 (Direct3D)" />
                                     <MenuItem Header="도구">
                                         <MenuItem x:Name="PART_WorldMapMenu" Header="세계지도" />
+                                        <MenuItem
+                                            x:Name="PART_WorldEditMenu"
+                                            Header="세계지도 편집 (WORLD.CDS)"
+                                            ToolTip="지도 칸을 붓으로 칠한다 — 고친 것은 asset/cds/WORLD.CDS 에 적고 놀이가 먼저 읽는다" />
                                         <MenuItem x:Name="PART_EventQueueMenu" Header="이벤트 큐 보기" />
                                         <MenuItem x:Name="PART_DbTableViewerMenu" Header="DB 테이블 보기" />
                                         <MenuItem

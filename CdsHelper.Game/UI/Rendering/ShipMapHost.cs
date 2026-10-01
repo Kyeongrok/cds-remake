@@ -513,7 +513,8 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>WORLD.CDS / OCEAN.CDS 를 올리고 스왑체인을 건다. 실패하면 까닭을 남기고 false.</summary>
     public bool Start(string gameDir)
     {
-        var world = WorldMapRenderer.LoadWorldData(System.IO.Path.Combine(gameDir, "WORLD.CDS"));
+        // 편집기에서 고친 지도(asset/cds/WORLD.CDS)가 있으면 그것을 먼저 쓴다.
+        var world = WorldMapRenderer.LoadWorldData(CdsAssetPath.Resolve(gameDir, "WORLD.CDS"));
         if (world == null) { Status = "WORLD.CDS 를 읽지 못했습니다"; return false; }
         _world = world;
 

@@ -48,6 +48,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_ShipMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_HelpMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldMapMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_WorldEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_DiscoveryStillMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_CultureEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_AccordionMenu, Type = typeof(NavigationMenu))]
@@ -86,6 +87,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_ShipMapMenu = "PART_ShipMapMenu";
     private const string PART_HelpMenu = "PART_HelpMenu";
     private const string PART_WorldMapMenu = "PART_WorldMapMenu";
+    private const string PART_WorldEditMenu = "PART_WorldEditMenu";
     private const string PART_DiscoveryStillMenu = "PART_DiscoveryStillMenu";
     private const string PART_CultureEditMenu = "PART_CultureEditMenu";
     private const string PART_AccordionMenu = "PART_AccordionMenu";
@@ -289,6 +291,11 @@ public class CdsHelperWindow : CdsWindow
         if (GetTemplateChild(PART_WorldMapMenu) is MenuItem worldMapMenu)
         {
             worldMapMenu.Click += (_, _) => NavigateAndSync("WorldMapContent");
+        }
+
+        if (GetTemplateChild(PART_WorldEditMenu) is MenuItem worldEditMenu)
+        {
+            worldEditMenu.Click += (_, _) => NavigateAndSync("WorldEditContent");
         }
 
         // 발견물 그림은 햄버거 차림표에서 「요소」를 거쳐 「에셋」 메뉴로 옮겼다(fb-ui-23) — 본문 자리에 그대로 띄운다.

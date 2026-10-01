@@ -368,8 +368,8 @@ internal static class HostileCityMenu
         if (!light)
         {
             TalkDialog.Say(owner, gate, "",
-                Standoff.Heard(string.Format(say.Villain, player.Name,
-                                             NameToken.Of(player.Name, say.IsTreaty ? 0 : 10)), heard));
+                Standoff.Heard(string.Format(say.Villain, player.CallName,
+                                             NameToken.Of(player.CallName, say.IsTreaty ? 0 : 10)), heard));
             return new Outcome(Entered: false, GameOver: true);
         }
 

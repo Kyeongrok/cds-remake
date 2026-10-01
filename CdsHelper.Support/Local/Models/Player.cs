@@ -109,6 +109,16 @@ public sealed class Player
     public string Name { get; set; } = "";
 
     /// <summary>
+    /// 사람들이 부르는 이름 — <b>명</b>만이다. 비었으면 <see cref="Name"/>.
+    /// </summary>
+    /// <remarks>
+    /// 게임의 제독 이름(<c>0x005B60A0</c> 가상 함수 0 = <c>0x0041B2F0</c>)은 <c>+0xBC</c> 칸을 돌려주는데, 거기에는
+    /// 신상 창의 <b>명 칸(+0xC0)만</b> 베껴 넣는다(<c>0x0045E395</c>). 「명·성」(<c>0x00571B08</c>)으로 붙인 것은
+    /// 신상 창에 보이려고 따로 짓는 글(<c>0x0062B2F0</c>)일 뿐이다. 그래서 후원자·대본·알림이 부르는 이름은 명 하나다.
+    /// </remarks>
+    public string CallName => Given.Length > 0 ? Given : Name;
+
+    /// <summary>
     /// 이 판의 표지 — NEW GAME 으로 주인공을 새로 앉힐 때 새로 뽑는다. 원본에는 없다(세이브가 한 파일뿐이라 쓸 데가 없다).
     /// </summary>
     /// <remarks>
