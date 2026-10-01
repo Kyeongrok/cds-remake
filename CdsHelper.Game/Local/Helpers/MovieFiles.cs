@@ -96,10 +96,18 @@ public static class MovieFiles
     public const string LogoStem = "LOGO", OpeningStem = "OPEN";
 
     /// <summary>
-    /// 틀 파일을 찾는다. 올려 둔 것 → 게임 폴더 차례고, 둘 다 없으면 null.
+    /// 틀 파일을 찾는다. 올려 둔 것 → 릴리즈에서 받아 둔 것 → 게임 폴더 차례고, 다 없으면 null.
     /// </summary>
+    /// <remarks>받아 둔 MP4 가 게임 폴더 AVI 보다 앞이다 — 원본 AVI 는 Indeo 5 라 요즘 윈도에서 안 틀린다.</remarks>
     public static string? Resolve(string? gameDirectory, string stem) =>
-        Uploaded(stem) ?? Original(gameDirectory, stem);
+        Uploaded(stem) ?? Downloaded(stem) ?? Original(gameDirectory, stem);
+
+    /// <summary>릴리즈에서 받아 둔 파일(<see cref="MovieAssetDownloader"/>). 없으면 null.</summary>
+    public static string? Downloaded(string stem)
+    {
+        var path = MovieAssetDownloader.CachePath(stem);
+        return File.Exists(path) ? path : null;
+    }
 
     /// <summary>올려 둔 파일. 없으면 null.</summary>
     public static string? Uploaded(string stem)

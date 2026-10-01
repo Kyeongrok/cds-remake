@@ -6754,6 +6754,9 @@ public sealed class ShipMapWindow : Window
             }
         }
 
+        // 빠진 원본 동영상(MP4)을 릴리즈에서 뒤에서 하나씩 받는다 — 갈아 끼운 것은 건너뛴다.
+        MovieAssetDownloader.StartBackground();
+
         _game.Bgm.Enabled = GameSettings.BgmEnabled;   // 설정 창에서 꺼 뒀으면 조용히 시작한다
         _game.Bgm.Play(BgmPlayer.TitleTrack);   // 메뉴 화면에서는 bgm/Track23.mp3
         if (_game.Bgm.LastError.Length > 0)

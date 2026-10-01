@@ -1068,7 +1068,7 @@ public sealed class DisevEditorDialog : GameWindow
                 string who = users.TryGetValue(n, out var names) ? $" · {names}" : "";
                 if (MovieFiles.Uploaded(stem) is { } up)
                     choices.Add(new ValueChoice(n, $"{n} · 올린 것 {Path.GetFileName(up)}{who}"));
-                else if (MovieFiles.Original(_gameDir, stem) != null)
+                else if (MovieFiles.Original(_gameDir, stem) != null || MovieFiles.Downloaded(stem) != null)
                     choices.Add(new ValueChoice(n, $"{n} · 원본{who}"));
             }
         }
