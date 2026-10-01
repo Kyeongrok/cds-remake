@@ -57,6 +57,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         Texture2D<float4> ArrowTex : register(t10);
         Texture2D<float4> CloudTex : register(t11);
         Texture2D<float4> FolkTex  : register(t12);
+        Texture2D<uint>   SeaDepth : register(t13);
 
         cbuffer Frame : register(b0)
         {
@@ -65,7 +66,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float4 SpriteRect;
             float2 MapCells;
             float  Detail;
-            float  Pad;
+            float  SeaOn;
             float4 OverlayRect;
             float4 Cover;
             float4 Ripple;
@@ -73,6 +74,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float4 Clouds[6];
             float4 Folk[16];
             float4 Route[32];
+            float4 Sea;
         };
 
         struct VSOut { float4 pos : SV_Position; };
@@ -173,6 +175,88 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             return lerp(col, float3(1.00, 0.55, 0.10), a);
         }
 
+        float DepthAt(int2 q)
+        {
+            int w = int(MapCells.x);
+            q.x = int(uint(q.x + w) % uint(w));
+            q.y = clamp(q.y, 0, int(MapCells.y) - 1);
+            return float(SeaDepth.Load(int3(q, 0)));
+        }
+
+        float Hash(float2 p)
+        {
+            uint2 q = uint2(int2(p) + int2(65536, 65536));
+            uint h = q.x * 1597334677u ^ q.y * 3812015801u;
+            h = (h ^ (h >> 15)) * 2246822519u;
+            h = h ^ (h >> 13);
+            return float(h & 0xFFFFu) / 65535.0;
+        }
+
+        float Noise(float2 p)
+        {
+            float2 i = floor(p);
+            float2 f = p - i;
+            float2 u = f * f * (3.0 - 2.0 * f);
+            return lerp(lerp(Hash(i), Hash(i + float2(1, 0)), u.x),
+                        lerp(Hash(i + float2(0, 1)), Hash(i + float2(1, 1)), u.x), u.y);
+        }
+
+        float Waves(float2 p, float2 dir, float time)
+        {
+            float2 side = float2(-dir.y, dir.x);
+            float h = 0.50 * Noise(p * 1.7 - dir * time * 0.55)
+                    + 0.30 * Noise(p * 3.3 + side * time * 0.40 - dir * time * 0.30 + 17.0)
+                    + 0.20 * Noise(p * 6.1 - dir * time * 0.85 - side * time * 0.25 + 41.0);
+            h += 0.18 * sin(dot(p, dir) * 2.4 - time * 1.3 + Noise(p * 0.6) * 4.0);
+            return h;
+        }
+
+        float3 SeaShade(float3 col, float2 cell)
+        {
+            if (SeaDepth.Load(int3(int2(cell), 0)) == 0u) return col;
+
+            float water = saturate((col.b - max(col.r, col.g) + 0.01) * 14.0);
+            if (water <= 0.0) return col;
+            float3 base = col;
+
+            float2 b = cell - 0.5;
+            int2   q = int2(floor(b));
+            float2 t = b - floor(b);
+            float d = lerp(lerp(DepthAt(q), DepthAt(q + int2(1, 0)), t.x),
+                           lerp(DepthAt(q + int2(0, 1)), DepthAt(q + int2(1, 1)), t.x), t.y);
+
+            float time = Sea.x;
+            float fine = saturate((0.30 - CellPerPixel.x) / 0.20);
+
+            float2 dir = Ripple.xy;
+            dir = dot(dir, dir) > 1e-4 ? normalize(dir) : float2(0.94, 0.34);
+
+            float2 p = cell;
+            const float e = 0.05;
+            float h0 = Waves(p, dir, time);
+            float hx = Waves(p + float2(e, 0), dir, time);
+            float hy = Waves(p + float2(0, e), dir, time);
+            float2 g = float2(hx - h0, hy - h0) / e * 0.11;
+
+            float3 n = normalize(float3(-g * fine, 1.0));
+            float3 L = normalize(float3(-0.45, -0.55, 0.70));
+            float diff = dot(n, L) / L.z;
+            float3 H = normalize(L + float3(0, 0, 1));
+            float glint = pow(saturate(dot(n, H)), 90.0) * smoothstep(0.55, 0.85, h0);
+            float spec = glint * 0.45 * fine;
+
+            float deep = saturate((d - 1.0) / 10.0);
+            col *= lerp(1.16, 0.98, deep);
+            col *= lerp(1.0, diff, 0.50);
+            col += spec;
+
+            float shore = saturate(1.7 - d);
+            float foam = shore * smoothstep(0.35, 0.75,
+                0.5 + 0.5 * sin(time * 1.4 - d * 6.0 + Noise(p * 2.0 + time * 0.2) * 5.0));
+            col = lerp(col, float3(0.93, 0.96, 0.98), foam * 0.35 * saturate(1.0 - CellPerPixel.x * 2.0));
+            return lerp(base, saturate(col), water);
+        }
+
         float4 PS(VSOut i) : SV_Target
         {
             if (OverlayRect.z > 0)
@@ -224,6 +308,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 col = Palette.Load(int3(int(pal), 0, 0));
             }
 
+            if (SeaOn > 0.5) col.rgb = SeaShade(col.rgb, cell);
+
             if (Arrows.x > 0.5)
             {
                 float4 a = ArrowsAt(cellRaw, i.pos.xy);
@@ -242,7 +328,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public float SpriteX, SpriteY, SpriteW, SpriteH;
         public float MapCellsX, MapCellsY;
         public float Detail;
-        public float Pad0;
+        public float SeaOn;
         public float OverlayX, OverlayY, OverlayW, OverlayH;
         public float CoverR, CoverG, CoverB, CoverA;
         public float RippleDirX, RippleDirY, RippleSpeed, RippleTick;
@@ -250,6 +336,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public fixed float Clouds[MaxClouds * 4];   // x, y, 그림번호, 보일지
         public fixed float Folk[MaxFolk * 4];       // x, y, 뱃머리(0~3), 배수
         public fixed float Route[MaxRoutePoints * 4]; // x, y, (안 씀), 켜졌는지
+        public float SeaTime, SeaPad1, SeaPad2, SeaPad3;
     }
 
     /// <summary>
@@ -387,6 +474,33 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     public bool ShowArrows { get; set; }
 
     /// <summary>
+    /// 바다 입체 효과 — 바다 칸에 움직이는 물결 굴곡·햇빛·반짝임을 얹고, 해안에서 멀수록 깊은 색으로,
+    /// 해안선에는 흰 물보라를 친다. 원본에 없는 덧그림이라 모드 창에서 켠다. 깊이 표(<see cref="SetSeaDepth"/>)가 있어야 듣는다.
+    /// </summary>
+    public bool SeaEffect { get; set; }
+
+    /// <summary>바다 물결이 흐르는 시각(초). 켜 둔 동안 프레임마다 밖에서 올린다.</summary>
+    public float SeaTime { get; set; }
+
+    private ID3D11ShaderResourceView _seaSrv = null!;
+    private bool _seaReady;
+
+    /// <summary>
+    /// 칸마다 <b>뭍까지의 거리</b>(0 뭍 · 1 해안에 붙은 물 · … · 15 먼바다). 2500x1250 바이트다.
+    /// </summary>
+    public void SetSeaDepth(byte[] depth)
+    {
+        if (depth.Length != WorldMapRenderer.UnfoldedW * WorldMapRenderer.CellH) return;
+        var old = _seaSrv;
+        _seaSrv = CreateImmutable(depth, WorldMapRenderer.UnfoldedW, WorldMapRenderer.CellH, Format.R8_UInt, sizeof(byte));
+        old?.Dispose();
+        _seaReady = true;
+    }
+
+    /// <summary>깊이 표를 이미 올렸는지.</summary>
+    public bool SeaDepthReady => _seaReady;
+
+    /// <summary>
     /// 지도 위에 씌우는 막(색과 짙기). 알파가 0 이면 아무것도 안 씌운다 —
     /// 도시에 들어가 있는 동안 게임이 지도를 이렇게 덮는다(색을 칠하는 것이 아니라 비쳐 보인다).
     /// </summary>
@@ -460,6 +574,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         CreatePalette(ocean);
         CreateSpriteTexture();
         CreateFlowTextures();
+        // 깊이 표는 켤 때 짓는다 — 그때까지는 모두 뭍(0)인 한 칸짜리를 걸어 둔다.
+        _seaSrv = CreateImmutable(new byte[] { 0 }, 1, 1, Format.R8_UInt, sizeof(byte));
     }
 
     /// <summary>
@@ -795,6 +911,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             MapCellsX = WorldMapRenderer.UnfoldedW,
             MapCellsY = WorldMapRenderer.CellH,
             Detail = PickDetail(cellsPerPixel.X),
+            SeaOn = SeaEffect && _seaReady ? 1 : 0,
+            SeaTime = SeaTime,
             OverlayX = overlayRect.X,
             OverlayY = overlayRect.Y,
             OverlayW = overlayRect.W,
@@ -829,7 +947,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _ctx.PSSetConstantBuffer(0, _cb);
         _ctx.PSSetShaderResources(0, [_cellSrv, _atlasSrv, _paletteSrv, _spriteSrv,
                                       _avgSrv[0], _avgSrv[1], _avgSrv[2], _overlaySrv,
-                                      _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv]);
+                                      _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv]);
         _ctx.Draw(3, 0);
     }
 
@@ -867,6 +985,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     {
         _rtv?.Dispose();
         _target?.Dispose();
+        _seaSrv?.Dispose();
         _folkSrv?.Dispose();
         _cloudSrv?.Dispose();
         _arrowSrv?.Dispose();

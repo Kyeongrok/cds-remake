@@ -85,11 +85,19 @@ internal static class ChromeTitleBar
     /// 왼쪽 햄버거. 대화 상자가 떠 있는 동안 이것만 따로 덮으려고 내준다 — 상자 위에서
     /// 또 상자를 열 수 있으면 안 된다. 차림표가 없으면 null.
     /// </param>
+    /// <param name="apps">
+    /// 햄버거 <b>왼쪽</b> 도시락 단추(점 아홉)에 내려올 줄들 — 모드로 켜는 보조 창을 햄버거와 갈라 둔다.
+    /// <paramref name="shown"/> 으로 보이는 줄이 하나도 없으면 단추째 숨는다.
+    /// </param>
+    /// <param name="refreshApps">모드 창에서 켜고 끈 뒤 부르면 도시락 단추를 보일지 다시 정한다.</param>
     public static FrameworkElement Attach(Window win, out FrameworkElement? menuButton,
                                           Func<string, bool>? shown,
+                                          (string Text, Action? Run)[] apps,
+                                          out Action refreshApps,
                                           params (string Text, Action? Run)[] menu)
     {
         menuButton = null;
+        refreshApps = () => { };
         WindowChrome.SetWindowChrome(win, new WindowChrome
         {
             // 위 32 점이 제목 줄이 된다 — 끌기와 두 번 눌러 최대화를 윈도가 알아서 한다.
@@ -122,9 +130,18 @@ internal static class ChromeTitleBar
         DockRight(bar, Button(GlyphKind.Close, () => SystemCommands.CloseWindow(win)));
         DockRight(bar, maximize);
         DockRight(bar, Button(GlyphKind.Minimize, () => SystemCommands.MinimizeWindow(win)));
+        if (apps.Length > 0)
+        {
+            var bento = MenuButton(apps, shown, GlyphKind.Apps, "도구");
+            DockPanel.SetDock(bento, System.Windows.Controls.Dock.Left);
+            bar.Children.Add(bento);
+            refreshApps = () => bento.Visibility =
+                apps.Any(a => shown == null || shown(a.Text)) ? Visibility.Visible : Visibility.Collapsed;
+            refreshApps();
+        }
         if (menu.Length > 0)
         {
-            var hamburger = MenuButton(menu, shown);
+            var hamburger = MenuButton(menu, shown, GlyphKind.Menu, "차림표");
             DockPanel.SetDock(hamburger, System.Windows.Controls.Dock.Left);
             bar.Children.Add(hamburger);
             menuButton = hamburger;
@@ -167,10 +184,10 @@ internal static class ChromeTitleBar
     /// 방금 닫혔으면 열지 않는다.
     /// </remarks>
     private static FrameworkElement MenuButton((string Text, Action? Run)[] items,
-                                               Func<string, bool>? shown)
+                                               Func<string, bool>? shown, GlyphKind glyph, string tip)
     {
         DateTime closedAt = DateTime.MinValue;
-        var button = (Border)Button(GlyphKind.Menu, MenuButtonWidth, "차림표", () => { });
+        var button = (Border)Button(glyph, MenuButtonWidth, tip, () => { });
 
         void Open()
         {
@@ -250,7 +267,7 @@ internal static class ChromeTitleBar
         else SystemCommands.MaximizeWindow(win);
     }
 
-    private enum GlyphKind { Menu, Minimize, Maximize, Restore, Close }
+    private enum GlyphKind { Menu, Apps, Minimize, Maximize, Restore, Close }
 
     /// <summary>
     /// 무늬는 글꼴(Segoe MDL2) 대신 선으로 그린다. 글꼴이 없는 자리에서 네모로 깨지는 일이
@@ -263,6 +280,10 @@ internal static class ChromeTitleBar
         {
             // 햄버거는 줄 셋. 크롬처럼 위아래로 4점씩 벌린다.
             GlyphKind.Menu => "M 0,1.5 H 12 M 0,5.5 H 12 M 0,9.5 H 12",
+            // 도시락은 점 아홉 — 2x2 네모를 4점 간격으로 세 줄 세 칸.
+            GlyphKind.Apps => "M 0,0 h 2 v 2 h -2 Z M 4,0 h 2 v 2 h -2 Z M 8,0 h 2 v 2 h -2 Z "
+                            + "M 0,4 h 2 v 2 h -2 Z M 4,4 h 2 v 2 h -2 Z M 8,4 h 2 v 2 h -2 Z "
+                            + "M 0,8 h 2 v 2 h -2 Z M 4,8 h 2 v 2 h -2 Z M 8,8 h 2 v 2 h -2 Z",
             GlyphKind.Minimize => "M 0,5.5 H 10",
             GlyphKind.Maximize => "M 0.5,0.5 H 9.5 V 9.5 H 0.5 Z",
             // 뒤 네모는 위/오른쪽만 보인다 — 앞 네모에 가려지는 두 변은 안 그린다.
@@ -287,6 +308,7 @@ internal static class ChromeTitleBar
         var glyph = new ShapePath
         {
             Data = Geometry(kind),
+            Fill = kind == GlyphKind.Apps ? Title : null,
             Stroke = Title,
             StrokeThickness = 1,
             HorizontalAlignment = HorizontalAlignment.Center,

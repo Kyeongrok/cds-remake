@@ -516,6 +516,14 @@ public sealed class ShipMapWindow : Window
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
                 _ => true,
             },
+            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
+            [
+                // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는 볼 길이 없다.
+                (BarmaidBookRow, () => BarmaidBookDialog.Show(this, _game)),
+                // 누가 어느 도시로 가고 있는지는 지도에 배만 떠 있어 알 길이 없다.
+                (PersonMoveRow, () => PersonMoveDialog.Show(this, _game)),
+            ],
+            out _refreshApps,
             // 설정은 게임 띠에 두었다가 햄버거로 옮겼다 — 게임 띠에 없는 칸이라
             // 섞여 있으면 원본과 달라 보인다(개발 창을 옮긴 것과 같은 까닭이다).
             // 지도 배율은 고르는 그 자리에서 지도에 먹인다.
@@ -523,11 +531,6 @@ public sealed class ShipMapWindow : Window
             ("단축키", () => ShortcutDialog.Show(this)),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
-            // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는
-            // 볼 길이 없어 여기에 둔다.
-            (BarmaidBookRow, () => BarmaidBookDialog.Show(this, _game)),
-            // 누가 어느 도시로 가고 있는지는 지도에 배만 떠 있어 알 길이 없다.
-            (PersonMoveRow, () => PersonMoveDialog.Show(this, _game)),
             // 어디에 무엇이 있는지 한눈에 — 게임 항해지도는 표식을 안 찍는다(볼트 91).
             (DiscoveryMapRow, ShowDiscoveryMap),
             // 「도구 앱」은 개발 창으로 옮겼다 — 표를 손보는 길이라 개발 쪽이 맞다.
@@ -712,10 +715,13 @@ public sealed class ShipMapWindow : Window
     /// <summary>햄버거의 발견물 지도 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string DiscoveryMapRow = "발견물 지도";
 
-    /// <summary>햄버거의 여급 수첩 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
+    /// <summary>도시락 단추를 보일지 다시 정한다 — 모드 창을 닫을 때 부른다.</summary>
+    private Action _refreshApps = () => { };
+
+    /// <summary>도시락의 여급 수첩 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string BarmaidBookRow = "여급 수첩";
 
-    /// <summary>햄버거의 인물 이동 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
+    /// <summary>도시락의 인물 이동 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string PersonMoveRow = "인물 이동";
 
     private void ShowDiscoveryMap()
@@ -2672,6 +2678,7 @@ public sealed class ShipMapWindow : Window
             _host.Lapped = laps => _game.Player.Laps += laps;
             if (!_host.Start(_game.Directory)) { _status.Text = _host.Status; return; }
             _host.ShowFlowArrows = GameSettings.ShowFlowArrows;
+            _host.SeaEffect = GameSettings.SeaEffect;
             _started = true;
         }
 
@@ -2898,7 +2905,13 @@ public sealed class ShipMapWindow : Window
     /// 개발 창에 섞여 있던 컨디션·미니맵·기능·언어·출입 일수를 여기로 옮겼다. 개발 창은
     /// 값을 밀어 넣어 시험하는 데고, 이쪽은 판을 그대로 두고 보기를 거드는 데다.
     /// </remarks>
-    private void ShowModDialog() => ModDialog.Show(this, new ModDialog.Options
+    private void ShowModDialog()
+    {
+        ShowModDialogCore();
+        _refreshApps();   // 여급 수첩 · 인물 이동을 켜고 껐으면 도시락 단추가 나타나거나 숨는다
+    }
+
+    private void ShowModDialogCore() => ModDialog.Show(this, new ModDialog.Options
     {
         // 발견물 수는 도시 창 쪽지다 — 켜고 끄면 떠 있는 도시 창이 설정 알림을 받아 곧바로 고친다.
         DiscoveryCountOn = () => GameSettings.ShowDiscoveryCount,
@@ -2921,6 +2934,12 @@ public sealed class ShipMapWindow : Window
         {
             _host.ShowFlowArrows = on;
             GameSettings.ShowFlowArrows = on;   // 다음에 켤 때도 그대로
+        },
+        SeaOn = () => _host.SeaEffect,
+        SetSea = on =>
+        {
+            _host.SeaEffect = on;
+            GameSettings.SeaEffect = on;
         },
     });
 

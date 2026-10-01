@@ -34,6 +34,10 @@ public sealed class ModDialog : GameWindow
         /// <summary>바람·해류 화살표 — 원본에 없는 덧그림이다.</summary>
         public Func<bool> ArrowsOn { get; init; } = () => false;
         public Action<bool> SetArrows { get; init; } = _ => { };
+
+        /// <summary>바다 입체 효과 — 원본에 없는 덧그림이다.</summary>
+        public Func<bool> SeaOn { get; init; } = () => false;
+        public Action<bool> SetSea { get; init; } = _ => { };
     }
 
     /// <summary>줄 목록과 설명 칸의 너비.</summary>
@@ -41,7 +45,7 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>아무 줄에도 커서가 없을 때 설명 칸에 적는 글.</summary>
     private const string Greeting =
-        "원본에 없는 편의 기능을 켜고 끄는 창입니다.\n\n왼쪽 줄에 커서를 올리면 여기에 설명이 뜹니다.";
+        "원본에 없는 기능을 켜고 끄는 창입니다.\n\n「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것, 「실험」은 아직 다듬는 중인 것입니다.\n\n왼쪽 줄에 커서를 올리면 여기에 설명이 뜹니다.";
 
     /// <summary>오른쪽 설명 칸의 이름 줄.</summary>
     private readonly TextBlock _tipName = new()
@@ -73,41 +77,46 @@ public sealed class ModDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
-        // 줄이 길어 두 탭으로 가른다 — 「편의성」은 보기를 거들고 손을 덜어 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것.
+        // 줄이 길어 두 탭으로 가른다 — 「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것.
         var rows = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「정보」 — 화면에 쪽지·덧그림·창으로 무언가를 더 보여 주는 것만 모은다.
+        var info = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「실험」 — 아직 다듬는 중인 덧그림. 모양이 바뀔 수 있다.
+        var lab = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
 
 
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
         // 배 속도 — 바다에서 걸음마다 잰 함대 속도를 쪽지로 띄운다.
-        rows.Children.Add(Toggle("배 속도", GameSettings.ShowShipSpeed, on => GameSettings.ShowShipSpeed = on,
+        info.Children.Add(Toggle("배 속도", GameSettings.ShowShipSpeed, on => GameSettings.ShowShipSpeed = on,
             "원본에 없는 것입니다 — 바다에 있을 때 함대 속도(바람·돛·선원으로 걸음마다 잰 값)를 지도 위 쪽지로 띄웁니다. 뭍·도시에서는 안 뜹니다. 끌어 옮길 수 있습니다."));
 
         // 발견물 수 — 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄운다.
-        rows.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
+        info.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
             "원본에 없는 것입니다 — 도시에 들어가면 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 도시 창 곁에 띄웁니다. 끌어 옮길 수 있습니다."));
 
-        rows.Children.Add(MiniMapControls(options));
+        info.Children.Add(MiniMapControls(options));
 
         // 바람·해류 화살표 — 원본은 물결로만 흐름을 보인다. 개발 창에 있던 것을 여기로 옮겼다.
-        rows.Children.Add(Toggle("바람·해류 화살표", options.ArrowsOn(), options.SetArrows,
+        info.Children.Add(Toggle("바람·해류 화살표", options.ArrowsOn(), options.SetArrows,
             "원본에 없는 덧그림입니다 — 바람과 해류의 방위를 지도 위에 화살표로 얹습니다."));
 
         // 발견물 지도 — 햄버거 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
-        rows.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
+        info.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,
             "햄버거에 「발견물 지도」 줄을 냅니다. 어디에 무엇이 있는지 표식으로 찍어 보여 줍니다."
             + " 끄면 줄도 단축키도 안 먹습니다."));
 
         // 여급 수첩 — 낯을 튼 여급과 궁합을 모아 본다. 원본에는 없는 창이다.
-        rows.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
+        info.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
             on => GameSettings.ShowBarmaidBookMenu = on,
-            "햄버거에 「여급 수첩」 줄을 냅니다. 낯을 튼 여급의 친밀도와 궁합을 모아 봅니다."));
+            "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「여급 수첩」을 냅니다. 낯을 튼 여급의 친밀도와 궁합을 모아 봅니다."
+            + " 여급 수첩 · 인물 이동을 다 끄면 도시락 단추도 사라집니다."));
 
         // 인물 이동 — 누가 어느 도시로 가고 있는지 늘어놓는 창.
-        rows.Children.Add(Toggle("인물 이동", GameSettings.ShowPersonMoveMenu,
+        info.Children.Add(Toggle("인물 이동", GameSettings.ShowPersonMoveMenu,
             on => GameSettings.ShowPersonMoveMenu = on,
-            "햄버거에 「인물 이동」 줄을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
+            "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「인물 이동」을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
 
         // Ctrl+클릭 배 놓기 — 지도를 찍은 자리로 배가 뛴다. 켠 채로 시작한다.
         rows.Children.Add(Toggle("Ctrl+클릭 배 놓기", GameSettings.PlaceShipByCtrlClick,
@@ -115,20 +124,20 @@ public sealed class ModDialog : GameWindow
             "Ctrl 을 짚고 지도를 찍으면 배를 그 자리에 놓습니다. 끄면 여느 클릭처럼 닻만 오르내립니다."));
 
         // 계약 힌트 — 기능·언어 쪽지 위에 현재 계약의 힌트 이름을 띄운다.
-        rows.Children.Add(Toggle("현재 계약 힌트", GameSettings.ShowContractHintOverlay,
+        info.Children.Add(Toggle("현재 계약 힌트", GameSettings.ShowContractHintOverlay,
             on => GameSettings.ShowContractHintOverlay = on,
             "도시에 들어가면 현재 계약을 맺은 힌트 이름을 기능·언어 쪽지 위에 띄웁니다."));
 
-        rows.Children.Add(Toggle("현재 함대 선박 이름", GameSettings.ShowFleetOverlay,
+        info.Children.Add(Toggle("현재 함대 선박 이름", GameSettings.ShowFleetOverlay,
             on => GameSettings.ShowFleetOverlay = on,
             "도시에 들어가면 현재 함대의 선박 이름과 선체를 도시 창 옆에 띄웁니다."));
 
-        rows.Children.Add(Toggle("현재 힌트 목록", GameSettings.ShowHintOverlay,
+        info.Children.Add(Toggle("현재 힌트 목록", GameSettings.ShowHintOverlay,
             on => GameSettings.ShowHintOverlay = on,
             "현재 남아 있는 힌트를 최대 10개까지 함대 선박 이름 아래에 띄웁니다."));
 
         // 기능·언어 — 켜 두면 도시에 들어갈 때 도시 그림 왼쪽에 쪽지로 뜬다.
-        rows.Children.Add(Toggle("기능·언어", GameSettings.ShowSkillOverlay,
+        info.Children.Add(Toggle("기능·언어", GameSettings.ShowSkillOverlay,
             on => GameSettings.ShowSkillOverlay = on,
             "도시에 들어가면 제독과 부하 넷의 기능·언어를 도시 그림 왼쪽에 띄웁니다. 끌어 옮기면 그 자리를 기억합니다."));
 
@@ -139,7 +148,7 @@ public sealed class ModDialog : GameWindow
             + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖춘 판에서 물음이 성가실 때 씁니다."));
 
         // 생명력 — 원본 탐험정보에 없는 줄이다.
-        rows.Children.Add(Toggle("생명력 정보", GameSettings.ShowVitalityInfo,
+        info.Children.Add(Toggle("생명력 정보", GameSettings.ShowVitalityInfo,
             on => GameSettings.ShowVitalityInfo = on,
             "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
@@ -160,6 +169,11 @@ public sealed class ModDialog : GameWindow
 
         // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 곡 등록 창은 햄버거에 있던 것을 이 줄 밑 단추로 옮겼다.
         general.Children.Add(CustomBgmControls());
+
+        // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
+        lab.Children.Add(Toggle("바다 입체 효과", options.SeaOn(), options.SetSea,
+            "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로,"
+            + " 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다."));
 
         // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
         general.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
@@ -238,7 +252,11 @@ public sealed class ModDialog : GameWindow
         // 두 판을 한 칸에 겹쳐 두고 안 보이는 쪽은 Hidden 으로 — 자리를 지켜 탭을 넘겨도 창 크기가 안 바뀐다.
         var pages = new Grid();
         pages.Children.Add(rows);
+        pages.Children.Add(info);
         pages.Children.Add(general);
+        pages.Children.Add(lab);
+        info.Visibility = Visibility.Hidden;
+        lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
 
         var body = new StackPanel { Orientation = Orientation.Horizontal };
@@ -247,7 +265,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(rows, general));
+        stack.Children.Add(Tabs(rows, info, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -264,7 +282,8 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
-    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement general)
+    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement general,
+                                  FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
         var heads = new List<(Border Head, FrameworkElement Page)>();
@@ -299,7 +318,9 @@ public sealed class ModDialog : GameWindow
         }
 
         Add("편의성", convenience);
+        Add("정보", info);
         Add("일반", general);
+        Add("실험", lab);
         Select(convenience);
         return bar;
     }

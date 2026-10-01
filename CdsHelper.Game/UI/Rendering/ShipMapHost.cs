@@ -229,6 +229,57 @@ public sealed class ShipMapHost : HwndHost
         }
     }
 
+    /// <summary>
+    /// 바다 입체 효과를 켤지. 켜면 깊이 표를 한 번 짓고, 켜 둔 동안은 물결이 흐르도록 프레임마다 다시 그린다.
+    /// </summary>
+    public bool SeaEffect
+    {
+        get => _renderer.SeaEffect;
+        set
+        {
+            if (_renderer.SeaEffect == value) return;
+            if (value && !_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);
+            _renderer.SeaEffect = value;
+            _dirty = true;
+        }
+    }
+
+    /// <summary>
+    /// 칸마다 뭍까지의 걸음 수(0 뭍 · 1~15 물, 15 에서 멈춘다). 지형표 부류 0·1 이 물이다(<see cref="TerrainTable.WaterMax"/>).
+    /// 뭍 칸 전부를 한꺼번에 띄워 너비 우선으로 번진다 — 가로는 경도 -180/180 을 잇는다.
+    /// </summary>
+    private byte[]? BuildSeaDepth()
+    {
+        if (_world == null || _terrain == null) return null;
+        int w = WorldMapRenderer.UnfoldedW, h = WorldMapRenderer.CellH;
+        var depth = new byte[w * h];
+        var queue = new int[w * h];
+        int head = 0, tail = 0;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                int i = y * w + x;
+                if (_terrain.ClassOfCell(CellValue(x, y)) > TerrainTable.WaterMax) queue[tail++] = i;   // 뭍 = 0
+                else depth[i] = 255;                                                                    // 아직 모름
+            }
+        while (head < tail)
+        {
+            int i = queue[head++];
+            int x = i % w, y = i / w;
+            byte next = (byte)Math.Min(15, depth[i] + 1);
+            Span<int> around = [y * w + (x + 1) % w, y * w + (x + w - 1) % w,
+                                y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
+            foreach (int j in around)
+            {
+                if (j < 0 || depth[j] != 255) continue;
+                depth[j] = next;
+                queue[tail++] = j;
+            }
+        }
+        for (int i = 0; i < depth.Length; i++) if (depth[i] == 255) depth[i] = 15;   // 뭍이 없는 줄(극지 밖)
+        return depth;
+    }
+
     // 마지막 프레임의 화면 원점. 클릭한 자리를 칸으로 되돌릴 때 쓴다.
     private (double X, double Y) _lastOrigin;
     private double _lastDpiX = 1, _lastDpiY = 1;
@@ -675,6 +726,13 @@ public sealed class ShipMapHost : HwndHost
 
         // 자동항해 항로. 마디 자리는 고정된 칸이라 원점이 그대로면 화면 자리도 그대로다.
         SyncRoute(origin);
+
+        // 바다 입체 효과를 켜 두면 물결이 흐르므로 프레임마다 다시 그린다.
+        if (_renderer.SeaEffect)
+        {
+            _renderer.SeaTime = (float)now.TotalSeconds;
+            _dirty = true;
+        }
 
         // 지난 프레임과 똑같으면 그리지 않는다. 배는 0.1초에 한 걸음씩 옮기고 지도는
         // 가장자리에 닿아야 넘어가므로, 60fps 로 도는 동안 거의 다 같은 그림이다.

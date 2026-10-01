@@ -77,6 +77,9 @@ public sealed class GameSettingsData
     /// <summary>발견물 지도에 위도·경도 25도 격자를 깔지. 꺼 두고 시작한다.</summary>
     public bool DiscoveryMapGrid { get; set; }
 
+    /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 꺼 두고 시작한다.</summary>
+    public bool SeaEffect { get; set; }
+
     /// <summary>미니맵 풍향 화살표. 꺼 두고 시작한다.</summary>
     public bool MiniMapWind { get; set; }
 
@@ -883,6 +886,13 @@ public static class GameSettings
     {
         get => Get(d => d.DiscoveryMapGrid);
         set => Set(d => d.DiscoveryMapGrid = value);
+    }
+
+    /// <summary>바다 입체 효과를 켤지 — 모드 창 「일반」에서 켜고 끈다. 원본에 없는 덧그림이다.</summary>
+    public static bool SeaEffect
+    {
+        get => Get(d => d.SeaEffect);
+        set => Set(d => d.SeaEffect = value);
     }
 
     /// <summary>미니맵에 풍향 화살표를 깔지 — 미니맵 오른쪽 위 단추로 켜고 끈다.</summary>
