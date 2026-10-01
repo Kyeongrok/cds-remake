@@ -69,11 +69,11 @@ public sealed class DiscoveryMapDialog : GameWindow
     private static readonly Brush Mine = Frozen(Color.FromRgb(0x20, 0x40, 0xC0));
 
     /// <summary>풍향 · 해류 화살표 색. 표식(빨강·회색·파랑)과 안 겹치게 보라와 청록이다.</summary>
-    private static readonly Brush WindInk = Frozen(Color.FromRgb(0x70, 0x40, 0xC0));
-    private static readonly Brush CurrentInk = Frozen(Color.FromRgb(0x10, 0x8A, 0x70));
+    internal static readonly Brush WindInk = Frozen(Color.FromRgb(0x70, 0x40, 0xC0));
+    internal static readonly Brush CurrentInk = Frozen(Color.FromRgb(0x10, 0x8A, 0x70));
 
     /// <summary>화살표 선 굵기와 머리 크기(지도 점). 배율을 따라 함께 커진다.</summary>
-    private const double ArrowLine = 0.5, ArrowHead = 1.6;
+    internal const double ArrowLine = 0.5, ArrowHead = 1.6;
 
     private static SolidColorBrush Frozen(Color c)
     {
@@ -105,6 +105,14 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <summary>풍향 · 해류 화살표가 앉는 켜. 표식보다 아래다.</summary>
     private readonly Canvas _windLayer = new() { IsHitTestVisible = false };
     private readonly Canvas _currentLayer = new() { IsHitTestVisible = false };
+
+    /// <summary>위도·경도 격자 켜 — 50도마다 어두운 흰 선과 도수 글씨.</summary>
+    private readonly Canvas _gridLayer = new() { IsHitTestVisible = false };
+
+    /// <summary>격자 간격(도).</summary>
+    private const int GridStep = 50;
+
+    private static readonly Brush GridInk = Frozen(Color.FromArgb(0xB0, 0xC8, 0xC8, 0xC8));
 
     /// <summary>바람표를 읽었는지 — 못 읽었으면 단추도 설명도 안 낸다.</summary>
     private readonly bool _hasFlows;
@@ -175,6 +183,11 @@ public sealed class DiscoveryMapDialog : GameWindow
             Height = height,
             SnapsToDevicePixels = true,
         });
+
+        // 격자는 화살표보다도 밑이다 — 바탕 바로 위.
+        _world.Children.Add(_gridLayer);
+        DrawGrid(width, height);
+        _gridLayer.Visibility = GameSettings.DiscoveryMapGrid ? Visibility.Visible : Visibility.Collapsed;
 
         // 화살표 켜는 표식보다 먼저 얹는다 — 점과 이름표가 화살표에 안 가린다.
         _world.Children.Add(_windLayer);
@@ -255,12 +268,16 @@ public sealed class DiscoveryMapDialog : GameWindow
             else Warp(px, py);
         };
 
+        // 안내 글은 <b>지도 폭에서 접는다</b> — 한 줄로 두면 글이 창 폭을 정해 지도 양옆이 쓸데없이 넓어졌다.
         _note = new TextBlock
         {
             Foreground = GameUi.Text,
             FontSize = 14,
             Margin = new Thickness(4, 2, 4, 4),
             HorizontalAlignment = HorizontalAlignment.Center,
+            MaxWidth = ViewW,
+            TextWrapping = TextWrapping.Wrap,
+            TextAlignment = TextAlignment.Center,
         };
 
         var ok = GameUi.PushButton("확인", Close, 88);
@@ -269,20 +286,23 @@ public sealed class DiscoveryMapDialog : GameWindow
 
         var stack = new StackPanel { Margin = new Thickness(2) };
         stack.Children.Add(viewport);
+        var toggles = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 2, 0, 0),
+        };
         if (_hasFlows)
         {
-            var toggles = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 2, 0, 0),
-            };
             toggles.Children.Add(Toggle("풍향", () => GameSettings.DiscoveryMapWind,
                                         v => GameSettings.DiscoveryMapWind = v, _windLayer, out _toggleWind));
             toggles.Children.Add(Toggle("해류", () => GameSettings.DiscoveryMapCurrent,
                                         v => GameSettings.DiscoveryMapCurrent = v, _currentLayer, out _toggleCurrent));
-            stack.Children.Add(toggles);
         }
+        // 위도·경도 격자 — 바람표가 없어도 늘 선다.
+        toggles.Children.Add(Toggle("격자", () => GameSettings.DiscoveryMapGrid,
+                                    v => GameSettings.DiscoveryMapGrid = v, _gridLayer, out _));
+        stack.Children.Add(toggles);
         stack.Children.Add(_note);
         stack.Children.Add(ok);
         Content = stack;
@@ -360,7 +380,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         foreach (var tag in _labels) tag.Visibility = show;
 
         _note.Text = $"발견물 {_found}곳 · 찾은 것 {_done}곳 · 배율 x{Z:0.#}"
-                   + "   (휠 키우기·줄이기 · 끌어서 옮기기"
+                   + Environment.NewLine + "(휠 키우기·줄이기 · 끌어서 옮기기"
                    + (_warp != null ? " · 오른쪽 단추 그 자리로 옮기기" : "")
                    + (_autoSail != null ? " · Shift+오른쪽 단추 그 자리로 자동항해" : "")
                    + " · 빨강 찾음 · 회색 아직 · 파랑 내 자리"
@@ -395,6 +415,62 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// </summary>
     private void DrawFlows(WindTable table, int width, int height)
     {
+        var (wind, current) = FlowGeometry(table, _month, width, height);
+        _windLayer.Children.Add(new System.Windows.Shapes.Path
+        {
+            Data = wind, Stroke = WindInk, Fill = WindInk, StrokeThickness = ArrowLine,
+        });
+        _currentLayer.Children.Add(new System.Windows.Shapes.Path
+        {
+            Data = current, Stroke = CurrentInk, Fill = CurrentInk, StrokeThickness = ArrowLine,
+        });
+    }
+
+    /// <summary>
+    /// 위도·경도 격자를 긋는다 — 50도마다 선 하나와 가장자리 도수 글씨. 지도 점(칸/4)으로 가로가 경도 360도,
+    /// 세로가 위도 180도다(왼쪽 끝 서경 180 · 위 끝 북위 90).
+    /// </summary>
+    private void DrawGrid(int width, int height)
+    {
+        var lines = new StreamGeometry();
+        using (var g = lines.Open())
+        {
+            for (int lon = -150; lon <= 150; lon += GridStep)
+            {
+                double x = (lon + 180) / 360.0 * width;
+                g.BeginFigure(new Point(x, 0), false, false);
+                g.LineTo(new Point(x, height), true, false);
+                Label(lon == 0 ? "0°" : lon < 0 ? $"{-lon}°W" : $"{lon}°E", x + 1, 1);
+            }
+            for (int lat = -50; lat <= 50; lat += GridStep)
+            {
+                double y = (90 - lat) / 180.0 * height;
+                g.BeginFigure(new Point(0, y), false, false);
+                g.LineTo(new Point(width, y), true, false);
+                Label(lat == 0 ? "0°" : lat < 0 ? $"{-lat}°S" : $"{lat}°N", 1, y + 1);
+            }
+        }
+        lines.Freeze();
+        _gridLayer.Children.Insert(0, new System.Windows.Shapes.Path
+        {
+            Data = lines, Stroke = GridInk, StrokeThickness = 0.5,
+        });
+
+        void Label(string text, double x, double y)
+        {
+            var tag = new TextBlock { Text = text, Foreground = GridInk, FontSize = 5 };
+            Canvas.SetLeft(tag, x);
+            Canvas.SetTop(tag, y);
+            _gridLayer.Children.Add(tag);
+        }
+    }
+
+    /// <summary>
+    /// 풍향·해류 화살표 도형 둘 — 발견물 지도와 미니맵이 같이 쓴다. 한 칸 윗쪽에 풍향, 아랫쪽에 해류다.
+    /// </summary>
+    internal static (StreamGeometry Wind, StreamGeometry Current) FlowGeometry(WindTable table, int month,
+                                                                             int width, int height)
+    {
         double cellW = width / (double)WindTable.Cols, cellH = height / (double)WindTable.Rows;
         var wind = new StreamGeometry();
         var current = new StreamGeometry();
@@ -408,7 +484,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                 double cy = (cell / WindTable.Cols + 0.5) * cellH;
 
                 // 한 칸 윗쪽에 풍향, 아랫쪽에 해류 — 가운데 겹치면 둘 다 안 읽힌다.
-                var blow = table.WindAt(cell, _month);
+                var blow = table.WindAt(cell, month);
                 if (!blow.IsStill) Arrow(w, table, blow, cx, cy - cellH / 4, cellW, maxSpeed: 6);
                 var flow = table.CurrentAt(cell);
                 if (!flow.IsStill) Arrow(c, table, flow, cx, cy + cellH / 4, cellW, maxSpeed: 7);
@@ -417,14 +493,7 @@ public sealed class DiscoveryMapDialog : GameWindow
 
         wind.Freeze();
         current.Freeze();
-        _windLayer.Children.Add(new System.Windows.Shapes.Path
-        {
-            Data = wind, Stroke = WindInk, Fill = WindInk, StrokeThickness = ArrowLine,
-        });
-        _currentLayer.Children.Add(new System.Windows.Shapes.Path
-        {
-            Data = current, Stroke = CurrentInk, Fill = CurrentInk, StrokeThickness = ArrowLine,
-        });
+        return (wind, current);
     }
 
     /// <summary>

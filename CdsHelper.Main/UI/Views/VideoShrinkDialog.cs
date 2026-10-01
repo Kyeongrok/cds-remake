@@ -53,6 +53,9 @@ public sealed class VideoShrinkDialog : Window
     private readonly Button _markFrom;
     private readonly Button _markTo;
     private readonly Button _clearRange;
+
+    /// <summary>남길 구간 띠 — 재생 막대 밑에서 양 끝 손잡이를 끌어 정한다.</summary>
+    private readonly RangeBar _range = new() { Margin = new Thickness(0, 4, 118, 0) };
     private readonly System.Windows.Threading.DispatcherTimer _tick;
     private bool _dragging;
 
@@ -130,9 +133,21 @@ public sealed class VideoShrinkDialog : Window
         _seek = new Slider { Minimum = 0, Maximum = 1, IsMoveToPointEnabled = true, VerticalAlignment = VerticalAlignment.Center };
         _clock = new TextBlock { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0), MinWidth = 110, Text = "0:00 / 0:00" };
         _rangeText = new TextBlock { Foreground = Brushes.DimGray, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
-        _markFrom = MakeButton("[ 여기서 시작", () => Mark(start: true));
-        _markTo = MakeButton("여기서 끝 ]", () => Mark(start: false));
-        _clearRange = MakeButton("구간 지우기", ClearRange);
+        _markFrom = MakeButton("[ 시작점 = 지금", () => Mark(start: true));
+        _markTo = MakeButton("끝점 = 지금 ]", () => Mark(start: false));
+        _clearRange = MakeButton("범위 해제", ClearRange);
+        _markFrom.ToolTip = "재생 막대가 있는 자리를 남길 구간의 시작으로 삼는다";
+        _markTo.ToolTip = "재생 막대가 있는 자리를 남길 구간의 끝으로 삼는다";
+        _clearRange.ToolTip = "정한 범위를 없애고 처음부터 끝까지 남긴다 — 동영상을 지우는 것이 아니다";
+
+        // 띠의 손잡이를 끄는 동안 그 장면을 보여 주고, 놓으면 그 범위를 남길 구간으로 삼는다.
+        _range.Dragging += seconds => { if (_player.Source != null) SeekTo(seconds); };
+        _range.RangeChanged += (from, to) =>
+        {
+            _keepFrom = from <= 0.001 ? null : TimeSpan.FromSeconds(from);
+            _keepTo = Length > TimeSpan.Zero && to >= Length.TotalSeconds - 0.001 ? null : TimeSpan.FromSeconds(to);
+            UpdateInfo();
+        };
         _tick = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
         _tick.Tick += (_, _) => SyncSeek();
         _seek.PreviewMouseLeftButtonDown += (_, _) => _dragging = true;
@@ -224,6 +239,8 @@ public sealed class VideoShrinkDialog : Window
         seekRow.Children.Add(_clock);
         seekRow.Children.Add(_seek);
 
+        // 남길 구간 띠 — 재생 막대 바로 밑. 오른쪽 시각 칸 폭만큼 비워 막대와 끝을 맞춘다.
+
         // 자르기 줄 — 지금 자리를 남길 구간의 시작·끝으로 적는다.
         var cutRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
         cutRow.Children.Add(_markFrom);
@@ -237,11 +254,13 @@ public sealed class VideoShrinkDialog : Window
         left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         Place(left, previewHead, 0);
         Place(left, frame, 1);
         Place(left, seekRow, 2);
-        Place(left, cutRow, 3);
-        Place(left, _previewInfo, 4);
+        Place(left, _range, 3);
+        Place(left, cutRow, 4);
+        Place(left, _previewInfo, 5);
 
         var options = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
         options.Children.Add(Section("크기"));
@@ -479,6 +498,8 @@ public sealed class VideoShrinkDialog : Window
         _playButton.IsEnabled = !_running;
         _seek.Maximum = Math.Max(0.1, Length.TotalSeconds);
         _seek.Value = 0;
+        _range.Maximum = _seek.Maximum;
+        _range.SetRange(_keepFrom?.TotalSeconds, _keepTo?.TotalSeconds);
         _tick.Start();
         SyncSeek();
         UpdateInfo();
@@ -641,6 +662,7 @@ public sealed class VideoShrinkDialog : Window
             _ => "화질과 용량의 중간",
         };
 
+        _range.SetRange(_keepFrom?.TotalSeconds, _keepTo?.TotalSeconds);
         _rangeText.Text = _keepFrom == null && _keepTo == null
             ? "자르지 않음 — 처음부터 끝까지"
             : $"남길 구간 {Clock(_keepFrom ?? TimeSpan.Zero)} ~ {(_keepTo is { } to ? Clock(to) : "끝")}";

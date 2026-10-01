@@ -422,15 +422,18 @@ public sealed class ShipMapWindow : Window
         };
 
         // 미니맵은 지도 오른쪽 아래다. 자리는 띄울 때 지도 크기로 다시 잡는다(SyncOverlay).
+        // 미니맵은 손을 받는다 — 마우스를 올리면 반투명해지고, 오른쪽 위 단추로 풍향·해류를 켠다.
+        // 그래서 미니맵 위를 눌러도 아래 지도로는 안 간다.
         _miniPopup = new Popup
         {
             PlacementTarget = input,
             Placement = PlacementMode.Relative,
             AllowsTransparency = true,
             StaysOpen = true,
-            IsHitTestVisible = false,
+            IsHitTestVisible = true,
             Child = _mini,
         };
+        _mini.HoverChanged += SyncMiniOpacity;
         surface.Children.Add(_miniPopup);
 
         // 게임 상단 띠. 어느 칸을 띄울지는 도시정보 창에서 켜고 끈다(띠를 오른쪽 단추로 누른다).
@@ -665,11 +668,16 @@ public sealed class ShipMapWindow : Window
         // END GAME · CONTINUE? 아니오 · 창 닫기가 모두 이 창을 닫으므로 여기 한 자리에서 건다.
         // 원본도 그림 앞에서 소리를 끈다(0x00410FC4 · 0x00410FD8).
         bool farewell = false;
+        ShuttingDown = false;   // 개발도구에서 다시 띄운 창이면 지난 판의 표시를 지운다
         Closing += (_, e) =>
         {
             if (farewell || e.Cancel) return;
             farewell = true;
             e.Cancel = true;
+            // 닫기 시작했다 — 떠 있던 창을 <b>가장 깊이 딸린 것부터</b> 차례로 닫는다. 한꺼번에 사라지면
+            // 그 밑에서 기다리던 코드가 이미 닫힌 창을 주인으로 새 창을 띄우려다 「닫힌 창에는 Owner 속성을…」으로 죽었다.
+            ShuttingDown = true;
+            CloseOwnedDeepestFirst(this);
             Dispatcher.BeginInvoke(() =>
             {
                 _overlay.IsOpen = false;
@@ -1175,9 +1183,22 @@ public sealed class ShipMapWindow : Window
             _miniPopup.HorizontalOffset = Math.Max(0, _input.ActualWidth - MiniMapView.ViewW - 10);
             _miniPopup.VerticalOffset = Math.Max(0, _input.ActualHeight - MiniMapView.ViewH - 10);
         }
-        // 배가 미니맵 밑으로 들어가면 <b>두 배 더 투명하게</b>(불투명도를 반으로) 해 배와 둘레가 보이게 한다.
-        _mini.SetOpacity(GameSettings.MiniMapOpacity * (room && ShipUnderMiniMap() ? 0.5 : 1));
+        // 풍향·해류 화살표 — 바람표가 반년마다 갈리므로 반년이 바뀌면 다시 그린다.
+        if (room) _mini.SetFlows(_miniWind ??= WindTable.Open(_game.Directory), _game.Player.Date.Month);
+        SyncMiniOpacity();
         _miniPopup.IsOpen = room;
+    }
+
+    /// <summary>미니맵 화살표에 쓰는 바람표 — 한 번 열어 둔다.</summary>
+    private WindTable? _miniWind;
+
+    /// <summary>
+    /// 미니맵 불투명도 — 배가 미니맵 밑으로 들어가거나 <b>마우스를 올리면</b> 반으로(두 배 더 투명하게) 낮춰 밑이 보이게 한다.
+    /// </summary>
+    private void SyncMiniOpacity()
+    {
+        bool see = _mini.Hovered || (_miniPopup.IsOpen && ShipUnderMiniMap());
+        _mini.SetOpacity(GameSettings.MiniMapOpacity * (see ? 0.5 : 1));
     }
 
     /// <summary>배 그림 반 폭(48점 그림의 반) — 배 가장자리가 미니맵에 걸리기만 해도 겹친 것으로 친다.</summary>
@@ -2059,6 +2080,25 @@ public sealed class ShipMapWindow : Window
         _game.Player.SetAshore(_host.AshoreSpot, _host.MooredHeading);
         // 대 둔 배 자리도 적는다 — 도시 안에서 적을 때도 뭍에 올라 있으면 그 배 자리가 있어야 뭍에서 잇는다.
         _game.Player.SetSeaCell(_host.SeaSpot);
+    }
+
+    /// <summary>
+    /// 게임 창을 닫는 중인지 — 앱의 오류 처리기가 이것을 보고, 닫는 사이 늦게 뜨려는 창 때문에 나는 오류를
+    /// 오류 창 없이 넘긴다.
+    /// </summary>
+    public static bool ShuttingDown { get; private set; }
+
+    /// <summary>딸린 창들을 가장 깊은 것(가장 위)부터 닫는다 — 부모가 자식보다 먼저 닫히지 않게.</summary>
+    private static void CloseOwnedDeepestFirst(Window parent)
+    {
+        var children = parent.OwnedWindows.Cast<Window>().ToList();
+        for (int i = children.Count - 1; i >= 0; i--)
+        {
+            var child = children[i];
+            CloseOwnedDeepestFirst(child);
+            try { child.Close(); }
+            catch (InvalidOperationException) { /* 이미 닫히는 중인 창 */ }
+        }
     }
 
     /// <summary>창이 닫혔는지 — 닫힌 뒤에 풀려난 모달 고리가 창을 다시 띄우지 않게 본다.</summary>

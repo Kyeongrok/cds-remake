@@ -32,6 +32,8 @@ internal class App : PrismApplication
 
         DispatcherUnhandledException += (s, args) =>
         {
+            // 게임 창을 닫는 사이 늦게 뜨려던 창이 내는 오류는 조용히 넘긴다 — 닫힌 창을 주인으로 삼으려던 것이다.
+            if (CdsHelper.Game.UI.Views.ShipMapWindow.ShuttingDown) { args.Handled = true; return; }
             MessageBox.Show($"DispatcherUnhandledException:\n{args.Exception.Message}\n\n{args.Exception.StackTrace}", "UI 오류", MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
         };

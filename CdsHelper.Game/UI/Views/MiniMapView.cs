@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
@@ -36,6 +37,18 @@ internal sealed class MiniMapView : Border
 
     private readonly Canvas _world = new();
     private readonly Canvas _marks = new();
+    private readonly Canvas _windLayer = new() { IsHitTestVisible = false };
+    private readonly Canvas _currentLayer = new() { IsHitTestVisible = false };
+    private readonly Border _windButton, _currentButton;
+
+    /// <summary>화살표를 마지막으로 그린 반년(1~6월이면 참). 바뀌면 다시 그린다.</summary>
+    private bool? _flowsFirstHalf;
+
+    /// <summary>마우스가 미니맵 위에 있는지 — 부르는 쪽이 이때 불투명도를 반으로 낮춘다.</summary>
+    public bool Hovered { get; private set; }
+
+    /// <summary>마우스가 올라오거나 나갔다.</summary>
+    public event Action? HoverChanged;
     private readonly Ellipse _ship = new() { Width = 5, Height = 5, Fill = Mine, Stroke = Brushes.White, StrokeThickness = 0.8 };
     private readonly TranslateTransform _shift = new();
 
@@ -50,15 +63,104 @@ internal sealed class MiniMapView : Border
         BorderThickness = new Thickness(2);
         Background = Brushes.Black;
         ClipToBounds = true;
-        IsHitTestVisible = false;
+        // 마우스를 받는다 — 올리면 반투명해지고, 오른쪽 위 단추로 풍향·해류를 켠다.
+        IsHitTestVisible = true;
+        MouseEnter += (_, _) => { Hovered = true; HoverChanged?.Invoke(); };
+        MouseLeave += (_, _) => { Hovered = false; HoverChanged?.Invoke(); };
 
         var moves = new TransformGroup();
         moves.Children.Add(new ScaleTransform(Zoom, Zoom));
         moves.Children.Add(_shift);
         _world.RenderTransform = moves;
+        _world.Children.Add(_windLayer);
+        _world.Children.Add(_currentLayer);
         _world.Children.Add(_marks);
         _world.Children.Add(_ship);
-        Child = new Canvas { Children = { _world } };
+
+        // 오른쪽 위 작은 단추 둘 — 「풍」 풍향 · 「류」 해류. 켜져 있으면 그 화살표 색으로 밝다.
+        _windButton = FlowButton("풍", "풍향 화살표 켜기/끄기",
+            () => GameSettings.MiniMapWind, v => GameSettings.MiniMapWind = v);
+        _currentButton = FlowButton("류", "해류 화살표 켜기/끄기",
+            () => GameSettings.MiniMapCurrent, v => GameSettings.MiniMapCurrent = v);
+        var buttons = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 2, 2, 0),
+            Children = { _windButton, _currentButton },
+        };
+        Child = new Grid { Children = { new Canvas { Children = { _world } }, buttons } };
+        SyncFlows();
+    }
+
+    /// <summary>작은 켜기 단추 하나.</summary>
+    private Border FlowButton(string text, string tip, Func<bool> get, Action<bool> set)
+    {
+        var button = new Border
+        {
+            Width = 18,
+            Height = 16,
+            Margin = new Thickness(2, 0, 0, 0),
+            CornerRadius = new CornerRadius(2),
+            BorderThickness = new Thickness(1),
+            Cursor = System.Windows.Input.Cursors.Hand,
+            ToolTip = tip,
+            Child = new TextBlock
+            {
+                Text = text,
+                FontSize = 10,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            },
+        };
+        button.MouseLeftButtonDown += (_, e) => { e.Handled = true; set(!get()); SyncFlows(); };
+        return button;
+    }
+
+    private static readonly Brush OffFill = Frozen(Color.FromArgb(0xB0, 0x20, 0x20, 0x20));
+    private static readonly Brush OffEdge = Frozen(Color.FromArgb(0xA0, 0x80, 0x80, 0x80));
+
+    /// <summary>켠 켜만 보이고, 단추 모양을 켜짐/꺼짐에 맞춘다.</summary>
+    private void SyncFlows()
+    {
+        bool wind = GameSettings.MiniMapWind, current = GameSettings.MiniMapCurrent;
+        _windLayer.Visibility = wind ? Visibility.Visible : Visibility.Collapsed;
+        _currentLayer.Visibility = current ? Visibility.Visible : Visibility.Collapsed;
+        Paint(_windButton, wind, DiscoveryMapDialog.WindInk);
+        Paint(_currentButton, current, DiscoveryMapDialog.CurrentInk);
+    }
+
+    private static void Paint(Border b, bool on, Brush ink)
+    {
+        b.Background = on ? ink : OffFill;
+        b.BorderBrush = on ? Brushes.White : OffEdge;
+        if (b.Child is TextBlock t) t.Foreground = on ? Brushes.White : Brushes.Gray;
+    }
+
+    /// <summary>
+    /// 풍향·해류 화살표를 깐다 — 바람표가 반년마다 갈리므로 반년이 바뀌면 다시 그린다. 발견물 지도와 같은 도형이다.
+    /// </summary>
+    public void SetFlows(WindTable? table, int month)
+    {
+        if (table == null || !HasChart) return;
+        bool first = WindTable.IsFirstHalf(month);
+        if (_flowsFirstHalf == first) return;
+        _flowsFirstHalf = first;
+
+        var (wind, current) = DiscoveryMapDialog.FlowGeometry(table, month, (int)_world.Width, (int)_world.Height);
+        _windLayer.Children.Clear();
+        _currentLayer.Children.Clear();
+        _windLayer.Children.Add(new Path
+        {
+            Data = wind, Stroke = DiscoveryMapDialog.WindInk, Fill = DiscoveryMapDialog.WindInk,
+            StrokeThickness = DiscoveryMapDialog.ArrowLine,
+        });
+        _currentLayer.Children.Add(new Path
+        {
+            Data = current, Stroke = DiscoveryMapDialog.CurrentInk, Fill = DiscoveryMapDialog.CurrentInk,
+            StrokeThickness = DiscoveryMapDialog.ArrowLine,
+        });
     }
 
     /// <summary>미니맵의 불투명도를 바꾼다.</summary>
