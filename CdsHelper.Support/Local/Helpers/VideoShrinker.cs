@@ -93,6 +93,28 @@ public static class VideoShrinker
 
         /// <summary><see cref="Destination.NextToSource"/> 일 때 이름 뒤에 붙일 꼬리말.</summary>
         public string Suffix { get; init; } = "_small";
+
+        /// <summary>남길 구간의 시작. null 이면 처음부터다.</summary>
+        public TimeSpan? KeepFrom { get; init; }
+
+        /// <summary>남길 구간의 끝. null 이면 끝까지다.</summary>
+        public TimeSpan? KeepTo { get; init; }
+    }
+
+    /// <summary>
+    /// 남길 구간 — 앞에서 잘라 낼 것과 뒤에서 잘라 낼 것. 변환기의 <see cref="MediaTranscoder.TrimStartTime"/> ·
+    /// <see cref="MediaTranscoder.TrimStopTime"/>(뒤에서 잘라 낼 길이)에 그대로 넘긴다.
+    /// </summary>
+    public static (TimeSpan CutFront, TimeSpan CutBack, TimeSpan Kept) Span(Probe probe, Options options)
+    {
+        var length = probe.Duration;
+        var from = options.KeepFrom is { } f ? Clamp(f, length) : TimeSpan.Zero;
+        var to = options.KeepTo is { } t ? Clamp(t, length) : length;
+        if (to < from) (from, to) = (to, from);
+        return (from, length - to, to - from);
+
+        static TimeSpan Clamp(TimeSpan v, TimeSpan max) =>
+            v < TimeSpan.Zero ? TimeSpan.Zero : v > max ? max : v;
     }
 
     /// <summary>원본 동영상에서 읽어 둔 값.</summary>
@@ -201,7 +223,7 @@ public static class VideoShrinker
         double bits = TargetVideoBitrate(probe, width, height, options);
         if (KeepsAudio(probe, options)) bits += AudioBitrate;
 
-        return (long)(bits * probe.Duration.TotalSeconds / 8 * 1.02);
+        return (long)(bits * Span(probe, options).Kept.TotalSeconds / 8 * 1.02);
     }
 
     public static bool KeepsAudio(Probe probe, Options options) => probe.HasAudio && !options.RemoveAudio;
@@ -297,6 +319,16 @@ public static class VideoShrinker
             output = new FileStream(temp, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 
             var transcoder = new MediaTranscoder { HardwareAccelerationEnabled = true };
+
+            // 고른 구간만 남긴다 — 앞은 TrimStartTime, 뒤는 끝에서 잘라 낼 길이(TrimStopTime)로 넘긴다.
+            var (cutFront, cutBack, kept) = Span(probe, options);
+            if (kept <= TimeSpan.Zero)
+            {
+                result.Error = "남길 구간이 없습니다 — 시작과 끝을 다시 골라 주세요";
+                return result;
+            }
+            if (cutFront > TimeSpan.Zero) transcoder.TrimStartTime = cutFront;
+            if (cutBack > TimeSpan.Zero) transcoder.TrimStopTime = cutBack;
             var prepared = await transcoder.PrepareStreamTranscodeAsync(
                 input.AsRandomAccessStream(), output.AsRandomAccessStream(), BuildProfile(probe, result, options));
             if (!prepared.CanTranscode)

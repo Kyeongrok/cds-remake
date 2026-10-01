@@ -45,6 +45,20 @@ public sealed class VideoShrinkDialog : Window
 
     private readonly List<Control> _inputs = [];
 
+    // ── 되감기와 자르기 ─────────────────────────────────────────────────────
+    /// <summary>되감기 막대 — 끌면 그 자리로 옮기고, 트는 동안은 지금 자리를 따라간다.</summary>
+    private readonly Slider _seek;
+    private readonly TextBlock _clock;
+    private readonly TextBlock _rangeText;
+    private readonly Button _markFrom;
+    private readonly Button _markTo;
+    private readonly Button _clearRange;
+    private readonly System.Windows.Threading.DispatcherTimer _tick;
+    private bool _dragging;
+
+    /// <summary>남길 구간 — 비우면 처음부터·끝까지.</summary>
+    private TimeSpan? _keepFrom, _keepTo;
+
     private string? _path;
     private string? _folder;
     private string? _lastOutput;
@@ -113,6 +127,21 @@ public sealed class VideoShrinkDialog : Window
         _status = new TextBlock { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0) };
         _progress = new ProgressBar { Height = 6, Minimum = 0, Maximum = 1, Margin = new Thickness(0, 6, 0, 0), Visibility = Visibility.Collapsed };
 
+        _seek = new Slider { Minimum = 0, Maximum = 1, IsMoveToPointEnabled = true, VerticalAlignment = VerticalAlignment.Center };
+        _clock = new TextBlock { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0), MinWidth = 110, Text = "0:00 / 0:00" };
+        _rangeText = new TextBlock { Foreground = Brushes.DimGray, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+        _markFrom = MakeButton("[ 여기서 시작", () => Mark(start: true));
+        _markTo = MakeButton("여기서 끝 ]", () => Mark(start: false));
+        _clearRange = MakeButton("구간 지우기", ClearRange);
+        _tick = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _tick.Tick += (_, _) => SyncSeek();
+        _seek.PreviewMouseLeftButtonDown += (_, _) => _dragging = true;
+        _seek.PreviewMouseLeftButtonUp += (_, _) => { _dragging = false; SeekTo(_seek.Value); };
+        _seek.ValueChanged += (_, _) =>
+        {
+            if (_dragging) SeekTo(_seek.Value);   // 끄는 동안 장면을 따라 보여 준다(ScrubbingEnabled)
+        };
+
         _saveButton = MakeButton("줄여서 저장", () => _ = SaveAsync());
         _revealButton = MakeButton("만든 파일 보기", RevealLast);
         _playResultButton = MakeButton("만든 것 틀기", PlayResult);
@@ -157,7 +186,7 @@ public sealed class VideoShrinkDialog : Window
             _cancel?.Cancel();
             _status.Text = "그만두는 중입니다 — 멈추면 닫힙니다.";
         };
-        Closed += (_, _) => _player.Close();
+        Closed += (_, _) => { _tick.Stop(); _player.Close(); };
 
         OnModeChanged();
         OnWhereChanged();
@@ -189,13 +218,30 @@ public sealed class VideoShrinkDialog : Window
             Child = _player,
         };
 
+        // 되감기 줄 — 막대와 「지금 / 전체」 시각.
+        var seekRow = new DockPanel { Margin = new Thickness(0, 6, 0, 0) };
+        DockPanel.SetDock(_clock, Dock.Right);
+        seekRow.Children.Add(_clock);
+        seekRow.Children.Add(_seek);
+
+        // 자르기 줄 — 지금 자리를 남길 구간의 시작·끝으로 적는다.
+        var cutRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+        cutRow.Children.Add(_markFrom);
+        cutRow.Children.Add(_markTo);
+        cutRow.Children.Add(_clearRange);
+        cutRow.Children.Add(_rangeText);
+
         var left = new Grid();
         left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         left.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        left.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         Place(left, previewHead, 0);
         Place(left, frame, 1);
-        Place(left, _previewInfo, 2);
+        Place(left, seekRow, 2);
+        Place(left, cutRow, 3);
+        Place(left, _previewInfo, 4);
 
         var options = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
         options.Children.Add(Section("크기"));
@@ -361,6 +407,7 @@ public sealed class VideoShrinkDialog : Window
         _path = path;
         _probe = null;
         _lastOutput = null;
+        _keepFrom = _keepTo = null;
         _pathText.Text = path;
         _pathText.ToolTip = path;
         _status.Foreground = Brushes.Black;
@@ -430,6 +477,46 @@ public sealed class VideoShrinkDialog : Window
     {
         _player.Position = TimeSpan.Zero;
         _playButton.IsEnabled = !_running;
+        _seek.Maximum = Math.Max(0.1, Length.TotalSeconds);
+        _seek.Value = 0;
+        _tick.Start();
+        SyncSeek();
+        UpdateInfo();
+    }
+
+    /// <summary>틀고 있는 동영상의 길이. 아직 모르면 0.</summary>
+    private TimeSpan Length => _player.NaturalDuration.HasTimeSpan ? _player.NaturalDuration.TimeSpan : TimeSpan.Zero;
+
+    /// <summary>막대와 시각을 지금 자리로 맞춘다 — 끄는 중이면 막대는 손을 따른다.</summary>
+    private void SyncSeek()
+    {
+        if (_player.Source == null) return;
+        var now = _player.Position;
+        if (!_dragging) _seek.Value = Math.Min(_seek.Maximum, now.TotalSeconds);
+        _clock.Text = $"{Clock(now)} / {Clock(Length)}";
+    }
+
+    private void SeekTo(double seconds)
+    {
+        if (_player.Source == null) return;
+        _player.Position = TimeSpan.FromSeconds(Math.Max(0, seconds));
+        _clock.Text = $"{Clock(_player.Position)} / {Clock(Length)}";
+    }
+
+    /// <summary>지금 자리를 남길 구간의 시작이나 끝으로 적는다. 원본을 틀 때만 뜻이 있다.</summary>
+    private void Mark(bool start)
+    {
+        if (_player.Source == null) return;
+        var now = _player.Position;
+        if (start) _keepFrom = now; else _keepTo = now;
+        if (_keepFrom is { } a && _keepTo is { } b && b < a) (_keepFrom, _keepTo) = (b, a);
+        UpdateInfo();
+    }
+
+    private void ClearRange()
+    {
+        _keepFrom = _keepTo = null;
+        UpdateInfo();
     }
 
     private void TogglePlay()
@@ -514,6 +601,8 @@ public sealed class VideoShrinkDialog : Window
             Where = Where,
             Folder = _folder,
             Suffix = _suffix.Text.Trim(),
+            KeepFrom = _keepFrom,
+            KeepTo = _keepTo,
         };
     }
 
@@ -552,6 +641,10 @@ public sealed class VideoShrinkDialog : Window
             _ => "화질과 용량의 중간",
         };
 
+        _rangeText.Text = _keepFrom == null && _keepTo == null
+            ? "자르지 않음 — 처음부터 끝까지"
+            : $"남길 구간 {Clock(_keepFrom ?? TimeSpan.Zero)} ~ {(_keepTo is { } to ? Clock(to) : "끝")}";
+
         if (_path == null || _probe is not { } probe)
         {
             _previewInfo.Text = "";
@@ -568,6 +661,9 @@ public sealed class VideoShrinkDialog : Window
 
         var text = $"원본 {probe.Width}×{probe.Height}{fps} · {Clock(probe.Duration)}{sourceBitrate} · {audio} · {ImageShrinkDialog.Human(probe.Bytes)}";
         text += $"\n→ {tw}×{th} · 영상 {videoBitrate / 1000} kbps · {(keepsAudio ? $"소리 {VideoShrinker.AudioBitrate / 1000} kbps" : "소리 없음")}";
+        var span = VideoShrinker.Span(probe, options);
+        if (span.CutFront > TimeSpan.Zero || span.CutBack > TimeSpan.Zero)
+            text += $" · 남김 {Clock(span.Kept)}";
         text += $" · 어림 {ImageShrinkDialog.Human(VideoShrinker.EstimateBytes(probe, options))}";
 
         if (options.Mode != VideoShrinker.SizeMode.Keep && tw >= (probe.Width & ~1) && th >= (probe.Height & ~1))
@@ -690,6 +786,7 @@ public sealed class VideoShrinkDialog : Window
     private void UpdateEnabled()
     {
         _saveButton.IsEnabled = !_running && _path != null && _probe != null;
+        _markFrom.IsEnabled = _markTo.IsEnabled = _clearRange.IsEnabled = !_running && _path != null;
         _revealButton.IsEnabled = !_running && _lastOutput != null;
         _playResultButton.IsEnabled = !_running && _lastOutput != null;
         _amount.IsEnabled = !_running && Mode != VideoShrinker.SizeMode.Keep;
