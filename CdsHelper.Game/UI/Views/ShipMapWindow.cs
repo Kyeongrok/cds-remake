@@ -2679,6 +2679,8 @@ public sealed class ShipMapWindow : Window
             if (!_host.Start(_game.Directory)) { _status.Text = _host.Status; return; }
             _host.ShowFlowArrows = GameSettings.ShowFlowArrows;
             _host.SeaEffect = GameSettings.SeaEffect;
+            _host.SeaBrightness = GameSettings.SeaBrightness;
+            _host.SmoothClouds = GameSettings.SmoothClouds;
             _started = true;
         }
 
@@ -2940,6 +2942,18 @@ public sealed class ShipMapWindow : Window
         {
             _host.SeaEffect = on;
             GameSettings.SeaEffect = on;
+        },
+        SeaBrightness = () => GameSettings.SeaBrightness,
+        SetSeaBrightness = v =>
+        {
+            GameSettings.SeaBrightness = v;
+            _host.SeaBrightness = GameSettings.SeaBrightness;
+        },
+        SmoothCloudsOn = () => _host.SmoothClouds,
+        SetSmoothClouds = on =>
+        {
+            _host.SmoothClouds = on;
+            GameSettings.SmoothClouds = on;
         },
     });
 
@@ -4916,7 +4930,8 @@ public sealed class ShipMapWindow : Window
                        with { Kind = EnemyKind.Raider };
             var talkFace = MateFace();
             // 고르기 창은 제목 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
-            switch (ChoiceDialog.Pick(this, "", Encounter.Choices))
+            // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다 — 굴림은 그대로라 실패하면 싸운다.
+            switch (GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices))
             {
                 case 0 when Talked(band, dice, talkFace, weight: foeMen): return;
                 case 1:
@@ -5422,7 +5437,8 @@ public sealed class ShipMapWindow : Window
             ConfirmDialog.Tell(this, Encounter.GreetOf(foe, rng), Encounter.TitleOf(foe.Kind), face);
 
             // 고르기 창은 제목도 「취소」 줄도 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
-            int pick = ChoiceDialog.Pick(this, "", Encounter.Choices);
+            // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다.
+            int pick = GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices);
             switch (pick)
             {
                 case 0 when Talked(foe, rng, face): return;  // 교섭이 되면 그대로 끝난다

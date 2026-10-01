@@ -38,6 +38,12 @@ public sealed class ModDialog : GameWindow
         /// <summary>바다 입체 효과 — 원본에 없는 덧그림이다.</summary>
         public Func<bool> SeaOn { get; init; } = () => false;
         public Action<bool> SetSea { get; init; } = _ => { };
+        public Func<double> SeaBrightness { get; init; } = () => 1.0;
+        public Action<double> SetSeaBrightness { get; init; } = _ => { };
+
+        /// <summary>부드러운 구름.</summary>
+        public Func<bool> SmoothCloudsOn { get; init; } = () => true;
+        public Action<bool> SetSmoothClouds { get; init; } = _ => { };
     }
 
     /// <summary>줄 목록과 설명 칸의 너비.</summary>
@@ -141,6 +147,13 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.ShowSkillOverlay = on,
             "도시에 들어가면 제독과 부하 넷의 기능·언어를 도시 그림 왼쪽에 띄웁니다. 끌어 옮기면 그 자리를 기억합니다."));
 
+        // 자동 도망 — 조우의 고르기 창을 건너뛰고 「도망」을 고른다.
+        rows.Children.Add(Toggle("자동 도망", GameSettings.AutoFlee,
+            on => GameSettings.AutoFlee = on,
+            "원본에 없는 것입니다 — 바다에서 해적·이슬람 함대·추격대와 부딪치거나 뭍에서 적 무리를 만나면"
+            + " 고르기 창 없이 「도망」을 고릅니다. 짐승·독충은 그대로 묻습니다."
+            + " 도망 성공 여부는 원본 그대로 굴리므로 실패하면 싸움이 이어집니다."));
+
         // 배 빌림 묻기 — 원본은 배가 있으면 계약 자리에서 늘 묻는다(0x00410724).
         rows.Children.Add(Toggle("배 빌림 묻기", GameSettings.AskLendShips,
             on => GameSettings.AskLendShips = on,
@@ -171,9 +184,10 @@ public sealed class ModDialog : GameWindow
         general.Children.Add(CustomBgmControls());
 
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
-        lab.Children.Add(Toggle("바다 입체 효과", options.SeaOn(), options.SetSea,
-            "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로,"
-            + " 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다."));
+        lab.Children.Add(SeaControls(options));
+        lab.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
+            "원본 구름은 한 점 걸러 찍은 바둑판 무늬로 반투명을 흉내 내서, 지도를 키우면 격자가 그대로 커집니다."
+            + " 켜면 그 무늬를 참 반투명으로 풀어 매끈하게 늘려 그립니다. 비치는 정도는 원본과 같습니다."));
 
         // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
         general.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
@@ -379,6 +393,43 @@ public sealed class ModDialog : GameWindow
         box.Unchecked += (_, _) => set(false);
         Watch(box, label, tip);
         return box;
+    }
+
+    /// <summary>바다 입체 효과 켜기와 그 밑의 밝기 막대. 끄면 막대도 흐려진다.</summary>
+    private UIElement SeaControls(Options options)
+    {
+        var box = Toggle("바다 입체 효과", options.SeaOn(), options.SetSea,
+            "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로,"
+            + " 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다.");
+
+        var value = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
+        var slider = new Slider
+        {
+            Minimum = 0.6, Maximum = 1.6, TickFrequency = 0.05, IsSnapToTickEnabled = true,
+            Width = 150, Margin = new Thickness(18, 0, 0, 0),
+            IsEnabled = box.IsChecked == true,
+            Value = Math.Clamp(options.SeaBrightness(), 0.6, 1.6),
+        };
+        void ShowValue() => value.Text = $"{slider.Value:P0}";
+        slider.ValueChanged += (_, _) => { ShowValue(); options.SetSeaBrightness(slider.Value); };
+        box.Checked += (_, _) => slider.IsEnabled = true;
+        box.Unchecked += (_, _) => slider.IsEnabled = false;
+        ShowValue();
+
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 2) };
+        line.Children.Add(new TextBlock
+        {
+            Text = "밝기", Width = 64, Foreground = GameUi.Text, Margin = new Thickness(18, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        line.Children.Add(slider);
+        line.Children.Add(value);
+        Watch(line, "바다 밝기", "바다 입체 효과의 밝기입니다. 100% 가 기본이고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(line);
+        return group;
     }
 
     private UIElement MiniMapControls(Options options)

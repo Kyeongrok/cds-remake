@@ -244,6 +244,20 @@ public sealed class ShipMapHost : HwndHost
         }
     }
 
+    /// <summary>바다 입체 효과의 밝기 배수.</summary>
+    public double SeaBrightness
+    {
+        get => _renderer.SeaBrightness;
+        set { _renderer.SeaBrightness = (float)value; _dirty = true; }
+    }
+
+    /// <summary>구름을 부드럽게 그릴지.</summary>
+    public bool SmoothClouds
+    {
+        get => _renderer.SmoothClouds;
+        set { _renderer.SmoothClouds = value; _dirty = true; }
+    }
+
     /// <summary>
     /// 칸마다 뭍까지의 걸음 수(0 뭍 · 1~15 물, 15 에서 멈춘다). 지형표 부류 0·1 이 물이다(<see cref="TerrainTable.WaterMax"/>).
     /// 뭍 칸 전부를 한꺼번에 띄워 너비 우선으로 번진다 — 가로는 경도 -180/180 을 잇는다.

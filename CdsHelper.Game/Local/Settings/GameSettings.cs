@@ -80,6 +80,15 @@ public sealed class GameSettingsData
     /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 꺼 두고 시작한다.</summary>
     public bool SeaEffect { get; set; }
 
+    /// <summary>조우하면 저절로 「도망」을 고를지. 꺼 두고 시작한다.</summary>
+    public bool AutoFlee { get; set; }
+
+    /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 1 이 기본이다.</summary>
+    public double SeaBrightness { get; set; } = 1.0;
+
+    /// <summary>구름을 부드럽게(바둑판 반투명을 참 반투명으로 풀어 매끈하게 늘려) 그릴지. 켜 두고 시작한다.</summary>
+    public bool SmoothClouds { get; set; } = true;
+
     /// <summary>미니맵 풍향 화살표. 꺼 두고 시작한다.</summary>
     public bool MiniMapWind { get; set; }
 
@@ -886,6 +895,30 @@ public static class GameSettings
     {
         get => Get(d => d.DiscoveryMapGrid);
         set => Set(d => d.DiscoveryMapGrid = value);
+    }
+
+    /// <summary>
+    /// 자동 도망 — 해적·이슬람 함대·추격대, 뭍의 무리와 마주치면 고르기 창 없이 「도망」을 고른다(짐승·독충은 그대로 묻는다).
+    /// 도망 굴림은 원본 그대로라 실패하면 싸움이 이어진다. 모드 창 「편의성」에서 켠다.
+    /// </summary>
+    public static bool AutoFlee
+    {
+        get => Get(d => d.AutoFlee);
+        set => Set(d => d.AutoFlee = value);
+    }
+
+    /// <summary>바다 입체 효과의 밝기 배수 — 모드 창 「실험」의 막대로 고른다.</summary>
+    public static double SeaBrightness
+    {
+        get => Math.Clamp(Get(d => d.SeaBrightness), 0.6, 1.6);
+        set => Set(d => d.SeaBrightness = Math.Clamp(value, 0.6, 1.6));
+    }
+
+    /// <summary>부드러운 구름 — 모드 창 「실험」에서 켜고 끈다.</summary>
+    public static bool SmoothClouds
+    {
+        get => Get(d => d.SmoothClouds);
+        set => Set(d => d.SmoothClouds = value);
     }
 
     /// <summary>바다 입체 효과를 켤지 — 모드 창 「일반」에서 켜고 끈다. 원본에 없는 덧그림이다.</summary>

@@ -58,6 +58,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         Texture2D<float4> CloudTex : register(t11);
         Texture2D<float4> FolkTex  : register(t12);
         Texture2D<uint>   SeaDepth : register(t13);
+        Texture2D<float4> CloudSoft: register(t14);
+        SamplerState      Lin      : register(s0);
 
         cbuffer Frame : register(b0)
         {
@@ -135,6 +137,14 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 if (Clouds[k].w <= 0) continue;
                 float2 d = (px - Clouds[k].xy) / Clouds[k].w;
                 if (any(d < 0) || d.x >= 160.0 || d.y >= 120.0) continue;
+                if (Sea.y > 0.5)
+                {
+                    float2 dd = clamp(d, float2(0.5, 0.5), float2(159.5, 119.5));
+                    float2 uv = float2(dd.x / 160.0, (dd.y + Clouds[k].z * 120.0) / 720.0);
+                    float4 s = CloudSoft.SampleLevel(Lin, uv, 0);
+                    col.rgb = col.rgb * (1.0 - s.a) + s.rgb;
+                    continue;
+                }
                 float4 c = CloudTex.Load(int3(int2(d) + int2(0, int(Clouds[k].z) * 120), 0));
                 if (c.a > 0) col = c;
             }
@@ -254,6 +264,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float foam = shore * smoothstep(0.35, 0.75,
                 0.5 + 0.5 * sin(time * 1.4 - d * 6.0 + Noise(p * 2.0 + time * 0.2) * 5.0));
             col = lerp(col, float3(0.93, 0.96, 0.98), foam * 0.35 * saturate(1.0 - CellPerPixel.x * 2.0));
+            col *= Sea.z;
             return lerp(base, saturate(col), water);
         }
 
@@ -336,7 +347,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public fixed float Clouds[MaxClouds * 4];   // x, y, 그림번호, 보일지
         public fixed float Folk[MaxFolk * 4];       // x, y, 뱃머리(0~3), 배수
         public fixed float Route[MaxRoutePoints * 4]; // x, y, (안 씀), 켜졌는지
-        public float SeaTime, SeaPad1, SeaPad2, SeaPad3;
+        public float SeaTime, CloudSmooth, SeaBright, SeaPad3;
     }
 
     /// <summary>
@@ -482,6 +493,18 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// <summary>바다 물결이 흐르는 시각(초). 켜 둔 동안 프레임마다 밖에서 올린다.</summary>
     public float SeaTime { get; set; }
 
+    /// <summary>바다 입체 효과의 밝기 배수. 1 이 기본이다.</summary>
+    public float SeaBrightness { get; set; } = 1f;
+
+    /// <summary>
+    /// 부드러운 구름 — 원본은 바둑판으로 한 점 걸러 찍어 반투명을 흉내 내서, 키우면 격자가 그대로 커진다.
+    /// 켜면 그 바둑판을 참 투명도(약 반)로 풀어 둔 그림을 선형 보간으로 늘려 그린다.
+    /// </summary>
+    public bool SmoothClouds { get; set; } = true;
+
+    private ID3D11ShaderResourceView _cloudSoftSrv = null!;
+    private ID3D11SamplerState _linear = null!;
+
     private ID3D11ShaderResourceView _seaSrv = null!;
     private bool _seaReady;
 
@@ -607,7 +630,17 @@ public sealed unsafe class MapD3DRenderer : IDisposable
 
         // 구름을 못 읽어도 셰이더에 걸 것은 있어야 한다. 안 그릴 것이므로 한 점이면 된다.
         _cloudSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
+        _cloudSoftSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
         _folkSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
+        _linear = _device.CreateSamplerState(new SamplerDescription
+        {
+            Filter = Filter.MinMagMipLinear,
+            AddressU = TextureAddressMode.Clamp,
+            AddressV = TextureAddressMode.Clamp,
+            AddressW = TextureAddressMode.Clamp,
+            ComparisonFunc = ComparisonFunction.Never,
+            MaxLOD = float.MaxValue,
+        });
     }
 
     /// <summary>
@@ -621,7 +654,49 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _cloudSrv = CreateImmutable(bgra.ToArray(), CloudSprites.Width, CloudSprites.AtlasHeight,
                                     Format.B8G8R8A8_UNorm, sizeof(uint));
         old?.Dispose();
+        var oldSoft = _cloudSoftSrv;
+        _cloudSoftSrv = CreateImmutable(SoftenClouds(bgra), CloudSprites.Width, CloudSprites.AtlasHeight,
+                                        Format.B8G8R8A8_UNorm, sizeof(uint));
+        oldSoft?.Dispose();
         _cloudsReady = true;
+    }
+
+    /// <summary>
+    /// 바둑판 반투명을 참 투명도로 푼다 — 장마다 1-2-1 천막 거르개(3x3)로 덮인 정도와 색을 섞는다.
+    /// 한 점 걸러 찍힌 자리는 꼭 반(0.5)이 되고 가장자리는 부드럽게 잦아든다. 색은 <b>알파를 곱해 둔</b> 꼴로 담아
+    /// 선형 보간해도 가장자리가 까매지지 않게 한다. 장 경계는 넘지 않는다.
+    /// </summary>
+    private static uint[] SoftenClouds(ReadOnlySpan<uint> bgra)
+    {
+        const int W = CloudSprites.Width, H = CloudSprites.Height;
+        var src = bgra.ToArray();
+        var outp = new uint[src.Length];
+        for (int f = 0; f < CloudSprites.FrameCount; f++)
+        {
+            int baseRow = f * H;
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    double a = 0, r = 0, g = 0, b = 0;
+                    for (int dy = -1; dy <= 1; dy++)
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            int sx = x + dx, sy = y + dy;
+                            if (sx < 0 || sx >= W || sy < 0 || sy >= H) continue;
+                            uint c = src[(baseRow + sy) * W + sx];
+                            if ((c >> 24) == 0) continue;
+                            double w = (dx == 0 ? 2 : 1) * (dy == 0 ? 2 : 1) / 16.0;
+                            a += w;
+                            r += w * ((c >> 16) & 0xFF);
+                            g += w * ((c >> 8) & 0xFF);
+                            b += w * (c & 0xFF);
+                        }
+                    outp[(baseRow + y) * W + x] =
+                        ((uint)Math.Round(Math.Min(1, a) * 255) << 24) | ((uint)Math.Round(r) << 16)
+                        | ((uint)Math.Round(g) << 8) | (uint)Math.Round(b);
+                }
+        }
+        return outp;
     }
 
     /// <summary>타일 번호 16,384개를 아틀라스와 같은 128x128 격자로 편다.</summary>
@@ -913,6 +988,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             Detail = PickDetail(cellsPerPixel.X),
             SeaOn = SeaEffect && _seaReady ? 1 : 0,
             SeaTime = SeaTime,
+            CloudSmooth = SmoothClouds ? 1 : 0,
+            SeaBright = SeaBrightness,
             OverlayX = overlayRect.X,
             OverlayY = overlayRect.Y,
             OverlayW = overlayRect.W,
@@ -947,7 +1024,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _ctx.PSSetConstantBuffer(0, _cb);
         _ctx.PSSetShaderResources(0, [_cellSrv, _atlasSrv, _paletteSrv, _spriteSrv,
                                       _avgSrv[0], _avgSrv[1], _avgSrv[2], _overlaySrv,
-                                      _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv]);
+                                      _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv, _cloudSoftSrv]);
+        _ctx.PSSetSampler(0, _linear);
         _ctx.Draw(3, 0);
     }
 
@@ -986,6 +1064,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _rtv?.Dispose();
         _target?.Dispose();
         _seaSrv?.Dispose();
+        _cloudSoftSrv?.Dispose();
+        _linear?.Dispose();
         _folkSrv?.Dispose();
         _cloudSrv?.Dispose();
         _arrowSrv?.Dispose();
