@@ -192,14 +192,6 @@ public sealed class ShipMapWindow : Window
     private bool _peopleWanted = GameSettings.ShowPeopleOverlay;
 
 
-    /// <summary>
-    /// 발견물 수 쪽지 — 함대·힌트 쪽지와 같은 둥근 상자라 끌어 옮길 수 있고, 옮긴 자리를 기억한다.
-    /// 처음 자리는 지도 창 왼쪽 아래다. 모드 창의 「발견물 수」로 켠다.
-    /// </summary>
-    private FleetLabelWindow? _foundNote;
-
-    /// <summary>발견물 수 상자를 켜 두었는지.</summary>
-    private bool _foundWanted = GameSettings.ShowDiscoveryCount;
 
     /// <summary>미니맵 — 지도 오른쪽 아래. 개발 창의 「미니맵」으로 켠다.</summary>
     private Popup _miniPopup = null!;
@@ -631,7 +623,6 @@ public sealed class ShipMapWindow : Window
             }
             if (_overlay.IsOpen) { var (lat, lon) = _host.ShipLatLon; FillOverlay(lat, lon); }
             if (_miniWanted) SyncMiniMap();
-            if (_foundNote is { IsVisible: true }) FillFound();
             SyncWeather();
             SyncSeaMusic();
         });
@@ -1040,14 +1031,6 @@ public sealed class ShipMapWindow : Window
         if (people) FillPeople();
         _people.IsOpen = people;
 
-        bool found = _foundWanted && up;
-        if (found)
-        {
-            _foundNote ??= FleetLabelWindow.Attach(this, FoundFontSize, FleetLabelWindow.Slot.Found);
-            FillFound();
-        }
-        else _foundNote?.Set("");
-
         SyncMiniMap();
     }
 
@@ -1208,18 +1191,6 @@ public sealed class ShipMapWindow : Window
     }
 
 
-    /// <summary>
-    /// 발견물 수 상자를 채운다 — 「발견물 N / 전체」. 전체는 발견물 표의 줄 수(모조품까지 든 274)다.
-    /// </summary>
-    private void FillFound()
-    {
-        int total = _game.Discoveries?.Table.Discoveries.Count ?? 0;
-        int found = _game.Player.Discoveries.Distinct().Count();
-        _foundNote?.Set(total > 0 ? $"발견물 {found} / {total}" : $"발견물 {found}");
-    }
-
-    /// <summary>발견물 수 쪽지의 글자 크기.</summary>
-    private const double FoundFontSize = 14;
 
     /// <summary>여급 칸의 너비(글자 칸). 한글 한 자를 두 칸으로 센다.</summary>
     private const int PeopleColumn = 34;
@@ -2047,6 +2018,8 @@ public sealed class ShipMapWindow : Window
         _game.Player.SetHeldWind(_host.HeldWindState);
         // 뭍에 올라 있으면 걷던 자리와 대 둔 배의 뱃머리 — 원본은 제독 +0x114 · +0x310~+0x31C 를 적는다(0x0047C90C~).
         _game.Player.SetAshore(_host.AshoreSpot, _host.MooredHeading);
+        // 대 둔 배 자리도 적는다 — 도시 안에서 적을 때도 뭍에 올라 있으면 그 배 자리가 있어야 뭍에서 잇는다.
+        _game.Player.SetSeaCell(_host.SeaSpot);
     }
 
     /// <summary>창이 닫혔는지 — 닫힌 뒤에 풀려난 모달 고리가 창을 다시 띄우지 않게 본다.</summary>
@@ -2792,8 +2765,14 @@ public sealed class ShipMapWindow : Window
             if (saved.Fame is { } fame) _game.Player.Fame = fame;
             _game.Player.Infamy = saved.Infamy ?? 0;
             _game.Player.RestoreAging(saved.AgingYear, saved.AgingSteps);
+            // 뭍으로 걸어 든 도시에서 적은 판이면 그 뭍 자리에 말을 세우고 배는 대 둔 자리에 둔다 —
+            // 성문으로 나서면 그 도시 앞 뭍에 선다. 그 도시는 이미 들렀으니 곧바로 다시 묻지 않는다.
+            if (saved.CityId >= 0 && saved.AshoreX is { } cx && saved.AshoreY is { } cy
+                && saved.SeaX is { } csx && saved.SeaY is { } csy
+                && _host.PlaceAshore(cx, cy, csx, csy, saved.MooredHeading ?? 0))
+                _askedCity = saved.CityId;
             // 적어 둔 도시 앞바다에 배를 놓는다. 그 도시는 이미 들렀으니 곧바로 다시 묻지 않는다.
-            if (saved.CityId >= 0 && _host.PlaceAtCity(saved.CityId)) _askedCity = saved.CityId;
+            else if (saved.CityId >= 0 && _host.PlaceAtCity(saved.CityId)) _askedCity = saved.CityId;
             // 바다에서 적은 판은 적어 둔 칸에 닻을 내린 채로 연다.
             else if (saved.CityId < 0 && saved.SeaX is { } sx && saved.SeaY is { } sy)
             {
@@ -2847,13 +2826,9 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void ShowModDialog() => ModDialog.Show(this, new ModDialog.Options
     {
-        DiscoveryCountOn = () => _foundWanted,
-        SetDiscoveryCount = on =>
-        {
-            _foundWanted = on;
-            GameSettings.ShowDiscoveryCount = on;   // 다음에 켤 때도 그대로
-            SyncOverlay();
-        },
+        // 발견물 수는 도시 창 쪽지다 — 켜고 끄면 떠 있는 도시 창이 설정 알림을 받아 곧바로 고친다.
+        DiscoveryCountOn = () => GameSettings.ShowDiscoveryCount,
+        SetDiscoveryCount = on => GameSettings.ShowDiscoveryCount = on,
         MiniMapOn = () => _miniWanted,
         SetMiniMap = on =>
         {

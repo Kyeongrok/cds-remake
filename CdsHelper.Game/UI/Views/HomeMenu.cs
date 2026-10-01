@@ -42,6 +42,12 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// <b>다섯 살 이하</b>인 아이를 처음 소개할 때는 사건 그림 8 을 세우고 말한다(<c>0x0045FFEB</c> —
     /// <c>0x00472FA0(8)</c> 로 그림을 올리고 소개가 끝나면 <c>0x00473160</c> 으로 내린다). 여섯 살부터는 말만 한다.
     /// </remarks>
+    /// <summary>
+    /// 아내 얼굴 — 그 여급의 얼굴(FEMALE.CDS). 아내 말은 이름 제목 없이 얼굴과 함께 낸다(여느 대사 창처럼).
+    /// </summary>
+    private uint[]? WifeFace() =>
+        _game.Barmaids?.Find(_player.SpouseId) is { } her ? _game.Faces?.TryGetBgra(her.Face, female: true) : null;
+
     public void Greet()
     {
         var owner = Owner;
@@ -61,7 +67,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
 
         // 아내와 아이가 맞는다(0x004144C0 · 0x00414670).
         if (_player.Spouse.Length > 0)
-            TalkDialog.Say(owner, null, _player.Spouse,
+            TalkDialog.Say(owner, WifeFace(), "",
                            Home.WifeWelcome[_random.Next(Home.WifeWelcome.Length)]);
 
         // 아이는 <b>하나만</b> 인사한다 — 다섯~열넷 살 가운데 굴려 고른다(0x00414670).
@@ -129,7 +135,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         {
             int fee = mine.Sum(r => Home.ShowFee(r.SellList));
             if (fee <= 0) return false;
-            TalkDialog.Say(owner, null, _player.Spouse,
+            TalkDialog.Say(owner, WifeFace(), "",
                            "돌아오셨어요? 참, 마을 사람들에게 당신이 잡아온 희한한 동물을 보여 주었더니, "
                            + $"관람료로 금화 {fee} 닢이나 모아졌지 뭐예요!");
             _player.SetSavings(_player.Savings + fee);
@@ -137,7 +143,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         }
 
         var ran = mine[_random.Next(mine.Count)];
-        TalkDialog.Say(owner, null, _player.Spouse,
+        TalkDialog.Say(owner, WifeFace(), "",
                        $"돌아오셨어요? 여보, 큰일 났었어요! 당신이 키우고 있는 {ran.Name}"
                        + $"{Local.Helpers.NameToken.Of(ran.Name, 0)} 도망쳐서 마을이 온통 야단법석이었어요! "
                        + "마을 사람들이 잡아 주었으니 망정이지, 영주님께 혼이났어요.");
@@ -157,7 +163,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         int paid = Home.PhotoFee(shot.SellList, _player.AbilityOf(Ability.Luck), _random);
         if (paid <= 0) return false;
 
-        TalkDialog.Say(owner, null, _player.Spouse,
+        TalkDialog.Say(owner, WifeFace(), "",
                        $"다녀오셨어요? 당신이 집에 없을 때, [{shot.Name}]의 사진을 찍어서 팔았더니, "
                        + $"인기가 좋아서 금화 {paid}닢이나 벌었어요. 놀랐지 뭐예요.");
         _player.SetSavings(_player.Savings + paid);
@@ -177,7 +183,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             string words = Home.IntroductionOf(child, _player.Date);
             if (child.AgeOn(_player.Date) <= Home.BabyAge)
                 DiscoveryDialog.Show(owner, _game.EventStills, Home.BabyStill, words);
-            else TalkDialog.Say(owner, null, _player.Spouse, words);
+            else TalkDialog.Say(owner, WifeFace(), "", words);
         }
 
         var named = child;
@@ -208,11 +214,11 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
                 face: ChildFace(daughter)))
         {
             TalkDialog.Say(owner, ChildFace(daughter), daughter.Name, "너무 해요! 아버지, 그런 슬픈 말씀 하지 마세요!");
-            TalkDialog.Say(owner, null, _player.Spouse, "당신, 딸의 부탁하니, 제발 허락해 주세요.");
+            TalkDialog.Say(owner, WifeFace(), "", "당신, 딸의 부탁하니, 제발 허락해 주세요.");
         }
 
         TalkDialog.Say(owner, ChildFace(daughter), daughter.Name, "고마워요, 아버지! 꼭 행복하겠어요.");
-        TalkDialog.Say(owner, null, _player.Spouse,
+        TalkDialog.Say(owner, WifeFace(), "",
             $"잘 되었구나. 그건 그렇고, 당신 결혼 준비금으로 금화를 {Home.MarriageDowry} 닢 준비해 주세요!");   // 0x00539580
 
         _player.SetSavings(_player.Savings - Home.MarriageDowry);
@@ -380,7 +386,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         var owner = Owner;
         void Wife(string words)
         {
-            if (_player.Spouse.Length > 0) TalkDialog.Say(owner, null, _player.Spouse, words);
+            if (_player.Spouse.Length > 0) TalkDialog.Say(owner, WifeFace(), "", words);
         }
         string Is(string name) => name + GameUi.Josa(name, "은", "는");
 
@@ -502,7 +508,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         var owner = Owner;
         void Wife(string words)
         {
-            if (_player.Spouse.Length > 0) TalkDialog.Say(owner, null, _player.Spouse, words);
+            if (_player.Spouse.Length > 0) TalkDialog.Say(owner, WifeFace(), "", words);
         }
 
         if (Home.EldestSon(_player) is not { } son) return;

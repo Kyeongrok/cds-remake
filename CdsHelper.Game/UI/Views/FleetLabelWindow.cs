@@ -27,8 +27,6 @@ public sealed class FleetLabelWindow : Window
     /// <summary>도시 창과 쪽지 사이. 처음에는 그림 오른쪽에 이만큼 띄워 붙인다.</summary>
     private const double Gap = 10;
 
-    /// <summary>발견물 수 쪽지의 처음 자리 — 지도 창 왼쪽에서, 아래 끝에서(아래 띠를 비킨다) 띄우는 거리.</summary>
-    private const double FoundInset = 16, FoundBottom = 60;
 
     /// <summary>
     /// 주인 창 왼쪽 위에서 잰 쪽지 자리. 한 번 옮겨 두면 앱이 도는 동안 그대로다 —
@@ -37,7 +35,7 @@ public sealed class FleetLabelWindow : Window
     private static readonly Dictionary<Slot, (double Dx, double Dy)> Moved = [];
 
     /// <summary>
-    /// 쪽지 갈래 — 갈래마다 옮긴 자리를 따로 기억한다. 함대·힌트는 도시 창 옆, 발견물 수는 지도 창 왼쪽 아래가 처음 자리다.
+    /// 쪽지 갈래 — 갈래마다 옮긴 자리를 따로 기억한다. 셋 다 도시 창 곁이 처음 자리다(발견물 수는 오른쪽 아래).
     /// </summary>
     public enum Slot { Fleet, Hint, Found }
 
@@ -155,9 +153,11 @@ public sealed class FleetLabelWindow : Window
         if (Moved.TryGetValue(_slot, out var moved)) (dx, dy) = moved;
         else if (_slot == Slot.Found)
         {
-            // 지도 창 안쪽 왼쪽 아래 — 아래 띠 위에 얹는다. 옮기기 전에는 창 크기가 바뀌면 따라간다.
-            dx = FoundInset;
-            dy = _anchor.ActualHeight - height - FoundBottom;
+            // 도시 그림 오른쪽 아래 곁 — 함대 쪽지와 같은 쪽 아래 끝에 붙인다. 옮기기 전에는 글 높이가 바뀌면 따라간다.
+            dx = _anchor.ActualWidth + Gap;
+            double right = SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth;
+            if (_anchor.Left + dx + width > right) dx = -(width + Gap);
+            dy = _anchor.ActualHeight - height;
         }
         else
         {

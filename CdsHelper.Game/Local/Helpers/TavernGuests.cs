@@ -300,6 +300,19 @@ public sealed class TavernGuests
         return seats;
     }
 
+    /// <summary>
+    /// 그 마을 술집 여급이 서는 그림 — <see cref="Seat"/> 가 여급 자리에 세우는 것과 같은 한 장이다
+    /// (그 문화권 여자 가운데 도시 번호로 고른다). 자택에서 아내를 세울 때 쓴다. 여자가 없으면 null.
+    /// </summary>
+    public Guest? MaidArt(string? culture, int seed)
+    {
+        if (!Ranges.TryGetValue(culture ?? "", out var range)) range = Ranges["이베리아"];
+        var women = new List<int>();
+        for (int i = 0; i < range.Count; i++)
+            if (_guests[range.Start + i].Female) women.Add(range.Start + i);
+        return women.Count == 0 ? null : _guests[women[new Random(seed).Next(women.Count)]];
+    }
+
     /// <summary>음수가 나오지 않는 나머지. 세이브 번호는 늘 0 이상이지만 눌러 둔다.</summary>
     private static int Mod(int value, int n) => ((value % n) + n) % n;
 

@@ -561,8 +561,15 @@ public static class GameSettings
     public static bool ShowDiscoveryCount
     {
         get => Get(d => d.ShowDiscoveryCount);
-        set => Set(d => d.ShowDiscoveryCount = value);
+        set
+        {
+            Set(d => d.ShowDiscoveryCount = value);
+            ShowDiscoveryCountChanged?.Invoke();
+        }
     }
+
+    /// <summary><see cref="ShowDiscoveryCount"/> 가 바뀌었다 — 떠 있는 도시 창이 쪽지를 곧바로 내거나 걷는다.</summary>
+    public static event Action? ShowDiscoveryCountChanged;
 
     public static bool ShowCoordOverlay
     {

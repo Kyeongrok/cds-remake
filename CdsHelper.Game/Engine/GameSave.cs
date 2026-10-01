@@ -386,8 +386,9 @@ public static class GameSave
                             [.. player.KnownCities], (int)player.Ailments,
                             player.Formation, [.. player.CrewShares], player.HomePort,
                             // 바다에서 적을 때만 배 자리를 적는다 — 도시면 도시 앞바다로 연다.
-                            player.CityId < 0 ? player.SeaCell?.X : null,
-                            player.CityId < 0 ? player.SeaCell?.Y : null,
+                            // 바다에서 적었거나, 뭍으로 걸어 든 도시에서 적었으면(대 둔 배 자리) 적는다.
+                            player.CityId < 0 || player.Ashore != null ? player.SeaCell?.X : null,
+                            player.CityId < 0 || player.Ashore != null ? player.SeaCell?.Y : null,
                             player.Condition,
                             // 능력치와 신상. 이 칸들이 없어 <b>불러오면 능력이 죄다 50</b> 이었다.
                             [.. player.Abilities], player.JobIndex, player.Age,
@@ -484,10 +485,12 @@ public static class GameSave
                             // 쥐고 있던 바람(0x00586168, 0x00424E20). 이 칸 앞의 세이브는 열 때 새로 흔든다.
                             Wind: player.HeldWind is { } wind ? [.. wind] : null,
                             // 뭍에 올라 걷던 자리(제독 +0x114 · +0x310/+0x314) — 그때 SeaX/SeaY 는 대 둔 배 자리(+0x318/+0x31C)다.
-                            // 바다에서 적을 때만 적는다. 이 칸 앞의 세이브는 대 둔 배 위에서 연다.
-                            AshoreX: player.CityId < 0 ? player.Ashore?.X : null,
-                            AshoreY: player.CityId < 0 ? player.Ashore?.Y : null,
-                            MooredHeading: player.CityId < 0 && player.Ashore != null ? player.MooredHeading : null,
+                            // 뭍으로 걸어 든 도시(톨레도 같은 내륙)에서 적어도 적는다 — 이어 할 때 성문으로 나서면 그 도시 앞
+                            // 뭍에 서야 한다. 예전에는 바다에서 적을 때만 적어, 도시에서 이어 하면 배 위로 돌아가 있다가
+                            // 성문으로 나서면 배 곁에 내렸다. 이 칸 앞의 세이브는 대 둔 배 위에서 연다.
+                            AshoreX: player.Ashore?.X,
+                            AshoreY: player.Ashore?.Y,
+                            MooredHeading: player.Ashore != null ? player.MooredHeading : null,
                             // 누적 캐릭터마다 튼 행적 줄 수(인물 +0x114). 이 칸 앞의 세이브는 불러온 날로 가늠한다.
                             AccPlayed: player.AccPlayed.Count > 0 ? player.AccPlayed.ToDictionary(e => e.Key, e => e.Value) : null,
                             // 이 판의 표지 — 은퇴·삭제할 때 그 판의 자동저장 칸을 가린다. 이 칸 앞의 세이브는 이름으로 가린다.

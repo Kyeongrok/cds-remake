@@ -79,7 +79,7 @@ public sealed class ModDialog : GameWindow
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
         // 발견물 수 — 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄운다.
         rows.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
-            "원본에 없는 것입니다 — 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄웁니다."));
+            "원본에 없는 것입니다 — 도시에 들어가면 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 도시 창 곁에 띄웁니다. 끌어 옮길 수 있습니다."));
 
         rows.Children.Add(MiniMapControls(options));
 

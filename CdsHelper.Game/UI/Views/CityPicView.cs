@@ -45,6 +45,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>현재 힌트 쪽지. 함대 쪽지와 별도 창으로 아래에 붙인다.</summary>
     private FleetLabelWindow? _hintNote;
+    /// <summary>발견물 수 쪽지 — 모드 「발견물 수」를 켜면 선다.</summary>
+    private FleetLabelWindow? _foundNote;
 
     /// <summary>기능·언어 쪽지. 개발 창에서 켜 두었을 때만 뜬다(<see cref="GameSettings.ShowSkillOverlay"/>).</summary>
     private SkillOverlayWindow? _skillNote;
@@ -73,6 +75,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         _shade.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
         _shipNote?.Shade(on);
         _hintNote?.Shade(on);
+        _foundNote?.Shade(on);
         _skillNote?.Shade(on);
     }
 
@@ -435,12 +438,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         {
             _shipNote = FleetLabelWindow.Attach(this, 13 * scale);
             _hintNote = FleetLabelWindow.Attach(this, 13 * scale, belowFleet: true);
+            _foundNote = FleetLabelWindow.Attach(this, 13 * scale, FleetLabelWindow.Slot.Found);
             _noteFontSize = 13 * scale;
             RefreshShipLabel();
             SyncSkillNote();
         };
         GameSettings.ShowFleetOverlayChanged += RefreshShipLabel;
         GameSettings.ShowHintOverlayChanged += RefreshShipLabel;
+        GameSettings.ShowDiscoveryCountChanged += RefreshShipLabel;
         // 개발 창에서 켜고 끄면 떠 있는 도시 창에도 곧바로 든다.
         GameSettings.ShowSkillOverlayChanged += SyncSkillNote;
         GameSettings.ShowContractHintOverlayChanged += SyncSkillNote;
@@ -452,6 +457,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             GameSettings.ShowContractHintOverlayChanged -= SyncSkillNote;
             GameSettings.ShowFleetOverlayChanged -= RefreshShipLabel;
             GameSettings.ShowHintOverlayChanged -= RefreshShipLabel;
+            GameSettings.ShowDiscoveryCountChanged -= RefreshShipLabel;
+            _foundNote?.Close(); _foundNote = null;
             _shipNote?.Close(); _shipNote = null;
             _hintNote?.Close(); _hintNote = null;
             _skillNote?.Close(); _skillNote = null;
@@ -1059,7 +1066,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _player.LoseSavings(30);
 
             if (_player.Spouse.Length > 0)
-                TalkDialog.Say(this, null, _player.Spouse, "여보, 미안해요. 내가 없는 동안 도둑이 들었어요!");
+                TalkDialog.Say(this, WifeFace(), "", "여보, 미안해요. 내가 없는 동안 도둑이 들었어요!");
             else
                 TalkDialog.Say(this, aide, "", "도둑이 들었습니다. 스폰서의 보복이겠지요.");
             return true;
@@ -1247,7 +1254,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         Shade(true);
         try { return Engine.Disev.DisevRunner.Run(this, _game, discovery); }
-        finally { Shade(false); }
+        finally { Shade(false); RefreshShipLabel(); }   // 찾았으면 발견물 수도 곧바로 는다
     }
 
     /// <returns>건물에 들어가도 되면 true — 발견할 것이 없었으면 늘 true 다.</returns>
@@ -1647,7 +1654,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         {
             if (_player.Spouse.Length == 0) return;
             var (wife, said) = FamilyVisit.MarketWords(girl, dice);
-            TalkDialog.Say(this, null, _player.Spouse, wife);
+            TalkDialog.Say(this, WifeFace(), "", wife);
             TalkDialog.Say(this, face, child.Name, said);
             return;
         }
@@ -1735,9 +1742,20 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         if (_player.Spouse.Length == 0) return [];
         if (_game.Barmaids?.Find(_player.SpouseId) is not { } her) return [];
+
+        // 술집 손님처럼 <b>작은 전신 그림</b>으로 선다 — 그 여급이 제 마을 술집에 서던 그림 그대로다
+        // (그 마을 문화권 여자 가운데 도시 번호로 고른 한 장, TavernGuests.MaidArt). 그림을 못 읽으면 얼굴로 물러선다.
+        if (_game.Guests?.MaidArt(_game.CultureOf(her.City), her.City) is { } art
+            && _game.Guests.TryGetBgra(art) is { } body)
+            return [new(body, art.Width, art.Height, _player.Spouse, TalkToWife)];
+
         if (_game.Faces?.TryGetBgra(her.Face, female: true) is not { } bgra) return [];
         return [new(bgra, PortraitW, PortraitH, _player.Spouse, TalkToWife)];
     }
+
+    /// <summary>아내 얼굴 — 그 여급의 얼굴(FEMALE.CDS). 없으면 null.</summary>
+    private uint[]? WifeFace() =>
+        _game.Barmaids?.Find(_player.SpouseId) is { } her ? _game.Faces?.TryGetBgra(her.Face, female: true) : null;
 
     /// <summary>초상화 크기(FEMALE.CDS 한 장).</summary>
     private const int PortraitW = 80, PortraitH = 96;
@@ -1757,7 +1775,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         if (Home.TalkerOf(_player, dice) is not { } child)
         {
-            TalkDialog.Say(this, face, _player.Spouse,
+            TalkDialog.Say(this, face, "",
                            Home.WifeAlone[dice.Next(Home.WifeAlone.Length)]);
             return;
         }
@@ -1765,7 +1783,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         int age = child.AgeOn(_player.Date);
         var talk = Home.TalkWith(child.Daughter, age, dice);
         // 「%s%s 크면」의 조사는 은/는이다(0x004147F7 의 0x004281B0(이름, 1)).
-        TalkDialog.Say(this, face, _player.Spouse,
+        TalkDialog.Say(this, face, "",
                        string.Format(talk.Wife, child.Name, GameUi.Josa(child.Name, "은", "는")));
         TalkDialog.Say(this, _game.Faces?.TryGetBgra(Home.FaceOf(child, age), child.Daughter),
                        child.Name, talk.Child);
@@ -2187,6 +2205,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             : "");
         _hintNote?.Set(GameSettings.ShowHintOverlay
             ? string.Join(Environment.NewLine, ["현재 힌트", .. GameInfo.HintNames(_game).Take(10)])
+            : "");
+        // 발견물 수 — 찾은 것 / 발견물 표 전체(모조품까지 든 274).
+        int total = _game.Discoveries?.Table.Discoveries.Count ?? 0;
+        int found = _player.Discoveries.Distinct().Count();
+        _foundNote?.Set(GameSettings.ShowDiscoveryCount
+            ? total > 0 ? $"발견물 {found} / {total}" : $"발견물 {found}"
             : "");
     }
 
