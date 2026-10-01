@@ -74,7 +74,7 @@ public sealed class GameSettingsData
     /// <summary>바다에 있을 때 배 속도 쪽지를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowShipSpeed { get; set; }
 
-    /// <summary>발견물 지도에 위도·경도 50도 격자를 깔지. 꺼 두고 시작한다.</summary>
+    /// <summary>발견물 지도에 위도·경도 25도 격자를 깔지. 꺼 두고 시작한다.</summary>
     public bool DiscoveryMapGrid { get; set; }
 
     /// <summary>미니맵 풍향 화살표. 꺼 두고 시작한다.</summary>
@@ -878,7 +878,7 @@ public static class GameSettings
     }
 
     /// <summary>발견물 지도에 풍향 화살표를 얹을지. 그 창의 「풍향」 단추로 켜고 끈다.</summary>
-    /// <summary>발견물 지도에 위도·경도 50도 격자를 깔지 — 지도 아래 「격자」 단추로 켜고 끈다.</summary>
+    /// <summary>발견물 지도에 위도·경도 25도 격자를 깔지 — 지도 아래 「격자」 단추로 켜고 끈다.</summary>
     public static bool DiscoveryMapGrid
     {
         get => Get(d => d.DiscoveryMapGrid);

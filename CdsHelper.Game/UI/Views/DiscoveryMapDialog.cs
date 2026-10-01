@@ -106,11 +106,20 @@ public sealed class DiscoveryMapDialog : GameWindow
     private readonly Canvas _windLayer = new() { IsHitTestVisible = false };
     private readonly Canvas _currentLayer = new() { IsHitTestVisible = false };
 
-    /// <summary>위도·경도 격자 켜 — 50도마다 어두운 흰 선과 도수 글씨.</summary>
+    /// <summary>위도·경도 격자 켜 — 25도마다 어두운 흰 선. 도수 글씨는 <see cref="_gridTags"/> 에 따로 띄운다.</summary>
     private readonly Canvas _gridLayer = new() { IsHitTestVisible = false };
 
     /// <summary>격자 간격(도).</summary>
-    private const int GridStep = 50;
+    private const int GridStep = 25;
+
+    /// <summary>
+    /// 격자 도수 글씨 켜 — 지도와 함께 움직이지 않고 <b>보이는 화면의 위쪽·왼쪽 가장자리</b>에 붙는다.
+    /// 지도 가장자리에 달아 두면 키웠을 때 화면 밖으로 밀려나 안 보였다.
+    /// </summary>
+    private readonly Canvas _gridTags = new() { IsHitTestVisible = false, Width = ViewW, Height = ViewH };
+
+    /// <summary>축 제목이 차지하는 왼쪽 위 모서리 — 도수 글씨가 여기와 겹치면 안 단다.</summary>
+    private const double AxisW = 30, AxisH = 26;
 
     private static readonly Brush GridInk = Frozen(Color.FromArgb(0xB0, 0xC8, 0xC8, 0xC8));
 
@@ -232,7 +241,7 @@ public sealed class DiscoveryMapDialog : GameWindow
             BorderThickness = new Thickness(1),
             Background = Brushes.Black,
             ClipToBounds = true,
-            Child = new Canvas { Children = { _world } },
+            Child = new Canvas { Children = { _world, _gridTags } },
             Cursor = Cursors.SizeAll,
         };
 
@@ -371,6 +380,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         _scale.ScaleX = _scale.ScaleY = Z;
         _shift.X = -_vx;
         _shift.Y = -_vy;
+        PlaceGridTags();
 
         // 표식은 화면에서 같은 크기로 보이게 지도 점 크기를 배율만큼 줄인다.
         foreach (var pin in _pins) Place(pin);
@@ -427,7 +437,7 @@ public sealed class DiscoveryMapDialog : GameWindow
     }
 
     /// <summary>
-    /// 위도·경도 격자를 긋는다 — 50도마다 선 하나와 가장자리 도수 글씨. 지도 점(칸/4)으로 가로가 경도 360도,
+    /// 위도·경도 격자 선을 긋는다 — 25도마다 하나. 지도 점(칸/4)으로 가로가 경도 360도,
     /// 세로가 위도 180도다(왼쪽 끝 서경 180 · 위 끝 북위 90).
     /// </summary>
     private void DrawGrid(int width, int height)
@@ -435,19 +445,17 @@ public sealed class DiscoveryMapDialog : GameWindow
         var lines = new StreamGeometry();
         using (var g = lines.Open())
         {
-            for (int lon = -150; lon <= 150; lon += GridStep)
+            for (int lon = -180 + GridStep; lon < 180; lon += GridStep)
             {
-                double x = (lon + 180) / 360.0 * width;
+                double x = LonX(lon);
                 g.BeginFigure(new Point(x, 0), false, false);
                 g.LineTo(new Point(x, height), true, false);
-                Label(lon == 0 ? "0°" : lon < 0 ? $"{-lon}°W" : $"{lon}°E", x + 1, 1);
             }
-            for (int lat = -50; lat <= 50; lat += GridStep)
+            for (int lat = -90 + GridStep; lat < 90; lat += GridStep)
             {
-                double y = (90 - lat) / 180.0 * height;
+                double y = LatY(lat);
                 g.BeginFigure(new Point(0, y), false, false);
                 g.LineTo(new Point(width, y), true, false);
-                Label(lat == 0 ? "0°" : lat < 0 ? $"{-lat}°S" : $"{lat}°N", 1, y + 1);
             }
         }
         lines.Freeze();
@@ -456,12 +464,46 @@ public sealed class DiscoveryMapDialog : GameWindow
             Data = lines, Stroke = GridInk, StrokeThickness = 0.5,
         });
 
-        void Label(string text, double x, double y)
+        // 도수 글씨 켜는 격자 켜를 따라 켜지고 꺼진다.
+        _gridTags.SetBinding(VisibilityProperty,
+            new System.Windows.Data.Binding(nameof(Visibility)) { Source = _gridLayer });
+    }
+
+    private double LonX(int lon) => (lon + 180) / 360.0 * _chartW;
+    private double LatY(int lat) => (90 - lat) / 180.0 * _chartH;
+
+    /// <summary>
+    /// 도수 글씨를 지금 보이는 자리에 맞춰 다시 단다 — 경도는 위쪽, 위도는 왼쪽 가장자리. 왼쪽 위 모서리에는
+    /// 축 제목 「경도」·「위도」를 둔다.
+    /// </summary>
+    private void PlaceGridTags()
+    {
+        _gridTags.Children.Clear();
+        for (int lon = -180 + GridStep; lon < 180; lon += GridStep)
         {
-            var tag = new TextBlock { Text = text, Foreground = GridInk, FontSize = 5 };
+            double x = (LonX(lon) - _vx) * Z;
+            if (x < AxisW || x > ViewW - 24) continue;
+            Tag(lon == 0 ? "0°" : lon < 0 ? $"{-lon}°W" : $"{lon}°E", x + 2, 2);
+        }
+        for (int lat = -90 + GridStep; lat < 90; lat += GridStep)
+        {
+            double y = (LatY(lat) - _vy) * Z;
+            if (y < AxisH || y > ViewH - 12) continue;
+            Tag(lat == 0 ? "0°" : lat < 0 ? $"{-lat}°S" : $"{lat}°N", 2, y + 1);
+        }
+        Tag("경도 →", 2, 2, bold: true);
+        Tag("위도 ↓", 2, 13, bold: true);
+
+        void Tag(string text, double x, double y, bool bold = false)
+        {
+            var tag = new TextBlock
+            {
+                Text = text, Foreground = GridInk, FontSize = 10,
+                FontWeight = bold ? FontWeights.Bold : FontWeights.Normal,
+            };
             Canvas.SetLeft(tag, x);
             Canvas.SetTop(tag, y);
-            _gridLayer.Children.Add(tag);
+            _gridTags.Children.Add(tag);
         }
     }
 
