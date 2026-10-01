@@ -32,7 +32,8 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 읽기만 한다. 건물 자리는 도시 그림에 딸린 것이라 여기서 고칠 것이 못 된다.
 ///
-/// 그림 밑 「테두리」를 켜면 게임 도시 화면의 금테(CITYFRM.CDS 파트 0, 416x336)를 씌우고,
+/// 그림 밑 「바깥 틀(CITYFRM)」을 켜면 CITYFRM.CDS 파트 0(416x336, 여덟 점 두께)을 씌우고, 「장식 테두리」를 끄면 그림 안의
+/// 장식 틀을 잘라 낸 안쪽만 보인다. 
 /// 「이미지 저장」은 지금 보이는 대로(테두리를 켰으면 테두리째, 건물 상자는 빼고) PNG 로 적는다.
 /// </remarks>
 public sealed class BuildingListDialog : Window
@@ -132,11 +133,34 @@ public sealed class BuildingListDialog : Window
 
     private readonly CheckBox _frameBox = new()
     {
-        Content = "테두리",
+        Content = "바깥 틀(CITYFRM)",
         VerticalAlignment = VerticalAlignment.Center,
         Margin = new Thickness(0, 0, 10, 0),
         ToolTip = "게임 도시 화면의 금테(CITYFRM.CDS)를 씌운다",
     };
+
+    /// <summary>
+    /// 장식 테두리 — 도시 그림(CITYCG) 안에 그려진 나무 틀·깃발 띠·문장. 끄면 가장자리를 <see cref="_inset"/> 점만큼 검게 덮어
+    /// 안쪽 풍경만 보인다. 틀 밑 풍경은 자료에 없고 두께가 문화권마다 달라(나가사키 6점 · 리스본 16점 · 구석 소용돌이는 60점 넘게)
+    /// 두께를 막대로 고른다. 자리는 그대로라 건물 상자 좌표가 어긋나지 않는다.
+    /// </summary>
+    private readonly CheckBox _ornateBox = new()
+    {
+        Content = "장식 테두리",
+        IsChecked = true,
+        VerticalAlignment = VerticalAlignment.Center,
+        Margin = new Thickness(0, 0, 6, 0),
+        ToolTip = "도시 그림 안에 그려진 장식 틀 — 끄면 가장자리를 잘라 안쪽 풍경만 본다",
+    };
+
+    private readonly Slider _inset = new()
+    {
+        Minimum = 0, Maximum = 48, Value = 16, Width = 90, TickFrequency = 2, IsSnapToTickEnabled = true,
+        VerticalAlignment = VerticalAlignment.Center, IsEnabled = false,
+        ToolTip = "잘라 낼 두께(점)",
+    };
+
+    private readonly TextBlock _insetText = new() { Width = 34, VerticalAlignment = VerticalAlignment.Center };
 
     private string _gameDir = "";
     private uint[]? _frameBgra;
@@ -211,6 +235,13 @@ public sealed class BuildingListDialog : Window
         var save = new Button { Content = "이미지 저장…", Padding = new Thickness(10, 3, 10, 3), ToolTip = "지금 보이는 도시 그림을 PNG 로 저장한다" };
         save.Click += (_, _) => SavePicture();
         var picBar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+        _ornateBox.Checked += (_, _) => { _inset.IsEnabled = false; ShowPicture(_shownCity); };
+        _ornateBox.Unchecked += (_, _) => { _inset.IsEnabled = true; ShowPicture(_shownCity); };
+        _inset.ValueChanged += (_, _) => { _insetText.Text = $"{(int)_inset.Value}점"; if (_ornateBox.IsChecked != true) ShowPicture(_shownCity); };
+        _insetText.Text = $"{(int)_inset.Value}점";
+        picBar.Children.Add(_ornateBox);
+        picBar.Children.Add(_inset);
+        picBar.Children.Add(_insetText);
         picBar.Children.Add(_frameBox);
         picBar.Children.Add(save);
         var picColumn = new StackPanel();
@@ -502,6 +533,7 @@ public sealed class BuildingListDialog : Window
         if (_pictures is not { } pictures) return;
 
         var bgra = cityId < 0 ? null : pictures.TryGetBgra(cityId);
+        if (bgra != null && _ornateBox.IsChecked != true) bgra = Crop(bgra, (int)_inset.Value);
         _cityBgra = bgra;
         if (bgra == null)
         {
@@ -546,7 +578,18 @@ public sealed class BuildingListDialog : Window
                     + $"{row.Y + CityBuildingTable.BoxHeight / 2})");
     }
 
-    /// <summary>테두리를 켜고 끈다 — 켜면 그림을 여덟 점 안으로 밀고 금테를 덮는다.</summary>
+    /// <summary>가장자리 <paramref name="inset"/> 점을 검게 덮은 사본 — 장식 테두리를 껐을 때 안쪽만 보이게.</summary>
+    private static uint[] Crop(uint[] bgra, int inset)
+    {
+        var copy = (uint[])bgra.Clone();
+        for (int y = 0; y < CityPictures.Height; y++)
+            for (int x = 0; x < CityPictures.Width; x++)
+                if (x < inset || y < inset || x >= CityPictures.Width - inset || y >= CityPictures.Height - inset)
+                    copy[y * CityPictures.Width + x] = 0xFF000000u;
+        return copy;
+    }
+
+    /// <summary>바깥 틀(CITYFRM)을 켜고 끈다 — 켜면 그림을 여덟 점 안으로 밀고 틀을 덮는다.</summary>
     private void SyncFrame()
     {
         bool on = _frameBox.IsChecked == true && _frameImage.Source != null;
