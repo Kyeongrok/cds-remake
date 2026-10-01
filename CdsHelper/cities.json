@@ -85,7 +85,7 @@
   },
   {
     "id": 7,
-    "name": "세빌리아",
+    "name": "세비야",
     "latitude": 37,
     "longitude": -6,
     "hasLibrary": true,
@@ -889,7 +889,7 @@
   },
   {
     "id": 74,
-    "name": "간디아",
+    "name": "칸디아",
     "latitude": 35,
     "longitude": 25,
     "hasLibrary": false,
@@ -1045,7 +1045,7 @@
   },
   {
     "id": 87,
-    "name": "마디라",
+    "name": "마데이라",
     "latitude": 32,
     "longitude": -16,
     "hasLibrary": false,
@@ -1201,7 +1201,7 @@
   },
   {
     "id": 100,
-    "name": "르완다",
+    "name": "루안다",
     "latitude": -8,
     "longitude": 13,
     "hasLibrary": false,
@@ -1993,7 +1993,7 @@
   },
   {
     "id": 166,
-    "name": "아친",
+    "name": "아체",
     "latitude": -5,
     "longitude": 95,
     "hasLibrary": false,
@@ -2005,7 +2005,7 @@
   },
   {
     "id": 167,
-    "name": "파렌반",
+    "name": "팔렘방",
     "latitude": -2,
     "longitude": 104,
     "hasLibrary": false,
@@ -2017,7 +2017,7 @@
   },
   {
     "id": 168,
-    "name": "반탐",
+    "name": "반텐",
     "latitude": -5,
     "longitude": 105,
     "hasLibrary": false,
@@ -2317,7 +2317,7 @@
   },
   {
     "id": 193,
-    "name": "쿄토",
+    "name": "교토",
     "latitude": 34,
     "longitude": 135,
     "hasLibrary": true,
@@ -2425,7 +2425,7 @@
   },
   {
     "id": 202,
-    "name": "투라스칼라",
+    "name": "틀락스칼라",
     "latitude": 19,
     "longitude": -98,
     "hasLibrary": false,

@@ -1231,7 +1231,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
-    /// 건물 자체가 발견물이면 들어서는 그 자리에서 발견한다 — 세빌리아 교회가 51번
+    /// 건물 자체가 발견물이면 들어서는 그 자리에서 발견한다 — 세비야 교회가 51번
     /// 히랄다탑이다.
     /// </summary>
     /// <remarks>

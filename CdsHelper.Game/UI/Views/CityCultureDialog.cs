@@ -18,7 +18,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 서고, 문화권을 손으로 갈아 보면 <b>같은 건물이 어떻게 바뀌는지</b>가 한눈에 보인다.
 ///
 /// 고른 문화권을 <b>씌워 둘</b> 수도 있다. 씌우면 그 도시는 앱 어디서나 그 문화권으로
-/// 굴러간다(<see cref="CityCultureEdits"/>) — 세빌리아를 이슬람으로 갈아 두고 그 마을에
+/// 굴러간다(<see cref="CityCultureEdits"/>) — 세비야를 이슬람으로 갈아 두고 그 마을에
 /// 들어가면 조선소에 이슬람 쪽 사람이 앉는다. 게임 EXE 는 손대지 않는다.
 /// </remarks>
 public sealed class CityCultureDialog : GameWindow

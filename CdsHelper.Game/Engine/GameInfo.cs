@@ -107,7 +107,7 @@ public static class GameInfo
         return new(who.Name, who.Body, who.Mind, who.Might, who.Charm, who.Age, job, t.Zodiac, t.BloodName, nation);
     }
 
-    /// <summary>교역품 한 칸의 이름 — 「%s산」 뒤에 품목 이름을 <b>붙여</b> 쓴다(「세빌리아산총」, <c>0x0042E310</c>). 산지를 모르면 이름만이다.</summary>
+    /// <summary>교역품 한 칸의 이름 — 「%s산」 뒤에 품목 이름을 <b>붙여</b> 쓴다(「세비야산총」, <c>0x0042E310</c>). 산지를 모르면 이름만이다.</summary>
     public static string CargoLabel(Game game, Support.Local.Models.Player.Cargo cargo)
     {
         string name = game.Goods?.Find(cargo.Kind)?.Name ?? $"교역품 {cargo.Kind}";

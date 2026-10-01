@@ -70,7 +70,7 @@ public sealed class CityBuildingTable
     /// <param name="X">도시 그림에서 상자의 왼쪽 위(400x320 기준).</param>
     /// <param name="TeachMask">가르치는 기능·언어 비트. 0 이면 안 가르친다.</param>
     /// <param name="Discovery">
-    /// 이 건물이 곧 발견물이면 그 번호(<c>+0x1C</c>), 아니면 -1. 세빌리아 교회는 51번
+    /// 이 건물이 곧 발견물이면 그 번호(<c>+0x1C</c>), 아니면 -1. 세비야 교회는 51번
     /// 히랄다탑이다 — 건물에 들어서면 그 자리에서 발견한 것으로 적힌다.
     /// </param>
     /// <param name="Picture">

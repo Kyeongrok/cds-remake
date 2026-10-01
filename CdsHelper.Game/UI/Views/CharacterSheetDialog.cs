@@ -16,7 +16,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   0x00571B30  "국적:%-10s  직업:%-8s"
 /// </code>
 /// "결정" 을 누르면 새 놀이가 시작되고, 고른 국적의 <b>자택이 열린다</b> —
-/// 포르투갈이면 리스본, 에스파니아면 세빌리아다.
+/// 포르투갈이면 리스본, 에스파니아면 세비야다.
 /// </remarks>
 internal sealed class CharacterSheetDialog : InfoDialog
 {

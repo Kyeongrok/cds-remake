@@ -13,7 +13,7 @@ using CdsHelper.Support.Local.Settings;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 건물 보기 — <b>왼쪽에 도시, 오른쪽에 그 도시의 건물</b>.
+/// 도시·건물 보기 — <b>왼쪽에 도시, 오른쪽에 그 도시의 그림과 건물</b>.
 /// </summary>
 /// <remarks>
 /// <see cref="CityBuildingTable"/>(<c>건물표.json</c>, 1504줄)를 편다. 적어 둔 JSON 을 그냥
@@ -31,6 +31,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 날 값 그대로다 — 어느 칸이 어떤 이름으로 적히는지 보거나, 복사해 다른 데 붙일 때 쓴다.
 ///
 /// 읽기만 한다. 건물 자리는 도시 그림에 딸린 것이라 여기서 고칠 것이 못 된다.
+///
+/// 그림 밑 「테두리」를 켜면 게임 도시 화면의 금테(CITYFRM.CDS 파트 0, 416x336)를 씌우고,
+/// 「이미지 저장」은 지금 보이는 대로(테두리를 켰으면 테두리째, 건물 상자는 빼고) PNG 로 적는다.
 /// </remarks>
 public sealed class BuildingListDialog : Window
 {
@@ -118,6 +121,28 @@ public sealed class BuildingListDialog : Window
 
     private readonly Border _picFrame;
 
+    /// <summary>금테 그림(416x336, 안쪽은 비친다). 테두리를 켜면 도시 그림 뒤가 아니라 위에 얹는다.</summary>
+    private readonly Image _frameImage = new()
+    {
+        Width = CityFrame.Width,
+        Height = CityFrame.Height,
+        IsHitTestVisible = false,
+        Visibility = Visibility.Collapsed,
+    };
+
+    private readonly CheckBox _frameBox = new()
+    {
+        Content = "테두리",
+        VerticalAlignment = VerticalAlignment.Center,
+        Margin = new Thickness(0, 0, 10, 0),
+        ToolTip = "게임 도시 화면의 금테(CITYFRM.CDS)를 씌운다",
+    };
+
+    private string _gameDir = "";
+    private uint[]? _frameBgra;
+    private uint[]? _cityBgra;
+    private int _shownCity = -1;
+
     private CityBuildingTable? _table;
     private CityTable? _cities;
 
@@ -126,7 +151,7 @@ public sealed class BuildingListDialog : Window
 
     private BuildingListDialog()
     {
-        Title = "건물 보기";
+        Title = "도시·건물 보기";
         Width = 1060;
         Height = 800;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -145,9 +170,16 @@ public sealed class BuildingListDialog : Window
         RenderOptions.SetBitmapScalingMode(_picImage, BitmapScalingMode.NearestNeighbor);
         _pic.Children.Add(_picImage);
         _pic.Children.Add(_box);
+        RenderOptions.SetBitmapScalingMode(_frameImage, BitmapScalingMode.NearestNeighbor);
+        // 그림과 금테를 한 칸에 겹친다 — 테두리를 켜면 그림이 여덟 점 안으로 들어가고 금테가 위에 덮인다.
+        var framed = new Grid();
+        framed.Children.Add(_pic);
+        framed.Children.Add(_frameImage);
+        _frameBox.Checked += (_, _) => SyncFrame();
+        _frameBox.Unchecked += (_, _) => SyncFrame();
         _picFrame = new Border
         {
-            Child = _pic,
+            Child = framed,
             BorderBrush = Brushes.Gray,
             BorderThickness = new Thickness(1),
             HorizontalAlignment = HorizontalAlignment.Left,
@@ -174,10 +206,19 @@ public sealed class BuildingListDialog : Window
             if (e.OriginalSource == _tabs && _tabs.SelectedIndex == 1) ShowJson();
         };
 
-        // 오른쪽 위: 도시 그림 + 설명.
+        // 오른쪽 위: 도시 그림(밑에 테두리·저장) + 설명.
+        var save = new Button { Content = "이미지 저장…", Padding = new Thickness(10, 3, 10, 3), ToolTip = "지금 보이는 도시 그림을 PNG 로 저장한다" };
+        save.Click += (_, _) => SavePicture();
+        var picBar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+        picBar.Children.Add(_frameBox);
+        picBar.Children.Add(save);
+        var picColumn = new StackPanel();
+        picColumn.Children.Add(_picFrame);
+        picColumn.Children.Add(picBar);
+
         var top = new DockPanel { Margin = new Thickness(6, 10, 0, 0) };
-        DockPanel.SetDock(_picFrame, Dock.Left);
-        top.Children.Add(_picFrame);
+        DockPanel.SetDock(picColumn, Dock.Left);
+        top.Children.Add(picColumn);
         top.Children.Add(_picNote);
 
         var right = new DockPanel();
@@ -264,7 +305,17 @@ public sealed class BuildingListDialog : Window
         _cities = CityTable.Open();
         // 건물 표와 달리 그림은 적어 둘 수 없다(20MB) — 게임 폴더가 있어야만 뜬다.
         _pictures = dir.Length > 0 ? CityPictures.Open(dir) : null;
+        _gameDir = dir;
         if (_pictures == null) _picFrame.Visibility = Visibility.Collapsed;
+        _frameBgra = dir.Length > 0 ? CityFrame.TryGetBgra(dir) : null;
+        if (_frameBgra != null)
+        {
+            var frame = BitmapSource.Create(CityFrame.Width, CityFrame.Height, 96, 96, PixelFormats.Bgra32, null,
+                                            _frameBgra, CityFrame.Width * 4);
+            frame.Freeze();
+            _frameImage.Source = frame;
+        }
+        else _frameBox.IsEnabled = false;
 
         if (_table == null)
         {
@@ -352,9 +403,12 @@ public sealed class BuildingListDialog : Window
     private void ShowPicture(int cityId)
     {
         _box.Visibility = Visibility.Collapsed;
+        _cityBgra = null;
+        _shownCity = cityId;
         if (_pictures is not { } pictures) return;
 
         var bgra = cityId < 0 ? null : pictures.TryGetBgra(cityId);
+        _cityBgra = bgra;
         if (bgra == null)
         {
             _picImage.Source = null;
@@ -396,6 +450,61 @@ public sealed class BuildingListDialog : Window
                 $"왼쪽 위 ({row.X}, {row.Y})",
                 $"가운데 ({row.X + CityBuildingTable.BoxWidth / 2}, "
                     + $"{row.Y + CityBuildingTable.BoxHeight / 2})");
+    }
+
+    /// <summary>테두리를 켜고 끈다 — 켜면 그림을 여덟 점 안으로 밀고 금테를 덮는다.</summary>
+    private void SyncFrame()
+    {
+        bool on = _frameBox.IsChecked == true && _frameImage.Source != null;
+        _frameImage.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        _pic.Margin = on ? new Thickness(CityFrame.Border) : new Thickness(0);
+    }
+
+    /// <summary>
+    /// 지금 보이는 도시 그림을 PNG 로 적는다 — 테두리를 켰으면 금테째(416x336), 아니면 그림만(400x320).
+    /// 건물 상자는 고르는 표시라 넣지 않는다.
+    /// </summary>
+    private void SavePicture()
+    {
+        if (_cityBgra is not { } city)
+        {
+            MessageBox.Show(this, "저장할 도시 그림이 없습니다.", "이미지 저장");
+            return;
+        }
+
+        bool framed = _frameBox.IsChecked == true && _frameBgra != null;
+        int w = framed ? CityFrame.Width : CityPictures.Width;
+        int h = framed ? CityFrame.Height : CityPictures.Height;
+        var pixels = new uint[w * h];
+        int off = framed ? CityFrame.Border : 0;
+        for (int y = 0; y < CityPictures.Height; y++)
+            Array.Copy(city, y * CityPictures.Width, pixels, (y + off) * w + off, CityPictures.Width);
+        if (framed)
+            for (int i = 0; i < pixels.Length; i++)
+                if ((_frameBgra![i] >> 24) != 0) pixels[i] = _frameBgra[i];   // 금테는 비치지 않는 점만 덮는다
+
+        var name = NameOf(_shownCity);
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "도시 그림 저장",
+            Filter = "PNG 그림|*.png",
+            FileName = $"{_shownCity:000}_{string.Concat(name.Split(Path.GetInvalidFileNameChars()))}{(framed ? "_테두리" : "")}.png",
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            var bmp = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, pixels, w * 4);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bmp));
+            using var file = File.Create(dialog.FileName);
+            encoder.Save(file);
+            _status.Text = $"저장했습니다: {dialog.FileName}";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this, $"저장하지 못했습니다:\n{ex.Message}", "이미지 저장");
+        }
     }
 
     /// <summary>그림 옆 설명 한 덩이 — 줄마다 한 도막.</summary>

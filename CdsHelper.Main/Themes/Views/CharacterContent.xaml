@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:views="clr-namespace:CdsHelper.Main.UI.Views"
                     xmlns:units="clr-namespace:CdsHelper.Support.UI.Units;assembly=CdsHelper.Support"
-                    xmlns:converters="clr-namespace:CdsHelper.Main.Local.Converters">
+                    xmlns:converters="clr-namespace:CdsHelper.Main.Local.Converters"
+                    xmlns:helpers="clr-namespace:CdsHelper.Support.Local.Helpers;assembly=CdsHelper.Support">
 
     <Style TargetType="{x:Type views:CharacterContent}">
         <Setter Property="Template">
@@ -119,8 +120,8 @@
                                                       IsReadOnly="True"
                                                       BorderThickness="0"
                                                       Background="Transparent">
-                                                <ComboBoxItem Content="리스본" />
-                                                <ComboBoxItem Content="세빌리아" />
+                                                <ComboBoxItem Content="{x:Static helpers:CityNames.Lisbon}" />
+                                                <ComboBoxItem Content="{x:Static helpers:CityNames.Seville}" />
                                                 <ComboBoxItem Content="함대소속" />
                                             </ComboBox>
                                         </DataTemplate>

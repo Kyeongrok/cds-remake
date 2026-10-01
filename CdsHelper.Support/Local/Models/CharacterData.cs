@@ -1,3 +1,4 @@
+using CdsHelper.Support.Local.Helpers;
 using System.ComponentModel;
 
 namespace CdsHelper.Support.Local.Models;
@@ -126,14 +127,14 @@ public class CharacterData : INotifyPropertyChanged
     public string Location { get; set; } = "";
 
     /// <summary>
-    /// 소재 선택 인덱스 (ComboBox용): 0=리스본, 1=세빌리아, 2=함대소속
+    /// 소재 선택 인덱스 (ComboBox용): 0=리스본, 1=세비야, 2=함대소속
     /// </summary>
     public int LocationSelectIndex
     {
         get => _locationIndex switch
         {
             0 => 0,    // 리스본
-            7 => 1,    // 세빌리아
+            7 => 1,    // 세비야
             255 => 2,  // 함대소속
             _ => -1    // 기타 (선택 안됨)
         };
@@ -142,7 +143,7 @@ public class CharacterData : INotifyPropertyChanged
             var newIndex = value switch
             {
                 0 => (byte)0,    // 리스본
-                1 => (byte)7,    // 세빌리아
+                1 => (byte)7,    // 세비야
                 2 => (byte)255,  // 함대소속
                 _ => _locationIndex
             };
@@ -155,8 +156,7 @@ public class CharacterData : INotifyPropertyChanged
 
     private static string LocationIndexToName(byte index) => index switch
     {
-        0 => "리스본",
-        7 => "세빌리아",
+        CityNames.LisbonId or CityNames.SevilleId => CityNames.Of(index),
         255 => "함대소속",
         _ => $"기타({index})"
     };

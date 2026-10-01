@@ -67,7 +67,7 @@
       },
       {
         "Id": 7,
-        "Name": "세빌리아",
+        "Name": "세비야",
         "Culture": "이베리아",
         "Latitude": 37,
         "Longitude": -6,
@@ -670,7 +670,7 @@
       },
       {
         "Id": 74,
-        "Name": "간디아",
+        "Name": "칸디아",
         "Culture": "발칸",
         "Latitude": 35,
         "Longitude": 25,
@@ -787,7 +787,7 @@
       },
       {
         "Id": 87,
-        "Name": "마디라",
+        "Name": "마데이라",
         "Culture": "아프리카",
         "Latitude": 32,
         "Longitude": -16,
@@ -904,7 +904,7 @@
       },
       {
         "Id": 100,
-        "Name": "르완다",
+        "Name": "루안다",
         "Culture": "아프리카",
         "Latitude": -8,
         "Longitude": 13,
@@ -1498,7 +1498,7 @@
       },
       {
         "Id": 166,
-        "Name": "아친",
+        "Name": "아체",
         "Culture": "동남아시아",
         "Latitude": -5,
         "Longitude": 95,
@@ -1507,7 +1507,7 @@
       },
       {
         "Id": 167,
-        "Name": "파렌반",
+        "Name": "팔렘방",
         "Culture": "동남아시아",
         "Latitude": -2,
         "Longitude": 104,
@@ -1516,7 +1516,7 @@
       },
       {
         "Id": 168,
-        "Name": "반탐",
+        "Name": "반텐",
         "Culture": "동남아시아",
         "Latitude": -5,
         "Longitude": 105,
@@ -1741,7 +1741,7 @@
       },
       {
         "Id": 193,
-        "Name": "쿄토",
+        "Name": "교토",
         "Culture": "일본",
         "Latitude": 34,
         "Longitude": 135,
@@ -1822,7 +1822,7 @@
       },
       {
         "Id": 202,
-        "Name": "투라스칼라",
+        "Name": "틀락스칼라",
         "Culture": "아메리카",
         "Latitude": 19,
         "Longitude": -98,

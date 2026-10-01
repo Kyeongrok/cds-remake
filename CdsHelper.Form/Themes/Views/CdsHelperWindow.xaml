@@ -266,8 +266,8 @@
                                             ToolTip="역사 항해자 열넷이 언제 무엇을 채가는지 고친다 — 고친 것은 놀이에도 그대로 쓰인다" />
                                         <MenuItem
                                             x:Name="PART_BuildingListMenu"
-                                            Header="건물"
-                                            ToolTip="도시마다 선 건물을 본다 — 자리와 가르치는 기능·언어까지" />
+                                            Header="도시·건물"
+                                            ToolTip="도시 그림(테두리·저장)과 도시마다 선 건물을 본다 — 자리와 가르치는 기능·언어까지" />
                                         <MenuItem
                                             x:Name="PART_PortraitBookMenu"
                                             Header="초상화 보기"

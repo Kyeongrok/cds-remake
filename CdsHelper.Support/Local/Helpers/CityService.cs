@@ -39,6 +39,11 @@ public class CityService
                     onMigrated: msg => EventQueueService.Instance.DataLoaded("CityService", msg));
             }
 
+            // DB 는 처음 한 번만 JSON 을 옮겨 담는다 — 그 뒤 cities.json 에서 고친 이름(세빌리아 → 세비야 따위)이
+            // 안 들어가 편집기와 놀이의 이름이 갈렸다. 켤 때마다 이름만 JSON 에 맞춘다.
+            if (!string.IsNullOrEmpty(jsonPath) && System.IO.File.Exists(jsonPath))
+                await SyncNamesAsync(jsonPath);
+
             // 캐시 로드
             await RefreshCacheAsync();
             _initialized = true;
@@ -46,6 +51,26 @@ public class CityService
         finally
         {
             _initLock.Release();
+        }
+    }
+
+    /// <summary>DB 의 도시 이름을 cities.json 에 맞춘다. 다른 칸(좌표·문화권)은 건드리지 않는다.</summary>
+    private async Task SyncNamesAsync(string jsonPath)
+    {
+        if (_controller == null) return;
+        try
+        {
+            var names = LoadCities(jsonPath).ToDictionary(c => c.Id, c => c.Name);
+            foreach (var entity in await _controller.GetAllCitiesAsync())
+            {
+                if (!names.TryGetValue(entity.Id, out var name) || name.Length == 0 || name == entity.Name) continue;
+                entity.Name = name;
+                await _controller.UpdateCityAsync(entity);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[CityService] 이름 맞추기 실패: {ex.Message}");
         }
     }
 

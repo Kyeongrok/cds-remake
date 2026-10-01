@@ -12,7 +12,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 발견 알림 — 그림 한 장을 세우고 그 아래에 "…을 발견했다!" 를 적는다.
 /// </summary>
 /// <remarks>
-/// 세빌리아 교회처럼 <b>건물 자체가 발견물</b>인 자리에서 뜬다. 그림은 DSTILL.CDS 에서
+/// 세비야 교회처럼 <b>건물 자체가 발견물</b>인 자리에서 뜬다. 그림은 DSTILL.CDS 에서
 /// 오고(<see cref="DiscoveryStills"/>), 어느 그림인지는 건물 표가 들고 있다
 /// (<see cref="CityBuildingTable.Building.Picture"/>).
 ///

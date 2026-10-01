@@ -2216,14 +2216,13 @@ public sealed class ShipMapWindow : Window
     }
     /// <summary>
     /// 새 놀이는 <b>고른 국적의 자택</b>에서 시작한다 — 포르투갈이면 리스본,
-    /// 에스파니아면 세빌리아다.
+    /// 에스파니아면 세비야다.
     /// </summary>
-    /// <summary>새 판이 여는 도시 — 나라가 1 이면 세빌리아, 아니면 리스본. 없으면 번호 -1.</summary>
+    /// <summary>새 판이 여는 도시 — 나라가 1 이면 세비야(7), 아니면 리스본(0). 이름이 아니라 번호로 찾는다. 없으면 번호 -1.</summary>
     private (int Id, string Name) StartCity()
     {
-        string want = _game.Player.Nation == 1 ? "세빌리아" : "리스본";
-        var found = _game.CityTable.Cities.FirstOrDefault(c => c.Name == want);
-        return found.Name == want ? (found.Id, found.Name) : (-1, "");
+        int want = _game.Player.Nation == 1 ? CityNames.SevilleId : CityNames.LisbonId;
+        return _game.CityTable.Find(want) is { } found ? (found.Id, found.Name) : (-1, "");
     }
 
     private void OpenHome()
@@ -2779,7 +2778,7 @@ public sealed class ShipMapWindow : Window
             if (saved.Blood is { } blood) _game.Player.Blood = blood;
             if (saved.Nation is { } nation) _game.Player.Nation = nation;
 
-            // 모항. 판 29 앞의 세이브에는 없어 새 판이 여는 도시(리스본·세빌리아)로 둔다.
+            // 모항. 판 29 앞의 세이브에는 없어 새 판이 여는 도시(리스본·세비야)로 둔다.
             // <b>국적을 넣은 뒤에</b> 고른다 — 앞에서 고르면 국적이 아직 밑값 0 이라 에스파니아도 리스본이 모항이 됐다.
             _game.Player.SetHomePort(saved.HomePort ?? StartCity().Id);
 
@@ -3694,7 +3693,7 @@ public sealed class ShipMapWindow : Window
     /// <see cref="Sailing.LandSpeed"/> 가 2 라 걸음이 <c>(3x2+54)/10/16 = 0.375</c>칸이고,
     /// 그래서 한 칸에 걸음이 <b>2.67</b> 번 든다. 육지(눈금 2)라면 칸마다 5.3눈금이라
     /// 하루에 아홉 칸 남짓인데, 칸마다 2눈금만 붙이면 스물넉 칸이 되어 <b>날이 세 배 가까이
-    /// 빨리 갔다</b> — 세빌리아에서 톨레도(스물한 칸)까지가 사흘이 아니라 하루였던 것이
+    /// 빨리 갔다</b> — 세비야에서 톨레도(스물한 칸)까지가 사흘이 아니라 하루였던 것이
     /// 이것이다.
     ///
     /// 바다도 같이 바로잡힌다. 걸음이 배의 이동값에 딸리므로 <b>느린 배는 같은 거리에
@@ -3790,7 +3789,7 @@ public sealed class ShipMapWindow : Window
     /// 그중 <c>0x0048E5E0</c> 은 풀기 전에 서 있던 재해마다 부관이 한 줄씩 말한다.
     /// 세 자리 가운데 어느 것이 상륙·입항인지는 아직 이름표를 안 붙여, 둘 다 말하게 둔다.
     /// </remarks>
-    /// <returns>부관이 한 마디라도 했으면 참 — 서 있던 재해가 있었다는 뜻이다.</returns>
+    /// <returns>부관이 한 마데이라도 했으면 참 — 서 있던 재해가 있었다는 뜻이다.</returns>
     /// <summary>
     /// 마을에 닿았다 — 입항·성문 어느 길로 들든 한 번 치른다. 전염병을 옮기고, 멸망한 후원자 소식을 듣고,
     /// 항해가 끝나 쥐·병이 <b>말 없이</b> 풀린다.

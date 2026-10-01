@@ -117,7 +117,7 @@ public sealed class SupplyDialog : GameWindow
     /// <summary>도시 형편 낱말 — 탄약을 파는지(비트 8), 물이 공짜인지(비트 0x40)를 가른다.</summary>
     private readonly int _cityFlags;
 
-    /// <summary>교역품 이름과 산지(「세빌리아산」). 없으면 번호로 적는다.</summary>
+    /// <summary>교역품 이름과 산지(「세비야산」). 없으면 번호로 적는다.</summary>
     private readonly Func<Player.Cargo, (string Name, string Origin)>? _cargoText;
 
     /// <summary>탄약을 파는 도시의 형편 비트.</summary>
@@ -261,7 +261,7 @@ public sealed class SupplyDialog : GameWindow
     /// </summary>
     /// <remarks>
     /// 이름은 보급품처럼 왼쪽에 붙고, [남은 달]은 단중량 칸의 <b>왼쪽 끝</b>에 선다 — 이름 칸에 같이 넣으면 줄이
-    /// 넘쳐 오른쪽 칸들이 눌린다. 줄에 마우스를 올리면 산지(「세빌리아산」)가 뜬다.
+    /// 넘쳐 오른쪽 칸들이 눌린다. 줄에 마우스를 올리면 산지(「세비야산」)가 뜬다.
     /// </remarks>
     private UIElement CargoRow(Player.Cargo cargo)
     {

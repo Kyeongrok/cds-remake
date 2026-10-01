@@ -368,7 +368,7 @@ public sealed class LandBattle
     public int City { get; } = -1;
 
     /// <summary>
-    /// 증원이 왔을 때 나오는 말 — 리스본·세빌리아면 첫 줄(<c>0x0056D130</c>), 그 밖이면 셋 가운데 굴린다
+    /// 증원이 왔을 때 나오는 말 — 리스본·세비야면 첫 줄(<c>0x0056D130</c>), 그 밖이면 셋 가운데 굴린다
     /// (<c>0x00446DF0</c> 의 <c>0x00549CC8</c>). 모두 부관(없으면 뱃사람) 얼굴로 나온다.
     /// </summary>
     public string ReinforceWordFor(GameRandom dice) =>
@@ -385,7 +385,7 @@ public sealed class LandBattle
     /// 이겼을 때 적의 새 병력이 붙는지 — <b>마을 공략에서 딱 한 번</b>이다.
     /// </summary>
     /// <remarks>
-    /// 규모가 셋 위면 늘 붙고, 작으면 <b>리스본(0)·세빌리아(7)</b>에서만 붙는다(<c>0x0044993C</c> 가 도시 번호를 본다).
+    /// 규모가 셋 위면 늘 붙고, 작으면 <b>리스본(0)·세비야(7)</b>에서만 붙는다(<c>0x0044993C</c> 가 도시 번호를 본다).
     /// 붙어도 <b>턴은 그대로</b> 간다 — <c>0x00449930</c> 은 깃발만 세우고 돌아가며 턴 칸을 안 건드린다.
     /// </remarks>
     public bool Reinforce(GameRandom dice)
@@ -405,7 +405,7 @@ public sealed class LandBattle
         return true;
     }
 
-    /// <summary>규모가 작아도 증원이 붙는 도시 — 리스본과 세빌리아(<c>0x0044993C</c>).</summary>
+    /// <summary>규모가 작아도 증원이 붙는 도시 — 리스본과 세비야(<c>0x0044993C</c>).</summary>
     private const int ReinforcingCityA = 0, ReinforcingCityB = 7;
 
     /// <summary>판을 열 때의 인원.</summary>
