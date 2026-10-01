@@ -71,6 +71,9 @@ public sealed class GameSettingsData
     /// <summary>지도 위에 좌표 상자를 겹쳐 보일지. 개발용이라 꺼 두고 시작한다(내놓은 판을 처음 깔면 꺼져 있다).</summary>
     public bool ShowCoordOverlay { get; set; }
 
+    /// <summary>바다에 있을 때 배 속도 쪽지를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    public bool ShowShipSpeed { get; set; }
+
     /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryCount { get; set; }
 
@@ -557,6 +560,13 @@ public static class GameSettings
     }
 
     /// <summary>지도 위에 좌표 상자를 겹쳐 보일지. 개발 창에서 켜고 끈다.</summary>
+    /// <summary>배 속도 쪽지 — 모드 창에서 켜고 끈다. 바다에 있을 때만 뜬다.</summary>
+    public static bool ShowShipSpeed
+    {
+        get => Get(d => d.ShowShipSpeed);
+        set => Set(d => d.ShowShipSpeed = value);
+    }
+
     /// <summary>발견물 수 상자 — 모드 창에서 켜고 끈다.</summary>
     public static bool ShowDiscoveryCount
     {

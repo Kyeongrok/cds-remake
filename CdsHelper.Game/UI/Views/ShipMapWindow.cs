@@ -188,6 +188,9 @@ public sealed class ShipMapWindow : Window
         LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
     };
 
+    /// <summary>배 속도 쪽지 — 모드 「배 속도」를 켜면 바다에 있는 동안 지도 위에 뜬다. 끌어 옮길 수 있다.</summary>
+    private FleetLabelWindow? _speedNote;
+
     /// <summary>만난 사람 상자를 켜 두었는지.</summary>
     private bool _peopleWanted = GameSettings.ShowPeopleOverlay;
 
@@ -623,6 +626,7 @@ public sealed class ShipMapWindow : Window
             }
             if (_overlay.IsOpen) { var (lat, lon) = _host.ShipLatLon; FillOverlay(lat, lon); }
             if (_miniWanted) SyncMiniMap();
+            SyncSpeedNote();
             SyncWeather();
             SyncSeaMusic();
         });
@@ -1032,6 +1036,7 @@ public sealed class ShipMapWindow : Window
         _people.IsOpen = people;
 
         SyncMiniMap();
+        SyncSpeedNote();
     }
 
     /// <summary>
@@ -1144,7 +1149,8 @@ public sealed class ShipMapWindow : Window
     private void SyncMiniMap()
     {
         bool calm = !_asking && !_host.Paused
-                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible);
+                    // 쪽지 창(배 속도 따위, FleetLabelWindow)은 사건 창이 아니다 — 세면 쪽지가 떠 있는 내내 미니맵이 숨었다.
+                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible && w is not FleetLabelWindow);
         var now = DateTime.UtcNow;
         if (!calm) _miniCalmSince = null;
         else _miniCalmSince ??= now;
@@ -1191,6 +1197,39 @@ public sealed class ShipMapWindow : Window
     }
 
 
+
+    /// <summary>
+    /// 배 속도 쪽지를 맞춘다 — 모드를 켰고, 지도가 앞이고, <b>바다</b>(뭍·도시 아님)일 때만 「배 속도 N」을 띄운다.
+    /// 값은 지도가 걸음마다 잰 함대 속도(<see cref="Rendering.ShipMapHost.LastSpeed"/>)다.
+    /// </summary>
+    private void SyncSpeedNote()
+    {
+        bool show = GameSettings.ShowShipSpeed && _started && WindowState != WindowState.Minimized
+                    && ReferenceEquals(_screen.Content, _mapRoot) && !_host.IsOnLand && !_host.InCity;
+        if (!show) { _speedNote?.Set(""); return; }
+        _speedNote ??= FleetLabelWindow.Attach(this, SpeedFontSize, FleetLabelWindow.Slot.Speed);
+        _speedNote.Set($"{KnotsOf(_host.LastSpeed):0.00} kn");
+    }
+
+    /// <summary>
+    /// 함대 속도를 노트로 — 한 눈금에 나아갈 칸 수 × 하루 눈금(48) × 한 칸의 해리(8.64) ÷ 24 시간.
+    /// </summary>
+    /// <remarks>
+    /// 한 칸은 위도 0.144도(세로 1250칸이 180도)라 8.64해리다. 바다 칸은 빠른 칸(그림 0x80)과 느린 칸이 반반 섞여
+    /// 걸음마다 칸 수가 갈리므로(<see cref="Engine.Sea.Sailing"/>) 두 셈의 가운데를 쓴다 — 해류는 안 친다.
+    /// </remarks>
+    private static double KnotsOf(int speed)
+    {
+        double cells = (Engine.Sea.Sailing.CellsPerTick(speed, true, false)
+                        + Engine.Sea.Sailing.CellsPerTick(speed, false, false)) / 2;
+        return cells * TerrainTable.TicksPerDay * NauticalMilesPerCell / 24;
+    }
+
+    /// <summary>지도 한 칸의 해리 — 위도 0.144도 x 60.</summary>
+    private const double NauticalMilesPerCell = 180.0 / 1250 * 60;
+
+    /// <summary>배 속도 쪽지의 글자 크기.</summary>
+    private const double SpeedFontSize = 14;
 
     /// <summary>여급 칸의 너비(글자 칸). 한글 한 자를 두 칸으로 센다.</summary>
     private const int PeopleColumn = 34;

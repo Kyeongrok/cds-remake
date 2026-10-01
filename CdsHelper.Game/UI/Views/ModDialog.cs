@@ -77,6 +77,10 @@ public sealed class ModDialog : GameWindow
 
 
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
+        // 배 속도 — 바다에서 걸음마다 잰 함대 속도를 쪽지로 띄운다.
+        rows.Children.Add(Toggle("배 속도", GameSettings.ShowShipSpeed, on => GameSettings.ShowShipSpeed = on,
+            "원본에 없는 것입니다 — 바다에 있을 때 함대 속도(바람·돛·선원으로 걸음마다 잰 값)를 지도 위 쪽지로 띄웁니다. 뭍·도시에서는 안 뜹니다. 끌어 옮길 수 있습니다."));
+
         // 발견물 수 — 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄운다.
         rows.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
             "원본에 없는 것입니다 — 도시에 들어가면 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 도시 창 곁에 띄웁니다. 끌어 옮길 수 있습니다."));
