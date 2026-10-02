@@ -93,7 +93,7 @@ internal sealed class App : Application
             var target = update.TargetFullRelease;
 
             bool now = window.IsLoaded && CdsHelper.Game.UI.Views.ConfirmDialog.Ask(window,
-                $"새 버전 {target.Version} 을(를) 받았습니다.\n지금 다시 시작해 적용하겠습니까?"
+                $"새 버전({target.Version})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?"
                 + "\n(진행 중인 판은 저장되지 않습니다. 아니오를 고르면 게임을 끌 때 적용됩니다.)");
             if (now) manager.ApplyUpdatesAndRestart(target);
             else manager.WaitExitThenApplyUpdates(target, silent: true, restart: false);
@@ -105,5 +105,5 @@ internal sealed class App : Application
     }
 
     /// <summary>릴리즈가 올라가는 저장소 — 개발도구의 업데이트와 같은 자리다.</summary>
-    private const string RepoUrl = "https://github.com/Kyeongrok/cds-helper";
+    private const string RepoUrl = "https://github.com/Kyeongrok/cds-remake";
 }

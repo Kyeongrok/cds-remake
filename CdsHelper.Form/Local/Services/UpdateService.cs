@@ -14,7 +14,7 @@ public class UpdateService
     public UpdateService()
     {
         _updateManager = new UpdateManager(
-            new GithubSource("https://github.com/Kyeongrok/cds-helper", null, false));
+            new GithubSource("https://github.com/Kyeongrok/cds-remake", null, false));
     }
 
     public bool IsInstalled => _updateManager.IsInstalled;
