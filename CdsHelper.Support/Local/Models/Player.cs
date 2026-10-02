@@ -2690,6 +2690,10 @@ public sealed class Player
         if (Flagship > index) Flagship--;
         else if (Flagship == index) Flagship = 0;
         Flagship = Math.Clamp(Flagship, 0, Math.Max(0, _ships.Count - 1));
+        // 배가 줄면 정원도 준다 — 넘치는 선원은 내린다. 게임은 선원을 배마다 들고 있어(배 레코드 +0x34) 배가 빠지면
+        // 그 배의 선원도 함께 빠진다. 안 맞추면 빌린 배를 다 돌려주고 <b>배가 한 척도 없는데 선원만 남아</b>,
+        // 성문의 「탐험을 떠난다」(선원 수 > 0, 0x00468910)가 열렸다.
+        if (Crew > MaxCrew) Crew = MaxCrew;
     }
 
     // ── 보급 ─────────────────────────────────────────────────────────────────

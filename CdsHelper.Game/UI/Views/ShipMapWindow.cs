@@ -1443,20 +1443,15 @@ public sealed class ShipMapWindow : Window
         items.Children.Add(TitleMenuItem("NEW GAME", NewGame));
 
         // 적어 둔 판이 있을 때만 고를 수 있다. 빈 새 설치에서는 게임처럼 흐리게 낸다.
+        // 원본은 「마지막에 저장한 데이터를 로드합니다」(0x00571A88) 한 번 묻고 한 파일을 연다. 우리는 손으로 적은
+        // 세이브를 다섯 칸까지 남기므로(GameSave.ManualSlots) CONTINUE 처럼 목록에서 고르게 한다.
         items.Children.Add(TitleMenuItem("LOAD GAME",
-            System.IO.File.Exists(Engine.GameSave.Path) ? () =>
-        {
-            // 게임도 제목 띠를 얹는다 — 0x00571A78 "게임 로드" · 0x00571A88 본문.
-            if (!ConfirmDialog.Ask(this, "마지막에 저장한 데이터를 로드합니다", "게임 로드")) return;
-            if (!System.IO.File.Exists(Engine.GameSave.Path))
-            {
-                // 0x005723F8 「저장 데이터 · 파일 이름 · 발견되지 않습니다」 — 제목은 「에러」다.
-                NoticeDialog.Show(this, $"저장 데이터{Environment.NewLine}{Engine.GameSave.Path}"
-                                        + $"{Environment.NewLine}가 발견되지 않습니다", "에러");
-                return;
-            }
-            StartMap(fresh: false);
-        } : null));
+            Engine.GameSave.HasManualSave()
+                ? () =>
+                {
+                    if (PickManualSave(this) is { } file) StartMap(fresh: false, path: file);
+                }
+                : null));
         // CONTINUE — 원본에 없는 줄이다. 입항 자동저장(모드 창)이 적어 둔 칸들을 목록으로 보여 주고
         // 고른 칸을 연다. 적어 둔 것이 없으면 <b>줄이 흐리다</b>(눌러도 안 먹는다) — LOAD GAME 과 달리
         // 원본에 없는 줄이라 「없습니다」를 띄울 자리가 아니다.
@@ -2339,6 +2334,13 @@ public sealed class ShipMapWindow : Window
                         + $"[{name}]{GameUi.Josa(name, "은", "는")} 은퇴시키겠습니까?"))   // 둘 다 갈래 1(0x0045F795 · 0x0045F7C3)
                     return false;
 
+                // 원본에 없는 물음이다 — 은퇴시키면 세이브가 지워진다는 것을 한 번 일러 준다.
+                // 우리는 지난 세이브 칸과 자동저장까지 같이 걷으므로 되돌릴 길이 없다.
+                if (!ConfirmDialog.Ask(this,
+                        $"[{name}]{GameUi.Josa(name, "을", "를")} 은퇴시키면 저장한 데이터와 자동저장이 모두 지워집니다. 좋습니까?",
+                        "모험 중단"))
+                    return false;
+
                 // 그 깃발이 선 판은 올리기 앞서 다섯 자리를 비운다(0x0041AD55).
                 if (saved.SkipsCumulative == true) Engine.AccData.Clear();
 
@@ -2599,13 +2601,21 @@ public sealed class ShipMapWindow : Window
         finally { _host.Paused = paused; }
     }
 
-    public void LoadGame()
+    /// <param name="path">열 세이브 칸. 안 주면 가장 새로 적은 것(<see cref="GameSave.Path"/>)이다.</param>
+    public void LoadGame(string? path = null)
     {
         foreach (var child in OwnedWindows.OfType<Window>().ToList()) child.Close();
         _overlay.IsOpen = false;
         _askedCity = -1;
-        StartMap(fresh: false);
+        StartMap(fresh: false, path: path);
     }
+
+    /// <summary>
+    /// 손으로 적은 세이브 칸을 새것부터 늘어놓고 하나를 고르게 한다 — 첫 화면의 <b>LOAD GAME</b> 과 놀이 안의 「로드」다.
+    /// </summary>
+    /// <returns>고른 칸의 파일 자리. 그만두었으면 null.</returns>
+    internal string? PickManualSave(Window owner) =>
+        PickSave(owner, GameSave.ManualSaves(), "게임 로드", "저장한 데이터가 없습니다");
 
     /// <summary>
     /// 자동저장 칸을 새것부터 늘어놓고 하나를 고르게 한다 — 첫 화면의 <b>CONTINUE</b> 다.
@@ -2615,9 +2625,12 @@ public sealed class ShipMapWindow : Window
     /// 칸은 <see cref="GameSave.AutoSlots"/> 개까지 들고 있다.
     /// </remarks>
     /// <returns>고른 칸의 파일 자리. 그만두었으면 null.</returns>
-    private string? PickAutoSave()
+    private string? PickAutoSave() =>
+        PickSave(this, GameSave.AutoSaves(), "자동저장 불러오기", "자동저장한 데이터가 없습니다");
+
+    /// <summary>세이브 칸 목록 — 줄마다 캐릭터 이름 · 도시 · 저장한 시각 · 찾은 발견물 수.</summary>
+    private static string? PickSave(Window owner, List<GameSave.AutoSlot> slots, string caption, string whenEmpty)
     {
-        var slots = GameSave.AutoSaves();
         static string Row(string name, string city, string at, string found) =>
             GameUi.Pad(name, 28) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + found;
 
@@ -2630,7 +2643,7 @@ public sealed class ShipMapWindow : Window
             return Row(name, city, $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
         }).ToList();
 
-        int at = HintListDialog.Pick(this, rows, "자동저장 불러오기", "자동저장한 데이터가 없습니다",
+        int at = HintListDialog.Pick(owner, rows, caption, whenEmpty,
                                      header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
                                      // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
                                      listWidth: 580);
@@ -2745,6 +2758,9 @@ public sealed class ShipMapWindow : Window
                                  gunsInStats: saved.Version >= GameSave.GunsInStatsFrom,
                                  sailsInStats: saved.Version >= GameSave.SailsInStatsFrom,
                                  hullNames: saved.Version >= GameSave.HullNamesFrom);
+            // 선원은 함대보다 먼저 되살렸다 — 되살린 함대의 정원에 다시 맞춘다. 빌린 배를 다 돌려주고
+            // 배 없이 선원만 남은 채 적힌 세이브(예전 버그)가 여기서 0 명으로 바로잡힌다.
+            _game.Player.SetCrew(_game.Player.Crew);
             _game.Player.RestoreMateBook(saved.MateBook);
             // 실은 교역품과 교역소 재고. 이 판 앞의 세이브에는 없어 빈 짐 · 처음 재고로 연다.
             _game.Player.RestoreCargo(saved.Cargo);

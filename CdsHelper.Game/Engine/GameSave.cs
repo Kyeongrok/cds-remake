@@ -121,6 +121,66 @@ public static class GameSave
     /// <summary>자동저장을 들고 있는 칸 수.</summary>
     public const int AutoSlots = 10;
 
+    /// <summary>
+    /// <b>손으로 적은 세이브</b>의 지난 칸들을 두는 폴더 — 적을 때마다 새 칸이 하나 생긴다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 세이브가 한 파일뿐이라 적으면 앞의 것이 사라진다. 우리는 <see cref="Path"/>(늘 가장 새 것)에 적으면서
+    /// 같은 것을 여기에도 한 칸 남기고, <see cref="ManualSlots"/> 개를 넘으면 가장 오래된 칸부터 지운다.
+    /// 첫 화면의 <b>LOAD GAME</b> 과 놀이 안의 「로드」가 이 칸들을 목록으로 보여 준다.
+    /// </remarks>
+    public static string ManualDirectory => System.IO.Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "CdsHelper", "save");
+
+    /// <summary>손으로 적은 세이브를 들고 있는 칸 수.</summary>
+    public const int ManualSlots = 5;
+
+    private static string NewManualPath() => System.IO.Path.Combine(
+        ManualDirectory, $"SAVE_{DateTime.Now:yyyyMMdd_HHmmss_fff}.CDS");
+
+    private static List<string> ManualFiles()
+    {
+        try
+        {
+            return Directory.Exists(ManualDirectory) ? [.. Directory.GetFiles(ManualDirectory, "*.CDS")] : [];
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return []; }
+    }
+
+    private static List<AutoSlot> Slots(IEnumerable<string> files) =>
+        [.. files.Select(f => Load(f) is { } d ? new AutoSlot(f, d) : null)
+                 .OfType<AutoSlot>()
+                 .OrderByDescending(s => s.Save.SavedAt)];
+
+    /// <summary>
+    /// 손으로 적은 세이브를 <b>새것부터</b> 낸다. 깨졌거나 못 읽는 파일은 뺀다.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Path"/> 는 가장 새 칸과 같은 것이라 겹치면 한 번만 낸다. 칸이 생기기 전에 적어 둔
+    /// 세이브(칸 폴더가 비어 있다)는 <see cref="Path"/> 한 줄로 나온다.
+    /// </remarks>
+    public static List<AutoSlot> ManualSaves()
+    {
+        var slots = Slots(ManualFiles());
+        if (Load() is { } latest && !slots.Any(s => s.Save.SavedAt == latest.SavedAt))
+            slots = [.. slots.Append(new AutoSlot(Path, latest)).OrderByDescending(s => s.Save.SavedAt)];
+        return slots;
+    }
+
+    /// <summary>손으로 적은 세이브가 하나라도 있는지 — 파일만 보고 열지는 않는다.</summary>
+    public static bool HasManualSave() => File.Exists(Path) || ManualFiles().Count > 0;
+
+    /// <summary><see cref="ManualSlots"/> 개를 넘는 오래된 칸을 지운다. <see cref="Path"/> 는 안 건드린다.</summary>
+    private static void PruneManualSaves()
+    {
+        foreach (var old in Slots(ManualFiles()).Skip(ManualSlots))
+        {
+            try { File.Delete(old.File); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+    }
+
     /// <summary>새 자동저장 칸의 자리 — 적는 시각을 이름에 넣어 겹치지 않게 한다.</summary>
     public static string NewAutoPath() => System.IO.Path.Combine(
         AutoDirectory, $"AUTO_{DateTime.Now:yyyyMMdd_HHmmss_fff}.CDS");
@@ -169,7 +229,7 @@ public static class GameSave
     }
 
     /// <summary>
-    /// 그 판의 <b>자동저장 칸</b>을 지운다 — 「모험 중단」에서 은퇴시키거나 삭제한 뒤다.
+    /// 그 판의 <b>자동저장 칸과 손으로 적은 지난 칸</b>을 지운다 — 「모험 중단」에서 은퇴시키거나 삭제한 뒤다.
     /// </summary>
     /// <remarks>
     /// 원본은 세이브가 한 파일뿐이라 그것만 지우면 끝이다(<c>0x0045F8F2</c>). 우리는 자동저장 칸이 따로 있어
@@ -195,7 +255,8 @@ public static class GameSave
                   && Key(d.Given) == Key(given);
 
         int gone = 0;
-        foreach (var slot in AutoSaves())
+        // 손으로 적은 지난 칸(ManualDirectory)도 같이 걷는다 — 남기면 LOAD GAME 목록에서 은퇴한 제독이 되살아난다.
+        foreach (var slot in AutoSaves().Concat(Slots(ManualFiles())))
         {
             if (!Same(slot.Save)) continue;
             try { File.Delete(slot.File); gone++; }
@@ -500,7 +561,21 @@ public static class GameSave
             string file = string.IsNullOrEmpty(path) ? Path : path;
             var dir = System.IO.Path.GetDirectoryName(file);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-            File.WriteAllText(file, JsonSerializer.Serialize(data, Pretty));
+            string json = JsonSerializer.Serialize(data, Pretty);
+            File.WriteAllText(file, json);
+
+            // 손으로 적은 것이면 지난 칸으로도 한 벌 남긴다 — 다섯 칸을 넘으면 가장 오래된 것이 빠진다.
+            // 칸을 못 남겨도 저장 자체는 된 것이라 까닭을 올리지 않는다.
+            if (string.IsNullOrEmpty(path))
+            {
+                try
+                {
+                    Directory.CreateDirectory(ManualDirectory);
+                    File.WriteAllText(NewManualPath(), json);
+                    PruneManualSaves();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            }
             return "";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

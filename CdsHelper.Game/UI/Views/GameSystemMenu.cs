@@ -71,11 +71,14 @@ internal static class GameSystemMenu
     /// <returns>적기까지 갔는지(물음에 YES 를 골랐는지).</returns>
     public static bool Save(Window owner, Engine.Game game)
     {
-        if (!ConfirmDialog.Ask(owner, "데이터를 겹쳐 쓰겠습니다. 좋습니까?")) return false;
+        // 원본은 「데이터를 겹쳐 쓰겠습니다」다 — 세이브가 한 파일이라 앞의 것이 사라진다. 우리는 지난 것을
+        // 다섯 칸까지 남기므로(GameSave.ManualSlots) 겹쳐 쓴다고 하지 않는다.
+        if (!ConfirmDialog.Ask(owner, "데이터를 저장하겠습니다. 좋습니까?")) return false;
 
         string error = game.Save();
-        ConfirmDialog.Tell(owner, error.Length == 0 ? "데이터를 겹쳐 썼습니다"
-                                                    : $"기록하지 못했다 — {error}");
+        ConfirmDialog.Tell(owner, error.Length == 0
+            ? $"데이터를 저장했습니다 (최근 {Engine.GameSave.ManualSlots}개까지 남습니다)"
+            : $"기록하지 못했다 — {error}");
         return true;
     }
 
@@ -91,10 +94,12 @@ internal static class GameSystemMenu
     public static void Load(Window view, GameMenuHost menu)
     {
         if (view.Owner is not ShipMapWindow map) { menu.Close(); return; }
+        // 어느 칸을 열지 먼저 고르고 묻는다 — 손으로 적은 세이브가 다섯 칸까지 남는다.
+        if (map.PickManualSave(menu.Window ?? view) is not { } file) return;
         if (!ConfirmDialog.Ask(menu.Window ?? view, "데이터를 불러 오겠습니다. 좋습니까?")) return;
 
         menu.Close();
-        map.LoadGame();
+        map.LoadGame(file);
     }
 
     /// <summary>

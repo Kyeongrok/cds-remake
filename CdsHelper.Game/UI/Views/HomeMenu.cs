@@ -357,6 +357,9 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         if (!ConfirmDialog.Ask(_view,
                 $"{me}{GameUi.Josa(me, "은", "는")} 모험가로서 게임에 복귀할 수 없게 됩니다만, 괜찮습니까?"))
             return false;
+        // 원본에 없는 물음이다 — 은퇴하면 세이브(지난 칸·자동저장까지)가 지워진다는 것을 한 번 일러 준다.
+        if (!ConfirmDialog.Ask(_view, "은퇴하면 저장한 데이터와 자동저장이 모두 지워집니다. 좋습니까?"))
+            return false;
 
         _game.Bgm.Play(RetireTrack);
         DiscoveryDialog.Show(_view, _game.EventStills, RetireStill,
