@@ -76,9 +76,8 @@ internal static class GameSystemMenu
         if (!ConfirmDialog.Ask(owner, "데이터를 저장하겠습니다. 좋습니까?")) return false;
 
         string error = game.Save();
-        ConfirmDialog.Tell(owner, error.Length == 0
-            ? $"데이터를 저장했습니다 (최근 {Engine.GameSave.ManualSlots}개까지 남습니다)"
-            : $"기록하지 못했다 — {error}");
+        ConfirmDialog.Tell(owner, error.Length == 0 ? "데이터를 저장했습니다."
+                                                    : $"기록하지 못했다 — {error}");
         return true;
     }
 

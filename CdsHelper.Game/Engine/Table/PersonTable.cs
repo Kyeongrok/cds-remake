@@ -146,6 +146,10 @@ public sealed class PersonTable
         /// <summary>칸이 모자란 옛 파일을 읽었을 때를 메운다.</summary>
         internal Row Fixed()
         {
+            // 이름은 표준 표기(StandardText)를 거친다 — 발견물 「인디언」 · 「호텐토트족」 · 「만타」와 그 족장·괴물의 이름이
+            // 어긋나지 않게. 바뀌는 것은 홋텐토트의 족장 · 인디안의 추장 · 맨터 셋뿐이다.
+            First = StandardText.Apply(First);
+            Last = StandardText.Apply(Last);
             Stats = Sized(Stats, StatCount);
             Skills = Sized(Skills, SkillCount);
             Languages = Sized(Languages, LangCount);

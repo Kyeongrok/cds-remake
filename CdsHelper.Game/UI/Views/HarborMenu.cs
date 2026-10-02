@@ -189,6 +189,10 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
                    : "선원이 모자랍니다. 이대로라면 함대의 속도가 늦어지지만, 괜찮으십니까?"))
             return false;
 
+        // 모드 「자동 보급」 — 출항하려는 이 자리에서 물·식량을 채운다. 버틸 날을 셈하기 앞이라,
+        // 채운 뒤의 날수로 아래 물음이 뜬다. 짐이 차서 못 실었으면 그냥 두고 그 물음(날수 경고)에 맡긴다.
+        if (Local.Settings.GameSettings.AutoSupply) AutoSupply();
+
         // 보급 쪽은 부관이 말한다. 부관이 없으면 항구 사람이 대신 나선다.
         uint[]? face = SailFace();
 
@@ -215,6 +219,61 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         }
 
         return true;
+    }
+
+    /// <summary>자동 보급이 맞추는 날수.</summary>
+    private const int AutoSupplyDays = 10;
+
+    /// <summary>자동 보급 띠 알림의 머리말 — 지도 창이 바다로 나올 때 이 알림을 알아보고 걷는다.</summary>
+    internal const string AutoSupplyNote = "자동 보급:";
+
+    /// <summary>
+    /// 물·식량 가운데 10일분이 안 되는 것을 10일분까지 산다 — 보급 창 「10일분」과 같은 셈(선원 수만큼의 통)이고,
+    /// 값은 그 항구 시세(물이 공짜인 항구는 물값 0)다. 원본에 없는 것이라 모드 창에서 켠다.
+    /// </summary>
+    /// <remarks>
+    /// <b>출항을 누를 때</b> 돈다 — 예전에는 배로 항구에 들 때 돌았는데, 그러면 교역품을 팔기 전이라 짐칸이 차 있어
+    /// 못 싣기 일쑤였다. 용량·중량·소지금이 모자라면 들어가는 데까지만 싣고, 하나도 못 실으면 <b>말없이 넘어간다</b> —
+    /// 바로 뒤의 출항 물음이 버틸 날을 알려 주므로 그때 손으로 보급하면 된다. 산 것은 아래 띠로 알린다.
+    /// </remarks>
+    private void AutoSupply()
+    {
+        var p = _player;
+        if (p.Ships.Count == 0 || p.Crew <= 0) return;
+        int need = Supply.BarrelsForDays(AutoSupplyDays, p.Crew);
+        int rate = _game.Rates.Of(_cityId), flags = _game.CityRows?.FlagsOf(_cityId) ?? 0;
+
+        int room = p.Capacity - p.LoadedBarrels;
+        int free = p.Tonnage - p.LoadedWeight;
+        int gold = p.Gold, spent = 0;
+        var bought = new List<string>();
+        foreach (var kind in new[] { SupplyKind.Water, SupplyKind.Food })
+        {
+            var supply = Supply.Of(kind);
+            int have = p.SupplyOf(kind);
+            if (have >= need) continue;
+            int price = supply.PriceAt(rate, flags);
+            int add = need - have;
+            add = Math.Min(add, Math.Max(0, room));
+            if (supply.UnitWeight > 0) add = Math.Min(add, Math.Max(0, free) / supply.UnitWeight);
+            if (price > 0) add = Math.Min(add, (gold - spent) / price);
+            if (add <= 0) continue;
+            p.SetSupply(kind, have + add);
+            room -= add;
+            free -= add * supply.UnitWeight;
+            spent += add * price;
+            bought.Add($"{supply.Name} {add}통");
+        }
+        if (bought.Count == 0) return;
+        p.SetGold(gold - spent);
+
+        // 아래 띠는 지도 창의 것이다 — 주인을 거슬러 올라가 찾는다.
+        for (Window? w = Owner; w != null; w = w.Owner)
+            if (w is ShipMapWindow map)
+            {
+                map.Say($"{AutoSupplyNote} {string.Join(" · ", bought)} (금화 {spent}닢)");
+                break;
+            }
     }
 
     /// <summary>모항에서 나설 때 아내가 하는 말 셋(<c>0x00544E48</c>~).</summary>

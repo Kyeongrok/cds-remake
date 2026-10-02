@@ -41,7 +41,9 @@ public sealed class RumorTable
 
     private readonly List<Rumor> _rumors;
 
-    private RumorTable(Snapshot snapshot) => _rumors = snapshot.Rumors;
+    // 소문 글은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    private RumorTable(Snapshot snapshot) =>
+        _rumors = [.. snapshot.Rumors.Select(r => r with { Text = StandardText.Apply(r.Text) })];
 
     public static string LastError { get; private set; } = "";
 

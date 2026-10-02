@@ -1739,6 +1739,8 @@ public sealed class DisevRunner
         var (speaker, body) = DisevScript.DecodeDialogue(raw.AsSpan(textStart, end - textStart),
                                                         _game.Player.CallName);
         if (body.Length == 0) return;
+        // 대사 속 이름도 표준 표기로 — 「이슈탈문을 발견했다！」가 표의 이름(이슈타르 문)과 어긋나지 않게.
+        body = Local.Helpers.StandardText.Apply(body);
 
         // <b>감찰관이 없으면 감찰관 대사는 통째로 건너뛴다</b> — 화자 해석기 0x0040C880 이 감찰관 객체를 못 찾으면
         // 0 을 돌려 그 줄을 안 낸다. 감찰관은 후원자 계약마다 하나 딸려 오므로 계약이 없으면 없다.

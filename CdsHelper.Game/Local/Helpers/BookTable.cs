@@ -99,7 +99,8 @@ public sealed class BookTable
 
     private BookTable(Snapshot snapshot)
     {
-        _books = snapshot.Books;
+        // 책 제목은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+        _books = [.. snapshot.Books.Select(b => b with { Title = StandardText.Apply(b.Title) })];
         _hintNeeds = snapshot.HintNeeds;
     }
 

@@ -1,0 +1,126 @@
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace CdsHelper.Game.Local.Helpers;
+
+/// <summary>
+/// 이름의 <b>표준 표기</b> — 원본 한글판이 일본어 가나를 그대로 옮긴 이름(イシュタル → 이슈탈)과 오자를
+/// 원어에 맞춰 고쳐 보인다. 낱말 짝을 <b>이 표 한 곳</b>에만 적고, 글을 내는 표들이 모두 여기를 거친다.
+/// </summary>
+/// <remarks>
+/// EXE 에서 읽은 값과 적어 둔 JSON 은 원본 그대로 두고 <b>보일 때만</b> 바꾼다. 같은 낱말이 발견물 이름 · 힌트 이름 ·
+/// 힌트 설명 · 소문 · 발견물 설명 · 아이템 이름과 설명 · 책 제목 · 발견 대본의 대사(「○○를 발견했다！」)에 두루
+/// 나오므로, 표마다 따로 고치면 어긋난다. 그래서 이름을 글 속에 박지 않고 여기서 한꺼번에 갈아 끼운다 —
+/// 표기를 바꿀 일이 생기면 아래 한 줄만 고치면 된다.
+///
+/// 낱말이 바뀌면 받침도 바뀔 수 있어(「원바트를」 → 「웜뱃을」) 바로 뒤에 붙은 조사를 새 받침에 맞춘다.
+/// 짧아서 딴 낱말 속에 들어 있을 수 있는 것(「투라」 — 투라스칼테카 · 아투라티리)은 앞뒤를 보는 식으로 따로 건다.
+/// </remarks>
+public static class StandardText
+{
+    /// <summary>원본 표기 → 표준 표기. 긴 것이 짧은 것보다 먼저 걸리게 길이순으로 돌린다.</summary>
+    private static readonly (string From, string To)[] Words = Sorted(
+    [
+        // 유럽 · 지중해
+        ("페로포네소스", "펠로폰네소스"), ("제로니모 수도원", "제로니무스 수도원"), ("노틀담", "노트르담"),
+        ("산 마르탄", "산 마르틴"), ("산 세르난", "생 세르냉"), ("몽레알레", "몬레알레"),
+        ("성마리아 피올레 대성당", "산타 마리아 델 피오레 대성당"), ("성마리아 마죠레 성당", "산타 마리아 마조레 성당"),
+        ("다람 대성당", "더럼 대성당"), ("스테브교회", "스타브 교회"), ("알 함브라", "알함브라"),
+        ("서튼후", "서턴 후"), ("아더왕", "아서왕"), ("성스테판", "성 이슈트반"), ("성 스테판", "성 이슈트반"),
+        ("프레스테 조안국", "프레스터 존의 나라"),
+        ("프레스테 조안", "프레스터 존"), ("프레스테조안", "프레스터 존"), ("성 블렌타누스", "성 브렌다누스"),
+        ("큐크롭스", "키클롭스"), ("노틀담·라·그랜드", "노트르담 라 그랑드"),
+        ("마술사 마린", "마술사 멀린"), ("마린지팡이", "멀린의 지팡이"),
+        // 이집트 · 서아시아 · 인도
+        ("기저의 3대 피라미드", "기자의 3대 피라미드"), ("기제의 3대 피라미드", "기자의 3대 피라미드"), ("알 기제", "알 기자"),
+        ("투탄카멘", "투탕카멘"), ("이슈탈문", "이슈타르 문"), ("이슈탈", "이슈타르"), ("지그라트", "지구라트"),
+        ("마스지트·이·샤", "마스지드 이 샤"), ("모헨죠다로", "모헨조다로"), ("브리하디 슈바라", "브리하디스와라"),
+        // 동아시아 · 동남아시아
+        ("무녕왕", "무령왕"), ("볼로브둘", "보로부두르"), ("포타라 궁전", "포탈라 궁전"), ("이에티", "예티"), ("팬더", "판다"),
+        // 아메리카 · 태평양
+        ("팔렝케", "팔렌케"), ("티아와나코", "티와나쿠"), ("카스티료", "카스티요"), ("푸에블로보닛", "푸에블로 보니토"),
+        ("마츄피츄", "마추픽추"), ("모뉴멘트벨리", "모뉴먼트밸리"), ("배링해협", "베링해협"), ("시페 토테크", "시페 토텍"),
+        ("시칸의 항금 대가면", "시칸의 황금 대가면"), ("홋 마츠아", "호투 마투아"), ("스쿠렐링", "스크렐링"),
+        ("헤로니모·아기랄", "헤로니모·아길라르"), ("토파크·와루카", "투팍·왈파"), ("인디안", "인디언"),
+        ("랴마", "라마"), ("푸레리독", "프레리도그"), ("타란츄라", "타란툴라"), ("세쿼이어", "세쿼이아"), ("피멘트", "피멘토"),
+        // 아프리카 · 오세아니아 · 바다
+        ("모케레 무벰베", "모켈레 음벰베"), ("콩가마트", "콩가마토"), ("테레호", "텔레호"), ("록크", "로크"),
+        ("홋텐토트", "호텐토트"), ("웰 웽챠", "웰위치아"), ("망그로브", "맹그로브"), ("라흐레시아", "라플레시아"),
+        ("시라칸스", "실러캔스"), ("원바트", "웜뱃"), ("군관조", "군함조"), ("뉴기니아인", "뉴기니인"), ("맨터", "만타"),
+        ("식충동물", "식충식물"),
+    ]);
+
+    /// <summary>
+    /// 앞뒤를 봐야 하는 낱말 — 한글 낱말 속에 들어 있지 않고, 조사가 붙거나 글이 거기서 끝날 때만 바꾼다.
+    /// 「투라」(톨텍의 수도 툴라)는 「투라스칼테카 왕국」 · 「아투라티리」 속에도 들어 있다.
+    /// </summary>
+    private static readonly (Regex Find, string To)[] Guarded =
+    [
+        (new Regex("(?<![가-힣])투라(?=[를에의은는이가과와]|라는|$)", RegexOptions.Compiled), "툴라"),
+    ];
+
+    private static (string, string)[] Sorted((string From, string To)[] words) =>
+        [.. words.OrderByDescending(w => w.From.Length)];
+
+    /// <summary>글 속의 이름을 표준 표기로 바꾼다. 바꿀 것이 없으면 받은 글 그대로다.</summary>
+    public static string Apply(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return text ?? "";
+
+        string result = text;
+        foreach (var (from, to) in Words)
+            if (result.Contains(from, StringComparison.Ordinal)) result = Swap(result, from, to);
+        foreach (var (find, to) in Guarded)
+            result = find.Replace(result, to);
+        return result;
+    }
+
+    /// <summary>낱말을 갈아 끼우고, 받침이 달라졌으면 바로 뒤의 조사를 새 받침에 맞춘다.</summary>
+    private static string Swap(string text, string from, string to)
+    {
+        bool was = HasBatchim(from), now = HasBatchim(to);
+        var made = new StringBuilder(text.Length + 8);
+        int at = 0;
+        while (true)
+        {
+            int hit = text.IndexOf(from, at, StringComparison.Ordinal);
+            if (hit < 0) break;
+            made.Append(text, at, hit - at).Append(to);
+            at = hit + from.Length;
+            if (was != now) at += FixJosa(text, at, now, made);
+        }
+        return made.Append(text, at, text.Length - at).ToString();
+    }
+
+    /// <summary>받침 있을 때 · 없을 때의 조사 짝. 긴 것부터 견준다.</summary>
+    private static readonly (string Closed, string Open)[] Josa =
+    [
+        ("이라는", "라는"), ("이란", "란"), ("이네", "네"), ("으로", "로"),
+        ("을", "를"), ("은", "는"), ("이", "가"), ("과", "와"),
+    ];
+
+    /// <summary>
+    /// <paramref name="at"/> 자리에 조사가 붙어 있으면 새 받침에 맞는 쪽을 <paramref name="made"/> 에 적고,
+    /// 원문에서 건너뛸 글자 수를 돌려준다. 조사가 아니면 0.
+    /// </summary>
+    private static int FixJosa(string text, int at, bool closed, StringBuilder made)
+    {
+        foreach (var (withBatchim, without) in Josa)
+        {
+            // 원문에는 옛 받침에 맞는 조사가 붙어 있다 — 새 받침이 있으면 옛것은 받침 없는 쪽이다.
+            string old = closed ? without : withBatchim;
+            if (string.CompareOrdinal(text, at, old, 0, old.Length) != 0) continue;
+            made.Append(closed ? withBatchim : without);
+            return old.Length;
+        }
+        return 0;
+    }
+
+    /// <summary>마지막 글자에 받침이 있는지. 한글이 아니면 없는 것으로 본다.</summary>
+    private static bool HasBatchim(string word)
+    {
+        if (word.Length == 0) return false;
+        char last = word[^1];
+        return last is >= '가' and <= '힣' && (last - '가') % 28 != 0;
+    }
+}

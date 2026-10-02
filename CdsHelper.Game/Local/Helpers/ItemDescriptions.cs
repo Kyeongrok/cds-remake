@@ -46,7 +46,9 @@ public sealed class ItemDescriptions
 
     private readonly string[] _texts;
 
-    private ItemDescriptions(Snapshot snapshot) => _texts = snapshot.Descriptions;
+    // 글은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    private ItemDescriptions(Snapshot snapshot) =>
+        _texts = [.. snapshot.Descriptions.Select(StandardText.Apply)];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";

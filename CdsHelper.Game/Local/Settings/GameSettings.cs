@@ -83,7 +83,7 @@ public sealed class GameSettingsData
     /// <summary>조우하면 저절로 「도망」을 고를지. 꺼 두고 시작한다.</summary>
     public bool AutoFlee { get; set; }
 
-    /// <summary>항구에 들면 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
+    /// <summary>항구에서 출항할 때 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
     public bool AutoSupply { get; set; }
 
     /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 1 이 기본이다.</summary>

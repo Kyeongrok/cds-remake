@@ -81,7 +81,9 @@ public sealed class ItemTable
 
     private readonly Record[] _items;
 
-    private ItemTable(Snapshot snapshot) => _items = snapshot.Items;
+    // 이름은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    private ItemTable(Snapshot snapshot) =>
+        _items = [.. snapshot.Items.Select(i => i with { Name = StandardText.Apply(i.Name) })];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";

@@ -163,7 +163,9 @@ public sealed class DiscoveryTable
 
     private readonly Record[] _rows;
 
-    private DiscoveryTable(Snapshot snapshot) => _rows = snapshot.Discoveries;
+    // 이름은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    private DiscoveryTable(Snapshot snapshot) =>
+        _rows = [.. snapshot.Discoveries.Select(r => r with { Name = StandardText.Apply(r.Name) })];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";

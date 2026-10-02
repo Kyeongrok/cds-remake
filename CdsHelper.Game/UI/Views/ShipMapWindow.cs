@@ -3923,49 +3923,6 @@ public sealed class ShipMapWindow : Window
         CheckSponsorFallen(city);
         // 마을에 닿으면 항해가 끝난다 — 쥐·병이 풀린다. 입항에서는 부관이 말하지 않는다.
         EndVoyage(speak: false);
-        // 모드 「자동 보급」 — 배로 항구에 들었을 때만.
-        if (GameSettings.AutoSupply && !_host.IsOnLand) AutoSupply(city);
-    }
-
-    /// <summary>자동 보급이 맞추는 날수.</summary>
-    private const int AutoSupplyDays = 10;
-
-    /// <summary>
-    /// 물·식량 가운데 10일분이 안 되는 것을 10일분까지 산다 — 보급 창 「10일분」과 같은 셈(선원 수만큼의 통)이고,
-    /// 값은 그 항구 시세(물이 공짜인 항구는 물값 0)다. 용량·중량·소지금이 모자라면 들어가는 데까지만 싣는다.
-    /// 산 것은 아래 띠로 알린다.
-    /// </summary>
-    private void AutoSupply(int city)
-    {
-        var p = _game.Player;
-        if (p.Ships.Count == 0 || p.Crew <= 0) return;
-        int need = Supply.BarrelsForDays(AutoSupplyDays, p.Crew);
-        int rate = _game.Rates.Of(city), flags = _game.CityRows?.FlagsOf(city) ?? 0;
-
-        int room = p.Capacity - p.LoadedBarrels;
-        int free = p.Tonnage - p.LoadedWeight;
-        int gold = p.Gold, spent = 0;
-        var bought = new List<string>();
-        foreach (var kind in new[] { SupplyKind.Water, SupplyKind.Food })
-        {
-            var supply = Supply.Of(kind);
-            int have = p.SupplyOf(kind);
-            if (have >= need) continue;
-            int price = supply.PriceAt(rate, flags);
-            int add = need - have;
-            add = Math.Min(add, Math.Max(0, room));
-            if (supply.UnitWeight > 0) add = Math.Min(add, Math.Max(0, free) / supply.UnitWeight);
-            if (price > 0) add = Math.Min(add, (gold - spent) / price);
-            if (add <= 0) continue;
-            p.SetSupply(kind, have + add);
-            room -= add;
-            free -= add * supply.UnitWeight;
-            spent += add * price;
-            bought.Add($"{supply.Name} {add}통");
-        }
-        if (bought.Count == 0) return;
-        p.SetGold(gold - spent);
-        Say($"자동 보급: {string.Join(" · ", bought)} (금화 {spent}닢)");
     }
 
     private bool EndVoyage(bool speak = true)
@@ -6757,6 +6714,9 @@ public sealed class ShipMapWindow : Window
             if (dialog.Sailed && _host.IsOnLand) _host.PlaceAtCity(city);
             // 출항하면 닻을 걷는다(0x0048EB84). 성문으로 나섰으면 함대는 이 도시에 그대로 있다.
             if (dialog.Sailed) _game.Player.MoorAt(-1);
+            // 「자동 보급」 띠는 출항 물음 동안만 보인다 — 바다로 나오면 걷는다. 그냥 두면 띠가 제 참(14초)을
+            // 다 채울 때까지 항해 화면 아래에 남는다. 딴 알림은 건드리지 않는다.
+            if (dialog.Sailed && _lastNote.StartsWith(HarborMenu.AutoSupplyNote, StringComparison.Ordinal)) Say("");
 
             // 성문으로 나섰으면 뭍에 올라 말로 걷는다 — 곡도 뭍 것으로 바뀐다.
             // 이미 뭍에 서 있으면(말로 걸어 들어온 마을이면) Land() 는 거짓을 낸다 — 그때도 걷는
