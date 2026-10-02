@@ -228,8 +228,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     internal const string AutoSupplyNote = "자동 보급:";
 
     /// <summary>
-    /// 물·식량 가운데 10일분이 안 되는 것을 10일분까지 산다 — 보급 창 「10일분」과 같은 셈(선원 수만큼의 통)이고,
-    /// 값은 그 항구 시세(물이 공짜인 항구는 물값 0)다. 원본에 없는 것이라 모드 창에서 켠다.
+    /// 물·식량을 저절로 사 싣는다 — 모드 창에서 고른 대로 <b>10일분</b>(보급 창 「10일분」과 같은 셈, 선원 수만큼의 통)까지,
+    /// 또는 <b>최대</b>(보급 창 「최대」처럼 물과 식량을 같은 통 수로 실을 수 있는 데까지). 값은 그 항구 시세(물이 공짜인
+    /// 항구는 물값 0)다. 원본에 없는 것이라 모드 창에서 켠다.
     /// </summary>
     /// <remarks>
     /// <b>출항을 누를 때</b> 돈다 — 예전에는 배로 항구에 들 때 돌았는데, 그러면 교역품을 팔기 전이라 짐칸이 차 있어
@@ -240,30 +241,61 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     {
         var p = _player;
         if (p.Ships.Count == 0 || p.Crew <= 0) return;
-        int need = Supply.BarrelsForDays(AutoSupplyDays, p.Crew);
         int rate = _game.Rates.Of(_cityId), flags = _game.CityRows?.FlagsOf(_cityId) ?? 0;
+        var water = Supply.Of(SupplyKind.Water);
+        var food = Supply.Of(SupplyKind.Food);
+        int haveWater = p.SupplyOf(SupplyKind.Water), haveFood = p.SupplyOf(SupplyKind.Food);
+        int waterPrice = water.PriceAt(rate, flags), foodPrice = food.PriceAt(rate, flags);
 
+        // 실을 자리 — 통 수와 무게. 물·식량을 뺀 나머지(짐·자재·탄약·대포)가 차지한 것을 덜어 낸 몫이다.
         int room = p.Capacity - p.LoadedBarrels;
         int free = p.Tonnage - p.LoadedWeight;
-        int gold = p.Gold, spent = 0;
-        var bought = new List<string>();
-        foreach (var kind in new[] { SupplyKind.Water, SupplyKind.Food })
+
+        // 맞출 총량. 「최대」는 보급 창의 그 단추처럼 <b>물과 식량을 같은 통 수로</b> 실을 수 있는 데까지다(0x0040ED20) —
+        // 지금 실린 물·식량까지 합친 자리를 둘로 나눈다. 10일분은 선원 수만큼의 통이다.
+        int target;
+        if (Local.Settings.GameSettings.AutoSupplyMax)
         {
-            var supply = Supply.Of(kind);
-            int have = p.SupplyOf(kind);
-            if (have >= need) continue;
-            int price = supply.PriceAt(rate, flags);
-            int add = need - have;
-            add = Math.Min(add, Math.Max(0, room));
-            if (supply.UnitWeight > 0) add = Math.Min(add, Math.Max(0, free) / supply.UnitWeight);
-            if (price > 0) add = Math.Min(add, (gold - spent) / price);
-            if (add <= 0) continue;
-            p.SetSupply(kind, have + add);
-            room -= add;
-            free -= add * supply.UnitWeight;
-            spent += add * price;
-            bought.Add($"{supply.Name} {add}통");
+            int pairRoom = (room + haveWater + haveFood) / 2;
+            int pairWeight = water.UnitWeight + food.UnitWeight;
+            int byWeight = pairWeight > 0
+                ? (free + haveWater * water.UnitWeight + haveFood * food.UnitWeight) / pairWeight
+                : int.MaxValue;
+            target = Math.Max(0, Math.Min(pairRoom, byWeight));
         }
+        else target = Supply.BarrelsForDays(AutoSupplyDays, p.Crew);
+
+        // 덜어 내지는 않는다 — 모자란 쪽만 채운다. 한 통씩, 지금 더 적은 쪽부터 사서 돈·자리·무게가 닿는 데까지 간다.
+        // 그래야 돈이 모자랄 때 한쪽만 가득 차고 다른 쪽이 비는 일이 없다.
+        int addWater = 0, addFood = 0, gold = p.Gold, spent = 0;
+        while (true)
+        {
+            bool wantWater = haveWater + addWater < target, wantFood = haveFood + addFood < target;
+            if (!wantWater && !wantFood) break;
+            bool pickWater = wantWater && (!wantFood || haveWater + addWater <= haveFood + addFood);
+            var kind = pickWater ? water : food;
+            int price = pickWater ? waterPrice : foodPrice;
+            bool fits = room >= 1 && free >= kind.UnitWeight && gold - spent >= price;
+            if (!fits)
+            {
+                // 이쪽이 안 들어가면 다른 쪽이라도 — 물이 공짜인 항구에서는 돈이 없어도 물은 실린다.
+                bool other = pickWater ? wantFood : wantWater;
+                var otherKind = pickWater ? food : water;
+                int otherPrice = pickWater ? foodPrice : waterPrice;
+                if (!other || room < 1 || free < otherKind.UnitWeight || gold - spent < otherPrice) break;
+                pickWater = !pickWater;
+                kind = otherKind;
+                price = otherPrice;
+            }
+            if (pickWater) addWater++; else addFood++;
+            room--;
+            free -= kind.UnitWeight;
+            spent += price;
+        }
+
+        var bought = new List<string>();
+        if (addWater > 0) { p.SetSupply(SupplyKind.Water, haveWater + addWater); bought.Add($"{water.Name} {addWater}통"); }
+        if (addFood > 0) { p.SetSupply(SupplyKind.Food, haveFood + addFood); bought.Add($"{food.Name} {addFood}통"); }
         if (bought.Count == 0) return;
         p.SetGold(gold - spent);
 

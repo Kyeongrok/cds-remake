@@ -172,12 +172,8 @@ public sealed class ModDialog : GameWindow
             + " 고르기 창 없이 「도망」을 고릅니다. 짐승·독충은 그대로 묻습니다."
             + " 도망 성공 여부는 원본 그대로 굴리므로 실패하면 싸움이 이어집니다."));
 
-        // 자동 보급 — 출항할 때 물·식량을 10일분까지.
-        rows.Children.Add(Toggle("자동 보급", GameSettings.AutoSupply,
-            on => GameSettings.AutoSupply = on,
-            "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 물이나 식량이 10일분이 안 되면 10일분까지 저절로 사 싣습니다."
-            + " 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다."
-            + " 짐이 차서 못 실으면 그냥 넘어가니, 출항 물음에 뜨는 항해 일수를 보고 손으로 보급하면 됩니다. 산 것은 아래 띠로 알립니다."));
+        // 자동 보급 — 출항할 때 물·식량을 10일분까지, 또는 실을 수 있는 데까지.
+        rows.Children.Add(AutoSupplyControls());
 
         // 배 빌림 묻기 — 원본은 배가 있으면 계약 자리에서 늘 묻는다(0x00410724).
         rows.Children.Add(Toggle("배 빌림 묻기", GameSettings.AskLendShips,
@@ -462,6 +458,45 @@ public sealed class ModDialog : GameWindow
         line.Children.Add(slider);
         line.Children.Add(value);
         Watch(line, "바다 밝기", "바다 입체 효과의 밝기입니다. 100% 가 기본이고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(line);
+        return group;
+    }
+
+    /// <summary>자동 보급 켜기와 그 밑의 양 고르기(10일분 · 최대). 끄면 고르기도 흐려진다.</summary>
+    private UIElement AutoSupplyControls()
+    {
+        var box = Toggle("자동 보급", GameSettings.AutoSupply,
+            on => GameSettings.AutoSupply = on,
+            "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 물과 식량을 저절로 사 싣습니다. 양은 아래에서 고릅니다."
+            + " 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다."
+            + " 짐이 차서 못 실으면 그냥 넘어가니, 출항 물음에 뜨는 항해 일수를 보고 손으로 보급하면 됩니다. 산 것은 아래 띠로 알립니다.");
+
+        RadioButton Pick(string label, bool max, string tip)
+        {
+            var radio = new RadioButton
+            {
+                Content = label, GroupName = "AutoSupplyAmount",
+                IsChecked = GameSettings.AutoSupplyMax == max,
+                IsEnabled = box.IsChecked == true,
+                Foreground = GameUi.Text, FontSize = 14,
+                Margin = new Thickness(0, 0, 16, 0),
+                VerticalContentAlignment = VerticalAlignment.Center,
+            };
+            radio.Checked += (_, _) => GameSettings.AutoSupplyMax = max;
+            box.Checked += (_, _) => radio.IsEnabled = true;
+            box.Unchecked += (_, _) => radio.IsEnabled = false;
+            Watch(radio, "자동 보급 — " + label, tip);
+            return radio;
+        }
+
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(18, 0, 0, 2) };
+        line.Children.Add(Pick("10일분", false,
+            "물이나 식량이 10일분이 안 될 때 10일분까지 채웁니다. 보급 창의 「10일분」과 같은 셈(선원 수만큼의 통)입니다."));
+        line.Children.Add(Pick("최대", true,
+            "보급 창의 「최대」처럼 물과 식량을 같은 통 수로, 용량·중량·소지금이 닿는 데까지 채웁니다. 이미 실린 것을 덜어 내지는 않습니다."));
 
         var group = new StackPanel();
         group.Children.Add(box);

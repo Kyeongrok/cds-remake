@@ -86,6 +86,9 @@ public sealed class GameSettingsData
     /// <summary>항구에서 출항할 때 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
     public bool AutoSupply { get; set; }
 
+    /// <summary>자동 보급을 「최대」로 할지 — 거짓이면 10일분까지다.</summary>
+    public bool AutoSupplyMax { get; set; }
+
     /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 1 이 기본이다.</summary>
     public double SeaBrightness { get; set; } = 1.0;
 
@@ -923,6 +926,13 @@ public static class GameSettings
     {
         get => Get(d => d.AutoSupply);
         set => Set(d => d.AutoSupply = value);
+    }
+
+    /// <summary>자동 보급의 양 — 참이면 보급 창 「최대」처럼 실을 수 있는 데까지, 거짓이면 10일분까지.</summary>
+    public static bool AutoSupplyMax
+    {
+        get => Get(d => d.AutoSupplyMax);
+        set => Set(d => d.AutoSupplyMax = value);
     }
 
     /// <summary>
