@@ -43,6 +43,9 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     //       배 그림(SpriteRect)이 있으면 그 자리는 지도 대신 배를 낸다. 색인 0 은 비침이다.
     //       덧그림(OverlayRect)은 배보다 먼저 보므로 배 위에 얹힌다 — 닻이 이것이다.
     //       남의 배(Folk)는 지도 위·내 배 아래다. 구름과 같은 결로 상수 배열에 자리를 싣는다.
+    //       내 배는 지도 색을 다 낸 뒤에 얹는다(ShipOver) — 가장자리를 섞고 그림자·항적을 밑에 깔려면 바탕이 먼저 있어야 한다.
+    //       ShipColor  큰 그림(ShipHi)이 있으면 그것을 매끈하게, 없으면 48x48 을 — 도트 필터가 켜져 있으면 모서리를 깎아 — 낸다.
+    //       WakeOver   배가 지나온 자리(Wake)를 따라 벌어지는 물거품. 가장자리 두 줄이 짙고 가운데는 옅다. 물 점에만 든다.
     private const string ShaderSource = """
         Texture2D<uint>   CellMap  : register(t0);
         Texture2D<uint>   Atlas    : register(t1);
@@ -65,6 +68,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         Texture2D<float4> CityTex  : register(t18);
         Texture2D<float4> CityHi   : register(t19);
         Texture2D<float4> SpriteHi : register(t20);
+        Texture2D<float4> ShipHi   : register(t21);
         SamplerState      Lin      : register(s0);
 
         cbuffer Frame : register(b0)
@@ -84,6 +88,10 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float4 Route[32];
             float4 Sea;
             float4 Extra;
+            float4 Flow;
+            float4 FlowDir;
+            float4 Ship;
+            float4 Wake[12];
         };
 
         struct VSOut { float4 pos : SV_Position; };
@@ -324,9 +332,30 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float3 tone = lerp(float3(0.31, 0.44, 0.52), float3(0.21, 0.34, 0.43), saturate((d - 1.0) / 5.0));
 
             float t = Sea.x;
-            float grain = 0.55 * Noise(cell * 21.0 + float2(t * 0.35, t * 0.10))
-                        + 0.45 * Noise(cell * 8.5 - float2(t * 0.15, t * 0.22) + 7.0);
+            float2 drift = Flow.xy;
+            float grain = 0.55 * Noise((cell - drift * 0.25) * 21.0 + float2(t * 0.35, t * 0.10))
+                        + 0.45 * Noise((cell - drift * 0.5) * 8.5 - float2(t * 0.15, t * 0.22) + 7.0);
             float3 sea = tone * (0.92 + 0.16 * grain);
+
+            float flow = Flow.z;
+            if (flow > 0.01)
+            {
+                float2 fd = FlowDir.xy;
+                float2 q = cell - drift;
+                float streak = 0.10 * Noise((q - fd * 0.66) * 7.0)
+                             + 0.15 * Noise((q - fd * 0.44) * 7.0)
+                             + 0.17 * Noise((q - fd * 0.22) * 7.0)
+                             + 0.16 * Noise(q * 7.0)
+                             + 0.17 * Noise((q + fd * 0.22) * 7.0)
+                             + 0.15 * Noise((q + fd * 0.44) * 7.0)
+                             + 0.10 * Noise((q + fd * 0.66) * 7.0);
+                streak = saturate((streak - 0.5) * 2.6 + 0.5);
+                sea *= 1.0 + flow * 0.34 * (streak - 0.5);
+                sea += flow * 0.09 * smoothstep(0.62, 0.90, streak);
+
+                float band = (dot(Ripple.xy, cell) - Ripple.z * Flow.w * 16.0) / 64.0;
+                sea *= 1.0 + flow * 0.06 * sin(band * 0.3926991);
+            }
 
             return lerp(land, sea, edge);
         }
@@ -424,28 +453,90 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             return saturate(col * lerp(1.0, m, amount));
         }
 
+        float4 SpriteTexel(int2 q)
+        {
+            if (any(q < 0) || any(q > 47)) return float4(0, 0, 0, 0);
+            return Sprite.Load(int3(q, 0));
+        }
+
+        float ShipLod()
+        {
+            return max(0.0, log2(Ship.y / max(SpriteRect.z, 1.0)));
+        }
+
+        float4 ShipColor(float2 s)
+        {
+            if (Ship.y > 0.5) return ShipHi.SampleLevel(Lin, s, ShipLod());
+
+            float2 g = s * 48.0;
+            int2 gi = int2(floor(g));
+            float4 e = SpriteTexel(gi);
+            if (Extra.x > 0.5)
+            {
+                float2 f = g - floor(g);
+                float4 B = SpriteTexel(gi + int2(0, -1));
+                float4 D = SpriteTexel(gi + int2(-1, 0));
+                float4 F = SpriteTexel(gi + int2(1, 0));
+                float4 H = SpriteTexel(gi + int2(0, 1));
+                if (!all(B == H) && !all(D == F))
+                {
+                    if (f.x + f.y < 0.5 && all(D == B)) e = D;
+                    else if ((1.0 - f.x) + f.y < 0.5 && all(B == F)) e = F;
+                    else if (f.x + (1.0 - f.y) < 0.5 && all(D == H)) e = D;
+                    else if ((1.0 - f.x) + (1.0 - f.y) < 0.5 && all(H == F)) e = F;
+                }
+            }
+            float a = step(0.001, e.a);
+            return float4(e.rgb * a, a);
+        }
+
+        float3 ShipOver(float3 col, float2 px)
+        {
+            if (SpriteRect.z <= 0) return col;
+            float2 s = (px - SpriteRect.xy) / SpriteRect.zw;
+            if (Ship.x > 0.5)
+            {
+                s.y -= Ship.z;
+                float2 sh = s - float2(0.035, 0.060);
+                if (all(sh >= 0) && all(sh < 1))
+                {
+                    float a = Ship.y > 0.5 ? ShipHi.SampleLevel(Lin, sh, ShipLod() + 1.0).a
+                                           : Sprite.SampleLevel(Lin, sh, 0).a;
+                    col *= 1.0 - 0.30 * a;
+                }
+            }
+            if (any(s < 0) || any(s >= 1)) return col;
+            float4 c = ShipColor(s);
+            return c.rgb + col * (1.0 - c.a);
+        }
+
+        float3 WakeOver(float3 col, float2 px, float2 cell, float wet)
+        {
+            if (Ship.x < 0.5 || wet <= 0.0) return col;
+            float pxPerCell = 1.0 / max(CellPerPixel.x, 1e-5);
+            float foam = 0.0;
+            [loop] for (int k = 0; k < 11; k++)
+            {
+                if (Wake[k].w <= 0 || Wake[k + 1].w <= 0) continue;
+                float2 a = Wake[k].xy;
+                float2 ab = Wake[k + 1].xy - a;
+                float t = saturate(dot(px - a, ab) / max(dot(ab, ab), 1e-5));
+                float d = distance(px, a + ab * t) / pxPerCell;
+                float age = lerp(Wake[k].z, Wake[k + 1].z, t);
+                float r = d / (0.22 + 1.05 * age);
+                if (r >= 1.0) continue;
+                float rim = smoothstep(0.45, 0.85, r) * (1.0 - smoothstep(0.85, 1.0, r));
+                float churn = (1.0 - r) * 0.35;
+                float life = (1.0 - age) * (1.0 - age);
+                foam = max(foam, (rim + churn) * life);
+            }
+            if (foam <= 0.0) return col;
+            float n = 0.55 + 0.45 * Noise(cell * 13.0 + Sea.x * 0.6);
+            return lerp(col, float3(0.90, 0.95, 0.97), saturate(foam * n * 0.62) * wet);
+        }
+
         float4 PS(VSOut i) : SV_Target
         {
-            if (OverlayRect.z > 0)
-            {
-                float2 v = (i.pos.xy - OverlayRect.xy) / OverlayRect.zw;
-                if (all(v >= 0) && all(v < 1))
-                {
-                    float4 c = Overlay.Load(int3(int2(v * 48.0), 0));
-                    if (c.a > 0) return Tint(CloudsOver(c, i.pos.xy));
-                }
-            }
-
-            if (SpriteRect.z > 0)
-            {
-                float2 s = (i.pos.xy - SpriteRect.xy) / SpriteRect.zw;
-                if (all(s >= 0) && all(s < 1))
-                {
-                    float4 c = Sprite.Load(int3(int2(s * 48.0), 0));
-                    if (c.a > 0) return Tint(CloudsOver(c, i.pos.xy));
-                }
-            }
-
             float2 cellRaw = OriginCell + i.pos.xy * CellPerPixel;
             float2 cell = cellRaw;
             cell.x = cell.x - floor(cell.x / MapCells.x) * MapCells.x;
@@ -485,6 +576,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             if (Extra.y > 0.5 && Detail > 2.5) col.rgb = LandDetail(col.rgb, cell, tile);
             if (Sea.w > 0.5 && Detail > 2.5) col.rgb = HiResSea(col.rgb, cell, pal);
             if (SeaOn > 0.5) col.rgb = SeaShade(col.rgb, cell);
+            float wet = saturate((col.b - max(col.r, col.g)) * 14.0 + 0.14);
 
             if (Extra.z > 0.5)
             {
@@ -518,8 +610,21 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 float4 a = ArrowsAt(cellRaw, i.pos.xy);
                 col.rgb = lerp(col.rgb, a.rgb, a.a);
             }
+            col.rgb = WakeOver(col.rgb, i.pos.xy, cell, wet);
             col.rgb = RouteOver(col.rgb, i.pos.xy);
-            return Tint(CloudsOver(FolkOver(col, i.pos.xy), i.pos.xy));
+            col = FolkOver(col, i.pos.xy);
+            col.rgb = ShipOver(col.rgb, i.pos.xy);
+
+            if (OverlayRect.z > 0)
+            {
+                float2 v = (i.pos.xy - OverlayRect.xy) / OverlayRect.zw;
+                if (all(v >= 0) && all(v < 1))
+                {
+                    float4 o = Overlay.Load(int3(int2(v * 48.0), 0));
+                    if (o.a > 0) col = o;
+                }
+            }
+            return Tint(CloudsOver(col, i.pos.xy));
         }
         """;
 
@@ -541,6 +646,106 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public fixed float Route[MaxRoutePoints * 4]; // x, y, (안 씀), 켜졌는지
         public float SeaTime, CloudSmooth, SeaBright, HiSea;
         public float PixelOn, LandOn, CityOn, ExtraPad3;
+        public float FlowX, FlowY, FlowStrength, FlowTick;
+        public float FlowDirX, FlowDirY, FlowPad0, FlowPad1;
+        public float ShipFxOn, ShipHiSide, ShipBobV, ShipPad;
+        public fixed float Wake[MaxWake * 4];       // x, y(화면 점), 나이 0~1, 켜졌는지
+    }
+
+    /// <summary>항적 마디 수. 첫 마디가 지금 배 자리다.</summary>
+    public const int MaxWake = 12;
+
+    private readonly float[] _wake = new float[MaxWake * 4];
+
+    /// <summary>
+    /// 배가 바다에 닿는 효과 — 항적·그림자·출렁임. 바다에 떠 있을 때만 밖에서 켠다.
+    /// </summary>
+    public bool ShipFx { get; set; }
+
+    /// <summary>배 그림을 위아래로 민 만큼(그림 한 변을 1 로). 출렁임이다.</summary>
+    public float ShipBob { get; set; }
+
+    /// <summary>항적 마디를 건다 — 화면 점 자리와 나이(0 갓 지난 자리 ~ 1 스러질 자리). 첫 마디가 배다.</summary>
+    public void SetWake(ReadOnlySpan<(float X, float Y, float Age)> points)
+    {
+        Array.Clear(_wake);
+        for (int i = 0; i < points.Length && i < MaxWake; i++)
+        {
+            _wake[i * 4 + 0] = points[i].X;
+            _wake[i * 4 + 1] = points[i].Y;
+            _wake[i * 4 + 2] = points[i].Age;
+            _wake[i * 4 + 3] = 1;
+        }
+    }
+
+    private ID3D11ShaderResourceView _shipHiSrv = null!;
+    private int _shipHiSide;
+    private uint[]? _shipHiSource;
+
+    /// <summary>
+    /// 고해상도 배 그림을 건다. null 이면 내린다 — 그때는 48x48 그림(<see cref="SetSprite"/>)을 쓴다.
+    /// </summary>
+    /// <param name="premultiplied">정사각 BGRA, <b>알파를 곱해 둔</b> 것. 선형으로 늘려도 가장자리에 검은 테가 안 생긴다.</param>
+    /// <param name="side">한 변. 줄여 그릴 때 지글거리지 않게 밉 단계를 여기서 다 지어 올린다.</param>
+    public void SetShipHi(uint[]? premultiplied, int side)
+    {
+        if (ReferenceEquals(premultiplied, _shipHiSource)) return;
+        _shipHiSource = premultiplied;
+        if (premultiplied == null || side <= 0 || premultiplied.Length < side * side)
+        {
+            _shipHiSide = 0;
+            return;
+        }
+
+        var levels = new List<(uint[] Px, int Side)> { (premultiplied, side) };
+        while (levels[^1].Side > 1)
+        {
+            var (src, n) = levels[^1];
+            int m = Math.Max(1, n / 2);
+            var dst = new uint[m * m];
+            for (int y = 0; y < m; y++)
+                for (int x = 0; x < m; x++)
+                {
+                    int x0 = Math.Min(x * 2, n - 1), x1 = Math.Min(x * 2 + 1, n - 1);
+                    int y0 = Math.Min(y * 2, n - 1), y1 = Math.Min(y * 2 + 1, n - 1);
+                    uint a = src[y0 * n + x0], b = src[y0 * n + x1], c = src[y1 * n + x0], d = src[y1 * n + x1];
+                    uint o = 0;
+                    for (int sh = 0; sh < 32; sh += 8)
+                        o |= ((((a >> sh) & 255) + ((b >> sh) & 255) + ((c >> sh) & 255) + ((d >> sh) & 255) + 2) / 4) << sh;
+                    dst[y * m + x] = o;
+                }
+            levels.Add((dst, m));
+        }
+
+        var pins = new GCHandle[levels.Count];
+        try
+        {
+            var subs = new SubresourceData[levels.Count];
+            for (int i = 0; i < levels.Count; i++)
+            {
+                pins[i] = GCHandle.Alloc(levels[i].Px, GCHandleType.Pinned);
+                subs[i] = new SubresourceData(pins[i].AddrOfPinnedObject(), (uint)(levels[i].Side * sizeof(uint)));
+            }
+            using var tex = _device.CreateTexture2D(new Texture2DDescription
+            {
+                Width = (uint)side,
+                Height = (uint)side,
+                MipLevels = (uint)levels.Count,
+                ArraySize = 1,
+                Format = Format.B8G8R8A8_UNorm,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = ResourceUsage.Immutable,
+                BindFlags = BindFlags.ShaderResource,
+            }, subs);
+            var old = _shipHiSrv;
+            _shipHiSrv = _device.CreateShaderResourceView(tex);
+            old?.Dispose();
+            _shipHiSide = side;
+        }
+        finally
+        {
+            foreach (var pin in pins) if (pin.IsAllocated) pin.Free();
+        }
     }
 
     /// <summary>
@@ -674,6 +879,21 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// </remarks>
     public (float DirX, float DirY, float Speed, float Tick) Ripple { get; set; }
 
+    /// <summary>
+    /// 고해상도 바다가 해류를 보이는 데 쓰는 값 — 물 무늬가 흘러간 만큼(칸), 흐름 방향(길이 1), 또렷함(0~1),
+    /// 그리고 끊기지 않게 이은 틱이다.
+    /// </summary>
+    /// <remarks>
+    /// 고해상도 바다는 물 점을 통째로 새로 칠해, 원본이 타일을 갈아 끼워 보이던 물결(<see cref="Ripple"/>)이
+    /// 묻힌다. 그래서 그 바다의 잔물결을 이만큼 밀어 흘리고, 흐름 쪽으로 늘어진 결을 얹고, 원본 띠와 같은
+    /// 간격·빠르기의 옅은 밝기 물결을 지나가게 한다. 흘러간 만큼은 밖에서 쌓아 준다 — 방향이 바뀌어도
+    /// 무늬가 튀지 않는다.
+    /// </remarks>
+    public (float X, float Y, float DirX, float DirY, float Strength, float Tick) FlowDrift { get; set; }
+
+    /// <summary>고해상도 바다에서 해류 결·띠의 짙기(0~1). 0 이면 잔물결만 흐르고 결과 띠는 안 선다.</summary>
+    public float FlowAmount { get; set; } = 0.5f;
+
     /// <summary>바람·해류 화살표를 얹을지. 게임에는 없는 것이라 커맨드 창에서 끄고 켠다.</summary>
     public bool ShowArrows { get; set; }
 
@@ -795,6 +1015,15 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _hiddenCities.Clear();
         _hiddenCities.UnionWith(next);
         if (CitySprites) RebuildCells();
+    }
+
+    /// <summary>
+    /// 지도를 통째로 갈아 끼운다 — WORLD.CDS 편집기가 칠한 것을 미리보기에 비출 때 쓴다.
+    /// </summary>
+    public void UpdateWorld(byte[] world)
+    {
+        _world = world;
+        RebuildCells();
     }
 
     private void RebuildCells()
@@ -939,6 +1168,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _cityTexSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
         _cityHiSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
         _spriteHiSrv = CreateImmutable(new float[4], 1, 1, Format.R32G32B32A32_Float, sizeof(float) * 4);
+        _shipHiSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
     }
 
     /// <summary>
@@ -1369,6 +1599,15 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             RippleDirY = Ripple.DirY,
             RippleSpeed = Ripple.Speed,
             RippleTick = Ripple.Tick,
+            FlowX = FlowDrift.X,
+            FlowY = FlowDrift.Y,
+            FlowStrength = FlowDrift.Strength * FlowAmount,
+            FlowTick = FlowDrift.Tick,
+            FlowDirX = FlowDrift.DirX,
+            FlowDirY = FlowDrift.DirY,
+            ShipFxOn = ShipFx ? 1 : 0,
+            ShipHiSide = _shipHiSide,
+            ShipBobV = ShipFx ? ShipBob : 0,
             ArrowOn = ShowArrows ? 1 : 0,
             ArrowGrid = WindTable.CellRaw / OceanTiles.TileW,   // 800 원본단위 = 지도 50칸
             ArrowCols = WindTable.Cols,
@@ -1377,6 +1616,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         for (int i = 0; i < _clouds.Length; i++) cb.Clouds[i] = _clouds[i];
         for (int i = 0; i < _folk.Length; i++) cb.Folk[i] = _folk[i];
         for (int i = 0; i < _route.Length; i++) cb.Route[i] = _route[i];
+        for (int i = 0; i < _wake.Length; i++) cb.Wake[i] = _wake[i];
 
         var map = _ctx.Map(_cb, 0, Vortice.Direct3D11.MapMode.WriteDiscard);
         *(FrameCb*)map.DataPointer = cb;
@@ -1392,7 +1632,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _ctx.PSSetShaderResources(0, [_cellSrv, _atlasSrv, _paletteSrv, _spriteSrv,
                                       _avgSrv[0], _avgSrv[1], _avgSrv[2], _overlaySrv,
                                       _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv, _cloudSoftSrv, _palWaterSrv, _tileKindSrv,
-                                      _cityMapSrv, _cityTexSrv, _cityHiSrv, _spriteHiSrv]);
+                                      _cityMapSrv, _cityTexSrv, _cityHiSrv, _spriteHiSrv, _shipHiSrv]);
         _ctx.PSSetSampler(0, _linear);
         _ctx.Draw(3, 0);
     }
@@ -1438,6 +1678,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _cityTexSrv?.Dispose();
         _cityHiSrv?.Dispose();
         _spriteHiSrv?.Dispose();
+        _shipHiSrv?.Dispose();
         _tileKindSrv?.Dispose();
         _linear?.Dispose();
         _folkSrv?.Dispose();

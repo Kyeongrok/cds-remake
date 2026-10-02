@@ -515,7 +515,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 인물 밑표의 275 줄은 얼굴이 0 이라, 예전처럼 밑표에서 꺼내면 <b>기본 제독 얼굴</b>이 떠 일기토 왼쪽에 내 얼굴이 섰다.
     /// </remarks>
     private uint[]? BrawlFace() =>
-        _game.Faces?.TryGetBgra(PersonTable.Open().Find(BrawlPerson)?.Face ?? BrawlFaceFallback, female: false);
+        PersonTable.Open().Find(BrawlPerson) is { } foe
+            ? _game.PersonFace(foe) : _game.Faces?.TryGetBgra(BrawlFaceFallback, female: false);
 
     /// <summary>표를 못 읽었을 때의 얼굴 — 빌린 배 선장과 같은 MALE.CDS 212 다.</summary>
     private const int BrawlFaceFallback = 212;
@@ -1672,7 +1673,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                  + player.LevelOf(Skill.Names[Skill.Sword]) * MateSwordWeight;
         int theirs = (mate.Might + 1) / MateEdge + mate.Sword * MateSwordWeight;
 
-        var face = game.Faces?.TryGetBgra(mate.Face, female: false);
+        var face = game.MateFace(mate);
         if (mine <= theirs)
         {
             TalkDialog.Say(view, face, "", MateEager[dice.Next(MateEager.Length)]);
@@ -1713,7 +1714,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>부관 얼굴. 못 구하면 null.</summary>
     private uint[]? MateFace(in Player.MateInfo who) =>
-        _game.Faces?.TryGetBgra(who.Face, female: false);
+        _game.MateFace(who);
 
     /// <summary>이겼을 때 상대가 남기는 말(<c>0x005348A8</c> 다섯).</summary>
     internal static readonly string[] Beaten =
@@ -2255,7 +2256,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </summary>
     private uint[]? FaceOf(TavernRoster.Person who) =>
         who.FaceCode is >= 0 and < 0xFFFF
-            ? _game.Faces?.TryGetBgra(who.FaceCode, female: false)
+            ? _game.Faces?.TryGetBgra(who.FaceCode, who.Female)
             : null;
 
     /// <summary>한잔 산다. 정말 샀으면 true — 낯을 트는 것은 부르는 쪽이 판단한다.</summary>

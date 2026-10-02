@@ -270,7 +270,7 @@ internal sealed class DuelFoeDialog : GameWindow
             BorderBrush = Brushes.Gray,
             BorderThickness = new Thickness(1),
         };
-        if (faces?.TryGetBgra(who.Face, female: false) is not { } bgra) return box;
+        if (faces?.TryGetBgra(who.Face, who.Female) is not { } bgra) return box;
 
         var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
                                       PixelFormats.Bgra32, null, bgra, Portraits.Width * 4);

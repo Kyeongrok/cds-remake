@@ -119,9 +119,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         string mate = _player.MateAt(MateSlot);
         if (mate.Length == 0) return null;
 
-        return _game.MateInfo(mate) is { Face: >= 0 and < 0xFFFF } who
-            ? _game.Faces?.TryGetBgra(who.Face, female: false)
-            : null;
+        return _game.MateInfo(mate) is { } who ? _game.MateFace(who) : null;
     }
 
     /// <summary>

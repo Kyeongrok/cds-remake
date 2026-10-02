@@ -719,8 +719,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (language >= 0 && BestTongue(language) is var (name, level) && level > mine)
         {
             var who = _game.MateInfo(name);
-            var face = who is { Face: >= 0 and < 0xFFFF } m
-                ? _game.Faces?.TryGetBgra(m.Face, female: false) : null;
+            var face = who is { } m ? _game.MateFace(m) : null;
             TalkDialog.Say(this, face, "",
                            $"[{StrangerTalk.Garble(words, level, _random)}]라고 말하고 있는 것 같습니다.");
             return;
@@ -1197,7 +1196,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                                                dice, _game.Items),
                                         _player.Items.Contains(Engine.Town.Duel.EdithShieldId),
                                         Environment.TickCount);
-        var face = _game.PersonTemplates?.Find(hunter) is { } t ? _game.Faces?.TryGetBgra(t.Face, female: false) : null;
+        var face = _game.PersonFace(hunter);
         DuelDialog.Show(this, duel, dice, face, _game.Fighters, FighterSprites.SetForCulture(_cultureNo),
                         myFace: _game.Faces?.TryGetBgra(PortraitAges.At(_player.Face, _player.Age, false, _game.Faces),
                                                         female: false),

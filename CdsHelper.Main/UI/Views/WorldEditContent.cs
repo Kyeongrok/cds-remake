@@ -99,6 +99,22 @@ public class WorldEditContent : ContentControl
         Content = "격자", IsChecked = true, Padding = new Thickness(6, 0, 6, 0), Margin = new Thickness(2, 0, 2, 0),
         ToolTip = "칸 경계선 (G) — x4 위로 키웠을 때 보인다",
     };
+    /// <summary>
+    /// 셰이더 미리보기 — 키운 자리를 놀이의 지도 셰이더로 그려 보인다(<see cref="MapShaderPreview"/>). 고해상도 바다는 늘 켜고,
+    /// 도트 확대 필터 · 뭍 세부 질감 · 바다 입체 효과는 놀이 모드 창에서 고른 대로 따른다.
+    /// 칸이 화면 네 점보다 커야(x6 위) 든다 — 놀이에서도 그때부터 고해상도 바다가 선다.
+    /// </summary>
+    private bool _shaderOn;
+    private CdsHelper.Game.UI.Views.MapShaderPreview? _shader;
+    private readonly System.Windows.Controls.Primitives.ToggleButton _shaderButton = new()
+    {
+        Content = "셰이더", Padding = new Thickness(6, 0, 6, 0), Margin = new Thickness(2, 0, 2, 0),
+        ToolTip = "놀이의 지도 셰이더(고해상도 바다 + 모드 창에서 켠 도트 필터·뭍 세부 질감·바다 입체 효과)로 미리 본다 (V) — x6 위로 키웠을 때 든다",
+    };
+
+    /// <summary>셰이더가 드는 가장 작은 배율 — 칸이 화면 네 점보다 커야 한다.</summary>
+    private const int ShaderMinZoom = 6;
+
     private readonly System.Windows.Controls.Primitives.ToggleButton _handButton = new()
     {
         Content = "✋", FontSize = 16, Width = 34, Margin = new Thickness(0, 0, 2, 0),
@@ -172,6 +188,7 @@ public class WorldEditContent : ContentControl
                 if (e.Key == Key.B) { _handButton.IsChecked = false; e.Handled = true; return; }
                 if (e.Key == Key.G) { _gridButton.IsChecked = !_gridButton.IsChecked; e.Handled = true; return; }
                 if (e.Key == Key.C) { _hideButton.IsChecked = !_hideButton.IsChecked; e.Handled = true; return; }
+                if (e.Key == Key.V) { _shaderButton.IsChecked = !_shaderButton.IsChecked; e.Handled = true; return; }
             }
             if (Keyboard.Modifiers != ModifierKeys.Control) return;
             if (e.Key == Key.Z) { Undo(); e.Handled = true; }
@@ -183,6 +200,7 @@ public class WorldEditContent : ContentControl
         _landBox.Click += (_, _) => FromBoxes();
 
         Loaded += (_, _) => { if (_world == null) Load(); Focus(); };
+        Unloaded += (_, _) => { _shader?.Dispose(); _shader = null; };
     }
 
     // ── 화면 짜기 ──────────────────────────────────────────────────────────
@@ -207,8 +225,11 @@ public class WorldEditContent : ContentControl
         bar.Children.Add(Btn("+", () => ZoomAt(1, null), "키우기 (휠)"));
         bar.Children.Add(_gridButton);
         bar.Children.Add(_hideButton);
-        _hideButton.Checked += (_, _) => { _hideCities = true; Redraw(); };
-        _hideButton.Unchecked += (_, _) => { _hideCities = false; Redraw(); };
+        _hideButton.Checked += (_, _) => { _hideCities = true; SyncShader(depth: true); Redraw(); };
+        _hideButton.Unchecked += (_, _) => { _hideCities = false; SyncShader(depth: true); Redraw(); };
+        bar.Children.Add(_shaderButton);
+        _shaderButton.Checked += (_, _) => { _shaderOn = true; SyncShader(depth: true); RefreshDetail(); };
+        _shaderButton.Unchecked += (_, _) => { _shaderOn = false; RefreshDetail(); };
         bar.Children.Add(Gap());
         bar.Children.Add(Btn("되돌리기", Undo, "Ctrl+Z"));
         bar.Children.Add(Btn("다시하기", Redo, "Ctrl+Y"));
@@ -278,6 +299,8 @@ public class WorldEditContent : ContentControl
         _avg = _ocean?.GetAverages(1);
         _undo.Clear(); _redo.Clear(); _unsaved = 0;
         LoadCovered();
+        _shader?.Dispose();
+        _shader = null;   // 지도가 통째로 바뀌었다 — 다음에 볼 때 새로 건다
 
         _bitmap = new WriteableBitmap(W, H, 96, 96, PixelFormats.Bgr32, null);
         _image.Source = _bitmap;
@@ -422,6 +445,7 @@ public class WorldEditContent : ContentControl
             _bitmap.AddDirtyRect(new Int32Rect(left, top, Math.Min(W, c.X + r + 1) - left, Math.Min(H, c.Y + r + 1) - top));
         }
         finally { _bitmap.Unlock(); }
+        SyncShader(depth: false);   // 끄는 동안에는 칸만 — 수심은 획이 끝나면 다시 짓는다
         RefreshDetail();
     }
 
@@ -452,6 +476,8 @@ public class WorldEditContent : ContentControl
             _redo.Clear();
             _unsaved += _stroke.Count;
             _status.Text = $"저장 안 한 칸 {_unsaved}개";
+            SyncShader(depth: true);
+            RefreshDetail();
         }
         _stroke = null;
     }
@@ -476,6 +502,7 @@ public class WorldEditContent : ContentControl
             }
         }
         finally { _bitmap.Unlock(); }
+        SyncShader(depth: true);
         RefreshDetail();
         to.Push(stroke);
         _unsaved += useOld ? -stroke.Count : stroke.Count;
@@ -804,11 +831,105 @@ public class WorldEditContent : ContentControl
     }
 
     /// <summary>
+    /// 셰이더 미리보기에 지금 지도를 건다. 처음이면 장치를 올린다. 꺼져 있으면 아무 일도 안 한다.
+    /// </summary>
+    /// <remarks>
+    /// 넘기는 지도는 <b>화면에 보이는 대로</b>다 — 도시 숨김이면 도시·발견물 칸을 바탕 타일로 갈아 둔 사본이다
+    /// (놀이의 도시 분리가 까는 바탕과 같다).
+    /// </remarks>
+    private void SyncShader(bool depth)
+    {
+        if (!_shaderOn || _world == null || _ocean == null) return;
+        var shown = (byte[])_world.Clone();
+        if (_hideCities)
+            foreach (var (cell, c) in _covered)
+            {
+                int at = Offset(cell % W, cell / W);
+                shown[at] = (byte)c.Under;
+                shown[at + 1] = (byte)(c.Under >> 8);
+            }
+
+        if (_shader == null)
+        {
+            _shader = CdsHelper.Game.UI.Views.MapShaderPreview.Open(GameDirectory, shown, _ocean);
+            if (_shader == null)
+            {
+                _status.Text = "셰이더 미리보기를 열지 못했습니다 — " + CdsHelper.Game.UI.Views.MapShaderPreview.LastError;
+                _shaderButton.IsChecked = false;
+                return;
+            }
+        }
+        else _shader.Update(shown, depth);
+
+        _shader.HiResSea = true;
+        _shader.PixelFilter = CdsHelper.Game.Local.Settings.GameSettings.PixelFilter;
+        _shader.LandDetail = CdsHelper.Game.Local.Settings.GameSettings.LandDetail;
+        _shader.SeaEffect = CdsHelper.Game.Local.Settings.GameSettings.SeaEffect;
+        _shader.SeaBrightness = CdsHelper.Game.Local.Settings.GameSettings.SeaBrightness;
+    }
+
+    /// <summary>
+    /// 보이는 자리를 셰이더로 그려 덮는다. 못 그렸으면 false — 그때는 타일 그림으로 물러선다.
+    /// </summary>
+    private bool RefreshShaderDetail(int zoom)
+    {
+        if (!_shaderOn || _shader == null || zoom < ShaderMinZoom) return false;
+
+        int x0 = Math.Max(0, (int)(_scroll.HorizontalOffset / zoom) - 1);
+        int y0 = Math.Max(0, (int)(_scroll.VerticalOffset / zoom) - 1);
+        int cols = Math.Min(W - x0, (int)Math.Ceiling(_scroll.ViewportWidth / zoom) + 3);
+        int rows = Math.Min(H - y0, (int)Math.Ceiling(_scroll.ViewportHeight / zoom) + 3);
+        if (cols <= 0 || rows <= 0) return false;
+
+        // 화면 점과 1:1 이 되게 — 배율에 화면 배율(DPI)을 곱한 만큼 찍는다.
+        double dpi = VisualTreeHelper.GetDpi(this).DpiScaleX;
+        double per = zoom * dpi;
+        int pw = (int)Math.Round(cols * per), ph = (int)Math.Round(rows * per);
+        if (pw <= 0 || ph <= 0 || pw > 8192 || ph > 8192) return false;
+
+        var pixels = _shader.Render(x0, y0, 1.0 / per, pw, ph);
+        if (pixels == null) return false;
+
+        // 격자 — 칸 경계에 걸친 점을 반쯤 어둡게.
+        if (_grid)
+        {
+            for (int cx = 1; cx <= cols; cx++)
+            {
+                int px = (int)Math.Round(cx * per) - 1;
+                if (px < 0 || px >= pw) continue;
+                for (int py = 0; py < ph; py++) Dim(pixels, (py * pw + px) * 4);
+            }
+            for (int cy = 1; cy <= rows; cy++)
+            {
+                int py = (int)Math.Round(cy * per) - 1;
+                if (py < 0 || py >= ph) continue;
+                for (int px = 0; px < pw; px++) Dim(pixels, (py * pw + px) * 4);
+            }
+        }
+
+        var bmp = BitmapSource.Create(pw, ph, 96, 96, PixelFormats.Bgr32, null, pixels, pw * 4);
+        bmp.Freeze();
+        _detail.Source = bmp;
+        _detail.Width = cols;
+        _detail.Height = rows;
+        Canvas.SetLeft(_detail, x0);
+        Canvas.SetTop(_detail, y0);
+        _detail.Visibility = Visibility.Visible;
+        return true;
+
+        static void Dim(byte[] p, int at)
+        {
+            p[at] >>= 1; p[at + 1] >>= 1; p[at + 2] >>= 1;
+        }
+    }
+
+    /// <summary>
     /// 보이는 자리의 칸을 타일 그림으로 다시 찍는다. 배율 1 이면 바탕 그림 그대로라 걷는다.
     /// </summary>
     private void RefreshDetail()
     {
         int zoom = Zooms[_zoom];
+        if (RefreshShaderDetail(zoom)) return;
         // 타일 원본이 16x16 이라 그보다 키우면 16 으로 찍고 화면 배율로 늘린다(최근접이라 또렷하다).
         int z = Math.Min(zoom, OceanTiles.TileW);
         if (_world == null || _ocean == null || zoom <= 1 || _scroll.ViewportWidth <= 0)

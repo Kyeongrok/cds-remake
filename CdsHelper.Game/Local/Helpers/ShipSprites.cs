@@ -70,6 +70,7 @@ public static class ShipSprites
                 _skin = next;
                 Generation++;
                 for (int i = 0; i < Directions; i++) Frames[0][i] = null;   // 배만 다시 읽는다
+                Array.Clear(HiFrames);
             }
         }
     }
@@ -93,6 +94,7 @@ public static class ShipSprites
                 _folder = next;
                 Generation++;
                 for (int i = 0; i < Directions; i++) Frames[0][i] = null;   // 배만 다시 읽는다
+                Array.Clear(HiFrames);
             }
         }
     }
@@ -165,6 +167,64 @@ public static class ShipSprites
             var px = File.Exists(path) ? LoadPng(path) : null;
             SkinFrames[skin][i] = px ?? [];
             return px;
+        }
+    }
+
+    /// <summary>고해상도 그림의 가장 큰 한 변. 48 의 열 배다.</summary>
+    public const int HiMaxWidth = Width * 10;
+
+    /// <summary>방향마다 읽어 둔 고해상도 배 그림. 없는 방향은 한 변이 0 이다.</summary>
+    private static readonly (uint[] Pixels, int Side)?[] HiFrames = new (uint[], int)?[Directions];
+
+    /// <summary>
+    /// 그 뱃머리의 <b>고해상도</b> 배 그림 — 없으면 null 이고, 그때는 48x48(<see cref="Frame"/>)을 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// 48x48 그림과 <b>같은 폴더</b>에 <c>ship_{방향}_hd.png</c> 로 둔다(<c>asset/ship-g1/ship_0_hd.png</c> 처럼,
+    /// 등록해 넣은 배는 그 배의 폴더에). 정사각이고 한 변이 48 의 배수(96 · 144 · 192 … <see cref="HiMaxWidth"/>)여야 한다.
+    /// 48x48 과 <b>같은 자리·같은 크기로</b> 놓이므로 배를 그 틀 안에 같은 비율로 그리면 된다. 비침은 알파다.
+    /// 여덟 방향 가운데 있는 것만 쓰고 없는 방향은 원본으로 남는다.
+    ///
+    /// 돌려주는 점은 <b>알파를 곱해 둔</b> 것이다 — 늘려 그릴 때 가장자리에 검은 테가 끼지 않는다.
+    /// </remarks>
+    public static (uint[] Pixels, int Side)? HiFrame(int heading16)
+    {
+        int i = (heading16 & 0xF) >> 1;
+        lock (Gate)
+        {
+            if (HiFrames[i] is { } kept) return kept.Side > 0 ? kept : null;
+
+            string dir = _folder ?? Path.Combine(AppContext.BaseDirectory,
+                                                 _skin >= 0 ? $"asset/ship-g{_skin}" : ShipDirectory);
+            var made = LoadHiPng(Path.Combine(dir, $"ship_{i}_hd.png"));
+            HiFrames[i] = made ?? ([], 0);
+            return made;
+        }
+    }
+
+    private static (uint[] Pixels, int Side)? LoadHiPng(string path)
+    {
+        if (!File.Exists(path)) return null;
+        try
+        {
+            using var fs = File.OpenRead(path);
+            var decoder = new PngBitmapDecoder(fs, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var src = new FormatConvertedBitmap(decoder.Frames[0], PixelFormats.Pbgra32, null, 0);
+            int side = src.PixelWidth;
+            if (side != src.PixelHeight || side % Width != 0 || side <= Width || side > HiMaxWidth)
+            {
+                LastError = $"{path} 크기가 {src.PixelWidth}x{src.PixelHeight} — 정사각이고 한 변이 {Width} 의 배수"
+                          + $"({Width * 2}~{HiMaxWidth})여야 합니다";
+                return null;
+            }
+            var px = new uint[side * side];
+            src.CopyPixels(px, side * 4, 0);
+            return (px, side);
+        }
+        catch (Exception ex)
+        {
+            LastError = $"{path} 를 읽지 못했습니다 — {ex.Message}";
+            return null;
         }
     }
 

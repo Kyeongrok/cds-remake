@@ -571,6 +571,31 @@ public sealed class Game
     /// <param name="buildingCode">건물 코드(항구 0 · 조선소 6 · 도서관 8 …).</param>
     /// <param name="culture">그 마을 문화권 번호.</param>
     /// <summary>
+    /// 인물 <b>번호</b>로 그 사람의 초상을 꺼낸다 — 남자·여자 묶음을 부르는 쪽이 고르지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 게임도 번호만 넘긴다. 인물 밑표가 얼굴 번호(<c>+0x08</c>)와 여자 얼굴인지(<c>+0x0C</c>)를 같이 들고 있어,
+    /// 대사 창(<c>0x00478280</c>)이 둘을 함께 읽어 <c>MALE.CDS</c> · <c>FEMALE.CDS</c> 를 가른다.
+    /// </remarks>
+    public uint[]? PersonFace(int id) =>
+        PersonTemplates?.Find(id) is { } t ? Faces?.TryGetBgra(t.Face, t.Female) : null;
+
+    /// <summary>인물표 한 줄의 초상 — 얼굴 번호와 여자 얼굴 칸을 그 줄에서 같이 읽는다.</summary>
+    public uint[]? PersonFace(PersonTable.Row who) => Faces?.TryGetBgra(who.Face, who.Female);
+
+    /// <summary>
+    /// 부하의 초상. 신상에는 이름과 얼굴 번호뿐이라 <b>이름으로 인물을 되짚어</b> 여자 얼굴인지 가른다.
+    /// 얼굴이 없으면(<c>0xFFFF</c>) null.
+    /// </summary>
+    public uint[]? MateFace(in Player.MateInfo who)
+    {
+        if (who.Face is < 0 or >= 0xFFFF) return null;
+        string name = who.Name;
+        bool female = World?.People.FirstOrDefault(r => r.Name == name)?.Female == true;
+        return Faces?.TryGetBgra(who.Face, female);
+    }
+
+    /// <summary>
     /// <b>부관</b>(부하 첫 자리)의 얼굴. 부관이 없거나 신상을 못 찾으면 <b>뱃사람(MALE #299)</b>이다.
     /// </summary>
     /// <remarks>
@@ -586,8 +611,7 @@ public sealed class Game
         get
         {
             string mate = Player.MateAt(0);
-            if (mate.Length > 0 && MateInfo(mate) is { Face: >= 0 and < 0xFFFF } who
-                && Faces?.TryGetBgra(who.Face, female: false) is { } face)
+            if (mate.Length > 0 && MateInfo(mate) is { } who && MateFace(who) is { } face)
                 return face;
             return Faces?.TryGetBgra(SailorFace, female: false);
         }

@@ -254,6 +254,13 @@ public sealed class ShipMapHost : HwndHost
         set { _renderer.SeaBrightness = (float)value; _dirty = true; }
     }
 
+    /// <summary>고해상도 바다에서 해류 결·띠의 짙기(0~1).</summary>
+    public double SeaFlowAmount
+    {
+        get => _renderer.FlowAmount;
+        set { _renderer.FlowAmount = (float)value; _dirty = true; }
+    }
+
     /// <summary>고해상도 바다를 그릴지. 켜 둔 동안은 잔물결이 흐르도록 프레임마다 다시 그린다.</summary>
     public bool HiResSea
     {
@@ -273,40 +280,8 @@ public sealed class ShipMapHost : HwndHost
     /// 흙빛(빨강이 파랑보다 뚜렷이 큰 색)이 아니면 물이다. 강 물빛(#5A6967 · #94A199)과 해안 물결의 짙은 점도
     /// 여기 든다 — 파란 기만으로 가르면 그것들이 원본 도트로 남아 고해상도 바다와 어긋났다.
     /// </summary>
-    /// <summary>지형표에서 강 칸의 부류.</summary>
-    private const int RiverClass = 5;
-
-    private byte[]? BuildWaterPalette()
-    {
-        if (_terrain == null || _world == null || _ocean == null) return null;
-        var uses = new Dictionary<int, int>();
-        for (int i = 0; i + 1 < _world.Length; i += 2)
-        {
-            int tile = (_world[i] | (_world[i + 1] << 8)) & OceanTiles.TileMask;
-            uses[tile] = uses.GetValueOrDefault(tile) + 1;
-        }
-        var wet = new long[256];
-        var dry = new long[256];
-        var data = _ocean.TileData;
-        foreach (var (tile, n) in uses)
-        {
-            // 강 칸(부류 5)도 물 쪽에 센다 — 강물 빛(#5F7887)은 바다 타일에는 안 나오고 강 타일에만 쓰인다.
-            int kind = _terrain.ClassOfCell(tile);
-            bool water = kind <= TerrainTable.WaterMax || kind == RiverClass;
-            int at = tile * OceanTiles.TilePixels;
-            for (int k = 0; k < OceanTiles.TilePixels; k++)
-                if (water) wet[data[at + k]] += n; else dry[data[at + k]] += n;
-        }
-        var table = new byte[256];
-        for (int c = 0; c < 256; c++)
-        {
-            int rgb = _ocean.PaletteRgb[c];
-            int red = (rgb >> 16) & 0xFF, blue = rgb & 0xFF;
-            bool earthy = red - blue > 5;
-            table[c] = (byte)(wet[c] > 0 && wet[c] > dry[c] * 4 && !earthy ? 1 : 0);
-        }
-        return table;
-    }
+    private byte[]? BuildWaterPalette() =>
+        _terrain == null || _world == null || _ocean == null ? null : MapShaderData.WaterPalette(_world, _terrain, _ocean);
 
     /// <summary>도시 분리 — 바탕 지도 위에 뽑아 둔 도시 그림을 따로 얹는다. 켜면 도시 그림 판을 한 번 짓는다.</summary>
     public bool CitySprites
@@ -441,17 +416,85 @@ public sealed class ShipMapHost : HwndHost
     /// 타일마다 지형 부류(지형표 값). 지도에서 그림 비트(0x8000)가 선 칸에 쓰인 타일은 7(도시·발견물 그림)로 둔다 —
     /// 세부 질감이 그림을 흐리지 않게.
     /// </summary>
-    private byte[]? BuildTileKinds()
+    private byte[]? BuildTileKinds() =>
+        _terrain == null || _world == null ? null : MapShaderData.TileKinds(_world, _terrain);
+
+    /// <summary>
+    /// 배가 바다에 닿는 효과(항적·그림자·출렁임)를 낼지. 원본에 없는 덧그림이라 모드 창에서 켠다.
+    /// 바다에 떠 있을 때만 든다 — 뭍의 말에는 안 든다.
+    /// </summary>
+    public bool ShipWake
     {
-        if (_terrain == null || _world == null) return null;
-        var kinds = new byte[OceanTiles.TileCount];
-        for (int t = 0; t < kinds.Length; t++) kinds[t] = (byte)_terrain.ClassOfCell(t);
-        for (int i = 0; i + 1 < _world.Length; i += 2)
+        get => _shipWake;
+        set { _shipWake = value; _wakeTrail.Clear(); _dirty = true; }
+    }
+
+    private bool _shipWake;
+
+    /// <summary>지나온 자리 — 칸 좌표와, 그 자리를 지난 때(<see cref="_wakeClock"/>). 새 것이 뒤다.</summary>
+    private readonly List<(double X, double Y, double At)> _wakeTrail = [];
+
+    /// <summary>항적이 흐른 시각(초). 창이 떠서 멈춘 동안에는 안 흐른다.</summary>
+    private double _wakeClock;
+
+    private readonly (float X, float Y, float Age)[] _wakeDraw = new (float, float, float)[MapD3DRenderer.MaxWake];
+
+    /// <summary>항적이 스러지기까지(초)와 그 길이의 끝(칸). 둘 가운데 먼저 닿는 쪽에서 사라진다.</summary>
+    private const double WakeLife = 2.2, WakeReach = 9.0;
+
+    /// <summary>
+    /// 항적 마디를 이번 프레임 것으로 맞추고 렌더러에 건다. 돌려주는 값은 효과가 지금 켜져 있는지다.
+    /// </summary>
+    /// <remarks>
+    /// 뱃머리 반대쪽으로 곧게 긋지 않고 <b>지나온 자리</b>를 잇는다 — 배가 돌면 항적도 휘어 남는다.
+    /// 마디는 때를 고르게 띄워 남기므로 빠를수록 길고, 서면 스러져 없어진다.
+    /// </remarks>
+    private bool SyncWake(double dt, (double X, double Y) origin, double seconds)
+    {
+        bool on = _shipWake && ShowShip && _shipKnown && _spriteReady && !_onLand && !_inCity;
+        _renderer.ShipFx = on;
+        if (!on)
         {
-            int word = _world[i] | (_world[i + 1] << 8);
-            if ((word & 0x8000) != 0) kinds[word & OceanTiles.TileMask] = 7;
+            _wakeTrail.Clear();
+            return false;
         }
-        return kinds;
+
+        if (!Paused) _wakeClock += dt;
+        double mapW = WorldMapRenderer.UnfoldedW;
+        double Wrap(double d) => d - Math.Floor(d / mapW + 0.5) * mapW;
+
+        if (_wakeTrail.Count > 0)
+        {
+            var last = _wakeTrail[^1];
+            double jx = Wrap(_shipX - last.X), jy = _shipY - last.Y;
+            double jump = Math.Sqrt(jx * jx + jy * jy);
+            if (jump > 6) _wakeTrail.Clear();   // 항구에서 나왔거나 자리를 옮겨 놓았다 — 잇지 않는다
+            else if (jump > 0.05 && _wakeClock - last.At >= WakeLife / (MapD3DRenderer.MaxWake - 2))
+                _wakeTrail.Add((_shipX, _shipY, _wakeClock));
+        }
+        else _wakeTrail.Add((_shipX, _shipY, _wakeClock));
+
+        _wakeTrail.RemoveAll(p => _wakeClock - p.At > WakeLife);
+        while (_wakeTrail.Count > MapD3DRenderer.MaxWake - 1) _wakeTrail.RemoveAt(0);
+
+        float shipPx = (float)((_shipX - origin.X) / _cellsPerPixel), shipPy = (float)((_shipY - origin.Y) / _cellsPerPixel);
+        int n = 0;
+        _wakeDraw[n++] = (shipPx, shipPy, 0);
+        double px = _shipX, py = _shipY, reach = 0;
+        for (int i = _wakeTrail.Count - 1; i >= 0 && n < _wakeDraw.Length; i--)
+        {
+            var p = _wakeTrail[i];
+            double dx = Wrap(p.X - px), dy = p.Y - py;
+            reach += Math.Sqrt(dx * dx + dy * dy);
+            if (reach > WakeReach) break;
+            double age = Math.Max((_wakeClock - p.At) / WakeLife, reach / WakeReach);
+            _wakeDraw[n++] = ((float)(shipPx + Wrap(p.X - _shipX) / _cellsPerPixel),
+                              (float)(shipPy + (p.Y - _shipY) / _cellsPerPixel), (float)Math.Clamp(age, 0, 1));
+            (px, py) = (p.X, p.Y);
+        }
+        _renderer.SetWake(_wakeDraw.AsSpan(0, n));
+        _renderer.ShipBob = (float)(Math.Sin(seconds * 1.9) * 0.011);
+        return true;
     }
 
     /// <summary>도트 확대 필터를 쓸지.</summary>
@@ -472,62 +515,8 @@ public sealed class ShipMapHost : HwndHost
     /// 칸마다 뭍까지의 걸음 수(0 뭍 · 1~15 물, 15 에서 멈춘다). 지형표 부류 0·1 이 물이다(<see cref="TerrainTable.WaterMax"/>).
     /// 뭍 칸 전부를 한꺼번에 띄워 너비 우선으로 번진다 — 가로는 경도 -180/180 을 잇는다.
     /// </summary>
-    private byte[]? BuildSeaDepth()
-    {
-        if (_world == null || _terrain == null) return null;
-        int w = WorldMapRenderer.UnfoldedW, h = WorldMapRenderer.CellH;
-        var depth = new byte[w * h];
-        var queue = new int[w * h];
-        int head = 0, tail = 0;
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-            {
-                int i = y * w + x;
-                if (_terrain.ClassOfCell(CellValue(x, y)) > TerrainTable.WaterMax) queue[tail++] = i;   // 뭍 = 0
-                else depth[i] = 255;                                                                    // 아직 모름
-            }
-        while (head < tail)
-        {
-            int i = queue[head++];
-            int x = i % w, y = i / w;
-            byte next = (byte)Math.Min(15, depth[i] + 1);
-            Span<int> around = [y * w + (x + 1) % w, y * w + (x + w - 1) % w,
-                                y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
-            foreach (int j in around)
-            {
-                if (j < 0 || depth[j] != 255) continue;
-                depth[j] = next;
-                queue[tail++] = j;
-            }
-        }
-        for (int i = 0; i < depth.Length; i++) if (depth[i] == 255) depth[i] = 15;   // 뭍이 없는 줄(극지 밖)
-
-        // 위 네 비트에는 <b>강 칸까지의 걸음 수</b>(0~15)를 싣는다 — 고해상도 바다가 강과 강 어귀는 원본 도트로 두고,
-        // 강에서 멀어질수록 서서히 새 바다로 넘어가게 한다(강을 매끈한 물로 바꾸면 둑이 뭉개지고 색도 어긋났다).
-        var river = new byte[w * h];
-        Array.Fill(river, (byte)255);
-        head = tail = 0;
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-                if (_terrain.ClassOfCell(CellValue(x, y)) == RiverClass) { river[y * w + x] = 0; queue[tail++] = y * w + x; }
-        while (head < tail)
-        {
-            int i = queue[head++];
-            int x = i % w, y = i / w;
-            byte next = (byte)Math.Min(15, river[i] + 1);
-            Span<int> around = [y * w + (x + 1) % w, y * w + (x + w - 1) % w,
-                                y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
-            foreach (int j in around)
-            {
-                if (j < 0 || river[j] != 255) continue;
-                river[j] = next;
-                if (next < 15) queue[tail++] = j;
-            }
-        }
-        for (int i = 0; i < depth.Length; i++)
-            depth[i] = (byte)(depth[i] | (Math.Min((int)river[i], 15) << 4));
-        return depth;
-    }
+    private byte[]? BuildSeaDepth() =>
+        _world == null || _terrain == null ? null : MapShaderData.SeaDepth(_world, _terrain);
 
     // 마지막 프레임의 화면 원점. 클릭한 자리를 칸으로 되돌릴 때 쓴다.
     private (double X, double Y) _lastOrigin;
@@ -978,8 +967,11 @@ public sealed class ShipMapHost : HwndHost
         // 자동항해 항로. 마디 자리는 고정된 칸이라 원점이 그대로면 화면 자리도 그대로다.
         SyncRoute(origin);
 
+        // 항적은 배 뒤로 벌어지며 스러지고 배는 출렁이므로, 켜 둔 동안에는 바다 효과처럼 프레임마다 다시 그린다.
+        bool wake = SyncWake(dt, origin, now.TotalSeconds);
+
         // 바다 입체 효과를 켜 두면 물결이 흐르므로 프레임마다 다시 그린다.
-        if (_renderer.SeaEffect || _renderer.HiResSea)
+        if (_renderer.SeaEffect || _renderer.HiResSea || wake)
         {
             _renderer.SeaTime = (float)now.TotalSeconds;
             _dirty = true;
@@ -1413,6 +1405,7 @@ public sealed class ShipMapHost : HwndHost
         var flow = cell < 0 ? default : _wind.CurrentAt(cell);
         var (dx, dy) = _wind.Vector(flow.Dir);
         _renderer.Ripple = (dx, dy, flow.Speed, _rippleTick);
+        DriftSea(dx, dy, flow.Speed, !_inCity && !Paused ? dt : 0);
 
         var wind = cell < 0 ? default : HeldWind(cell, month);
         UpdateClouds(wind.Dir, wind.Speed, ticks);
@@ -1420,6 +1413,50 @@ public sealed class ShipMapHost : HwndHost
         // 구름이 떠 있으면 틱마다 자리가 달라지므로 틱 자체가 곧 그림이다.
         if (_cloudCount > 0) return _rippleTick;
         return (flow.Dir << 26) | (flow.Speed << 22) | ((flow.Speed * _rippleTick / 4) & 0x3FFFFF);
+    }
+
+    /// <summary>고해상도 바다의 물 무늬가 해류를 타고 흘러간 만큼(칸)과, 부드럽게 따라가는 방향·또렷함.</summary>
+    private double _driftX, _driftY, _driftDirX, _driftDirY, _driftStrength;
+
+    /// <summary>무늬가 흘러간 만큼을 이 칸 수에서 되감는다 — 값이 커지면 셰이더의 소수 자리가 거칠어진다.</summary>
+    private const double DriftWrap = 4096;
+
+    /// <summary>
+    /// 고해상도 바다의 해류 무늬를 한 프레임만큼 흘린다(<see cref="MapD3DRenderer.FlowDrift"/>).
+    /// </summary>
+    /// <remarks>
+    /// 방향과 또렷함은 지금 칸의 해류를 <b>서서히</b> 따라간다 — 함대가 해류 칸을 넘나들 때 결이 툭 바뀌지 않게.
+    /// 빠르기는 세기 1 에 초당 0.45칸, 7 에 1.65칸이다. 원본 띠(세기 1 에 초당 2.5칸)대로 밀면 잔무늬가
+    /// 프레임마다 한 눈금씩 건너뛰어 지글거린다. 창이 떠서 멈춘 동안에는 흐르지 않는다.
+    /// </remarks>
+    private void DriftSea(float dx, float dy, int speed, double dt)
+    {
+        double len = Math.Sqrt(dx * dx + dy * dy);
+        double tx = len > 0 ? dx / len : 0, ty = len > 0 ? dy / len : 0;
+        double want = speed > 0 && len > 0 ? 0.4 + 0.6 * Math.Min(speed, 7) / 7.0 : 0;
+
+        double k = 1 - Math.Exp(-dt * 2.5);
+        _driftStrength += (want - _driftStrength) * k;
+        if (want > 0)
+        {
+            // 흐름이 없던 자리에서 들어서면 방향은 곧바로 잡는다 — 돌려 맞출 옛 방향이 없다.
+            if (_driftStrength < 0.05 || (_driftDirX == 0 && _driftDirY == 0)) (_driftDirX, _driftDirY) = (tx, ty);
+            else
+            {
+                _driftDirX += (tx - _driftDirX) * k;
+                _driftDirY += (ty - _driftDirY) * k;
+                double n = Math.Sqrt(_driftDirX * _driftDirX + _driftDirY * _driftDirY);
+                if (n > 1e-6) { _driftDirX /= n; _driftDirY /= n; }
+                else (_driftDirX, _driftDirY) = (tx, ty);
+            }
+        }
+
+        double rate = _driftStrength > 0.01 ? 0.25 + 0.2 * Math.Max(speed, 1) : 0;
+        _driftX = (_driftX + _driftDirX * rate * _driftStrength * dt) % DriftWrap;
+        _driftY = (_driftY + _driftDirY * rate * _driftStrength * dt) % DriftWrap;
+
+        _renderer.FlowDrift = ((float)_driftX, (float)_driftY, (float)_driftDirX, (float)_driftDirY,
+                               (float)_driftStrength, (float)(_rippleTick + _rippleAccum / TickSeconds));
     }
 
     /// <summary>
@@ -1664,6 +1701,7 @@ public sealed class ShipMapHost : HwndHost
             _shipY += (_targetY - _shipY) * 0.15;
             var spr0 = _ship.TryReadSprite();
             if (spr0 != null) UploadGameSprite(spr0);
+            _renderer.SetShipHi(null, 0);
             _spriteKey = null;   // 이쪽에서 올린 그림은 우리 뱃머리와 무관하다 — 돌아가면 다시 올린다
             return;
         }
@@ -1678,6 +1716,10 @@ public sealed class ShipMapHost : HwndHost
         var indices = _ship.IsAttached
             ? _ship.TryReadSprite(_heading, _onLand, _onLand ? _walkPhase : -1)
             : null;
+        // 고해상도 그림은 우리 그림(asset)으로 바다에 떠 있을 때만 건다 — 게임에서 읽은 그림과 말에는 짝이 없다.
+        var hi = indices == null && !_onLand ? ShipSprites.HiFrame(_heading) : null;
+        _renderer.SetShipHi(hi?.Pixels, hi?.Side ?? 0);
+
         if (indices != null) UploadGameSprite(indices);
         else
         {

@@ -83,8 +83,14 @@ public sealed class GameSettingsData
     /// <summary>조우하면 저절로 「도망」을 고를지. 꺼 두고 시작한다.</summary>
     public bool AutoFlee { get; set; }
 
+    /// <summary>항구에 들면 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
+    public bool AutoSupply { get; set; }
+
     /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 1 이 기본이다.</summary>
     public double SeaBrightness { get; set; } = 1.0;
+
+    /// <summary>고해상도 바다에서 해류 결·띠의 짙기(0~1). 반에서 시작한다.</summary>
+    public double SeaFlowAmount { get; set; } = 0.5;
 
     /// <summary>구름을 부드럽게(바둑판 반투명을 참 반투명으로 풀어 매끈하게 늘려) 그릴지. 켜 두고 시작한다.</summary>
     public bool SmoothClouds { get; set; } = true;
@@ -95,11 +101,11 @@ public sealed class GameSettingsData
     /// <summary>도트 확대 필터(대각선 계단을 사선으로). 꺼 두고 시작한다.</summary>
     public bool PixelFilter { get; set; }
 
+    /// <summary>배 항적(항적·그림자·출렁임). 꺼 두고 시작한다.</summary>
+    public bool ShipWake { get; set; }
+
     /// <summary>뭍 세부 질감(지형마다 화면 해상도 잔무늬). 꺼 두고 시작한다.</summary>
     public bool LandDetail { get; set; }
-
-    /// <summary>도시 분리(바탕 지도 위에 도시 그림을 따로 얹기). 꺼 두고 시작한다.</summary>
-    public bool CitySprites { get; set; }
 
     /// <summary>미니맵 풍향 화살표. 꺼 두고 시작한다.</summary>
     public bool MiniMapWind { get; set; }
@@ -910,6 +916,16 @@ public static class GameSettings
     }
 
     /// <summary>
+    /// 자동 보급 — 배로 항구에 들면 물·식량 가운데 10일분이 안 되는 것을 10일분까지 산다(보급 창과 같은 값 · 용량·중량·소지금 안에서).
+    /// 모드 창 「편의성」에서 켠다.
+    /// </summary>
+    public static bool AutoSupply
+    {
+        get => Get(d => d.AutoSupply);
+        set => Set(d => d.AutoSupply = value);
+    }
+
+    /// <summary>
     /// 자동 도망 — 해적·이슬람 함대·추격대, 뭍의 무리와 마주치면 고르기 창 없이 「도망」을 고른다(짐승·독충은 그대로 묻는다).
     /// 도망 굴림은 원본 그대로라 실패하면 싸움이 이어진다. 모드 창 「편의성」에서 켠다.
     /// </summary>
@@ -926,11 +942,11 @@ public static class GameSettings
         set => Set(d => d.SeaBrightness = Math.Clamp(value, 0.6, 1.6));
     }
 
-    /// <summary>도시 분리 — 모드 창 「실험」에서 켜고 끈다.</summary>
-    public static bool CitySprites
+    /// <summary>고해상도 바다의 해류 결·띠 짙기 — 모드 창 「실험」의 막대로 고른다.</summary>
+    public static double SeaFlowAmount
     {
-        get => Get(d => d.CitySprites);
-        set => Set(d => d.CitySprites = value);
+        get => Math.Clamp(Get(d => d.SeaFlowAmount), 0, 1);
+        set => Set(d => d.SeaFlowAmount = Math.Clamp(value, 0, 1));
     }
 
     /// <summary>뭍 세부 질감 — 모드 창 「실험」에서 켜고 끈다.</summary>
@@ -945,6 +961,13 @@ public static class GameSettings
     {
         get => Get(d => d.PixelFilter);
         set => Set(d => d.PixelFilter = value);
+    }
+
+    /// <summary>배 항적 — 모드 창 「실험」에서 켜고 끈다.</summary>
+    public static bool ShipWake
+    {
+        get => Get(d => d.ShipWake);
+        set => Set(d => d.ShipWake = value);
     }
 
     /// <summary>고해상도 바다 — 모드 창 「실험」에서 켜고 끈다.</summary>

@@ -2116,8 +2116,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             string name = _player.MateAt(slot);
             if (name.Length == 0) continue;
 
-            var face = _player.MateInfoOf(name) is { } info
-                ? _game.Faces?.TryGetBgra(info.Face, female: false) : null;
+            var face = _player.MateInfoOf(name) is { } info ? _game.MateFace(info) : null;
             int baseFee = _game.World?.People.FirstOrDefault(r => r.Name == name)?.Fee ?? 0;
             int fee = Math.Max(0, baseFee * (10 - eloquence) / 3);
 

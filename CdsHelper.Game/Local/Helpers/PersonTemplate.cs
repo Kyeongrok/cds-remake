@@ -9,6 +9,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <code>
 ///   표 0x004DF3F0 · 204바이트(0xCC) x 281   꺼내기 0x00431A70 (번호 x 204)
 ///   +0x00 이름 ptr  +0x04 성 ptr  +0x08 얼굴  +0x10 나이
+///   +0x0C 여자 얼굴인지 → 인물 +0x10 (vtbl+0x10 = 0x0041B200) — 1 이면 FEMALE.CDS 에서 꺼낸다
 ///   +0x14 나라  → 인물 +0x14 (vtbl+0x14 = 0x0041B210)
 ///   +0x20 직업  → 인물 +0x1C (vtbl+0x18 = 0x0041B220)
 /// </code>
@@ -43,9 +44,14 @@ public sealed class PersonTemplate
     /// <param name="Face">밑표 <c>+0x08</c> 얼굴 — 별자리 셈에 들어간다.</param>
     /// <param name="Blood">밑표 <c>+0x1C</c> 혈액형(0 A · 1 B · 2 O · 3 AB).</param>
     /// <param name="JobName">직업 이름(<c>0x00560AA8[직업]</c>).</param>
+    /// <param name="Female">
+    /// 밑표 <c>+0x0C</c> — 참이면 얼굴을 <c>FEMALE.CDS</c> 에서 꺼낸다. 대사 창(<c>0x00478280</c>)이 얼굴 번호와
+    /// 함께 넘긴다. 여섯뿐이다(192 · 200 · 221 아마조네스의 족장 · 230 · 232 · 236).
+    /// </param>
     [method: JsonConstructor]
     public readonly record struct Template(int Id, int Nation, int Job,
-                                           int Face = 0, int Blood = 0, string JobName = "")
+                                           int Face = 0, int Blood = 0, string JobName = "",
+                                           bool Female = false)
     {
         /// <summary>
         /// 별자리. <b>생일 칸이 없어</b> 게임이 <c>(얼굴 + 혈액형 + 나라) % 12</c> 로 지어낸다
@@ -74,9 +80,9 @@ public sealed class PersonTemplate
     /// <summary>표를 연다. 적어 둔 JSON 이 있으면 그것을 읽는다.</summary>
     public static PersonTemplate? Open(string gameDirectory)
     {
-        // 판 2: 얼굴·혈액형·직업 이름을 더했다.
+        // 판 2: 얼굴·혈액형·직업 이름을 더했다. 판 3: 여자 얼굴 칸.
         var snapshot = ExeTable.Open<Snapshot>(CacheName, gameDirectory, ReadFromExe, out string error,
-                                               version: 2);
+                                               version: 3);
         LastError = error;
         return snapshot == null ? null : new PersonTemplate(snapshot.Rows);
     }
@@ -96,7 +102,8 @@ public sealed class PersonTemplate
             string jobName = job is >= 0 and < JobNameCount
                 ? exe.Text(exe.Word(JobNameVa + job * 4)) ?? "" : "";
             rows[i] = new Template(i, exe.Int(row + 0x14), job,
-                                   exe.Int(row + 0x08), exe.Int(row + 0x1C), jobName);
+                                   exe.Int(row + 0x08), exe.Int(row + 0x1C), jobName,
+                                   exe.Int(row + 0x0C) != 0);
         }
 
         // 3번 바스코·다 가마는 포르투갈, 6번 아메리고·베스풋치는 에스파니아다 — 판이 다른

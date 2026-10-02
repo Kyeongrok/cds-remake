@@ -254,7 +254,7 @@ public sealed class PersonTable
         {
             Edited = true;
             Source = saved.Source.Length > 0 ? saved.Source : CacheName + ".json";
-            return new PersonTable(WithFees(Fix(saved.Data.People)), saved.Data.Year);
+            return new PersonTable(WithSex(WithFees(Fix(saved.Data.People))), saved.Data.Year);
         }
         Edited = false;
 
@@ -312,6 +312,19 @@ public sealed class PersonTable
     }
 
     private static List<Row> Fix(List<Row> rows) => rows.Select(r => r.Fixed()).ToList();
+
+    /// <summary>
+    /// 고친 표에 <b>여자 얼굴 칸</b>을 본에서 메운다 — 그 칸이 생기기 전에 고쳐 둔 표에는 빠져 있어,
+    /// 그대로 두면 여자 인물이 <c>MALE.CDS</c> 의 같은 번호 얼굴로 뜬다.
+    /// </summary>
+    private static List<Row> WithSex(List<Row> rows)
+    {
+        if (Shipped() is not { } shipped) return rows;
+        var women = shipped.People.Where(r => r.Female).Select(r => r.Id).ToHashSet();
+        foreach (var row in rows)
+            if (women.Contains(row.Id)) row.Female = true;
+        return rows;
+    }
 
     private static void MigrateLegacyCache(TableCache.Cached<Snapshot> saved)
     {

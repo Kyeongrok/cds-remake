@@ -595,7 +595,7 @@ internal sealed class LandBattleScene : GameWindow
                                    _battle.FoeBody, _battle.FoeMight,
                                    _battle.SkillAt(LandBattle.FirstFoe, Skill.Sword),
                                    _battle.FoeLuck, 0, 0);
-        var foeFace = foeRow is { } r ? game.Faces?.TryGetBgra(r.Face, female: false) : null;
+        var foeFace = foeRow is { } r ? game.PersonFace(r) : null;
 
         // 무대는 싸움터(+0xA8)다 — 0(도시)이면 1(초원), 2 숲, 3 모래(0x004478CA). 예전에는 늘 초원이었다.
         string arena = _battle.Terrain switch { 2 => "duel-wood", 3 => "duel-sand", _ => DuelArt.Field };

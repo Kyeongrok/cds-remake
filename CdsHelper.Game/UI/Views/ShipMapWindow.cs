@@ -43,6 +43,7 @@ public sealed class ShipMapWindow : Window
         FontFamily = new FontFamily("Consolas"),
     };
     private readonly DispatcherTimerLite _statusTimer;
+    private readonly DispatcherTimerLite _weatherTimer;
 
     /// <summary>
     /// 지도 아래 띠에 적는 글. 게임은 이 자리에 짧은 알림을 낸다 —
@@ -605,7 +606,8 @@ public sealed class ShipMapWindow : Window
         {
             SyncMouse();
             SyncBarPlace();
-            _host.ShowShip = _game.Player.Ships.Count > 0;
+            // 배가 없으면 바다에 그릴 배가 없다. 뭍에서는 말이라 배가 없어도 그린다 — 안 그리면 보이지 않는 채로 돌아다닌다.
+            _host.ShowShip = _game.Player.Ships.Count > 0 || _host.IsOnLand;
             _status.Text = _focusNote.Length > 0 ? $"{_host.Status}    {_focusNote}"
                                                  : _host.Status;
             // 한 틱의 차례는 원본 고리 그대로다(0x0048EF18~0x0048EF7D) —
@@ -630,9 +632,14 @@ public sealed class ShipMapWindow : Window
             if (_overlay.IsOpen) { var (lat, lon) = _host.ShipLatLon; FillOverlay(lat, lon); }
             if (_miniWanted) SyncMiniMap();
             SyncSpeedNote();
-            SyncWeather();
             SyncSeaMusic();
         });
+
+        // 비·눈 층은 제 시계로 돈다 — 상태 시계는 발견물·입항 물음을 <b>그 안에서</b> 띄워 놓고 기다리므로,
+        // 거기 얹어 두면 그 창이 떠 있는 동안 층을 거둘 차례가 안 와 창 위로 비가 계속 내렸다.
+        _weatherTimer = new DispatcherTimerLite(TimeSpan.FromMilliseconds(100), SyncWeather);
+        _weatherTimer.Start();
+        Closed += (_, _) => _weatherTimer.Stop();
         Loaded += OnLoaded;
 
         // 창을 옮기면 그 위에 얹힌 도시 그림·커맨드 창도 같이 옮긴다 — 게임에서는 지도 안에
@@ -654,6 +661,9 @@ public sealed class ShipMapWindow : Window
         Deactivated += (_, _) =>
         {
             SyncOverlay();
+            // 비·눈 층도 곧바로 거둔다 — 팝업이라 그냥 두면 남의 앱이나 발견물·물음 창 위로 계속 내린다.
+            // 상태 시계(SyncWeather)에만 맡기면, 그 시계 안에서 창을 띄워 기다리는 동안에는 닿지 않는다.
+            _weatherPopup.IsOpen = false;
             FocusWatch.After("지도창 초점 잃음");
         };
         StateChanged += (_, _) => SyncOverlay();
@@ -1126,9 +1136,15 @@ public sealed class ShipMapWindow : Window
     /// 비·눈 층을 한 걸음 옮기고 띄울지 따진다 — 0.1초마다. 지도가 앞이고 오는 것이 있을 때만 뜬다.
     /// 사건 애니메이션이 도는 동안에는 원본도 안 그린다(<c>0x0048A9F0</c>) — 그 창이 앞이면 여기도 숨는다.
     /// </summary>
+    /// <remarks>
+    /// 원본의 비는 <b>지도 그림의 일부</b>라(<c>0x0048AA6E</c>) 발견물 그림이나 물음 상자가 뜨면 그 밑에 깔린다.
+    /// 여기서는 지도 위에 얹는 팝업이라 딸린 창보다도 위에 뜨므로, 딸린 창이 하나라도 보이면 층을 통째로 거둔다 —
+    /// 날씨는 그대로라 창이 닫히면 다시 내린다. 쪽지 창(배 속도 따위)은 사건 창이 아니라 세지 않는다.
+    /// </remarks>
     private void SyncWeather()
     {
         bool show = _weatherView.Busy && _started && IsActive
+                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible && w is not FleetLabelWindow)
                     && WindowState != WindowState.Minimized
                     && ReferenceEquals(_screen.Content, _mapRoot)
                     && _input.ActualWidth > 0 && _input.ActualHeight > 0;
@@ -1817,7 +1833,7 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>그 인물의 얼굴. 인물표를 못 읽었으면 null.</summary>
     private uint[]? PersonFace(int id) =>
-        _game.World?.Table.Find(id) is { } row ? _game.Faces?.TryGetBgra(row.Face, female: false) : null;
+        _game.World?.Table.Find(id) is { } row ? _game.PersonFace(row) : null;
 
     /// <summary>
     /// 해전 일기토(<c>0x0043A200</c> 6.4 → <c>0x004AA700(적장, 0, 0, −1)</c>) — 판 창 위에 결투 판을 연다.
@@ -1880,7 +1896,7 @@ public sealed class ShipMapWindow : Window
                  + player.LevelOf(Skill.Names[Skill.Sword]) * TavernMenu.MateSwordWeight;
         int theirs = (mate.Might + 1) / TavernMenu.MateEdge + mate.Sword * TavernMenu.MateSwordWeight;
 
-        var face = _game.Faces?.TryGetBgra(mate.Face, female: false);
+        var face = _game.MateFace(mate);
         if (mine <= theirs)
         {
             TalkDialog.Say(owner, face, "", TavernMenu.MateEager[dice.Next(TavernMenu.MateEager.Length)]);
@@ -2682,9 +2698,12 @@ public sealed class ShipMapWindow : Window
             _host.SeaBrightness = GameSettings.SeaBrightness;
             _host.SmoothClouds = GameSettings.SmoothClouds;
             _host.HiResSea = GameSettings.HiResSea;
+            _host.SeaFlowAmount = GameSettings.SeaFlowAmount;
             _host.PixelFilter = GameSettings.PixelFilter;
+            _host.ShipWake = GameSettings.ShipWake;
             _host.LandDetail = GameSettings.LandDetail;
-            _host.CitySprites = GameSettings.CitySprites;
+            // 도시 분리는 늘 켠다 — 도시 그림을 바탕 지형 위에 따로 얹어야 고해상도 바다·세부 질감·도트 필터가 그림을 안 건드린다.
+            _host.CitySprites = true;
             _started = true;
         }
 
@@ -2953,23 +2972,29 @@ public sealed class ShipMapWindow : Window
             GameSettings.SeaBrightness = v;
             _host.SeaBrightness = GameSettings.SeaBrightness;
         },
+        SeaFlowAmount = () => GameSettings.SeaFlowAmount,
+        SetSeaFlowAmount = v =>
+        {
+            GameSettings.SeaFlowAmount = v;
+            _host.SeaFlowAmount = GameSettings.SeaFlowAmount;
+        },
         HiResSeaOn = () => _host.HiResSea,
         SetHiResSea = on =>
         {
             _host.HiResSea = on;
             GameSettings.HiResSea = on;
         },
-        CitySpritesOn = () => _host.CitySprites,
-        SetCitySprites = on =>
-        {
-            _host.CitySprites = on;
-            GameSettings.CitySprites = on;
-        },
         LandDetailOn = () => _host.LandDetail,
         SetLandDetail = on =>
         {
             _host.LandDetail = on;
             GameSettings.LandDetail = on;
+        },
+        ShipWakeOn = () => _host.ShipWake,
+        SetShipWake = on =>
+        {
+            _host.ShipWake = on;
+            GameSettings.ShipWake = on;
         },
         PixelFilterOn = () => _host.PixelFilter,
         SetPixelFilter = on =>
@@ -3819,12 +3844,30 @@ public sealed class ShipMapWindow : Window
             CheckSeaEvent();
 
             // 서 있는 재해가 날마다 해를 끼친다 — 쥐는 식량을, 병은 선원을(0x00474DA0).
+            // 보급 문턱(사흘치 · 바닥) 말은 하루치를 먹은 PassDay 에서만 셌다 — 쥐가 갉아 먹어 문턱을 넘으면
+            // 아무 말도 없었다. 쥐가 먹은 뒤에도 같은 잣대로 한 번 더 본다.
+            int foodBefore = _game.Player.SupplyUnitsOf(SupplyKind.Food);
             SeaEvents.Ail(_game.Player, _game.Random, MateSheetAt);
+            TellRatFood(foodBefore);
             TellCrewShort();
 
             if (CrewGone()) return;
             CheckSeaDailyEvent();
         }
+    }
+
+    /// <summary>
+    /// 쥐가 식량을 갉아 먹어 문턱을 넘었으면 보급 말을 낸다 — 「식량이 얼마 남지 않았습니다」(사흘치 밑) ·
+    /// 「바닥을 드러내고 있습니다」(0). 하루치 셈(<see cref="SeaEvents.PassDay"/>)과 같은 잣대다.
+    /// </summary>
+    private void TellRatFood(int before)
+    {
+        int after = _game.Player.SupplyUnitsOf(SupplyKind.Food);
+        if (after >= before) return;
+        int warn = Supply.DailyUse(_game.Player.Crew) * Supply.LowDays;
+        bool low = before >= warn && after < warn && after > 0;
+        bool empty = before > 0 && after <= 0;
+        if (low || empty) Tell(new SeaEvents.Day(false, low, false, empty, 0, 0, 0));
     }
 
     /// <summary>
@@ -3863,6 +3906,49 @@ public sealed class ShipMapWindow : Window
         CheckSponsorFallen(city);
         // 마을에 닿으면 항해가 끝난다 — 쥐·병이 풀린다. 입항에서는 부관이 말하지 않는다.
         EndVoyage(speak: false);
+        // 모드 「자동 보급」 — 배로 항구에 들었을 때만.
+        if (GameSettings.AutoSupply && !_host.IsOnLand) AutoSupply(city);
+    }
+
+    /// <summary>자동 보급이 맞추는 날수.</summary>
+    private const int AutoSupplyDays = 10;
+
+    /// <summary>
+    /// 물·식량 가운데 10일분이 안 되는 것을 10일분까지 산다 — 보급 창 「10일분」과 같은 셈(선원 수만큼의 통)이고,
+    /// 값은 그 항구 시세(물이 공짜인 항구는 물값 0)다. 용량·중량·소지금이 모자라면 들어가는 데까지만 싣는다.
+    /// 산 것은 아래 띠로 알린다.
+    /// </summary>
+    private void AutoSupply(int city)
+    {
+        var p = _game.Player;
+        if (p.Ships.Count == 0 || p.Crew <= 0) return;
+        int need = Supply.BarrelsForDays(AutoSupplyDays, p.Crew);
+        int rate = _game.Rates.Of(city), flags = _game.CityRows?.FlagsOf(city) ?? 0;
+
+        int room = p.Capacity - p.LoadedBarrels;
+        int free = p.Tonnage - p.LoadedWeight;
+        int gold = p.Gold, spent = 0;
+        var bought = new List<string>();
+        foreach (var kind in new[] { SupplyKind.Water, SupplyKind.Food })
+        {
+            var supply = Supply.Of(kind);
+            int have = p.SupplyOf(kind);
+            if (have >= need) continue;
+            int price = supply.PriceAt(rate, flags);
+            int add = need - have;
+            add = Math.Min(add, Math.Max(0, room));
+            if (supply.UnitWeight > 0) add = Math.Min(add, Math.Max(0, free) / supply.UnitWeight);
+            if (price > 0) add = Math.Min(add, (gold - spent) / price);
+            if (add <= 0) continue;
+            p.SetSupply(kind, have + add);
+            room -= add;
+            free -= add * supply.UnitWeight;
+            spent += add * price;
+            bought.Add($"{supply.Name} {add}통");
+        }
+        if (bought.Count == 0) return;
+        p.SetGold(gold - spent);
+        Say($"자동 보급: {string.Join(" · ", bought)} (금화 {spent}닢)");
     }
 
     private bool EndVoyage(bool speak = true)
@@ -4167,7 +4253,7 @@ public sealed class ShipMapWindow : Window
         int nation = template?.Nation ?? -1;
         var side = SideOf(nation, template?.Job ?? 0);
         string nationName = _game.Nations?.Find(nation)?.Name ?? "";
-        var face = _game.Faces?.TryGetBgra(who.Face, female: false);
+        var face = _game.PersonFace(who);
         var aide = _game.AideFace;
         // 운세 칸(0x00477FE0) — 별자리·혈액형이 밑표(얼굴·혈액형·나라)에서 나온다.
         var fortune = FleetRaid.FortuneOf(template?.Face ?? 0, template?.Blood ?? 0, nation);
@@ -4992,8 +5078,7 @@ public sealed class ShipMapWindow : Window
                                        scale: bandScale, nation: bandNation)
             {
                 MyCulture = _game.MyCulture,
-                FoeFace = _game.PersonTemplates?.Find(LandFieldFoes.FirstLeader + at) is { } chief
-                    ? _game.Faces?.TryGetBgra(chief.Face, female: false) : null,
+                FoeFace = _game.PersonFace(LandFieldFoes.FirstLeader + at),
             };
             if (LandBattleScene.Run(this, _game, field, roll)) return;
             if (!field.Wiped) return;
@@ -6016,8 +6101,7 @@ public sealed class ShipMapWindow : Window
     private uint[]? MateFace()
     {
         string mate = _game.Player.MateAt(0);
-        if (mate.Length > 0 && _game.MateInfo(mate) is { Face: >= 0 and < 0xFFFF } who
-            && _game.Faces?.TryGetBgra(who.Face, female: false) is { } face)
+        if (mate.Length > 0 && _game.MateInfo(mate) is { } who && _game.MateFace(who) is { } face)
             return face;
         return _game.Faces?.TryGetBgra(SailorFace, female: false);
     }
@@ -6177,7 +6261,7 @@ public sealed class ShipMapWindow : Window
                                         Environment.TickCount);
 
         DuelDialog.Show(this, duel, dice,
-                        _game.Faces?.TryGetBgra(who.Face, female: false),
+                        _game.PersonFace(who),
                         _game.Fighters, foeSet: 1,
                         myFace: _game.Faces?.TryGetBgra(
                             PortraitAges.At(_game.Player.Face, _game.Player.Age,
@@ -6515,7 +6599,7 @@ public sealed class ShipMapWindow : Window
                 string name = _game.CityName(city);
                 string mate = player.MateAt(CityCoordinates.SurveyorSlot);
                 if (mate.Length > 0 && player.MateInfoOf(mate) is { } who)
-                    TalkDialog.Say(this, _game.Faces?.TryGetBgra(who.Face, female: false), "",
+                    TalkDialog.Say(this, _game.MateFace(who), "",
                                    $"{name}{NameToken.Of(name, 9)} {spot.Words}");
                 else NoticeDialog.Show(this, $"{name}  {spot.Words}");
             }

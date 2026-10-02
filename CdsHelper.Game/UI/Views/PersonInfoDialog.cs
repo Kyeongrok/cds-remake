@@ -104,7 +104,9 @@ internal sealed class PersonInfoDialog : InfoDialog
         head.Children.Add(BlackLine($"  매  력/{Ability.Display(who.Charm),4}"));
 
         var top = new StackPanel { Orientation = Orientation.Horizontal };
-        if (Face(faces?.TryGetBgra(who.Face, female: false)) is { } portrait)
+        // 신상에는 이름과 얼굴 번호뿐이라 이름으로 인물을 되짚어 여자 얼굴인지 가른다.
+        bool female = PersonTable.Open().People.Any(r => r.Female && r.Name == who.Name);
+        if (Face(faces?.TryGetBgra(who.Face, female)) is { } portrait)
             top.Children.Add(portrait);
         top.Children.Add(head);
 

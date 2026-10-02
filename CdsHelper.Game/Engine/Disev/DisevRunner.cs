@@ -1333,8 +1333,7 @@ public sealed class DisevRunner
         {
             int sword = row.Skills.Length > Support.Local.Models.Skill.Sword ? row.Skills[Support.Local.Models.Skill.Sword] : 0;
             foe = new Town.Duel.Fighter(row.Name, row.Stats[0], row.Stats[2], sword, row.Stats[4], 0, 0);
-            face = _game.PersonTemplates?.Find(person) is { } t
-                ? _game.Faces?.TryGetBgra(t.Face, female: false) : null;
+            face = _game.PersonFace(person);
         }
 
         // 대본 일기토는 판 종류 2 라 <b>부관을 대신 내보낼지 묻는다</b>(0x004A8680 의 종류 <= 2).
@@ -1785,8 +1784,7 @@ public sealed class DisevRunner
         if (args["Person"] is { } p)
         {
             int id = p.GetValue<int>();
-            var face = _game.PersonTemplates?.Find(id) is { } person
-                ? _game.Faces?.TryGetBgra(person.Face, female: false) : null;
+            var face = _game.PersonFace(id);
             return face != null ? (face, null) : (MissingFace, $"[초상화 없음] 인물 {id}");
         }
         if (args["Sponsor"] is { } s)
@@ -1833,9 +1831,7 @@ public sealed class DisevRunner
         if (_game.SpeakerNames?.Find(speaker) is not { } who) return null;
         if (who.Sponsor >= 0 && _game.Sponsors?.Sponsors.FirstOrDefault(s => s.Index == who.Sponsor) is { Name.Length: > 0 } sponsor)
             return _game.Faces?.TryGetBgra(sponsor.Face, sponsor.IsFemale);
-        if (who.Person >= 0 && _game.PersonTemplates?.Find(who.Person) is { } person)
-            return _game.Faces?.TryGetBgra(person.Face, female: false);
-        return null;
+        return who.Person >= 0 ? _game.PersonFace(who.Person) : null;
     }
 
     /// <summary>

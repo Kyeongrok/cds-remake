@@ -44,10 +44,8 @@ public sealed class ModDialog : GameWindow
         /// <summary>고해상도 바다.</summary>
         public Func<bool> HiResSeaOn { get; init; } = () => false;
         public Action<bool> SetHiResSea { get; init; } = _ => { };
-
-        /// <summary>도시 분리.</summary>
-        public Func<bool> CitySpritesOn { get; init; } = () => false;
-        public Action<bool> SetCitySprites { get; init; } = _ => { };
+        public Func<double> SeaFlowAmount { get; init; } = () => 0.5;
+        public Action<double> SetSeaFlowAmount { get; init; } = _ => { };
 
         /// <summary>뭍 세부 질감.</summary>
         public Func<bool> LandDetailOn { get; init; } = () => false;
@@ -56,6 +54,10 @@ public sealed class ModDialog : GameWindow
         /// <summary>도트 확대 필터.</summary>
         public Func<bool> PixelFilterOn { get; init; } = () => false;
         public Action<bool> SetPixelFilter { get; init; } = _ => { };
+
+        /// <summary>배 항적 — 항적·그림자·출렁임.</summary>
+        public Func<bool> ShipWakeOn { get; init; } = () => false;
+        public Action<bool> SetShipWake { get; init; } = _ => { };
 
         /// <summary>부드러운 구름.</summary>
         public Func<bool> SmoothCloudsOn { get; init; } = () => true;
@@ -170,6 +172,12 @@ public sealed class ModDialog : GameWindow
             + " 고르기 창 없이 「도망」을 고릅니다. 짐승·독충은 그대로 묻습니다."
             + " 도망 성공 여부는 원본 그대로 굴리므로 실패하면 싸움이 이어집니다."));
 
+        // 자동 보급 — 항구에 들면 물·식량을 10일분까지.
+        rows.Children.Add(Toggle("자동 보급", GameSettings.AutoSupply,
+            on => GameSettings.AutoSupply = on,
+            "원본에 없는 것입니다 — 배로 항구에 들면 물이나 식량이 10일분이 안 될 때 10일분까지 저절로 사 싣습니다."
+            + " 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다. 산 것은 아래 띠로 알립니다."));
+
         // 배 빌림 묻기 — 원본은 배가 있으면 계약 자리에서 늘 묻는다(0x00410724).
         rows.Children.Add(Toggle("배 빌림 묻기", GameSettings.AskLendShips,
             on => GameSettings.AskLendShips = on,
@@ -201,20 +209,18 @@ public sealed class ModDialog : GameWindow
 
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
         lab.Children.Add(SeaControls(options));
-        lab.Children.Add(Toggle("고해상도 바다", options.HiResSeaOn(), options.SetHiResSea,
-            "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로"
-            + " 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다."
-            + " 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다."));
-        lab.Children.Add(Toggle("도시 분리", options.CitySpritesOn(), options.SetCitySprites,
-            "도시 칸을 바탕 지형으로 깔고, 지형 타일에서 뽑아 둔 도시 그림을 그 위에 따로 얹습니다 — 겉모습은 원본과 같습니다."
-            + " 고해상도 바다·뭍 세부 질감·도트 필터가 도시 그림을 건드리지 않게 됩니다. 아직 안 선 도시는 그림을 얹지 않습니다."));
+        lab.Children.Add(HiResSeaControls(options));
         lab.Children.Add(Toggle("뭍 세부 질감", options.LandDetailOn(), options.SetLandDetail,
             "지도를 키웠을 때 원본 도트는 그대로 두고, 지형마다 화면 해상도의 잔무늬를 얇게 얹습니다 —"
             + " 사막은 모래 결, 산은 바위 결, 숲은 잎 덩이, 평지는 풀 결. 도시·발견물 그림과 물은 건드리지 않습니다."
             + " 키울수록 짙어집니다."));
         lab.Children.Add(Toggle("도트 확대 필터", options.PixelFilterOn(), options.SetPixelFilter,
             "지도를 키웠을 때(칸이 화면 네 점보다 클 때) 원본 도트의 대각선 계단을 사선으로 깎아 매끈하게 그립니다."
-            + " 바다·뭍·해안·도시 그림 모두에 듭니다. 바둑판 잔무늬는 그대로 둡니다."));
+            + " 바다·뭍·해안·도시 그림과 내 배 그림 모두에 듭니다. 바둑판 잔무늬는 그대로 둡니다."));
+        lab.Children.Add(Toggle("배 항적", options.ShipWakeOn(), options.SetShipWake,
+            "원본에 없는 덧그림입니다 — 바다에 뜬 내 배 뒤로 지나온 길을 따라 물거품 항적이 벌어지며 스러지고,"
+            + " 배 밑에 옅은 그림자가 깔리고 배가 살짝 출렁입니다. 빠를수록 항적이 길고, 서면 사라집니다."
+            + " 켜 둔 동안은 화면을 계속 다시 그립니다. 남의 배와 뭍의 말에는 안 듭니다."));
         lab.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
             "원본 구름은 한 점 걸러 찍은 바둑판 무늬로 반투명을 흉내 내서, 지도를 키우면 격자가 그대로 커집니다."
             + " 켜면 그 무늬를 참 반투명으로 풀어 매끈하게 늘려 그립니다. 비치는 정도는 원본과 같습니다."));
@@ -455,6 +461,45 @@ public sealed class ModDialog : GameWindow
         line.Children.Add(slider);
         line.Children.Add(value);
         Watch(line, "바다 밝기", "바다 입체 효과의 밝기입니다. 100% 가 기본이고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(line);
+        return group;
+    }
+
+    /// <summary>고해상도 바다 켜기와 그 밑의 해류 결 막대. 끄면 막대도 흐려진다.</summary>
+    private UIElement HiResSeaControls(Options options)
+    {
+        var box = Toggle("고해상도 바다", options.HiResSeaOn(), options.SetHiResSea,
+            "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로"
+            + " 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다."
+            + " 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다.");
+
+        var value = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
+        var slider = new Slider
+        {
+            Minimum = 0, Maximum = 1, TickFrequency = 0.05, IsSnapToTickEnabled = true,
+            Width = 150, Margin = new Thickness(18, 0, 0, 0),
+            IsEnabled = box.IsChecked == true,
+            Value = Math.Clamp(options.SeaFlowAmount(), 0, 1),
+        };
+        void ShowValue() => value.Text = $"{slider.Value:P0}";
+        slider.ValueChanged += (_, _) => { ShowValue(); options.SetSeaFlowAmount(slider.Value); };
+        box.Checked += (_, _) => slider.IsEnabled = true;
+        box.Unchecked += (_, _) => slider.IsEnabled = false;
+        ShowValue();
+
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 2) };
+        line.Children.Add(new TextBlock
+        {
+            Text = "해류 결", Width = 64, Foreground = GameUi.Text, Margin = new Thickness(18, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        line.Children.Add(slider);
+        line.Children.Add(value);
+        Watch(line, "해류 결", "고해상도 바다에서 해류를 보이는 결과 띠의 짙기입니다. 해류가 흐르는 쪽으로 결이 늘어지고 셀수록 또렷합니다."
+            + " 0% 면 잔물결만 해류를 따라 흐르고 결은 안 섭니다. 고해상도 바다를 켜야 조절할 수 있습니다.");
 
         var group = new StackPanel();
         group.Children.Add(box);

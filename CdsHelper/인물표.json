@@ -11418,6 +11418,7 @@
       "Wait": 0,
       "Fee": 100,
       "Face": 134,
+      "Female": true,
       "Stats": [
         41,
         71,
@@ -12615,6 +12616,7 @@
       "Wait": 119,
       "Fee": 100,
       "Face": 138,
+      "Female": true,
       "Stats": [
         71,
         46,
@@ -13243,6 +13245,7 @@
       "Wait": 0,
       "Fee": 100,
       "Face": 94,
+      "Female": true,
       "Stats": [
         36,
         86,
