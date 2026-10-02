@@ -2270,7 +2270,8 @@ public sealed class ShipMapWindow : Window
     ///   0045F8F2  YES 면 C:SAVEDATA.CDS · C:SAVEDATA.TMP · C:ACCDATA.CDS 를 지우고 만들기로
     /// </code>
     ///
-    /// <b>지우는 것은 우리 세이브뿐이다</b>(<c>%APPDATA%\CdsHelper\SAVEDATA.CDS</c>).
+    /// <b>원본의 「삭제한다」 줄은 「남겨 둔다」로 바꿨고 세이브를 지우지 않는다</b> — 원본과 다르다. 지우는 것은 「은퇴시킨다」뿐이고 그때도
+    /// 우리 세이브만이다(<c>%APPDATA%\CdsHelper\SAVEDATA.CDS</c> 와 지난 칸·자동저장).
     /// 게임 폴더의 SAVEDATA.CDS 는 사람이 진짜로 놀던 것이라 우리는 읽기만 한다 —
     /// 그것을 지우면 되돌릴 길이 없다.
     ///
@@ -2299,7 +2300,7 @@ public sealed class ShipMapWindow : Window
             int at;
             try
             {
-                at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "삭제한다"], "신규작성을 중지한다",
+                at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "남겨 둔다"], "신규작성을 중지한다",
                                       dim: room ? -1 : 0, under: held);
             }
             finally { held.Close(); }
@@ -2364,14 +2365,12 @@ public sealed class ShipMapWindow : Window
 
             if (at != 1) return false;      // 신규작성을 중지한다 · ESC
 
-            if (!ConfirmDialog.Ask(this, $"[{name}]{GameUi.Josa(name, "을", "를")} 삭제합니다. 좋습니까?"))
-                return false;
-
-            GameSave.DeleteAutoSavesOf(saved);
-            if (GameSave.Delete()) return true;
-
-            NoticeDialog.Show(this, "적어 둔 것을 지우지 못했습니다.");
-            return false;
+            // 원본은 여기서 세이브를 지운다(0x0045F8F2) — 한 파일뿐이라 새 캐릭터가 그 자리를 써야 했다.
+            // 우리는 지난 칸을 남기므로 <b>지우지 않는다</b>: 누적 캐릭터로 안 올라가니 다음 판에 나올 일도 없고,
+            // LOAD GAME · CONTINUE 목록에서 다시 불러 이어 할 수 있다. 새 캐릭터가 저장하면 「가장 새 것」 자리만 넘어간다.
+            return ConfirmDialog.Ask(this,
+                $"[{name}]{GameUi.Josa(name, "을", "를")} 그만두고 새 캐릭터를 만듭니다. "
+                + "저장한 데이터는 지우지 않고 남겨 둡니다. 좋습니까?");
         }
     }
 

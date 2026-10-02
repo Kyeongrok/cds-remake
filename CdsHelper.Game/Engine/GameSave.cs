@@ -73,7 +73,7 @@ public static class GameSave
     public const int HullNamesFrom = 31;
 
     /// <summary>
-    /// 적어 둔 것을 지운다 — 새 놀이에서 <b>삭제한다</b> 를 고를 때다.
+    /// 적어 둔 것을 지운다 — 은퇴시킬 때다(원본은 새 놀이의 「삭제한다」에서도 지운다 — 우리는 그 줄을 「남겨 둔다」로 바꿨다).
     /// </summary>
     /// <remarks>
     /// 게임은 <c>0x0045F8F2</c> 에서 <c>C:SAVEDATA.CDS</c> · <c>C:SAVEDATA.TMP</c> ·
@@ -562,6 +562,21 @@ public static class GameSave
             var dir = System.IO.Path.GetDirectoryName(file);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
             string json = JsonSerializer.Serialize(data, Pretty);
+
+            // 「가장 새 것」 자리를 덮기 전에, 그 자리에 있던 것이 지난 칸에 없으면 한 칸으로 옮겨 둔다 —
+            // 칸이 생기기 전에 적은 세이브나, 딴 캐릭터를 남겨 둔 채 새 캐릭터가 처음 적을 때 앞의 것이 사라지지 않게.
+            if (string.IsNullOrEmpty(path) && Load() is { } before
+                && !Slots(ManualFiles()).Any(s => s.Save.SavedAt == before.SavedAt))
+            {
+                try
+                {
+                    Directory.CreateDirectory(ManualDirectory);
+                    File.Copy(Path, System.IO.Path.Combine(
+                        ManualDirectory, $"SAVE_{before.SavedAt:yyyyMMdd_HHmmss_fff}.CDS"), overwrite: true);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            }
+
             File.WriteAllText(file, json);
 
             // 손으로 적은 것이면 지난 칸으로도 한 벌 남긴다 — 다섯 칸을 넘으면 가장 오래된 것이 빠진다.
