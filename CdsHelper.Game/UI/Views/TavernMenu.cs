@@ -2080,7 +2080,13 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 hired = true;
             }
             if (!hired)
+            {
+                // 거절당하면 닻 소리(0x1D)가 난다 — 놀아 본 사람의 기억으로 넣었다. 원본에서 그 소리를 직접 트는
+                // 자리(0x0040E0B8 띠 알림 · 0x0042ABAC · 0x0049F205 부대배치)는 이 길(0x00453600)에 없고, 설득
+                // 애니메이션도 소리 없이(-1) 돈다(0x004A63A0) — 어디서 나는지는 못 짚었다.
+                _game.Sfx?.Play(SoundBank.AnchorPart);
                 TalkDialog.Say(_view, face, "", "시시한 배를 탈 정도로 바보는 아니네.");
+            }
         }
 
         if (hired)

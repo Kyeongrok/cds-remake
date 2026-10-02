@@ -1884,6 +1884,26 @@ public sealed class Player
         return true;
     }
 
+    /// <summary>
+    /// 발견한 적이 없는 것으로 되돌린다 — <b>개발 창</b>의 발견물 탭이 체크를 풀 때 쓴다. 놀이에는 이런 길이 없다.
+    /// </summary>
+    /// <remarks>
+    /// 찾은 날·찾은 사람, 자리 사건 매듭, 보고(발표)한 기록까지 같이 지운다. 이미 받은 명성·보수·아이템과
+    /// 계약에 얹힌 발견물 칸은 안 건드린다.
+    /// </remarks>
+    public bool Undiscover(int discovery)
+    {
+        if (!_found.Remove(discovery)) return false;
+        _foundOn.Remove(discovery);
+        _foundBy.Remove(discovery);
+        _settled.Remove(discovery);
+        _unresolved.Remove(discovery);
+        _announced.Remove(discovery);
+        _announcedOn.Remove(discovery);
+        _announcedBy.Remove(discovery);
+        return true;
+    }
+
     private readonly Dictionary<int, string> _foundBy = [];
     private readonly Dictionary<int, string> _announcedBy = [];
 

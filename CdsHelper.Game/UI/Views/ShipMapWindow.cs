@@ -2369,8 +2369,7 @@ public sealed class ShipMapWindow : Window
             // 우리는 지난 칸을 남기므로 <b>지우지 않는다</b>: 누적 캐릭터로 안 올라가니 다음 판에 나올 일도 없고,
             // LOAD GAME · CONTINUE 목록에서 다시 불러 이어 할 수 있다. 새 캐릭터가 저장하면 「가장 새 것」 자리만 넘어간다.
             return ConfirmDialog.Ask(this,
-                $"[{name}]{GameUi.Josa(name, "을", "를")} 그만두고 새 캐릭터를 만듭니다. "
-                + "저장한 데이터는 지우지 않고 남겨 둡니다. 좋습니까?");
+                $"[{name}]{GameUi.Josa(name, "을", "를")} 남겨두고 새 캐릭터를 만듭니다. 좋습니까?");
         }
     }
 
@@ -3051,6 +3050,9 @@ public sealed class ShipMapWindow : Window
         // 해를 되돌렸으면 인물 세상을 다시 연다 — 세상은 앞으로만 간다.
         YearChanged = back => { if (back) _game.ResetWorld(); },
         Quest = () => QuestDialog.Show(this, _game),
+        // 「발견물」 탭 — 체크로 찾은 것을 바꿨으면 지도의 발견물·유적 그림을 다시 맞춘다.
+        Discoveries = _game.Discoveries?.Table,
+        DiscoveriesChanged = () => HideCities(),
         // 게임에는 없는 것이라 해상 커맨드에서 개발 창으로 옮겼다(fb-ui-21). 지도를 Shift+오른쪽 클릭해
         // 바로 찍는 길은 그대로다.
         AutoSail = () =>

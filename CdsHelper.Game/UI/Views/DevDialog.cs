@@ -61,7 +61,15 @@ public sealed class DevDialog : GameWindow
         /// <summary>해를 바꾼 뒤 — 되돌렸으면(<c>true</c>) 앞으로만 가는 것들을 다시 연다.</summary>
         public Action<bool>? YearChanged { get; init; }
 
+        /// <summary>발견물 표 — 「발견물」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
+        public DiscoveryTable? Discoveries { get; init; }
+
+        /// <summary>발견물 체크를 바꾸고 창을 닫은 뒤 — 지도의 발견물 그림을 다시 맞춘다.</summary>
+        public Action? DiscoveriesChanged { get; init; }
     }
+
+    /// <summary>발견물 탭에서 체크를 하나라도 바꿨는지.</summary>
+    private bool _findsChanged;
 
     private DevDialog(Player player, Options options)
     {
@@ -242,7 +250,15 @@ public sealed class DevDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(rows);
+        if (options.Discoveries is { } table)
+        {
+            var finds = FindsPage(table);
+            stack.Children.Add(Tabs(("일반", rows), ("발견물", finds)));
+            stack.Children.Add(rows);
+            stack.Children.Add(finds);
+            Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
+        }
+        else stack.Children.Add(rows);
         stack.Children.Add(buttons);
 
         Content = new Border
@@ -256,6 +272,145 @@ public sealed class DevDialog : GameWindow
 
         Sync();
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+    }
+
+    /// <summary>탭 머리 — 누른 쪽 판만 보이고 머리는 밝게 선다(<see cref="ModDialog"/> 와 같은 모양).</summary>
+    private static FrameworkElement Tabs(params (string Text, FrameworkElement Page)[] pages)
+    {
+        var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
+        var heads = new List<(Border Head, FrameworkElement Page)>();
+
+        void Select(FrameworkElement page)
+        {
+            foreach (var (head, p) in heads)
+            {
+                bool on = ReferenceEquals(p, page);
+                p.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+                head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
+                ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
+            }
+        }
+
+        foreach (var (text, page) in pages)
+        {
+            var head = new Border
+            {
+                BorderBrush = GameUi.Edge,
+                BorderThickness = new Thickness(1, 1, 1, 0),
+                Padding = new Thickness(16, 4, 16, 4),
+                Margin = new Thickness(0, 0, 4, 0),
+                Cursor = Cursors.Hand,
+                Child = new TextBlock { Text = text, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15 },
+            };
+            head.MouseLeftButtonDown += (_, _) => Select(page);
+            heads.Add((head, page));
+            bar.Children.Add(head);
+        }
+        Select(pages[0].Page);
+        return bar;
+    }
+
+    /// <summary>
+    /// 「발견물」 탭 — 발견물을 죄다 늘어놓고, 체크하면 <b>발견한 것으로</b>, 풀면 안 찾은 것으로 한다.
+    /// </summary>
+    /// <remarks>
+    /// 놀이에는 없는 판이다. 발견물이 있어야 볼 수 있는 것(보고 · 연표 · 백과사전 · 발견으로 켜지는 교역품)을
+    /// 시험하려고 둔다. 체크는 찾은 것으로 적고(<see cref="Player.Discover"/>) 그 자리 사건도 매듭짓는다
+    /// (<see cref="Player.Settle"/>) — 지도에서 그 자리를 지나도 발견 장면이 다시 안 뜬다.
+    /// <b>보고는 안 한다</b> — 명성·보수·아이템은 왕궁에 보고해야 든다. 체크를 풀면 보고한 기록까지 지운다
+    /// (<see cref="Player.Undiscover"/>).
+    /// </remarks>
+    private FrameworkElement FindsPage(DiscoveryTable table)
+    {
+        var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 560 };
+        var count = new TextBlock { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
+        var find = Field();
+        find.Width = 180;
+        find.TextAlignment = TextAlignment.Left;
+        var list = new StackPanel();
+        var boxes = new List<(CheckBox Box, DiscoveryTable.Record Row)>();
+        bool bulk = false;
+
+        void Count() => count.Text = $"  {_player.Discoveries.Count} / {boxes.Count}";
+
+        foreach (var row in table.Discoveries)
+        {
+            if (row.Name.Length == 0) continue;
+            int id = row.Id;
+            var box = new CheckBox
+            {
+                Content = $"{id,3}  {row.Name}" + (row.CategoryName.Length > 0 ? $"  [{row.CategoryName}]" : "")
+                          + (_player.Announced.Contains(id) ? "  (보고함)" : ""),
+                IsChecked = _player.HasFound(id),
+                Foreground = GameUi.Text,
+                FontSize = 14,
+                Margin = new Thickness(0, 2, 0, 2),
+                VerticalContentAlignment = VerticalAlignment.Center,
+            };
+            box.Checked += (_, _) =>
+            {
+                if (_player.Discover(id)) { _player.Settle(id); _findsChanged = true; }
+                if (!bulk) Count();
+            };
+            box.Unchecked += (_, _) =>
+            {
+                if (_player.Undiscover(id)) _findsChanged = true;
+                if (!bulk) Count();
+            };
+            boxes.Add((box, row));
+            list.Children.Add(box);
+        }
+
+        void All(bool on)
+        {
+            bulk = true;
+            // 찾기로 걸러 보이는 줄만 바꾼다 — 가려진 줄까지 건드리면 뭘 바꿨는지 알 수 없다.
+            foreach (var (box, _) in boxes)
+                if (box.Visibility == Visibility.Visible) box.IsChecked = on;
+            bulk = false;
+            Count();
+        }
+
+        find.TextChanged += (_, _) =>
+        {
+            string want = find.Text.Trim();
+            foreach (var (box, row) in boxes)
+                box.Visibility = want.Length == 0 || row.Name.Contains(want, StringComparison.OrdinalIgnoreCase)
+                                 || row.CategoryName.Contains(want) || row.Id.ToString() == want
+                    ? Visibility.Visible : Visibility.Collapsed;
+        };
+
+        var top = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+        top.Children.Add(new TextBlock
+        {
+            Text = "찾기", Width = 40, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        top.Children.Add(find);
+        top.Children.Add(GameUi.PushButton("모두 체크", () => All(true), 100));
+        top.Children.Add(GameUi.PushButton("모두 해제", () => All(false), 100));
+        top.Children.Add(count);
+        page.Children.Add(top);
+        page.Children.Add(new Border
+        {
+            BorderBrush = GameUi.Edge,
+            BorderThickness = new Thickness(1),
+            Child = new ScrollViewer
+            {
+                Height = 420,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Padding = new Thickness(8, 4, 8, 4),
+                Content = list,
+            },
+        });
+        page.Children.Add(new TextBlock
+        {
+            Text = "체크하면 발견한 것으로 적습니다(보고는 따로 해야 합니다). 풀면 보고한 기록까지 지웁니다.",
+            Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        Count();
+        return page;
     }
 
     /// <summary>다운로드한 CDSX 에셋이 있는 실행 폴더를 탐색기로 연다.</summary>
