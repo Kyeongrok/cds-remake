@@ -97,8 +97,7 @@ public sealed class PersonMoveDialog : GameWindow
                 return null;
             }
 
-            image = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                        PixelFormats.Bgra32, null, pixels, Portraits.Width * 4);
+            image = Portraits.Bitmap(pixels);
             image.Freeze();
             _cache[key] = image;
             return image;

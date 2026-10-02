@@ -369,8 +369,7 @@ public sealed class HintListDialog : GameWindow
         if (bgra == null || bgra.Length < Portraits.Width * Portraits.Height)
             return new Border { Width = FaceWidth, Height = FaceHeight, Margin = margin };
 
-        var bitmap = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                         PixelFormats.Bgra32, null, bgra, Portraits.Width * 4);
+        var bitmap = Portraits.Bitmap(bgra);
         bitmap.Freeze();
         var image = new Image
         {
@@ -380,7 +379,7 @@ public sealed class HintListDialog : GameWindow
             Stretch = Stretch.Fill,
             Margin = margin,
         };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
         return image;
     }
 

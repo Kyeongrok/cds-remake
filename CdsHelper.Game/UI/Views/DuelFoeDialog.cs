@@ -272,12 +272,11 @@ internal sealed class DuelFoeDialog : GameWindow
         };
         if (faces?.TryGetBgra(who.Face, who.Female) is not { } bgra) return box;
 
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, bgra, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(bgra);
         bmp.Freeze();
 
         var image = new Image { Source = bmp, Width = FaceWidth, Height = FaceHeight };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
         box.Child = image;
         return box;

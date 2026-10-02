@@ -133,6 +133,43 @@ public static class PortraitImport
         return bgra;
     }
 
+    /// <summary>그대로 넣는 그림의 가장 큰 배수 — 80x96 의 열두 배(960x1152)까지다.</summary>
+    public const int MaxHdScale = 12;
+
+    /// <summary>
+    /// 같은 <paramref name="crop"/> 자리를 <b>줄이지 않고</b> 뜬다 — 원본 점 하나가 그림 점 하나가 되는 크기다.
+    /// </summary>
+    /// <remarks>
+    /// 네모의 비율(5:6)은 지킨다. 원본이 아주 크면 <see cref="MaxHdScale"/> 배에서 멈추고, 원본이 80x96 보다
+    /// 작으면 80x96 으로 뜬다(그때도 색은 안 줄인다).
+    /// </remarks>
+    public static BitmapSource ShapeHd(BitmapSource source, Crop crop)
+    {
+        double zoom = Math.Clamp(crop.Zoom, MinZoom, MaxZoom);
+
+        // 폭 5n · 높이 6n — n 이 16 이면 80x96 이다.
+        int n = (int)Math.Clamp(Math.Round(16 / zoom), 16, 16 * MaxHdScale);
+        int w = 5 * n, h = 6 * n;
+        double scale = zoom * n / 16;
+
+        var box = new Rect(Math.Round(w / 2.0 - crop.CenterX * scale),
+                           Math.Round(h / 2.0 - crop.CenterY * scale),
+                           source.PixelWidth * scale, source.PixelHeight * scale);
+
+        var canvas = new DrawingVisual();
+        RenderOptions.SetBitmapScalingMode(canvas, BitmapScalingMode.HighQuality);
+        using (var draw = canvas.RenderOpen())
+        {
+            draw.DrawRectangle(Brushes.Black, null, new Rect(0, 0, w, h));
+            draw.DrawImage(source, box);
+        }
+
+        var shot = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
+        shot.Render(canvas);
+        shot.Freeze();
+        return shot;
+    }
+
     /// <summary>
     /// 80x96 BGRA 를 게임 팔레트 색인 7,680바이트로 줄인다.
     /// </summary>
@@ -191,8 +228,12 @@ public static class PortraitImport
     /// <summary>
     /// 그 자리에 초상화를 넣는다. <paramref name="face"/> 가 지금 장수와 같으면 뒤에 붙인다.
     /// </summary>
+    /// <param name="hd">
+    /// 줄이지 않은 그림(<see cref="ShapeHd"/>). 주면 벌 옆에 따로 적어 두고 놀이가 그것을 건다 —
+    /// 벌에는 <paramref name="indexed"/> 가 번호 자리를 잡으러 그대로 들어간다. 안 주면 그 자리의 옛 그림을 지운다.
+    /// </param>
     /// <returns>넣은 얼굴 번호. 못 넣었으면 −1 이고 까닭은 <see cref="LastError"/> 다.</returns>
-    public static int Put(bool female, int face, byte[] indexed)
+    public static int Put(bool female, int face, byte[] indexed, BitmapSource? hd = null)
     {
         LastError = "";
 
@@ -212,7 +253,30 @@ public static class PortraitImport
             LastError = Ls12Writer.LastError;
             return -1;
         }
+
+        PortraitStore.DropHd(female, face);
+        if (hd != null && !SaveHd(female, face, hd)) return -1;
         return face;
+    }
+
+    /// <summary>줄이지 않은 그림을 벌 옆에 PNG 로 적는다.</summary>
+    private static bool SaveHd(bool female, int face, BitmapSource hd)
+    {
+        try
+        {
+            Directory.CreateDirectory(PortraitStore.HdDirectory);
+
+            var png = new PngBitmapEncoder();
+            png.Frames.Add(BitmapFrame.Create(hd));
+            using var file = File.Create(PortraitStore.HdPathOf(female, face));
+            png.Save(file);
+            return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            LastError = $"{face}번은 줄인 그림으로 들어갔지만 본디 그림을 적지 못했습니다 — {e.Message}";
+            return false;
+        }
     }
 
     /// <summary>
@@ -237,6 +301,7 @@ public static class PortraitImport
         }
 
         if (!Ls12Writer.Remove(path, face)) { LastError = Ls12Writer.LastError; return false; }
+        PortraitStore.DropHd(female, face);
         return true;
     }
 
@@ -264,6 +329,7 @@ public static class PortraitImport
             LastError = Ls12Writer.LastError;
             return false;
         }
+        PortraitStore.DropHd(female, face);
         return true;
     }
 

@@ -452,12 +452,11 @@ internal sealed class CharacterMakeDialog : GameWindow
         var px = _faces?.TryGetBgra(_face, female: false);
         if (px == null) { _portrait.Source = null; return; }
 
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, px, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(px);
         bmp.Freeze();
         _portrait.Source = bmp;
         _portrait.Stretch = Stretch.Fill;
-        RenderOptions.SetBitmapScalingMode(_portrait, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(_portrait, Portraits.Scaling(_portrait.Source));
     }
 
     /// <summary>

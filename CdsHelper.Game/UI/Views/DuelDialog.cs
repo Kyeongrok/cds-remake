@@ -360,8 +360,7 @@ public sealed class DuelDialog : GameWindow
     {
         if (face == null) return null;
 
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, face, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(face);
         bmp.Freeze();
 
         var image = new Image
@@ -370,7 +369,7 @@ public sealed class DuelDialog : GameWindow
             Width = Portraits.Width,
             Height = Portraits.Height,
         };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
         return image;
     }

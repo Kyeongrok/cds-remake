@@ -15,13 +15,18 @@ namespace CdsHelper.Game.UI.Views;
 /// 그림 한 장을 골라 <b>게임 초상화로 넣는</b> 창.
 /// </summary>
 /// <remarks>
-/// 게임 초상화는 <b>80x96 · 256색 색인</b>이다. 그래서 두 걸음을 거친다 —
-/// 네모에 맞추고, 색을 게임 팔레트로 줄인다.
+/// 넣는 결이 둘이다.
+/// <list type="bullet">
+///   <item><b>그냥 넣기</b> — 고른 자리를 <b>줄이지 않고</b> 그대로 넣는다. 놀이가 큰 그림을 곱게 줄여 건다.
+///   초상화 벌에는 줄인 것이 번호 자리를 잡으러 함께 들어간다(<see cref="PortraitImport.Put"/>).</item>
+///   <item><b>게임 색으로 줄여 넣기</b> — 게임 초상화 그대로 <b>80x96 · 256색 색인</b>으로 줄인다.
+///   네모에 맞추고, 색을 게임 팔레트로 줄이는 두 걸음이다.</item>
+/// </list>
 ///
 /// 왼쪽 네모가 <b>그대로 들어갈 자리</b>다. 안을 <b>끌면</b> 그림이 움직이고
 /// <b>굴리면</b> 크기가 바뀌므로, 얼굴 어디를 얼마나 크게 넣을지 눈으로 잡을 수 있다
-/// (<see cref="PortraitImport.Crop"/>). 오른쪽에는 <b>줄인 결과 그대로</b>를 내므로
-/// 색이 어떻게 뭉개지는지도 함께 보인다.
+/// (<see cref="PortraitImport.Crop"/>). 오른쪽에는 <b>들어갈 결과 그대로</b>를 내므로
+/// 줄여 넣을 때 색이 어떻게 뭉개지는지도 함께 보인다.
 ///
 /// 「맞추기」 두 단추는 <b>첫 자리를 잡아 주는 것</b>이다 — 누르면 그 결로 다시 물린다.
 ///
@@ -69,6 +74,19 @@ public sealed class PortraitAddDialog : GameWindow
         Margin = new Thickness(6, 0, 0, 0),
     };
 
+    /// <summary>줄이지 않고 그대로 넣는다 — 기본이다.</summary>
+    private readonly RadioButton _asIs = new() { Content = "그냥 넣기", IsChecked = true };
+
+    /// <summary>게임 초상화처럼 80x96 · 256색으로 줄여 넣는다.</summary>
+    private readonly RadioButton _reduce = new()
+    {
+        Content = "게임 색으로 줄여 넣기 (80x96 · 256색)",
+        Margin = new Thickness(10, 0, 0, 0),
+    };
+
+    /// <summary>오른쪽 미리 보기의 머리글 — 넣는 결에 따라 바뀐다.</summary>
+    private readonly TextBlock _afterTitle = Caption("그대로");
+
     private readonly CheckBox _append = new()
     {
         Content = "맨 뒤에 새로 붙인다",
@@ -106,6 +124,9 @@ public sealed class PortraitAddDialog : GameWindow
     private PortraitImport.Crop _crop;
     private byte[]? _indexed;
 
+    /// <summary>줄이지 않고 뜬 그림. 「그냥 넣기」가 아니면 null.</summary>
+    private BitmapSource? _whole;
+
     /// <summary>끌기 — 누른 자리와 그때의 가운데. 안 끌고 있으면 null.</summary>
     private (Point At, PortraitImport.Crop From)? _drag;
 
@@ -126,6 +147,8 @@ public sealed class PortraitAddDialog : GameWindow
 
         _male.Checked += (_, _) => Tell();
         _female.Checked += (_, _) => Tell();
+        _asIs.Checked += (_, _) => Reshape();
+        _reduce.Checked += (_, _) => Reshape();
         _cover.Click += (_, _) => Refit(PortraitImport.Fit.Cover);
         _contain.Click += (_, _) => Refit(PortraitImport.Fit.Contain);
 
@@ -167,7 +190,7 @@ public sealed class PortraitAddDialog : GameWindow
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 10, 0, 6),
-            Children = { Titled("끌어서 자리 잡기", _before), Titled("게임 색으로", _after) },
+            Children = { Titled(Caption("끌어서 자리 잡기"), _before), Titled(_afterTitle, _after) },
         };
 
         var rows = new StackPanel { Margin = new Thickness(14) };
@@ -176,6 +199,7 @@ public sealed class PortraitAddDialog : GameWindow
         rows.Children.Add(Line(new TextBlock { Text = "성별", Width = 60 }, _male, _female));
         rows.Children.Add(Line(new TextBlock { Text = "맞추기", Width = 60 },
                                tighter, wider, _cover, _contain));
+        rows.Children.Add(Line(new TextBlock { Text = "넣기", Width = 60 }, _asIs, _reduce));
         rows.Children.Add(Line(new TextBlock { Text = "자리", Width = 60 }, _append, _at));
         rows.Children.Add(Line(new TextBlock { Text = "중년", Width = 60 }, _pair, _pairWith));
         rows.Children.Add(_status);
@@ -247,12 +271,19 @@ public sealed class PortraitAddDialog : GameWindow
     /// <summary>지금 자리대로 두 미리 보기를 다시 뜬다.</summary>
     private void Reshape()
     {
+        bool asIs = _asIs.IsChecked == true;
+        _afterTitle.Text = asIs ? "그대로" : "게임 색으로";
         if (_picture is not { } picture) return;
 
+        // 줄인 것은 늘 뜬다 — 그냥 넣을 때도 초상화 벌에 번호 자리를 잡으러 들어간다.
         var shaped = PortraitImport.Shape(picture, _crop);
         _indexed = PortraitImport.Quantize(shaped);
         _before.Source = Bitmap(shaped);
-        _after.Source = Bitmap(PortraitImport.Preview(_indexed));
+
+        _whole = asIs ? PortraitImport.ShapeHd(picture, _crop) : null;
+        _after.Source = _whole ?? Bitmap(PortraitImport.Preview(_indexed));
+        RenderOptions.SetBitmapScalingMode(_after, Portraits.Scaling(_after.Source));
+        if (_whole != null) _afterTitle.Text = $"그대로 ({_whole.PixelWidth}x{_whole.PixelHeight})";
         Tell();
     }
 
@@ -322,9 +353,12 @@ public sealed class PortraitAddDialog : GameWindow
 
 
         string big = _picture == null ? "" : $" 크기 {_crop.Zoom * 100:0}%.";
+        string how = _asIs.IsChecked != true ? " 80x96 · 256색으로 줄여 넣는다."
+            : _whole != null ? $" 줄이지 않고 {_whole.PixelWidth}x{_whole.PixelHeight} 그대로 넣는다."
+            : " 줄이지 않고 그대로 넣는다.";
 
         _status.Text = $"{Path.GetFileName(path)} 에 {where}. 지금 {count}장이 들어 있다."
-                       + big + aging;
+                       + big + how + aging;
         _status.Foreground = Brushes.DimGray;
     }
 
@@ -342,7 +376,7 @@ public sealed class PortraitAddDialog : GameWindow
         int count = faces == null ? 0 : female ? faces.FemaleCount : faces.MaleCount;
         int at = _append.IsChecked == true ? count : (int)_at.Value;
 
-        int put = PortraitImport.Put(female, at, indexed);
+        int put = PortraitImport.Put(female, at, indexed, _asIs.IsChecked == true ? _whole : null);
         if (put < 0)
         {
             _status.Text = $"못 넣었습니다 — {PortraitImport.LastError}";
@@ -394,18 +428,21 @@ public sealed class PortraitAddDialog : GameWindow
         return made;
     }
 
-    private static UIElement Titled(string title, UIElement what) => new StackPanel
+    /// <summary>미리 보기 위의 머리글 한 줄.</summary>
+    private static TextBlock Caption(string title) => new()
+    {
+        Text = title,
+        HorizontalAlignment = HorizontalAlignment.Center,
+        Margin = new Thickness(0, 0, 0, 4),
+        Foreground = Brushes.DimGray,
+    };
+
+    private static UIElement Titled(TextBlock title, UIElement what) => new StackPanel
     {
         Margin = new Thickness(8, 0, 8, 0),
         Children =
         {
-            new TextBlock
-            {
-                Text = title,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 4),
-                Foreground = Brushes.DimGray,
-            },
+            title,
             new Border
             {
                 BorderBrush = Brushes.Silver,

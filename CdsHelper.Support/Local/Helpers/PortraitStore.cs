@@ -45,6 +45,28 @@ public static class PortraitStore
             ? fallback : "";
     }
 
+    /// <summary>
+    /// <b>줄이지 않고 넣은</b> 얼굴 그림이 사는 폴더 — 초상화 벌 옆이다.
+    /// </summary>
+    /// <remarks>
+    /// 초상화 벌(LS12)은 80x96 · 256색 색인만 담는다. 그림을 그대로 넣으면 벌에는 줄인 것을 넣어
+    /// <b>번호 자리</b>를 잡고, 본디 그림은 여기에 <c>male-414.png</c> 처럼 번호로 따로 둔다.
+    /// 그리는 쪽은 이 그림이 있으면 이것을 건다.
+    /// </remarks>
+    public static string HdDirectory => Path.Combine(Directory, "face-hd");
+
+    /// <summary>그 얼굴의 그대로 넣은 그림 자리. 있는지는 안 본다.</summary>
+    public static string HdPathOf(bool female, int face) =>
+        Path.Combine(HdDirectory, $"{(female ? "female" : "male")}-{face}.png");
+
+    /// <summary>그 얼굴의 그대로 넣은 그림을 지운다 — 얼굴을 갈아 끼우거나 비울 때 옛 그림이 남지 않게.</summary>
+    public static void DropHd(bool female, int face)
+    {
+        try { File.Delete(HdPathOf(female, face)); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
     /// <summary>왜 못 꺼냈는지. 잘 됐으면 빈 글.</summary>
     public static string LastError { get; private set; } = "";
 
@@ -54,7 +76,15 @@ public static class PortraitStore
     public static bool Reset(bool female)
     {
         string path = Path.Combine(Directory, NameOf(female));
-        try { if (File.Exists(path)) File.Delete(path); }
+        try
+        {
+            if (File.Exists(path)) File.Delete(path);
+
+            // 그대로 넣은 그림도 그 벌 것은 죄다 걷는다 — 남겨 두면 원본 얼굴 위에 덮여 보인다.
+            if (System.IO.Directory.Exists(HdDirectory))
+                foreach (string hd in System.IO.Directory.GetFiles(HdDirectory, (female ? "female" : "male") + "-*.png"))
+                    File.Delete(hd);
+        }
         catch (Exception e) { LastError = e.Message; return false; }
 
         return Unpack(female, path);

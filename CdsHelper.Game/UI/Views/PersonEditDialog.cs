@@ -196,8 +196,7 @@ public sealed class PersonEditDialog : GameWindow
             BitmapSource? made = null;
             if (_faces?.TryGetBgra(face, female: false) is { } px)
             {
-                made = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                           PixelFormats.Bgra32, null, px, Portraits.Width * 4);
+                made = Portraits.Bitmap(px);
                 made.Freeze();
             }
             _made[face] = made;

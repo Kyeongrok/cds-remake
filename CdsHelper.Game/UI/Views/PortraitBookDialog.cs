@@ -214,14 +214,13 @@ public sealed class PortraitBookDialog : GameWindow
         }
 
         _status.Text = $"{(_female ? "FEMALE.CDS" : "MALE.CDS")} · 얼굴 {count}장" +
-                       "   —  번호는 인물표 · 후원자표 · 시설 화자표가 가리키는 그 번호다";
+                       "   —  번호는 인물표 · 후원자표 · 시설 화자표가 가리키는 그 번호다  ·  ◆ 는 줄이지 않고 넣은 얼굴";
     }
 
     /// <summary>얼굴 한 장과 그 번호.</summary>
     private UIElement Cell(int face, uint[] px)
     {
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, px, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(px);
         bmp.Freeze();
 
         var image = new Image
@@ -230,13 +229,14 @@ public sealed class PortraitBookDialog : GameWindow
             Width = Portraits.Width * _scale,
             Height = Portraits.Height * _scale,
         };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
 
         var box = new StackPanel { Margin = new Thickness(CellPad), Tag = face };
         box.Children.Add(image);
         box.Children.Add(new TextBlock
         {
-            Text = face.ToString(),
+            // 줄이지 않고 넣은 얼굴은 번호 옆에 표를 단다.
+            Text = Portraits.IsHd(bmp) ? $"{face} ◆" : face.ToString(),
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 2, 0, 0),
         });

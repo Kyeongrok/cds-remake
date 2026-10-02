@@ -185,8 +185,7 @@ internal sealed class PersonInfoDialog : InfoDialog
     {
         if (px == null) return null;
 
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, px, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(px);
         bmp.Freeze();
 
         var image = new Image
@@ -195,7 +194,7 @@ internal sealed class PersonInfoDialog : InfoDialog
             Width = Portraits.Width * FaceScale,
             Height = Portraits.Height * FaceScale,
         };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
 
         return new Border
         {

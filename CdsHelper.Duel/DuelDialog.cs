@@ -234,12 +234,11 @@ internal sealed class DuelDialog : InfoDialog
             {
                 Width = FaceW,
                 Height = FaceH,
-                Source = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                             PixelFormats.Bgra32, null, pixels,
-                                             Portraits.Width * 4),
+                Source = Portraits.Bitmap(pixels),
                 IsHitTestVisible = false,
             };
-            RenderOptions.SetBitmapScalingMode(art, BitmapScalingMode.NearestNeighbor);
+            RenderOptions.SetBitmapScalingMode(art, Portraits.IsHd(art.Source)
+                ? BitmapScalingMode.HighQuality : BitmapScalingMode.NearestNeighbor);
             Canvas.SetLeft(art, x);
             Canvas.SetTop(art, FaceY);
             _scene.Children.Add(art);

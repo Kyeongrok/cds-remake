@@ -1098,7 +1098,8 @@ internal sealed class PokerDialog : GameWindow
             Stretch = Stretch.Fill,
             IsHitTestVisible = false,
         };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        // 줄이지 않고 넣은 얼굴은 곱게 줄여 건다 — 나머지 조각은 여느 결 그대로다.
+        RenderOptions.SetBitmapScalingMode(image, width == Portraits.Width ? Portraits.Scaling(source) : GameUi.SpriteScaling);
         return image;
     }
 
@@ -1113,8 +1114,7 @@ internal sealed class PokerDialog : GameWindow
     private static BitmapSource? FaceArt(uint[]? bgra)
     {
         if (bgra == null) return null;
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96, PixelFormats.Bgra32, null,
-                                      bgra, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(bgra);
         bmp.Freeze();
         return bmp;
     }

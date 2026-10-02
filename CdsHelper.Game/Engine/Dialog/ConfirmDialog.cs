@@ -267,8 +267,7 @@ public sealed class ConfirmDialog : GameWindow
     /// <summary>얼굴 한 장. 조각 그대로 걸고 위에 붙인다.</summary>
     private static UIElement Portrait(uint[] face)
     {
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, face, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(face);
         bmp.Freeze();
 
         var image = new Image
@@ -279,7 +278,7 @@ public sealed class ConfirmDialog : GameWindow
             VerticalAlignment = VerticalAlignment.Top,
             Margin = new Thickness(FacePad, 0, 0, 0),
         };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
         return image;
     }

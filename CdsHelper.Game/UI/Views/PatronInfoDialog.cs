@@ -129,12 +129,11 @@ public sealed class PatronInfoDialog : GameWindow
         if (face < 0) return null;
         if (Portraits.Open(gameDirectory)?.TryGetBgra(face, female) is not { } px) return null;
 
-        var bmp = BitmapSource.Create(Portraits.Width, Portraits.Height, 96, 96,
-                                      PixelFormats.Bgra32, null, px, Portraits.Width * 4);
+        var bmp = Portraits.Bitmap(px);
         bmp.Freeze();
 
         var image = new Image { Source = bmp, Width = Portraits.Width, Height = Portraits.Height };
-        RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
 
         return new Border

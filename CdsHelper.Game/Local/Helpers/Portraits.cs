@@ -1,4 +1,7 @@
 ﻿using System.IO;
+using System.Runtime.CompilerServices;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
@@ -22,6 +25,11 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 잡혀 있어야만 나오면 곤란하다 — 부하 인물정보처럼 우리 세이브만으로 서야 하는 자리도
 /// 있다. 그 벌이 어디 사는지는 <see cref="PortraitStore"/> 가 안다. 없을 때에만 게임
 /// 폴더로 물러선다.
+///
+/// <b>줄이지 않고 넣은 얼굴</b>(<see cref="PortraitStore.HdPathOf"/>)도 여기서 건다. 얼굴은 놀이 곳곳에
+/// 80x96 색 배열로 넘겨지므로 그 틀은 그대로 두고, 배열을 낼 때 본디 그림을 <b>그 배열에 짝지어</b> 둔다.
+/// 그리는 쪽은 배열로 그림을 만들 때 <see cref="Bitmap"/> 을 거치기만 하면 된다 — 짝이 있으면 그 그림이,
+/// 없으면 배열 그대로의 80x96 이 나온다.
 /// </remarks>
 public sealed class Portraits
 {
@@ -115,6 +123,73 @@ public sealed class Portraits
             bgra[i] = (uint)(0xFF << 24 | GamePalette.Rgb[c] << 16
                              | GamePalette.Rgb[c + 1] << 8 | GamePalette.Rgb[c + 2]);
         }
+
+        // 줄이지 않고 넣은 그림이 있으면 이 배열에 짝지어 둔다 — Bitmap 이 그것을 건다.
+        if (Hd(face, female) is { } hd) HdOf.AddOrUpdate(bgra, hd);
         return bgra;
     }
+
+    // ── 줄이지 않고 넣은 그림 ──────────────────────────────────────────────────
+
+    /// <summary>낸 색 배열 → 그 얼굴의 본디 그림. 배열이 버려지면 짝도 함께 사라진다.</summary>
+    private static readonly ConditionalWeakTable<uint[], BitmapSource> HdOf = new();
+
+    /// <summary>읽어 둔 본디 그림 — 파일이 바뀌면(적힌 때가 다르면) 다시 읽는다.</summary>
+    private static readonly Dictionary<(bool Female, int Face), (DateTime Stamp, BitmapSource Art)> HdCache = [];
+
+    /// <summary>그 얼굴의 줄이지 않고 넣은 그림. 없거나 못 읽으면 null.</summary>
+    public static BitmapSource? Hd(int face, bool female)
+    {
+        string path = PortraitStore.HdPathOf(female, face);
+        var key = (female, face);
+        lock (HdCache)
+        {
+            if (!File.Exists(path)) { HdCache.Remove(key); return null; }
+
+            var stamp = File.GetLastWriteTimeUtc(path);
+            if (HdCache.TryGetValue(key, out var kept) && kept.Stamp == stamp) return kept.Art;
+
+            try
+            {
+                // 흐름으로 읽는다 — 주소로 읽으면 WPF 가 같은 주소의 옛 그림을 담아 두었다가 도로 내준다.
+                using var file = File.OpenRead(path);
+                var made = new BitmapImage();
+                made.BeginInit();
+                made.CacheOption = BitmapCacheOption.OnLoad;
+                made.StreamSource = file;
+                made.EndInit();
+                made.Freeze();
+                HdCache[key] = (stamp, made);
+                return made;
+            }
+            catch (Exception e) when (e is IOException or NotSupportedException or UnauthorizedAccessException
+                                          or ArgumentException or InvalidOperationException)
+            {
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 얼굴 색 배열을 걸 그림으로 만든다. 그 얼굴에 <b>줄이지 않고 넣은 그림</b>이 있으면 그것이 나온다.
+    /// </summary>
+    /// <remarks>얼굴을 그리는 자리는 모두 이것을 거친다 — 80x96 으로 손수 만들면 본디 그림이 안 걸린다.</remarks>
+    public static BitmapSource Bitmap(uint[] bgra)
+    {
+        if (HdOf.TryGetValue(bgra, out var hd)) return hd;
+
+        var made = BitmapSource.Create(Width, Height, 96, 96, PixelFormats.Bgra32, null, bgra, Width * 4);
+        made.Freeze();
+        return made;
+    }
+
+    /// <summary>그 그림이 80x96 보다 큰, 줄이지 않고 넣은 얼굴인지.</summary>
+    public static bool IsHd(ImageSource? art) => art is BitmapSource { PixelWidth: > Width };
+
+    /// <summary>
+    /// 얼굴을 걸 때의 늘이는 결. 큰 그림을 작게 거는 것이라 <b>곱게 줄여야</b> 점이 안 빠진다 —
+    /// 80x96 도트 그림은 여느 조각처럼 <see cref="UI.Views.GameUi.SpriteScaling"/> 이다.
+    /// </summary>
+    public static BitmapScalingMode Scaling(ImageSource? art) =>
+        IsHd(art) ? BitmapScalingMode.HighQuality : UI.Views.GameUi.SpriteScaling;
 }
