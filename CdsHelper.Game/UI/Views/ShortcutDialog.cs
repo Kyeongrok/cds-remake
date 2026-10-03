@@ -41,7 +41,8 @@ public sealed class ShortcutDialog : GameWindow
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 0, 0, 10),
-            Children = { GameUi.PushButton("닫기", Close) },
+            // 닫기도 게임 띠 단추다 — 윈도 글꼴 상자를 쓰면 위 줄들(게임 띠)과 결이 다르다.
+            Children = { new GameButton("닫기", Close, width: 110) },
         });
 
         Content = new Border
