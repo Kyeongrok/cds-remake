@@ -925,14 +925,14 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private bool CanPersuade => LiveHints.Count > 0;
 
     /// <summary>
-    /// 아직 살아 있는 힌트 — 얻었고 아직 보고 안 한 것이다(원본 힌트 상태 13).
+    /// 설득에 내밀 힌트 — 얻었고 아직 보고 안 한 것(원본 힌트 상태 13) 가운데 <b>아직 못 찾은 것</b>이다.
     /// </summary>
     /// <remarks>
-    /// 보고까지 마친 힌트는 여기서 빠진다. 왜 «발견» 이 아니라 «보고» 인지는
-    /// <see cref="DiscoveryLog.IsHintDone"/> 에 적어 두었다.
+    /// 보고까지 마친 힌트는 원본대로 빠진다(<see cref="DiscoveryLog.IsHintDone"/>). 거기에 더해 이미 찾은 발견물의
+    /// 힌트도 뺀다 — 원본에는 없는 거름이다(<see cref="DiscoveryLog.PersuadableHints"/>).
     /// </remarks>
     private List<int> LiveHints =>
-        _game.Discoveries?.LiveHints(_player) ?? [.. _player.Hints.Order()];
+        _game.Discoveries?.PersuadableHints(_player) ?? [.. _player.Hints.Order()];
 
     /// <summary>
     /// 이 <b>자리</b>에서 계약 중인지(<c>0x0044E550</c>) — 사람이 바뀌었어도 자리가 같으면 참이다.

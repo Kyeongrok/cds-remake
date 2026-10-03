@@ -144,6 +144,29 @@ public sealed class DiscoveryLog
         [.. player.Hints.Where(id => !IsHintDone(player, id)).Order()];
 
     /// <summary>
+    /// 그 힌트가 가리키는 발견물(같은 유적 번호)을 <b>하나라도 찾았는지</b> — 보고 여부는 안 본다.
+    /// </summary>
+    public bool IsHintFound(Player player, int hintId)
+    {
+        if (_hints?.Find(hintId) is not { } hint) return false;
+
+        foreach (int id in player.Discoveries)
+            if (_table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// 후원자에게 내밀 수 있는 힌트 — 살아 있는 힌트(<see cref="LiveHints"/>) 가운데 <b>아직 못 찾은 것</b>이다.
+    /// </summary>
+    /// <remarks>
+    /// <b>원본과 다르다.</b> 원본 설득 목록(<c>0x0044E7B0</c>)은 상태 13(얻었고 보고 전)을 다 올려, 이미 찾은 발견물의
+    /// 힌트로도 계약을 맺을 수 있었다. 찾은 것을 두고 지원을 청하는 꼴이라 빼 달라는 요청으로 거른다.
+    /// 「취득 힌트 일람」은 원본 그대로 <see cref="LiveHints"/> 를 쓴다 — 보고 전까지는 거기 남는다.
+    /// </remarks>
+    public List<int> PersuadableHints(Player player) =>
+        [.. LiveHints(player).Where(id => !IsHintFound(player, id))];
+
+    /// <summary>
     /// 지금 칸에서 발견될 것. 없으면 -1.
     /// </summary>
     /// <param name="player">주인공. 이미 발견한 것과 가진 힌트를 본다.</param>

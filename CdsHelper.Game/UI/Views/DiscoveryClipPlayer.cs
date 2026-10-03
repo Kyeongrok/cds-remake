@@ -88,6 +88,8 @@ public static class DiscoveryClipPlayer
         screen.Loaded += (_, _) => clock.Start();
         screen.Closed += (_, _) => clock.Stop();
 
+        // 겹쳐 보기 쪽지가 영상 위로 올라오지 않게 도는 동안 걷어 둔다(MoviePlayer 와 같다).
+        using var notes = OverlayNotes.Hold();
         bgm?.Pause();
         screen.ShowDialog();
         bgm?.Resume();

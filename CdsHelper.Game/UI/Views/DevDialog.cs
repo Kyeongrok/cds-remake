@@ -311,14 +311,15 @@ public sealed class DevDialog : GameWindow
     }
 
     /// <summary>
-    /// 「발견물」 탭 — 발견물을 죄다 늘어놓고, 체크하면 <b>발견한 것으로</b>, 풀면 안 찾은 것으로 한다.
+    /// 「발견물」 탭 — 발견물을 죄다 늘어놓고, 체크하면 <b>찾아서 보고까지 한 것으로</b>, 풀면 안 찾은 것으로 한다.
     /// </summary>
     /// <remarks>
     /// 놀이에는 없는 판이다. 발견물이 있어야 볼 수 있는 것(보고 · 연표 · 백과사전 · 발견으로 켜지는 교역품)을
     /// 시험하려고 둔다. 체크는 찾은 것으로 적고(<see cref="Player.Discover"/>) 그 자리 사건도 매듭짓는다
-    /// (<see cref="Player.Settle"/>) — 지도에서 그 자리를 지나도 발견 장면이 다시 안 뜬다.
-    /// <b>보고는 안 한다</b> — 명성·보수·아이템은 왕궁에 보고해야 든다. 체크를 풀면 보고한 기록까지 지운다
-    /// (<see cref="Player.Undiscover"/>).
+    /// (<see cref="Player.Settle"/>) — 지도에서 그 자리를 지나도 발견 장면이 다시 안 뜬다. 그리고 <b>보고(발표)한 것으로도</b>
+    /// 적는다(<see cref="Player.Announce"/>) — 그래야 후원자 · 왕궁의 「제안 선택」에 안 뜬다. 보고로 드는 명성 · 보수 ·
+    /// 아이템은 안 준다. 체크는 보고까지 된 것에만 서 있고, 찾기만 하고 보고 전인 것은 「(보고 전)」으로 적혀 비어 있다.
+    /// 체크를 풀면 보고한 기록까지 지운다(<see cref="Player.Undiscover"/>).
     /// </remarks>
     private FrameworkElement FindsPage(DiscoveryTable table)
     {
@@ -331,7 +332,7 @@ public sealed class DevDialog : GameWindow
         var boxes = new List<(CheckBox Box, DiscoveryTable.Record Row)>();
         bool bulk = false;
 
-        void Count() => count.Text = $"  {_player.Discoveries.Count} / {boxes.Count}";
+        void Count() => count.Text = $"  {_player.Announced.Count} / {boxes.Count}";
 
         foreach (var row in table.Discoveries)
         {
@@ -340,8 +341,8 @@ public sealed class DevDialog : GameWindow
             var box = new CheckBox
             {
                 Content = $"{id,3}  {row.Name}" + (row.CategoryName.Length > 0 ? $"  [{row.CategoryName}]" : "")
-                          + (_player.Announced.Contains(id) ? "  (보고함)" : ""),
-                IsChecked = _player.HasFound(id),
+                          + (_player.HasFound(id) && !_player.HasAnnounced(id) ? "  (보고 전)" : ""),
+                IsChecked = _player.HasAnnounced(id),
                 Foreground = GameUi.Text,
                 FontSize = 14,
                 Margin = new Thickness(0, 2, 0, 2),
@@ -350,6 +351,8 @@ public sealed class DevDialog : GameWindow
             box.Checked += (_, _) =>
             {
                 if (_player.Discover(id)) { _player.Settle(id); _findsChanged = true; }
+                // 보고까지 한 것으로 — 행적에는 안 남긴다(놀이에서 한 보고가 아니다).
+                if (_player.Announce(id, trace: false)) _findsChanged = true;
                 if (!bulk) Count();
             };
             box.Unchecked += (_, _) =>

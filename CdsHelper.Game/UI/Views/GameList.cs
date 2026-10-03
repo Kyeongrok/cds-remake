@@ -103,6 +103,19 @@ internal sealed class GameList : Border
     /// <summary>여럿 고르기에서 골라 둔 줄들.</summary>
     private readonly HashSet<int> _chosen = [];
 
+    /// <summary>여럿 고르기의 끌어 고르기. 처음 누를 때 만든다.</summary>
+    private DragPick? _drag;
+
+    private DragPick Drag => _drag ??= new DragPick(this, _rows,
+        isOn: _chosen.Contains,
+        set: (i, on) => { if (on) _chosen.Add(i); else _chosen.Remove(i); },
+        changed: at =>
+        {
+            Selected = at;
+            Paint();
+            SelectionChanged?.Invoke();
+        });
+
     /// <param name="columns">칸 배치. 모든 줄이 같이 쓴다.</param>
     /// <param name="cells">줄 번호를 주면 그 줄의 칸 글자들을 내는 이. 칸 수는 <paramref name="columns"/> 와 같아야 한다.</param>
     /// <param name="count">줄 수.</param>
@@ -260,8 +273,19 @@ internal sealed class GameList : Border
             Child = Line(index, on: false),
         };
         // 누름도 여기서 삼킨다 — 창 끌기가 먼저 걸리면 마우스를 잡아 버려 뗌이 안 온다.
-        row.MouseLeftButtonDown += (_, e) => e.Handled = true;
-        row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Touch(index); };
+        // 고르는 방식(Pick)은 줄을 지은 뒤에 정해지므로(init) 누를 때 본다. 여럿 고르기는 끌어서도
+        // 한꺼번에 켜고 끈다 — 끌지 않고 떼면 한 줄만 켜고 끈다(DragPick). 끄는 동안은 판이 마우스를 잡아
+        // 줄의 뗌이 안 온다.
+        row.MouseLeftButtonDown += (_, e) =>
+        {
+            e.Handled = true;
+            if (Pick == GameListPick.Many) Drag.Press(index);
+        };
+        row.MouseLeftButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            if (Pick != GameListPick.Many) Touch(index);
+        };
         // 받는 쪽이 없으면 삼키지 않는다 — 창의 「오른쪽 단추 = 닫기」가 그대로 가야 한다.
         row.MouseRightButtonUp += (_, e) =>
         {

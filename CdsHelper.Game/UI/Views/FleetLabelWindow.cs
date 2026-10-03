@@ -97,9 +97,12 @@ public sealed class FleetLabelWindow : Window
         // 도시 창이 움직이면 같은 사이를 두고 따라간다(펼침 효과로 미끄러져 들어올 때도).
         anchor.LocationChanged += OnAnchorMoved;
         anchor.SizeChanged += OnAnchorMoved;
+        // 동영상이 도는 동안에는 걷어 둔다(OverlayNotes).
+        OverlayNotes.Changed += Apply;
         Closed += (_, _) =>
         {
             IsClosed = true;
+            OverlayNotes.Changed -= Apply;
             anchor.LocationChanged -= OnAnchorMoved;
             anchor.SizeChanged -= OnAnchorMoved;
         };
@@ -131,7 +134,18 @@ public sealed class FleetLabelWindow : Window
         // 주인 창을 닫으며 딸린 창을 먼저 닫은 뒤에도 주인이 활성화되며 이리로 올 수 있다 — 닫힌 창은 못 띄운다.
         if (IsClosed) return;
         _text.Text = text;
-        Visibility = text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        _wanted = text.Length > 0;
+        Apply();
+    }
+
+    /// <summary>보여야 하는지 — 글이 있고 사건으로 감추지 않았을 때다. 동영상이 도는 동안에는 이것과 상관없이 감춘다.</summary>
+    private bool _wanted;
+
+    /// <summary>지금 보일지 맞춘다.</summary>
+    private void Apply()
+    {
+        if (IsClosed) return;
+        Visibility = _wanted && !OverlayNotes.Held ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>
@@ -140,7 +154,8 @@ public sealed class FleetLabelWindow : Window
     public void Shade(bool on)
     {
         if (IsClosed || _text.Text.Length == 0) return;
-        Visibility = on ? Visibility.Collapsed : Visibility.Visible;
+        _wanted = !on;
+        Apply();
     }
 
     /// <summary>지금 자리를 주인 창에서 잰 거리로 적어 둔다.</summary>

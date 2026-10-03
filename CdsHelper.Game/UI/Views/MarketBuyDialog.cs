@@ -163,6 +163,9 @@ public sealed class MarketBuyDialog : GameWindow
     ///   0x004B3B52  나머지를 소지품에 넣는다 — 넘치면 물릴 수 없는 버리기 창(0x004B1710(…, 0))
     ///   0x004B3B65  돈을 빼고, 장사꾼 「고맙네!」 — 창을 닫는다
     /// </code>
+    /// <b>사는 동안에는 목록과 시장 차림표를 걷어 둔다.</b> 아이템 창 · 값 알림 · 물음이 목록 가운데에 뜨면
+    /// 도시 창 · 차림표 · 목록 · 아이템 창 · 물음이 한데 겹쳐 무엇이 위인지 모르게 된다. 그래서 그 창들은
+    /// 도시 창(<see cref="Window.Owner"/>)에 걸어 그 한가운데에 띄우고, 목록으로 돌아올 때 둘을 도로 낸다.
     /// </remarks>
     private void Decide()
     {
@@ -175,19 +178,48 @@ public sealed class MarketBuyDialog : GameWindow
         int over = _player.Items.Count + picked.Count - Player.MaxItems;
         if (over > 0 && !ConfirmDialog.Ask(this, $"이대로는 {over}개 들을 수 없습니다. 괜찮습니까?")) return;
 
+        // 걷어 둘 차림표 — 도시 창에 떠 있는 시장 차림표다.
+        var menu = Application.Current.Windows.OfType<MenuWindow>()
+            .FirstOrDefault(w => w.IsVisible && w.Owner == Owner);
+        var host = Owner ?? this;
+        bool bought = false;
+
+        // 도시 창을 먼저 띄워 두고 걷는다 — 걷힌 창에서 초점이 딴 앱으로 새지 않게.
+        host.Activate();
+        menu?.Hide();
+        if (host != this) Hide();
+        try
+        {
+            bought = Buy(host, picked, pickedAt);
+        }
+        finally
+        {
+            menu?.Show();
+            if (!bought && host != this)
+            {
+                Show();
+                Activate();
+            }
+        }
+        if (bought) Close();
+    }
+
+    /// <summary>아이템 창 · 값 알림 · 물음을 거쳐 산다. 샀으면 참 — 아니면 목록으로 돌아간다.</summary>
+    private bool Buy(Window host, List<ItemTable.Record> picked, List<int> pickedAt)
+    {
         foreach (var item in picked)
-            ItemInfoDialog.Show(this, item, _descriptions?.Of(item.Id) ?? "", _art);
+            ItemInfoDialog.Show(host, item, _descriptions?.Of(item.Id) ?? "", _art);
 
         int total = picked.Sum(item => _market.PriceOf(item, _cityId));
-        Say($"그렇다면 금화 {total}닢 필요하네.");
+        Say(host, $"그렇다면 금화 {total}닢 필요하네.");
 
         string what = picked.Count > 1 ? "이것들의 아이템" : "이 아이템";
-        if (!ConfirmDialog.Ask(this, $"{what}을 구입하겠습니까?")) return;
+        if (!ConfirmDialog.Ask(host, $"{what}을 구입하겠습니까?")) return false;
 
         if (!_player.CanAfford(total))
         {
-            Say("가난한 사람에게는 볼일 없네! 안 살 거면 돌아가게!");
-            return;
+            Say(host, "가난한 사람에게는 볼일 없네! 안 살 거면 돌아가게!");
+            return false;
         }
 
         // 모조품은 산 그 자리에서 발견이 된다 — 증거 물건은 보고할 때까지 소지품에 안 든다.
@@ -198,19 +230,19 @@ public sealed class MarketBuyDialog : GameWindow
             if (id < 0) { goods.Add(picked[k].Id); continue; }
             if (_found?.Table.Find(id) is not { } row || !_player.Discover(id)) continue;
 
-            Say("자네, 보는 눈이 있군. 득보는 걸세.");
-            ConfirmDialog.Tell(this, $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");
+            Say(host, "자네, 보는 눈이 있군. 득보는 걸세.");
+            ConfirmDialog.Tell(host, $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");
         }
 
-        if (_game != null) ItemGain.AddForced(this, _game, goods);
+        if (_game != null) ItemGain.AddForced(host, _game, goods);
         else foreach (int id in goods) _player.Take(id);
         _player.Pay(total);
-        Say("고맙네!");
-        Close();
+        Say(host, "고맙네!");
+        return true;
     }
 
     /// <summary>장사꾼이 말한다(<c>0x004692E0</c> — 시장 화자 얼굴).</summary>
-    private void Say(string text) => TalkDialog.Say(this, _face, "", text);
+    private void Say(Window owner, string text) => TalkDialog.Say(owner, _face, "", text);
 
     /// <summary>소지품 넘침 창에서 이름을 찾을 판. 없으면 넘침 창 없이 넣는다.</summary>
     private readonly Engine.Game? _game;

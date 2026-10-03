@@ -210,7 +210,9 @@ public sealed class HintListDialog : GameWindow
             // (0x004AE993 이 그 줄의 사용 가능 칸을 0 으로 두고 목록을 다시 띄운다).
             bool open = usable == null || i >= usable.Count || usable[i];
             if (!open) { row.Opacity = 0.45; row.Cursor = Cursors.Arrow; }
-            if (choosing && open) row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Select(index); };
+            // 여럿 고르기는 끌어서도 한꺼번에 켜고 끈다(DragPick) — 끌지 않고 떼면 한 줄만 켜고 끈다.
+            if (choosing && open && multi) (_drag ??= Dragger(list, usable)).Attach(row, index);
+            else if (choosing && open) row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Select(index); };
             _rows.Add(row);
             list.Children.Add(row);
         }
@@ -318,6 +320,22 @@ public sealed class HintListDialog : GameWindow
         Height = ItemArt.Height,
         SnapsToDevicePixels = true,
     };
+
+    /// <summary>여럿 고르기의 끌어 고르기. 여럿 고르기가 아니면 null.</summary>
+    private DragPick? _drag;
+
+    /// <summary>줄들 위에서 끌어 켜고 끄는 손을 짓는다.</summary>
+    private DragPick Dragger(UIElement list, IReadOnlyList<bool>? usable) => new(
+        list, _rows,
+        isOn: _chosen.Contains,
+        set: (i, on) => { if (on) _chosen.Add(i); else _chosen.Remove(i); },
+        changed: at =>
+        {
+            if (_preview != null) _previewImage.Source = _preview(at);
+            for (int i = 0; i < _rows.Count; i++) Paint(i, _chosen.Contains(i));
+            _decide.On = _decideReady = _chosen.Count > 0;
+        },
+        open: i => usable == null || i >= usable.Count || usable[i]);
 
     /// <summary>한 줄을 고른다. 고르고 나야 결정이 살아난다.</summary>
     private void Select(int index)

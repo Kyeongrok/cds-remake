@@ -73,8 +73,12 @@ public sealed class SkillOverlayWindow : Window
 
         anchor.LocationChanged += OnAnchorMoved;
         anchor.SizeChanged += OnAnchorMoved;
+        // 동영상이 도는 동안에는 걷어 둔다(OverlayNotes).
+        OverlayNotes.Changed += Apply;
         Closed += (_, _) =>
         {
+            _closed = true;
+            OverlayNotes.Changed -= Apply;
             anchor.LocationChanged -= OnAnchorMoved;
             anchor.SizeChanged -= OnAnchorMoved;
         };
@@ -90,6 +94,7 @@ public sealed class SkillOverlayWindow : Window
         note.Refresh(game);
         note.Show();
         note.Place();
+        note.Apply();
         return note;
     }
 
@@ -192,7 +197,23 @@ public sealed class SkillOverlayWindow : Window
     private static SolidColorBrush Brush(string hex) => new((Color)ColorConverter.ConvertFromString(hex));
 
     /// <summary>사건이 도는 동안 감춘다 — 함대 쪽지와 같다.</summary>
-    public void Shade(bool on) => Visibility = on ? Visibility.Collapsed : Visibility.Visible;
+    public void Shade(bool on)
+    {
+        _wanted = !on;
+        Apply();
+    }
+
+    /// <summary>사건으로 감추지 않았는지. 동영상이 도는 동안에는 이것과 상관없이 감춘다.</summary>
+    private bool _wanted = true;
+
+    private bool _closed;
+
+    /// <summary>지금 보일지 맞춘다.</summary>
+    private void Apply()
+    {
+        if (_closed) return;
+        Visibility = _wanted && !OverlayNotes.Held ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     /// <summary>
     /// 적어 둔 거리대로 자리를 잡는다. 아직 옮긴 적이 없으면 <b>그림 왼쪽</b>에 붙이고,
