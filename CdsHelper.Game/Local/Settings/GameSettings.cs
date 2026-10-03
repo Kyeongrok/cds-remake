@@ -226,6 +226,9 @@ public sealed class GameSettingsData
     /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool WheelZoom { get; set; }
 
+    /// <summary>수에즈 지협에 바닷길을 뚫을지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool SuezCanal { get; set; }
+
     /// <summary>스폰서 제안에서 고르기 없이 자금 증가를 고를지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool AutoFundRaise { get; set; }
 
@@ -1002,6 +1005,13 @@ public static class GameSettings
     {
         get => Get(d => d.AutoFundRaise);
         set => Set(d => d.AutoFundRaise = value);
+    }
+
+    /// <summary>수에즈 운하 — 지중해와 수에즈만 사이에 배가 지나갈 바닷길을 뚫는다(Engine.Sea.SuezCanal). 판을 다시 열 때 든다.</summary>
+    public static bool SuezCanal
+    {
+        get => Get(d => d.SuezCanal);
+        set => Set(d => d.SuezCanal = value);
     }
 
     /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>

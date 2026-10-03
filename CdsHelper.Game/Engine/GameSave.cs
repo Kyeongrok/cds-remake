@@ -352,6 +352,7 @@ public static class GameSave
         List<Support.Local.Models.Player.Cargo>? Cargo = null,
         Dictionary<int, List<int>>? TradeStock = null,
         List<int>? OpenedHints = null,
+        List<int>? ScriptOpened = null, List<int>? ScriptClosed = null,
         List<int>? ActiveGoods = null,
         List<Support.Local.Models.Player.Betrayal>? Betrayals = null,
         Dictionary<string, DateTime>? Sulks = null,
@@ -458,6 +459,9 @@ public static class GameSave
                             Cargo: [.. player.CargoHold],
                             TradeStock: player.TradeStock.ToDictionary(e => e.Key, e => e.Value.ToList()),
                             OpenedHints: [.. player.OpenedHints],
+                            // 대본이 연 · 닫은 발견물(원본에 없는 칸).
+                            ScriptOpened: [.. player.ScriptOpenedDiscoveries],
+                            ScriptClosed: [.. player.ScriptClosedDiscoveries],
                             // 발견으로 판매가 켜진 교역품. 이 칸 앞의 세이브는 불러올 때 발견물 대본에서 다시 찾는다.
                             ActiveGoods: [.. player.ActiveGoods],
                             // 감찰관을 처벌해 배신한 후원자와, 기분이 상한 후원자.

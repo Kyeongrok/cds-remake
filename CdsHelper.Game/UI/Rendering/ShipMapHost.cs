@@ -811,6 +811,25 @@ public sealed class ShipMapHost : HwndHost
         if (_hwnd != IntPtr.Zero) { DestroyWindow(_hwnd); _hwnd = IntPtr.Zero; }
     }
 
+    /// <summary>수에즈 운하 자리의 원래 지도 낱말 — 모드를 끌 때 되돌린다.</summary>
+    private int[]? _canalOriginal;
+
+    /// <summary>
+    /// 모드 「수에즈 운하」를 켜고 끈 것을 곧바로 지도에 들인다 — 운하 칸을 되돌리고 다시 뚫은 뒤, 지도와 그 지도에서 지은
+    /// 표(수심 · 타일 부류 · 물 색)를 다시 건다. 판을 다시 열지 않아도 된다.
+    /// </summary>
+    public void RefreshSuezCanal()
+    {
+        if (_world == null || _canalOriginal == null) return;
+        Engine.Sea.SuezCanal.Restore(_world, _canalOriginal);
+        Engine.Sea.SuezCanal.Apply(_world, _terrain);
+        _renderer.UpdateWorld(_world);
+        if (_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);
+        if (_renderer.TileKindsReady && BuildTileKinds() is { } kinds) _renderer.SetTileKinds(kinds);
+        if (_renderer.WaterPaletteReady && BuildWaterPalette() is { } water) _renderer.SetWaterPalette(water);
+        _dirty = true;
+    }
+
     /// <summary>WORLD.CDS / OCEAN.CDS 를 올리고 스왑체인을 건다. 실패하면 까닭을 남기고 false.</summary>
     public bool Start(string gameDir)
     {
@@ -825,6 +844,10 @@ public sealed class ShipMapHost : HwndHost
 
         // 칸을 지날 수 있는지는 게임 표가 가른다. 못 읽으면 옛 어림으로 물러선다.
         _terrain = TerrainTable.Open(gameDir);
+        // 모드 「수에즈 운하」 — 지협에 바닷길을 뚫는다. 그림 · 통행 · 길찾기가 다 이 지도 낱말을 본다.
+        // 원래 칸을 들고 있다가 모드를 끄면 되돌린다(RefreshSuezCanal).
+        _canalOriginal = Engine.Sea.SuezCanal.Capture(_world);
+        Engine.Sea.SuezCanal.Apply(_world, _terrain);
         if (_terrain == null)
             System.Diagnostics.Debug.WriteLine($"[ShipMap] 지형표 없음: {TerrainTable.LastError}");
 

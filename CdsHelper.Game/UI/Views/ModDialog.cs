@@ -234,19 +234,13 @@ public sealed class ModDialog : GameWindow
             "원본과 다릅니다 — 몇몇 아이템을 새로 그린 그림으로 보입니다(지금은 사자의 서). 끄면 원본 그림입니다."
             + " 원본은 사자의 서가 지중해의 유혹어와 같은 책 그림을 나눠 씁니다."));
 
-        // 인물정보 목록 — 누구를 볼지 고르는 창을 스폰서 일람처럼(게임 글꼴).
-        ui.Children.Add(Toggle("인물정보 목록", GameSettings.PersonInfoList,
-            on => GameSettings.PersonInfoList = on,
-            "원본과 다릅니다 — 「인물정보」에서 누구를 볼지 고르는 창을 스폰서 일람처럼 띄웁니다(게임 글꼴)."
-            + " 줄마다 초상화, 이름 밑에 지닌 기능 · 언어(그 자리에서 안 쓰이는 것은 흐리게), 오른쪽에 자리가 나오고,"
-            + " 줄을 고르면 오른쪽에 맡은 기능의 효과가 펼쳐집니다. 끄면 원본처럼 자리 이름만 늘어놓습니다."));
-
         // 향상된 인물정보 목록 — 같은 목록을 리디바탕 글씨의 전용 창으로.
         ui.Children.Add(Toggle("향상된 인물정보 목록", GameSettings.PersonInfoEnhanced,
             on => GameSettings.PersonInfoEnhanced = on,
-            "원본과 다릅니다 — 「인물정보」 목록을 리디바탕 글씨의 전용 창으로 띄웁니다. 내용은 「인물정보 목록」과 같고,"
-            + " 기능 · 언어가 길어도 폭에 맞춰 접혀 읽기 쉽습니다. 결정(또는 두 번 누르기)으로 인물정보 판을 엽니다."
-            + " 켜면 「인물정보 목록」을 켜지 않아도 이 창이 뜹니다."));
+            "원본과 다릅니다 — 「인물정보」에서 누구를 볼지 고르는 창을 리디바탕 글씨의 목록으로 띄웁니다."
+            + " 줄마다 초상화, 지닌 기능과 언어(그 자리에서 안 쓰이는 것은 흐리게), 오른쪽에 자리가 나오고,"
+            + " 줄을 고르면 오른쪽에 맡은 기능의 효과가 펼쳐집니다. 결정(또는 두 번 누르기)으로 인물정보 판을 엽니다."
+            + " 끄면 원본처럼 자리 이름(플레이어 · 부관 …)만 늘어놓습니다."));
 
         // 아이템 창 — 소지품일람 줄마다 그림과 효과.
         ui.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
@@ -347,6 +341,12 @@ public sealed class ModDialog : GameWindow
         dismiss.Checked += (_, _) => skip.IsEnabled = true;
         dismiss.Unchecked += (_, _) => skip.IsEnabled = false;
         general.Children.Add(skip);
+
+        // 수에즈 운하 — 지중해와 수에즈만 사이에 바닷길.
+        general.Children.Add(Toggle("수에즈 운하", GameSettings.SuezCanal,
+            on => { GameSettings.SuezCanal = on; ShipMapWindow.Current?.RefreshSuezCanal(); },
+            "원본에 없는 것입니다(운하는 1869년) — 포트사이드와 수에즈 사이 지협에 두 칸 폭의 바닷길을 뚫어, 지중해에서 홍해로"
+            + " 배로 곧장 지나갈 수 있게 합니다."));
 
         general.Children.Add(Toggle("특별주문", GameSettings.SpecialOrder, on => GameSettings.SpecialOrder = on,
             "원본에 없는 것입니다 — 조선소 「구입」 아래에 「특별주문」 줄이 생깁니다. 가진 배 가운데 그 조선소가 파는 선체를 고르면"

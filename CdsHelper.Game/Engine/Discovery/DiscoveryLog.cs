@@ -98,6 +98,9 @@ public sealed class DiscoveryLog
     /// </remarks>
     public bool IsOpen(Player player, in DiscoveryTable.Record row)
     {
+        // 대본 명령 「발견물 닫기 · 열기」(원본에 없는 것)가 계약 · 처음부터보다 먼저다.
+        if (player.ScriptClosedDiscoveries.Contains(row.Id)) return false;
+        if (player.ScriptOpenedDiscoveries.Contains(row.Id)) return true;
         if (row.OpenAtStart) return true;
         if (_hints == null) return false;
 

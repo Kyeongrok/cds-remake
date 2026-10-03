@@ -558,6 +558,10 @@ public sealed class DisevRunner
             // 70 10 — 대사 사건(갈래 6)이 그 번호면 참. 원본에 없는 조건이다(TownLines).
             case DisevCall.SpeechIs:
                 return _event.Kind == DisevEvent.SpeechKind && _event.Line == I("Line");
+            // 73 0B — 그 발견물이 열려 있으면 참(계약 · 처음부터 · 대본 열기). 원본에 없는 조건이다.
+            case DisevCall.DiscoveryOpenIs:
+                return _game.Discoveries is { } openLog && openLog.Table.Find(I("Discovery")) is { } openRow
+                       && openLog.IsOpen(player, openRow);
             // 65 — 후원자 건물을 나서는 사건(갈래 5, 0x0044E72F)이면 참(0x00407E7C).
             case DisevCall.SponsorVisitEnded:
                 return _event.Kind == DisevEvent.SponsorLeftKind;
@@ -937,6 +941,14 @@ public sealed class DisevRunner
                 return null;
             case DisevCall.RemoveItem:
                 _game.Player.Drop(I("Item"));
+                return null;
+
+            // 71 0B · 72 0B — 대본이 발견물을 연다 · 닫는다(원본에 없는 명령, DiscoveryLog.IsOpen 이 본다).
+            case DisevCall.OpenDiscovery:
+                _game.Player.OpenDiscoveryByScript(I("Discovery"));
+                return null;
+            case DisevCall.CloseDiscovery:
+                _game.Player.CloseDiscoveryByScript(I("Discovery"));
                 return null;
 
             case DisevCall.Discover:

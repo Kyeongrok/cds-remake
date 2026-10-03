@@ -24,6 +24,7 @@ public enum DisevCall
     Raw,
 
     // ── 표시·연출 ─────────────────────────────────────────────
+    OpenDiscovery, CloseDiscovery,
     Say, AskYesNo, SayBare, AskChoice, AskChoiceWide,
     ShowDStill, ShowEvStill, CloseImage, PlayVideo, PlayCgAnimation, SpecialEncounter,
     PlaySound, StopSound, HideDialog, ShowDialog, DelphiOracle,
@@ -48,7 +49,7 @@ public enum DisevCall
     Result, ResultFalse, LastConditionFalse, LastCondition, NoAide, HasAide, ChoiceIs, ChoiceIsNot,
     HintActive, HintInactive, HasItem, LacksItem, Discovered, NotDiscovered, DiscoveryDone, DiscoveryNotDone,
     YearAtLeast, YearBefore, YearAtMost, YearAfter, YearIs, YearBetween, YearOutside, YearMonthIs,
-    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
+    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, DiscoveryOpenIs, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
     CityNationCheck, CityNationIs, CityStanding, CityGone, BuildingStanding, BuildingGone, LeftCityBySea, LeftCityOnLand,
     Story0, NotStory0, Story1, NotStory1, Unknown0015, NoContract, Or, RandomChance,
     GreaterThan, GreaterOrEqual, LessThan, LessOrEqual, EqualTo, NotEqualTo,
@@ -104,6 +105,9 @@ public static class DisevCalls
         S(DisevCall.PuzzleMinigame1A, "0E 1A u32 04 u16", "Discs", "Game"),
 
         S(DisevCall.Discover, "01 0B u16", "Discovery"),
+        // 71 0B · 72 0B [발견물] — 원본에 없는 꼴. 그 발견물의 열림 깃발을 대본이 세우고 · 내린다(DiscoveryLog.IsOpen).
+        S(DisevCall.OpenDiscovery, "71 0B u16", "Discovery"),
+        S(DisevCall.CloseDiscovery, "72 0B u16", "Discovery"),
         S(DisevCall.ActivateGoods, "01 15 u16", "Goods"),
         S(DisevCall.BuyCargoFrom, "5B 08 u16 15 u16", "City", "Goods"),
         S(DisevCall.BuyCargo, "5B 15 u16", "Goods"),
@@ -206,6 +210,8 @@ public static class DisevCalls
         C(DisevCall.BuildingCommand, null, "42 10 u16 21 u16", "Building", "Command"),
         // 70 10 [번호] — 원본에 없는 꼴. 엔진이 마을 사람 대사를 내기 직전 올린 대사 사건(갈래 6)이 그 번호면 참(TownLines).
         C(DisevCall.SpeechIs, null, "70 10 u16", "Line"),
+        // 73 0B [발견물] — 원본에 없는 꼴. 그 발견물이 열려 있으면(계약 · 처음부터 · 대본) 참.
+        C(DisevCall.DiscoveryOpenIs, null, "73 0B u16", "Discovery"),
         // 65 — 후원자 건물을 나서는 사건(맥락 갈래 5, 0x0044E72F)일 때 참(0x00407E7C).
         C(DisevCall.SponsorVisitEnded, null, "65"),
         // 59 — 함대에 배가 한 척이라도 있으면 참(0x00407DA9 → 0x00473CD0 이 여덟 자리를 훑는다).

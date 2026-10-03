@@ -2604,6 +2604,9 @@ public sealed class ShipMapWindow : Window
         ShowModDialog();
     }
 
+    /// <summary>모드 「수에즈 운하」를 켜고 끈 것을 지도에 곧바로 들인다.</summary>
+    internal void RefreshSuezCanal() => _host.RefreshSuezCanal();
+
     /// <summary>모드 창이 떠 있는지 — 모드 창 안에서 M 을 또 눌러 겹쳐 뜨지 않게.</summary>
     private bool _modOpen;
 
@@ -3039,6 +3042,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreContract(GameSave.ContractOf(saved));
             // 계약 맺어 본 힌트. 이 칸이 없던 옛 세이브라도 지금 맺고 있는 계약만큼은
             // 열어 둔 채로 이어야 한다 — 안 그러면 불러오자마자 그 발견물이 다시 잠긴다.
+            _game.Player.RestoreScriptDiscoveries(saved.ScriptOpened, saved.ScriptClosed);
             _game.Player.RestoreOpenedHints(
                 saved.OpenedHints ?? (saved.Contract is { } deal ? [deal.Hint] : null));
 

@@ -32,7 +32,7 @@ internal static class PersonInfoMenu
             return;
         }
         // 모드 「인물정보 목록」 — 스폰서 일람처럼 초상화와 기능을 늘어놓고 고르게 한다.
-        if (Local.Settings.GameSettings.PersonInfoList || Local.Settings.GameSettings.PersonInfoEnhanced)
+        if (Local.Settings.GameSettings.PersonInfoEnhanced)
         {
             Held(hold, menu, () => ShowList(owner, game));
             return;
@@ -48,7 +48,7 @@ internal static class PersonInfoMenu
     {
         var player = game.Player;
         if (player.MateCount == 0) { PersonInfoDialog.Show(owner, player, game.Directory, game); return; }
-        if (Local.Settings.GameSettings.PersonInfoList || Local.Settings.GameSettings.PersonInfoEnhanced) { ShowList(owner, game); return; }
+        if (Local.Settings.GameSettings.PersonInfoEnhanced) { ShowList(owner, game); return; }
 
         var slots = new List<int> { -1 };
         var labels = new List<string> { "플레이어" };
@@ -118,55 +118,10 @@ internal static class PersonInfoMenu
             });
         }
 
-        // 향상된 인물정보 목록 — 리디바탕 글씨의 전용 창. 아니면 게임 글꼴의 공용 목록 창이다.
-        if (Local.Settings.GameSettings.PersonInfoEnhanced)
-        {
-            PersonListDialog.Show(owner, [.. Enumerable.Range(0, names.Count).Select(i =>
-                new PersonListDialog.Entry(names[i], faces[i], skills[i], roles[i], notes[i], open[i]))]);
-            return;
-        }
-
-        // 게임 글꼴은 낱말을 알아서 접지 않는다 — 칸 수로 접어 넘긴다.
-        var folded = skills.Select(FoldLines).ToList();
-        while (true)
-        {
-            int pick = HintListDialog.Pick(owner, names, "인물정보", "", faces: faces,
-                                           subtitles: folded, rightTexts: roles, listWidth: ListWidth,
-                                           faceHeight: FaceHeight, maxHeight: ListHeight,
-                                           describe: i => i < notes.Count ? notes[i] : "");
-            if (pick < 0 || pick >= open.Count) return;
-            open[pick]();
-        }
+        // 향상된 인물정보 목록 — 리디바탕 글씨의 전용 창.
+        PersonListDialog.Show(owner, [.. Enumerable.Range(0, names.Count).Select(i =>
+            new PersonListDialog.Entry(names[i], faces[i], skills[i], roles[i], notes[i], open[i]))]);
     }
-
-    /// <summary>게임 글꼴 목록 폭.</summary>
-    private const double ListWidth = 430;
-
-    /// <summary>게임 글꼴 목록의 초상화 높이 — 원본 초상화(96)의 8할.</summary>
-    private const double FaceHeight = 77;
-
-    /// <summary>게임 글꼴 목록이 굴리지 않고 늘어날 높이 — 다섯 줄이 한눈에 든다.</summary>
-    private const double ListHeight = 640;
-
-    /// <summary>게임 글꼴 한 줄에 드는 칸 수 — 한글 한 자가 두 칸이다.</summary>
-    private const int LineCells = 40;
-
-    /// <summary>줄마다 낱말 단위로 <see cref="LineCells"/> 를 넘지 않게 접는다. 흐린 표시 <c>~</c> 는 칸에 안 센다.</summary>
-    private static string FoldLines(string lines) =>
-        string.Join("\n", lines.Split('\n').Select(line =>
-        {
-            var text = new System.Text.StringBuilder();
-            int used = 0;
-            foreach (string part in line.Split(' '))
-            {
-                int width = part.TrimStart('~').Sum(c => c < 0x80 ? 1 : 2);
-                if (used > 0 && used + 1 + width > LineCells) { text.Append('\n'); used = 0; }
-                else if (used > 0) { text.Append(' '); used++; }
-                text.Append(part);
-                used += width;
-            }
-            return text.ToString();
-        }));
 
     /// <summary>부하 자리.</summary>
     private const int FirstMateSlot = 0, NavigatorSlot = 1, SurveyorSlot = 2, InterpreterSlot = 3;

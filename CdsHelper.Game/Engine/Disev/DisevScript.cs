@@ -39,6 +39,9 @@ public static class DisevScript
 
     private static byte[] Sig(params byte[] bytes) => bytes;
 
+    /// <summary>발견물 번호 → 이름 — 풀이 글(「발견물 열기: 0 희망봉」)에 쓴다. 판 · 편집기가 걸어 둔다.</summary>
+    public static Func<int, string?>? DiscoveryNameOf { get; set; }
+
     /// <summary><c>43 2B~2E 1C</c> 비교 분기의 갈래 이름. 어떤 비교인지는 둘째 바이트에 있다.</summary>
     public const string CompareKind = "상태값 비교 분기";
 
@@ -147,6 +150,10 @@ public static class DisevScript
         new(Sig(0x42, 0x10), 7, "건물 명령 조건"),
         // 70 10 [번호] — 원본에 없는 대사 사건 조건(TownLines). 편집기에는 번호와 이름이 같이 보인다.
         new(Sig(0x70, 0x10), 4, "대사 사건 조건"),
+        // 71 0B · 72 0B · 73 0B [발견물] — 원본에 없는 발견물 열기 · 닫기 · 열림 조건.
+        new(Sig(0x71, 0x0B), 4, "발견물 열기"),
+        new(Sig(0x72, 0x0B), 4, "발견물 닫기"),
+        new(Sig(0x73, 0x0B), 4, "발견물 열림 조건"),
         new(Sig(0x65), 1, "후원자 건물 나섬 조건"),
         new(Sig(0x59), 1, "배 있음 조건"),
         new(Sig(0x17, 0x19), 4, "문화권 조건"),
@@ -615,6 +622,13 @@ public static class DisevScript
         string kind = form.Kind;
         switch (kind)
         {
+            case "발견물 열기":
+            case "발견물 닫기":
+            case "발견물 열림 조건":
+            {
+                int n = U16(raw, 2);
+                return $"{kind}: {n} {DiscoveryNameOf?.Invoke(n) ?? ""}".TrimEnd();
+            }
             case "대사 사건 조건":
             {
                 int n = U16(raw, 2);

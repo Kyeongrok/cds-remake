@@ -2054,6 +2054,38 @@ public sealed class Player
     /// </remarks>
     public void EndContract() => Contract = null;
 
+    private readonly HashSet<int> _scriptOpened = [];
+    private readonly HashSet<int> _scriptClosed = [];
+
+    /// <summary>대본이 「발견물 열기」로 연 발견물 — 계약 없이도 자리 판정에 걸린다(원본에 없는 몫).</summary>
+    public IReadOnlyCollection<int> ScriptOpenedDiscoveries => _scriptOpened;
+
+    /// <summary>대본이 「발견물 닫기」로 닫은 발견물 — 계약했거나 처음부터 열려 있어도 안 걸린다(원본에 없는 몫).</summary>
+    public IReadOnlyCollection<int> ScriptClosedDiscoveries => _scriptClosed;
+
+    /// <summary>대본이 그 발견물을 연다. 닫아 둔 것이었으면 닫힘을 걷는다.</summary>
+    public void OpenDiscoveryByScript(int id)
+    {
+        _scriptClosed.Remove(id);
+        _scriptOpened.Add(id);
+    }
+
+    /// <summary>대본이 그 발견물을 닫는다. 대본이 열어 둔 것이었으면 열림을 걷는다.</summary>
+    public void CloseDiscoveryByScript(int id)
+    {
+        _scriptOpened.Remove(id);
+        _scriptClosed.Add(id);
+    }
+
+    /// <summary>세이브를 되돌릴 때 대본이 연 · 닫은 발견물을 채운다.</summary>
+    public void RestoreScriptDiscoveries(IEnumerable<int>? opened, IEnumerable<int>? closed)
+    {
+        _scriptOpened.Clear();
+        _scriptClosed.Clear();
+        foreach (int id in opened ?? []) _scriptOpened.Add(id);
+        foreach (int id in closed ?? []) _scriptClosed.Add(id);
+    }
+
     /// <summary>세이브를 되돌릴 때 계약을 맺어 본 힌트를 그대로 채운다.</summary>
     public void RestoreOpenedHints(IEnumerable<int>? openedHints)
     {

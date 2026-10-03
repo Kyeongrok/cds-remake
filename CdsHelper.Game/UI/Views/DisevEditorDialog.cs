@@ -112,7 +112,15 @@ public sealed class DisevEditorDialog : GameWindow
     [
         (DisevCall.PlayVideo, "동영상 재생"),
         (DisevCall.ShowDStill, "DSTILL 그림 표시"),
+        // 원본에 없는 발견물 명령 — 열림 깃발을 대본이 세우고 내린다. 조건은 조건 덩이에 넣는다.
+        (DisevCall.OpenDiscovery, "발견물 열기"),
+        (DisevCall.CloseDiscovery, "발견물 닫기"),
+        (DisevCall.DiscoveryOpenIs, "발견물 열림 조건"),
     ];
+
+    /// <summary>발견물을 값으로 받는 명령인지 — 값 칸이 발견물 목록이 되고 인자 이름이 Discovery 다.</summary>
+    private static bool TakesDiscovery(DisevCall call) =>
+        call is DisevCall.OpenDiscovery or DisevCall.CloseDiscovery or DisevCall.DiscoveryOpenIs;
 
     private readonly Button _open = Bar("게임 폴더 고르기");
     private readonly Button _revert = Bar("이 발견물만 원본으로");
@@ -388,6 +396,8 @@ public sealed class DisevEditorDialog : GameWindow
 
         // 이름표는 게임 폴더의 EXE 에서 온다. 없어도 번호로는 다룰 수 있다.
         _names = DiscoveryTable.Open(dir);
+        var namesNow = _names;
+        DisevScript.DiscoveryNameOf = id => namesNow?.Find(id)?.Name;
         _items = ItemTable.Open(dir);
         _cities = CityTable.Open();
 
@@ -1104,7 +1114,12 @@ public sealed class DisevEditorDialog : GameWindow
         var call = AddKinds[Math.Clamp(_addKind.SelectedIndex, 0, AddKinds.Length - 1)].Call;
         var choices = new List<ValueChoice>();
 
-        if (call == DisevCall.PlayVideo)
+        if (TakesDiscovery(call))
+        {
+            foreach (var d in (_names?.Discoveries ?? []).OrderBy(d => d.Id))
+                choices.Add(new ValueChoice(d.Id, $"{d.Id} · {d.Name}"));
+        }
+        else if (call == DisevCall.PlayVideo)
         {
             // 발견물 표가 그 번호를 쓰면 이름을 붙인다.
             var users = (_names?.Discoveries ?? []).Where(d => d.Movie >= 0)
@@ -1211,7 +1226,9 @@ public sealed class DisevEditorDialog : GameWindow
             var (call, kindText) = AddKinds[Math.Clamp(_addKind.SelectedIndex, 0, AddKinds.Length - 1)];
             if (_addValue.SelectedItem is not ValueChoice value)
             {
-                _status.Text = call == DisevCall.PlayVideo
+                _status.Text = TakesDiscovery(call)
+                    ? "발견물 표를 못 읽었습니다 — 게임 폴더를 골라 주세요."
+                    : call == DisevCall.PlayVideo
                     ? "넣을 동영상이 없습니다 — 에셋-동영상에서 「새 동영상 추가」로 먼저 올리세요."
                     : "DSTILL 그림을 못 읽었습니다 — 게임 폴더를 골라 주세요.";
                 return;
@@ -1225,7 +1242,7 @@ public sealed class DisevEditorDialog : GameWindow
             var line = new DisevLine
             {
                 Call = call,
-                Args = new System.Text.Json.Nodes.JsonObject { ["Id"] = value.Id },
+                Args = new System.Text.Json.Nodes.JsonObject { [TakesDiscovery(call) ? "Discovery" : "Id"] = value.Id },
             };
             int where = below ? at + 1 : at;
             if (!below)
