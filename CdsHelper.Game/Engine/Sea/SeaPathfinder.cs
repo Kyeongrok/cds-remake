@@ -42,22 +42,25 @@ public static class SeaPathfinder
     /// 시작 칸에서 도착 칸까지 바닷길을 찾는다. 둘 다 뭍이면 가까운 물칸으로 민다.
     /// 못 찾으면 null.
     /// </summary>
+    /// <param name="land">참이면 <b>뭍길</b>을 찾는다(<see cref="TerrainTable.CanWalk"/> — 뭍 자동이동). 기본은 바닷길이다.</param>
     public static List<(double X, double Y)>? FindRoute(
-        byte[] world, TerrainTable terrain, (double X, double Y) start, (double X, double Y) goal)
+        byte[] world, TerrainTable terrain, (double X, double Y) start, (double X, double Y) goal, bool land = false)
     {
+        bool ok(int x, int y) => Passable(world, terrain, x, y, land);
+
         int sx = Wrap((int)Math.Floor(start.X));
         int sy = Math.Clamp((int)Math.Floor(start.Y), 0, MapH - 1);
         int gx = Wrap((int)Math.Floor(goal.X));
         int gy = Math.Clamp((int)Math.Floor(goal.Y), 0, MapH - 1);
 
-        if (!CanSail(world, terrain, sx, sy))
+        if (!ok(sx, sy))
         {
-            if (NearestSail(world, terrain, sx, sy) is not { } s) return null;
+            if (Nearest(ok, sx, sy) is not { } s) return null;
             (sx, sy) = s;
         }
-        if (!CanSail(world, terrain, gx, gy))
+        if (!ok(gx, gy))
         {
-            if (NearestSail(world, terrain, gx, gy) is not { } g) return null;
+            if (Nearest(ok, gx, gy) is not { } g) return null;
             (gx, gy) = g;
         }
 
@@ -71,14 +74,14 @@ public static class SeaPathfinder
 
         for (int attempt = 0; attempt < MaxAttempts; attempt++, margin *= 2.2)
         {
-            var path = TryAStar(world, terrain, sx, sy, gx, gy, margin);
-            if (path != null) return Simplify(world, terrain, path);
+            var path = TryAStar(ok, sx, sy, gx, gy, margin);
+            if (path != null) return Simplify(ok, path);
         }
         return null;
     }
 
     private static List<(int X, int Y)>? TryAStar(
-        byte[] world, TerrainTable terrain, int sx, int sy, int gx, int gy, double margin)
+        Func<int, int, bool> ok, int sx, int sy, int gx, int gy, double margin)
     {
         int minX = (int)Math.Floor(Math.Min(sx, gx) - margin);
         int maxX = (int)Math.Ceiling(Math.Max(sx, gx) + margin);
@@ -119,10 +122,9 @@ public static class SeaPathfinder
             {
                 int nx = cx + dx, ny = cy + dy;
                 if (!InBox(nx, ny)) continue;
-                if (!CanSail(world, terrain, nx, ny)) continue;
-                // 대각으로 뭍 모서리를 스치듯 가로지르지 않는다 — 두 이웃이 다 뭍이면 막는다.
-                if (dx != 0 && dy != 0
-                    && !CanSail(world, terrain, cx + dx, cy) && !CanSail(world, terrain, cx, cy + dy))
+                if (!ok(nx, ny)) continue;
+                // 대각으로 막힌 모서리를 스치듯 가로지르지 않는다 — 두 이웃이 다 막혔으면 막는다.
+                if (dx != 0 && dy != 0 && !ok(cx + dx, cy) && !ok(cx, cy + dy))
                     continue;
 
                 int ni = Idx(nx, ny);
@@ -161,7 +163,7 @@ public static class SeaPathfinder
     /// 자리를 골라 안전은 늘 지킨다.
     /// </summary>
     private static List<(double X, double Y)> Simplify(
-        byte[] world, TerrainTable terrain, List<(int X, int Y)> path)
+        Func<int, int, bool> ok, List<(int X, int Y)> path)
     {
         var outPts = new List<(double X, double Y)> { Center(path[0]) };
         int n = path.Count, i = 0;
@@ -171,7 +173,7 @@ public static class SeaPathfinder
             while (lo <= hi)
             {
                 int mid = (lo + hi) / 2;
-                if (LineIsSea(world, terrain, path[i], path[mid])) { best = mid; lo = mid + 1; }
+                if (LineIsOpen(ok, path[i], path[mid])) { best = mid; lo = mid + 1; }
                 else hi = mid - 1;
             }
             outPts.Add(Center(path[best]));
@@ -182,8 +184,8 @@ public static class SeaPathfinder
 
     private static (double X, double Y) Center((int X, int Y) c) => (c.X + 0.5, c.Y + 0.5);
 
-    /// <summary>두 칸을 잇는 직선이 처음부터 끝까지 바다인지 — 브레젠험으로 훑는다.</summary>
-    private static bool LineIsSea(byte[] world, TerrainTable terrain, (int X, int Y) a, (int X, int Y) b)
+    /// <summary>두 칸을 잇는 직선이 처음부터 끝까지 지나갈 수 있는 칸인지 — 브레젠험으로 훑는다.</summary>
+    private static bool LineIsOpen(Func<int, int, bool> ok, (int X, int Y) a, (int X, int Y) b)
     {
         int x0 = a.X, y0 = a.Y, x1 = b.X, y1 = b.Y;
         int dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
@@ -192,7 +194,7 @@ public static class SeaPathfinder
 
         while (true)
         {
-            if (!CanSail(world, terrain, x, y)) return false;
+            if (!ok(x, y)) return false;
             if (x == x1 && y == y1) return true;
             int e2 = 2 * err;
             if (e2 >= dy) { err += dy; x += sx; }
@@ -200,8 +202,8 @@ public static class SeaPathfinder
         }
     }
 
-    /// <summary>그 자리에서 가장 가까운 바다 칸(테두리만 훑는다). 못 찾으면 null.</summary>
-    private static (int X, int Y)? NearestSail(byte[] world, TerrainTable terrain, int x, int y)
+    /// <summary>그 자리에서 가장 가까운 지나갈 수 있는 칸(테두리만 훑는다). 못 찾으면 null.</summary>
+    private static (int X, int Y)? Nearest(Func<int, int, bool> ok, int x, int y)
     {
         for (int r = 1; r <= 64; r++)
             for (int dy = -r; dy <= r; dy++)
@@ -210,15 +212,17 @@ public static class SeaPathfinder
                     if (Math.Abs(dx) != r && Math.Abs(dy) != r) continue;
                     int ny = y + dy;
                     if (ny < 0 || ny >= MapH) continue;
-                    if (CanSail(world, terrain, x + dx, ny)) return (Wrap(x + dx), ny);
+                    if (ok(x + dx, ny)) return (Wrap(x + dx), ny);
                 }
         return null;
     }
 
-    private static bool CanSail(byte[] world, TerrainTable terrain, int x, int y)
+    /// <summary>그 칸을 지나갈 수 있는지 — 바다면 바다 칸, 뭍이면 걸을 수 있는 칸이다.</summary>
+    private static bool Passable(byte[] world, TerrainTable terrain, int x, int y, bool land)
     {
         if (y < 0 || y >= MapH) return false;
-        return terrain.CanSail(CellValue(world, x, y));
+        int cell = CellValue(world, x, y);
+        return land ? terrain.CanWalk(cell) : terrain.CanSail(cell);
     }
 
     /// <summary>

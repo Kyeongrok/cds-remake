@@ -129,11 +129,19 @@ public sealed class FleetLabelWindow : Window
     }
 
     /// <summary>적을 글을 갈아 준다. 빈 글이면 쪽지를 감춘다.</summary>
-    public void Set(string text)
+    /// <param name="detail">밑에 작은 글씨로 덧붙일 줄들(배 속도의 셈식 따위). 없으면 한 줄이다.</param>
+    public void Set(string text, string? detail = null)
     {
         // 주인 창을 닫으며 딸린 창을 먼저 닫은 뒤에도 주인이 활성화되며 이리로 올 수 있다 — 닫힌 창은 못 띄운다.
         if (IsClosed) return;
-        _text.Text = text;
+        if (string.IsNullOrEmpty(detail)) _text.Text = text;
+        else
+        {
+            _text.Inlines.Clear();
+            _text.Inlines.Add(new System.Windows.Documents.Run(text));
+            _text.Inlines.Add(new System.Windows.Documents.LineBreak());
+            _text.Inlines.Add(new System.Windows.Documents.Run(detail) { FontSize = Math.Max(11, _text.FontSize * 0.5) });
+        }
         _wanted = text.Length > 0;
         Apply();
     }

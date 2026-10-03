@@ -136,6 +136,39 @@ public static class Sailing
     }
 
     /// <summary>
+    /// 함대 속도 셈을 줄마다 풀어 쓴다(정보 등급 「상세」의 배 속도 쪽지) — <see cref="SpeedOf"/> 와 같은 셈이다.
+    /// </summary>
+    public static string Explain(Player player, SailTable? sails, int windDir, int windSpeed, int heading, bool onLand)
+    {
+        if (onLand) return $"뭍 속도 {LandSpeed}";
+        if (windSpeed == 0) return $"무풍 — 속도 {CalmSpeed}";
+        if (sails == null || player.Ships.Count == 0) return $"속도 {CalmSpeed}";
+
+        int relative = (windDir - heading) & 0xF;
+        var lines = new List<string> { "배 = 속력 × (풍속+1) × 돛효율 ÷ 100" };
+        int sum = 0, flagship = 0;
+        for (int i = 0; i < player.Ships.Count; i++)
+        {
+            var ship = player.Ships[i];
+            int eff = sails.Efficiency(ship.Sails, relative);
+            int v = ship.Speed * (windSpeed + 1) * eff / 100;
+            string line = $"{ship.Name}: {ship.Speed} × {windSpeed + 1} × {eff}% = {v}";
+            int need = ship.Crew, aboard = CrewOn(player, i);
+            if (need > aboard)
+            {
+                v = Math.Max(aboard * v / Math.Max(1, need), (v + 1) / 2);
+                line += $" → 선원 {aboard}/{need} → {v}";
+            }
+            if (i == player.Flagship) { flagship = v; line += " (기함)"; }
+            sum += v;
+            lines.Add(line);
+        }
+        int avg = sum / player.Ships.Count;
+        lines.Add($"함대 = (기함 {flagship} + 평균 {avg}) ÷ 2 = {(flagship + avg) / 2}");
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>
     /// 그 배에 탄 선원 수.
     /// </summary>
     /// <remarks>

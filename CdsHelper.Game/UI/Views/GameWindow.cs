@@ -87,6 +87,13 @@ public class GameWindow : Window
         {
             ShipMapWindow.Current?.HintsByKey(window);
             e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.PersonKey, Key.X))
+        {
+            ShipMapWindow.Current?.PersonByKey(window);
+            e.Handled = true;
         }
     }
 

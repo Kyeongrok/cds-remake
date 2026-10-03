@@ -90,21 +90,73 @@ public static class MapShaderData
     /// 강에서 멀어질수록 서서히 새 바다로 넘어가게 한다(강을 매끈한 물로 바꾸면 둑이 뭉개지고 색도 어긋났다).
     /// </remarks>
     /// <summary>
-    /// 나일강이 흐르는 칸 네모 — 알렉산드리아(78) · 카이로(79) · 아스완(80) · 하르툼(111)을 둘러 넉넉히 잡는다.
-    /// 그 안의 강 칸만 바다처럼 그린다. 도시 좌표를 모르면 null.
+    /// 강 칸을 <b>바다처럼</b> 그리는 구역 — 기준 도시들을 둘러싼 네모에 여백(왼 · 위 · 오른 · 아래, 칸)을 더한다.
     /// </summary>
-    private static (int Left, int Top, int Right, int Bottom)? NileBox()
+    /// <remarks>
+    /// <code>
+    ///   나일강              알렉산드리아(78) · 카이로(79) · 아스완(80) · 하르툼(111)
+    ///   티그리스 · 유프라테스  바그다드(127) · 바스라(126) — 북서쪽 상류(시리아 · 아나톨리아 쪽)까지 넉넉히
+    ///   라인강              앤트워프(23) · 암스테르담(24) · 쾰른(47) · 프랑크푸르트(48) · 스트라스부르크(49) — 상류는 남쪽으로 더
+    /// </code>
+    /// 한 도는 대략 6~7칸이다(바그다드 · 바스라 사이로 잰 값).
+    /// </remarks>
+    private static readonly (int[] Cities, int Left, int Top, int Right, int Bottom)[] SeaRivers =
+    [
+        ([78, 79, 80, 111], 24, 4, 24, 24),
+        ([126, 127], 50, 38, 20, 8),
+        ([23, 24, 47, 48, 49], 6, 2, 6, 16),
+    ];
+
+    /// <summary>바다처럼 그릴 강 구역의 칸 네모들. 기준 도시 좌표를 모르는 구역은 뺀다.</summary>
+    private static IEnumerable<(int Left, int Top, int Right, int Bottom)> SeaRiverBoxes()
     {
         int w = WorldMapRenderer.UnfoldedW, h = WorldMapRenderer.CellH;
-        double l = double.MaxValue, t = double.MaxValue, r = double.MinValue, b = double.MinValue;
-        foreach (int city in (int[])[78, 79, 80, 111])
+        foreach (var (cities, ml, mt, mr, mb) in SeaRivers)
         {
-            if (!GameMapCoords.TryCityCell(city, out double cx, out double cy)) return null;
-            l = Math.Min(l, cx); r = Math.Max(r, cx); t = Math.Min(t, cy); b = Math.Max(b, cy);
+            double l = double.MaxValue, t = double.MaxValue, r = double.MinValue, b = double.MinValue;
+            bool known = true;
+            foreach (int city in cities)
+            {
+                if (!GameMapCoords.TryCityCell(city, out double cx, out double cy)) { known = false; break; }
+                l = Math.Min(l, cx); r = Math.Max(r, cx); t = Math.Min(t, cy); b = Math.Max(b, cy);
+            }
+            if (!known) continue;
+            yield return (Math.Clamp((int)l - ml, 0, w - 1), Math.Clamp((int)t - mt, 0, h - 1),
+                          Math.Clamp((int)r + mr, 0, w - 1), Math.Clamp((int)b + mb, 0, h - 1));
         }
-        const int Margin = 24;
-        return (Math.Clamp((int)l - Margin, 0, w - 1), Math.Clamp((int)t - 4, 0, h - 1),
-                Math.Clamp((int)r + Margin, 0, w - 1), Math.Clamp((int)b + Margin, 0, h - 1));
+    }
+
+    /// <summary>
+    /// 바다처럼 그릴 강 칸 — 구역 네모 안의 강 칸을 씨앗으로, <b>이어진 강줄기 전체</b>(8방 이웃)를 고른다.
+    /// 네모로만 자르면 지류가 네모 가장자리에서 반은 바다식 · 반은 원본 도트로 갈렸다(뉘른베르크 쪽 마인강).
+    /// </summary>
+    public static List<int> SeaRiverCells(byte[] kind, int w, int h)
+    {
+        var seen = new bool[kind.Length];
+        var queue = new Queue<int>();
+        foreach (var box in SeaRiverBoxes())
+            for (int y = box.Top; y <= box.Bottom; y++)
+                for (int x = box.Left; x <= box.Right; x++)
+                {
+                    int i = y * w + x;
+                    if (kind[i] == RiverClass && !seen[i]) { seen[i] = true; queue.Enqueue(i); }
+                }
+        var cells = new List<int>();
+        while (queue.Count > 0)
+        {
+            int i = queue.Dequeue();
+            cells.Add(i);
+            int x = i % w, y = i / w;
+            for (int dy = -1; dy <= 1; dy++)
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int ny = y + dy;
+                    if ((dx == 0 && dy == 0) || ny < 0 || ny >= h) continue;
+                    int j = ny * w + (x + dx + w) % w;
+                    if (!seen[j] && kind[j] == RiverClass) { seen[j] = true; queue.Enqueue(j); }
+                }
+        }
+        return cells;
     }
 
     public static byte[] SeaDepth(byte[] world, TerrainTable terrain)
@@ -121,13 +173,11 @@ public static class MapShaderData
                 kind[y * w + x] = (word & 0x8000) != 0 ? (byte)0 : (byte)terrain.ClassOfCell(word);
             }
 
-        // 나일강은 강 칸이지만 <b>바다처럼</b> 그린다 — 강 도트로 두면 넓은 사막에 가는 줄 하나라 바다 어귀와 결이 달랐다.
+        // 나일강 · 티그리스 · 유프라테스는 강 칸이지만 <b>바다처럼</b> 그린다 — 강 도트로 두면 넓은 사막에 가는 줄 하나라
+        // 바다 어귀와 결이 달랐다(SeaRivers).
         // 물 칸으로 쳐서 수심을 재고, 강 거리 씨앗에서도 뺀다(그래야 고해상도 바다가 원본 도트로 물러서지 않는다).
-        var nileCells = new List<int>();
-        if (NileBox() is { } nile)
-            for (int y = nile.Top; y <= nile.Bottom; y++)
-                for (int x = nile.Left; x <= nile.Right; x++)
-                    if (kind[y * w + x] == RiverClass) { kind[y * w + x] = 0; nileCells.Add(y * w + x); }
+        var nileCells = SeaRiverCells(kind, w, h);
+        foreach (int i in nileCells) kind[i] = 0;
 
         var depth = new byte[w * h];
         var queue = new int[w * h];

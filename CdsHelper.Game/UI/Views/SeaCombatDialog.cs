@@ -1125,12 +1125,15 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             .Select(PrizeOf)
             .ToList();
         if (prizes.Count == 0) return;
+        // 빼앗는 양은 <b>편입 창을 띄우기 전에</b> 잡은 배 전부로 센다 — 원본도 V · W 를 먼저 모으고(0x00434D6D 고리)
+        // 편입 창(0x00488A20)은 그 뒤다. 편입 창이 함대에 들인 배를 목록에서 빼므로(PrizeFleetMenu.Run), 예전처럼 뒤에서
+        // 세면 다 들였을 때 풀이 0 이 되어 미탑재품도 교역품도 안 떴다.
+        int volume = prizes.Sum(s => s.UsableCapacity), weight = prizes.Sum(s => s.Tonnage);
         PrizeFleetMenu.Run(this, player, prizes, _game?.Items);
 
         // 편성 뒤에 짐 창이 뜬다(0x00434D30 → 0x004879A0). 괴물과의 판에는 없다. 빼앗는 양은 편입과
         // 상관없이 잡은 배 전부로 센다 — 빈 용량(포탑 뺀 적재량)과 선체 중량 한도의 합이다.
         if (_battle.Monster || _game is not { } game) return;
-        int volume = prizes.Sum(s => s.UsableCapacity), weight = prizes.Sum(s => s.Tonnage);
         int pool = BattleLoot.PoolOf(volume, weight);
         var loot = game.CityRows is { } cities && game.Trade is { } trade && game.Goods is { } goods
             ? BattleLoot.GoodsOf(_foe.Leader?.Nation ?? -1, volume, weight, pool, cities, trade, goods, _random)

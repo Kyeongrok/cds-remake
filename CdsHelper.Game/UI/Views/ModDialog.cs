@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -106,6 +106,8 @@ public sealed class ModDialog : GameWindow
         var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「정보」 — 화면에 쪽지·덧그림·창으로 무언가를 더 보여 주는 것만 모은다.
         var info = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「UI」 — 창 모양 · 글꼴 · 차림표 줄처럼 화면 꾸밈을 바꾸는 것.
+        var ui = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「실험」 — 아직 다듬는 중인 덧그림. 모양이 바뀔 수 있다.
         var lab = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
 
@@ -136,19 +138,19 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 덧그림입니다 — 바람과 해류의 방위를 지도 위에 화살표로 얹습니다."));
 
         // 발견물 지도 — 햄버거 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
-        info.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
+        ui.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,
             "햄버거에 「발견물 지도」 줄을 냅니다. 어디에 무엇이 있는지 표식으로 찍어 보여 줍니다."
             + " 끄면 줄도 단축키도 안 먹습니다."));
 
         // 여급 수첩 — 낯을 튼 여급과 궁합을 모아 본다. 원본에는 없는 창이다.
-        info.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
+        ui.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
             on => GameSettings.ShowBarmaidBookMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「여급 수첩」을 냅니다. 낯을 튼 여급의 친밀도와 궁합을 모아 봅니다."
             + " 여급 수첩 · 인물 이동을 다 끄면 도시락 단추도 사라집니다."));
 
         // 인물 이동 — 누가 어느 도시로 가고 있는지 늘어놓는 창.
-        info.Children.Add(Toggle("인물 이동", GameSettings.ShowPersonMoveMenu,
+        ui.Children.Add(Toggle("인물 이동", GameSettings.ShowPersonMoveMenu,
             on => GameSettings.ShowPersonMoveMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「인물 이동」을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
 
@@ -205,14 +207,14 @@ public sealed class ModDialog : GameWindow
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
 
         // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
-        info.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
+        ui.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
             on => { GameSettings.RidiFont = on; UiFont.Refresh(); },
             "원본에 없는 것입니다 — 게임 비트맵 글꼴이 아니라 윈도 글꼴로 찍는 글씨(이 모드 창, 향상된 힌트 보기, 교역소 숫자 따위)를"
             + " 리디바탕(명조)으로 바꿉니다. 게임 비트맵 글씨는 그대로입니다. 켜고 끄면 떠 있는 창에도 곧바로 듭니다."
             + " 리디바탕은 리디주식회사가 SIL OFL 1.1 로 낸 글꼴입니다."));
 
         // 향상된 힌트 보기 — 취득 힌트 일람을 모드 창처럼 목록 · 설명 두 칸으로.
-        info.Children.Add(Toggle("향상된 힌트 보기", GameSettings.HintBrowser,
+        ui.Children.Add(Toggle("향상된 힌트 보기", GameSettings.HintBrowser,
             on => GameSettings.HintBrowser = on,
             "원본과 다릅니다 — 취득 힌트 일람을 왼쪽에 목록, 오른쪽에 설명으로 나란히 띄웁니다."
             + " 줄을 누르면(↑↓ 글쇠도) 곧바로 그 힌트의 이야기가 오른쪽에 나옵니다(정보 등급 「일반」이면 등급 · 자금 · 기한도)."
@@ -227,16 +229,41 @@ public sealed class ModDialog : GameWindow
             + " 「상세」는 원본이 감춰 둔 값까지 보입니다 — 도서관 책등 이름표에 읽는 데 필요한 언어 · 기능이 붙습니다."));
 
         // 향상된 아이템 이미지 — 덧붙인 그림으로 보인다.
-        info.Children.Add(Toggle("향상된 아이템 이미지", GameSettings.EnhancedItemArt,
+        ui.Children.Add(Toggle("향상된 아이템 이미지", GameSettings.EnhancedItemArt,
             on => GameSettings.EnhancedItemArt = on,
             "원본과 다릅니다 — 몇몇 아이템을 새로 그린 그림으로 보입니다(지금은 사자의 서). 끄면 원본 그림입니다."
             + " 원본은 사자의 서가 지중해의 유혹어와 같은 책 그림을 나눠 씁니다."));
 
+        // 인물정보 목록 — 누구를 볼지 고르는 창을 스폰서 일람처럼(게임 글꼴).
+        ui.Children.Add(Toggle("인물정보 목록", GameSettings.PersonInfoList,
+            on => GameSettings.PersonInfoList = on,
+            "원본과 다릅니다 — 「인물정보」에서 누구를 볼지 고르는 창을 스폰서 일람처럼 띄웁니다(게임 글꼴)."
+            + " 줄마다 초상화, 이름 밑에 지닌 기능 · 언어(그 자리에서 안 쓰이는 것은 흐리게), 오른쪽에 자리가 나오고,"
+            + " 줄을 고르면 오른쪽에 맡은 기능의 효과가 펼쳐집니다. 끄면 원본처럼 자리 이름만 늘어놓습니다."));
+
+        // 향상된 인물정보 목록 — 같은 목록을 리디바탕 글씨의 전용 창으로.
+        ui.Children.Add(Toggle("향상된 인물정보 목록", GameSettings.PersonInfoEnhanced,
+            on => GameSettings.PersonInfoEnhanced = on,
+            "원본과 다릅니다 — 「인물정보」 목록을 리디바탕 글씨의 전용 창으로 띄웁니다. 내용은 「인물정보 목록」과 같고,"
+            + " 기능 · 언어가 길어도 폭에 맞춰 접혀 읽기 쉽습니다. 결정(또는 두 번 누르기)으로 인물정보 판을 엽니다."
+            + " 켜면 「인물정보 목록」을 켜지 않아도 이 창이 뜹니다."));
+
         // 아이템 창 — 소지품일람 줄마다 그림과 효과.
-        info.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
+        ui.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
             on => GameSettings.ItemListPictures = on,
             "원본과 다릅니다 — 소지품일람의 줄마다 스폰서 일람처럼 왼쪽에 아이템 그림을 내고, 이름 밑에"
             + " 갈래와 효과(무기 · 방어구), 「장비중」을 적습니다. 끄면 원본처럼 이름만 늘어놓습니다."));
+
+        // 자금 증가 기본 — 스폰서 제안에서 고르기 없이 자금 증가.
+        rows.Children.Add(Toggle("자금 증가 기본", GameSettings.AutoFundRaise, on => GameSettings.AutoFundRaise = on,
+            "원본에 없는 것입니다 — 스폰서가 자금과 기간을 내놓고 「어떤가」 하면 「승낙한다 / 교섭한다」를 묻지 않고"
+            + " 곧바로 자금 증가(자금 x1.3, 기간 절반)를 고릅니다. 스폰서 재력이 모자라거나 기간이 1년이라 원본대로면"
+            + " 「탐욕스러운 놈!」 하고 쫓겨날 판이면, 대신 제안 그대로 승낙합니다."));
+
+        // 휠 확대 — 지도를 마우스 휠로 키우고 줄인다. 원본에 없어 꺼 둔다.
+        rows.Children.Add(Toggle("휠 확대", GameSettings.WheelZoom, on => GameSettings.WheelZoom = on,
+            "원본에 없는 것입니다 — 항해 · 뭍 지도에서 마우스 휠을 굴리면 커서 자리를 두고 지도를 키우고 줄입니다."
+            + " 끄면(기본) 휠을 굴려도 지도가 그대로입니다. 발견물 지도 창의 휠 확대는 이와 상관없이 늘 됩니다."));
 
         // 중량 없음 — 보급품 · 교역품 무게로 막지 않는다.
         rows.Children.Add(Toggle("중량 없음", GameSettings.NoWeight, on => GameSettings.NoWeight = on,
@@ -269,6 +296,12 @@ public sealed class ModDialog : GameWindow
 
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
         // 배 중심 — 가장자리에서 화면을 넘기지 않고 배를 늘 한가운데에 둔다. 아직 다듬는 중이라 실험에 둔다.
+        // 뭍 자동이동 — 발견물 지도에서 발견물 점을 오른쪽 단추로 누르면 그 자리까지 걸어간다.
+        lab.Children.Add(Toggle("뭍 자동이동", GameSettings.LandAutoWalk, on => GameSettings.LandAutoWalk = on,
+            "원본에 없는 것입니다 — 뭍에 올라 있을 때 발견물 지도를 열고 발견물 점에 마우스를 올리면 점에 흰 테두리가 생깁니다."
+            + " 그 점을 오른쪽 단추로 누르면 지도가 닫히고 그 자리까지 뭍길을 찾아 저절로 걸어갑니다(바다 자동항해와 같은 마디 따라가기)."
+            + " 길을 못 찾거나 바다에 있으면 아래 줄에 알립니다. 사건이 나면 멈춥니다."));
+
         lab.Children.Add(Toggle("배 중심", GameSettings.ShipCentered, on => GameSettings.ShipCentered = on,
             "원본에 없는 것입니다 — 원본은 배가 화면 가장자리에 닿으면 화면을 한 번에 넘깁니다."
             + " 켜면 배를 늘 화면 한가운데에 두고 지도가 배를 따라 실시간으로 흐릅니다. 뭍에서 말로 다닐 때도 같습니다."));
@@ -299,6 +332,22 @@ public sealed class ModDialog : GameWindow
             + " 인물정보에 작위와 공적, 「작위」 단추가 나옵니다."));
 
         // 특별주문 — 조선소에서 가진 배와 옵션까지 똑같은 배를 산다.
+        // 부하 해고 — 부하편성 오른쪽 단추에 「해고한다」.
+        var dismiss = Toggle("부하 해고", GameSettings.MateDismiss, on => GameSettings.MateDismiss = on,
+            "원본에 없는 것입니다 — 여관 · 술집 「부하편성」의 결정 오른쪽에 「해고」 단추가 생깁니다. 부하 줄을 눌러 잡고 「해고」를 누릅니다."
+            + " 해고하면 계약이 끝나 재계약을 안 맺었을 때처럼 「또 일이 있으면 불러 주십시오!」 하고 떠나고,"
+            + " 그 뒤로는 여느 인물처럼 제 갈 길을 갑니다(다시 술집에서 고용할 수 있습니다).");
+        general.Children.Add(dismiss);
+        // 그 밑 — 보고 시 재계약 끄기. 부하 해고를 켰을 때만 살아 있다.
+        var skip = Toggle("보고 시 재계약 끄기", GameSettings.SkipRecontract, on => GameSettings.SkipRecontract = on,
+            "부하 해고를 켰을 때만 듭니다(기본 켬) — 후원자에게 보고해 계약이 끝나도 부하마다 「한번 더 제독의 배를 탈 수 있습니다」를"
+            + " 묻지 않습니다. 부하는 선금 없이 그대로 남고, 내보내고 싶으면 부하편성에서 해고합니다. 끄면 원본처럼 물어봅니다.");
+        skip.Margin = new Thickness(18, skip.Margin.Top, skip.Margin.Right, skip.Margin.Bottom);
+        skip.IsEnabled = dismiss.IsChecked == true;
+        dismiss.Checked += (_, _) => skip.IsEnabled = true;
+        dismiss.Unchecked += (_, _) => skip.IsEnabled = false;
+        general.Children.Add(skip);
+
         general.Children.Add(Toggle("특별주문", GameSettings.SpecialOrder, on => GameSettings.SpecialOrder = on,
             "원본에 없는 것입니다 — 조선소 「구입」 아래에 「특별주문」 줄이 생깁니다. 가진 배 가운데 그 조선소가 파는 선체를 고르면"
             + " 포탑 · 대포 · 돛 · 개조까지 똑같은 새 배를 짓습니다. 값은 새 배값에 개조비 장부 · 포탑 · 대포 · 선수상 값을 더한 것입니다."
@@ -383,9 +432,11 @@ public sealed class ModDialog : GameWindow
         var pages = new Grid();
         pages.Children.Add(rows);
         pages.Children.Add(info);
+        pages.Children.Add(ui);
         pages.Children.Add(general);
         pages.Children.Add(lab);
         info.Visibility = Visibility.Hidden;
+        ui.Visibility = Visibility.Hidden;
         lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
 
@@ -395,7 +446,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(rows, info, general, lab));
+        stack.Children.Add(Tabs(rows, info, ui, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -412,8 +463,8 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
-    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement general,
-                                  FrameworkElement lab)
+    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement ui,
+                                  FrameworkElement general, FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
         var heads = new List<(Border Head, FrameworkElement Page)>();
@@ -449,6 +500,7 @@ public sealed class ModDialog : GameWindow
 
         Add("편의성", convenience);
         Add("정보", info);
+        Add("UI", ui);
         Add("일반", general);
         Add("실험", lab);
         Select(convenience);

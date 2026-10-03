@@ -1245,6 +1245,31 @@ public sealed class ShipMapHost : HwndHost
         return (true, $"{route.Count}개 마디로 바닷길을 짰습니다");
     }
 
+    /// <summary>
+    /// 그 칸까지 <b>뭍길</b>을 찾아 걸어간다(모드 「뭍 자동이동」) — 자동항해와 같은 마디 따라가기다.
+    /// 뭍에 있을 때만, 길을 찾았을 때만 시작한다. 도착하면 멈춰 선다.
+    /// </summary>
+    public (bool Ok, string Message) StartAutoWalk(double destX, double destY)
+    {
+        if (!_ready || _world == null || _terrain == null) return (false, "지도를 아직 읽지 못했습니다");
+        if (SeaBlocked) return (false, "도시 안에서는 자동이동을 쓸 수 없습니다");
+        if (!_shipKnown || !_onLand) return (false, "뭍에 있을 때만 자동이동을 쓸 수 있습니다");
+
+        var route = Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), (destX, destY), land: true);
+        if (route == null) return (false, "뭍길을 찾지 못했습니다");
+        if (route.Count < 2) return (false, "이미 그 자리 가까이 있습니다");
+
+        _autoRoute = route;
+        _autoIndex = 0;
+        _anchored = false;
+        _tickAccum = 0;
+        _stuckX = _shipX;
+        _stuckY = _shipY;
+        _stuckTicks = 0;
+        _dirty = true;
+        return (true, "그 자리로 걸어갑니다");
+    }
+
     /// <summary>자동항해를 끈다. 그 자리에 세우지 않는다 — 손으로 이어서 몰 수 있게 둔다.</summary>
     public void StopAutoSail()
     {
@@ -1270,7 +1295,7 @@ public sealed class ShipMapHost : HwndHost
             _targetY = _shipY + dy;
             return;
         }
-        CompleteAutoSail("도착했습니다 — 닻을 내렸습니다");
+        CompleteAutoSail(_onLand ? "도착했습니다" : "도착했습니다 — 닻을 내렸습니다");
     }
 
     private void CompleteAutoSail(string message)
@@ -1765,7 +1790,7 @@ public sealed class ShipMapHost : HwndHost
             // <b>멈춤과 커서 놓침을 먼저 적는다.</b> 이 둘은 뱃머리가 안 도는 까닭인데,
             // 예전 줄은 그래도 "커서 쪽으로 항해 중" 이라 적어 서 있는 배와 구별이 안 됐다.
             Status = AutoSailing
-                ? $"자동항해 중 {_shipX:F1}, {_shipY:F1} 칸 · 방향 {HeadingName} · " +
+                ? $"{(_onLand ? "자동이동" : "자동항해")} 중 {_shipX:F1}, {_shipY:F1} 칸 · 방향 {HeadingName} · " +
                   (Paused ? "멈춤(창이 떠 있다)" : $"마디 {_autoIndex + 1}/{AutoRouteCount} 쪽으로")
                 : $"{(_onLand ? "말" : "배")} {_shipX:F1}, {_shipY:F1} 칸 · 방향 {HeadingName} · " +
                      (Paused ? "멈춤(창이 떠 있다)"

@@ -249,8 +249,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         if (church && !_player.HasMet(patron.Name) && !(sponsor is { } met && _player.HasMet(met.Name))
             && ChurchGateFails())
         {
-            TalkDialog.Say(_view, _game.SpeakerFace(ChurchCode, _culture), "",
-                           $"{shown}님은 바쁘셔서 만나실 수 없습니다.");
+            Engine.Disev.TownLines.Say(_view, _game, "교회.명성부족",
+                () => TalkDialog.Say(_view, _game.SpeakerFace(ChurchCode, _culture), "",
+                                     $"{shown}님은 바쁘셔서 만나실 수 없습니다."),
+                ("후원자", shown));
             return;
         }
 
@@ -518,13 +520,18 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 0x004AF22A 가 줄 수 2 를 넘긴다)이다. 두 줄이 같은 무늬라 Pick 을 쓴다.
         // <b>제목 띠에는 계약금 전부가 뜬다</b> — 절반이 아니다(서식은 0x00546C18
         // " 기간%d년 금화 %ld닢 "). 절반은 바로 위 대사가 이미 두 번 불렀다.
-        int pick = ChoiceDialog.Pick(_view, $" 기간{years}년 금화 {funds}닢 ",
-                                     ["승낙한다", "교섭한다"]);
+        // 모드 「자금 증가 기본」 — 고르기 없이 자금 증가로 간다. 쫓겨날 판(재력 부족 · 기간 1년)이면 그대로 승낙한다.
+        bool auto = Local.Settings.GameSettings.AutoFundRaise;
+        int raisedFunds = To10(funds * 13 / 10);
+        bool canRaise = years > 1 && WealthOf(patron) >= raisedFunds
+                        && _player.PurseOf(patron.Name, WealthOf(patron)) >= raisedFunds;
+        int pick = auto ? (canRaise ? 1 : 0)
+                        : ChoiceDialog.Pick(_view, $" 기간{years}년 금화 {funds}닢 ", ["승낙한다", "교섭한다"]);
         if (pick < 0) return;
 
         // 「교섭한다」를 골랐을 때만 한 번 더 묻는다 — <b>되풀이는 없다</b>.
         // 욕심을 부려 쫓겨나면 후원자가 삐진다(0x004AF24B — 비트 14).
-        if (pick != 0 && !Bargain(patron, face, Say, ref funds, ref years))
+        if (pick != 0 && !Bargain(patron, face, Say, ref funds, ref years, forced: auto ? 0 : null))
         {
             _player.Sulk(patron.Name);
             return;
@@ -708,10 +715,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// "탐욕스러운 놈! 너 같은 녀석에게 볼일 없다. 썩 꺼져라!"(<c>0x00546430</c>).
     /// </remarks>
     /// <returns>계약으로 넘어가면 true, 물러났거나 쫓겨났으면 false.</returns>
+    /// <param name="forced">고르기 없이 이 줄을 고른 셈 친다(모드 「자금 증가 기본」은 0). 없으면 묻는다.</param>
     private bool Bargain(Patron patron, uint[]? face, Action<string> Say,
-                         ref int funds, ref int years)
+                         ref int funds, ref int years, int? forced = null)
     {
-        int at = ChoiceDialog.Pick(_view, " 교섭 ",
+        int at = forced ?? ChoiceDialog.Pick(_view, " 교섭 ",
             [("자금 증가", years > 1), ("기간 연장", true), ("변경 없음", true)]);
 
         // <b>「변경 없음」은 바로 계약으로 간다</b> — 제안을 다시 묻지 않는다.
@@ -1657,7 +1665,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 증거품은 여전히 손에 들어온다.
             // 재계약은 계약이 정말 끝났을 때만이다 — 원본은 계약을 끝내는 0x0044EE30 이 [+0xBC] 를 3 밖으로 바꿀 때만
             // 0x00454160 을 부른다(0x0044E6CC). 모조품을 봐줘 계약이 남았으면 부하가 떠나거나 선금을 다시 받지 않는다.
-            if (_player.Contract == null) RecontractMates();
+            // 모드 「부하 해고」 + 「보고 시 재계약 끄기」면 묻지 않는다 — 부하는 그대로 남고, 내보내려면 해고한다.
+            if (_player.Contract == null
+                && !(Local.Settings.GameSettings.MateDismiss && Local.Settings.GameSettings.SkipRecontract))
+                RecontractMates();
 
             // 숨겨 둔 증거품은 보고를 마치고 나설 때 손에 들어온다.
             HandHidden();

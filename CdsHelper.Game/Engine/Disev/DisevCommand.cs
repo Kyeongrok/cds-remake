@@ -48,7 +48,7 @@ public enum DisevCall
     Result, ResultFalse, LastConditionFalse, LastCondition, NoAide, HasAide, ChoiceIs, ChoiceIsNot,
     HintActive, HintInactive, HasItem, LacksItem, Discovered, NotDiscovered, DiscoveryDone, DiscoveryNotDone,
     YearAtLeast, YearBefore, YearAtMost, YearAfter, YearIs, YearBetween, YearOutside, YearMonthIs,
-    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
+    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
     CityNationCheck, CityNationIs, CityStanding, CityGone, BuildingStanding, BuildingGone, LeftCityBySea, LeftCityOnLand,
     Story0, NotStory0, Story1, NotStory1, Unknown0015, NoContract, Or, RandomChance,
     GreaterThan, GreaterOrEqual, LessThan, LessOrEqual, EqualTo, NotEqualTo,
@@ -204,6 +204,8 @@ public static class DisevCalls
         C(DisevCall.NotInBuilding, DisevCall.InBuilding, "41 10 u16", "Building"),
         // 42 10 [건물] 21 [명령] — 건물 차림표에서 그 명령을 고른 사건(맥락 갈래 4, 0x004A248C)일 때 참(0x00407D31).
         C(DisevCall.BuildingCommand, null, "42 10 u16 21 u16", "Building", "Command"),
+        // 70 10 [번호] — 원본에 없는 꼴. 엔진이 마을 사람 대사를 내기 직전 올린 대사 사건(갈래 6)이 그 번호면 참(TownLines).
+        C(DisevCall.SpeechIs, null, "70 10 u16", "Line"),
         // 65 — 후원자 건물을 나서는 사건(맥락 갈래 5, 0x0044E72F)일 때 참(0x00407E7C).
         C(DisevCall.SponsorVisitEnded, null, "65"),
         // 59 — 함대에 배가 한 척이라도 있으면 참(0x00407DA9 → 0x00473CD0 이 여덟 자리를 훑는다).

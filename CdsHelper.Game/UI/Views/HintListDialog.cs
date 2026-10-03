@@ -73,6 +73,9 @@ public sealed class HintListDialog : GameWindow
     /// <remarks>게임 창에는 얼굴이 없다. 누구인지 한눈에 보려고 더한 것이라 작게 둔다.</remarks>
     private const double FaceWidth = 40, FaceHeight = 48, FaceGap = 4;
 
+    /// <summary>이 창의 얼굴 크기 — 기본은 <see cref="FaceWidth"/> x <see cref="FaceHeight"/>, 인물정보 목록은 더 크다.</summary>
+    private readonly double _faceW = FaceWidth, _faceH = FaceHeight;
+
     /// <summary>고른 줄. 아무것도 안 골랐으면 -1.</summary>
     private int _picked = -1;
 
@@ -94,8 +97,12 @@ public sealed class HintListDialog : GameWindow
                            IReadOnlyList<string>? subtitles = null, IReadOnlyList<bool>? marks = null,
                            bool multi = false, IReadOnlyList<string>? rightTexts = null,
                            IReadOnlyList<bool>? usable = null, Func<int, ImageSource?>? preview = null,
-                           double listWidth = ListWidth)
+                           double listWidth = ListWidth, double faceHeight = FaceHeight,
+                           double maxHeight = ListMaxHeight, Func<int, string>? describe = null)
     {
+        _describe = describe;
+        _faceH = faceHeight;
+        _faceW = faceHeight * Portraits.Width / Portraits.Height;
         _marks = marks;
         _preview = preview;
         _multi = multi;
@@ -108,7 +115,7 @@ public sealed class HintListDialog : GameWindow
 
         var list = new StackPanel
         {
-            Width = faces == null ? listWidth : listWidth + FaceWidth + FaceGap,
+            Width = faces == null ? listWidth : listWidth + _faceW + FaceGap,
         };
 
         // 머리글 — 고를 수 없는 줄 하나를 맨 위에 둔다(조선소 개조 목록이 쓴다).
@@ -143,30 +150,22 @@ public sealed class HintListDialog : GameWindow
 
             // 얼굴을 받았으면 줄 왼쪽에 작게 붙인다. 못 읽은 얼굴은 빈칸으로 두어 글씨 줄을 맞춘다.
             // 이름 아래 한 줄(스폰서 일람의 취향). 얼굴과 함께 쓰면 두 줄이 얼굴 높이 안에 든다.
+            // 둘째 줄 글에 줄바꿈이 있으면 줄마다 하나씩 쌓는다(인물정보 목록의 기능 · 언어).
             FrameworkElement text = label;
             if (subtitles != null && i < subtitles.Count && subtitles[i].Length > 0)
-                text = new StackPanel
-                {
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Children =
-                    {
-                        label,
-                        new GameUi.GameLabel(GameFont.BlackColor, GameUi.ItemTextHeight)
-                        {
-                            Text = subtitles[i],
-                            Bold = false,
-                            FallbackBrush = Brushes.Black,
-                            HorizontalAlignment = HorizontalAlignment.Left,
-                        },
-                    },
-                };
+            {
+                var lines = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { label } };
+                foreach (string line in subtitles[i].Split('\n'))
+                    lines.Children.Add(SubLine(line));
+                text = lines;
+            }
 
             FrameworkElement content = text;
             if (faces != null)
                 content = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
-                    Children = { Face(i < faces.Count ? faces[i] : null), text },
+                    Children = { Face(i < faces.Count ? faces[i] : null, _faceW, _faceH), text },
                 };
             if (rightTexts != null)
             {
@@ -260,11 +259,37 @@ public sealed class HintListDialog : GameWindow
             Child = GameUi.Scroller(new Border
             {
                 // 얼굴을 붙이면 그만큼 넓힌다 — 이름 칸 폭은 그대로 둔다.
-                Width = faces == null ? listWidth : listWidth + FaceWidth + FaceGap,
+                Width = faces == null ? listWidth : listWidth + _faceW + FaceGap,
                 Child = list,
-            }, ListMaxHeight),
+            }, maxHeight),
         };
-        if (preview == null) stack.Children.Add(page);
+        if (describe != null)
+        {
+            // 고른 줄의 설명을 목록 오른쪽에 둔다(인물정보 목록 — 맡은 기능의 효과).
+            var side = new StackPanel { Orientation = Orientation.Horizontal };
+            side.Children.Add(page);
+            // 고르기 전에는 칸째 접어 둔다 — 창 폭도 목록만큼이다. 줄을 고르면 펴지며 창이 그만큼 넓어진다.
+            side.Children.Add(_describePane = new Border
+            {
+                Visibility = Visibility.Collapsed,
+                Width = DescribeWidth,
+                Margin = new Thickness(0, 3, 3, 0),
+                Padding = new Thickness(10, 8, 10, 8),
+                Background = GameUi.PageFill,
+                BorderBrush = GameUi.ItemEdge,
+                BorderThickness = new Thickness(1),
+                Child = _describeText,
+            });
+            stack.Children.Add(side);
+
+            // 설명 칸이 펴지며 창이 넓어지면 <b>가운데를 지키도록</b> 왼쪽으로 반만큼 민다 — 오른쪽으로만 늘어 치우쳤다.
+            SizeChanged += (_, e) =>
+            {
+                if (e.WidthChanged && e.PreviousSize.Width > 0)
+                    Left -= (e.NewSize.Width - e.PreviousSize.Width) / 2;
+            };
+        }
+        else if (preview == null) stack.Children.Add(page);
         else
         {
             // 고른 줄의 그림을 목록 오른쪽에 둔다 — 「선두상 선택」(0x00443920 이 +0xAC 의 선수상을
@@ -310,6 +335,62 @@ public sealed class HintListDialog : GameWindow
         MouseRightButtonUp += (_, _) => Cancel();
     }
 
+    /// <summary>줄 번호로 오른쪽 설명 글을 내는 것. 없으면 설명 칸이 없다.</summary>
+    private readonly Func<int, string>? _describe;
+
+    /// <summary>오른쪽 설명 칸 폭.</summary>
+    private const double DescribeWidth = 330;
+
+    /// <summary>오른쪽 설명 글 — 게임 글꼴 줄들이다. 고른 줄이 바뀔 때마다 갈아 끼운다.</summary>
+    private readonly StackPanel _describeText = new();
+
+    /// <summary>설명 칸 한 줄에 드는 칸 수(한글 한 자가 두 칸) — 칸 폭에서 안쪽 여백을 뺀 만큼이다.</summary>
+    private const int DescribeCells = (int)((DescribeWidth - 22) / 8);
+
+    /// <summary>
+    /// 설명 글을 게임 글꼴 줄로 찍는다 — 목록과 같은 글꼴이라야 한 창처럼 보인다. 줄바꿈은 그대로 두고,
+    /// 넘치는 줄은 띄어쓰기 자리에서 접는다. 접힌 다음 줄은 첫 줄의 들여쓰기(● 뒤)만큼 들인다.
+    /// </summary>
+    private void ShowDescription(string text)
+    {
+        _describeText.Children.Clear();
+        foreach (string paragraph in text.Split('\n'))
+            foreach (string line in Fold(paragraph, DescribeCells))
+                _describeText.Children.Add(new GameUi.GameLabel(GameFont.BlackColor, GameUi.ItemTextHeight)
+                {
+                    Text = line.Length == 0 ? " " : line,
+                    Bold = false,
+                    FallbackBrush = Brushes.Black,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Margin = new Thickness(0, 1, 0, 1),
+                });
+    }
+
+    /// <summary>한 문단을 칸 수에 맞춰 접는다. 접힌 줄은 「● 」 · 앞 빈칸만큼 들인다.</summary>
+    private static IEnumerable<string> Fold(string paragraph, int cells)
+    {
+        static int Width(string s) => s.Sum(c => c < 0x80 ? 1 : 2);
+        if (Width(paragraph) <= cells) { yield return paragraph; yield break; }
+
+        int lead = paragraph.Length - paragraph.TrimStart().Length;
+        string indent = new(' ', paragraph.TrimStart().StartsWith('●') ? lead + 3 : lead);
+        var line = new System.Text.StringBuilder();
+        foreach (string word in paragraph.Split(' '))
+        {
+            string next = line.Length == 0 ? word : line + " " + word;
+            if (line.Length > 0 && Width(next) > cells)
+            {
+                yield return line.ToString();
+                line.Clear().Append(indent).Append(word);
+            }
+            else line.Clear().Append(next);
+        }
+        if (line.Length > 0) yield return line.ToString();
+    }
+
+    /// <summary>오른쪽 설명 칸 판 — 줄을 고르기 전에는 접어 둔다.</summary>
+    private Border? _describePane;
+
     /// <summary>줄 번호로 곁 그림을 내는 것. 없으면 곁 그림 칸이 없다.</summary>
     private readonly Func<int, ImageSource?>? _preview;
 
@@ -341,6 +422,11 @@ public sealed class HintListDialog : GameWindow
     private void Select(int index)
     {
         if (_preview != null) _previewImage.Source = _preview(index);
+        if (_describe != null)
+        {
+            ShowDescription(_describe(index));
+            if (_describePane != null) _describePane.Visibility = Visibility.Visible;
+        }
         if (_multi)
         {
             if (!_chosen.Remove(index)) _chosen.Add(index);
@@ -367,7 +453,9 @@ public sealed class HintListDialog : GameWindow
         // 얼굴 · 둘째 줄이 붙은 줄은 글씨가 판 안에 들어 있다 — 든 글씨를 다 뒤집는다.
         // 글씨색만 뒤집는다 — 겹쳐 찍기는 어느 줄에서도 안 한다.
         foreach (var label in LabelsIn(_rows[i].Child))
-            label.TextColor = on ? GameFont.WhiteColor : GameFont.BlackColor;
+            label.TextColor = Equals(label.Tag, DimTag)
+                ? on ? DimOnPick : DimInk
+                : on ? GameFont.WhiteColor : GameFont.BlackColor;
     }
 
     private bool _decideReady;
@@ -380,20 +468,59 @@ public sealed class HintListDialog : GameWindow
         _ => [],
     };
 
+    /// <summary>
+    /// 이름 밑 한 줄. 낱말 앞에 <c>~</c> 를 붙이면 그 낱말만 흐린 색(<see cref="DimInk"/>)으로 찍는다 —
+    /// 인물정보 목록이 그 자리에서 안 쓰이는 기능을 흐리게 낸다.
+    /// </summary>
+    private static FrameworkElement SubLine(string line)
+    {
+        GameUi.GameLabel Word(string text, byte color) => new(color, GameUi.ItemTextHeight)
+        {
+            Text = text,
+            Bold = false,
+            FallbackBrush = color == DimInk ? Brushes.Gray : Brushes.Black,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            // 흐린 낱말은 표시를 남긴다 — 줄을 고르고 풀 때(Paint) 흐린 색을 되살린다.
+            Tag = color == DimInk ? DimTag : null,
+        };
+
+        if (!line.Contains('~')) return Word(line, GameFont.BlackColor);
+
+        var words = new StackPanel { Orientation = Orientation.Horizontal };
+        string[] parts = line.Split(' ');
+        for (int k = 0; k < parts.Length; k++)
+        {
+            string part = parts[k];
+            bool dim = part.StartsWith('~');
+            string text = (dim ? part[1..] : part) + (k < parts.Length - 1 ? " " : "");
+            words.Children.Add(Word(text, dim ? DimInk : GameFont.BlackColor));
+        }
+        return words;
+    }
+
+    /// <summary>흐린 글자색 — 공용 색표 21번 <c>#80786C</c>.</summary>
+    private const byte DimInk = 21;
+
+    /// <summary>고른 줄(남색 바탕) 위의 흐린 글자색 — 공용 색표 34번 <c>#908874</c>.</summary>
+    private const byte DimOnPick = 34;
+
+    /// <summary>흐린 낱말 표시(<see cref="FrameworkElement.Tag"/>).</summary>
+    private const string DimTag = "dim";
+
     /// <summary>줄 왼쪽의 작은 얼굴. 그림이 없으면 같은 크기의 빈칸이다.</summary>
-    private static FrameworkElement Face(uint[]? bgra)
+    private static FrameworkElement Face(uint[]? bgra, double width, double height)
     {
         var margin = new Thickness(0, 1, FaceGap, 1);
         if (bgra == null || bgra.Length < Portraits.Width * Portraits.Height)
-            return new Border { Width = FaceWidth, Height = FaceHeight, Margin = margin };
+            return new Border { Width = width, Height = height, Margin = margin };
 
         var bitmap = Portraits.Bitmap(bgra);
         bitmap.Freeze();
         var image = new Image
         {
             Source = bitmap,
-            Width = FaceWidth,
-            Height = FaceHeight,
+            Width = width,
+            Height = height,
             Stretch = Stretch.Fill,
             Margin = margin,
         };
@@ -445,6 +572,7 @@ public sealed class HintListDialog : GameWindow
     /// <param name="preview">줄 번호로 목록 오른쪽에 얹을 120x120 그림을 낸다. 없으면 곁 그림 칸이 없다.</param>
     /// <param name="listWidth">목록 폭. 줄이 길어 잘리면 넓힌다.</param>
     /// <param name="preselect">처음부터 골라 둘 줄. 음수면 아무것도 안 골라 둔다(결정이 흐리다).</param>
+    /// <param name="faceHeight">초상화 높이. 폭은 초상화 비(80:96)를 따른다. 기본은 작은 얼굴(48)이다.</param>
     public static int Pick(Window owner, IReadOnlyList<string> items,
                            string caption = "취득 힌트 일람",
                            string whenEmpty = "설득 가능한 힌트가 없습니다",
@@ -456,7 +584,10 @@ public sealed class HintListDialog : GameWindow
                            IReadOnlyList<bool>? usable = null,
                            Func<int, ImageSource?>? preview = null,
                            double listWidth = ListWidth,
-                           int preselect = -1)
+                           int preselect = -1,
+                           double faceHeight = FaceHeight,
+                           double maxHeight = ListMaxHeight,
+                           Func<int, string>? describe = null)
     {
         if (items.Count == 0)
         {
@@ -466,7 +597,8 @@ public sealed class HintListDialog : GameWindow
 
         var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
                                      rightTexts: rightTexts, usable: usable, preview: preview,
-                                     listWidth: listWidth) { Owner = owner };
+                                     listWidth: listWidth, faceHeight: faceHeight, maxHeight: maxHeight,
+                                     describe: describe) { Owner = owner };
         if (preselect >= 0 && preselect < items.Count
             && (usable == null || preselect >= usable.Count || usable[preselect]))
             dlg.Select(preselect);

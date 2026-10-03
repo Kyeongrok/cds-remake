@@ -46,6 +46,9 @@ internal static class TownMenu
                 screen)))]);
     }
 
+    /// <summary>교역소 「투자」 줄이 대본에 올라가는 번호 — 원본 칸(0~2)과 안 겹치게 붙박는다.</summary>
+    public const int InvestRow = 10;
+
     /// <summary>
     /// 이야기 대본에 올리는 줄 번호 — 게임은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
     /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
@@ -59,6 +62,10 @@ internal static class TownMenu
     /// </remarks>
     private static int TableRow(Facility facility, TownWork work, int row)
     {
+        // 교역소 「투자」는 원본에 없는 줄이다 — 붙박이 번호를 따로 주고, 「나온다」는 원본 칸(2)을 지킨다.
+        // 그래야 원본 대본이 보는 칸 번호가 투자 줄 때문에 밀리지 않고, 대본 「마을대사」는 투자를 10 으로 알아본다.
+        if (facility.Kind == FacilityKind.TradingPost)
+            return work switch { TownWork.Invest => InvestRow, TownWork.Exit => 2, _ => row };
         if (facility.Kind is not (FacilityKind.Church or FacilityKind.Palace or FacilityKind.Other)) return row;
         bool palace = facility.Kind == FacilityKind.Palace;
         return work switch

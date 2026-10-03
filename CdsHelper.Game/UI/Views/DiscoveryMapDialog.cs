@@ -47,7 +47,7 @@ public sealed class DiscoveryMapDialog : GameWindow
     private const int ZoomStart = 2;
 
     /// <summary>이름표를 다는 배율 구간 — 너무 키우면 이름이 그림을 덮는다.</summary>
-    private const double LabelFrom = 4, LabelTo = 12;
+    private const double LabelFrom = 3, LabelTo = 12;
 
     /// <summary>
     /// 표식 크기(지도 점) — <see cref="ZoomBase"/> 배율에서 잰 값이다.
@@ -185,8 +185,10 @@ public sealed class DiscoveryMapDialog : GameWindow
                                Func<double, double, (double X, double Y)?>? warp,
                                Func<double, double, string>? autoSail,
                                IReadOnlyList<(string Name, double X, double Y, bool Library)>? cities,
-                               IReadOnlyDictionary<int, (double X, double Y)>? inTown)
+                               IReadOnlyDictionary<int, (double X, double Y)>? inTown,
+                               Func<double, double, (bool Ok, string Message)>? walk)
     {
+        _walk = walk;
         _warp = warp;
         _autoSail = autoSail;
         _chartW = width;
@@ -261,8 +263,9 @@ public sealed class DiscoveryMapDialog : GameWindow
             else continue;
 
             bool found = player.HasFound(row.Id);
-            Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
-                 MarkSize, found ? Found : Yet, row.Name, label: true, layer: _spotLayer);
+            var spotDot = Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
+                            MarkSize, found ? Found : Yet, row.Name, label: true, layer: _spotLayer);
+            if (walk != null && spotDot is System.Windows.Shapes.Ellipse dot) WalkTarget(dot, x, y);
             shown++;
             if (found) done++;
         }
@@ -717,6 +720,33 @@ public sealed class DiscoveryMapDialog : GameWindow
         Apply();
     }
 
+    /// <summary>뭍 자동이동을 거는 손(모드 「뭍 자동이동」). 칸 자리를 받아 시작했는지와 알림 말을 돌려준다. 없으면 그 기능이 없다.</summary>
+    private readonly Func<double, double, (bool Ok, string Message)>? _walk;
+
+    /// <summary>
+    /// 발견물 점 하나를 자동이동 과녁으로 — 마우스를 올리면 흰 테두리가 서고, 오른쪽 단추로 누르면 그 자리로 걸어간다.
+    /// 걷기 시작하면 지도를 닫는다(창이 떠 있는 동안은 놀이가 멈춰 있다).
+    /// </summary>
+    private void WalkTarget(System.Windows.Shapes.Ellipse dot, double cellX, double cellY)
+    {
+        dot.Cursor = Cursors.Hand;
+        dot.MouseEnter += (_, _) =>
+        {
+            dot.Stroke = Brushes.White;
+            dot.StrokeThickness = Math.Max(0.1, dot.Width * 0.22);
+        };
+        dot.MouseLeave += (_, _) => dot.Stroke = null;
+        dot.MouseRightButtonUp += (_, e) =>
+        {
+            if (_walk == null) return;
+            e.Handled = true;
+            var (ok, message) = _walk(cellX, cellY);
+            if (ok) { Close(); return; }
+            _said = "   ·   " + message;
+            Apply();
+        };
+    }
+
     /// <summary>짚은 자리(지도 점)로 자동항해를 건다.</summary>
     private void AutoSailTo(double px, double py)
     {
@@ -741,10 +771,11 @@ public sealed class DiscoveryMapDialog : GameWindow
                             Func<double, double, (double X, double Y)?>? warp = null,
                             Func<double, double, string>? autoSail = null,
                             IReadOnlyList<(string Name, double X, double Y, bool Library)>? cities = null,
-                            IReadOnlyDictionary<int, (double X, double Y)>? inTown = null)
+                            IReadOnlyDictionary<int, (double X, double Y)>? inTown = null,
+                            Func<double, double, (bool Ok, string Message)>? walk = null)
     {
         if (chart == null || table == null || width <= 0 || height <= 0) return;
-        new DiscoveryMapDialog(chart, width, height, table, player, ship, wind, warp, autoSail, cities, inTown)
+        new DiscoveryMapDialog(chart, width, height, table, player, ship, wind, warp, autoSail, cities, inTown, walk)
         { Owner = owner }.ShowDialog();
     }
 }

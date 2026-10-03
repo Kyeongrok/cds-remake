@@ -140,6 +140,7 @@ public sealed class GameSettingsData
     public string ModKey { get; set; } = "M";
     public string ItemsKey { get; set; } = "R";
     public string HintsKey { get; set; } = "H";
+    public string PersonKey { get; set; } = "X";
 
     /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPeopleOverlay { get; set; }
@@ -209,6 +210,27 @@ public sealed class GameSettingsData
 
     /// <summary>바다에서 다가간 함대의 신상 쪽지를 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool FleetCard { get; set; }
+
+    /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool MateDismiss { get; set; }
+
+    /// <summary>보고를 마치고 나설 때 부하 재계약을 안 물을지(부하 해고를 켰을 때만). 켜 두고 시작한다.</summary>
+    public bool SkipRecontract { get; set; } = true;
+
+    /// <summary>인물정보 고르기를 초상화 · 기능 목록으로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PersonInfoList { get; set; }
+
+    /// <summary>인물정보 고르기를 리디바탕 글씨의 전용 목록으로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PersonInfoEnhanced { get; set; }
+
+    /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool WheelZoom { get; set; }
+
+    /// <summary>스폰서 제안에서 고르기 없이 자금 증가를 고를지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool AutoFundRaise { get; set; }
+
+    /// <summary>뭍에서 발견물 지도로 자동이동할지. 실험이라 꺼 두고 시작한다.</summary>
+    public bool LandAutoWalk { get; set; }
 
     /// <summary>작위 제도(공적 · 작위 · 혜택)를 쓸지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool Nobility { get; set; }
@@ -634,6 +656,13 @@ public static class GameSettings
         set => Set(d => d.HintsKey = value);
     }
 
+    /// <summary><b>인물정보</b> 단축키. 기본은 <c>X</c> 다.</summary>
+    public static string PersonKey
+    {
+        get => Get(d => d.PersonKey);
+        set => Set(d => d.PersonKey = value);
+    }
+
     /// <summary>몇 사람까지 적어 둘지.</summary>
     public const int MaxRecentFoes = 5;
 
@@ -937,6 +966,63 @@ public static class GameSettings
     {
         get => Get(d => d.HandyInventory);
         set => Set(d => d.HandyInventory = value);
+    }
+
+    /// <summary>
+    /// 보고 시 재계약 끄기 — 모드 「부하 해고」를 켰을 때, 보고로 계약이 끝나도 부하마다 재계약을 묻지 않는다.
+    /// 부하는 선금 없이 그대로 남는다(내보내려면 부하편성에서 해고한다). 기본은 켬.
+    /// </summary>
+    public static bool SkipRecontract
+    {
+        get => Get(d => d.SkipRecontract);
+        set => Set(d => d.SkipRecontract = value);
+    }
+
+    /// <summary>부하 해고 — 부하편성 결정 오른쪽의 「해고」 단추. 재계약을 안 맺은 것처럼 떠난다.</summary>
+    public static bool MateDismiss
+    {
+        get => Get(d => d.MateDismiss);
+        set => Set(d => d.MateDismiss = value);
+    }
+
+    /// <summary>
+    /// 뭍 자동이동(실험) — 뭍에 있을 때 발견물 지도에서 발견물 점을 오른쪽 단추로 누르면 그 자리까지 뭍길을 찾아 걸어간다.
+    /// </summary>
+    public static bool LandAutoWalk
+    {
+        get => Get(d => d.LandAutoWalk);
+        set => Set(d => d.LandAutoWalk = value);
+    }
+
+    /// <summary>
+    /// 자금 증가 기본 — 스폰서가 「이것으로 어떤가」 하면 승낙/교섭 고르기 없이 자금 증가(x1.3, 기간 절반)를 고른다.
+    /// 스폰서 재력이 모자라거나 기간이 1년이면 쫓겨나지 않게 제안 그대로 승낙한다.
+    /// </summary>
+    public static bool AutoFundRaise
+    {
+        get => Get(d => d.AutoFundRaise);
+        set => Set(d => d.AutoFundRaise = value);
+    }
+
+    /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>
+    public static bool WheelZoom
+    {
+        get => Get(d => d.WheelZoom);
+        set => Set(d => d.WheelZoom = value);
+    }
+
+    /// <summary>향상된 인물정보 목록 — 인물정보 목록을 리디바탕 글씨의 전용 창으로(초상화 · 기능 · 언어 · 설명).</summary>
+    public static bool PersonInfoEnhanced
+    {
+        get => Get(d => d.PersonInfoEnhanced);
+        set => Set(d => d.PersonInfoEnhanced = value);
+    }
+
+    /// <summary>인물정보 목록 — 누구를 볼지 고르는 창을 스폰서 일람처럼 초상화와 기능으로.</summary>
+    public static bool PersonInfoList
+    {
+        get => Get(d => d.PersonInfoList);
+        set => Set(d => d.PersonInfoList = value);
     }
 
     /// <summary>접근 함대 정보 — 「우호적으로 접근한다 · 습격한다」 고르기 위에 상대의 초상화 · 국적 · 직업 · 함대 규모.</summary>

@@ -555,6 +555,9 @@ public sealed class DisevRunner
             // 예전에는 이 사건을 안 올려 이야기가 파트 4 에서 멈췄다.
             case DisevCall.BuildingCommand:
                 return _event.Kind == DisevEvent.CommandKind && _building == I("Building") && _event.Command == I("Command");
+            // 70 10 — 대사 사건(갈래 6)이 그 번호면 참. 원본에 없는 조건이다(TownLines).
+            case DisevCall.SpeechIs:
+                return _event.Kind == DisevEvent.SpeechKind && _event.Line == I("Line");
             // 65 — 후원자 건물을 나서는 사건(갈래 5, 0x0044E72F)이면 참(0x00407E7C).
             case DisevCall.SponsorVisitEnded:
                 return _event.Kind == DisevEvent.SponsorLeftKind;
@@ -1742,6 +1745,11 @@ public sealed class DisevRunner
         if (body.Length == 0) return;
         // 대사 속 이름도 표준 표기로 — 「이슈탈문을 발견했다！」가 표의 이름(이슈타르 문)과 어긋나지 않게.
         body = Local.Helpers.StandardText.Apply(body);
+        // <도시> — 지금 있는 도시 이름(원본에 없는 자리표, 마을대사 책이 쓴다).
+        if (body.Contains("<도시>")) body = body.Replace("<도시>", _game.Player.CityName);
+        // 대사 사건이 넘긴 자리표(<금액> · <개월> 따위)를 그때 값으로.
+        if (_event.Vars is { } vars)
+            foreach (var (name, value) in vars) body = body.Replace($"<{name}>", value);
 
         // <b>감찰관이 없으면 감찰관 대사는 통째로 건너뛴다</b> — 화자 해석기 0x0040C880 이 감찰관 객체를 못 찾으면
         // 0 을 돌려 그 줄을 안 낸다. 감찰관은 후원자 계약마다 하나 딸려 오므로 계약이 없으면 없다.
@@ -1973,9 +1981,16 @@ public sealed class DisevRunner
 /// <param name="Building">건물 코드. 모르면 −1.</param>
 /// <param name="Command">고른 명령 번호(갈래 4) — 숨은 줄까지 센 차림표 표의 자리다(<c>Menu.TownMenu</c>). 모르면 −1.</param>
 /// <param name="OnLand">상륙해 뭍을 걷는 중인지(<c>0x005B61B4</c> — 성문으로 나서면 1, 승선하면 0) — 조건 5F · 60 이 본다.</param>
-public readonly record struct DisevEvent(int Kind, int City = -1, int Building = -1, int Command = -1, bool OnLand = false)
+/// <param name="Line">대사 사건(갈래 6)의 대사 번호(<see cref="TownLines"/>). 아니면 −1.</param>
+/// <param name="Vars">대사 사건이 넘기는 자리표 값 — 대사 속 &lt;이름&gt; 을 이 값으로 바꾼다.</param>
+public readonly record struct DisevEvent(int Kind, int City = -1, int Building = -1, int Command = -1, bool OnLand = false,
+                                         int Line = -1, IReadOnlyDictionary<string, string>? Vars = null)
 {
-    public const int CityKind = 1, LeftCityKind = 2, BuildingKind = 3, CommandKind = 4, SponsorLeftKind = 5;
+    public const int CityKind = 1, LeftCityKind = 2, BuildingKind = 3, CommandKind = 4, SponsorLeftKind = 5, SpeechKind = 6;
+
+    /// <summary>대사 사건 — 엔진이 그 대사를 내기 직전(<see cref="TownLines"/>). 원본에 없는 갈래다.</summary>
+    public static DisevEvent Speech(int line, IReadOnlyDictionary<string, string> vars) =>
+        new(SpeechKind, Line: line, Vars: vars);
 
     public static DisevEvent EnterCity(int city) => new(CityKind, city);
     public static DisevEvent LeaveCity(int city, bool onLand) => new(LeftCityKind, city, OnLand: onLand);

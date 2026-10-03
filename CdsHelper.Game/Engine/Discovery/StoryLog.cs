@@ -36,9 +36,14 @@ public static class StoryLog
     /// 직업과 상관없이 <b>모두에게</b> 도는 전역 대본들 — 개인 이야기와 같은 단계 카운터(<see cref="Player.StoryProgress"/>)로 돈다.
     /// 지금은 모드 「작위」의 대본 하나다(<see cref="Town.Nobility"/>).
     /// </summary>
+    /// <summary>마을 사람 대사 대본(exe-tables/마을대사.json).</summary>
+    public const string TownTalkBook = "마을대사";
+
     public static IEnumerable<string> GlobalBooks()
     {
         if (Town.Nobility.Enabled) yield return Town.Nobility.BookName;
+        // 마을 사람 대사 — 단계를 안 올리는 책이라 파트 0 이 늘 걸린다. 슬롯마다 건물 · 명령 조건으로 가른다.
+        yield return TownTalkBook;
     }
 
     /// <summary>그 책(<paramref name="cache"/>)에서 그 사건으로 열리는 파트. 없으면 null.</summary>

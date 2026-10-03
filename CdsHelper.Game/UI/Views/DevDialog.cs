@@ -251,7 +251,9 @@ public sealed class DevDialog : GameWindow
         var stack = new StackPanel();
         stack.Children.Add(title);
         // 「색」 탭 — 게임이 쓰는 색 토큰을 늘어놓는다(개발용).
-        var colors = ColorsPage();
+        var colors = ColorsPage(editor: false);
+        // 「편집기 색」 — 퀘스트 편집기 · 모션 메이커 따위 도구 창의 붓만 따로 — 게임 화면 색과 섞이면 헷갈렸다.
+        var toolColors = ColorsPage(editor: true);
         var pages = new List<(string, FrameworkElement)> { ("일반", rows) };
         if (options.Discoveries is { } table)
         {
@@ -259,6 +261,7 @@ public sealed class DevDialog : GameWindow
             Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
         }
         pages.Add(("색", colors));
+        pages.Add(("편집기 색", toolColors));
         stack.Children.Add(Tabs([.. pages]));
         foreach (var (_, page) in pages) stack.Children.Add(page);
         stack.Children.Add(buttons);
@@ -323,7 +326,8 @@ public sealed class DevDialog : GameWindow
     /// </code>
     /// 줄을 누르면 #RRGGBB 를 클립보드에 넣는다.
     /// </remarks>
-    private FrameworkElement ColorsPage()
+    /// <param name="editor">참이면 편집기 · 도구 창의 붓만, 거짓이면 게임 화면 쪽(붓 · 글꼴 색인 · 공용 색표)이다.</param>
+    private FrameworkElement ColorsPage(bool editor)
     {
         var list = new StackPanel();
 
@@ -358,12 +362,13 @@ public sealed class DevDialog : GameWindow
             return line;
         }
 
-        // UI 붓 — 이 어셈블리 UI.Views 의 형마다 정적 SolidColorBrush 칸.
-        list.Children.Add(Head("UI 붓 (형.이름)"));
+        // UI 붓 — 이 어셈블리 UI.Views 의 형마다 정적 SolidColorBrush 칸. 편집기 쪽 형은 따로 낸다(IsEditorType).
+        list.Children.Add(Head(editor ? "편집기 · 도구 창 붓 (형.이름)" : "UI 붓 (형.이름)"));
         var flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
                   | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly;
         var brushes = typeof(GameUi).Assembly.GetTypes()
             .Where(t => t.Namespace == typeof(GameUi).Namespace && !t.IsGenericTypeDefinition)
+            .Where(t => IsEditorType(t) == editor)
             .SelectMany(t =>
             {
                 try { return t.GetFields(flags).Select(f => (Type: t, Field: f)).ToList(); }
@@ -378,6 +383,7 @@ public sealed class DevDialog : GameWindow
             .Where(x => x.Brush != null && !x.Name.Contains('<'))
             .OrderBy(x => x.Name, StringComparer.Ordinal);
         foreach (var (name, brush) in brushes) list.Children.Add(Swatch(brush!.Color, name, ""));
+        if (editor) return Wrap(list);
 
         // 글꼴 색인 — GameFont 의 *Color 상수.
         list.Children.Add(Head("게임 글꼴 색인 (GameFont)"));
@@ -415,15 +421,29 @@ public sealed class DevDialog : GameWindow
             grid.Children.Add(cell);
         }
         list.Children.Add(grid);
+        return Wrap(list);
 
-        return new ScrollViewer
+        static FrameworkElement Wrap(UIElement content) => new ScrollViewer
         {
             Width = 560, Height = 460, Margin = new Thickness(12, 10, 12, 4),
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Content = list,
+            Content = content,
         };
 
         static string Short(Type t) => t.IsNested ? $"{t.DeclaringType!.Name}.{t.Name}" : t.Name;
+    }
+
+    /// <summary>
+    /// 편집기 · 도구 창 쪽 형인지 — 놀이 화면에는 안 나오는 창(퀘스트 편집기 흐름도 · 모션 메이커 · 각종 편집 창)이다.
+    /// 딸린 형(중첩)은 바깥 형을 따른다.
+    /// </summary>
+    private static bool IsEditorType(Type type)
+    {
+        var t = type;
+        while (t.DeclaringType is { } outer) t = outer;
+        string name = t.Name;
+        return name.Contains("Edit") || name.Contains("Designer") || name.StartsWith("Disev")
+               || name is "MotionMakerDialog" or "BuildingListDialog" or "CitySpriteDialog" or "DevDialog";
     }
 
     /// <summary>

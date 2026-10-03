@@ -60,6 +60,16 @@ internal sealed class TrainingMenu(Window view, Engine.Game game, int buildingCo
 
     private void Say(string text) => ConfirmDialog.Tell(_view, text, face: Face);
 
+    /// <summary>
+    /// 교회 대사는 대사 사건으로 낸다 — 대본(「마을대사」)이 맡으면 대본이, 아니면 <paramref name="text"/>(엔진 대사)가 나온다.
+    /// 교회가 아니면 엔진 대사 그대로다.
+    /// </summary>
+    private void Line(string churchKey, string text, params (string, object)[] vars)
+    {
+        if (_buildingCode == Church) Engine.Disev.TownLines.Say(_view, _game, churchKey, () => Say(text), vars);
+        else Say(text);
+    }
+
     /// <summary>"수련" — 가르칠 것을 늘어놓고, 하나 배우면 끝나고, 종료면 배웅한다.</summary>
     /// <remarks>
     /// 차림을 열기 전에 두 문을 본다(<c>0x004914C8</c> · <c>0x004914D3</c>). 둘 다 얼굴 없는 알림이다.
@@ -86,17 +96,17 @@ internal sealed class TrainingMenu(Window view, Engine.Game game, int buildingCo
         var skills = _buildings.Teaches(teachMask);
         if (skills.Count == 0)
         {
-            Say(Pick("죄송하지만, 여기서는 수련이 불가능합니다.", "우리집에서는 수련할 수 없네.",
-                     "미안하지만, 나는 아무것도 가르쳐 줄 수 없네."));
+            Line("교회.수련불가", Pick("죄송하지만, 여기서는 수련이 불가능합니다.", "우리집에서는 수련할 수 없네.",
+                                        "미안하지만, 나는 아무것도 가르쳐 줄 수 없네."));
             return;
         }
 
-        Say(Pick("주의 배움의 터전에 잘 오셨습니다. 어떤 학문, 기능을 배우고 싶습니까?", "기술을 습득하고 싶나?",
-                 skills.Count == 1 ? "가르쳐 드릴 것은 한가지 밖에 없습니다만." : "무엇을 배우고 싶은가?"));
+        Line("교회.수련인사", Pick("주의 배움의 터전에 잘 오셨습니다. 어떤 학문, 기능을 배우고 싶습니까?", "기술을 습득하고 싶나?",
+                                    skills.Count == 1 ? "가르쳐 드릴 것은 한가지 밖에 없습니다만." : "무엇을 배우고 싶은가?"));
 
         if (SkillLearnDialog.Show(_view, skills, LevelOf, Learn)) return;
 
-        Say(Pick("용건이 있을 경우에는 언제든지 와 주십시오.", "용건이 없다면 오지 말게!", "배울 마음이 없다면 돌아가게."));
+        Line("교회.수련배웅", Pick("용건이 있을 경우에는 언제든지 와 주십시오.", "용건이 없다면 오지 말게!", "배울 마음이 없다면 돌아가게."));
     }
 
     private static bool IsTongue(string name) => Skill.Languages.Contains(name);
@@ -144,8 +154,8 @@ internal sealed class TrainingMenu(Window view, Engine.Game game, int buildingCo
         int level = LevelOf(name);
         if (level >= Skill.MaxLevel)
         {
-            Say(Pick("당신은 벌써 숙달해 있습니다. 제가 가르쳐 드릴 것은 아무것도 없습니다.",
-                     "자네에게 가르쳐 줄 것은 아무것도 없네.", "내가 가르쳐 줄 것은 아무것도 없네."));
+            Line("교회.숙달", Pick("당신은 벌써 숙달해 있습니다. 제가 가르쳐 드릴 것은 아무것도 없습니다.",
+                                  "자네에게 가르쳐 줄 것은 아무것도 없네.", "내가 가르쳐 줄 것은 아무것도 없네."));
             return false;
         }
 
@@ -155,12 +165,16 @@ internal sealed class TrainingMenu(Window view, Engine.Game game, int buildingCo
             $"기부금으로 {cost}닢 받겠습니다. 습득하는데는 {months}개월 정도 걸립니다. 좋습니까?",
             $"배우고 싶다면 금화 {cost}닢 필요하네. 습득하는데는, {months}개월 정도 필요하네. 그래도 좋다면 가르쳐 주지. 괜찮은가?",
             $"수업료로 금화 {cost}닢 받겠네. 습득하는데는 {months}개월 정도 필요하네만, 괜찮은가?");
-        if (!ConfirmDialog.Ask(_view, ask, face: Face)) return false;
+        bool yes = _buildingCode == Church
+            ? Engine.Disev.TownLines.Ask(_view, _game, "교회.기부금물음", () => ConfirmDialog.Ask(_view, ask, face: Face),
+                                         ("금액", cost), ("개월", months), ("기능", name))
+            : ConfirmDialog.Ask(_view, ask, face: Face);
+        if (!yes) return false;
 
         if (cost > Player.Gold)
         {
-            Say(Pick("안됐지만 기부금이 모자랍니다. 다음 기회에 와 주십시오.", "돈도 없는 녀석에게는 볼일없다. 빨리 돌아가게!",
-                     "수업료를 내지 못한다면 가르쳐 드릴 수 없습니다."));
+            Line("교회.기부금부족", Pick("안됐지만 기부금이 모자랍니다. 다음 기회에 와 주십시오.", "돈도 없는 녀석에게는 볼일없다. 빨리 돌아가게!",
+                                        "수업료를 내지 못한다면 가르쳐 드릴 수 없습니다."));
             return false;
         }
 

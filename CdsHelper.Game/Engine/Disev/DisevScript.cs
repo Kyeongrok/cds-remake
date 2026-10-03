@@ -145,6 +145,8 @@ public static class DisevScript
         new(Sig(0x41, 0x08), 4, "도시 아님 조건"),
         new(Sig(0x41, 0x10), 4, "건물 아님 조건"),
         new(Sig(0x42, 0x10), 7, "건물 명령 조건"),
+        // 70 10 [번호] — 원본에 없는 대사 사건 조건(TownLines). 편집기에는 번호와 이름이 같이 보인다.
+        new(Sig(0x70, 0x10), 4, "대사 사건 조건"),
         new(Sig(0x65), 1, "후원자 건물 나섬 조건"),
         new(Sig(0x59), 1, "배 있음 조건"),
         new(Sig(0x17, 0x19), 4, "문화권 조건"),
@@ -613,6 +615,11 @@ public static class DisevScript
         string kind = form.Kind;
         switch (kind)
         {
+            case "대사 사건 조건":
+            {
+                int n = U16(raw, 2);
+                return $"대사 사건: {n} {CdsHelper.Game.Engine.Disev.TownLines.Find(n)?.Key ?? "(없는 번호)"}";
+            }
             case "AVI 재생":
             case "EVSTILL 이미지 표시":
             case "음원 재생":

@@ -90,6 +90,18 @@ public sealed class MateRosterDialog : GameWindow
             Margin = new Thickness(0, 4, 0, 12),
         };
         buttons.Children.Add(new GameButton("결정", Decide, width: 110));
+        // 모드 「부하 해고」 — 결정 오른쪽에 「해고」. 사람이 앉은 줄을 잡았을 때만 눌린다.
+        if (Local.Settings.GameSettings.MateDismiss)
+        {
+            var fire = new GameButton("해고", () =>
+            {
+                int slot = _list.Selected;
+                if (slot >= 0 && _player.MateAt(slot) is { Length: > 0 } who) Fire(slot, who);
+            }, width: 110) { On = false };
+            _list.SelectionChanged += () =>
+                fire.On = _list.Selected >= 0 && _player.MateAt(_list.Selected).Length > 0;
+            buttons.Children.Add(fire);
+        }
         buttons.Children.Add(new GameButton("중단", Cancel, width: 110));
 
         var title = GameUi.TitleBar("부하편성", Cancel);
@@ -160,10 +172,31 @@ public sealed class MateRosterDialog : GameWindow
             NoticeDialog.Show(this, $"{name}의 자료를 찾지 못했다");
     }
 
-    /// <summary>들어올 때 자리로 되돌리고 닫는다.</summary>
+    /// <summary>
+    /// 해고한다(모드 「부하 해고」) — 재계약을 안 맺었을 때(PatronMenu.RecontractMates 의 NO)와 같다.
+    /// 자리를 비우고 그 사람이 「또 일이 있으면 불러 주십시오!」 하고 떠난다. 그 뒤로는 여느 인물처럼 움직인다.
+    /// </summary>
+    private void Fire(int slot, string name)
+    {
+        if (!ConfirmDialog.Ask(this, $"{name}{GameUi.Josa(name, "을", "를")} 해고하시겠습니까?")) return;
+
+        var face = _player.MateInfoOf(name) is { } info ? _game?.MateFace(info) : null;
+        int person = _game?.World?.People.FirstOrDefault(r => r.Name == name)?.Id ?? -1;
+        _player.Dismiss(slot, person);
+        _fired.Add(name);
+        TalkDialog.Say(this, face, "", "또 일이 있으면 불러 주십시오!");
+        // 잡아 둔 줄을 놓는다 — 빈 자리를 잡은 채로 두면 다음 누름이 맞바꾸기가 된다.
+        _list.Rebuild(Player.MaxMates);
+    }
+
+    /// <summary>이 창에서 해고한 사람 — 중단해도 되돌리지 않는다.</summary>
+    private readonly HashSet<string> _fired = [];
+
+    /// <summary>들어올 때 자리로 되돌리고 닫는다. 해고한 사람은 되돌리지 않는다.</summary>
     private void Cancel()
     {
-        for (int i = 0; i < _before.Length; i++) _player.SetMate(i, _before[i]);
+        for (int i = 0; i < _before.Length; i++)
+            _player.SetMate(i, _fired.Contains(_before[i]) ? "" : _before[i]);
         Close();
     }
 

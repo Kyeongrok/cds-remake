@@ -1,0 +1,333 @@
+﻿{
+  "Stamp": "",
+  "Data": {
+    "Parts": [
+      {
+        "Index": 0,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
+          },
+          {
+            "Condition": 4,
+            "Body": 5
+          },
+          {
+            "Condition": 6,
+            "Body": 7
+          },
+          {
+            "Condition": 8,
+            "Body": 9
+          },
+          {
+            "Condition": 10,
+            "Body": 11
+          },
+          {
+            "Condition": 12,
+            "Body": 13
+          },
+          {
+            "Condition": 14,
+            "Body": 15
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "42 10",
+              "Call": "BuildingCommand",
+              "Args": {
+                "Building": 1,
+                "Command": 10
+              },
+              "Note": "건물 명령 조건: 교역소(1)의 「투자」(10 — 원본에 없는 줄의 붙박이 번호)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "<도시> 도시의 발전을 위해 투자를 해 준다는 건가？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L0100",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "YES — 그대로 끝, 투자 창이 뜬다"
+            },
+            {
+              "Label": "L0100",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "바쁜 사람을 놀리지 말게．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1 — 투자 창을 막는다"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 1,
+                "LineName": "교회.수련불가"
+              },
+              "Note": "대사 사건: 1 교회.수련불가"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "죄송하지만， 여기서는 수련이 불가능합니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 2,
+                "LineName": "교회.수련인사"
+              },
+              "Note": "대사 사건: 2 교회.수련인사"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "주의 배움의 터전에 잘 오셨습니다． 어떤 학문， 기능을 배우고 싶습니까？"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 3,
+                "LineName": "교회.수련배웅"
+              },
+              "Note": "대사 사건: 3 교회.수련배웅"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "용건이 있을 경우에는 언제든지 와 주십시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 4,
+                "LineName": "교회.숙달"
+              },
+              "Note": "대사 사건: 4 교회.숙달"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "당신은 벌써 숙달해 있습니다． 제가 가르쳐 드릴 것은 아무것도 없습니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 5,
+                "LineName": "교회.기부금물음"
+              },
+              "Note": "대사 사건: 5 교회.기부금물음"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "기부금으로 <금액>닢 받겠습니다． 습득하는데는 <개월>개월 정도 걸립니다． 좋습니까？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L0250",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "4C",
+              "Call": "EndDone",
+              "Note": "이벤트 결과 코드 0 — 예"
+            },
+            {
+              "Label": "L0250",
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1 — 아니오"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 6,
+                "LineName": "교회.기부금부족"
+              },
+              "Note": "대사 사건: 6 교회.기부금부족"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "안됐지만 기부금이 모자랍니다． 다음 기회에 와 주십시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 7,
+                "LineName": "교회.명성부족"
+              },
+              "Note": "대사 사건: 7 교회.명성부족"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "<후원자>님은 바쁘셔서 만나실 수 없습니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  "Source": "원본에 없는 전역 대본 — 마을 사람 대사(교역소 투자 물음 · 교회 대사 일곱). 대사 사건(70 10)은 TownLines 의 번호다.",
+  "Version": 15
+}

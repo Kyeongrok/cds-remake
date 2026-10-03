@@ -56,6 +56,9 @@ public sealed class CountDialog : GameWindow
     /// <summary>수를 적는 크림빛 칸의 폭과 키. 게임 화면에서 칸이 계산기 두 개 폭쯤이다.</summary>
     private const double FieldWidth = 44, FieldHeight = 18;
 
+    /// <summary>게임 글꼴 숫자 한 자의 폭(반각 8점).</summary>
+    private const double DigitWidth = 8;
+
     /// <summary>줄 사이 틈과, 이름 끝에서 값 칸까지의 틈.</summary>
     private const double RowGap = 4, NameGap = 8;
 
@@ -110,7 +113,8 @@ public sealed class CountDialog : GameWindow
             Background = GameUi.PageFill,
             BorderBrush = GameUi.ItemEdge,
             BorderThickness = new Thickness(1),
-            Width = FieldWidth,
+            // 칸은 <b>가장 큰 값이 들어갈 만큼</b> 넓힌다 — 투자처럼 여섯 · 일곱 자리면 44 점 칸에서 잘렸다.
+            Width = Math.Max(FieldWidth, max.ToString().Length * DigitWidth + 8),
             Height = FieldHeight,
             Child = _count,
         };

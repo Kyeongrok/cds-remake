@@ -561,7 +561,11 @@ public sealed class ShipMapWindow : Window
         // V 글쇠가 어느 창에서든 이 창을 찾을 수 있게 해 둔다.
         Current = this;
         Closed += (_, _) => { if (ReferenceEquals(Current, this)) Current = null; };
-        input.MouseWheel += (_, e) => _host.Zoom(e.Delta > 0 ? 1 : -1, e.GetPosition(input));
+        // 휠 확대는 모드 「휠 확대」를 켰을 때만이다 — 원본에 없는 조작이라 꺼 두고 시작한다.
+        input.MouseWheel += (_, e) =>
+        {
+            if (GameSettings.WheelZoom) _host.Zoom(e.Delta > 0 ? 1 : -1, e.GetPosition(input));
+        };
         // 오른쪽 단추는 커맨드 창만 낸다. 예전에는 끌면 지도가 밀렸는데, 게임에 없는
         // 조작인 데다 커맨드를 내려다 손이 조금만 흔들려도 지도가 밀려 걷어냈다.
         input.MouseRightButtonUp += (_, e) =>
@@ -765,8 +769,12 @@ public sealed class ShipMapWindow : Window
                 && GameMapCoords.TryCityCell(b.City, out double bx, out double by))
                 inTown[b.Discovery] = (bx, by);
 
+        // 모드 「뭍 자동이동」 — 뭍에 있을 때 발견물 점을 오른쪽 단추로 누르면 그 자리까지 걸어간다.
+        Func<double, double, (bool, string)>? walk = GameSettings.LandAutoWalk && _host.IsOnLand
+            ? (x, y) => _host.StartAutoWalk(x, y)
+            : null;
         DiscoveryMapDialog.Show(this, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
-                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown);
+                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk);
     }
 
     /// <summary>
@@ -1275,7 +1283,17 @@ public sealed class ShipMapWindow : Window
         if (ShuttingDown) return;
         if (_speedNote is { IsClosed: true }) _speedNote = null;
         _speedNote ??= FleetLabelWindow.Attach(this, SpeedFontSize, FleetLabelWindow.Slot.Speed);
-        _speedNote.Set($"{KnotsOf(_host.LastSpeed):0.00} kn");
+        // 정보 등급 「상세」 — 밑에 셈식을 작은 글씨로 붙인다(배마다의 값 · 기함과 평균 · 작위 혜택 · 노트 바꾸기).
+        string? detail = null;
+        if (GameSettings.Shows(GameSettings.InfoDetailed))
+        {
+            var wind = _host.LastWind;
+            detail = Sailing.Explain(_game.Player, _game.Sails, wind.Dir, wind.Speed, _host.Heading, onLand: false);
+            int knot = Engine.Town.Nobility.Sum(_game.Player, Engine.Town.PassiveEffect.SeaSpeed);
+            if (knot > 0) detail += $"\n작위 혜택 +{knot}노트 = +{SpeedPerKnot * knot}";
+            detail += $"\n속도 {_host.LastSpeed} → {KnotsOf(_host.LastSpeed):0.00} kn";
+        }
+        _speedNote.Set($"{KnotsOf(_host.LastSpeed):0.00} kn", detail);
     }
 
     /// <summary>
@@ -2623,6 +2641,21 @@ public sealed class ShipMapWindow : Window
     /// <summary>힌트 창이 떠 있는지 — 그 창 안에서 H 를 또 눌러 겹쳐 뜨지 않게.</summary>
     private bool _hintsOpen;
 
+    /// <summary>
+    /// 단축키로 <b>인물정보</b>를 연다 — 커맨드 「인물정보」와 같은 판이다. 어디서든 지금 창 위에 뜨고,
+    /// 이미 떠 있으면 또 열지 않는다.
+    /// </summary>
+    internal void PersonByKey(Window owner)
+    {
+        if (!_started || _personOpen) return;
+        _personOpen = true;
+        try { PersonInfoMenu.ShowByKey(owner, _game); }
+        finally { _personOpen = false; }
+    }
+
+    /// <summary>인물정보가 떠 있는지 — 그 창 안에서 X 를 또 눌러 겹쳐 뜨지 않게.</summary>
+    private bool _personOpen;
+
     private void OnMapKey(object sender, KeyEventArgs e)
     {
         // ESC — 떠 있는 커맨드·도시정보 창을 접는다. 창이 제 글쇠를 받는 것은 그 창에
@@ -2682,6 +2715,13 @@ public sealed class ShipMapWindow : Window
         {
             e.Handled = true;
             if (_started && !_hintsOpen) Hold(() => HintsByKey(this));
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.PersonKey, Key.X))
+        {
+            e.Handled = true;
+            if (_started && !_personOpen) Hold(() => PersonByKey(this));
             return;
         }
 

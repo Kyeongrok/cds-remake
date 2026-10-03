@@ -2661,9 +2661,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         // 관문을 넘으면 한 번 더 묻는다(0x0046894F). 글 둘을 넘기지만 0x00469680 이
         // <b>부관 있고 없고로 하나만</b> 고른다 — 제목 띠가 아니다.
-        // 준비하는 열흘은 성문을 나설 때 도는 PassPortDays 가 그대로 쓴다.
+        // 준비하는 날수는 성문을 나설 때 도는 PassPortDays 가 쓰는 모드 값(GameSettings.PortDays, 원본 10)이다 — 말도 그 값으로.
         if (!ConfirmDialog.Ask(this, _game.Player.MateAt(0).Length > 0
-                ? "탐험을 떠납니까? 준비하는데 10일 걸립니다. 좋습니까?"
+                ? $"탐험을 떠납니까? 준비하는데 {Local.Settings.GameSettings.PortDays}일 걸립니다. 좋습니까?"
                 : "탐험하러 출발하십니까?")) return;
 
         Explored = true;
@@ -2727,6 +2727,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     void ITownScreen.Invest()
     {
         var owner = Menu.Window ?? this;
+
+        // 교역소 주인의 물음(「… 투자를 해 준다는 건가?」)은 대본 「마을대사」가 한다 — 줄을 고르면 명령보다 먼저 돈다.
+
         if (_player.Gold < InvestStep)
         {
             GameDialog.Show(owner, "투자할 돈이 없습니다");
@@ -2739,7 +2742,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                    _player.Gold, InvestStep, full: false,
                                    new CountDialog.Gauge("소지금", _player.Gold),
                                    new CountDialog.Gauge("투자액", (int)Math.Min(int.MaxValue, here)),
-                                   new CountDialog.Gauge("공  적", merit));
+                                   new CountDialog.Gauge("공  적", merit, ""));
         if (want <= 0) return;
 
         long before = _player.TotalInvested;

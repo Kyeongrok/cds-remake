@@ -13,6 +13,7 @@ public sealed class ShortcutDialog : GameWindow
     private readonly TextBox _mod = KeyBox();
     private readonly TextBox _items = KeyBox();
     private readonly TextBox _hints = KeyBox();
+    private readonly TextBox _person = KeyBox();
 
     private ShortcutDialog()
     {
@@ -34,6 +35,8 @@ public sealed class ShortcutDialog : GameWindow
         _items.PreviewKeyDown += (_, e) => Assign(e, _items, key => GameSettings.ItemsKey = key);
         _hints.Text = GameSettings.HintsKey;
         _hints.PreviewKeyDown += (_, e) => Assign(e, _hints, key => GameSettings.HintsKey = key);
+        _person.Text = GameSettings.PersonKey;
+        _person.PreviewKeyDown += (_, e) => Assign(e, _person, key => GameSettings.PersonKey = key);
 
         var stack = new StackPanel();
         stack.Children.Add(GameUi.TitleBar("단축키", Close));
@@ -42,6 +45,7 @@ public sealed class ShortcutDialog : GameWindow
         stack.Children.Add(Row("모드", _mod));
         stack.Children.Add(Row("소지품 정보", _items));
         stack.Children.Add(Row("힌트 정보", _hints));
+        stack.Children.Add(Row("인물정보", _person));
         stack.Children.Add(new TextBlock
         {
             Text = "각 칸을 누른 뒤 지정할 글쇠를 누르십시오.",
@@ -104,7 +108,7 @@ public sealed class ShortcutDialog : GameWindow
             return;
 
         string key = e.Key.ToString();
-        if (new[] { _save, _map, _mod, _items, _hints }.Any(b => b != box && string.Equals(key, b.Text, StringComparison.OrdinalIgnoreCase)))
+        if (new[] { _save, _map, _mod, _items, _hints, _person }.Any(b => b != box && string.Equals(key, b.Text, StringComparison.OrdinalIgnoreCase)))
         {
             e.Handled = true;
             NoticeDialog.Show(this, "같은 글쇠를 두 단축키에 함께 지정할 수 없습니다.");
