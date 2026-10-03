@@ -226,6 +226,9 @@ public sealed class GameSettingsData
     /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool WheelZoom { get; set; }
 
+    /// <summary>게임 로드 · 이어하기 창을 리디바탕 표로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool RidiLoadList { get; set; }
+
     /// <summary>수에즈 지협에 바닷길을 뚫을지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SuezCanal { get; set; }
 
@@ -1012,6 +1015,13 @@ public static class GameSettings
     {
         get => Get(d => d.SuezCanal);
         set => Set(d => d.SuezCanal = value);
+    }
+
+    /// <summary>게임 로드 창 글꼴 — 세이브 고르기 창(게임 로드 · CONTINUE)을 리디바탕 표로 띄운다(SaveListDialog).</summary>
+    public static bool RidiLoadList
+    {
+        get => Get(d => d.RidiLoadList);
+        set => Set(d => d.RidiLoadList = value);
     }
 
     /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>

@@ -2809,6 +2809,25 @@ public sealed class ShipMapWindow : Window
             return Row(name, city, $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
         }).ToList();
 
+        // 모드 폰트 「게임 로드 창」 — 리디바탕 표로 칸을 나눠 그린다(고정폭 빈칸 맞추기가 아니라).
+        if (GameSettings.RidiLoadList)
+        {
+            if (slots.Count == 0) { NoticeDialog.Show(owner, whenEmpty); return null; }
+            var table = slots.Select(s =>
+            {
+                var d = s.Save;
+                string who = !string.IsNullOrEmpty(d.Name) ? d.Name
+                           : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } whole ? whole : "이름 없는 제독";
+                return new[]
+                {
+                    who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName,
+                    $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0}개",
+                };
+            }).ToList();
+            int pick = SaveListDialog.Pick(owner, caption, ["캐릭터", "도시", "저장한 시각", "발견물"], table);
+            return pick >= 0 && pick < slots.Count ? slots[pick].File : null;
+        }
+
         int at = HintListDialog.Pick(owner, rows, caption, whenEmpty,
                                      header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
                                      // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.

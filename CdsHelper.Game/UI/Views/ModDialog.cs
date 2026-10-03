@@ -106,8 +106,10 @@ public sealed class ModDialog : GameWindow
         var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「정보」 — 화면에 쪽지·덧그림·창으로 무언가를 더 보여 주는 것만 모은다.
         var info = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
-        // 「UI」 — 창 모양 · 글꼴 · 차림표 줄처럼 화면 꾸밈을 바꾸는 것.
+        // 「UI」 — 창 모양 · 차림표 줄처럼 화면 꾸밈을 바꾸는 것.
         var ui = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「폰트」 — 어느 창을 어떤 글꼴로 찍는지.
+        var font = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「실험」 — 아직 다듬는 중인 덧그림. 모양이 바뀔 수 있다.
         var lab = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
 
@@ -207,7 +209,7 @@ public sealed class ModDialog : GameWindow
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
 
         // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
-        ui.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
+        font.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
             on => { GameSettings.RidiFont = on; UiFont.Refresh(); },
             "원본에 없는 것입니다 — 게임 비트맵 글꼴이 아니라 윈도 글꼴로 찍는 글씨(이 모드 창, 향상된 힌트 보기, 교역소 숫자 따위)를"
             + " 리디바탕(명조)으로 바꿉니다. 게임 비트맵 글씨는 그대로입니다. 켜고 끄면 떠 있는 창에도 곧바로 듭니다."
@@ -241,6 +243,12 @@ public sealed class ModDialog : GameWindow
             + " 줄마다 초상화, 지닌 기능과 언어(그 자리에서 안 쓰이는 것은 흐리게), 오른쪽에 자리가 나오고,"
             + " 줄을 고르면 오른쪽에 맡은 기능의 효과가 펼쳐집니다. 결정(또는 두 번 누르기)으로 인물정보 판을 엽니다."
             + " 끄면 원본처럼 자리 이름(플레이어 · 부관 …)만 늘어놓습니다."));
+
+        // 게임 로드 창 — 세이브 고르기를 리디바탕 표로.
+        font.Children.Add(Toggle("게임 로드 창", GameSettings.RidiLoadList, on => GameSettings.RidiLoadList = on,
+            "원본과 다릅니다 — 「게임 로드」 · CONTINUE 의 세이브 고르기 창을 리디바탕 글씨의 표로 띄웁니다."
+            + " 캐릭터 · 도시 · 저장한 시각 · 발견물이 칸마다 나뉘어 이름이 길어도 줄이 안 어긋납니다. 두 번 누르면 곧바로 불러옵니다."
+            + " 끄면 원본처럼 게임 글꼴로 띄웁니다."));
 
         // 아이템 창 — 소지품일람 줄마다 그림과 효과.
         ui.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
@@ -433,10 +441,12 @@ public sealed class ModDialog : GameWindow
         pages.Children.Add(rows);
         pages.Children.Add(info);
         pages.Children.Add(ui);
+        pages.Children.Add(font);
         pages.Children.Add(general);
         pages.Children.Add(lab);
         info.Visibility = Visibility.Hidden;
         ui.Visibility = Visibility.Hidden;
+        font.Visibility = Visibility.Hidden;
         lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
 
@@ -446,7 +456,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(rows, info, ui, general, lab));
+        stack.Children.Add(Tabs(rows, info, ui, font, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -464,7 +474,7 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
     private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement ui,
-                                  FrameworkElement general, FrameworkElement lab)
+                                  FrameworkElement font, FrameworkElement general, FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
         var heads = new List<(Border Head, FrameworkElement Page)>();
@@ -501,6 +511,7 @@ public sealed class ModDialog : GameWindow
         Add("편의성", convenience);
         Add("정보", info);
         Add("UI", ui);
+        Add("폰트", font);
         Add("일반", general);
         Add("실험", lab);
         Select(convenience);
