@@ -145,8 +145,12 @@ public sealed class SupplyDialog : GameWindow
         var head = new StackPanel { Orientation = Orientation.Horizontal };
         head.Children.Add(Label("용량 "));
         head.Children.Add(_capacity);
-        head.Children.Add(Label("    중량 "));
-        head.Children.Add(_weight);
+        // 모드 「중량 없음」이면 무게 칸을 안 낸다.
+        if (!Player.IgnoresWeight())
+        {
+            head.Children.Add(Label("    중량 "));
+            head.Children.Add(_weight);
+        }
         head.Children.Add(Label("    소지금 "));
         head.Children.Add(_gold);
 
@@ -409,7 +413,8 @@ public sealed class SupplyDialog : GameWindow
         int now = have + _add[index];
 
         int room = Math.Max(0, _player.Capacity - Barrels);
-        int byWeight = supply.UnitWeight > 0 ? Math.Max(0, (_player.Tonnage - Weight) / supply.UnitWeight) : room;
+        int byWeight = supply.UnitWeight > 0 && !Player.IgnoresWeight()
+            ? Math.Max(0, (_player.Tonnage - Weight) / supply.UnitWeight) : room;
         int most = Sold(supply) ? now + Math.Min(room, byWeight) : have;
 
         int? total = CountDialog.Set(this, supply.Name, "실을 총량", "통", now, most,
@@ -459,7 +464,7 @@ public sealed class SupplyDialog : GameWindow
         var supply = Supply.All[index];
         if (!Sold(supply) && _add[index] >= 0) return "-";
         if (Barrels + 1 > _player.Capacity) return "용량 오버입니다.";
-        if (Weight + supply.UnitWeight > _player.Tonnage) return "중량 오버입니다.";
+        if (_player.Overweight(Weight + supply.UnitWeight)) return "중량 오버입니다.";
         if (Total + supply.PriceAt(_rate, _cityFlags) > _player.Gold)
             return _player.Gold == 0
                 ? _mate ? "제독, 안됐지만 빈털터리입니다!" : "소지금이 없습니다"
@@ -543,8 +548,10 @@ public sealed class SupplyDialog : GameWindow
         int haveAmmo = _player.SupplyOf(SupplyKind.Ammo);
 
         int room = (_player.Capacity - _player.CargoCount - haveMaterial - haveAmmo) / 2;
-        int free = _player.Tonnage - _player.GunWeight - _player.CargoWeight
-                   - haveMaterial * material.UnitWeight - haveAmmo * ammo.UnitWeight;
+        int free = Player.IgnoresWeight()
+            ? Player.NoWeightRoom
+            : _player.Tonnage - _player.GunWeight - _player.CargoWeight
+              - haveMaterial * material.UnitWeight - haveAmmo * ammo.UnitWeight;
         int byWeight = free / (food.UnitWeight + water.UnitWeight);
         int pair = Math.Max(0, Math.Min(room, byWeight));
 
@@ -677,7 +684,7 @@ public sealed class SupplyDialog : GameWindow
     private string WhyNotDecide()
     {
         if (Barrels > _player.Capacity) return "용량 오버입니다.";
-        if (Weight > _player.Tonnage) return "중량 오버입니다.";
+        if (_player.Overweight(Weight)) return "중량 오버입니다.";
         if (Total > _player.Gold)
             return _player.Gold == 0
                 ? _mate ? "제독, 안됐지만 빈털터리입니다!" : "소지금이 없습니다"
@@ -726,7 +733,7 @@ public sealed class SupplyDialog : GameWindow
         if (player.Ships.Count == 0) return;
         var dialog = new SupplyDialog(player, rate, cityFlags, cargoText) { Owner = owner };
         dialog.Last();
-        if (dialog.Weight > player.Tonnage || dialog.Barrels > player.Capacity) dialog.Fill();
+        if (player.Overweight(dialog.Weight) || dialog.Barrels > player.Capacity) dialog.Fill();
 
         var (foodTo, waterTo) = dialog.FillTargets();
         if (foodTo <= player.SupplyOf(SupplyKind.Food) && waterTo <= player.SupplyOf(SupplyKind.Water))

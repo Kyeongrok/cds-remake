@@ -106,7 +106,9 @@ public sealed class NationTable
 
     private readonly Nation[] _nations;
 
-    private NationTable(Snapshot snapshot) => _nations = snapshot.Nations;
+    // 이름은 표준 표기(StandardText)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    private NationTable(Snapshot snapshot) =>
+        _nations = [.. snapshot.Nations.Select(n => n with { Name = Local.Helpers.StandardText.Apply(n.Name) })];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";

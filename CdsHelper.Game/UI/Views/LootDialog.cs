@@ -42,8 +42,9 @@ public sealed class LootDialog : GameWindow
     /// <summary>한도를 넘은 수의 색(<c>0x3B</c>).</summary>
     private const byte OverColor = 0x3B;
 
-    private const double BoardWidth = 519;
-    private const double UnitWidth = 70, HaveWidth = 84, AddWidth = 100, SwapWidth = 24;
+    private const double BoardWidth = 537;
+    /// <remarks>보충량 칸은 계산기 단추 하나만큼(18) 넓혔다 — 판도 그만큼 넓다.</remarks>
+    private const double UnitWidth = 70, HaveWidth = 84, AddWidth = 118, SwapWidth = 24;
     private const int Step = 1, FastStep = 10;
 
     private static SolidColorBrush Frozen(Color c)
@@ -147,9 +148,13 @@ public sealed class LootDialog : GameWindow
         head.Children.Add(Label("용량 "));
         head.Children.Add(Label($"{Barrels,6}", Barrels > _player.Capacity));
         head.Children.Add(Label($"/ {_player.Capacity}"));
-        head.Children.Add(Label("    중량 "));
-        head.Children.Add(Label($"{Weight,6}", Weight > WeightLimit));
-        head.Children.Add(Label($"/ {WeightLimit}"));
+        // 모드 「중량 없음」이면 무게 칸을 안 낸다.
+        if (!Player.IgnoresWeight())
+        {
+            head.Children.Add(Label("    중량 "));
+            head.Children.Add(Label($"{Weight,6}", Weight > WeightLimit));
+            head.Children.Add(Label($"/ {WeightLimit}"));
+        }
         head.Children.Add(Label($"    소지금 {_player.Gold,8}닢"));
         _body.Children.Add(head);
 
@@ -166,7 +171,9 @@ public sealed class LootDialog : GameWindow
                                                                               v => _now[at] = v)),
                 Cell(Label($"{s.UnitWeight,6}"), UnitWidth),
                 Cell(Label($"{_original[i],6}통"), HaveWidth),
-                Cell(Spin(_now[i] - _original[i], () => BumpSupply(at, +1), () => BumpSupply(at, -1)), AddWidth)));
+                Cell(Spin(_now[i] - _original[i], () => BumpSupply(at, +1), () => BumpSupply(at, -1),
+                          () => Enter(s.Name, _now[at], _original[at] + _pool, _original[at], s.UnitWeight,
+                                      v => _now[at] = v)), AddWidth)));
         }
 
         for (int k = 0; k < _rows.Count; k++)
@@ -179,7 +186,9 @@ public sealed class LootDialog : GameWindow
                                                                      v => r.Now = v)),
                 Cell(Label($"{r.Goods.UnitWeight,6}"), UnitWidth),
                 Cell(Label($"{r.Original,6}통"), HaveWidth),
-                Cell(Spin(r.Now - r.Original, () => BumpGoods(at, +1), () => BumpGoods(at, -1)), AddWidth)));
+                Cell(Spin(r.Now - r.Original, () => BumpGoods(at, +1), () => BumpGoods(at, -1),
+                          () => Enter(GoodsName(r.Goods.Kind), r.Now, r.Original, r.Original, r.Goods.UnitWeight,
+                                      v => r.Now = v)), AddWidth)));
         }
 
         // 미탑재품 — 빼앗은 교역품이 남았거나 풀에 남은 것이 있을 때만(0x00488180).
@@ -262,7 +271,7 @@ public sealed class LootDialog : GameWindow
     /// <summary>결정 — 한도를 보고 되쓴다(<c>0x00487DF0</c>).</summary>
     private void Decide()
     {
-        bool heavy = Weight > WeightLimit, full = Barrels > _player.Capacity;
+        bool heavy = !Player.IgnoresWeight() && Weight > WeightLimit, full = Barrels > _player.Capacity;
         if (heavy || full)
         {
             GameDialog.Show(this, heavy && full ? "중량도 용량도 한계를 넘고 있습니다!"
@@ -307,13 +316,20 @@ public sealed class LootDialog : GameWindow
         },
     };
 
-    /// <summary>「＋%4d」 / 「－%4d」 와 ↑↓.</summary>
-    private static UIElement Spin(int delta, Action up, Action down)
+    /// <summary>「＋%4d」 / 「－%4d」 와 ↑↓, 그리고 계산기.</summary>
+    /// <remarks>
+    /// 계산기는 원본에 없다 — 보급 창처럼 <b>실을 총량</b>을 적는 창(이름을 눌렀을 때와 같은 것)을 연다.
+    /// 화살표로 하나씩 올리기가 너무 번거로웠다.
+    /// </remarks>
+    private static UIElement Spin(int delta, Action up, Action down, Action calc)
     {
         var spin = new StackPanel { Orientation = Orientation.Horizontal };
         spin.Children.Add(Label(delta < 0 ? $"－{-delta,4}" : $"＋{delta,4}"));
         spin.Children.Add(Arrow(UiSprites.IconUp, up));
         spin.Children.Add(Arrow(UiSprites.IconDown, down));
+        var box = Arrow(UiSprites.IconCalc, calc);
+        if (box is FrameworkElement f) f.ToolTip = "실을 양을 적는다";
+        spin.Children.Add(box);
         return spin;
     }
 

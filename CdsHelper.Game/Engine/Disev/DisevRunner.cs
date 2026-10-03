@@ -790,6 +790,7 @@ public sealed class DisevRunner
                         else _game.Player.Earn(value - _game.Player.Gold);
                         break;
                     case 29: _game.Player.SetStoryQuestDeadline(value); break;   // STORY 의뢰 남은 기한(일)
+                    case Town.Nobility.RankStat: _game.Player.SetNobleRank(value); break;   // 작위(모드 「작위」)
                 }
                 return null;
             }
@@ -1822,6 +1823,8 @@ public sealed class DisevRunner
         Inspector or "검사관" => _game.Faces?.TryGetBgra(Town.Inspector.Face, female: false),
         // 執事 — 게임은 인물 275 를 세우고 얼굴을 229 로 박는다(0x0040CA16~0x0040CA40).
         Butler => _game.Faces?.TryGetBgra(ButlerFace, female: false),
+        // 国王 — 원본에 없는 화자. 지금 들어온 왕궁에 앉은 국왕(도시 창이 걸어 둔 Game.RulerFace)이다. 모드 「작위」 대본이 쓴다.
+        King => _game.RulerFace?.Invoke(),
         _ => FacilityFace(speaker) ?? NamedFace(speaker),
     };
 
@@ -1887,6 +1890,10 @@ public sealed class DisevRunner
             26 => player.Nation,                                        // 제독 국적(vt+0x14)
             27 => player.Contract?.DaysLeft(player.Date) ?? 0,          // 후원자 계약 남은 기한(일)
             29 => player.StoryQuestDaysLeft,                            // STORY 의뢰 남은 기한(일)
+            // 모드 「작위」(Town.Nobility) — 원본에 없는 칸이다.
+            Town.Nobility.MeritStat => Town.Nobility.MeritOf(_game),             // 40 공적
+            Town.Nobility.RankStat => player.NobleRank,                          // 41 작위
+            Town.Nobility.HomeCapitalStat => Town.Nobility.InHomeCapital(_game) ? 1 : 0,   // 42 본국 수도에 있음
             _ => null,
         };
     }
@@ -1896,6 +1903,9 @@ public sealed class DisevRunner
 
     /// <summary>부관 화자 이름. 대본에는 CP932 로 <c>副官</c> 이라 적혀 있다.</summary>
     private const string Aide = "부관";
+
+    /// <summary>국왕 화자 이름 — CP932 <c>国王</c>(<c>8D 91 89 A4</c>). 원본 대본에는 없다.</summary>
+    private const string King = "국왕";
 
     /// <summary>主人公 — 제독.</summary>
     private const string Hero = "주인공";

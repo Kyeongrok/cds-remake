@@ -102,4 +102,8 @@
       <None Remove="대항해시대3 후원자.csv" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="asset\video\" />
+    </ItemGroup>
+
 </Project>

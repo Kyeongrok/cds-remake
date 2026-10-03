@@ -30,6 +30,19 @@ public sealed class Game
     /// <summary>판을 짓는다 — 신도시의 발견물 조건이 이 판의 발견을 보게 건다.</summary>
     public Game() => CityFounding.Discovered = FoundBy;
 
+    /// <summary>모드 「중량 없음」을 주인공 쪽 무게 셈에 건다 — 설정은 이쪽에만 있다.</summary>
+    static Game()
+    {
+        Player.IgnoresWeight = () => Local.Settings.GameSettings.NoWeight;
+        // 작위 혜택(자작) — 소지품 칸이 는다.
+        Player.ExtraItems = p => Town.Nobility.Has(p, Town.Nobility.Perk.Inventory) ? Town.Nobility.ExtraItemSlots : 0;
+    }
+
+    /// <summary>
+    /// 지금 들어와 있는 왕궁의 국왕 얼굴 — 대본의 화자 「국왕」이 쓴다. 도시 창이 건물에 들 때 걸어 둔다.
+    /// </summary>
+    public Func<uint[]?>? RulerFace { get; set; }
+
     /// <summary>
     /// 주인공을 새로 앉힌다 — <b>NEW GAME</b> 이 부른다.
     /// </summary>

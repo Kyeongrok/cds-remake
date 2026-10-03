@@ -10,6 +10,9 @@ public sealed class ShortcutDialog : GameWindow
 {
     private readonly TextBox _save = KeyBox();
     private readonly TextBox _map = KeyBox();
+    private readonly TextBox _mod = KeyBox();
+    private readonly TextBox _items = KeyBox();
+    private readonly TextBox _hints = KeyBox();
 
     private ShortcutDialog()
     {
@@ -23,13 +26,22 @@ public sealed class ShortcutDialog : GameWindow
 
         _save.Text = GameSettings.SaveKey;
         _map.Text = GameSettings.MapKey;
-        _save.PreviewKeyDown += (_, e) => Assign(e, _save, isSave: true);
-        _map.PreviewKeyDown += (_, e) => Assign(e, _map, isSave: false);
+        _mod.Text = GameSettings.ModKey;
+        _save.PreviewKeyDown += (_, e) => Assign(e, _save, key => GameSettings.SaveKey = key);
+        _map.PreviewKeyDown += (_, e) => Assign(e, _map, key => GameSettings.MapKey = key);
+        _mod.PreviewKeyDown += (_, e) => Assign(e, _mod, key => GameSettings.ModKey = key);
+        _items.Text = GameSettings.ItemsKey;
+        _items.PreviewKeyDown += (_, e) => Assign(e, _items, key => GameSettings.ItemsKey = key);
+        _hints.Text = GameSettings.HintsKey;
+        _hints.PreviewKeyDown += (_, e) => Assign(e, _hints, key => GameSettings.HintsKey = key);
 
         var stack = new StackPanel();
         stack.Children.Add(GameUi.TitleBar("단축키", Close));
         stack.Children.Add(Row("저장", _save));
         stack.Children.Add(Row("발견물 지도", _map));
+        stack.Children.Add(Row("모드", _mod));
+        stack.Children.Add(Row("소지품 정보", _items));
+        stack.Children.Add(Row("힌트 정보", _hints));
         stack.Children.Add(new TextBlock
         {
             Text = "각 칸을 누른 뒤 지정할 글쇠를 누르십시오.",
@@ -85,15 +97,14 @@ public sealed class ShortcutDialog : GameWindow
         },
     };
 
-    private void Assign(KeyEventArgs e, TextBox box, bool isSave)
+    private void Assign(KeyEventArgs e, TextBox box, Action<string> store)
     {
         if (e.Key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl
             or Key.LeftAlt or Key.RightAlt or Key.System or Key.None)
             return;
 
         string key = e.Key.ToString();
-        string other = isSave ? _map.Text : _save.Text;
-        if (string.Equals(key, other, StringComparison.OrdinalIgnoreCase))
+        if (new[] { _save, _map, _mod, _items, _hints }.Any(b => b != box && string.Equals(key, b.Text, StringComparison.OrdinalIgnoreCase)))
         {
             e.Handled = true;
             NoticeDialog.Show(this, "같은 글쇠를 두 단축키에 함께 지정할 수 없습니다.");
@@ -101,8 +112,7 @@ public sealed class ShortcutDialog : GameWindow
         }
 
         box.Text = key;
-        if (isSave) GameSettings.SaveKey = key;
-        else GameSettings.MapKey = key;
+        store(key);
         e.Handled = true;
     }
 

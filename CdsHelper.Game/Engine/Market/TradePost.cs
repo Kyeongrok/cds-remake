@@ -404,7 +404,7 @@ public sealed class TradePost
         // 막는 차례는 게임(<c>0x00415B11</c>)의 차례 그대로다 — 품목 수 · 무게 · 자리 · 돈이고,
         // <b>돈이 맨 끝</b>이다. 짐이 안 들어가면 돈은 보지도 않는다.
         if (kinds.Count > Player.CargoSlots) return Outcome.NoSlot;
-        if (weight > player.Tonnage) return Outcome.TooHeavy;
+        if (player.Overweight(weight)) return Outcome.TooHeavy;
         if (count > player.Capacity) return Outcome.HoldFull;
         if ((long)player.Gold + GainOf(player, city, deal) < CostOf(deal)) return Outcome.NotEnoughGold;
         return Outcome.Ok;

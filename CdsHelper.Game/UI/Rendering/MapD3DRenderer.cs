@@ -46,6 +46,19 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     //       내 배는 지도 색을 다 낸 뒤에 얹는다(ShipOver) — 가장자리를 섞고 그림자·항적을 밑에 깔려면 바탕이 먼저 있어야 한다.
     //       ShipColor  큰 그림(ShipHi)이 있으면 그것을 매끈하게, 없으면 48x48 을 — 도트 필터가 켜져 있으면 모서리를 깎아 — 낸다.
     //       WakeOver   배가 지나온 자리(Wake)를 따라 벌어지는 물거품. 가장자리 두 줄이 짙고 가운데는 옅다. 물 점에만 든다.
+    // CityCellSeaNote — 바다 입체 효과는 예전에 <b>수심 0 칸(뭍)</b>을 통째로 건너뛰었다. 도시 칸은 그림을 지형과 갈라 놓은 뒤에도
+    // 지형 표에서 뭍으로 쳐 수심이 0 이라, 그 칸 안의 물 점만 음영이 빠져 바닷가 도시(시라쿠사 따위) 옆에 네모난 밝은 판이 섰다.
+    // 이제 칸으로 거르지 않고 점의 색(파랑이 이기는지)으로만 물을 가린다.
+    //
+    // CoastFoamNote — 바다 입체 효과의 해안 물보라는 <b>칸 수심</b>(뭍까지 몇 칸)만 보면 1.7칸 안을 다 덮는다. 폭이 한두 칸인
+    // 해협(지브롤터)은 통째로 그 안이라 해협 한가운데가 하얗게 일렁였고, 리스본 같은 들쭉날쭉한 해안도 하얗게 번졌다.
+    // 그래서 원본 그림 점 단위로 반경 1.5~3점 안에 뭍이 얼마나 있는지(CoastNear)를 곱해 <b>해안에 바짝 붙은 얇은 띠</b>로만 낸다.
+    //
+    // HiResCoastNote — 고해상도 바다(HiResSeaCore)는 물/뭍 경계를 <b>두 점 묶음</b>(2x2 평균) 격자에서 B-스플라인으로 잰다.
+    // 한 점 격자로 재면 해안 그림의 계단 · 섞어 찍은 그림자 점을 하나하나 따라가 해안선에 작은 혹이 줄줄이 붙고, 물 위에
+    // 외딴 그림자 점이 떠 있었다 — 지브롤터처럼 두 해안이 붙은 곳에서 꿀렁거려 보였다. 한 칸(16점) 안에 여덟 묶음이라
+    // 좁은 해협도 안 막힌다. 뭍 빛깔은 여전히 한 점 격자 가운데 넷에서 뽑는다.
+    // <b>셰이더 글 안에는 한글을 쓰지 않는다</b> — HLSL 컴파일러가 UTF-8 주석에서 「파일 끝」 오류를 낸다.
     private const string ShaderSource = """
         Texture2D<uint>   CellMap  : register(t0);
         Texture2D<uint>   Atlas    : register(t1);
@@ -299,7 +312,6 @@ public sealed unsafe class MapD3DRenderer : IDisposable
 
             float4 wx = BSpline(f.x);
             float4 wy = BSpline(f.y);
-            float m = 0.0;
             float3 landSum = float3(0, 0, 0);
             float landW = 0.0;
             [unroll] for (int y = 0; y < 4; y++)
@@ -308,13 +320,29 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 {
                     uint p = TexelPal(b + float2(x - 1, y - 1));
                     float w = wx[x] * wy[y];
-                    float wet = WaterOf(p);
-                    m += wet * w;
-                    if (x >= 1 && x <= 2 && y >= 1 && y <= 2 && wet < 0.5)
+                    if (x >= 1 && x <= 2 && y >= 1 && y <= 2 && WaterOf(p) < 0.5)
                     {
                         landSum += Palette.Load(int3(int(p), 0, 0)).rgb * w;
                         landW += w;
                     }
+                }
+            }
+
+            // coast mask on a 2x2-averaged grid (see HiResCoastNote in C#)
+            float2 gc = cell * 8.0 - 0.5;
+            float2 bc = floor(gc);
+            float2 fc = gc - bc;
+            float4 cx4 = BSpline(fc.x);
+            float4 cy4 = BSpline(fc.y);
+            float m = 0.0;
+            [unroll] for (int yy = 0; yy < 4; yy++)
+            {
+                [unroll] for (int xx = 0; xx < 4; xx++)
+                {
+                    float2 o = (bc + float2(xx - 1, yy - 1)) * 2.0;
+                    float wet = 0.25 * (WaterOf(TexelPal(o)) + WaterOf(TexelPal(o + float2(1, 0)))
+                                      + WaterOf(TexelPal(o + float2(0, 1))) + WaterOf(TexelPal(o + float2(1, 1))));
+                    m += wet * cx4[xx] * cy4[yy];
                 }
             }
             if (m <= 0.02) return col;
@@ -372,10 +400,24 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             return lerp(col, HiResSeaCore(col, cell, pal), keep);
         }
 
+        float CoastNear(float2 cell)
+        {
+            float2 g = cell * 16.0;
+            float land = 0.0;
+            [unroll] for (int k = 0; k < 8; k++)
+            {
+                float a = k * 0.785398;
+                float2 o = float2(cos(a), sin(a)) * 3.0;
+                land += 1.0 - WaterOf(TexelPal(g + o));
+            }
+            float2 o2[4] = { float2(1.5, 0), float2(-1.5, 0), float2(0, 1.5), float2(0, -1.5) };
+            [unroll] for (int j = 0; j < 4; j++) land += 2.0 * (1.0 - WaterOf(TexelPal(g + o2[j])));
+            return saturate(land / 6.0);
+        }
+
         float3 SeaShade(float3 col, float2 cell)
         {
-            if ((SeaDepth.Load(int3(int2(cell), 0)) & 15u) == 0u) return col;
-
+            // no per-cell land skip: city cells count as land but hold water texels (CityCellSeaNote in C#)
             float water = saturate((col.b - max(col.r, col.g) + 0.01) * 14.0);
             if (water <= 0.0) return col;
             float3 base = col;
@@ -411,7 +453,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             col *= lerp(1.0, diff, 0.50);
             col += spec;
 
-            float shore = saturate(1.7 - d);
+            // foam hugs the coast at texel scale (CoastFoamNote in C#)
+            float shore = saturate(1.7 - d) * CoastNear(cell);
             float foam = shore * smoothstep(0.35, 0.75,
                 0.5 + 0.5 * sin(time * 1.4 - d * 6.0 + Noise(p * 2.0 + time * 0.2) * 5.0));
             col = lerp(col, float3(0.93, 0.96, 0.98), foam * 0.35 * saturate(1.0 - CellPerPixel.x * 2.0));

@@ -25,7 +25,7 @@ public static class ItemGain
         var player = game.Player;
         var all = player.Items.Concat(items).ToList();
 
-        if (all.Count > Support.Local.Models.Player.MaxItems)
+        if (all.Count > player.ItemLimit)
         {
             GameDialog.Show(owner, "더 이상 가질 수 없습니다! 소지품을 삭제해 주십시오");
             all = Drop(owner, game, all, cancellable: false)!;
@@ -42,7 +42,7 @@ public static class ItemGain
         var player = game.Player;
         var all = player.Items.Append(item).ToList();
 
-        if (all.Count > Support.Local.Models.Player.MaxItems)
+        if (all.Count > player.ItemLimit)
         {
             GameDialog.Show(owner, "더 이상 가질 수 없습니다! 소지품을 삭제해 주십시오");
             if (Drop(owner, game, all, cancellable: true) is not { } kept) return false;
@@ -75,7 +75,7 @@ public static class ItemGain
             // 주인 창이 닫혔으면(게임 창을 닫는 중 따위) 더 띄울 데가 없다 — 닫힌 창을 주인으로 새 창을 지으면
             // 터진다. 물릴 수 있으면 물리고, 아니면 앞에서부터 열여섯만 남긴다(새로 든 것이 뒤에 붙어 있다).
             if (Gone(owner))
-                return cancellable ? null : [.. all.Take(Support.Local.Models.Player.MaxItems)];
+                return cancellable ? null : [.. all.Take(game.Player.ItemLimit)];
 
             var got = HintListDialog.PickMany(owner, names, "삭제 아이템의 선택", [.. picked]);
             if (got.Count == 0)
@@ -84,7 +84,7 @@ public static class ItemGain
                 continue;                                   // 원본은 창이 안 닫힌다 — 다시 띄운다
             }
             picked = got;
-            int over = all.Count - got.Count - Support.Local.Models.Player.MaxItems;
+            int over = all.Count - got.Count - game.Player.ItemLimit;
             if (over > 0)
             {
                 GameDialog.Show(owner, $"소지품을 앞으로 {over}개 삭제해 주십시오", "소지품 제한");

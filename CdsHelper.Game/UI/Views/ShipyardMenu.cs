@@ -152,6 +152,174 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     }
 
     /// <summary>
+    /// 특별주문으로 지을 수 있는 내 배 — 함대와 이 마을에 맡긴 배 가운데 <b>이 조선소가 파는 선체</b>인 것.
+    /// </summary>
+    private List<Ship> OrderableShips()
+    {
+        var sold = SoldHulls();
+        bool Sold(Ship s) => sold.Any(h => h.Id >= 0 && h.Id < 8 ? h.Id == s.Hull.Id : h.Name == s.Hull.Name);
+        var ships = new List<Ship>();
+        if (_player.FleetHere(_cityId)) ships.AddRange(_player.Ships);
+        ships.AddRange(_player.DockedAt(_cityId));
+        return [.. ships.Where(s => !s.Lent && Sold(s))];
+    }
+
+    /// <summary>특별주문 배 목록 너비 — 이름 14칸 · 선체(대형카라벨 10칸) · 값(「252,400닢」)이 다 든다.</summary>
+    private const double OrderListWidth = 380;
+
+    /// <summary>
+    /// 특별주문 목록 줄 밑의 옵션 한 줄 — 「포탑 8 · 캘버린포 8문 · 돛 △□＿」.
+    /// 대포가 없으면 「대포 없음」. 돛은 개조 목록과 같은 기호(<see cref="SailMark"/>)로 메인 · 세브 · 선미 차례다 —
+    /// 「삼각 사각」 처럼 글로 적으니 줄이 넘쳐 잘렸다.
+    /// </summary>
+    private static string OptionLine(Ship ship)
+    {
+        string guns = Cannon.Of(ship.Gun) is { } gun && ship.Guns > 0 ? $"{gun.Name} {ship.Guns}문" : "대포 없음";
+        return $"포탑 {ship.Turrets} · {guns} · 돛 {string.Concat(ship.Sails.Select(SailMark))}";
+    }
+
+    /// <summary>특별주문으로 지을 배가 있는지 — 없으면 줄이 흐리다.</summary>
+    public bool CanSpecialOrder => OrderableShips().Count > 0;
+
+    /// <summary>특별주문 값의 명세 — 선체 · 개조(장부) · 포탑 · 대포 · 선수상.</summary>
+    private readonly record struct OrderPrice(int Hull, int Refit, int Turrets, int Guns, int Figurehead, bool KeepFigurehead)
+    {
+        public int Total => Hull + Refit + Turrets + Guns + Figurehead;
+    }
+
+    /// <summary>
+    /// 그 배와 같은 배를 지을 값. 선체는 그 도시 구입값, 개조는 장부(<see cref="Ship.RefitSpent"/>),
+    /// 포탑은 선체 기본보다 는 만큼 x 200, 대포는 실을 문수 x 정가, 선수상은 <b>이 조선소가 팔 때만</b> 그 구입값이다.
+    /// </summary>
+    /// <param name="gunKind">실을 대포 갈래 — 안 주면 그 배에 실린 것.</param>
+    /// <param name="gunCount">실을 문수 — 안 주면 그 배에 실린 것.</param>
+    private OrderPrice PriceOf(Ship ship, int? gunKind = null, int? gunCount = null)
+    {
+        int hull = Math.Max(1, ship.Hull.Price * _rate / 100);
+        int turrets = Math.Max(0, ship.Turrets - ship.Hull.Guns) * Cannon.TurretPrice;
+        int guns = Cannon.Of(gunKind ?? ship.Gun) is { } gun ? gun.Price * (gunCount ?? ship.Guns) : 0;
+        bool keep = ship.Figurehead >= 0 && Stock().Contains(ship.Figurehead);
+        int figure = keep ? CostOf(ship.Figurehead, buying: true) : 0;
+        return new OrderPrice(hull, ship.RefitSpent, turrets, guns, figure, keep);
+    }
+
+    /// <summary>
+    /// 특별주문 — 내 배 하나를 고르면 <b>옵션까지 같은 배</b>를 새로 짓는다. 원본에 없는 줄이다.
+    /// </summary>
+    /// <remarks>
+    /// 값은 새 배값에 옵션값을 더한 것까지다(웃돈 없음). 선수상은 이 조선소가 파는 것이면 같이 달고, 안 팔면 빼고 짓는다.
+    /// 사는 차례(함대가 여기 있는지 · 척수 · 돈 · 동영상 · 선명)는 「구입」과 같다.
+    /// </remarks>
+    public void SpecialOrder()
+    {
+        var owner = Owner;
+        var ships = OrderableShips();
+        if (ships.Count == 0)
+        {
+            Say("자네 배 가운데 우리가 지을 수 있는 형이 없네.");
+            return;
+        }
+
+        Say("가진 배와 똑같은 배를 만들어 주겠네. 어느 배와 똑같이 만들 건가?");
+        while (true)
+        {
+            int at = HintListDialog.Pick(owner,
+                [.. ships.Select(s => $"{GameUi.Pad(s.Name, 14)}{s.Hull.Name}")],
+                "특별주문", "지을 수 있는 배가 없습니다",
+                // 목록 값은 이 마을에서 안 파는 대포를 뺀 값이다 — 바꿔 달면 고른 뒤 다시 매긴다.
+                rightTexts: [.. ships.Select(s => $"{(CannonsSold().Contains(s.Gun) ? PriceOf(s) : PriceOf(s, -1, 0)).Total:N0}닢")],
+                // 「배 이름 · 선체 · 값」 세 칸이라 여느 목록(264)으로는 「대형카라벨」이 값에 잘린다.
+                listWidth: OrderListWidth,
+                // 이름 아래 한 줄 — 무엇이 똑같이 지어지는지(포탑 · 대포 · 돛).
+                subtitles: [.. ships.Select(OptionLine)]);
+            if (at < 0 || at >= ships.Count) return;
+
+            var ship = ships[at];
+            if (!_player.FleetHere(_cityId))
+            {
+                Notice("함대가 정박해 있지 않는 마을에서는 배를 살 수 없습니다");
+                return;
+            }
+            if (_player.Ships.Count >= Player.MaxShips)
+            {
+                Notice("이 이상 배를 늘릴 수 없습니다!");
+                return;
+            }
+
+            // 대포 — <b>이 마을에서 파는 대포만 싣는다</b>. 안 파는 갈래가 실려 있으면 말하고 바꿔 달지 묻는다.
+            // 「예」면 이 마을이 파는 대포 목록을 띄워 고르게 하고(무게로 못 실으면 실을 수 있는 만큼),
+            // 「아니오」면 대포 없이 짓는다. 목록에서 물리면 배 고르기로 돌아간다.
+            int gunKind = ship.Gun, gunCount = ship.Guns;
+            if (gunCount > 0 && Cannon.Of(gunKind) is { } carried && !CannonsSold().Contains(gunKind))
+            {
+                Say($"{carried.Name}{GameUi.Josa(carried.Name, "은", "는")} 우리 마을에서 팔지 않네.");
+                if (Ask("다른 대포로 바꿔 달겠나?"))
+                {
+                    if (PickOrderCannon(ship) is not { } swap) continue;
+                    (gunKind, gunCount) = swap;
+                }
+                else
+                {
+                    Say("그럼 대포는 빼고 만들겠네.");
+                    (gunKind, gunCount) = (-1, 0);
+                }
+            }
+
+            // 값은 <b>합계 한 줄</b>만 말한다 — 선체 · 개조 · 포탑 · 대포 · 선수상으로 늘어놓으니 말 창이 넘쳤다.
+            var price = PriceOf(ship, gunKind, gunCount);
+            if (ship.Figurehead >= 0 && !price.KeepFigurehead)
+                Say("선수상은 우리 집에서 다루지 않는 것이라 빼고 만들겠네.");
+            if (!Ask($"[{ship.Name}]{GameUi.Josa(ship.Name, "과", "와")} 똑같은 {ship.Hull.Name}{GameUi.Josa(ship.Hull.Name, "을", "를")} "
+                     + $"만들려면 금화 {price.Total:N0}닢이 필요하네. 괜찮겠나?")) continue;
+
+            if (!_player.CanAfford(price.Total))
+            {
+                Notice("자금이 모자랍니다!");
+                continue;
+            }
+
+            MoviePlayer.Play(GameUi.RootOf(owner), MovieOf(ship.Hull), _game.Bgm);
+            string name = ShipNameDialog.Settle(owner, _player.SuggestShipName());
+            var stats = ship.Snapshot() with
+            {
+                Figurehead = price.KeepFigurehead ? ship.Figurehead : -1,
+                Gun = gunCount > 0 ? gunKind : -1,
+                Guns = Math.Max(0, gunCount),
+            };
+            _player.BuyBuilt(ship.Hull, stats, name, price.Total);
+            _menu.Refresh();
+            return;
+        }
+    }
+
+    /// <summary>
+    /// 특별주문에서 바꿔 달 대포를 고른다 — 이 마을이 파는 대포 목록(대포구입과 같은 줄)이다.
+    /// 문수는 본뜬 배와 같게, 무게로 그만큼 못 실으면 실을 수 있는 만큼이다. 물리면 null.
+    /// </summary>
+    private (int Kind, int Count)? PickOrderCannon(Ship ship)
+    {
+        var sold = CannonsSold();
+        while (true)
+        {
+            int pick = HintListDialog.Pick(Owner,
+                [.. sold.Select(i => Cannon.All[i]).Select(c => $"{GameUi.Pad(c.Name, 12)}{c.Price,6}닢{c.Weight,5}")],
+                "대포 선택", "대포가 없네.", GunHead);
+            if (pick < 0 || pick >= sold.Count) return null;
+
+            int kind = sold[pick];
+            int count = Math.Min(ship.Guns, ship.RoomFor(kind, ship.Tonnage));
+            if (count <= 0)
+            {
+                Say("이 대포는 무거워서 실을 수 없네.");
+                continue;
+            }
+            if (count < ship.Guns)
+                Say($"그 대포라면 {count}문까지만 실을 수 있네.");
+            return (kind, count);
+        }
+    }
+
+    /// <summary>
     /// 이 조선소가 지금 파는 선체. 도시 표를 못 읽으면 모두다.
     /// </summary>
     /// <remarks>
@@ -227,12 +395,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         // 값이 0 이라 줄이 흐린 것은 <b>빌린 배</b>다(0x0044B889 의 배 +0x64) — 기함이 아니다.
         // 기함도 팔 수 있고, 배가 한 척뿐일 때만 위에서 막는다(0x0044B863).
-        var rows = _player.Ships.Select((s, i) => new ShipSellDialog.Row(
-            i, s.Name, s.Hull.Name,
-            s.Figurehead >= 0 ? NameOf(s.Figurehead) : "---",
-            s.Lent ? 0 : Shipyard.SellPrice(s, _rate))).ToList();
+        // 표는 개조 · 편입과 같은 배 목록 표다 — 머리글 색이 있고, 머리글을 누르면 칸 묶음이 돈다. 첫 묶음에
+        // 대포 · 포탑 · 돛까지 보이고 견적가격 칸과 견적합계 줄이 붙는다. 줄 차례는 함대 차례 그대로다.
+        var shares = _player.CrewShares;
+        var entries = _player.Ships.Select((s, i) => new ShipPickDialog.Entry(
+            s, shares.ElementAtOrDefault(i), i == _player.Flagship, On: !s.Lent)).ToList();
+        var prices = _player.Ships.Select(s => s.Lent ? 0 : Shipyard.SellPrice(s, _rate)).ToList();
 
-        var picked = ShipSellDialog.Ask(owner, rows);
+        var picked = ShipPickDialog.PickToSell(owner, entries, prices, _game.Items, "매각선박의 선택");
         if (picked.Count == 0) return;
 
         int paid = picked.Sum(at => _player.Ships[at].Lent ? 0 : Shipyard.SellPrice(_player.Ships[at], _rate));
@@ -364,7 +534,13 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         while (true)
         {
             // 배 목록 표 — 머리글을 누르면 칸 묶음이 돈다. 개조는 묶음 1(0x0056E290)로 연다.
-            int at = ShipPickDialog.Pick(owner, _player, _game.Items, "개조선박의 선택", startSet: 1);   // 0x00532300
+            // 이 마을이 손대지 못하는 선체는 <b>처음부터 흐리게</b> 둔다 — 원본은 고른 뒤에야 「이 배 형은…」 하고
+            // 물렸는데, 고를 수 없는 줄을 고르게 두는 것이 헷갈려 원본과 달리 막아 둔다.
+            var (rows, slots) = ShipPickDialog.Fleet(_player, 0);
+            rows = [.. rows.Select(r => r with { On = r.On && Shipyard.CanRefitHere(r.Ship.Hull.Id, _culture) })];
+            int row = ShipPickDialog.Pick(owner, rows, _game.Items, "개조선박의 선택", startSet: 1);   // 0x00532300
+            if (row < 0) return;
+            int at = slots[row];
             if (at < 0 || at >= _player.Ships.Count) return;
 
             // 그 마을에서 손댈 수 있는 배인지 본다(0x004969F9) — 유럽권(0·1·2·10)은 다우선을
@@ -629,6 +805,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         var was = ship.Snapshot();
         _player.Pay(cost);
+        ship.AddRefitSpent(cost);   // 개조비 장부
 
         int mast = ship.AddMast(sail);
         if (mast < 0) return;
@@ -715,6 +892,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
                 if (!_player.Pay(cost)) Say("돈이 모자라는 것 같군.");
                 else if (ship.SwapSail(mast))
                 {
+                    ship.AddRefitSpent(cost);   // 개조비 장부
                     still?.Redraw(ship);   // 0x00494E58 → 0x004949E0
                     string where = Ship.MastNames[mast], what = Ship.SailNames[ship.Sails[mast]];
                     NoticeDialog.Show(owner,
@@ -773,6 +951,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         if (!Ask("마스트에 부담이 되어 배가 조그마한 충격에도 약해지지만, 괜찮겠나?")) return;
 
         _player.Pay(cost);
+        ship.AddRefitSpent(cost);   // 개조비 장부
         ShowRefit(owner, ship.AddSail(), ship);
     }
 
@@ -999,6 +1178,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         if (!Ask(Shipyard.RefitWarning(item))) return;
 
         _player.Pay(cost);
+        ship.AddRefitSpent(cost);   // 개조비 장부 — 특별주문 옵션값
         var change = item switch
         {
             Facility.RefitTonnage => ship.GrowTonnage(),

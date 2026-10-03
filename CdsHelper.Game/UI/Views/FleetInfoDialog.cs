@@ -79,7 +79,9 @@ internal sealed class FleetInfoDialog : InfoDialog
         rows.Children.Add(Row("피로도", Bar(player.Fatigue, Player.MaxFatigue)));
         rows.Children.Add(Row("총승원수", Bar(player.Crew, player.MaxCrew)));
         rows.Children.Add(Row("짐용량", Bar(player.LoadedBarrels, player.Capacity)));
-        rows.Children.Add(Row("짐중량", Bar(player.LoadedWeight, player.Tonnage)));
+        // 모드 「중량 없음」이면 무게로 안 막으니 줄도 안 낸다.
+        if (!Player.IgnoresWeight())
+            rows.Children.Add(Row("짐중량", Bar(player.LoadedWeight, player.Tonnage)));
 
         Build("함대정보", rows, BoardWidth, BoardHeight,
               new GameButton("대열", () => FormationDialog.Show(this, player)),

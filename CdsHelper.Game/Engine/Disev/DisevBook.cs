@@ -54,6 +54,8 @@ public sealed class DisevBook
         ("EDG", "개인 이야기(에스파니아 발굴자)", "EDG.CDS"),
         ("EHT", "개인 이야기(에스파니아 사냥꾼)", "EHT.CDS"),
         ("ECQ", "개인 이야기(에스파니아 정복자)", "ECQ.CDS"),
+        // 원본에 없는 전역 대본 — 모드 「작위」(Town.Nobility). CDS 가 없어 JSON(exe-tables/작위.json)만 있다.
+        ("작위", "전역 이야기(작위)", ""),
     ];
 
     /// <summary>

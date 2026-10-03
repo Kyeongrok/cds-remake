@@ -250,15 +250,17 @@ public sealed class DevDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
+        // 「색」 탭 — 게임이 쓰는 색 토큰을 늘어놓는다(개발용).
+        var colors = ColorsPage();
+        var pages = new List<(string, FrameworkElement)> { ("일반", rows) };
         if (options.Discoveries is { } table)
         {
-            var finds = FindsPage(table);
-            stack.Children.Add(Tabs(("일반", rows), ("발견물", finds)));
-            stack.Children.Add(rows);
-            stack.Children.Add(finds);
+            pages.Add(("발견물", FindsPage(table)));
             Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
         }
-        else stack.Children.Add(rows);
+        pages.Add(("색", colors));
+        stack.Children.Add(Tabs([.. pages]));
+        foreach (var (_, page) in pages) stack.Children.Add(page);
         stack.Children.Add(buttons);
 
         Content = new Border
@@ -308,6 +310,120 @@ public sealed class DevDialog : GameWindow
         }
         Select(pages[0].Page);
         return bar;
+    }
+
+    /// <summary>
+    /// 「색」 탭 — 게임이 쓰는 색 토큰. <b>코드에서 그대로 읽어 온다</b>(리플렉션) — 색을 더하거나 바꾸면 저절로 따라온다.
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   UI 붓      CdsHelper.Game.UI.Views 의 형마다 정적 Brush 칸(공개 · 비공개) — GameUi.Back 따위
+    ///   글꼴 색인  GameFont 의 *Color 상수 — 게임 비트맵 글꼴이 쓰는 공용 색표 자리
+    ///   공용 색표  GamePalette 0~73 — 그 위는 그림마다 제 팔레트가 얹힌다
+    /// </code>
+    /// 줄을 누르면 #RRGGBB 를 클립보드에 넣는다.
+    /// </remarks>
+    private FrameworkElement ColorsPage()
+    {
+        var list = new StackPanel();
+
+        TextBlock Head(string text) => new()
+        {
+            Text = text, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 14,
+            Margin = new Thickness(0, 10, 0, 4),
+        };
+
+        UIElement Swatch(Color c, string name, string note)
+        {
+            string hex = $"#{c.R:X2}{c.G:X2}{c.B:X2}" + (c.A < 255 ? $" (α {c.A})" : "");
+            var line = new DockPanel { Margin = new Thickness(0, 1, 0, 1), Cursor = Cursors.Hand, Background = Brushes.Transparent };
+            var chip = new Border
+            {
+                Width = 36, Height = 18, Margin = new Thickness(0, 0, 8, 0),
+                Background = new SolidColorBrush(c), BorderBrush = GameUi.Edge, BorderThickness = new Thickness(1),
+            };
+            DockPanel.SetDock(chip, Dock.Left);
+            line.Children.Add(chip);
+            var code = new TextBlock { Text = hex, Width = 120, Foreground = GameUi.Text, FontFamily = new FontFamily("Consolas"), FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+            DockPanel.SetDock(code, Dock.Left);
+            line.Children.Add(code);
+            line.Children.Add(new TextBlock
+            {
+                Text = note.Length > 0 ? $"{name}   {note}" : name,
+                Foreground = GameUi.Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            line.ToolTip = "누르면 색 값을 복사합니다";
+            line.MouseLeftButtonUp += (_, _) => { try { Clipboard.SetText($"#{c.R:X2}{c.G:X2}{c.B:X2}"); } catch { } };
+            return line;
+        }
+
+        // UI 붓 — 이 어셈블리 UI.Views 의 형마다 정적 SolidColorBrush 칸.
+        list.Children.Add(Head("UI 붓 (형.이름)"));
+        var flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
+                  | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly;
+        var brushes = typeof(GameUi).Assembly.GetTypes()
+            .Where(t => t.Namespace == typeof(GameUi).Namespace && !t.IsGenericTypeDefinition)
+            .SelectMany(t =>
+            {
+                try { return t.GetFields(flags).Select(f => (Type: t, Field: f)).ToList(); }
+                catch { return []; }
+            })
+            .Where(x => typeof(Brush).IsAssignableFrom(x.Field.FieldType))
+            .Select(x =>
+            {
+                try { return (Name: $"{Short(x.Type)}.{x.Field.Name}", Brush: x.Field.GetValue(null) as SolidColorBrush); }
+                catch { return (Name: "", Brush: (SolidColorBrush?)null); }
+            })
+            .Where(x => x.Brush != null && !x.Name.Contains('<'))
+            .OrderBy(x => x.Name, StringComparer.Ordinal);
+        foreach (var (name, brush) in brushes) list.Children.Add(Swatch(brush!.Color, name, ""));
+
+        // 글꼴 색인 — GameFont 의 *Color 상수.
+        list.Children.Add(Head("게임 글꼴 색인 (GameFont)"));
+        foreach (var f in typeof(GameFont).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                     .Where(f => f.IsLiteral && f.FieldType == typeof(byte) && f.Name.EndsWith("Color")))
+        {
+            byte index = (byte)f.GetRawConstantValue()!;
+            uint argb = GameFont.TextArgb(index);
+            list.Children.Add(Swatch(Color.FromRgb((byte)(argb >> 16), (byte)(argb >> 8), (byte)argb),
+                                     $"GameFont.{f.Name}", $"색인 {index}"));
+        }
+
+        // 공용 색표 0~73.
+        list.Children.Add(Head($"공용 색표 (GamePalette 0~{GamePalette.OwnPaletteBase - 1})"));
+        var grid = new WrapPanel { Width = 520 };
+        for (int i = 0; i < GamePalette.OwnPaletteBase; i++)
+        {
+            var c = Color.FromRgb(GamePalette.Rgb[i * 3], GamePalette.Rgb[i * 3 + 1], GamePalette.Rgb[i * 3 + 2]);
+            int at = i;
+            var cell = new Border
+            {
+                Width = 64, Height = 34, Margin = new Thickness(1),
+                Background = new SolidColorBrush(c), BorderBrush = GameUi.Edge, BorderThickness = new Thickness(1),
+                Cursor = Cursors.Hand,
+                ToolTip = $"{at}  #{c.R:X2}{c.G:X2}{c.B:X2}",
+                Child = new TextBlock
+                {
+                    Text = $"{at}\n{c.R:X2}{c.G:X2}{c.B:X2}", FontSize = 10, FontFamily = new FontFamily("Consolas"),
+                    Foreground = c.R * 0.3 + c.G * 0.59 + c.B * 0.11 > 128 ? Brushes.Black : Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
+                },
+            };
+            cell.MouseLeftButtonUp += (_, _) => { try { Clipboard.SetText($"#{c.R:X2}{c.G:X2}{c.B:X2}"); } catch { } };
+            grid.Children.Add(cell);
+        }
+        list.Children.Add(grid);
+
+        return new ScrollViewer
+        {
+            Width = 560, Height = 460, Margin = new Thickness(12, 10, 12, 4),
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Content = list,
+        };
+
+        static string Short(Type t) => t.IsNested ? $"{t.DeclaringType!.Name}.{t.Name}" : t.Name;
     }
 
     /// <summary>

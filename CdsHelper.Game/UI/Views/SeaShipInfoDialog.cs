@@ -41,7 +41,9 @@ internal sealed class SeaShipInfoDialog : InfoDialog
         Row(rows, "추진력", $"{ship.Speed}");
         Row(rows, "적재량", $"{ship.Cargo}");
 
-        Build("해전전황정보(선박)", rows, BoardWidth, RowHeight * 9 + 16);
+        // 높이 = 제목(글 + 띄움 6) + 이름 줄 + 띄움 8 + 여덟 줄. 예전 「아홉 줄 + 16」은 제목 몫을 빠뜨려
+        // 마지막 「적재량」 줄이 반쯤 잘렸다.
+        Build("해전전황정보(선박)", rows, BoardWidth, RowHeight * 10 + 8 + 6 + 10);
     }
 
     private static void Row(StackPanel rows, string label, string value)

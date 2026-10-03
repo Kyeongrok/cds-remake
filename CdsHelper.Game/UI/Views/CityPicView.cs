@@ -763,6 +763,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 쪽에서 발견 대본을 돌리고(0x00492A5E~0x00492AF9), 결과가 밑값 2 로 남으면 건물에 안 든다.
         if (!Discover(building)) return;
 
+        // 왕궁이면 그 자리 국왕 얼굴을 걸어 둔다 — 대본의 화자 「국왕」(모드 「작위」)이 쓴다.
+        _game.RulerFace = building.Code == PalaceCode ? () => RulerFaceOf(building.Code, building.Kind) : null;
+
         // 초심자 개인 이야기(이야기0/1)가 <b>맨 먼저</b>다 — 게임은 들어서자마자 0x004AB5A0 으로
         // 건물 사건을 보고, 장면이 돌았으면 보복·문간 관문·차림표를 다 건너뛰고 건물을 나선다
         // (0x004A266A → 0x004A26BC). 그래서 명성이 모자라도 이야기의 저택에는 불려 들어간다.
@@ -785,6 +788,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                  BuildingTrack(building.Code));
         MarkGateway(facility.Kind, arrived);
     }
+
+    /// <summary>그 왕궁에 앉은 국왕의 얼굴. 모르면 null.</summary>
+    private uint[]? RulerFaceOf(int code, string kind) =>
+        PatronAt(code, kind) is { } ruler && _game.Sponsors?.FindByName(ruler.Name) is { } row
+            ? _game.Faces?.TryGetBgra(row.Face, row.IsFemale)
+            : null;
 
     /// <summary>왕궁의 건물 코드 — 문간 관문의 배수가 x100 이다(<c>0x00470AC0</c>).</summary>
     private const int PalaceCode = 2;
@@ -1358,8 +1367,18 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>이야기 대본을 그 사건으로 한 장면 돌린다. 결과 1 로 끝나 부른 쪽이 물러서야 하면 true.</summary>
     private bool RunStory(Engine.Disev.DisevEvent ev)
     {
-        if (_player.ActiveStoryBook is not { } book) return false;
-        if (Engine.Discovery.StoryLog.NextPart(_player, _game, ev) is not { } part) return false;
+        // 개인 이야기가 먼저 — 장면이 돌아 건물을 막았으면 전역 대본은 안 본다.
+        if (_player.ActiveStoryBook is { } own && RunBook(ev, own)) return true;
+        // 전역 대본(모드 「작위」 따위) — 직업과 상관없이 돈다.
+        foreach (string global in Engine.Discovery.StoryLog.GlobalBooks())
+            if (RunBook(ev, global)) return true;
+        return false;
+    }
+
+    /// <summary>그 책을 그 사건으로 한 장면 돌린다. 결과 1 로 끝나 부른 쪽이 물러서야 하면 true.</summary>
+    private bool RunBook(Engine.Disev.DisevEvent ev, string book)
+    {
+        if (Engine.Discovery.StoryLog.NextPart(_player, _game, ev, book) is not { } part) return false;
 
         Engine.Disev.DisevRunner.Run(this, _game, book, part, ev);
         Engine.Discovery.StoryLog.Advance(_player, _game, book, part);
@@ -2160,6 +2179,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         var owner = _cityMenu.Window ?? this;
         var ids = _game.Discoveries?.LiveHints(_player) ?? [.. _player.Hints.Order()];
 
+        // 모드 「향상된 힌트 보기」 — 목록과 설명을 한 창에 나란히.
+        if (HintBrowserDialog.IsOn(_player)) { HintBrowserDialog.Show(owner, _game, ids); return; }
+
         while (true)
         {
             // 힌트가 없으면 게임도 설득 때와 같은 「설득 가능한 힌트가 없습니다」를 낸다.
@@ -2669,6 +2691,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                 c.Origin >= 0 ? $"{_game.CityName(c.Origin)}산" : ""));
 
     void ITownScreen.BuyShip() => Yard.BuyShip();
+    void ITownScreen.SpecialOrder() => Yard.SpecialOrder();
+    bool ITownScreen.CanSpecialOrder => Yard.CanSpecialOrder;
     void ITownScreen.SellShip() => Yard.SellShip();
     void ITownScreen.RepairShip() => Yard.RepairShip();
     void ITownScreen.RefitShip() => Yard.RefitShip();

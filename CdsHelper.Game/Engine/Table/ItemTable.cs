@@ -11,7 +11,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x00  이름 ptr("바스타드소드")   +0x04  그림번호(-1 = 없음, 0~205)
 ///   +0x08  살 때 정가(12000)        +0x0C  팔 때 정가(6000)
 ///   +0x10  효과(48)                 +0x14  분류(0~8)
-///   +0x18  걸린 힌트(-1 = 없음) — 로제타석·사자의 책 같은 고문서 아홉 개만 있다(0x00465800)
+///   +0x18  걸린 힌트(-1 = 없음) — 로제타석·사자의 서 같은 고문서 아홉 개만 있다(0x00465800)
 /// </code>
 /// 자리는 cds95-mod 의 <c>CharacterUtilKR/src/itemdb.h</c> 가 밝힌 것이다. 값·효과가
 /// <c>item.json</c> 과 맞는 것을 대조해 확인했다(286 중 값 271개·효과 전부).
@@ -33,8 +33,12 @@ public sealed class ItemTable
     /// <summary>아이템 수.</summary>
     public const int Count = 286;
 
-    /// <summary>그림 번호의 최대값. <c>asset/item/item-205.png</c> 까지 있다.</summary>
-    public const int MaxPic = 205;
+    /// <summary>그림 번호의 최대값. <c>asset/item/item-206.png</c> 까지 있다.</summary>
+    /// <remarks>
+    /// 원본 ITEM.CDS 는 0~205 다. <b>206 은 덧붙인 그림</b> — 「사자의 서」 전용(지중해의 유혹어와 나눠 쓰던 053 대신).
+    /// asset/item 에만 있고 ITEM.CDS 에는 없다. 모드 「향상된 아이템 이미지」를 켰을 때만 쓴다(<see cref="EnhancedPics"/>).
+    /// </remarks>
+    public const int MaxPic = 206;
 
     /// <summary>분류 이름. 표의 <c>+0x14</c> 가 이 차례를 가리킨다.</summary>
     public static readonly string[] CategoryNames =
@@ -88,17 +92,31 @@ public sealed class ItemTable
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";
 
+    /// <summary>
+    /// 모드 「향상된 아이템 이미지」가 갈아 끼우는 그림 — 아이템 번호 → 덧붙인 그림 번호(asset/item 에만 있다).
+    /// 적어 둔 표는 원본 그림 번호 그대로이고, 모드를 켰을 때만 보일 때 바꾼다.
+    /// </summary>
+    private static readonly Dictionary<int, int> EnhancedPics = new()
+    {
+        [110] = 206,   // 사자의 서 — 원본은 053(책)을 지중해의 유혹어 1~8 과 나눠 쓴다
+    };
+
+    /// <summary>모드를 켰으면 덧붙인 그림 번호로 바꿔 낸다.</summary>
+    private static Record Shown(Record r) =>
+        Local.Settings.GameSettings.EnhancedItemArt && EnhancedPics.TryGetValue(r.Id, out int pic) ? r with { Pic = pic } : r;
+
     /// <summary>아이템 전부. 색인이 곧 아이템 번호다.</summary>
-    public IReadOnlyList<Record> Items => _items;
+    public IReadOnlyList<Record> Items =>
+        Local.Settings.GameSettings.EnhancedItemArt ? [.. _items.Select(Shown)] : _items;
 
     /// <summary>그 아이템. 범위 밖이면 null.</summary>
-    public Record? Find(int id) => id >= 0 && id < _items.Length ? _items[id] : null;
+    public Record? Find(int id) => id >= 0 && id < _items.Length ? Shown(_items[id]) : null;
 
     /// <summary>이름으로 찾는다. 없으면 null.</summary>
     public Record? Find(string name)
     {
         foreach (var r in _items)
-            if (r.Name == name) return r;
+            if (r.Name == name) return Shown(r);
         return null;
     }
 

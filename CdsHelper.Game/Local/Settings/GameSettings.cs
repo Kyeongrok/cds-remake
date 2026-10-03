@@ -77,8 +77,17 @@ public sealed class GameSettingsData
     /// <summary>항해 중 지도 왼쪽 위에 출항한 지 며칠인지 동그라미로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool ShowSeaDays { get; set; }
 
+    /// <summary>지도가 배를 늘 한가운데에 두고 따라 흐를지. 원본은 가장자리에서 넘기므로 꺼 두고 시작한다.</summary>
+    public bool ShipCentered { get; set; }
+
     /// <summary>발견물 지도에 위도·경도 25도 격자를 깔지. 꺼 두고 시작한다.</summary>
     public bool DiscoveryMapGrid { get; set; }
+
+    /// <summary>발견물 지도에 도시를 찍을지. 꺼 두고 시작한다.</summary>
+    public bool DiscoveryMapCities { get; set; }
+
+    /// <summary>발견물 지도에서 발견물 표식을 감출지. 기본은 보인다.</summary>
+    public bool DiscoveryMapHideSpots { get; set; }
 
     /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 꺼 두고 시작한다.</summary>
     public bool SeaEffect { get; set; }
@@ -125,9 +134,12 @@ public sealed class GameSettingsData
     /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryCount { get; set; }
 
-    /// <summary>저장·발견물 지도 단축키(글쇠 이름). 비면 기본값을 쓴다.</summary>
+    /// <summary>저장·발견물 지도·모드 단축키(글쇠 이름). 비면 기본값을 쓴다.</summary>
     public string SaveKey { get; set; } = "V";
     public string MapKey { get; set; } = "D";
+    public string ModKey { get; set; } = "M";
+    public string ItemsKey { get; set; } = "R";
+    public string HintsKey { get; set; } = "H";
 
     /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPeopleOverlay { get; set; }
@@ -173,6 +185,30 @@ public sealed class GameSettingsData
 
     /// <summary>소지품일람 줄마다 아이템 그림과 효과를 낼지(스폰서 일람처럼). 원본은 이름만이라 꺼 두고 시작한다.</summary>
     public bool ItemListPictures { get; set; }
+
+    /// <summary>취득 힌트 일람을 목록·설명 두 칸으로 볼지(모드 창처럼). 원본은 고르고 결정해야 펴지므로 꺼 두고 시작한다.</summary>
+    public bool HintBrowser { get; set; }
+
+    /// <summary>보급품 · 교역품 무게를 안 따질지. 원본은 따지므로 꺼 두고 시작한다.</summary>
+    public bool NoWeight { get; set; }
+
+    /// <summary>윈도 글꼴로 찍는 창 글씨를 리디바탕으로 쓸지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool RidiFont { get; set; }
+
+    /// <summary>조선소 「특별주문」 줄을 낼지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool SpecialOrder { get; set; }
+
+    /// <summary>덧붙인 아이템 그림(asset/item 206~)을 쓸지. 끄면 원본 그림이다.</summary>
+    public bool EnhancedItemArt { get; set; }
+
+    /// <summary>정보 제공 등급(0 기본 · 1 일반 · 2 상세). 기본은 원본만큼만 보인다.</summary>
+    public int InfoLevel { get; set; }
+
+    /// <summary>소지품 창에서 바로 보관 · 판매할지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool HandyInventory { get; set; }
+
+    /// <summary>작위 제도(공적 · 작위 · 혜택)를 쓸지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool Nobility { get; set; }
 
     /// <summary>스핑크스 퀴즈에서 정답 줄에 표를 달지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SphinxHelper { get; set; }
@@ -574,6 +610,27 @@ public static class GameSettings
         set => Set(d => d.MapKey = value);
     }
 
+    /// <summary><b>모드</b> 창 단축키. 기본은 <c>M</c> 이다.</summary>
+    public static string ModKey
+    {
+        get => Get(d => d.ModKey);
+        set => Set(d => d.ModKey = value);
+    }
+
+    /// <summary><b>소지품 정보</b> 단축키. 기본은 <c>R</c> 이다.</summary>
+    public static string ItemsKey
+    {
+        get => Get(d => d.ItemsKey);
+        set => Set(d => d.ItemsKey = value);
+    }
+
+    /// <summary><b>힌트 정보</b>(취득 힌트 일람) 단축키. 기본은 <c>H</c> 다.</summary>
+    public static string HintsKey
+    {
+        get => Get(d => d.HintsKey);
+        set => Set(d => d.HintsKey = value);
+    }
+
     /// <summary>몇 사람까지 적어 둘지.</summary>
     public const int MaxRecentFoes = 5;
 
@@ -626,6 +683,13 @@ public static class GameSettings
     {
         get => Get(d => d.ShowSeaDays);
         set => Set(d => d.ShowSeaDays = value);
+    }
+
+    /// <summary>배 중심 — 지도가 배를 늘 한가운데에 두고 실시간으로 흐른다. 모드 창에서 켜고 끈다.</summary>
+    public static bool ShipCentered
+    {
+        get => Get(d => d.ShipCentered);
+        set => Set(d => d.ShipCentered = value);
     }
 
     /// <summary>발견물 수 상자 — 모드 창에서 켜고 끈다.</summary>
@@ -815,6 +879,76 @@ public static class GameSettings
         set => Set(d => d.ItemListPictures = value);
     }
 
+    /// <summary>향상된 힌트 보기 — 왼쪽 목록에서 누르면 오른쪽에 곧바로 설명이 펴진다. 모드 창에서 켜고 끈다.</summary>
+    public static bool HintBrowser
+    {
+        get => Get(d => d.HintBrowser);
+        set => Set(d => d.HintBrowser = value);
+    }
+
+    /// <summary>중량 없음 — 보급품 · 교역품 무게로 막지 않는다(용량 · 통 수는 그대로). 모드 창에서 켜고 끈다.</summary>
+    public static bool NoWeight
+    {
+        get => Get(d => d.NoWeight);
+        set => Set(d => d.NoWeight = value);
+    }
+
+    /// <summary>리디바탕 글꼴 — 게임 비트맵 글꼴이 아닌 창 글씨(모드 창 · 향상된 힌트 보기 따위)를 리디바탕으로. 모드 창에서 켜고 끈다.</summary>
+    public static bool RidiFont
+    {
+        get => Get(d => d.RidiFont);
+        set => Set(d => d.RidiFont = value);
+    }
+
+    /// <summary>특별주문 — 조선소에서 가진 배와 옵션까지 똑같은 배를 산다. 모드 창에서 켜고 끈다.</summary>
+    public static bool SpecialOrder
+    {
+        get => Get(d => d.SpecialOrder);
+        set => Set(d => d.SpecialOrder = value);
+    }
+
+    /// <summary>향상된 아이템 이미지 — 몇몇 아이템을 덧붙인 그림으로 보인다(사자의 서 따위). 모드 창에서 켜고 끈다.</summary>
+    public static bool EnhancedItemArt
+    {
+        get => Get(d => d.EnhancedItemArt);
+        set => Set(d => d.EnhancedItemArt = value);
+    }
+
+    /// <summary>정보 제공 등급 — 창이 원본보다 얼마나 더 알려 주는지.</summary>
+    /// <remarks>
+    /// <code>
+    ///   0 기본  원본만큼만
+    ///   1 일반  게임 안에서 알 수 있는 값을 한 단계 더 보인다(힌트의 등급 · 자금 · 기한 따위)
+    ///   2 상세  더 많이 — 아직 쓰는 곳이 없어 모드 창에서는 숨겨 둔다
+    /// </code>
+    /// 무엇을 어느 등급에 둘지는 차차 정한다. 보이는 쪽은 <see cref="Shows"/> 로 묻는다.
+    /// </remarks>
+    public static int InfoLevel
+    {
+        get => Math.Clamp(Get(d => d.InfoLevel), InfoBasic, InfoDetailed);
+        set => Set(d => d.InfoLevel = Math.Clamp(value, InfoBasic, InfoDetailed));
+    }
+
+    /// <summary>편리한 인벤토리 — 소지품 정보 창에 「보관함」 · 「판매」 단추가 붙는다. 모드 창에서 켜고 끈다.</summary>
+    public static bool HandyInventory
+    {
+        get => Get(d => d.HandyInventory);
+        set => Set(d => d.HandyInventory = value);
+    }
+
+    /// <summary>작위 — 발견물을 보고해 공적을 쌓고 본국 왕궁에서 작위를 받는다(Engine.Town.Nobility). 모드 창에서 켜고 끈다.</summary>
+    public static bool Nobility
+    {
+        get => Get(d => d.Nobility);
+        set => Set(d => d.Nobility = value);
+    }
+
+    /// <summary>정보 제공 등급 값.</summary>
+    public const int InfoBasic = 0, InfoNormal = 1, InfoDetailed = 2;
+
+    /// <summary>그 등급 이상이면 참 — 「일반부터 보인다」는 Shows(InfoNormal) 이다.</summary>
+    public static bool Shows(int level) => InfoLevel >= level;
+
     /// <summary>스핑크스 퀴즈 도우미 — 켜면 고르는 창의 정답 줄에 「← 답」을 단다. 모드 창에서 켜고 끈다.</summary>
     public static bool SphinxHelper
     {
@@ -942,6 +1076,20 @@ public static class GameSettings
     {
         get => Get(d => d.DiscoveryMapGrid);
         set => Set(d => d.DiscoveryMapGrid = value);
+    }
+
+    /// <summary>발견물 지도에 아는 도시를 찍을지 — 지도 아래 「도시」 단추로 켜고 끈다. 기본은 끔.</summary>
+    public static bool DiscoveryMapCities
+    {
+        get => Get(d => d.DiscoveryMapCities);
+        set => Set(d => d.DiscoveryMapCities = value);
+    }
+
+    /// <summary>발견물 지도에 발견물 표식을 찍을지 — 지도 아래 「발견물」 단추로 켜고 끈다. 기본은 켬.</summary>
+    public static bool DiscoveryMapSpots
+    {
+        get => !Get(d => d.DiscoveryMapHideSpots);
+        set => Set(d => d.DiscoveryMapHideSpots = !value);
     }
 
     /// <summary>

@@ -175,7 +175,7 @@ public sealed class MarketBuyDialog : GameWindow
             if (at >= 0 && at < _stock.Length) { picked.Add(_stock[at]); pickedAt.Add(at); }
         if (picked.Count == 0) return;
 
-        int over = _player.Items.Count + picked.Count - Player.MaxItems;
+        int over = _player.Items.Count + picked.Count - _player.ItemLimit;
         if (over > 0 && !ConfirmDialog.Ask(this, $"이대로는 {over}개 들을 수 없습니다. 괜찮습니까?")) return;
 
         // 걷어 둘 차림표 — 도시 창에 떠 있는 시장 차림표다.
@@ -284,7 +284,7 @@ public sealed class MarketBuyDialog : GameWindow
                             Engine.Discovery.DiscoveryLog? found = null, uint[]? face = null,
                             Engine.Game? game = null)
     {
-        if (player.Items.Count >= Player.MaxItems)
+        if (player.Items.Count >= player.ItemLimit)
         {
             GameDialog.Show(owner, "이 이상 가질 수 없습니다!");
             return;

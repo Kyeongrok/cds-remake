@@ -578,32 +578,80 @@ public sealed class DisevEditorDialog : GameWindow
 
         _header.Text = $"파트 {SelectedPart} · {data.Length}바이트 · 단계 번호 {_part.Step} · "
                      + $"슬롯 {_part.Slots.Count}개 · 덩이 {_part.ChunkStarts.Count}개"
-                     + (_book.IsEdited(SelectedPart) ? "   ● 고침" : "");
+                     + (_book.IsEdited(SelectedPart) ? "   ● 고침" : "")
+                     + "\n위 슬롯부터 조건을 보고, 처음 맞는 슬롯의 본문 하나만 실행합니다. 하나도 안 맞으면 아무 일도 없습니다.";
 
-        var rows = _part.ChunkStarts
-            .Select(start =>
+        // <b>슬롯 차례로 「만약 … → 실행 …」 짝을 묶어 늘어놓는다.</b> 예전에는 덩이를 파일 안 자리 차례(조건, 조건, 본문,
+        // 본문)로 늘어놓아 어느 조건이 어느 본문의 짝인지 읽기 어려웠다. 엔진도 슬롯을 0번부터 보다가 <b>처음 맞는
+        // 슬롯의 본문 하나만</b> 돌리므로 이 차례가 곧 실행 차례다. 슬롯 표에 안 걸린 덩이는 맨 끝에 따로 둔다.
+        var rows = new List<ChunkRow>();
+        for (int i = 0; i < _part.Slots.Count; i++)
+        {
+            var slot = _part.Slots[i];
+            var (cf, ct) = _part.ChunkRange(slot.Condition);
+            var (bf, bt) = _part.ChunkRange(slot.Body);
+            string head = i == 0 ? "만약" : "아니고";
+            rows.Add(new ChunkRow
             {
-                var (from, to) = _part.ChunkRange(start);
-                return new ChunkRow
-                {
-                    Start = start,
-                    // 무엇에 쓰이는 덩이인지를 <b>앞에</b> 적는다 — 조건인지 본문인지가
-                    // 자리·크기보다 먼저 눈에 들어와야 한다.
-                    Text = $"{_part.UsersOf(start),-14}  +0x{start:X4}  {to - from,4}바이트",
-                };
-            })
-            .ToList();
+                Start = slot.Condition,
+                Text = $"슬롯 {i}  {head}   {ConditionSummary(cf, ct)}",
+            });
+            rows.Add(new ChunkRow
+            {
+                Start = slot.Body,
+                Text = $"            → 실행   {BodySummary(bf, bt)}",
+            });
+        }
+        var used = _part.Slots.SelectMany(sl => new[] { sl.Condition, sl.Body }).ToHashSet();
+        foreach (int start in _part.ChunkStarts.Where(c => !used.Contains(c)))
+        {
+            var (from, to) = _part.ChunkRange(start);
+            rows.Add(new ChunkRow
+            {
+                Start = start,
+                Text = $"(슬롯에 안 걸린 덩이)  +0x{start:X4}  {to - from}바이트",
+            });
+        }
 
         _chunks.ItemsSource = rows;
 
-        // <b>첫 덩이는 대개 조건이다.</b> 자리로 늘어놓으면 조건이 본문보다 앞에 서는데,
-        // 조건 덩이는 「조건 없음」이면 FF 한 줄뿐이라 골라 봐야 아무것도 안 나온다.
-        // 그래서 <b>0번 슬롯의 본문</b>을 먼저 편다 — 사람이 보고 싶은 것은 그쪽이다.
-        int first = _part.Slots.Count > 0
-            ? rows.FindIndex(r => r.Start == _part.Slots[0].Body)
-            : -1;
-        if (first < 0 && rows.Count > 0) first = 0;
+        // <b>0번 슬롯의 본문</b>을 먼저 편다 — 조건 덩이는 줄에 이미 풀려 있고, 사람이 보고 싶은 것은 본문이다.
+        int first = rows.Count > 1 && _part.Slots.Count > 0 ? 1 : rows.Count > 0 ? 0 : -1;
         if (first >= 0) _chunks.SelectedIndex = first;
+    }
+
+    /// <summary>
+    /// 조건 덩이 한 줄 풀이 — 명령마다의 풀이(<see cref="Describe"/>)를 「 · 」로 잇는다. 끝(FF)은 뺀다.
+    /// 조건이 없는 덩이(FF 한 줄)는 「조건 없음」이다.
+    /// </summary>
+    private string ConditionSummary(int from, int to)
+    {
+        if (_part == null) return "";
+        int still = _names?.Find(SelectedPart)?.Picture ?? -1;
+        var parts = DisevScript.Parse(_part.Data, from, to, still)
+            .Where(op => !op.Text.StartsWith("끝") && op.Hex.Trim() != "FF")
+            .Select(Describe)
+            .Where(t => t.Length > 0)
+            .ToList();
+        return parts.Count == 0 ? "조건 없음" : string.Join(" · ", parts);
+    }
+
+    /// <summary>
+    /// 본문 덩이 한 줄 풀이 — 앞의 명령 셋까지 풀고, 더 있으면 「외 n개」를 붙인다. 끝(FF)만 있으면 「아무것도 안 함」이다.
+    /// </summary>
+    private string BodySummary(int from, int to)
+    {
+        if (_part == null) return "";
+        int still = _names?.Find(SelectedPart)?.Picture ?? -1;
+        var parts = DisevScript.Parse(_part.Data, from, to, still)
+            .Where(op => !op.Text.StartsWith("끝") && op.Hex.Trim() != "FF")
+            .Select(Describe)
+            .Where(t => t.Length > 0)
+            .ToList();
+        if (parts.Count == 0) return "아무것도 안 함";
+        const int Shown = 3;
+        string text = string.Join(" · ", parts.Take(Shown).Select(t => t.Length > 40 ? t[..40] + "…" : t));
+        return parts.Count > Shown ? $"{text}  외 {parts.Count - Shown}개" : text;
     }
 
     private void ShowChunk()

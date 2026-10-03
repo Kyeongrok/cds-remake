@@ -1496,6 +1496,9 @@ public sealed class SeaBattle
     /// <summary>한 번에 쏘는 발 수(<c>0x00436DDC</c>) — 여느 때 셋, 속사포를 지닌 내 배는 여덟.</summary>
     public const int ShotsPerVolley = 3, RapidShots = 8;
 
+    /// <summary>내 배가 한 번 쏠 때 더 쏘는 발 — 작위 혜택(공작) 「대포 +1회」. 속사포 판에는 안 붙는다.</summary>
+    public int ExtraShots { get; set; }
+
     /// <summary>속사포 아이템 번호(소지품).</summary>
     public const int RapidFireItem = 1;
 
@@ -1578,7 +1581,7 @@ public sealed class SeaBattle
         var shots = new List<Shot>();
         bool bigUsed = false;
         // 속사포는 내 배만, 한 번에 여덟 발이다(0x00436DDC). 명중률도 피해도 그대로다.
-        int volley = ship.Mine && RapidFire > 0 ? RapidShots : ShotsPerVolley;
+        int volley = ship.Mine && RapidFire > 0 ? RapidShots : ShotsPerVolley + (ship.Mine ? ExtraShots : 0);
         if (ship.Mine && RapidFire == 1)
         {
             RapidFire = 2;                         // 알리는 것은 판에 한 번뿐이다(0x004384E8)

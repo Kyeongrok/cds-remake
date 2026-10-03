@@ -27,7 +27,7 @@ internal static class PersonInfoMenu
     {
         if (game.Player.MateCount == 0)
         {
-            Held(hold, menu, () => PersonInfoDialog.Show(owner, game.Player, game.Directory));
+            Held(hold, menu, () => PersonInfoDialog.Show(owner, game.Player, game.Directory, game));
             return;
         }
         menu.Push(() => Build(owner, game, menu, hold));
@@ -66,7 +66,7 @@ internal static class PersonInfoMenu
     {
         var rows = new List<(string, Action?)>
         {
-            ("플레이어", () => Held(hold, menu, () => PersonInfoDialog.Show(owner, game.Player, game.Directory))),
+            ("플레이어", () => Held(hold, menu, () => PersonInfoDialog.Show(owner, game.Player, game.Directory, game))),
         };
 
         for (int i = 0; i < Player.MaxMates; i++)

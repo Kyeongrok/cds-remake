@@ -133,6 +133,8 @@ internal static class TownMenu
             TownWork.Announce => screen.Announce,
 
             TownWork.BuyShip => screen.BuyShip,
+            // 특별주문 — 원본에 없는 줄. 지을 배가 하나라도 있으면 켜진다.
+            TownWork.SpecialOrder when screen.CanSpecialOrder => screen.SpecialOrder,
             // 함대가 닿아 있으면 켜진다(0x0044BD60). 기함뿐이면 눌러야 막힌다(0x0044B863 의 cmp esi,1 / jle).
             TownWork.SellShip when screen.CanSellShip => screen.SellShip,
             // 게임도 고칠 배가 없으면 이 줄을 흐리게 둔다(0x0044BD40).

@@ -29,9 +29,21 @@ public static class StoryLog
             : DisevEvent.EnterCity(player.CityId));
 
     /// <summary>그 사건(<see cref="DisevEvent"/>)에서 열리는 이야기 파트. 없으면 null.</summary>
-    public static int? NextPart(Player player, Game game, DisevEvent ev)
+    public static int? NextPart(Player player, Game game, DisevEvent ev) =>
+        player.ActiveStoryBook is { } cache ? NextPart(player, game, ev, cache) : null;
+
+    /// <summary>
+    /// 직업과 상관없이 <b>모두에게</b> 도는 전역 대본들 — 개인 이야기와 같은 단계 카운터(<see cref="Player.StoryProgress"/>)로 돈다.
+    /// 지금은 모드 「작위」의 대본 하나다(<see cref="Town.Nobility"/>).
+    /// </summary>
+    public static IEnumerable<string> GlobalBooks()
     {
-        if (player.ActiveStoryBook is not { } cache) return null;
+        if (Town.Nobility.Enabled) yield return Town.Nobility.BookName;
+    }
+
+    /// <summary>그 책(<paramref name="cache"/>)에서 그 사건으로 열리는 파트. 없으면 null.</summary>
+    public static int? NextPart(Player player, Game game, DisevEvent ev, string cache)
+    {
         if (player.IsStoryArcClosed(cache)) return null;
         if (DisevRunner.Open(game.Directory, cache) is not { } book) return null;
 

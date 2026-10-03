@@ -477,10 +477,12 @@ public sealed class ShipMapHost : HwndHost
         _wakeTrail.RemoveAll(p => _wakeClock - p.At > WakeLife);
         while (_wakeTrail.Count > MapD3DRenderer.MaxWake - 1) _wakeTrail.RemoveAt(0);
 
-        float shipPx = (float)((_shipX - origin.X) / _cellsPerPixel), shipPy = (float)((_shipY - origin.Y) / _cellsPerPixel);
+        // 「배 중심」이면 배 그림이 걸음 사이를 메운 자리(한가운데)에 있으니 물보라 머리도 거기서 뺀다.
+        var (headX, headY) = CenteredFollow ? (_centerX, _centerY) : (_shipX, _shipY);
+        float shipPx = (float)((headX - origin.X) / _cellsPerPixel), shipPy = (float)((headY - origin.Y) / _cellsPerPixel);
         int n = 0;
         _wakeDraw[n++] = (shipPx, shipPy, 0);
-        double px = _shipX, py = _shipY, reach = 0;
+        double px = headX, py = headY, reach = 0;
         for (int i = _wakeTrail.Count - 1; i >= 0 && n < _wakeDraw.Length; i--)
         {
             var p = _wakeTrail[i];
@@ -488,8 +490,8 @@ public sealed class ShipMapHost : HwndHost
             reach += Math.Sqrt(dx * dx + dy * dy);
             if (reach > WakeReach) break;
             double age = Math.Max((_wakeClock - p.At) / WakeLife, reach / WakeReach);
-            _wakeDraw[n++] = ((float)(shipPx + Wrap(p.X - _shipX) / _cellsPerPixel),
-                              (float)(shipPy + (p.Y - _shipY) / _cellsPerPixel), (float)Math.Clamp(age, 0, 1));
+            _wakeDraw[n++] = ((float)(shipPx + Wrap(p.X - headX) / _cellsPerPixel),
+                              (float)(shipPy + (p.Y - headY) / _cellsPerPixel), (float)Math.Clamp(age, 0, 1));
             (px, py) = (p.X, p.Y);
         }
         _renderer.SetWake(_wakeDraw.AsSpan(0, n));
@@ -948,7 +950,8 @@ public sealed class ShipMapHost : HwndHost
         if (_follow && _shipKnown) FollowShip(w, h);
         origin = (_centerX - w / 2.0 * _cellsPerPixel, _centerY - h / 2.0 * _cellsPerPixel);
 
-        var rect = ShowShip && _shipKnown && _spriteReady ? SpriteRectAt(_shipX, _shipY, origin)
+        var rect = ShowShip && _shipKnown && _spriteReady
+                       ? CenteredFollow ? SpriteRectAt(_centerX, _centerY, origin) : SpriteRectAt(_shipX, _shipY, origin)
                                              : (0f, 0f, 0f, 0f);
 
         // 덧그림 한 장을 두 가지로 나눠 쓴다. 둘이 같이 뜰 일은 없다 — 상륙하면 닻이 풀린다.
@@ -1564,6 +1567,9 @@ public sealed class ShipMapHost : HwndHost
             1, MapD3DRenderer.MaxClouds);
 
         if (!_cloudsPlaced) PlaceClouds(gw, gh);
+        _cloudGw = gw;
+        _cloudGh = gh;
+        _cloudScale = scale;
 
         var (vx, vy) = _wind!.Vector(windDir);
         for (int t = 0; t < ticks; t++)
@@ -1571,11 +1577,47 @@ public sealed class ShipMapHost : HwndHost
                 DriftCloud(ref _cloudState[i], vx * windSpeed * CloudSpeed[i],
                            vy * windSpeed * CloudSpeed[i], gw, gh);
 
+        SubmitClouds();
+    }
+
+    /// <summary>구름 자리를 renderer 에 건넨다 — 지도가 흐르다 남긴 소수 자리(<see cref="_cloudSubX"/>)까지 더해서.</summary>
+    private void SubmitClouds()
+    {
+        double scale = _cloudScale;
         for (int i = 0; i < _cloudCount; i++)
             _cloudDraw[i] = new MapD3DRenderer.CloudDraw(
-                (float)(_cloudState[i].X * scale), (float)(_cloudState[i].Y * scale),
+                (float)((_cloudState[i].X + _cloudSubX) * scale), (float)((_cloudState[i].Y + _cloudSubY) * scale),
                 CloudBase[i] + CloudShape[_cloudState[i].Shape], (float)scale);
         _renderer.SetClouds(_cloudDraw.AsSpan(0, _cloudCount));
+    }
+
+    /// <summary>마지막으로 구름을 굴린 화면 크기(게임 점)와 배율.</summary>
+    private int _cloudGw = 1, _cloudGh = 1;
+    private double _cloudScale;
+
+    /// <summary>「배 중심」에서 지도가 흐르며 구름에 아직 못 옮긴 몫(게임 점, -2~2). 구름 무늬 짝을 지키려고 두 점씩 옮긴다.</summary>
+    private double _cloudSubX, _cloudSubY;
+
+    /// <summary>
+    /// 지도가 (<paramref name="dx"/>, <paramref name="dy"/>) 게임 점만큼 흘렀으니 구름을 거꾸로 민다 — 구름이 바다에 실려
+    /// 같이 흘러가 보이게. 정수 자리는 두 점씩만 옮겨(<see cref="FixParity"/> 짝 유지) 남는 몫은 그릴 때 더한다.
+    /// </summary>
+    private void ScrollClouds(double dx, double dy)
+    {
+        if (_cloudCount == 0 || (dx == 0 && dy == 0)) return;
+        _cloudSubX -= dx;
+        _cloudSubY -= dy;
+        int stepX = 2 * (int)Math.Truncate(_cloudSubX / 2), stepY = 2 * (int)Math.Truncate(_cloudSubY / 2);
+        _cloudSubX -= stepX;
+        _cloudSubY -= stepY;
+        if (stepX != 0 || stepY != 0)
+            for (int i = 0; i < _cloudCount; i++)
+            {
+                _cloudState[i].X += stepX;
+                _cloudState[i].Y += stepY;
+                WrapCloud(ref _cloudState[i], _cloudGw, _cloudGh);
+            }
+        SubmitClouds();
     }
 
     /// <summary>게임과 같이 3열로 벌려 놓는다(<c>0x0048906B</c>).</summary>
@@ -1598,7 +1640,13 @@ public sealed class ShipMapHost : HwndHost
         while (c.AccY >= WindTable.VectorLength) { c.AccY -= WindTable.VectorLength; c.Y++; }
         while (c.AccY <= -WindTable.VectorLength) { c.AccY += WindTable.VectorLength; c.Y--; }
 
-        // 화면 밖으로 나가면 반대쪽 끝에서 아무 자리로 다시 들어온다(0x00489456~).
+        WrapCloud(ref c, gw, gh);
+        c.Shape = (c.Shape + 1) % 3;
+    }
+
+    /// <summary>화면 밖으로 나가면 반대쪽 끝에서 아무 자리로 다시 들어온다(0x00489456~).</summary>
+    private void WrapCloud(ref Cloud c, int gw, int gh)
+    {
         int w = CloudSprites.Width, h = CloudSprites.Height;
         if (c.X <= -w) { c.X = gw - 1; c.Y = _cloudRng.Next(gh) - (h - 1); }
         else if (c.X >= gw) { c.X = -(w - 1); c.Y = _cloudRng.Next(gh) - (h - 1); }
@@ -1606,7 +1654,6 @@ public sealed class ShipMapHost : HwndHost
         else if (c.Y >= gh) { c.Y = -(h - 1); c.X = _cloudRng.Next(gw) - (w - 1); }
 
         FixParity(ref c);
-        c.Shape = (c.Shape + 1) % 3;
     }
 
     /// <summary>
@@ -1624,6 +1671,23 @@ public sealed class ShipMapHost : HwndHost
     /// </summary>
     private void FollowShip(int w, int h)
     {
+        // 모드 「배 중심」 — 넘기지 않고 매 프레임 배를 한가운데에 둔다(실시간으로 흐른다).
+        if (Local.Settings.GameSettings.ShipCentered)
+        {
+            // 배는 틱(0.1초)마다 한 걸음씩 뛴다 — 그대로 따라가면 화면이 초당 열 번 툭툭 끊긴다.
+            // 지난 틱 자리와 지금 자리 사이를 틱이 지난 만큼 메운 자리를 따라간다.
+            var (sx0, sy0) = SmoothShip();
+            // 한가운데는 <b>온 실픽셀</b>에 맞춘다. 반 픽셀씩 밀리면 점그림 지도가 칸마다 들쑥날쑥 번져 어지럽다.
+            double nx = Math.Round(sx0 / _cellsPerPixel) * _cellsPerPixel;
+            double ny = Math.Round(sy0 / _cellsPerPixel) * _cellsPerPixel;
+            double moveX = WrapDx(nx - _centerX), moveY = ny - _centerY;
+            _centerX = nx;
+            _centerY = ny;
+            // 구름은 화면 자리로 들고 있어 그냥 두면 바다가 흘러도 화면에 붙어 선다 — 지도가 흐른 만큼 같이 민다.
+            ScrollClouds(moveX * GamePixelsPerCell, moveY * GamePixelsPerCell);
+            return;
+        }
+
         // 창이 여백 두 겹보다 좁으면 여백이 화면을 다 먹는다 — 반보다는 작게 잡는다.
         double mx = Math.Min(EdgeMarginPixels, w / 2.0 - 1);
         double my = Math.Min(EdgeMarginPixels, h / 2.0 - 1);
@@ -1637,6 +1701,26 @@ public sealed class ShipMapHost : HwndHost
         _centerX = _shipX;
         _centerY = _shipY;
     }
+
+    /// <summary>지난 틱이 시작될 때 배 자리 — 「배 중심」이 걸음 사이를 메우는 데 쓴다.</summary>
+    private double _prevShipX, _prevShipY;
+
+    /// <summary>이보다 멀리 뛰면(입항·상륙·불러오기 같은 순간이동) 메우지 않고 곧장 지금 자리로 간다.</summary>
+    private const double SmoothJumpCells = 4;
+
+    /// <summary>
+    /// 그릴 배 자리 — 지난 틱 자리에서 지금 자리로, 다음 틱까지 지난 몫만큼 나아간 자리. 한 틱 늦게 따라가는 대신 매끈하다.
+    /// </summary>
+    private (double X, double Y) SmoothShip()
+    {
+        double dx = WrapDx(_shipX - _prevShipX), dy = _shipY - _prevShipY;
+        if (dx * dx + dy * dy > SmoothJumpCells * SmoothJumpCells) return (_shipX, _shipY);
+        double t = Math.Clamp(_tickAccum / TickSeconds, 0, 1);
+        return (_shipX - dx * (1 - t), _shipY - dy * (1 - t));
+    }
+
+    /// <summary>「배 중심」으로 배를 한가운데에 두고 따라가는 중인지.</summary>
+    private bool CenteredFollow => _follow && Local.Settings.GameSettings.ShipCentered;
 
     /// <summary>가로로 이어진 지도에서 가장 가까운 쪽으로 잰 가로 차이.</summary>
     private static double WrapDx(double dx) =>
@@ -1780,7 +1864,7 @@ public sealed class ShipMapHost : HwndHost
     /// </remarks>
     private void Sail(double dt)
     {
-        if (Paused) { _tickAccum = 0; return; }
+        if (Paused) { _tickAccum = 0; (_prevShipX, _prevShipY) = (_shipX, _shipY); return; }
 
         // 커서가 창 밖으로 나가도 배는 가던 쪽으로 계속 간다. 커서는 바라는 쪽을 바꿀 때만 쓴다.
         // 자동항해 중에는 커서 대신 다음 마디가 같은 몫을 한다(_hasHeadingTarget).
@@ -1795,6 +1879,7 @@ public sealed class ShipMapHost : HwndHost
         while (_tickAccum >= TickSeconds)
         {
             _tickAccum -= TickSeconds;
+            (_prevShipX, _prevShipY) = (_shipX, _shipY);
             Ticks++;                       // 날 눈금은 서 있어도 쌓인다(0x0044AF90)
             Turn();
 

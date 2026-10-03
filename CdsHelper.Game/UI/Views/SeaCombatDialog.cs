@@ -75,15 +75,21 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <summary>불 그림이 한 장 바뀌는 눈 — <c>[+0x8F0] % 48 / 16</c>.</summary>
     private const int FlameTicks = 16;
 
-    /// <summary>포격 연출의 한 장 참과 포탄이 날아가는 걸음 수(<c>0x004384E8</c>).</summary>
+    /// <summary>포격 연출의 한 장 참(<c>0x004384E8</c>).</summary>
     private static readonly TimeSpan FxFrame = TimeSpan.FromMilliseconds(60);
-    private const int BallSteps = 9;
 
     /// <summary>
-    /// 포탄 한 걸음의 참. 걸음 0~9 열 번이라 한 발이 이것의 열 배 동안 난다 — 15ms 면 0.15초.
-    /// 원본 주소에서 옮긴 값이 아니라 보기 좋게 맞춘 값이다(예전 25ms 는 좀 느렸다).
+    /// 포탄 한 발이 날아가는 동안. 원본 주소에서 옮긴 값이 아니라 보기 좋게 맞춘 값이다.
     /// </summary>
-    private static readonly TimeSpan BallStepTime = TimeSpan.FromMilliseconds(15);
+    /// <remarks>
+    /// 예전에는 걸음 열 번 x 15ms 로 셌는데, 윈도 타이머 한 눈이 15.6ms 쯤이라 실제로는 한 발에 0.16초 남짓 걸렸고
+    /// 걸음 값을 줄여도 빨라지지 않았다. 이제는 <b>흐른 시간</b>으로 자리를 매겨, 이 값이 곧 한 발의 길이다 —
+    /// 그때보다 2할쯤 빠르게 0.125초다.
+    /// </remarks>
+    private static readonly TimeSpan BallFlight = TimeSpan.FromMilliseconds(125);
+
+    /// <summary>포탄 자리를 고쳐 그리는 사이 — 타이머 한 눈보다 짧게 둬서 눈마다 한 번씩 그린다.</summary>
+    private static readonly TimeSpan BallFrame = TimeSpan.FromMilliseconds(8);
 
     /// <summary>
     /// 판 크기. 폭은 원본 넓은 화면(800) 그대로고, 키는 <b>틀이 끝나는 자리</b>(아래 띠 560 + 32 = 592)까지다 —
@@ -286,6 +292,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         _board.Background = Brushes.Transparent;
         _board.MouseLeftButtonUp += Touch;
+        // 포격 연출 중에 누르면 그 포격의 남은 연출(포탄 · 폭발 · 물보라 · 숫자)을 건너뛴다 — 원본처럼.
+        // 판 고르기(Touch)로 흘러가지 않게 여기서 먹는다.
+        PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            if (!_inFx) return;
+            _skipFx = true;
+            e.Handled = true;
+        };
         _board.MouseMove += (_, e) => AimScroll(e.GetPosition(_board));
         _board.MouseLeave += (_, _) => { _scrollWay = -1; _scrollTimer.Stop(); };
         _scrollTimer.Tick += (_, _) => Slide(_scrollWay);
@@ -299,7 +313,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         //   위임 중이면 「제독이 명령하시겠습니까?」만 묻고 끝난다(0x0043EE9A).
         //   판 칸 밖(띠·기둥)을 누르면 「해전전황정보(제독·함대수)」(0x0043FAC2 → 0x00434430),
         //   배가 선 칸이면 그 배의 「해전전황정보(선박)」(0x0043FAB3 → 0x0043EBD0)다 — 아군·적 모두.
-        //   빈 바다 칸은 게임에서 아무 일도 없다 — 여기서는 앱 차림표(항복)를 낸다.
+        //   빈 바다 칸은 게임처럼 아무 일도 없다 — 예전에는 원본에 없는 「항복한다 / 게임 복귀」 차림표를 냈다.
         MouseRightButtonUp += (_, e) =>
         {
             if (_running) return;
@@ -325,10 +339,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                     ship = _battle.MonsterHead ?? ship;
                 }
                 SeaShipInfoDialog.Show(this, ship);
-                return;
             }
-            GameUi.ContextMenuAt(this, e.GetPosition(this),
-                                 [("항복한다", Surrender), ("게임 복귀", () => { })]);
         };
 
         // 글쇠(0x0043EEDF 갈래) — PgUp 은 「해전전황정보(제독·함대수)」(0x0043F895),
@@ -443,6 +454,20 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 Put(_marks, _art.Path_($"mark-{lway:D2}"), ax + 8, ay, 32, 32, z: 0);
             }
         }
+
+        // 제자리 선회를 지시해 둔 내 배는 <b>돌아설 쪽 칸에 방향 화살표</b>를 세워 둔다 — 지시를 마치면 고른 배가
+        // 풀려(Unpick) 위의 길 화살표가 걷히므로, 어느 쪽으로 돌기로 했는지가 화면에서 사라졌다.
+        // 화살표는 길 끝 화살표와 같은 mark-00~05(방향 0~5)이고, 누른 그 선회 칸(뱃머리 앞옆)에 선다.
+        if (!_running)
+            foreach (var ship in _battle.Ships.Where(s => s.Mine && s.CanAct && s.Ordered
+                                                          && s.Pivot != SeaBattle.Move.Straight))
+            {
+                int way = SeaBattle.Turn(ship.Way, ship.Pivot);
+                var (px, py) = SeaBattle.Step(ship.X, ship.Y, way);
+                if (!SeaBattle.OnBoard(px, py)) continue;
+                var (ax, ay) = ScreenOf(px, py);
+                Put(_marks, _art.Path_($"mark-{way:D2}"), ax + 8, ay, 32, 32, z: 0);
+            }
 
         foreach (var ship in _battle.Ships)
         {
@@ -930,18 +955,6 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 「충돌 영향으로…」는 턴 끝에 내지 않는다 — 원본은 부딪힌 배를 <b>눌렀을 때</b>만 낸다(0x0043E299 한 곳).
     }
 
-    private void Surrender()
-    {
-        if (_running) return;
-        if (!ConfirmDialog.Ask(this, "항복하겠습니까?", face: _face)) return;
-        Result = Outcome.Surrendered;
-        // 항복은 게임에 없는 앱 차림표라 도망(0x00435ABF)처럼 되쓴다 — 잃은 배·빼앗긴 배는 함대에서 빠진다.
-        WriteBack(Result);
-        _settle?.Invoke(this, new Report(Result, _battle.EnemyDowned, _battle.EnemyCaptured));
-        CheckCrew();
-        Close();
-    }
-
     /// <summary>
     /// 판이 끝났다 — <b>먼저 빠진 기함</b>이 끝을 정한다(<c>0x004350F0</c>).
     /// </summary>
@@ -968,7 +981,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private void FinishSound(int part, int ticks)
     {
         _bgm?.Pause();
-        _sfx?.Play(part);
+        _sfx?.PlayOver(part);
         Wait(Tick * ticks);
         _bgm?.Resume();
     }
@@ -1184,56 +1197,93 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// </remarks>
     private void Animate(SeaBattle.Volley volley)
     {
+        _skipFx = false;
+        _inFx = true;
+        try { AnimateShots(volley); }
+        finally
+        {
+            _inFx = false;
+            _skipFx = false;
+        }
+    }
+
+    /// <summary>포격 연출이 도는 중인지 — 이때 누르면 건너뛴다.</summary>
+    private bool _inFx;
+
+    /// <summary>이번 포격의 남은 연출을 건너뛸지. 포격마다 새로 내린다.</summary>
+    private bool _skipFx;
+
+    /// <summary>연출 한 장 기다림 — 건너뛰기를 눌렀으면 안 기다린다.</summary>
+    private void FxWait(TimeSpan span)
+    {
+        if (_inFx && _skipFx) return;
+        Wait(span);
+    }
+
+    private void AnimateShots(SeaBattle.Volley volley)
+    {
         var (sx, sy) = ScreenOf(volley.Shooter.X, volley.Shooter.Y);
         var (tx, ty) = ScreenOf(volley.Target.X, volley.Target.Y);
         var rng = Random.Shared;
 
         foreach (var shot in volley.Shots)
         {
-            _sfx?.Play(FirePart);
+            // 건너뛰었으면 남은 발은 소리도 그림도 없다 — 피해는 엔진이 이미 다 매겼다.
+            if (_skipFx) break;
+            _sfx?.PlayOver(FirePart);
 
             // 포연 세 장과 포탄이 날아가는 걸음을 함께 흘린다.
+            // 포연 세 장은 날아가는 길의 0 · 1/3 · 2/3 에 한 장씩 — 예전 걸음 0 · 3 · 6 자리다.
             var ball = Sprite(_art.Path_("dot-00"), sx + 20, sy + 12, 8, 8);
-            for (int step = 0; step <= BallSteps; step++)
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            int puffs = 0;
+            while (true)
             {
-                if (step % 3 == 0 && step / 3 < 3)
-                    Flash(_art.Path_($"blast-{15 + step / 3:D2}"), sx, sy - 8, 48, 48);
+                double t = Math.Min(1, clock.Elapsed.TotalMilliseconds / BallFlight.TotalMilliseconds);
+                while (puffs < 3 && t >= puffs / 3.0)
+                {
+                    Flash(_art.Path_($"blast-{15 + puffs:D2}"), sx, sy - 8, 48, 48);
+                    puffs++;
+                }
                 if (ball != null)
                 {
-                    Canvas.SetLeft(ball, sx + 20 + (tx - sx) * step / (double)BallSteps);
-                    Canvas.SetTop(ball, sy + 12 + (ty - sy) * step / (double)BallSteps);
+                    Canvas.SetLeft(ball, sx + 20 + (tx - sx) * t);
+                    Canvas.SetTop(ball, sy + 12 + (ty - sy) * t);
                 }
-                Wait(BallStepTime);
+                if (t >= 1 || _skipFx) break;
+                Wait(BallFrame);
             }
             if (ball != null) _fx.Children.Remove(ball);
+            if (_skipFx) break;
 
             if (shot.Hit)
             {
-                _sfx?.Play(HitPart);
+                _sfx?.PlayOver(HitPart);
                 int first = shot.Big ? 6 : 0;
                 for (int f = 0; f < 3; f++)
                 {
                     var blast = Sprite(_art.Path_($"blast-{first + f:D2}"), tx, ty - 8, 48, 48);
-                    Wait(FxFrame);
+                    FxWait(FxFrame);
                     if (blast != null) _fx.Children.Remove(blast);
                 }
             }
             else
             {
-                _sfx?.Play(MissPart);
+                _sfx?.PlayOver(MissPart);
                 var (nx, ny) = SeaBattle.Step(volley.Target.X, volley.Target.Y, rng.Next(SeaBattle.Ways));
                 var (wx, wy) = SeaBattle.OnBoard(nx, ny) ? ScreenOf(nx, ny) : (tx, ty);
                 for (int f = 0; f < 3; f++)
                 {
                     var splash = Sprite(_art.Path_($"mark-{6 + f:D2}"), wx + 8, wy - 4, 32, 32);
-                    Wait(FxFrame);
+                    FxWait(FxFrame);
                     if (splash != null) _fx.Children.Remove(splash);
                 }
             }
 
             // <b>피해 숫자는 발마다 바로 뜬다</b>(0x00437330 이 발 고리 <b>안</b>에 있다).
             // 세 발을 다 쏘고 합을 한 번 찍었더니 마지막에만 숫자가 떴다.
-            Wait(FxFrame * 2);
+            FxWait(FxFrame * 2);
+            if (_skipFx) break;
             if (shot.Hit && shot.Damage > 0) ShowNumbers((volley.Target, shot.Damage));
         }
 
@@ -1260,7 +1310,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             }
         }
         if (digits.Count == 0) return;
-        Wait(FxFrame * 5);
+        FxWait(FxFrame * 5);
         foreach (var digit in digits) _fx.Children.Remove(digit);
     }
 
@@ -1298,7 +1348,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     void SeaBattle.IStage.Crash(SeaBattle.Ship mover, SeaBattle.Ship hit, bool friendly)
     {
         Redraw();
-        if (!friendly) _sfx?.Play(CrashPart);
+        if (!friendly) _sfx?.PlayOver(CrashPart);
         ConfirmDialog.Tell(this, SeaBattle.CrashWord(mover, hit), BattleTitle);
     }
 
@@ -1313,7 +1363,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     void SeaBattle.IStage.Melee(SeaBattle.Ship mover, SeaBattle.Ship target, int moverLoss, int targetLoss)
     {
         Redraw();
-        _sfx?.Play(MeleePart);
+        _sfx?.PlayOver(MeleePart);
         Wait(Tick * 3);
         Blast(9, BlastAt(target));
         Wait(Tick * 2);
@@ -1323,7 +1373,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
     void SeaBattle.IStage.Ignite(SeaBattle.Ship target)
     {
-        _sfx?.Play(IgnitePart);
+        _sfx?.PlayOver(IgnitePart);
         Blast(3, BlastAt(target));
         UpdateFlames();
     }
@@ -1335,7 +1385,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     void SeaBattle.IStage.Gunfight(SeaBattle.Ship shooter, SeaBattle.Ship target, int shooterLoss, int targetLoss)
     {
         Redraw();
-        _sfx?.Play(GunfightPart);
+        _sfx?.PlayOver(GunfightPart);
         Wait(Tick);
         int mx = (shooter.X + target.X) / 2, my = (shooter.Y + target.Y) / 2;
         double shift = (((shooter.X & 1) == 0 ? 16 : 0) + ((target.X & 1) == 0 ? 16 : 0)) / 2.0;
@@ -1363,7 +1413,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// </remarks>
     void SeaBattle.IStage.Sink(IReadOnlyList<SeaBattle.Ship> ships)
     {
-        _sfx?.Play(_battle.Monster && ships.Any(s => !s.Mine) ? MonsterSinkPart : SinkPart);
+        _sfx?.PlayOver(_battle.Monster && ships.Any(s => !s.Mine) ? MonsterSinkPart : SinkPart);
         Wait(Tick * 3);
         Blast(12, ships.Select(BlastAt).ToArray());
         foreach (var ship in ships.Where(s => !s.Flagship)) Say(_battle.SinkWord(ship));
@@ -1431,7 +1481,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private void Flash(string? path, double x, double y, double w, double h)
     {
         var image = Sprite(path, x, y, w, h);
-        Wait(FxFrame);
+        FxWait(FxFrame);
         if (image != null) _fx.Children.Remove(image);
     }
 
@@ -1559,6 +1609,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 탄약 = 함대 보급품 탄약 x 10(볼트 85). 잠수폭탄은 소지품 칸마다 굴린다(볼트 94 3.1).
         battle.Ammo = player.SupplyOf(SupplyKind.Ammo) * 10;
         battle.Mines = player.Items.Count(id => id == SeaBattle.MineItem);
+        // 작위 혜택(공작) — 내 배가 한 번 쏠 때 한 발 더.
+        battle.ExtraShots = Engine.Town.Nobility.Has(player, Engine.Town.Nobility.Perk.Cannon) ? 1 : 0;
         // 속사포는 판을 열 때 한 번 굴려 정해진다(0x00441EA5) — 먹으면 그 판 내내 여덟 발이다.
         battle.ArmRapidFire(player.Items.Count(id => id == SeaBattle.RapidFireItem));
         var ours = new List<(SeaBattle.Ship, Support.Local.Models.Ship)>();

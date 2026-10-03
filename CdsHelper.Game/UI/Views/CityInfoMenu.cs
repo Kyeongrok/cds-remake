@@ -23,7 +23,7 @@ internal static class CityInfoMenu
     /// 그 줄이 조용히 흐려진다 — 그래서 양쪽이 이 이름을 함께 쓴다.
     /// </summary>
     public const string Date = "날짜", Coord = "위도·경도", Gold = "소지금",
-                        Fame = "명성", City = "도시명", Fatigue = "피로도", Morale = "규칙",
+                        Fame = "명성", City = "도시명", Fatigue = "피로도", Morale = "규율",
                         Crew = "선원·대원", Stores = "물·식량", DaysLeft = "남은일수",
                         Wind = "풍향·풍속", Language = "언어", Rate = "시세",
                         Current = "해류", Vitality = "생명력";

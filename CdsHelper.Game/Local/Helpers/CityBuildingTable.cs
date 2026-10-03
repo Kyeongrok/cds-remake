@@ -127,7 +127,8 @@ public sealed class CityBuildingTable
 
     private CityBuildingTable(Snapshot snapshot)
     {
-        _buildings = snapshot.Buildings;
+        // 이름은 표준 표기(StandardText)를 거친다 — 「비즈비항」 → 「비스뷔항」. 적어 둔 JSON 은 원본 그대로다.
+        _buildings = [.. snapshot.Buildings.Select(b => b with { Name = StandardText.Apply(b.Name) })];
         SkillNames = snapshot.SkillNames;
         LanguageNames = snapshot.LanguageNames;
         foreach (var b in _buildings)

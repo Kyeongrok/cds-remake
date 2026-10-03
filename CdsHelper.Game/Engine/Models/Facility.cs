@@ -52,8 +52,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
         new(FacilityKind.Harbor, "항구",
             ["출항", "보급", "함대편성", "선원편성", "마을정보", Announce, "마을로 돌아간다"]),
 
+        // 「특별주문」은 원본에 없는 줄이다 — 내 배 하나를 골라 옵션까지 같은 배를 짓는다(ShipyardMenu.SpecialOrder).
         new(FacilityKind.Shipyard, "조선소",
-            ["구입", "매각", "수리", "개조", "조선소를 나온다"]),
+            ["구입", SpecialOrder, "매각", "수리", "개조", "조선소를 나온다"]),
 
         // 파는 술은 여기 안 적는다 — 고장마다 다르므로 술 표(<see cref="DrinkTable"/>)에서
         // 그 고장 것을 골라 <see cref="TownWorks.LinesOf"/> 가 맨 앞에 붙인다.
@@ -143,6 +144,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     /// 안 쓰이는 <c>0x0053C068</c> "선수상 선택" 벌도 함께 들고 있다. 화면에서 본 대로
     /// <b>선수상</b> 으로 적는다.
     /// </remarks>
+    /// <summary>조선소 「특별주문」 — 원본에 없는 줄.</summary>
+    public const string SpecialOrder = "특별주문";
+
     public const string RefitMast = "마스트 추가",
                         RefitSailKind = "돛종류 변경",
                         RefitSail = "돛 추가",

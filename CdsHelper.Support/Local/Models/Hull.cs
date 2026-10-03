@@ -93,6 +93,25 @@ public sealed record Hull(
     ];
 
     /// <summary>
+    /// 선체표의 <b>위값</b>(개조 한계) — 내구 <c>+0x18</c> · 추진 <c>+0x10</c> · 용량 <c>+0x28</c> · 중량 <c>+0x20</c> · 대포 <c>+0x30</c>.
+    /// </summary>
+    /// <remarks>
+    /// 조선소에 안 나오는 선체(코구 · 대형카락 · 다우)를 <see cref="FromTable"/> 로 지을 때 쓴다. 예전에는 이 값을
+    /// 안 넣어 한계가 「아래값 x <see cref="Ship.RefitCeiling"/>」로 물러나, 코구 추진 한계가 원본 90 이 아니라 140 이었다.
+    /// </remarks>
+    private static readonly (int Hp, int Speed, int Capacity, int Tonnage, int Guns)[] Tops =
+    [
+        (35,  90, 150, 1750,  5),   // 코구
+        (30, 100, 225, 2000,  8),   // 카라벨
+        (50,  70, 300, 2750, 14),   // 대형카라벨
+        (50,  80, 275, 2500, 12),   // 카락
+        (60,  70, 375, 3250, 20),   // 대형카락
+        (80,  55, 500, 5000, 32),   // 중카락
+        (100, 75, 500, 5000, 40),   // 갤리온
+        (50,  90, 300, 2500, 12),   // 다우
+    ];
+
+    /// <summary>
     /// 이 배의 게임 선체 번호 — 해전 그림 벌(SCOMBAT 파트 5+번호)이 이것이다(<c>0x00442D93</c>).
     /// </summary>
     /// <remarks>
@@ -133,11 +152,14 @@ public sealed record Hull(
             Caravel => 2,
             _ => 3,
         };
+        var top = Tops[spec.Id];
         return new Hull(spec.Name, spec.Hp, spec.Speed, spec.Capacity, spec.Tonnage, spec.Crew,
                         spec.GunsMin, spec.PriceFactor * 1000, TableSkins[spec.Id],
                         // 돛종류는 카락 이상만 바꾼다 — 코구·카라벨·대형카라벨·다우는 안 된다(0x00494E00: 선체 0~2·7).
                         MaxMasts: masts, CanChangeSail: spec.Id is not (Cog or Caravel or LargeCaravel or Dhow),
-                        Id: spec.Id);
+                        Id: spec.Id,
+                        HpTop: top.Hp, SpeedTop: top.Speed, CapacityTop: top.Capacity,
+                        TonnageTop: top.Tonnage, GunsTop: top.Guns);
     }
 
     /// <summary>선체표 이름으로 찾는다. 없으면 null — 세이브를 되돌릴 때 조선소에 없는 선체를 살린다.</summary>

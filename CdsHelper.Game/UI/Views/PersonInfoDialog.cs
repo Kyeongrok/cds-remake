@@ -52,7 +52,7 @@ internal sealed class PersonInfoDialog : InfoDialog
     /// <inheritdoc/>
     protected override Brush BoardEdge => SteelEdge;
 
-    private PersonInfoDialog(Player player, Portraits? faces)
+    private PersonInfoDialog(Player player, Portraits? faces, Engine.Game? game = null)
     {
         var head = new StackPanel { Margin = new Thickness(10, 0, 0, 0) };
         head.Children.Add(BlackLine($"  {player.Name}"));
@@ -81,8 +81,38 @@ internal sealed class PersonInfoDialog : InfoDialog
         rows.Children.Add(BlackLine($"  저금  /{player.Savings,10}닢"));
         rows.Children.Add(BlackLine($"  빚    /{player.Debt,10}닢"));
 
-        Build("", rows, BoardWidth, BoardHeight,
-              new GameButton("특기", () => ShowSkills(player)), new GameButton("취소", Close));
+        // 모드 「작위」 — 작위와 공적 한 줄, 그리고 혜택을 보는 단추.
+        bool noble = Engine.Town.Nobility.Enabled && game != null;
+        if (noble)
+        {
+            int merit = Engine.Town.Nobility.MeritOf(game!);
+            int next = Engine.Town.Nobility.ToNext(player.NobleRank, merit);
+            rows.Children.Add(BlackLine($"  작위  /{GameUi.Pad(Engine.Town.Nobility.NameOf(player.NobleRank), 8)}" +
+                                        $"공적/{merit,5}" + (next > 0 ? $"  (다음까지 {next})" : "")));
+        }
+
+        var buttons = new List<GameButton> { new("특기", () => ShowSkills(player)) };
+        if (noble) buttons.Add(new GameButton("작위", () => ShowNobility(player)));
+        buttons.Add(new GameButton("취소", Close));
+        Build("", rows, BoardWidth, noble ? BoardHeight + 20 : BoardHeight, [.. buttons]);
+    }
+
+    /// <summary>
+    /// 작위 혜택 — 작위마다 무엇이 붙는지, 지금 가진 것과 아직인 것을 늘어놓는다(모드 「작위」).
+    /// </summary>
+    private void ShowNobility(Player player)
+    {
+        var lines = new List<string> { $"지금 작위: {Engine.Town.Nobility.NameOf(player.NobleRank)}", "" };
+        for (int rank = 1; rank <= Engine.Town.Nobility.MaxRank; rank++)
+        {
+            var perks = Engine.Town.Nobility.Perks.Where(p => p.Rank == rank).ToList();
+            string mark = player.NobleRank >= rank ? "●" : "○";
+            string what = perks.Count > 0
+                ? string.Join(" · ", perks.Select(p => p.Name))
+                : "앞의 혜택 전부";
+            lines.Add($"{mark} {Engine.Town.Nobility.Names[rank]}({Engine.Town.Nobility.Thresholds[rank]}) — {what}");
+        }
+        NoticeDialog.Show(this, string.Join(Environment.NewLine, lines), "작위");
     }
 
     /// <summary>
@@ -217,10 +247,10 @@ internal sealed class PersonInfoDialog : InfoDialog
 
     /// <summary>인물정보 판을 연다.</summary>
     /// <param name="gameDirectory">초상화를 읽을 게임 폴더. 없으면 얼굴 없이 뜬다.</param>
-    public static void Show(Window owner, Player player, string gameDirectory = "")
+    public static void Show(Window owner, Player player, string gameDirectory = "", Engine.Game? game = null)
     {
         var faces = Portraits.Open(gameDirectory);
-        new PersonInfoDialog(player, faces) { Owner = owner }.ShowDialog();
+        new PersonInfoDialog(player, faces, game) { Owner = owner }.ShowDialog();
     }
 
     /// <summary>부하 하나의 인물정보 판을 연다.</summary>

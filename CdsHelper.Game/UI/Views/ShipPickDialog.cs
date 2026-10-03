@@ -43,7 +43,18 @@ public sealed class ShipPickDialog : GameWindow
         new("용적", 56, true), new("선체타입", 100, true), new("선수상", 88, false), new("추진력", 72, true),
         new("대포명  포문수", 176, false), new("대포수", 60, true), new("포탑수", 60, true), new("소유", 48, false),
         new("돛종류", 64, false), new("함대", 48, false),
+        // 14 — 매각 견적. 원본 배 목록 칸이 아니다(매각 창이 이 표를 쓰면서 붙인 칸).
+        new("견적가격", 80, true),
     ];
+
+    /// <summary>매각 견적 칸 번호.</summary>
+    private const int PriceColumn = 14;
+
+    /// <summary>
+    /// 매각 창의 첫 묶음 — 선명 · 선체타입 · 대포명/포문수 · 포탑수 · 돛종류 · 선수상. 팔 배를 가를 때 보는 것을 한눈에 둔다.
+    /// 그 뒤로는 여느 묶음 다섯을 돈다. 견적가격 칸은 어느 묶음에나 끝에 붙는다.
+    /// </summary>
+    private static readonly int[] SellLead = [0, 5, 8, 10, 12, 6];
 
     /// <summary>묶음 표(<c>0x00560E10</c>).</summary>
     private static readonly int[][] Sets =
@@ -93,6 +104,15 @@ public sealed class ShipPickDialog : GameWindow
     private readonly IReadOnlyList<Entry> _entries;
     private readonly ItemTable? _items;
     private readonly string _title;
+
+    /// <summary>이 창이 도는 묶음들 — 여느 다섯, 매각이면 앞에 <see cref="SellLead"/> 가 붙는다.</summary>
+    private readonly int[][] _sets;
+
+    /// <summary>줄마다 견적가(매각 창). 없으면 null — 견적 칸과 합계 줄이 없다.</summary>
+    private readonly IReadOnlyList<int>? _prices;
+
+    /// <summary>「견적합계 N닢」 줄. 매각 창에서만.</summary>
+    private readonly GameUi.GameLabel? _total;
     private readonly bool _many;
     private readonly StackPanel _table = new();
     private readonly GameButton _decide;
@@ -102,12 +122,18 @@ public sealed class ShipPickDialog : GameWindow
     /// <summary>고른 줄들(넘겨받은 목록의 자리). 안 골랐으면 비어 있다.</summary>
     private List<int> _chosen = [];
 
-    private ShipPickDialog(IReadOnlyList<Entry> entries, ItemTable? items, string title, bool many)
+    /// <summary>여럿 고르기면 끌어서 한꺼번에 켜고 끈다(선박 편입 · 수리 따위). 한 척 고르기면 null.</summary>
+    private readonly DragPick? _drag;
+
+    private ShipPickDialog(IReadOnlyList<Entry> entries, ItemTable? items, string title, bool many,
+                           IReadOnlyList<int>? prices = null)
     {
         _entries = entries;
         _items = items;
         _title = title;
         _many = many;
+        _prices = prices;
+        _sets = prices != null ? [SellLead, .. Sets] : Sets;
 
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -132,19 +158,47 @@ public sealed class ShipPickDialog : GameWindow
         var stack = new StackPanel();
         stack.Children.Add(head);
         stack.Children.Add(new Border { Margin = new Thickness(8, 4, 8, 0), Child = _table });
+        if (prices != null)
+        {
+            _total = new GameUi.GameLabel(GameFont.WhiteColor)
+            {
+                Bold = false,
+                FallbackBrush = GameUi.Text,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(8, 4, 12, 0),
+            };
+            stack.Children.Add(_total);
+        }
         stack.Children.Add(buttons);
         Content = GameUi.DialogEdge(stack);
+
+        // 여럿 고르기는 시장 · 발표 목록처럼 끌어서 고른다 — 한 척씩 누르기가 번거로웠다.
+        if (many)
+            _drag = new DragPick(_table, _rows,
+                                 i => _picked.Contains(i),
+                                 (i, on) => { if (on) _picked.Add(i); else _picked.Remove(i); },
+                                 _ => Repaint(),
+                                 i => i >= 0 && i < _entries.Count && _entries[i].On);
 
         Paint();
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
     }
 
-    private int Set => Remembered.TryGetValue(_title, out int set) ? set : 0;
+    /// <summary>고른 줄 바탕과 결정 단추만 다시 칠한다.</summary>
+    private void Repaint()
+    {
+        for (int i = 0; i < _rows.Count; i++) _rows[i].Background = _picked.Contains(i) ? PickFill : RowFill;
+        _decide.On = _picked.Count > 0;
+        if (_total != null && _prices != null)
+            _total.Text = $"견적합계 {_picked.Sum(i => i < _prices.Count ? _prices[i] : 0)}닢";
+    }
 
-    /// <summary>묶음을 하나 넘긴다(<c>0x0046C300</c>) — 0~4 에서 돈다.</summary>
+    private int Set => Remembered.TryGetValue(_title, out int set) ? Math.Clamp(set, 0, _sets.Length - 1) : 0;
+
+    /// <summary>묶음을 하나 넘긴다(<c>0x0046C300</c>) — 0~4 에서 돈다(매각 창은 앞 묶음까지 여섯).</summary>
     private void Turn(int by)
     {
-        Remembered[_title] = ((Set + by) % Sets.Length + Sets.Length) % Sets.Length;
+        Remembered[_title] = ((Set + by) % _sets.Length + _sets.Length) % _sets.Length;
         Paint();
     }
 
@@ -152,7 +206,7 @@ public sealed class ShipPickDialog : GameWindow
     {
         _table.Children.Clear();
         _rows.Clear();
-        var set = Sets[Set];
+        int[] set = _prices != null ? [.. _sets[Set], PriceColumn] : _sets[Set];
 
         var header = Row(set, set.Select(c => Columns[c].Head).ToArray(), header: true);
         header.Cursor = Cursors.Hand;
@@ -163,17 +217,19 @@ public sealed class ShipPickDialog : GameWindow
         for (int i = 0; i < _entries.Count; i++)
         {
             int at = i;
-            var row = Row(set, set.Select(c => CellOf(c, at)).ToArray(), header: false);
+            var row = Row(set, set.Select(c => CellOf(c, at)).ToArray(), header: false, dim: !_entries[at].On);
             if (_entries[at].On)
             {
                 row.Cursor = Cursors.Hand;
-                row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Pick(at); };
+                if (_drag != null) _drag.Attach(row, at);
+                else row.MouseLeftButtonUp += (_, e) => { e.Handled = true; Pick(at); };
             }
-            else row.Opacity = 0.45;   // 흐린 줄 — 글꼴이 색표 색인이라 칸째 흐린다
+            // 못 고르는 줄은 <b>글씨만 회색</b>이다 — 예전에는 줄째 흐려 바탕까지 칠한 듯 보였다.
             if (_picked.Contains(at)) row.Background = PickFill;
             _rows.Add(row);
             _table.Children.Add(row);
         }
+        Repaint();
     }
 
     /// <summary>칸 하나의 글 — 서식은 칸 표(<c>0x00560D68</c>) 그대로다.</summary>
@@ -201,12 +257,16 @@ public sealed class ShipPickDialog : GameWindow
             11 => ship.Lent ? "대출" : "소유",
             12 => string.Concat(ship.Sails.Select(ShipyardMenu.SailMark)),
             13 => entry.Flagship ? "기함" : "",
+            PriceColumn => _prices is { } prices && at < prices.Count ? $"{prices[at],7}" : "",
             _ => "",
         };
     }
 
     /// <summary>표 한 줄 — 이름은 가운데, 숫자는 오른쪽이다(구입 표와 같은 모양).</summary>
-    private static Border Row(int[] set, string[] cells, bool header)
+    /// <summary>못 고르는 줄의 글씨색 — 공용 색표의 회색(144,140,140).</summary>
+    private const byte DimColor = 11;
+
+    private static Border Row(int[] set, string[] cells, bool header, bool dim = false)
     {
         var grid = new Grid();
         for (int c = 0; c < set.Length; c++)
@@ -214,11 +274,11 @@ public sealed class ShipPickDialog : GameWindow
 
         for (int c = 0; c < cells.Length; c++)
         {
-            var label = new GameUi.GameLabel(GameFont.BlackColor)
+            var label = new GameUi.GameLabel(dim ? DimColor : GameFont.BlackColor)
             {
                 Text = cells[c],
                 Bold = false,
-                FallbackBrush = Brushes.Black,
+                FallbackBrush = dim ? Brushes.Gray : Brushes.Black,
                 Margin = new Thickness(3, 1, 3, 1),
                 HorizontalAlignment = header || !Columns[set[c]].Number
                     ? HorizontalAlignment.Center
@@ -237,8 +297,7 @@ public sealed class ShipPickDialog : GameWindow
     {
         if (_many) { if (!_picked.Remove(at)) _picked.Add(at); }
         else { _picked.Clear(); _picked.Add(at); }
-        for (int i = 0; i < _rows.Count; i++) _rows[i].Background = _picked.Contains(i) ? PickFill : RowFill;
-        _decide.On = _picked.Count > 0;
+        Repaint();
     }
 
     private void Decide()
@@ -293,12 +352,20 @@ public sealed class ShipPickDialog : GameWindow
     public static List<int> PickMany(Window owner, IReadOnlyList<Entry> rows, ItemTable? items, string title, int startSet) =>
         Show(owner, rows, items, title, startSet, many: true);
 
+    /// <summary>
+    /// 「매각선박의 선택」 — 여럿을 골라 함께 판다. 견적가격 칸과 「견적합계」 줄이 붙고, 첫 묶음은 대포 · 포탑 · 돛까지 보인다.
+    /// 견적가가 0 인 줄(빌린 배)은 <paramref name="rows"/> 에서 흐리게(On 거짓) 넘긴다. 물렀으면 빈 목록.
+    /// </summary>
+    public static List<int> PickToSell(Window owner, IReadOnlyList<Entry> rows, IReadOnlyList<int> prices,
+                                       ItemTable? items, string title) =>
+        Show(owner, rows, items, title, 0, many: true, prices);
+
     private static List<int> Show(Window owner, IReadOnlyList<Entry> rows, ItemTable? items, string title,
-                                  int startSet, bool many)
+                                  int startSet, bool many, IReadOnlyList<int>? prices = null)
     {
         if (rows.Count == 0) return [];
-        if (!Remembered.ContainsKey(title)) Remembered[title] = Math.Clamp(startSet, 0, Sets.Length - 1);
-        var dialog = new ShipPickDialog(rows, items, title, many) { Owner = owner };
+        if (!Remembered.ContainsKey(title)) Remembered[title] = Math.Max(0, startSet);
+        var dialog = new ShipPickDialog(rows, items, title, many, prices) { Owner = owner };
         dialog.ShowDialog();
         return dialog._chosen;
     }

@@ -59,7 +59,21 @@ public sealed class Ship
         if (Guns == 0) Gun = -1;
         Hp = Math.Clamp(hp ?? MaxHp, 0, MaxHp);
         Lent = s.Lent;
+        RefitSpent = Math.Max(0, s.RefitSpent);
     }
+
+    /// <summary>
+    /// 개조비 장부 — 조선소에서 이 배에 들인 개조 값(용량증가 · 부력증가 · 보강 · 마스트 · 돛 · 돛종류)의 합.
+    /// 원본에 없는 칸이다. 조선소 「특별주문」이 같은 배를 지을 때 이 값을 옵션값으로 받는다.
+    /// </summary>
+    /// <remarks>
+    /// 포탑 · 대포 · 선수상은 여기에 안 쌓는다 — 떼거나 바꾸면 값이 달라지므로 특별주문 때 <b>지금 실린 것</b>으로 값을 매긴다.
+    /// 이 칸이 생기기 전에 개조한 배는 0 이다.
+    /// </remarks>
+    public int RefitSpent { get; private set; }
+
+    /// <summary>개조 값을 장부에 적는다.</summary>
+    public void AddRefitSpent(int amount) => RefitSpent = Math.Max(0, RefitSpent + Math.Max(0, amount));
 
     private static int Bound(int value, int ceiling) =>
         Math.Clamp(value, 1, Math.Max(1, ceiling));
@@ -548,7 +562,7 @@ public sealed class Ship
     public sealed record Stats(int MaxHp, int Speed, int Capacity, int Tonnage, int Crew,
                                int Turrets = 0, int Gun = -1, int Guns = 0,
                                IReadOnlyList<int>? Sails = null, int? Figurehead = null,
-                               bool Lent = false, int? SpeedNow = null)
+                               bool Lent = false, int? SpeedNow = null, int RefitSpent = 0)
     {
         /// <summary>
         /// 선체 기본값 그대로. 포탑은 다 달린 채로 나오고 대포는 안 실려 있으며,
@@ -572,10 +586,10 @@ public sealed class Ship
     /// <summary>지금 값을 통째로.</summary>
     public Stats Snapshot() =>
         new(MaxHp, MaxSpeed, Capacity, Tonnage, Crew, Turrets, Gun, Guns, [.. _sails], Figurehead,
-            Lent, Speed);
+            Lent, Speed, RefitSpent);
 
     /// <summary>개조로 값이 갈렸는지.</summary>
-    public bool IsRefitted => Snapshot() with { Lent = false } != Stats.Of(Hull);
+    public bool IsRefitted => Snapshot() with { Lent = false, RefitSpent = 0 } != Stats.Of(Hull);
 }
 
 /// <summary>

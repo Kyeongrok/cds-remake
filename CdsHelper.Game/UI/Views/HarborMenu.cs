@@ -180,7 +180,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         // 모드 「선원 자동 모집」 — 선원이 모자란지 묻기 앞에서 최저 승원 수까지 채운다. 다 못 채웠으면
         // 아래 물음들이 그대로 막거나 묻는다. 자동 보급보다 먼저다 — 보급 날수가 선원 수로 셈해진다.
         var notes = new List<string>();
-        if (Local.Settings.GameSettings.AutoCrew && AutoCrew() is { } hired) notes.Add(hired);
+        // 작위 모드를 켰으면 기사 혜택이 정한다(Nobility.Effective).
+        if (Engine.Town.Nobility.Effective(_player, Local.Settings.GameSettings.AutoCrew, Engine.Town.Nobility.Perk.AutoCrew)
+            && AutoCrew() is { } hired) notes.Add(hired);
 
         if (_player.Crew <= 0)
         {
@@ -199,7 +201,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
 
         // 모드 「자동 보급」 — 출항하려는 이 자리에서 물·식량을 채운다. 버틸 날을 셈하기 앞이라,
         // 채운 뒤의 날수로 아래 물음이 뜬다. 짐이 차서 못 실었으면 그냥 두고 그 물음(날수 경고)에 맡긴다.
-        if (Local.Settings.GameSettings.AutoSupply && AutoSupply() is { } bought) notes.Add(bought);
+        // 작위 모드를 켰으면 남작 혜택이 정한다(Nobility.Effective).
+        if (Engine.Town.Nobility.Effective(_player, Local.Settings.GameSettings.AutoSupply, Engine.Town.Nobility.Perk.AutoSupply)
+            && AutoSupply() is { } bought) notes.Add(bought);
         Note(notes);
 
         // 보급 쪽은 부관이 말한다. 부관이 없으면 항구 사람이 대신 나선다.
@@ -302,7 +306,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
 
         // 실을 자리 — 통 수와 무게. 물·식량을 뺀 나머지(짐·자재·탄약·대포)가 차지한 것을 덜어 낸 몫이다.
         int room = p.Capacity - p.LoadedBarrels;
-        int free = p.Tonnage - p.LoadedWeight;
+        int free = p.FreeWeight;   // 「중량 없음」이면 무게로는 안 막힌다
 
         // 맞출 총량. 「최대」는 보급 창의 그 단추처럼 <b>물과 식량을 같은 통 수로</b> 실을 수 있는 데까지다(0x0040ED20) —
         // 지금 실린 물·식량까지 합친 자리를 둘로 나눈다. 10일분은 선원 수만큼의 통이다.
@@ -744,7 +748,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             if (picked.Count == 0) return;
 
             int gives = picked.Count(i => rows[i].GivesItem);
-            if (_player.Items.Count + gives <= Player.MaxItems
+            if (_player.Items.Count + gives <= _player.ItemLimit
                 || ConfirmDialog.Ask(owner, "소지품을 다 갖진 못하게 됩니다만, 괜찮습니까?"))
                 break;
         }

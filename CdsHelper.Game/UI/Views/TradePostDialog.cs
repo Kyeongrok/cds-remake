@@ -621,7 +621,9 @@ public sealed class TradePostDialog : GameWindow
         var left = new StackPanel { Width = ColumnWidth, Margin = new Thickness(0, 0, 12, 0) };
         left.Children.Add(Light($"소지금 {_player.Gold:N0}닢", 15));
         left.Children.Add(BarLine("짐용량", _player.LoadedBarrels, addCount, _player.Capacity));
-        left.Children.Add(BarLine("짐중량", _player.LoadedWeight, addWeight, _player.Tonnage));
+        // 모드 「중량 없음」이면 무게로 안 막으니 막대도 안 세운다.
+        if (!Player.IgnoresWeight())
+            left.Children.Add(BarLine("짐중량", _player.LoadedWeight, addWeight, _player.Tonnage));
         if (_message.Length > 0)
             left.Children.Add(new TextBlock
             {

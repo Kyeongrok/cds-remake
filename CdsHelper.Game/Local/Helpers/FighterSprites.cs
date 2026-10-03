@@ -153,6 +153,9 @@ public sealed class FighterSprites
                     g = GamePalette.Rgb[v * 3 + 1];
                     b = GamePalette.Rgb[v * 3 + 2];
                 }
+                // 바탕 마젠타와 <b>거의 같은 색</b>도 비침이다 — 아랍(3)·중국(6) 벌은 바탕 둘레에 (247,8,247) ·
+                // (255,8,255) 색인이 따로 섞여 있어, 귀퉁이 한 색만 빼면 사람 둘레에 분홍 테가 남았다.
+                if (r >= 0xF0 && g <= 0x10 && b >= 0xF0) { made[i] = 0; continue; }
                 made[i] = 0xFF000000u | ((uint)r << 16) | ((uint)g << 8) | b;
             }
         }

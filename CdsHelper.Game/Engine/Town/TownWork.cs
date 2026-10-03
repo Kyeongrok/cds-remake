@@ -22,7 +22,7 @@ public enum TownWork
     Sail, Supply, FleetForm, CrewForm, CityInfo, Announce,
 
     // ── 조선소 ────────────────────────────────────────────────────────────
-    BuyShip, SellShip, RepairShip, RefitShip,
+    BuyShip, SpecialOrder, SellShip, RepairShip, RefitShip,
 
     // ── 시장 · 교역소 ─────────────────────────────────────────────────────
     BuyGoods, SellGoods, Trade, Talk,
@@ -86,6 +86,7 @@ public static class TownWorks
         // ── 조선소 ────────────────────────────────────────────────────────
         // "구입" · "매각" 은 시장에도 있는 이름이다. 그래서 자리로 가린다.
         new(TownWork.BuyShip, "구입", FacilityKind.Shipyard),
+        new(TownWork.SpecialOrder, Facility.SpecialOrder, FacilityKind.Shipyard),
         new(TownWork.SellShip, "매각", FacilityKind.Shipyard),
         new(TownWork.RepairShip, "수리", FacilityKind.Shipyard),
         new(TownWork.RefitShip, "개조", FacilityKind.Shipyard),
@@ -206,6 +207,10 @@ public static class TownWorks
         // (게임도 0x00477974 가 0x00476DE0 의 값을 그 줄의 보임 칸에 넣는다).
         if (facility.Kind == FacilityKind.Harbor && !state.CanAnnounce)
             items.Remove(NameOf(TownWork.Announce));
+
+        // 조선소 「특별주문」은 원본에 없는 줄이라 모드에서 켰을 때만 낸다.
+        if (facility.Kind == FacilityKind.Shipyard && !Local.Settings.GameSettings.SpecialOrder)
+            items.Remove(NameOf(TownWork.SpecialOrder));
 
         // 아이가 없으면 교육·세대교체는 <b>줄에서 뺀다</b>. 가르칠 아이도 물려줄 아이도
         // 없는데 줄만 서 있으면 눌러 보고서야 알게 된다.

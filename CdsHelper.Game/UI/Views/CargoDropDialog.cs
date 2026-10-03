@@ -124,9 +124,13 @@ public sealed class CargoDropDialog : GameWindow
         head.Children.Add(Label("용량 "));
         head.Children.Add(Label($"{Barrels,6}", Barrels > _player.Capacity));
         head.Children.Add(Label($"/ {_player.Capacity}"));
-        head.Children.Add(Label("    중량 "));
-        head.Children.Add(Label($"{Weight,6}", Weight > WeightLimit));
-        head.Children.Add(Label($"/ {WeightLimit}"));
+        // 모드 「중량 없음」이면 무게 칸을 안 낸다.
+        if (!Player.IgnoresWeight())
+        {
+            head.Children.Add(Label("    중량 "));
+            head.Children.Add(Label($"{Weight,6}", Weight > WeightLimit));
+            head.Children.Add(Label($"/ {WeightLimit}"));
+        }
         head.Children.Add(Label($"    소지금 {_player.Gold,8}닢"));
         _body.Children.Add(head);
 
@@ -222,7 +226,7 @@ public sealed class CargoDropDialog : GameWindow
     /// <summary>결정 — 한도를 보고 되쓰고, 덜어 낸 값을 받는다.</summary>
     private void Decide()
     {
-        bool heavy = Weight > WeightLimit, full = Barrels > _player.Capacity;
+        bool heavy = !Player.IgnoresWeight() && Weight > WeightLimit, full = Barrels > _player.Capacity;
         if (heavy || full)
         {
             GameDialog.Show(this, OverloadLine(heavy, full));
@@ -306,7 +310,7 @@ public sealed class CargoDropDialog : GameWindow
     public static void Force(Window owner, Engine.Game game, int city)
     {
         var player = game.Player;
-        bool heavy = player.LoadedWeight > player.Tonnage;
+        bool heavy = player.Overweight(player.LoadedWeight);
         bool full = player.LoadedBarrels > player.Capacity;
         if (!heavy && !full) return;
 

@@ -120,6 +120,7 @@
       <Folder Include="..\asset\video\">
         <Link>asset\video</Link>
       </Folder>
+      <Folder Include="asset\video\" />
     </ItemGroup>
 
 </Project>

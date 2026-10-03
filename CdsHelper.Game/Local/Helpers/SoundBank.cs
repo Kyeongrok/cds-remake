@@ -265,6 +265,61 @@ public sealed class SoundBank : IDisposable
         }
     }
 
+    /// <summary>
+    /// <b>겹쳐 나는</b> 효과음 — 앞 소리를 끊지 않고 그 위에 섞어 낸다. 해전처럼 소리가 잇달아 나는 판에 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Play"/> 의 SoundPlayer(Win32 <c>PlaySound</c>)는 한 프로세스에 한 소리뿐이라, 해전에서 포탄이 닿자마자 나는
+    /// 명중 소리가 0.74초짜리 발사 소리를 0.1초 남짓에서 끊고, 다음 발의 발사 소리가 1.3초짜리 명중 소리를 또 끊었다.
+    /// 여기서는 MediaPlayer 여럿을 돌려 가며 쓴다 — MediaPlayer 는 저마다 따로 섞여 난다. 소리 알맹이는 되풀이 소리처럼
+    /// 크기를 먹여 파일로 한 번 적어 두고 다시 쓴다.
+    /// </remarks>
+    public void PlayOver(int part)
+    {
+        if (!GameSettings.SfxEnabled) return;
+        try
+        {
+            var wav = _bank?.Wav(part) ?? AssetWav(part);
+            if (wav == null) return;
+
+            int volume = GameSettings.SfxVolume;
+            Directory.CreateDirectory(LoopDirectory);
+            string path = Path.Combine(LoopDirectory, $"over-{part:D2}-{volume}-{wav.Length}.wav");
+            if (!File.Exists(path)) File.WriteAllBytes(path, Scaled(wav, volume));
+
+            // 돌려 쓰는 자리 — 차례로 하나씩. 가장 오래 전에 튼 것을 다시 잡으므로, 한꺼번에 OverVoices 개까지 겹친다.
+            var player = _over[_overNext] ??= new System.Windows.Media.MediaPlayer();
+            _overNext = (_overNext + 1) % _over.Length;
+            player.Stop();
+            player.Open(new Uri(path));
+            player.Volume = 1.0;          // 크기는 소리 알맹이에 이미 먹였다(Scaled)
+            player.Play();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SoundBank] 파트 {part} 를 겹쳐 내지 못했습니다 — {ex.Message}");
+        }
+    }
+
+    /// <summary>한꺼번에 겹쳐 낼 수 있는 소리 수.</summary>
+    private const int OverVoices = 6;
+
+    private readonly System.Windows.Media.MediaPlayer?[] _over = new System.Windows.Media.MediaPlayer?[OverVoices];
+    private int _overNext;
+
+    /// <summary>겹쳐 내던 소리를 모두 끊는다.</summary>
+    public void StopOver()
+    {
+        foreach (var player in _over)
+        {
+            try { player?.Stop(); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SoundBank] 겹친 소리를 끊지 못했습니다 — {ex.Message}");
+            }
+        }
+    }
+
     /// <summary>되풀이하던 소리만 끊는다 — 나고 있는 효과음은 그대로 둔다.</summary>
     public void StopLoop()
     {
@@ -284,5 +339,7 @@ public sealed class SoundBank : IDisposable
         _player.Dispose();
         StopLoop();
         _loop = null;
+        StopOver();
+        foreach (var player in _over) player?.Close();
     }
 }

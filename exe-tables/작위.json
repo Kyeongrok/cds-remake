@@ -1,0 +1,1052 @@
+{
+  "Stamp": "",
+  "Data": {
+    "Parts": [
+      {
+        "Index": 0,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 25
+                }
+              },
+              "Note": "공적 >= 25"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 25
+                }
+              },
+              "Note": "공적 >= 25"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "<제독>여， 그대가 바다에서 세운 공적은 짐의 귀에도 들려왔노라． 그 공을 기려 그대를 기사로 서임하노라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 1
+                }
+              },
+              "Note": "작위 = 1(기사)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 기사의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 1,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 75
+                }
+              },
+              "Note": "공적 >= 75"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 75
+                }
+              },
+              "Note": "공적 >= 75"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "<제독>， 그대의 발견은 이 나라의 이름을 드높였다． 짐은 그대에게 남작의 작위를 내리노라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 2
+                }
+              },
+              "Note": "작위 = 2(남작)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 남작의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 2,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 150
+                }
+              },
+              "Note": "공적 >= 150"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 150
+                }
+              },
+              "Note": "공적 >= 150"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "<제독>의 공적이 끊이지 않는구나． 그 충성과 용기를 기려 자작으로 봉하노라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 3
+                }
+              },
+              "Note": "작위 = 3(자작)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 자작의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 3,
+        "Step": 3,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 275
+                }
+              },
+              "Note": "공적 >= 275"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 275
+                }
+              },
+              "Note": "공적 >= 275"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "그대가 넓힌 세상의 끝은 곧 이 나라의 영광이다． <제독>， 그대를 백작으로 삼노라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 4
+                }
+              },
+              "Note": "작위 = 4(백작)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 백작의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 4,
+        "Step": 4,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 450
+                }
+              },
+              "Note": "공적 >= 450"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 450
+                }
+              },
+              "Note": "공적 >= 450"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "<제독>， 그대만한 탐험가는 이 나라에 다시 없으리라． 후작의 작위를 받으라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 5
+                }
+              },
+              "Note": "작위 = 5(후작)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 후작의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 5,
+        "Step": 5,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 700
+                }
+              },
+              "Note": "공적 >= 700"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 700
+                }
+              },
+              "Note": "공적 >= 700"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "짐의 곁에 그대만큼 큰 공을 세운 이가 없도다． <제독>， 그대를 공작으로 봉하노라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 6
+                }
+              },
+              "Note": "작위 = 6(공작)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 공작의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 6,
+        "Step": 6,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 1000
+                }
+              },
+              "Note": "공적 >= 1000"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 1000
+                }
+              },
+              "Note": "공적 >= 1000"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "<제독>， 그대의 이름은 이 나라의 역사에 길이 남으리라． 짐은 그대에게 대공의 칭호를 내리노라！"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 7
+                }
+              },
+              "Note": "작위 = 7(대공)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 대공의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  "Source": "모드 「작위」 — 원본에 없는 전역 대본",
+  "Version": 15
+}

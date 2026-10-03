@@ -797,8 +797,22 @@ public sealed class Player
     /// <summary>소지품 칸 수. 게임도 열여섯이다.</summary>
     public const int MaxItems = 16;
 
+    /// <summary>
+    /// 원본 열여섯 칸 위에 더 붙는 소지품 칸 — 작위 혜택(자작, Engine.Town.Nobility)이 쓴다. 판이 이 물음을 걸어 둔다.
+    /// </summary>
+    public static Func<Player, int> ExtraItems { get; set; } = _ => 0;
+
+    /// <summary>지금 지닐 수 있는 소지품 칸 수 — 원본 <see cref="MaxItems"/> 에 작위 혜택을 더한 것.</summary>
+    public int ItemLimit => MaxItems + Math.Max(0, ExtraItems(this));
+
     /// <summary>소지품이 꽉 찼는지.</summary>
-    public bool IsBagFull => _items.Count >= MaxItems;
+    public bool IsBagFull => _items.Count >= ItemLimit;
+
+    /// <summary>작위(0 없음 · 1 기사 ~ 7 대공). 원본에 없는 칸이다 — 모드 「작위」의 대본이 적는다.</summary>
+    public int NobleRank { get; private set; }
+
+    /// <summary>작위를 적는다.</summary>
+    public void SetNobleRank(int rank) => NobleRank = Math.Clamp(rank, 0, 7);
 
     /// <summary>그 아이템을 지녔는지.</summary>
     public bool HasItem(int itemId) => _items.Contains(itemId);
@@ -813,6 +827,14 @@ public sealed class Player
 
     /// <summary>소지품에서 하나 뺀다. 없었으면 false.</summary>
     public bool Drop(int itemId) => _items.Remove(itemId);
+
+    /// <summary>소지품 그 칸을 뺀다. 칸이 없으면 false.</summary>
+    public bool DropAt(int index)
+    {
+        if (index < 0 || index >= _items.Count) return false;
+        _items.RemoveAt(index);
+        return true;
+    }
 
     private readonly List<int> _stored = [];
 
@@ -860,9 +882,12 @@ public sealed class Player
     /// </remarks>
     public void ReplaceBelongings(IEnumerable<int> items, IEnumerable<int> stored)
     {
+        // 칸 한도는 지금 칸(작위 혜택 포함)과 이미 지닌 수 가운데 큰 쪽 — 작위 모드를 꺼 열여섯을 넘게 지닌 채로
+        // 보관함을 열었다 닫아도 넘친 것이 사라지지 않게.
+        int limit = Math.Max(ItemLimit, _items.Count);
         _items.Clear();
         foreach (int id in items)
-            if (id >= 0 && _items.Count < MaxItems) _items.Add(id);
+            if (id >= 0 && _items.Count < limit) _items.Add(id);
 
         _stored.Clear();
         foreach (int id in stored)
@@ -3313,6 +3338,21 @@ public sealed class Player
     /// <summary>함대가 실은 대포의 무게.</summary>
     public int GunWeight => _ships.Sum(s => s.GunWeight);
 
+    /// <summary>
+    /// 모드 「중량 없음」이 켜졌는지 — 켜면 보급품 · 교역품 무게로 막는 곳이 다 풀린다(대포 수 한도는 그대로).
+    /// 설정은 Game 쪽에 있어 판이 이 물음을 걸어 둔다.
+    /// </summary>
+    public static Func<bool> IgnoresWeight { get; set; } = () => false;
+
+    /// <summary>「중량 없음」일 때 남은 무게 자리로 내는 값 — 무게로는 안 막히게 넉넉히 크다(더해도 넘치지 않게 반으로).</summary>
+    public const int NoWeightRoom = int.MaxValue / 4;
+
+    /// <summary>더 실을 수 있는 무게(톤수 − 실은 무게). 「중량 없음」이면 <see cref="NoWeightRoom"/>.</summary>
+    public int FreeWeight => IgnoresWeight() ? NoWeightRoom : Math.Max(0, Tonnage - LoadedWeight);
+
+    /// <summary>실은 무게가 톤수를 넘었는지. 「중량 없음」이면 늘 아니다.</summary>
+    public bool Overweight(int weight) => !IgnoresWeight() && weight > Tonnage;
+
     /// <summary>함대의 대포 문수.</summary>
     public int Guns => _ships.Sum(s => s.Guns);
 
@@ -3358,6 +3398,21 @@ public sealed class Player
 
         Gold -= cost;
         _ships.Add(new Ship(hull, name: string.IsNullOrWhiteSpace(name) ? SuggestShipName() : name.Trim()));
+        Note(TraceShipIn, hull.GameId);
+        return PurchaseResult.Ok;
+    }
+
+    /// <summary>
+    /// 조선소 「특별주문」 — 고른 값(<paramref name="stats"/>) 그대로 지은 새 배를 산다. 내구는 꽉 찬 채다.
+    /// </summary>
+    public PurchaseResult BuyBuilt(Hull hull, Ship.Stats stats, string? name, int price)
+    {
+        if (IsFleetFull) return PurchaseResult.FleetFull;
+        if (!CanAfford(price)) return PurchaseResult.NotEnoughGold;
+
+        Gold -= price;
+        var built = stats with { Lent = false, SpeedNow = null };
+        _ships.Add(new Ship(hull, null, built, string.IsNullOrWhiteSpace(name) ? SuggestShipName() : name.Trim()));
         Note(TraceShipIn, hull.GameId);
         return PurchaseResult.Ok;
     }

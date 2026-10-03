@@ -14,14 +14,14 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 internal sealed class SeaDaysBadge : Window
 {
-    /// <summary>동그라미 지름.</summary>
-    private const double Size = 44;
+    /// <summary>동그라미 지름 — 처음 44 는 커 보여 한 할 줄였다.</summary>
+    private const double Size = 40;
 
     private readonly TextBlock _days = new()
     {
         Foreground = Brushes.White,
         FontWeight = FontWeights.Bold,
-        FontSize = 17,
+        FontSize = 15.5,
         HorizontalAlignment = HorizontalAlignment.Center,
         VerticalAlignment = VerticalAlignment.Center,
         Effect = new DropShadowEffect { Color = Colors.Black, ShadowDepth = 1.2, BlurRadius = 2, Opacity = 1 },
@@ -74,7 +74,7 @@ internal sealed class SeaDaysBadge : Window
         {
             _days.Text = days.ToString();
             // 세 자리면 글자를 줄여 동그라미 안에 든다.
-            _days.FontSize = days >= 100 ? 14 : 17;
+            _days.FontSize = days >= 100 ? 12.5 : 15.5;
             Left = at.X;
             Top = at.Y;
         }

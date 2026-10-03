@@ -1665,7 +1665,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <inheritdoc cref="SendMate(GameRandom)"/>
     internal static Player.MateInfo? SendMate(Window view, Player player, Engine.Game game, GameRandom dice)
     {
-        string first = player.Mates.FirstOrDefault(m => m.Length > 0) ?? "";
+        // 부관 <b>자리(첫 칸)</b>만 본다 — 원본 0x004A8666 이 0x0047CC60(0) 으로 첫 자리를 묻는다. 예전에는 빈칸 아닌
+        // 첫 부하를 골라, 부관 자리가 비어도 측량사·통역이 있으면 「부관을 싸우게…」를 물었다.
+        string first = player.MateAt(0);
         if (first.Length == 0 || player.MateInfoOf(first) is not { } mate) return null;
         if (!ConfirmDialog.Ask(view, "　부관을 싸우게 하겠습니까?", "일기토")) return null;
 

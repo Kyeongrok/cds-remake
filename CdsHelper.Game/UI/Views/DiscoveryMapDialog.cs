@@ -68,6 +68,17 @@ public sealed class DiscoveryMapDialog : GameWindow
     private static readonly Brush Yet = Frozen(Color.FromRgb(0x50, 0x50, 0x50));
     private static readonly Brush Mine = Frozen(Color.FromRgb(0x20, 0x40, 0xC0));
 
+    /// <summary>도시 표식 색 — 발견물(빨강 · 회색) · 내 자리(파랑) · 화살표(보라 · 청록)와 안 겹치는 주황.</summary>
+    private static readonly Brush CityInk = Frozen(Color.FromRgb(0xD0, 0x78, 0x00));
+
+    /// <summary>도시 표식 크기(지도 점, <see cref="ZoomBase"/> 배율).</summary>
+    private const double CitySize = 3;
+
+    /// <summary>
+    /// 내 자리 점이 키울수록 줄어드는 하한 — 화면 크기의 몇 배까지 줄지. 아주 키우면 점 하나가 바다를 덮었다.
+    /// </summary>
+    private const double ShipShrinkFloor = 0.45;
+
     /// <summary>풍향 · 해류 화살표 색. 표식(빨강·회색·파랑)과 안 겹치게 보라와 청록이다.</summary>
     internal static readonly Brush WindInk = Frozen(Color.FromRgb(0x70, 0x40, 0xC0));
     internal static readonly Brush CurrentInk = Frozen(Color.FromRgb(0x10, 0x8A, 0x70));
@@ -105,6 +116,12 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <summary>풍향 · 해류 화살표가 앉는 켜. 표식보다 아래다.</summary>
     private readonly Canvas _windLayer = new() { IsHitTestVisible = false };
     private readonly Canvas _currentLayer = new() { IsHitTestVisible = false };
+
+    /// <summary>도시 표식 켜 — 「도시」 단추로 켜고 끈다. 발견물 표식보다 아래다.</summary>
+    private readonly Canvas _cityLayer = new();
+
+    /// <summary>발견물 표식 켜 — 「발견물」 단추로 켜고 끈다. 도시 켜 위, 내 자리 점 아래다.</summary>
+    private readonly Canvas _spotLayer = new();
 
     /// <summary>위도·경도 격자 켜 — 25도마다 어두운 흰 선. 도수 글씨는 <see cref="_gridTags"/> 에 따로 띄운다.</summary>
     private readonly Canvas _gridLayer = new() { IsHitTestVisible = false };
@@ -163,7 +180,9 @@ public sealed class DiscoveryMapDialog : GameWindow
     private DiscoveryMapDialog(uint[] chart, int width, int height,
                                DiscoveryTable table, Player player, (double X, double Y)? ship, WindTable? wind,
                                Func<double, double, (double X, double Y)?>? warp,
-                               Func<double, double, string>? autoSail)
+                               Func<double, double, string>? autoSail,
+                               IReadOnlyList<(string Name, double X, double Y)>? cities,
+                               IReadOnlyDictionary<int, (double X, double Y)>? inTown)
     {
         _warp = warp;
         _autoSail = autoSail;
@@ -211,17 +230,35 @@ public sealed class DiscoveryMapDialog : GameWindow
         moves.Children.Add(_scale);
         _world.RenderTransform = moves;
 
+        // 도시는 발견물 표식보다 아래 켜다 — 같은 자리(건물 속 발견물)에서 발견물 점이 위에 온다.
+        _world.Children.Add(_cityLayer);
+        _cityLayer.Visibility = GameSettings.DiscoveryMapCities ? Visibility.Visible : Visibility.Collapsed;
+        foreach (var city in cities ?? [])
+            Mark(city.X / ExploredMap.CellsPerBlock, city.Y / ExploredMap.CellsPerBlock,
+                 CitySize, CityInk, city.Name, label: true, layer: _cityLayer);
+
+        _world.Children.Add(_spotLayer);
+        _spotLayer.Visibility = GameSettings.DiscoveryMapSpots ? Visibility.Visible : Visibility.Collapsed;
+
         int shown = 0, done = 0;
         // 0~Count-1 로만 돌면 DiscoveryEdits 로 더한 줄(274 이상)이 안 뜬다 — table.Discoveries 를 돈다.
         foreach (var row in table.Discoveries)
         {
-            if (!row.HasPlace) continue;
+            // 바다 · 뭍 자리가 없는 발견물은 도시 건물 속에서 찾는 것(진흙 모스크 따위) — 그 도시 자리에 찍는다.
+            double x, y;
+            if (row.HasPlace)
+            {
+                // 자리는 네모라 한가운데를 찍는다.
+                x = (row.X1 + row.X2) / 2.0;
+                y = (row.Y1 + row.Y2) / 2.0;
+            }
+            else if (inTown != null && inTown.TryGetValue(row.Id, out var town))
+                (x, y) = town;
+            else continue;
 
             bool found = player.HasFound(row.Id);
-            // 자리는 네모라 한가운데를 찍는다.
-            Mark((row.X1 + row.X2) / 2.0 / ExploredMap.CellsPerBlock,
-                 (row.Y1 + row.Y2) / 2.0 / ExploredMap.CellsPerBlock,
-                 MarkSize, found ? Found : Yet, row.Name, label: true);
+            Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
+                 MarkSize, found ? Found : Yet, row.Name, label: true, layer: _spotLayer);
             shown++;
             if (found) done++;
         }
@@ -311,6 +348,11 @@ public sealed class DiscoveryMapDialog : GameWindow
         // 위도·경도 격자 — 바람표가 없어도 늘 선다.
         toggles.Children.Add(Toggle("격자", () => GameSettings.DiscoveryMapGrid,
                                     v => GameSettings.DiscoveryMapGrid = v, _gridLayer, out _));
+        toggles.Children.Add(Toggle("발견물", () => GameSettings.DiscoveryMapSpots,
+                                    v => GameSettings.DiscoveryMapSpots = v, _spotLayer, out _));
+        if (cities is { Count: > 0 })
+            toggles.Children.Add(Toggle("도시", () => GameSettings.DiscoveryMapCities,
+                                        v => GameSettings.DiscoveryMapCities = v, _cityLayer, out _));
         stack.Children.Add(toggles);
         stack.Children.Add(_note);
         stack.Children.Add(ok);
@@ -394,6 +436,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                    + (_warp != null ? " · 오른쪽 단추 그 자리로 옮기기" : "")
                    + (_autoSail != null ? " · Shift+오른쪽 단추 그 자리로 자동항해" : "")
                    + " · 빨강 찾음 · 회색 아직 · 파랑 내 자리"
+                   + " · 주황 도시"
                    + (_hasFlows
                        ? $" · 보라 풍향 {(WindTable.IsFirstHalf(_month) ? "1~6월" : "7~12월")} · 청록 해류)"
                        : ")")
@@ -564,8 +607,9 @@ public sealed class DiscoveryMapDialog : GameWindow
 
     /// <summary>점 하나와 이름표를 찍는다. 자리는 <b>지도 점</b>(칸/4)이다.</summary>
     private System.Windows.Shapes.Ellipse Mark(double x, double y, double size, Brush fill,
-                                              string name, bool label)
+                                              string name, bool label, Canvas? layer = null)
     {
+        layer ??= _world;
         var dot = new System.Windows.Shapes.Ellipse
         {
             Width = size,
@@ -573,7 +617,7 @@ public sealed class DiscoveryMapDialog : GameWindow
             Fill = fill,
             ToolTip = name,
         };
-        _world.Children.Add(dot);
+        layer.Children.Add(dot);
 
         TextBlock? tag = null;
         if (label)
@@ -586,7 +630,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                 Visibility = Visibility.Collapsed,
                 IsHitTestVisible = false,
             };
-            _world.Children.Add(tag);
+            layer.Children.Add(tag);
             _labels.Add(tag);
         }
 
@@ -606,6 +650,8 @@ public sealed class DiscoveryMapDialog : GameWindow
     private void Place(Pin pin)
     {
         double size = pin.Size * ZoomBase / Z;
+        // 내 자리 점은 키울수록 화면에서도 조금씩 준다 — 붙박아 두면 크게 키웠을 때 둘레를 덮었다.
+        if (pin == _shipPin && Z > ZoomBase) size *= Math.Max(ShipShrinkFloor, Math.Sqrt(ZoomBase / Z));
         pin.Dot.Width = pin.Dot.Height = size;
         Canvas.SetLeft(pin.Dot, pin.X - size / 2);
         Canvas.SetTop(pin.Dot, pin.Y - size / 2);
@@ -659,14 +705,18 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <param name="autoSail">
     /// Shift + 오른쪽 단추로 짚은 자리로 자동항해를 거는 손. 안 주면 자동항해 걸기가 없다.
     /// </param>
+    /// <param name="cities">찍을 도시(이름 · 칸 자리). 없으면 「도시」 단추가 안 나온다.</param>
+    /// <param name="inTown">건물 속에서 찾는 발견물의 자리 — 발견물 번호 → 그 도시 칸 자리.</param>
     public static void Show(Window owner, uint[]? chart, int width, int height,
                             DiscoveryTable? table, Player player, (double X, double Y)? ship,
                             WindTable? wind = null,
                             Func<double, double, (double X, double Y)?>? warp = null,
-                            Func<double, double, string>? autoSail = null)
+                            Func<double, double, string>? autoSail = null,
+                            IReadOnlyList<(string Name, double X, double Y)>? cities = null,
+                            IReadOnlyDictionary<int, (double X, double Y)>? inTown = null)
     {
         if (chart == null || table == null || width <= 0 || height <= 0) return;
-        new DiscoveryMapDialog(chart, width, height, table, player, ship, wind, warp, autoSail)
+        new DiscoveryMapDialog(chart, width, height, table, player, ship, wind, warp, autoSail, cities, inTown)
         { Owner = owner }.ShowDialog();
     }
 }

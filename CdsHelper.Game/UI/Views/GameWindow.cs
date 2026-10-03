@@ -66,6 +66,27 @@ public class GameWindow : Window
         {
             ShipMapWindow.Current?.MapByKey();
             e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.ModKey, Key.M))
+        {
+            ShipMapWindow.Current?.ModByKey();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.ItemsKey, Key.R))
+        {
+            ShipMapWindow.Current?.ItemsByKey(window);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.HintsKey, Key.H))
+        {
+            ShipMapWindow.Current?.HintsByKey(window);
+            e.Handled = true;
         }
     }
 

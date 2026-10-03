@@ -127,7 +127,7 @@ public sealed class Market
         foreach (var item in items)
             if (!Sells(cityId, item.Id)) return BuyResult.NotSold;
 
-        if (player.Items.Count + items.Count > Player.MaxItems) return BuyResult.BagFull;
+        if (player.Items.Count + items.Count > player.ItemLimit) return BuyResult.BagFull;
 
         long total = 0;
         foreach (var item in items) total += PriceOf(item, cityId);

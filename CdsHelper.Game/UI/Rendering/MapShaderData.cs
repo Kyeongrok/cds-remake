@@ -87,9 +87,15 @@ public static class MapShaderData
     {
         int w = WorldMapRenderer.UnfoldedW, h = WorldMapRenderer.CellH;
         var kind = new byte[w * h];
+        // <b>도시 · 발견물 그림 칸(그림 비트 0x8000)은 뭍으로 치지 않는다</b> — 그림은 지형과 갈라 따로 그리므로 수심은
+        // 진짜 뭍만으로 잰다. 예전에는 그 칸이 뭍(수심 0)이라 바다 입체 효과가 칸째 건너뛰어, 바닷가 도시(시라쿠사 따위)
+        // 옆 바다에 네모난 밝은 판이 섰다. 그림 칸의 뭍 점은 셰이더가 점 색으로 가려 음영을 안 준다.
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
-                kind[y * w + x] = (byte)terrain.ClassOfCell(Cell(world, x, y));
+            {
+                int word = Cell(world, x, y);
+                kind[y * w + x] = (word & 0x8000) != 0 ? (byte)0 : (byte)terrain.ClassOfCell(word);
+            }
 
         var depth = new byte[w * h];
         var queue = new int[w * h];

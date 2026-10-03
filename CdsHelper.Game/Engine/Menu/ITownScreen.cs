@@ -131,6 +131,13 @@ internal interface ITownScreen
 
     void Supply();
     void BuyShip();
+
+    /// <summary>조선소 「특별주문」 — 내 배 하나와 옵션까지 같은 배를 짓는다. 원본에 없는 줄이다.</summary>
+    void SpecialOrder();
+
+    /// <summary>특별주문으로 지을 수 있는 배(이 조선소가 파는 선체)가 있는지.</summary>
+    bool CanSpecialOrder { get; }
+
     void SellShip();
     void RepairShip();
     void RefitShip();

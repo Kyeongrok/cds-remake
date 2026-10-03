@@ -48,7 +48,7 @@ public sealed class StorageDialog : GameWindow
     private readonly ItemTable? _items;
 
     /// <summary>칸 배열 — 빈 자리는 <see cref="Empty"/> 다.</summary>
-    private readonly int[] _bag = new int[Player.MaxItems];
+    private readonly int[] _bag;
     private readonly int[] _box = new int[Player.MaxStored];
 
     private readonly GameList _bagList, _boxList;
@@ -60,6 +60,8 @@ public sealed class StorageDialog : GameWindow
     {
         _player = player;
         _items = items;
+        // 소지품 칸 수는 작위 혜택(자작)으로 늘 수 있다 — 이미 더 지녔으면 그만큼.
+        _bag = new int[Math.Max(player.ItemLimit, player.Items.Count)];
 
         Title = "아이템 교환";
         WindowStyle = WindowStyle.None;

@@ -199,11 +199,50 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
 
+        // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
+        info.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
+            on => { GameSettings.RidiFont = on; UiFont.Refresh(); },
+            "원본에 없는 것입니다 — 게임 비트맵 글꼴이 아니라 윈도 글꼴로 찍는 글씨(이 모드 창, 향상된 힌트 보기, 교역소 숫자 따위)를"
+            + " 리디바탕(명조)으로 바꿉니다. 게임 비트맵 글씨는 그대로입니다. 켜고 끄면 떠 있는 창에도 곧바로 듭니다."
+            + " 리디바탕은 리디주식회사가 SIL OFL 1.1 로 낸 글꼴입니다."));
+
+        // 향상된 힌트 보기 — 취득 힌트 일람을 모드 창처럼 목록 · 설명 두 칸으로.
+        info.Children.Add(Toggle("향상된 힌트 보기", GameSettings.HintBrowser,
+            on => GameSettings.HintBrowser = on,
+            "원본과 다릅니다 — 취득 힌트 일람을 왼쪽에 목록, 오른쪽에 설명으로 나란히 띄웁니다."
+            + " 줄을 누르면(↑↓ 글쇠도) 곧바로 그 힌트의 이야기가 오른쪽에 나옵니다(정보 등급 「일반」이면 등급 · 자금 · 기한도)."
+            + " 끄면 원본처럼 고르고 결정을 눌러야 파란 판이 뜹니다."));
+
+        // 정보 제공 등급 — 기본(원본) · 일반 · 상세. 상세는 아직 쓰는 곳이 없어 줄에 안 낸다.
+        info.Children.Add(Select("정보 등급", ["기본 (원본)", "일반"],
+            Math.Min(GameSettings.InfoLevel, GameSettings.InfoNormal),
+            i => GameSettings.InfoLevel = i,
+            "창이 원본보다 얼마나 더 알려 주는지 고릅니다. 「기본」은 원본만큼만 보입니다."
+            + " 「일반」은 게임 안에서 알 수 있는 값을 한 단계 더 보입니다 — 향상된 힌트 보기의 등급 · 자금 · 기한이 이것입니다."));
+
+        // 향상된 아이템 이미지 — 덧붙인 그림으로 보인다.
+        info.Children.Add(Toggle("향상된 아이템 이미지", GameSettings.EnhancedItemArt,
+            on => GameSettings.EnhancedItemArt = on,
+            "원본과 다릅니다 — 몇몇 아이템을 새로 그린 그림으로 보입니다(지금은 사자의 서). 끄면 원본 그림입니다."
+            + " 원본은 사자의 서가 지중해의 유혹어와 같은 책 그림을 나눠 씁니다."));
+
         // 아이템 창 — 소지품일람 줄마다 그림과 효과.
         info.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
             on => GameSettings.ItemListPictures = on,
             "원본과 다릅니다 — 소지품일람의 줄마다 스폰서 일람처럼 왼쪽에 아이템 그림을 내고, 이름 밑에"
             + " 갈래와 효과(무기 · 방어구), 「장비중」을 적습니다. 끄면 원본처럼 이름만 늘어놓습니다."));
+
+        // 중량 없음 — 보급품 · 교역품 무게로 막지 않는다.
+        rows.Children.Add(Toggle("중량 없음", GameSettings.NoWeight, on => GameSettings.NoWeight = on,
+            "원본과 다릅니다 — 보급품(물 · 식량 · 자재 · 탄약)과 교역품의 무게를 따지지 않습니다."
+            + " 교역소 · 보급 · 전리품 · 약탈에서 「중량을 초과하고 있습니다」로 막히지 않고, 짐 덜기 창도 무게 때문에는 안 뜹니다."
+            + " 용량(통 수)과 대포 수 한도는 그대로입니다."));
+
+        // 편리한 인벤토리 — 소지품 창에서 바로 보관 · 판매.
+        rows.Children.Add(Toggle("편리한 인벤토리", GameSettings.HandyInventory, on => GameSettings.HandyInventory = on,
+            "원본에 없는 것입니다 — 소지품 정보 창에 「보관함」 · 「판매」 단추가 붙습니다."
+            + " 고른 아이템을 자택에 가지 않고 바로 자택 보관함으로 보내거나, 시장에 가지 않고 바로 팝니다."
+            + " 판 값은 시장 매각과 같습니다(아이템 매각가 x 지금 도시 시세, 바다 위면 시세 100)."));
 
         // 스핑크스 퀴즈 도우미 — 개발도구에 있던 계산기를 놀이 안으로 옮겼다.
         rows.Children.Add(Toggle("스핑크스 퀴즈 도우미", GameSettings.SphinxHelper,
@@ -223,6 +262,10 @@ public sealed class ModDialog : GameWindow
         general.Children.Add(CustomBgmControls());
 
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
+        // 배 중심 — 가장자리에서 화면을 넘기지 않고 배를 늘 한가운데에 둔다. 아직 다듬는 중이라 실험에 둔다.
+        lab.Children.Add(Toggle("배 중심", GameSettings.ShipCentered, on => GameSettings.ShipCentered = on,
+            "원본에 없는 것입니다 — 원본은 배가 화면 가장자리에 닿으면 화면을 한 번에 넘깁니다."
+            + " 켜면 배를 늘 화면 한가운데에 두고 지도가 배를 따라 실시간으로 흐릅니다. 뭍에서 말로 다닐 때도 같습니다."));
         lab.Children.Add(SeaControls(options));
         lab.Children.Add(HiResSeaControls(options));
         lab.Children.Add(Toggle("뭍 세부 질감", options.LandDetailOn(), options.SetLandDetail,
@@ -239,6 +282,21 @@ public sealed class ModDialog : GameWindow
         lab.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
             "원본 구름은 한 점 걸러 찍은 바둑판 무늬로 반투명을 흉내 내서, 지도를 키우면 격자가 그대로 커집니다."
             + " 켜면 그 무늬를 참 반투명으로 풀어 매끈하게 늘려 그립니다. 비치는 정도는 원본과 같습니다."));
+
+        // 작위 — 공적 · 작위 · 혜택.
+        lab.Children.Add(Toggle("작위", GameSettings.Nobility, on => GameSettings.Nobility = on,
+            "원본에 없는 것입니다 — 발견물을 보고할 때마다 공적(힌트 등급 x 10)이 쌓이고, 공적이 차면 술집에서"
+            + " 「본국 왕궁에서 찾는다」는 말을 듣습니다. 본국 수도 왕궁에 들면 국왕이 작위를 내립니다(기사 · 남작 · 자작 · 백작 · 후작 · 공작 · 대공)."
+            + " 작위마다 혜택이 붙습니다 — 기사: 향상된 스폰서보기 · 선원 자동 모집, 남작: 향상된 힌트보기 · 자동 보급,"
+            + " 자작: 자동 도망, 백작: 소지품 +10칸, 후작: 항해 속도 +1노트, 공작: 대포 +1회."
+            + " 켜면 자동 보급 · 자동 도망 · 선원 자동 모집 · 향상된 힌트 보기 모드는 작위가 정합니다."
+            + " 인물정보에 작위와 공적, 「작위」 단추가 나옵니다."));
+
+        // 특별주문 — 조선소에서 가진 배와 옵션까지 똑같은 배를 산다.
+        general.Children.Add(Toggle("특별주문", GameSettings.SpecialOrder, on => GameSettings.SpecialOrder = on,
+            "원본에 없는 것입니다 — 조선소 「구입」 아래에 「특별주문」 줄이 생깁니다. 가진 배 가운데 그 조선소가 파는 선체를 고르면"
+            + " 포탑 · 대포 · 돛 · 개조까지 똑같은 새 배를 짓습니다. 값은 새 배값에 개조비 장부 · 포탑 · 대포 · 선수상 값을 더한 것입니다."
+            + " 그 마을에서 안 파는 선수상은 빼고, 안 파는 대포는 바꿔 달지 묻습니다."));
 
         // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
         general.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
@@ -293,7 +351,8 @@ public sealed class ModDialog : GameWindow
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 6, 0, 12),
         };
-        buttons.Children.Add(GameUi.PushButton("닫기", Close, 96));
+        // 닫기는 게임 띠 단추다 — 설정·단축키 창과 같이 원본 단추 결로 맞춘다.
+        buttons.Children.Add(new GameButton("닫기", Close, width: 110));
 
         var title = GameUi.TitleBar("모드", Close);
         GameUi.EnableDrag(this, title);

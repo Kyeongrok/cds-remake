@@ -133,8 +133,8 @@ public static class GameSave
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "CdsHelper", "save");
 
-    /// <summary>손으로 적은 세이브를 들고 있는 칸 수.</summary>
-    public const int ManualSlots = 5;
+    /// <summary>손으로 적은 세이브를 들고 있는 칸 수 — 다섯이던 것을 열로 늘렸다.</summary>
+    public const int ManualSlots = 10;
 
     private static string NewManualPath() => System.IO.Path.Combine(
         ManualDirectory, $"SAVE_{DateTime.Now:yyyyMMdd_HHmmss_fff}.CDS");
@@ -361,7 +361,7 @@ public static class GameSave
         Dictionary<int, int>? CityRates = null, int? RatesMonth = null,
         Dictionary<int, int>? CityStates = null, int? HistoryMonth = null,
         Dictionary<int, int>? HistoryNations = null, List<int>? HistoryDone = null,
-        Dictionary<int, int>? AnnouncedYears = null,
+        Dictionary<int, int>? AnnouncedYears = null, int? NobleRank = null,
         Dictionary<int, DateTime>? AnnouncedOn = null, Dictionary<int, DateTime>? FoundOn = null, Dictionary<int, int>? CityScales = null,
         List<Support.Local.Models.Player.Rumor>? Rumors = null,
         List<Support.Local.Models.Player.Rumor>? PersonLines = null,
@@ -478,6 +478,8 @@ public static class GameSave
                             HistoryDone: [.. player.HistoryDone],
                             // 발표한 해 — 향신료·신대륙 기호품 값이 여기서부터 햇수를 센다.
                             AnnouncedYears: player.AnnouncedOn.ToDictionary(e => e.Key, e => e.Value.Year),
+                            // 작위(모드 「작위」). 이 칸 앞의 세이브는 작위가 없다.
+                            NobleRank: player.NobleRank,
                             // 연표가 쓰는 날짜. 이 칸 앞의 세이브는 해만 있어 1월로 연다.
                             AnnouncedOn: player.AnnouncedOn.ToDictionary(e => e.Key, e => e.Value),
                             FoundOn: player.FoundOn.ToDictionary(e => e.Key, e => e.Value),

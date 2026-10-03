@@ -2629,6 +2629,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 이름은 게임 표에서 가져온다 — <c>patrons.json</c> 은 "페르난 마르틴스" 인데 게임 화면은
     /// 가운뎃점을 쓴다("페르난·마르틴스").
     /// </remarks>
+    /// <summary>스폰서 일람 너비 — 오른쪽에 권력·친밀도(「권력 A  친밀도 100」)를 달아 여느 목록(264)보다 넓힌다.</summary>
+    private const double StatsListWidth = 400;
+
     public void ShowPatrons()
     {
         int year = _player.Date.Year;
@@ -2651,6 +2654,14 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                                          : "없음")
                         .ToList();
 
+        // 줄 오른쪽 — 권력과 친밀도. 원본 일람에는 없고 상세 창에만 있는 값이라, 하나하나 열어 보지 않게 앞으로 꺼낸다.
+        // 작위 모드를 켰으면 기사 혜택(향상된 스폰서보기)일 때만 — 끄면 늘 보인다.
+        bool showStats = !Engine.Town.Nobility.Enabled
+                         || Engine.Town.Nobility.Has(_player, Engine.Town.Nobility.Perk.SponsorView);
+        List<string>? stats = showStats
+            ? [.. mine.Select(m => $"권력 {m.Patron.Power}  친밀도 {_player.ClosenessOf(m.Patron.Name),3}")]
+            : null;
+
         // 고르면 상세를 띄우고 닫으면 목록으로 돌아온다 — 게임도 그렇다(0x0049348E 가
         // 목록 짓는 데로 되돌아간다).
         // <b>도시 그림 창에 얹는다.</b> 부르는 쪽(CityPicView)이 도시 명령 창을 먼저
@@ -2662,7 +2673,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             int row = HintListDialog.Pick(owner, names, "스폰서 일람",
                                           "이 마을에는 아는 스폰서가 없습니다", faces: faces,
-                                          subtitles: likes);
+                                          subtitles: likes, rightTexts: stats,
+                                          listWidth: showStats ? StatsListWidth : 264);
             if (row < 0 || row >= mine.Count) return;
 
             var (patron, sponsor) = mine[row];

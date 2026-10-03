@@ -499,6 +499,7 @@ public sealed class DuelDialog : GameWindow
     private void Refresh()
     {
         _hurtTimer.Stop();
+        _heldBack = null;
         for (int i = 0; i < Duel.Lines; i++)
         {
             Rest(_mine[i], _duel.MyParts[i], _duel.MyFull);
@@ -551,10 +552,36 @@ public sealed class DuelDialog : GameWindow
         bool any = false;
         for (int i = 0; i < Duel.Lines; i++)
         {
-            any |= StartHurt(_mine[i], _duel.MyParts[i], _wasMine[i], _duel.MyFull);
-            any |= StartHurt(_theirs[i], _duel.FoeParts[i], _wasFoe[i], _duel.FoeFull);
+            any |= StartHurt(_mine[i], ShownMine(i), _wasMine[i], _duel.MyFull);
+            any |= StartHurt(_theirs[i], ShownFoe(i), _wasFoe[i], _duel.FoeFull);
         }
         if (any) _hurtTimer.Start();
+    }
+
+    /// <summary>
+    /// 벽에 몰려 두 번 맞은 판에서 <b>첫 바퀴에는 아직 안 보일 두 번째 몫</b> — 맞은 쪽(<c>Foe</c> 면 상대), 부위, 값.
+    /// 엔진은 두 칼을 한꺼번에 빼 두지만 화면은 칼마다 한 번씩 줄여야 두 번 맞은 것이 보인다.
+    /// 예전에는 첫 바퀴가 둘을 함께 줄이고 두 번째 바퀴는 소리만 내, 두 번째 칼이 안 들어간 것처럼 보였다.
+    /// </summary>
+    private (bool Foe, int Line, int Hurt)? _heldBack;
+
+    /// <summary>막대가 지금 가리킬 값 — 엔진 값에 아직 안 보일 두 번째 몫을 되얹는다.</summary>
+    private int ShownMine(int i) => Shown(false, i, _duel.MyParts[i], _wasMine[i]);
+    private int ShownFoe(int i) => Shown(true, i, _duel.FoeParts[i], _wasFoe[i]);
+
+    private int Shown(bool foe, int i, int now, int was) =>
+        _heldBack is { } h && h.Foe == foe && h.Line == i ? Math.Min(was, now + h.Hurt) : now;
+
+    /// <summary>두 번째 칼이 들어가는 순간 — 첫 몫을 다 그린 것으로 치고 남은 몫을 줄인다.</summary>
+    private void SecondHurt()
+    {
+        if (_heldBack is { } h)
+        {
+            if (h.Foe) _wasFoe[h.Line] = ShownFoe(h.Line);
+            else _wasMine[h.Line] = ShownMine(h.Line);
+            _heldBack = null;
+        }
+        StartHurt();
     }
 
     private static bool StartHurt(BarView view, int now, int was, int full)
@@ -589,10 +616,10 @@ public sealed class DuelDialog : GameWindow
         for (int i = 0; i < Duel.Lines; i++)
         {
             if (HurtTick(_mine[i], _duel.MyFull)) any = true;
-            else _wasMine[i] = _duel.MyParts[i];
+            else _wasMine[i] = ShownMine(i);
 
             if (HurtTick(_theirs[i], _duel.FoeFull)) any = true;
-            else _wasFoe[i] = _duel.FoeParts[i];
+            else _wasFoe[i] = ShownFoe(i);
         }
         if (!any) _hurtTimer.Stop();
     }
@@ -745,12 +772,14 @@ public sealed class DuelDialog : GameWindow
         int ticks = turn.Blow == Duel.Blow.Blocked ? DuelStage.ShortTicks : DuelStage.HitTicks;
 
         // 벽에 몰려 한 번 더 맞은 판은 틱을 7 로 되돌려 <b>같은 몸짓을 한 번 더</b> 돌린다
-        // (0x004A7E3B 의 [+0xDC] = 8 − 1). 깎인 값은 엔진이 이미 둘 다 뺐으므로 첫 바퀴의 빨강이
-        // 둘을 함께 보이고, 두 번째 바퀴는 소리만 한 번 더 낸다.
+        // (0x004A7E3B 의 [+0xDC] = 8 − 1). 엔진은 두 칼을 이미 다 뺐지만 막대는 <b>칼마다 한 번씩</b> 줄인다 —
+        // 첫 바퀴는 첫 몫만, 두 번째 바퀴가 남은 몫을 깎는다(원본도 두 번째 칼을 틱 16 에 따로 깎는다).
         var again = turn with { Critical = turn.AgainCritical };
+        if (turn.Again && turn.AgainHurt > 0)
+            _heldBack = (turn.Blow is Duel.Blow.FoeHit or Duel.Blow.FoeGrazed, turn.Line, turn.AgainHurt);
         Action done = turn.Again
             ? () => _stage.Play(mine, theirs, 0, ticks, onSay: null,
-                                onHurt: () => HitSound(again), onDone: () => Settle(turn))
+                                onHurt: () => { HitSound(again); SecondHurt(); }, onDone: () => Settle(turn))
             : () => Settle(turn);
 
         _stage.Play(mine, theirs, way, ticks,

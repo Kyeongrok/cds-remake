@@ -339,6 +339,7 @@ public sealed class ShipMapWindow : Window
 
     public ShipMapWindow()
     {
+        UiFont.Install();   // 모드 「리디바탕 글꼴」 — 뜨는 창마다 글꼴을 건다
         Title = AppVersion is { Length: > 0 } version ? $"대항해시대3  v{version}" : "대항해시대3";
         // 크기는 설정에 적어 둔 것으로 선다(기본은 예전 그대로 1200x800).
         Width = 1200;
@@ -747,8 +748,23 @@ public sealed class ShipMapWindow : Window
         if (chart == null) { NoticeDialog.Show(this, "지도를 아직 못 읽었습니다"); return; }
 
         var at = _host.ShipCell is { } cell ? ((double, double)?)(cell.CellX, cell.CellY) : null;
+        // 도시 — 지금 아는 도시만(자동항해 고르기와 같다).
+        var cities = Enumerable.Range(0, GameMapCoords.CityCount)
+            .Where(id => _game.CityVisible(id))
+            .Select(id => GameMapCoords.TryCityCell(id, out double cx, out double cy)
+                ? ((string, double, double)?)(_game.CityName(id), cx, cy) : null)
+            .OfType<(string Name, double X, double Y)>()
+            .ToList();
+
+        // 건물 속에서 찾는 발견물(진흙 모스크 따위)은 바다 · 뭍 자리가 없다 — 그 도시 자리로 찍는다.
+        var inTown = new Dictionary<int, (double X, double Y)>();
+        foreach (var b in _game.Buildings?.Buildings ?? [])
+            if (b.IsDiscovery && !inTown.ContainsKey(b.Discovery)
+                && GameMapCoords.TryCityCell(b.City, out double bx, out double by))
+                inTown[b.Discovery] = (bx, by);
+
         DiscoveryMapDialog.Show(this, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
-                                WindTable.Open(_game.Directory), WarpTo, AutoSail);
+                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown);
     }
 
     /// <summary>
@@ -1261,7 +1277,9 @@ public sealed class ShipMapWindow : Window
     /// </summary>
     private void SyncDaysBadge()
     {
-        bool show = GameSettings.ShowSeaDays && _started && WindowState != WindowState.Minimized && IsActiveOrOwner()
+        // 창이 앞인지는 안 본다 — 입항 물음처럼 지도 창이 초점을 잃는 순간에 걷으면, 물음이 상태 시계 안에서
+        // 기다리는 동안 다시 띄울 차례가 안 와 물음 내내 사라져 있었다. 딴 앱이 앞에 오면 딸린 창이라 함께 가려진다.
+        bool show = GameSettings.ShowSeaDays && _started && WindowState != WindowState.Minimized
                     && ReferenceEquals(_screen.Content, _mapRoot) && !_host.IsOnLand && !_host.InCity
                     && _game.Player.Ships.Count > 0;
         if (!show) { _daysBadge?.Set(-1, default); return; }
@@ -1274,10 +1292,6 @@ public sealed class ShipMapWindow : Window
         _daysBadge.Set(_game.Player.DaysAtSea, GameUi.ToScreen(this, inside));
     }
 
-    /// <summary>지도 창이 앞에 있는지 — 딴 앱으로 넘어갔으면 동그라미도 숨긴다(쪽지 창은 늘 위에 뜨므로).</summary>
-    private bool IsActiveOrOwner() =>
-        IsActive || Application.Current.Windows.OfType<Window>().Any(w => w.IsActive);
-
     /// <summary>항해 일수 동그라미를 지도 왼쪽 위에서 들이는 거리.</summary>
     private const double DaysInset = 10;
 
@@ -1288,6 +1302,10 @@ public sealed class ShipMapWindow : Window
     /// 한 칸은 위도 0.144도(세로 1250칸이 180도)라 8.64해리다. 바다 칸은 빠른 칸(그림 0x80)과 느린 칸이 반반 섞여
     /// 걸음마다 칸 수가 갈리므로(<see cref="Engine.Sea.Sailing"/>) 두 셈의 가운데를 쓴다 — 해류는 안 친다.
     /// </remarks>
+    /// <summary>속도 값 몇이 1노트인지 — 작위 혜택 「항해 속도 +1노트」가 더하는 몫. 적어도 1.</summary>
+    private static readonly int SpeedPerKnot =
+        Math.Max(1, (int)Math.Round(10.0 / Math.Max(1e-6, KnotsOf(110) - KnotsOf(100))));
+
     private static double KnotsOf(int speed)
     {
         double cells = (Engine.Sea.Sailing.CellsPerTick(speed, true, false)
@@ -1475,7 +1493,7 @@ public sealed class ShipMapWindow : Window
 
         // 적어 둔 판이 있을 때만 고를 수 있다. 빈 새 설치에서는 게임처럼 흐리게 낸다.
         // 원본은 「마지막에 저장한 데이터를 로드합니다」(0x00571A88) 한 번 묻고 한 파일을 연다. 우리는 손으로 적은
-        // 세이브를 다섯 칸까지 남기므로(GameSave.ManualSlots) CONTINUE 처럼 목록에서 고르게 한다.
+        // 세이브를 열 칸까지 남기므로(GameSave.ManualSlots) CONTINUE 처럼 목록에서 고르게 한다.
         items.Children.Add(TitleMenuItem("LOAD GAME",
             Engine.GameSave.HasManualSave()
                 ? () =>
@@ -1626,7 +1644,7 @@ public sealed class ShipMapWindow : Window
         _tired.Text = $"피로도{_game.Player.Fatigue,4}";
         // 게임 서식 그대로다 — 「규칙%4d」(0x0056BFB0) · 「풍향: %s/풍속:%d」(0x0056BFF8) ·
         // 「해류: %s/속도:%d」(0x0056C010) · 「HP:%4d」(0x005692AC).
-        _morale.Text = $"규칙{_game.Player.Morale,4}";
+        _morale.Text = $"규율{_game.Player.Morale,4}";
         _windText.Text = WindLine();
         _currentText.Text = CurrentLine();
         // 커서 쪽 길찾기 보정은 항해사(자리 1)와 나침반이 있을 때만 든다(0x0048ECEF).
@@ -1914,7 +1932,9 @@ public sealed class ShipMapWindow : Window
     private Player.MateInfo? SeaSendMate(Window owner, GameRandom dice)
     {
         var player = _game.Player;
-        string first = player.Mates.FirstOrDefault(n => n.Length > 0) ?? "";
+        // 부관 <b>자리(첫 칸)</b>만 본다 — 원본 0x004A8666 이 0x0047CC60(0) 으로 첫 자리를 묻는다. 예전에는 빈칸 아닌
+        // 첫 부하를 골라, 부관 자리가 비어도 측량사·통역이 있으면 「부관을 싸우게…」를 물었다.
+        string first = player.MateAt(0);
         if (first.Length == 0 || player.MateInfoOf(first) is not { } mate) return null;
         if (!ConfirmDialog.Ask(owner, "　부관을 싸우게 하겠습니까?", "일기토")) return null;
 
@@ -2550,6 +2570,52 @@ public sealed class ShipMapWindow : Window
         ShowDiscoveryMap();
     }
 
+    /// <summary>
+    /// 단축키로 <b>모드</b> 창을 연다 — 어느 창에서 눌러도 여기로 온다. 이미 떠 있으면 또 열지 않는다.
+    /// </summary>
+    internal void ModByKey()
+    {
+        if (!_started || !ReferenceEquals(_screen.Content, _mapRoot)) return;
+        ShowModDialog();
+    }
+
+    /// <summary>모드 창이 떠 있는지 — 모드 창 안에서 M 을 또 눌러 겹쳐 뜨지 않게.</summary>
+    private bool _modOpen;
+
+    /// <summary>
+    /// 단축키로 <b>소지품 정보</b>를 연다 — 바다·뭍·도시 어디서든, 지금 손이 가 있는 창 위에 뜬다.
+    /// 이미 떠 있으면(그 창 안에서 또 누르면) 또 열지 않는다.
+    /// </summary>
+    internal void ItemsByKey(Window owner)
+    {
+        if (!_started || _itemsOpen) return;
+        _itemsOpen = true;
+        try
+        {
+            BelongingsDialog.Show(owner, _game.Player, _game.Items, _game.ItemText, _game.ItemPictures,
+                                  GameInfo.DiscoveryNames(_game), _game);
+        }
+        finally { _itemsOpen = false; }
+    }
+
+    /// <summary>소지품 창이 떠 있는지 — 그 창 안에서 R 을 또 눌러 겹쳐 뜨지 않게.</summary>
+    private bool _itemsOpen;
+
+    /// <summary>
+    /// 단축키로 <b>힌트 정보</b>(취득 힌트 일람)를 연다 — 커맨드 「힌트정보」와 같은 창이다. 어디서든 지금 창 위에 뜨고,
+    /// 이미 떠 있으면 또 열지 않는다.
+    /// </summary>
+    internal void HintsByKey(Window owner)
+    {
+        if (!_started || _hintsOpen) return;
+        _hintsOpen = true;
+        try { ShowHints(owner); }
+        finally { _hintsOpen = false; }
+    }
+
+    /// <summary>힌트 창이 떠 있는지 — 그 창 안에서 H 를 또 눌러 겹쳐 뜨지 않게.</summary>
+    private bool _hintsOpen;
+
     private void OnMapKey(object sender, KeyEventArgs e)
     {
         // ESC — 떠 있는 커맨드·도시정보 창을 접는다. 창이 제 글쇠를 받는 것은 그 창에
@@ -2588,6 +2654,27 @@ public sealed class ShipMapWindow : Window
         {
             e.Handled = true;
             if (GameSettings.ShowDiscoveryMapMenu) Hold(ShowDiscoveryMap);
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.ModKey, Key.M))
+        {
+            e.Handled = true;
+            if (_started && !_modOpen) Hold(ModByKey);
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.ItemsKey, Key.R))
+        {
+            e.Handled = true;
+            if (_started && !_itemsOpen) Hold(() => ItemsByKey(this));
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.HintsKey, Key.H))
+        {
+            e.Handled = true;
+            if (_started && !_hintsOpen) Hold(() => HintsByKey(this));
             return;
         }
 
@@ -2731,7 +2818,9 @@ public sealed class ShipMapWindow : Window
             _host.MonthOf = () => _game.Player.Date.Month;
             // 배가 얼마나 빨리 가는지는 함대와 돛 효율표가 정한다 — 지도는 그 둘을 모른다.
             _host.FleetSpeed = (dir, speed, heading, onLand) =>
-                Sailing.SpeedOf(_game.Player, _game.Sails, dir, speed, heading, onLand);
+                Sailing.SpeedOf(_game.Player, _game.Sails, dir, speed, heading, onLand)
+                // 작위 혜택(후작) — 바다에서 1노트 빨라진다. 속도 값을 노트로 바꾸는 셈(KnotsOf)의 거꾸로다.
+                + (!onLand && Engine.Town.Nobility.Has(_game.Player, Engine.Town.Nobility.Perk.Speed) ? SpeedPerKnot : 0);
             // 뱃머리가 도는 빠르기도 기함 종류가 정한다(0x00569FC0) — 큰 배일수록 굼뜨다.
             _host.TurnRateOf = () => Sailing.TurnRateOf(_game.Player.FlagshipHull?.Hull);
             // 날짜변경선을 넘을 때마다 바퀴 수를 센다(0x0047D11B) — 세계일주 장면이 쓴다.
@@ -2826,6 +2915,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreRumors(saved.Rumors, saved.PersonLines);
             _game.Player.RestoreHistory(saved.HistoryMonth, saved.HistoryNations, saved.HistoryDone);
             _game.Player.RestoreAnnouncedDates(saved.AnnouncedOn, saved.AnnouncedYears);
+            _game.Player.SetNobleRank(saved.NobleRank ?? 0);
             _game.Player.RestoreFoundDates(saved.FoundOn);
             // 찾은 사람·보고한 사람 이름. 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
             _game.Player.RestoreDiscoverers(saved.FoundBy, saved.AnnouncedBy);
@@ -2940,12 +3030,16 @@ public sealed class ShipMapWindow : Window
             // 쥐고 있던 바람도 적어 둔 그대로(0x00586168). 예전에는 열 때 방위를 새로 흔들어(rand(3) − 1,
             // 0x00424E50) 불러오기만 해도 바람이 한 칸 돌 수 있었다. 이 칸 앞의 세이브는 새로 흔든다.
             _host.RestoreHeldWind(saved.Wind);
+            // 뭍에 오른 채로 연 판은 「뭍에서」 — 예전에는 뭍 자리를 제대로 되살려 놓고도 「바다에서」 라 적었다.
             _status.Text = saved.CityId >= 0
                 ? $"[{SavedCityName(saved)}] 에서 이어 간다 — {saved.Date:yyyy년 M월 d일}"
-                : $"바다에서 이어 간다 — {saved.Date:yyyy년 M월 d일}";
+                : _host.IsOnLand
+                    ? $"뭍에서 이어 간다 — {saved.Date:yyyy년 M월 d일}"
+                    : $"바다에서 이어 간다 — {saved.Date:yyyy년 M월 d일}";
         }
 
-        _game.Bgm.Play(SeaTrackHere());
+        // 뭍에서 연 판은 걷는 곡이다 — 상륙할 때(Land)와 같다. 예전에는 늘 바다 곡이 났다.
+        _game.Bgm.Play(_host.IsOnLand ? BgmPlayer.LandTrack : SeaTrackHere());
         SyncOverlay();
 
         // 날짜가 다 자리잡은 뒤라야 어느 도시가 섰는지 셀 수 있다. 처음 한 번은
@@ -2979,7 +3073,10 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void ShowModDialog()
     {
-        ShowModDialogCore();
+        if (_modOpen) return;
+        _modOpen = true;
+        try { ShowModDialogCore(); }
+        finally { _modOpen = false; }
         _refreshApps();   // 여급 수첩 · 인물 이동을 켜고 껐으면 도시락 단추가 나타나거나 숨는다
     }
 
@@ -3311,7 +3408,7 @@ public sealed class ShipMapWindow : Window
             GameInfo.DiscoveryNames(_game), _game))),
         // 도시 커맨드(CityPicView.ShowHints)와 같은 창이다 — 보고까지 마친 힌트만 빼고, 고르면 설명을 편다.
         // 예전에는 발견만 한 힌트까지 빼는 딴 목록(GameInfo.HintNames)을 써서 바다에서는 비어 보였다(fb-ui-20).
-        ("힌트정보", () => Info(ShowHints)),
+        ("힌트정보", () => Info(() => ShowHints(this))),
         ("계약정보", () => Info(ShowContract)),
         ("지도를 본다", () => CommandMenu.Push(MapMenuBox)),
         // 「돌아간다」는 커맨드로 되짚지 않고 <b>커맨드 창을 통째로 닫는다</b> — 0x00425E40 이 돌아가면
@@ -3492,20 +3589,23 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>정보 판 하나를 띄운다 — 커맨드 창은 접고, 배는 세워 둔 채다.</summary>
     /// <summary>얻은 힌트를 늘어놓고, 한 줄을 고르면 그 이야기를 편다 — 도시 쪽과 한 벌이다.</summary>
-    private void ShowHints()
+    private void ShowHints(Window owner)
     {
         var player = _game.Player;
         var ids = _game.Discoveries?.LiveHints(player) ?? [.. player.Hints.Order()];
 
+        // 모드 「향상된 힌트 보기」 — 목록과 설명을 한 창에 나란히.
+        if (HintBrowserDialog.IsOn(_game.Player)) { HintBrowserDialog.Show(owner, _game, ids); return; }
+
         while (true)
         {
-            int at = HintListDialog.Pick(this, [.. ids.Select(id => _game.HintName(id))],
+            int at = HintListDialog.Pick(owner, [.. ids.Select(id => _game.HintName(id))],
                                          rightTexts: [.. ids.Select(id => _game.Hints?.Find(id) is { } hint
                                              ? _game.Hints.CategoryOf(hint.Category) : "")]);
             if (at < 0 || at >= ids.Count) return;
             if (_game.Hints?.Find(ids[at]) is not { } hint) return;
 
-            HintDetailDialog.Show(this, hint, _game.Hints.CategoryOf(hint.Category),
+            HintDetailDialog.Show(owner, hint, _game.Hints.CategoryOf(hint.Category),
                                   player.Fame, _game.MateSpeaks, player.Contract?.Hint == hint.Id);
         }
     }
@@ -3981,7 +4081,7 @@ public sealed class ShipMapWindow : Window
     /// </summary>
     /// <remarks>
     /// 언제 무엇이 서는지는 <see cref="CityFounding"/> 에 있다. 1531년에는 파나마가 선
-    /// 다음 달에 레온·코로·투르히요가 <b>한꺼번에</b> 선다 — 게임의 제작 오류를 그대로
+    /// 다음 달에 레온·코로·트루히요가 <b>한꺼번에</b> 선다 — 게임의 제작 오류를 그대로
     /// 옮긴 것이라 그 무더기도 그대로 나온다.
     /// </remarks>
     private void TellFounded()
@@ -4357,7 +4457,7 @@ public sealed class ShipMapWindow : Window
             var kind = pick == 0 ? SupplyKind.Water : SupplyKind.Food;
             int price = pick == 0 ? waterPrice : foodPrice;
             int room = Math.Max(0, player.Capacity - player.LoadedBarrels);                   // 0x00474490
-            int weight = Math.Max(0, player.Tonnage - player.LoadedWeight)
+            int weight = player.FreeWeight
                          / Supply.Of(kind).UnitWeight;                                        // 0x004743D0
             int most = Math.Min(Math.Min(player.Gold / price, FleetRaid.MaxBarrels), Math.Min(room, weight));
             if (most <= 0) continue;
@@ -4981,7 +5081,7 @@ public sealed class ShipMapWindow : Window
             water, food,
             player.SupplyOf(SupplyKind.Water), player.SupplyOf(SupplyKind.Food),
             Math.Max(0, player.Capacity - player.LoadedBarrels),        // 0x00474490
-            Math.Max(0, player.Tonnage - player.LoadedWeight));         // 0x004743D0
+            player.FreeWeight);                                         // 0x004743D0 (「중량 없음」이면 무한)
 
         player.AddSupply(SupplyKind.Food, gotFood);                     // 0x00474160
         player.AddSupply(SupplyKind.Water, gotWater);                   // 0x004740C0
@@ -5052,7 +5152,7 @@ public sealed class ShipMapWindow : Window
             var talkFace = MateFace();
             // 고르기 창은 제목 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
             // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다 — 굴림은 그대로라 실패하면 싸운다.
-            switch (GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices))
+            switch (Engine.Town.Nobility.Effective(_game.Player, GameSettings.AutoFlee, Engine.Town.Nobility.Perk.AutoFlee) ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices))
             {
                 case 0 when Talked(band, dice, talkFace, weight: foeMen): return;
                 case 1:
@@ -5558,7 +5658,7 @@ public sealed class ShipMapWindow : Window
 
             // 고르기 창은 제목도 「취소」 줄도 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
             // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다.
-            int pick = GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices);
+            int pick = Engine.Town.Nobility.Effective(_game.Player, GameSettings.AutoFlee, Engine.Town.Nobility.Perk.AutoFlee) ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices);
             switch (pick)
             {
                 case 0 when Talked(foe, rng, face): return;  // 교섭이 되면 그대로 끝난다
@@ -5635,14 +5735,21 @@ public sealed class ShipMapWindow : Window
 
         EndWeather();   // 해전이 열리면 비가 그친다(0x00443822)
 
+        // <b>괴물 판은 인물 번호가 271~274 일 때뿐이다</b>(0x004435B0 이 0x10F~0x112 로 가른다). 예전에는 대본 해전을 늘
+        // 괴물 판으로 열어, 정복자 퀘스트의 알제 해적(인물 235) 같은 사람과의 판에서도 「괴물이 잠수해 버려…」가 떴다.
+        // 사람이면 바다에서 만난 해적과 같은 여느 해전이다 — 그 사람이 이끄는 함대가 선다.
+        bool monster = person is >= EnemyFleet.FirstMonster and <= EnemyFleet.LastMonster;
+
         // 괴물 판은 명성·악명·전리품이 없다 — 이기면 퇴치 삯 한 줄과 무력 오름뿐이다(0x0043550C).
         var outcome = SeaCombatDialog.Engage(this, _game.Player, foe, rng, MateFace(),
                                             (_host.LastWind.Dir, _host.LastWind.Speed), _game.Sfx,
                                             foeFace,
-                                            (board, end) => SettleRaid(board, end, -1, -1, rng, raid: false,
-                                                                       monster: person),
+                                            monster
+                                                ? (board, end) => SettleRaid(board, end, -1, -1, rng, raid: false,
+                                                                             monster: person)
+                                                : null,
                                             SeaDuel(person, name, foeFace), _game.Bgm,
-                                            monster: true, game: _game).Outcome;
+                                            monster: monster, game: _game).Outcome;
 
         if (outcome != SeaCombatDialog.Outcome.Defeated)
             return (outcome == SeaCombatDialog.Outcome.Won, false);
@@ -6421,8 +6528,15 @@ public sealed class ShipMapWindow : Window
     /// <summary>이야기 대본을 그 사건(<see cref="DisevEvent"/>)으로 한 장면 돌린다.</summary>
     private void CheckStory(DisevEvent ev)
     {
-        if (_game.Player.ActiveStoryBook is not { } book) return;
-        if (StoryLog.NextPart(_game.Player, _game, ev) is not { } part) return;
+        if (_game.Player.ActiveStoryBook is { } own) CheckBook(ev, own);
+        // 전역 대본(모드 「작위」 따위) — 직업과 상관없이 돈다.
+        foreach (string global in StoryLog.GlobalBooks()) CheckBook(ev, global);
+    }
+
+    /// <summary>그 책을 그 사건으로 한 장면 돌린다.</summary>
+    private void CheckBook(DisevEvent ev, string book)
+    {
+        if (StoryLog.NextPart(_game.Player, _game, ev, book) is not { } part) return;
 
         DisevRunner.Run(this, _game, book, part, ev);
         StoryLog.Advance(_game.Player, _game, book, part);

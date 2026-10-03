@@ -53,6 +53,15 @@ public sealed class BelongingsDialog : GameWindow
     private readonly GameButton _decide;
     private int _at = -1;
 
+    /// <summary>주인공 — 편리한 인벤토리가 보관 · 판매할 때 쓴다.</summary>
+    private readonly Player _player;
+
+    /// <summary>소지품 줄이 놓이는 칸.</summary>
+    private readonly StackPanel _list;
+
+    /// <summary>편리한 인벤토리 단추 둘. 모드를 껐으면 null.</summary>
+    private readonly GameButton? _storeButton, _sellButton;
+
     /// <summary>고문서의 힌트를 읽힐 판. 없으면 아이템 창만 뜬다.</summary>
     private readonly Engine.Game? _game;
 
@@ -61,6 +70,7 @@ public sealed class BelongingsDialog : GameWindow
                              IReadOnlyList<string> discoveries, Engine.Game? game)
     {
         _game = game;
+        _player = player;
         _items = items;
         _descriptions = descriptions;
         _art = art;
@@ -102,6 +112,7 @@ public sealed class BelongingsDialog : GameWindow
         columns.ColumnDefinitions.Add(new ColumnDefinition());
 
         var leftList = ListColumn();
+        _list = leftList.Items;
         Grid.SetColumn(leftList.Host, 0);
         columns.Children.Add(leftList.Host);
 
@@ -138,6 +149,14 @@ public sealed class BelongingsDialog : GameWindow
             Margin = new Thickness(0, 4, 0, 12),
         };
         buttons.Children.Add(_decide);
+        // 편리한 인벤토리 — 결정과 중단 사이에 「보관함」 · 「판매」.
+        if (Local.Settings.GameSettings.HandyInventory)
+        {
+            _storeButton = new GameButton("보관함", StoreHome, width: 110) { On = false };
+            _sellButton = new GameButton("판매", SellNow, width: 110) { On = false };
+            buttons.Children.Add(_storeButton);
+            buttons.Children.Add(_sellButton);
+        }
         buttons.Children.Add(new GameButton("중단", Close, width: 130));
 
         var root = new DockPanel { LastChildFill = true };
@@ -308,6 +327,69 @@ public sealed class BelongingsDialog : GameWindow
             _rows[i].Row.Child = Line(_rows[i].ItemId, _rows[i].Name, on);
         }
         _decide.On = true;      // 게임도 아무것도 안 고른 동안은 이 단추가 흐리다
+        // 보관 · 판매는 <b>실제 소지품 칸</b>만 — 뒤에 붙은 「아직 안 알린 발견물」 줄은 지닌 것이 아니다.
+        bool real = index < _player.Items.Count;
+        if (_storeButton != null) _storeButton.On = real;
+        if (_sellButton != null) _sellButton.On = real;
+    }
+
+    /// <summary>
+    /// 편리한 인벤토리 「보관함」 — 고른 소지품을 자택 보관함으로 곧장 보낸다(<see cref="Player.Store"/>).
+    /// </summary>
+    private void StoreHome()
+    {
+        if (_at < 0 || _at >= _player.Items.Count) return;
+        string name = _rows[_at].Name;
+        if (_player.IsStoreFull)
+        {
+            NoticeDialog.Show(this, "자택 보관함이 가득 찼습니다");
+            return;
+        }
+        if (!ConfirmDialog.Ask(this, $"{name}{GameUi.Josa(name, "을", "를")} 자택 보관함으로 보내겠습니까?")) return;
+        if (!_player.Store(_at)) return;
+        RemoveRow(_at);
+    }
+
+    /// <summary>
+    /// 편리한 인벤토리 「판매」 — 고른 소지품을 그 자리에서 판다. 값은 시장 매각과 같다
+    /// (아이템 매각가 x 지금 도시 시세 — 바다 위면 시세 100, <see cref="Engine.Market.MarketRates.SellPrice(int, int)"/>).
+    /// </summary>
+    private void SellNow()
+    {
+        if (_at < 0 || _at >= _player.Items.Count || _game == null) return;
+        if (_items?.Find(_rows[_at].ItemId) is not { } item) return;
+        string name = _rows[_at].Name;
+
+        int price = _game.Rates.SellPrice(item.SellList, _player.CityId);
+        if (price <= 0)
+        {
+            NoticeDialog.Show(this, "값을 쳐 줄 수 없는 물건입니다");
+            return;
+        }
+        if (!ConfirmDialog.Ask(this, $"{name}{GameUi.Josa(name, "을", "를")} 금화 {price:N0}닢에 팔겠습니까?")) return;
+
+        // 그 칸을 정확히 뺀다 — 같은 아이템이 여럿이어도 고른 줄이 빠진다.
+        _player.DropAt(_at);
+        _player.Earn(price);
+        RemoveRow(_at);
+    }
+
+    /// <summary>줄 하나를 걷고 나머지를 다시 칠한다(장비중 표시가 바뀔 수 있다).</summary>
+    private void RemoveRow(int index)
+    {
+        _list.Children.Remove(_rows[index].Row);
+        _rows.RemoveAt(index);
+        _bag.Clear();
+        _bag.AddRange(_player.Items);
+        _at = -1;
+        for (int i = 0; i < _rows.Count; i++)
+        {
+            _rows[i].Row.Background = Brushes.Transparent;
+            _rows[i].Row.Child = Line(_rows[i].ItemId, _rows[i].Name, false);
+        }
+        _decide.On = false;
+        if (_storeButton != null) _storeButton.On = false;
+        if (_sellButton != null) _sellButton.On = false;
     }
 
     private void OnKey(object sender, KeyEventArgs e)

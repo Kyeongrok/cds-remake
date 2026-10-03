@@ -319,9 +319,14 @@ internal sealed class GrailPuzzleDialog : InfoDialog
         _ghost.Width = DipperW;
         _ghost.Height = DipperH;
         _ghost.Visibility = Visibility.Visible;
-        Canvas.SetLeft(_ghost, at.X - DipperW / 2.0);
-        Canvas.SetTop(_ghost, at.Y - DipperH / 2.0);
+        // 손 자리에 <b>국자 머리</b>를 둔다. 놓을 자리도 손 자리로 가리므로, 머리가 성배 위에 오면 그 성배다.
+        // 예전엔 그림 한가운데를 손에 맞춰, 그림 위쪽 반에 있는 머리가 성배 오른쪽 위로 비껴 나야 칸에 들었다.
+        Canvas.SetLeft(_ghost, at.X - BowlX);
+        Canvas.SetTop(_ghost, at.Y - BowlY);
     }
+
+    /// <summary>바가지 그림(48x64)에서 머리 가운데 자리 — 머리는 오른쪽 위(가로 21~36, 세로 0~16)에 있다.</summary>
+    private const double BowlX = 29, BowlY = 8;
 
     /// <summary>놓는다. 무슨 일이 일어날지는 놓는 자리가 정한다.</summary>
     private void PutDown(int from, int to)

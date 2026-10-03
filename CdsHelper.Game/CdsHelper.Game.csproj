@@ -21,6 +21,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <!-- 모드 「리디바탕 글꼴」(UI/Views/UiFont.cs). 리디바탕은 SIL OFL 1.1 이라 라이선스 전문을 함께 싣는다. -->
+      <Resource Include="Fonts\RIDIBatang.otf" />
+      <None Include="Fonts\RIDIBatang-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Folder Include="Engine\Battle\" />
       <Folder Include="Engine\Menu\" />
     </ItemGroup>
