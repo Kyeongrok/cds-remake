@@ -72,10 +72,13 @@ public sealed class BelongingsDialog : GameWindow
         // 창은 <b>줄 수를 따라 자란다</b> — 원본도 넉 줄 남짓한 납작한 창으로 열리고
         // 지닌 것이 늘면 아래로 길어진다. 가로는 원본이 화면의 2/3 쯤이다.
         int virtualCount = game != null ? Engine.GameInfo.VirtualItems(game).Count : 0;
-        int lines = Math.Clamp(Math.Max(player.Items.Count + virtualCount, discoveries.Count),
-                               MinRows, MaxRows);
+        // 「아이템 창 개선」을 켜면 소지품 줄이 그림만큼 높아진다 — 그만큼 덜 늘린다.
+        bool rich = Rich;
+        int lines = rich
+            ? Math.Clamp(player.Items.Count + virtualCount, MinRows, MaxRichRows)
+            : Math.Clamp(Math.Max(player.Items.Count + virtualCount, discoveries.Count), MinRows, MaxRows);
         Width = BoardWidth;
-        Height = ChromeHeight + lines * RowHeight;
+        Height = ChromeHeight + lines * (rich ? RichRowHeight : RowHeight);
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ShowInTaskbar = false;
         Background = GameUi.Back;
@@ -169,6 +172,15 @@ public sealed class BelongingsDialog : GameWindow
     /// <summary>처음 여는 줄 수와, 이보다 길어지지 않는 줄 수.</summary>
     private const int MinRows = 4, MaxRows = 22;
 
+    /// <summary>「아이템 창 개선」 — 줄마다 그림을 다는지(<see cref="GameSettings.ItemListPictures"/>).</summary>
+    private static bool Rich => Local.Settings.GameSettings.ItemListPictures;
+
+    /// <summary>그림을 다는 줄의 키와 그 그림 크기. 그림(120x120)을 줄여 건다 — 스폰서 일람 얼굴 높이쯤이다.</summary>
+    private const double RichRowHeight = 50, ThumbSize = 44;
+
+    /// <summary>그림을 다는 줄로 이보다 길어지지 않는다 — 넘치면 굴린다.</summary>
+    private const int MaxRichRows = 10;
+
     /// <summary>발견물 칸. 지금까지 발견한 것이 찾은 차례대로 놓인다.</summary>
     public StackPanel Discoveries { get; }
 
@@ -214,7 +226,7 @@ public sealed class BelongingsDialog : GameWindow
             Padding = new Thickness(0, 2, 0, 2),
             Cursor = Cursors.Hand,
             HorizontalAlignment = HorizontalAlignment.Stretch,
-            Child = Label(name, picked: false),
+            Child = Line(itemId, name, picked: false),
         };
         row.MouseLeftButtonDown += (_, e) => e.Handled = true;
         row.MouseLeftButtonUp += (_, e) =>
@@ -224,6 +236,45 @@ public sealed class BelongingsDialog : GameWindow
         };
         return (itemId, row, name);
     }
+
+    /// <summary>
+    /// 소지품 줄 속. 여느 때는 이름 한 줄이고, 「아이템 창 개선」을 켜면 스폰서 일람처럼 왼쪽에 그림,
+    /// 이름 밑에 갈래 · 효과(무기 · 방어구) · 「장비중」이다.
+    /// </summary>
+    private FrameworkElement Line(int itemId, string name, bool picked)
+    {
+        if (!Rich) return Label(name, picked);
+
+        var found = _items?.Find(itemId);
+        var thumb = new Border
+        {
+            Width = ThumbSize,
+            Height = ThumbSize,
+            Margin = new Thickness(4, 1, 0, 1),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        if (found is { HasPic: true } pictured && _art?.TryGetImage(pictured.Pic) is { } art)
+        {
+            var image = new Image { Source = art, Width = ThumbSize, Height = ThumbSize, Stretch = Stretch.Uniform };
+            // 크게 줄여 거는 것이라 곱게 줄인다 — 가장가까운점이면 점이 듬성듬성 빠진다.
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+            thumb.Child = image;
+        }
+
+        var words = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        words.Children.Add(Label(name, picked));
+        if (found is { } item)
+        {
+            string note = item.Category is Weapon or Armor ? $"{item.CategoryName}  효과 {item.Effect}" : item.CategoryName;
+            if (_items != null && ItemInfoDialog.IsEquipped(item, _bag, _items)) note += "  장비중";
+            if (note.Length > 0) words.Children.Add(Label(note, picked));
+        }
+
+        return new StackPanel { Orientation = Orientation.Horizontal, Children = { thumb, words } };
+    }
+
+    /// <summary>효과를 적는 갈래 — 무기 · 방어구(아이템 창과 같다).</summary>
+    private const int Weapon = 3, Armor = 4;
 
     /// <summary>
     /// 줄 글씨. 게임 비트맵 글꼴로 찍는다 — 윈도 글꼴은 같은 자리에서 더 크고 결이 다르다.
@@ -254,7 +305,7 @@ public sealed class BelongingsDialog : GameWindow
         {
             bool on = i == index;
             _rows[i].Row.Background = on ? Picked : Brushes.Transparent;
-            _rows[i].Row.Child = Label(_rows[i].Name, on);
+            _rows[i].Row.Child = Line(_rows[i].ItemId, _rows[i].Name, on);
         }
         _decide.On = true;      // 게임도 아무것도 안 고른 동안은 이 단추가 흐리다
     }

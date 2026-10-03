@@ -74,6 +74,9 @@ public sealed class GameSettingsData
     /// <summary>바다에 있을 때 배 속도 쪽지를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowShipSpeed { get; set; }
 
+    /// <summary>항해 중 지도 왼쪽 위에 출항한 지 며칠인지 동그라미로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool ShowSeaDays { get; set; }
+
     /// <summary>발견물 지도에 위도·경도 25도 격자를 깔지. 꺼 두고 시작한다.</summary>
     public bool DiscoveryMapGrid { get; set; }
 
@@ -88,6 +91,9 @@ public sealed class GameSettingsData
 
     /// <summary>자동 보급을 「최대」로 할지 — 거짓이면 10일분까지다.</summary>
     public bool AutoSupplyMax { get; set; }
+
+    /// <summary>항구에서 출항할 때 선원이 최저 승원 밑이면 그만큼 저절로 모집한다. 꺼 두고 시작한다.</summary>
+    public bool AutoCrew { get; set; }
 
     /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 1 이 기본이다.</summary>
     public double SeaBrightness { get; set; } = 1.0;
@@ -164,6 +170,9 @@ public sealed class GameSettingsData
 
     /// <summary>정보 창·상단 띠에 「생명력」 줄을 낼지. 원본 탐험정보에는 없어 꺼 두고 시작한다.</summary>
     public bool ShowVitalityInfo { get; set; }
+
+    /// <summary>소지품일람 줄마다 아이템 그림과 효과를 낼지(스폰서 일람처럼). 원본은 이름만이라 꺼 두고 시작한다.</summary>
+    public bool ItemListPictures { get; set; }
 
     /// <summary>스핑크스 퀴즈에서 정답 줄에 표를 달지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SphinxHelper { get; set; }
@@ -612,6 +621,13 @@ public static class GameSettings
         set => Set(d => d.ShowShipSpeed = value);
     }
 
+    /// <summary>항해 일수 — 항해 중 지도 왼쪽 위 동그라미에 출항한 지 며칠인지 띄운다. 모드 창에서 켜고 끈다.</summary>
+    public static bool ShowSeaDays
+    {
+        get => Get(d => d.ShowSeaDays);
+        set => Set(d => d.ShowSeaDays = value);
+    }
+
     /// <summary>발견물 수 상자 — 모드 창에서 켜고 끈다.</summary>
     public static bool ShowDiscoveryCount
     {
@@ -789,6 +805,16 @@ public static class GameSettings
         set => Set(d => d.ShowVitalityInfo = value);
     }
 
+    /// <summary>
+    /// 아이템 창 개선 — 소지품일람 줄마다 <b>왼쪽에 아이템 그림</b>, 이름 밑에 갈래 · 효과 · 「장비중」을 낸다.
+    /// 모드 창에서 켜고 끈다.
+    /// </summary>
+    public static bool ItemListPictures
+    {
+        get => Get(d => d.ItemListPictures);
+        set => Set(d => d.ItemListPictures = value);
+    }
+
     /// <summary>스핑크스 퀴즈 도우미 — 켜면 고르는 창의 정답 줄에 「← 답」을 단다. 모드 창에서 켜고 끈다.</summary>
     public static bool SphinxHelper
     {
@@ -933,6 +959,13 @@ public static class GameSettings
     {
         get => Get(d => d.AutoSupplyMax);
         set => Set(d => d.AutoSupplyMax = value);
+    }
+
+    /// <summary>선원 자동 모집 — 출항할 때 함대의 최저 승원 수까지 저절로 모집한다. 모드 창에서 켜고 끈다.</summary>
+    public static bool AutoCrew
+    {
+        get => Get(d => d.AutoCrew);
+        set => Set(d => d.AutoCrew = value);
     }
 
     /// <summary>

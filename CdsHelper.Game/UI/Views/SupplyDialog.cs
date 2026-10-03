@@ -82,11 +82,11 @@ public sealed class SupplyDialog : GameWindow
     /// 예전에는 <c>620</c> 이라 창이 <c>674</c> 로 나왔다 — 게임보다 <b>111점 넓었다</b>.
     /// 키는 그때도 맞았다(412).
     /// </remarks>
-    private const double BoardWidth = 519, BoardHeight = 300;
+    private const double BoardWidth = 537, BoardHeight = 300;   // 계산기 칸(17)만큼 넓혔다
 
     /// <summary>칸 폭 — 단중량/단가 · 현재량 · 보충량 · 가격.</summary>
     /// <remarks>판을 줄인 만큼(0.837배) 같이 줄였다. 칸 차례와 결은 그대로다.</remarks>
-    private const double UnitWidth = 134, HaveWidth = 84, AddWidth = 100, CostWidth = 92;
+    private const double UnitWidth = 134, HaveWidth = 84, AddWidth = 118, CostWidth = 92;
 
     /// <summary>
     /// 한 무리 안의 단추 사이. 게임 갈무리에서 단추 사이가 단추 폭의 한 켜쯤(열 점 안팎)이다.
@@ -245,8 +245,9 @@ public sealed class SupplyDialog : GameWindow
         };
         spin.Children.Add(_signLabels[index]);
         spin.Children.Add(_addLabels[index]);
-        spin.Children.Add(Arrow("↑", () => Bump(index, +1)));
-        spin.Children.Add(Arrow("↓", () => Bump(index, -1)));
+        spin.Children.Add(Arrow("↑", first => Bump(index, +1, first)));
+        spin.Children.Add(Arrow("↓", first => Bump(index, -1, first)));
+        spin.Children.Add(Calculator(() => AskTotal(index)));
 
         return Row(Label(supply.Name),
                    Cell(Label(Sold(supply) ? $"{supply.UnitWeight,3}/{supply.PriceAt(_rate, _cityFlags),4}"
@@ -278,8 +279,8 @@ public sealed class SupplyDialog : GameWindow
         var spin = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
         spin.Children.Add(Label("+"));
         spin.Children.Add(Label($"{0,5}"));
-        // ↑↓ 자리는 비워 둔다 — 보급품 줄과 숫자가 세로로 맞게.
-        spin.Children.Add(new Border { Width = 2 * (UiSprites.IconWidth + 1) });
+        // ↑↓ · 계산기 자리는 비워 둔다 — 보급품 줄과 숫자가 세로로 맞게.
+        spin.Children.Add(new Border { Width = 3 * (UiSprites.IconWidth + 1) });
 
         var row = Row(Label(goods),
                       unit,
@@ -342,7 +343,8 @@ public sealed class SupplyDialog : GameWindow
     /// ↑·↓ 한 칸. 게임 조각(<c>MISC.CDS</c> 파트 3, 16x16)을 그대로 건다 — 능력치·기술 화면과
     /// 같은 화살표다. 조각을 못 읽었을 때만 글자 화살표로 물러선다.
     /// </summary>
-    private static UIElement Arrow(string mark, Action run)
+    /// <remarks>누르고 있으면 되풀이한다(<see cref="HoldRepeat"/>).</remarks>
+    private static UIElement Arrow(string mark, Func<bool, bool> run)
     {
         bool up = mark == "↑";
         FrameworkElement box = GameUi.GameIcon(up ? UiSprites.IconUp : UiSprites.IconDown)
@@ -364,10 +366,58 @@ public sealed class SupplyDialog : GameWindow
         box.Margin = new Thickness(1, 0, 0, 0);
         box.Cursor = Cursors.Hand;
         box.VerticalAlignment = VerticalAlignment.Center;
-        // 누름은 삼킨다 — 판 끌기가 먼저 걸리면 마우스를 잡아 버려 뗌이 안 온다.
+        HoldRepeat.Attach(box, run);
+        return box;
+    }
+
+    /// <summary>
+    /// 계산기 한 칸 — 게임 조각(<c>MISC.CDS</c> 파트 3 의 계산기, 16x16)이다. 누르면 그 줄의 <b>실을 총량</b>을 적는다.
+    /// </summary>
+    private static UIElement Calculator(Action run)
+    {
+        FrameworkElement box = GameUi.GameIcon(UiSprites.IconCalc)
+            ?? (FrameworkElement)new Border
+            {
+                Width = UiSprites.IconWidth,
+                Height = UiSprites.IconHeight,
+                Background = GameUi.ItemFill,
+                BorderBrush = GameUi.ItemEdge,
+                BorderThickness = new Thickness(1),
+                Child = new TextBlock { Text = "=", Foreground = Brushes.Black, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center },
+            };
+        box.Margin = new Thickness(1, 0, 0, 0);
+        box.Cursor = Cursors.Hand;
+        box.VerticalAlignment = VerticalAlignment.Center;
+        box.ToolTip = "실을 양을 적는다";
         box.MouseLeftButtonDown += (_, e) => e.Handled = true;
         box.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
         return box;
+    }
+
+    /// <summary>
+    /// 계산기 — 그 보급품을 <b>모두 몇 통으로</b> 할지 적는다. 지금 실린 것보다 적게 적으면 그만큼 덜어 낸다.
+    /// </summary>
+    /// <remarks>
+    /// 더할 양이 아니라 <b>총량</b>을 받는다 — 수 적기 창은 0 이상만 받으므로 더할 양으로 받으면 덜어 내기를 못 한다.
+    /// 총량으로 받으면 실린 것보다 큰 수는 더하기, 작은 수는 빼기가 된다. 올릴 수 있는 끝은 남은 용량 · 중량이고
+    /// (다른 줄에서 더하고 덜어 낸 것까지 친다), 돈은 결정할 때 본다. 이 도시가 안 파는 탄약은 지금 것 밑으로만 된다.
+    /// </remarks>
+    private void AskTotal(int index)
+    {
+        var supply = Supply.All[index];
+        int have = _player.SupplyOf(supply.Kind);
+        int now = have + _add[index];
+
+        int room = Math.Max(0, _player.Capacity - Barrels);
+        int byWeight = supply.UnitWeight > 0 ? Math.Max(0, (_player.Tonnage - Weight) / supply.UnitWeight) : room;
+        int most = Sold(supply) ? now + Math.Min(room, byWeight) : have;
+
+        int? total = CountDialog.Set(this, supply.Name, "실을 총량", "통", now, most,
+                                     new CountDialog.Gauge("현재량", have, "통"),
+                                     new CountDialog.Gauge("최대", most, "통"));
+        if (total is not { } n) return;
+        _add[index] = n - have;
+        Paint();
     }
 
     /// <summary>밤색 판 위에 얹는 밝은 글씨.</summary>
@@ -422,24 +472,29 @@ public sealed class SupplyDialog : GameWindow
 
     private bool CanAdd(int index) => WhyNot(index).Length == 0;
 
-    private void Bump(int index, int by)
+    /// <summary>한 번 올리거나 내린다. 움직였으면 참 — 누르고 있는 동안의 되풀이가 거짓에서 멈춘다.</summary>
+    /// <param name="first">누른 첫 번인지 — 막는 말은 첫 번에만 낸다(누르고 있는 동안 되풀이해 뜨지 않게).</param>
+    private bool Bump(int index, int by, bool first = true)
     {
         int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step;
+        bool moved = false;
         for (int i = 0; i < step; i++)
         {
             // <b>왜 못 싣는지 말해 준다</b> — 게임도 누를 때마다 낸다. 한 번 눌러 여러 통이
             // 올라가는 자리(Shift)에서는 첫 걸음에서 막혔을 때만 낸다.
             if (by > 0 && WhyNot(index) is { Length: > 0 } why)
             {
-                if (i == 0 && why != "-") GameDialog.Show(Owner ?? this, why);
+                if (first && i == 0 && why != "-") GameDialog.Show(Owner ?? this, why);
                 break;
             }
             if (by > 0 && !CanAdd(index)) break;
             // 내리면 0 에서 멈추지 않고 실어 둔 것까지 덜어 낸다 — 현재량 밑으로는 못 간다.
             if (by < 0 && _add[index] <= -_player.SupplyOf(Supply.All[index].Kind)) break;
             _add[index] += by > 0 ? 1 : -1;
+            moved = true;
         }
         Paint();
+        return moved;
     }
 
     /// <summary>
@@ -560,10 +615,15 @@ public sealed class SupplyDialog : GameWindow
     }
 
     /// <summary>「전회분」 — 지난번 결정한 총량으로(<c>0x0040EC60</c>).</summary>
+    /// <remarks>
+    /// <b>적어 둔 전회분이 없으면(다 0) 지금 실린 그대로</b>(보충량 0)다. 0 을 총량으로 맞추면 보충량이 「− 실린 만큼」이 되어
+    /// 창을 처음 열자마자 물·식량을 다 내리는 꼴이 되고, ↓ 가 이미 바닥이라 눌러도 안 움직였다.
+    /// </remarks>
     private void Last()
     {
+        bool none = _player.LastSupply.All(n => n == 0);
         for (int i = 0; i < Supply.Count; i++)
-            _add[i] = _player.LastSupply[i] - _player.SupplyOf(Supply.All[i].Kind);
+            _add[i] = none ? 0 : _player.LastSupply[i] - _player.SupplyOf(Supply.All[i].Kind);
         if (!_ammoSold) _add[(int)SupplyKind.Ammo] = 0;
         Paint();
     }

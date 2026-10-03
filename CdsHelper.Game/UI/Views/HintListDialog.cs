@@ -444,6 +444,7 @@ public sealed class HintListDialog : GameWindow
     /// <param name="usable">줄마다 고를 수 있는지. false 인 줄은 흐리고 눌리지 않는다. 없으면 다 고를 수 있다.</param>
     /// <param name="preview">줄 번호로 목록 오른쪽에 얹을 120x120 그림을 낸다. 없으면 곁 그림 칸이 없다.</param>
     /// <param name="listWidth">목록 폭. 줄이 길어 잘리면 넓힌다.</param>
+    /// <param name="preselect">처음부터 골라 둘 줄. 음수면 아무것도 안 골라 둔다(결정이 흐리다).</param>
     public static int Pick(Window owner, IReadOnlyList<string> items,
                            string caption = "취득 힌트 일람",
                            string whenEmpty = "설득 가능한 힌트가 없습니다",
@@ -454,7 +455,8 @@ public sealed class HintListDialog : GameWindow
                            IReadOnlyList<string>? rightTexts = null,
                            IReadOnlyList<bool>? usable = null,
                            Func<int, ImageSource?>? preview = null,
-                           double listWidth = ListWidth)
+                           double listWidth = ListWidth,
+                           int preselect = -1)
     {
         if (items.Count == 0)
         {
@@ -465,6 +467,9 @@ public sealed class HintListDialog : GameWindow
         var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
                                      rightTexts: rightTexts, usable: usable, preview: preview,
                                      listWidth: listWidth) { Owner = owner };
+        if (preselect >= 0 && preselect < items.Count
+            && (usable == null || preselect >= usable.Count || usable[preselect]))
+            dlg.Select(preselect);
         dlg.ShowDialog();
         return dlg._picked;
     }

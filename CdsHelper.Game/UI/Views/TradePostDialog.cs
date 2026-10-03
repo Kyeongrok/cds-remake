@@ -223,8 +223,9 @@ public sealed class TradePostDialog : GameWindow
         {
             TradePost.Outcome.NotEnoughGold => mate ? "제독, 금화가 모자랍니다." : "금화가 모자랍니다.",
             TradePost.Outcome.HoldFull => mate ? "제독, 실을 장소가 없습니다." : "실을 장소가 없습니다.",
-            TradePost.Outcome.TooHeavy => mate ? "제독, 너무 무거워 배가 가라앉고 맙니다."
-                                              : "너무 무거워 배가 가라앉고 맙니다.",
+            // 원본 글(「너무 무거워 배가 가라앉고 맙니다.」)은 무엇이 넘쳤는지 흐려 바꿨다.
+            TradePost.Outcome.TooHeavy => mate ? "제독, 중량을 초과하고 있습니다."
+                                              : "중량을 초과하고 있습니다.",
             TradePost.Outcome.NoSlot => mate ? $"제독, 실을 수 있는 것은 {Player.CargoSlots} 품목까지입니다."
                                              : $"실을 수 있는 것은 {Player.CargoSlots} 품목까지입니다",
             _ => null,

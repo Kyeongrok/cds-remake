@@ -192,6 +192,9 @@ public sealed class ShipMapWindow : Window
     /// <summary>배 속도 쪽지 — 모드 「배 속도」를 켜면 바다에 있는 동안 지도 위에 뜬다. 끌어 옮길 수 있다.</summary>
     private FleetLabelWindow? _speedNote;
 
+    /// <summary>모드 「항해 일수」의 동그라미. 처음 띄울 때 만든다.</summary>
+    private SeaDaysBadge? _daysBadge;
+
     /// <summary>만난 사람 상자를 켜 두었는지.</summary>
     private bool _peopleWanted = GameSettings.ShowPeopleOverlay;
 
@@ -632,6 +635,7 @@ public sealed class ShipMapWindow : Window
             if (_overlay.IsOpen) { var (lat, lon) = _host.ShipLatLon; FillOverlay(lat, lon); }
             if (_miniWanted) SyncMiniMap();
             SyncSpeedNote();
+            SyncDaysBadge();
             SyncSeaMusic();
         });
 
@@ -1055,6 +1059,7 @@ public sealed class ShipMapWindow : Window
 
         SyncMiniMap();
         SyncSpeedNote();
+        SyncDaysBadge();
     }
 
     /// <summary>
@@ -1249,6 +1254,32 @@ public sealed class ShipMapWindow : Window
         _speedNote ??= FleetLabelWindow.Attach(this, SpeedFontSize, FleetLabelWindow.Slot.Speed);
         _speedNote.Set($"{KnotsOf(_host.LastSpeed):0.00} kn");
     }
+
+    /// <summary>
+    /// 항해 일수 동그라미를 맞춘다 — 모드를 켰고, 지도가 앞이고, <b>바다</b>(뭍·도시 아님)일 때만 지도 왼쪽 위에
+    /// 출항한 지 며칠인지(<see cref="Player.DaysAtSea"/>) 띄운다.
+    /// </summary>
+    private void SyncDaysBadge()
+    {
+        bool show = GameSettings.ShowSeaDays && _started && WindowState != WindowState.Minimized && IsActiveOrOwner()
+                    && ReferenceEquals(_screen.Content, _mapRoot) && !_host.IsOnLand && !_host.InCity
+                    && _game.Player.Ships.Count > 0;
+        if (!show) { _daysBadge?.Set(-1, default); return; }
+        if (ShuttingDown || _input.ActualWidth <= 0) return;
+        if (_daysBadge is { IsClosed: true }) _daysBadge = null;
+        _daysBadge ??= new SeaDaysBadge(this);
+
+        // 지도 판 왼쪽 위에서 조금 들인 자리 — 창 안 자리를 화면 자리(WPF 단위)로 옮긴다.
+        var inside = _input.TranslatePoint(new Point(DaysInset, DaysInset), this);
+        _daysBadge.Set(_game.Player.DaysAtSea, GameUi.ToScreen(this, inside));
+    }
+
+    /// <summary>지도 창이 앞에 있는지 — 딴 앱으로 넘어갔으면 동그라미도 숨긴다(쪽지 창은 늘 위에 뜨므로).</summary>
+    private bool IsActiveOrOwner() =>
+        IsActive || Application.Current.Windows.OfType<Window>().Any(w => w.IsActive);
+
+    /// <summary>항해 일수 동그라미를 지도 왼쪽 위에서 들이는 거리.</summary>
+    private const double DaysInset = 10;
 
     /// <summary>
     /// 함대 속도를 노트로 — 한 눈금에 나아갈 칸 수 × 하루 눈금(48) × 한 칸의 해리(8.64) ÷ 24 시간.
@@ -2644,7 +2675,9 @@ public sealed class ShipMapWindow : Window
         int at = HintListDialog.Pick(owner, rows, caption, whenEmpty,
                                      header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
                                      // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
-                                     listWidth: 580);
+                                     listWidth: 580,
+                                     // 맨 위(가장 새것)를 골라 둔다 — 결정만 누르면 곧바로 불러온다.
+                                     preselect: 0);
         return at >= 0 && at < slots.Count ? slots[at].File : null;
     }
 
@@ -6714,9 +6747,9 @@ public sealed class ShipMapWindow : Window
             if (dialog.Sailed && _host.IsOnLand) _host.PlaceAtCity(city);
             // 출항하면 닻을 걷는다(0x0048EB84). 성문으로 나섰으면 함대는 이 도시에 그대로 있다.
             if (dialog.Sailed) _game.Player.MoorAt(-1);
-            // 「자동 보급」 띠는 출항 물음 동안만 보인다 — 바다로 나오면 걷는다. 그냥 두면 띠가 제 참(14초)을
+            // 「자동 보급」 · 「자동 모집」 띠는 출항 물음 동안만 보인다 — 바다로 나오면 걷는다. 그냥 두면 띠가 제 참(14초)을
             // 다 채울 때까지 항해 화면 아래에 남는다. 딴 알림은 건드리지 않는다.
-            if (dialog.Sailed && _lastNote.StartsWith(HarborMenu.AutoSupplyNote, StringComparison.Ordinal)) Say("");
+            if (dialog.Sailed && HarborMenu.IsAutoNote(_lastNote)) Say("");
 
             // 성문으로 나섰으면 뭍에 올라 말로 걷는다 — 곡도 뭍 것으로 바뀐다.
             // 이미 뭍에 서 있으면(말로 걸어 들어온 마을이면) Land() 는 거짓을 낸다 — 그때도 걷는

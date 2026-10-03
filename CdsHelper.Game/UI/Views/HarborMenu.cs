@@ -177,12 +177,20 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             return false;
         }
 
+        // 모드 「선원 자동 모집」 — 선원이 모자란지 묻기 앞에서 최저 승원 수까지 채운다. 다 못 채웠으면
+        // 아래 물음들이 그대로 막거나 묻는다. 자동 보급보다 먼저다 — 보급 날수가 선원 수로 셈해진다.
+        var notes = new List<string>();
+        if (Local.Settings.GameSettings.AutoCrew && AutoCrew() is { } hired) notes.Add(hired);
+
         if (_player.Crew <= 0)
         {
+            Note(notes);
             MateSays(owner, "선원이 모자랍니다. 이래서는 출항할 수 없습니다!");
             return false;
         }
 
+        // 모집한 것을 먼저 띠에 적어 둔다 — 아래 물음에서 물러나도 무엇을 했는지 보이게.
+        Note(notes);
         if (_player.Crew < _player.MinCrew
             && !MateAsks(owner, _player.MateAt(0).Length > 0
                    ? "제독, 선원이 모자랍니다. 이대로라면 함대가 늦어지지만, 괜찮으십니까?"
@@ -191,7 +199,8 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
 
         // 모드 「자동 보급」 — 출항하려는 이 자리에서 물·식량을 채운다. 버틸 날을 셈하기 앞이라,
         // 채운 뒤의 날수로 아래 물음이 뜬다. 짐이 차서 못 실었으면 그냥 두고 그 물음(날수 경고)에 맡긴다.
-        if (Local.Settings.GameSettings.AutoSupply) AutoSupply();
+        if (Local.Settings.GameSettings.AutoSupply && AutoSupply() is { } bought) notes.Add(bought);
+        Note(notes);
 
         // 보급 쪽은 부관이 말한다. 부관이 없으면 항구 사람이 대신 나선다.
         uint[]? face = SailFace();
@@ -227,6 +236,50 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// <summary>자동 보급 띠 알림의 머리말 — 지도 창이 바다로 나올 때 이 알림을 알아보고 걷는다.</summary>
     internal const string AutoSupplyNote = "자동 보급:";
 
+    /// <summary>선원 자동 모집 띠 알림의 머리말.</summary>
+    internal const string AutoCrewNote = "자동 모집:";
+
+    /// <summary>자동 보급 · 자동 모집이 띠에 적은 알림인지 — 바다로 나오면 걷는다.</summary>
+    internal static bool IsAutoNote(string note) =>
+        note.StartsWith(AutoSupplyNote, StringComparison.Ordinal)
+        || note.StartsWith(AutoCrewNote, StringComparison.Ordinal);
+
+    /// <summary>자동으로 한 일을 아래 띠에 한 줄로 알린다 — 지금까지 모인 것을 다 적는다. 없으면 아무것도 안 한다.</summary>
+    private void Note(List<string> notes)
+    {
+        if (notes.Count == 0) return;
+
+        // 아래 띠는 지도 창의 것이다 — 주인을 거슬러 올라가 찾는다.
+        for (Window? w = Owner; w != null; w = w.Owner)
+            if (w is ShipMapWindow map)
+            {
+                map.Say(string.Join("   ", notes));
+                break;
+            }
+    }
+
+    /// <summary>
+    /// 선원을 함대의 <b>최저 승원 수</b>까지 저절로 모집한다 — 선원 모집 창과 같은 값(<see cref="CrewPrice"/>)이고
+    /// 정원(<see cref="Player.MaxCrew"/>)은 넘기지 않는다. 소지금이 모자라면 낼 수 있는 만큼만이다.
+    /// 원본에 없는 것이라 모드 창에서 켠다. 모집했으면 띠에 적을 한 줄을, 아니면 null 을 낸다.
+    /// </summary>
+    private string? AutoCrew()
+    {
+        var p = _player;
+        if (p.Ships.Count == 0) return null;
+
+        int lack = Math.Min(p.MinCrew, p.MaxCrew) - p.Crew;
+        if (lack <= 0) return null;
+
+        int price = CrewPrice;
+        int want = price > 0 ? Math.Min(lack, p.Gold / price) : lack;
+        if (want <= 0) return null;
+
+        p.Pay(price * want);
+        p.AddCrew(want);
+        return $"{AutoCrewNote} 선원 {want}명 (금화 {price * want}닢)";
+    }
+
     /// <summary>
     /// 물·식량을 저절로 사 싣는다 — 모드 창에서 고른 대로 <b>10일분</b>(보급 창 「10일분」과 같은 셈, 선원 수만큼의 통)까지,
     /// 또는 <b>최대</b>(보급 창 「최대」처럼 물과 식량을 같은 통 수로 실을 수 있는 데까지). 값은 그 항구 시세(물이 공짜인
@@ -237,10 +290,10 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// 못 싣기 일쑤였다. 용량·중량·소지금이 모자라면 들어가는 데까지만 싣고, 하나도 못 실으면 <b>말없이 넘어간다</b> —
     /// 바로 뒤의 출항 물음이 버틸 날을 알려 주므로 그때 손으로 보급하면 된다. 산 것은 아래 띠로 알린다.
     /// </remarks>
-    private void AutoSupply()
+    private string? AutoSupply()
     {
         var p = _player;
-        if (p.Ships.Count == 0 || p.Crew <= 0) return;
+        if (p.Ships.Count == 0 || p.Crew <= 0) return null;
         int rate = _game.Rates.Of(_cityId), flags = _game.CityRows?.FlagsOf(_cityId) ?? 0;
         var water = Supply.Of(SupplyKind.Water);
         var food = Supply.Of(SupplyKind.Food);
@@ -296,16 +349,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         var bought = new List<string>();
         if (addWater > 0) { p.SetSupply(SupplyKind.Water, haveWater + addWater); bought.Add($"{water.Name} {addWater}통"); }
         if (addFood > 0) { p.SetSupply(SupplyKind.Food, haveFood + addFood); bought.Add($"{food.Name} {addFood}통"); }
-        if (bought.Count == 0) return;
+        if (bought.Count == 0) return null;
         p.SetGold(gold - spent);
-
-        // 아래 띠는 지도 창의 것이다 — 주인을 거슬러 올라가 찾는다.
-        for (Window? w = Owner; w != null; w = w.Owner)
-            if (w is ShipMapWindow map)
-            {
-                map.Say($"{AutoSupplyNote} {string.Join(" · ", bought)} (금화 {spent}닢)");
-                break;
-            }
+        return $"{AutoSupplyNote} {string.Join(" · ", bought)} (금화 {spent}닢)";
     }
 
     /// <summary>모항에서 나설 때 아내가 하는 말 셋(<c>0x00544E48</c>~).</summary>

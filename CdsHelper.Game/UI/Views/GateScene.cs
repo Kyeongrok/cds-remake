@@ -21,6 +21,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 곧 차림표 인자의 뜻을 밝혀 준다(1 이 마을, 0 이 항구).
 ///
 /// 이 창은 그림만 깐다 — 말과 차림표는 이 창을 임자로 삼아 그 위에 뜬다.
+///
+/// 그림 둘레에는 도시 화면처럼 <c>CITYFRM.CDS</c> 금빛 틀(여덟 점)을 두른다(<see cref="CityFrame"/>) —
+/// 예전에는 그림만 깔아 들어간 도시와 테가 달랐다. 틀을 못 읽으면 그림만이다.
 /// </remarks>
 internal sealed class GateScene : GameWindow, IGateStage
 {
@@ -48,6 +51,9 @@ internal sealed class GateScene : GameWindow, IGateStage
     private readonly int _scale;
     private bool _playing;
 
+    /// <summary>틀 두께(그림 점). 틀을 못 읽었으면 0.</summary>
+    private readonly int _border;
+
     private GateScene(Engine.Game game, BitmapSource picture, int scale, Rect mapArea)
     {
         _game = game;
@@ -58,7 +64,11 @@ internal sealed class GateScene : GameWindow, IGateStage
         Background = Brushes.Black;
         SizeToContent = SizeToContent.Manual;
 
-        double fullW = CityPictures.Width * scale, fullH = CityPictures.Height * scale;
+        // 도시 화면과 같은 금빛 틀 — 창은 틀을 두른 크기(416x336)다.
+        var frame = CityFrame.TryGetBgra(game.Directory, CityFrame.GoldPart);
+        _border = frame != null ? CityFrame.Border : 0;
+        double fullW = (CityPictures.Width + _border * 2) * scale,
+               fullH = (CityPictures.Height + _border * 2) * scale;
         Width = fullW;
         Height = fullH;
         if (mapArea.Width > 0)
@@ -76,7 +86,32 @@ internal sealed class GateScene : GameWindow, IGateStage
         RenderOptions.SetBitmapScalingMode(art, GameUi.SpriteScaling);
 
         // 그림 위에 애니메이션을 얹을 자리를 하나 깔아 둔다 — 교섭할 때 하트가 여기서 돈다.
-        Content = new Grid { Children = { art, _layer } };
+        var picBox = new Grid
+        {
+            Width = CityPictures.Width * scale,
+            Height = CityPictures.Height * scale,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(_border * scale),
+            Children = { art, _layer },
+        };
+
+        var box = new Grid { Width = fullW, Height = fullH };
+        if (frame != null)
+        {
+            var frameImage = new Image
+            {
+                Source = BitmapSource.Create(CityFrame.Width, CityFrame.Height, 96, 96,
+                                             PixelFormats.Bgra32, null, frame, CityFrame.Width * 4),
+                Width = fullW,
+                Height = fullH,
+                Stretch = Stretch.Fill,
+            };
+            RenderOptions.SetBitmapScalingMode(frameImage, GameUi.SpriteScaling);
+            box.Children.Add(frameImage);
+        }
+        box.Children.Add(picBox);
+        Content = box;
     }
 
     /// <summary>

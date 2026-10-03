@@ -115,6 +115,11 @@ public sealed class ModDialog : GameWindow
         info.Children.Add(Toggle("배 속도", GameSettings.ShowShipSpeed, on => GameSettings.ShowShipSpeed = on,
             "원본에 없는 것입니다 — 바다에 있을 때 함대 속도(바람·돛·선원으로 걸음마다 잰 값)를 지도 위 쪽지로 띄웁니다. 뭍·도시에서는 안 뜹니다. 끌어 옮길 수 있습니다."));
 
+        // 항해 일수 — 출항한 지 며칠인지 지도 왼쪽 위 동그라미에.
+        info.Children.Add(Toggle("항해 일수", GameSettings.ShowSeaDays, on => GameSettings.ShowSeaDays = on,
+            "원본에 없는 것입니다 — 항해 중 지도 왼쪽 위에 동그라미를 띄우고 그 안에 출항한 지 며칠이 됐는지 적습니다."
+            + " 항구에 들면 0 으로 돌아갑니다. 뭍·도시에서는 안 뜹니다."));
+
         // 발견물 수 — 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄운다.
         info.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
             "원본에 없는 것입니다 — 도시에 들어가면 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 도시 창 곁에 띄웁니다. 끌어 옮길 수 있습니다."));
@@ -175,6 +180,13 @@ public sealed class ModDialog : GameWindow
         // 자동 보급 — 출항할 때 물·식량을 10일분까지, 또는 실을 수 있는 데까지.
         rows.Children.Add(AutoSupplyControls());
 
+        // 선원 자동 모집 — 출항할 때 최저 승원 수까지.
+        rows.Children.Add(Toggle("선원 자동 모집", GameSettings.AutoCrew,
+            on => GameSettings.AutoCrew = on,
+            "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 선원이 함대의 최저 승원 수보다 적으면 그만큼 저절로 모집합니다."
+            + " 값은 선원 모집과 같고(명성이 높을수록 쌉니다), 소지금이 모자라면 낼 수 있는 만큼만 모집합니다."
+            + " 정원은 넘기지 않습니다. 모집한 것은 아래 띠로 알립니다."));
+
         // 배 빌림 묻기 — 원본은 배가 있으면 계약 자리에서 늘 묻는다(0x00410724).
         rows.Children.Add(Toggle("배 빌림 묻기", GameSettings.AskLendShips,
             on => GameSettings.AskLendShips = on,
@@ -186,6 +198,12 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.ShowVitalityInfo = on,
             "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
+
+        // 아이템 창 — 소지품일람 줄마다 그림과 효과.
+        info.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
+            on => GameSettings.ItemListPictures = on,
+            "원본과 다릅니다 — 소지품일람의 줄마다 스폰서 일람처럼 왼쪽에 아이템 그림을 내고, 이름 밑에"
+            + " 갈래와 효과(무기 · 방어구), 「장비중」을 적습니다. 끄면 원본처럼 이름만 늘어놓습니다."));
 
         // 스핑크스 퀴즈 도우미 — 개발도구에 있던 계산기를 놀이 안으로 옮겼다.
         rows.Children.Add(Toggle("스핑크스 퀴즈 도우미", GameSettings.SphinxHelper,
