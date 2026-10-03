@@ -352,6 +352,16 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             float3 land = col;
             if (WaterOf(pal) > 0.5 && landW > 1e-4) land = landSum / landW;
 
+            // bank rim for the Nile (river nibble 15, see MapShaderData.NileMark): dark brown cliff band on the land side
+            if (RiverAt(int2(floor(cell))) > 14.5)
+            {
+                float jag = 0.55 + 0.45 * Noise(cell * 22.0) + 0.25 * Noise(cell * 61.0);
+                float rim = smoothstep(0.03, 0.22, m * jag) * (1.0 - edge);
+                float lip = smoothstep(0.20, 0.40, m);
+                float3 cliff = lerp(float3(0.42, 0.27, 0.16), float3(0.18, 0.10, 0.05), lip);
+                land = lerp(land, cliff, saturate(rim));
+            }
+
             float2 cb = cell - 0.5;
             int2   cq = int2(floor(cb));
             float2 ct = cb - floor(cb);

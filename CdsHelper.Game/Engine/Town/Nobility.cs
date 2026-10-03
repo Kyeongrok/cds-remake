@@ -44,7 +44,7 @@ public static class Nobility
         if (!Enabled || player.NobleRank <= 0) return 0;
         int sum = 0;
         foreach (var p in Passives.All)
-            if (p.Effect == effect && p.Rank <= player.NobleRank && (effect != PassiveEffect.Ability || p.Stat == stat))
+            if (p.Effect == effect && p.Rank > 0 && p.Rank <= player.NobleRank && (effect != PassiveEffect.Ability || p.Stat == stat))
                 sum += p.Amount;
         return sum;
     }

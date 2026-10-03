@@ -2306,8 +2306,22 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         int language = _game.Nations?.Find(_game.CityRows?.NationOf(_cityId) ?? -1)?.Language ?? -1;
         int level = language >= 0 && language < Skill.Languages.Length
             ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
-        void Say(string words) => TalkDialog.Say(_view, face, "",
-                                                 StrangerTalk.Garble(words, level, _game.Random));
+        // 부관 · 통역(자리 0 · 3)이 그 말을 더 잘하면 그 사람이 옮겨 준다 — 무명 손님 소문(MeetStranger)과 같다.
+        int best = level;
+        string relayer = "";
+        if (language is >= 0 and < 14)
+            foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+                if (RowOf(_player.MateAt(slot)) is { } mate && mate.Languages[language] > best)
+                {
+                    best = mate.Languages[language];
+                    relayer = _player.MateAt(slot);
+                }
+        void Say(string words)
+        {
+            TalkDialog.Say(_view, face, "", StrangerTalk.Garble(words, level, _game.Random));
+            if (relayer.Length > 0 && _player.MateInfoOf(relayer) is { } who)
+                TalkDialog.Say(_view, MateFace(who), "", StrangerTalk.Relay(StrangerTalk.Garble(words, best, _game.Random), false));
+        }
 
         if (_rumor < 0 || _game.Rumors?.Rumors is not { } rumors || _rumor >= rumors.Count) return;
         var rumor = rumors[_rumor];

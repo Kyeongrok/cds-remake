@@ -62,7 +62,7 @@ public sealed class PassiveEditDialog : GameWindow
         Background = System.Windows.Media.Brushes.White;
 
         Combo("작위", nameof(Row.Rank), 80,
-              Enumerable.Range(1, Nobility.MaxRank).Select(r => new Choice(r, $"{r} {Nobility.Names[r]}")));
+              Enumerable.Range(0, Nobility.MaxRank + 1).Select(r => new Choice(r, r == 0 ? "미배치" : $"{r} {Nobility.Names[r]}")));
         Text("이름", nameof(Row.Name), 180);
         Combo("갈래", nameof(Row.Effect), 140,
               Enum.GetValues<PassiveEffect>().Select(e => new Choice((int)e, Passives.NameOf(e))));
@@ -150,7 +150,7 @@ public sealed class PassiveEditDialog : GameWindow
     /// <summary>작위 차례로 늘어놓고 그 줄을 고른다.</summary>
     private void Rebind(Row? pick)
     {
-        _rows = [.. _rows.OrderBy(r => r.Rank)];
+        _rows = [.. _rows.OrderBy(r => r.Rank == 0 ? int.MaxValue : r.Rank)];
         _grid.ItemsSource = _rows;
         if (pick != null) { _grid.SelectedItem = pick; _grid.ScrollIntoView(pick); }
         ShowStatus();
@@ -159,7 +159,8 @@ public sealed class PassiveEditDialog : GameWindow
     private void ShowStatus()
     {
         var byRank = Enumerable.Range(1, Nobility.MaxRank)
-            .Select(r => $"{Nobility.Names[r]} {_rows.Count(x => x.Rank == r)}");
+            .Select(r => $"{Nobility.Names[r]} {_rows.Count(x => x.Rank == r)}")
+            .Append($"미배치 {_rows.Count(x => x.Rank == 0)}");
         _status.Text = $"패시브 {_rows.Count}개 ({string.Join(" · ", byRank)})"
                      + "   ·   작위가 오르면 아래 작위의 것도 다 가진다 · 같은 갈래는 더해진다 · 이름을 비우면 풀이가 이름이 된다"
                      + "   ·   능력치 칸은 갈래가 「능력치 증가」일 때만 쓴다 · 감소 갈래의 양은 % 다";

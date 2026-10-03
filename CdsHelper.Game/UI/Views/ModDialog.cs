@@ -294,7 +294,7 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 발견물을 보고할 때마다 공적(힌트 등급 x 10)이 쌓이고, 교역소 「투자」로도 1000닢마다 공적 1 이 쌓입니다. 공적이 차면 술집에서"
             + " 「본국 왕궁에서 찾는다」는 말을 듣습니다. 본국 수도 왕궁에 들면 국왕이 작위를 내립니다(기사 · 남작 · 자작 · 백작 · 후작 · 공작 · 대공)."
             + " 작위마다 패시브 혜택이 붙고 쌓입니다 — "
-            + string.Join(", ", Engine.Town.Passives.All.Select(p => $"{Engine.Town.Nobility.Names[p.Rank]}: {p.Name}")) + "."
+            + string.Join(", ", Engine.Town.Passives.All.Where(p => p.Rank > 0).Select(p => $"{Engine.Town.Nobility.Names[p.Rank]}: {p.Name}")) + "."
             + " 패시브는 도구 앱 「요소 → 패시브」에서 만들고 고칩니다."
             + " 인물정보에 작위와 공적, 「작위」 단추가 나옵니다."));
 

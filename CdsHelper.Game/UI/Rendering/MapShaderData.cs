@@ -15,6 +15,12 @@ public static class MapShaderData
     /// <summary>지형표에서 강 칸의 부류.</summary>
     public const int RiverClass = 5;
 
+    /// <summary>강 거리 칸에서 「강에서 멀다」의 끝 값. 15 는 나일강 둘레 표시(<see cref="NileMark"/>)로 비워 둔다.</summary>
+    private const int FarRiver = 14;
+
+    /// <summary>강 거리 칸의 나일강 둘레 표시 — 셰이더가 둑 테두리를 그린다.</summary>
+    private const byte NileMark = 15;
+
     /// <summary>칸 (x, y)의 값. 짝수 행이 지도의 왼쪽 절반, 홀수 행이 오른쪽 절반이다.</summary>
     public static int Cell(byte[] world, int x, int y)
     {
@@ -83,6 +89,24 @@ public static class MapShaderData
     /// 위 네 비트에는 <b>강 칸까지의 걸음 수</b>(0~15)를 싣는다 — 고해상도 바다가 강과 강 어귀는 원본 도트로 두고,
     /// 강에서 멀어질수록 서서히 새 바다로 넘어가게 한다(강을 매끈한 물로 바꾸면 둑이 뭉개지고 색도 어긋났다).
     /// </remarks>
+    /// <summary>
+    /// 나일강이 흐르는 칸 네모 — 알렉산드리아(78) · 카이로(79) · 아스완(80) · 하르툼(111)을 둘러 넉넉히 잡는다.
+    /// 그 안의 강 칸만 바다처럼 그린다. 도시 좌표를 모르면 null.
+    /// </summary>
+    private static (int Left, int Top, int Right, int Bottom)? NileBox()
+    {
+        int w = WorldMapRenderer.UnfoldedW, h = WorldMapRenderer.CellH;
+        double l = double.MaxValue, t = double.MaxValue, r = double.MinValue, b = double.MinValue;
+        foreach (int city in (int[])[78, 79, 80, 111])
+        {
+            if (!GameMapCoords.TryCityCell(city, out double cx, out double cy)) return null;
+            l = Math.Min(l, cx); r = Math.Max(r, cx); t = Math.Min(t, cy); b = Math.Max(b, cy);
+        }
+        const int Margin = 24;
+        return (Math.Clamp((int)l - Margin, 0, w - 1), Math.Clamp((int)t - 4, 0, h - 1),
+                Math.Clamp((int)r + Margin, 0, w - 1), Math.Clamp((int)b + Margin, 0, h - 1));
+    }
+
     public static byte[] SeaDepth(byte[] world, TerrainTable terrain)
     {
         int w = WorldMapRenderer.UnfoldedW, h = WorldMapRenderer.CellH;
@@ -96,6 +120,14 @@ public static class MapShaderData
                 int word = Cell(world, x, y);
                 kind[y * w + x] = (word & 0x8000) != 0 ? (byte)0 : (byte)terrain.ClassOfCell(word);
             }
+
+        // 나일강은 강 칸이지만 <b>바다처럼</b> 그린다 — 강 도트로 두면 넓은 사막에 가는 줄 하나라 바다 어귀와 결이 달랐다.
+        // 물 칸으로 쳐서 수심을 재고, 강 거리 씨앗에서도 뺀다(그래야 고해상도 바다가 원본 도트로 물러서지 않는다).
+        var nileCells = new List<int>();
+        if (NileBox() is { } nile)
+            for (int y = nile.Top; y <= nile.Bottom; y++)
+                for (int x = nile.Left; x <= nile.Right; x++)
+                    if (kind[y * w + x] == RiverClass) { kind[y * w + x] = 0; nileCells.Add(y * w + x); }
 
         var depth = new byte[w * h];
         var queue = new int[w * h];
@@ -130,18 +162,33 @@ public static class MapShaderData
         {
             int i = queue[head++];
             int x = i % w, y = i / w;
-            byte next = (byte)Math.Min(15, river[i] + 1);
+            byte next = (byte)Math.Min(FarRiver, river[i] + 1);
             Span<int> around = [y * w + (x + 1) % w, y * w + (x + w - 1) % w,
                                 y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
             foreach (int j in around)
             {
                 if (j < 0 || river[j] != 255) continue;
                 river[j] = next;
-                if (next < 15) queue[tail++] = j;
+                if (next < FarRiver) queue[tail++] = j;
             }
         }
+        for (int i = 0; i < river.Length; i++) river[i] = (byte)Math.Min((int)river[i], FarRiver);
+
+        // 나일강 칸과 그 둘레 한 칸은 강 거리 칸에 <see cref="NileMark"/>(15)를 싣는다 — 셰이더가 이것을 보고 둑에
+        // 짙은 갈색 테두리를 그린다(바닷가 타일에는 그림에 든 절벽 테두리가 강 타일에는 없다). 다른 강 거리는 14 까지다.
+        foreach (int i in nileCells)
+        {
+            int x = i % w, y = i / w;
+            for (int dy = -1; dy <= 1; dy++)
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int yy = y + dy;
+                    if (yy < 0 || yy >= h) continue;
+                    river[yy * w + (x + dx + w) % w] = NileMark;
+                }
+        }
         for (int i = 0; i < depth.Length; i++)
-            depth[i] = (byte)(depth[i] | (Math.Min((int)river[i], 15) << 4));
+            depth[i] = (byte)(depth[i] | (river[i] << 4));
         return depth;
     }
 }

@@ -20,6 +20,11 @@ public sealed class LandBattle
     /// <summary>한 쪽 자리 수와 온 자리 수.</summary>
     public const int PerSide = LandRoster.SlotCount, Slots = PerSide * 2;
 
+    /// <summary>
+    /// 제독 부대(아군 총대장)가 칠 때 <b>적 총대장을 먼저 노릴 확률</b>(%) — 작위 패시브 「적 대장 우선 타격」. 원본에 없는 몫이라 0 이면 원본 그대로다.
+    /// </summary>
+    public int LeaderFocus { get; private set; }
+
     /// <summary>적의 첫 자리.</summary>
     public const int FirstFoe = PerSide;
 
@@ -176,6 +181,8 @@ public sealed class LandBattle
                       int scale, int nation, int culture, int terrain, GameRandom dice,
                       int myMen = 0, bool mock = false, int city = -1, int sort = Town)
     {
+        // 작위 패시브 「적 대장 우선 타격」 — 제독 부대가 적 총대장을 먼저 노릴 확률(%).
+        LeaderFocus = Engine.Town.Nobility.Sum(player, Engine.Town.PassiveEffect.LeaderStrike);
         Sort = sort == ScriptCity ? ScriptCity : Town;
         City = city;
         Nation = nation;
@@ -221,6 +228,8 @@ public sealed class LandBattle
                       int myMen, int foeMen, Player player, Player.MateInfo? aide,
                       int culture, int terrain, GameRandom dice, int sort = Town)
     {
+        // 작위 패시브 「적 대장 우선 타격」 — 제독 부대가 적 총대장을 먼저 노릴 확률(%).
+        LeaderFocus = Engine.Town.Nobility.Sum(player, Engine.Town.PassiveEffect.LeaderStrike);
         Sort = sort == Field ? Field : Town;
         Nation = -1;
         Culture = culture;
@@ -277,6 +286,8 @@ public sealed class LandBattle
                       (int Sword, int Gunnery, int Shooting)? foeSkills = null, int sort = Script,
                       int scale = 0, int nation = -1)
     {
+        // 작위 패시브 「적 대장 우선 타격」 — 제독 부대가 적 총대장을 먼저 노릴 확률(%).
+        LeaderFocus = Engine.Town.Nobility.Sum(player, Engine.Town.PassiveEffect.LeaderStrike);
         FoeSkills = foeSkills;
         Sort = sort == Field ? Field : Script;
         Nation = nation;

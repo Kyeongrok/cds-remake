@@ -462,6 +462,20 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         var kind = LandUnits.KindOf(unit.Kind);
         bool mine = slot < LandBattle.FirstFoe;
 
+        // 작위 패시브 「적 대장 우선 타격」 — 제독 부대가 그 확률로 적 총대장을 먼저 친다.
+        // 근접은 앞열에 선 대장만, 사격은 어디 선 대장이든 노린다. 포 · 지원 병종은 그대로다.
+        if (mine && unit.IsLeader && battle.LeaderFocus > 0
+            && kind is LandUnits.Kind.Melee or LandUnits.Kind.Shot
+            && !(kind == LandUnits.Kind.Shot && Damp(unit.Kind))
+            && LeaderOf(foe: true) is var chief && chief >= 0
+            && (kind != LandUnits.Kind.Melee || battle.IsFront(chief))
+            && dice.Next(100) < battle.LeaderFocus)
+        {
+            Hit(slot, chief);
+            Done();
+            return;
+        }
+
         switch (kind)
         {
             case LandUnits.Kind.Melee:

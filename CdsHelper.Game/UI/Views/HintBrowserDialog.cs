@@ -35,7 +35,7 @@ public sealed class HintBrowserDialog : GameWindow
     private readonly Engine.Game _game;
     private readonly IReadOnlyList<int> _ids;
     private readonly List<Border> _rows = [];
-    private readonly ScrollViewer _scroll;
+    private readonly FrameworkElement _scroll;
     private int _at = -1;
 
     private readonly TextBlock _head = new()
@@ -90,15 +90,11 @@ public sealed class HintBrowserDialog : GameWindow
         var list = new StackPanel();
         for (int i = 0; i < ids.Count; i++) list.Children.Add(Row(i));
 
-        _scroll = new ScrollViewer
-        {
-            Width = ListWidth,
-            Height = PaneHeight,
-            Margin = new Thickness(12, 10, 8, 4),
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            Content = list,
-        };
+        // 굴림대는 게임 것(화살표 조각 + 손잡이, GameUi.Scroller)이다 — 윈도 기본 막대가 판 위에서 튀었다.
+        _scroll = GameUi.Scroller(list, PaneHeight);
+        _scroll.Width = ListWidth;
+        _scroll.Height = PaneHeight;
+        _scroll.Margin = new Thickness(12, 10, 8, 4);
 
         var detail = new StackPanel();
         detail.Children.Add(_head);
@@ -115,12 +111,7 @@ public sealed class HintBrowserDialog : GameWindow
             Background = new SolidColorBrush(Color.FromArgb(0x30, 0, 0, 0)),
             BorderBrush = GameUi.Edge,
             BorderThickness = new Thickness(1),
-            Child = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                Content = detail,
-            },
+            Child = GameUi.Scroller(detail, PaneHeight - 22),
         };
 
         var body = new StackPanel { Orientation = Orientation.Horizontal };
