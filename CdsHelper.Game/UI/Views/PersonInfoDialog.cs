@@ -75,7 +75,7 @@ internal sealed class PersonInfoDialog : InfoDialog
         rows.Children.Add(Gap(14));
         rows.Children.Add(BlackLine($"  연령  /{player.Age,2}세          " +
                                 $"생년월일/{player.BirthYear,4}년{player.BirthMonth,2}월{player.BirthDay,2}일"));
-        rows.Children.Add(BlackLine($"  별자리/{GameUi.Pad(player.Zodiac, 12)}혈액형  /{player.BloodName}"));
+        rows.Children.Add(BlackLine($"  별자리/{GameUi.Pad(player.Zodiac, 14)}혈액형  /{player.BloodName}"));
         rows.Children.Add(BlackLine($"  국적  /{player.NationName}"));
         rows.Children.Add(BlackLine($"  소지금/{player.Gold,10}닢"));
         rows.Children.Add(BlackLine($"  저금  /{player.Savings,10}닢"));
@@ -92,7 +92,7 @@ internal sealed class PersonInfoDialog : InfoDialog
         }
 
         var buttons = new List<GameButton> { new("특기", () => ShowSkills(player)) };
-        if (noble) buttons.Add(new GameButton("작위", () => ShowNobility(player)));
+        if (noble) buttons.Add(new GameButton("작위", () => ShowNobility(this, game!)));
         buttons.Add(new GameButton("취소", Close));
         Build("", rows, BoardWidth, noble ? BoardHeight + 20 : BoardHeight, [.. buttons]);
     }
@@ -100,19 +100,28 @@ internal sealed class PersonInfoDialog : InfoDialog
     /// <summary>
     /// 작위 혜택 — 작위마다 무엇이 붙는지, 지금 가진 것과 아직인 것을 늘어놓는다(모드 「작위」).
     /// </summary>
-    private void ShowNobility(Player player)
+    /// <remarks>인물정보의 「작위」 단추와 도시 커맨드의 「작위」 줄이 같이 쓴다.</remarks>
+    public static void ShowNobility(Window owner, Engine.Game game)
     {
-        var lines = new List<string> { $"지금 작위: {Engine.Town.Nobility.NameOf(player.NobleRank)}", "" };
+        var player = game.Player;
+        int merit = Engine.Town.Nobility.MeritOf(game);
+        int next = Engine.Town.Nobility.ToNext(player.NobleRank, merit);
+        var lines = new List<string>
+        {
+            $"지금 작위: {Engine.Town.Nobility.NameOf(player.NobleRank)}   공적: {merit}"
+                + (next > 0 ? $"   다음 작위까지: {next}" : ""),
+            $"  (발견물 보고 {Engine.Town.Nobility.DiscoveryMeritOf(game)} · 교역소 투자 {Engine.Town.Nobility.InvestMeritOf(player.TotalInvested)}"
+                + $", 투자 {player.TotalInvested}닢)",
+            "",
+        };
         for (int rank = 1; rank <= Engine.Town.Nobility.MaxRank; rank++)
         {
-            var perks = Engine.Town.Nobility.Perks.Where(p => p.Rank == rank).ToList();
+            var perks = Engine.Town.Passives.All.Where(p => p.Rank == rank).ToList();
             string mark = player.NobleRank >= rank ? "●" : "○";
-            string what = perks.Count > 0
-                ? string.Join(" · ", perks.Select(p => p.Name))
-                : "앞의 혜택 전부";
-            lines.Add($"{mark} {Engine.Town.Nobility.Names[rank]}({Engine.Town.Nobility.Thresholds[rank]}) — {what}");
+            string what = perks.Count > 0 ? string.Join(" · ", perks.Select(p => p.Name)) : "-";
+            lines.Add($"{mark} {Engine.Town.Nobility.Names[rank]}({Engine.Town.Nobility.Thresholds[rank]}) : {what}");
         }
-        NoticeDialog.Show(this, string.Join(Environment.NewLine, lines), "작위");
+        NoticeDialog.Show(owner, string.Join(Environment.NewLine, lines), "작위");
     }
 
     /// <summary>

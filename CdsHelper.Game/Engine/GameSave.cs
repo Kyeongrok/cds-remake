@@ -362,6 +362,7 @@ public static class GameSave
         Dictionary<int, int>? CityStates = null, int? HistoryMonth = null,
         Dictionary<int, int>? HistoryNations = null, List<int>? HistoryDone = null,
         Dictionary<int, int>? AnnouncedYears = null, int? NobleRank = null,
+        Dictionary<int, long>? Investments = null,
         Dictionary<int, DateTime>? AnnouncedOn = null, Dictionary<int, DateTime>? FoundOn = null, Dictionary<int, int>? CityScales = null,
         List<Support.Local.Models.Player.Rumor>? Rumors = null,
         List<Support.Local.Models.Player.Rumor>? PersonLines = null,
@@ -480,6 +481,8 @@ public static class GameSave
                             AnnouncedYears: player.AnnouncedOn.ToDictionary(e => e.Key, e => e.Value.Year),
                             // 작위(모드 「작위」). 이 칸 앞의 세이브는 작위가 없다.
                             NobleRank: player.NobleRank,
+                            // 교역소 투자(모드 「작위」). 이 칸 앞의 세이브는 투자가 없다.
+                            Investments: player.Investments.ToDictionary(e => e.Key, e => e.Value),
                             // 연표가 쓰는 날짜. 이 칸 앞의 세이브는 해만 있어 1월로 연다.
                             AnnouncedOn: player.AnnouncedOn.ToDictionary(e => e.Key, e => e.Value),
                             FoundOn: player.FoundOn.ToDictionary(e => e.Key, e => e.Value),

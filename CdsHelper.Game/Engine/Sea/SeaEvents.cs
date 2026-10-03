@@ -194,6 +194,10 @@ public static class SeaEvents
         int safe = sail * SafePerLevel + faith + SafeBase;
         if (safe >= rng.Next(SafeRoll)) return null;
 
+        // 작위 패시브 「재해 감소」 — 재해가 일어날 날의 그 % 를 그냥 넘긴다. 원본에 없는 몫이라 패시브가 없으면 주사위를 안 굴린다.
+        if (Town.Nobility.Sum(player, Town.PassiveEffect.DisasterRate) is > 0 and var less && rng.Next(100) < less)
+            return null;
+
         // 과학·의학은 <b>자리 0</b> 과 견준다(0x0047484C · 0x0047486A 의 인자).
         var aide = mateAt?.Invoke(0);
         int carved = FigureheadOf(player);

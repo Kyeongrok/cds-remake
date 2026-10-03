@@ -375,12 +375,13 @@ public static class Encounter
     /// <param name="chased">뒤쫓는 후원자가 있는지(<c>Player.Pursuers</c>).</param>
     /// <param name="lookup">인물 번호로 적장을 찾는다. null 이거나 못 찾으면 붙박이 값(<see cref="CaptainOf"/>)이다.</param>
     public static Enemy? AtSea(double lat, double lon, int steps, Random rng,
-                               Func<int, Captain?>? lookup = null, bool chased = false)
+                               Func<int, Captain?>? lookup = null, bool chased = false, double rate = 1)
     {
         if (RollOf(lat, lon) is not { } roll) return null;
 
         // 모드 창의 「해적 조우 확률」 배수 — 주사위 폭을 그만큼 나눈다. 0 이면 아예 안 붙는다(원본은 x1).
-        double scale = Local.Settings.GameSettings.SeaRaidScales[Local.Settings.GameSettings.SeaRaidScale];
+        // rate 는 그 위에 곱하는 몫 — 작위 패시브 「해적 조우 감소」가 준다(20% 면 0.8).
+        double scale = Local.Settings.GameSettings.SeaRaidScales[Local.Settings.GameSettings.SeaRaidScale] * rate;
         if (scale <= 0) return null;
         int width = Math.Max(1, (int)Math.Round(roll / scale));
 

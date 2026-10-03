@@ -2818,9 +2818,13 @@ public sealed class ShipMapWindow : Window
             _host.MonthOf = () => _game.Player.Date.Month;
             // 배가 얼마나 빨리 가는지는 함대와 돛 효율표가 정한다 — 지도는 그 둘을 모른다.
             _host.FleetSpeed = (dir, speed, heading, onLand) =>
-                Sailing.SpeedOf(_game.Player, _game.Sails, dir, speed, heading, onLand)
-                // 작위 혜택(후작) — 바다에서 1노트 빨라진다. 속도 값을 노트로 바꾸는 셈(KnotsOf)의 거꾸로다.
-                + (!onLand && Engine.Town.Nobility.Has(_game.Player, Engine.Town.Nobility.Perk.Speed) ? SpeedPerKnot : 0);
+            {
+                int s = Sailing.SpeedOf(_game.Player, _game.Sails, dir, speed, heading, onLand);
+                // 작위 패시브 「육상 이동」 — 뭍에서 걷는 빠르기가 그 % 빨라진다.
+                if (onLand) return s * (100 + Engine.Town.Nobility.Sum(_game.Player, Engine.Town.PassiveEffect.LandSpeed)) / 100;
+                // 작위 패시브 「항해 속도」 — 바다에서 그 노트만큼 빨라진다. 속도 값을 노트로 바꾸는 셈(KnotsOf)의 거꾸로다.
+                return s + SpeedPerKnot * Engine.Town.Nobility.Sum(_game.Player, Engine.Town.PassiveEffect.SeaSpeed);
+            };
             // 뱃머리가 도는 빠르기도 기함 종류가 정한다(0x00569FC0) — 큰 배일수록 굼뜨다.
             _host.TurnRateOf = () => Sailing.TurnRateOf(_game.Player.FlagshipHull?.Hull);
             // 날짜변경선을 넘을 때마다 바퀴 수를 센다(0x0047D11B) — 세계일주 장면이 쓴다.
@@ -2916,6 +2920,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreHistory(saved.HistoryMonth, saved.HistoryNations, saved.HistoryDone);
             _game.Player.RestoreAnnouncedDates(saved.AnnouncedOn, saved.AnnouncedYears);
             _game.Player.SetNobleRank(saved.NobleRank ?? 0);
+            _game.Player.RestoreInvestments(saved.Investments);
             _game.Player.RestoreFoundDates(saved.FoundOn);
             // 찾은 사람·보고한 사람 이름. 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
             _game.Player.RestoreDiscoverers(saved.FoundBy, saved.AnnouncedBy);
@@ -5152,7 +5157,7 @@ public sealed class ShipMapWindow : Window
             var talkFace = MateFace();
             // 고르기 창은 제목 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
             // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다 — 굴림은 그대로라 실패하면 싸운다.
-            switch (Engine.Town.Nobility.Effective(_game.Player, GameSettings.AutoFlee, Engine.Town.Nobility.Perk.AutoFlee) ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices))
+            switch (GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices))
             {
                 case 0 when Talked(band, dice, talkFace, weight: foeMen): return;
                 case 1:
@@ -5622,7 +5627,10 @@ public sealed class ShipMapWindow : Window
 
         var (lat, lon) = _host.ShipLatLon;
         if (Encounter.AtSea(lat, lon, steps, _game.Random, CaptainOf,
-                            chased: _game.Player.Pursuers.Any()) is not { } foe) return;
+                            chased: _game.Player.Pursuers.Any(),
+                            // 작위 패시브 「해적 조우 감소」 — 마주칠 확률이 그 % 준다.
+                            rate: Math.Max(0, 100 - Engine.Town.Nobility.Sum(_game.Player, Engine.Town.PassiveEffect.EncounterRate)) / 100.0)
+            is not { } foe) return;
         var rng = _game.Random;
 
         bool over = false;
@@ -5658,7 +5666,7 @@ public sealed class ShipMapWindow : Window
 
             // 고르기 창은 제목도 「취소」 줄도 없이 세 줄뿐이다(0x0045582D → 0x004878A0(목록, 0, 0, 0, 0)).
             // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다.
-            int pick = Engine.Town.Nobility.Effective(_game.Player, GameSettings.AutoFlee, Engine.Town.Nobility.Perk.AutoFlee) ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices);
+            int pick = GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices);
             switch (pick)
             {
                 case 0 when Talked(foe, rng, face): return;  // 교섭이 되면 그대로 끝난다

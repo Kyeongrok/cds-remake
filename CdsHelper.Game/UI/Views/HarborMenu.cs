@@ -180,9 +180,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         // 모드 「선원 자동 모집」 — 선원이 모자란지 묻기 앞에서 최저 승원 수까지 채운다. 다 못 채웠으면
         // 아래 물음들이 그대로 막거나 묻는다. 자동 보급보다 먼저다 — 보급 날수가 선원 수로 셈해진다.
         var notes = new List<string>();
-        // 작위 모드를 켰으면 기사 혜택이 정한다(Nobility.Effective).
-        if (Engine.Town.Nobility.Effective(_player, Local.Settings.GameSettings.AutoCrew, Engine.Town.Nobility.Perk.AutoCrew)
-            && AutoCrew() is { } hired) notes.Add(hired);
+        if (Local.Settings.GameSettings.AutoCrew && AutoCrew() is { } hired) notes.Add(hired);
 
         if (_player.Crew <= 0)
         {
@@ -201,9 +199,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
 
         // 모드 「자동 보급」 — 출항하려는 이 자리에서 물·식량을 채운다. 버틸 날을 셈하기 앞이라,
         // 채운 뒤의 날수로 아래 물음이 뜬다. 짐이 차서 못 실었으면 그냥 두고 그 물음(날수 경고)에 맡긴다.
-        // 작위 모드를 켰으면 남작 혜택이 정한다(Nobility.Effective).
-        if (Engine.Town.Nobility.Effective(_player, Local.Settings.GameSettings.AutoSupply, Engine.Town.Nobility.Perk.AutoSupply)
-            && AutoSupply() is { } bought) notes.Add(bought);
+        if (Local.Settings.GameSettings.AutoSupply && AutoSupply() is { } bought) notes.Add(bought);
         Note(notes);
 
         // 보급 쪽은 부관이 말한다. 부관이 없으면 항구 사람이 대신 나선다.

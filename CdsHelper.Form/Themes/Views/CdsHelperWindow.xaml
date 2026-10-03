@@ -265,6 +265,10 @@
                                             Header="선수상"
                                             ToolTip="선수상 서른여섯의 등급을 고친다 — 막을 확률(등급x30−20)과 다는 삯이 놀이에 바로 든다" />
                                         <MenuItem
+                                            x:Name="PART_PassiveEditMenu"
+                                            Header="패시브"
+                                            ToolTip="모드 「작위」의 혜택을 만들고 고친다 — 운 · 신앙 같은 능력치 증가, 해적 조우 · 재해 감소, 속도 따위" />
+                                        <MenuItem
                                             x:Name="PART_VoyagerEditMenu"
                                             Header="경쟁자"
                                             ToolTip="역사 항해자 열넷이 언제 무엇을 채가는지 고친다 — 고친 것은 놀이에도 그대로 쓰인다" />

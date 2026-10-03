@@ -247,7 +247,5 @@ public sealed class HintBrowserDialog : GameWindow
     }
 
     /// <summary>모드 「향상된 힌트 보기」가 켜졌는지.</summary>
-    /// <remarks>작위 모드를 켰으면 남작 혜택이 정한다(<see cref="Engine.Town.Nobility.Effective"/>).</remarks>
-    public static bool IsOn(Support.Local.Models.Player player) =>
-        Engine.Town.Nobility.Effective(player, GameSettings.HintBrowser, Engine.Town.Nobility.Perk.HintView);
+    public static bool IsOn(Support.Local.Models.Player player) => GameSettings.HintBrowser;
 }

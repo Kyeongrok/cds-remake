@@ -1910,7 +1910,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             ShowPatrons: () => KeepCityMenu(Patrons.ShowPatrons),
             ShowMap: () => _cityMenu.Push(MapMenu),
             Quit: () => GameSystemMenu.Quit(this, _game, Menu),
-            Cancel: CloseCityMenu));
+            Cancel: CloseCityMenu,
+            ShowNobility: Engine.Town.Nobility.Enabled
+                ? () => KeepCityMenu(() => PersonInfoDialog.ShowNobility(this, _game))
+                : null));
 
     /// <summary>
     /// 인물 정보. <b>부하가 하나라도 있으면</b> 게임처럼 누구를 볼지 먼저 묻고,
@@ -2717,6 +2720,38 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     void ITownScreen.TradeTalk() => TradeTalk();
+
+    /// <summary>
+    /// 교역소 「투자」 — 소지금을 이 교역소에 맡긴다. 투자한 돈은 1000 닢마다 공적 1 이 된다(모드 「작위」).
+    /// </summary>
+    void ITownScreen.Invest()
+    {
+        var owner = Menu.Window ?? this;
+        if (_player.Gold < InvestStep)
+        {
+            GameDialog.Show(owner, "투자할 돈이 없습니다");
+            return;
+        }
+
+        long here = _player.InvestedIn(_cityId);
+        int merit = Engine.Town.Nobility.MeritOf(_game);
+        int want = CountDialog.Ask(owner, "투자한다", "금  액", "닢",
+                                   _player.Gold, InvestStep, full: false,
+                                   new CountDialog.Gauge("소지금", _player.Gold),
+                                   new CountDialog.Gauge("투자액", (int)Math.Min(int.MaxValue, here)),
+                                   new CountDialog.Gauge("공  적", merit));
+        if (want <= 0) return;
+
+        long before = _player.TotalInvested;
+        if (!_player.Invest(_cityId, want)) return;
+        int gained = Engine.Town.Nobility.InvestMeritOf(_player.TotalInvested)
+                     - Engine.Town.Nobility.InvestMeritOf(before);
+        GameDialog.Show(owner, $"금화 {want}닢을 {_player.CityName} 교역소에 투자했습니다"
+                               + (gained > 0 ? $"{Environment.NewLine}공적이 {gained} 올랐습니다" : ""));
+    }
+
+    /// <summary>투자 수 적기의 한 칸 — 공적 1 이 되는 몫(1000 닢)이다.</summary>
+    private const int InvestStep = Engine.Town.Nobility.InvestPerMerit;
 
     void ITownScreen.Stay() => Stay();
 

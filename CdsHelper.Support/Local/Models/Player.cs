@@ -295,9 +295,16 @@ public sealed class Player
     /// <summary>능력치 여섯(체력·지력·무력·매력·운·신앙심).</summary>
     public int[] Abilities { get; private set; } = [50, 50, 50, 50, 50, 50];
 
-    /// <summary>그 능력치.</summary>
+    /// <summary>그 능력치 — 작위 패시브(<see cref="AbilityBonus"/>)가 얹힌 값이다. 보이는 값 100 을 안 넘는다.</summary>
     public int AbilityOf(int which) =>
-        which >= 0 && which < Abilities.Length ? Abilities[which] : 0;
+        which >= 0 && which < Abilities.Length
+            ? Math.Min(Abilities[which] + AbilityBonus(this, which), Ability.Max - 1)
+            : 0;
+
+    /// <summary>
+    /// 능력치에 늘 얹히는 값 — 작위 패시브(Engine.Town.Passives)가 쓴다. 판이 이 물음을 걸어 둔다. 적어 두는 값은 안 바뀐다.
+    /// </summary>
+    public static Func<Player, int, int> AbilityBonus { get; set; } = (_, _) => 0;
 
     /// <summary>다음에 늙는 해(제독 <c>+0x304</c>). NEW GAME 은 0 이라 마흔을 넘긴 첫 저장에서 곧 늙는다(<c>0x0047C324</c>).</summary>
     public int AgingYear { get; set; }
@@ -813,6 +820,33 @@ public sealed class Player
 
     /// <summary>작위를 적는다.</summary>
     public void SetNobleRank(int rank) => NobleRank = Math.Clamp(rank, 0, 7);
+
+    private readonly Dictionary<int, long> _invested = [];
+
+    /// <summary>교역소에 투자한 돈 — 도시 번호 → 누적 금액. 원본에 없는 칸이다(모드 「작위」).</summary>
+    public IReadOnlyDictionary<int, long> Investments => _invested;
+
+    /// <summary>그 도시 교역소에 투자한 돈.</summary>
+    public long InvestedIn(int city) => _invested.TryGetValue(city, out long v) ? v : 0;
+
+    /// <summary>모든 교역소에 투자한 돈의 합.</summary>
+    public long TotalInvested => _invested.Values.Sum();
+
+    /// <summary>그 도시 교역소에 투자한다 — 소지금에서 낸다. 모자라면 아무 일도 없이 false.</summary>
+    public bool Invest(int city, int amount)
+    {
+        if (amount <= 0 || !Pay(amount)) return false;
+        _invested[city] = InvestedIn(city) + amount;
+        return true;
+    }
+
+    /// <summary>투자 기록을 통째로 박는다 — 적어 둔 판을 열 때 쓴다.</summary>
+    public void RestoreInvestments(IReadOnlyDictionary<int, long>? saved)
+    {
+        _invested.Clear();
+        foreach (var (city, amount) in saved ?? new Dictionary<int, long>())
+            if (amount > 0) _invested[city] = amount;
+    }
 
     /// <summary>그 아이템을 지녔는지.</summary>
     public bool HasItem(int itemId) => _items.Contains(itemId);

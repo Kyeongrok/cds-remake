@@ -45,6 +45,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_VideoShrinkMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_ShipRegistryMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_FigureheadEditMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_PassiveEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_ShipMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_HelpMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldMapMenu, Type = typeof(MenuItem))]
@@ -85,6 +86,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_VideoShrinkMenu = "PART_VideoShrinkMenu";
     private const string PART_ShipRegistryMenu = "PART_ShipRegistryMenu";
     private const string PART_FigureheadEditMenu = "PART_FigureheadEditMenu";
+    private const string PART_PassiveEditMenu = "PART_PassiveEditMenu";
     private const string PART_ShipMapMenu = "PART_ShipMapMenu";
     private const string PART_HelpMenu = "PART_HelpMenu";
     private const string PART_WorldMapMenu = "PART_WorldMapMenu";
@@ -193,6 +195,9 @@ public class CdsHelperWindow : CdsWindow
         {
             nationEditMenu.Click += OnNationEditMenuClick;
         }
+
+        if (GetTemplateChild(PART_PassiveEditMenu) is MenuItem passiveEditMenu)
+            passiveEditMenu.Click += (_, _) => CdsHelper.Game.UI.Views.PassiveEditDialog.Show(this);
 
         if (GetTemplateChild(PART_FigureheadEditMenu) is MenuItem figureheadEditMenu)
         {

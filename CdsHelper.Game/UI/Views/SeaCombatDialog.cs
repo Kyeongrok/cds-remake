@@ -1609,8 +1609,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 탄약 = 함대 보급품 탄약 x 10(볼트 85). 잠수폭탄은 소지품 칸마다 굴린다(볼트 94 3.1).
         battle.Ammo = player.SupplyOf(SupplyKind.Ammo) * 10;
         battle.Mines = player.Items.Count(id => id == SeaBattle.MineItem);
-        // 작위 혜택(공작) — 내 배가 한 번 쏠 때 한 발 더.
-        battle.ExtraShots = Engine.Town.Nobility.Has(player, Engine.Town.Nobility.Perk.Cannon) ? 1 : 0;
+        // 작위 패시브 「대포 발수」 — 내 배가 한 번 쏠 때 그만큼 더.
+        battle.ExtraShots = Math.Max(0, Engine.Town.Nobility.Sum(player, Engine.Town.PassiveEffect.ExtraShots));
         // 속사포는 판을 열 때 한 번 굴려 정해진다(0x00441EA5) — 먹으면 그 판 내내 여덟 발이다.
         battle.ArmRapidFire(player.Items.Count(id => id == SeaBattle.RapidFireItem));
         var ours = new List<(SeaBattle.Ship, Support.Local.Models.Ship)>();

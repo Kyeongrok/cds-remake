@@ -150,6 +150,9 @@ internal interface ITownScreen
     /// <summary>교역소 「회화」 — 돈벌이 이야기나 특산품 자랑.</summary>
     void TradeTalk();
 
+    /// <summary>교역소 「투자」 — 돈을 맡겨 공적을 쌓는다. 원본에 없는 줄이다(모드 「작위」).</summary>
+    void Invest();
+
     /// <summary>자택 「연표를 본다」 — 발견·보고를 날짜 차례로 늘어놓는다.</summary>
     void ShowChronicle();
 

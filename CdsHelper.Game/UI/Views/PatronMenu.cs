@@ -2655,12 +2655,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                         .ToList();
 
         // 줄 오른쪽 — 권력과 친밀도. 원본 일람에는 없고 상세 창에만 있는 값이라, 하나하나 열어 보지 않게 앞으로 꺼낸다.
-        // 작위 모드를 켰으면 기사 혜택(향상된 스폰서보기)일 때만 — 끄면 늘 보인다.
-        bool showStats = !Engine.Town.Nobility.Enabled
-                         || Engine.Town.Nobility.Has(_player, Engine.Town.Nobility.Perk.SponsorView);
-        List<string>? stats = showStats
-            ? [.. mine.Select(m => $"권력 {m.Patron.Power}  친밀도 {_player.ClosenessOf(m.Patron.Name),3}")]
-            : null;
+        var stats = mine.Select(m => $"권력 {m.Patron.Power}  친밀도 {_player.ClosenessOf(m.Patron.Name),3}").ToList();
 
         // 고르면 상세를 띄우고 닫으면 목록으로 돌아온다 — 게임도 그렇다(0x0049348E 가
         // 목록 짓는 데로 되돌아간다).
@@ -2673,8 +2668,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             int row = HintListDialog.Pick(owner, names, "스폰서 일람",
                                           "이 마을에는 아는 스폰서가 없습니다", faces: faces,
-                                          subtitles: likes, rightTexts: stats,
-                                          listWidth: showStats ? StatsListWidth : 264);
+                                          subtitles: likes, rightTexts: stats, listWidth: StatsListWidth);
             if (row < 0 || row >= mine.Count) return;
 
             var (patron, sponsor) = mine[row];

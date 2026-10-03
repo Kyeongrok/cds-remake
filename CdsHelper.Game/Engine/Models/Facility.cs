@@ -70,8 +70,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
         new(FacilityKind.Market, "시장",
             ["구입", "매각", "시장을 나온다"]),
 
+        // 「투자」는 원본에 없는 줄이다 — 모드 「작위」를 켰을 때만 선다(투자한 돈이 공적이 된다).
         new(FacilityKind.TradingPost, "교역소",
-            ["매매", "회화", "교역소를 나온다"]),
+            ["매매", "회화", Invest, "교역소를 나온다"]),
 
         new(FacilityKind.Church, "교회",
             ["수련", "교회를 나온다"]),
@@ -146,6 +147,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     /// </remarks>
     /// <summary>조선소 「특별주문」 — 원본에 없는 줄.</summary>
     public const string SpecialOrder = "특별주문";
+
+    /// <summary>교역소 「투자」 — 원본에 없는 줄(모드 「작위」).</summary>
+    public const string Invest = "투자";
 
     public const string RefitMast = "마스트 추가",
                         RefitSailKind = "돛종류 변경",

@@ -194,10 +194,14 @@ public sealed class ItemInfoDialog : GameWindow
     /// <summary>
     /// 지닌 것 가운데 <b>그 갈래에서 가장 센 것</b>인지 — 이것 하나에만 「장비중」이 붙는다.
     /// </summary>
-    /// <remarks>게임 <c>0x0046E6D7</c> 고리 그대로다. 같은 값이면 먼저 든 것이 이긴다.</remarks>
+    /// <remarks>
+    /// 게임 <c>0x0046E6D7</c> 고리 그대로다. 같은 값이면 먼저 든 것이 이긴다.
+    /// <b>무기 · 방어구만</b> 장비한다 — 원본은 다른 갈래면 이 고리에 들지도 않는다(<c>0x0046E65E</c>).
+    /// 이것을 안 가리면 소지품일람에서 골동품 · 조각상 · 서적에도 「장비중」이 붙었다.
+    /// </remarks>
     public static bool IsEquipped(ItemTable.Record item, IEnumerable<int> bag, ItemTable? table)
     {
-        if (table == null) return false;
+        if (table == null || item.Category is not (Weapon or Armor)) return false;
 
         int best = -1, bestEffect = int.MinValue;
         foreach (int id in bag)

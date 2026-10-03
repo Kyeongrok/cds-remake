@@ -25,7 +25,7 @@ public enum TownWork
     BuyShip, SpecialOrder, SellShip, RepairShip, RefitShip,
 
     // ── 시장 · 교역소 ─────────────────────────────────────────────────────
-    BuyGoods, SellGoods, Trade, Talk,
+    BuyGoods, SellGoods, Trade, Talk, Invest,
 
     // ── 여관 · 술집 ───────────────────────────────────────────────────────
     Stay, OddJob, MateForm, Treat,
@@ -96,6 +96,7 @@ public static class TownWorks
         new(TownWork.SellGoods, "매각", FacilityKind.Market),
         new(TownWork.Trade, "매매", FacilityKind.TradingPost),
         new(TownWork.Talk, "회화", FacilityKind.TradingPost),
+        new(TownWork.Invest, Facility.Invest, FacilityKind.TradingPost),
 
         // ── 여관 · 술집 ───────────────────────────────────────────────────
         new(TownWork.Stay, "숙박", FacilityKind.Inn),
@@ -209,6 +210,8 @@ public static class TownWorks
             items.Remove(NameOf(TownWork.Announce));
 
         // 조선소 「특별주문」은 원본에 없는 줄이라 모드에서 켰을 때만 낸다.
+        if (facility.Kind == FacilityKind.TradingPost && !Town.Nobility.Enabled)
+            items.Remove(NameOf(TownWork.Invest));
         if (facility.Kind == FacilityKind.Shipyard && !Local.Settings.GameSettings.SpecialOrder)
             items.Remove(NameOf(TownWork.SpecialOrder));
 

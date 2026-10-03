@@ -34,8 +34,9 @@ public sealed class Game
     static Game()
     {
         Player.IgnoresWeight = () => Local.Settings.GameSettings.NoWeight;
-        // 작위 혜택(자작) — 소지품 칸이 는다.
-        Player.ExtraItems = p => Town.Nobility.Has(p, Town.Nobility.Perk.Inventory) ? Town.Nobility.ExtraItemSlots : 0;
+        // 작위 패시브 — 소지품 칸이 늘고, 능력치가 늘 그만큼 높다.
+        Player.ExtraItems = p => Town.Nobility.Sum(p, Town.PassiveEffect.ItemSlots);
+        Player.AbilityBonus = (p, which) => Town.Nobility.Sum(p, Town.PassiveEffect.Ability, which);
     }
 
     /// <summary>
