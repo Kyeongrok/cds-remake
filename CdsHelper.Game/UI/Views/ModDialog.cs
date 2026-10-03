@@ -213,12 +213,13 @@ public sealed class ModDialog : GameWindow
             + " 줄을 누르면(↑↓ 글쇠도) 곧바로 그 힌트의 이야기가 오른쪽에 나옵니다(정보 등급 「일반」이면 등급 · 자금 · 기한도)."
             + " 끄면 원본처럼 고르고 결정을 눌러야 파란 판이 뜹니다."));
 
-        // 정보 제공 등급 — 기본(원본) · 일반 · 상세. 상세는 아직 쓰는 곳이 없어 줄에 안 낸다.
-        info.Children.Add(Select("정보 등급", ["기본 (원본)", "일반"],
-            Math.Min(GameSettings.InfoLevel, GameSettings.InfoNormal),
+        // 정보 제공 등급 — 기본(원본) · 일반 · 상세.
+        info.Children.Add(Select("정보 등급", ["기본 (원본)", "일반", "상세"],
+            GameSettings.InfoLevel,
             i => GameSettings.InfoLevel = i,
             "창이 원본보다 얼마나 더 알려 주는지 고릅니다. 「기본」은 원본만큼만 보입니다."
-            + " 「일반」은 게임 안에서 알 수 있는 값을 한 단계 더 보입니다 — 향상된 힌트 보기의 등급 · 자금 · 기한이 이것입니다."));
+            + " 「일반」은 게임 안에서 알 수 있는 값을 한 단계 더 보입니다 — 향상된 힌트 보기의 등급 · 자금 · 기한이 이것입니다."
+            + " 「상세」는 원본이 감춰 둔 값까지 보입니다 — 도서관 책등 이름표에 읽는 데 필요한 언어 · 기능이 붙습니다."));
 
         // 향상된 아이템 이미지 — 덧붙인 그림으로 보인다.
         info.Children.Add(Toggle("향상된 아이템 이미지", GameSettings.EnhancedItemArt,

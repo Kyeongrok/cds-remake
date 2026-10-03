@@ -114,7 +114,11 @@ public sealed class ShipPickDialog : GameWindow
     /// <summary>「견적합계 N닢」 줄. 매각 창에서만.</summary>
     private readonly GameUi.GameLabel? _total;
     private readonly bool _many;
-    private readonly StackPanel _table = new();
+    /// <summary>
+    /// 표 — 바탕을 줄 색으로 깔고 줄 경계를 화소에 맞춘다. 창이 배율로 늘면 줄 경계가 반 화소에 걸려
+    /// 그 틈으로 어두운 창 바탕이 비쳐 줄 사이에 가는 선이 섰다.
+    /// </summary>
+    private readonly StackPanel _table = new() { Background = RowFill, UseLayoutRounding = true };
     private readonly GameButton _decide;
     private readonly List<Border> _rows = [];
     private readonly HashSet<int> _picked = [];

@@ -46,6 +46,13 @@ public sealed class LibraryDialog : GameWindow
     private readonly Canvas _layer = new();
     private readonly Border _tag;
     private readonly GameUi.GameLabel _tagText;
+
+    /// <summary>이름표 둘째 줄 — 읽는 데 필요한 언어와 기능. 정보 제공 등급 「상세」일 때만 선다.</summary>
+    private readonly GameUi.GameLabel _tagNeed = new(GameFont.WhiteColor)
+    {
+        FallbackBrush = Brushes.White,
+        Visibility = Visibility.Collapsed,
+    };
     private readonly int _scale;
 
     /// <summary>
@@ -112,6 +119,11 @@ public sealed class LibraryDialog : GameWindow
         // 굵히면 한 점 겹쳐 찍혀서 획에 그림자가 진 것처럼 보인다.
         // 게임 서가의 이름표는 짙은 판에 밝은 한 점 테, 흰 글씨다 — 술집 손님 이름표와 같은 꼴이다.
         (_tag, _tagText) = GameUi.HoverTag();
+        // 둘째 줄(필요 기능)을 받게 판을 두 줄짜리로 — 한 줄일 때는 원래 높이 그대로다.
+        _tag.Child = null;
+        _tag.Child = new StackPanel { Children = { _tagText, _tagNeed } };
+        _tag.Height = double.NaN;
+        _tag.MinHeight = 24;
         _layer.Children.Add(_tag);
         Panel.SetZIndex(_tag, 20);
 
@@ -220,6 +232,10 @@ public sealed class LibraryDialog : GameWindow
         string title = readable ? book.Title : Masked(book.Title);
         string author = readable ? book.Author : Masked(book.Author);
         _tagText.Text = $"「{title}」{author}";
+        // 정보 제공 등급 「상세」 — 읽는 데 필요한 언어와, 실린 힌트를 알아듣는 데 필요한 기능.
+        string need = Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoDetailed) ? NeedLine(book) : "";
+        _tagNeed.Text = need;
+        _tagNeed.Visibility = need.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         // 못 읽는 책의 「%s로 표기되어 있습니다」는 원본에서 힌트 패널 글이다
         // (0x004719B7 에서 짜서 0x004719CE 가 push 5 · 0x00580C48 로 0x0040E0C0 에 넘긴다).
         // 힌트 패널 글은 옮기지 않는다는 방침대로 아래 띠에 띄우지 않고 띠만 비운다.
@@ -229,8 +245,26 @@ public sealed class LibraryDialog : GameWindow
         double w = _tag.ActualWidth > 0 ? _tag.ActualWidth : 160;
         double left = (x + BookShelf.SpineWidth / 2.0) * _scale - w / 2;
         Canvas.SetLeft(_tag, Math.Clamp(left, 0, Math.Max(0, BookShelf.ShelfWidth * _scale - w)));
+        double h = _tag.ActualHeight > 0 ? _tag.ActualHeight : 24;
         Canvas.SetTop(_tag, Math.Min((y + BookShelf.SpineHeight + 2) * _scale,
-                                     BookShelf.ShelfHeight * _scale - 24));
+                                     BookShelf.ShelfHeight * _scale - h));
+    }
+
+    /// <summary>「필요: 아랍어 3 · 신학 3」 — 책의 언어와, 실린 힌트들이 요구하는 기능(같은 기능은 가장 높은 수준 하나).</summary>
+    private string NeedLine(BookTable.Book book)
+    {
+        var parts = new List<string>();
+        if (book.Language >= 0) parts.Add($"{LanguageOf(book)} {ReadLevel}");
+        var skills = new Dictionary<int, int>();
+        foreach (int hint in book.Hints)
+        {
+            var need = _books.NeedFor(hint);
+            if (need.Skill < 0 || need.Level <= 0) continue;
+            skills[need.Skill] = Math.Max(skills.GetValueOrDefault(need.Skill), need.Level);
+        }
+        foreach (var (skill, level) in skills.OrderBy(p => p.Key))
+            parts.Add($"{(skill < _names.SkillNames.Count ? _names.SkillNames[skill] : $"기능 {skill}")} {level}");
+        return parts.Count > 0 ? "필요: " + string.Join(" · ", parts) : "";
     }
 
     private string LanguageOf(BookTable.Book book) =>
@@ -393,10 +427,37 @@ public sealed class LibraryDialog : GameWindow
             : -1;
         bool readable = open && CanRead(book) && KnowsSkill(hint);
 
+        // 정보 제공 등급 「상세」 — 못 읽는 면은 빈 종이 대신 무엇이 모자란지 적는다(원본은 빈 종이).
+        if (!readable && Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoDetailed))
+            return new OpenBookDialog.Spread(true, illustration, _reported?.Invoke(hint) == true,
+                                             "읽기 조건", Conditions(book, hint));
+
         return new OpenBookDialog.Spread(true, illustration, _reported?.Invoke(hint) == true,
                                          readable ? _hintName(hint) : "",
                                          readable ? _hintText?.Invoke(hint) ?? "" : "");
     }
+
+    /// <summary>
+    /// 그 면의 힌트를 읽는 조건을 한 줄씩 — ○ 채움 · × 모자람. 선행 발견물 · 기능 · 책의 언어 차례다.
+    /// </summary>
+    private string Conditions(BookTable.Book book, int hint)
+    {
+        static string Mark(bool ok) => ok ? "○" : "×";
+        var lines = new List<string>();
+        if (hint == SealedHint) lines.Add("× 이 힌트는 읽을 수 없게 막혀 있다");
+
+        var need = _books.NeedFor(hint);
+        foreach (int id in need.Parents ?? [])
+            lines.Add($"{Mark(_player.HasFound(id))} 선행 발견: {DiscoveryName?.Invoke(id) ?? $"발견물 {id}"}");
+        if (need.Skill >= 0 && need.Level > 0)
+            lines.Add($"{Mark(KnowsSkill(hint))} {SkillOf(hint)} {need.Level}");
+        if (book.Language >= 0)
+            lines.Add($"{Mark(CanRead(book))} {LanguageOf(book)} {ReadLevel}");
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>발견물 이름 — 읽기 조건의 선행 발견물에 쓴다. 없으면 번호로 적는다.</summary>
+    private Func<int, string>? DiscoveryName { get; init; }
 
     /// <summary>
     /// 펼침면 <c>i</c> 가 화면에 나왔다 — 힌트를 주고 아래 띠에 말을 낸다(<c>0x00464A30</c>).
@@ -461,7 +522,7 @@ public sealed class LibraryDialog : GameWindow
                             Func<int, string> hintName,
                             OpenBookArt? book = null, Func<int, string>? hintText = null,
                             Action<string>? say = null, SoundBank? sfx = null,
-                            Func<int, bool>? reported = null)
+                            Func<int, bool>? reported = null, Func<int, string>? discoveryName = null)
     {
         var art = BookShelf.Open(gameDirectory);
         if (art == null)
@@ -486,6 +547,7 @@ public sealed class LibraryDialog : GameWindow
                           book, hintText, say, sfx, reported)
         {
             Owner = owner,
+            DiscoveryName = discoveryName,
         }.ShowDialog();
     }
 }

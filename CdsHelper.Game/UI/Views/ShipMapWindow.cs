@@ -748,12 +748,14 @@ public sealed class ShipMapWindow : Window
         if (chart == null) { NoticeDialog.Show(this, "지도를 아직 못 읽었습니다"); return; }
 
         var at = _host.ShipCell is { } cell ? ((double, double)?)(cell.CellX, cell.CellY) : null;
-        // 도시 — 지금 아는 도시만(자동항해 고르기와 같다).
+        // 도시 — 지금 아는 도시만(자동항해 고르기와 같다). 도서관이 있으면 동그라미에 「도」.
         var cities = Enumerable.Range(0, GameMapCoords.CityCount)
             .Where(id => _game.CityVisible(id))
             .Select(id => GameMapCoords.TryCityCell(id, out double cx, out double cy)
-                ? ((string, double, double)?)(_game.CityName(id), cx, cy) : null)
-            .OfType<(string Name, double X, double Y)>()
+                ? ((string, double, double, bool)?)(_game.CityName(id), cx, cy,
+                                                    _game.CityTable.Find(id)?.HasLibrary == true)
+                : null)
+            .OfType<(string Name, double X, double Y, bool Library)>()
             .ToList();
 
         // 건물 속에서 찾는 발견물(진흙 모스크 따위)은 바다 · 뭍 자리가 없다 — 그 도시 자리로 찍는다.

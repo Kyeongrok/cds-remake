@@ -64,6 +64,17 @@ public sealed class HintBrowserDialog : GameWindow
         TextWrapping = TextWrapping.Wrap,
     };
 
+    /// <summary>설명 아래 출전 — 그 힌트가 실린 책의 제목과 저자.</summary>
+    private readonly TextBlock _source = new()
+    {
+        Foreground = GameUi.Text,
+        FontSize = 12.5,
+        Opacity = 0.75,
+        TextWrapping = TextWrapping.Wrap,
+        TextAlignment = TextAlignment.Right,
+        Margin = new Thickness(0, 12, 0, 0),
+    };
+
     private HintBrowserDialog(Engine.Game game, IReadOnlyList<int> ids)
     {
         _game = game;
@@ -93,6 +104,7 @@ public sealed class HintBrowserDialog : GameWindow
         detail.Children.Add(_head);
         detail.Children.Add(_facts);
         detail.Children.Add(_body);
+        detail.Children.Add(_source);
 
         var side = new Border
         {
@@ -204,6 +216,7 @@ public sealed class HintBrowserDialog : GameWindow
             _head.Text = _game.HintName(id);
             _facts.Text = "";
             _body.Text = "";
+            _source.Text = "";
             return;
         }
 
@@ -219,6 +232,13 @@ public sealed class HintBrowserDialog : GameWindow
         _facts.Text = string.Join(" · ", facts);
         _facts.Visibility = facts.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         _body.Text = hint.Text;
+
+        // 출전 — 그 힌트를 펼침면에 담은 책. 어느 책으로 얻었는지는 안 적어 두므로 실린 책을 다 든다.
+        // 술집 · 후원자처럼 책 밖에서만 얻는 힌트는 줄이 없다.
+        var books = _game.Books?.Books.Where(b => b.Hints.Contains(hint.Id)).ToList() ?? [];
+        _source.Text = string.Join(Environment.NewLine,
+            books.Select(b => b.Author.Length > 0 ? $"『{b.Title}』 {b.Author}" : $"『{b.Title}』"));
+        _source.Visibility = books.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnKey(object sender, KeyEventArgs e)

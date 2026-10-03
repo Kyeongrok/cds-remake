@@ -74,6 +74,9 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <summary>도시 표식 크기(지도 점, <see cref="ZoomBase"/> 배율).</summary>
     private const double CitySize = 3;
 
+    /// <summary>도서관 있는 도시 표식 크기 — 동그라미 안에 「도」가 읽히게 조금 크다.</summary>
+    private const double LibrarySize = 5;
+
     /// <summary>
     /// 내 자리 점이 키울수록 줄어드는 하한 — 화면 크기의 몇 배까지 줄지. 아주 키우면 점 하나가 바다를 덮었다.
     /// </summary>
@@ -163,7 +166,7 @@ public sealed class DiscoveryMapDialog : GameWindow
     private readonly Func<double, double, string>? _autoSail;
 
     /// <summary>내 자리 점. 옮기면 이 점을 따라 옮긴다.</summary>
-    private System.Windows.Shapes.Ellipse? _shipDot;
+    private FrameworkElement? _shipDot;
 
     /// <summary>아래 줄에 잠깐 붙는 말(옮겼다 · 못 옮긴다).</summary>
     private string _said = "";
@@ -181,7 +184,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                                DiscoveryTable table, Player player, (double X, double Y)? ship, WindTable? wind,
                                Func<double, double, (double X, double Y)?>? warp,
                                Func<double, double, string>? autoSail,
-                               IReadOnlyList<(string Name, double X, double Y)>? cities,
+                               IReadOnlyList<(string Name, double X, double Y, bool Library)>? cities,
                                IReadOnlyDictionary<int, (double X, double Y)>? inTown)
     {
         _warp = warp;
@@ -235,7 +238,8 @@ public sealed class DiscoveryMapDialog : GameWindow
         _cityLayer.Visibility = GameSettings.DiscoveryMapCities ? Visibility.Visible : Visibility.Collapsed;
         foreach (var city in cities ?? [])
             Mark(city.X / ExploredMap.CellsPerBlock, city.Y / ExploredMap.CellsPerBlock,
-                 CitySize, CityInk, city.Name, label: true, layer: _cityLayer);
+                 city.Library ? LibrarySize : CitySize, CityInk, city.Name, label: true, layer: _cityLayer,
+                 glyph: city.Library ? "도" : null);
 
         _world.Children.Add(_spotLayer);
         _spotLayer.Visibility = GameSettings.DiscoveryMapSpots ? Visibility.Visible : Visibility.Collapsed;
@@ -436,7 +440,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                    + (_warp != null ? " · 오른쪽 단추 그 자리로 옮기기" : "")
                    + (_autoSail != null ? " · Shift+오른쪽 단추 그 자리로 자동항해" : "")
                    + " · 빨강 찾음 · 회색 아직 · 파랑 내 자리"
-                   + " · 주황 도시"
+                   + " · 주황 도시(「도」 도서관)"
                    + (_hasFlows
                        ? $" · 보라 풍향 {(WindTable.IsFirstHalf(_month) ? "1~6월" : "7~12월")} · 청록 해류)"
                        : ")")
@@ -606,17 +610,41 @@ public sealed class DiscoveryMapDialog : GameWindow
     }
 
     /// <summary>점 하나와 이름표를 찍는다. 자리는 <b>지도 점</b>(칸/4)이다.</summary>
-    private System.Windows.Shapes.Ellipse Mark(double x, double y, double size, Brush fill,
-                                              string name, bool label, Canvas? layer = null)
+    /// <param name="glyph">동그라미 안에 넣을 글자(도서관 「도」). 없으면 그냥 점이다.</param>
+    private FrameworkElement Mark(double x, double y, double size, Brush fill,
+                                  string name, bool label, Canvas? layer = null, string? glyph = null)
     {
         layer ??= _world;
-        var dot = new System.Windows.Shapes.Ellipse
+        FrameworkElement dot = new System.Windows.Shapes.Ellipse
         {
             Width = size,
             Height = size,
             Fill = fill,
             ToolTip = name,
         };
+        if (glyph != null)
+        {
+            // 글자는 동그라미를 따라 줄고 는다 — 크기는 Place 가 점째 바꾼다.
+            dot = new Grid
+            {
+                Width = size,
+                Height = size,
+                ToolTip = name,
+                Children =
+                {
+                    new System.Windows.Shapes.Ellipse { Fill = fill },
+                    new Viewbox
+                    {
+                        // 여백은 글자 안쪽에 둔다 — 상자 밖에 두면 점을 줄일 때 여백만 그대로라 글자가 찌그러진다.
+                        Child = new TextBlock
+                        {
+                            Text = glyph, Foreground = Brushes.White, FontWeight = FontWeights.Bold,
+                            Margin = new Thickness(3, 1, 3, 2),
+                        },
+                    },
+                },
+            };
+        }
         layer.Children.Add(dot);
 
         TextBlock? tag = null;
@@ -712,7 +740,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                             WindTable? wind = null,
                             Func<double, double, (double X, double Y)?>? warp = null,
                             Func<double, double, string>? autoSail = null,
-                            IReadOnlyList<(string Name, double X, double Y)>? cities = null,
+                            IReadOnlyList<(string Name, double X, double Y, bool Library)>? cities = null,
                             IReadOnlyDictionary<int, (double X, double Y)>? inTown = null)
     {
         if (chart == null || table == null || width <= 0 || height <= 0) return;
