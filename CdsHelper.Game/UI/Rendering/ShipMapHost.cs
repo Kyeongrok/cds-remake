@@ -506,6 +506,16 @@ public sealed class ShipMapHost : HwndHost
         set { _renderer.PixelFilter = value; _dirty = true; }
     }
 
+    /// <summary>
+    /// 구름을 걷어 둘지 — 폭풍 · 눈보라가 오는 동안 켠다. 걷어도 구름 자리는 그대로 두었다가 끄면 그 자리에서 다시 흐른다.
+    /// </summary>
+    public bool CloudsHidden
+    {
+        get => _cloudsHidden;
+        set { _cloudsHidden = value; _dirty = true; }
+    }
+    private bool _cloudsHidden;
+
     /// <summary>구름을 부드럽게 그릴지.</summary>
     public bool SmoothClouds
     {
@@ -1552,7 +1562,7 @@ public sealed class ShipMapHost : HwndHost
     private void UpdateClouds(int windDir, int windSpeed, int ticks)
     {
         double scale = 1.0 / (_cellsPerPixel * GamePixelsPerCell);   // 실픽셀 / 게임점
-        if (scale <= 0 || _pixelW <= 0 || _pixelH <= 0
+        if (_cloudsHidden || scale <= 0 || _pixelW <= 0 || _pixelH <= 0
             || CloudSprites.Width * scale < CloudMinPixels)
         {
             _cloudCount = 0;

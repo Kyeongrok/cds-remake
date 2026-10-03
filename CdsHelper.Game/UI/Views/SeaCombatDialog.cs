@@ -1142,9 +1142,12 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private static Support.Local.Models.Ship PrizeOf(SeaBattle.Ship s)
     {
         var hull = Hull.FromTable(s.Art);
+        // 판의 적재 칸(s.Cargo)은 이미 「적재 − 포탑」이다(판에 올릴 때 뺐다) — 배로 되돌릴 때 포탑을 도로 얹는다.
+        // 예전에는 그대로 적재량에 넣어 포탑이 두 번 빠졌고, 대포가 많은 배는 빈 용량이 0 이 되어 빼앗을 짐도 0 이었다.
+        int turrets = Math.Max(hull.Guns, s.Guns);
         var stats = new Support.Local.Models.Ship.Stats(
-            MaxHp: Math.Max(1, s.MaxHp), Speed: Math.Max(1, s.Speed), Capacity: Math.Max(1, s.Cargo),
-            Tonnage: hull.Tonnage, Crew: Math.Max(1, s.MinCrew), Turrets: Math.Max(hull.Guns, s.Guns),
+            MaxHp: Math.Max(1, s.MaxHp), Speed: Math.Max(1, s.Speed), Capacity: Math.Max(1, s.Cargo + turrets),
+            Tonnage: hull.Tonnage, Crew: Math.Max(1, s.MinCrew), Turrets: turrets,
             Gun: s.Gun, Guns: s.Guns, Sails: [.. s.Sails]);
         return new Support.Local.Models.Ship(hull, s.Hp, stats, s.HullName);
     }

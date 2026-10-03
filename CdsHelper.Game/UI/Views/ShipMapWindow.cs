@@ -868,7 +868,12 @@ public sealed class ShipMapWindow : Window
         double perPixel = area.Width / pixelW;                  // 실픽셀 → WPF 단위
         double scale = Math.Clamp(_host.GamePixelScale * perPixel, area.Width / 1280, area.Width / 320);
         Point? ship = _host.ShipOnSurface is { } p ? new Point(p.X * perPixel, p.Y * perPixel) : null;
-        EventAnimationPopup.Play(this, _game, scene, area, scale, ship, _host.Heading);
+        // 폭풍 · 눈보라 장면 동안은 구름을 걷는다 — 대본이 트는 폭풍도 같다. 끝나면 앞의 상태로 되돌린다.
+        bool stormy = scene is EventAnimation.Storm or EventAnimation.Blizzard;
+        bool hidden = _host.CloudsHidden;
+        if (stormy) _host.CloudsHidden = true;
+        try { EventAnimationPopup.Play(this, _game, scene, area, scale, ship, _host.Heading); }
+        finally { if (stormy) _host.CloudsHidden = hidden; }
     }
 
     /// <summary>트리에 붙었고 자리도 잡았는가 — <c>PointToScreen</c> 을 부르기 전에 본다.</summary>
@@ -4372,7 +4377,13 @@ public sealed class ShipMapWindow : Window
         // 운세 칸(0x00477FE0) — 별자리·혈액형이 밑표(얼굴·혈액형·나라)에서 나온다.
         var fortune = FleetRaid.FortuneOf(template?.Face ?? 0, template?.Blood ?? 0, nation);
 
-        int pick = ChoiceDialog.Ask(this, who.Name, ["우호적으로 접근한다", "습격한다"], cancel: "떠난다");
+        // 모드 「접근 함대 정보」 — 고르기 창 위에 상대의 신상 쪽지를 띄워 두고, 고르면 걷는다.
+        FleetCardDialog? card = GameSettings.FleetCard
+            ? FleetCardDialog.Open(this, who.Name, face, FleetCardLines(who, template, nationName))
+            : null;
+        int pick;
+        try { pick = ChoiceDialog.Ask(this, who.Name, ["우호적으로 접근한다", "습격한다"], cancel: "떠난다", under: card); }
+        finally { card?.Close(); }
         if (pick < 0) return false;
 
         bool fight = pick == 0
@@ -4380,6 +4391,20 @@ public sealed class ShipMapWindow : Window
             : Raid(side, nationName, face, aide, _game.Random);
 
         return fight && FightFolk(world, who, nation, face);
+    }
+
+    /// <summary>접근 함대 정보 쪽지의 줄 — 국적 · 직업 · 함대 규모 · 무력. 함대 규모는 해전이 지을 척수(Encounter.OfPerson) 그대로다.</summary>
+    private List<(string, string)> FleetCardLines(PersonTable.Row who, PersonTemplate.Template? template, string nationName)
+    {
+        var leader = CaptainOf(who.Id) ?? Encounter.CaptainOf(who.Id);
+        var foe = Encounter.OfPerson(leader, who.Name);
+        return
+        [
+            ("국적", nationName.Length > 0 ? nationName : "---"),
+            ("직업", template?.JobName is { Length: > 0 } job ? job : "---"),
+            ("함대", $"{foe.Ships}척"),
+            ("무력", $"{leader.Might}"),
+        ];
     }
 
     /// <summary>우호적으로 접근했을 때(<c>0x0048C3B4</c>). 싸움이 붙으면 true.</summary>
@@ -6028,6 +6053,8 @@ public sealed class ShipMapWindow : Window
 
         _asking = true;
         _host.Paused = true;
+        // 폭풍 · 눈보라가 오는 동안은 구름을 걷는다 — 맑은 날 구름이 그대로 떠 있으면 어색하다.
+        _host.CloudsHidden = true;
         try
         {
             // 폭풍 말은 모두 부관(없으면 뱃사람 #299) 얼굴이다 — 0x00478280(0x0047CC60(0, 1)).
@@ -6064,6 +6091,7 @@ public sealed class ShipMapWindow : Window
         }
         finally
         {
+            _host.CloudsHidden = false;
             _host.Paused = false;
             _asking = false;
         }

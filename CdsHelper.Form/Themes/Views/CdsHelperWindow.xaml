@@ -265,6 +265,10 @@
                                             Header="선수상"
                                             ToolTip="선수상 서른여섯의 등급을 고친다 — 막을 확률(등급x30−20)과 다는 삯이 놀이에 바로 든다" />
                                         <MenuItem
+                                            x:Name="PART_RumorEditMenu"
+                                            Header="소문"
+                                            ToolTip="술집 · 여관 무명 손님이 건네는 소문을 문화권별로 고친다 — 줄을 더하고 뺄 수 있고, 원래대로 되돌릴 수 있다" />
+                                        <MenuItem
                                             x:Name="PART_PassiveEditMenu"
                                             Header="패시브"
                                             ToolTip="모드 「작위」의 혜택을 만들고 고친다 — 운 · 신앙 같은 능력치 증가, 해적 조우 · 재해 감소, 속도 따위" />

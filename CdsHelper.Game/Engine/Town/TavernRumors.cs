@@ -48,10 +48,29 @@ public static class TavernRumors
     public static string Of(int culture, Random random, bool inn = false)
     {
         int set = culture >= 0 && culture < SetOf.Length ? SetOf[culture] : 0;
-        var lines = Sets[set];
-        int skip = inn ? Math.Min(TavernOnly[set], lines.Length - 1) : 0;
-        return lines[random.Next(lines.Length - skip) + skip];
+        var lines = LinesOf(set);
+        if (lines.Count == 0) return "";
+        // 여관이면 술집에서만 하는 줄을 뺀다 — 원본 벌은 그 줄이 맨 앞에 몰려 있어 rand(전체 − k) + k 와 같은 줄이 나온다.
+        var pool = inn ? [.. lines.Where(l => !l.TavernOnly)] : lines;
+        if (pool.Count == 0) pool = lines;
+        return pool[random.Next(pool.Count)].Text;
     }
+
+    /// <summary>소문 갈래 아홉의 이름 — 편집 창에 쓴다. 0 은 북유럽 · 이베리아 · 지중해가 함께 쓴다.</summary>
+    public static readonly string[] SetNames =
+        ["유럽(북유럽·이베리아·지중해)", "아프리카", "이슬람", "인도", "중국", "중앙아시아", "동남아시아", "일본", "아메리카"];
+
+    /// <summary>소문 한 줄 — 글과, 술집에서만 하는 말인지(여관 손님은 안 한다).</summary>
+    public readonly record struct Line(string Text, bool TavernOnly);
+
+    /// <summary>그 갈래의 원본 줄들.</summary>
+    public static IReadOnlyList<Line> DefaultsOf(int set) =>
+        set >= 0 && set < Sets.Length
+            ? [.. Sets[set].Select((text, i) => new Line(text, i < TavernOnly[set]))]
+            : [];
+
+    /// <summary>그 갈래에서 지금 쓰는 줄들 — 편집 창에서 고쳤으면 그것(<see cref="TavernRumorEdits"/>), 아니면 원본.</summary>
+    public static IReadOnlyList<Line> LinesOf(int set) => TavernRumorEdits.Of(set) ?? DefaultsOf(set);
 
     /// <summary>
     /// 갈래마다 <b>술집에서만</b> 나오는 앞 줄 수 — 표 <c>0x00572878</c> 의 (전체, k) 에서 k 다.

@@ -207,6 +207,9 @@ public sealed class GameSettingsData
     /// <summary>소지품 창에서 바로 보관 · 판매할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool HandyInventory { get; set; }
 
+    /// <summary>바다에서 다가간 함대의 신상 쪽지를 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool FleetCard { get; set; }
+
     /// <summary>작위 제도(공적 · 작위 · 혜택)를 쓸지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool Nobility { get; set; }
 
@@ -934,6 +937,13 @@ public static class GameSettings
     {
         get => Get(d => d.HandyInventory);
         set => Set(d => d.HandyInventory = value);
+    }
+
+    /// <summary>접근 함대 정보 — 「우호적으로 접근한다 · 습격한다」 고르기 위에 상대의 초상화 · 국적 · 직업 · 함대 규모.</summary>
+    public static bool FleetCard
+    {
+        get => Get(d => d.FleetCard);
+        set => Set(d => d.FleetCard = value);
     }
 
     /// <summary>작위 — 발견물을 보고해 공적을 쌓고 본국 왕궁에서 작위를 받는다(Engine.Town.Nobility). 모드 창에서 켜고 끈다.</summary>
