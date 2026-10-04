@@ -3829,7 +3829,10 @@ public sealed class ShipMapWindow : Window
 
         // 배는 항구 칸으로, 말은 도시 칸으로 잰다. 게임도 그렇게 갈라 본다.
         bool byLand = _host.IsOnLand;
-        int city = byLand ? _host.NearestTown() : _host.NearestCity();
+        // 바다면 항구(건물 0), 뭍이면 성문(건물 10)이 있어야 묻는다(0x0048DA19 가 [0x005B61B4] 로 갈라 본다) —
+        // 안 가리면 로마 같은 항구 없는 도시 곁을 배로 지나도 「항구로 들어가겠습니까」가 떴다.
+        int door = byLand ? GateCode : HarborCode;
+        int city = _host.TownsAt().FirstOrDefault(t => _game.CityRows?.HasBuilding(t, door) ?? true, -1);
         if (city < 0) { _askedCity = -1; return; }      // 도시를 벗어났다
         if (city == _askedCity) return;                 // 이미 물어본 도시다
         _askedCity = city;
@@ -4348,9 +4351,19 @@ public sealed class ShipMapWindow : Window
         {
             if (_game.CityKnown(city)) continue;
             if (!_game.CityStanding(city)) continue;         // 아직 안 선 도시는 못 본다
-            if (!rows.TryCell(city, out int cx, out int cy, out _)) continue;
+            if (!rows.TryCell(city, out int cx, out int cy, out int size)) continue;
 
-            int dx = cx - sx, dy = cy - sy;
+            // 도시가 <b>차지하는 칸 어느 하나</b>라도 원 안에 들면 본다 — 원본은 원 안의 칸마다 왼쪽·위로 세 칸까지
+            // 되짚어 그 칸을 덮는 도시를 찾는다(0x0048D8F2 ~ 0x0048D958, 차지하는 칸 수 0x0042A010).
+            // 예전에는 도시의 왼쪽 위 칸만 재서, 도시 오른쪽·아래에서 다가가면 한두 칸 늦게 보였다.
+            // 가로는 이어져 있다(0x0048D8E2 의 % 2500).
+            int wide = Math.Max(1, size) - 1;
+            int dx = sx - cx;
+            if (dx > WorldMapRenderer.UnfoldedW / 2) dx -= WorldMapRenderer.UnfoldedW;
+            if (dx < -WorldMapRenderer.UnfoldedW / 2) dx += WorldMapRenderer.UnfoldedW;
+            dx -= Math.Clamp(dx, 0, wide);
+            int dy = sy - cy;
+            dy -= Math.Clamp(dy, 0, wide);
             if (dx * dx + dy * dy > far) continue;
 
             // 원본은 한 틱에 <b>첫 도시 하나만</b> 알아보고 고리를 빠져나간다(0x0048D9D5 → 0x0048DA19).

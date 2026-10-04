@@ -1398,6 +1398,9 @@ public sealed class ShipMapHost : HwndHost
     private enum OverlayArt { None, Anchor, MooredShip }
 
     private OverlayArt _overlayArt = OverlayArt.None;
+
+    /// <summary>덧그림에 올라가 있는 대 둔 배가 어느 그림인지 - 기함 그림(폴더 · 벌)과 뱃머리.</summary>
+    private (string? Folder, int Skin, int Heading) _mooredArt;
     private uint[]? _anchorPixels;
 
     /// <summary>
@@ -1410,7 +1413,11 @@ public sealed class ShipMapHost : HwndHost
         var want = _anchored && !_onLand ? OverlayArt.Anchor
                  : _onLand && _moored ? OverlayArt.MooredShip
                  : OverlayArt.None;
-        if (want == _overlayArt || want == OverlayArt.None) { _overlayArt = want; return; }
+        // 대 둔 배는 <b>기함 그림이 바뀌면</b> 다시 올린다 - 불러올 때는 배를 뭍에 놓는 것이 기함 그림을 정하는 것보다
+        // 먼저라, 안 그러면 앞 판(또는 처음 값)의 배 모양이 그대로 남았다(다우가 카라벨로 보이던 것).
+        var art = (ShipSprites.Folder, ShipSprites.Skin, _mooredHeading);
+        bool stale = want == OverlayArt.MooredShip && art != _mooredArt;
+        if ((want == _overlayArt && !stale) || want == OverlayArt.None) { _overlayArt = want; return; }
 
         if (want == OverlayArt.Anchor)
         {
@@ -1422,7 +1429,7 @@ public sealed class ShipMapHost : HwndHost
             // 살아 있는 게임 함대를 읽는 길(GameShipReader)은 지금 뱃머리만 내주므로
             // 대 둔 배의 방향을 물을 수가 없다.
             var frame = ShipSprites.Frame(_mooredHeading, onLand: false);
-            if (!frame.IsEmpty) _renderer.SetOverlay(frame);
+            if (!frame.IsEmpty) { _renderer.SetOverlay(frame); _mooredArt = art; }
         }
         _overlayArt = want;
         _dirty = true;

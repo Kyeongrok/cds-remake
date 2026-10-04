@@ -806,6 +806,9 @@ public sealed class ModDialog : GameWindow
             v => GameSettings.MiniMapScale = v,
             "미니맵 크기", "미니맵 창의 크기입니다. 키우면 더 넓은 곳이 보입니다."));
         group.Children.Add(sizeLine);
+        group.Children.Add(SliderLine("내 표식 크기", 2.0, 12.0, 0.5, GameSettings.MiniMapShipSize, v => $"{v:0.0}",
+            v => GameSettings.MiniMapShipSize = v,
+            "미니맵 내 표식 크기", "내 자리를 가리키는 파란 점의 크기입니다. 기본은 5.0 입니다."));
         return group;
     }
 

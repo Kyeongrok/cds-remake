@@ -149,6 +149,9 @@ public sealed class GameSettingsData
     /// <summary>미니맵 표식(발견물 · 도시 점) 크기(지도 점, 1~5).</summary>
     public double MiniMapMarkSize { get; set; } = 2.5;
 
+    /// <summary>미니맵의 내 자리 점(파란 점) 크기(지도 점, 2~12).</summary>
+    public double MiniMapShipSize { get; set; } = 5;
+
     /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryCount { get; set; }
 
@@ -1396,6 +1399,13 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.MiniMapHoverOpacity), 0.05, 1.0);
         set => Set(d => d.MiniMapHoverOpacity = Math.Clamp(value, 0.05, 1.0));
+    }
+
+    /// <summary>미니맵의 내 자리 점(파란 점) 크기 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    public static double MiniMapShipSize
+    {
+        get => Math.Clamp(Get(d => d.MiniMapShipSize), 2.0, 12.0);
+        set => Set(d => d.MiniMapShipSize = Math.Clamp(value, 2.0, 12.0));
     }
 
     /// <summary>미니맵 표식(발견물 · 도시 점) 크기 — 모드 창 「미니맵」 탭의 굴림대.</summary>

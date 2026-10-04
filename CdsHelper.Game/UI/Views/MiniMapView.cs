@@ -53,7 +53,7 @@ internal sealed class MiniMapView : Border
 
     /// <summary>마우스가 올라오거나 나갔다.</summary>
     public event Action? HoverChanged;
-    private readonly Ellipse _ship = new() { Width = 5, Height = 5, Fill = Mine, Stroke = Brushes.White, StrokeThickness = 0.8 };
+    private readonly Ellipse _ship = new() { Width = GameSettings.MiniMapShipSize, Height = GameSettings.MiniMapShipSize, Fill = Mine, Stroke = Brushes.White, StrokeThickness = 0.8 };
     private readonly TranslateTransform _shift = new();
 
     /// <summary>점을 마지막으로 찍었을 때의 찾은 발견물 수 — 달라지면 다시 찍는다.</summary>
@@ -136,6 +136,15 @@ internal sealed class MiniMapView : Border
         _cityLayer.Visibility = GameSettings.MiniMapCities ? Visibility.Visible : Visibility.Collapsed;
         SyncFlows();
         if (Math.Abs(Width - ViewW) > 0.01) { Width = ViewW; Height = ViewH; }
+
+        // 내 자리 점 — 가운데를 지킨 채 크기만 바꾼다.
+        double mine = GameSettings.MiniMapShipSize;
+        if (Math.Abs(_ship.Width - mine) > 0.01)
+        {
+            double cx = Canvas.GetLeft(_ship) + _ship.Width / 2, cy = Canvas.GetTop(_ship) + _ship.Height / 2;
+            _ship.Width = _ship.Height = mine;
+            if (!double.IsNaN(cx)) { Canvas.SetLeft(_ship, cx - mine / 2); Canvas.SetTop(_ship, cy - mine / 2); }
+        }
 
         // 표식 크기가 바뀌었으면 찍어 둔 점을 가운데를 지킨 채 다시 잰다.
         double size = GameSettings.MiniMapMarkSize;
