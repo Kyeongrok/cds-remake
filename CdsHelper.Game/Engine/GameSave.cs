@@ -630,6 +630,25 @@ public static class GameSave
 
     /// <summary>적어 둔 것을 읽는다. 없거나 깨졌으면 null.</summary>
     /// <param name="path">읽을 자리. 안 주면 <see cref="Path"/> 다.</param>
+    /// <summary>
+    /// 그 세이브 파일의 소지품에 아이템 하나를 넣는다 — 개발 창 「아이템 넣기」. 실패하면 까닭, 성공이면 빈 문자열.
+    /// </summary>
+    /// <remarks>파일을 읽어 소지품 줄만 늘려 그대로 다시 적는다. 떠 있는 판에는 안 든다 — 그 파일을 불러와야 보인다.</remarks>
+    public static string AddItem(string file, int itemId)
+    {
+        if (Load(file) is not { } data) return "세이브를 읽지 못했습니다.";
+        try
+        {
+            var next = data with { Items = [.. data.Items ?? [], itemId] };
+            File.WriteAllText(file, JsonSerializer.Serialize(next, Pretty));
+            return "";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return ex.Message;
+        }
+    }
+
     public static Data? Load(string? path = null)
     {
         try

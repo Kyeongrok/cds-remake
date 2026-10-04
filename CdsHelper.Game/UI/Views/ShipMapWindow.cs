@@ -3285,8 +3285,50 @@ public sealed class ShipMapWindow : Window
     /// 게임 상단 띠에 칸으로 두었던 것을 제목 줄 햄버거로 옮겼다. 놀이에는 없는 자리라
     /// 게임 띠에 섞여 있으면 원본과 달라 보인다 — 앱이 얹은 것은 앱 쪽 차림표에 둔다.
     /// </remarks>
+    /// <summary>
+    /// 개발 창 「아이템 넣기」 — 세이브 파일을 고르고, 아이템을 골라 그 주인공 소지품에 넣는다. 그만둘 때까지 이어 넣는다.
+    /// </summary>
+    /// <remarks>파일만 고친다 — 지금 떠 있는 판에는 안 들고, 그 세이브를 불러와야 보인다.</remarks>
+    private void GiveItemToSave()
+    {
+        if (_game.Items is not { } table) { NoticeDialog.Show(this, "아이템 표를 읽지 못했습니다."); return; }
+
+        var slots = GameSave.ManualSaves().Select(s => (Slot: s, Auto: false))
+            .Concat(GameSave.AutoSaves().Select(s => (Slot: s, Auto: true))).ToList();
+        if (slots.Count == 0) { NoticeDialog.Show(this, "저장한 데이터가 없습니다"); return; }
+
+        var rows = slots.Select(s =>
+        {
+            var d = s.Slot.Save;
+            string who = !string.IsNullOrEmpty(d.Name) ? d.Name
+                       : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } whole ? whole : "이름 없는 제독";
+            return new[]
+            {
+                s.Auto ? who + " (자동)" : who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName,
+                $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Items?.Count ?? 0}개",
+            };
+        }).ToList();
+        int pick = SaveListDialog.Pick(this, "아이템 넣기 - 세이브 고르기", ["캐릭터", "도시", "저장한 시각", "소지품"], rows);
+        if (pick < 0) return;
+        string file = slots[pick].Slot.File;
+
+        var items = table.Items.Where(i => !string.IsNullOrWhiteSpace(i.Name)).ToList();
+        var lines = items.Select(i => GameUi.Pad(i.Name, 24) + i.CategoryName).ToList();
+        int last = -1;
+        while (true)
+        {
+            int at = HintListDialog.Pick(this, lines, "아이템 넣기 - 아이템 고르기", "아이템이 없습니다", preselect: last);
+            if (at < 0) return;
+            last = at;
+            string failed = GameSave.AddItem(file, items[at].Id);
+            if (failed.Length > 0) { NoticeDialog.Show(this, failed); return; }
+            Say($"{rows[pick][0]}의 세이브에 {items[at].Name}{GameUi.Josa(items[at].Name, "을", "를")} 넣었습니다. 불러오면 보입니다.");
+        }
+    }
+
     private void ShowDevDialog() => DevDialog.Show(this, _game.Player, new DevDialog.Options
     {
+        GiveItem = GiveItemToSave,
         CoordsOn = () => _overlayWanted,
         SetCoords = on =>
         {

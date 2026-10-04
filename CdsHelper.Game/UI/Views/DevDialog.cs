@@ -52,6 +52,9 @@ public sealed class DevDialog : GameWindow
 
         /// <summary>싸움 셈을 돌려 보는 세 가지 — 일기토 · 육상전 모의전 · 모의해전. 창을 닫은 뒤 부른다.</summary>
         public Action? Duel { get; init; }
+
+        /// <summary>아이템 넣기 — 세이브 파일을 골라 그 주인공 소지품에 아이템을 넣는다. 창을 닫은 뒤 부른다.</summary>
+        public Action? GiveItem { get; init; }
         public Action? LandSpar { get; init; }
         public Action? SeaSpar { get; init; }
 
@@ -133,6 +136,23 @@ public sealed class DevDialog : GameWindow
             line.Children.Add(slider);
             line.Children.Add(value);
             tests.Children.Add(line);
+        }
+
+        // 아이템 넣기 — 세이브 파일을 골라 그 주인공 소지품에 아이템을 넣는다(베타 테스트용).
+        if (options.GiveItem is { } giveItem)
+        {
+            var give = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 4) };
+            give.Children.Add(new TextBlock
+            {
+                Text = "세이브",
+                Width = 80,
+                Foreground = GameUi.Text,
+                FontWeight = FontWeights.Bold,
+                FontSize = 15,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            give.Children.Add(GameUi.PushButton("아이템 넣기…", () => { Close(); giveItem(); }, 180));
+            tests.Children.Add(give);
         }
 
         // 자동항해 — 해상 커맨드에 있던 것을 옮겼다. 창을 닫고 나서 목적지를 고른다.
