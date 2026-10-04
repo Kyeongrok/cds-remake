@@ -244,6 +244,9 @@ public sealed class GameSettingsData
     /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool WheelZoom { get; set; }
 
+    /// <summary>새 주인공을 지을 때 지난번에 적은 것을 채워 줄지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool KeepCharacterDraft { get; set; }
+
     /// <summary>개발 — 일기토에서 내 체력이 0 이 안 된다. 꺼 두고 시작한다.</summary>
     public bool DuelImmortal { get; set; }
 
@@ -1060,6 +1063,13 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.MutinyRate), 0, 100);
         set => Set(d => d.MutinyRate = Math.Clamp(value, 0, 100));
+    }
+
+    /// <summary>모드 「캐릭터 작성 기억」 — 새 주인공을 지을 때 지난번에 적은 것(CharacterDraft)을 채워 준다.</summary>
+    public static bool KeepCharacterDraft
+    {
+        get => Get(d => d.KeepCharacterDraft);
+        set => Set(d => d.KeepCharacterDraft = value);
     }
 
     /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>

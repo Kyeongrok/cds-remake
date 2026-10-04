@@ -84,6 +84,8 @@ public sealed class DevDialog : GameWindow
         Background = GameUi.Back;
 
         var rows = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
+        // 「테스트」 탭 — 베타 테스트를 돕는 것(안 죽기 · 재해 줄이기).
+        var tests = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
         rows.Children.Add(Row("소지금", _gold, GoldStep, v => _player.SetGold(v)));
         rows.Children.Add(Row("명성", _fame, FameStep, v => _player.Fame = v));
         rows.Children.Add(YearRow(options.YearChanged));
@@ -96,7 +98,7 @@ public sealed class DevDialog : GameWindow
             "배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄웁니다"));
 
         // 일기토 불사 — 베타 테스트용. 내 체력이 안 떨어지고, 판은 오른쪽 단추 「승리 · 항복」으로 끝낸다.
-        rows.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on => GameSettings.DuelImmortal = on,
+        tests.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on => GameSettings.DuelImmortal = on,
             "일기토에서 죽지 않습니다. 명령을 고를 차례에 오른쪽 단추를 누르면 「승리 · 항복」으로 판을 끝냅니다"));
 
         // 반란 빈도 — 바다 반란이 일어날 몫. 100% 가 원본 그대로다.
@@ -130,7 +132,7 @@ public sealed class DevDialog : GameWindow
             });
             line.Children.Add(slider);
             line.Children.Add(value);
-            rows.Children.Add(line);
+            tests.Children.Add(line);
         }
 
         // 자동항해 — 해상 커맨드에 있던 것을 옮겼다. 창을 닫고 나서 목적지를 고른다.
@@ -292,7 +294,7 @@ public sealed class DevDialog : GameWindow
         var colors = ColorsPage(editor: false);
         // 「편집기 색」 — 퀘스트 편집기 · 모션 메이커 따위 도구 창의 붓만 따로 — 게임 화면 색과 섞이면 헷갈렸다.
         var toolColors = ColorsPage(editor: true);
-        var pages = new List<(string, FrameworkElement)> { ("일반", rows) };
+        var pages = new List<(string, FrameworkElement)> { ("일반", rows), ("테스트", tests) };
         if (options.Discoveries is { } table)
         {
             pages.Add(("발견물", FindsPage(table)));

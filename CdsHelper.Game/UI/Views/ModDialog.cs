@@ -277,6 +277,10 @@ public sealed class ModDialog : GameWindow
             + " 「탐욕스러운 놈!」 하고 쫓겨날 판이면, 대신 제안 그대로 승낙합니다."));
 
         // 휠 확대 — 지도를 마우스 휠로 키우고 줄인다. 원본에 없어 꺼 둔다.
+        rows.Children.Add(Toggle("캐릭터 작성 기억", GameSettings.KeepCharacterDraft,
+            on => GameSettings.KeepCharacterDraft = on,
+            "원본에 없는 것입니다 — 새 캐릭터를 만들 때 지난번에 적은 이름 · 연령 · 생일 · 혈액형 · 국적 · 얼굴을 채워 줍니다(세 시간 안)."));
+
         rows.Children.Add(Toggle("휠 확대", GameSettings.WheelZoom, on => GameSettings.WheelZoom = on,
             "원본에 없는 것입니다 — 항해 · 뭍 지도에서 마우스 휠을 굴리면 커서 자리를 두고 지도를 키우고 줄입니다."
             + " 끄면(기본) 휠을 굴려도 지도가 그대로입니다. 발견물 지도 창의 휠 확대는 이와 상관없이 늘 됩니다."));

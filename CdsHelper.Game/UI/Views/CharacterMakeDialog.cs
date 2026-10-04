@@ -181,8 +181,8 @@ internal sealed class CharacterMakeDialog : GameWindow
         _month.Text = $"{(fresh ? FreshBirthMonth : player.BirthMonth)}";
         _day.Text = $"{(fresh ? FreshBirthDay : player.BirthDay)}";
 
-        // 세 시간 안에 새 주인공을 짓다 「다음」을 눌렀으면 그때 적은 것을 그대로 채운다(원본에 없다).
-        if (fresh && GameSettings.CharacterDraft is { } draft)
+        // 세 시간 안에 새 주인공을 짓다 「다음」을 눌렀으면 그때 적은 것을 그대로 채운다(원본에 없다 — 모드 「캐릭터 작성 기억」).
+        if (fresh && GameSettings.KeepCharacterDraft && GameSettings.CharacterDraft is { } draft)
         {
             _family.Text = draft.Family;
             _given.Text = draft.Given;
@@ -333,13 +333,16 @@ internal sealed class CharacterMakeDialog : GameWindow
     /// 이름 칸을 누르면 그 자리에 글상자를 띄워 <b>키보드로</b> 적게 한다 — 원본에 없는 것(원본은 「문자입력」 판뿐이다).
     /// 한글은 윈도 입력기가 조합한다. Enter 나 딴 곳을 누르면 적은 것이 칸에 들고, Esc 는 물린다.
     /// </summary>
-    private void TypeOver(GameUi.GameLabel box, double x, double y, double width)
+    /// <param name="range">숫자 칸이면 받을 범위 — 벗어나면 끝값으로 맞춘다. 이름 칸은 안 준다.</param>
+    /// <param name="changed">적은 것이 칸에 든 뒤 부른다(별자리 다시 찍기).</param>
+    private void TypeOver(GameUi.GameLabel box, double x, double y, double width,
+                          (int Min, int Max)? range = null, Action? changed = null)
     {
         var edit = new TextBox
         {
             Width = width,
             Height = FieldHeight,
-            MaxLength = NameLimit,
+            MaxLength = range is { } r ? $"{r.Max}".Length : NameLimit,
             FontSize = 12,
             Padding = new Thickness(1, 0, 1, 0),
             BorderThickness = new Thickness(1),
@@ -364,7 +367,16 @@ internal sealed class CharacterMakeDialog : GameWindow
         void Done(bool keep)
         {
             if (edit.Visibility != Visibility.Visible) return;
-            if (keep && edit.Text.Trim().Length > 0) box.Text = edit.Text.Trim();
+            string typed = edit.Text.Trim();
+            if (keep && typed.Length > 0)
+            {
+                if (range is not { } span) { box.Text = typed; changed?.Invoke(); }
+                else if (int.TryParse(typed, out int n))
+                {
+                    box.Text = $"{Math.Clamp(n, span.Min, span.Max)}";
+                    changed?.Invoke();
+                }
+            }
             edit.Visibility = Visibility.Collapsed;
         }
         hit.MouseLeftButtonDown += (_, e) =>
@@ -394,6 +406,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     {
         Label("연령", RowAge);
         Boxed(_age, AgeX, RowAge, NumWidth);
+        TypeOver(_age, AgeX, RowAge, NumWidth, (Player.MinAge, Player.MaxAge));
         Spinner(AgeX + NumWidth + SpinGap, RowAge, () =>
         {
             if (NumberPadDialog.Ask(this, Number(_age, 25), Player.MinAge, Player.MaxAge) is { } n)
@@ -411,6 +424,7 @@ internal sealed class CharacterMakeDialog : GameWindow
 
         Label("생일", RowBirth);
         Boxed(_month, x, RowBirth, NumWidth);
+        TypeOver(_month, x, RowBirth, NumWidth, (1, 12), Mark);
         Spinner(x + NumWidth + SpinGap, RowBirth, () =>
         {
             if (NumberPadDialog.Ask(this, Number(_month, 1), 1, 12) is { } n)
@@ -421,6 +435,7 @@ internal sealed class CharacterMakeDialog : GameWindow
         // "월" 한 자(16) 뒤로 한 칸 띄고 다음 칸이 선다.
         double x2 = x + after + 2 + 16 + WordGap;
         Boxed(_day, x2, RowBirth, NumWidth);
+        TypeOver(_day, x2, RowBirth, NumWidth, (1, 31), Mark);
         Spinner(x2 + NumWidth + SpinGap, RowBirth, () =>
         {
             if (NumberPadDialog.Ask(this, Number(_day, 1), 1, 31) is { } n)
