@@ -49,7 +49,7 @@ public enum DisevCall
     Result, ResultFalse, LastConditionFalse, LastCondition, NoAide, HasAide, ChoiceIs, ChoiceIsNot,
     HintActive, HintInactive, HasItem, LacksItem, Discovered, NotDiscovered, DiscoveryDone, DiscoveryNotDone,
     YearAtLeast, YearBefore, YearAtMost, YearAfter, YearIs, YearBetween, YearOutside, YearMonthIs,
-    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, DiscoveryOpenIs, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
+    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, DiscoveryOpenIs, GoodsOnSale, GoodsNotOnSale, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
     CityNationCheck, CityNationIs, CityStanding, CityGone, BuildingStanding, BuildingGone, LeftCityBySea, LeftCityOnLand,
     Story0, NotStory0, Story1, NotStory1, Unknown0015, NoContract, Or, RandomChance,
     GreaterThan, GreaterOrEqual, LessThan, LessOrEqual, EqualTo, NotEqualTo,
@@ -212,6 +212,9 @@ public static class DisevCalls
         C(DisevCall.SpeechIs, null, "70 10 u16", "Line"),
         // 73 0B [발견물] — 원본에 없는 꼴. 그 발견물이 열려 있으면(계약 · 처음부터 · 대본) 참.
         C(DisevCall.DiscoveryOpenIs, null, "73 0B u16", "Discovery"),
+        // 74 15 · 75 15 [교역품] — 원본에 없는 꼴. 그 교역품의 판매 깃발(0x0058BAB0, 01 15 가 켠다)이 서 있으면 · 없으면 참.
+        C(DisevCall.GoodsOnSale, DisevCall.GoodsNotOnSale, "74 15 u16", "Goods"),
+        C(DisevCall.GoodsNotOnSale, DisevCall.GoodsOnSale, "75 15 u16", "Goods"),
         // 65 — 후원자 건물을 나서는 사건(맥락 갈래 5, 0x0044E72F)일 때 참(0x00407E7C).
         C(DisevCall.SponsorVisitEnded, null, "65"),
         // 59 — 함대에 배가 한 척이라도 있으면 참(0x00407DA9 → 0x00473CD0 이 여덟 자리를 훑는다).

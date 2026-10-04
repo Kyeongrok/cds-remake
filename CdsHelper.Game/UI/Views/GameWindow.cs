@@ -94,6 +94,13 @@ public class GameWindow : Window
         {
             ShipMapWindow.Current?.PersonByKey(window);
             e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.PatronKey, Key.P))
+        {
+            ShipMapWindow.Current?.PatronsByKey(window);
+            e.Handled = true;
         }
     }
 

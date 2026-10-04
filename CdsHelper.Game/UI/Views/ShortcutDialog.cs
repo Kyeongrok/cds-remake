@@ -14,6 +14,7 @@ public sealed class ShortcutDialog : GameWindow
     private readonly TextBox _items = KeyBox();
     private readonly TextBox _hints = KeyBox();
     private readonly TextBox _person = KeyBox();
+    private readonly TextBox _patron = KeyBox();
 
     private ShortcutDialog()
     {
@@ -38,6 +39,9 @@ public sealed class ShortcutDialog : GameWindow
         _person.Text = GameSettings.PersonKey;
         _person.PreviewKeyDown += (_, e) => Assign(e, _person, key => GameSettings.PersonKey = key);
 
+        _patron.Text = GameSettings.PatronKey;
+        _patron.PreviewKeyDown += (_, e) => Assign(e, _patron, key => GameSettings.PatronKey = key);
+
         var stack = new StackPanel();
         stack.Children.Add(GameUi.TitleBar("단축키", Close));
         stack.Children.Add(Row("저장", _save));
@@ -46,6 +50,7 @@ public sealed class ShortcutDialog : GameWindow
         stack.Children.Add(Row("소지품 정보", _items));
         stack.Children.Add(Row("힌트 정보", _hints));
         stack.Children.Add(Row("인물정보", _person));
+        stack.Children.Add(Row("후원자 정보", _patron));
         stack.Children.Add(new TextBlock
         {
             Text = "각 칸을 누른 뒤 지정할 글쇠를 누르십시오.",

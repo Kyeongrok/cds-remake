@@ -664,6 +664,18 @@ public sealed class Game
     /// <summary>
     /// 힌트 이름. 게임 표를 읽었으면 그것으로, 아니면 우리 DB 것으로, 그것도 없으면 번호로 낸다.
     /// </summary>
+    /// <summary>
+    /// 그 힌트가 가리키는 발견물 이름 — 같은 번호를 쓰는 것(기제의 피라미드 · 스핑크스)은 가운뎃점으로 잇는다.
+    /// 정보 제공 등급 「상세」가 아니거나 가리키는 것이 없으면 빈 글이다(원본 힌트 일람에는 없는 값).
+    /// </summary>
+    public string HintDiscoveryNames(int id)
+    {
+        if (!Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoDetailed)) return "";
+        if (Hints?.Find(id) is not { } hint || hint.Discovery < 0 || Discoveries?.Table is not { } table) return "";
+        return string.Join(" · ", table.Discoveries.Where(r => r.Hint == hint.Discovery && r.Name.Length > 0)
+                                       .Select(r => r.Name).Distinct());
+    }
+
     public string HintName(int id)
     {
         if (Hints?.Find(id)?.Name is { Length: > 0 } name) return name;

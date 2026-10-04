@@ -2188,7 +2188,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         while (true)
         {
             // 힌트가 없으면 게임도 설득 때와 같은 「설득 가능한 힌트가 없습니다」를 낸다.
+            // 정보 제공 등급 「상세」면 이름 아래에 그 힌트가 가리키는 발견물을 단다.
             int at = HintListDialog.Pick(owner, [.. ids.Select(HintNameOf)],
+                                         subtitles: [.. ids.Select(_game.HintDiscoveryNames)],
                                          rightTexts: [.. ids.Select(id => _game.Hints?.Find(id) is { } hint
                                              ? _game.Hints.CategoryOf(hint.Category) : "")]);
             if (at < 0 || at >= ids.Count) return;

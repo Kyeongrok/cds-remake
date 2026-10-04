@@ -37,6 +37,18 @@
           {
             "Condition": 14,
             "Body": 15
+          },
+          {
+            "Condition": 16,
+            "Body": 17
+          },
+          {
+            "Condition": 18,
+            "Body": 19
+          },
+          {
+            "Condition": 20,
+            "Body": 21
           }
         ],
         "Chunks": [
@@ -323,11 +335,103 @@
               "Call": "End",
               "Note": "조건/본문 끝"
             }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 8,
+                "LineName": "교역소.팔것없음"
+              },
+              "Note": "대사 사건: 8 교역소.팔것없음"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "미안하지만， 자네에게 팔 물건은 아무것도 없네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 9,
+                "LineName": "교역소.미발견"
+              },
+              "Note": "대사 사건: 9 교역소.미발견"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교역소",
+                "Text": "이 고장의 <교역품><은는> 아직 세상에 알려지지 않아서 말이지．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "70 10",
+              "Call": "SpeechIs",
+              "Args": {
+                "Line": 10,
+                "LineName": "알림.교역품개시"
+              },
+              "Note": "대사 사건: 10 알림.교역품개시"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "이제 교역소에서 [<교역품>]<을를> 다룹니다"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "조건/본문 끝"
+            }
           ]
         ]
       }
     ]
   },
-  "Source": "원본에 없는 전역 대본 — 마을 사람 대사(교역소 투자 물음 · 교회 대사 일곱). 대사 사건(70 10)은 TownLines 의 번호다.",
+  "Source": "원본에 없는 전역 대본 — 마을 사람 대사(교역소 투자 물음 · 교회 대사 일곱 · 교역소 대사 둘 · 교역품 개시 알림). 대사 사건(70 10)은 TownLines 의 번호다.",
   "Version": 15
 }

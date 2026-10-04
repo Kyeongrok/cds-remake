@@ -230,6 +230,12 @@ public sealed class DisevRunner
         Run(owner, game, cache, partIndex, EventOf(game, building));
 
     /// <summary>그 책의 그 파트를 <b>그 사건으로</b> 돌린다 — 건물 명령 고름(갈래 4) 따위.</summary>
+    /// <summary>그 교역품을 파는지 — 처음부터 켜졌거나(표) 발견 대본이 켰다(<see cref="Market.TradePost.OnSale"/> 와 같은 셈).</summary>
+    private bool GoodsOnSale(int kind) => (_game.Trade?.OnSale(kind) ?? true) || _game.Player.IsGoodsActive(kind);
+
+    /// <summary>이번 대본이 새로 판매를 켠 교역품(<c>01 15</c>) — 끝난 뒤 알림을 낸다.</summary>
+    private readonly List<int> _opened = [];
+
     public static bool Run(Window owner, Game game, string cache, int partIndex, DisevEvent ev)
     {
         LastEndedInGameOver = false;
@@ -258,6 +264,16 @@ public sealed class DisevRunner
             // 암전(48)을 걸어 둔 채 대본이 끝나도 화면은 걷는다 — 원본 대본은 늘 49 로 걷지만 멈춤(4A 따위)이 끼면 못 닿는다.
             runner._shade?.Close();
         }
+        // 이 대본이 판매를 켠 교역품을 알린다 - 원본은 말없이 켜서, 교역소에 줄이 생긴 것을 알 길이 없었다.
+        if (!LastEndedInGameOver)
+            foreach (int kind in runner._opened)
+                if (game.Goods?.Find(kind)?.Name is { Length: > 0 } name)
+                {
+                    string particle = GameUi.Josa(name, "을", "를");
+                    TownLines.Say(owner, game, "알림.교역품개시",
+                        () => NoticeDialog.Show(owner, $"이제 교역소에서 [{name}]{particle} 다룹니다"),
+                        ("교역품", name), ("을를", particle));
+                }
         // 도시에 들어선 사건(갈래 1, 0x004AB4D0)은 단계를 <b>늘 한 칸만</b> 올린다 — +4 가 1 이면 카운터를 inc 할 뿐
         // +0x10 을 안 본다(0x004AB53C). 딴 갈래는 0x004AB460 이 +0x10(58 n 이면 n+1)을 더한다(0x004AB49E).
         // 그래서 1500 년 뒤 개인 이야기 첫 파트의 「58 02」가 도시에 들며 걸리면 장을 건너뛰지 않고 다음 파트로 간다.
@@ -562,6 +578,9 @@ public sealed class DisevRunner
             case DisevCall.DiscoveryOpenIs:
                 return _game.Discoveries is { } openLog && openLog.Table.Find(I("Discovery")) is { } openRow
                        && openLog.IsOpen(player, openRow);
+            // 74 15 · 75 15 — 그 교역품의 판매 깃발이 서 있으면 · 없으면 참. 원본에 없는 조건이다.
+            case DisevCall.GoodsOnSale: return GoodsOnSale(I("Goods"));
+            case DisevCall.GoodsNotOnSale: return !GoodsOnSale(I("Goods"));
             // 65 — 후원자 건물을 나서는 사건(갈래 5, 0x0044E72F)이면 참(0x00407E7C).
             case DisevCall.SponsorVisitEnded:
                 return _event.Kind == DisevEvent.SponsorLeftKind;
@@ -913,7 +932,8 @@ public sealed class DisevRunner
 
             // 01 15 [교역품] — 판매 게이트 0x0058BAB0[교역품] = 1(0x004088D8). 교역소가 그 품목을 팔기 시작한다.
             case DisevCall.ActivateGoods:
-                _game.Player.ActivateGoods(I("Goods"));
+                // 새로 켜진 것은 대본이 끝난 뒤에 알린다(원본에 없는 알림) - 한가운데서 내면 발견 말 사이에 낀다.
+                if (_game.Player.ActivateGoods(I("Goods"))) _opened.Add(I("Goods"));
                 return null;
 
             // 5B 08 [도시] 15 [교역품] · 5B 15 [교역품] — 의뢰한 짐을 <b>정가로 인수</b>한다(0x0040B3C8).

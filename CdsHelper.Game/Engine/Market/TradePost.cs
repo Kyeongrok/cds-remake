@@ -198,6 +198,26 @@ public sealed class TradePost
         return total > 0;
     }
 
+    /// <summary>
+    /// 그 도시가 팔 것인데 <b>판매 게이트에 걸려</b> 아직 안 파는 교역품들 — 공통품, 제 특산품, 딸린 내륙 도시 특산품.
+    /// 발견 대본(<c>01 15</c>)이 켜 주기 전에는 줄이 안 선다. 상인이 까닭을 일러 줄 때 쓴다(원본에 없는 말).
+    /// </summary>
+    public List<int> LockedOf(Player player, int city)
+    {
+        var kinds = new List<int>();
+        void Add(int kind)
+        {
+            if (kind >= 0 && !OnSale(player, kind) && !kinds.Contains(kind)) kinds.Add(kind);
+        }
+
+        int region = _table.RegionOf(city);
+        if (region >= 0)
+            foreach (int kind in _table.CommonOf(region)) Add(kind);
+        Add(_table.SpecialOf(city));
+        foreach (int inland in _table.InlandOf(city)) Add(_table.SpecialOf(inland));
+        return kinds;
+    }
+
     /// <summary>그 도시에 교역소 물건이 하나라도 있는지.</summary>
     public bool HasGoods(Player player, int city) => RowsOf(player, city).Count > 0;
 

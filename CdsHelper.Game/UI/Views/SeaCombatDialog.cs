@@ -1414,16 +1414,17 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     void SeaBattle.IStage.Notice(string text) => ConfirmDialog.Tell(this, text, BattleTitle);
 
     /// <remarks>
-    /// 소리 0x2E → 150ms → 배 칸마다 blast-12~14 → 기함 아닌 배마다 격침 말 → 판을 다시 그려 배가 사라진다.
-    /// 배가 가라앉거나 뒤집히는 장은 없다(원본도 불꽃 석 장뿐이다).
+    /// 소리 0x2E → 150ms → 배 칸마다 blast-12~14 → 판을 다시 그려 배가 사라진다 → 기함 아닌 배마다 격침 말.
+    /// 배가 가라앉거나 뒤집히는 장은 없다(원본도 불꽃 석 장뿐이다). 배는 <b>불꽃이 끝나자마자</b> 지운다 —
+    /// 격침 말 뒤에 지우면 「격침시켰습니다」가 떠 있는 동안 그 배가 멀쩡히 서 있어 어색했다.
     /// </remarks>
     void SeaBattle.IStage.Sink(IReadOnlyList<SeaBattle.Ship> ships)
     {
         _sfx?.PlayOver(_battle.Monster && ships.Any(s => !s.Mine) ? MonsterSinkPart : SinkPart);
         Wait(Tick * 3);
         Blast(12, ships.Select(BlastAt).ToArray());
-        foreach (var ship in ships.Where(s => !s.Flagship)) Say(_battle.SinkWord(ship));
         Redraw();
+        foreach (var ship in ships.Where(s => !s.Flagship)) Say(_battle.SinkWord(ship));
     }
 
     void SeaBattle.IStage.Captured(SeaBattle.Ship ship)

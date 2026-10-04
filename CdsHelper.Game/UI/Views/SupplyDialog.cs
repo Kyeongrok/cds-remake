@@ -721,8 +721,8 @@ public sealed class SupplyDialog : GameWindow
     /// </param>
     /// <remarks>
     /// 여는 차례(<c>0x0040F38B</c>): 먼저 <b>전회분</b>을 채워 두고(<c>0x0040EC60</c>), 그것이 남은 중량·용량을
-    /// 넘으면 「최대」로 다시 맞춘다(<c>0x0040F3C9</c>). 그러고도 더 실을 여유가 전혀 없으면 부관이(없으면
-    /// 알림으로) 「이 이상 실을 여유가 없습니다.」(<c>0x00545678</c>) 하고 창이 곧 닫힌다(<c>0x0040F3F5</c>).
+    /// 넘으면 「최대」로 다시 맞춘다(<c>0x0040F3C9</c>). 원본은 그러고도 더 실을 여유가 전혀 없으면 부관이(없으면
+    /// 알림으로) 「이 이상 실을 여유가 없습니다.」(<c>0x00545678</c>) 하고 창을 닫는데(<c>0x0040F3F5</c>), 우리는 닫지 않는다.
     /// </remarks>
     /// <param name="cargoText">실은 교역품의 이름과 산지 — 교역품 줄에 적고, 산지는 마우스를 올리면 뜬다.</param>
     public static void Show(Window owner, Player player, int rate = 100, int cityFlags = AmmoBit,
@@ -735,13 +735,8 @@ public sealed class SupplyDialog : GameWindow
         dialog.Last();
         if (player.Overweight(dialog.Weight) || dialog.Barrels > player.Capacity) dialog.Fill();
 
-        var (foodTo, waterTo) = dialog.FillTargets();
-        if (foodTo <= player.SupplyOf(SupplyKind.Food) && waterTo <= player.SupplyOf(SupplyKind.Water))
-        {
-            if (mateFace != null) ConfirmDialog.Tell(owner, "이 이상 실을 여유가 없습니다.", face: mateFace);
-            else GameDialog.Show(owner, "이 이상 실을 여유가 없습니다.");
-            return;
-        }
+        // 원본은 더 실을 여유가 없으면 「이 이상 실을 여유가 없습니다.」 하고 창을 닫지만(0x0040F3F5), 여기서는
+        // <b>그대로 연다</b> - 실은 것을 덜어 내려고 여는 수도 있다.
         dialog.ShowDialog();
     }
 }

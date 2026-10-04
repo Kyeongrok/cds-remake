@@ -2316,11 +2316,18 @@ public sealed class ShipMapHost : HwndHost
         return cellX < 0 ? cellX + w : cellX;
     }
 
-    /// <summary>발밑이 빠른 부류(그림 번호 <c>0x80</c>)인지.</summary>
+    /// <summary>발밑이 빠른 부류(부류 1 - 난바다)인지.</summary>
+    /// <remarks>
+    /// 게임은 <b>부류표</b>(<c>0x004CD048</c>)에 칸 값을 그대로 넣어 본다(<c>0x00426710</c>). 예전에는 칸 값의
+    /// <c>0x80</c> 비트로 갈랐는데, 난바다 칸은 <c>0x800 · 0x880 · 0x900 · 0x980 ...</c> 이 물결 무늬로 섞여 있고
+    /// 표에서는 <b>모두 부류 1</b> 이다 - 비트로 가르면 한 칸 걸러 느린 식(해류 없음)으로 떨어져, 역풍에 역류면
+    /// 배가 칸마다 섰다 갔다 했다. 표를 못 읽었을 때만 옛 어림을 쓴다.
+    /// </remarks>
     private bool FastTile()
     {
         if (_world == null) return false;
         var (_, _, _, _, off) = RawAt(_shipX, _shipY);
+        if (_terrain != null) return _terrain.ClassOfCell(CellAt(off)) == 1;
         return (WorldMapRenderer.CellToTile(_world, off) & 0x80) != 0;
     }
 

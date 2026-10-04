@@ -162,6 +162,7 @@ public sealed class GameSettingsData
     public string ItemsKey { get; set; } = "R";
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
+    public string PatronKey { get; set; } = "P";
 
     /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPeopleOverlay { get; set; }
@@ -693,6 +694,13 @@ public static class GameSettings
     {
         get => Get(d => d.HintsKey);
         set => Set(d => d.HintsKey = value);
+    }
+
+    /// <summary><b>후원자 정보</b> 단축키. 기본은 <c>P</c> 다.</summary>
+    public static string PatronKey
+    {
+        get => Get(d => d.PatronKey);
+        set => Set(d => d.PatronKey = value);
     }
 
     /// <summary><b>인물정보</b> 단축키. 기본은 <c>X</c> 다.</summary>

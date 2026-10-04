@@ -2702,6 +2702,25 @@ public sealed class ShipMapWindow : Window
     /// <summary>인물정보가 떠 있는지 — 그 창 안에서 X 를 또 눌러 겹쳐 뜨지 않게.</summary>
     private bool _personOpen;
 
+    /// <summary>
+    /// 단축키로 <b>후원자 정보</b>(스폰서 일람)를 연다 — 도시 커맨드 「후원자 정보」와 같은 창이다. 어디서든 지금 창 위에
+    /// 뜨고, 이미 떠 있으면 또 열지 않는다.
+    /// </summary>
+    internal void PatronsByKey(Window owner)
+    {
+        if (!_started || _patronsOpen) return;
+        _patronsOpen = true;
+        try { ShowPatrons(owner); }
+        finally { _patronsOpen = false; }
+    }
+
+    /// <summary>후원자 정보가 떠 있는지 — 그 창 안에서 P 를 또 눌러 겹쳐 뜨지 않게.</summary>
+    private bool _patronsOpen;
+
+    /// <summary>스폰서 일람 — 아는 후원자와 권력 · 친밀도. 도시 창이 없는 바다 · 뭍에서도 같은 창을 낸다.</summary>
+    private void ShowPatrons(Window owner) =>
+        new PatronMenu(owner, _game, "", CommandMenu, CommandMenu, 0, 0, -1).ShowPatrons(owner);
+
     private void OnMapKey(object sender, KeyEventArgs e)
     {
         // ESC — 떠 있는 커맨드·도시정보 창을 접는다. 창이 제 글쇠를 받는 것은 그 창에
@@ -2768,6 +2787,13 @@ public sealed class ShipMapWindow : Window
         {
             e.Handled = true;
             if (_started && !_personOpen) Hold(() => PersonByKey(this));
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.PatronKey, Key.P))
+        {
+            e.Handled = true;
+            if (_started && !_patronsOpen) Hold(() => PatronsByKey(this));
             return;
         }
 
@@ -3576,6 +3602,12 @@ public sealed class ShipMapWindow : Window
         // 예전에는 발견만 한 힌트까지 빼는 딴 목록(GameInfo.HintNames)을 써서 바다에서는 비어 보였다(fb-ui-20).
         ("힌트정보", () => Info(() => ShowHints(this))),
         ("계약정보", () => Info(ShowContract)),
+        // 원본 바다 「정보」에는 없는 두 줄 — 도시 커맨드의 「후원자 정보」 · 「작위 정보」와 같은 창이다.
+        // 작위는 도시와 같이 모드 「작위」를 켰을 때만 선다.
+        ("후원자정보", () => Info(() => ShowPatrons(this))),
+        .. Engine.Town.Nobility.Enabled
+            ? new (string, Action?)[] { ("작위정보", () => Info(() => PersonInfoDialog.ShowNobility(this, _game))) }
+            : [],
         ("지도를 본다", () => CommandMenu.Push(MapMenuBox)),
         // 「돌아간다」는 커맨드로 되짚지 않고 <b>커맨드 창을 통째로 닫는다</b> — 0x00425E40 이 돌아가면
         // 0x0048B636 → 0x0048B798 로 창이 끝난다.
@@ -3765,7 +3797,9 @@ public sealed class ShipMapWindow : Window
 
         while (true)
         {
+            // 정보 제공 등급 「상세」면 이름 아래에 그 힌트가 가리키는 발견물을 단다.
             int at = HintListDialog.Pick(owner, [.. ids.Select(id => _game.HintName(id))],
+                                         subtitles: [.. ids.Select(_game.HintDiscoveryNames)],
                                          rightTexts: [.. ids.Select(id => _game.Hints?.Find(id) is { } hint
                                              ? _game.Hints.CategoryOf(hint.Category) : "")]);
             if (at < 0 || at >= ids.Count) return;

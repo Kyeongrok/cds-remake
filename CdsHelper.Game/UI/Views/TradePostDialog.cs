@@ -787,7 +787,18 @@ public sealed class TradePostDialog : GameWindow
         }
         if (!post.HasGoods(game.Player, city) && game.Player.CargoHold.Count == 0)
         {
-            ConfirmDialog.Tell(owner, "미안하지만, 자네에게 팔 물건은 아무것도 없네.", face: face);
+            // 말은 전역 대본 「마을대사」가 한다(대사 사건) - 대본이 그 줄을 안 맡았으면 엔진 대사가 나온다.
+            Engine.Disev.TownLines.Say(owner, game, "교역소.팔것없음",
+                () => ConfirmDialog.Tell(owner, "미안하지만, 자네에게 팔 물건은 아무것도 없네.", face: face));
+            // 원본에 없는 한 마디 - 이 고장 물건이 판매 깃발에 걸려 있으면 까닭을 일러 준다. 안 그러면 왜 비었는지 알 길이 없다.
+            if (post.LockedOf(game.Player, city) is { Count: > 0 } locked)
+            {
+                string names = string.Join(", ", locked.Select(post.NameOf));
+                string particle = GameUi.Josa(post.NameOf(locked[^1]), "은", "는");
+                Engine.Disev.TownLines.Say(owner, game, "교역소.미발견",
+                    () => ConfirmDialog.Tell(owner, $"이 고장의 {names}{particle} 아직 세상에 알려지지 않아서 말이지.", face: face),
+                    ("교역품", names), ("은는", particle));
+            }
             return;
         }
         new TradePostDialog(game, post, city, cityName) { Owner = owner, _face = face }.ShowDialog();

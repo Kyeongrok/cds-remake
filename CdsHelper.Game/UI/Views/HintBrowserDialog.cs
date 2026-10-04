@@ -220,6 +220,8 @@ public sealed class HintBrowserDialog : GameWindow
         // 원본 판 아래 말 창에 뜨던 부관의 평(「발견할 수 있을 것 같습니다」 따위)은 안 붙인다 — 훑어보는 데 거슬린다는 요청.
         // 지금 좇는 계약만은 알 만하니 기한 줄 끝에 단다.
         if (player.Contract?.Hint == hint.Id) facts.Add("현재 계약중");
+        // 가리키는 발견물은 「상세」부터(HintDiscoveryNames 가 등급을 본다).
+        if (_game.HintDiscoveryNames(hint.Id) is { Length: > 0 } finds) facts.Add($"발견물 {finds}");
         _facts.Text = string.Join(" · ", facts);
         _facts.Visibility = facts.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         _body.Text = hint.Text;

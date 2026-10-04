@@ -2644,7 +2644,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>스폰서 일람 너비 — 오른쪽에 권력·친밀도(「권력 A  친밀도 100」)를 달아 여느 목록(264)보다 넓힌다.</summary>
     private const double StatsListWidth = 400;
 
-    public void ShowPatrons()
+    public void ShowPatrons() => ShowPatrons(_view);
+
+    /// <summary>스폰서 일람을 그 창 위에 낸다 — 바다 「정보」와 단축키는 도시 창이 없어 주인을 따로 준다.</summary>
+    public void ShowPatrons(Window owner)
     {
         int year = _player.Date.Year;
         var table = _game.Sponsors;
@@ -2675,11 +2678,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 닫는데, 그 창은 점으로 오므라드는 동안 <b>아직 살아 있고 보이기까지 한다</b>
         // (GameMenuHost.Close → CloseZoomed). 그 창을 주인으로 잡으면 오므라들기가
         // 끝나는 순간 우리 물음창까지 딸려 닫혀 판이 멎은 것처럼 보인다.
-        var owner = _view;
         while (true)
         {
             int row = HintListDialog.Pick(owner, names, "스폰서 일람",
-                                          "이 마을에는 아는 스폰서가 없습니다", faces: faces,
+                                          "아는 스폰서가 없습니다", faces: faces,
                                           subtitles: likes, rightTexts: stats, listWidth: StatsListWidth);
             if (row < 0 || row >= mine.Count) return;
 
