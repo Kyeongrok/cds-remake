@@ -793,7 +793,7 @@ public sealed class ShipMapHost : HwndHost
 
     protected override HandleRef BuildWindowCore(HandleRef hwndParent)
     {
-        _hwnd = CreateWindowExW(0, WndClass, null, WsChild | WsVisible, 0, 0, 1, 1,
+        _hwnd = CreateWindowExW(0, WndClass, null, WsChild | WsVisible | 0x04000000 /* WS_CLIPSIBLINGS */, 0, 0, 1, 1,
                                 hwndParent.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
         if (_hwnd == IntPtr.Zero)
             throw new InvalidOperationException(

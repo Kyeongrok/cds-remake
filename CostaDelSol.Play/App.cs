@@ -79,12 +79,14 @@ internal sealed class App : Application
     /// 「아니오」면 게임을 끌 때 적용된다(<see cref="UpdateManager.WaitExitThenApplyUpdates"/>).
     /// 인터넷이 없거나 GitHub 이 막혀도 놀이는 그대로 돈다 — 조용히 넘어간다.
     /// </remarks>
-    private static async Task CheckForUpdateAsync(Window window)
+    private static async Task CheckForUpdateAsync(ShipMapWindow window)
     {
         try
         {
             var manager = new UpdateManager(new GithubSource(RepoUrl, null, false));
             if (!manager.IsInstalled) return;
+
+            window.Say("업데이트를 확인합니다.");
 
             var update = await manager.CheckForUpdatesAsync();
             if (update == null) return;

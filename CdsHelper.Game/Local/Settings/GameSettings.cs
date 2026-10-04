@@ -244,6 +244,9 @@ public sealed class GameSettingsData
     /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool WheelZoom { get; set; }
 
+    /// <summary>녹화용 — 도시 화면을 지도 창 안에 비춰 그릴지(CaptureMirror). 실험이라 꺼 두고 시작한다.</summary>
+    public bool CaptureMirror { get; set; }
+
     /// <summary>새 주인공을 지을 때 지난번에 적은 것을 채워 줄지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool KeepCharacterDraft { get; set; }
 
@@ -1070,6 +1073,13 @@ public static class GameSettings
     {
         get => Get(d => d.KeepCharacterDraft);
         set => Set(d => d.KeepCharacterDraft = value);
+    }
+
+    /// <summary>모드 실험 「녹화용 창 합치기」 — 도시 화면을 지도 창 안에 비춰 그려 「창 지정」 녹화에 들게 한다.</summary>
+    public static bool CaptureMirror
+    {
+        get => Get(d => d.CaptureMirror);
+        set => Set(d => d.CaptureMirror = value);
     }
 
     /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>

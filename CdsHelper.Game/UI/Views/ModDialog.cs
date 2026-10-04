@@ -322,6 +322,10 @@ public sealed class ModDialog : GameWindow
             + " 그 점을 오른쪽 단추로 누르면 지도가 닫히고 그 자리까지 뭍길을 찾아 저절로 걸어갑니다(바다 자동항해와 같은 마디 따라가기)."
             + " 길을 못 찾거나 바다에 있으면 아래 줄에 알립니다. 사건이 나면 멈춥니다."));
 
+        lab.Children.Add(Toggle("녹화용 창 합치기", GameSettings.CaptureMirror, on => GameSettings.CaptureMirror = on,
+            "녹화 앱에서 「창 지정」으로 찍을 때 도시 화면이 빠지는 것을 막습니다 — 도시 화면을 게임 창 안에 그대로 비춰 그립니다."
+            + " 눈에 보이는 것은 그대로입니다. 메뉴와 대화 상자는 아직 안 비춥니다."));
+
         lab.Children.Add(Toggle("배 중심", GameSettings.ShipCentered, on => GameSettings.ShipCentered = on,
             "원본에 없는 것입니다 — 원본은 배가 화면 가장자리에 닿으면 화면을 한 번에 넘깁니다."
             + " 켜면 배를 늘 화면 한가운데에 두고 지도가 배를 따라 실시간으로 흐릅니다. 뭍에서 말로 다닐 때도 같습니다."));

@@ -545,7 +545,10 @@ public sealed class ShipMapWindow : Window
         DockPanel.SetDock(titleBar, Dock.Top);
         shell.Children.Add(titleBar);
         shell.Children.Add(_screen);
-        Content = shell;
+        // 녹화용 거울 층 — 딸린 창(도시 화면)을 이 창 안에 비춰 그린다(모드 실험 「녹화용 창 합치기」). 손은 안 받는다.
+        var mirrors = new Canvas { IsHitTestVisible = false };
+        Content = new Grid { Children = { shell, mirrors } };
+        _captureMirror = new CaptureMirror(this, mirrors);
 
         // 대화 상자가 떠 있는 동안은 <b>게임 화면만</b> 손을 안 받게 덮는다 —
         // 제목 줄의 최소화·최대화·닫기는 살아 있어야 오른쪽 위 단추로 게임을 끝낼 수
@@ -2643,6 +2646,9 @@ public sealed class ShipMapWindow : Window
 
     /// <summary>모드 「수에즈 운하」를 켜고 끈 것을 지도에 곧바로 들인다.</summary>
     internal void RefreshSuezCanal() => _host.RefreshSuezCanal();
+
+    /// <summary>녹화용 거울 — 켜 둔 동안 도시 화면을 이 창 안에 비춘다.</summary>
+    private readonly CaptureMirror _captureMirror;
 
     /// <summary>모드 창이 떠 있는지 — 모드 창 안에서 M 을 또 눌러 겹쳐 뜨지 않게.</summary>
     private bool _modOpen;
