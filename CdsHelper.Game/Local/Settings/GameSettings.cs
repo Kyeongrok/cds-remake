@@ -131,6 +131,24 @@ public sealed class GameSettingsData
     /// <summary>미니맵 해류 화살표. 꺼 두고 시작한다.</summary>
     public bool MiniMapCurrent { get; set; }
 
+    /// <summary>미니맵에 찾은 발견물 점(빨강)을 찍을지. 꺼 두고 시작한다.</summary>
+    public bool MiniMapFound { get; set; }
+
+    /// <summary>미니맵에 아직 못 찾은 발견물 점(회색)을 찍을지. 꺼 두고 시작한다.</summary>
+    public bool MiniMapYet { get; set; }
+
+    /// <summary>미니맵에 도시 점(주황)을 찍을지. 꺼 두고 시작한다.</summary>
+    public bool MiniMapCities { get; set; }
+
+    /// <summary>미니맵 창 크기 배율(0.5~2.5). 1 이 260x160 이다.</summary>
+    public double MiniMapScale { get; set; } = 1.0;
+
+    /// <summary>마우스를 올렸거나 배가 밑에 들어갔을 때의 미니맵 불투명도(0.05~1.0).</summary>
+    public double MiniMapHoverOpacity { get; set; } = 0.35;
+
+    /// <summary>미니맵 표식(발견물 · 도시 점) 크기(지도 점, 1~5).</summary>
+    public double MiniMapMarkSize { get; set; } = 2.5;
+
     /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryCount { get; set; }
 
@@ -225,6 +243,12 @@ public sealed class GameSettingsData
 
     /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool WheelZoom { get; set; }
+
+    /// <summary>개발 — 일기토에서 내 체력이 0 이 안 된다. 꺼 두고 시작한다.</summary>
+    public bool DuelImmortal { get; set; }
+
+    /// <summary>개발 — 바다 반란이 일어날 몫(%). 100 이 원본 그대로, 0 이면 안 일어난다.</summary>
+    public int MutinyRate { get; set; } = 100;
 
     /// <summary>게임 로드 · 이어하기 창을 리디바탕 표로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool RidiLoadList { get; set; }
@@ -1024,6 +1048,20 @@ public static class GameSettings
         set => Set(d => d.RidiLoadList = value);
     }
 
+    /// <summary>개발 「일기토 불사」 — 일기토에서 내 부위 체력이 1 밑으로 안 내려간다. 판은 오른쪽 단추로 끝낸다.</summary>
+    public static bool DuelImmortal
+    {
+        get => Get(d => d.DuelImmortal);
+        set => Set(d => d.DuelImmortal = value);
+    }
+
+    /// <summary>개발 「반란 빈도」 — 바다 반란이 일어날 몫(%). 100 이 원본 그대로다.</summary>
+    public static int MutinyRate
+    {
+        get => Math.Clamp(Get(d => d.MutinyRate), 0, 100);
+        set => Set(d => d.MutinyRate = Math.Clamp(value, 0, 100));
+    }
+
     /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>
     public static bool WheelZoom
     {
@@ -1310,6 +1348,48 @@ public static class GameSettings
     {
         get => Get(d => d.MiniMapCurrent);
         set => Set(d => d.MiniMapCurrent = value);
+    }
+
+    /// <summary>미니맵에 찾은 발견물 점을 찍을지 — 모드 창 「미니맵」 탭.</summary>
+    public static bool MiniMapFound
+    {
+        get => Get(d => d.MiniMapFound);
+        set => Set(d => d.MiniMapFound = value);
+    }
+
+    /// <summary>미니맵에 아직 못 찾은 발견물 점을 찍을지 — 모드 창 「미니맵」 탭.</summary>
+    public static bool MiniMapYet
+    {
+        get => Get(d => d.MiniMapYet);
+        set => Set(d => d.MiniMapYet = value);
+    }
+
+    /// <summary>미니맵 창 크기 배율 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    public static double MiniMapScale
+    {
+        get => Math.Clamp(Get(d => d.MiniMapScale), 0.5, 2.5);
+        set => Set(d => d.MiniMapScale = Math.Clamp(value, 0.5, 2.5));
+    }
+
+    /// <summary>마우스를 올렸거나 배가 밑에 들어갔을 때의 미니맵 불투명도 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    public static double MiniMapHoverOpacity
+    {
+        get => Math.Clamp(Get(d => d.MiniMapHoverOpacity), 0.05, 1.0);
+        set => Set(d => d.MiniMapHoverOpacity = Math.Clamp(value, 0.05, 1.0));
+    }
+
+    /// <summary>미니맵 표식(발견물 · 도시 점) 크기 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    public static double MiniMapMarkSize
+    {
+        get => Math.Clamp(Get(d => d.MiniMapMarkSize), 1.0, 5.0);
+        set => Set(d => d.MiniMapMarkSize = Math.Clamp(value, 1.0, 5.0));
+    }
+
+    /// <summary>미니맵에 도시 점을 찍을지 — 모드 창 「미니맵」 탭.</summary>
+    public static bool MiniMapCities
+    {
+        get => Get(d => d.MiniMapCities);
+        set => Set(d => d.MiniMapCities = value);
     }
 
     public static bool DiscoveryMapWind

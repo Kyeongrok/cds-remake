@@ -95,6 +95,44 @@ public sealed class DevDialog : GameWindow
         rows.Children.Add(Toggle("좌표 겹쳐 보기", options.CoordsOn(), options.SetCoords,
             "배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄웁니다"));
 
+        // 일기토 불사 — 베타 테스트용. 내 체력이 안 떨어지고, 판은 오른쪽 단추 「승리 · 항복」으로 끝낸다.
+        rows.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on => GameSettings.DuelImmortal = on,
+            "일기토에서 죽지 않습니다. 명령을 고를 차례에 오른쪽 단추를 누르면 「승리 · 항복」으로 판을 끝냅니다"));
+
+        // 반란 빈도 — 바다 반란이 일어날 몫. 100% 가 원본 그대로다.
+        {
+            var value = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
+            var slider = new Slider
+            {
+                Minimum = 0, Maximum = 100, TickFrequency = 10, IsSnapToTickEnabled = true,
+                Width = 150, Value = GameSettings.MutinyRate, VerticalAlignment = VerticalAlignment.Center,
+            };
+            value.Text = $"{slider.Value:0}%";
+            slider.ValueChanged += (_, _) =>
+            {
+                value.Text = $"{slider.Value:0}%";
+                GameSettings.MutinyRate = (int)slider.Value;
+            };
+            var line = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 4, 0, 4),
+                ToolTip = "바다에서 반란이 일어나는 빈도입니다. 100% 가 원본 그대로이고 0% 면 안 일어납니다",
+            };
+            line.Children.Add(new TextBlock
+            {
+                Text = "반란 빈도",
+                Width = 80,
+                Foreground = GameUi.Text,
+                FontWeight = FontWeights.Bold,
+                FontSize = 15,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            line.Children.Add(slider);
+            line.Children.Add(value);
+            rows.Children.Add(line);
+        }
+
         // 자동항해 — 해상 커맨드에 있던 것을 옮겼다. 창을 닫고 나서 목적지를 고른다.
         if (options.AutoSail is { } autoSail)
         {

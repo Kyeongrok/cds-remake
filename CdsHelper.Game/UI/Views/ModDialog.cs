@@ -106,6 +106,10 @@ public sealed class ModDialog : GameWindow
         var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「정보」 — 화면에 쪽지·덧그림·창으로 무언가를 더 보여 주는 것만 모은다.
         var info = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「미니맵」 — 미니맵을 띄울지와 그 위에 찍는 표식.
+        var mini = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「고해상도」 — 지도를 키웠을 때 얹는 덧그림(바다 입체 · 질감 · 필터 · 항적 · 구름).
+        var hires = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「UI」 — 창 모양 · 차림표 줄처럼 화면 꾸밈을 바꾸는 것.
         var ui = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「폰트」 — 어느 창을 어떤 글꼴로 찍는지.
@@ -133,7 +137,17 @@ public sealed class ModDialog : GameWindow
         info.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
             "원본에 없는 것입니다 — 도시에 들어가면 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 도시 창 곁에 띄웁니다. 끌어 옮길 수 있습니다."));
 
-        info.Children.Add(MiniMapControls(options));
+        mini.Children.Add(MiniMapControls(options));
+        mini.Children.Add(Toggle("찾은 발견물", GameSettings.MiniMapFound, on => GameSettings.MiniMapFound = on,
+            "미니맵에 찾은 발견물을 빨간 점으로 찍습니다."));
+        mini.Children.Add(Toggle("못 찾은 발견물", GameSettings.MiniMapYet, on => GameSettings.MiniMapYet = on,
+            "미니맵에 아직 못 찾은 발견물을 회색 점으로 찍습니다."));
+        mini.Children.Add(Toggle("도시", GameSettings.MiniMapCities, on => GameSettings.MiniMapCities = on,
+            "미니맵에 지금 아는 도시를 주황 점으로 찍습니다."));
+        mini.Children.Add(Toggle("풍향", GameSettings.MiniMapWind, on => GameSettings.MiniMapWind = on,
+            "미니맵에 풍향 화살표를 깝니다. 미니맵 오른쪽 위 「풍」 단추와 같습니다."));
+        mini.Children.Add(Toggle("해류", GameSettings.MiniMapCurrent, on => GameSettings.MiniMapCurrent = on,
+            "미니맵에 해류 화살표를 깝니다. 미니맵 오른쪽 위 「류」 단추와 같습니다."));
 
         // 바람·해류 화살표 — 원본은 물결로만 흐름을 보인다. 개발 창에 있던 것을 여기로 옮겼다.
         info.Children.Add(Toggle("바람·해류 화살표", options.ArrowsOn(), options.SetArrows,
@@ -307,20 +321,20 @@ public sealed class ModDialog : GameWindow
         lab.Children.Add(Toggle("배 중심", GameSettings.ShipCentered, on => GameSettings.ShipCentered = on,
             "원본에 없는 것입니다 — 원본은 배가 화면 가장자리에 닿으면 화면을 한 번에 넘깁니다."
             + " 켜면 배를 늘 화면 한가운데에 두고 지도가 배를 따라 실시간으로 흐릅니다. 뭍에서 말로 다닐 때도 같습니다."));
-        lab.Children.Add(SeaControls(options));
-        lab.Children.Add(HiResSeaControls(options));
-        lab.Children.Add(Toggle("뭍 세부 질감", options.LandDetailOn(), options.SetLandDetail,
+        hires.Children.Add(SeaControls(options));
+        hires.Children.Add(HiResSeaControls(options));
+        hires.Children.Add(Toggle("뭍 세부 질감", options.LandDetailOn(), options.SetLandDetail,
             "지도를 키웠을 때 원본 도트는 그대로 두고, 지형마다 화면 해상도의 잔무늬를 얇게 얹습니다 —"
             + " 사막은 모래 결, 산은 바위 결, 숲은 잎 덩이, 평지는 풀 결. 도시·발견물 그림과 물은 건드리지 않습니다."
             + " 키울수록 짙어집니다."));
-        lab.Children.Add(Toggle("도트 확대 필터", options.PixelFilterOn(), options.SetPixelFilter,
+        hires.Children.Add(Toggle("도트 확대 필터", options.PixelFilterOn(), options.SetPixelFilter,
             "지도를 키웠을 때(칸이 화면 네 점보다 클 때) 원본 도트의 대각선 계단을 사선으로 깎아 매끈하게 그립니다."
             + " 바다·뭍·해안·도시 그림과 내 배 그림 모두에 듭니다. 바둑판 잔무늬는 그대로 둡니다."));
-        lab.Children.Add(Toggle("배 항적", options.ShipWakeOn(), options.SetShipWake,
+        hires.Children.Add(Toggle("배 항적", options.ShipWakeOn(), options.SetShipWake,
             "원본에 없는 덧그림입니다 — 바다에 뜬 내 배 뒤로 지나온 길을 따라 물거품 항적이 벌어지며 스러지고,"
             + " 배 밑에 옅은 그림자가 깔리고 배가 살짝 출렁입니다. 빠를수록 항적이 길고, 서면 사라집니다."
             + " 켜 둔 동안은 화면을 계속 다시 그립니다. 남의 배와 뭍의 말에는 안 듭니다."));
-        lab.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
+        hires.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
             "원본 구름은 한 점 걸러 찍은 바둑판 무늬로 반투명을 흉내 내서, 지도를 키우면 격자가 그대로 커집니다."
             + " 켜면 그 무늬를 참 반투명으로 풀어 매끈하게 늘려 그립니다. 비치는 정도는 원본과 같습니다."));
 
@@ -440,11 +454,15 @@ public sealed class ModDialog : GameWindow
         var pages = new Grid();
         pages.Children.Add(rows);
         pages.Children.Add(info);
+        pages.Children.Add(mini);
+        pages.Children.Add(hires);
         pages.Children.Add(ui);
         pages.Children.Add(font);
         pages.Children.Add(general);
         pages.Children.Add(lab);
         info.Visibility = Visibility.Hidden;
+        mini.Visibility = Visibility.Hidden;
+        hires.Visibility = Visibility.Hidden;
         ui.Visibility = Visibility.Hidden;
         font.Visibility = Visibility.Hidden;
         lab.Visibility = Visibility.Hidden;
@@ -456,7 +474,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(rows, info, ui, font, general, lab));
+        stack.Children.Add(Tabs(rows, info, mini, hires, ui, font, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -473,8 +491,9 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
-    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement ui,
-                                  FrameworkElement font, FrameworkElement general, FrameworkElement lab)
+    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
+                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement general,
+                                  FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
         var heads = new List<(Border Head, FrameworkElement Page)>();
@@ -498,7 +517,7 @@ public sealed class ModDialog : GameWindow
             {
                 BorderBrush = GameUi.Edge,
                 BorderThickness = new Thickness(1, 1, 1, 0),
-                Padding = new Thickness(16, 4, 16, 4),
+                Padding = new Thickness(12, 4, 12, 4),
                 Margin = new Thickness(0, 0, 4, 0),
                 Cursor = Cursors.Hand,
                 Child = new TextBlock { Text = text, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15 },
@@ -510,6 +529,8 @@ public sealed class ModDialog : GameWindow
 
         Add("편의성", convenience);
         Add("정보", info);
+        Add("미니맵", mini);
+        Add("고해상도", hires);
         Add("UI", ui);
         Add("폰트", font);
         Add("일반", general);
@@ -692,8 +713,8 @@ public sealed class ModDialog : GameWindow
     private UIElement MiniMapControls(Options options)
     {
         var box = Toggle("미니맵", options.MiniMapOn(), options.SetMiniMap,
-            "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다"
-            + " (빨강 찾음 · 회색 아직 · 파랑 내 자리).");
+            "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다."
+            + " 아래에서 표식마다 켜고 끕니다.");
 
         var value = new TextBlock
         {
@@ -735,10 +756,85 @@ public sealed class ModDialog : GameWindow
         line.Children.Add(value);
         Watch(line, "미니맵 투명도", "미니맵을 켠 상태에서 투명도를 조절합니다. 체크를 끄면 조절할 수 없습니다.");
 
+        // 표식 크기 — 발견물 · 도시 점.
+        var sizeValue = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
+        var sizeSlider = new Slider
+        {
+            Minimum = 1.0,
+            Maximum = 5.0,
+            TickFrequency = 0.5,
+            IsSnapToTickEnabled = true,
+            Width = 150,
+            Margin = new Thickness(18, 0, 0, 0),
+            Value = GameSettings.MiniMapMarkSize,
+        };
+        void ShowSize() => sizeValue.Text = $"{sizeSlider.Value:0.0}";
+        sizeSlider.ValueChanged += (_, _) =>
+        {
+            ShowSize();
+            GameSettings.MiniMapMarkSize = sizeSlider.Value;
+        };
+        ShowSize();
+        var sizeLine = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 2) };
+        sizeLine.Children.Add(new TextBlock
+        {
+            Text = "표식 크기",
+            Width = 64,
+            Foreground = GameUi.Text,
+            Margin = new Thickness(18, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        sizeLine.Children.Add(sizeSlider);
+        sizeLine.Children.Add(sizeValue);
+        Watch(sizeLine, "미니맵 표식 크기", "발견물 · 도시 점의 크기를 조절합니다. 기본은 2.5 입니다.");
+
         var group = new StackPanel();
         group.Children.Add(box);
         group.Children.Add(line);
+        group.Children.Add(SliderLine("올림 투명도", 0.05, 1.0, 0.05, GameSettings.MiniMapHoverOpacity, v => $"{v:P0}",
+            v => GameSettings.MiniMapHoverOpacity = v,
+            "미니맵 올림 투명도", "마우스를 올렸거나 배가 미니맵 밑에 들어갔을 때의 투명도입니다."));
+        group.Children.Add(SliderLine("크기", 0.5, 2.5, 0.1, GameSettings.MiniMapScale, v => $"{v:P0}",
+            v => GameSettings.MiniMapScale = v,
+            "미니맵 크기", "미니맵 창의 크기입니다. 키우면 더 넓은 곳이 보입니다."));
+        group.Children.Add(sizeLine);
         return group;
+    }
+
+    /// <summary>굴림대 줄 하나 — 이름 · 굴림대 · 값. 옮기면 곧바로 설정에 남긴다.</summary>
+    private UIElement SliderLine(string label, double min, double max, double tick, double start,
+                                 Func<double, string> show, Action<double> set, string tipName, string tip)
+    {
+        var value = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
+        var slider = new Slider
+        {
+            Minimum = min,
+            Maximum = max,
+            TickFrequency = tick,
+            IsSnapToTickEnabled = true,
+            Width = 150,
+            Margin = new Thickness(4, 0, 0, 0),
+            Value = start,
+        };
+        value.Text = show(slider.Value);
+        slider.ValueChanged += (_, _) =>
+        {
+            value.Text = show(slider.Value);
+            set(slider.Value);
+        };
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 2) };
+        line.Children.Add(new TextBlock
+        {
+            Text = label,
+            Width = 78,
+            Foreground = GameUi.Text,
+            Margin = new Thickness(18, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        line.Children.Add(slider);
+        line.Children.Add(value);
+        Watch(line, tipName, tip);
+        return line;
     }
 
     /// <summary>고르는 줄 하나 — 이름과 펼침 상자. 고르면 곧바로 설정에 남긴다.</summary>

@@ -450,6 +450,8 @@ public sealed class Duel
 
         var parts = mine ? FoeParts : MyParts;
         parts[line] -= hurt;
+        // 개발 「일기토 불사」 — 내 부위는 1 밑으로 안 내려간다(원본에 없는 것). 판은 Concede 로 끝낸다.
+        if (!mine && parts[line] <= 0 && Local.Settings.GameSettings.DuelImmortal) parts[line] = 1;
         if (parts[line] <= 0)
         {
             parts[line] = 0;
@@ -541,6 +543,12 @@ public sealed class Duel
 
     /// <summary>부위 하나가 뚫려 판이 끝났는가.</summary>
     public bool Over => Won != null;
+
+    /// <summary>판을 그 자리에서 끝낸다 — 개발 「일기토 불사」의 오른쪽 단추 「승리 · 항복」.</summary>
+    public void Concede(bool win)
+    {
+        if (!Over) Won = win;
+    }
 
     /// <summary>
     /// 판을 치르며 <b>잃은 만큼</b>(<c>0x004AA600</c>) — <c>체력+1 − 남은 부위 셋의 평균</c>이다.

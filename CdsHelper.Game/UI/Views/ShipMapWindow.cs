@@ -1180,7 +1180,7 @@ public sealed class ShipMapWindow : Window
     private void SyncWeather()
     {
         bool show = _weatherView.Busy && _started && IsActive
-                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible && w is not FleetLabelWindow)
+                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible && w is not (FleetLabelWindow or SeaDaysBadge or SkillOverlayWindow))
                     && WindowState != WindowState.Minimized
                     && ReferenceEquals(_screen.Content, _mapRoot)
                     && _input.ActualWidth > 0 && _input.ActualHeight > 0;
@@ -1210,13 +1210,16 @@ public sealed class ShipMapWindow : Window
     {
         bool calm = !_asking && !_host.Paused
                     // 쪽지 창(배 속도 따위, FleetLabelWindow)은 사건 창이 아니다 — 세면 쪽지가 떠 있는 내내 미니맵이 숨었다.
-                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible && w is not FleetLabelWindow);
+                    && !OwnedWindows.Cast<Window>().Any(w => w.IsVisible && w is not (FleetLabelWindow or SeaDaysBadge or SkillOverlayWindow));
         var now = DateTime.UtcNow;
         if (!calm) _miniCalmSince = null;
         else _miniCalmSince ??= now;
-        bool settled = _miniCalmSince is { } since && now - since >= MiniCalm;
+        // 모드 창이 떠 있는 동안은 미리보기로 띄운다 — 켜고 끈 표식을 그 자리에서 볼 수 있게.
+        bool settled = _modOpen || (_miniCalmSince is { } since && now - since >= MiniCalm);
 
-        bool room = _miniWanted && _started && IsActive && settled
+        // 팝업은 늘 맨 위 창이라, 딴 앱이 앞에 오면 거둬야 그 위에 안 그려진다 — 모드 창이 앞일 때만 미리보기다.
+        bool front = IsActive || (_modOpen && OwnedWindows.Cast<Window>().Any(w => w.IsActive));
+        bool room = _miniWanted && _started && front && settled
                     && WindowState != WindowState.Minimized
                     && ReferenceEquals(_screen.Content, _mapRoot)
                     && !_host.SeaBlocked
@@ -1232,6 +1235,21 @@ public sealed class ShipMapWindow : Window
         if (room && _host.ShipCell is { } cell)
         {
             _mini.Update(_game.Discoveries?.Table, _game.Player, cell.CellX, cell.CellY);
+            _mini.SyncMarks();
+            // 도시 점 — 지금 아는 도시만(발견물 지도와 같다). 아는 도시는 드물게 늘므로 몇 초에 한 번만 다시 센다.
+            if (GameSettings.MiniMapCities && (_miniCitiesAt is not { } last || now - last >= MiniCityEvery))
+            {
+                _miniCitiesAt = now;
+                var known = new List<(double X, double Y)>();
+                for (int id = 0; id < GameMapCoords.CityCount; id++)
+                    if (_game.CityVisible(id) && GameMapCoords.TryCityCell(id, out double cx, out double cy))
+                        known.Add((cx, cy));
+                if (known.Count != _miniCityCount)
+                {
+                    _miniCityCount = known.Count;
+                    _mini.SetCities(known);
+                }
+            }
             _miniPopup.HorizontalOffset = Math.Max(0, _input.ActualWidth - MiniMapView.ViewW - 10);
             _miniPopup.VerticalOffset = Math.Max(0, _input.ActualHeight - MiniMapView.ViewH - 10);
         }
@@ -1241,16 +1259,22 @@ public sealed class ShipMapWindow : Window
         _miniPopup.IsOpen = room;
     }
 
+    /// <summary>미니맵 도시 점을 마지막으로 센 때와 그때의 도시 수.</summary>
+    private DateTime? _miniCitiesAt;
+    private int _miniCityCount = -1;
+    private static readonly TimeSpan MiniCityEvery = TimeSpan.FromSeconds(3);
+
     /// <summary>미니맵 화살표에 쓰는 바람표 — 한 번 열어 둔다.</summary>
     private WindTable? _miniWind;
 
     /// <summary>
-    /// 미니맵 불투명도 — 배가 미니맵 밑으로 들어가거나 <b>마우스를 올리면</b> 반으로(두 배 더 투명하게) 낮춰 밑이 보이게 한다.
+    /// 미니맵 불투명도 — 배가 미니맵 밑으로 들어가거나 <b>마우스를 올리면</b> 모드에서 정한 값으로 낮춰 밑이 보이게 한다.
     /// </summary>
     private void SyncMiniOpacity()
     {
         bool see = _mini.Hovered || (_miniPopup.IsOpen && ShipUnderMiniMap());
-        _mini.SetOpacity(GameSettings.MiniMapOpacity * (see ? 0.5 : 1));
+        _mini.SetOpacity(see ? Math.Min(GameSettings.MiniMapOpacity, GameSettings.MiniMapHoverOpacity)
+                             : GameSettings.MiniMapOpacity);
     }
 
     /// <summary>배 그림 반 폭(48점 그림의 반) — 배 가장자리가 미니맵에 걸리기만 해도 겹친 것으로 친다.</summary>
@@ -2346,8 +2370,8 @@ public sealed class ShipMapWindow : Window
     ///   0045F8F2  YES 면 C:SAVEDATA.CDS · C:SAVEDATA.TMP · C:ACCDATA.CDS 를 지우고 만들기로
     /// </code>
     ///
-    /// <b>원본의 「삭제한다」 줄은 「남겨 둔다」로 바꿨고 세이브를 지우지 않는다</b> — 원본과 다르다. 지우는 것은 「은퇴시킨다」뿐이고 그때도
-    /// 우리 세이브만이다(<c>%APPDATA%\CdsHelper\SAVEDATA.CDS</c> 와 지난 칸·자동저장).
+    /// <b>줄은 셋이다</b> — 「은퇴시킨다」 · 「남겨 둔다」(원본에 없는 줄, 세이브를 안 지운다) · 「삭제한다」(원본 그대로, 누적 캐릭터로
+    /// 안 올리고 그 제독의 세이브를 지운다). 지우는 것은 우리 세이브만이다(<c>%APPDATA%\CdsHelper\SAVEDATA.CDS</c> 와 지난 칸·자동저장).
     /// 게임 폴더의 SAVEDATA.CDS 는 사람이 진짜로 놀던 것이라 우리는 읽기만 한다 —
     /// 그것을 지우면 되돌릴 길이 없다.
     ///
@@ -2376,7 +2400,7 @@ public sealed class ShipMapWindow : Window
             int at;
             try
             {
-                at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "남겨 둔다"], "신규작성을 중지한다",
+                at = ChoiceDialog.Ask(this, "", ["은퇴시킨다", "남겨 둔다", "삭제한다"], "신규작성을 중지한다",
                                       dim: room ? -1 : 0, under: held);
             }
             finally { held.Close(); }
@@ -2433,6 +2457,19 @@ public sealed class ShipMapWindow : Window
                 }
 
                 // 그 판의 자동저장 칸도 걷는다 — 남기면 CONTINUE 로 은퇴한 제독이 되살아난다.
+                GameSave.DeleteAutoSavesOf(saved);
+                if (GameSave.Delete()) return true;
+                NoticeDialog.Show(this, "적어 둔 것을 지우지 못했습니다.");
+                return false;
+            }
+
+            // 「삭제한다」(0x0045F8AA) — 누적 캐릭터로 안 올리고 그 제독의 세이브(지난 칸 · 자동저장까지)를 지운다.
+            if (at == 2)
+            {
+                if (!ConfirmDialog.Ask(this,
+                        $"[{name}]{GameUi.Josa(name, "을", "를")} 삭제합니다. 저장한 데이터와 자동저장이 모두 지워집니다. 좋습니까?",
+                        "모험 중단"))
+                    return false;
                 GameSave.DeleteAutoSavesOf(saved);
                 if (GameSave.Delete()) return true;
                 NoticeDialog.Show(this, "적어 둔 것을 지우지 못했습니다.");
@@ -2898,18 +2935,24 @@ public sealed class ShipMapWindow : Window
             _host.TurnRateOf = () => Sailing.TurnRateOf(_game.Player.FlagshipHull?.Hull);
             // 날짜변경선을 넘을 때마다 바퀴 수를 센다(0x0047D11B) — 세계일주 장면이 쓴다.
             _host.Lapped = laps => _game.Player.Laps += laps;
-            if (!_host.Start(_game.Directory)) { _status.Text = _host.Status; return; }
-            _host.ShowFlowArrows = GameSettings.ShowFlowArrows;
-            _host.SeaEffect = GameSettings.SeaEffect;
-            _host.SeaBrightness = GameSettings.SeaBrightness;
-            _host.SmoothClouds = GameSettings.SmoothClouds;
-            _host.HiResSea = GameSettings.HiResSea;
-            _host.SeaFlowAmount = GameSettings.SeaFlowAmount;
-            _host.PixelFilter = GameSettings.PixelFilter;
-            _host.ShipWake = GameSettings.ShipWake;
-            _host.LandDetail = GameSettings.LandDetail;
-            // 도시 분리는 늘 켠다 — 도시 그림을 바탕 지형 위에 따로 얹어야 고해상도 바다·세부 질감·도트 필터가 그림을 안 건드린다.
-            _host.CitySprites = true;
+            // 지도와 고해상도 표를 짓는 데 몇 초가 걸린다 — 멈춘 듯 보이지 않게 깜빡이는 준비 쪽지를 띄운다.
+            var loading = LoadingDialog.Open(this, "지도를 읽는 중...");
+            try
+            {
+                if (!_host.Start(_game.Directory)) { _status.Text = _host.Status; return; }
+                _host.ShowFlowArrows = GameSettings.ShowFlowArrows;
+                _host.SeaEffect = GameSettings.SeaEffect;
+                _host.SeaBrightness = GameSettings.SeaBrightness;
+                _host.SmoothClouds = GameSettings.SmoothClouds;
+                _host.HiResSea = GameSettings.HiResSea;
+                _host.SeaFlowAmount = GameSettings.SeaFlowAmount;
+                _host.PixelFilter = GameSettings.PixelFilter;
+                _host.ShipWake = GameSettings.ShipWake;
+                _host.LandDetail = GameSettings.LandDetail;
+                // 도시 분리는 늘 켠다 — 도시 그림을 바탕 지형 위에 따로 얹어야 고해상도 바다·세부 질감·도트 필터가 그림을 안 건드린다.
+                _host.CitySprites = true;
+            }
+            finally { loading.Close(); }
             _started = true;
         }
 

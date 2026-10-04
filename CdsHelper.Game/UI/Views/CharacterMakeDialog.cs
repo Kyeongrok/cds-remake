@@ -318,6 +318,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     {
         Label(label, y);
         Boxed(box, NameX, y, FieldWidth);
+        TypeOver(box, NameX, y, FieldWidth);
         Spinner(NameX + FieldWidth + SpinGap, y, () =>
         {
             if (TextInputDialog.Ask(this, box.Text, NameLimit) is { } typed) box.Text = typed;
@@ -326,6 +327,67 @@ internal sealed class CharacterMakeDialog : GameWindow
         {
             if (NameListDialog.Ask(this, list(), box.Text) is { } got) box.Text = got;
         });
+    }
+
+    /// <summary>
+    /// 이름 칸을 누르면 그 자리에 글상자를 띄워 <b>키보드로</b> 적게 한다 — 원본에 없는 것(원본은 「문자입력」 판뿐이다).
+    /// 한글은 윈도 입력기가 조합한다. Enter 나 딴 곳을 누르면 적은 것이 칸에 들고, Esc 는 물린다.
+    /// </summary>
+    private void TypeOver(GameUi.GameLabel box, double x, double y, double width)
+    {
+        var edit = new TextBox
+        {
+            Width = width,
+            Height = FieldHeight,
+            MaxLength = NameLimit,
+            FontSize = 12,
+            Padding = new Thickness(1, 0, 1, 0),
+            BorderThickness = new Thickness(1),
+            BorderBrush = GameUi.ItemEdge,
+            Background = GameUi.PageFill,
+            Foreground = Brushes.Black,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Visibility = Visibility.Collapsed,
+        };
+        // 칸 위에 안 보이는 손잡이를 얹어 누름을 받는다 — 글자 그림은 손을 안 받는 자리가 있다.
+        var hit = new Border
+        {
+            Width = width,
+            Height = FieldHeight,
+            Background = Brushes.Transparent,
+            Cursor = Cursors.IBeam,
+        };
+        Put(hit, x, y);
+        Put(edit, x, y);
+
+        bool dropped = false;
+        void Done(bool keep)
+        {
+            if (edit.Visibility != Visibility.Visible) return;
+            if (keep && edit.Text.Trim().Length > 0) box.Text = edit.Text.Trim();
+            edit.Visibility = Visibility.Collapsed;
+        }
+        hit.MouseLeftButtonDown += (_, e) =>
+        {
+            e.Handled = true;
+            dropped = false;
+            edit.Text = box.Text;
+            edit.Visibility = Visibility.Visible;
+            edit.Focus();
+            edit.SelectAll();
+        };
+        edit.LostKeyboardFocus += (_, _) => Done(!dropped);
+        edit.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key is Key.Enter or Key.Escape)
+            {
+                e.Handled = true;   // 창의 Esc(닫기)로 안 새게
+                dropped = e.Key == Key.Escape;
+                Done(!dropped);
+                Keyboard.ClearFocus();
+                Focus();
+            }
+        };
     }
 
     private void AgeRow()

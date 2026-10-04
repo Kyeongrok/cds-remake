@@ -103,7 +103,7 @@ public sealed class ContractDialog : GameWindow
     private const double CancelWidth = 96, CancelHeight = 24, CancelInset = 8;
 
     private ContractDialog(Contract contract, DateTime today, string title, string sponsorShown,
-                           IReadOnlyList<string> found, IReadOnlyList<string> evidence)
+                           IReadOnlyList<string> found, IReadOnlyList<string> evidence, string closeText)
     {
         Title = "계약 정보";
         WindowStyle = WindowStyle.None;
@@ -136,7 +136,7 @@ public sealed class ContractDialog : GameWindow
         Put(board, Label("증거품"), RowLeft, 232);
         Put(board, List(evidence), ListLeft, 244);
 
-        Put(board, new GameButton("취소", Close, width: CancelWidth) { Margin = new Thickness(0) },
+        Put(board, new GameButton(closeText, Close, width: CancelWidth) { Margin = new Thickness(0) },
             BoardWidth - CancelInset - CancelWidth, BoardHeight - CancelInset - CancelHeight);
 
         var frame = GameUi.InfoFrame(board, Back, Line);
@@ -231,10 +231,11 @@ public sealed class ContractDialog : GameWindow
     /// </param>
     /// <param name="found">이 계약을 맺은 뒤 발견한 것의 이름.</param>
     /// <param name="evidence">그 발견물이 준 물건 중 아직 지닌 것의 이름.</param>
+    /// <param name="close">오른쪽 아래 단추 글 — 정보로 볼 때는 「취소」, 후원자에게 보고할 때는 「확인」.</param>
     public static void Show(Window owner, Contract? contract, DateTime today,
                             string hintName,
                             IReadOnlyList<string> found, IReadOnlyList<string> evidence,
-                            string? sponsorName = null)
+                            string? sponsorName = null, string close = "취소")
     {
         if (contract == null)
         {
@@ -243,7 +244,7 @@ public sealed class ContractDialog : GameWindow
         }
 
         string shown = string.IsNullOrEmpty(sponsorName) ? contract.Sponsor : sponsorName;
-        new ContractDialog(contract, today, hintName, shown, found, evidence) { Owner = owner }
+        new ContractDialog(contract, today, hintName, shown, found, evidence, close) { Owner = owner }
             .ShowDialog();
     }
 }

@@ -238,6 +238,8 @@ public static class SeaEvents
                     ? null : SeaEventKind.Plague,
 
             MutinyKind when !Mutinous(player) => null,
+            // 개발 「반란 빈도」 — 그 몫만 일어난다. 100(원본 그대로)이면 주사위를 안 굴린다.
+            MutinyKind when Local.Settings.GameSettings.MutinyRate is < 100 and var rate && rng.Next(100) >= rate => null,
             MutinyKind =>
                 Figureheads.Blocks(carved, Figureheads.GuardsMutiny, rng)
                     ? null : SeaEventKind.Mutiny,

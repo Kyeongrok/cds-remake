@@ -1601,7 +1601,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             var sheet = GameInfo.ContractSheetOf(_game);
             ContractDialog.Show(_view, sheet.Contract, _player.Date,
                                 sheet.HintName, sheet.Found, sheet.Evidence,
-                                _game.Sponsors?.FindByName(sheet.Contract?.Sponsor ?? "")?.Name);
+                                _game.Sponsors?.FindByName(sheet.Contract?.Sponsor ?? "")?.Name,
+                                close: "확인");
 
             var stage = _view as CityPicView;
             int paid;

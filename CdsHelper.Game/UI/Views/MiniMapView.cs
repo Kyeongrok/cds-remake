@@ -18,8 +18,9 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 internal sealed class MiniMapView : Border
 {
-    /// <summary>보이는 창 크기(화면 점).</summary>
-    public const double ViewW = 260, ViewH = 160;
+    /// <summary>보이는 창 크기(화면 점) — 모드 창 「미니맵」 탭의 크기 배율을 곱한다.</summary>
+    public static double ViewW => 260 * GameSettings.MiniMapScale;
+    public static double ViewH => 160 * GameSettings.MiniMapScale;
 
     /// <summary>지도 점 하나를 몇 배로 키워 보일지.</summary>
     private const double Zoom = 2;
@@ -27,6 +28,7 @@ internal sealed class MiniMapView : Border
     private static readonly Brush Found = Frozen(Color.FromRgb(0xC0, 0x30, 0x20));
     private static readonly Brush Yet = Frozen(Color.FromRgb(0x50, 0x50, 0x50));
     private static readonly Brush Mine = Frozen(Color.FromRgb(0x20, 0x40, 0xC0));
+    private static readonly Brush CityInk = Frozen(Color.FromRgb(0xD0, 0x78, 0x00));
 
     private static SolidColorBrush Frozen(Color c)
     {
@@ -36,7 +38,9 @@ internal sealed class MiniMapView : Border
     }
 
     private readonly Canvas _world = new();
-    private readonly Canvas _marks = new();
+    private readonly Canvas _foundLayer = new();
+    private readonly Canvas _yetLayer = new();
+    private readonly Canvas _cityLayer = new();
     private readonly Canvas _windLayer = new() { IsHitTestVisible = false };
     private readonly Canvas _currentLayer = new() { IsHitTestVisible = false };
     private readonly Border _windButton, _currentButton;
@@ -45,7 +49,7 @@ internal sealed class MiniMapView : Border
     private bool? _flowsFirstHalf;
 
     /// <summary>마우스가 미니맵 위에 있는지 — 부르는 쪽이 이때 불투명도를 반으로 낮춘다.</summary>
-    public bool Hovered { get; private set; }
+    public bool Hovered => IsMouseOver;
 
     /// <summary>마우스가 올라오거나 나갔다.</summary>
     public event Action? HoverChanged;
@@ -65,8 +69,9 @@ internal sealed class MiniMapView : Border
         ClipToBounds = true;
         // 마우스를 받는다 — 올리면 반투명해지고, 오른쪽 위 단추로 풍향·해류를 켠다.
         IsHitTestVisible = true;
-        MouseEnter += (_, _) => { Hovered = true; HoverChanged?.Invoke(); };
-        MouseLeave += (_, _) => { Hovered = false; HoverChanged?.Invoke(); };
+        // 깃발을 따로 안 둔다 - 마우스가 올라간 채 팝업이 닫히면 MouseLeave 가 안 와 흐린 채로 굳었다.
+        MouseEnter += (_, _) => HoverChanged?.Invoke();
+        MouseLeave += (_, _) => HoverChanged?.Invoke();
 
         var moves = new TransformGroup();
         moves.Children.Add(new ScaleTransform(Zoom, Zoom));
@@ -74,7 +79,9 @@ internal sealed class MiniMapView : Border
         _world.RenderTransform = moves;
         _world.Children.Add(_windLayer);
         _world.Children.Add(_currentLayer);
-        _world.Children.Add(_marks);
+        _world.Children.Add(_cityLayer);
+        _world.Children.Add(_yetLayer);
+        _world.Children.Add(_foundLayer);
         _world.Children.Add(_ship);
 
         // 오른쪽 위 작은 단추 둘 — 「풍」 풍향 · 「류」 해류. 켜져 있으면 그 화살표 색으로 밝다.
@@ -121,6 +128,52 @@ internal sealed class MiniMapView : Border
     private static readonly Brush OffFill = Frozen(Color.FromArgb(0xB0, 0x20, 0x20, 0x20));
     private static readonly Brush OffEdge = Frozen(Color.FromArgb(0xA0, 0x80, 0x80, 0x80));
 
+    /// <summary>모드 창 「미니맵」 탭에서 고른 표식만 보이게 한다 — 화살표 단추도 같이 맞춘다.</summary>
+    public void SyncMarks()
+    {
+        _foundLayer.Visibility = GameSettings.MiniMapFound ? Visibility.Visible : Visibility.Collapsed;
+        _yetLayer.Visibility = GameSettings.MiniMapYet ? Visibility.Visible : Visibility.Collapsed;
+        _cityLayer.Visibility = GameSettings.MiniMapCities ? Visibility.Visible : Visibility.Collapsed;
+        SyncFlows();
+        if (Math.Abs(Width - ViewW) > 0.01) { Width = ViewW; Height = ViewH; }
+
+        // 표식 크기가 바뀌었으면 찍어 둔 점을 가운데를 지킨 채 다시 잰다.
+        double size = GameSettings.MiniMapMarkSize;
+        if (Math.Abs(size - _markSize) < 0.01) return;
+        foreach (var layer in new[] { _foundLayer, _yetLayer, _cityLayer })
+            foreach (var child in layer.Children)
+                if (child is Ellipse dot)
+                {
+                    double cx = Canvas.GetLeft(dot) + dot.Width / 2, cy = Canvas.GetTop(dot) + dot.Height / 2;
+                    dot.Width = dot.Height = size;
+                    Canvas.SetLeft(dot, cx - size / 2);
+                    Canvas.SetTop(dot, cy - size / 2);
+                }
+        _markSize = size;
+    }
+
+    /// <summary>지금 찍힌 점의 크기 — 설정과 달라지면 <see cref="SyncMarks"/> 가 다시 잰다.</summary>
+    private double _markSize = GameSettings.MiniMapMarkSize;
+
+    /// <summary>점 하나 — 가운데(지도 점)와 색.</summary>
+    private Ellipse Dot(double x, double y, Brush ink)
+    {
+        var dot = new Ellipse { Width = _markSize, Height = _markSize, Fill = ink };
+        Canvas.SetLeft(dot, x - _markSize / 2);
+        Canvas.SetTop(dot, y - _markSize / 2);
+        return dot;
+    }
+
+    /// <summary>도시 점을 다시 찍는다 — 자리는 칸. 아는 도시가 늘면 부르는 쪽이 다시 준다.</summary>
+    public void SetCities(IReadOnlyList<(double X, double Y)> cities)
+    {
+        _cityLayer.Children.Clear();
+        foreach (var (cx, cy) in cities)
+        {
+            _cityLayer.Children.Add(Dot(cx / ExploredMap.CellsPerBlock, cy / ExploredMap.CellsPerBlock, CityInk));
+        }
+    }
+
     /// <summary>켠 켜만 보이고, 단추 모양을 켜짐/꺼짐에 맞춘다.</summary>
     private void SyncFlows()
     {
@@ -164,7 +217,7 @@ internal sealed class MiniMapView : Border
     }
 
     /// <summary>미니맵의 불투명도를 바꾼다.</summary>
-    public void SetOpacity(double opacity) => Opacity = Math.Clamp(opacity, 0.1, 1.0);
+    public void SetOpacity(double opacity) => Opacity = Math.Clamp(opacity, 0.05, 1.0);
 
     /// <summary>바탕 지도가 섰는지. 안 섰으면 <see cref="SetChart"/> 부터.</summary>
     public bool HasChart { get; private set; }
@@ -187,17 +240,15 @@ internal sealed class MiniMapView : Border
     {
         if (table != null && player.Discoveries.Count != _markedFound)
         {
-            _marks.Children.Clear();
+            _foundLayer.Children.Clear();
+            _yetLayer.Children.Clear();
             foreach (var row in table.Discoveries)
             {
                 if (!row.HasPlace) continue;
                 bool found = player.HasFound(row.Id);
                 double x = (row.X1 + row.X2) / 2.0 / ExploredMap.CellsPerBlock;
                 double y = (row.Y1 + row.Y2) / 2.0 / ExploredMap.CellsPerBlock;
-                var dot = new Ellipse { Width = 2.5, Height = 2.5, Fill = found ? Found : Yet };
-                Canvas.SetLeft(dot, x - 1.25);
-                Canvas.SetTop(dot, y - 1.25);
-                _marks.Children.Add(dot);
+                (found ? _foundLayer : _yetLayer).Children.Add(Dot(x, y, found ? Found : Yet));
             }
             _markedFound = player.Discoveries.Count;
         }

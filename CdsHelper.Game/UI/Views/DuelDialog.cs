@@ -301,6 +301,26 @@ public sealed class DuelDialog : GameWindow
         GameUi.EnableDrag(this, page);
         KeyDown += (_, e) => { if (e.Key == Key.Escape) e.Handled = true; };   // 판은 물러날 수 없다
 
+        // 개발 「일기토 불사」 — 안 죽으니 판을 끝낼 길이 따로 있어야 한다. 명령을 고를 차례에 오른쪽 단추로 연다.
+        MouseRightButtonUp += (_, e) =>
+        {
+            if (!Local.Settings.GameSettings.DuelImmortal || _duel.Over || _keyBox.Visibility != Visibility.Visible) return;
+            e.Handled = true;
+            var menu = new ContextMenu { PlacementTarget = this, Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint };
+            foreach (var (text, win) in new[] { ("승리", true), ("항복", false) })
+            {
+                var item = new MenuItem { Header = text };
+                item.Click += (_, _) =>
+                {
+                    if (_duel.Over) return;
+                    _duel.Concede(win);
+                    Settle(default);
+                };
+                menu.Items.Add(item);
+            }
+            menu.IsOpen = true;
+        };
+
         _hurtTimer.Interval = TimeSpan.FromSeconds(DuelMotions.Tick);
         _hurtTimer.Tick += (_, _) => HurtTick();
 
