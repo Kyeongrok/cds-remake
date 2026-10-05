@@ -99,9 +99,8 @@ public sealed class BelongingsDialog : GameWindow
         bands.ColumnDefinitions.Add(new ColumnDefinition());
         bands.ColumnDefinitions.Add(new ColumnDefinition());
 
-        var leftBand = Band("소지품일람");
-        Grid.SetColumn(leftBand, 0);
-        bands.Children.Add(leftBand);
+        _bands = bands;
+        SyncBagBand();
 
         var rightBand = Band("발견물일람");
         Grid.SetColumn(rightBand, 1);
@@ -177,6 +176,23 @@ public sealed class BelongingsDialog : GameWindow
 
         GameUi.EnableDrag(this, bands);
         KeyDown += OnKey;
+    }
+
+    /// <summary>제목 띠 둘이 놓이는 칸과, 그 왼쪽에 걸린 소지품 띠.</summary>
+    private readonly Grid _bands;
+    private FrameworkElement? _bagBand;
+
+    /// <summary>
+    /// 소지품 띠를 지금 값으로 다시 건다 — 정보 제공 등급이 「일반」부터면 <b>「소지품일람 3/16」</b>처럼
+    /// 지닌 수와 칸 수(<see cref="Player.ItemLimit"/>)를 붙인다. 원본 띠는 이름뿐이라 몇 칸 남았는지 알 수 없다.
+    /// </summary>
+    private void SyncBagBand()
+    {
+        if (_bagBand != null) _bands.Children.Remove(_bagBand);
+        bool counted = Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoNormal);
+        _bagBand = Band(counted ? $"소지품일람 {_player.Items.Count}/{_player.ItemLimit}" : "소지품일람");
+        Grid.SetColumn(_bagBand, 0);
+        _bands.Children.Add(_bagBand);
     }
 
     /// <summary>창 폭 — 원본은 화면의 2/3 쯤(640 점 자로 408)이다.</summary>
@@ -381,6 +397,7 @@ public sealed class BelongingsDialog : GameWindow
         _rows.RemoveAt(index);
         _bag.Clear();
         _bag.AddRange(_player.Items);
+        SyncBagBand();
         _at = -1;
         for (int i = 0; i < _rows.Count; i++)
         {
