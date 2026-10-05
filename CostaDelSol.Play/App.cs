@@ -3,6 +3,7 @@ using System.Text;
 using System.Windows;
 using Velopack;
 using Velopack.Sources;
+using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Local.Settings;
 using CdsHelper.Game.UI.Views;
 using CdsHelper.Support.Local.Settings;
@@ -67,7 +68,31 @@ internal sealed class App : Application
         MainWindow = window;
         window.Show();
 
+        // 창이 다 뜬 뒤에 띄운다 — 지금 띄우면 주인 창이 아직 자리를 못 잡아 알림이 엉뚱한 데 선다.
+        window.Dispatcher.BeginInvoke(() => ShowReleaseNotes(window),
+                                      System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
         _ = CheckForUpdateAsync(window);
+    }
+
+    /// <summary>
+    /// 업데이트한 뒤 처음 켰으면 그 사이 판들의 릴리즈 노트를 띄운다(<see cref="ReleaseNotes"/>).
+    /// </summary>
+    /// <remarks>
+    /// 「업데이트됐다」는 것은 <b>켠 판이 마지막으로 노트를 보여 준 판과 다르다</b>로 안다
+    /// (<see cref="GameSettings.NotesSeenVersion"/>). 노트에 지금 판 대목이 없으면(개발 중 빌드) 아무것도 안 한다.
+    /// </remarks>
+    private static void ShowReleaseNotes(ShipMapWindow window)
+    {
+        if (typeof(App).Assembly.GetName().Version is not { } version) return;
+        string current = ReleaseNotes.Trim(version).ToString();
+        if (GameSettings.NotesSeenVersion == current) return;
+
+        string notes = ReleaseNotes.Since(ReleaseNotes.Read(), GameSettings.NotesSeenVersion, version);
+        if (notes.Length == 0) return;
+
+        GameSettings.NotesSeenVersion = current;
+        if (window.IsLoaded) NoticeDialog.Show(window, notes, "릴리즈 노트");
     }
 
     /// <summary>

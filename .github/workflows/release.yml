@@ -99,6 +99,25 @@ jobs:
         # --merge: tag push로 자동 생성된 빈 릴리즈가 있으면 그쪽에 에셋을 병합
         run: vpk upload github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.ref_name }} --releaseName "${{ github.ref_name }}" --outputDir releases --publish --merge
 
+      # 릴리즈 본문은 릴리즈노트.md 의 이 판 대목(「## v판번호」 아래)이다 — 게임이 업데이트 뒤에 띄우는 것과 같은 글이다.
+      # 대목이 없으면 본문을 안 건드린다.
+      - name: Set release notes
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $keep = $false
+          $body = foreach ($line in Get-Content -Encoding UTF8 "릴리즈노트.md") {
+            if ($line -match '^## ') { $keep = ($line.Substring(3).Trim() -eq $tag); continue }
+            if ($keep) { $line }
+          }
+          $text = ($body -join "`n").Trim()
+          if ($text) {
+            Set-Content -Encoding UTF8 -Path notes.md -Value $text
+            gh release edit $tag --notes-file notes.md
+          } else { Write-Host "릴리즈노트.md 에 $tag 대목이 없습니다 - 본문은 그대로 둡니다" }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # 단일 파일 exe 둘은 Velopack 이 모르는 덤이라 따로 붙인다. 릴리즈가 선 뒤라야 붙는다.
       - name: Upload single-file exes
         shell: pwsh

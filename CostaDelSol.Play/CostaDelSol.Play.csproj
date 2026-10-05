@@ -27,6 +27,11 @@
         <Link>exe-tables\%(RecursiveDir)%(Filename)%(Extension)</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <!-- 업데이트한 뒤 처음 켤 때 띄우는 릴리즈 노트(ReleaseNotes). -->
+      <Content Include="..\릴리즈노트.md">
+        <Link>릴리즈노트.md</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <Content Include="..\CdsHelper\cities.json">
         <Link>cities.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

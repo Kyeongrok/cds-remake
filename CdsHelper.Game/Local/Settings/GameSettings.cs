@@ -95,6 +95,9 @@ public sealed class GameSettingsData
     /// <summary>조우하면 저절로 「도망」을 고를지. 꺼 두고 시작한다.</summary>
     public bool AutoFlee { get; set; }
 
+    /// <summary>릴리즈 노트를 마지막으로 보여 준 판(「1.0.51」 꼴). 아직 없으면 빈 글이다.</summary>
+    public string NotesSeenVersion { get; set; } = "";
+
     /// <summary>항구에서 출항할 때 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
     public bool AutoSupply { get; set; }
 
@@ -1309,6 +1312,16 @@ public static class GameSettings
     {
         get => Get(d => d.AutoFlee);
         set => Set(d => d.AutoFlee = value);
+    }
+
+    /// <summary>
+    /// 릴리즈 노트를 마지막으로 보여 준 판. 켠 판이 이것과 다르면 업데이트된 것이라 노트를 띄운다
+    /// (<see cref="Helpers.ReleaseNotes"/>).
+    /// </summary>
+    public static string NotesSeenVersion
+    {
+        get => Get(d => d.NotesSeenVersion);
+        set => Set(d => d.NotesSeenVersion = value);
     }
 
     /// <summary>바다 입체 효과의 밝기 배수 — 모드 창 「실험」의 막대로 고른다.</summary>
