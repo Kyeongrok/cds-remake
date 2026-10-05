@@ -4142,7 +4142,9 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private void PassTime()
     {
-        if (_asking || _host.Paused || _host.SeaBlocked) return;
+        // 도시 안에서도 고리는 돈다(<see cref="ShipMapHost.Ticks"/>). 그 바퀴를 여기서 버리지 않으면 도시를
+        // 나서는 첫 틱에 밀린 바퀴가 한꺼번에 날로 넘어간다 — 성문을 나서자마자 이틀이 가 규율이 8 깎였다.
+        if (_asking || _host.Paused || _host.SeaBlocked) { _steps = _host.Ticks; return; }
 
         // <b>닻을 내려도 날은 간다</b> — 게임은 자리만 안 옮기고(0x0048D14F) 칸 눈금은
         // 조건 없이 쌓는다(0x0048EF64 → 0x0044AF90). 그래서 서 있어도 식량·물·피로가 흐른다.
@@ -7126,6 +7128,10 @@ public sealed class ShipMapWindow : Window
             // 걷을 때(LoadGame · ReturnToTitle 이 거느린 창을 다 닫는다)도 이 처리기가 돌기 때문이다.
             // 예전에는 그때도 버려질 판으로 이야기 대본이 돌고 갈매기가 날았다.
             if (!dialog.Sailed && !dialog.Explored) return;
+
+            // 나선 자리에서 하루를 새로 센다 — 들어오기 전에 쌓인 눈금이 남아 있으면 나서자마자 날이 넘어가
+            // 규율이 깎였다. 원본에 있는 것이 아니라 우리가 넣은 것이다.
+            _ticks = 0;
 
             // 대본 대사와 갈매기가 떠 있는 동안은 지도를 세운다 — 상자는 모달이 아니라(GameWindow) 상태 타이머가
             // 그 밑에서 계속 돈다. 안 세우면 대사를 읽는 사이 날이 가고(PassTime) 조우(MeetFolk)가 겹쳐 떴다.
