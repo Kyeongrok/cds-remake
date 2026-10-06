@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace CdsHelper.Game.UI.Views;
@@ -47,6 +48,72 @@ public class GameWindow : Window
     {
         EventManager.RegisterClassHandler(typeof(GameWindow), Keyboard.KeyDownEvent,
                                           new KeyEventHandler(OnAnyKey));
+
+        // 상자 밑에 깔린 창은 손도 글쇠도 안 받는다. 지도 창은 GameWindow 가 아니라서 Window 에 건다.
+        EventManager.RegisterClassHandler(typeof(Window), Keyboard.PreviewKeyDownEvent,
+                                          new KeyEventHandler(OnKeyUnderBox));
+        EventManager.RegisterClassHandler(typeof(Window), Mouse.PreviewMouseDownEvent,
+                                          new MouseButtonEventHandler(OnMouseUnderBox));
+        EventManager.RegisterClassHandler(typeof(Window), Mouse.PreviewMouseUpEvent,
+                                          new MouseButtonEventHandler(OnMouseUnderBox));
+    }
+
+    /// <summary>주인 창 → 그 위에 떠 있는 상자. <see cref="ShowDialog"/> 가 넣고 뺀다.</summary>
+    private static readonly Dictionary<Window, GameWindow> Boxes = [];
+
+    /// <summary>그 창 위에 떠 있는 <b>맨 위</b> 상자. 없거나 안 보이면 null.</summary>
+    private static GameWindow? BoxOver(Window window)
+    {
+        if (!Boxes.TryGetValue(window, out var box)) return null;
+        while (Boxes.TryGetValue(box, out var next)) box = next;
+        return box.IsVisible ? box : null;
+    }
+
+    /// <summary>
+    /// 상자 밑에 깔린 창에 온 글쇠는 <b>상자에게 넘긴다</b>.
+    /// </summary>
+    /// <remarks>
+    /// 모달이 아니라서 초점이 주인 창(명령 창 따위)에 남거나 돌아가 있을 수 있다. 그러면 스페이스가
+    /// 대사 창의 「확인」이 아니라 밑에 깔린 명령 창의 줄을 다시 눌렀다 — 대사는 안 넘어가고 같은 명령만
+    /// 또 돌았다. 원본은 창이 하나라 글쇠가 늘 맨 위 창으로 간다.
+    /// </remarks>
+    private static void OnKeyUnderBox(object sender, KeyEventArgs e)
+    {
+        if (sender is not Window window || BoxOver(window) is not { } box) return;
+        if (e.Key == Key.System) return;   // Alt+F4 따위는 그 창 몫이다 — 상자가 떠 있어도 게임은 닫힌다
+        e.Handled = true;
+
+        if (!box.IsActive) box.Activate();
+        if (PresentationSource.FromVisual(box) is not { } source) return;
+
+        var key = e.Key == Key.ImeProcessed ? e.ImeProcessedKey : e.Key;
+        var preview = new KeyEventArgs(e.KeyboardDevice, source, e.Timestamp, key)
+        {
+            RoutedEvent = Keyboard.PreviewKeyDownEvent,
+        };
+        box.RaiseEvent(preview);
+        if (preview.Handled) return;
+        box.RaiseEvent(new KeyEventArgs(e.KeyboardDevice, source, e.Timestamp, key)
+        {
+            RoutedEvent = Keyboard.KeyDownEvent,
+        });
+    }
+
+    /// <summary>
+    /// 상자 밑에 깔린 창은 마우스 단추도 안 받는다 — 덮지 않은 데(지도 창의 제목 줄)만 산다.
+    /// </summary>
+    /// <remarks>
+    /// 덮개(<see cref="Shield"/>)는 알맹이만 손을 안 받게 하는데, 그러면 누름이 <b>창 바탕</b>에 떨어져
+    /// 창에 건 손(오른쪽 단추 따위)은 그대로 돌았다 — 해전 판을 오른쪽으로 거듭 누르면 정보 창이 누른 만큼 겹쳐 떴다.
+    /// </remarks>
+    private static void OnMouseUnderBox(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not Window window || BoxOver(window) is not { } box) return;
+        if (window.Content is Visual body && e.OriginalSource is Visual hit
+            && hit != body && hit.IsDescendantOf(body)) return;
+
+        e.Handled = true;
+        if (e.RoutedEvent == Mouse.PreviewMouseDownEvent && !box.IsActive) box.Activate();
     }
 
     private static void OnAnyKey(object sender, KeyEventArgs e)
@@ -127,6 +194,14 @@ public class GameWindow : Window
         Closed += Stop;
         if (owner != null) owner.Closed += Stop;   // 주인이 먼저 닫히면 같이 나온다
 
+        // 주인 창에 온 손·글쇠를 이 상자가 막고 받는다(OnKeyUnderBox · OnMouseUnderBox).
+        GameWindow? under = null;
+        if (owner != null)
+        {
+            Boxes.TryGetValue(owner, out under);
+            Boxes[owner] = this;
+        }
+
         try
         {
             Show();
@@ -137,6 +212,10 @@ public class GameWindow : Window
         {
             Closed -= Stop;
             if (owner != null) owner.Closed -= Stop;
+            if (owner != null)
+            {
+                if (under != null) Boxes[owner] = under; else Boxes.Remove(owner);
+            }
             shield?.Dispose();
 
             // 초점을 <b>주인 창에 돌려준다</b>. 모달이 아니므로 상자가 닫혀도 윈도가

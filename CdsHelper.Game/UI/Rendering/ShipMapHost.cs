@@ -1063,12 +1063,14 @@ public sealed class ShipMapHost : HwndHost
         int one = MapD3DRenderer.FolkSize * MapD3DRenderer.FolkSize;
         var atlas = new uint[one * MapD3DRenderer.FolkFrames];
 
-        // 16방위에서 북(0) · 서(4) · 남(8) · 동(12) 을 뽑는다. 앞 열여섯 장이 배 벌 넷(벌마다 넉 장), 뒤 넉 장이 말이다.
+        // 16방위에서 북(0) · 서(4) · 남(8) · 동(12) 을 뽑는다. 앞 열여섯 장이 배 벌 넷(벌마다 넉 장)이고,
+        // 그 뒤가 말이다 — 방향마다 걸음 여덟 장씩 서른두 장(걷는 그림이 없으면 선 그림 한 장이 여덟 번 든다).
         for (int i = 0; i < MapD3DRenderer.FolkFrames; i++)
         {
-            bool land = i >= MapD3DRenderer.FolkLandFrame;
-            int heading = (i % MapD3DRenderer.FolkWays) * 4;
-            var frame = land ? ShipSprites.Frame(heading, onLand: true)
+            int step = i - MapD3DRenderer.FolkLandFrame;
+            bool land = step >= 0;
+            int heading = (land ? step / MapD3DRenderer.FolkLandPhases : i % MapD3DRenderer.FolkWays) * 4;
+            var frame = land ? ShipSprites.Frame(heading, onLand: true, step % MapD3DRenderer.FolkLandPhases)
                              : ShipSprites.SkinFrame(i / MapD3DRenderer.FolkWays, heading) ?? ShipSprites.Frame(heading);
             if (frame.Length != one) return;                 // 그림 벌이 아직 안 열렸다
             frame.CopyTo(atlas.AsSpan(i * one));
@@ -1124,10 +1126,10 @@ public sealed class ShipMapHost : HwndHost
             var one = _folk[i];
             // 16방위 → 넉 장. 뭍 칸에 서 있으면 말 쪽 넉 장으로 내린다(0x0048A799).
             // 바다면 그 사람 기함 벌의 넉 장에서 고른다.
-            int frame = (one.Heading & 0xF) >> 2;
-            frame += FolkOnLand(one.X, one.Y)
-                ? MapD3DRenderer.FolkLandFrame
-                : Math.Clamp(one.Skin, 0, MapD3DRenderer.FolkSkins - 1) * MapD3DRenderer.FolkWays;
+            int way = (one.Heading & 0xF) >> 2;
+            int frame = FolkOnLand(one.X, one.Y)
+                ? MapD3DRenderer.FolkLandFrame + way * MapD3DRenderer.FolkLandPhases + FolkStep(one)
+                : Math.Clamp(one.Skin, 0, MapD3DRenderer.FolkSkins - 1) * MapD3DRenderer.FolkWays + way;
 
             var draw = new MapD3DRenderer.FolkDraw(
                 (float)((one.X - origin.X) / _cellsPerPixel - size / 2),
@@ -1146,6 +1148,23 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>지난 프레임에 그린 남의 배 수.</summary>
     private int _folkShown;
+
+    /// <summary>사람마다 지난번 자리와 걸음 번호 — 자리가 옮겨질 때마다 한 걸음 는다.</summary>
+    private readonly Dictionary<int, (double X, double Y, int Phase)> _folkSteps = [];
+
+    /// <summary>
+    /// 그 사람의 걸음 번호. 내 말(<see cref="_walkPhase"/>)처럼 <b>움직일 때만</b> 늘어, 선 말은 다리도 선다.
+    /// </summary>
+    private int FolkStep((double X, double Y, int Heading, int Person, int Skin) one)
+    {
+        // 접힌 자리(Fold)는 화면을 따라 세계 폭만큼 뛰므로 접기 전 값으로 견준다.
+        double wide = WorldMapRenderer.UnfoldedW;
+        double x = ((one.X % wide) + wide) % wide;
+        if (!_folkSteps.TryGetValue(one.Person, out var was)) was = (x, one.Y, 0);
+        else if (was.X != x || was.Y != one.Y) was = (x, one.Y, (was.Phase + 1) % MapD3DRenderer.FolkLandPhases);
+        _folkSteps[one.Person] = was;
+        return was.Phase;
+    }
 
     /// <summary>
     /// 그 사람이 뭍 칸에 서 있는지 — 게임은 부류가 2 이상이면 배 대신 말을 그린다.

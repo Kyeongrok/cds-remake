@@ -467,7 +467,8 @@ public sealed class TradePostDialog : GameWindow
         lines.Children.Add(third);
 
         var buttons = StepButtons(n => AddBuy(i, n),
-            () => { _qty[i] = _qty[i] >= row.Supply ? 0 : row.Supply; _wins = 0; Paint(); });
+            () => { _qty[i] = _qty[i] >= row.Supply ? 0 : row.Supply; _wins = 0; Paint(); },
+            () => { _qty[i] = NextShare(_qty[i], row.Supply); _wins = 0; Paint(); });
 
         var border = Row(i, row.Kind, lines, buttons);
         border.MouseLeftButtonDown += (_, e) =>
@@ -518,7 +519,8 @@ public sealed class TradePostDialog : GameWindow
         {
             int slot = r.Slot;
             buttons = StepButtons(n => AddSell(slot, n),
-                () => { _sell[slot] = _sell[slot] >= have ? 0 : have; Paint(); });
+                () => { _sell[slot] = _sell[slot] >= have ? 0 : have; Paint(); },
+                () => { _sell[slot] = NextShare(_sell[slot], have); Paint(); });
         }
         else
         {
@@ -593,14 +595,22 @@ public sealed class TradePostDialog : GameWindow
             GoodsInfoDialog.Show(this, _game, kind);
     }
 
-    private StackPanel StepButtons(Action<int> add, Action all)
+    /// <param name="share">
+    /// 단추 줄을 오른쪽 단추로 누를 때 — 원본 수량 창처럼 전부 · 절반 · 0 을 돈다(<see cref="CountDialog.NextShare"/>).
+    /// 줄의 다른 자리는 그대로 교역품 정보다(<see cref="AskGoodsInfo"/>).
+    /// </param>
+    private StackPanel StepButtons(Action<int> add, Action all, Action share)
     {
-        var panel = new StackPanel { Orientation = Orientation.Horizontal };
+        // 바탕을 깔아야 단추 사이 틈을 눌러도 여기서 받는다 — 안 그러면 줄(교역품 정보)로 샌다.
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Background = Brushes.Transparent };
         foreach (int n in (int[])[1, 10, 100])
             panel.Children.Add(Small($"{n}", () => add(n), n switch { 1 => 26, 10 => 32, _ => 40 }));
         panel.Children.Add(Small("모두", all, 50));
+        panel.MouseRightButtonUp += (_, e) => { e.Handled = true; share(); };
         return panel;
     }
+
+    private static int NextShare(int now, int max) => CountDialog.NextShare(now, max);
 
     private static Border Small(string text, Action run, double width)
     {

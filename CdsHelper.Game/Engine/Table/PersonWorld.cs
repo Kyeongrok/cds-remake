@@ -335,6 +335,10 @@ public sealed class PersonWorld
         double days = row.Wait + Math.Clamp(dayPart, 0, 1);
         double gone = far <= 0 ? 1 : Math.Clamp(days * SpeedPerDay / far, 0, 1);
 
+        // 도시에 다 닿았으면 지도에서 걷는다. 도착(Arrive)은 날이 넘어갈 때에야 치므로, 그냥 두면
+        // 낮에 닿은 사람이 그날이 다 가도록 도시 앞에 서 있었다. 발견물 자리는 닿은 뒤에도 서 있는다.
+        if (gone >= 1 && row.Dest != SpotDest) return null;
+
         double x = leg.Fx + leg.Dx * gone, y = leg.Fy + leg.Dy * gone;
         if (x < 0) x += WorldWidth;
         else if (x >= WorldWidth) x -= WorldWidth;

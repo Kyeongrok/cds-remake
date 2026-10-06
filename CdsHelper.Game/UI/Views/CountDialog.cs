@@ -168,8 +168,27 @@ public sealed class CountDialog : GameWindow
         Content = frame;
 
         KeyDown += OnKey;
-        MouseRightButtonUp += (_, _) => Close();
+        // 오른쪽 단추는 수를 돌린다 — 원본은 누를 때마다 전부 · 절반 · 0 이다. 나가는 길은 「중단」과 ESC 다.
+        MouseRightButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            _at = NextShare(_at, _max);
+            Paint();
+        };
         Paint();
+    }
+
+    /// <summary>
+    /// 오른쪽 단추로 도는 다음 수 — 전부(100%) → 절반(50%) → 0 → 다시 전부.
+    /// </summary>
+    /// <remarks>절반은 내림이다. 그 사이의 딴 수에서 누르면 전부부터 시작한다.</remarks>
+    public static int NextShare(int now, int max)
+    {
+        if (max <= 0) return 0;
+        int half = max / 2;
+        if (now == max) return half;
+        if (now == half && half > 0) return 0;
+        return max;
     }
 
     private void OnKey(object sender, KeyEventArgs e)

@@ -843,10 +843,13 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// 다시 바다로 나오면 배로 바뀐다. 셰이더는 <c>Folk[k].z * 48</c> 로 줄을 내리므로 장수를
     /// 모른다 — 여기 값만 맞추면 된다.
     /// </remarks>
-    public const int FolkFrames = FolkSkins * FolkWays + FolkWays;
+    public const int FolkFrames = FolkSkins * FolkWays + FolkWays * FolkLandPhases;
 
     /// <summary>배 그림 벌 수와 벌마다의 방향 장수.</summary>
     public const int FolkSkins = 4, FolkWays = 4;
+
+    /// <summary>말은 방향마다 걸음 여덟 장이다 — 내 말과 같은 벌이라 다리가 같이 움직인다.</summary>
+    public const int FolkLandPhases = Local.Helpers.ShipSprites.WalkPhases;
 
     /// <summary>말 그림이 시작하는 장. 배 열여섯 장 다음이다.</summary>
     public const int FolkLandFrame = FolkSkins * FolkWays;
