@@ -22,7 +22,7 @@ namespace CdsHelper.Game.UI.Views;
 public sealed class GameDataDialog : GameWindow
 {
     /// <summary>
-    /// 미리 보기에 한 번에 올리는 글자 수. 건물표는 1504줄이라 다 펼치면 40만 자가 넘는데,
+    /// 미리 보기에 한 번에 올리는 글자 수. 건물표는 1508줄이라 다 펼치면 40만 자가 넘는데,
     /// 그만큼을 <see cref="TextBox"/> 에 밀어 넣으면 창이 뜨는 데만 한참 걸린다.
     /// </summary>
     private const int PreviewLimit = 200_000;

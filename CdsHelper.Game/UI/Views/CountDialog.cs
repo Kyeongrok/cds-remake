@@ -25,7 +25,7 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 화면에서 본 대로 맞춘 것 넷이다.
 /// <list type="bullet">
-///   <item><b>↑↓ 가 없다.</b> 값은 칸 옆 계산기로만 넣는다.</item>
+///   <item><b>↑↓ 가 없다.</b> 값은 칸 옆 계산기로 넣는다 — 숫자 글쇠로 곧바로 쳐도 된다(원본에 없는 덤).</item>
 ///   <item><b>눈금 줄에도 단위가 붙는다</b> — "0명" · "12명" 이지 "0" · "12" 가 아니다.</item>
 ///   <item>제목 띠에 <b>닫기(X)가 없다</b>. 나가는 길은 "중단" 이다.</item>
 ///   <item>결정·중단이 <b>같은 폭</b>으로 나란히 선다.</item>
@@ -199,7 +199,24 @@ public sealed class CountDialog : GameWindow
             case Key.Up: Bump(+1); e.Handled = true; break;
             case Key.Down: Bump(-1); e.Handled = true; break;
             case Key.Enter or Key.Space when _at > 0 || _zeroOk: Decide(); e.Handled = true; break;
+            // 숫자 글쇠로 곧바로 친다 — 계산기를 안 열어도 된다(원본에 없는 덤, 회원 요청).
+            case >= Key.D0 and <= Key.D9: Type(e.Key - Key.D0); e.Handled = true; break;
+            case >= Key.NumPad0 and <= Key.NumPad9: Type(e.Key - Key.NumPad0); e.Handled = true; break;
+            case Key.Back: _at /= 10; Paint(); _typing = true; e.Handled = true; break;
+            case Key.Delete: _at = 0; Paint(); e.Handled = true; break;
         }
+    }
+
+    /// <summary>숫자 글쇠로 치는 중인지 — 처음 친 자리는 앞의 값을 갈아 치우고, 그 뒤로는 뒤에 붙는다.</summary>
+    private bool _typing;
+
+    /// <summary>한 자리 친다. 가장 큰 수를 넘으면 가장 큰 수에 멎는다.</summary>
+    private void Type(int digit)
+    {
+        long typed = (_typing ? _at : 0) * 10L + digit;
+        _at = (int)Math.Min(typed, _max);
+        Paint();
+        _typing = true;
     }
 
     private void Bump(int by)
@@ -213,6 +230,7 @@ public sealed class CountDialog : GameWindow
     {
         _count.Text = $"{_at}";
         _decide.On = _at > 0 || _zeroOk;
+        _typing = false;   // 딴 길(↑↓ · 계산기 · 최대 · 오른쪽 단추)로 바뀌면 다음 숫자는 새로 친다
     }
 
     private void Decide()

@@ -265,7 +265,11 @@ public sealed class DisevRunner
             runner._shade?.Close();
         }
         // 이 대본이 판매를 켠 교역품을 알린다 - 원본은 말없이 켜서, 교역소에 줄이 생긴 것을 알 길이 없었다.
-        if (!LastEndedInGameOver)
+        if (!LastEndedInGameOver && runner._opened.Count > 0)
+        {
+            // 알림이 전역 대본(마을대사)으로 돌면 이 대본의 결과가 그 대본 것으로 덮인다 — 붙들어 두었다 되돌린다.
+            // 안 그러면 상아·산호처럼 교역품을 켜는 발견이 결과 2 로 읽혀 매듭이 안 서고, 그 자리에서 한 번 더 떴다.
+            var kept = (LastResult, LastStoryArcCompleted, LastAdvancedStep, LastStepsAdvanced, LastGameOverPicture);
             foreach (int kind in runner._opened)
                 if (game.Goods?.Find(kind)?.Name is { Length: > 0 } name)
                 {
@@ -274,6 +278,9 @@ public sealed class DisevRunner
                         () => NoticeDialog.Show(owner, $"이제 교역소에서 [{name}]{particle} 다룹니다"),
                         ("교역품", name), ("을를", particle));
                 }
+            LastEndedInGameOver = false;
+            (LastResult, LastStoryArcCompleted, LastAdvancedStep, LastStepsAdvanced, LastGameOverPicture) = kept;
+        }
         // 도시에 들어선 사건(갈래 1, 0x004AB4D0)은 단계를 <b>늘 한 칸만</b> 올린다 — +4 가 1 이면 카운터를 inc 할 뿐
         // +0x10 을 안 본다(0x004AB53C). 딴 갈래는 0x004AB460 이 +0x10(58 n 이면 n+1)을 더한다(0x004AB49E).
         // 그래서 1500 년 뒤 개인 이야기 첫 파트의 「58 02」가 도시에 들며 걸리면 장을 건너뛰지 않고 다음 파트로 간다.
@@ -1382,8 +1389,7 @@ public sealed class DisevRunner
                                  me.Items.Contains(Town.Duel.EdithShieldId), Environment.TickCount);
         bool won = UI.Views.DuelDialog.Show(_owner, duel, _dice, face, _game.Fighters,
             foeSet: Math.Max(0, _duelSet),
-            myFace: _game.Faces?.TryGetBgra(
-                Local.Helpers.PortraitAges.At(me.Face, me.Age, false, _game.Faces), female: false),
+            myFace: _game.DuelFace(stand),
             bgm: _game.Bgm);
         // 대신 나간 사람이 다친다(0x004AA5CA).
         if (stand is { } hurt) me.HurtMate(hurt.Name, duel.BodyLost);

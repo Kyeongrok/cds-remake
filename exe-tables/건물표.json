@@ -18049,6 +18049,54 @@
         "Discovery": -1,
         "Picture": -1,
         "Comment": ""
+      },
+      {
+        "City": 224,
+        "Code": 10,
+        "Kind": "성문",
+        "Name": "태양의 문",
+        "X": 163,
+        "Y": 151,
+        "TeachMask": 0,
+        "Discovery": -1,
+        "Picture": -1,
+        "Comment": ""
+      },
+      {
+        "City": 225,
+        "Code": 4,
+        "Kind": "술집",
+        "Name": "술집",
+        "X": 84,
+        "Y": 151,
+        "TeachMask": 0,
+        "Discovery": -1,
+        "Picture": -1,
+        "Comment": ""
+      },
+      {
+        "City": 225,
+        "Code": 5,
+        "Kind": "여관",
+        "Name": "여관",
+        "X": 156,
+        "Y": 162,
+        "TeachMask": 0,
+        "Discovery": -1,
+        "Picture": -1,
+        "Comment": ""
+      },
+      {
+        "City": 225,
+        "Code": 10,
+        "Kind": "성문",
+        "Name": "성문",
+        "X": 88,
+        "Y": 193,
+        "TeachMask": 0,
+        "Discovery": -1,
+        "Picture": -1,
+        "Comment": ""
       }
     ],
     "SkillNames": [
@@ -18084,5 +18132,5 @@
     ]
   },
   "Source": "CDS_95.EXE",
-  "Version": 3
+  "Version": 4
 }

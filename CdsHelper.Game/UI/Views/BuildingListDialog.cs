@@ -16,7 +16,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 도시·건물 보기 — <b>왼쪽에 도시, 오른쪽에 그 도시의 그림과 건물</b>.
 /// </summary>
 /// <remarks>
-/// <see cref="CityBuildingTable"/>(<c>건물표.json</c>, 1504줄)를 편다. 적어 둔 JSON 을 그냥
+/// <see cref="CityBuildingTable"/>(<c>건물표.json</c>, 1508줄)를 편다. 적어 둔 JSON 을 그냥
 /// 열면 도시 번호와 비트마스크뿐이라 눈으로 읽기 힘들다 — 여기서는 <b>도시 이름</b>을 붙이고
 /// <b>가르치는 기능·언어</b>를 풀어 낸다.
 ///

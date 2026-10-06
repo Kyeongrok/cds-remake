@@ -1964,8 +1964,7 @@ public sealed class ShipMapWindow : Window
                                         Environment.TickCount);
 
         DuelDialog.Show(board, duel, dice, foeFace, _game.Fighters, foeSet: 1,
-                        myFace: _game.Faces?.TryGetBgra(
-                            PortraitAges.At(player.Face, player.Age, false, _game.Faces), female: false),
+                        myFace: _game.DuelFace(mate),
                         arena: DuelArt.Deck,
                         bgm: _game.Bgm);
 
@@ -6519,10 +6518,7 @@ public sealed class ShipMapWindow : Window
             DuelDialog.Show(this, duel, dice,
                             _game.Faces?.TryGetBgra(MutinyFace, female: false),
                             _game.Fighters, foeSet: 1,
-                            myFace: _game.Faces?.TryGetBgra(
-                                PortraitAges.At(_game.Player.Face, _game.Player.Age,
-                                                false, _game.Faces),
-                                female: false),
+                            myFace: _game.DuelFace(stand),
                             arena: land ? DuelArt.Field : DuelArt.Deck,
                             // 반란도 일기토 판이라 트랙 11 이 돈다(0x004AA8A0).
                             bgm: _game.Bgm);

@@ -70,6 +70,21 @@ public class GameWindow : Window
     }
 
     /// <summary>
+    /// 그 창을 막고 있는 상자 — 제 위에 뜬 것이거나, <b>주인 창 위에 뜬 것</b>(명령 창 · 건물 사진 창일 때).
+    /// </summary>
+    /// <remarks>
+    /// 명령 창과 사진 창은 도시 창 곁에 따로 뜬 창이라 도시 창의 덮개가 못 덮는다. 그래서 대사 상자가 떠 있어도
+    /// 사진 앞 손님을 또 눌러 같은 사람을 두 번 들이거나, 명령 창의 「구입」을 또 눌러 창이 겹쳐 떴다.
+    /// 원본은 창이 하나라 상자가 떠 있으면 그 밑의 것은 아무것도 안 눌린다.
+    /// </remarks>
+    private static GameWindow? BoxBlocking(Window window)
+    {
+        if (BoxOver(window) is { } over) return over;
+        if (window is not (MenuWindow or BuildingPhotoWindow) || window.Owner is not { } owner) return null;
+        return BoxOver(owner) is { } beside && beside != window ? beside : null;
+    }
+
+    /// <summary>
     /// 상자 밑에 깔린 창에 온 글쇠는 <b>상자에게 넘긴다</b>.
     /// </summary>
     /// <remarks>
@@ -79,7 +94,7 @@ public class GameWindow : Window
     /// </remarks>
     private static void OnKeyUnderBox(object sender, KeyEventArgs e)
     {
-        if (sender is not Window window || BoxOver(window) is not { } box) return;
+        if (sender is not Window window || BoxBlocking(window) is not { } box) return;
         if (e.Key == Key.System) return;   // Alt+F4 따위는 그 창 몫이다 — 상자가 떠 있어도 게임은 닫힌다
         e.Handled = true;
 
@@ -108,8 +123,9 @@ public class GameWindow : Window
     /// </remarks>
     private static void OnMouseUnderBox(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not Window window || BoxOver(window) is not { } box) return;
-        if (window.Content is Visual body && e.OriginalSource is Visual hit
+        if (sender is not Window window || BoxBlocking(window) is not { } box) return;
+        // 덮개가 덮은 창은 덮지 않은 데(제목 줄)만 산다. 곁에 뜬 창은 덮개가 없으니 통째로 막는다.
+        if (BoxOver(window) != null && window.Content is Visual body && e.OriginalSource is Visual hit
             && hit != body && hit.IsDescendantOf(body)) return;
 
         e.Handled = true;

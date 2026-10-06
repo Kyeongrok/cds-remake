@@ -8,7 +8,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </summary>
 /// <remarks>
 /// <code>
-///   표     VA 0x00500918, 1504행 x 0x38 (.rdata)
+///   표     VA 0x00500918, 1508행 x 0x38 (.rdata)
 ///   +0x00  이름 ptr("베렌의 탑")     +0x04  종류이름 ptr("항구")
 ///   +0x08  도시 번호                 +0x0C  건물 코드
 ///   +0x14  발견물 그림 번호(DSTILL)  +0x1C  발견물 번호 (-1 = 발견물이 아님)
@@ -33,7 +33,11 @@ namespace CdsHelper.Game.Local.Helpers;
 public sealed class CityBuildingTable
 {
     private const int TableVa = 0x00500918;
-    private const int RowCount = 1504;
+    /// <summary>
+    /// 줄 수. 예전에는 1504 로 끊어 읽어 <b>맨 끝 넉 줄</b>이 빠졌다 — 나스카 성문 「태양의 문」과 포토시의
+    /// 술집 · 여관 · 성문이다. 나스카는 성문 그림만 있고 눌리지 않아 뭍으로 못 나갔다. 1508 째부터는 딴 표다.
+    /// </summary>
+    private const int RowCount = 1508;
     private const int RowSize = 0x38;
     /// <summary>
     /// 건물 <b>해설</b>의 글 표. 건물 줄의 <c>+0x18</c> 이 이 표의 몇 번째인지를 든다.
@@ -113,8 +117,8 @@ public sealed class CityBuildingTable
     /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\건물표.json</c>).</summary>
     private const string CacheName = "건물표";
 
-    /// <summary>알맹이 모양 판. 발견물 번호와 그림 번호를 더하며 2 로 올렸다.</summary>
-    private const int Version = 3;
+    /// <summary>알맹이 모양 판. 발견물 번호와 그림 번호를 더하며 2 로, 빠진 끝 넉 줄을 더하며 4 로 올렸다.</summary>
+    private const int Version = 4;
 
     /// <summary>
     /// JSON 으로 적어 두는 알맹이. EXE 를 읽어야만 알 수 있는 것이 여기 다 들어 있다 —

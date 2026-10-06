@@ -83,6 +83,23 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         finally { _hideMenu?.Invoke(false); }
     }
 
+    /// <summary>
+    /// 사진 앞 손님을 눌렀을 때 — 한 사람과 이야기하는 동안 또 누른 것은 버린다.
+    /// </summary>
+    /// <remarks>
+    /// 설득 애니메이션이 도는 사이처럼 상자가 안 떠 있는 틈에도 사진 창은 눌린다. 그때 같은 사람을 또 누르면
+    /// 고용 흐름이 둘 겹쳐 「일을 정해 주십시오」가 두 번 뜨고, 같은 사람이 두 자리에 앉았다.
+    /// </remarks>
+    private void WithGuest(Action run)
+    {
+        if (_withGuest) return;
+        _withGuest = true;
+        try { Alone(run); }
+        finally { _withGuest = false; }
+    }
+
+    private bool _withGuest;
+
     private Player _player => _game.Player;
 
     /// <summary>
@@ -729,7 +746,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 maidSeated = true;
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
                             _player.HasMetBarmaid(her.Id) ? her.Name : "여",
-                            () => Alone(() => MeetBarmaid(her))));
+                            () => WithGuest(() => MeetBarmaid(her))));
                 owners.Add(null);
                 continue;
             }
@@ -741,7 +758,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 bool inn = kind == FacilityKind.Inn;
                 var talk = seat.Art.Female ? null : SeatStranger(inn);
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height, label,
-                            () => Alone(() => MeetStranger(seat.Art.Female, talk, inn))));
+                            () => WithGuest(() => MeetStranger(seat.Art.Female, talk, inn))));
                 owners.Add(null);
             }
             else
@@ -752,7 +769,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                 // 이름표는 <b>커서를 올릴 때마다</b> 다시 정한다 — 말을 걸어 낯을 트면 곧바로 이름이 뜬다.
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
                             Known(who) ? who.ShortName : female ? "여" : "남",
-                            () => Alone(() => MeetPerson(who, seat.Art.Female,
+                            () => WithGuest(() => MeetPerson(who, seat.Art.Female,
                                                          inn: kind == FacilityKind.Inn)),
                             () => Known(who) ? who.ShortName : female ? "여" : "남"));
                 owners.Add(who.Name);
@@ -1565,9 +1582,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
                                         Theirs(who, dice), Shielded(), Environment.TickCount);
         DuelDialog.Show(_view, duel, dice, face, _game.Fighters,
                         FighterSprites.SetForCulture(_cultureNo),
-                        myFace: _game.Faces?.TryGetBgra(
-                            PortraitAges.At(_player.Face, _player.Age, false, _game.Faces),
-                            female: false),
+                        myFace: _game.DuelFace(mate),
                         arena: DuelArt.TavernFor(_cultureNo),
                         bgm: _game.Bgm);
 

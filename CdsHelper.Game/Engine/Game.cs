@@ -598,6 +598,14 @@ public sealed class Game
     public uint[]? PersonFace(PersonTable.Row who) => Faces?.TryGetBgra(who.Face, who.Female);
 
     /// <summary>
+    /// 일기토 판 오른쪽에 걸 내 쪽 얼굴 — <b>부관이 대신 나갔으면 부관</b>, 아니면 나이에 맞춘 제독 초상이다.
+    /// 부관 얼굴을 못 구하면 제독 것으로 물러선다.
+    /// </summary>
+    public uint[]? DuelFace(Player.MateInfo? stand) =>
+        (stand is { } mate ? MateFace(mate) : null)
+        ?? Faces?.TryGetBgra(Local.Helpers.PortraitAges.At(Player.Face, Player.Age, false, Faces), female: false);
+
+    /// <summary>
     /// 부하의 초상. 신상에는 이름과 얼굴 번호뿐이라 <b>이름으로 인물을 되짚어</b> 여자 얼굴인지 가른다.
     /// 얼굴이 없으면(<c>0xFFFF</c>) null.
     /// </summary>
