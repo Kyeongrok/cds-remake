@@ -61,18 +61,24 @@ async function getDashboard(url, env) {
      WHERE c.kind = ? ${cond} GROUP BY c.key ORDER BY n DESC, c.key LIMIT ${limit}`)
     .bind(kind, ...args).all().then((r) => r.results);
 
-  const [total, discoveries, cities, menus, battles, errors, mods, days, versions] = await Promise.all([
+  const [total, kinds, discoveries, cities, menus, battles, errors, mods, modValues, days, versions] = await Promise.all([
     env.DB.prepare(`SELECT COUNT(*) AS batches, COUNT(DISTINCT install) AS installs FROM batches b WHERE 1 = 1 ${cond}`).bind(...args).first(),
+    // 갈래마다 합계 — 아래 순위는 줄 수에 끝이 있어, 타일의 셈은 여기서 따로 낸다.
+    env.DB.prepare(
+      `SELECT c.kind, SUM(c.n) AS n, COUNT(DISTINCT c.key) AS keys
+       FROM counts c JOIN batches b ON b.batch = c.batch WHERE 1 = 1 ${cond} GROUP BY c.kind`).bind(...args).all().then((r) => r.results),
     top('discovery', 400), top('city', 300), top('menu', 300), top('battle', 50), top('error', 200),
     env.DB.prepare(
       `SELECT name, COUNT(*) AS installs, SUM(value <> 0) AS enabled, AVG(value) AS average
        FROM mods GROUP BY name ORDER BY enabled DESC, name`).all().then((r) => r.results),
+    // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다.
+    env.DB.prepare(`SELECT name, value, COUNT(*) AS installs FROM mods GROUP BY name, value ORDER BY name, value`).all().then((r) => r.results),
     env.DB.prepare(
       `SELECT substr(b.received_at, 1, 10) AS day, b.version, COUNT(DISTINCT b.install) AS installs, COUNT(*) AS batches
        FROM batches b WHERE 1 = 1 ${cond} GROUP BY day, b.version ORDER BY day DESC, b.version DESC LIMIT 120`).bind(...args).all().then((r) => r.results),
     env.DB.prepare('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').all().then((r) => r.results.map((v) => v.version)),
   ]);
-  return json({ total, discoveries, cities, menus, battles, errors, mods, days, versions });
+  return json({ total, kinds, discoveries, cities, menus, battles, errors, mods, modValues, days, versions });
 }
 
 export default {
