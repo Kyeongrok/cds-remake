@@ -98,6 +98,9 @@ public sealed class GameSettingsData
     /// <summary>릴리즈 노트를 마지막으로 보여 준 판(「1.0.51」 꼴). 아직 없으면 빈 글이다.</summary>
     public string NotesSeenVersion { get; set; } = "";
 
+    /// <summary>놀이 통계를 보내도 되는지. 아직 안 물었으면 null 이다.</summary>
+    public bool? SendStats { get; set; }
+
     /// <summary>항구에서 출항할 때 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
     public bool AutoSupply { get; set; }
 
@@ -1322,6 +1325,15 @@ public static class GameSettings
     {
         get => Get(d => d.NotesSeenVersion);
         set => Set(d => d.NotesSeenVersion = value);
+    }
+
+    /// <summary>
+    /// 놀이 통계(<see cref="Helpers.PlayStats"/>)를 보내도 되는지 — 처음 켤 때 한 번 묻는다. 아직 안 물었으면 null.
+    /// </summary>
+    public static bool? SendStats
+    {
+        get => Get(d => d.SendStats);
+        set => Set(d => d.SendStats = value);
     }
 
     /// <summary>바다 입체 효과의 밝기 배수 — 모드 창 「실험」의 막대로 고른다.</summary>

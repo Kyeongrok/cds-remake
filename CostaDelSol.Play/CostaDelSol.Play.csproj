@@ -32,6 +32,11 @@
         <Link>릴리즈노트.md</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <!-- 놀이 통계를 받는 곳의 주소(PlayStats). 비어 있으면 아무것도 안 보낸다. -->
+      <Content Include="..\stats-url.txt">
+        <Link>stats-url.txt</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <Content Include="..\CdsHelper\cities.json">
         <Link>cities.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

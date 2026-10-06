@@ -1,0 +1,4 @@
+# 놀이 통계를 받는 곳(tools/stats-worker 를 올리면 찍히는 주소)을 아래에 한 줄로 적는다.
+# 비어 있으면 게임은 아무것도 보내지 않는다.
+
+https://cds-remake-stats.oceanfog1.workers.dev

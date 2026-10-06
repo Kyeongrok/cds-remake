@@ -1680,6 +1680,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         try { dialog.ShowDialog(); }
         finally { if (was >= 0) bgm?.Play(was); }
 
+        PlayStats.SeaBattle(dialog.Result.ToString());
         return new Report(dialog.Result, battle.EnemyDowned, battle.EnemyCaptured);
     }
 

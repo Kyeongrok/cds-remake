@@ -44,6 +44,7 @@ internal sealed class App : Application
         {
             // 게임 창을 닫는 사이 늦게 뜨려던 창이 내는 오류는 조용히 넘긴다 — 닫힌 창을 주인으로 삼으려던 것이다.
             if (CdsHelper.Game.UI.Views.ShipMapWindow.ShuttingDown) { args.Handled = true; return; }
+            PlayStats.Error(args.Exception);
             MessageBox.Show($"{args.Exception.Message}\n\n{args.Exception.StackTrace}",
                             "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
@@ -69,8 +70,12 @@ internal sealed class App : Application
         window.Show();
 
         // 창이 다 뜬 뒤에 띄운다 — 지금 띄우면 주인 창이 아직 자리를 못 잡아 알림이 엉뚱한 데 선다.
-        window.Dispatcher.BeginInvoke(() => ShowReleaseNotes(window),
+        window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskStats(window); },
                                       System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
+        // 놀이 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
+        PlayStats.Start(typeof(App).Assembly);
+        Exit += (_, _) => PlayStats.Flush();
 
         _ = CheckForUpdateAsync(window);
     }
@@ -93,6 +98,20 @@ internal sealed class App : Application
 
         GameSettings.NotesSeenVersion = current;
         if (window.IsLoaded) NoticeDialog.Show(window, notes, "릴리즈 노트");
+    }
+
+    /// <summary>
+    /// 놀이 통계를 모은다고 <b>한 번</b> 알리고 켠다(<see cref="PlayStats"/>). 이미 켜져 있으면
+    /// (<see cref="GameSettings.SendStats"/>) 다시 알리지 않는다. 보낼 수 없는 판(받는 곳 주소가 없거나
+    /// 손으로 빌드한 판)에서는 알리지도 켜지도 않는다.
+    /// </summary>
+    private static void AskStats(ShipMapWindow window)
+    {
+        if (GameSettings.SendStats == true || !PlayStats.CanUploadBuild || !window.IsLoaded) return;
+        NoticeDialog.Show(window,
+            "테스트 중 오류와 통계 데이터를 수집해서 더 좋은 결과물을 만들기 위해 수집 합니다.",
+            "통계 보내기");
+        GameSettings.SendStats = true;
     }
 
     /// <summary>

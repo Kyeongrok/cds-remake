@@ -1,0 +1,9 @@
+name = "cds-remake-stats"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# `wrangler d1 create cds-remake-stats` 가 찍어 주는 database_id 를 아래에 넣는다.
+[[d1_databases]]
+binding = "DB"
+database_name = "cds-remake-stats"
+database_id = "561cea8a-128e-416b-b281-80e3886398c7"

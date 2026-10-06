@@ -269,6 +269,8 @@ public sealed class DiscoveryLog
     {
         if (_table.Find(id) is not { } row) return false;
         if (TakenBy(row, player.Date) >= 0) return false;
-        return player.Discover(id);
+        if (!player.Discover(id)) return false;
+        Local.Helpers.PlayStats.Found(id, row.Name);
+        return true;
     }
 }

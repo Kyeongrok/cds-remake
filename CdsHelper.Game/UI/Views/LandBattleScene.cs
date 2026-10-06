@@ -163,7 +163,12 @@ internal sealed class LandBattleScene : GameWindow
         int was = game.Bgm.Track;
 
         scene.Show();
-        try { return scene.Fight(); }
+        try
+        {
+            bool won = scene.Fight();
+            PlayStats.LandBattle(won);
+            return won;
+        }
         finally { scene.Close(); game.Bgm.Play(was); }
     }
 

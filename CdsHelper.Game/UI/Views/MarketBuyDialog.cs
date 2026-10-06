@@ -229,6 +229,7 @@ public sealed class MarketBuyDialog : GameWindow
             int id = _asDiscovery[pickedAt[k]];
             if (id < 0) { goods.Add(picked[k].Id); continue; }
             if (_found?.Table.Find(id) is not { } row || !_player.Discover(id)) continue;
+            Local.Helpers.PlayStats.Found(id, row.Name);
 
             Say(host, "자네, 보는 눈이 있군. 득보는 걸세.");
             ConfirmDialog.Tell(host, $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");

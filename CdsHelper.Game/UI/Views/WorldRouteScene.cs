@@ -115,7 +115,8 @@ internal static class WorldRouteScene
             : $"소유 아이템이 너무 많아서 [{map}]{GameUi.Josa(map, "을", "를")} 손에 넣는 것을 단념했습니다");
 
         // 여기서 발견물 7번이 <b>발견</b>으로 적힌다(0x004AAC10) — 발표는 아직이다.
-        player.Discover(Discovery);
+        if (player.Discover(Discovery))
+            PlayStats.Found(Discovery, game.Discoveries?.Table.Find(Discovery)?.Name);
 
         Mate("제, 제독···이상한데요.");
         Lord("응? 무슨 일인가?");
