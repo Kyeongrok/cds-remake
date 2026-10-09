@@ -1909,7 +1909,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             ShowContract: ShowContract,
             ShowPatrons: () => KeepCityMenu(Patrons.ShowPatrons),
             ShowMap: () => _cityMenu.Push(MapMenu),
-            Quit: () => GameSystemMenu.Quit(this, _game, Menu),
+            Quit: () => GameSystemMenu.Quit(this, _game, Menu, _cityMenu),
             Cancel: CloseCityMenu,
             ShowNobility: Engine.Town.Nobility.Enabled
                 ? () => KeepCityMenu(() => PersonInfoDialog.ShowNobility(this, _game))
@@ -2286,6 +2286,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private List<CityBuildingTable.Building> Standing(int cityId) =>
         [.. _table.InCity(cityId)
                   .Where(b => _game.CityRows?.HasBuilding(cityId, b.Code) ?? true)
+                  // 자택은 <b>모항</b>에만 선다 — 새 판이 고른 나라의 모항에만 비트 11 을 세운다(0x0045E449).
+                  // 건물 표에는 리스본 · 세비야 둘 다 있어, 안 가리면 남의 나라 자택에도 들어가졌다.
+                  .Where(b => b.Code != CityExeTable.HomeCode || _player.HomePort < 0 || cityId == _player.HomePort)
                   .OrderBy(b => b.Code)];
 
     /// <summary>그 자리의 건물 줄. 못 찾으면 null.</summary>

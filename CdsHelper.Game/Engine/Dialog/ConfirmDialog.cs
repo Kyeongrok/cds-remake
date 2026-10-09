@@ -45,6 +45,23 @@ public sealed class ConfirmDialog : GameWindow
 {
     private readonly GameUi.FocusGroup _focus = new();
 
+    /// <summary>그 줄이 주소 하나뿐이면 그 주소. 글 사이에 낀 주소는 안 친다 — 줄 전체가 누르는 자리가 되기 때문이다.</summary>
+    private static string? LinkOf(string line)
+    {
+        string url = line.Trim();
+        return url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) && !url.Contains(' ')
+               && Uri.TryCreate(url, UriKind.Absolute, out _) ? url : null;
+    }
+
+    private static void OpenLink(string url)
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            // 브라우저를 못 띄워도 알림은 그대로 둔다.
+        }
+    }
+
     private ConfirmDialog(string text, string? title, bool yesNo, uint[]? face,
                           double indent, bool bare = false)
     {
@@ -113,7 +130,8 @@ public sealed class ConfirmDialog : GameWindow
         // 그렇다). 한 줄이면 남는 칸의 반만큼 밀어 가운데로 맞춘다.
         var words = new StackPanel();
         foreach (string line in lines)
-            words.Children.Add(new GameUi.GameLabel(GameFont.WhiteColor, TextHeight)
+        {
+            var label = new GameUi.GameLabel(GameFont.WhiteColor, TextHeight)
             {
                 Text = line,
                 // 본문은 <b>겹쳐 찍지 않는다</b> — 오른쪽 아래로 한 점 겹친 자국이
@@ -122,7 +140,18 @@ public sealed class ConfirmDialog : GameWindow
                 FallbackBrush = GameUi.Text,
                 HorizontalAlignment = face == null && lines.Count == 1
                     ? HorizontalAlignment.Center : HorizontalAlignment.Left,
-            });
+            };
+            // 주소(https://…)만 적힌 줄은 누르면 브라우저로 연다 — 릴리즈 노트의 채널 링크가 이 길로 열린다.
+            if (LinkOf(line) is { } link)
+            {
+                label.Cursor = Cursors.Hand;
+                label.BorderBrush = GameUi.Text;
+                label.BorderThickness = new Thickness(0, 0, 0, 1);
+                label.ToolTip = link;
+                label.MouseLeftButtonUp += (_, e) => { e.Handled = true; OpenLink(link); };
+            }
+            words.Children.Add(label);
+        }
 
         var body = new StackPanel { Margin = new Thickness(0, BodyGap, 0, 0) };
         if (face == null)

@@ -184,7 +184,37 @@ public static class PlayStats
             }
             catch (TargetInvocationException) { /* 못 읽는 값은 건너뛴다 */ }
         }
+
+        // 화면 해상도(주 모니터의 화면 점)와 배율(%) — 창이 화면 밖으로 삐져나오는 자리를 가늠하려고 싣는다.
+        var (width, height, scale) = Screen();
+        if (width > 0)
+        {
+            mods["ScreenWidth"] = width;
+            mods["ScreenHeight"] = height;
+            mods["ScreenScale"] = scale;
+        }
         return mods;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern uint GetDpiForSystem();
+
+    /// <summary>주 모니터의 폭 · 높이(화면 점)와 배율(100 이 100%). 못 읽으면 0 이다.</summary>
+    private static (int Width, int Height, int Scale) Screen()
+    {
+        try
+        {
+            double dpi = GetDpiForSystem();
+            if (dpi <= 0) dpi = 96;
+            // WPF 는 화면 크기를 DIP 로 내므로 배율을 곱해 화면 점으로 되돌린다.
+            return ((int)Math.Round(System.Windows.SystemParameters.PrimaryScreenWidth * dpi / 96),
+                    (int)Math.Round(System.Windows.SystemParameters.PrimaryScreenHeight * dpi / 96),
+                    (int)Math.Round(dpi * 100 / 96));
+        }
+        catch (Exception ex) when (ex is EntryPointNotFoundException or DllNotFoundException or InvalidOperationException)
+        {
+            return (0, 0, 0);
+        }
     }
 
     /// <summary>참·거짓이 아니라 단계로 고르는 옵션들.</summary>

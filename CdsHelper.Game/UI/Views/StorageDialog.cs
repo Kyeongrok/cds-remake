@@ -82,6 +82,13 @@ public sealed class StorageDialog : GameWindow
         _boxList.SelectionChanged += () => Hand(onBag: false);
         Hand(onBag: true);
 
+        // 모드 「편리한 보관함」 — 줄을 누르면 곧바로 반대쪽 빈 칸으로 옮긴다. 「교환」은 그대로 남는다.
+        if (Local.Settings.GameSettings.QuickStorage)
+        {
+            _bagList.RowClicked += at => Send(_bag, at, _box, "자택 보관함이 가득 찼습니다");
+            _boxList.RowClicked += at => Send(_box, at, _bag, "소지품을 더 지닐 수 없습니다");
+        }
+
         var columns = new Grid();
         columns.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         columns.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -155,6 +162,21 @@ public sealed class StorageDialog : GameWindow
         (_bag[a], _box[b]) = (_box[b], _bag[a]);
 
         // 글자만 다시 찍으면 된다 — 줄 수는 그대로다.
+        _bagList.Refresh();
+        _boxList.Refresh();
+    }
+
+    /// <summary>
+    /// 모드 「편리한 보관함」 — 누른 칸의 것을 반대쪽 <b>첫 빈 칸</b>으로 보낸다. 빈 칸을 눌렀으면 아무 일도 없다.
+    /// </summary>
+    private void Send(int[] from, int at, int[] to, string full)
+    {
+        if (at < 0 || at >= from.Length || from[at] == Empty) return;
+
+        int free = Array.IndexOf(to, Empty);
+        if (free < 0) { NoticeDialog.Show(this, full); return; }
+
+        (to[free], from[at]) = (from[at], Empty);
         _bagList.Refresh();
         _boxList.Refresh();
     }

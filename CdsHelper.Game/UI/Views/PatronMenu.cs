@@ -1554,6 +1554,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             && !ConfirmDialog.Ask(_view, "제독, 보고하고 배를 돌려주면 짐이 넘칠지도 모릅니다. 좋습니까?",
                                   face: _game.AideFace))
             return;
+        // 원본은 부관이 없으면 아무 말 없이 넘어간다 — 그러면 빌린 배를 돌려주며 넘친 짐을 헐값에 잃기 쉬워
+        // (피드백) 부관이 없을 때도 한 번 묻는다. 말은 우리가 지은 것이다.
+        if (_player.MateAt(0).Length == 0 && _player.CargoHold.Count > 0 && _player.LentInFleet > 0
+            && !ConfirmDialog.Ask(_view, "배에 교역품이 실려 있습니다." + Environment.NewLine
+                                         + "보고하면 빌린 배를 돌려주어 짐이 넘칠 수 있습니다. 보고하겠습니까?"))
+            return;
 
         bool inTime = contract.DaysLeft(_player.Date) > 0;
         bool world = rows.Any(r => r.Id == Palace.WorldRoute);

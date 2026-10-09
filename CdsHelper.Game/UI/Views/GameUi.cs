@@ -387,6 +387,26 @@ internal static class GameUi
     }
 
     /// <summary>
+    /// 미니게임 판(<paramref name="w"/>x<paramref name="h"/> 점)을 <b>게임 창 안에 드는</b> 가장 큰 정수 곱으로 놓을 배율.
+    /// <paramref name="most"/> 를 넘지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 늘 두 배로 놓아, 1200x800 창에서 성배 판(368x432 → 736x864)이 게임 창 위아래로 삐져나왔다.
+    /// 판 둘레에 제목 줄 · 단추가 더 붙으므로 키는 창의 여든다섯 푼까지만 쓴다.
+    /// </remarks>
+    public static double SceneZoom(Visual? visual, int w, int h, int most = 2)
+    {
+        int zoom = Math.Max(1, most);
+        double dpi = visual == null ? 1 : VisualTreeHelper.GetDpi(visual).DpiScaleX;
+        if (dpi <= 0) dpi = 1;
+
+        if (ShipMapWindow.Current is { ActualWidth: > 0, ActualHeight: > 0 } room)
+            while (zoom > 1 && (w * zoom / dpi > room.ActualWidth * FitMargin || h * zoom / dpi > room.ActualHeight * 0.85))
+                zoom--;
+        return zoom / dpi;
+    }
+
+    /// <summary>
     /// <paramref name="owner"/> 안에 <paramref name="w"/>x<paramref name="h"/> 점짜리
     /// 그림을 앉힐 때 쓸 <b>화면 점 단위</b>의 정수 곱. 1 부터 <paramref name="most"/> 까지다.
     /// </summary>

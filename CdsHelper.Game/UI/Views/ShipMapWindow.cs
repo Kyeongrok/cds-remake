@@ -560,6 +560,7 @@ public sealed class ShipMapWindow : Window
 
         PreviewKeyDown += OnTitleKey;   // 타이틀에서만 먹는다(그 안에서 화면을 본다)
         KeyDown += OnMapKey;            // 지도에서 V 저장
+        PreviewKeyDown += OnSailKey;    // 항해 글쇠(방향키 따위) — 단추가 스페이스를 먹기 전에 받는다
 
         // V 글쇠가 어느 창에서든 이 창을 찾을 수 있게 해 둔다.
         Current = this;
@@ -2803,6 +2804,60 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>
+    /// 항해 글쇠 — 단축키 창 「항해」 탭에서 고른 글쇠로 뱃머리를 세운다(<see cref="GameSettings.SailActions"/>).
+    /// 원본에는 숫자판 조타뿐이라, 숫자판 없는 자판을 위해 얹은 것이다.
+    /// </summary>
+    /// <remarks>
+    /// 동서남북 글쇠는 <b>둘을 함께 누르면 대각선</b>이다 — 누른 순간 넷 가운데 눌려 있는 것을 모아 방위를 낸다.
+    /// </remarks>
+    private void OnSailKey(object sender, KeyEventArgs e)
+    {
+        if (e.Handled || Keyboard.Modifiers != ModifierKeys.None) return;
+        if (e.OriginalSource is System.Windows.Controls.Primitives.TextBoxBase) return;
+        if (!ReferenceEquals(_screen.Content, _mapRoot)) return;
+
+        string name = e.Key.ToString();
+        string? id = null;
+        foreach (var (action, _, _) in GameSettings.SailActions)
+            if (string.Equals(GameSettings.SailKey(action), name, StringComparison.OrdinalIgnoreCase)) { id = action; break; }
+        if (id == null) return;
+
+        e.Handled = true;
+        switch (id)
+        {
+            case "Anchor":
+                if (!e.IsRepeat) _host.ToggleAnchor();
+                return;
+            case "Command":
+                if (!e.IsRepeat) ShowCommandMenu(this, new Point(ActualWidth / 2, ActualHeight / 2));
+                return;
+        }
+
+        bool Held(string action) =>
+            action == id || (KeyOf(GameSettings.SailKey(action), Key.None) is var key && key != Key.None && Keyboard.IsKeyDown(key));
+
+        int dx = 0, dy = 0;
+        if (id is "Up" or "Down" or "Left" or "Right")
+        {
+            dx = (Held("Right") ? 1 : 0) - (Held("Left") ? 1 : 0);
+            dy = (Held("Down") ? 1 : 0) - (Held("Up") ? 1 : 0);
+        }
+        // 맞선 둘이 함께 눌렸으면(또는 대각선 글쇠면) 방금 누른 것만 본다.
+        if (dx == 0 && dy == 0)
+        {
+            dx = id.Contains("Right") ? 1 : id.Contains("Left") ? -1 : 0;
+            dy = id.Contains("Down") ? 1 : id.Contains("Up") ? -1 : 0;
+        }
+
+        // 16방위 — 북 0 에서 서쪽으로 돈다(숫자판 8 → 0, 4 → 4, 2 → 8, 6 → 12).
+        _host.SteerTo((dx, dy) switch
+        {
+            (0, -1) => 0, (-1, -1) => 2, (-1, 0) => 4, (-1, 1) => 6,
+            (0, 1) => 8, (1, 1) => 10, (1, 0) => 12, _ => 14,
+        });
+    }
+
+    /// <summary>
     /// 숫자판 조타 표(<c>0x005696EC</c> 의 글쇠 <c>'1'</c>~<c>'9'</c> 칸) — 16방위 값이다.
     /// <c>'5'</c> 는 −1 로 내어 멈춤 토글을 뜻한다. 숫자 글쇠가 아니면 null.
     /// </summary>
@@ -3440,7 +3495,8 @@ public sealed class ShipMapWindow : Window
             // 뭍에 올라 있는 동안은 보급·수리 줄이 <b>없다</b> — 그 둘은 배에 탄 채로 여는
             // 「상륙」 차림표에 있다(0x0048B1E2~0x0048B4C2 에는 도시·승선·정보·도시좌표·
             //  항해일지·기능뿐이다).
-            // 대 둔 배 곁 — 가로세로 <b>두 칸</b>(1/16 눈금 0x20) 안이어야 선다(0x0048B3C6~0x0048B3D8).
+            // 대 둔 배 곁 — 원본은 가로세로 <b>두 칸</b>(1/16 눈금 0x20) 안이어야 선다(0x0048B3C6~0x0048B3D8).
+            // 우리는 그림이 맞붙어 보이면 서도록 네 칸으로 넓혔다(IsNearMoor).
             // 아무 물가에서나 타지는 못한다. 내린 자리는 배 둘레 3x3 이라 내리자마자 타는 데는 걸리지 않는다.
             if (_host.IsNearMoor())
                 // 뭍에서 배로 옮겨 타는 줄은 「승선」이다(0x0056F9A8, 0x0048B3ED) — 「출항」은 항구 것이다.

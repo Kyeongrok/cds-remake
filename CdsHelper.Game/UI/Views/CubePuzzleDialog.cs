@@ -226,7 +226,7 @@ internal sealed class CubePuzzleDialog : GameWindow
         _scene.Background = Brushes.Transparent;
         _scene.MouseLeftButtonDown += (_, e) => e.Handled = true;
 
-        double zoom = GameUi.PixelZoom(this, Zoom);
+        double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
         // 게임은 미니 게임에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 금빛 액자뿐이고

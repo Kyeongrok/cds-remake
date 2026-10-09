@@ -129,15 +129,33 @@ internal static class GameSystemMenu
     /// 문구는 게임 것 그대로다(<c>0x00568D20</c>). <b>아직 저장하지 않은 판</b>이면 한 번 더 묻는다
     /// (<c>0x00568D38</c> · 상태비트 <c>0x005A4D18 &amp; 0x80</c>, 우리는 <see cref="Engine.Game.Unsaved"/>).
     /// </remarks>
-    public static void Quit(Window view, Engine.Game game, GameMenuHost menu)
+    /// <param name="cityMenu">
+    /// 도시 커맨드 창에서 불렀으면 그 창 — 물어보는 동안 감춰 두고, 종료하면 같이 닫는다. 예전에는 시설 창만 닫아
+    /// 열한 줄짜리 커맨드 창이 물음 뒤에 그대로 떠 있었다.
+    /// </param>
+    public static void Quit(Window view, Engine.Game game, GameMenuHost menu, GameMenuHost? cityMenu = null)
     {
-        if (view.Owner is not ShipMapWindow map) { menu.Close(); return; }
-        if (!ConfirmDialog.Ask(view, "게임을 종료하겠습니까?")) return;
-        if (game.Unsaved
-            && !ConfirmDialog.Ask(view, "이 게임은 저장되어 있지 않습니다." + Environment.NewLine
-                                        + "이대로 종료해도 괜찮습니까?"))
-            return;
+        if (view.Owner is not ShipMapWindow map) { menu.Close(); cityMenu?.Close(); return; }
 
+        var shown = cityMenu?.Window;
+        if (shown != null) shown.Visibility = Visibility.Hidden;
+
+        bool quit = ConfirmDialog.Ask(view, "게임을 종료하겠습니까?")
+                    && (!game.Unsaved
+                        || ConfirmDialog.Ask(view, "이 게임은 저장되어 있지 않습니다." + Environment.NewLine
+                                                   + "이대로 종료해도 괜찮습니까?"));
+        if (!quit)
+        {
+            if (shown is { IsLoaded: true })
+            {
+                shown.Visibility = Visibility.Visible;
+                shown.Activate();
+            }
+            return;
+        }
+
+        // 오므라드는 것을 기다리지 않고 곧바로 닫는다 — 첫 화면 위에 창이 남으면 안 된다.
+        shown?.Close();
         menu.Close();
         map.ReturnToTitle();
     }

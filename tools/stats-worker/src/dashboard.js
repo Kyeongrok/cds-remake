@@ -72,7 +72,7 @@ const sum = (rows, k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
 const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '-';
 const EMPTY = (cols) => '<tr><td colspan="' + cols + '" class="dim name">아직 자료가 없습니다.</td></tr>';
 // 단계 옵션 — 게임(PlayStats.LevelMods)이 켬·끔이 아니라 값으로 보내는 것.
-const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays'];
+const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
 const SEA = [['Won', '승리'], ['Defeated', '패배'], ['Escaped', '퇴각'], ['Surrendered', '항복']];
 
 let data = null;

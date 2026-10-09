@@ -297,6 +297,18 @@ public sealed class ModDialog : GameWindow
             + " 고른 아이템을 자택에 가지 않고 바로 자택 보관함으로 보내거나, 시장에 가지 않고 바로 팝니다."
             + " 판 값은 시장 매각과 같습니다(아이템 매각가 x 지금 도시 시세, 바다 위면 시세 100)."));
 
+        // 편리한 보관함 — 자택 보관 창에서 줄을 누르면 곧바로 옮긴다.
+        rows.Children.Add(Toggle("편리한 보관함", GameSettings.QuickStorage, on => GameSettings.QuickStorage = on,
+            "원본에 없는 것입니다 — 자택 「보관」 창에서 소지 아이템을 누르면 곧바로 보관함으로, 보관 아이템을 누르면 곧바로 소지품으로 옮깁니다."
+            + " 반대쪽의 첫 빈 칸으로 들어가고, 빈 칸이 없으면 알려 줍니다."
+            + " 끄면 원본처럼 양쪽에서 한 칸씩 고르고 「교환」을 눌러야 합니다(켜도 「교환」은 그대로 쓸 수 있습니다)."));
+
+        // 적하 시세 순위 — 실은 교역품이 어디서 비싸게 팔리는지.
+        rows.Children.Add(Toggle("적하 시세 순위", GameSettings.CargoPriceRank, on => GameSettings.CargoPriceRank = on,
+            "원본에 없는 것입니다 — 함대정보 「짐」 판의 교역품일람에서 교역품을 누르면, 그 교역품을 비싸게 팔 수 있는 도시를"
+            + " 순위로 보여 줍니다(단가와 전부 팔았을 때의 값). 아는 도시 가운데 교역소가 있는 곳의 지금 시세로 셈합니다."
+            + " 원래 뜨던 교역품 창은 순위 창의 「교역품 정보」 단추로 엽니다."));
+
         // 스핑크스 퀴즈 도우미 — 개발도구에 있던 계산기를 놀이 안으로 옮겼다.
         rows.Children.Add(Toggle("스핑크스 퀴즈 도우미", GameSettings.SphinxHelper,
             on => GameSettings.SphinxHelper = on,

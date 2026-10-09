@@ -170,6 +170,15 @@ public sealed class GameSettingsData
     public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
 
+    /// <summary>항해 글쇠(<see cref="GameSettings.SailActions"/> 의 Id → 글쇠 이름). 안 적힌 것은 기본값이고, 빈 글이면 안 쓴다.</summary>
+    public Dictionary<string, string>? SailKeys { get; set; }
+
+    /// <summary>보관 창에서 줄을 누르면 곧바로 옮길지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool QuickStorage { get; set; }
+
+    /// <summary>함대정보 「짐」 판의 교역품을 누르면 비싸게 팔리는 도시 순위를 낼지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool CargoPriceRank { get; set; }
+
     /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPeopleOverlay { get; set; }
 
@@ -714,6 +723,45 @@ public static class GameSettings
     {
         get => Get(d => d.PersonKey);
         set => Set(d => d.PersonKey = value);
+    }
+
+    /// <summary>
+    /// 항해 글쇠로 하는 일들 — 단축키 창 「항해」 탭이 이 차례로 늘어놓는다. 숫자판 조타(1~9 · 5 · 0)는 이것과 따로 늘 먹는다.
+    /// </summary>
+    /// <remarks>
+    /// 숫자판이 없는 자판(텐키리스)에서는 숫자 글쇠가 한 줄로 늘어서 있어 방위를 잡기 어렵다 — 그래서 방향키를 기본으로 둔다.
+    /// 대각선은 비워 두고 시작한다(방향키 둘을 함께 누르면 대각선이다).
+    /// </remarks>
+    public static readonly (string Id, string Label, string Default)[] SailActions =
+    [
+        ("Up", "북 (위)", "Up"), ("Down", "남 (아래)", "Down"),
+        ("Left", "서 (왼쪽)", "Left"), ("Right", "동 (오른쪽)", "Right"),
+        ("UpLeft", "북서", ""), ("UpRight", "북동", ""),
+        ("DownLeft", "남서", ""), ("DownRight", "남동", ""),
+        ("Anchor", "정지 · 출발", "Space"), ("Command", "커맨드 창", ""),
+    ];
+
+    /// <summary>그 항해 글쇠의 이름. 안 쓰면 빈 글이다.</summary>
+    public static string SailKey(string id) => Get(d =>
+        d.SailKeys != null && d.SailKeys.TryGetValue(id, out string? key)
+            ? key
+            : SailActions.FirstOrDefault(a => a.Id == id).Default ?? "");
+
+    /// <summary>항해 글쇠를 바꾼다. 빈 글이면 그 일에는 글쇠를 안 쓴다.</summary>
+    public static void SetSailKey(string id, string key) => Set(d => (d.SailKeys ??= [])[id] = key);
+
+    /// <summary>편리한 보관함 — 자택 「보관」 창에서 줄을 누르면 곧바로 반대쪽으로 옮긴다. 모드 창에서 켜고 끈다.</summary>
+    public static bool QuickStorage
+    {
+        get => Get(d => d.QuickStorage);
+        set => Set(d => d.QuickStorage = value);
+    }
+
+    /// <summary>적하 시세 순위 — 함대정보 「짐」 판에서 교역품을 누르면 비싸게 팔리는 도시 순위를 낸다. 모드 창에서 켜고 끈다.</summary>
+    public static bool CargoPriceRank
+    {
+        get => Get(d => d.CargoPriceRank);
+        set => Set(d => d.CargoPriceRank = value);
     }
 
     /// <summary>몇 사람까지 적어 둘지.</summary>

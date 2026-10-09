@@ -29,6 +29,6 @@ npx wrangler d1 execute cds-remake-stats --remote --command "SELECT key, MAX(nam
 
 - `batches` — 덩이 하나에 한 줄(설치 번호 · 버전 · 받은 때).
 - `counts` — 덩이 안의 셈. `kind` 는 `discovery`(발견물 번호) · `city`(도시 번호) · `menu`(「창 제목/줄 글」) · `battle`(`sea:Won` · `sea:Defeated` · `sea:Escaped` · `land:win` · `land:lose`) · `error`(「오류 갈래@클래스.메서드」 — 오류 글은 안 싣는다).
-- `mods` — 설치마다 지금 켜 둔 옵션(`GameSettings` 의 참·거짓 값 전부와 단계 옵션 몇). 보낼 때마다 마지막 값으로 덮는다.
+- `mods` — 설치마다 지금 켜 둔 옵션(`GameSettings` 의 참·거짓 값 전부와 단계 옵션 몇). 보낼 때마다 마지막 값으로 덮는다. 주 모니터 해상도(`ScreenWidth` · `ScreenHeight`, 화면 점)와 배율(`ScreenScale`, %)도 여기 실린다 — 게임 창 크기는 `Resolution`(고른 차례)이다.
 
 이름 · 계정 · IP · 세이브 내용은 적지 않는다. 메뉴 줄 글은 화면에 뜬 그대로라, 줄에 회원이 지은 이름(배 이름 따위)이 뜨는 창이 있으면 그것도 들어온다.

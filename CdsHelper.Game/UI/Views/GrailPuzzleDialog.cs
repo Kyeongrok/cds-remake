@@ -127,7 +127,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
         _scene.MouseLeftButtonUp += SceneUp;
 
         // 모니터 배율을 물어 나눠 준다 — 그림 점 하나가 화면 점 하나가 되게.
-        double zoom = GameUi.PixelZoom(this, Zoom);
+        double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
         // 게임은 미니 게임에 밤색 판도 제목도 아래 단추도 안 두른다 — 그림에 금빛 액자만

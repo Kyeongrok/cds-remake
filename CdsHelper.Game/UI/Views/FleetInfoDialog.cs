@@ -85,7 +85,7 @@ internal sealed class FleetInfoDialog : InfoDialog
 
         Build("함대정보", rows, BoardWidth, BoardHeight,
               new GameButton("대열", () => FormationDialog.Show(this, player)),
-              new GameButton("짐", () => CargoView.Show(this, player, cargoName, cargoInfo)),
+              new GameButton("짐", () => CargoView.Show(this, player, cargoName, cargoInfo, game)),
               new GameButton("취소", Close));
     }
 
@@ -174,7 +174,7 @@ internal sealed class FleetInfoDialog : InfoDialog
     private sealed class CargoView : InfoDialog
     {
         private CargoView(Player player, Func<Player.Cargo, string>? cargoName,
-                          Action<Window, Player.Cargo>? cargoInfo)
+                          Action<Window, Player.Cargo>? cargoInfo, Engine.Game? game)
         {
             var rows = new StackPanel { Margin = new Thickness(RowInset, 0, RowInset, 0) };
             rows.Children.Add(Label("보급물자"));
@@ -189,7 +189,15 @@ internal sealed class FleetInfoDialog : InfoDialog
             {
                 var item = cargo;
                 rows.Children.Add(new GameButton(cargoName?.Invoke(item) ?? $"교역품 {item.Kind}",
-                                                 () => cargoInfo?.Invoke(this, item))
+                                                 () =>
+                                                 {
+                                                     // 모드 「적하 시세 순위」 — 교역품 창 대신 비싸게 팔리는 도시 순위를 낸다.
+                                                     // 교역품 창은 그 안의 「교역품 정보」 단추로 간다.
+                                                     if (game != null && Local.Settings.GameSettings.CargoPriceRank
+                                                         && CargoRankDialog.Show(this, game, item, () => cargoInfo?.Invoke(this, item)))
+                                                         return;
+                                                     cargoInfo?.Invoke(this, item);
+                                                 })
                 {
                     Margin = new Thickness(0, 4, 0, 0),
                 });
@@ -204,7 +212,7 @@ internal sealed class FleetInfoDialog : InfoDialog
         private const double CargoWidth = 480;
 
         public static void Show(Window owner, Player player, Func<Player.Cargo, string>? cargoName,
-                                Action<Window, Player.Cargo>? cargoInfo) =>
-            new CargoView(player, cargoName, cargoInfo) { Owner = owner }.ShowDialog();
+                                Action<Window, Player.Cargo>? cargoInfo, Engine.Game? game) =>
+            new CargoView(player, cargoName, cargoInfo, game) { Owner = owner }.ShowDialog();
     }
 }
