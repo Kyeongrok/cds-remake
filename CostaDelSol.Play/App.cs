@@ -97,7 +97,7 @@ internal sealed class App : Application
         if (notes.Length == 0) return;
 
         GameSettings.NotesSeenVersion = current;
-        if (window.IsLoaded) NoticeDialog.Show(window, notes, "릴리즈 노트");
+        if (window.IsLoaded) NoticeDialog.Notes(window, notes, "릴리즈 노트");
     }
 
     /// <summary>

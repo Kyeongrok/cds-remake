@@ -54,6 +54,15 @@ public static class ReleaseNotes
     }
 
     /// <summary>판 번호를 세 자리로 맞춘다 — 어셈블리 판은 넷째 자리(0)가 붙어 온다.</summary>
+    /// <summary>
+    /// 가장 새 판부터 <paramref name="count"/> 판의 대목 — 햄버거 「릴리즈 노트」가 언제든 다시 보여 준다.
+    /// 노트가 없으면 빈 글이다.
+    /// </summary>
+    public static string Recent(string text, int count = 2) =>
+        string.Join(Environment.NewLine + Environment.NewLine,
+                    Parse(text).OrderByDescending(s => s.Version).Take(count)
+                               .Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}"));
+
     public static Version Trim(Version v) => new(v.Major, Math.Max(0, v.Minor), Math.Max(0, v.Build));
 
     private static List<(Version Version, string Body)> Parse(string text)

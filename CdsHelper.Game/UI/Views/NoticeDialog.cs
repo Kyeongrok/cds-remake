@@ -21,6 +21,12 @@ public static class NoticeDialog
         ConfirmDialog.Tell(owner, text, title);
 
     /// <summary>
+    /// 여러 줄짜리 긴 글(릴리즈 노트) — 글이 왼쪽 테에 붙지 않게 한 자만큼 들인다.
+    /// </summary>
+    public static void Notes(System.Windows.Window owner, string text, string title) =>
+        ConfirmDialog.Tell(owner, text, title, null, GameUi.CellWidth);
+
+    /// <summary>
     /// 미니게임의 <b>「게임 설명」</b> 창. 글이 왼쪽 테에서 한 뼘 떨어져 시작한다.
     /// </summary>
     /// <remarks>

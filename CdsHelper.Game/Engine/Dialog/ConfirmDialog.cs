@@ -148,7 +148,10 @@ public sealed class ConfirmDialog : GameWindow
                 label.BorderBrush = GameUi.Text;
                 label.BorderThickness = new Thickness(0, 0, 0, 1);
                 label.ToolTip = link;
-                label.MouseLeftButtonUp += (_, e) => { e.Handled = true; OpenLink(link); };
+                // 글자 사이 빈 데를 눌러도 먹게 바탕을 깐다.
+                label.Background = Brushes.Transparent;
+                // <b>누를 때</b> 연다 — 창 끌기가 누름을 받아 마우스를 잡아 버려 뗌이 줄까지 안 온다.
+                label.MouseLeftButtonDown += (_, e) => { e.Handled = true; OpenLink(link); };
             }
             words.Children.Add(label);
         }

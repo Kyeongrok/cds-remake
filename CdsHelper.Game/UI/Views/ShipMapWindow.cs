@@ -534,6 +534,8 @@ public sealed class ShipMapWindow : Window
             // 지도 배율은 고르는 그 자리에서 지도에 먹인다.
             ("설정", () => SettingsDialog.Show(this, _game.Bgm, s => _host.ApplyMapScale(s))),
             ("단축키", () => ShortcutDialog.Show(this)),
+            // 업데이트한 뒤 한 번 뜨고 마는 글을 다시 본다 — 새 판 둘의 대목이다.
+            ("릴리즈 노트", ShowReleaseNotes),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
             // 어디에 무엇이 있는지 한눈에 — 게임 항해지도는 표식을 안 찍는다(볼트 91).
@@ -2720,6 +2722,14 @@ public sealed class ShipMapWindow : Window
     /// <summary>스폰서 일람 — 아는 후원자와 권력 · 친밀도. 도시 창이 없는 바다 · 뭍에서도 같은 창을 낸다.</summary>
     private void ShowPatrons(Window owner) =>
         new PatronMenu(owner, _game, "", CommandMenu, CommandMenu, 0, 0, -1).ShowPatrons(owner);
+
+    /// <summary>햄버거 「릴리즈 노트」 — 가장 새 두 판의 노트를 다시 띄운다.</summary>
+    private void ShowReleaseNotes()
+    {
+        string notes = ReleaseNotes.Recent(ReleaseNotes.Read());
+        if (notes.Length == 0) NoticeDialog.Show(this, "릴리즈 노트를 찾지 못했습니다.", "릴리즈 노트");
+        else NoticeDialog.Notes(this, notes, "릴리즈 노트");
+    }
 
     private void OnMapKey(object sender, KeyEventArgs e)
     {

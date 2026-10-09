@@ -396,9 +396,11 @@ public sealed class ModDialog : GameWindow
             + " 그 마을에서 안 파는 선수상은 빼고, 안 파는 대포는 바꿔 달지 묻습니다."));
 
         // 오프닝 동영상 — 원본은 켤 때마다 로고와 오프닝을 튼다(0x00410AE3 · 0x00410B22).
-        general.Children.Add(Toggle("오프닝 동영상", GameSettings.PlayOpeningMovie,
-            on => GameSettings.PlayOpeningMovie = on,
-            "켤 때 로고(LOGO.AVI)와 오프닝(OPEN.AVI) 동영상을 틉니다(원본 그대로). 끄면 둘 다 건너뛰고 곧장 메인메뉴로 갑니다."));
+        // 줄은 「끄기」로 낸다 — 체크하면 건너뛴다는 쪽이 알아보기 쉽다. 적는 값(PlayOpeningMovie)은 그대로라 거꾸로 잇는다.
+        general.Children.Add(Toggle("오프닝 동영상 끄기", !GameSettings.PlayOpeningMovie,
+            on => GameSettings.PlayOpeningMovie = !on,
+            "체크하면 켤 때 로고(LOGO.AVI)와 오프닝(OPEN.AVI) 동영상을 건너뛰고 곧장 메인메뉴로 갑니다."
+            + " 체크를 풀면 원본처럼 켤 때마다 둘 다 틉니다."));
 
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
         general.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
