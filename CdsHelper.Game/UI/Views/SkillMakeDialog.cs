@@ -87,7 +87,8 @@ internal sealed class SkillMakeDialog : InfoDialog
     private SkillMakeDialog(Player player, int rolledMind, bool keep)
     {
         // 보너스는 앞 걸음에서 남겨 온 것이 아니라 여기서 새로 센다(0x0045DDD9).
-        _left = Skill.BonusFor(player.Age, player.AbilityOf(Ability.Mind));
+        // 지력은 <b>보이는 값</b>(굴린 것 + 넣은 것)으로 센다 — 담아 둔 값은 1 이 빠져 있어 짝수 지력에서 한 점 모자랐다.
+        _left = Skill.BonusFor(player.Age, Ability.Display(player.Abilities[Ability.Mind]));
         // 상한은 <b>굴린</b> 지력으로 선다 — 능력치 화면에서 넣은 점은 안 친다(0x0045DFF6 의 [+0x110]).
         _cap = Skill.CapFor(rolledMind);
 

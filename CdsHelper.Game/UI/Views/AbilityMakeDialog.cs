@@ -121,11 +121,14 @@ internal sealed class AbilityMakeDialog : InfoDialog
         _fortune = player.Fortune;
 
         // 되돌아온 걸음이면 굴리지 않는다 — 굴려 버리면 손본 것이 죄다 날아간다.
+        // 담아 둔 값은 보이는 값에서 1 을 뺀 것이라 도로 더한다 — 안 더하면 되돌아올 때마다 1 씩 깎인다.
+        // 넣은 보너스도 잇는다: 안 이으면 도로 뺄 수 없고 굴린 지력(RolledMind)도 넣은 만큼 부푼다.
         bool again = spare >= 0;
         _stats = again
-            ? [.. player.Abilities]
+            ? [.. player.Abilities.Select(Ability.Display)]
             : Ability.Roll(Ability.BiasOf(player.Fortune), _age, player.BirthMonth, player.BirthDay, rng);
         _left = again ? spare : Ability.BonusFor(_stats, rng);
+        if (again) Array.Copy(LastAdded, _added, _added.Length);
         _initial = [.. _stats];
 
         // 세 시간 안에 적어 둔 바라는 값이 있으면 그대로 채운다(CharacterMakeDialog 와 한 벌).
@@ -438,8 +441,12 @@ internal sealed class AbilityMakeDialog : InfoDialog
         player.Fame = dialog._fame;
         player.Infamy = dialog._infamy;
         RolledMind = dialog._stats[Ability.Mind] - dialog._added[Ability.Mind];
+        LastAdded = [.. dialog._added];
         return dialog._left;
     }
+
+    /// <summary>마지막으로 「다음」을 눌렀을 때 칸마다 넣어 둔 보너스 — 기술 화면에서 되돌아오면 잇는다.</summary>
+    private static int[] LastAdded = new int[Ability.Names.Length];
 
     /// <summary>
     /// 굴린 지력(<c>[+0x110]</c>) — 보너스로 넣은 것을 뺀 값이다. 기술 화면의 상한이 이것으로 선다(<c>0x0045DFF6</c>).
