@@ -29,10 +29,9 @@ async function postPlay(request, env) {
     return json({ error: 'bad batch' }, 400);
 
   const now = new Date().toISOString(), version = text(b.version, 32);
-  const head = await env.DB.prepare(`INSERT OR IGNORE INTO batches (batch, received_at, install, version) VALUES (?, ?, ?, ?)`)
-    .bind(b.batch, now, b.install, version).run();
-  if (!head.meta.changes) return json({ ok: true, duplicate: true });   // 이미 받은 것 — 다시 보낸 것이다
-
+  // 덩이 줄과 셈은 한 묶음(트랜잭션)으로 쓴다 — 셈이 안 들어갔는데 덩이 줄만 남으면, 게임이 다시 보내도 「이미 받았다」가 되어 그 셈을 잃는다
+  // (D1 하루 쓰기 한도가 찼을 때 그랬다). 이미 받은 덩이면 셈 · 옵션은 고르는 줄이 없어 안 쓰이고, 덩이 줄은 맨 끝에 넣는다.
+  const fresh = 'NOT EXISTS (SELECT 1 FROM batches WHERE batch = ?)';
   // 셈은 덩이마다 줄을 쌓지 않고 (갈래 · 열쇠 · 버전 · 설치)마다 한 줄에 더한다 — 대시보드가 훑을 줄이 날마다 늘지 않게.
   const counts = b.counts
     .filter((c) => c && typeof c === 'object' && KINDS.includes(c.kind) && typeof c.key === 'string' && c.key.length > 0)
@@ -42,9 +41,9 @@ async function postPlay(request, env) {
     rows.push(env.DB.prepare(
       `INSERT INTO tally (kind, key, version, install, name, n)
        SELECT json_extract(value, '$.kind'), json_extract(value, '$.key'), ?, ?, json_extract(value, '$.name'), json_extract(value, '$.n')
-       FROM json_each(?) WHERE true
+       FROM json_each(?) WHERE ${fresh}
        ON CONFLICT (kind, key, version, install) DO UPDATE SET n = n + excluded.n, name = excluded.name`)
-      .bind(version, b.install, JSON.stringify(counts)));
+      .bind(version, b.install, JSON.stringify(counts), b.batch));
 
   // 모드 옵션은 설치마다 마지막 값 하나만 남긴다. 값이 그대로면 안 쓴다.
   if (b.mods && typeof b.mods === 'object' && !Array.isArray(b.mods)) {
@@ -54,14 +53,16 @@ async function postPlay(request, env) {
     if (mods.length)
       rows.push(env.DB.prepare(
         `INSERT INTO mods (install, name, value, version, updated_at)
-         SELECT ?, json_extract(value, '$.name'), json_extract(value, '$.value'), ?, ? FROM json_each(?) WHERE true
+         SELECT ?, json_extract(value, '$.name'), json_extract(value, '$.value'), ?, ? FROM json_each(?) WHERE ${fresh}
          ON CONFLICT (install, name) DO UPDATE SET value = excluded.value, version = excluded.version, updated_at = excluded.updated_at
          WHERE mods.value <> excluded.value`)
-        .bind(b.install, version, now, JSON.stringify(mods)));
+        .bind(b.install, version, now, JSON.stringify(mods), b.batch));
   }
 
-  if (rows.length) await env.DB.batch(rows);
-  return json({ ok: true });
+  rows.push(env.DB.prepare(`INSERT OR IGNORE INTO batches (batch, received_at, install, version) VALUES (?, ?, ?, ?)`)
+    .bind(b.batch, now, b.install, version));
+  const done = await env.DB.batch(rows);
+  return json(done[done.length - 1].meta.changes ? { ok: true } : { ok: true, duplicate: true });   // 안 들어갔으면 다시 보낸 것이다
 }
 
 // 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
@@ -143,6 +144,7 @@ export default {
         return new Response(DASHBOARD_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
       return json({ error: 'not found' }, 404);
     } catch (e) {
+      console.error(e && e.stack || e);
       return json({ error: 'server error' }, 500);
     }
   },
