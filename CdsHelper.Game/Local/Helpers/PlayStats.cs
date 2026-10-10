@@ -17,7 +17,8 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   menu       「창 제목/줄 글」       battle  sea:Won · sea:Escaped · land:win · land:lose …
 ///   error      「오류 갈래@클래스.메서드」
 /// </code>
-/// 셈은 메모리에 모았다가 <see cref="FlushEvery"/> 마다, 그리고 끌 때 한 덩이로 줄(파일)에 세워 뒤에서 보낸다 —
+/// 셈은 메모리에 모았다가 <b>도시를 나설 때</b>(출항 · 성문)와 끌 때 한 덩이로 줄(파일)에 세워 뒤에서 보낸다
+/// (나서지 않고 오래 있으면 <see cref="FlushEvery"/> 마다) —
 /// 인터넷이 없으면 다음에 켤 때 다시 보낸다. <b>놀이 exe 가 <see cref="Start"/> 를 불러야만</b> 세기 시작하고,
 /// 모은다고 한 번 알린 뒤(<see cref="GameSettings.SendStats"/>)에만, 태그로 낸 릴리즈 판에서만 보낸다.
 /// 누가 보냈는지는 설치마다 만든 무작위 번호뿐이다 — 이름 · 세이브 · IP 는 안 적는다.
@@ -27,8 +28,11 @@ public static class PlayStats
     /// <summary>받는 곳의 주소를 적어 두는 파일 — 저장소 뿌리에 있고 exe 옆에 실린다.</summary>
     public const string UrlFile = "stats-url.txt";
 
-    /// <summary>모은 셈을 줄에 세우는 사이.</summary>
-    private static readonly TimeSpan FlushEvery = TimeSpan.FromMinutes(5);
+    /// <summary>
+    /// 도시를 나서지 않고 이만큼 지나면 그때까지 모은 셈을 줄에 세운다 — 바다나 도시에 오래 머물다 강제로 꺼져도
+    /// 다 잃지 않게 둔 안전판이다. 예전에는 5분마다 보냈는데 덩이가 너무 잦아 받는 곳의 하루 한도가 찼다.
+    /// </summary>
+    private static readonly TimeSpan FlushEvery = TimeSpan.FromMinutes(30);
 
     /// <summary>열쇠·이름의 가장 긴 길이. 받는 쪽도 같은 데서 자른다.</summary>
     private const int MaxKey = 96;
@@ -130,7 +134,7 @@ public static class PlayStats
     }
 
     /// <summary>
-    /// 모은 셈을 줄에 세우고 뒤에서 보낸다. 끌 때도 부른다 — 보내지 못하고 꺼져도 줄에 남아 다음에 간다.
+    /// 모은 셈을 줄에 세우고 뒤에서 보낸다. 도시를 나설 때와 끌 때 부른다 — 보내지 못하고 꺼져도 줄에 남아 다음에 간다.
     /// </summary>
     public static void Flush()
     {

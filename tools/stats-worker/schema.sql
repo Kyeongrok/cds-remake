@@ -8,17 +8,25 @@ CREATE TABLE IF NOT EXISTS batches (
   version     TEXT NOT NULL
 );
 
--- 덩이 안의 셈 — 무엇을 몇 번.
-CREATE TABLE IF NOT EXISTS counts (
-  batch TEXT NOT NULL,
-  kind  TEXT NOT NULL,            -- discovery · city · menu · battle · error
-  key   TEXT NOT NULL,            -- 발견물 번호 · 도시 번호 · 「창 제목/줄 글」 · sea:Won / land:win … · 「오류 갈래@클래스.메서드」
-  name  TEXT NOT NULL,            -- 발견물 · 도시 이름(그 밖은 빈 글)
-  n     INTEGER NOT NULL
-);
+-- 셈 — 무엇을 몇 번. 덩이마다 줄을 쌓지 않고 (갈래 · 열쇠 · 버전 · 설치)마다 한 줄에 더한다.
+-- 대시보드가 이 표를 통째로 훑으므로, 줄이 날마다 늘면 D1 무료 읽기 한도(하루 오백만 줄)를 넘는다.
+-- 예전에는 counts 표에 덩이마다 한 줄씩 쌓았다 — 그 표는 옛 자료째 남아 있고 이제 안 쓴다(옮기지 않았다).
+CREATE TABLE IF NOT EXISTS tally (
+  kind    TEXT NOT NULL,          -- discovery · city · menu · battle · error
+  key     TEXT NOT NULL,          -- 발견물 번호 · 도시 번호 · 「창 제목/줄 글」 · sea:Won / land:win … · 「오류 갈래@클래스.메서드」
+  version TEXT NOT NULL,
+  install TEXT NOT NULL,
+  name    TEXT NOT NULL,          -- 발견물 · 도시 이름(그 밖은 빈 글)
+  n       INTEGER NOT NULL,
+  PRIMARY KEY (kind, key, version, install)
+) WITHOUT ROWID;
 
-CREATE INDEX IF NOT EXISTS counts_batch ON counts (batch);
-CREATE INDEX IF NOT EXISTS counts_kind ON counts (kind, key);
+-- 대시보드 집계를 묵혀 두는 곳 — 버전(전체는 빈 글)마다 한 줄, 한 시간이 지나면 새로 센다.
+CREATE TABLE IF NOT EXISTS snapshots (
+  version TEXT PRIMARY KEY,
+  made_at TEXT NOT NULL,
+  body    TEXT NOT NULL
+);
 
 -- 설치마다 지금 켜 둔 옵션 — 보낼 때마다 마지막 값으로 덮는다.
 CREATE TABLE IF NOT EXISTS mods (

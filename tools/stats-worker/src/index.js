@@ -1,7 +1,7 @@
 // 놀이 통계를 받는 Cloudflare Worker — 게임(CdsHelper.Game/Local/Helpers/PlayStats.cs)이 몇 분마다, 그리고 끌 때 셈 한 덩이를 보낸다.
 //
-//   POST /v1/play        셈 한 덩이(JSON)를 D1 에 넣는다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
-//   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 도시 · 메뉴 · 전투 · 오류 · 모드 옵션.
+//   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
+//   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 도시 · 메뉴 · 전투 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
 //
 // 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다.
@@ -31,54 +31,99 @@ async function postPlay(request, env) {
     .bind(b.batch, now, b.install, version).run();
   if (!head.meta.changes) return json({ ok: true, duplicate: true });   // 이미 받은 것 — 다시 보낸 것이다
 
-  const row = env.DB.prepare(`INSERT INTO counts (batch, kind, key, name, n) VALUES (?, ?, ?, ?, ?)`);
-  const rows = b.counts
+  // 셈은 덩이마다 줄을 쌓지 않고 (갈래 · 열쇠 · 버전 · 설치)마다 한 줄에 더한다 — 대시보드가 훑을 줄이 날마다 늘지 않게.
+  const counts = b.counts
     .filter((c) => c && typeof c === 'object' && KINDS.includes(c.kind) && typeof c.key === 'string' && c.key.length > 0)
-    .map((c) => row.bind(b.batch, c.kind, text(c.key, MAX_KEY), text(c.name, MAX_KEY), int(c.n, 1_000_000)));
+    .map((c) => ({ kind: c.kind, key: text(c.key, MAX_KEY), name: text(c.name, MAX_KEY), n: int(c.n, 1_000_000) }));
+  const rows = [];
+  if (counts.length)
+    rows.push(env.DB.prepare(
+      `INSERT INTO tally (kind, key, version, install, name, n)
+       SELECT json_extract(value, '$.kind'), json_extract(value, '$.key'), ?, ?, json_extract(value, '$.name'), json_extract(value, '$.n')
+       FROM json_each(?) WHERE true
+       ON CONFLICT (kind, key, version, install) DO UPDATE SET n = n + excluded.n, name = excluded.name`)
+      .bind(version, b.install, JSON.stringify(counts)));
 
-  // 모드 옵션은 설치마다 마지막 값 하나만 남긴다.
+  // 모드 옵션은 설치마다 마지막 값 하나만 남긴다. 값이 그대로면 안 쓴다.
   if (b.mods && typeof b.mods === 'object' && !Array.isArray(b.mods)) {
-    const mod = env.DB.prepare(
-      `INSERT INTO mods (install, name, value, version, updated_at) VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT (install, name) DO UPDATE SET value = excluded.value, version = excluded.version, updated_at = excluded.updated_at`);
-    for (const [name, value] of Object.entries(b.mods).slice(0, MAX_MODS))
-      if (/^[A-Za-z0-9_]{1,48}$/.test(name) && Number.isFinite(value))
-        rows.push(mod.bind(b.install, name, int(value, 1_000_000), version, now));
+    const mods = Object.entries(b.mods).slice(0, MAX_MODS)
+      .filter(([name, value]) => /^[A-Za-z0-9_]{1,48}$/.test(name) && Number.isFinite(value))
+      .map(([name, value]) => ({ name, value: int(value, 1_000_000) }));
+    if (mods.length)
+      rows.push(env.DB.prepare(
+        `INSERT INTO mods (install, name, value, version, updated_at)
+         SELECT ?, json_extract(value, '$.name'), json_extract(value, '$.value'), ?, ? FROM json_each(?) WHERE true
+         ON CONFLICT (install, name) DO UPDATE SET value = excluded.value, version = excluded.version, updated_at = excluded.updated_at
+         WHERE mods.value <> excluded.value`)
+        .bind(b.install, version, now, JSON.stringify(mods)));
   }
 
-  // D1 은 한 번에 묶는 수에 끝이 있어 백 줄씩 끊어 넣는다.
-  for (let i = 0; i < rows.length; i += 100) await env.DB.batch(rows.slice(i, i + 100));
+  if (rows.length) await env.DB.batch(rows);
   return json({ ok: true });
 }
+
+// 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
+const SNAPSHOT_TTL = 60 * 60 * 1000;
+const LIMITS = { discovery: 400, city: 300, menu: 300, battle: 50, error: 200 };
 
 // 대시보드 집계 — 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
 async function getDashboard(url, env) {
   const version = (url.searchParams.get('version') || '').slice(0, 32);
-  const cond = version ? 'AND b.version = ?' : '', args = version ? [version] : [];
-  const top = (kind, limit) => env.DB.prepare(
-    `SELECT c.key, MAX(c.name) AS name, SUM(c.n) AS n, COUNT(DISTINCT b.install) AS installs
-     FROM counts c JOIN batches b ON b.batch = c.batch
-     WHERE c.kind = ? ${cond} GROUP BY c.key ORDER BY n DESC, c.key LIMIT ${limit}`)
-    .bind(kind, ...args).all().then((r) => r.results);
+  const all = await snapshot(env, '', null);
+  if (!version) return json(all);
+  // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
+  if (!all.versions.includes(version))
+    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], cities: [], menus: [], battles: [], errors: [], days: [] });
+  return json(await snapshot(env, version, all.versions));
+}
 
-  const [total, kinds, discoveries, cities, menus, battles, errors, mods, modValues, days, versions] = await Promise.all([
-    env.DB.prepare(`SELECT COUNT(*) AS batches, COUNT(DISTINCT install) AS installs FROM batches b WHERE 1 = 1 ${cond}`).bind(...args).first(),
-    // 갈래마다 합계 — 아래 순위는 줄 수에 끝이 있어, 타일의 셈은 여기서 따로 낸다.
-    env.DB.prepare(
-      `SELECT c.kind, SUM(c.n) AS n, COUNT(DISTINCT c.key) AS keys
-       FROM counts c JOIN batches b ON b.batch = c.batch WHERE 1 = 1 ${cond} GROUP BY c.kind`).bind(...args).all().then((r) => r.results),
-    top('discovery', 400), top('city', 300), top('menu', 300), top('battle', 50), top('error', 200),
-    env.DB.prepare(
-      `SELECT name, COUNT(*) AS installs, SUM(value <> 0) AS enabled, AVG(value) AS average
-       FROM mods GROUP BY name ORDER BY enabled DESC, name`).all().then((r) => r.results),
+// 묵혀 둔 집계를 내고, 없거나 낡았으면 새로 세어 적어 둔다.
+async function snapshot(env, version, versions) {
+  const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind(version).first();
+  if (kept && Date.now() - Date.parse(kept.made_at) < SNAPSHOT_TTL) return JSON.parse(kept.body);
+
+  const body = await aggregate(env, version, versions);
+  await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)')
+    .bind(version, body.madeAt, JSON.stringify(body)).run();
+  return body;
+}
+
+// 표를 훑는 것은 여기뿐이다 — 셈 표 한 번, 모드 표 한 번, 덩이 표 두 번(전체일 때는 버전 목록까지 세 번).
+async function aggregate(env, version, versions) {
+  const cond = version ? 'AND version = ?' : '', args = version ? [version] : [];
+  const all = (sql, ...bound) => env.DB.prepare(sql).bind(...bound).all().then((r) => r.results);
+
+  const [total, tally, modValues, days, known] = await Promise.all([
+    env.DB.prepare(`SELECT COUNT(*) AS batches, COUNT(DISTINCT install) AS installs FROM batches WHERE 1 = 1 ${cond}`).bind(...args).first(),
+    all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, COUNT(DISTINCT install) AS installs
+         FROM tally WHERE 1 = 1 ${cond} GROUP BY kind, key`, ...args),
     // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다.
-    env.DB.prepare(`SELECT name, value, COUNT(*) AS installs FROM mods GROUP BY name, value ORDER BY name, value`).all().then((r) => r.results),
-    env.DB.prepare(
-      `SELECT substr(b.received_at, 1, 10) AS day, b.version, COUNT(DISTINCT b.install) AS installs, COUNT(*) AS batches
-       FROM batches b WHERE 1 = 1 ${cond} GROUP BY day, b.version ORDER BY day DESC, b.version DESC LIMIT 120`).bind(...args).all().then((r) => r.results),
-    env.DB.prepare('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').all().then((r) => r.results.map((v) => v.version)),
+    all('SELECT name, value, COUNT(*) AS installs FROM mods GROUP BY name, value ORDER BY name, value'),
+    all(`SELECT substr(received_at, 1, 10) AS day, version, COUNT(DISTINCT install) AS installs, COUNT(*) AS batches
+         FROM batches WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
+    versions ?? all('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
   ]);
-  return json({ total, kinds, discoveries, cities, menus, battles, errors, mods, modValues, days, versions });
+
+  // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
+  const kinds = [], tops = {};
+  for (const kind of KINDS) {
+    const rows = tally.filter((r) => r.kind === kind).map(({ key, name, n, installs }) => ({ key, name, n, installs }));
+    if (rows.length) kinds.push({ kind, n: rows.reduce((s, r) => s + r.n, 0), keys: rows.length });
+    tops[kind] = rows.sort((a, b) => b.n - a.n || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)).slice(0, LIMITS[kind]);
+  }
+
+  // 모드 옵션 — 값마다 설치 수에서 켠 설치 · 평균을 낸다.
+  const byName = new Map();
+  for (const v of modValues) {
+    const m = byName.get(v.name) ?? { name: v.name, installs: 0, enabled: 0, sum: 0 };
+    m.installs += v.installs; m.enabled += v.value ? v.installs : 0; m.sum += v.value * v.installs;
+    byName.set(v.name, m);
+  }
+  const mods = [...byName.values()].map(({ sum, ...m }) => ({ ...m, average: sum / m.installs }))
+    .sort((a, b) => b.enabled - a.enabled || (a.name < b.name ? -1 : 1));
+
+  return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, cities: tops.city, menus: tops.menu,
+           battles: tops.battle, errors: tops.error, mods, modValues, days, versions: known };
 }
 
 export default {

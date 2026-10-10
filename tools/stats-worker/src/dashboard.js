@@ -51,6 +51,7 @@ export const DASHBOARD_HTML = `<!doctype html>
   <div class="sub">익명으로 수집한 놀이 셈입니다. 모드 옵션은 설치마다 마지막 값이라 버전으로 거르지 않습니다.</div>
   <div class="filters">
     <label>버전 <select id="version"><option value="">전체</option></select></label>
+    <span class="dim" id="made"></span>
     <span id="error"></span>
   </div>
   <div class="tiles" id="tiles"></div>
@@ -172,6 +173,7 @@ async function load() {
     const sel = $('version'), keep = state.version;
     sel.innerHTML = '<option value="">전체</option>' + data.versions.map((v) => '<option>' + esc(v) + '</option>').join('');
     sel.value = keep;
+    $('made').textContent = data.madeAt ? '집계 시각 ' + new Date(data.madeAt).toLocaleString('ko-KR') + ' · 한 시간마다 새로 셉니다' : '';
     render();
   } catch (e) { $('error').textContent = '불러오지 못했습니다: ' + e.message; }
 }
