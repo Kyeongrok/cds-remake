@@ -66,6 +66,8 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>줄 목록과 설명 칸의 너비.</summary>
     private const double ListWidth = 250, TipWidth = 330;
+    // 막대 줄 = 들여쓰기 18 + 이름 64 + 틈 18 + 막대 + 수치 48 — 목록 너비(250)를 넘으면 오른쪽 수치가 잘려 안 보인다
+    private const double SliderWidth = 102;
 
     /// <summary>아무 줄에도 커서가 없을 때 설명 칸에 적는 글.</summary>
     private const string Greeting =
@@ -91,6 +93,40 @@ public sealed class ModDialog : GameWindow
         TextWrapping = TextWrapping.Wrap,
     };
 
+    /// <summary>
+    /// 오른쪽 설명 칸의 그림 — 글 밑에 붙는다. <c>asset/ui/tip/</c> 에 그 이름의 그림이 있을 때만 보인다.
+    /// </summary>
+    private readonly Image _tipImage = new()
+    {
+        Stretch = Stretch.Uniform,
+        StretchDirection = StretchDirection.DownOnly,
+        HorizontalAlignment = HorizontalAlignment.Left,
+        Margin = new Thickness(0, 8, 0, 0),
+        Visibility = Visibility.Collapsed,
+    };
+
+    /// <summary>설명 칸에 그 그림을 건다. 이름이 없거나 파일이 없으면 그림 자리를 접는다.</summary>
+    private void ShowTipImage(string? file)
+    {
+        _tipImage.Visibility = Visibility.Collapsed;
+        _tipImage.Source = null;
+        if (file is null) return;
+        string path = System.IO.Path.Combine(AppContext.BaseDirectory, "asset", "ui", "tip", file);
+        if (!System.IO.File.Exists(path)) return;
+        try
+        {
+            var picture = new System.Windows.Media.Imaging.BitmapImage();
+            picture.BeginInit();
+            picture.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            picture.UriSource = new Uri(path);
+            picture.EndInit();
+            picture.Freeze();
+            _tipImage.Source = picture;
+            _tipImage.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or NotSupportedException or UnauthorizedAccessException) { }
+    }
+
     private ModDialog(Options options)
     {
         Title = "모드";
@@ -103,6 +139,8 @@ public sealed class ModDialog : GameWindow
 
         // 줄이 길어 두 탭으로 가른다 — 「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것.
         var rows = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「권장」 — 오리지널 · 초보 · 중수 · 고수 가운데 하나를 고르면 다른 탭의 줄들이 그 묶음대로 켜지고 꺼진다. 맨 앞 탭이다.
+        var preset = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「정보」 — 화면에 쪽지·덧그림·창으로 무언가를 더 보여 주는 것만 모은다.
         var info = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
@@ -156,8 +194,23 @@ public sealed class ModDialog : GameWindow
         // 발견물 지도 — 햄버거 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
         ui.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,
-            "햄버거에 「발견물 지도」 줄을 냅니다. 어디에 무엇이 있는지 표식으로 찍어 보여 줍니다."
-            + " 끄면 줄도 단축키도 안 먹습니다."));
+            "처음 하시는 분께 추천합니다. 세계지도 위에 발견물과 도시가 어디 있는지 한눈에 보여 주는 창입니다."
+            + " 원본 항해지도는 지나간 바다만 밝혀 줄 뿐 표식이 없어서, 힌트를 듣고도 어디로 가야 할지 막막하기 쉽습니다.\n\n"
+            + "여는 법 — 햄버거 메뉴의 「발견물 지도」, 또는 D 키(단축키 창에서 바꿀 수 있습니다).\n\n"
+            + "보는 법\n"
+            + " · 회색 점: 아직 못 찾은 발견물\n"
+            + " · 빨간 점: 이미 찾은 발견물\n"
+            + " · 파란 점: 지금 내 함대\n"
+            + " · 주황 점: 도시(「도」가 붙으면 도서관이 있는 도시)\n\n"
+            + "쓰는 법\n"
+            + " · 휠로 키우고 줄이고, 끌어서 옮깁니다.\n"
+            + " · 아래 단추로 발견물 · 도시 · 격자(경도 · 위도) · 풍향 · 해류를 켜고 끕니다.\n"
+            + " · Shift 를 누른 채 오른쪽 단추로 누르면 그 자리까지 자동항해합니다.\n"
+            + " · 육지에서는 「실험」 탭의 「뭍 자동이동」을 켜 두면 발견물 점을 오른쪽 단추로 눌러 걸어갑니다.\n\n"
+            + "이렇게 써 보세요 — 회색 점이 몰린 곳을 다음 목적지로 잡고, 격자를 켜서 힌트의 경도 · 위도와 맞춰 봅니다."
+            + " 스스로 찾는 재미를 아끼고 싶으면 아래 단추에서 「발견물」만 꺼 두고 도시 · 풍향 · 해류 지도로만 쓰셔도 됩니다.\n\n"
+            + "끄면 햄버거 줄도 단축키도 안 먹습니다.",
+            image: "discovery-map.png"));
 
         // 여급 수첩 — 낯을 튼 여급과 궁합을 모아 본다. 원본에는 없는 창이다.
         ui.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
@@ -216,8 +269,8 @@ public sealed class ModDialog : GameWindow
             "계약을 맺을 때 내 배가 한 척이라도 있으면 후원자가 「배를 빌리겠습니까?」를 묻습니다(원본 그대로)."
             + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖춘 판에서 물음이 성가실 때 씁니다."));
 
-        // 생명력 — 원본 탐험정보에 없는 줄이다.
-        info.Children.Add(Toggle("생명력 정보", GameSettings.ShowVitalityInfo,
+        // 생명력 — 원본 탐험정보에 없는 줄이다. 「정보」 탭에서 빼 「UI」 탭에 둔다.
+        ui.Children.Add(Toggle("생명력 정보", GameSettings.ShowVitalityInfo,
             on => GameSettings.ShowVitalityInfo = on,
             "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
             + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
@@ -234,7 +287,17 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.HintBrowser = on,
             "원본과 다릅니다 — 취득 힌트 일람을 왼쪽에 목록, 오른쪽에 설명으로 나란히 띄웁니다."
             + " 줄을 누르면(↑↓ 글쇠도) 곧바로 그 힌트의 이야기가 오른쪽에 나옵니다(정보 등급 「일반」이면 등급 · 자금 · 기한도)."
-            + " 끄면 원본처럼 고르고 결정을 눌러야 파란 판이 뜹니다."));
+            + " 끄면 원본처럼 고르고 결정을 눌러야 파란 판이 뜹니다.",
+            image: "hint-browser.png"));
+
+        // 향상된 후원자 정보 — 스폰서 일람 줄에 얼굴 · 취향 · 권력 · 친밀도.
+        ui.Children.Add(Toggle("향상된 후원자 정보", GameSettings.PatronListEnhanced,
+            on => GameSettings.PatronListEnhanced = on,
+            "원본과 다릅니다 — 「후원자 정보」의 스폰서 일람 줄마다 얼굴, 좋아하는 발견물 갈래(지리 · 역사 · 보물 …),"
+            + " 권력과 친밀도를 함께 보입니다. 원본은 이름만 늘어놓아 한 사람씩 열어 봐야 알 수 있습니다."
+            + " 어느 후원자에게 어떤 발견물을 가져가면 좋을지, 누구와 친한지 한눈에 고를 수 있습니다."
+            + " 끄면 원본처럼 이름만 나옵니다.",
+            image: "patron-list.png"));
 
         // 정보 제공 등급 — 기본(원본) · 일반 · 상세.
         info.Children.Add(Select("정보 등급", ["기본 (원본)", "일반", "상세"],
@@ -242,7 +305,12 @@ public sealed class ModDialog : GameWindow
             i => GameSettings.InfoLevel = i,
             "창이 원본보다 얼마나 더 알려 주는지 고릅니다. 「기본」은 원본만큼만 보입니다."
             + " 「일반」은 게임 안에서 알 수 있는 값을 한 단계 더 보입니다 — 향상된 힌트 보기의 등급 · 자금 · 기한이 이것입니다."
-            + " 「상세」는 원본이 감춰 둔 값까지 보입니다 — 도서관 책등 이름표에 읽는 데 필요한 언어 · 기능이 붙습니다."));
+            + " 「상세」는 원본이 감춰 둔 값까지 보입니다 — 도서관 책등 이름표에 읽는 데 필요한 언어 · 기능이 붙습니다."
+            + " 등급을 올리면 스스로 알아내는 재미가 줄 수 있어, 올릴 때 한 번 물어봅니다. 가급적 「기본」으로 즐기시길 권합니다.",
+            // 올릴 때만 묻는다 — 내리는 것은 그냥 된다.
+            allow: (from, to) => to <= from || ConfirmDialog.Ask(this,
+                $"정보 등급을 「{(to == 1 ? "일반" : "상세")}」로 올리면 원본이 감춰 둔 값이 보여 게임의 재미를 해칠 수 있습니다."
+                + " 가급적 「기본」으로 두고 즐기시길 권합니다. 그래도 올리시겠습니까?", "정보 등급")));
 
         // 향상된 아이템 이미지 — 덧붙인 그림으로 보인다.
         ui.Children.Add(Toggle("향상된 아이템 이미지", GameSettings.EnhancedItemArt,
@@ -418,8 +486,8 @@ public sealed class ModDialog : GameWindow
             + " 원본은 걸음마다 유럽 700분의 1, 동쪽 400분의 1입니다. 「안 만남」이면 아예 붙지 않습니다."
             + " 지도에 보이는 적 함대와 마주치는 것은 따로라 바뀌지 않습니다."));
 
-        // 마을·항구에 들고 날 때 보내는 날수. 원본은 열흘씩이라 오가는 시험이 더디다.
-        general.Children.Add(Select("출입 일수",
+        // 마을·항구에 들고 날 때 보내는 날수. 원본은 열흘씩이라 오가는 시험이 더디다. 「편의성」 탭에 둔다.
+        rows.Children.Add(Select("출입 일수",
             [.. Enumerable.Range(GameSettings.MinPortDays,
                                  GameSettings.MaxPortDays - GameSettings.MinPortDays + 1)
                           .Select(n => n == GameSettings.DefaultPortDays ? $"{n}일 (원본)" : $"{n}일")],
@@ -460,6 +528,7 @@ public sealed class ModDialog : GameWindow
         var tip = new StackPanel();
         tip.Children.Add(_tipName);
         tip.Children.Add(_tipText);
+        tip.Children.Add(_tipImage);
 
         var side = new Border
         {
@@ -469,12 +538,17 @@ public sealed class ModDialog : GameWindow
             Background = new SolidColorBrush(Color.FromArgb(0x30, 0, 0, 0)),
             BorderBrush = GameUi.Edge,
             BorderThickness = new Thickness(1),
-            Child = tip,
+            // 긴 설명 · 그림이 창을 키우지 않게 칸 안에서 굴린다 — 칸 높이는 왼쪽 목록에 맞춘다(아래 SizeChanged).
+            Child = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = tip },
         };
 
         // 두 판을 한 칸에 겹쳐 두고 안 보이는 쪽은 Hidden 으로 — 자리를 지켜 탭을 넘겨도 창 크기가 안 바뀐다.
+        // 권장 판은 다른 줄들이 다 선 뒤에 짓는다 — 묶음이 그 줄들의 체크 칸을 찾아 켜고 끈다.
+        PresetControls(preset);
         var pages = new Grid();
+        pages.Children.Add(preset);
         pages.Children.Add(rows);
+        rows.Visibility = Visibility.Hidden;
         pages.Children.Add(info);
         pages.Children.Add(mini);
         pages.Children.Add(hires);
@@ -490,13 +564,14 @@ public sealed class ModDialog : GameWindow
         lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
 
+        pages.SizeChanged += (_, e) => side.Height = Math.Max(0, e.NewSize.Height - 14);
         var body = new StackPanel { Orientation = Orientation.Horizontal };
         body.Children.Add(pages);
         body.Children.Add(side);
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(rows, info, mini, hires, ui, font, general, lab));
+        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, font, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -513,7 +588,7 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
-    private FrameworkElement Tabs(FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
+    private FrameworkElement Tabs(FrameworkElement preset, FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
                                   FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement general,
                                   FrameworkElement lab)
     {
@@ -531,6 +606,7 @@ public sealed class ModDialog : GameWindow
             }
             _tipName.Text = "";
             _tipText.Text = Greeting;
+            ShowTipImage(null);
         }
 
         void Add(string text, FrameworkElement page)
@@ -549,6 +625,7 @@ public sealed class ModDialog : GameWindow
             bar.Children.Add(head);
         }
 
+        Add("권장", preset);
         Add("편의성", convenience);
         Add("정보", info);
         Add("미니맵", mini);
@@ -557,7 +634,7 @@ public sealed class ModDialog : GameWindow
         Add("폰트", font);
         Add("일반", general);
         Add("실험", lab);
-        Select(convenience);
+        Select(preset);
         return bar;
     }
 
@@ -584,13 +661,142 @@ public sealed class ModDialog : GameWindow
         return group;
     }
 
+    // ── 권장 옵션 ────────────────────────────────────────────────────────
+
+    /// <summary>줄 이름 → 그 줄의 체크 칸 · 고르기 칸. 권장 묶음이 이름으로 찾아 켜고 끈다.</summary>
+    private readonly Dictionary<string, CheckBox> _boxes = new();
+    private readonly Dictionary<string, ComboBox> _combos = new();
+
+    /// <summary>권장 묶음을 먹이는 중 — 정보 등급을 올릴 때의 물음을 건너뛴다(묶음 설명에 이미 적혀 있다).</summary>
+    private bool _presetting;
+
+    /// <summary>권장 묶음 하나 — 켤 줄 · 끌 줄 · 고르기 칸의 자리. 여기 없는 줄은 건드리지 않는다.</summary>
+    private sealed record Preset(string Name, string Summary, string[] On, string[] Off, (string Label, int Index)[] Picks);
+
+    /// <summary>세 묶음이 다 켜는 것 — 창을 보기 좋게 하고 손을 덜 뿐, 놀이 규칙과 숨은 정보는 안 건드리는 줄들.</summary>
+    private static readonly string[] PresetBase =
+    [
+        "발견물 지도", "향상된 힌트 보기", "향상된 후원자 정보", "향상된 인물정보 목록", "아이템 창 개선",
+        "캐릭터 작성 기억", "도시 자동저장",
+        "자동 보급", "선원 자동 모집", "배 속도", "항해 일수", "현재 계약 힌트", "현재 힌트 목록",
+        // 미니맵은 초보도 켠다(사용자, 2026-10-11) — 못 찾은 발견물만 고수에 남긴다.
+        "미니맵", "찾은 발견물", "도시", "풍향", "해류",
+    ];
+
+    /// <summary>중수부터 켜는 것 — 화면에 정보를 더 얹어 판단을 돕는 줄들.</summary>
+    private static readonly string[] PresetMore =
+    [
+        "바람·해류 화살표", "접근 함대 정보", "기능·언어",
+        "현재 함대 선박 이름", "발견물 수", "적하 시세 순위", "뭍 자동이동",
+        "편리한 인벤토리", "편리한 보관함",
+    ];
+
+    /// <summary>
+    /// 초보 · 중수 · 고수가 다 켜는 화면 꾸밈 — 설치하면 켜져 있는 것들이다(사용자, 2026-10-11).
+    /// 「오리지널」은 이 셋을 건드리지 않는다.
+    /// </summary>
+    private static readonly string[] PresetLook = ["바다 입체 효과", "고해상도 바다", "리디바탕 글꼴"];
+
+    /// <summary>어느 단계에서도 끄는 것(사용자, 2026-10-11).</summary>
+    private static readonly string[] PresetNever = ["휠 확대"];
+
+    /// <summary>고수만 켜는 것 — 절차를 건너뛰고 답을 미리 보여 빨리 찾게 하는 줄들.</summary>
+    private static readonly string[] PresetFast =
+    [
+        "못 찾은 발견물", "자동 도망", "자금 증가 기본", "스핑크스 퀴즈 도우미", "수에즈 운하",
+    ];
+
+    /// <summary>
+    /// 초보일수록 원본에 가깝게(규칙 · 숨은 정보는 그대로) 두되 손은 덜어 주고, 고수일수록 빨리 찾게 한다.
+    /// 화면 꾸밈 셋(<see cref="PresetLook"/>) 말고의 고해상도 · 폰트 · 소리 · 실험 줄과 「중량 없음」 같은 규칙 바꾸기는 어느 묶음도 안 건드린다.
+    /// </summary>
+    private static readonly Preset[] Presets =
+    [
+        new("오리지널", "원본 그대로 즐깁니다. 아래 단계들이 켜는 옵션을 모두 끄고, 정보 등급은 기본, 출입 일수는 10일로 둡니다."
+            + " 처음에는 이 단계입니다.",
+            [], [.. PresetBase, .. PresetMore, .. PresetFast, .. PresetNever], [("정보 등급", 0), ("출입 일수", 9)]),
+        new("초보", "원본에 가깝게 즐기되 손이 많이 가는 일만 덜어 줍니다. 발견물 지도, 미니맵(도시 · 풍향 · 해류 · 찾은 발견물), 보기 좋은 목록 창,"
+            + " 자동 보급 · 선원 자동 모집 · 도시 자동저장을 켭니다. 숨은 정보와 규칙은 원본 그대로입니다(정보 등급 기본, 출입 일수 10일).",
+            [.. PresetBase, .. PresetLook], [.. PresetMore, .. PresetFast, .. PresetNever], [("정보 등급", 0), ("출입 일수", 9)]),
+        new("중수", "초보 묶음에 더해 화면에 정보를 더 띄웁니다. 바람 · 해류 화살표,"
+            + " 접근 함대 정보, 적하 시세 순위, 편리한 인벤토리 · 보관함, 뭍 자동이동을 켭니다. 정보 등급은 일반, 출입 일수는 5일입니다.",
+            [.. PresetBase, .. PresetLook, .. PresetMore], [.. PresetFast, .. PresetNever], [("정보 등급", 1), ("출입 일수", 4)]),
+        new("고수", "빨리 찾는 데 맞춥니다. 중수 묶음에 더해 미니맵에 못 찾은 발견물까지 찍고, 자동 도망 · 자금 증가 기본 ·"
+            + " 스핑크스 퀴즈 도우미 · 수에즈 운하를 켭니다. 정보 등급은 상세, 출입 일수는 1일입니다."
+            + " 스스로 알아내는 재미는 줄어듭니다.",
+            [.. PresetBase, .. PresetLook, .. PresetMore, .. PresetFast], PresetNever, [("정보 등급", 2), ("출입 일수", 0)]),
+    ];
+
+    /// <summary>권장 판 — 안내 글과 묶음 고르기(라디오 넷 — 오리지널 · 초보 · 중수 · 고수). 고르면 다른 탭의 줄들이 그 묶음대로 바뀐다.</summary>
+    private void PresetControls(StackPanel page)
+    {
+        page.Children.Add(new TextBlock
+        {
+            Text = "권장 옵션",
+            Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15,
+            Margin = new Thickness(0, 8, 0, 4),
+        });
+        page.Children.Add(new TextBlock
+        {
+            Text = "하나를 고르면 다른 탭의 옵션이 그 단계에 맞게 한꺼번에 켜지고 꺼집니다.",
+            Foreground = GameUi.Text, FontSize = 13, LineHeight = 19, TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 8),
+        });
+
+        for (int i = 0; i < Presets.Length; i++)
+        {
+            int index = i;
+            var pick = Presets[i];
+            var radio = new RadioButton
+            {
+                Content = pick.Name, GroupName = "ModPreset",
+                IsChecked = GameSettings.ModPreset == index,
+                Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15,
+                Margin = new Thickness(0, 6, 0, 2),
+                VerticalContentAlignment = VerticalAlignment.Center,
+            };
+            // 처음 채운 뒤에 건다 — 창을 열 때 지난번에 고른 묶음을 다시 먹이지 않는다(그 뒤 손으로 바꾼 줄이 되돌아간다).
+            radio.Checked += (_, _) => { GameSettings.ModPreset = index; Apply(pick); };
+            Watch(radio, "권장 옵션 — " + pick.Name, pick.Summary
+                + (pick.On.Length > 0 ? "\n\n켜는 것: " + string.Join(", ", pick.On) : "")
+                + (pick.Off.Length > 0 ? "\n\n끄는 것: " + string.Join(", ", pick.Off) : ""));
+            page.Children.Add(radio);
+        }
+
+        page.Children.Add(new TextBlock
+        {
+            Text = "고른 뒤에도 각 탭에서 하나씩 바꿀 수 있습니다. 「바다 입체 효과」 · 「고해상도 바다」 · 「리디바탕 글꼴」은 초보 · 중수 · 고수가 함께 켭니다."
+                 + " 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션과 「중량 없음」 같은 규칙 바꾸기는 어느 단계도 건드리지 않습니다.",
+            Foreground = GameUi.Text, Opacity = 0.8, FontSize = 12, LineHeight = 18, TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 12, 0, 0),
+        });
+    }
+
+    /// <summary>묶음을 먹인다 — 줄의 체크 칸을 바꿔 그 줄의 손(설정 적기 · 지도에 곧바로 먹이기)이 그대로 돌게 한다.</summary>
+    private void Apply(Preset pick)
+    {
+        _presetting = true;
+        try
+        {
+            foreach (string label in pick.On)
+                if (_boxes.TryGetValue(label, out var box)) box.IsChecked = true;
+            foreach (string label in pick.Off)
+                if (_boxes.TryGetValue(label, out var box)) box.IsChecked = false;
+            foreach (var (label, index) in pick.Picks)
+                if (_combos.TryGetValue(label, out var combo) && index < combo.Items.Count) combo.SelectedIndex = index;
+        }
+        finally { _presetting = false; }
+    }
+
     /// <summary>그 줄의 설명을 오른쪽 칸에 건다. 커서가 떠나도 마지막 것을 남긴다.</summary>
-    private void Watch(FrameworkElement row, string label, string tip)
+    /// <param name="image">글 밑에 붙일 그림 파일 이름(<c>asset/ui/tip/</c>). 없어도 된다.</param>
+    private void Watch(FrameworkElement row, string label, string tip, string? image = null)
     {
         void Show()
         {
             _tipName.Text = label;
             _tipText.Text = tip;
+            ShowTipImage(image);
         }
 
         row.MouseEnter += (_, _) => Show();
@@ -599,7 +805,7 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>켜고 끄는 줄 하나.</summary>
-    private CheckBox Toggle(string label, bool on, Action<bool> set, string tip)
+    private CheckBox Toggle(string label, bool on, Action<bool> set, string tip, string? image = null)
     {
         var box = new CheckBox
         {
@@ -613,7 +819,8 @@ public sealed class ModDialog : GameWindow
         };
         box.Checked += (_, _) => set(true);
         box.Unchecked += (_, _) => set(false);
-        Watch(box, label, tip);
+        _boxes[label] = box;
+        Watch(box, label, tip, image);
         return box;
     }
 
@@ -628,7 +835,7 @@ public sealed class ModDialog : GameWindow
         var slider = new Slider
         {
             Minimum = 0.6, Maximum = 1.6, TickFrequency = 0.05, IsSnapToTickEnabled = true,
-            Width = 150, Margin = new Thickness(18, 0, 0, 0),
+            Width = SliderWidth, Margin = new Thickness(18, 0, 0, 0),
             IsEnabled = box.IsChecked == true,
             Value = Math.Clamp(options.SeaBrightness(), 0.6, 1.6),
         };
@@ -646,7 +853,7 @@ public sealed class ModDialog : GameWindow
         });
         line.Children.Add(slider);
         line.Children.Add(value);
-        Watch(line, "바다 밝기", "바다 입체 효과의 밝기입니다. 100% 가 기본이고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.");
+        Watch(line, "바다 밝기", "바다 입체 효과의 밝기입니다. 85% 에서 시작하고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.");
 
         var group = new StackPanel();
         group.Children.Add(box);
@@ -705,7 +912,7 @@ public sealed class ModDialog : GameWindow
         var slider = new Slider
         {
             Minimum = 0, Maximum = 1, TickFrequency = 0.05, IsSnapToTickEnabled = true,
-            Width = 150, Margin = new Thickness(18, 0, 0, 0),
+            Width = SliderWidth, Margin = new Thickness(18, 0, 0, 0),
             IsEnabled = box.IsChecked == true,
             Value = Math.Clamp(options.SeaFlowAmount(), 0, 1),
         };
@@ -750,7 +957,7 @@ public sealed class ModDialog : GameWindow
             Maximum = 1.0,
             TickFrequency = 0.1,
             IsSnapToTickEnabled = true,
-            Width = 150,
+            Width = SliderWidth,
             Margin = new Thickness(18, 0, 0, 0),
             IsEnabled = box.IsChecked == true,
             Value = Math.Clamp(options.MiniMapOpacity(), 0.1, 1.0),
@@ -786,7 +993,7 @@ public sealed class ModDialog : GameWindow
             Maximum = 5.0,
             TickFrequency = 0.5,
             IsSnapToTickEnabled = true,
-            Width = 150,
+            Width = SliderWidth,
             Margin = new Thickness(18, 0, 0, 0),
             Value = GameSettings.MiniMapMarkSize,
         };
@@ -837,7 +1044,7 @@ public sealed class ModDialog : GameWindow
             Maximum = max,
             TickFrequency = tick,
             IsSnapToTickEnabled = true,
-            Width = 150,
+            Width = SliderWidth,
             Margin = new Thickness(4, 0, 0, 0),
             Value = start,
         };
@@ -863,8 +1070,9 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>고르는 줄 하나 — 이름과 펼침 상자. 고르면 곧바로 설정에 남긴다.</summary>
+    /// <param name="allow">바꾸기 전에 묻는다(전 자리, 새 자리) — 거짓이면 전 자리로 되돌린다. 없으면 안 묻는다.</param>
     private UIElement Select(string label, IReadOnlyList<string> items, int selected,
-                             Action<int> set, string tip)
+                             Action<int> set, string tip, Func<int, int, bool>? allow = null)
     {
         var line = new StackPanel
         {
@@ -892,7 +1100,22 @@ public sealed class ModDialog : GameWindow
         };
         foreach (string item in items) box.Items.Add(item);
         box.SelectedIndex = Math.Clamp(selected, 0, items.Count - 1);
-        box.SelectionChanged += (_, _) => { if (box.SelectedIndex >= 0) set(box.SelectedIndex); };
+        _combos[label] = box;
+        int kept = box.SelectedIndex;
+        bool reverting = false;
+        box.SelectionChanged += (_, _) =>
+        {
+            if (reverting || box.SelectedIndex < 0) return;
+            if (!_presetting && allow != null && !allow(kept, box.SelectedIndex))
+            {
+                reverting = true;
+                box.SelectedIndex = kept;
+                reverting = false;
+                return;
+            }
+            kept = box.SelectedIndex;
+            set(kept);
+        };
 
         line.Children.Add(box);
         Watch(line, label, tip);

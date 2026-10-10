@@ -74,7 +74,9 @@ const sum = (rows, k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
 const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '-';
 const EMPTY = (cols) => '<tr><td colspan="' + cols + '" class="dim name">아직 자료가 없습니다.</td></tr>';
 // 단계 옵션 — 게임(PlayStats.LevelMods)이 켬·끔이 아니라 값으로 보내는 것.
-const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
+const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'ModPreset', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
+// 값에 이름이 있는 단계 옵션 — 수 대신 이름으로 적는다. ModPreset 은 모드 창 「권장」에서 고른 단계다.
+const LEVEL_NAMES = { ModPreset: ['오리지널', '초보', '중수', '고수'], InfoLevel: ['기본', '일반', '상세'] };
 const SEA = [['Won', '승리'], ['Defeated', '패배'], ['Escaped', '퇴각'], ['Surrendered', '항복']];
 
 let data = null;
@@ -112,7 +114,7 @@ function renderMods() {
   }
   $('mods').innerHTML = '<tr><th class="name">옵션</th><th>설치</th><th>평균값</th><th class="name">값마다 설치 수</th></tr>'
     + (levels.length ? levels.map((m) => '<tr><td class="name">' + esc(m.name) + '</td><td>' + n(m.installs) + '</td><td>' + (Math.round(m.average * 100) / 100) + '</td><td class="name wrap">'
-        + (data.modValues || []).filter((v) => v.name === m.name).map((v) => '<b>' + n(v.value) + '</b> <span class="dim">× ' + n(v.installs) + '</span>').join(' &nbsp;·&nbsp; ') + '</td></tr>').join('') : EMPTY(4));
+        + (data.modValues || []).filter((v) => v.name === m.name).map((v) => '<b>' + esc((LEVEL_NAMES[m.name] || [])[v.value] || n(v.value)) + '</b> <span class="dim">× ' + n(v.installs) + '</span>').join(' &nbsp;·&nbsp; ') + '</td></tr>').join('') : EMPTY(4));
 }
 
 // 항해 — 구간마다 횟수 · 설치 수와, 날수 · 선회의 합을 횟수로 나눈 평균.

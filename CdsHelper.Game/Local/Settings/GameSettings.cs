@@ -89,8 +89,8 @@ public sealed class GameSettingsData
     /// <summary>발견물 지도에서 발견물 표식을 감출지. 기본은 보인다.</summary>
     public bool DiscoveryMapHideSpots { get; set; }
 
-    /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 꺼 두고 시작한다.</summary>
-    public bool SeaEffect { get; set; }
+    /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 켜 두고 시작한다.</summary>
+    public bool SeaEffect { get; set; } = true;
 
     /// <summary>조우하면 저절로 「도망」을 고를지. 꺼 두고 시작한다.</summary>
     public bool AutoFlee { get; set; }
@@ -110,17 +110,17 @@ public sealed class GameSettingsData
     /// <summary>항구에서 출항할 때 선원이 최저 승원 밑이면 그만큼 저절로 모집한다. 꺼 두고 시작한다.</summary>
     public bool AutoCrew { get; set; }
 
-    /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 1 이 기본이다.</summary>
-    public double SeaBrightness { get; set; } = 1.0;
+    /// <summary>바다 입체 효과의 밝기 배수(0.6~1.6). 0.85 에서 시작한다.</summary>
+    public double SeaBrightness { get; set; } = 0.85;
 
-    /// <summary>고해상도 바다에서 해류 결·띠의 짙기(0~1). 반에서 시작한다.</summary>
-    public double SeaFlowAmount { get; set; } = 0.5;
+    /// <summary>고해상도 바다에서 해류 결·띠의 짙기(0~1). 0.1 에서 시작한다.</summary>
+    public double SeaFlowAmount { get; set; } = 0.1;
 
     /// <summary>구름을 부드럽게(바둑판 반투명을 참 반투명으로 풀어 매끈하게 늘려) 그릴지. 켜 두고 시작한다.</summary>
     public bool SmoothClouds { get; set; } = true;
 
-    /// <summary>고해상도 바다(물 점을 화면 해상도로 새로 그리고 해안선을 곡선으로). 꺼 두고 시작한다.</summary>
-    public bool HiResSea { get; set; }
+    /// <summary>고해상도 바다(물 점을 화면 해상도로 새로 그리고 해안선을 곡선으로). 켜 두고 시작한다.</summary>
+    public bool HiResSea { get; set; } = true;
 
     /// <summary>도트 확대 필터(대각선 계단을 사선으로). 꺼 두고 시작한다.</summary>
     public bool PixelFilter { get; set; }
@@ -234,8 +234,17 @@ public sealed class GameSettingsData
     /// <summary>보급품 · 교역품 무게를 안 따질지. 원본은 따지므로 꺼 두고 시작한다.</summary>
     public bool NoWeight { get; set; }
 
-    /// <summary>윈도 글꼴로 찍는 창 글씨를 리디바탕으로 쓸지. 원본에 없어 꺼 두고 시작한다.</summary>
-    public bool RidiFont { get; set; }
+    /// <summary>윈도 글꼴로 찍는 창 글씨를 리디바탕으로 쓸지. 켜 두고 시작한다.</summary>
+    public bool RidiFont { get; set; } = true;
+
+    /// <summary>
+    /// 모드 창 「권장」에서 마지막으로 고른 단계(0 오리지널 · 1 초보 · 2 중수 · 3 고수). 고른 적이 없으면 0(오리지널)이다.
+    /// 놀이 통계가 이 값을 그대로 보낸다.
+    /// </summary>
+    public int ModPreset { get; set; }
+
+    /// <summary>스폰서 일람 줄에 얼굴 · 발견물 취향 · 권력 · 친밀도를 낼지. 원본은 이름만이다. 켜 두고 시작한다.</summary>
+    public bool PatronListEnhanced { get; set; } = true;
 
     /// <summary>조선소 「특별주문」 줄을 낼지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SpecialOrder { get; set; }
@@ -1187,6 +1196,20 @@ public static class GameSettings
     {
         get => Get(d => d.PersonInfoEnhanced);
         set => Set(d => d.PersonInfoEnhanced = value);
+    }
+
+    /// <summary>모드 창 「권장」에서 마지막으로 고른 단계(0 오리지널 · 1 초보 · 2 중수 · 3 고수).</summary>
+    public static int ModPreset
+    {
+        get => Get(d => d.ModPreset);
+        set => Set(d => d.ModPreset = value);
+    }
+
+    /// <summary>향상된 후원자 정보 — 스폰서 일람 줄에 얼굴 · 발견물 취향 · 권력 · 친밀도.</summary>
+    public static bool PatronListEnhanced
+    {
+        get => Get(d => d.PatronListEnhanced);
+        set => Set(d => d.PatronListEnhanced = value);
     }
 
     /// <summary>인물정보 목록 — 누구를 볼지 고르는 창을 스폰서 일람처럼 초상화와 기능으로.</summary>

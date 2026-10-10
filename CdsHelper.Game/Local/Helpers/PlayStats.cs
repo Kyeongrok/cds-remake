@@ -246,6 +246,7 @@ public static class PlayStats
     [
         nameof(GameSettings.InfoLevel), nameof(GameSettings.SeaRaidScale), nameof(GameSettings.MutinyRate),
         nameof(GameSettings.Resolution), nameof(GameSettings.PortDays),
+        nameof(GameSettings.ModPreset),      // 권장 옵션 — 0 오리지널 · 1 초보 · 2 중수 · 3 고수
     ];
 
     /// <summary>설치마다 하나인 무작위 번호 — 누구인지는 모르고 같은 설치인지만 안다.</summary>

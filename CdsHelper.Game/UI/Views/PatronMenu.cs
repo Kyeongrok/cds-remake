@@ -2686,9 +2686,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 끝나는 순간 우리 물음창까지 딸려 닫혀 판이 멎은 것처럼 보인다.
         while (true)
         {
-            int row = HintListDialog.Pick(owner, names, "스폰서 일람",
-                                          "아는 스폰서가 없습니다", faces: faces,
-                                          subtitles: likes, rightTexts: stats, listWidth: StatsListWidth);
+            // 모드 「향상된 후원자 정보」를 끄면 원본처럼 이름만 늘어놓는다.
+            int row = Local.Settings.GameSettings.PatronListEnhanced
+                ? HintListDialog.Pick(owner, names, "스폰서 일람",
+                                      "아는 스폰서가 없습니다", faces: faces,
+                                      subtitles: likes, rightTexts: stats, listWidth: StatsListWidth)
+                : HintListDialog.Pick(owner, names, "스폰서 일람", "아는 스폰서가 없습니다");
             if (row < 0 || row >= mine.Count) return;
 
             var (patron, sponsor) = mine[row];
