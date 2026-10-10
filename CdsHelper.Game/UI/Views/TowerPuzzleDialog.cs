@@ -68,6 +68,20 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     /// </remarks>
     private const int Rise = 21;
 
+    /// <summary>누르는 칸이 받침 가운데에서 위·아래로 뻗는 만큼 — 탑이 낮을 때의 크기다.</summary>
+    private const int SpotAbove = 110, SpotBelow = 40;
+
+    /// <summary>
+    /// 그 기둥의 누르는 칸 위쪽 끝. <b>탑이 자라면 칸도 따라 자란다.</b>
+    /// </summary>
+    /// <remarks>
+    /// 칸이 받침 둘레에 박혀 있으면 높이 쌓인 탑의 꼭대기가 칸 밖으로 나간다 — 맨 위 판자를
+    /// 눌러도 안 집히고, 꼭대기에 끌어다 놓아도 「기둥 밖」이라 제자리로 돌아간다. 여덟 장의
+    /// 마지막 한 장이 그래서 안 올라갔다. 다음 판자가 얹힐 칸까지 덮는다.
+    /// </remarks>
+    private double SpotTop(int peg) =>
+        Math.Max(0, Math.Min(PegY[peg] - SpotAbove,
+                             PegY[peg] - _game.Stack(peg).Count * Rise - PlankH / 2.0));
 
     private readonly TowerPuzzle _game;
 
@@ -95,22 +109,23 @@ internal sealed class TowerPuzzleDialog : InfoDialog
 
         Lay(Picture("tower-bg.png"), 0, 0, SceneWidth, SceneHeight);
 
-        // 기둥마다 누르는 칸. 받침을 넉넉히 덮는다.
+        // 기둥마다 누르는 칸. 받침을 넉넉히 덮는다 — 높이는 Sync 가 탑에 맞춘다.
         for (int peg = 0; peg < TowerPuzzle.Pegs; peg++)
         {
             int here = peg;
             var box = new Border
             {
                 Width = PlankW,
-                Height = 150,
+                Height = SpotAbove + SpotBelow,
                 Background = Brushes.Transparent,
                 BorderBrush = Brushes.Transparent,
                 BorderThickness = new Thickness(2),
                 Cursor = Cursors.Hand,
             };
-            box.MouseLeftButtonDown += (_, e) => Grab(here, e);
+            // 칸이 자라면 서로 겹친다 — 어느 기둥인지는 PegAt 이 가른다.
+            box.MouseLeftButtonDown += (_, e) => Grab(PegAt(e.GetPosition(_scene)) ?? here, e);
             Canvas.SetLeft(box, PegX[peg] - PlankW / 2);
-            Canvas.SetTop(box, PegY[peg] - 110);
+            Canvas.SetTop(box, PegY[peg] - SpotAbove);
             _scene.Children.Add(box);
             _spot[peg] = box;
         }
@@ -287,14 +302,20 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     }
 
     /// <summary>그 자리에 놓인 기둥 번호. 어느 기둥도 아니면 null.</summary>
+    /// <remarks>
+    /// 아래 받침의 탑이 높아지면 그 칸이 가운데 위 받침의 칸과 겹친다. 겹친 데서는
+    /// <b>가운데가 더 가까운 기둥</b>으로 친다.
+    /// </remarks>
     private int? PegAt(Point at)
     {
+        int? found = null;
         for (int peg = 0; peg < TowerPuzzle.Pegs; peg++)
         {
-            double x = PegX[peg] - PlankW / 2.0, y = PegY[peg] - 110;
-            if (at.X >= x && at.X < x + PlankW && at.Y >= y && at.Y < y + 150) return peg;
+            double x = PegX[peg] - PlankW / 2.0;
+            if (at.X < x || at.X >= x + PlankW || at.Y < SpotTop(peg) || at.Y >= PegY[peg] + SpotBelow) continue;
+            if (found is not int other || Math.Abs(at.X - PegX[peg]) < Math.Abs(at.X - PegX[other])) found = peg;
         }
-        return null;
+        return found;
     }
 
     private void Tap(int peg)
@@ -342,6 +363,11 @@ internal sealed class TowerPuzzleDialog : InfoDialog
             // 아래에서부터 칸을 한 단씩 올려 쌓는다.
             for (int i = 0; i < stack.Count; i++)
                 Plank(stack[i], i, PegX[peg], PegY[peg] - i * Rise);
+
+            // 누르는 칸을 탑 높이에 맞춘다.
+            double top = SpotTop(peg);
+            Canvas.SetTop(_spot[peg], top);
+            _spot[peg].Height = PegY[peg] + SpotBelow - top;
 
             // 집은 기둥에 테를 두르지 않는다 — 게임에 없는 표시다. 판자가 떠 있는 것으로
             // 어디서 집었는지 이미 보인다.
