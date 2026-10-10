@@ -111,10 +111,14 @@ public sealed class SkillOverlayWindow : Window
                 : "없음"));
         }
 
-        var columns = new StackPanel { Orientation = Orientation.Horizontal };
-        columns.Children.Add(Column("기능", SkillBoardDialog.Build(game.Player, people, language: false)));
-        columns.Children.Add(Column("언어", SkillBoardDialog.Build(game.Player, people, language: true)));
-        content.Children.Add(columns);
+        // 기능·언어는 제 체크상자가 따로 있다 — 계약 힌트만 켰으면 힌트만 낸다.
+        if (GameSettings.ShowSkillOverlay)
+        {
+            var columns = new StackPanel { Orientation = Orientation.Horizontal };
+            columns.Children.Add(Column("기능", SkillBoardDialog.Build(game.Player, people, language: false)));
+            columns.Children.Add(Column("언어", SkillBoardDialog.Build(game.Player, people, language: true)));
+            content.Children.Add(columns);
+        }
 
         _frame.Child = content;
     }

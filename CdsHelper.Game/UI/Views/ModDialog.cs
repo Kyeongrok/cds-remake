@@ -900,6 +900,13 @@ public sealed class ModDialog : GameWindow
         return line;
     }
 
-    public static void Show(Window owner, Options options) =>
-        new ModDialog(options) { Owner = owner }.ShowDialog();
+    /// <remarks>
+    /// 도시 창이 떠 있으면 <b>그 창</b>을 주인으로 삼는다. 쪽지(기능·언어 · 계약 힌트 · 함대)를 켜면 도시 창에
+    /// 딸린 창이 새로 뜨면서 도시 창 무리가 위로 올라오는데, 바다 지도에 딸려 있으면 모드 창이 도시 그림 뒤로 빠졌다.
+    /// </remarks>
+    public static void Show(Window owner, Options options)
+    {
+        var city = owner.OwnedWindows.OfType<CityPicView>().FirstOrDefault(w => w.IsVisible);
+        new ModDialog(options) { Owner = city ?? owner }.ShowDialog();
+    }
 }

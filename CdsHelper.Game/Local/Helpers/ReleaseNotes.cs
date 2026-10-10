@@ -9,6 +9,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <remarks>
 /// 파일은 저장소 뿌리에 있고 exe 옆에 같이 놓인다. 판마다 <c>## v1.0.51</c> 줄로 대목을 열고 그 아래에
 /// 바뀐 것을 적는다. 릴리즈 빌드(<c>release.yml</c>)도 같은 대목을 GitHub 릴리즈 본문으로 쓴다.
+/// 도와주신 분은 맨 아래 <c>## 도움 주신 분들</c> 대목 한 곳에 모아 두고, 보여 줄 때마다 끝에 붙인다.
 /// </remarks>
 public static class ReleaseNotes
 {
@@ -49,8 +50,38 @@ public static class ReleaseNotes
             .OrderByDescending(s => s.Version)
             .Take(MaxSections);
 
-        return string.Join(Environment.NewLine + Environment.NewLine,
-                           shown.Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}"));
+        return WithThanks(string.Join(Environment.NewLine + Environment.NewLine,
+                                      shown.Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}")), text);
+    }
+
+    /// <summary>명단 대목의 제목 — <c>## 도움 주신 분들</c>. 판 번호가 아니라 판 대목으로는 안 읽힌다.</summary>
+    public const string ThanksTitle = "도움 주신 분들";
+
+    /// <summary>
+    /// 보여 줄 대목 맨 아래에 <b>도움 주신 분들</b> 명단을 붙인다 — 판마다 적지 않고 한 곳에 모아 매번 보인다.
+    /// 보여 줄 것이 없거나 명단이 없으면 그대로 낸다.
+    /// </summary>
+    private static string WithThanks(string notes, string text)
+    {
+        if (notes.Length == 0) return notes;
+        string thanks = Thanks(text);
+        return thanks.Length == 0
+            ? notes
+            : $"{notes}{Environment.NewLine}{Environment.NewLine}{ThanksTitle}{Environment.NewLine}{thanks}";
+    }
+
+    /// <summary><c>## 도움 주신 분들</c> 대목의 글. 없으면 빈 글이다.</summary>
+    public static string Thanks(string text)
+    {
+        var body = new StringBuilder();
+        bool keep = false;
+        foreach (string raw in text.Replace("\r\n", "\n").Split('\n'))
+        {
+            string line = raw.TrimEnd();
+            if (line.StartsWith("## ")) { keep = line[3..].Trim() == ThanksTitle; continue; }
+            if (keep && line.Length > 0) body.Append(body.Length > 0 ? Environment.NewLine : "").Append(line);
+        }
+        return body.ToString();
     }
 
     /// <summary>판 번호를 세 자리로 맞춘다 — 어셈블리 판은 넷째 자리(0)가 붙어 온다.</summary>
@@ -59,9 +90,9 @@ public static class ReleaseNotes
     /// 노트가 없으면 빈 글이다.
     /// </summary>
     public static string Recent(string text, int count = 2) =>
-        string.Join(Environment.NewLine + Environment.NewLine,
-                    Parse(text).OrderByDescending(s => s.Version).Take(count)
-                               .Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}"));
+        WithThanks(string.Join(Environment.NewLine + Environment.NewLine,
+                               Parse(text).OrderByDescending(s => s.Version).Take(count)
+                                          .Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}")), text);
 
     public static Version Trim(Version v) => new(v.Major, Math.Max(0, v.Minor), Math.Max(0, v.Build));
 

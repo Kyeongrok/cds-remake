@@ -2310,12 +2310,13 @@ public sealed class Player
     /// 남이 발표한 것으로 적는다. 이미 아무나 발표한 것이면 false 다
     /// (<c>0x0040B983</c> 이 칸 2 가 비었을 때만 채운다).
     /// </summary>
-    public bool Scoop(int discovery, string who)
+    /// <param name="on">발표한 날. 안 주면 오늘이다 — 역사 항해자의 지난 발표를 되짚을 때 그 달을 넘긴다.</param>
+    public bool Scoop(int discovery, string who, DateTime? on = null)
     {
         if (who.Length == 0 || HasAnnounced(discovery) || _scooped.ContainsKey(discovery)) return false;
         _scooped[discovery] = who;
         // 칸 2 에는 이름과 함께 그 연월이 적힌다(0x004AACA0) — 연표가 이 날짜로 「보고」 줄을 세운다.
-        _scoopedOn[discovery] = Date;
+        _scoopedOn[discovery] = on ?? Date;
         return true;
     }
 

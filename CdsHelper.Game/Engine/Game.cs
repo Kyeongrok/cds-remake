@@ -213,11 +213,23 @@ public sealed class Game
         int now = CityHistory.MonthKey(player.Date.Year, player.Date.Month);
         if (player.RatesMonth == 0 || player.RatesMonth > now) player.SetRatesMonth(now);
         if (player.HistoryMonth == 0 || player.HistoryMonth > now) player.SetHistoryMonth(CityHistory.StartKey);
-        if (player.RatesMonth == now && player.HistoryMonth == now) return;
+        // 역사 항해자의 발표(3F)는 날짜로 정해진다 — 이 주인공으로 처음 세거나 달 셈이 밖에서 바뀌었으면
+        // (불러오기) 이미 지난 달의 발표를 <b>조용히</b> 되짚는다.
+        bool fresh = !ReferenceEquals(_reportsFor, player) || player.HistoryMonth != _reportsKey;
+        if (!fresh && player.RatesMonth == now && player.HistoryMonth == now) return;
 
         _catchingUp = true;
         try
         {
+            if (fresh)
+            {
+                int done = player.HistoryMonth;
+                RunVoyagerReports(player, DateTime.MinValue,
+                                  new DateTime((done - 1) / 12, (done - 1) % 12 + 1, 1), tell: false);
+                _reportsFor = player;
+            }
+            _reportsKey = now;
+
             var voyagers = Voyagers;
             bool Found(int id, DateTime when) =>
                 player.HasFound(id) || (voyagers?.TakenBy(id, when) ?? -1) >= 0;
@@ -233,7 +245,11 @@ public sealed class Game
                                       Found(MarketRates.Aztec, when), Found(MarketRates.Inca, when));
 
                 if (key > player.HistoryMonth)
+                {
                     History?.RunMonth(player, year, month, CityRows, Nations, Found);
+                    // 한참 밀린 달(옛 세이브)은 알리지 않는다 — 수십 건이 한꺼번에 뜬다.
+                    RunVoyagerReports(player, when, when, tell: now - key < 12);
+                }
             }
             player.SetRatesMonth(now);
             player.SetHistoryMonth(now);
@@ -241,6 +257,47 @@ public sealed class Game
         finally
         {
             _catchingUp = false;
+        }
+    }
+
+    private Player? _reportsFor;
+    private int _reportsKey;
+
+    /// <summary>
+    /// 역사 항해자가 막 발표한 것들 — 지도 창이 꺼내 「%s%s [%s]%s 보고했습니다」(<c>0x00538CF0</c>)를 띄운다.
+    /// </summary>
+    public Queue<(string Who, int Discovery)> VoyagerReports { get; } = new();
+
+    /// <summary>
+    /// 그 사이에 든 역사 항해자의 발표(<c>3F</c>, <c>0x0040AF28</c>)를 돌린다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 발견물을 통째로 훑어 <b>칸 1 이 제 이름이고 칸 2 가 빈 것</b>을 제 이름으로 발표한다
+    /// (<c>0x004AACA0</c>). 칸 1 은 비었을 때만 적히므로(<c>0x004AAC65</c>) 그 발견물을 <b>가장 먼저</b> 채간
+    /// 사람만 발표하고, 한 번짜리는 주인공이 먼저 찾았으면 아예 이름을 못 올린다(<c>0x004AAC10</c>).
+    /// 내가 이미 보고·발표한 것은 <see cref="Player.Scoop"/> 이 거른다 — 먼저 보고한 쪽이 임자다.
+    /// </remarks>
+    private void RunVoyagerReports(Player player, DateTime from, DateTime through, bool tell)
+    {
+        if (Voyagers is not { } voyagers || Discoveries is not { } log) return;
+
+        foreach (var report in voyagers.Reports)
+        {
+            if (report.On < from || report.On > through) continue;
+
+            foreach (var voyage in voyagers.All)
+            {
+                if (voyage.Voyager != report.Voyager || voyage.On > report.On) continue;
+                if (voyagers.FirstTaker(voyage.Discovery) is not { } first || first.Voyager != report.Voyager) continue;
+                if (log.Table.Find(voyage.Discovery) is not { } row) continue;
+                // 한 번짜리를 내가 먼저 찾았으면 그 사람은 칸 1 에 못 올랐다. 찾은 날을 안 적던 세이브는 먼저로 친다.
+                if (row.Once && player.HasFound(row.Id)
+                    && (player.FoundDateOf(row.Id) ?? DateTime.MinValue) < first.On) continue;
+
+                string who = HistoryVoyages.NameOf(report.Voyager);
+                if (!player.Scoop(row.Id, who, report.On)) continue;
+                if (tell) VoyagerReports.Enqueue((who, row.Id));
+            }
         }
     }
 

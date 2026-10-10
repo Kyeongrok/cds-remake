@@ -136,6 +136,11 @@ public sealed class DiscoveryLog
         foreach (int id in player.Announced)
             if (!player.Unresolved.Contains(id)   // 모조품을 들켜 도장만 찍힌 것은 안 친다(0x0047E630)
                 && _table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
+
+        // 남이 발표해도 같은 자리(0x004AACA0)를 탄다 — 발표자가 누구든 그 유적 번호의 힌트를 다 켠다.
+        // 역사 항해자(3F)나 누적 캐릭터가 먼저 보고하면 그 힌트는 일람·설득 목록에서 빠진다.
+        foreach (int id in player.Scooped.Keys)
+            if (_table.Find(id) is { } row && row.Hint == hint.Discovery) return true;
         return false;
     }
 
@@ -232,7 +237,10 @@ public sealed class DiscoveryLog
     {
         if (player.IsSettled(row.Id)) return false;
         if (!IsOpen(player, row)) return false;
-        if (row.Once) return !player.HasFound(row.Id) && TakenBy(row, player.Date) < 0;
+        // <b>원본과 다르다.</b> 원본은 역사 항해자가 칸 1 에 이름을 올리면 한 번짜리가 영영 잠긴다(4AAD47).
+        // 계약까지 맺고 가도 아무 일이 없어, 여기서는 <b>남이 찾은 뒤에도</b> 사건을 띄운다. 그 사람이 발표(3F)하기
+        // 전에 내가 먼저 보고하면 내 것이고, 발표한 뒤면 명성 없이 사례가 깎인다(Game.RunVoyagerReports).
+        if (row.Once) return !player.HasFound(row.Id);
         return !player.HasAnnounced(row.Id) && player.ScoopedBy(row.Id) == null;
     }
 
@@ -254,7 +262,7 @@ public sealed class DiscoveryLog
     /// 일람에 비쳐 보이기만 한다(<see cref="GameInfo.VirtualItems"/>, <c>0x004AAC10</c> 은 칸 0 만 채운다).
     /// </summary>
     /// <remarks>
-    /// 관문이 하나 더 있다(<c>0x004AAC10</c>) — 발견물 표 <c>+0x2C</c> 가 1
+    /// 원본에는 관문이 하나 더 있다(<c>0x004AAC10</c>) — 발견물 표 <c>+0x2C</c> 가 1
     /// (<see cref="DiscoveryTable.Record.Once"/>, 한 번만 발견되는 것)인데 사람 칸 0·1 에
     /// 이미 이름이 올라가 있으면 <b>아무것도 적지 않는다</b>. 깃발 <c>0x40</c> 도 안 서서
     /// 항구 발표 목록(<c>0x00476DA0</c>)에 뜨지도 않는다. 그것이 <see cref="TakenBy"/> 다.
@@ -263,12 +271,15 @@ public sealed class DiscoveryLog
     /// 예순일곱 건을 채가고 그 중 스물한 건이 한 번짜리라 <b>선수를 빼앗기면 영영 못
     /// 얻는다</b> — 희망봉(1488.01)·마젤란해협(1520.10)·기저의 3대 피라미드(1519.07)·
     /// 잉카제국(1533.11) 따위다.
+    ///
+    /// <b>여기서는 그 관문을 안 건다</b>(요청으로 원본과 달리한다). 남이 찾은 것도 찾을 수 있고, 그 항해자가
+    /// 대본의 발표 달(<see cref="HistoryVoyages.Report"/>)에 발표하기 전에 내가 먼저 보고하면 내 것이다.
+    /// 발표한 뒤면 <see cref="Player.Scoop"/> 이 서 있어 보고해도 명성이 없고 사례가 계약금/4 다.
     /// </remarks>
     /// <returns>새로 발견했으면 true.</returns>
     public bool Discover(Player player, int id)
     {
         if (_table.Find(id) is not { } row) return false;
-        if (TakenBy(row, player.Date) >= 0) return false;
         if (!player.Discover(id)) return false;
         Local.Helpers.PlayStats.Found(id, row.Name);
         return true;

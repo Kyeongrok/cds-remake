@@ -4515,11 +4515,40 @@ public sealed class ShipMapWindow : Window
     /// 하루 안의 눈금(<see cref="_ticks"/>)을 함께 넘긴다. 예전에는 날짜만 넘겨 배가 하루에
     /// 스물네 칸씩 <b>순간이동</b>하듯 뛰었다 — 게임은 눈금마다 조금씩 옮긴다.
     /// </remarks>
+    /// <summary>
+    /// 역사 항해자가 막 발표한 것을 알린다 — 「%s%s [%s]%s 보고했습니다」(<c>0x00538CF0</c>, <c>0x0040AFFF</c>).
+    /// </summary>
+    /// <remarks>그리는 길에서 불리므로 창은 한 박자 뒤에 띄운다. 달 셈은 여기서 한 번 밀어 준다.</remarks>
+    private void TellVoyagerReports()
+    {
+        _game.CatchUpMonths();
+        if (_game.VoyagerReports.Count == 0 || _tellingReports) return;
+
+        _tellingReports = true;
+        Dispatcher.BeginInvoke(() =>
+        {
+            try
+            {
+                while (_game.VoyagerReports.TryDequeue(out var told))
+                {
+                    string what = _game.Discoveries?.Table.Find(told.Discovery)?.Name ?? "";
+                    if (what.Length == 0) continue;
+                    NoticeDialog.Show(this, $"{told.Who}{GameUi.Josa(told.Who, "이", "가")} "
+                                            + $"[{what}]{GameUi.Josa(what, "을", "를")} 보고했습니다");
+                }
+            }
+            finally { _tellingReports = false; }
+        });
+    }
+
+    private bool _tellingReports;
+
     private IReadOnlyList<(double X, double Y, int Heading, int Person, int Skin)> FolkAfloat()
     {
         if (_game.World is not { } world) return [];
 
         world.Advance(_game.Player.Date);
+        TellVoyagerReports();
 
         var now = (_game.Player.Date, world.Revision, _ticks);
         if (_folkStamp == now) return _folkList;
@@ -5479,7 +5508,9 @@ public sealed class ShipMapWindow : Window
             // 규모는 적 대장 나라의 수도에서 온다(0x004494B3).
             int bandNation = _game.PersonTemplates?.Find(bandLeader)?.Nation ?? -1;
             int bandScale = _game.CityRows?.ScaleOf(_game.Nations?.Find(bandNation)?.Capital ?? -1) ?? 0;
-            var field = new LandBattle(line, 0, foeMen, player, aide, culture,
+            // 아군 총원은 선원 + 1(제독 자신)이다(0x0044A7CB). 예전에는 0 을 넘겨 부대가 한 명씩으로 서고,
+            // 끝나면 그 수가 선원 수로 박혀 한 대만 맞아도 선원이 다 사라졌다.
+            var field = new LandBattle(line, player.Crew + 1, foeMen, player, aide, culture,
                                        LandBattle.FieldFor(_host.TerrainClass),
                                        foe, roll, foeSkills, sort: LandBattle.Field,
                                        scale: bandScale, nation: bandNation)
