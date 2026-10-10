@@ -1540,7 +1540,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         string ask = _player.MateCount > 0
             ? "제독! 진심이십니까?"
             : "일기토를 신청합니다. 좋습니까?";
-        if (!ConfirmDialog.Ask(_view, ask, "일기토", face)) return;
+        // 되묻는 것은 <b>부관</b>이다(0x004A4B6A 의 0x00469680) — 부관이 없으면 얼굴 없는 물음이다. 예전에는
+        // 상대 얼굴을 띄워 상대가 「제독! 진심이십니까?」라고 하는 꼴이었다.
+        if (!ConfirmDialog.Ask(_view, ask, "일기토", _player.MateCount > 0 ? _game.AideFace : null)) return;
 
         // 상대가 먼저 한 마디 한다(0x004A48A0) — <b>성미 일곱째 칸</b>(무신경 0 ~ 신경질 2)으로
         // 세 묶음이 갈리고 그 안에서 굴린다.

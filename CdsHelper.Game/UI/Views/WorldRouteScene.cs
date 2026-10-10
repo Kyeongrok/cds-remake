@@ -74,19 +74,19 @@ internal static class WorldRouteScene
     }
 
     /// <summary>
-    /// 장면을 돌린다(<c>0x00492040</c>) — 대사는 후원자와 부관이 주고받는다.
+    /// 장면을 돌린다(<c>0x00492040</c>) — 대사는 <b>감찰관</b>과 부관이 주고받는다.
     /// </summary>
     /// <remarks>
-    /// 반말 쪽은 계약을 맺은 후원자의 인물 기록이 말하는데(<c>계약+0x0C</c>), 우리말은
-    /// 제독이 하는 말처럼 읽힌다(「제, 제독···이상한데요」에 대꾸한다). 원본 코드대로
-    /// <b>후원자 얼굴</b>을 쓴다.
+    /// 반말 쪽 화자는 <c>0x004ADD50(0x00493DF0(계약))</c> 이 내는 사람 물건이다(<c>0x004920B5</c>~<c>0x004920C6</c>) —
+    /// 계약 때 감찰관의 이름과 얼굴 232 를 박아 둔 바로 그 물건이라(<c>0x004AF459</c> · <c>0x004AF479</c>)
+    /// <b>감찰관 얼굴</b>이 선다. 예전에는 후원자의 인물 기록으로 읽어 후원자 얼굴을 띄웠다.
     /// </remarks>
-    public static void Play(Window owner, Engine.Game game, uint[]? sponsorFace, uint[]? mateFace)
+    public static void Play(Window owner, Engine.Game game, uint[]? inspectorFace, uint[]? mateFace)
     {
         var player = game.Player;
         int laps = player.Laps, turns = Math.Abs(laps);
 
-        void Lord(string words) => TalkDialog.Say(owner, sponsorFace, "", words);
+        void Lord(string words) => TalkDialog.Say(owner, inspectorFace, "", words);
         void Mate(string words) => TalkDialog.Say(owner, mateFace, "", words);
 
         Lord("···돌아왔구나.");

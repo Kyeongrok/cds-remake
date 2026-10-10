@@ -1844,8 +1844,17 @@ public sealed class DisevRunner
             return face != null ? (face, null) : (MissingFace, $"[초상화 없음] 후원자 {id}");
         }
         if (string.IsNullOrEmpty(speaker)) return (null, null);
-        return FaceOf(speaker) is { } named ? (named, null) : (MissingFace, $"[초상화 없음] {speaker}");
+        if (FaceOf(speaker) is { } named) return (named, null);
+        // 어느 표에도 없는 화자는 원본도 얼굴 없이 알림 상자로 낸다(0x0040C880 이 다 못 찾으면 0x0040CCDD → 0x0049E3E0) —
+        // 남극인(펭귄)의 「？？？？」가 그렇다. 표에 있는데 얼굴을 못 읽은 것만 자홍색으로 알린다.
+        return KnownSpeaker(speaker) ? (MissingFace, $"[초상화 없음] {speaker}") : (null, null);
     }
+
+    /// <summary>화자 이름이 원본의 화자 표들(자리 화자 · 시설 · 후원자 · 인물) 어디엔가 있는지.</summary>
+    private bool KnownSpeaker(string speaker) =>
+        speaker is Aide or Hero or Inspector or "검사관" or Butler or King
+        || FacilitySpeakers.ContainsKey(speaker)
+        || _game.SpeakerNames?.Find(speaker) != null;
 
     /// <summary>얼굴을 못 찾았을 때 대신 띄우는 자홍색 초상 — 눈에 띄라고 일부러 튀는 색이다.</summary>
     private static readonly uint[] MissingFace =

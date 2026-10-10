@@ -146,6 +146,11 @@ public sealed class SoundBank : IDisposable
     /// 앱이 함께 쓰는 한 벌. 여러 창이 소리를 내므로 파일을 창마다 다시 풀지 않는다.
     /// 게임 폴더가 바뀌면 그때 다시 연다.
     /// </summary>
+    /// <summary>
+    /// 지금 열려 있는 한 벌 — 게임 폴더를 모르는 창(일기토 판 따위)이 쓴다. 아직 아무도 안 열었으면 폴더 없이 연다.
+    /// </summary>
+    public static SoundBank? Current => _shared ?? Shared("");
+
     public static SoundBank? Shared(string gameDirectory)
     {
         // 폴더를 몰라도 연다 — 뽑아 둔 것으로 소리는 난다.

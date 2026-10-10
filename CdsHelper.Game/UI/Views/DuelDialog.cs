@@ -195,9 +195,24 @@ public sealed class DuelDialog : GameWindow
     private const double KeyBoxRight = 20, KeyBoxBottom = 25;
 
     /// <summary>
-    /// 말풍선 자리 — 두 초상 사이다. 화면에서 재어 맞췄다.
+    /// 말풍선 자리 — 상대 초상 바로 옆에서 시작해 내 초상에 조금 걸친다.
     /// </summary>
-    private const double BubbleX = 120, BubbleY = 12, BubbleW = 180, BubbleH = 76;
+    /// <remarks>
+    /// 게임이 16x16 조각으로 짜는 자리 그대로다(<c>0x004A63C0</c>) — 창에서 가로 <c>0x60</c>~<c>0x130</c>,
+    /// 세로 <c>0x90</c>~<c>0xE0</c>. 귀 조각은 3 · 4 · 9 · 10 이라 <b>왼쪽 아래에 꼬리</b>가 달린다(조각 9) —
+    /// 꼬리가 왼쪽의 상대 초상을 가리킨다. 예전에는 꼬리 없이 오른쪽으로 치우쳐 있어 제독이 하는 말처럼 보였다.
+    /// </remarks>
+    private const double BubbleX = 96, BubbleY = 8, BubbleW = 208, BubbleH = 80;
+
+    /// <summary>말풍선 꼬리 — 왼쪽 아래 귀에서 상대 초상 쪽으로 삐져나온다.</summary>
+    private readonly System.Windows.Shapes.Polygon _bubbleTail = new()
+    {
+        Points = [new Point(11, -14), new Point(-8, -1), new Point(20, -1)],
+        Fill = System.Windows.Media.Brushes.White,
+        Stroke = System.Windows.Media.Brushes.Black,
+        StrokeThickness = 1,
+        Visibility = Visibility.Collapsed,
+    };
 
     /// <summary>상대가 하는 말이 적히는 흰 말풍선. 할 말이 없으면 안 보인다.</summary>
     private readonly StackPanel _bubbleText = new()
@@ -270,6 +285,8 @@ public sealed class DuelDialog : GameWindow
         }
 
         // 상대가 하는 말은 <b>눈금판 위의 흰 말풍선</b>이다 — 두 초상 사이를 채운다.
+        // 꼬리를 먼저 놓고 풍선을 그 위에 얹는다 — 풍선의 테가 꼬리의 윗변을 덮어 한 덩이로 보인다.
+        Put(canvas, _bubbleTail, BubbleX, Top + BubbleY + BubbleH);
         Put(canvas, _bubble, BubbleX, Top + BubbleY, BubbleW, BubbleH);
 
         // 판 밑에는 아무것도 안 붙인다. 게임 판은 384x248 이 전부이고, 상대의 말은
@@ -441,6 +458,7 @@ public sealed class DuelDialog : GameWindow
         if (text.Length == 0)
         {
             _bubble.Visibility = Visibility.Collapsed;
+            _bubbleTail.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -455,6 +473,7 @@ public sealed class DuelDialog : GameWindow
 
         _bubble.Child = _bubbleText;
         _bubble.Visibility = Visibility.Visible;
+        _bubbleTail.Visibility = Visibility.Visible;
     }
 
     /// <summary>그 판에 고른 명령의 이름 — 맞부딪힘·공격이면 치는 줄, 방어면 막는 명령이다.</summary>
@@ -721,8 +740,8 @@ public sealed class DuelDialog : GameWindow
     /// 명령을 고를 때 나는 칼 부딪히는 소리. 효과음을 못 열면 조용히 넘어간다.
     /// </summary>
     /// <remarks>
-    /// 효과음 묶음은 <see cref="SoundBank.Shared"/> 가 한 벌만 들고 있고, 게임 폴더는
-    /// 마지막으로 연 세이브 파일 자리에서 찾는다 — 이 창은 게임 판을 안 들고 있다.
+    /// 효과음 묶음은 <see cref="SoundBank"/> 가 한 벌만 들고 있다 — 이 창은 게임 판을 안 들고 있어
+    /// 지금 열려 있는 그 한 벌(<see cref="SoundBank.Current"/>)을 쓴다.
     /// </remarks>
     private void Clang() => Sound(SoundBank.ClashPart);
 
@@ -743,13 +762,11 @@ public sealed class DuelDialog : GameWindow
     private const int HitSoundId = 0x4C, CriticalSoundId = 0x49;
 
     /// <summary>효과음 한 자락. 묶음을 못 열면 조용히 넘어간다.</summary>
-    private static void Sound(int part)
-    {
-        var dir = System.IO.Path.GetDirectoryName(
-            CdsHelper.Support.Local.Settings.AppSettings.LastSaveFilePath);
-        if (string.IsNullOrEmpty(dir)) return;
-        SoundBank.Shared(dir)?.Play(part);
-    }
+    /// <remarks>
+    /// 예전에는 게임 폴더를 <b>마지막으로 연 세이브 파일 자리</b>에서 찾았다 — 그것은 도구 앱이 적는 값이라
+    /// 놀이만 하는 설치에서는 비어 있고, 그러면 칼 소리도 이기고 지는 소리도 안 났다.
+    /// </remarks>
+    private static void Sound(int part) => SoundBank.Current?.Play(part);
 
     private void OnKey(object sender, KeyEventArgs e)
     {

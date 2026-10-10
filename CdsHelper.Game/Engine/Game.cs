@@ -785,12 +785,19 @@ public sealed class Game
     /// 아니라 <b>이름</b>으로 갈리기 때문에, 여기까지 따라오지 않으면 얼굴만 바뀌고
     /// 사진은 그대로인 어정쩡한 마을이 된다.
     /// </remarks>
+    /// <remarks>
+    /// 손으로 갈아 둔 것이 없으면 <b>게임 도시 표의 문화권 번호</b>(<see cref="CityExeTable.CultureOf"/>)의 이름을 낸다.
+    /// 앱 DB 의 이름은 열한 도시가 비었거나 어긋나 있다 — 타슈켄트 · 카슈가르 · 시빌 · 호브드 · 카라코룸(중앙아시아),
+    /// 통북투 · 카노 · 하르툼(아프리카), 리골(동남아시아), 베라크루스(아메리카)는 빈 글이고 칸디아는 「발칸」이다.
+    /// 그 도시들에서는 건물 사진과 술집 손님이 엉뚱한 문화권 것으로 나왔다. 나머지 215 곳은 두 표가 같다.
+    /// </remarks>
     public string CultureOf(int city)
     {
         int changed = CityCultureEdits.Of(city);
-        return changed == CityCultureEdits.None
-            ? CityTable.CultureOf(city)
-            : CityCultureEdits.NameOf(changed);
+        if (changed != CityCultureEdits.None) return CityCultureEdits.NameOf(changed);
+
+        string fromGame = CityCultureEdits.NameOf(CityRows?.CultureOf(city) ?? -1);
+        return fromGame.Length > 0 ? fromGame : CityTable.CultureOf(city);
     }
 
     /// <summary>그 도시의 이름. 표에 없으면 번호로 물러선다.</summary>
