@@ -12,11 +12,11 @@ CREATE TABLE IF NOT EXISTS batches (
 -- 대시보드가 이 표를 통째로 훑으므로, 줄이 날마다 늘면 D1 무료 읽기 한도(하루 오백만 줄)를 넘는다.
 -- 예전에는 counts 표에 덩이마다 한 줄씩 쌓았다 — 그 표는 옛 자료째 남아 있고 이제 안 쓴다(옮기지 않았다).
 CREATE TABLE IF NOT EXISTS tally (
-  kind    TEXT NOT NULL,          -- discovery · city · menu · battle · error
-  key     TEXT NOT NULL,          -- 발견물 번호 · 도시 번호 · 「창 제목/줄 글」 · sea:Won / land:win … · 「오류 갈래@클래스.메서드」
+  kind    TEXT NOT NULL,          -- discovery · city · voyage · voyage_days · voyage_turns · nav · battle · error (옛 줄: menu)
+  key     TEXT NOT NULL,          -- 발견물 번호 · 도시 번호 · 「떠난 도시>닿은 도시」 · pick:quick / end:arrived … · sea:Won / land:win … · 「오류 갈래@클래스.메서드」
   version TEXT NOT NULL,
   install TEXT NOT NULL,
-  name    TEXT NOT NULL,          -- 발견물 · 도시 이름(그 밖은 빈 글)
+  name    TEXT NOT NULL,          -- 발견물 · 도시 이름, 항해는 「리스본 > 세비야」(그 밖은 빈 글)
   n       INTEGER NOT NULL,
   PRIMARY KEY (kind, key, version, install)
 ) WITHOUT ROWID;

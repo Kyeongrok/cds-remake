@@ -208,9 +208,10 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 float d = distance(px, SegClosest(px, Route[r].xy, Route[r + 1].xy));
                 best = min(best, d);
             }
-            const float core = 1.3, soft = 2.6;
+            const float core = 0.3, soft = 1.6;
             float a = 1.0 - saturate((best - core) / (soft - core));
-            return lerp(col, float3(1.00, 0.55, 0.10), a);
+            // color token DuelDialog.Left_ (#4C8CC4). ASCII only in here: the compiler mangles other text.
+            return lerp(col, float3(0.298, 0.549, 0.769), a);
         }
 
         float DepthAt(int2 q)

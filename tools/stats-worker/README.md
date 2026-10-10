@@ -1,6 +1,6 @@
 # 놀이 통계 받는 곳 (Cloudflare Worker + D1)
 
-게임이 도시를 나설 때, 그리고 끌 때 보내는 셈(무엇을 발견했고 어느 도시에 들렀고 어느 메뉴를 눌렀고 얼마나 싸웠나)을 받아 D1 에 쌓는다.
+게임이 도시를 나설 때, 그리고 끌 때 보내는 셈(무엇을 발견했고 어느 도시에 들렀고 어디서 어디로 며칠 걸려 갔고 얼마나 싸웠나)을 받아 D1 에 쌓는다.
 보내는 쪽은 `CdsHelper.Game/Local/Helpers/PlayStats.cs`.
 
 ## 처음 한 번 올리기
@@ -18,7 +18,7 @@ npx wrangler deploy                              # https://cds-remake-stats.<계
 
 ## 보기
 
-- 대시보드: `https://…workers.dev/dashboard` — 합계 타일 · 모드 옵션(켬·끔 비율 / 단계 옵션은 값마다 설치 수) · 도시 · 발견물 순위(횟수 · 설치로 줄 세우기) · 메뉴(창으로 묶음 / 줄별) · 전투(해전 · 육상전 승률) · 오류 · 날짜/버전별. 지금은 누구나 볼 수 있다.
+- 대시보드: `https://…workers.dev/dashboard` — 합계 타일 · 모드 옵션(켬·끔 비율 / 단계 옵션은 값마다 설치 수) · 도시 · 발견물 순위(횟수 · 설치로 줄 세우기) · 항해(구간마다 횟수 · 평균 날수 · 평균 선회) · 네비게이션(고른 길 · 자동이동 모드 · 끝난 꼴) · 전투(해전 · 육상전 승률) · 오류 · 날짜/버전별. 지금은 누구나 볼 수 있다.
 - 마음대로 묻기:
 
 ```
@@ -37,7 +37,7 @@ D1 무료 판은 하루에 읽기 오백만 줄 · 쓰기 십만 줄까지다(�
 ## 적히는 것
 
 - `batches` — 덩이 하나에 한 줄(설치 번호 · 버전 · 받은 때).
-- `tally` — 셈. (갈래 · 열쇠 · 버전 · 설치)마다 한 줄이고 받을 때마다 더한다. `kind` 는 `discovery`(발견물 번호) · `city`(도시 번호) · `menu`(「창 제목/줄 글」) · `battle`(`sea:Won` · `sea:Defeated` · `sea:Escaped` · `land:win` · `land:lose`) · `error`(「오류 갈래@클래스.메서드」 — 오류 글은 안 싣는다).
+- `tally` — 셈. (갈래 · 열쇠 · 버전 · 설치)마다 한 줄이고 받을 때마다 더한다. `kind` 는 `discovery`(발견물 번호) · `city`(도시 번호) · `voyage` · `voyage_days` · `voyage_turns`(열쇠는 셋 다 「떠난 도시 번호>닿은 도시 번호」 — 횟수 · 날수의 합 · 선회의 합) · `nav`(`pick:quick` · `helm:steady` · `from:city` · `end:arrived` · `trip:auto` …) · `battle`(`sea:Won` · `sea:Defeated` · `sea:Escaped` · `land:win` · `land:lose`) · `error`(「오류 갈래@클래스.메서드」 — 오류 글은 안 싣는다).
 - `mods` — 설치마다 지금 켜 둔 옵션(`GameSettings` 의 참·거짓 값 전부와 단계 옵션 몇). 보낼 때마다 마지막 값으로 덮는다. 주 모니터 해상도(`ScreenWidth` · `ScreenHeight`, 화면 점)와 배율(`ScreenScale`, %)도 여기 실린다 — 게임 창 크기는 `Resolution`(고른 차례)이다.
 
-이름 · 계정 · IP · 세이브 내용은 적지 않는다. 메뉴 줄 글은 화면에 뜬 그대로라, 줄에 회원이 지은 이름(배 이름 따위)이 뜨는 창이 있으면 그것도 들어온다.
+이름 · 계정 · IP · 세이브 내용은 적지 않는다. 차림표 줄(`menu`)은 예전에 받았는데 이제 안 받는다 — 줄 글에 회원이 지은 이름(배 이름 따위)이 섞여 들어올 수 있었다. 표에 남은 옛 줄은 집계에 안 든다(지우려면 `DELETE FROM tally WHERE kind = 'menu'`).

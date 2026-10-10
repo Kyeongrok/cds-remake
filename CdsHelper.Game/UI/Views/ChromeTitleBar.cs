@@ -90,14 +90,22 @@ internal static class ChromeTitleBar
     /// <paramref name="shown"/> 으로 보이는 줄이 하나도 없으면 단추째 숨는다.
     /// </param>
     /// <param name="refreshApps">모드 창에서 켜고 끈 뒤 부르면 도시락 단추를 보일지 다시 정한다.</param>
+    /// <param name="quick">
+    /// 햄버거 <b>오른쪽</b>에 글자로 다는 단추 하나 — 자주 쓰는 일을 차림표를 안 열고 부른다.
+    /// 글자는 물을 때마다 새로 받는다(단축키 이름이 들어 있다).
+    /// </param>
+    /// <param name="refreshQuick">단축키를 바꾼 뒤 부르면 그 단추의 글자를 다시 적는다.</param>
     public static FrameworkElement Attach(Window win, out FrameworkElement? menuButton,
                                           Func<string, bool>? shown,
                                           (string Text, Action? Run)[] apps,
                                           out Action refreshApps,
+                                          (Func<string> Text, Action Run)? quick,
+                                          out Action refreshQuick,
                                           params (string Text, Action? Run)[] menu)
     {
         menuButton = null;
         refreshApps = () => { };
+        refreshQuick = () => { };
         WindowChrome.SetWindowChrome(win, new WindowChrome
         {
             // 위 32 점이 제목 줄이 된다 — 끌기와 두 번 눌러 최대화를 윈도가 알아서 한다.
@@ -145,6 +153,32 @@ internal static class ChromeTitleBar
             DockPanel.SetDock(hamburger, System.Windows.Controls.Dock.Left);
             bar.Children.Add(hamburger);
             menuButton = hamburger;
+        }
+        if (quick is { } q)
+        {
+            var label = new TextBlock
+            {
+                Text = q.Text(),
+                Foreground = Title,
+                FontSize = 12,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            var button = new Border
+            {
+                Height = Height,
+                Padding = new Thickness(10, 0, 10, 0),
+                Background = Brushes.Transparent,
+                Cursor = Cursors.Hand,
+                Child = label,
+            };
+            WindowChrome.SetIsHitTestVisibleInChrome(button, true);
+            button.MouseEnter += (_, _) => button.Background = Hover;
+            button.MouseLeave += (_, _) => button.Background = Brushes.Transparent;
+            button.MouseLeftButtonDown += (_, e) => e.Handled = true;
+            button.MouseLeftButtonUp += (_, e) => { e.Handled = true; q.Run(); };
+            DockPanel.SetDock(button, System.Windows.Controls.Dock.Left);
+            bar.Children.Add(button);
+            refreshQuick = () => label.Text = q.Text();
         }
         bar.Children.Add(text);
 

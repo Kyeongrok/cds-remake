@@ -684,6 +684,7 @@ public sealed class ShipMapHost : HwndHost
     /// </summary>
     public void SteerTo(int heading)
     {
+        if (_desired != (heading & 0xF)) TurnCount++;
         _desired = heading & 0xF;
         _making = true;
         _anchored = false;
@@ -823,6 +824,7 @@ public sealed class ShipMapHost : HwndHost
         if (_world == null || _canalOriginal == null) return;
         Engine.Sea.SuezCanal.Restore(_world, _canalOriginal);
         Engine.Sea.SuezCanal.Apply(_world, _terrain);
+        _routes.Open(_world);   // 지도가 바뀌었다 — 적어 둔 바닷길은 그 지도의 것만 쓴다
         _renderer.UpdateWorld(_world);
         if (_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);
         if (_renderer.TileKindsReady && BuildTileKinds() is { } kinds) _renderer.SetTileKinds(kinds);
@@ -848,6 +850,7 @@ public sealed class ShipMapHost : HwndHost
         // 원래 칸을 들고 있다가 모드를 끄면 되돌린다(RefreshSuezCanal).
         _canalOriginal = Engine.Sea.SuezCanal.Capture(_world);
         Engine.Sea.SuezCanal.Apply(_world, _terrain);
+        _routes.Open(_world);
         if (_terrain == null)
             System.Diagnostics.Debug.WriteLine($"[ShipMap] 지형표 없음: {TerrainTable.LastError}");
 
@@ -1262,30 +1265,328 @@ public sealed class ShipMapHost : HwndHost
     private double _stuckX, _stuckY;
     private int _stuckTicks;
 
+    /// <summary>그은 선 위에서 이만큼(칸) 앞을 바라보고 몬다.</summary>
+    private const double AutoLookahead = 2.0;
+
+    /// <summary>선에서 이만큼(칸) 넘게 벗어나면 선으로 곧장 돌아가고, 이만큼 안으로 들면 다시 앞을 본다.</summary>
+    private const double AutoStrayLimit = 1.2, AutoBackOnLine = 0.3;
+
+    /// <summary>마디까지 선을 따라 이만큼(칸) 남으면 다음 토막으로 넘어간다.</summary>
+    private const double AutoTurnEarly = 0.5;
+
+    /// <summary>선으로 돌아갈 때 바라보는 거리(칸) — 뱃머리가 도는 죽은 구역(<see cref="TurnDeadZoneCells"/>)보다 멀어야 한다.</summary>
+    private const double AutoRecoverReach = 3.0;
+
+    private bool _autoRecover;
+
+    /// <summary>이 틱 수만큼 내리 막혀 있으면 길을 다시 짠다(0.1초 x 30 = 3초).</summary>
+    private const int ReplanTicks = 30;
+
+    private int _blockedTicks;
+
+    /// <summary>자동항해가 가는 자리(칸) — 길을 다시 짤 때 쓴다.</summary>
+    private (double X, double Y) _autoDest;
+
+    /// <summary>자동항해가 가는 도시. 도시가 아닌 자리로 가면 −1.</summary>
+    private int _autoCity = -1;
+
+    /// <summary>
+    /// 바라는 뱃머리가 바뀐 횟수 — 손으로 몰든 자동항해든 센다. 놀이 통계가 항해마다 0 으로 돌려 놓고 읽는다.
+    /// </summary>
+    public int TurnCount { get; set; }
+
+    /// <summary>마지막 마디까지 끝까지 가는지 — 도시 어귀나 배 댈 자리로 갈 때다.</summary>
+    private bool _autoExact;
+
+    /// <summary>지금 자동항해가 길을 고른 법 — 다시 짤 때 같은 법을 쓴다.</summary>
+    private RouteKind _autoKind;
+
+    /// <summary>
+    /// 항구 없는 내륙 도시로 갈 때 배를 댈 자리 — <b>배로 가는 시간과 내려서 걸어가는 시간을 더한 것</b>이 가장
+    /// 짧은 해안이다(<see cref="Engine.Sea.SeaPathfinder.LandingByTime"/>). 없으면 null.
+    /// </summary>
+    /// <remarks>함대 속도를 모르면 시간을 못 재므로, 걸어갈 길이 트인 가장 가까운 해안으로 물러선다.</remarks>
+    public (double X, double Y)? LandingCellOf(int city) => LandingCellsOf(city) is [var first, ..] ? first.Cell : null;
+
+    /// <summary>
+    /// 내륙 도시로 갈 때 배를 댈 만한 자리 <b>몇 군데</b> — 가장 빠른 자리, 덜 걷는 자리, 가장 가까운 해안.
+    /// 서로 가까운 것은 하나로 친다. 앞의 것이 기본이다.
+    /// </summary>
+    public List<((double X, double Y) Cell, string Label)> LandingCellsOf(int city)
+    {
+        var got = new List<((double X, double Y) Cell, string Label)>();
+        if (_world == null || _terrain == null || _cities == null) return got;
+        if (!_cities.TryCell(city, out int cx, out int cy, out int reach)) return got;
+
+        void Add((double X, double Y)? cell, string label)
+        {
+            if (cell is not { } c) return;
+            foreach (var (had, _) in got)
+                if (Math.Abs(WrapDx(had.X - c.X)) <= SameLanding && Math.Abs(had.Y - c.Y) <= SameLanding) return;
+            got.Add((c, label));
+        }
+
+        if (FleetSpeed is { } fleet && _wind != null)
+        {
+            var pace = new Engine.Sea.SailCost(_wind, MonthOf?.Invoke() ?? DefaultMonth,
+                                               (dir, speed, heading) => fleet(dir, speed, heading, false));
+            double afoot = Engine.Sea.Sailing.CellsPerTick(fleet(0, 0, 0, true), false, onLand: true);
+            Add(Engine.Sea.SeaPathfinder.LandingByTime(_world, _terrain, (_shipX, _shipY), (cx, cy), reach, pace, afoot),
+                "가장 빠른 길");
+            Add(Engine.Sea.SeaPathfinder.LandingByTime(_world, _terrain, (_shipX, _shipY), (cx, cy), reach, pace, afoot,
+                                                       walkWeight: LessWalkWeight), "덜 걷는 길");
+        }
+        Add(Engine.Sea.SeaPathfinder.Landing(_world, _terrain, (_shipX, _shipY), (cx, cy), reach), "가장 가까운 해안");
+        return got;
+    }
+
+    /// <summary>배 댈 자리 둘이 이만큼(칸) 안이면 같은 자리로 친다.</summary>
+    private const double SameLanding = 12;
+
+    /// <summary>「덜 걷는 길」은 걷는 시간을 이만큼 곱해 견준다.</summary>
+    private const double LessWalkWeight = 3;
+
+    /// <summary>자동항해가 길을 고르는 법.</summary>
+    public enum RouteKind
+    {
+        /// <summary>짧은 길로 가되, 뚜렷이 빠르면 바람 · 해류를 본 길로.</summary>
+        Auto,
+        /// <summary>가장 짧은 길.</summary>
+        Short,
+        /// <summary>바람 · 해류를 보아 가장 빠른 길.</summary>
+        Quick,
+    }
+
+    /// <summary>
+    /// 지금 자리에서 그 칸까지의 항로를 <b>잡아만 본다</b> — 떠나기 전에 여럿을 견주어 보여 줄 때 쓴다.
+    /// 틱 수는 바람 · 해류를 넣은 어림이고, 함대 속도를 모르면 NaN 이다.
+    /// </summary>
+    public (IReadOnlyList<(double X, double Y)> Route, double Ticks)? PreviewRoute(double destX, double destY, RouteKind kind)
+    {
+        if (!_ready || !_shipKnown) return null;
+        var (route, _, ticks) = PlanSeaRoute(destX, destY, kind);
+        return route is { Count: >= 2 } ? (route, ticks) : null;
+    }
+
+    /// <summary>그 칸에서 그 도시까지 곧게 걸어가는 틱 수(어림). 함대 속도를 모르면 NaN.</summary>
+    public double WalkTicks((double X, double Y) from, int city)
+    {
+        if (FleetSpeed is not { } fleet || _cities == null || !_cities.TryCell(city, out int cx, out int cy, out int reach))
+            return double.NaN;
+        double step = Engine.Sea.Sailing.CellsPerTick(fleet(0, 0, 0, true), false, onLand: true);
+        if (step <= 0) return double.NaN;
+        double midY = cy + reach / 2.0;
+        double lon = Engine.Sea.Sailing.LonScale(90.0 - (from.Y + midY) / 2 * 180.0 / WorldMapRenderer.CellH);
+        double dx = WrapDx(cx + reach / 2.0 - from.X) / lon, dy = midY - from.Y;
+        return Math.Sqrt(dx * dx + dy * dy) * 1.05 / step;
+    }
+
+    /// <summary>지금 가고 있는 항로. 자동항해 중이 아니면 null.</summary>
+    public IReadOnlyList<(double X, double Y)>? AutoRoute => _autoRoute;
+
+    private static readonly string[] Compass16 =
+    [
+        "북", "북북동", "북동", "동북동", "동", "동남동", "남동", "남남동",
+        "남", "남남서", "남서", "서남서", "서", "서북서", "북서", "북북서",
+    ];
+
+    /// <summary>
+    /// 항로를 <b>어디서 어느 쪽으로 뱃머리를 트는지</b>의 줄들로 — 「1  북위38.7 서경9.1  남서로」.
+    /// 같은 쪽으로 이어지는 토막은 한 줄로 묶는다. 띠 · 목록 글꼴에 없는 글자(화살표 · 도 기호)는 안 쓴다.
+    /// </summary>
+    public static List<string> DescribeRoute(IReadOnlyList<(double X, double Y)> route)
+    {
+        static string Spot((double X, double Y) p)
+        {
+            double lat = 90.0 - p.Y * 180.0 / WorldMapRenderer.CellH;
+            double x = p.X % WorldMapRenderer.UnfoldedW;
+            if (x < 0) x += WorldMapRenderer.UnfoldedW;
+            double lon = x * 360.0 / WorldMapRenderer.UnfoldedW - 180.0;
+            return $"{(lat >= 0 ? "북" : "남")}위{Math.Abs(lat):0.0} {(lon >= 0 ? "동" : "서")}경{Math.Abs(lon):0.0}";
+        }
+
+        var lines = new List<string>();
+        string was = "";
+        for (int i = 0; i + 1 < route.Count; i++)
+        {
+            double dx = route[i + 1].X - route[i].X, dy = route[i + 1].Y - route[i].Y;
+            if (dx == 0 && dy == 0) continue;
+            // 북에서 시계로 잰 각을 16방위로.
+            double turn = Math.Atan2(dx, -dy) / (Math.PI * 2);
+            string way = Compass16[(int)Math.Round((turn < 0 ? turn + 1 : turn) * 16) % 16];
+            if (way == was) continue;
+            was = way;
+            lines.Add($"{lines.Count + 1}  {Spot(route[i])}  {way}{(way.EndsWith('동') ? "으로" : "로")}");
+        }
+        if (route.Count > 0) lines.Add($"도착  {Spot(route[^1])}");
+        return lines;
+    }
+
+    /// <summary>
+    /// 그 도시의 어귀 가운데 배가 설 물칸 — 자동항해가 이 칸으로 간다. 어귀에 물이 없으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 어귀는 <see cref="TownsAt"/> 이 재는 네모다. 그 안의 물칸 가운데 <b>둘레에 물이 많은 칸</b>을 고르고
+    /// (뭍에 낀 칸은 배가 들어서기 어렵다), 같으면 네모 한가운데에 가까운 칸을 고른다.
+    /// </remarks>
+    public (double X, double Y)? PortCellOf(int city)
+    {
+        if (_cities == null || !_cities.TryCell(city, out int cx, out int cy, out int reach)) return null;
+
+        double midX = cx + (reach - TownSlack) / 2.0, midY = cy + (reach - TownSlack) / 2.0;
+        (double X, double Y)? best = null;
+        int bestOpen = -1;
+        double bestFar = double.MaxValue;
+        for (int y = cy - TownSlack - TouchSlack; y <= cy + reach + TouchSlack; y++)
+            for (int x = cx - TownSlack - TouchSlack; x <= cx + reach + TouchSlack; x++)
+            {
+                if (IsLand(x + 0.5, y + 0.5)) continue;
+                int open = 0;
+                for (int dy = -1; dy <= 1; dy++)
+                    for (int dx = -1; dx <= 1; dx++)
+                        if (!IsLand(x + dx + 0.5, y + dy + 0.5)) open++;
+                double far = (x - midX) * (x - midX) + (y - midY) * (y - midY);
+                if (open < bestOpen || (open == bestOpen && far >= bestFar)) continue;
+                bestOpen = open;
+                bestFar = far;
+                best = (x + 0.5, y + 0.5);
+            }
+        return best;
+    }
+
+    /// <summary>닻을 내려 그 자리에 세운다.</summary>
+    public void DropAnchor()
+    {
+        _anchored = true;
+        _tickAccum = 0;
+    }
+
     /// <summary>
     /// 그 칸까지 바닷길을 찾아 자동항해를 시작한다. 뭍이나 도시 안에서는, 지도를 아직 못
     /// 읽었으면, 바닷길을 못 찾았으면 시작하지 않는다.
     /// </summary>
-    public (bool Ok, string Message) StartAutoSail(double destX, double destY)
+    /// <param name="city">
+    /// 가려는 도시. 주면 그 도시의 <b>어귀</b>(「항구로 들어가겠습니까」가 뜨는 칸)에 들어서야 도착이다 —
+    /// 안 주면 찍은 자리 두 칸 안에서 멎는데, 그러면 도시 코앞에 서고 물음은 안 뜬다.
+    /// </param>
+    /// <param name="exact">참이면 도시가 아니어도 찍은 칸까지 끝까지 간다 — 내륙 도시로 가려고 배를 댈 자리다.</param>
+    /// <param name="kind">길을 고르는 법 — 길이 막혀 다시 짤 때도 같은 법으로 짠다.</param>
+    public (bool Ok, string Message) StartAutoSail(double destX, double destY, int city = -1, bool exact = false,
+                                                   RouteKind kind = RouteKind.Auto)
     {
         if (!_ready || _world == null || _terrain == null) return (false, "지도를 아직 읽지 못했습니다");
         if (SeaBlocked) return (false, "도시 안에서는 자동항해를 쓸 수 없습니다");
         if (!_shipKnown || _onLand) return (false, "바다에 있을 때만 자동항해를 쓸 수 있습니다");
 
-        var route = Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), (destX, destY));
+        var (route, gain, _) = PlanSeaRoute(destX, destY, kind);
         if (route == null) return (false, "바닷길을 찾지 못했습니다");
         if (route.Count < 2) return (false, "이미 그 자리 가까이 있습니다");
 
         _autoRoute = route;
+        _autoDest = (destX, destY);
+        _autoCity = city;
+        _autoKind = kind;
+        _autoExact = exact || city >= 0;
         _autoIndex = 0;
         _anchored = false;
         _tickAccum = 0;
         _stuckX = _shipX;
         _stuckY = _shipY;
         _stuckTicks = 0;
+        _blockedTicks = 0;
         _dirty = true;
-        return (true, $"{route.Count}개 마디로 바닷길을 짰습니다");
+        _routes.Save();   // 떠날 때 한 번 적어 둔다 — 다음에 같은 데로 갈 때 찾지 않는다
+        return (true, $"항로를 잡았습니다. 경유 지점 {route.Count}곳{gain}");
     }
+
+    /// <summary>지금 자리에서 그 칸까지의 바닷길 — 가장 짧은 길, 또는 뚜렷이 빠르면 바람 · 해류를 본 길.</summary>
+    private (List<(double X, double Y)>? Route, string Gain, double Ticks) PlanSeaRoute(
+        double destX, double destY, RouteKind kind = RouteKind.Auto)
+    {
+        if (_world is not { } world || _terrain is not { } terrain) return (null, "", double.NaN);
+        var route = RouteTo(world, terrain, destX, destY, null);
+        if (route == null || route.Count < 2) return (route, "", double.NaN);
+
+        // 바람 · 해류를 넣어 가장 빠른 길도 찾아 본다 — 어림으로 견줘 뚜렷이 빠를 때만 그 길로 간다.
+        string gain = "";
+        double ticks = double.NaN;
+        if (FleetSpeed is { } fleet && _wind != null)
+        {
+            var pace = new Engine.Sea.SailCost(_wind, MonthOf?.Invoke() ?? DefaultMonth,
+                                               (dir, speed, heading) => fleet(dir, speed, heading, false));
+            double plain = ticks = Engine.Sea.SeaPathfinder.RouteTicks(world, terrain, route, pace);
+            var quick = kind == RouteKind.Short ? null : RouteTo(world, terrain, destX, destY, pace);
+            if (quick is { Count: >= 2 })
+            {
+                double timed = Engine.Sea.SeaPathfinder.RouteTicks(world, terrain, quick, pace);
+                if (kind == RouteKind.Quick ? timed < plain : timed < plain * QuickRouteWorth)
+                {
+                    ticks = timed;
+                    route = quick;
+                    // 띠 글꼴에 없는 글자(긴 줄표 따위)는 물음표로 찍힌다 — 쉼표와 마침표만 쓴다.
+                    gain = $", 바람과 해류를 타서 가장 짧은 길보다 {(1 - timed / plain) * 100:0}% 빠릅니다";
+                }
+            }
+        }
+        // 최소 조타 — 토막을 8방위로 곧게 뻗게 꺾어, 토막마다 뱃머리를 한 번만 세운다.
+        if (Local.Settings.GameSettings.SteadyHelm)
+            route = Engine.Sea.SeaPathfinder.Dogleg(world, terrain, route);
+        return (route, gain, ticks);
+    }
+
+    /// <summary>한 번 찾은 바닷길 — 같은 길은 다시 찾지 않고, 가까이 지나는 길에는 올라탄다.</summary>
+    private readonly Engine.Sea.RouteCache _routes = new();
+
+    /// <summary>적어 둔 길이 배에서 이만큼(칸) 안을 지나면 그 길에 올라탄다.</summary>
+    private const double JoinReach = 30;
+
+    /// <summary>올라타러 가는 길이 곧은 거리의 이 곱절(더하기 덤)보다 길면 안 쓴다 — 곶 너머의 길이다.</summary>
+    private const double JoinDetour = 2.5, JoinSlack = 12;
+
+    /// <summary>
+    /// 지금 자리에서 그 칸까지의 바닷길. 적어 둔 것이 있으면 그것을, 같은 데로 가는 길이 가까이 지나면 거기
+    /// 올라타는 데까지만 새로 찾아 이어 붙인 것을, 없으면 처음부터 찾은 것을 준다.
+    /// </summary>
+    /// <param name="pace">걸음 값. 주면 가장 빠른 길, 안 주면 가장 짧은 길이다.</param>
+    private List<(double X, double Y)>? RouteTo(byte[] world, TerrainTable terrain, double destX, double destY,
+                                               Engine.Sea.SailCost? pace)
+    {
+        int sx = (int)Math.Floor(_shipX), sy = (int)Math.Floor(_shipY);
+        int gx = (int)Math.Floor(destX), gy = (int)Math.Floor(destY);
+        long sig = pace?.Signature ?? 0;
+
+        if (_routes.Find(sx, sy, gx, gy, sig) is { } same) return same;
+
+        if (_routes.Near(_shipX, _shipY, gx, gy, sig, JoinReach) is var (old, join) && join < old.Count)
+        {
+            var onto = old[join];
+            var link = Engine.Sea.SeaPathfinder.FindRoute(world, terrain, (_shipX, _shipY), onto, pace: pace);
+            if (link is { Count: >= 2 })
+            {
+                double went = 0;
+                for (int i = 1; i < link.Count; i++)
+                    went += Math.Sqrt((link[i].X - link[i - 1].X) * (link[i].X - link[i - 1].X)
+                                      + (link[i].Y - link[i - 1].Y) * (link[i].Y - link[i - 1].Y));
+                double straight = Math.Sqrt(WrapDx(onto.X - _shipX) * WrapDx(onto.X - _shipX)
+                                            + (onto.Y - _shipY) * (onto.Y - _shipY));
+                if (went <= straight * JoinDetour + JoinSlack)
+                {
+                    // 올라탄 마디는 이은 길의 끝과 같은 자리다 — 한 번만 싣는다. 가로 바퀴는 적어 둔 길에 맞춘다.
+                    double lap = Math.Round((link[^1].X - onto.X) / WorldMapRenderer.UnfoldedW) * WorldMapRenderer.UnfoldedW;
+                    for (int i = join + 1; i < old.Count; i++) link.Add((old[i].X + lap, old[i].Y));
+                    _routes.Add(sx, sy, gx, gy, sig, whole: false, link);
+                    return link;
+                }
+            }
+        }
+
+        var found = Engine.Sea.SeaPathfinder.FindRoute(world, terrain, (_shipX, _shipY), (destX, destY), pace: pace);
+        if (found is { Count: >= 2 }) _routes.Add(sx, sy, gx, gy, sig, whole: true, found);
+        return found;
+    }
+
+    /// <summary>빠른 길이 짧은 길의 이 몫보다 덜 걸려야 그 길로 간다 — 어림끼리의 견줌이라 비슷하면 짧은 길이 낫다.</summary>
+    private const double QuickRouteWorth = 0.97;
 
     /// <summary>
     /// 그 칸까지 <b>뭍길</b>을 찾아 걸어간다(모드 「뭍 자동이동」) — 자동항해와 같은 마디 따라가기다.
@@ -1302,12 +1603,16 @@ public sealed class ShipMapHost : HwndHost
         if (route.Count < 2) return (false, "이미 그 자리 가까이 있습니다");
 
         _autoRoute = route;
+        _autoDest = (destX, destY);
+        _autoCity = -1;
+        _autoExact = false;
         _autoIndex = 0;
         _anchored = false;
         _tickAccum = 0;
         _stuckX = _shipX;
         _stuckY = _shipY;
         _stuckTicks = 0;
+        _blockedTicks = 0;
         _dirty = true;
         return (true, "그 자리로 걸어갑니다");
     }
@@ -1322,22 +1627,77 @@ public sealed class ShipMapHost : HwndHost
     }
 
     /// <summary>
-    /// 다음 마디를 바라보게 목표 자리를 잡는다. 이미 다가선 마디는 건너뛴다.
+    /// 다음 마디 쪽으로 목표 자리를 잡는다. 이미 다가선 마디는 건너뛴다.
     /// 마지막 마디까지 다다랐으면 도착으로 치고 닻을 내린다.
     /// </summary>
+    /// <remarks>
+    /// 마디를 곧장 바라보지 않고 <b>그은 선 위에서 조금 앞</b>(<see cref="AutoLookahead"/>)을 바라본다.
+    /// 뱃머리가 8방위뿐이라 먼 마디를 바라보면 선에서 한참 벗어났다가 돌아오고(동쪽으로 죽 가다가
+    /// 나중에야 대각으로 꺾는다), 해류에도 밀린다 — 그 사이에 해안에 걸린다.
+    /// </remarks>
     private void UpdateAutoTarget()
     {
         if (_autoRoute is not { } route) return;
+        // 도시로 가는 길이면 그 어귀에 들어선 것이 도착이다 — 거기서 입항 물음이 뜬다.
+        if (_autoCity >= 0 && !_onLand && TownsAt().Contains(_autoCity))
+        {
+            CompleteAutoSail("도착했습니다. 닻을 내렸습니다");
+            return;
+        }
         while (_autoIndex < route.Count)
         {
+            // 첫 마디는 떠난 자리다.
+            if (_autoIndex == 0) { _autoIndex++; continue; }
+
             var (wx, wy) = route[_autoIndex];
+            var (px, py) = route[_autoIndex - 1];
             double dx = WrapDx(wx - _shipX), dy = wy - _shipY;
-            if (dx * dx + dy * dy <= AutoWaypointRadius * AutoWaypointRadius) { _autoIndex++; continue; }
+            double sx = wx - px, sy = wy - py, len = Math.Sqrt(sx * sx + sy * sy);
+            if (len == 0) { _autoIndex++; continue; }
+            double ux = sx / len, uy = sy / len;
+
+            // 이 마디까지 선을 따라 남은 칸 수. 마지막 마디는 둘레 안에 들 때까지 다가서고, 그 밖의
+            // 마디는 선을 따라 다 왔을 때 넘긴다 — 멀리서 미리 넘기면 모퉁이를 질러가다 뭍에 걸린다.
+            double left = dx * ux + dy * uy;
+            bool last = _autoIndex == route.Count - 1;
+            // 도시로 가는 길은 마지막 마디도 끝까지 간다 — 두 칸 앞에서 멎으면 어귀에 못 들어선다.
+            if (last && !_autoExact ? dx * dx + dy * dy <= AutoWaypointRadius * AutoWaypointRadius : left <= AutoTurnEarly)
+            {
+                _autoIndex++;
+                continue;
+            }
+
+            // 선에서 벗어난 만큼 — 배에서 선 위 가장 가까운 자리까지.
+            double back = Math.Clamp(left, 0, len);
+            double ox = dx - back * ux, oy = dy - back * uy, off = Math.Sqrt(ox * ox + oy * oy);
+            // 걸음이 크면 선을 사이에 두고 왔다 갔다 한다 — 한 걸음에 넘어설 만큼 가까우면 돌아온 것으로 친다.
+            if (off <= Math.Max(AutoBackOnLine, LastStep * 0.6)) _autoRecover = false;
+            if (_blocked || off > AutoStrayLimit) _autoRecover = true;
+
+            if (_autoRecover && off > 0.05)
+            {
+                // 뭍에 닿았거나 많이 벗어났다 — 앞을 보지 않고 선으로 곧장 돌아간다. 좁은 물길에서
+                // 한 줄 어긋난 채 앞만 보면 뭍에 대고 서 버린다.
+                dx = ox / off * AutoRecoverReach;
+                dy = oy / off * AutoRecoverReach;
+            }
+            else if (Local.Settings.GameSettings.SteadyHelm && !_onLand)
+            {
+                // 최소 조타 — 선에서 조금 벗어난 것은 두고 토막의 쪽만 본다. 많이 벗어나면 위에서 돌아온다.
+                // 선 쪽으로 조금씩 고치려 들면 방위가 갈리는 금에서 뱃머리가 이쪽저쪽으로 떤다.
+                if (!last || back > AutoLookahead) { dx = ux * AutoLookahead; dy = uy * AutoLookahead; }
+            }
+            else if (!last || back > AutoLookahead)
+            {
+                // 선 위 가장 가까운 자리에서 조금 앞 — 마디를 지나서도 선의 쪽을 그대로 본다.
+                dx = ox + ux * AutoLookahead;
+                dy = oy + uy * AutoLookahead;
+            }
             _targetX = _shipX + dx;
             _targetY = _shipY + dy;
             return;
         }
-        CompleteAutoSail(_onLand ? "도착했습니다" : "도착했습니다 — 닻을 내렸습니다");
+        CompleteAutoSail(_onLand ? "도착했습니다" : "도착했습니다. 닻을 내렸습니다");
     }
 
     private void CompleteAutoSail(string message)
@@ -1356,6 +1716,20 @@ public sealed class ShipMapHost : HwndHost
     /// </summary>
     private void UpdateStuckGuard()
     {
+        // 뭍에 닿은 채로 이어지면 지금 자리에서 길을 다시 짠다 — 선에서 벗어나 만에 갇힌 것을 푼다.
+        if (!_blocked) _blockedTicks = 0;
+        else if (++_blockedTicks >= ReplanTicks)
+        {
+            _blockedTicks = 0;
+            if (_world != null && _terrain != null)
+            {
+                var again = _onLand
+                    ? Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), _autoDest, land: true)
+                    : PlanSeaRoute(_autoDest.X, _autoDest.Y, _autoKind).Route;
+                if (again is { Count: >= 2 }) { _autoRoute = again; _autoIndex = 0; _dirty = true; }
+            }
+        }
+
         double dx = _shipX - _stuckX, dy = _shipY - _stuckY;
         if (dx * dx + dy * dy >= StuckMoveThreshold * StuckMoveThreshold)
         {
@@ -1380,8 +1754,8 @@ public sealed class ShipMapHost : HwndHost
         new MapD3DRenderer.RouteDraw[MapD3DRenderer.MaxRoutePoints];
 
     /// <summary>
-    /// 항로 마디를 화면 자리로 옮겨 렌더러에 건넨다. 마디가 화면에 다 못 실으면 고르게 골라 줄인다 —
-    /// 길찾기 자체는 그대로 다 쓴다(<see cref="UpdateAutoTarget"/>).
+    /// 항로 마디를 화면 자리로 옮겨 렌더러에 건넨다. 다 못 실으면 지금 가는 토막부터 실을 수 있는 만큼만
+    /// 싣는다 — 길찾기 자체는 그대로 다 쓴다(<see cref="UpdateAutoTarget"/>).
     /// </summary>
     private void SyncRoute((double X, double Y) origin)
     {
@@ -1391,12 +1765,13 @@ public sealed class ShipMapHost : HwndHost
             return;
         }
 
-        int n = route.Count;
-        int shown = Math.Min(n, MapD3DRenderer.MaxRoutePoints);
+        // 지금 가는 토막부터 차례로 싣는다. 고르게 골라 줄이면 건너뛴 마디 사이가 곧은 선으로 이어져
+        // 육지를 가로지르고, 배가 가는 길과도 어긋나 보인다 — 다 못 실은 먼 뒤쪽은 다가가면 보인다.
+        int from = Math.Clamp(_autoIndex - 1, 0, route.Count - 1);
+        int shown = Math.Min(route.Count - from, MapD3DRenderer.MaxRoutePoints);
         for (int i = 0; i < shown; i++)
         {
-            int src = shown == 1 ? 0 : i * (n - 1) / (shown - 1);
-            var (wx, wy) = route[src];
+            var (wx, wy) = route[from + i];
             double x = Fold(wx, origin.X);
             _routeDraw[i] = new MapD3DRenderer.RouteDraw(
                 (float)((x - origin.X) / _cellsPerPixel),
@@ -1955,7 +2330,9 @@ public sealed class ShipMapHost : HwndHost
         double dx = _targetX - _shipX, dy = _targetY - _shipY;
         if (_hasHeadingTarget && dx * dx + dy * dy > TurnDeadZoneCells * TurnDeadZoneCells)
         {
-            _desired = (Sector8(dx, dy) + HeadingZeroOffset) & 0xF;
+            int want = (Sector8(dx, dy) + HeadingZeroOffset) & 0xF;
+            if (want != _desired) TurnCount++;
+            _desired = want;
             _making = true;
         }
 
@@ -2357,6 +2734,11 @@ public sealed class ShipMapHost : HwndHost
     private void Step(double dx, double dy)
     {
         if (CanGo(_shipX + dx, _shipY + dy)) { Move(dx, dy); _blocked = false; return; }
+        // 자동항해는 걸음을 줄여서라도 다가선다 — 한 걸음이 한 칸을 넘는 빠른 배는 좁은 물길의 막다른
+        // 모퉁이에서 온 걸음을 못 떼어 그대로 서 버린다.
+        if (AutoSailing)
+            for (double part = 0.5; part >= 0.25; part /= 2)
+                if (CanGo(_shipX + dx * part, _shipY + dy * part)) { Move(dx * part, dy * part); _blocked = false; return; }
         if (dx != 0 && CanGo(_shipX + dx, _shipY)) { Move(dx, 0); _blocked = true; return; }
         if (dy != 0 && CanGo(_shipX, _shipY + dy)) { Move(0, dy); _blocked = true; return; }
         _blocked = true;

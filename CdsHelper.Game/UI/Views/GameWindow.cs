@@ -159,7 +159,14 @@ public class GameWindow : Window
             return;
         }
 
-        if (e.Key == KeyOf(Local.Settings.GameSettings.ItemsKey, Key.R))
+        if (e.Key == KeyOf(Local.Settings.GameSettings.NavKey, Key.R))
+        {
+            ShipMapWindow.Current?.NavByKey();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.ItemsKey, Key.I))
         {
             ShipMapWindow.Current?.ItemsByKey(window);
             e.Handled = true;

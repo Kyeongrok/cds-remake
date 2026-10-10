@@ -1,7 +1,7 @@
 // 놀이 통계를 받는 Cloudflare Worker — 게임(CdsHelper.Game/Local/Helpers/PlayStats.cs)이 몇 분마다, 그리고 끌 때 셈 한 덩이를 보낸다.
 //
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
-//   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 도시 · 메뉴 · 전투 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
+//   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 도시 · 항해 · 네비게이션 · 전투 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
 //
 // 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다.
@@ -9,7 +9,9 @@
 import { DASHBOARD_HTML } from './dashboard.js';
 
 const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
-const KINDS = ['discovery', 'city', 'menu', 'battle', 'error'];
+// 차림표 줄(menu)은 이제 안 받는다 — 옛 판이 보내도 여기서 걸러진다. 표에 남은 옛 줄은 집계에도 안 든다.
+// 항해는 같은 열쇠(「떠난 도시>닿은 도시」)로 갈래 셋에 나눠 온다 — 횟수 · 날수의 합 · 선회의 합. 평균은 집계가 나눠서 낸다.
+const KINDS = ['discovery', 'city', 'voyage', 'voyage_days', 'voyage_turns', 'nav', 'battle', 'error'];
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
@@ -64,7 +66,7 @@ async function postPlay(request, env) {
 
 // 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
 const SNAPSHOT_TTL = 60 * 60 * 1000;
-const LIMITS = { discovery: 400, city: 300, menu: 300, battle: 50, error: 200 };
+const LIMITS = { discovery: 400, city: 300, voyage: 400, voyage_days: 100000, voyage_turns: 100000, nav: 100, battle: 50, error: 200 };
 
 // 대시보드 집계 — 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
 async function getDashboard(url, env) {
@@ -73,7 +75,7 @@ async function getDashboard(url, env) {
   if (!version) return json(all);
   // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
   if (!all.versions.includes(version))
-    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], cities: [], menus: [], battles: [], errors: [], days: [] });
+    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], cities: [], voyages: [], navs: [], battles: [], errors: [], days: [] });
   return json(await snapshot(env, version, all.versions));
 }
 
@@ -122,7 +124,12 @@ async function aggregate(env, version, versions) {
   const mods = [...byName.values()].map(({ sum, ...m }) => ({ ...m, average: sum / m.installs }))
     .sort((a, b) => b.enabled - a.enabled || (a.name < b.name ? -1 : 1));
 
-  return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, cities: tops.city, menus: tops.menu,
+  // 항해 — 구간마다 횟수에 날수 · 선회의 합을 붙인다.
+  const sumOf = (kind) => new Map(tops[kind].map((r) => [r.key, r.n]));
+  const dayOf = sumOf('voyage_days'), turnOf = sumOf('voyage_turns');
+  const voyages = tops.voyage.map((r) => ({ ...r, days: dayOf.get(r.key) || 0, turns: turnOf.get(r.key) || 0 }));
+
+  return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, cities: tops.city, voyages, navs: tops.nav,
            battles: tops.battle, errors: tops.error, mods, modValues, days, versions: known };
 }
 

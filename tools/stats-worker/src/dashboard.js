@@ -60,7 +60,8 @@ export const DASHBOARD_HTML = `<!doctype html>
     <section><h2>도시 순위</h2><div class="scroll"><table id="cities"></table></div></section>
     <section><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table></div></section>
   </div>
-  <section><h2>메뉴</h2><div class="tabs" id="menutabs"></div><div class="scroll"><table id="menus"></table></div></section>
+  <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회</small></h2><div class="scroll"><table id="voyages"></table></div></section>
+  <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
   <section><h2>전투</h2><table id="battles"></table></section>
   <section><h2>오류</h2><div class="scroll"><table id="errors"></table></div></section>
   <section><h2>날짜별 · 버전별</h2><table id="days"></table></section>
@@ -77,8 +78,8 @@ const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDa
 const SEA = [['Won', '승리'], ['Defeated', '패배'], ['Escaped', '퇴각'], ['Surrendered', '항복']];
 
 let data = null;
-const state = { version: '' }, sorts = { cities: 'n', discoveries: 'n', menus: 'n', errors: 'n' }, closed = new Set();
-let modTab = 'bool', menuTab = 'window';
+const state = { version: '' }, sorts = { cities: 'n', discoveries: 'n', voyages: 'n', errors: 'n' };
+let modTab = 'bool';
 
 const COLS = [['n', '횟수'], ['installs', '설치']];
 const bar = (v, top) => '<td class="bar"><i style="width:' + (100 * v / Math.max(1, top)).toFixed(1) + '%"></i></td>';
@@ -114,26 +115,30 @@ function renderMods() {
         + (data.modValues || []).filter((v) => v.name === m.name).map((v) => '<b>' + n(v.value) + '</b> <span class="dim">× ' + n(v.installs) + '</span>').join(' &nbsp;·&nbsp; ') + '</td></tr>').join('') : EMPTY(4));
 }
 
-// 메뉴는 「창 제목/줄 글」이라 창으로 묶는다 — 창 줄에는 그 창의 합계, 누르면 접힌다. 설치 수는 줄마다 센 것이라 창 줄에는 그중 가장 큰 값.
-function renderMenus() {
-  tabs('menutabs', [['window', '창별'], ['line', '줄별']], menuTab, (k) => { menuTab = k; });
-  if (menuTab === 'line') { rankTable('menus', '창 / 줄', data.menus, (r) => esc(r.key)); return; }
-  const k = sorts.menus, groups = new Map();
-  for (const m of data.menus) {
-    const cut = m.key.indexOf('/'), win = cut < 0 ? '(창 제목 없음)' : m.key.slice(0, cut).trim(), line = cut < 0 ? m.key : m.key.slice(cut + 1);
-    if (!groups.has(win)) groups.set(win, { n: 0, installs: 0, rows: [] });
-    const g = groups.get(win);
-    g.n += m.n; g.installs = Math.max(g.installs, m.installs); g.rows.push({ ...m, line });
-  }
-  const list = [...groups.entries()].sort((a, b) => b[1][k] - a[1][k] || b[1].n - a[1].n);
-  const top = Math.max(1, ...list.map(([, g]) => g[k]));
-  $('menus').innerHTML = '<tr><th class="name">창 · 줄</th>' + sortHead('menus') + '<th></th></tr>'
-    + (list.length ? list.map(([win, g]) => '<tr class="chapter" data-win="' + esc(win) + '"><td class="name">' + (closed.has(win) ? '▸ ' : '▾ ') + esc(win) + ' <span class="dim">' + g.rows.length + '줄</span></td><td>'
-        + n(g.n) + '</td><td>' + n(g.installs) + '</td>' + bar(g[k], top) + '</tr>'
-        + (closed.has(win) ? '' : g.rows.sort((a, b) => b[k] - a[k] || b.n - a.n).map((r) => '<tr><td class="name indent wrap">' + esc(r.line) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td>' + bar(r[k], top) + '</tr>').join(''))).join('')
-      : EMPTY(4));
-  bindSort('menus');
-  $('menus').querySelectorAll('tr.chapter').forEach((tr) => tr.onclick = () => { const w = tr.dataset.win; closed.has(w) ? closed.delete(w) : closed.add(w); render(); });
+// 항해 — 구간마다 횟수 · 설치 수와, 날수 · 선회의 합을 횟수로 나눈 평균.
+function renderVoyages() {
+  const k = sorts.voyages, rows = [...(data.voyages || [])].sort((a, b) => b[k] - a[k] || b.n - a.n);
+  const top = Math.max(1, ...rows.map((r) => r[k])), avg = (sum, count) => (count ? (Math.round(sum / count * 10) / 10).toLocaleString('ko-KR') : '-');
+  $('voyages').innerHTML = '<tr><th>#</th><th class="name">구간</th>' + sortHead('voyages') + '<th>평균 날수</th><th>평균 선회</th><th></th></tr>'
+    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name wrap">' + esc(r.name || r.key) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td><td>'
+        + avg(r.days, r.n) + '</td><td>' + avg(r.turns, r.n) + '</td>' + bar(r[k], top) + '</tr>').join('') : EMPTY(7));
+  bindSort('voyages');
+}
+
+// 네비게이션 — 열쇠는 「묶음:값」이다. 묶음마다 그 안에서의 몫을 낸다.
+const NAV_GROUPS = [['trip', '항해 한 번'], ['pick', '고른 길'], ['helm', '자동이동 모드'], ['from', '건 곳'], ['end', '끝난 꼴']];
+const NAV_NAMES = { 'trip:auto': '자동항해를 쓴 항해', 'trip:manual': '손으로만 몬 항해', 'pick:quick': '가장 빠른 길', 'pick:short': '가장 짧은 길',
+  'pick:land-fast': '내륙 — 가장 빠른 길', 'pick:land-lesswalk': '내륙 — 덜 걷는 길', 'pick:land-near': '내륙 — 가장 가까운 해안', 'pick:map': '지도를 찍어서',
+  'helm:fast': '속도 중시', 'helm:steady': '최소 조타', 'from:city': '도시 안에서', 'from:sea': '바다에서',
+  'end:arrived': '도착', 'end:stopped': '손으로 멈춤', 'end:stuck': '길이 막혀 멈춤' };
+function renderNavs() {
+  const rows = data.navs || [];
+  $('navs').innerHTML = '<tr><th class="name">묶음</th><th class="name">값</th><th>횟수</th><th>설치</th><th>몫</th><th></th></tr>'
+    + (rows.length ? NAV_GROUPS.map(([group, label]) => {
+        const mine = rows.filter((r) => r.key.startsWith(group + ':')).sort((a, b) => b.n - a.n), all = sum(mine, 'n');
+        return mine.map((r, i) => '<tr><td class="name">' + (i ? '' : label) + '</td><td class="name">' + esc(NAV_NAMES[r.key] || r.key) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td><td>'
+          + pct(r.n, all) + '</td>' + bar(r.n, all) + '</tr>').join('');
+      }).join('') : EMPTY(6));
 }
 
 function renderBattles() {
@@ -150,13 +155,14 @@ function renderBattles() {
 function render() {
   const kind = (k) => (data.kinds || []).find((r) => r.kind === k) || { n: 0, keys: 0 };
   $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('city').n, '도시 방문'], [kind('discovery').n, '발견'],
-      [kind('menu').n, '메뉴 누름'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
+      [kind('voyage').n, '항해'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
     .map(([v, label]) => '<div class="tile"><b>' + n(v) + '</b><span>' + label + '</span></div>').join('');
 
   renderMods();
   rankTable('cities', '도시', data.cities, (r) => esc(r.name || '#' + r.key));
   rankTable('discoveries', '발견물', data.discoveries, (r) => esc(r.name || '#' + r.key));
-  renderMenus();
+  renderVoyages();
+  renderNavs();
   renderBattles();
   rankTable('errors', '오류 갈래 @ 난 자리', data.errors, (r) => { const [type, at] = r.key.split('@'); return esc(type) + (at ? ' <span class="dim">@ ' + esc(at) + '</span>' : ''); });
 

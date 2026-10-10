@@ -2648,9 +2648,25 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     void ITownScreen.BribeInspector(Patron patron) => Patrons.BribeInspector(patron);
     void ITownScreen.BorrowShips(Patron patron) => Patrons.BorrowShips(patron);
 
-    void ITownScreen.Sail()
+    void ITownScreen.Sail() => Sail(sure: false);
+
+    /// <summary>이 도시에서 배로 떠날 수 있는지 — 함대가 여기 있어야 한다(항구 「출항」 줄과 같은 조건).</summary>
+    internal bool CanSailOut => _player.FleetHere(_cityId, 1);
+
+    /// <summary>
+    /// 자동항해 목적지를 골랐을 때 — 어느 건물에 있든 그 자리에서 출항한다. 떠났으면 참.
+    /// </summary>
+    /// <remarks>게임에는 없는 길이다. 출항 관문(<see cref="HarborMenu.ConfirmSail"/>)은 그대로 거친다.</remarks>
+    internal bool SailNow()
     {
-        if (!Port.ConfirmSail()) return;
+        if (!CanSailOut) return false;
+        CloseMenu();
+        return Sail(sure: true);
+    }
+
+    private bool Sail(bool sure)
+    {
+        if (!Port.ConfirmSail(sure)) return false;
         Sailed = true;
         SailedOnArrival = _arrived;
         // 마을에서 걸어 나와 출항하면 항구 칸 6(0x00477310)이 0x004A2AD0(10, 2)를 돌려 삐짐을 다 푼다.
@@ -2658,6 +2674,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!_arrived) _player.ClearSulks();
         _gateway = null;
         Close();
+        return true;
     }
 
     void ITownScreen.Explore(int buildingCode)

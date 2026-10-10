@@ -529,11 +529,14 @@ public sealed class ShipMapWindow : Window
                 (PersonMoveRow, () => PersonMoveDialog.Show(this, _game)),
             ],
             out _refreshApps,
+            // 햄버거 오른쪽 「네비게이션(R)」 — 목적지 도시를 골라 자동항해(도시 안이면 출항부터)를 건다.
+            (() => $"네비게이션({GameSettings.NavKey})", NavByKey),
+            out _refreshNav,
             // 설정은 게임 띠에 두었다가 햄버거로 옮겼다 — 게임 띠에 없는 칸이라
             // 섞여 있으면 원본과 달라 보인다(개발 창을 옮긴 것과 같은 까닭이다).
             // 지도 배율은 고르는 그 자리에서 지도에 먹인다.
             ("설정", () => SettingsDialog.Show(this, _game.Bgm, s => _host.ApplyMapScale(s))),
-            ("단축키", () => ShortcutDialog.Show(this)),
+            ("단축키", () => { ShortcutDialog.Show(this); _refreshNav(); }),
             // 업데이트한 뒤 한 번 뜨고 마는 글을 다시 본다 — 새 판 둘의 대목이다.
             ("릴리즈 노트", ShowReleaseNotes),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
@@ -604,6 +607,8 @@ public sealed class ShipMapWindow : Window
             // 그냥 찍으면 닻을 내리고 그 자리에 선다. 한 번 더 찍으면 올리고 다시 간다.
             // 뭍에서도 같은 스위치로 말이 서고 다시 간다.
             // 이 클릭이 커서 조타도 깨운다(0x0048B080 이 +0x104 에 1).
+            // 자동항해 중이면 이 클릭이 자동항해를 끄고 그 자리에 세운다.
+            StopNav();
             _host.SteerArmed = true;
             _host.ToggleAnchor();
             // 내릴 때도 올릴 때도 같은 소리가 난다.
@@ -666,8 +671,8 @@ public sealed class ShipMapWindow : Window
         _host.FolkAt = FolkAfloat;
 
         // 자동항해가 도착하거나 막혀서 스스로 멎으면 아래 띠로 알린다.
-        _host.AutoSailEnded += Say;
-        Closed += (_, _) => _host.AutoSailEnded -= Say;
+        _host.AutoSailEnded += AutoSailEnded;
+        Closed += (_, _) => _host.AutoSailEnded -= AutoSailEnded;
 
         GameUi.CarryOwnedWindows(this);
 
@@ -743,6 +748,25 @@ public sealed class ShipMapWindow : Window
     /// <summary>도시락 단추를 보일지 다시 정한다 — 모드 창을 닫을 때 부른다.</summary>
     private Action _refreshApps = () => { };
 
+    /// <summary>제목 줄 「네비게이션」 단추의 글자를 다시 적는다 — 단축키를 바꾼 뒤 부른다.</summary>
+    private Action _refreshNav = () => { };
+
+    private bool _navOpen;
+
+    /// <summary>
+    /// 네비게이션 — 목적지 도시를 고르는 창을 연다. 제목 줄 단추와 단축키(<see cref="GameSettings.NavKey"/>)가 부른다.
+    /// </summary>
+    internal void NavByKey()
+    {
+        if (!_started || _navOpen || !ReferenceEquals(_screen.Content, _mapRoot)) return;
+        // 도시 안에서는 고르면 곧바로 출항한다(ShowAutoSailDialog). 뭍에서는 배가 없다.
+        if (_host.IsOnLand && !_host.SeaBlocked) { Say("바다에 있을 때만 자동항해를 쓸 수 있습니다"); return; }
+
+        _navOpen = true;
+        try { Hold(ShowAutoSailDialog); }
+        finally { _navOpen = false; }
+    }
+
     /// <summary>도시락의 여급 수첩 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string BarmaidBookRow = "여급 수첩";
 
@@ -804,24 +828,226 @@ public sealed class ShipMapWindow : Window
     private string AutoSail(double cellX, double cellY)
     {
         var (ok, message) = _host.StartAutoSail(cellX, cellY);
+        if (ok) NavStarted("map", fromCity: false);
         return message;
     }
+
+    // ── 놀이 통계: 항해 한 번 ────────────────────────────────────────────
+
+    /// <summary>배로 떠난 도시. 떠난 적이 없거나(판을 불러온 직후) 이미 닿았으면 −1.</summary>
+    private int _tripFrom = -1;
+
+    /// <summary>떠날 때의 지도 틱 수와, 가는 동안 자동항해를 걸었는지.</summary>
+    private long _tripTicks;
+    private bool _tripAuto;
+
+    /// <summary>배로 도시를 떠났다 — 닿을 때까지 날수와 선회를 센다.</summary>
+    private void TripStarted(int city)
+    {
+        _tripFrom = city;
+        _tripTicks = _host.Ticks;
+        _tripAuto = false;
+        _host.TurnCount = 0;
+    }
+
+    /// <summary>배로 도시에 닿았다 — 어디서 어디로 며칠 걸려 몇 번 돌려 왔는지 적는다(<see cref="PlayStats.Voyage"/>).</summary>
+    private void TripEnded(int city)
+    {
+        int from = _tripFrom;
+        _tripFrom = -1;
+        if (from < 0) return;
+        int days = (int)Math.Ceiling((_host.Ticks - _tripTicks) / (double)TerrainTable.TicksPerDay);
+        PlayStats.Voyage(from, _game.CityName(from), city, _game.CityName(city), days, _host.TurnCount, _tripAuto);
+    }
+
+    /// <summary>자동항해를 걸었다 — 무엇을 골랐는지 적는다(<see cref="PlayStats.Nav"/>).</summary>
+    /// <param name="pick">고른 길 — quick · short · land-fast · land-lesswalk · land-near · map(지도를 찍었다).</param>
+    private void NavStarted(string pick, bool fromCity)
+    {
+        _tripAuto = true;
+        PlayStats.Nav("pick:" + pick);
+        PlayStats.Nav(GameSettings.SteadyHelm ? "helm:steady" : "helm:fast");
+        PlayStats.Nav(fromCity ? "from:city" : "from:sea");
+    }
+
+    /// <summary>
+    /// 이름으로 고른 자동항해의 목적지 도시. 없으면 −1.
+    /// </summary>
+    /// <remarks>
+    /// 게임에는 없는 것이다. <b>도시 안에서 고르면 그 자리에서 출항해</b> 그리로 자동항해가 걸리고,
+    /// 그 도시의 항구에 닿으면 「들어가겠습니까」를 묻지 않고 들어간다 — 가는 길에 스치는 딴 항구도 묻지 않는다.
+    /// 출항을 막는 것 · 걱정스러운 물음과 적대 도시 차림표는 그대로 사람이 답한다 — 거기서 물러서면 걸어 둔
+    /// 채로 남아, 손으로 출항할 때 걸린다. 자동항해가 딴 까닭으로 꺼지면 같이 지운다.
+    /// </remarks>
+    private int _sailTo = -1;
+
+    /// <summary>지금 떠 있는 도시 창. 바다 · 뭍에 있으면 null.</summary>
+    private CityPicView? _cityView;
 
     /// <summary>도시 이름으로 자동항해 목적지를 고르는 창을 연다 — 지금 아는 도시만 나온다.</summary>
     private void ShowAutoSailDialog()
     {
+        int here = _host.SeaBlocked ? _game.Player.CityId : -1;
         var cities = Enumerable.Range(0, GameMapCoords.CityCount)
-            .Where(id => _game.CityVisible(id))
-            .Select(id => (Id: id, Name: _game.CityName(id)));
+            .Where(id => id != here && _game.CityVisible(id))
+            .Select(id => (Id: id, Name: _game.CityName(id), Culture: _game.CultureOf(id),
+                           Harbor: _game.CityRows?.HasBuilding(id, HarborCode) ?? true));
 
-        AutoSailDialog.Show(this, cities, id =>
+        bool inCity = _host.SeaBlocked;
+        var town = _cityView;
+
+        // 미리보기에 깔 세계 지도 — 발견물 지도와 같은 그림이다(점 하나가 칸 넷).
+        System.Windows.Media.Imaging.BitmapSource? chart = null;
+        var all = new ExploredMap();
+        all.RevealAll();
+        if (_host.Chart(all, out int chartW, out int chartH) is { } dots)
+        {
+            chart = System.Windows.Media.Imaging.BitmapSource.Create(
+                chartW, chartH, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, dots, chartW * 4);
+            chart.Freeze();
+        }
+
+        // 창이 띄운 후보들 — 고른 차례로 여기서 되찾는다.
+        var goals = new List<SailGoal>();
+        var (chosen, pick) = AutoSailDialog.Show(this, cities, chart, id =>
         {
             if (!GameMapCoords.TryCityCell(id, out double cx, out double cy))
-                return (false, "그 도시의 좌표를 모릅니다");
-            var (ok, message) = _host.StartAutoSail(cx, cy);
-            if (ok) Say(message);
-            return (ok, message);
+                return (false, "그 도시의 좌표를 모릅니다", []);
+            if (inCity && town is not { CanSailOut: true })
+                return (false, "이 도시에는 함대가 없어 배로 떠날 수 없습니다", []);
+
+            goals.Clear();
+            var plans = new List<AutoSailDialog.Plan>();
+            foreach (var goal in SailGoals(id))
+            {
+                if (_host.PreviewRoute(goal.X, goal.Y, goal.Kind) is not { } found) continue;
+                double walk = goal.Afoot ? _host.WalkTicks((goal.X, goal.Y), id) : 0;
+                // 같은 길이 두 번 나오면(빠른 길이 곧 짧은 길일 때) 하나만 낸다.
+                if (plans.Any(had => SameRoute(had.Route, found.Route))) continue;
+                goals.Add(goal);
+                plans.Add(new AutoSailDialog.Plan(goal.Label, DaysNote(found.Ticks, walk), found.Route,
+                                                  goal.Afoot ? (cx, cy) : null, ShipMapHost.DescribeRoute(found.Route)));
+            }
+            if (plans.Count == 0) return (false, "바닷길을 찾지 못했습니다", []);
+
+            string name = _game.CityName(id);
+            return (true, goals[0].Afoot ? $"[{name}] 가는 길 (내륙 도시라 배를 대고 걸어갑니다)" : $"[{name}] 가는 길", plans);
         });
+
+        if (chosen < 0 || pick < 0 || pick >= goals.Count) return;
+        _sailTo = chosen;
+        _sailGoal = goals[pick];
+
+        // 도시 안이면 걸어 두고 곧바로 출항한다 — 자동항해는 도시 창이 닫히면서 걸린다.
+        if (inCity)
+        {
+            if (town == null) return;
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (_cityView != town || _sailTo != chosen || town.SailNow()) return;
+                string name = _game.CityName(chosen);
+                Say($"출항하면 [{name}]{GameUi.Josa(name, "으로", "로")} 자동항해합니다");
+            });
+            return;
+        }
+
+        var (ok, message) = _host.StartAutoSail(_sailGoal.X, _sailGoal.Y, _sailGoal.City, _sailGoal.Exact, _sailGoal.Kind);
+        if (ok) { NavStarted(_sailGoal.Tag, fromCity: false); Say($"[{_game.CityName(chosen)}]까지 {message}"); }
+        else { _sailTo = -1; Say(message); }
+    }
+
+    /// <summary>그 도시로 가는 자동항해 한 가지 — 향할 칸과 길을 고르는 법.</summary>
+    /// <param name="City">어귀 도착을 볼 도시. 어귀로 가는 길이 아니면 −1.</param>
+    /// <param name="Exact">그 칸까지 끝까지 갈지.</param>
+    /// <param name="Afoot">배를 대고 걸어가야 하는지(항구 없는 내륙 도시).</param>
+    /// <param name="Tag">놀이 통계에 적는 이름 — quick · short · land-fast · land-lesswalk · land-near.</param>
+    private readonly record struct SailGoal(string Label, double X, double Y, int City, bool Exact, bool Afoot,
+                                            ShipMapHost.RouteKind Kind, string Tag);
+
+    /// <summary>네비게이션에서 고른 길 — 도시 안에서 골랐으면 출항한 뒤 이것으로 건다.</summary>
+    private SailGoal _sailGoal;
+
+    /// <summary>
+    /// 그 도시로 가는 길 후보. 앞의 것이 기본이다.
+    /// </summary>
+    /// <remarks>
+    /// 항구가 있으면 그 어귀(입항 물음이 뜨는 자리)로 가는 「가장 빠른 길」(바람 · 해류)과 「가장 짧은 길」이다.
+    /// 항구 없는 내륙 도시는 배를 댈 자리가 갈린다 — 배로 가는 시간과 걸어가는 시간을 더해 가장 빠른 자리,
+    /// 덜 걷는 자리, 도시에 가장 가까운 해안.
+    /// </remarks>
+    private List<SailGoal> SailGoals(int id)
+    {
+        var got = new List<SailGoal>();
+        GameMapCoords.TryCityCell(id, out double cx, out double cy);
+        bool harbor = _game.CityRows?.HasBuilding(id, HarborCode) ?? true;
+
+        if (harbor)
+        {
+            var (x, y, exact) = _host.PortCellOf(id) is { } port ? (port.X, port.Y, true) : (cx, cy, false);
+            got.Add(new SailGoal("가장 빠른 길", x, y, id, exact, false, ShipMapHost.RouteKind.Quick, "quick"));
+            got.Add(new SailGoal("가장 짧은 길", x, y, id, exact, false, ShipMapHost.RouteKind.Short, "short"));
+            return got;
+        }
+
+        foreach (var (cell, label) in _host.LandingCellsOf(id))
+            got.Add(new SailGoal(label, cell.X, cell.Y, -1, true, true, ShipMapHost.RouteKind.Auto, label switch
+            {
+                "가장 빠른 길" => "land-fast",
+                "덜 걷는 길" => "land-lesswalk",
+                _ => "land-near",
+            }));
+        if (got.Count == 0)
+            got.Add(new SailGoal("가장 가까운 바다", cx, cy, -1, false, true, ShipMapHost.RouteKind.Auto, "land-near"));
+        return got;
+    }
+
+    /// <summary>두 항로가 같은 길인지 — 마디 수와 자리가 같다.</summary>
+    private static bool SameRoute(IReadOnlyList<(double X, double Y)> a, IReadOnlyList<(double X, double Y)> b)
+    {
+        if (a.Count != b.Count) return false;
+        for (int i = 0; i < a.Count; i++)
+            if (Math.Abs(a[i].X - b[i].X) > 0.01 || Math.Abs(a[i].Y - b[i].Y) > 0.01) return false;
+        return true;
+    }
+
+    /// <summary>「약 12일」 · 「항해 12일 + 도보 5일」 — 틱 수를 날로. 모르면 빈 글.</summary>
+    private static string DaysNote(double seaTicks, double walkTicks)
+    {
+        if (double.IsNaN(seaTicks) || double.IsNaN(walkTicks)) return "";
+        static int Days(double ticks) => Math.Max(1, (int)Math.Ceiling(ticks / TerrainTable.TicksPerDay));
+        return walkTicks > 0 ? $"항해 {Days(seaTicks)}일 + 도보 {Days(walkTicks)}일" : $"약 {Days(seaTicks)}일";
+    }
+
+    /// <summary>
+    /// 손으로 몰기 시작했다 — 자동항해 중이면 끄고 걸어 둔 목적지도 지운다. 껐으면 참.
+    /// </summary>
+    /// <remarks>
+    /// 지도 클릭 · 정지 글쇠(스페이스 · 숫자판 5)는 이어서 닻을 내려 그 자리에 서고, 방향 글쇠는 그 쪽으로
+    /// 손으로 몰아 간다. 예전에는 끄는 길이 없어 방향 글쇠를 눌러도 곧바로 항로로 되돌아갔다.
+    /// </remarks>
+    private bool StopNav()
+    {
+        if (!_host.AutoSailing) return false;
+        _host.StopAutoSail();
+        _sailTo = -1;
+        PlayStats.Nav("end:stopped");
+        Say("자동항해를 멈췄습니다");
+        return true;
+    }
+
+    /// <summary>자동항해가 스스로 멎었다 — 알리고, 목적지 도시 어귀에 닿아 멎은 것이면 들어간다.</summary>
+    private void AutoSailEnded(string message)
+    {
+        if (!_host.IsOnLand) PlayStats.Nav(message.StartsWith("도착", StringComparison.Ordinal) ? "end:arrived" : "end:stuck");
+
+        // 내륙 도시는 배를 댄 데서 내려 걸어가야 한다 — 어귀가 아니라 입항 물음이 안 뜬다.
+        int to = _sailTo;
+        bool afoot = to >= 0 && message.StartsWith("도착", StringComparison.Ordinal)
+                     && !(_game.CityRows?.HasBuilding(to, HarborCode) ?? true);
+        Say(afoot ? $"[{_game.CityName(to)}] 쪽 해안에 닿았습니다. 상륙해서 걸어가십시오" : message);
+
+        // 목적지 어귀에 닿아 멎었으면 입항 물음은 CheckPort 가 낸다 — 손으로 다가갔을 때와 같은 길이다.
+        _sailTo = -1;
     }
 
     /// <summary>
@@ -2754,6 +2980,7 @@ public sealed class ShipMapWindow : Window
         if (NumpadWay(e.Key) is { } pad)
         {
             e.Handled = true;
+            StopNav();
             if (pad < 0) _host.ToggleAnchor();          // 「5」
             else _host.SteerTo(pad);
             return;
@@ -2779,7 +3006,14 @@ public sealed class ShipMapWindow : Window
             return;
         }
 
-        if (e.Key == KeyOf(GameSettings.ItemsKey, Key.R))
+        if (e.Key == KeyOf(GameSettings.NavKey, Key.R))
+        {
+            e.Handled = true;
+            NavByKey();
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.ItemsKey, Key.I))
         {
             e.Handled = true;
             if (_started && !_itemsOpen) Hold(() => ItemsByKey(this));
@@ -2836,7 +3070,7 @@ public sealed class ShipMapWindow : Window
         switch (id)
         {
             case "Anchor":
-                if (!e.IsRepeat) _host.ToggleAnchor();
+                if (!e.IsRepeat) { StopNav(); _host.ToggleAnchor(); }
                 return;
             case "Command":
                 if (!e.IsRepeat) ShowCommandMenu(this, new Point(ActualWidth / 2, ActualHeight / 2));
@@ -2859,6 +3093,7 @@ public sealed class ShipMapWindow : Window
             dy = id.Contains("Down") ? 1 : id.Contains("Up") ? -1 : 0;
         }
 
+        StopNav();
         // 16방위 — 북 0 에서 서쪽으로 돈다(숫자판 8 → 0, 4 → 4, 2 → 8, 6 → 12).
         _host.SteerTo((dx, dy) switch
         {
@@ -3064,6 +3299,7 @@ public sealed class ShipMapWindow : Window
         // 하루 안의 눈금도 판마다 제 것으로 — 새 판은 0, 불러온 판은 적어 둔 값(머리 +0x14, 0x0044AE60).
         // 예전에는 적지도 되돌리지도 않아 앞 판 눈금이 새어 첫 날이 최대 하루 어긋났다.
         _ticks = saved?.DayTicks is { } dayTicks ? Math.Clamp(dayTicks, 0, TerrainTable.TicksPerDay - 1) : 0;
+        _tripFrom = -1;   // 불러온 판은 어디서 떠났는지 모른다 — 다음 출항부터 센다
 
         // 발견물 이름 덧씌우기는 판을 열 때마다 비운다 — 안 그러면 앞 판에서 지은 이름이 남는다.
         Local.Helpers.DiscoveryTable.ResetNames(null);
@@ -3439,13 +3675,6 @@ public sealed class ShipMapWindow : Window
         // 「발견물」 탭 — 체크로 찾은 것을 바꿨으면 지도의 발견물·유적 그림을 다시 맞춘다.
         Discoveries = _game.Discoveries?.Table,
         DiscoveriesChanged = () => HideCities(),
-        // 게임에는 없는 것이라 해상 커맨드에서 개발 창으로 옮겼다(fb-ui-21). 지도를 Shift+오른쪽 클릭해
-        // 바로 찍는 길은 그대로다.
-        AutoSail = () =>
-        {
-            if (_host.IsOnLand) Say("바다에 있을 때만 자동항해를 쓸 수 있습니다");
-            else ShowAutoSailDialog();
-        },
     });
 
     /// <summary>
@@ -3932,8 +4161,13 @@ public sealed class ShipMapWindow : Window
         // 안 가리면 로마 같은 항구 없는 도시 곁을 배로 지나도 「항구로 들어가겠습니까」가 떴다.
         int door = byLand ? GateCode : HarborCode;
         int city = _host.TownsAt().FirstOrDefault(t => _game.CityRows?.HasBuilding(t, door) ?? true, -1);
+        // 목적지 도시를 걸어 둔 자동항해 — 손으로 몰거나 막혀서 꺼졌으면 걸어 둔 것도 지운다.
+        if (_sailTo >= 0 && !_host.AutoSailing) _sailTo = -1;
         if (city < 0) { _askedCity = -1; return; }      // 도시를 벗어났다
         if (city == _askedCity) return;                 // 이미 물어본 도시다
+        // 가는 길에 스치는 딴 항구는 묻지 않는다 — 물음창이 뜰 때마다 배가 서면 자동이 아니다.
+        bool bound = _sailTo >= 0 && !byLand;
+        if (bound && city != _sailTo) return;
         _askedCity = city;
 
         var name = _game.CityName(city);
@@ -3952,6 +4186,8 @@ public sealed class ShipMapWindow : Window
             //  SpotCities 로 옮겼다.)
             string where = byLand ? "도시" : "항구";
 
+            // 걸어 둔 목적지에 닿았다 — 자동항해를 끄고 닻을 내린 뒤, 손으로 다가갔을 때처럼 묻는다.
+            if (bound) { _sailTo = -1; _host.StopAutoSail(); _host.DropAnchor(); }
             // <b>피로도가 60 이상이면 말이 다르다</b>(0x0048DBCA) — 물음인 것은 같다.
             if (!ConfirmDialog.Ask(this, _game.Player.Fatigue >= TiredToRest
                     ? $"[{name}]의 {where}입니다. 모두 지쳐 있으니 {where}로 들어갑시다."
@@ -7132,6 +7368,7 @@ public sealed class ShipMapWindow : Window
 
         // 바다로 들어서면 함대가 이 도시에 닻을 내린다(0x0048B54E). 말로 걸어 들어오면 안 바뀐다.
         bool bySea = !_host.IsOnLand;
+        if (bySea && !enterHome && !resumed) TripEnded(city);
         if (enterHome || bySea) _game.Player.MoorAt(city);
         // 함대가 기다리는 도시로 <b>걸어 돌아왔으면 배에 다시 오른다</b> — 성문 건물이 들어설 때
         // 뭍 표시를 끄고 대 둔 바다 자리를 되돌린다(0x0046871F → 0x004745B0).
@@ -7139,6 +7376,8 @@ public sealed class ShipMapWindow : Window
 
         var dialog = CityPicView.Open(this, _game, city, name, MapAreaOnScreen(), track, culture);
         if (dialog == null) return false;
+        _cityView = dialog;
+        dialog.Closed += (_, _) => { if (_cityView == dialog) _cityView = null; };
 
         _game.Bgm.Play(track);
         SetInCity(true);          // 지도에 남색 막을 씌운다(그림 창과는 따로 논다)
@@ -7188,6 +7427,11 @@ public sealed class ShipMapWindow : Window
         else if (!resumed) dialog.Arrive(bySea);
         dialog.Closed += (_, _) =>
         {
+            // 도시 안에서 걸어 둔 자동항해 목적지 — 출항했을 때만 쓴다. 아래 대사 · 장면이 도는 사이
+            // CheckPort 가 지우지 않게 여기서 빼 둔다.
+            int sailTo = dialog.Sailed ? _sailTo : -1;
+            _sailTo = -1;
+
             SetInCity(false);
 
             // 항구에서 출항했는데 아직 뭍이면(뭍으로 걸어 들어온 마을이다) 그 마을 앞바다에 배를
@@ -7195,6 +7439,7 @@ public sealed class ShipMapWindow : Window
             if (dialog.Sailed && _host.IsOnLand) _host.PlaceAtCity(city);
             // 출항하면 닻을 걷는다(0x0048EB84). 성문으로 나섰으면 함대는 이 도시에 그대로 있다.
             if (dialog.Sailed) _game.Player.MoorAt(-1);
+            if (dialog.Sailed) TripStarted(city);
             // 「자동 보급」 · 「자동 모집」 띠는 출항 물음 동안만 보인다 — 바다로 나오면 걷는다. 그냥 두면 띠가 제 참(14초)을
             // 다 채울 때까지 항해 화면 아래에 남는다. 딴 알림은 건드리지 않는다.
             if (dialog.Sailed && HarborMenu.IsAutoNote(_lastNote)) Say("");
@@ -7252,6 +7497,14 @@ public sealed class ShipMapWindow : Window
                 _host.Paused = false;
                 _asking = false;
             }
+
+            // 걸어 둔 목적지가 있으면 닻을 올리고 그리로 간다. 대본이 싸움 · 딴 도시로 끌고 갔으면 걸지 않는다.
+            if (sailTo < 0 || _host.SeaBlocked || _host.IsOnLand) return;
+            var goal = _sailGoal;
+            var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
+            if (ok) NavStarted(goal.Tag, fromCity: true);
+            if (ok) _sailTo = sailTo;
+            Say(ok ? $"[{_game.CityName(sailTo)}]까지 {message}" : message);
         };
         return true;
     }

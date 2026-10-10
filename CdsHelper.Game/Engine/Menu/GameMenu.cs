@@ -66,9 +66,7 @@ internal sealed class GameMenu : Border
             // 메뉴는 줄을 붙여 쌓으므로 단추끼리 벌리는 여백을 덮는다.
             // 죽은 줄은 <b>손만 떼면</b> 된다 — 손이 없는 띠는 GameButton 이 글씨를
             // 회색(색인 21)으로 찍는다. 게임도 띠는 그대로 두고 글씨만 흐리게 낸다.
-            // 줄을 고르면 어느 줄인지 센다(PlayStats) — 마우스로 누르든 글쇠로 고르든 이 손을 지난다.
-            Action? run = row.Dim || row.Run is not { } act ? null
-                        : () => { PlayStats.Menu(title, row.Text); act(); };
+            Action? run = row.Dim ? null : row.Run;
             var button = new GameButton(row.Text, run, style) { Margin = default };
 
             // 창이 뜨면 <b>첫 줄에 초점</b>이 가 있다 — 게임도 그 줄의 안쪽 테가 깜빡인다.

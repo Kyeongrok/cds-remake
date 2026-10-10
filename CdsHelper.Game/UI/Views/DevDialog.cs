@@ -41,9 +41,6 @@ public sealed class DevDialog : GameWindow
         public Func<bool> CoordsOn { get; init; } = () => false;
         public Action<bool> SetCoords { get; init; } = _ => { };
 
-        /// <summary>자동항해 — 목적지 도시를 골라 손을 놓고 몬다. 개발 창을 닫은 뒤 부른다.</summary>
-        public Action? AutoSail { get; init; }
-
         /// <summary>도구 앱(Editor.exe) 띄우기 — 창을 닫은 뒤 부른다.</summary>
         public Action? HelperApp { get; init; }
 
@@ -153,23 +150,6 @@ public sealed class DevDialog : GameWindow
             });
             give.Children.Add(GameUi.PushButton("아이템 넣기…", () => { Close(); giveItem(); }, 180));
             tests.Children.Add(give);
-        }
-
-        // 자동항해 — 해상 커맨드에 있던 것을 옮겼다. 창을 닫고 나서 목적지를 고른다.
-        if (options.AutoSail is { } autoSail)
-        {
-            var sail = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
-            sail.Children.Add(new TextBlock
-            {
-                Text = "항해",
-                Width = 64,
-                Foreground = GameUi.Text,
-                FontWeight = FontWeights.Bold,
-                FontSize = 15,
-                VerticalAlignment = VerticalAlignment.Center,
-            });
-            sail.Children.Add(GameUi.PushButton("자동항해…", () => { Close(); autoSail(); }, 180));
-            rows.Children.Add(sail);
         }
 
         // 모의전 셋 — 게임에 없는 줄이라 미니 게임 차림표에서 이 창으로 옮겼다.

@@ -165,7 +165,11 @@ public sealed class GameSettingsData
     public string SaveKey { get; set; } = "V";
     public string MapKey { get; set; } = "D";
     public string ModKey { get; set; } = "M";
-    public string ItemsKey { get; set; } = "R";
+    public string ItemsKey { get; set; } = "I";
+    public string NavKey { get; set; } = "R";
+
+    /// <summary>자동항해를 「최소 조타」로 몰지. 끄면 「속도 중시」다.</summary>
+    public bool SteadyHelm { get; set; }
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
@@ -697,11 +701,35 @@ public static class GameSettings
         set => Set(d => d.ModKey = value);
     }
 
-    /// <summary><b>소지품 정보</b> 단축키. 기본은 <c>R</c> 이다.</summary>
+    /// <summary><b>소지품 정보</b> 단축키. 기본은 <c>I</c> 다.</summary>
+    /// <remarks>
+    /// 예전 기본은 <c>R</c> 이었는데 네비게이션이 그 글쇠를 가져갔다. 예전 값이 적힌 설정 파일은 둘이 같은
+    /// 글쇠가 되므로, 겹치면 이쪽이 <c>I</c> 로 비켜 선다.
+    /// </remarks>
     public static string ItemsKey
     {
-        get => Get(d => d.ItemsKey);
+        get => Get(d => string.Equals(d.ItemsKey, d.NavKey, StringComparison.OrdinalIgnoreCase) ? "I" : d.ItemsKey);
         set => Set(d => d.ItemsKey = value);
+    }
+
+    /// <summary>
+    /// 자동항해의 조타 — 참이면 「최소 조타」, 거짓(기본)이면 「속도 중시」다. 네비게이션 창에서 고른다.
+    /// </summary>
+    /// <remarks>
+    /// 속도 중시는 그은 선에 바짝 붙어 가느라 뱃머리를 자주 튼다. 최소 조타는 길을 8방위로 곧게 뻗는 토막으로
+    /// 바꿔 토막마다 뱃머리를 한 번만 세운다 — 해안 가까이처럼 그렇게 못 바꾸는 데서는 조금 더 걸린다.
+    /// </remarks>
+    public static bool SteadyHelm
+    {
+        get => Get(d => d.SteadyHelm);
+        set => Set(d => d.SteadyHelm = value);
+    }
+
+    /// <summary><b>네비게이션</b>(목적지 도시를 골라 자동항해) 단축키. 기본은 <c>R</c> 이다.</summary>
+    public static string NavKey
+    {
+        get => Get(d => d.NavKey);
+        set => Set(d => d.NavKey = value);
     }
 
     /// <summary><b>힌트 정보</b>(취득 힌트 일람) 단축키. 기본은 <c>H</c> 다.</summary>

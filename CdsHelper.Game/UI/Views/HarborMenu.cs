@@ -165,7 +165,11 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// 맨 앞에서 보는 것은 "편성돼 있지 않은 선박"(<c>0x004688A0</c>) — 이 마을에
     /// <b>맡겨 둔 배</b>가 한 척이라도 있으면 출항을 막는다.
     /// </remarks>
-    public bool ConfirmSail()
+    /// <param name="sure">
+    /// 참이면 마지막 「준비 만반 … 출항하겠습니까?」를 묻지 않는다 — 자동항해 목적지를 골라 이미 떠나기로 한
+    /// 때다. 막는 것(선원 · 보급 · 맡겨 둔 배)과 걱정스러운 물음(선원 모자람 · 보급 20일 밑)은 그대로다.
+    /// </param>
+    public bool ConfirmSail(bool sure = false)
     {
         var owner = Owner;
 
@@ -212,9 +216,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             return false;
         }
 
-        if (!ConfirmDialog.Ask(owner, days < ReadyDays
-                ? $"{days}일 정도 항해할 수 있다고 생각합니다. 출항하겠습니까?"
-                : "준비 만반입니다. 언제라도 출항할 수 있습니다! 출항하겠습니까?", face: face))
+        if (days < ReadyDays
+                ? !ConfirmDialog.Ask(owner, $"{days}일 정도 항해할 수 있다고 생각합니다. 출항하겠습니까?", face: face)
+                : !sure && !ConfirmDialog.Ask(owner, "준비 만반입니다. 언제라도 출항할 수 있습니다! 출항하겠습니까?", face: face))
             return false;
 
         // 모항에서 나설 때는 아내가 배웅한다(0x00477160 — 도시 +0x1D 비트 8 과 아내가 있을 때).
