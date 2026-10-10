@@ -1309,7 +1309,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         // 제독 수준으로 뭉개 들려주고, 부관이 더 잘하면 부관이 옮긴다(0x004690A0).
         ConfirmDialog.Tell(_view, StrangerTalk.Garble(line, mine, dice), face: face);
-        if (relayer.Length > 0 && _player.MateInfoOf(relayer) is { } who)
+        if (relayer.Length > 0 && _game.MateInfo(relayer) is { } who)
             TalkDialog.Say(_view, MateFace(who), "", StrangerTalk.Relay(StrangerTalk.Garble(line, best, dice), false));
     }
 
@@ -2334,7 +2334,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         void Say(string words)
         {
             TalkDialog.Say(_view, face, "", StrangerTalk.Garble(words, level, _game.Random));
-            if (relayer.Length > 0 && _player.MateInfoOf(relayer) is { } who)
+            if (relayer.Length > 0 && _game.MateInfo(relayer) is { } who)
                 TalkDialog.Say(_view, MateFace(who), "", StrangerTalk.Relay(StrangerTalk.Garble(words, best, _game.Random), false));
         }
 

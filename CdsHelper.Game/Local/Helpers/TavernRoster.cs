@@ -97,21 +97,30 @@ public sealed class TavernRoster
             if (r.Building is not (Tavern or Inn)) continue;
             if (r.Name == "???") continue;
 
-            people.Add(new Person(
-                r.Id, r.Name, r.Fame, ageOf?.Invoke(r) ?? r.Age,
-                Byte(r.Hire), r.Face, r.City, Byte(r.Building),
-                Stat(r, 0), Stat(r, 1), Stat(r, 2), Stat(r, 3), Stat(r, 4),
-                Level(r, Support.Local.Models.Skill.Sword),
-                Level(r, Support.Local.Models.Skill.Shooting),
-                Level(r, Support.Local.Models.Skill.Gunnery),
-                Level(r, Support.Local.Models.Skill.Sailing),
-                Level(r, Support.Local.Models.Skill.Handling),
-                Level(r, Support.Local.Models.Skill.Medicine),
-                Level(r, Support.Local.Models.Skill.Science),
-                r.Female));
+            people.Add(PersonOf(r, ageOf?.Invoke(r) ?? r.Age));
         }
         return new TavernRoster(people);
     }
+
+    /// <summary>
+    /// 인물 표의 한 줄을 그대로 사람으로 — <b>술집 · 여관에 앉아 있지 않은 사람</b>도 된다.
+    /// </summary>
+    /// <remarks>
+    /// 대본이 부하로 앉히는 사람(신대륙의 통역 헤로니모·아기랄 · 도냐·마리나)은 소재지가 없어 이 목록에 안 든다.
+    /// 그런 사람의 신상을 되짚을 때 쓴다.
+    /// </remarks>
+    public static Person PersonOf(PersonTable.Row r, int age) => new(
+        r.Id, r.Name, r.Fame, age,
+        Byte(r.Hire), r.Face, r.City, Byte(r.Building),
+        Stat(r, 0), Stat(r, 1), Stat(r, 2), Stat(r, 3), Stat(r, 4),
+        Level(r, Support.Local.Models.Skill.Sword),
+        Level(r, Support.Local.Models.Skill.Shooting),
+        Level(r, Support.Local.Models.Skill.Gunnery),
+        Level(r, Support.Local.Models.Skill.Sailing),
+        Level(r, Support.Local.Models.Skill.Handling),
+        Level(r, Support.Local.Models.Skill.Medicine),
+        Level(r, Support.Local.Models.Skill.Science),
+        r.Female);
 
     /// <summary>그 도시 그 건물에 앉아 있는 사람들. 표에 적힌 차례 그대로다.</summary>
     public IReadOnlyList<Person> At(int city, byte building)

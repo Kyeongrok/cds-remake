@@ -3300,6 +3300,10 @@ public sealed class ShipMapWindow : Window
         // 예전에는 적지도 되돌리지도 않아 앞 판 눈금이 새어 첫 날이 최대 하루 어긋났다.
         _ticks = saved?.DayTicks is { } dayTicks ? Math.Clamp(dayTicks, 0, TerrainTable.TicksPerDay - 1) : 0;
         _tripFrom = -1;   // 불러온 판은 어디서 떠났는지 모른다 — 다음 출항부터 센다
+        // 부하의 신상(얼굴 · 능력)을 채워 둔다 — 대본으로 들어온 통역처럼 예전 판에서 신상 없이 앉은 사람이 있다.
+        // 얼굴을 그리는 자리들은 이미 채워진 신상만 본다.
+        foreach (string mate in _game.Player.Mates)
+            if (mate.Length > 0) _game.MateInfo(mate);
 
         // 발견물 이름 덧씌우기는 판을 열 때마다 비운다 — 안 그러면 앞 판에서 지은 이름이 남는다.
         Local.Helpers.DiscoveryTable.ResetNames(null);

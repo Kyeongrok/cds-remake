@@ -716,10 +716,25 @@ public sealed class Game
     /// 게임 세이브의 인물표에서 채워 <b>그 자리에서 적어 둔다</b> — 한 번 채우면 다음부터는
     /// 우리 것만으로 뜬다.
     /// </summary>
+    /// <summary>
+    /// 그 이름의 사람 — 술집 · 여관에 앉은 사람이 아니면 인물 표에서 바로 찾는다.
+    /// </summary>
+    /// <remarks>
+    /// 대본이 부하로 앉히는 사람(신대륙의 통역 둘)은 소재지가 없어 술집 목록(<see cref="Roster"/>)에 없다 —
+    /// 예전에는 여기서 못 찾아 인물정보에 얼굴이 안 나오고, 술집에서 말을 옮겨 주지도 않았다.
+    /// </remarks>
+    private TavernRoster.Person? FindPerson(string name)
+    {
+        if (Roster?.Find(name) is { } seated) return seated;
+        if (name.Length == 0 || World is not { } world) return null;
+        if (world.People.FirstOrDefault(r => r.Name == name) is not { } row) return null;
+        return TavernRoster.PersonOf(row, world.Table.AgeOn(row, Player.Date.Year));
+    }
+
     public Player.MateInfo? MateInfo(string name)
     {
         if (Player.MateInfoOf(name) is { } mine) return mine;
-        if (Roster?.Find(name) is not { } person) return null;
+        if (FindPerson(name) is not { } person) return null;
 
         var filled = Town.Tavern.MateInfoOf(person);
         Player.RememberMate(filled);
