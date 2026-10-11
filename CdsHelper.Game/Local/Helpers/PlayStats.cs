@@ -252,6 +252,7 @@ public static class PlayStats
     [
         nameof(GameSettings.InfoLevel), nameof(GameSettings.SeaRaidScale), nameof(GameSettings.MutinyRate),
         nameof(GameSettings.Resolution), nameof(GameSettings.PortDays),
+        nameof(GameSettings.PersonRollDays), nameof(GameSettings.PersonMoveOdds), nameof(GameSettings.PersonRestDays),
         nameof(GameSettings.ModPreset),      // 권장 옵션 — 0 오리지널 · 1 초보 · 2 중수 · 3 고수
     ];
 

@@ -59,6 +59,9 @@ public sealed class GameSettingsData
     /// <summary>인물이 떠날 확률의 분모(1~5) — N분의 1. 기본 5(원본).</summary>
     public int PersonMoveOdds { get; set; } = GameSettings.DefaultPersonMoveOdds;
 
+    /// <summary>인물이 도시에 닿고 나서 쉬는 날수(0~60). 기본 60(원본).</summary>
+    public int PersonRestDays { get; set; } = GameSettings.DefaultPersonRestDays;
+
     /// <summary>일기토에서 최근에 싸운 상대 이름 — 앞이 가장 최근이다.</summary>
     public List<string> RecentDuelFoes { get; set; } = [];
 
@@ -665,6 +668,20 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.PersonMoveOdds), MinPersonMoveOdds, MaxPersonMoveOdds);
         set => Set(d => d.PersonMoveOdds = Math.Clamp(value, MinPersonMoveOdds, MaxPersonMoveOdds));
+    }
+
+    /// <summary>인물이 닿고 나서 쉬는 날수의 기본(원본, <c>0x00432617</c> 의 <c>push -0x3c</c>)과 모드 창에서 고르는 값들.</summary>
+    public const int DefaultPersonRestDays = 60;
+    public static readonly int[] PersonRestChoices = [0, 5, 10, 15, 20, 30, 45, 60];
+
+    /// <summary>
+    /// 인물이 도시에 닿고 나서 쉬는 날수(0~60) — 그동안은 떠날지 굴리지 않는다. 원본은 60 이다.
+    /// 줄이면 길 위에 있는 사람이 늘어 바다에서 더 자주 보인다. 바다에서 붙고 수도로 돌아간 사람이 쉬는 날도 이 값이다.
+    /// </summary>
+    public static int PersonRestDays
+    {
+        get => Math.Clamp(Get(d => d.PersonRestDays), 0, DefaultPersonRestDays);
+        set => Set(d => d.PersonRestDays = Math.Clamp(value, 0, DefaultPersonRestDays));
     }
 
     /// <summary>들고 나는 날수의 아래·위·기본.</summary>

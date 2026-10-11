@@ -75,7 +75,7 @@ const sum = (rows, k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
 const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '-';
 const EMPTY = (cols) => '<tr><td colspan="' + cols + '" class="dim name">아직 자료가 없습니다.</td></tr>';
 // 단계 옵션 — 게임(PlayStats.LevelMods)이 켬·끔이 아니라 값으로 보내는 것.
-const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'ModPreset', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
+const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'PersonRollDays', 'PersonMoveOdds', 'PersonRestDays', 'ModPreset', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
 // 값에 이름이 있는 단계 옵션 — 수 대신 이름으로 적는다. ModPreset 은 모드 창 「권장」에서 고른 단계다.
 const LEVEL_NAMES = { ModPreset: ['오리지널', '초보', '중수', '고수'], InfoLevel: ['기본', '일반', '상세'] };
 // 옵션 이름 — 게임은 GameSettings 의 속성 이름으로 보낸다. 모드 창(ModDialog)에 적힌 글로 바꿔 보이고, 여기 없는 것은 속성 이름 그대로 나온다.
@@ -97,7 +97,7 @@ const MOD_NAMES = {
   SmoothClouds: '부드러운 구름', SeaEffect: '바다 입체 효과', HiResSea: '고해상도 바다',
   Nobility: '작위', MateDismiss: '부하 해고', SkipRecontract: '보고 시 재계약 끄기', SuezCanal: '수에즈 운하', SpecialOrder: '특별주문', PlayOpeningMovie: '오프닝 동영상 틀기',
   BgmEnabled: '배경음악', SfxEnabled: '효과음', CustomBgmEnabled: '커스텀 BGM', DuelImmortal: '일기토 불사(개발)',
-  InfoLevel: '정보 제공 등급', ModPreset: '권장 단계', SeaRaidScale: '해적·이슬람 함대 확률 배수(차례)', MutinyRate: '바다 반란 몫(%)', PortDays: '항구 드나드는 날수',
+  InfoLevel: '정보 제공 등급', ModPreset: '권장 단계', SeaRaidScale: '해적·이슬람 함대 확률 배수(차례)', MutinyRate: '바다 반란 몫(%)', PortDays: '항구 드나드는 날수', PersonRollDays: '인물 이동 주기(0 매월 1일 · N일마다)', PersonMoveOdds: '인물 떠날 확률(N분의 1)', PersonRestDays: '인물 쉬는 날',
   Resolution: '게임 창 크기(고른 차례)', ScreenWidth: '모니터 너비(점)', ScreenHeight: '모니터 높이(점)', ScreenScale: '모니터 배율(%)',
 };
 // 옵션이 모드 창의 어느 탭에 있는지 — 탭 차례는 모드 창(ModDialog.Tabs)과 같다. 모드 창 밖에서 바꾸는 것은 「그 밖」 · 「화면」 · 「개발」로 모은다.
@@ -112,7 +112,7 @@ const MOD_TABS = [
   ['폰트', ['RidiFont']],
   ['캐릭터', ['MateDismiss', 'SkipRecontract', 'RerollOnJob']],
   ['저장', ['AutoSaveOnPort']],
-  ['일반', ['CustomBgmEnabled', 'SuezCanal', 'SpecialOrder', 'PlayOpeningMovie', 'SeaRaidScale']],
+  ['일반', ['CustomBgmEnabled', 'SuezCanal', 'SpecialOrder', 'PlayOpeningMovie', 'SeaRaidScale', 'PersonRollDays', 'PersonMoveOdds', 'PersonRestDays']],
   ['실험', ['LandAutoWalk', 'CaptureMirror', 'ShipCentered', 'Nobility', 'RidiLoadList']],
   ['그 밖', ['BgmEnabled', 'SfxEnabled', 'AutoOpenShipMap', 'SteadyHelm', 'PersonInfoList', 'DiscoveryMapSpots', 'DiscoveryMapCities', 'DiscoveryMapGrid', 'DiscoveryMapWind', 'DiscoveryMapCurrent']],
   ['화면', ['Resolution', 'ScreenWidth', 'ScreenHeight', 'ScreenScale']],

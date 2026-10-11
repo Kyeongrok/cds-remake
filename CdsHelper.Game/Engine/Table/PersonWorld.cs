@@ -43,8 +43,9 @@ public sealed class PersonWorld
     /// <summary>하루에 나아가는 거리. <c>0x00432587</c> 의 <c>x24</c> 다.</summary>
     private const int SpeedPerDay = 24;
 
-    /// <summary>닿고 나서 쉬는 날. <c>0x00432617</c> 의 <c>push -0x3c</c> 다.</summary>
-    private const int RestDays = 60;
+    /// <summary>닿고 나서 쉬는 날. 원본은 60 이다(<c>0x00432617</c> 의 <c>push -0x3c</c>).</summary>
+    /// <remarks>모드 창 「쉬는 날」로 0~60 사이에서 바꿀 수 있다.</remarks>
+    private static int RestDays => Local.Settings.GameSettings.PersonRestDays;
 
     /// <summary>세계가 감기는 너비. <c>0x9C4</c> 다.</summary>
     private const int WorldWidth = 0x9C4;

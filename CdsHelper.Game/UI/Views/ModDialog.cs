@@ -515,6 +515,13 @@ public sealed class ModDialog : GameWindow
             GameSettings.PersonMoveOdds - GameSettings.MinPersonMoveOdds,
             i => GameSettings.PersonMoveOdds = i + GameSettings.MinPersonMoveOdds,
             $"굴릴 때마다 떠날 확률. 원본은 {GameSettings.DefaultPersonMoveOdds}분의 1입니다."));
+        // 쉬는 날 — 닿고 나서 이만큼은 떠날지 굴리지 않는다. 원본은 예순 날(0x00432617).
+        general.Children.Add(Select("쉬는 날",
+            [.. GameSettings.PersonRestChoices.Select(n => n == GameSettings.DefaultPersonRestDays ? $"{n}일 (원본)" : $"{n}일")],
+            Math.Max(0, Array.FindLastIndex(GameSettings.PersonRestChoices, n => n <= GameSettings.PersonRestDays)),
+            i => GameSettings.PersonRestDays = GameSettings.PersonRestChoices[i],
+            $"인물이 도시에 닿고 나서 쉬는 날수. 그동안은 떠나지 않습니다. 원본은 {GameSettings.DefaultPersonRestDays}일입니다."
+            + " 「이동 주기」 · 「떠날 확률」을 올려도 바다에서 인물이 잘 안 보이면 이 값을 줄이십시오 — 길 위에 있는 사람이 늘어납니다."));
 
         var buttons = new StackPanel
         {
