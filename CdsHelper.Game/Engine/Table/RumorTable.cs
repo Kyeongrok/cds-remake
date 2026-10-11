@@ -47,7 +47,26 @@ public sealed class RumorTable
 
     public static string LastError { get; private set; } = "";
 
-    public IReadOnlyList<Rumor> Rumors => _rumors;
+    /// <summary>
+    /// 소문 전부 — 원본 191줄 뒤에 <b>더해 넣은 소문</b>(<c>소문-고친것.json</c>)을 잇는다. 줄 번호가 원본과 어긋나지 않게
+    /// 늘 뒤에 붙인다. 더한 것은 모드 「추가 발견물」을 켰을 때만 낸다.
+    /// </summary>
+    /// <remarks>
+    /// 더해 넣은 발견물(돌묵상어 따위)의 힌트로 계약하면 술집 「정보를 듣는다」가 들려줄 줄이 있어야 한다 —
+    /// 소문의 <see cref="Rumor.Discovery"/> 가 그 힌트의 목표(발견물 일련번호)와 같아야 뽑힌다.
+    /// <c>소문표.json</c> 은 EXE 를 구운 본이라 손으로 안 고치고 따로 적어 둔다.
+    /// </remarks>
+    public IReadOnlyList<Rumor> Rumors =>
+        Local.Settings.GameSettings.ExtraDiscoveries && Added.Count > 0 ? [.. _rumors, .. Added] : _rumors;
+
+    /// <summary>더해 넣은 소문을 적어 둔 파일 이름(<c>소문-고친것.json</c>).</summary>
+    private const string AddedName = "소문-고친것";
+
+    private static List<Rumor>? _added;
+
+    private static List<Rumor> Added => _added ??=
+        [.. (TableCache.Read<Snapshot>(AddedName)?.Data.Rumors ?? [])
+            .Select(r => r with { Text = StandardText.Apply(r.Text) })];
 
     public static RumorTable? Open(string gameDirectory)
     {
