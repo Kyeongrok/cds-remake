@@ -2379,8 +2379,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </remarks>
     private void HideMenu(bool hide)
     {
-        if (Menus.FacilityWindow is { } window)
-            window.Visibility = hide ? Visibility.Hidden : Visibility.Visible;
+        if (Menus.FacilityWindow is not { } window) return;
+        window.Visibility = hide ? Visibility.Hidden : Visibility.Visible;
+        // 창은 Visibility 를 바꿔도 <b>곧바로</b> 안 뜬다 — WPF 가 띄우기를 줄에 세워 둔다. 그대로 두면 바로 뒤에 여는
+        // 알림 창보다 명령 창이 <b>늦게</b> 떠서 알림을 덮는다(여관에서 묵고 말을 배웠을 때 「…어를 조금 습득했다!」가
+        // 여관 창 밑에 깔렸다). 줄에 선 것을 여기서 비워 명령 창을 먼저 띄운다.
+        if (!hide) Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private TavernMenu? _guests;
