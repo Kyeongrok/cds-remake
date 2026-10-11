@@ -2154,6 +2154,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             }
 
             _player.Dismiss(slot, PersonIdOf(name));
+            PlayStats.Dismissed(PersonIdOf(name), name);
             TalkDialog.Say(_view, face, "", "또 일이 있으면 불러 주십시오!");
         }
     }

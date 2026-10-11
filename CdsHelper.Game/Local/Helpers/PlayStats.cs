@@ -15,8 +15,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <code>
 ///   discovery     발견물 번호                  battle  sea:Won · sea:Escaped · land:win · land:lose …
 ///   voyage        「떠난 도시>닿은 도시」 횟수    error   「오류 갈래@클래스.메서드」
-///   voyage_days   같은 열쇠, 걸린 날수의 합
-///   voyage_turns  같은 열쇠, 뱃머리를 돌린 횟수의 합
+///   voyage_days   같은 열쇠, 걸린 날수의 합      hire    고용한 부하의 인물 번호
+///   voyage_turns  같은 열쇠, 뱃머리를 돌린 횟수의 합  dismiss 해고한 부하의 인물 번호
 ///   nav           네비게이션 — pick:quick · helm:steady · end:arrived · trip:auto …
 /// </code>
 /// 받는 쪽은 열쇠마다 수를 <b>더하기만</b> 한다 — 그래서 항해는 횟수 · 날수 · 선회를 갈래 셋으로 갈라 보내고,
@@ -97,6 +97,15 @@ public static class PlayStats
 
     /// <summary>발견물 하나를 새로 발견했다.</summary>
     public static void Found(int id, string? name) => Count("discovery", id.ToString(), name);
+
+    /// <summary>술집에서 부하를 고용했다.</summary>
+    public static void Hired(int person, string? name) => Count("hire", person.ToString(), name);
+
+    /// <summary>
+    /// 부하를 <b>내 손으로</b> 내보냈다 — 부하편성의 「해고」(모드)와 재계약을 물렸을 때다. 선금이 모자라 떠나거나
+    /// 대가 바뀌어 · 판이 끝나 흩어지는 것은 안 센다.
+    /// </summary>
+    public static void Dismissed(int person, string? name) => Count("dismiss", person.ToString(), name);
 
     /// <summary>
     /// 배로 한 도시를 떠나 다른 도시에 닿았다 — 어디서 어디로, 며칠 걸려, 뱃머리를 몇 번 돌려 갔는지.

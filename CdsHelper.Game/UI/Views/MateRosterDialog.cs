@@ -183,6 +183,7 @@ public sealed class MateRosterDialog : GameWindow
         var face = _player.MateInfoOf(name) is { } info ? _game?.MateFace(info) : null;
         int person = _game?.World?.People.FirstOrDefault(r => r.Name == name)?.Id ?? -1;
         _player.Dismiss(slot, person);
+        PlayStats.Dismissed(person, name);
         _fired.Add(name);
         TalkDialog.Say(this, face, "", "또 일이 있으면 불러 주십시오!");
         // 잡아 둔 줄을 놓는다 — 빈 자리를 잡은 채로 두면 다음 누름이 맞바꾸기가 된다.

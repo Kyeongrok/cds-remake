@@ -2114,6 +2114,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             // 됨됨이를 지금 베껴 둔다 — 나중에 인물정보를 낼 때 게임 세이브를 다시 안 뒤지게.
             _player.RememberMate(Tavern.MateInfoOf(who));
             _player.Note(Player.TraceHire, who.Index);    // 0x0045345E — 행적에 고용을 적는다
+            PlayStats.Hired(who.Index, who.Name);
             PlaceMate(who.Name);
             // 부하가 되면 술집 자리에서 빠진다(Sitting) — 사진 앞 줄에서는 그 칸만 지운다(0x004A4D3B 가
             // 나감 깃발을 세우면 0x004A5100 이 0x004A1C60 을 부른다).

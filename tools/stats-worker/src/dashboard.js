@@ -57,6 +57,10 @@ export const DASHBOARD_HTML = `<!doctype html>
   <div class="tiles" id="tiles"></div>
   <section><h2>모드 옵션 <small>설치별 마지막 값</small></h2><div class="tabs" id="modtabs"></div><div class="scroll"><table id="mods"></table></div></section>
   <section><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table></div></section>
+  <div class="two">
+    <section><h2>고용한 부하 <small>술집에서 고용</small></h2><div class="scroll"><table id="hires"></table></div></section>
+    <section><h2>해고한 부하 <small>부하편성 해고 · 재계약 거절</small></h2><div class="scroll"><table id="dismisses"></table></div></section>
+  </div>
   <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회</small></h2><div class="scroll"><table id="voyages"></table></div></section>
   <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
   <section><h2>전투</h2><table id="battles"></table></section>
@@ -120,7 +124,7 @@ const modName = (name) => '<span title="' + esc(name) + '">' + esc(MOD_NAMES[nam
 const SEA = [['Won', '승리'], ['Defeated', '패배'], ['Escaped', '퇴각'], ['Surrendered', '항복']];
 
 let data = null;
-const state = { version: '' }, sorts = { discoveries: 'n', voyages: 'n', errors: 'n' };
+const state = { version: '' }, sorts = { discoveries: 'n', hires: 'n', dismisses: 'n', voyages: 'n', errors: 'n' };
 let modTab = 'all';
 
 const COLS = [['n', '횟수'], ['installs', '설치']];
@@ -197,12 +201,14 @@ function renderBattles() {
 
 function render() {
   const kind = (k) => (data.kinds || []).find((r) => r.kind === k) || { n: 0, keys: 0 };
-  $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('discovery').n, '발견'],
+  $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('discovery').n, '발견'], [kind('hire').n, '부하 고용'], [kind('dismiss').n, '부하 해고'],
       [kind('voyage').n, '항해'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
     .map(([v, label]) => '<div class="tile"><b>' + n(v) + '</b><span>' + label + '</span></div>').join('');
 
   renderMods();
   rankTable('discoveries', '발견물', data.discoveries, (r) => esc(r.name || '#' + r.key));
+  rankTable('hires', '부하', data.hires || [], (r) => esc(r.name || '#' + r.key));
+  rankTable('dismisses', '부하', data.dismisses || [], (r) => esc(r.name || '#' + r.key));
   renderVoyages();
   renderNavs();
   renderBattles();
