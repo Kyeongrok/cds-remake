@@ -1,0 +1,35 @@
+{
+  "Stamp": "1줄",
+  "Data": {
+    "Discoveries": [
+      {
+        "Id": 274,
+        "Name": "돌묵상어",
+        "Category": 6,
+        "Hint": 800,
+        "Reward": 30000,
+        "ItemId": -1,
+        "Indirect": false,
+        "OpenAtStart": true,
+        "OnLand": false,
+        "Once": false,
+        "X1": 1168,
+        "Y1": 224,
+        "X2": 1194,
+        "Y2": 240,
+        "Picture": 84,
+        "Movie": -1,
+        "Erase": [
+          65535,
+          65535,
+          65535,
+          65535
+        ],
+        "SoldIn": -1,
+        "Clip": -1
+      }
+    ]
+  },
+  "Source": "사람이 더한 것",
+  "Version": 1
+}

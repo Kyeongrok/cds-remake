@@ -266,6 +266,8 @@ public sealed class HintTable
         get
         {
             var merged = _hints.Select(HintEdits.Apply).ToList();
+            // 원본에 없던 힌트는 모드 「추가 발견물」을 켰을 때만 낸다.
+            if (!Local.Settings.GameSettings.ExtraDiscoveries) return merged;
             var baseIds = _hints.Select(h => h.Id).ToHashSet();
             foreach (var (id, entry) in HintEdits.All)
                 if (!baseIds.Contains(id)) merged.Add(HintEdits.Synthesize(entry));
@@ -293,6 +295,7 @@ public sealed class HintTable
     public Hint? Find(int id)
     {
         if (Original(id) is { } row) return HintEdits.Apply(row);
+        if (!Local.Settings.GameSettings.ExtraDiscoveries) return null;
         return HintEdits.Of(id) is { } entry ? HintEdits.Synthesize(entry) : null;
     }
 

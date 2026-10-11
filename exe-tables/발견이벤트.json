@@ -49860,6 +49860,148 @@
             }
           ]
         ]
+      },
+      {
+        "Index": 274,
+        "Step": 274,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "2E 1A",
+              "Call": "RandomChance",
+              "Args": {
+                "Denominator": 3,
+                "Success": 1
+              },
+              "Note": "무작위 확률 조건: 1 / 3"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독！ 수면에 커다란 등지느러미가 보입니다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "감찰관",
+                "Text": "사， 상어다！ 어서 배를 돌려라！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아니， 덤벼들지 않습니다． 입을 벌린 채 천천히 헤엄치고 있을 뿐입니다．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 55
+              },
+              "Note": "음원 재생: 슬롯 55"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "첨벙！"
+              }
+            },
+            {
+              "OpCode": "00 01",
+              "Call": "ShowDStill",
+              "Args": {
+                "Id": 84
+              },
+              "Note": "DSTILL 이미지 표시: 슬롯 84"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "저 입을 보십시오！ 사람 하나쯤은 통째로 들어가겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "감찰관",
+                "Text": "이빨이 보이지 않는군． 바닷물을 들이마시고 있는 것인가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "작은 먹이를 물과 함께 걸러 먹는 모양입니다． 온순한 상어로군요．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 75
+              },
+              "Note": "음원 재생: 슬롯 75"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "돌묵상어를 발견했다！"
+              }
+            },
+            {
+              "OpCode": "01 0B",
+              "Call": "Discover",
+              "Args": {
+                "Discovery": 274
+              },
+              "Note": "발견물 등록/발견 처리: ID 274"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "감찰관",
+                "Text": "이렇게 큰 물고기가 햇볕을 쬐며 떠다니다니···． 세상은 넓구나．"
+              }
+            },
+            {
+              "OpCode": "4C",
+              "Call": "EndDone",
+              "Note": "이벤트 결과 코드 0"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
       }
     ]
   },

@@ -267,6 +267,9 @@ public sealed class GameSettingsData
     /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MateDismiss { get; set; }
 
+    /// <summary>원본 274개에 <b>더해 넣은 발견물</b>(돌묵상어 따위)과 그 힌트를 놀이에 낼지. 켜 두고 시작한다.</summary>
+    public bool ExtraDiscoveries { get; set; } = true;
+
     /// <summary>보고를 마치고 나설 때 부하 재계약을 안 물을지(부하 해고를 켰을 때만). 켜 두고 시작한다.</summary>
     public bool SkipRecontract { get; set; } = true;
 
@@ -1291,6 +1294,17 @@ public static class GameSettings
     /// 없는 내륙 마을</b>에서도 적힌다. 적는 자리는 <see cref="Engine.GameSave.AutoDirectory"/> 의 칸들이라
     /// 손으로 적어 둔 것과 따로다. 첫 화면의 <b>CONTINUE</b> 가 그 파일을 연다.
     /// </remarks>
+    /// <summary>
+    /// 원본에 없던 <b>추가 발견물</b>을 놀이에 낼지 — 끄면 발견물 표 · 힌트 표 · 책의 힌트 목록에서 더한 것이 빠진다
+    /// (<see cref="Engine.Table.DiscoveryTable.Discoveries"/> · <see cref="Engine.Table.HintTable.Hints"/> ·
+    /// <see cref="Local.Helpers.BookTable.Books"/>). 원본 줄을 고쳐 둔 것은 그대로다.
+    /// </summary>
+    public static bool ExtraDiscoveries
+    {
+        get => Get(d => d.ExtraDiscoveries);
+        set => Set(d => d.ExtraDiscoveries = value);
+    }
+
     public static bool AutoSaveOnPort
     {
         get => Get(d => d.AutoSaveOnPort);

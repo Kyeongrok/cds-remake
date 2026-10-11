@@ -115,9 +115,17 @@ public sealed class BookTable
         get
         {
             var edits = BookEdits.All;
+            // 모드 「추가 발견물」을 끄면 원본에 없던 힌트(번호가 힌트 조건 표 밖)를 책에서 빼고, 더한 책도 안 낸다.
+            bool extras = Settings.GameSettings.ExtraDiscoveries;
             var merged = new List<Book>(_books.Count + edits.Count);
             foreach (var b in _books)
-                merged.Add(edits.TryGetValue(b.Index, out var edited) ? edited : b);
+            {
+                var book = edits.TryGetValue(b.Index, out var edited) ? edited : b;
+                if (!extras && book.Hints.Any(h => h >= _hintNeeds.Length))
+                    book = book with { Hints = [.. book.Hints.Where(h => h < _hintNeeds.Length)] };
+                merged.Add(book);
+            }
+            if (!extras) return merged;
             foreach (var (id, b) in edits)
                 if (_books.All(o => o.Index != id)) merged.Add(b);
             return merged;

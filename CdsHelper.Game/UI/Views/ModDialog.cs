@@ -65,7 +65,7 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>줄 목록과 설명 칸의 너비.</summary>
-    private const double ListWidth = 290, TipWidth = 430;
+    private const double ListWidth = 290, TipWidth = 480;
     // 막대 줄 = 들여쓰기 18 + 이름 64 + 틈 18 + 막대 + 수치 48 — 목록 너비(250)를 넘으면 오른쪽 수치가 잘려 안 보인다
     private const double SliderWidth = 102;
 
@@ -154,6 +154,8 @@ public sealed class ModDialog : GameWindow
         var font = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「캐릭터」 — 주인공을 만들 때와 부하를 거느릴 때의 것.
         var character = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「발견물」 — 원본 274개에 더해 넣은 발견물.
+        var discovery = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「저장」 — 세이브를 언제 · 어디에 적는지.
         var save = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「실험」 — 아직 다듬는 중인 덧그림. 모양이 바뀔 수 있다.
@@ -387,6 +389,13 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 스핑크스 퀴즈에서 고르는 창의 정답 줄에 「← 답」을 붙입니다."
             + " 셈 문제의 답은 늘 다리 넷 달린 괴물의 수입니다."));
 
+        // 추가 발견물 — 원본 274개 뒤에 더해 넣은 것(돌묵상어 따위)과 그 힌트.
+        discovery.Children.Add(Toggle("추가 발견물", GameSettings.ExtraDiscoveries,
+            on => GameSettings.ExtraDiscoveries = on,
+            "원본에 없는 것입니다 — 원본 발견물 274개에 더해 넣은 발견물(돌묵상어 등)이 지도에 나오고,"
+            + " 그 힌트가 도서관의 책에 실려 후원자와 계약할 수 있습니다."
+            + " 끄면 더해 넣은 발견물과 힌트가 나오지 않습니다. 이미 찾은 것은 기록에 남습니다."));
+
         // 자동저장 — 원본에 없다. 손으로 적는 자리(SAVEDATA.CDS)는 안 건드리고 따로 적는다.
         save.Children.Add(Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
             on => GameSettings.AutoSaveOnPort = on,
@@ -566,6 +575,7 @@ public sealed class ModDialog : GameWindow
         pages.Children.Add(ui);
         pages.Children.Add(font);
         pages.Children.Add(character);
+        pages.Children.Add(discovery);
         pages.Children.Add(save);
         pages.Children.Add(general);
         pages.Children.Add(lab);
@@ -575,6 +585,7 @@ public sealed class ModDialog : GameWindow
         ui.Visibility = Visibility.Hidden;
         font.Visibility = Visibility.Hidden;
         character.Visibility = Visibility.Hidden;
+        discovery.Visibility = Visibility.Hidden;
         save.Visibility = Visibility.Hidden;
         lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
@@ -586,7 +597,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, font, character, save, general, lab));
+        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, font, character, discovery, save, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -604,7 +615,7 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
     private FrameworkElement Tabs(FrameworkElement preset, FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
-                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement character, FrameworkElement save, FrameworkElement general,
+                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement character, FrameworkElement discovery, FrameworkElement save, FrameworkElement general,
                                   FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
@@ -648,6 +659,7 @@ public sealed class ModDialog : GameWindow
         Add("UI", ui);
         Add("폰트", font);
         Add("캐릭터", character);
+        Add("발견물", discovery);
         Add("저장", save);
         Add("일반", general);
         Add("실험", lab);

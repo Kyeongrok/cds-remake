@@ -1,0 +1,27 @@
+{
+  "Stamp": "1권",
+  "Data": {
+    "Books": [
+      {
+        "Index": 30,
+        "Title": "박물지",
+        "Author": "플리니우스 저",
+        "Language": 2,
+        "Year": 1480,
+        "Cities": [
+          0,
+          12,
+          29,
+          33
+        ],
+        "Hints": [
+          110,
+          136,
+          186
+        ]
+      }
+    ]
+  },
+  "Source": "사람이 더한 것",
+  "Version": 1
+}
