@@ -1452,6 +1452,32 @@ internal static class GameUi
     /// 게임은 초점이 간 단추의 <b>안쪽 테</b>를 깜빡여 지금 고른 것을 알린다. 그래서 단추마다
     /// 테를 한 겹 더 두고 그 색만 움직인다.
     /// </remarks>
+    /// <summary>
+    /// 마우스가 <b>실제로 움직여</b> 그 단추 위에 왔을 때만 초점을 옮긴다.
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 MouseEnter 에 곧장 옮겼다. 그런데 창이 뜨는 자리에 커서가 <b>가만히 놓여 있기만 해도</b> WPF 가 그 밑의 단추에
+    /// MouseEnter 를 보낸다 — 그래서 물음 창이 뜨자마자 초점이 「NO」로, 시설 창이 뜨자마자 커서 밑의 줄로 넘어가
+    /// 스페이스 · 엔터가 첫 줄(숙박 · 출항 · YES)이 아닌 것을 골랐다. 들어온 자리를 적어 두고, 커서가 거기서 움직였을 때만 옮긴다.
+    /// </remarks>
+    public static void FocusOnHover(FrameworkElement button, Action focus)
+    {
+        Point? seen = null;
+        Point? Where(MouseEventArgs e) =>
+            PresentationSource.FromVisual(button) == null ? null : button.PointToScreen(e.GetPosition(button));
+
+        button.MouseEnter += (_, e) => seen = Where(e);
+        button.MouseLeave += (_, _) => seen = null;
+        button.MouseMove += (_, e) =>
+        {
+            if (Where(e) is not { } now) return;
+            if (seen is not { } was) { seen = now; return; }
+            if ((now - was).Length < 1) return;
+            seen = now;
+            focus();
+        };
+    }
+
     public sealed class FocusGroup
     {
         private readonly List<GameButton> _items = [];
@@ -1464,7 +1490,7 @@ internal static class GameUi
             int index = _items.Count;
             _items.Add(button);
 
-            button.MouseEnter += (_, _) => Focus(index);
+            FocusOnHover(button, () => Focus(index));
             if (_items.Count == 1) Focus(0);   // 첫 단추에 초점을 두고 시작한다
             return button;
         }

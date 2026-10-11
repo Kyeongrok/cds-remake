@@ -75,7 +75,8 @@ internal sealed class GameMenu : Border
                 int at = _picks.Count;
                 _picks.Add(button);
                 if (_at < 0) Focus(0);
-                button.MouseEnter += (_, _) => Focus(at);
+                // 커서가 실제로 움직였을 때만 — 창이 커서 밑에 뜨기만 해도 초점이 넘어가면 스페이스가 첫 줄을 못 고른다.
+                GameUi.FocusOnHover(button, () => Focus(at));
             }
 
             stack.Children.Add(button);
