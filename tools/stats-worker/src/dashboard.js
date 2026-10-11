@@ -174,7 +174,7 @@ function renderVoyages() {
 
 // 네비게이션 — 열쇠는 「묶음:값」이다. 묶음마다 그 안에서의 몫을 낸다.
 const NAV_GROUPS = [['trip', '항해 한 번'], ['pick', '고른 길'], ['helm', '자동이동 모드'], ['from', '건 곳'], ['end', '끝난 꼴']];
-const NAV_NAMES = { 'trip:auto': '자동항해를 쓴 항해', 'trip:manual': '손으로만 몬 항해', 'pick:quick': '가장 빠른 길', 'pick:short': '가장 짧은 길',
+const NAV_NAMES = { 'trip:auto': '자동 항해', 'trip:manual': '수동 항해', 'pick:quick': '가장 빠른 길', 'pick:short': '가장 짧은 길',
   'pick:land-fast': '내륙 — 가장 빠른 길', 'pick:land-lesswalk': '내륙 — 덜 걷는 길', 'pick:land-near': '내륙 — 가장 가까운 해안', 'pick:map': '지도를 찍어서',
   'helm:fast': '속도 중시', 'helm:steady': '최소 조타', 'from:city': '도시 안에서', 'from:sea': '바다에서',
   'end:arrived': '도착', 'end:stopped': '손으로 멈춤', 'end:stuck': '길이 막혀 멈춤' };
