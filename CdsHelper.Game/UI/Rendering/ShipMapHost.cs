@@ -1437,8 +1437,9 @@ public sealed class ShipMapHost : HwndHost
         (double X, double Y)? best = null;
         int bestOpen = -1;
         double bestFar = double.MaxValue;
-        for (int y = cy - TownSlack - TouchSlack; y <= cy + reach + TouchSlack; y++)
-            for (int x = cx - TownSlack - TouchSlack; x <= cx + reach + TouchSlack; x++)
+        int slack = TouchSlack + MouthSlack(city);
+        for (int y = cy - TownSlack - slack; y <= cy + reach + slack; y++)
+            for (int x = cx - TownSlack - slack; x <= cx + reach + slack; x++)
             {
                 if (IsLand(x + 0.5, y + 0.5)) continue;
                 int open = 0;
@@ -3344,6 +3345,30 @@ public sealed class ShipMapHost : HwndHost
     /// </remarks>
     private const int TouchSlack = 0;
 
+    /// <summary>도시 ID -> 어귀에 물이 없어 배 쪽으로만 더 얹는 여유 칸(<see cref="MouthSlack"/>).</summary>
+    private readonly Dictionary<int, int> _mouthSlack = [];
+
+    /// <summary>
+    /// 배로 다가갈 때 그 도시에만 더 얹는 여유 칸 — 어귀 네모 안에 <b>물칸이 하나도 없는</b> 항구면 1, 아니면 0 이다.
+    /// </summary>
+    /// <remarks>
+    /// 항구가 있는 135곳 가운데 캘커타(157) 하나가 그렇다 — 네모(<c>1863..1866</c>, <c>472..475</c>)가 온통 뭍이고
+    /// 물은 바로 아랫줄(<c>476</c>)부터라, 우리 셈으로는 배가 영영 못 닿았다. 원본의 훑는 셈(<c>0x0048DA29</c>)은
+    /// 같으므로 원본과 다른 것은 배 자리를 잡는 쪽일 텐데 거기까지는 못 밝혔다 — 그 한 곳만 한 칸 넓혀 닿게 한다.
+    /// </remarks>
+    private int MouthSlack(int city)
+    {
+        if (_mouthSlack.TryGetValue(city, out int known)) return known;
+        if (_cities == null || _world == null || _terrain == null
+            || !_cities.TryCell(city, out int cx, out int cy, out int reach)) return 0;
+
+        int slack = 1;
+        for (int y = cy - TownSlack - TouchSlack; y <= cy + reach + TouchSlack && slack > 0; y++)
+            for (int x = cx - TownSlack - TouchSlack; x <= cx + reach + TouchSlack; x++)
+                if (!IsLand(x + 0.5, y + 0.5)) { slack = 0; break; }
+        return _mouthSlack[city] = slack;
+    }
+
     /// <summary>
     /// 말이 닿은 도시 ID. 없으면 -1.
     /// </summary>
@@ -3439,11 +3464,12 @@ public sealed class ShipMapHost : HwndHost
         {
             if (CityOpen is { } open && !open(id)) continue;
             if (!_cities.TryCell(id, out int cx, out int cy, out int reach)) continue;
-            if (fy < cy - TownSlack - TouchSlack || fy > cy + reach + TouchSlack) continue;
+            int slack = TouchSlack + (_onLand ? 0 : MouthSlack(id));
+            if (fy < cy - TownSlack - slack || fy > cy + reach + slack) continue;
             int dx = fx - cx;
             if (dx > WorldMapRenderer.UnfoldedW / 2) dx -= WorldMapRenderer.UnfoldedW;
             if (dx < -WorldMapRenderer.UnfoldedW / 2) dx += WorldMapRenderer.UnfoldedW;
-            if (dx < -TownSlack - TouchSlack || dx > reach + TouchSlack) continue;
+            if (dx < -TownSlack - slack || dx > reach + slack) continue;
             got.Add(id);
         }
         return got;
@@ -3459,13 +3485,14 @@ public sealed class ShipMapHost : HwndHost
         {
             if (CityOpen is { } open && !open(id)) continue;   // 아직 안 선 도시
             if (!_cities.TryCell(id, out int cx, out int cy, out int reach)) continue;
-            if (fy < cy - TownSlack - TouchSlack || fy > cy + reach + TouchSlack) continue;
+            int slack = TouchSlack + (_onLand ? 0 : MouthSlack(id));
+            if (fy < cy - TownSlack - slack || fy > cy + reach + slack) continue;
 
             // 가로는 이어져 있다 — 날짜변경선을 넘어도 같은 도시다.
             int dx = fx - cx;
             if (dx > WorldMapRenderer.UnfoldedW / 2) dx -= WorldMapRenderer.UnfoldedW;
             if (dx < -WorldMapRenderer.UnfoldedW / 2) dx += WorldMapRenderer.UnfoldedW;
-            if (dx < -TownSlack - TouchSlack || dx > reach + TouchSlack) continue;
+            if (dx < -TownSlack - slack || dx > reach + slack) continue;
 
             return id;
         }
