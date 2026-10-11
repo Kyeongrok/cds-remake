@@ -1,0 +1,59 @@
+// Zed 작업 — Ctrl+Shift+P → 「task: spawn」 으로 고른다.
+[
+  {
+    "label": "게임 실행 (CostaDelSol)",
+    "command": "dotnet run --project CostaDelSol.Play",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "게임 빌드 (CostaDelSol)",
+    "command": "dotnet build CostaDelSol.Play",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  },
+  {
+    "label": "게임 엔진만 빌드 (CdsHelper.Game)",
+    "command": "dotnet build CdsHelper.Game",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  },
+  {
+    "label": "에디터 실행 (CdsHelper)",
+    "command": "dotnet run --project CdsHelper",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "솔루션 전체 빌드",
+    "command": "dotnet build cds-helper.sln",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  },
+  {
+    "label": "게임 릴리즈 빌드",
+    "command": "dotnet build CostaDelSol.Play -c Release",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  },
+  {
+    "label": "정리 (clean)",
+    "command": "dotnet clean cds-helper.sln",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "on_success"
+  }
+]
