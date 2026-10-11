@@ -261,7 +261,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         // 몸이 성해야 한다 — 컨디션이 100 밑이면 아내가 말리고 끝난다(0x0046139E).
         if (_player.Condition < Home.HeirCondition)
         {
-            TalkDialog.Say(Owner, null, _player.Spouse, Home.HeirTired);
+            TalkDialog.Say(Owner, WifeFace(), "", Home.HeirTired);
             return;
         }
 
@@ -271,7 +271,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         (_view as CityPicView)?.PlayHeir(born);
 
         // 됐든 안 됐든 아내가 한 마디 한다(0x00414B30) — 쉰 살이 넘어야 앞 셋이 나온다.
-        TalkDialog.Say(Owner, null, _player.Spouse, Home.WifeWord(_player.Age, _random));
+        TalkDialog.Say(Owner, WifeFace(), "", Home.WifeWord(_player.Age, _random));
 
         // 됐는지는 따로 알리지 않는다 — 원본은 애니메이션(0x004A6340)과 아내 말(0x00414B30) 뒤에
         // 됐으면 조용히 아이를 들일 뿐이다(0x004613F4 → 0x00460C50, 말이 없다).
@@ -713,7 +713,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             foreach (var child in newborns) Introduce(Owner, child);
         // 아내가 있으면 아내가 말하고, 없으면 지문이 뜬다(0x004607FE).
         else if (_player.Spouse.Length > 0)
-            TalkDialog.Say(Owner, null, _player.Spouse, Home.RestWifeWord(_random));
+            TalkDialog.Say(Owner, WifeFace(), "", Home.RestWifeWord(_random));
         else
             GameDialog.Show(Owner, Home.RestWord(_random));
         // HP 는 달마다 50~99, 아내가 있으면 0~19 더 찬다(0x00460859).
