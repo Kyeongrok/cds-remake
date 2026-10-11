@@ -3330,9 +3330,11 @@ public sealed class ShipMapWindow : Window
                                  gunsInStats: saved.Version >= GameSave.GunsInStatsFrom,
                                  sailsInStats: saved.Version >= GameSave.SailsInStatsFrom,
                                  hullNames: saved.Version >= GameSave.HullNamesFrom);
-            // 선원은 함대보다 먼저 되살렸다 — 되살린 함대의 정원에 다시 맞춘다. 빌린 배를 다 돌려주고
-            // 배 없이 선원만 남은 채 적힌 세이브(예전 버그)가 여기서 0 명으로 바로잡힌다.
-            _game.Player.SetCrew(_game.Player.Crew);
+            // 선원은 함대를 되살린 <b>뒤에</b> 세이브 값으로 다시 박는다 — Restore 는 함대보다 먼저 돌아 <b>그때 있던 함대</b>의
+            // 정원으로 잘라 버린다. 앱을 껐다 켜면 그 함대가 처음 배 한 척(카라벨, 정원 75)이라, 불러올 때마다 선원이
+            // 75 명으로 깎였다(카락 세 척 최저 84 명인데 75 명). 예전에는 그 깎인 값을 여기서 다시 박았다.
+            // 빌린 배를 다 돌려주고 배 없이 선원만 남은 채 적힌 세이브(예전 버그)는 여기서 0 명으로 바로잡힌다.
+            _game.Player.SetCrew(saved.Crew ?? _game.Player.MinCrew);
             _game.Player.RestoreMateBook(saved.MateBook);
             // 실은 교역품과 교역소 재고. 이 판 앞의 세이브에는 없어 빈 짐 · 처음 재고로 연다.
             _game.Player.RestoreCargo(saved.Cargo);
