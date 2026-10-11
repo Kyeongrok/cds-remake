@@ -77,22 +77,23 @@ async function getDashboard(url, env) {
   // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
   if (!all.versions.includes(version))
     return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], cities: [], voyages: [], navs: [], battles: [], errors: [], days: [] });
-  return json(await snapshot(env, version, all.versions));
+  return json(await snapshot(env, version, all));
 }
 
 // 묵혀 둔 집계를 내고, 없거나 낡았으면 새로 세어 적어 둔다.
-async function snapshot(env, version, versions) {
+async function snapshot(env, version, whole) {
   const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind(version).first();
   if (kept && Date.now() - Date.parse(kept.made_at) < SNAPSHOT_TTL) return JSON.parse(kept.body);
 
-  const body = await aggregate(env, version, versions);
+  const body = await aggregate(env, version, whole);
   await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)')
     .bind(version, body.madeAt, JSON.stringify(body)).run();
   return body;
 }
 
-// 표를 훑는 것은 여기뿐이다 — 셈 표 한 번, 모드 표 한 번, 덩이 표 두 번(전체일 때는 버전 목록까지 세 번).
-async function aggregate(env, version, versions) {
+// 표를 훑는 것은 여기뿐이다 — 셈 표 한 번, 덩이 표 두 번, 전체일 때는 모드 표와 버전 목록까지.
+// 모드 옵션 · 버전 목록은 버전으로 안 거르므로, 버전 집계는 전체 집계(whole)의 것을 그대로 쓴다 — 모드 표를 버전마다 또 훑지 않게.
+async function aggregate(env, version, whole) {
   const cond = version ? 'AND version = ?' : '', args = version ? [version] : [];
   const all = (sql, ...bound) => env.DB.prepare(sql).bind(...bound).all().then((r) => r.results);
 
@@ -101,10 +102,10 @@ async function aggregate(env, version, versions) {
     all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, COUNT(DISTINCT install) AS installs
          FROM tally WHERE 1 = 1 ${cond} GROUP BY kind, key`, ...args),
     // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다.
-    all('SELECT name, value, COUNT(*) AS installs FROM mods GROUP BY name, value ORDER BY name, value'),
+    whole ? whole.modValues : all('SELECT name, value, COUNT(*) AS installs FROM mods GROUP BY name, value ORDER BY name, value'),
     all(`SELECT substr(received_at, 1, 10) AS day, version, COUNT(DISTINCT install) AS installs, COUNT(*) AS batches
          FROM batches WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
-    versions ?? all('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
+    whole ? whole.versions : all('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
   ]);
 
   // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
