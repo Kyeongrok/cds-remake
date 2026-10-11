@@ -1,4 +1,4 @@
-// 놀이 통계를 받는 Cloudflare Worker — 게임(CdsHelper.Game/Local/Helpers/PlayStats.cs)이 몇 분마다, 그리고 끌 때 셈 한 덩이를 보낸다.
+// 게임 통계를 받는 Cloudflare Worker — 게임(CdsHelper.Game/Local/Helpers/PlayStats.cs)이 몇 분마다, 그리고 끌 때 셈 한 덩이를 보낸다.
 //
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
 //   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.

@@ -17,7 +17,7 @@ namespace CdsHelper.Game.Engine.Land;
 /// <c>3 이면 큰 것 · 2 면 반반 · 그 밑이면 작은 것</c> 세 갈래다.
 ///
 /// 여기 적힌 것이 <b>본</b>이고, 사람이 고친 것은 <see cref="LandFormationEdits"/> 가
-/// 위에 얹는다. 놀이도 고치는 창도 <see cref="Of"/> 하나만 본다.
+/// 위에 얹는다. 게임도 고치는 창도 <see cref="Of"/> 하나만 본다.
 /// </remarks>
 public static class LandFormations
 {

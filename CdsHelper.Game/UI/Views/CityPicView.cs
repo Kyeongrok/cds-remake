@@ -1048,7 +1048,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     ///     r &gt; 96 이면 곧바로 붙잡힌다, 아니면 일기토(인물 268) — 지면 붙잡힌다
     ///     붙잡히면 「좋아, 상금 걸린 자를 붙잡았다!」 → 후원자 「정신이 드나? …」 → GAME OVER
     /// </code>
-    /// 일기토에 져서 베이면(결과 3) 붙잡는 말 없이 곧바로 놀이가 끝난다(<c>0x0044FFBE</c> 의 <c>0x0044AF40(4)</c>).
+    /// 일기토에 져서 베이면(결과 3) 붙잡는 말 없이 곧바로 게임이 끝난다(<c>0x0044FFBE</c> 의 <c>0x0044AF40(4)</c>).
     /// </remarks>
     private bool Ambushed()
     {
@@ -1102,7 +1102,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (r <= 96)
         {
             // 판 결과 0·1 이면 달아나고, 2(졌지만 살았다)면 붙잡히고, 3(베였다)이면 붙잡는 말도 없이
-            // 곧바로 놀이가 끝난다(0x0044FFAF → 0x0044FFBE 의 0x0044AF40(4)).
+            // 곧바로 게임이 끝난다(0x0044FFAF → 0x0044FFBE 의 0x0044AF40(4)).
             switch (HunterDuel())
             {
                 case null or true:
@@ -1136,7 +1136,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 모항이 등을 돌린다(<c>0x0046B980</c>) — 악명 3000 을 넘으면 병사가 일기토를 건다.
     /// </summary>
     /// <remarks>
-    /// 막는 말은 둘 가운데 굴려 고르고 <b>문지기 얼굴</b>로 나온다. 지면(판 결과 2·3) 놀이가 끝나고
+    /// 막는 말은 둘 가운데 굴려 고르고 <b>문지기 얼굴</b>로 나온다. 지면(판 결과 2·3) 게임이 끝나고
     /// (<c>0x0046B894</c> 가 상태 4 로 끝낸다), 이기면 처형·놓아 준다·모두 뺏는다를 고른다 — 처형(결과 0)이면
     /// 악명이 말없이 500 오르고(<c>0x004697C0(1, 500)</c>), 그 밖(결과 1)은 악명이 안 오른다.
     /// </remarks>
@@ -1281,7 +1281,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 대본이 도는 동안 도시 그림이 파래진다 — 바다·뭍 발견의 지도(ShipMapWindow.Tint)와 같은 몫이다.
         bool scripted = RunShaded(row.Id);
         // 대본이 게임 오버로 끝났으면(파르테논 육상전에서 전멸하거나 물러나 저주를 받으면) 발견을
-        // 적지 않고 놀이를 끝낸다 — 바다·뭍 발견과 같은 차례다(ShipMapWindow.CheckDiscovery).
+        // 적지 않고 게임을 끝낸다 — 바다·뭍 발견과 같은 차례다(ShipMapWindow.CheckDiscovery).
         if (Engine.Disev.DisevRunner.LastEndedInGameOver)
         {
             GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
@@ -2605,7 +2605,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     bool ITownScreen.StoryCommand(int code, int row) => RunStory(Engine.Disev.DisevEvent.PickCommand(code, row));
 
     /// <summary>
-    /// 놀이를 끝낸다(<c>0x0044AF40</c>) — 그림 0x0B 와 CONTINUE? 뒤 첫 화면으로 돌아간다.
+    /// 게임을 끝낸다(<c>0x0044AF40</c>) — 그림 0x0B 와 CONTINUE? 뒤 첫 화면으로 돌아간다.
     /// 끝난 까닭 0·4·5·6 은 그림 0x0B, 1·2 는 0x0C, 3 은 0x0D 다(<c>0x00410CA1</c> 뜀표).
     /// </summary>
     internal void EndGame()

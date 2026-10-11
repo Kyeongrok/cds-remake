@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 지도 오른쪽 아래에 붙는 <b>미니맵</b> — 발견물 지도(<see cref="DiscoveryMapDialog"/>)를 작게 잘라 배를 가운데 두고 따라간다.
 /// </summary>
 /// <remarks>
-/// 놀이에는 없는 것이라 개발 창의 「미니맵」으로 켠다. 바탕은 발견물 지도와 같은 온 세계 양피지 지도이고(점 하나가 칸 4x4),
+/// 게임에는 없는 것이라 개발 창의 「미니맵」으로 켠다. 바탕은 발견물 지도와 같은 온 세계 양피지 지도이고(점 하나가 칸 4x4),
 /// 빨강은 찾은 발견물 · 회색은 아직 · 파랑은 내 자리다. 도시 안에서는 안 뜬다(부르는 쪽이 가린다).
 /// </remarks>
 internal sealed class MiniMapView : Border

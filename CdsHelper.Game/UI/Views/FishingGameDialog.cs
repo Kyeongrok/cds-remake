@@ -30,7 +30,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 도는데, 여기서는 20밀리초에 한 틱으로 잡았다(다 내려가는 데 여섯 해 남짓).
 ///
 /// <b>바다 것들은 처음부터 다 보인다.</b> 어디에 오징어와 낙지가 있는지 보고 피해
-/// 가는 놀이라 감추면 안 된다. 대어도 바닥에 보인다.
+/// 가는 게임이라 감추면 안 된다. 대어도 바닥에 보인다.
 /// </remarks>
 internal sealed class FishingGameDialog : InfoDialog
 {

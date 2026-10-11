@@ -54,7 +54,7 @@ public static class CdsAssetPath
     /// </summary>
     /// <remarks>
     /// 소스 옆을 먼저 본다 — 앱은 <c>asset</c> 을 빌드할 때 제 실행 폴더로 복사하므로, 굽힌 자리만 보면 편집기에서
-    /// 고친 것이 다시 빌드하기 전까지 놀이에 안 먹는다. 내놓은 판에서 고친 것은 <c>%APPDATA%</c> 에 든다.
+    /// 고친 것이 다시 빌드하기 전까지 게임에 안 먹는다. 내놓은 판에서 고친 것은 <c>%APPDATA%</c> 에 든다.
     /// </remarks>
     public static string? Edited(string cdsName)
     {

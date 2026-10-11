@@ -71,7 +71,7 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>아무 줄에도 커서가 없을 때 설명 칸에 적는 글.</summary>
     private const string Greeting =
-        "원본에 없는 기능을 켜고 끄는 창입니다.\n\n「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「캐릭터」는 주인공을 만들고 부하를 거느리는 것, 「저장」은 세이브에 얽힌 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것, 「실험」은 아직 다듬는 중인 것입니다.\n\n왼쪽 줄에 커서를 올리면 여기에 설명이 뜹니다.";
+        "원본에 없는 기능을 켜고 끄는 창입니다.\n\n「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「캐릭터」는 주인공을 만들고 부하를 거느리는 것, 「저장」은 세이브에 얽힌 것, 「일반」은 게임 규칙·소리·진행을 바꾸는 것, 「실험」은 아직 다듬는 중인 것입니다.\n\n왼쪽 줄에 커서를 올리면 여기에 설명이 뜹니다.";
 
     /// <summary>오른쪽 설명 칸의 이름 줄.</summary>
     private readonly TextBlock _tipName = new()
@@ -137,7 +137,7 @@ public sealed class ModDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
-        // 줄이 길어 두 탭으로 가른다 — 「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것.
+        // 줄이 길어 두 탭으로 가른다 — 「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「일반」은 게임 규칙·소리·진행을 바꾸는 것.
         var rows = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「권장」 — 오리지널 · 초보 · 중수 · 고수 가운데 하나를 고르면 다른 탭의 줄들이 그 묶음대로 켜지고 꺼진다. 맨 앞 탭이다.
         var preset = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
@@ -383,7 +383,7 @@ public sealed class ModDialog : GameWindow
             + " 순위로 보여 줍니다(단가와 전부 팔았을 때의 값). 아는 도시 가운데 교역소가 있는 곳의 지금 시세로 셈합니다."
             + " 원래 뜨던 교역품 창은 순위 창의 「교역품 정보」 단추로 엽니다."));
 
-        // 스핑크스 퀴즈 도우미 — 개발도구에 있던 계산기를 놀이 안으로 옮겼다.
+        // 스핑크스 퀴즈 도우미 — 개발도구에 있던 계산기를 게임 안으로 옮겼다.
         rows.Children.Add(Toggle("스핑크스 퀴즈 도우미", GameSettings.SphinxHelper,
             on => GameSettings.SphinxHelper = on,
             "원본에 없는 것입니다 — 스핑크스 퀴즈에서 고르는 창의 정답 줄에 「← 답」을 붙입니다."
@@ -702,7 +702,7 @@ public sealed class ModDialog : GameWindow
     /// <summary>권장 묶음 하나 — 켤 줄 · 끌 줄 · 고르기 칸의 자리. 여기 없는 줄은 건드리지 않는다.</summary>
     private sealed record Preset(string Name, string Summary, string[] On, string[] Off, (string Label, int Index)[] Picks);
 
-    /// <summary>세 묶음이 다 켜는 것 — 창을 보기 좋게 하고 손을 덜 뿐, 놀이 규칙과 숨은 정보는 안 건드리는 줄들.</summary>
+    /// <summary>세 묶음이 다 켜는 것 — 창을 보기 좋게 하고 손을 덜 뿐, 게임 규칙과 숨은 정보는 안 건드리는 줄들.</summary>
     private static readonly string[] PresetBase =
     [
         "발견물 지도", "향상된 힌트 보기", "향상된 후원자 정보", "향상된 인물정보 목록", "아이템 창 개선",

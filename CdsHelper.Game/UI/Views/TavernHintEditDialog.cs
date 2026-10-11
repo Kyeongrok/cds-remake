@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 브르타뉴 대신 중근동을 일러 주었다. 고치기 전에 눈으로 대 볼 수 있게 함께 낸다.
 ///
 /// <b>적어 둔 힌트표.json 을 직접 고치지 않는다</b> — 고치거나 더한 것만 따로 적어 두고
-/// (<see cref="HintEdits"/>) 표가 읽힐 때 얹는다. 그래서 여기서 고치면 놀이 안의 술집·도서관도
+/// (<see cref="HintEdits"/>) 표가 읽힐 때 얹는다. 그래서 여기서 고치면 게임 안의 술집·도서관도
 /// 그대로 따라온다.
 /// </remarks>
 public sealed class TavernHintEditDialog : GameWindow
@@ -270,7 +270,7 @@ public sealed class TavernHintEditDialog : GameWindow
                      + (edits == 0 ? "" : $" · 손으로 고친 줄 {edits}")
                      + "   ·   「일련번호」는 발견물 표의 몇째 줄인지가 아니라 발견물 줄의"
                      + " +0x08 과 맞대어 보는 번호다   ·   힌트는 어느 책에도 안 물려 있으면"
-                     + " 도서관에서 절대 안 나온다(「수록된 책」 참고)   ·   고친 것은 놀이 안에서도 그대로 쓰인다";
+                     + " 도서관에서 절대 안 나온다(「수록된 책」 참고)   ·   고친 것은 게임 안에서도 그대로 쓰인다";
     }
 
     /// <summary>이 힌트 번호를 물고 있는 책 이름들. 하나도 없으면 빈 글.</summary>

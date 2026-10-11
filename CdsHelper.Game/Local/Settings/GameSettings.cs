@@ -74,7 +74,7 @@ public sealed class GameSettingsData
     /// <summary>지도 위에 좌표 상자를 겹쳐 보일지. 개발용이라 꺼 두고 시작한다(내놓은 판을 처음 깔면 꺼져 있다).</summary>
     public bool ShowCoordOverlay { get; set; }
 
-    /// <summary>바다에 있을 때 배 속도 쪽지를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>바다에 있을 때 배 속도 쪽지를 띄울지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowShipSpeed { get; set; }
 
     /// <summary>항해 중 지도 왼쪽 위에 출항한 지 며칠인지 동그라미로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
@@ -101,7 +101,7 @@ public sealed class GameSettingsData
     /// <summary>릴리즈 노트를 마지막으로 보여 준 판(「1.0.51」 꼴). 아직 없으면 빈 글이다.</summary>
     public string NotesSeenVersion { get; set; } = "";
 
-    /// <summary>놀이 통계를 보내도 되는지. 아직 안 물었으면 null 이다.</summary>
+    /// <summary>게임 통계를 보내도 되는지. 아직 안 물었으면 null 이다.</summary>
     public bool? SendStats { get; set; }
 
     /// <summary>항구에서 출항할 때 물·식량이 10일분 밑이면 10일분까지 저절로 사 싣는다. 꺼 두고 시작한다.</summary>
@@ -161,7 +161,7 @@ public sealed class GameSettingsData
     /// <summary>미니맵의 내 자리 점(파란 점) 크기(지도 점, 2~12).</summary>
     public double MiniMapShipSize { get; set; } = 5;
 
-    /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>지도 왼쪽 아래에 「발견물 N / 전체」 상자를 띄울지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryCount { get; set; }
 
     /// <summary>저장·발견물 지도·모드 단축키(글쇠 이름). 비면 기본값을 쓴다.</summary>
@@ -186,11 +186,11 @@ public sealed class GameSettingsData
     /// <summary>함대정보 「짐」 판의 교역품을 누르면 비싸게 팔리는 도시 순위를 낼지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CargoPriceRank { get; set; }
 
-    /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>지도 위에 만난 사람 상자를 겹쳐 보일지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPeopleOverlay { get; set; }
 
 
-    /// <summary>항해·뭍 이동 중에 지도 오른쪽 아래에 미니맵을 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>항해·뭍 이동 중에 지도 오른쪽 아래에 미니맵을 띄울지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowMiniMap { get; set; }
 
     /// <summary>미니맵의 불투명도(0.1~1.0). 모드에서 미니맵을 켰을 때만 조절한다.</summary>
@@ -201,10 +201,10 @@ public sealed class GameSettingsData
     /// </summary>
     public List<int> UnlockedMinigames { get; set; } = [];
 
-    /// <summary>도시에 들어가면 도시 그림 왼쪽에 기능·언어 쪽지를 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>도시에 들어가면 도시 그림 왼쪽에 기능·언어 쪽지를 띄울지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowSkillOverlay { get; set; }
 
-    /// <summary>도시에 들어가면 현재 계약 힌트를 기능·언어 쪽지 위에 띄울지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>도시에 들어가면 현재 계약 힌트를 기능·언어 쪽지 위에 띄울지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowContractHintOverlay { get; set; }
 
     /// <summary>도시에 들어가면 현재 함대의 배 이름 쪽지를 띄울지. 기존 기능을 유지하도록 켜 두고 시작한다.</summary>
@@ -213,7 +213,7 @@ public sealed class GameSettingsData
     /// <summary>도시에 들어가면 아직 남은 힌트 열 개를 함대 쪽지 아래에 띄울지.</summary>
     public bool ShowHintOverlay { get; set; }
 
-    /// <summary>햄버거에 「발견물 지도」 줄을 낼지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>햄버거에 「발견물 지도」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryMapMenu { get; set; }
 
     /// <summary>
@@ -242,7 +242,7 @@ public sealed class GameSettingsData
 
     /// <summary>
     /// 모드 창 「권장」에서 마지막으로 고른 단계(0 오리지널 · 1 초보 · 2 중수 · 3 고수). 고른 적이 없으면 0(오리지널)이다.
-    /// 놀이 통계가 이 값을 그대로 보낸다.
+    /// 게임 통계가 이 값을 그대로 보낸다.
     /// </summary>
     public int ModPreset { get; set; }
 
@@ -267,7 +267,7 @@ public sealed class GameSettingsData
     /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MateDismiss { get; set; }
 
-    /// <summary>원본 274개에 <b>더해 넣은 발견물</b>(돌묵상어 따위)과 그 힌트를 놀이에 낼지. 켜 두고 시작한다.</summary>
+    /// <summary>원본 274개에 <b>더해 넣은 발견물</b>(돌묵상어 따위)과 그 힌트를 게임에 낼지. 켜 두고 시작한다.</summary>
     public bool ExtraDiscoveries { get; set; } = true;
 
     /// <summary>보고를 마치고 나설 때 부하 재계약을 안 물을지(부하 해고를 켰을 때만). 켜 두고 시작한다.</summary>
@@ -319,17 +319,17 @@ public sealed class GameSettingsData
     public bool RerollOnJob { get; set; }
 
     /// <summary>
-    /// <b>도시에 들어설 때마다</b> 자동저장 파일에 적을지. 놀이에는 없는 것이라 꺼 두고 시작한다.
+    /// <b>도시에 들어설 때마다</b> 자동저장 파일에 적을지. 게임에는 없는 것이라 꺼 두고 시작한다.
     /// </summary>
     public bool AutoSaveOnPort { get; set; }
 
-    /// <summary>햄버거에 「여급 수첩」 줄을 낼지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>햄버거에 「여급 수첩」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowBarmaidBookMenu { get; set; }
 
     /// <summary>지도를 Ctrl+클릭해 배를 그 자리에 놓을지. 켠 채로 시작한다.</summary>
     public bool PlaceShipByCtrlClick { get; set; } = true;
 
-    /// <summary>햄버거에 「인물 이동」 줄을 낼지. 놀이에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>햄버거에 「인물 이동」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPersonMoveMenu { get; set; }
 
     /// <summary>
@@ -378,7 +378,7 @@ public sealed class GameSettingsData
 /// </summary>
 /// <remarks>
 /// 같은 짜임으로 여러 판을 굴려 보는 자리라 <b>앱을 껐다 켜도</b> 남긴다. 손으로 고친
-/// 파일이 들어와도 놀이는 굴러가야 하므로, 읽는 쪽이 칸 수와 범위를 다시 본다.
+/// 파일이 들어와도 게임은 굴러가야 하므로, 읽는 쪽이 칸 수와 범위를 다시 본다.
 /// </remarks>
 public sealed class LandSparData
 {
@@ -395,15 +395,15 @@ public sealed class LandSparData
 }
 
 /// <summary>
-/// 이 앱이 품고 있는 놀이에만 쓰는 설정. <c>%APPDATA%\CdsHelper\game-settings.json</c> 에 적는다.
+/// 이 앱이 품고 있는 게임에만 쓰는 설정. <c>%APPDATA%\CdsHelper\game-settings.json</c> 에 적는다.
 /// </summary>
 /// <remarks>
 /// 앱 설정(<c>CdsHelper.Support</c> 의 <c>AppSettings</c>)과 갈라 두었다. 그쪽은 지도·발견물처럼
-/// 이 앱이 도구로서 하는 일이고, 여기는 놀이 쪽이라 섞일 까닭이 없다. 갈라 두면 놀이를 통째로
+/// 이 앱이 도구로서 하는 일이고, 여기는 게임 쪽이라 섞일 까닭이 없다. 갈라 두면 게임을 통째로
 /// 들어내도 앱 설정은 그대로다.
 ///
 /// <b>실제 CDS_95 를 자동으로 조작하는 값(<c>AutoConfirmDialog</c> 따위)은 여기 없다</b> —
-/// 그건 놀이가 아니라 도구 쪽 일이라 <c>AppSettings</c> 에 남아 있다.
+/// 그건 게임이 아니라 도구 쪽 일이라 <c>AppSettings</c> 에 남아 있다.
 ///
 /// 예전에는 이 값들이 <c>settings.json</c> 에 같이 들어 있었다. 새 파일이 없으면 그 파일에서
 /// 한 번 옮겨 온다(<see cref="MigrateFromLegacy"/>) — 쓰던 사람이 맞춰 둔 값을 잃지 않는다.
@@ -465,7 +465,7 @@ public static class GameSettings
         }
         catch
         {
-            // 읽다 넘어져도 놀이는 기본값으로 굴러가야 한다.
+            // 읽다 넘어져도 게임은 기본값으로 굴러가야 한다.
             _data = new GameSettingsData();
         }
     }
@@ -580,7 +580,7 @@ public static class GameSettings
     // ── 값들 ────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// 그 미니게임이 MINI GAME 차림표에 풀렸는지 — 발견 이벤트에서 그 놀이를 이기면 풀린다
+    /// 그 미니게임이 MINI GAME 차림표에 풀렸는지 — 발견 이벤트에서 그 게임을 이기면 풀린다
     /// (<c>0x00406B60</c> 이 레지스트리 <c>MG%02d</c> 를 켜고 <c>0x0045FA54</c> 벌이 읽는다).
     /// </summary>
     public static bool IsMinigameUnlocked(int game) => Get(d => d.UnlockedMinigames.Contains(game));
@@ -929,7 +929,7 @@ public static class GameSettings
     /// 지도를 <b>Ctrl+클릭</b>해 배를 그 자리에 놓을지. 모드 창의 「Ctrl+클릭 배 놓기」가 켜고 끈다.
     /// </summary>
     /// <remarks>
-    /// 놀이에는 없는 길이다 — 끄면 Ctrl 을 짚고 찍어도 여느 클릭처럼 닻만 오르내린다.
+    /// 게임에는 없는 길이다 — 끄면 Ctrl 을 짚고 찍어도 여느 클릭처럼 닻만 오르내린다.
     /// 잘못 눌러 배가 엉뚱한 데로 뛰는 것을 막고 싶을 때 끈다.
     /// </remarks>
     public static bool PlaceShipByCtrlClick
@@ -1295,7 +1295,7 @@ public static class GameSettings
     /// 손으로 적어 둔 것과 따로다. 첫 화면의 <b>CONTINUE</b> 가 그 파일을 연다.
     /// </remarks>
     /// <summary>
-    /// 원본에 없던 <b>추가 발견물</b>을 놀이에 낼지 — 끄면 발견물 표 · 힌트 표 · 책의 힌트 목록에서 더한 것이 빠진다
+    /// 원본에 없던 <b>추가 발견물</b>을 게임에 낼지 — 끄면 발견물 표 · 힌트 표 · 책의 힌트 목록에서 더한 것이 빠진다
     /// (<see cref="Engine.Table.DiscoveryTable.Discoveries"/> · <see cref="Engine.Table.HintTable.Hints"/> ·
     /// <see cref="Local.Helpers.BookTable.Books"/>). 원본 줄을 고쳐 둔 것은 그대로다.
     /// </summary>
@@ -1458,7 +1458,7 @@ public static class GameSettings
     }
 
     /// <summary>
-    /// 놀이 통계(<see cref="Helpers.PlayStats"/>)를 보내도 되는지 — 처음 켤 때 한 번 묻는다. 아직 안 물었으면 null.
+    /// 게임 통계(<see cref="Helpers.PlayStats"/>)를 보내도 되는지 — 처음 켤 때 한 번 묻는다. 아직 안 물었으면 null.
     /// </summary>
     public static bool? SendStats
     {
@@ -1602,7 +1602,7 @@ public static class GameSettings
     /// 육상전 모의전 창이 지난번에 차렸던 짜임. 한 번도 안 차렸으면 null.
     /// </summary>
     /// <remarks>
-    /// 「싸운다」를 누를 때 적히고, 창을 열 때 되편다. 그 창은 놀이가 아니라 시험 삼아
+    /// 「싸운다」를 누를 때 적히고, 창을 열 때 되편다. 그 창은 게임이 아니라 시험 삼아
     /// 굴려 보는 자리라 앱을 껐다 켜도 남긴다.
     /// </remarks>
     public static LandSparData? LandSpar

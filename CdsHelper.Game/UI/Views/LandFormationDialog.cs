@@ -21,7 +21,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 자리는 병종 하나로 못 박을 수도 있고 <b>기능으로 갈리게</b> 둘 수도 있다 — 게임이
 /// 적 대장의 검술·포술·사격술로 낙타병과 경보병을 가르는 그 자리다.
 ///
-/// 고친 것은 <see cref="LandFormationEdits"/> 가 적어 두고 놀이도 그대로 쓴다.
+/// 고친 것은 <see cref="LandFormationEdits"/> 가 적어 두고 게임도 그대로 쓴다.
 /// </remarks>
 public sealed class LandFormationDialog : GameWindow
 {

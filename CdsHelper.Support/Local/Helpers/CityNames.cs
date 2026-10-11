@@ -7,7 +7,7 @@ namespace CdsHelper.Support.Local.Helpers;
 /// 도시 이름을 <b>번호로</b> 찾는다 — 코드에 「세비야」 같은 이름을 박지 않고 표 한 곳(cities.json)만 고치면 따라 바뀌게.
 /// </summary>
 /// <remarks>
-/// 앱이 읽어 둔 도시 목록(<see cref="CityService"/>)을 먼저 보고, 없으면(놀이 앱처럼 DB 를 안 여는 자리)
+/// 앱이 읽어 둔 도시 목록(<see cref="CityService"/>)을 먼저 보고, 없으면(게임 앱처럼 DB 를 안 여는 자리)
 /// 실행 파일 옆 <c>cities.json</c> 을 한 번 읽어 둔다.
 /// </remarks>
 public static class CityNames

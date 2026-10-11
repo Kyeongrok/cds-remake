@@ -15,7 +15,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 개발용 창 — 소지금과 명성을 손으로 올리고 내린다.
 /// </summary>
 /// <remarks>
-/// 놀이에는 없는 창이다. 명성이 오르는 길(발견물 발표)이나 돈이 도는 길(교역)을 아직
+/// 게임에는 없는 창이다. 명성이 오르는 길(발견물 발표)이나 돈이 도는 길(교역)을 아직
 /// 흉내내지 않아서, 후원자 알현처럼 값이 있어야 볼 수 있는 것들을 시험하려면 손으로
 /// 넣어 줄 데가 필요하다.
 ///
@@ -93,7 +93,7 @@ public sealed class DevDialog : GameWindow
         rows.Children.Add(SpouseRow());
 
         // 좌표 겹쳐 보기 — 배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄운다.
-        // 놀이에는 없는 것이라 이 창으로 옮겨 두었다.
+        // 게임에는 없는 것이라 이 창으로 옮겨 두었다.
         rows.Children.Add(Toggle("좌표 겹쳐 보기", options.CoordsOn(), options.SetCoords,
             "배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄웁니다"));
 
@@ -188,7 +188,7 @@ public sealed class DevDialog : GameWindow
             rows.Children.Add(line);
         }
 
-        // 묘책 확률 표 — 게임 표를 그대로 보여 주고 고치면 놀이에도 바로 든다.
+        // 묘책 확률 표 — 게임 표를 그대로 보여 주고 고치면 게임에도 바로 든다.
         if (options.RuseTable is { } ruses)
         {
             var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
@@ -474,7 +474,7 @@ public sealed class DevDialog : GameWindow
     }
 
     /// <summary>
-    /// 편집기 · 도구 창 쪽 형인지 — 놀이 화면에는 안 나오는 창(퀘스트 편집기 흐름도 · 모션 메이커 · 각종 편집 창)이다.
+    /// 편집기 · 도구 창 쪽 형인지 — 게임 화면에는 안 나오는 창(퀘스트 편집기 흐름도 · 모션 메이커 · 각종 편집 창)이다.
     /// 딸린 형(중첩)은 바깥 형을 따른다.
     /// </summary>
     private static bool IsEditorType(Type type)
@@ -490,7 +490,7 @@ public sealed class DevDialog : GameWindow
     /// 「발견물」 탭 — 발견물을 죄다 늘어놓고, 체크하면 <b>찾아서 보고까지 한 것으로</b>, 풀면 안 찾은 것으로 한다.
     /// </summary>
     /// <remarks>
-    /// 놀이에는 없는 판이다. 발견물이 있어야 볼 수 있는 것(보고 · 연표 · 백과사전 · 발견으로 켜지는 교역품)을
+    /// 게임에는 없는 판이다. 발견물이 있어야 볼 수 있는 것(보고 · 연표 · 백과사전 · 발견으로 켜지는 교역품)을
     /// 시험하려고 둔다. 체크는 찾은 것으로 적고(<see cref="Player.Discover"/>) 그 자리 사건도 매듭짓는다
     /// (<see cref="Player.Settle"/>) — 지도에서 그 자리를 지나도 발견 장면이 다시 안 뜬다. 그리고 <b>보고(발표)한 것으로도</b>
     /// 적는다(<see cref="Player.Announce"/>) — 그래야 후원자 · 왕궁의 「제안 선택」에 안 뜬다. 보고로 드는 명성 · 보수 ·
@@ -527,7 +527,7 @@ public sealed class DevDialog : GameWindow
             box.Checked += (_, _) =>
             {
                 if (_player.Discover(id)) { _player.Settle(id); _findsChanged = true; }
-                // 보고까지 한 것으로 — 행적에는 안 남긴다(놀이에서 한 보고가 아니다).
+                // 보고까지 한 것으로 — 행적에는 안 남긴다(게임에서 한 보고가 아니다).
                 if (_player.Announce(id, trace: false)) _findsChanged = true;
                 if (!bulk) Count();
             };
@@ -631,7 +631,7 @@ public sealed class DevDialog : GameWindow
     /// 아내를 붙였다 뗀다 — 자택 "후손을 남긴다" 줄이 아내가 있어야 눌린다.
     /// </summary>
     /// <remarks>
-    /// 놀이에는 없는 줄이다. 게임에서 아내를 맞으려면 술집 여급과 친밀도를 90 까지
+    /// 게임에는 없는 줄이다. 게임에서 아내를 맞으려면 술집 여급과 친밀도를 90 까지
     /// 올려야 해서(<see cref="Engine.Town.Barmaids"/>) 시험할 때는 여기서 붙여 준다.
     /// </remarks>
     private UIElement SpouseRow()
@@ -671,7 +671,7 @@ public sealed class DevDialog : GameWindow
         return line;
     }
 
-    /// <summary>개발 창에서 고를 수 있는 해. 놀이는 1480년에 열린다.</summary>
+    /// <summary>개발 창에서 고를 수 있는 해. 게임은 1480년에 열린다.</summary>
     private const int FirstYear = 1480, LastYear = 1600;
 
     /// <summary>

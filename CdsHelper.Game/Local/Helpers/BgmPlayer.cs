@@ -32,7 +32,7 @@ public sealed class BgmPlayer : IDisposable
     /// <summary>육상전이 도는 동안의 곡. 해전도 같은 곡이다.</summary>
     public const int BattleTrack = 28;
 
-    /// <summary>놀이가 끝났을 때(CONTINUE? 화면) 도는 곡.</summary>
+    /// <summary>게임이 끝났을 때(CONTINUE? 화면) 도는 곡.</summary>
     public const int GameOverTrack = 8;
 
     /// <summary>술집에 들어가 있는 동안 도는 곡.</summary>

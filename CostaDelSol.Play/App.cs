@@ -11,7 +11,7 @@ using CdsHelper.Support.Local.Settings;
 namespace CostaDelSol.Play;
 
 /// <summary>
-/// 놀이만 띄우는 실행 파일 — <c>CostaDelSol.exe</c>.
+/// 게임만 띄우는 실행 파일 — <c>CostaDelSol.exe</c>.
 /// </summary>
 /// <remarks>
 /// 개발도구(<c>Editor.exe</c>)를 거치지 않고 <see cref="ShipMapWindow"/> 를 바로 연다.
@@ -59,11 +59,11 @@ internal sealed class App : Application
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         GameSettings.Load();
 
-        // 미궁은 딴 어셈블리에 있어 놀이 쪽에서 곧장 못 부른다 — 여기서 걸어 준다.
-        // 일기토는 이제 놀이 쪽(ShipMapWindow.PlayDuel)이 제 판을 곧장 부른다.
+        // 미궁은 딴 어셈블리에 있어 게임 쪽에서 곧장 못 부른다 — 여기서 걸어 준다.
+        // 일기토는 이제 게임 쪽(ShipMapWindow.PlayDuel)이 제 판을 곧장 부른다.
         ShipMapWindow.MazeGame = CdsHelper.Maze.MazeGame.Play;
 
-        // 놀이 창은 주인이 없다. 창이 <c>CenterOwner</c> 로 서 있어 주인이 없으면
+        // 게임 창은 주인이 없다. 창이 <c>CenterOwner</c> 로 서 있어 주인이 없으면
         // 자리가 어정쩡하게 잡힌다 — 여기서는 화면 한가운데로 못 박는다.
         var window = new ShipMapWindow { WindowStartupLocation = WindowStartupLocation.CenterScreen };
         MainWindow = window;
@@ -73,7 +73,7 @@ internal sealed class App : Application
         window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskStats(window); },
                                       System.Windows.Threading.DispatcherPriority.ApplicationIdle);
 
-        // 놀이 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
+        // 게임 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
         PlayStats.Start(typeof(App).Assembly);
         Exit += (_, _) => PlayStats.Flush();
 
@@ -101,7 +101,7 @@ internal sealed class App : Application
     }
 
     /// <summary>
-    /// 놀이 통계를 모은다고 <b>한 번</b> 알리고 켠다(<see cref="PlayStats"/>). 이미 켜져 있으면
+    /// 게임 통계를 모은다고 <b>한 번</b> 알리고 켠다(<see cref="PlayStats"/>). 이미 켜져 있으면
     /// (<see cref="GameSettings.SendStats"/>) 다시 알리지 않는다. 보낼 수 없는 판(받는 곳 주소가 없거나
     /// 손으로 빌드한 판)에서는 알리지도 켜지도 않는다.
     /// </summary>
@@ -121,7 +121,7 @@ internal sealed class App : Application
     /// 개발도구(<c>Editor.exe</c>)의 <c>UpdateService</c> 와 같은 저장소(GitHub 릴리즈)를 본다. Setup.exe 로 깔지 않은
     /// 판(단일 파일 exe · 개발 중 빌드)은 <see cref="UpdateManager.IsInstalled"/> 가 거짓이라 아무것도 안 한다.
     /// 「아니오」면 게임을 끌 때 적용된다(<see cref="UpdateManager.WaitExitThenApplyUpdates"/>).
-    /// 인터넷이 없거나 GitHub 이 막혀도 놀이는 그대로 돈다 — 조용히 넘어간다.
+    /// 인터넷이 없거나 GitHub 이 막혀도 게임은 그대로 돈다 — 조용히 넘어간다.
     /// </remarks>
     private static async Task CheckForUpdateAsync(ShipMapWindow window)
     {

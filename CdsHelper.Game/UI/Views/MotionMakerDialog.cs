@@ -677,10 +677,10 @@ public sealed class MotionMakerDialog : GameWindow
         pair.ToolTip = "아군 것에 맞춰 적군을 세운다"
                      + " — 아군이 상단 공격이면 적군은 웅크린다, 뛴다면 적군은 하단 공격이다";
 
-        // 고친 차례를 그 모션으로 되적는다 — 놀이가 이 파일을 읽는다.
+        // 고친 차례를 그 모션으로 되적는다 — 게임이 이 파일을 읽는다.
         var keep = Push("저장", Keep, 14);
         keep.ToolTip = "마지막으로 만진 쪽의 차례를 고른 모션으로 적어 둔다."
-                     + " 놀이의 일기토가 이 파일을 읽으므로 다시 굽지 않아도 든다";
+                     + " 게임의 일기토가 이 파일을 읽으므로 다시 굽지 않아도 든다";
 
         var back = Push("되돌리기", Undo, 10);
         back.ToolTip = "적어 둔 파일을 지우고 게임 표에서 짚은 밑값으로 돌린다";
@@ -808,7 +808,7 @@ public sealed class MotionMakerDialog : GameWindow
     /// 마지막으로 만진 쪽의 차례를 고른 모션으로 적어 둔다.
     /// </summary>
     /// <remarks>
-    /// 적히는 곳은 <c>asset/duel/motion.json</c> 이고 <b>놀이가 그 파일을 읽는다</b>
+    /// 적히는 곳은 <c>asset/duel/motion.json</c> 이고 <b>게임이 그 파일을 읽는다</b>
     /// (<see cref="DuelMotions"/>). 곧 여기서 고쳐 저장하면 일기토가 그대로 돈다 —
     /// 다시 굽지 않아도 된다.
     /// </remarks>
@@ -848,7 +848,7 @@ public sealed class MotionMakerDialog : GameWindow
 
         _status.Text = $"{lane.Name} 차례를 「{made.Name}」 으로 적었습니다"
                      + $" ({made.Steps.Length}장 · {made.Length:0.00}초) — {DuelMotions.Path_()}."
-                     + "  놀이의 일기토가 이것을 읽습니다." + warn;
+                     + "  게임의 일기토가 이것을 읽습니다." + warn;
     }
 
     /// <summary>적어 둔 파일을 걷고 밑값으로 돌린다.</summary>

@@ -12,7 +12,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 넣어 두면 그것이 원본 자리를 갈아 끼운다. 확장자는 무엇이든 된다(<see cref="Extensions"/>).
 ///
 /// 올려 둔 폴더는 <b>소스 옆 <c>asset/movie</c> 를 먼저</b> 찾는다 — 앱마다 <c>asset</c> 을 제
-/// 출력 폴더로 복사해 가므로, 굽힌 자리만 보면 도구에서 올린 것이 다시 굽기 전까지 놀이에
+/// 출력 폴더로 복사해 가므로, 굽힌 자리만 보면 도구에서 올린 것이 다시 굽기 전까지 게임에
 /// 안 보인다(<see cref="DuelMotions.Path_"/> 와 같은 까닭). 내놓은 판이면 굽힌 자리를 쓴다.
 /// </remarks>
 public static class MovieFiles

@@ -56,7 +56,7 @@ public class SaveDataService
     private const int DISCOVERY_SIZE = 164;
     private const int DISCOVERY_STATE_REL = 0x15;
     // 칸 수는 EXE 고리가 못박는다 — 0x61E4C8 에서 0x629898 까지 0xA8 씩 = 274.
-    // 즉치값이라 놀이 중에 늘어나지 않는다. DiscoveryTable.Count 와 같은 값이다
+    // 즉치값이라 게임 중에 늘어나지 않는다. DiscoveryTable.Count 와 같은 값이다
     // (Support 는 Game 을 참조할 수 없어 상수로 둔다).
     private const int DISCOVERY_COUNT = 274;
 

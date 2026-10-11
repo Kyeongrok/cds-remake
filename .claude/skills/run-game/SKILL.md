@@ -1,9 +1,9 @@
 ---
 name: run-game
-description: 놀이 앱(CostaDelSol)을 닫고, 다시 구워, 띄운다. 사용자가 "실행", "실행해줘", "띄워줘", "돌려봐" 라고 하거나, 코드를 고쳐 빌드가 통과한 뒤 화면으로 확인할 일이 있을 때 쓴다.
+description: 게임 앱(CostaDelSol)을 닫고, 다시 구워, 띄운다. 사용자가 "실행", "실행해줘", "띄워줘", "돌려봐" 라고 하거나, 코드를 고쳐 빌드가 통과한 뒤 화면으로 확인할 일이 있을 때 쓴다.
 ---
 
-# 놀이 앱 실행
+# 게임 앱 실행
 
 `CostaDelSol.Play` 가 이 저장소의 실행 앱이고, 구워진 이름은 **`CostaDelSol.exe`** 다.
 
@@ -33,7 +33,7 @@ CostaDelSol.Play/bin/Debug/net10.0-windows10.0.19041.0/win-x64/CostaDelSol.exe
   그래서 굽기 전에 반드시 닫는다.
 - 대상 판이 올라가면 `net10.0-windows10.0.19041.0` 자리가 바뀐다. 길이 안 맞으면
   `ls CostaDelSol.Play/bin/Debug/*/win-x64/CostaDelSol.exe` 로 찾아 쓴다.
-- 앱을 닫으면 하던 판이 날아간다. 사용자가 놀이 중일 수 있으니 **닫는다는 말을 한 줄
+- 앱을 닫으면 하던 판이 날아간다. 사용자가 게임 중일 수 있으니 **닫는다는 말을 한 줄
   적고** 닫는다.
 
 ## 실행 단추

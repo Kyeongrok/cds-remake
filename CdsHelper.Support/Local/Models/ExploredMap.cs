@@ -53,7 +53,7 @@ public sealed class ExploredMap
     public bool Any { get; private set; }
 
     /// <summary>
-    /// 온 지도를 밝힌다. 놀이에는 쓰지 않는다 — <b>발견물 지도</b>가 바탕을 지을 때만 쓴다.
+    /// 온 지도를 밝힌다. 게임에는 쓰지 않는다 — <b>발견물 지도</b>가 바탕을 지을 때만 쓴다.
     /// </summary>
     public void RevealAll()
     {

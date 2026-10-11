@@ -193,7 +193,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 자리(+0xBC == 2)에서도 그대로 돈다.
         _player.EndContract();
         RecontractMates();
-        // 선장과의 일기토에서 베였으면 놀이가 끝났다 — 설득으로 넘어가지 않는다(0x0044AF40(4) 뒤에는 나서기만 남는다).
+        // 선장과의 일기토에서 베였으면 게임이 끝났다 — 설득으로 넘어가지 않는다(0x0044AF40(4) 뒤에는 나서기만 남는다).
         return MutinousLentShips(deal.Sponsor);
     }
 
@@ -1128,7 +1128,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 없다(0x0041243D 로 곧장 빠진다).
             if (broke)
             {
-                // 감옥에서 일생을 마쳤으면 빌린 배·짐을 거둬 가는 알림도 없다 — 놀이가 이미 끝났다.
+                // 감옥에서 일생을 마쳤으면 빌린 배·짐을 거둬 가는 알림도 없다 — 게임이 이미 끝났다.
                 if (!_reportOver) ReturnLentShips(broken: true);
                 _player.EndContract();
             }
@@ -1446,7 +1446,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 깃발 14 는 삐짐이다(<see cref="Player.IsSulking"/> — 설득을 물렸거나 계약중단을 한 뒤 한동안).
     /// 말은 신분마다 세 벌씩이고, 위약금을 못 내면 그대로 감옥이다.
     /// </remarks>
-    /// <returns>감옥에서 놀이가 끝났으면 true.</returns>
+    /// <returns>감옥에서 게임이 끝났으면 true.</returns>
     private bool Punish(Patron patron, SponsorTable.Sponsor? sponsorRow,
                         Func<string, string, string, string> Pick3)
     {
@@ -1528,7 +1528,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private bool KnownByOthers(DiscoveryTable.Record row) =>
         !_player.HasAnnounced(row.Id) && _player.ScoopedBy(row.Id) != null;
 
-    /// <summary>이번 보고에서 모조품을 들켜 감옥에서 놀이가 끝났는지 — 그러면 나설 때의 뒷처리를 다 건너뛴다.</summary>
+    /// <summary>이번 보고에서 모조품을 들켜 감옥에서 게임이 끝났는지 — 그러면 나설 때의 뒷처리를 다 건너뛴다.</summary>
     private bool _reportOver;
 
     private void ReportNow(Patron patron)
@@ -2028,7 +2028,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     }
 
     /// <summary>
-    /// 감옥(<c>0x0044EF20</c>). 놀이가 끝났으면 true.
+    /// 감옥(<c>0x0044EF20</c>). 게임이 끝났으면 true.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -2084,7 +2084,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private int PersonIdOf(string name) =>
         _game.World?.People.FirstOrDefault(r => r.Name == name)?.Id ?? -1;
 
-    /// <summary>놀이를 끝낸다 — 도시 발견 대본이 게임 오버로 끝날 때와 같은 차례다.</summary>
+    /// <summary>게임을 끝낸다 — 도시 발견 대본이 게임 오버로 끝날 때와 같은 차례다.</summary>
     private void EndGame()
     {
         GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
@@ -2229,7 +2229,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 사람의 배만 고르는데, 우리 배는 빌린 것인지 아닌지만 안다. 처벌은 <b>지금 계약</b>의
     /// 후원자에게만 할 수 있으니 빌린 배도 그 사람 것뿐이라 보고 다 건다.
     /// </remarks>
-    /// <returns>놀이가 이어지면 true — 선장에게 베여 게임 오버면 false.</returns>
+    /// <returns>게임이 이어지면 true — 선장에게 베여 게임 오버면 false.</returns>
     private bool MutinousLentShips(string sponsor)
     {
         var lent = _player.Ships.Where(s => s.Lent).ToList();
@@ -2295,7 +2295,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                         myFace: _game.Faces?.TryGetBgra(PortraitAges.At(_player.Face, _player.Age, false, _game.Faces),
                                                         female: false),
                         arena: DuelArt.Field, bgm: _game.Bgm);
-        // 지면 여느 일기토처럼 도망·용서·죽음이 갈리고, <b>베였을 때만</b> 놀이가 끝난다(0x00410145 의
+        // 지면 여느 일기토처럼 도망·용서·죽음이 갈리고, <b>베였을 때만</b> 게임이 끝난다(0x00410145 의
         // 결과 3). 졌어도 살았으면 이긴 것과 같이 이어 간다 — 원본 함수는 그때도 1 을 낸다.
         // 빌린 배 선장과의 판은 종류 4 라 도망도 용서도 없다(0x004A9EDE).
         if (duel.Won != true && TavernMenu.LostDuel(_view, _player, duel, face, dice,

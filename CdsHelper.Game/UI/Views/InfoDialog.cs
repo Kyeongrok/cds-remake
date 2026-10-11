@@ -45,7 +45,7 @@ internal abstract class InfoDialog : GameWindow
     protected virtual Brush BoardEdge => Line;
 
     /// <summary>
-    /// 오른쪽 위에 닫기(X)를 둘지. <b>새 놀이 화면 셋에는 없다</b> — 게임 갈무리에 없다.
+    /// 오른쪽 위에 닫기(X)를 둘지. <b>새 게임 화면 셋에는 없다</b> — 게임 갈무리에 없다.
     /// </summary>
     protected virtual bool ShowClose => true;
 
@@ -172,7 +172,7 @@ internal abstract class InfoDialog : GameWindow
 
     /// <summary>
     /// 굴러가는 줄 목록. <paramref name="page"/> 를 주면 그 색 양피지 판에 얹고 게임 굴림대를
-    /// 단다 — 새 놀이 확인 화면이 그렇다(게임 것은 <c>#FFEFD6</c> 판이다).
+    /// 단다 — 새 게임 확인 화면이 그렇다(게임 것은 <c>#FFEFD6</c> 판이다).
     /// </summary>
     protected static UIElement List(IEnumerable<string> lines, double height, Brush? page)
     {

@@ -293,7 +293,7 @@ public static class DisevForm
     /// <remarks>
     /// <paramref name="text"/> 는 <see cref="DisevScript.DecodeDialogue(ReadOnlySpan{byte}, bool)"/> 를
     /// <c>normalize: false</c> 로 부른 <b>무손실 글</b>이라야 한다. 그래야 전각·자리표·구분자가
-    /// 그대로 되돌아간다. 반각 ASCII 는 놀이 글꼴에 맞춰 전각으로 굽는다.
+    /// 그대로 되돌아간다. 반각 ASCII 는 게임 글꼴에 맞춰 전각으로 굽는다.
     /// </remarks>
     public static byte[] BuildDialogue(int? flag, ReadOnlySpan<byte> speakerTag, string text)
     {
@@ -326,7 +326,7 @@ public static class DisevForm
 
         for (int i = 0; i < text.Length;)
         {
-            // 자리표는 놀이가 그때그때 채우는 것이라 원래 바이트로 돌려놓는다.
+            // 자리표는 게임이 그때그때 채우는 것이라 원래 바이트로 돌려놓는다.
             if (text[i] == '<' && TryToken(text, i, out byte token, out int used))
             {
                 Flush();
@@ -425,7 +425,7 @@ public static class DisevForm
     }
 
     /// <summary>
-    /// 반각 글자를 놀이 글꼴에 맞는 전각으로 올린다 — 창의 「전각으로」 단추가 쓴다.
+    /// 반각 글자를 게임 글꼴에 맞는 전각으로 올린다 — 창의 「전각으로」 단추가 쓴다.
     /// <c>&lt;01&gt;</c> 같은 이름표 안은 건드리지 않는다.
     /// </summary>
     public static string ToWide(string text)

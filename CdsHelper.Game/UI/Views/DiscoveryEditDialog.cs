@@ -248,7 +248,7 @@ public sealed class DiscoveryEditDialog : GameWindow
         _status.Text = $"발견물 {table.Discoveries.Count}줄 가운데 {rows.Count}줄 — 게임 표 0x0051C540"
                      + (edits == 0 ? "" : $" · 손으로 고치거나 더한 줄 {edits}")
                      + "   ·   자리(X1~Y2)가 -1 이면 그 발견물은 아무 데서도 안 잡힌다"
-                     + "   ·   고치거나 더한 것은 놀이 안에서도 그대로 쓰인다";
+                     + "   ·   고치거나 더한 것은 게임 안에서도 그대로 쓰인다";
     }
 
     private Row ToRow(in DiscoveryTable.Record d) => new()

@@ -11,9 +11,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 경쟁자를 고치는 창 — 역사 항해자 열넷이 <b>언제 무엇을 채가는지</b>.
 /// </summary>
 /// <remarks>
-/// 이 놀이에서 경쟁자가 하는 일은 이것 하나뿐이다(<see cref="HistoryVoyages"/>).
+/// 이 게임에서 경쟁자가 하는 일은 이것 하나뿐이다(<see cref="HistoryVoyages"/>).
 /// <c>HISTCHR.CDS</c> 의 대본이 시키는 일이라 원래는 손댈 수 없는데, 여기서 고친 것을
-/// <see cref="VoyagerEdits"/> 가 따로 들고 표 위에 얹는다 — <b>놀이 안에서도 그대로</b>
+/// <see cref="VoyagerEdits"/> 가 따로 들고 표 위에 얹는다 — <b>게임 안에서도 그대로</b>
 /// 따라온다. <c>HISTCHR.CDS</c> 자체는 손대지 않는다.
 ///
 /// 한 번짜리 발견물(<see cref="DiscoveryTable.Record.Once"/>)은 <b>먼저 가는 쪽이 임자</b>라
@@ -244,11 +244,11 @@ public sealed class VoyagerEditDialog : GameWindow
                      + (once == 0 ? "" : $" (★ 한 번짜리 {once}건)")
                      + $"   ·   표 전체 {table.All.Count}건 / {HistoryVoyages.Count}명"
                      + (edited == 0 ? "" : $" · 손댄 사람 {edited}명")
-                     + "   ·   고친 것은 놀이 안에서도 그대로 쓰인다"
+                     + "   ·   고친 것은 게임 안에서도 그대로 쓰인다"
                      + $" ({HistoryVoyages.FileName} 는 손대지 않는다)";
     }
 
-    /// <summary>그 사람에게 줄을 하나 더한다 — 놀이 첫날로 놓고 시작한다.</summary>
+    /// <summary>그 사람에게 줄을 하나 더한다 — 게임 첫날로 놓고 시작한다.</summary>
     private void AddRow()
     {
         if (_table == null || !Editing) return;

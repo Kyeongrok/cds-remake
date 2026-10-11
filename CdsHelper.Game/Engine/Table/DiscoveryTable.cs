@@ -106,7 +106,7 @@ public sealed class DiscoveryTable
     /// <param name="OnLand">참이면 뭍에서, 거짓이면 바다에서 발견된다.</param>
     /// <param name="Once">
     /// 거짓이면 게임에서 여러 사람이 거듭 발견할 수 있는 것이다(생물·교역품·도시 건물).
-    /// 이 놀이에서는 한 판에 한 번으로 다룬다 — 원본도 한 판 안에서는 한 번만 뜬다.
+    /// 이 게임에서는 한 판에 한 번으로 다룬다 — 원본도 한 판 안에서는 한 번만 뜬다.
     /// </param>
     /// <remarks>
     /// 레코드 <b>구조체</b>는 빈 생성자가 늘 있어서, 적어 둔 JSON 을 되읽을 때 어느 것을 쓸지
@@ -193,7 +193,7 @@ public sealed class DiscoveryTable
     private static readonly Dictionary<int, string> Named = [];
 
     /// <summary>
-    /// 놀이 안에서 <b>이름을 지어 준</b> 발견물(대본 <c>1F 0B</c> · <c>0x004AAB00</c>).
+    /// 게임 안에서 <b>이름을 지어 준</b> 발견물(대본 <c>1F 0B</c> · <c>0x004AAB00</c>).
     /// </summary>
     /// <remarks>
     /// 게임은 발견물 레코드의 이름 칸을 그대로 갈아 버려서, 그 뒤로는 일람이든 지도든

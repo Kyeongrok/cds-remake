@@ -158,7 +158,7 @@ internal static class HostileCityMenu
                     { MyCulture = game.MyCulture };
                     if (!LandBattleScene.Run(owner, game, field, dice))
                     {
-                        // 부대가 모두 쓰러졌으면 놀이가 끝난다 — 마을 공략에서 지면 게임 오버다.
+                        // 부대가 모두 쓰러졌으면 게임이 끝난다 — 마을 공략에서 지면 게임 오버다.
                         if (field.Wiped) return new Outcome(Entered: false, GameOver: true, GameOverDialog.LandLost);
 
                         // 퇴각했으면 부관이 물러서자고 한다(0x00468A17). 부관이 없으면 상자만 뜬다.
@@ -345,7 +345,7 @@ internal static class HostileCityMenu
     ///   4a54af  가벼우면 rand(100) &lt; 운 + 1
     ///   4a54cc  그 굴림을 동전으로 낸다
     ///           되면 추방만, 아니면 벌금 + 소지금 몰수(0x004A5508)
-    ///   4a5561  무거우면 "죽음으로서 속죄하라!" — 그대로 놀이가 끝난다(0x0044AF70)
+    ///   4a5561  무거우면 "죽음으로서 속죄하라!" — 그대로 게임이 끝난다(0x0044AF70)
     /// </code>
     /// <b>감옥에 갇히는 갈래는 없다.</b> 재판의 끝은 이 셋뿐이고, 갇혀 날짜가 흐르는
     /// 자리도 없다 — 그 사이의 <c>0x004A5AE0(-1, 1)</c> 은 <c>0x00428000(40, 1)</c> 을

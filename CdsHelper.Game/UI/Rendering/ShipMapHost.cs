@@ -211,7 +211,7 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>화살표 격자를 구운 달. 달이 바뀌면 바람 표가 갈리므로 다시 굽는다.</summary>
     private int _flowMonth = -1;
 
-    /// <summary>지금 달을 알려 주는 이. 안 주면 4월로 본다(놀이 시작 달).</summary>
+    /// <summary>지금 달을 알려 주는 이. 안 주면 4월로 본다(게임 시작 달).</summary>
     public Func<int>? MonthOf { get; set; }
 
     /// <summary>
@@ -1291,7 +1291,7 @@ public sealed class ShipMapHost : HwndHost
     private int _autoCity = -1;
 
     /// <summary>
-    /// 바라는 뱃머리가 바뀐 횟수 — 손으로 몰든 자동항해든 센다. 놀이 통계가 항해마다 0 으로 돌려 놓고 읽는다.
+    /// 바라는 뱃머리가 바뀐 횟수 — 손으로 몰든 자동항해든 센다. 게임 통계가 항해마다 0 으로 돌려 놓고 읽는다.
     /// </summary>
     public int TurnCount { get; set; }
 
@@ -1830,7 +1830,7 @@ public sealed class ShipMapHost : HwndHost
         _dirty = true;
     }
 
-    /// <summary>표를 못 열었을 때 볼 달. 놀이가 시작하는 달이다.</summary>
+    /// <summary>표를 못 열었을 때 볼 달. 게임이 시작하는 달이다.</summary>
     private const int DefaultMonth = 4;
 
     /// <summary>

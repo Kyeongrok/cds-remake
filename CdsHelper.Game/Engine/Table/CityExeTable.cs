@@ -31,7 +31,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <b>메모리를 읽을 까닭이 없다.</b> 게임이 돌 때는 도시 레코드(<c>0x005863A8</c> + 도시번호
 /// x 92)의 <c>+0x20~+0x3C</c> 에 같은 값이 올라와 있지만, 그것은 이 표를 옮겨 놓은 것이다 —
 /// 켜 놓은 게임에서 226곳을 읽어 이 표와 대 보니 <b>한 칸도 다르지 않았다</b>. 게다가
-/// 여기는 <c>.rdata</c> 라 놀이 중에 바뀌지도 않는다(시세는 다르다 — 그쪽은 돌아다닌다).
+/// 여기는 <c>.rdata</c> 라 게임 중에 바뀌지도 않는다(시세는 다르다 — 그쪽은 돌아다닌다).
 ///
 /// 도시 <b>이름</b>은 안 읽는다. 앱은 그것을 DB 에서 내고(<see cref="CityTable"/>),
 /// 거기서는 사람이 고칠 수도 있기 때문이다. 문화권은 여기서 읽는다 — 여관 값처럼
@@ -69,7 +69,7 @@ public sealed class CityExeTable
 
     /// <summary>규모·나라·특산품이 놓인 자리.</summary>
     /// <remarks>
-    /// 규모는 <c>+0x28</c> 이다(0~7). 게임이 놀이를 시작할 때 이 값을 살아 있는 도시 레코드
+    /// 규모는 <c>+0x28</c> 이다(0~7). 게임이 새 판을 시작할 때 이 값을 살아 있는 도시 레코드
     /// (<c>0x005863A8</c> + 도시번호 x 92)의 <c>+0x08</c> 로 옮기고, 도시정보 창은 거기서
     /// 읽어 막대로 그린다. <c>+0x0C</c> 는 2 아니면 3 뿐이라 규모가 아니었다.
     /// </remarks>
@@ -106,7 +106,7 @@ public sealed class CityExeTable
 
     /// <summary>
     /// 건물 낱말(<c>+0x60</c>) — 비트 n 이 건물 코드 n(0 항구 · 2 왕궁 · 6 조선소 · 10 성문 · 11 저택 · 12~15 NPC 저택).
-    /// 놀이를 열면 도시 레코드 <c>+0x1C</c> 로 옮겨지고(<c>0x00429A1D</c>) 역사 대본이 켜고 끈다.
+    /// 게임을 열면 도시 레코드 <c>+0x1C</c> 로 옮겨지고(<c>0x00429A1D</c>) 역사 대본이 켜고 끈다.
     /// </summary>
     private const int BuildingOffset = 0x60;
 
@@ -220,22 +220,22 @@ public sealed class CityExeTable
     }
 
     /// <summary>
-    /// 처음 규모. 놀이 중에 도시가 자라면 이 값보다 커진다 — 게임이 돌 때의 값은 딴 자리다.
+    /// 처음 규모. 게임 중에 도시가 자라면 이 값보다 커진다 — 게임이 돌 때의 값은 딴 자리다.
     /// </summary>
     public int ScaleOf(int cityId) =>
         Live?.CityScales.TryGetValue(cityId, out int grown) == true ? grown
         : cityId >= 0 && cityId < _scales.Length ? _scales[cityId] : 0;
 
     /// <summary>
-    /// 놀이 중에 바뀐 값을 든 주인공 — 역사 대본이 바꾼 나라(<see cref="Player.HistoryNations"/>)와
-    /// 규모(<see cref="Player.CityScales"/>)가 표 첫값을 덮는다. 편집기처럼 놀이가 없는 자리면 null.
+    /// 게임 중에 바뀐 값을 든 주인공 — 역사 대본이 바꾼 나라(<see cref="Player.HistoryNations"/>)와
+    /// 규모(<see cref="Player.CityScales"/>)가 표 첫값을 덮는다. 편집기처럼 게임이 없는 자리면 null.
     /// </summary>
     public Player? Live => LivePlayer?.Invoke();
 
     /// <summary>지금 주인공을 알려 주는 길. 새 판으로 주인공이 갈려도 따라가게 함수로 둔다.</summary>
     public Func<Player>? LivePlayer { get; set; }
 
-    /// <summary>표에 적힌 처음 나라 — 사람이 갈아 둔 것은 들지만 놀이 중 바뀐 것은 안 든다.</summary>
+    /// <summary>표에 적힌 처음 나라 — 사람이 갈아 둔 것은 들지만 게임 중 바뀐 것은 안 든다.</summary>
     public int StartNationOf(int cityId)
     {
         int changed = CityNationEdits.Of(cityId);
@@ -304,7 +304,7 @@ public sealed class CityExeTable
         cityId >= 0 && cityId < _flags.Length ? _flags[cityId] : 0;
 
     /// <summary>
-    /// 놀이를 켤 때부터 <b>아는 도시</b>인지 — 유럽·지중해 101곳이 그렇다.
+    /// 게임을 켤 때부터 <b>아는 도시</b>인지 — 유럽·지중해 101곳이 그렇다.
     /// </summary>
     public bool KnownAtStart(int cityId) => (FlagsOf(cityId) & KnownBit) != 0;
 

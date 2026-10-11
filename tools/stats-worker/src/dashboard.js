@@ -6,7 +6,7 @@ export const DASHBOARD_HTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>코스타 델 솔 — 놀이 통계</title>
+<title>코스타 델 솔 — 게임 통계</title>
 <style>
   :root { --bg: #0d1424; --panel: #16203a; --line: #2b3a63; --text: #e8ecf7; --dim: #93a0c2; --accent: #6ea8ff; --gold: #ffe070; --bar: #3b6fd6; --good: #5fd08a; --bad: #ff7a7a; }
   @media (prefers-color-scheme: light) { :root { --bg: #f4f6fb; --panel: #ffffff; --line: #d5dbea; --text: #1b2338; --dim: #5d6885; --accent: #2a5fd0; --gold: #a06a00; --bar: #8fb2f2; --good: #1d8a4c; --bad: #c23636; } }
@@ -47,8 +47,8 @@ export const DASHBOARD_HTML = `<!doctype html>
 </head>
 <body>
 <main>
-  <h1>코스타 델 솔 — 놀이 통계</h1>
-  <div class="sub">익명으로 수집한 놀이 셈입니다. 모드 옵션은 설치마다 마지막 값이라 버전으로 거르지 않습니다.</div>
+  <h1>코스타 델 솔 — 게임 통계</h1>
+  <div class="sub">익명으로 수집한 게임 셈입니다. 모드 옵션은 설치마다 마지막 값이라 버전으로 거르지 않습니다.</div>
   <div class="filters">
     <label>버전 <select id="version"><option value="">전체</option></select></label>
     <span class="dim" id="made"></span>

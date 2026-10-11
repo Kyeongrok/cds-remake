@@ -213,7 +213,7 @@
                                         <MenuItem
                                             x:Name="PART_WorldEditMenu"
                                             Header="세계지도 편집 (WORLD.CDS)"
-                                            ToolTip="지도 칸을 붓으로 칠한다 — 고친 것은 asset/cds/WORLD.CDS 에 적고 놀이가 먼저 읽는다" />
+                                            ToolTip="지도 칸을 붓으로 칠한다 — 고친 것은 asset/cds/WORLD.CDS 에 적고 게임이 먼저 읽는다" />
                                         <MenuItem x:Name="PART_EventQueueMenu" Header="이벤트 큐 보기" />
                                         <MenuItem x:Name="PART_DbTableViewerMenu" Header="DB 테이블 보기" />
                                         <MenuItem
@@ -247,7 +247,7 @@
                                         <MenuItem
                                             x:Name="PART_NationEditMenu"
                                             Header="국가"
-                                            ToolTip="나라 이름·쓰는 말·수도를 고친다 — 고친 것은 놀이에도 그대로 쓰인다" />
+                                            ToolTip="나라 이름·쓰는 말·수도를 고친다 — 고친 것은 게임에도 그대로 쓰인다" />
                                         <MenuItem
                                             x:Name="PART_CultureEditMenu"
                                             Header="문화권"
@@ -263,7 +263,7 @@
                                         <MenuItem
                                             x:Name="PART_FigureheadEditMenu"
                                             Header="선수상"
-                                            ToolTip="선수상 서른여섯의 등급을 고친다 — 막을 확률(등급x30−20)과 다는 삯이 놀이에 바로 든다" />
+                                            ToolTip="선수상 서른여섯의 등급을 고친다 — 막을 확률(등급x30−20)과 다는 삯이 게임에 바로 든다" />
                                         <MenuItem
                                             x:Name="PART_RumorEditMenu"
                                             Header="소문"
@@ -275,7 +275,7 @@
                                         <MenuItem
                                             x:Name="PART_VoyagerEditMenu"
                                             Header="경쟁자"
-                                            ToolTip="역사 항해자 열넷이 언제 무엇을 채가는지 고친다 — 고친 것은 놀이에도 그대로 쓰인다" />
+                                            ToolTip="역사 항해자 열넷이 언제 무엇을 채가는지 고친다 — 고친 것은 게임에도 그대로 쓰인다" />
                                         <MenuItem
                                             x:Name="PART_BuildingListMenu"
                                             Header="도시·건물"
@@ -298,7 +298,7 @@
                                         <MenuItem
                                             x:Name="PART_MovieBankMenu"
                                             Header="동영상 보기"
-                                            ToolTip="게임 AVI 동영상을 틀어 보고, 갈아 끼울 동영상을 asset/movie 에 올린다 — 올린 것이 있으면 놀이가 그것을 먼저 튼다" />
+                                            ToolTip="게임 AVI 동영상을 틀어 보고, 갈아 끼울 동영상을 asset/movie 에 올린다 — 올린 것이 있으면 게임이 그것을 먼저 튼다" />
                                     </MenuItem>
                                     <MenuItem Header="개발">
                                         <MenuItem

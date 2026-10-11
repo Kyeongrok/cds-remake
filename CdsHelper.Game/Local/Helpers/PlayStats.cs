@@ -8,7 +8,7 @@ using CdsHelper.Game.Local.Settings;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 놀이 통계 — 무엇을 발견하고 어디서 어디로 며칠 걸려 가고 얼마나 싸우는지 세어 받는 곳으로 보낸다.
+/// 게임 통계 — 무엇을 발견하고 어디서 어디로 며칠 걸려 가고 얼마나 싸우는지 세어 받는 곳으로 보낸다.
 /// </summary>
 /// <remarks>
 /// 받는 곳은 <c>tools/stats-worker</c>(Cloudflare Worker + D1)다. 모드 옵션은 켤 때 한 번 찍는다.
@@ -23,7 +23,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 평균은 보는 쪽이 나눠서 낸다. 차림표 줄(menu)은 예전에 셌는데 이제 안 센다.
 /// 셈은 메모리에 모았다가 <b>도시를 나설 때</b>(출항 · 성문)와 끌 때 한 덩이로 줄(파일)에 세워 뒤에서 보낸다
 /// (나서지 않고 오래 있으면 <see cref="FlushEvery"/> 마다) —
-/// 인터넷이 없으면 다음에 켤 때 다시 보낸다. <b>놀이 exe 가 <see cref="Start"/> 를 불러야만</b> 세기 시작하고,
+/// 인터넷이 없으면 다음에 켤 때 다시 보낸다. <b>게임 exe 가 <see cref="Start"/> 를 불러야만</b> 세기 시작하고,
 /// 모은다고 한 번 알린 뒤(<see cref="GameSettings.SendStats"/>)에만, 태그로 낸 릴리즈 판에서만 보낸다.
 /// 누가 보냈는지는 설치마다 만든 무작위 번호뿐이다 — 이름 · 세이브 · IP 는 안 적는다.
 /// </remarks>
@@ -59,7 +59,7 @@ public static class PlayStats
     private static DateTime _flushedAt = DateTime.UtcNow;
     private static int _uploading;
 
-    /// <summary>세기 시작했는가 — 놀이 exe 만 켠다. 개발도구에서 돌린 놀이는 안 센다.</summary>
+    /// <summary>세기 시작했는가 — 게임 exe 만 켠다. 개발도구에서 돌린 게임은 안 센다.</summary>
     public static bool Started { get; private set; }
 
     /// <summary>이 판이 보낼 수 있는 판인가(회원의 답과 무관) — 받는 곳 주소가 있고 태그로 낸 릴리즈 판일 때.</summary>
@@ -68,9 +68,9 @@ public static class PlayStats
     private static bool CanUpload => CanUploadBuild && GameSettings.SendStats == true;
 
     /// <summary>
-    /// 놀이를 켤 때 한 번 — 받는 곳 주소와 판 번호를 읽고, 지난번에 못 보낸 것을 뒤에서 보낸다.
+    /// 게임을 켤 때 한 번 — 받는 곳 주소와 판 번호를 읽고, 지난번에 못 보낸 것을 뒤에서 보낸다.
     /// </summary>
-    /// <param name="app">놀이 exe 의 어셈블리. 손으로 빌드한 판은 판 번호가 csproj 값(1.12.0) 그대로라 릴리즈로 안 친다.</param>
+    /// <param name="app">게임 exe 의 어셈블리. 손으로 빌드한 판은 판 번호가 csproj 값(1.12.0) 그대로라 릴리즈로 안 친다.</param>
     public static void Start(Assembly app)
     {
         _url = ReadUrl();

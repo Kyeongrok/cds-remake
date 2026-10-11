@@ -129,7 +129,7 @@ public sealed class RouteCache
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
             File.WriteAllText(FilePath, JsonSerializer.Serialize(new Snapshot(_world, _routes)));
         }
-        catch { /* 못 적어도 놀이는 그대로다 */ }
+        catch { /* 못 적어도 게임은 그대로다 */ }
     }
 
     private static List<(double X, double Y)> Unpack(double[] points)

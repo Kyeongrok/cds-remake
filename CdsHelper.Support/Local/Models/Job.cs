@@ -34,15 +34,15 @@
 ///
 /// 국적이 주는 <b>모국어 3 · 이웃 2</b> 는 여기 없다(<see cref="Skill.TongueOf"/>).
 ///
-/// 뒤의 넷(해적·전도사·상인·군인)은 새 놀이에서 못 고르므로 아직 <b>지어 둔 값</b>이다.
+/// 뒤의 넷(해적·전도사·상인·군인)은 새 게임에서 못 고르므로 아직 <b>지어 둔 값</b>이다.
 /// </remarks>
 public sealed record Job(string Name, int[] Bias, (int Skill, int Level)[] Skills,
                          (int Language, int Level)[] Tongues)
 {
-    /// <summary>새 놀이에서 고를 수 있는 직업 넷. 게임 화면에도 이 넷만 뜬다.</summary>
+    /// <summary>새 게임에서 고를 수 있는 직업 넷. 게임 화면에도 이 넷만 뜬다.</summary>
     public const int Choosable = 4;
 
-    /// <summary>여덟. 앞의 넷만 새 놀이에서 고른다.</summary>
+    /// <summary>여덟. 앞의 넷만 새 게임에서 고른다.</summary>
     public static readonly Job[] All =
     [
         new("탐험가", [0, 0, 0, 0, 0, 0],
@@ -58,7 +58,7 @@ public sealed record Job(string Name, int[] Bias, (int Skill, int Level)[] Skill
             [(Skill.Sword, 3), (Skill.Gunnery, 2), (Skill.Shipwright, 2), (Skill.Theology, 2)],
             []),
 
-        // 아래 넷은 새 놀이에서 못 고른다 — 값은 아직 지어 둔 것이다.
+        // 아래 넷은 새 게임에서 못 고른다 — 값은 아직 지어 둔 것이다.
         new("해적", [-2, -4, 5, -1, 2, 0],
             [(Skill.Sword, 3), (Skill.Gunnery, 2), (Skill.Handling, 1)], []),
         new("전도사", [-2, 4, -3, -1, 2, 0],
@@ -78,7 +78,7 @@ public sealed record Job(string Name, int[] Bias, (int Skill, int Level)[] Skill
 /// 능력치 여섯 — 게임 표(<c>0x00560A88</c>) 차례 그대로다.
 /// </summary>
 /// <remarks>
-/// 새 놀이 화면에는 앞의 다섯만 뜬다. <b>신앙심</b>은 안 보이는 자리에서 따로 굴린다
+/// 새 게임 화면에는 앞의 다섯만 뜬다. <b>신앙심</b>은 안 보이는 자리에서 따로 굴린다
 /// (<c>0x0045D590</c> 의 <c>rand(80) + 21</c>).
 /// </remarks>
 public static class Ability

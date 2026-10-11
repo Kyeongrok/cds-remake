@@ -12,7 +12,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 원본 표는 <c>0x0054A0A0</c>(이름 ptr, 등급) 여덟 바이트 x 서른여섯이고, 이름은 소지품
-/// 갈래 6(아이템 213~248)과 같은 차례다. 등급이 바뀌면 그대로 놀이에 든다.
+/// 갈래 6(아이템 213~248)과 같은 차례다. 등급이 바뀌면 그대로 게임에 든다.
 /// <code>
 ///   막는 것    번호 % 4    0 쥐 · 1 병 · 2 반란 · 3 폭풍·눈보라
 ///   막을 확률  등급 x 30 − 20 (%)          ; 등급 0 은 −20 이라 아무것도 못 막는다
@@ -163,7 +163,7 @@ public sealed class FigureheadEditDialog : GameWindow
         int edits = FigureheadEdits.All.Count;
         _status.Text = $"선수상 {rows.Count}개 — 게임 표 0x0054A0A0 (8바이트 x {Figureheads.Count})"
                      + (edits == 0 ? "" : $" · 손으로 고친 것 {edits}개")
-                     + "   ·   등급은 0~3, 고친 것은 놀이 안에서도 그대로 쓰인다";
+                     + "   ·   등급은 0~3, 고친 것은 게임 안에서도 그대로 쓰인다";
     }
 
     /// <summary>고친 칸만 골라 적어 둔다 — 게임 값과 같으면 씌우지 않는다.</summary>

@@ -30,8 +30,8 @@ public static class Skill
     /// 언어 열넷. 게임 표(<c>0x00560A48</c>) 차례 그대로다.
     /// </summary>
     /// <remarks>
-    /// 새 놀이 화면에서는 앞의 <b>여섯</b>만 찍을 수 있고 나머지는 흐리다 — 페르시아어부터는
-    /// 놀이 안에서 배워야 한다.
+    /// 새 게임 화면에서는 앞의 <b>여섯</b>만 찍을 수 있고 나머지는 흐리다 — 페르시아어부터는
+    /// 게임 안에서 배워야 한다.
     /// </remarks>
     public static readonly string[] Languages =
     [
@@ -40,7 +40,7 @@ public static class Skill
         "아프리카토착어", "중남미토착어", "동남아시아토착어", "동아시아토착어",
     ];
 
-    /// <summary>새 놀이에서 찍을 수 있는 언어 수.</summary>
+    /// <summary>새 게임에서 찍을 수 있는 언어 수.</summary>
     public const int LanguagesAtStart = 6;
 
     /// <summary>
@@ -113,7 +113,7 @@ public static class Skill
     public const int Spanish = 0, Portuguese = 1, Romance = 2, German = 3,
                      SlavGreek = 4, Arabic = 5;
 
-    /// <summary>국적 번호 — 새 놀이에서 고르는 둘.</summary>
+    /// <summary>국적 번호 — 새 게임에서 고르는 둘.</summary>
     public const int Portugal = 0, Spain = 1;
 
     /// <summary>한 자리 올리는 데 드는 값(닢). 자리와 상관없이 같다.</summary>

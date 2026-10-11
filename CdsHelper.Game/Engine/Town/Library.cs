@@ -45,7 +45,7 @@ public static class Library
     /// <summary>세 번에 한 번 꼴로 일어난다는 뜻 — 게임이 <c>rand(3)</c> 로 던지는 주사위다.</summary>
     private const int Dice = 3;
 
-    /// <summary>놀이가 시작하는 해. 씨앗을 짓는 데 쓴다(<c>0x004721AE</c> 의 <c>sub eax,0x5c8</c>).</summary>
+    /// <summary>게임이 시작하는 해. 씨앗을 짓는 데 쓴다(<c>0x004721AE</c> 의 <c>sub eax,0x5c8</c>).</summary>
     private const int FirstYear = 1480;
 
     /// <summary>서가가 바뀌는 주기(해). 씨앗이 <c>(해-1480)/4</c> 라 넉 해 동안은 그대로다.</summary>

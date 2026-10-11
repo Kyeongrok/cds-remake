@@ -14,7 +14,7 @@ namespace CdsHelper.Main.UI.Views;
 /// <b>갈아 끼울 동영상을 올리는</b> 창.
 /// </summary>
 /// <remarks>
-/// 올린 것은 같은 이름 줄기로 <c>asset/movie</c> 에 들어간다(<see cref="MovieFiles"/>). 놀이는
+/// 올린 것은 같은 이름 줄기로 <c>asset/movie</c> 에 들어간다(<see cref="MovieFiles"/>). 게임은
 /// 그쪽을 먼저 보고, 없으면 게임 폴더 원본을 튼다 — 발견·보고·발표·DISEV·조선소가 다 그렇다.
 ///
 /// 발견물 표에 원래 없던 번호(70 이상)를 적어 둔 줄이 있으면 그 번호도 줄로 낸다 — 원본이 없으니

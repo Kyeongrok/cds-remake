@@ -12,7 +12,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <remarks>
 /// 줄 하나가 패시브 하나다 — 어느 작위부터 · 무슨 갈래 · 얼마나. 같은 갈래를 여럿 두면 더해지고, 작위가 오르면 아래 것도 다 가진다.
 /// 「운 +5」 같은 것은 갈래를 「능력치 증가」로 두고 능력치 칸에서 운을 고른다. 저장하면 <c>exe-tables/패시브.json</c> 에 적히고
-/// 놀이 앱이 다음에 열 때 읽는다.
+/// 게임 앱이 다음에 열 때 읽는다.
 /// </remarks>
 public sealed class PassiveEditDialog : GameWindow
 {
@@ -174,7 +174,7 @@ public sealed class PassiveEditDialog : GameWindow
         Passives.Save(_rows.Select(r => r.ToPassive()));
         _rows = [.. Passives.All.Select(Row.Of)];
         Rebind(null);
-        _status.Text = "저장했습니다 — 놀이 앱은 다음에 열 때 새 표를 읽습니다.   ·   " + _status.Text;
+        _status.Text = "저장했습니다 — 게임 앱은 다음에 열 때 새 표를 읽습니다.   ·   " + _status.Text;
     }
 
     /// <summary>창을 띄운다.</summary>

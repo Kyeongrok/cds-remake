@@ -18,7 +18,7 @@ namespace CdsHelper.Main.UI.Views;
 /// 파일은 2500바이트 행이 2500줄이고 짝수 행이 지도 왼쪽 절반, 홀수 행이 오른쪽 절반이다.
 ///
 /// <b>원본 게임 폴더의 WORLD.CDS 는 건드리지 않는다.</b> 고친 것은 <c>asset/cds/WORLD.CDS</c>
-/// (<see cref="CdsAssetPath.EditedSaveDirectory"/>)에 적고, 놀이·편집기는 그것이 있으면 먼저 읽는다
+/// (<see cref="CdsAssetPath.EditedSaveDirectory"/>)에 적고, 게임·편집기는 그것이 있으면 먼저 읽는다
 /// (<see cref="CdsAssetPath.Resolve"/>). 저장소에서 고치면 릴리즈에도 같이 실린다.
 ///
 /// 왼쪽 단추로 칠하고, 오른쪽 단추로 그 칸 값을 집는다(스포이드). 가운데 단추로 끌면 화면을 옮기고
@@ -100,16 +100,16 @@ public class WorldEditContent : ContentControl
         ToolTip = "칸 경계선 (G) — x4 위로 키웠을 때 보인다",
     };
     /// <summary>
-    /// 셰이더 미리보기 — 키운 자리를 놀이의 지도 셰이더로 그려 보인다(<see cref="MapShaderPreview"/>). 고해상도 바다는 늘 켜고,
-    /// 도트 확대 필터 · 뭍 세부 질감 · 바다 입체 효과는 놀이 모드 창에서 고른 대로 따른다.
-    /// 칸이 화면 네 점보다 커야(x6 위) 든다 — 놀이에서도 그때부터 고해상도 바다가 선다.
+    /// 셰이더 미리보기 — 키운 자리를 게임의 지도 셰이더로 그려 보인다(<see cref="MapShaderPreview"/>). 고해상도 바다는 늘 켜고,
+    /// 도트 확대 필터 · 뭍 세부 질감 · 바다 입체 효과는 게임 모드 창에서 고른 대로 따른다.
+    /// 칸이 화면 네 점보다 커야(x6 위) 든다 — 게임에서도 그때부터 고해상도 바다가 선다.
     /// </summary>
     private bool _shaderOn;
     private CdsHelper.Game.UI.Views.MapShaderPreview? _shader;
     private readonly System.Windows.Controls.Primitives.ToggleButton _shaderButton = new()
     {
         Content = "셰이더", Padding = new Thickness(6, 0, 6, 0), Margin = new Thickness(2, 0, 2, 0),
-        ToolTip = "놀이의 지도 셰이더(고해상도 바다 + 모드 창에서 켠 도트 필터·뭍 세부 질감·바다 입체 효과)로 미리 본다 (V) — x6 위로 키웠을 때 든다",
+        ToolTip = "게임의 지도 셰이더(고해상도 바다 + 모드 창에서 켠 도트 필터·뭍 세부 질감·바다 입체 효과)로 미리 본다 (V) — x6 위로 키웠을 때 든다",
     };
 
     /// <summary>셰이더가 드는 가장 작은 배율 — 칸이 화면 네 점보다 커야 한다.</summary>
@@ -273,7 +273,7 @@ public class WorldEditContent : ContentControl
         panel.Children.Add(new TextBlock
         {
             Text = "왼쪽 위 ✋ (H): 끌어서 옮기기, 끄면(B) 칠하기\n왼쪽 단추: 칠하기\n오른쪽 단추: 그 칸 집기(스포이드)\n가운데 단추 끌기: 화면 옮기기\n휠: 키우기·줄이기\nCtrl+Z / Ctrl+Y: 되돌리기 / 다시하기\n\n" +
-                   "저장하면 asset/cds/WORLD.CDS 에 적고, 놀이와 편집기가 그것을 먼저 읽는다. 놀이 창을 다시 열어야 먹는다.",
+                   "저장하면 asset/cds/WORLD.CDS 에 적고, 게임과 편집기가 그것을 먼저 읽는다. 게임 창을 다시 열어야 먹는다.",
             TextWrapping = TextWrapping.Wrap,
             Foreground = Brushes.Gray,
             Margin = new Thickness(0, 16, 0, 0),
@@ -835,7 +835,7 @@ public class WorldEditContent : ContentControl
     /// </summary>
     /// <remarks>
     /// 넘기는 지도는 <b>화면에 보이는 대로</b>다 — 도시 숨김이면 도시·발견물 칸을 바탕 타일로 갈아 둔 사본이다
-    /// (놀이의 도시 분리가 까는 바탕과 같다).
+    /// (게임의 도시 분리가 까는 바탕과 같다).
     /// </remarks>
     private void SyncShader(bool depth)
     {

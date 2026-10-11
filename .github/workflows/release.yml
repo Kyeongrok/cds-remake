@@ -35,7 +35,7 @@ jobs:
       - name: Restore
         run: dotnet restore CdsHelper/CdsHelper.csproj
 
-      # 놀이만 띄우는 exe 도 같이 낸다 — 같은 폴더에 나란히 놓인다.
+      # 게임만 띄우는 exe 도 같이 낸다 — 같은 폴더에 나란히 놓인다.
       - name: Restore (play)
         run: dotnet restore CostaDelSol.Play/CostaDelSol.Play.csproj
 

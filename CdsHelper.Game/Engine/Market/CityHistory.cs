@@ -32,7 +32,7 @@ public sealed class CityHistory
 {
     public const string FileName = "HIST_EV.CDS";
 
-    /// <summary>놀이 첫 달. 이 달은 안 돌고 다음 달부터 돈다(달이 바뀔 때 돌기 때문이다).</summary>
+    /// <summary>게임 첫 달. 이 달은 안 돌고 다음 달부터 돈다(달이 바뀔 때 돌기 때문이다).</summary>
     public const int FirstYear = 1480;
 
     /// <summary>HIST_EV 파트들(원본 바이트).</summary>
@@ -72,7 +72,7 @@ public sealed class CityHistory
     /// <summary>달을 가리는 값(해 x 12 + 달).</summary>
     public static int MonthKey(int year, int month) => year * 12 + month;
 
-    /// <summary>놀이 첫 달의 값.</summary>
+    /// <summary>게임 첫 달의 값.</summary>
     public static int StartKey => MonthKey(FirstYear, 1);
 
     /// <summary>그 발견물을 누가 찾았는지(주인공이든 역사 항해자든). 칸 0·1 에 이름이 있는지다(<c>0x004AAD80</c>).</summary>
@@ -322,7 +322,7 @@ public sealed class CityHistory
     /// 도시의 나라를 바꾼다(<c>0x00409AB6</c>) — 그 도시가 옛 나라의 <b>수도</b>면 옛 나라 도시가 다 넘어간다.
     /// </summary>
     /// <remarks>
-    /// 수도는 나라 레코드(<c>0x005859C0</c> + 나라 x 16)의 <c>+0x00</c> 이다. 놀이 중에 이 칸을 바꾸는 곳을 못 찾아
+    /// 수도는 나라 레코드(<c>0x005859C0</c> + 나라 x 16)의 <c>+0x00</c> 이다. 게임 중에 이 칸을 바꾸는 곳을 못 찾아
     /// 나라 표의 수도(<see cref="NationTable.Nation.Capital"/>)로 본다.
     ///
     /// 마을 공략에 이겼을 때(<c>0x00468AC0</c>)도 같은 셈이다 — 그쪽은 도시 레코드 <c>+0x04</c> 에

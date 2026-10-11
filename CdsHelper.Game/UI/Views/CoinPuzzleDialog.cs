@@ -176,7 +176,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     private readonly List<Image> _piled = [];
 
     /// <summary>
-    /// 놀이 속 천칭인지(<c>+0x154</c>) — 들어올 때 받은 인자다. 미니 게임(0)은 한 번 틀리면 곧 끝나고
+    /// 게임 속 천칭인지(<c>+0x154</c>) — 들어올 때 받은 인자다. 미니 게임(0)은 한 번 틀리면 곧 끝나고
     /// 삯도 없다(<c>0x00450C9C</c> → <c>0x00450D3D</c>).
     /// </summary>
     private readonly bool _stakes;
@@ -668,10 +668,10 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     }
 
     /// <summary>
-    /// 놀이를 한 판 하고 <c>0x00450C2D</c> 이 하듯 결과를 알린다.
+    /// 게임을 한 판 하고 <c>0x00450C2D</c> 이 하듯 결과를 알린다.
     /// </summary>
     /// <remarks>
-    /// 삯 3000닢은 <b>놀이 속 천칭</b>에서만 나온다 — <c>0x00450C4C</c> 가
+    /// 삯 3000닢은 <b>게임 속 천칭</b>에서만 나온다 — <c>0x00450C4C</c> 가
     /// <c>[0x154] != 0</c> 일 때만 <c>0x0047CBC0(0xBB8)</c> 을 부르는데, 그 값은
     /// 들어올 때 받은 인자이고 미니 게임은 0 을 준다(<c>0x0045FB54</c>).
     /// </remarks>

@@ -37,7 +37,7 @@ public static class ShipyardStock
     /// <summary>건물 낱말에서 조선소 비트(<c>0x40</c>).</summary>
     private const int ShipyardBit = 6;
 
-    /// <summary>놀이 첫 해 — 해 값에서 빼는 수(<c>0x0042A383</c> 의 <c>−0x5C3</c>)와 짝이다.</summary>
+    /// <summary>게임 첫 해 — 해 값에서 빼는 수(<c>0x0042A383</c> 의 <c>−0x5C3</c>)와 짝이다.</summary>
     private const int FirstYear = 1480, YearBase = 1475;
 
     /// <summary>파는 선체가 없을 때 조선소 주인의 말(<c>0x00531118</c>).</summary>

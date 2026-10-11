@@ -109,7 +109,7 @@ public sealed class PersonWorld
     /// <summary>
     /// 표를 받아 세상을 연다.
     /// </summary>
-    /// <param name="start">놀이가 시작하는 날. 여기서부터 따라잡는다.</param>
+    /// <param name="start">게임이 시작하는 날. 여기서부터 따라잡는다.</param>
     /// <param name="script">
     /// 역사 항해자 대본(<c>HISTCHR.CDS</c>). 없으면 0~13번은 제자리에 앉아 있는다.
     /// </param>
@@ -183,7 +183,7 @@ public sealed class PersonWorld
         {
             var nextRoll = NextRollDay(at);
             var step = nextRoll <= today ? nextRoll : today;
-            // 돌려보낸 날(Recalls)에서도 끊는다 — 그날 굴림 뒤에 돌려보내야 놀이 때와 차례가 같다.
+            // 돌려보낸 날(Recalls)에서도 끊는다 — 그날 굴림 뒤에 돌려보내야 게임 때와 차례가 같다.
             if (NextRecall(at) is { } recall && recall < step) step = recall;
 
             Walk((step - at).Days);
@@ -207,7 +207,7 @@ public sealed class PersonWorld
     /// <remarks>
     /// 원본은 돌려보낸 뒤의 인물 레코드(소재·목적지·날 셈)를 세이브에 그대로 적는다(<c>0x00431E90</c>). 우리는
     /// 세상을 날짜로 다시 짓는 것이라 이것 없이는 불러오면 돌려보낸 일이 잊혀, 격파한 사람이 가던 길에 그대로 있었다.
-    /// 놀이 중에 막 돌려보낸 것은 그날이 이미 지나 있어(<see cref="AsOf"/>) 다시 하지 않는다.
+    /// 게임 중에 막 돌려보낸 것은 그날이 이미 지나 있어(<see cref="AsOf"/>) 다시 하지 않는다.
     /// </remarks>
     public IReadOnlyList<Support.Local.Models.Player.Recall>? Recalls { get; set; }
 

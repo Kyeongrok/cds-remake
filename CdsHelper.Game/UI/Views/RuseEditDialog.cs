@@ -159,7 +159,7 @@ public sealed class RuseEditDialog : GameWindow
         int edits = RuseEdits.All.Count;
         _status.Text = $"묘책 확률 {rows.Count}칸 — 게임 표 0x00549B80 (4바이트 x {rows.Count})"
                      + (edits == 0 ? "" : $" · 손으로 고친 것 {edits}개")
-                     + "   ·   0~100, 고친 것은 놀이 안에서도 그대로 쓰인다"
+                     + "   ·   0~100, 고친 것은 게임 안에서도 그대로 쓰인다"
                      + "\n칸 간격이 셋인데 묘책은 넷이라 이웃 문화권끼리 칸을 나눠 쓴다 — "
                      + "원본 그대로다. 심판은 굴리지 않아 늘 떨어진다.";
     }

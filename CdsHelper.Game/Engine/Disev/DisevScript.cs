@@ -198,7 +198,7 @@ public static class DisevScript
         new(Sig(0x49), 1, "대화창 표시"),
         // 46 — 공용 결과를 거짓으로 둔다(0x0040B1BC).
         new(Sig(0x46), 1, "결과 거짓 설정"),
-        // 4A 는 놀이를 끝낸다 — 0x0044AF40(0x5A4D18, 0) 이다(0x0040BDBA).
+        // 4A 는 게임을 끝낸다 — 0x0044AF40(0x5A4D18, 0) 이다(0x0040BDBA).
         new(Sig(0x4A), 1, "게임 오버"),
         new(Sig(0x37, 0x0D), 4, "인물 런타임 조건"),
         new(Sig(0x37, 0x12), 4, "후원자 런타임 조건"),
@@ -865,13 +865,13 @@ public static class DisevScript
     /// <summary>대사 한 줄을 화자와 본문으로 가른다.</summary>
     /// <remarks>
     /// 화자표는 CP932 로 적히고 전각 콜론(<c>81 46</c>)으로 끝난다. 본문은 CP949 다.
-    /// 자리표 <c>81 93 82 xx</c> 는 놀이가 그때그때 채우는 것이라 뜻을 적어 둔다.
+    /// 자리표 <c>81 93 82 xx</c> 는 게임이 그때그때 채우는 것이라 뜻을 적어 둔다.
     /// </remarks>
     public static (string? Speaker, string Body) DecodeDialogue(ReadOnlySpan<byte> data) =>
         DecodeDialogue(data, normalize: true);
 
     /// <summary>
-    /// 놀이가 낼 글 — 자리표에 <b>제독 이름과 조사</b>를 채워 넣는다.
+    /// 게임이 낼 글 — 자리표에 <b>제독 이름과 조사</b>를 채워 넣는다.
     /// </summary>
     /// <param name="player">제독 이름. 비었으면 「제독」으로 물러선다.</param>
     public static (string? Speaker, string Body) DecodeDialogue(ReadOnlySpan<byte> data, string player) =>
@@ -969,7 +969,7 @@ public static class DisevScript
     /// 자리표 한 개를 글로 편다(<see cref="NameToken"/>).
     /// </summary>
     /// <param name="player">
-    /// 놀이가 낼 글이면 제독 이름. <b>null 이면 고치는 창</b>이라 이름 대신 자리 이름을 적는다 —
+    /// 게임이 낼 글이면 제독 이름. <b>null 이면 고치는 창</b>이라 이름 대신 자리 이름을 적는다 —
     /// 그래야 무손실 글이 다시 같은 바이트로 구워진다(<see cref="DisevForm"/>).
     /// </param>
     private static string TokenText(byte code, bool normalize, string? player)

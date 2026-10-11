@@ -114,7 +114,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     private const int NameLimit = 16;
 
     /// <summary>
-    /// 게임이 새 놀이에서 고르게 하는 초상화 수 — <b>앞의 열여섯</b>이다.
+    /// 게임이 새 게임에서 고르게 하는 초상화 수 — <b>앞의 열여섯</b>이다.
     /// </summary>
     /// <remarks>
     /// 여기서는 <b>더 넣은 얼굴까지 다 고르게 한다</b>. 게임이 열여섯으로 묶어 둔 까닭은

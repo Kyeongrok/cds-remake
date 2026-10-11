@@ -38,7 +38,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- 위 줄은 비워 둔다 — 플레이어 칸은 놀이 쪽(Play)으로 옮겼다. -->
+                        <!-- 위 줄은 비워 둔다 — 플레이어 칸은 게임 쪽(Play)으로 옮겼다. -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" />
 
                         <!-- 중앙: 동료 상세 + 힌트 -->

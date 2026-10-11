@@ -419,7 +419,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
     }
 
     /// <summary>
-    /// 놀이를 한 판 하고, <c>0x004684D0</c> 이 하듯 결과를 알린 뒤 상금을 준다.
+    /// 게임을 한 판 하고, <c>0x004684D0</c> 이 하듯 결과를 알린 뒤 상금을 준다.
     /// </summary>
     /// <remarks>
     /// 게임은 「대실패」와 「다시 한번 찬스」 뒤에 "다시 도전하겠습니까?" 를 묻고

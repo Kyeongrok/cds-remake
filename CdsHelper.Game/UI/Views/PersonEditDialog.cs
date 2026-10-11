@@ -18,7 +18,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 고치는 것은 <b>세이브가 아니라 <see cref="PersonTable"/>(<c>인물표.json</c>)</b> 이다.
 /// 나라 표·도시 문화권 창과 같은 결이라 남의 세이브는 한 바이트도 건드리지 않고,
 /// 고친 것은 <c>%APPDATA%\CdsHelper\exe-tables\인물표-고친것.json</c> 에 남아
-/// <b>놀이에도 그대로 쓰인다</b>.
+/// <b>게임에도 그대로 쓰인다</b>.
 /// "본으로 되돌리기" 는 고쳐 둔 것을 걷어 같이 깔린 <c>인물표.json</c> 으로 돌려놓고,
 /// "세이브에서 굽기" 는 고른 세이브에서 표를 통째로 다시 굽는다.
 ///
@@ -402,7 +402,7 @@ public sealed class PersonEditDialog : GameWindow
             + $" / 표 {PersonTable.Count}칸"
             + $" — {(PersonTable.Edited ? "고쳐 둔 것" : "같이 깔린 본")}"
             + (PersonTable.Source.Length == 0 ? "" : $" ({PersonTable.Source})")
-            + "   ·   고친 것은 놀이 안에서도 그대로 쓰인다";
+            + "   ·   고친 것은 게임 안에서도 그대로 쓰인다";
     }
 
     private void FillSkills(PersonTable.Row? row)

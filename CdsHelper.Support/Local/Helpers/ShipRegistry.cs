@@ -10,7 +10,7 @@ namespace CdsHelper.Support.Local.Helpers;
 /// 조선소에 낼 배를 손으로 등록해 두는 곳.
 /// </summary>
 /// <remarks>
-/// 게임 EXE 는 건드리지 않는다 — 이 앱이 품고 있는 놀이(조선소 → 구입)에만 나온다.
+/// 게임 EXE 는 건드리지 않는다 — 이 앱이 품고 있는 게임(조선소 → 구입)에만 나온다.
 /// 스펙은 <c>%APPDATA%\CdsHelper\ships\ships.json</c> 에, 8방향 그림은 그 옆
 /// <c>ships\{Id}\ship_0.png</c> ~ <c>ship_7.png</c> 에 둔다. 그림은 넣을 때
 /// <see cref="SpriteWidth"/> 크기로 맞춰 굽는다 — 게임 그림이 48x48 이라서다.
@@ -97,7 +97,7 @@ public static class ShipRegistry
         }
         catch
         {
-            // 읽다 넘어져도 놀이는 붙박이 다섯으로 굴러가야 한다.
+            // 읽다 넘어져도 게임은 붙박이 다섯으로 굴러가야 한다.
             return [];
         }
     }

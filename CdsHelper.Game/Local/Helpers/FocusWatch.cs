@@ -16,7 +16,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 초점은 창을 부순 <b>다음에</b> 정해지므로 그 자리에서 읽으면 아직 옛 값이다. 그래서
 /// 조금 있다가(<see cref="SettleMs"/>) 한 번 읽는다.
 ///
-/// 놀이에는 쓰이지 않는다 — 다 잡고 나면 지운다.
+/// 게임에는 쓰이지 않는다 — 다 잡고 나면 지운다.
 /// </remarks>
 internal static class FocusWatch
 {

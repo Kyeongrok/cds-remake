@@ -15,7 +15,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <remarks>
 /// 게임의 <c>0x0049B3C0</c> 이고, 규칙은 <see cref="CubePuzzle"/> 에 모아 두었다.
 ///
-/// 이 놀이는 <b>제 그림 파일이 없다</b> — <c>0x0049B422</c> 가 <c>0x00455DE0</c> 을
+/// 이 게임은 <b>제 그림 파일이 없다</b> — <c>0x0049B422</c> 가 <c>0x00455DE0</c> 을
 /// 부르니 <b>MGGRAPH.CDS</b> 를 함께 쓴다. 쓰는 파트는 열둘이다.
 /// <code>
 ///   파트 3~8    64x48   입방체를 돌리는 화살표 여섯 (왼쪽 검은 칸)
@@ -40,7 +40,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 돌 블록 여덟이 <b>한 점도 안 틀리고</b> 이 자리에 앉는다.
 ///
 /// <b>아직 못 찾은 것.</b> 왼쪽 칸 가운데의 <b>입방체 상자</b>(면마다 화살표가 새겨진 회색
-/// 입방체)는 미리 구운 그림이 아니다 — MGGRAPH 에서 이 놀이가 쓰는 파트 열둘을 다 짚었고
+/// 입방체)는 미리 구운 그림이 아니다 — MGGRAPH 에서 이 게임이 쓰는 파트 열둘을 다 짚었고
 /// 그 안에 없다. 돌 때마다 면을 그려 내는 것으로 보이는데 그 자리를 아직 못 짚었다.
 /// 그때까지는 지금 위에 온 화살표를 글로 적어 둔다.
 /// </remarks>
@@ -535,7 +535,7 @@ internal sealed class CubePuzzleDialog : GameWindow
         Canvas.SetTop(_hero, at.Y + HeroDy);
     }
 
-    /// <summary>놀이를 한 판 하고 <c>0x0049B3C0</c> 이 하듯 결과를 알린다.</summary>
+    /// <summary>게임을 한 판 하고 <c>0x0049B3C0</c> 이 하듯 결과를 알린다.</summary>
     /// <summary>금괴를 밟을 때 나는 소리 — 사운드 0x27(<c>0x0049C918</c>), WAVE 파트 11 이다.</summary>
     private const int GoldSoundPart = 0x27 - 28;
 

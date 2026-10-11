@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <remarks>
 /// <b>적어 둔 <c>나라표.json</c> 을 직접 고치지 않는다.</b> 그 파일은 EXE 에서 구워 둔
 /// 본이라 판이 바뀌면 다시 구워진다. 고친 것만 따로 적어 두고(<see cref="NationEdits"/>)
-/// 표가 읽힐 때 얹는다 — 그래서 여기서 고치면 <b>놀이 안에서도 그대로</b> 따라온다.
+/// 표가 읽힐 때 얹는다 — 그래서 여기서 고치면 <b>게임 안에서도 그대로</b> 따라온다.
 /// 도시·문화권 창과 같은 결이다.
 /// </remarks>
 public sealed class NationEditDialog : GameWindow
@@ -166,7 +166,7 @@ public sealed class NationEditDialog : GameWindow
         int edits = NationEdits.All.Count;
         _status.Text = $"나라 {rows.Count}곳 — 게임 표 0x004CA370 (24바이트 x {NationTable.Count})"
                      + (edits == 0 ? "" : $" · 손으로 고친 곳 {edits}곳")
-                     + "   ·   고친 것은 놀이 안에서도 그대로 쓰인다";
+                     + "   ·   고친 것은 게임 안에서도 그대로 쓰인다";
     }
 
     private string LanguageName(int language) =>

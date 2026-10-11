@@ -13,7 +13,7 @@ namespace CdsHelper.Main.Local.ViewModels;
 /// 발견물 그림 뷰어 — <c>asset/dstill</c> 의 그림(<c>D{번호}.png</c>)을 늘어놓고 골라 본다.
 /// </summary>
 /// <remarks>
-/// 그림은 놀이 쪽 읽개를 그대로 쓴다(<see cref="DiscoveryStillFiles"/>) — 게임 폴더의 DSTILL.CDS 는 안 읽는다. 어느 그림이 어느
+/// 그림은 게임 쪽 읽개를 그대로 쓴다(<see cref="DiscoveryStillFiles"/>) — 게임 폴더의 DSTILL.CDS 는 안 읽는다. 어느 그림이 어느
 /// 발견물인지는 발견물 표의 <c>+0x0C</c> 가 들고 있어서(<see cref="DiscoveryTable"/>),
 /// 표가 열리면 이름을 붙이고 안 열리면 번호만 낸다.
 ///

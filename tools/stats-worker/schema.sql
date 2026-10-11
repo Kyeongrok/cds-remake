@@ -1,4 +1,4 @@
--- 놀이 통계 D1 표 — wrangler d1 execute cds-remake-stats --remote --file=schema.sql
+-- 게임 통계 D1 표 — wrangler d1 execute cds-remake-stats --remote --file=schema.sql
 
 -- 게임이 보낸 덩이 하나에 한 줄(다시 보내도 한 번만 들어가게).
 CREATE TABLE IF NOT EXISTS batches (

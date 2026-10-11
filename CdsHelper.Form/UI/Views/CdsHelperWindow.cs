@@ -465,7 +465,7 @@ public class CdsHelperWindow : CdsWindow
         dialog.ShowDialog();
     }
 
-    // 나라 이름·쓰는 말·수도를 고치는 창. 고친 것은 놀이에도 그대로 쓰인다.
+    // 나라 이름·쓰는 말·수도를 고치는 창. 고친 것은 게임에도 그대로 쓰인다.
     private void OnNationEditMenuClick(object sender, RoutedEventArgs e) =>
         CdsHelper.Game.UI.Views.NationEditDialog.Show(this);
 
@@ -486,7 +486,7 @@ public class CdsHelperWindow : CdsWindow
     private void OnQuestEditorMenuClick(object sender, RoutedEventArgs e) =>
         CdsHelper.Game.UI.Views.DisevEditorDialog.Show(this, "PEX");
 
-    // 역사 항해자 열넷이 언제 무엇을 채가는지 고치는 창. 이 놀이의 유일한 경쟁자다.
+    // 역사 항해자 열넷이 언제 무엇을 채가는지 고치는 창. 이 게임의 유일한 경쟁자다.
     private void OnVoyagerEditMenuClick(object sender, RoutedEventArgs e) =>
         CdsHelper.Game.UI.Views.VoyagerEditDialog.Show(this);
 
@@ -508,7 +508,7 @@ public class CdsHelperWindow : CdsWindow
     private void OnFortuneMenuClick(object sender, RoutedEventArgs e) =>
         CdsHelper.Game.UI.Views.FortuneDialog.Show(this);
 
-    // 게임 창들의 꼴을 손잡이로 짜 보는 창. 단추 여백만 놀이에 곧바로 든다.
+    // 게임 창들의 꼴을 손잡이로 짜 보는 창. 단추 여백만 게임에 곧바로 든다.
     private void OnMenuDesignerMenuClick(object sender, RoutedEventArgs e)
     {
         var dialog = new CdsHelper.Game.UI.Views.MenuDesignerDialog
@@ -568,7 +568,7 @@ public class CdsHelperWindow : CdsWindow
         dialog.ShowDialog();
     }
 
-    // 이 앱이 품은 놀이의 조선소에 낼 배를 등록하는 창. 게임 EXE 는 건드리지 않는다.
+    // 이 앱이 품은 게임의 조선소에 낼 배를 등록하는 창. 게임 EXE 는 건드리지 않는다.
     private void OnShipRegistryMenuClick(object sender, RoutedEventArgs e)
     {
         var dialog = new ShipRegistryDialog
@@ -585,7 +585,7 @@ public class CdsHelperWindow : CdsWindow
     /// 사운드테스트 — 게임 타이틀에 있던 줄을 이리로 옮겼다(<c>0x0045FBCD</c>).
     /// </summary>
     /// <remarks>
-    /// 소리를 트는 것은 놀이 쪽 <c>ShipMapWindow</c> 다(배경음악·효과음 둘 다 그쪽이 쥐고 있다).
+    /// 소리를 트는 것은 게임 쪽 <c>ShipMapWindow</c> 다(배경음악·효과음 둘 다 그쪽이 쥐고 있다).
     /// 이미 떠 있는 창이 있으면 그것에 물어보고, 없으면 새로 띄워 놓고 부른다.
     /// </remarks>
     private void OnSoundTestMenuClick(object sender, RoutedEventArgs e)

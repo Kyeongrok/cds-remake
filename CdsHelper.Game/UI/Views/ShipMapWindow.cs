@@ -174,7 +174,7 @@ public sealed class ShipMapWindow : Window
     /// 만난 사람 상자 — 말을 걸어 본 여급(친밀도·궁합)과 만난 인물을 지도 위에 겹쳐 낸다.
     /// </summary>
     /// <remarks>
-    /// 놀이에는 없는 것이라 개발 창의 "정보" 로만 켠다(<see cref="GameSettings.ShowPeopleOverlay"/>).
+    /// 게임에는 없는 것이라 개발 창의 "정보" 로만 켠다(<see cref="GameSettings.ShowPeopleOverlay"/>).
     /// 좌표 상자와 같은 꼴이고, 자리만 지도 오른쪽 위다.
     /// </remarks>
     private Popup _people = null!;
@@ -598,7 +598,7 @@ public sealed class ShipMapWindow : Window
             // 먹으면 창 뒤에서 말이 서고 가고, 닻 소리까지 난다.
             if (_host.SeaBlocked || _host.Paused) return;
             // Ctrl 을 누른 채 찍으면 그 자리에 배를 놓는다. 시작 자리를 손으로 잡는 길인데,
-            // 놀이에는 없는 것이라 모드 창에서 끌 수 있다.
+            // 게임에는 없는 것이라 모드 창에서 끌 수 있다.
             if (GameSettings.PlaceShipByCtrlClick && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 _host.PlaceShipAt(e.GetPosition(input));
@@ -739,7 +739,7 @@ public sealed class ShipMapWindow : Window
     /// 발견물 지도를 연다 — 온 지도를 밝힌 양피지 위에 발견물 자리와 내 자리를 찍는다.
     /// </summary>
     /// <remarks>
-    /// 바탕은 항해지도를 짓는 손을 그대로 쓰되 <b>다 밝힌 지도</b>로 부른다. 놀이에는 없는
+    /// 바탕은 항해지도를 짓는 손을 그대로 쓰되 <b>다 밝힌 지도</b>로 부른다. 게임에는 없는
     /// 창이라 햄버거 차림표에 둔다 — 원본 항해지도는 표식을 하나도 안 찍는다.
     /// </remarks>
     /// <summary>햄버거의 발견물 지도 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
@@ -832,7 +832,7 @@ public sealed class ShipMapWindow : Window
         return message;
     }
 
-    // ── 놀이 통계: 항해 한 번 ────────────────────────────────────────────
+    // ── 게임 통계: 항해 한 번 ────────────────────────────────────────────
 
     /// <summary>배로 떠난 도시. 떠난 적이 없거나(판을 불러온 직후) 이미 닿았으면 −1.</summary>
     private int _tripFrom = -1;
@@ -960,7 +960,7 @@ public sealed class ShipMapWindow : Window
     /// <param name="City">어귀 도착을 볼 도시. 어귀로 가는 길이 아니면 −1.</param>
     /// <param name="Exact">그 칸까지 끝까지 갈지.</param>
     /// <param name="Afoot">배를 대고 걸어가야 하는지(항구 없는 내륙 도시).</param>
-    /// <param name="Tag">놀이 통계에 적는 이름 — quick · short · land-fast · land-lesswalk · land-near.</param>
+    /// <param name="Tag">게임 통계에 적는 이름 — quick · short · land-fast · land-lesswalk · land-near.</param>
     private readonly record struct SailGoal(string Label, double X, double Y, int City, bool Exact, bool Afoot,
                                             ShipMapHost.RouteKind Kind, string Tag);
 
@@ -1064,7 +1064,7 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>
-    /// 놀이 끝 화면을 연다. 게임 화면만 덮고(제목 줄·위아래 띠는 남는다) 곡을 8번으로 바꾼다.
+    /// 게임 끝 화면을 연다. 게임 화면만 덮고(제목 줄·위아래 띠는 남는다) 곡을 8번으로 바꾼다.
     /// </summary>
     private bool GameOver(int picture = GameOverDialog.MutinyLost) =>
         GameOverDialog.Show(this, _game.EventStills, picture, MapAreaOnScreen(), _game.Bgm);
@@ -1795,7 +1795,7 @@ public sealed class ShipMapWindow : Window
         items.Children.Add(TitleMenuItem("MINI GAME", MiniGames));
         items.Children.Add(TitleMenuItem("END GAME", Close));
         // 사운드테스트 줄은 <b>헬퍼의 「도구」로 옮겼다</b>(0x00571BE8 — 원본 타이틀에는 있다).
-        // 놀이를 시작하는 자리에 시험 줄이 섞여 있는 것이 거슬린다는 뜻이었다.
+        // 게임을 시작하는 자리에 시험 줄이 섞여 있는 것이 거슬린다는 뜻이었다.
 
         var box = new Border
         {
@@ -2016,7 +2016,7 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private const double TilePack = 1.0 / 1.75;
 
-    /// <remarks>놀이 끝 화면(<see cref="GameOverDialog"/>)도 같은 무늬를 깐다.</remarks>
+    /// <remarks>게임 끝 화면(<see cref="GameOverDialog"/>)도 같은 무늬를 깐다.</remarks>
     internal static Brush TitleBackground()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "asset", "title", "title-tile.png");
@@ -2069,7 +2069,7 @@ public sealed class ShipMapWindow : Window
     /// 못 고르는 줄은 묶음에 안 넣는다 — 초점이 그 줄을 건너뛴다.
     /// </remarks>
     /// <summary>
-    /// 미궁 64 퍼즐을 여는 자리. <b>그 놀이는 CdsHelper.Maze 에 따로 있다</b> —
+    /// 미궁 64 퍼즐을 여는 자리. <b>그 게임은 CdsHelper.Maze 에 따로 있다</b> —
     /// 그쪽이 여기를 물고 있어서 반대로는 못 부른다. 띄우는 쪽(CdsHelper.Form)이
     /// 이 자리에 걸어 준다.
     /// </summary>
@@ -2110,7 +2110,7 @@ public sealed class ShipMapWindow : Window
             "코인 게임", "발라몬의 탑 퍼즐", "화살표 입방체 퍼즐",
         ];
 
-        // 발견 이벤트에서 그 놀이를 이겨 풀린 것만 켜진다(0x0045FA54 벌).
+        // 발견 이벤트에서 그 게임을 이겨 풀린 것만 켜진다(0x0045FA54 벌).
         bool[] open = [.. names.Select((_, i) => Local.Settings.GameSettings.IsMinigameUnlocked(i))];
         int pick = MapPointDialog.Ask(this, names, "미니 게임", MapPointDialog.MenuWidth, open);
         if (pick < 0) return;
@@ -2456,7 +2456,7 @@ public sealed class ShipMapWindow : Window
         // 적어 둔 판이 있으면 그것부터 어떻게 할지 묻는다.
         if (!BreakOff()) { HideTitleMenu(false); return; }
 
-        // 앞 판이 묻어 오지 않게 주인공을 새로 앉힌다 — 새 놀이는 1480년 1월 1일부터다.
+        // 앞 판이 묻어 오지 않게 주인공을 새로 앉힌다 — 새 게임은 1480년 1월 1일부터다.
         // 짓다 말고 물러나면 하던 판을 도로 앉혀야 한다.
         var before = _game.NewPlayer();
         bool made = false;
@@ -2495,7 +2495,7 @@ public sealed class ShipMapWindow : Window
         finally
         {
             if (!made) _game.UsePlayer(before);
-            // 물러났으면 메뉴가 도로 나와야 한다. 놀이로 들어갔으면 타이틀째로 사라진다.
+            // 물러났으면 메뉴가 도로 나와야 한다. 게임으로 들어갔으면 타이틀째로 사라진다.
             HideTitleMenu(false);
         }
 
@@ -2563,7 +2563,7 @@ public sealed class ShipMapWindow : Window
             }
     }
     /// <summary>
-    /// 새 놀이는 <b>고른 국적의 자택</b>에서 시작한다 — 포르투갈이면 리스본,
+    /// 새 게임은 <b>고른 국적의 자택</b>에서 시작한다 — 포르투갈이면 리스본,
     /// 에스파니아면 세비야다.
     /// </summary>
     /// <summary>새 판이 여는 도시 — 나라가 1 이면 세비야(7), 아니면 리스본(0). 이름이 아니라 번호로 찾는다. 없으면 번호 -1.</summary>
@@ -2791,7 +2791,7 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>
-    /// 놀이를 그만두고 첫 화면으로 돌아간다. 자택의 "게임 종료" 가 부른다.
+    /// 게임을 그만두고 첫 화면으로 돌아간다. 자택의 "게임 종료" 가 부른다.
     /// </summary>
     /// <remarks>
     /// 창을 닫지는 않는다 — 게임도 첫 화면으로 되돌아갈 뿐이다. 그래서 D3D 자식 창도
@@ -2830,7 +2830,7 @@ public sealed class ShipMapWindow : Window
     /// </summary>
     /// <remarks>
     /// 시설 창·상자들은 저마다 딴 창이라 글쇠가 지도까지 올라오지 않는다. 그래서 창 쪽에서
-    /// 이 자리를 찾아 부른다. 헬퍼 앱에서는 놀이가 안 도니 늘 <c>null</c> 이다.
+    /// 이 자리를 찾아 부른다. 헬퍼 앱에서는 게임이 안 도니 늘 <c>null</c> 이다.
     /// </remarks>
     internal static ShipMapWindow? Current { get; private set; }
 
@@ -3145,7 +3145,7 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>
-    /// 손으로 적은 세이브 칸을 새것부터 늘어놓고 하나를 고르게 한다 — 첫 화면의 <b>LOAD GAME</b> 과 놀이 안의 「로드」다.
+    /// 손으로 적은 세이브 칸을 새것부터 늘어놓고 하나를 고르게 한다 — 첫 화면의 <b>LOAD GAME</b> 과 게임 안의 「로드」다.
     /// </summary>
     /// <returns>고른 칸의 파일 자리. 그만두었으면 null.</returns>
     internal string? PickManualSave(Window owner) =>
@@ -3435,7 +3435,7 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreCloseness(saved.Closeness);
 
             // 얼굴과 운명 코드는 판 25 부터 적힌다. 운명 코드가 없으면 얼굴 번호로
-            // 물러선다 — 그때까지는 새 놀이가 앞의 열여섯만 고르게 해 둘이 같았다.
+            // 물러선다 — 그때까지는 새 게임이 앞의 열여섯만 고르게 해 둘이 같았다.
             if (saved.Face is { } face) _game.Player.Face = face;
             _game.Player.SetFortune(saved.Fortune ?? _game.Player.Face);
             if (saved.Morale is { } morale) _game.Player.SetMorale(morale);
@@ -3621,10 +3621,10 @@ public sealed class ShipMapWindow : Window
     });
 
     /// <summary>
-    /// 개발 창 — 소지금과 명성을 손으로 넣고, 놀이에 없는 것들을 켜고 끈다.
+    /// 개발 창 — 소지금과 명성을 손으로 넣고, 게임에 없는 것들을 켜고 끈다.
     /// </summary>
     /// <remarks>
-    /// 게임 상단 띠에 칸으로 두었던 것을 제목 줄 햄버거로 옮겼다. 놀이에는 없는 자리라
+    /// 게임 상단 띠에 칸으로 두었던 것을 제목 줄 햄버거로 옮겼다. 게임에는 없는 자리라
     /// 게임 띠에 섞여 있으면 원본과 달라 보인다 — 앱이 얹은 것은 앱 쪽 차림표에 둔다.
     /// </remarks>
     /// <summary>
@@ -3680,7 +3680,7 @@ public sealed class ShipMapWindow : Window
         },
         // 싸움 셈을 도시 없이 돌려 보는 세 가지 — 미니 게임 차림표에 붙여 두었던 것을 옮겼다.
         HelperApp = RunHelperApp,
-        // 묘책 확률 표(0x00549B80) — 보고 고치면 놀이에도 바로 든다.
+        // 묘책 확률 표(0x00549B80) — 보고 고치면 게임에도 바로 든다.
         RuseTable = () => RuseEditDialog.Show(this),
         Duel = PlayDuel,
         LandSpar = () => LandSparDialog.Play(this, _game),
@@ -3877,7 +3877,7 @@ public sealed class ShipMapWindow : Window
     /// </remarks>
     private GameMenu AshoreMenuBox()
     {
-        // <b>창을 닫는 것은 차림표다</b> — 이름만 Close 라고 쓰면 게임 창이 닫혀 놀이가 끝난다.
+        // <b>창을 닫는 것은 차림표다</b> — 이름만 Close 라고 쓰면 게임 창이 닫혀 게임이 끝난다.
         void Shut() => CommandMenu.Close();
 
         return new GameMenu("상륙", null,
@@ -4293,7 +4293,7 @@ public sealed class ShipMapWindow : Window
     /// <remarks>
     /// 원본에 없는 것이다. 배로 입항하든 뭍으로 성문을 지나든 이 자리를 거치므로 <b>항구가
     /// 없는 내륙 마을</b>에서도 적힌다. 적는 자리는 <see cref="Engine.GameSave.AutoDirectory"/> 의 칸들이라
-    /// 손으로 적어 둔 <c>SAVEDATA.CDS</c> 는 안 건드린다. 적다 넘어져도 놀이는 그대로
+    /// 손으로 적어 둔 <c>SAVEDATA.CDS</c> 는 안 건드린다. 적다 넘어져도 게임은 그대로
     /// 굴러가야 하므로 띠에 한 줄만 남기고 지나간다.
     /// </remarks>
     private void AutoSaveHere()
@@ -4543,7 +4543,7 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>
-    /// 선원이 다 죽었으면 놀이가 끝난다 — 하루 셈 끝에 도시 밖이고 선원 합이 0 이면
+    /// 선원이 다 죽었으면 게임이 끝난다 — 하루 셈 끝에 도시 밖이고 선원 합이 0 이면
     /// <c>0x0044AF40(0x5A4D18, 1)</c> 로 GAME OVER 다(<c>0x00475A2C</c>). 바다든 뭍이든 본다.
     /// </summary>
     private bool CrewGone()
@@ -4844,7 +4844,7 @@ public sealed class ShipMapWindow : Window
     /// 굴리지 않는다 — 게임도 <c>0x0048C126</c> 에서 목록이 비었을 때만 주사위로 간다.
     ///
     /// 그 뒤의 흐름·해전·값 치르기는 볼트 <c>전투/93.분석-보이는 함대 습격</c> 그대로다
-    /// (<see cref="FleetRaid"/>). 해전에서 내 기함이 가라앉으면 놀이가 끝난다.
+    /// (<see cref="FleetRaid"/>). 해전에서 내 기함이 가라앉으면 게임이 끝난다.
     /// </remarks>
     /// <returns>이번에 새로 두 칸 안에 든 배가 있었는지.</returns>
     private bool MeetFolk()
@@ -4914,7 +4914,7 @@ public sealed class ShipMapWindow : Window
     /// 세 줄 모두 켜져 있다(<c>0x00487820</c> 의 켜짐 깃발 1). 「떠난다」는 아무 값도 안 바꾼다 —
     /// 걸쇠만 남아 두 칸 밖으로 벗어났다 다시 들어오면 또 묻는다.
     /// </remarks>
-    /// <returns>해전에서 내 기함이 가라앉아 놀이가 끝났는지.</returns>
+    /// <returns>해전에서 내 기함이 가라앉아 게임이 끝났는지.</returns>
     private bool Approach(PersonWorld world, PersonTable.Row who)
     {
         var template = _game.PersonTemplates?.Find(who.Id);
@@ -5170,7 +5170,7 @@ public sealed class ShipMapWindow : Window
     /// 적 배는 그 사람을 적장으로 짓는다(<see cref="EnemyFleet"/>). 대본 함대 276~280 의 선체 목록
     /// (<c>0x00589C70</c>)은 아직 없어 그들도 적장 능력으로 짓는다.
     /// </remarks>
-    /// <returns>내 기함이 가라앉아 놀이가 끝났는지.</returns>
+    /// <returns>내 기함이 가라앉아 게임이 끝났는지.</returns>
     private bool FightFolk(PersonWorld world, PersonTable.Row who, int nation, uint[]? foeFace)
     {
         var player = _game.Player;
@@ -5699,7 +5699,7 @@ public sealed class ShipMapWindow : Window
     /// <remarks>
     /// 무리는 그 구역의 둘 가운데 <c>rand(2)</c>, 병력은 그 무리의 <c>밑 + rand(폭)</c> 이다.
     /// 판은 <b>들싸움</b>이라 버티기만 해도 이긴 것으로 친다(<see cref="LandBattle.Field"/>).
-    /// 지면 놀이가 끝난다 — 마을 공략과 같다.
+    /// 지면 게임이 끝난다 — 마을 공략과 같다.
     /// </remarks>
     private void CheckLandParty()
     {
@@ -6283,7 +6283,7 @@ public sealed class ShipMapWindow : Window
                                                                            raid: false),
                                                 SeaDuel(leaderId, foe.Name, foeFace), _game.Bgm, game: _game).Outcome;
 
-            // 기함을 잃으면(격침·나포·일기토 패배) 놀이가 끝난다 — 보이는 함대 해전(FightFolk)과 같다.
+            // 기함을 잃으면(격침·나포·일기토 패배) 게임이 끝난다 — 보이는 함대 해전(FightFolk)과 같다.
             if (outcome == SeaCombatDialog.Outcome.Defeated)
             {
                 GameOver(GameOverDialog.FleetLost);   // 해전 패배는 까닭 2(0x0044386D)
@@ -6308,9 +6308,9 @@ public sealed class ShipMapWindow : Window
     /// </summary>
     /// <remarks>
     /// 조우 해전과 같은 길이다 — 적장을 인물 표에서 떠 오고, 판의 바람은 함대 자리의
-    /// 바다 바람이다(<c>0x00441F1C</c>). 기함을 잃으면 놀이가 끝난다.
+    /// 바다 바람이다(<c>0x00441F1C</c>). 기함을 잃으면 게임이 끝난다.
     /// </remarks>
-    /// <returns>이겼는지와, 져서 놀이가 끝났는지.</returns>
+    /// <returns>이겼는지와, 져서 게임이 끝났는지.</returns>
     internal (bool Won, bool Over) SeaFight(int person)
     {
         var rng = _game.Random;
@@ -6554,7 +6554,7 @@ public sealed class ShipMapWindow : Window
     private double _polarWas;
 
     /// <summary>
-    /// 극지방 경고와 전멸(<c>0x0048D690</c>). 놀이가 이어지면 true.
+    /// 극지방 경고와 전멸(<c>0x0048D690</c>). 게임이 이어지면 true.
     /// </summary>
     private bool CheckPolar()
     {
@@ -6898,7 +6898,7 @@ public sealed class ShipMapWindow : Window
                 : $"자네, 제독감이 아니로군. {beast}의 먹이가 더 어울리는군.",
                 face: _game.Faces?.TryGetBgra(MutinyFace, female: false));
 
-            // 그리고 <b>놀이가 끝난다</b> — 게임도 여기서 끝낸다(0x0044AF40 상태 4).
+            // 그리고 <b>게임이 끝난다</b> — 게임도 여기서 끝낸다(0x0044AF40 상태 4).
             NoticeDialog.Show(this,
                 $"제독은 {beast}의 먹이가 되었다. 항해는 여기서 끝났다.");
 
@@ -7179,7 +7179,7 @@ public sealed class ShipMapWindow : Window
             if (!scripted) PlainNotice(row);
 
             // 대본이 게임 오버(명령 4A)로 끝났으면 — 피라미드에서 성배 퍼즐에 지면 그렇다 —
-            // 발견을 적지 않고 놀이를 끝낸다. 반란에 졌을 때와 같은 차례다.
+            // 발견을 적지 않고 게임을 끝낸다. 반란에 졌을 때와 같은 차례다.
             if (DisevRunner.LastEndedInGameOver)
             {
                 over = true;
@@ -7531,7 +7531,7 @@ public sealed class ShipMapWindow : Window
     /// 부르는 자리가 도시 쪽 <c>0x0046875A</c>·<c>0x00468786</c> 과 항구 쪽
     /// <c>0x00477326</c> 에 나란히 있다.
     ///
-    /// <b>이 스무 날이 빠져 있어 우리 놀이가 훨씬 빨랐다.</b> 세비야에서 카르낙 거석군을
+    /// <b>이 스무 날이 빠져 있어 우리 게임이 훨씬 빨랐다.</b> 세비야에서 카르낙 거석군을
     /// 왕복하면 원본이 스무아흐레인데, 그 가운데 스무 날이 들고 나는 값이고 실제로 걷는
     /// 것은 아흐레쯤이다. 우리는 걷는 날만 세고 있었으니 절반이 될 수밖에 없었다.
     /// </remarks>
@@ -7575,7 +7575,7 @@ public sealed class ShipMapWindow : Window
         // <b>작업표시줄 단추를 하나로 둔다.</b> 개발도구에서 띄운 것이면 이 창까지
         // 단추를 갖는데, 대화 창을 여닫을 때마다 활성 창이 두 단추 사이를 오가는 것이
         // 눈에 보인다 — WPF 의 ShowDialog 가 앱의 창을 다 잠갔다 푸는 통에 활성 창이
-        // 잠깐 주인 쪽으로 넘어가기 때문이다. 주인이 없으면(놀이 전용 exe) 제 단추를
+        // 잠깐 주인 쪽으로 넘어가기 때문이다. 주인이 없으면(게임 전용 exe) 제 단추를
         // 갖는다.
         ShowInTaskbar = Owner == null;
 

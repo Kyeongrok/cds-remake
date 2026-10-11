@@ -14,7 +14,7 @@ namespace CdsHelper.Maze;
 public static class MazeGame
 {
     /// <summary>
-    /// 놀이를 한 판 하고 결과를 알린다. 돌파했으면 true.
+    /// 게임을 한 판 하고 결과를 알린다. 돌파했으면 true.
     /// </summary>
     /// <param name="player">상금을 받을 제독. 없으면 금화만 안 준다.</param>
     /// <param name="sfx">효과음. 상자를 열 때 난다.</param>

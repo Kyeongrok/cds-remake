@@ -565,7 +565,7 @@ public sealed class Duel
         /// <summary>상대가 봐 주었다.</summary>
         Spared,
 
-        /// <summary>베였다. 게임은 여기서 놀이가 끝난다.</summary>
+        /// <summary>베였다. 게임은 여기서 게임이 끝난다.</summary>
         Slain,
     }
 

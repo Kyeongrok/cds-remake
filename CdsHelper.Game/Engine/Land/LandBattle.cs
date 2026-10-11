@@ -669,7 +669,7 @@ public sealed class LandBattle
     /// 그 문화권의 진형이 낼 병종들. 세트 자체는 <see cref="LandFormations"/> 에 있다.
     /// </summary>
     /// <remarks>
-    /// 놀이도 고치는 창(<c>LandFormationDialog</c>)도 같은 표를 본다 — 사람이 편성을
+    /// 게임도 고치는 창(<c>LandFormationDialog</c>)도 같은 표를 본다 — 사람이 편성을
     /// 갈아 두면 여기에도 그대로 먹는다.
     /// </remarks>
     private int[] Formation(int units, GameRandom dice) =>

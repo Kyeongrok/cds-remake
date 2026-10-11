@@ -131,7 +131,7 @@ public sealed class AccReplay
     /// <summary>
     /// 하루를 넘긴다 — 사람마다 그날 있어야 할 자리로 옮긴다.
     /// </summary>
-    /// <param name="today">놀이 날짜.</param>
+    /// <param name="today">게임 날짜.</param>
     /// <param name="people">인물 표.</param>
     public void PassDay(DateTime today, IReadOnlyList<PersonTable.Row> people)
     {

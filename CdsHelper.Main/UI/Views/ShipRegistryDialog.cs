@@ -13,7 +13,7 @@ namespace CdsHelper.Main.UI.Views;
 /// 조선소에 낼 배를 등록·고침·지우는 창. 개발 → 선박 으로 연다.
 /// </summary>
 /// <remarks>
-/// 게임 EXE 는 건드리지 않는다 — 여기서 등록한 배는 이 앱이 품고 있는 놀이의 조선소
+/// 게임 EXE 는 건드리지 않는다 — 여기서 등록한 배는 이 앱이 품고 있는 게임의 조선소
 /// (구입 표)에만 나온다. 적어 두는 자리와 그림 굽기는 <see cref="ShipRegistry"/> 가 맡는다.
 ///
 /// 그림은 방향마다 한 장씩 여덟 장이 다 차야 조선소에 나온다. 한 장이라도 비면 목록에
@@ -561,7 +561,7 @@ public sealed class ShipRegistryDialog : Window
         Reload(design.Id);
 
         _status.Text = design.IsBuiltin
-            ? $"저장했습니다 — 붙박이 '{design.Name}' 의 값이 놀이에 그대로 쓰입니다."
+            ? $"저장했습니다 — 붙박이 '{design.Name}' 의 값이 게임에 그대로 쓰입니다."
             : ShipRegistry.HasAllSprites(design.Id)
                 ? $"저장했습니다 — '{design.Name}' 이 조선소 구입 표에 나옵니다."
                 : "저장했습니다. 그림이 여덟 장 다 차야 조선소에 나옵니다.";

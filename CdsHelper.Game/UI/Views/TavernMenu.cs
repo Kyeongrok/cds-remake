@@ -169,7 +169,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     ///   0042fd1e  결과 0(이겨서 처형)      명성 +100 · 악명 +1000
     ///   0042fd3b  결과 1(이겨서 놓아 줌·뺏음) 악명 += rand(100) + 100
     ///             결과 2(져도 살았다)       아무 일 없다
-    ///   0042fd55  결과 3(베였다)            놀이 끝
+    ///   0042fd55  결과 3(베였다)            게임 끝
     /// </code>
     /// 판 결과는 <c>[일기토+0x1C0]</c> 이다(<c>0x004AA6F0</c>) — 처형이 0(<c>0x004AA362</c>), 그 밖의 승리가 1,
     /// 도망·용서가 2, 죽음이 3 이다. 술집 판(갈래 0)은 이기면 처형·놓아 준다·모두 뺏는다를 고른다.
@@ -1196,7 +1196,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <remarks>
     /// 연적은 <b>인물 275</b>다(<c>0x004659C8</c> 의 <c>push 0x113</c> — 술집 싸움 상대와 같은 사람). 말은 그 얼굴을
     /// 걸고 한다(<c>0x004659F0</c> · <c>0x00465A1B</c>). 판 갈래가 5 라 이겨도 처형 여부를 묻지 않는다.
-    /// 판 결과 0·1 이면 이기고, 2(져도 살았다)면 악명 +500, 3(베였다)이면 놀이가 끝난다(<c>0x00465A64</c>).
+    /// 판 결과 0·1 이면 이기고, 2(져도 살았다)면 악명 +500, 3(베였다)이면 게임이 끝난다(<c>0x00465A64</c>).
     /// </remarks>
     /// <returns>혼인을 이어도 되면 참.</returns>
     private bool RivalBeaten(GameRandom dice)
@@ -1600,7 +1600,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         }
         else if (LostDuel(duel, face, dice, mate is { }))
         {
-            // 베였으면 놀이가 끝난다(0x004A4A74 → 0x0044AF40(4)).
+            // 베였으면 게임이 끝난다(0x004A4A74 → 0x0044AF40(4)).
             EndGame();
             return;
         }
@@ -1615,7 +1615,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </summary>
     /// <remarks>
     /// 판이 무엇이든(술집 손님 · 도전 · 싸움) 같은 뒤처리다. 베이면 판의 결과가 3 이 되고
-    /// 부르는 쪽이 <c>0x0044AF40(4)</c> 로 놀이를 끝낸다(<c>0x004A4A74</c> · <c>0x0042FD55</c> · <c>0x0042ED16</c>).
+    /// 부르는 쪽이 <c>0x0044AF40(4)</c> 로 게임을 끝낸다(<c>0x004A4A74</c> · <c>0x0042FD55</c> · <c>0x0042ED16</c>).
     /// </remarks>
     private bool LostDuel(Engine.Town.Duel duel, uint[]? face, GameRandom dice, bool mateFought,
                           bool canFlee = true, bool canSpare = true) =>
@@ -1663,7 +1663,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         }
     }
 
-    /// <summary>놀이 끝 — 그림 0x0B 와 CONTINUE? 뒤 첫 화면으로(<c>0x0044AF40(4)</c>).</summary>
+    /// <summary>게임 끝 — 그림 0x0B 와 CONTINUE? 뒤 첫 화면으로(<c>0x0044AF40(4)</c>).</summary>
     private void EndGame()
     {
         if (_view is CityPicView city) city.EndGame();

@@ -229,7 +229,7 @@ public static class PortraitImport
     /// 그 자리에 초상화를 넣는다. <paramref name="face"/> 가 지금 장수와 같으면 뒤에 붙인다.
     /// </summary>
     /// <param name="hd">
-    /// 줄이지 않은 그림(<see cref="ShapeHd"/>). 주면 벌 옆에 따로 적어 두고 놀이가 그것을 건다 —
+    /// 줄이지 않은 그림(<see cref="ShapeHd"/>). 주면 벌 옆에 따로 적어 두고 게임이 그것을 건다 —
     /// 벌에는 <paramref name="indexed"/> 가 번호 자리를 잡으러 그대로 들어간다. 안 주면 그 자리의 옛 그림을 지운다.
     /// </param>
     /// <returns>넣은 얼굴 번호. 못 넣었으면 −1 이고 까닭은 <see cref="LastError"/> 다.</returns>

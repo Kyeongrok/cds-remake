@@ -237,7 +237,7 @@ public sealed class DuelDialog : GameWindow
         _dice = dice;
         _face = face;
         // 몸짓 표를 <b>판을 열 때마다</b> 다시 읽는다 — 모션 메이커에서 고쳐 저장한 것이
-        // 놀이를 다시 띄우지 않아도 다음 일기토부터 들게 하려는 것이다.
+        // 게임을 다시 띄우지 않아도 다음 일기토부터 들게 하려는 것이다.
         DuelMotions.Forget();
         if (art != null) _stage = new DuelStage(art, foeSet);
 
@@ -764,7 +764,7 @@ public sealed class DuelDialog : GameWindow
     /// <summary>효과음 한 자락. 묶음을 못 열면 조용히 넘어간다.</summary>
     /// <remarks>
     /// 예전에는 게임 폴더를 <b>마지막으로 연 세이브 파일 자리</b>에서 찾았다 — 그것은 도구 앱이 적는 값이라
-    /// 놀이만 하는 설치에서는 비어 있고, 그러면 칼 소리도 이기고 지는 소리도 안 났다.
+    /// 게임만 하는 설치에서는 비어 있고, 그러면 칼 소리도 이기고 지는 소리도 안 났다.
     /// </remarks>
     private static void Sound(int part) => SoundBank.Current?.Play(part);
 

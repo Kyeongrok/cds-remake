@@ -71,7 +71,7 @@ public static class PortraitAges
         return Real(aged, female, faces) ? aged : face;
     }
 
-    /// <summary>그 얼굴이 중년 짝을 가졌는지 — 새 놀이 화면이 이것을 알려 준다.</summary>
+    /// <summary>그 얼굴이 중년 짝을 가졌는지 — 새 게임 화면이 이것을 알려 준다.</summary>
     public static bool HasAged(int face, bool female, Portraits? faces = null) =>
         AgedOf(face, female, faces) != face;
 

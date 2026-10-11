@@ -29,7 +29,7 @@ public static class Standoff
     /// <remarks>
     /// 게임은 판을 열 때 나라 표 <c>+0x14</c> 를 형편 칸으로 뜨고(<c>0x0041B320</c>), 그 뒤로는
     /// 형편 칸만 본다. 여기서는 <b>주인공이 아직 그 나라를 건드린 적이 없으면 표 값을 그대로
-    /// 쓴다</b> — 결과가 같으면서, 표를 고치면 놀이에 곧장 먹는다.
+    /// 쓴다</b> — 결과가 같으면서, 표를 고치면 게임에 곧장 먹는다.
     /// </remarks>
     public static int EntryOf(Player player, NationTable? nations, int nation)
     {

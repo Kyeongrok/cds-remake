@@ -1,4 +1,4 @@
-# 놀이 통계 받는 곳 (Cloudflare Worker + D1)
+# 게임 통계 받는 곳 (Cloudflare Worker + D1)
 
 게임이 도시를 나설 때, 그리고 끌 때 보내는 셈(무엇을 발견했고 누구를 고용 · 해고했고 어디서 어디로 며칠 걸려 갔고 얼마나 싸웠나)을 받아 D1 에 쌓는다.
 보내는 쪽은 `CdsHelper.Game/Local/Helpers/PlayStats.cs`.

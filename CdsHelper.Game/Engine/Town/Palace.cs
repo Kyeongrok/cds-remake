@@ -388,7 +388,7 @@ public static class Palace
     ///   412479  eax = max(10, eax - 1)
     ///   412483  들킴 = (eax &gt; roll(100))
     /// </code>
-    /// 정적 친밀도 밑값(놀이 내내 안 바뀌는 표 값)이 높을수록, 내 운이 낮을수록 잘 들킨다.
+    /// 정적 친밀도 밑값(게임 내내 안 바뀌는 표 값)이 높을수록, 내 운이 낮을수록 잘 들킨다.
     /// <b>안 들키면 진짜를 가져온 것처럼 그대로 통과된다</b> — 사례·명성·친밀도가 다 오른다.
     /// </remarks>
     public static bool CounterfeitCaught(int sponsorTableCloseness, int luck, Random random) =>
@@ -439,7 +439,7 @@ public static class Palace
     /// </summary>
     /// <remarks>
     /// <code>
-    ///   4124c4  ecx = 후원자.+0x20                    ; 동적 친밀도(놀이 중에 쌓인 것, 0~100)
+    ///   4124c4  ecx = 후원자.+0x20                    ; 동적 친밀도(게임 중에 쌓인 것, 0~100)
     ///   4124cb  ecx += [0x5B60D0]                      ; + 운
     ///   4124d1  ecx = min(97, ecx + 1)
     ///   4124dc  봐줌 = (ecx &gt; roll(100))

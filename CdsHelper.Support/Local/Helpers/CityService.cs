@@ -40,7 +40,7 @@ public class CityService
             }
 
             // DB 는 처음 한 번만 JSON 을 옮겨 담는다 — 그 뒤 cities.json 에서 고친 이름(세빌리아 → 세비야 따위)이
-            // 안 들어가 편집기와 놀이의 이름이 갈렸다. 켤 때마다 이름만 JSON 에 맞춘다.
+            // 안 들어가 편집기와 게임의 이름이 갈렸다. 켤 때마다 이름만 JSON 에 맞춘다.
             if (!string.IsNullOrEmpty(jsonPath) && System.IO.File.Exists(jsonPath))
                 await SyncNamesAsync(jsonPath);
 

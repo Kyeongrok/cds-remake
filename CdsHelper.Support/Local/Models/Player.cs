@@ -72,10 +72,10 @@ public sealed class Player
     public const int StartingFame = 1700;
 
     /// <summary>
-    /// 놀이가 시작하는 날 — <b>1480년 1월 1일</b>이다.
+    /// 게임이 시작하는 날 — <b>1480년 1월 1일</b>이다.
     /// </summary>
     /// <remarks>
-    /// 새 놀이는 늘 이 날이다. 여급 표의 등장년도도 이 해를 바닥으로 삼고
+    /// 새 게임은 늘 이 날이다. 여급 표의 등장년도도 이 해를 바닥으로 삼고
     /// (<c>max(1480, 1495 - 표값)</c>), 도서관 책도 이 해부터 하나씩 나온다.
     ///
     /// 예전에는 <c>1499년 4월 15일</c> 로 두었는데, 그것은 <b>이어서 하던 판</b>의 갈무리에서
@@ -178,7 +178,7 @@ public sealed class Player
     /// <b>운명 코드</b> — 여급과의 궁합이 이 값 하나로 갈린다(0~15).
     /// </summary>
     /// <remarks>
-    /// 게임은 이것을 주인공 객체의 <c>+0x08</c> 에 따로 들고 있다(<c>0x0047CB10</c>). 새 놀이가
+    /// 게임은 이것을 주인공 객체의 <c>+0x08</c> 에 따로 들고 있다(<c>0x0047CB10</c>). 새 게임이
     /// 앞의 열여섯 초상화만 고르게 해서 값이 <see cref="Face"/> 와 늘 같았을 뿐,
     /// <b>초상화 번호와 같은 것이 아니다</b>.
     ///
@@ -343,7 +343,7 @@ public sealed class Player
     /// (<c>0x0042F021</c>).
     /// </summary>
     /// <remarks>
-    /// <b>놀이 안에서 올라가는 길이 없다.</b> NEW GAME 은 0 으로 시작하고, 아이가 물려받을 때만
+    /// <b>게임 안에서 올라가는 길이 없다.</b> NEW GAME 은 0 으로 시작하고, 아이가 물려받을 때만
     /// <c>rand(3) − 1</c> 이 얹히며(<c>0x00460E99</c>), 세대교체가 아이 칸을 그대로 베껴 온다
     /// (<c>0x0047D4F5</c> 의 <c>rep movsd</c> 가 <c>+0x20</c>~<c>+0xAB</c> 를 옮긴다).
     /// </remarks>
@@ -411,7 +411,7 @@ public sealed class Player
             _tongues[name] = Math.Clamp(level, 0, Skill.MaxLevel);
     }
 
-    /// <summary>기술 자리를 박는다(새 놀이에서 찍어 줄 때).</summary>
+    /// <summary>기술 자리를 박는다(새 게임에서 찍어 줄 때).</summary>
     public void SetSkill(string skill, int level) =>
         _skills[skill] = Math.Clamp(level, 0, Skill.MaxLevel);
 
@@ -570,7 +570,7 @@ public sealed class Player
     /// <remarks>
     /// 게임은 후원자 객체 <c>+0x20</c> 에 들고 <b>0 에서 시작한다</b> — 후원자 정보 창의
     /// 「친밀도」가 이 값이다. 후원자 표의 <c>+0x30</c> 은 이름은 같아도 딴 값이다:
-    /// 그쪽은 낼 자금을 가르는 밑값이고(<c>0x004AF086</c> 이 표를 읽는다) 놀이 내내 안 바뀐다.
+    /// 그쪽은 낼 자금을 가르는 밑값이고(<c>0x004AF086</c> 이 표를 읽는다) 게임 내내 안 바뀐다.
     ///
     /// 여급의 친밀도(<see cref="Liking"/>)와 같은 함수로 오르내리지만 자리는 따로다.
     /// </remarks>
@@ -1014,7 +1014,7 @@ public sealed class Player
     }
 
     /// <summary>
-    /// 달을 넘긴다(여관 숙박·수련). 날짜는 놀이 안에서만 흐르므로 밖에서 박지 않는다.
+    /// 달을 넘긴다(여관 숙박·수련). 날짜는 게임 안에서만 흐르므로 밖에서 박지 않는다.
     /// </summary>
     public void AdvanceMonths(int months)
     {
@@ -1028,7 +1028,7 @@ public sealed class Player
     /// 해만 바꾼다(개발 창). 달·날은 그대로 두고, 2월 29일이 없는 해면 28일로 당긴다.
     /// </summary>
     /// <remarks>
-    /// 놀이 안에서 흐른 것이 아니라 회복·짐 썩음은 셈하지 않는다. 시세·역사는 다음에 물을 때
+    /// 게임 안에서 흐른 것이 아니라 회복·짐 썩음은 셈하지 않는다. 시세·역사는 다음에 물을 때
     /// 따라잡는다(<c>Game.CatchUpMonths</c> 가 뒤로 간 달도 받는다).
     /// </remarks>
     public void SetYear(int year)
@@ -1038,7 +1038,7 @@ public sealed class Player
     }
 
     /// <summary>
-    /// 놀이 안에서 날짜를 앞으로 옮긴다 — 달이 넘어갈 때마다 달 넘김을 먹인다.
+    /// 게임 안에서 날짜를 앞으로 옮긴다 — 달이 넘어갈 때마다 달 넘김을 먹인다.
     /// </summary>
     /// <remarks>
     /// 게임은 일이 1 이 되는 날마다 <c>0x0044B2A0</c> 을 돌고, 그 첫 줄이 제독 달 넘김
@@ -1476,10 +1476,10 @@ public sealed class Player
     /// <b>처음 값은 나라 표에서 온다.</b> 판을 열 때 <c>0x0041B320</c> 이 나라 표
     /// <c>0x004CA370</c> 의 <c>+0x14</c>(출입여부)를 이 칸으로 떠 준다. 그래서 그라나다와
     /// 오스만·투르크는 첫날부터 2 다. 여기서는 <b>이 딕셔너리에 아무것도 없으면 표 값이
-    /// 그대로 쓰인다</b>(<c>Standoff.EntryOf</c>) — 표를 고치면 놀이에 곧장 먹는다.
+    /// 그대로 쓰인다</b>(<c>Standoff.EntryOf</c>) — 표를 고치면 게임에 곧장 먹는다.
     /// 1 은 마을만 막고 항구는 열며, 2 라야 항구까지 막힌다(<c>Standoff.Barred</c>).
     ///
-    /// <b>원본도 놀이 중에 이 값을 안 바꾼다</b> — 나라 레코드 <c>+0x0C</c> 에 쓰는 곳은 판 열기(<c>0x0041B320</c>)와
+    /// <b>원본도 게임 중에 이 값을 안 바꾼다</b> — 나라 레코드 <c>+0x0C</c> 에 쓰는 곳은 판 열기(<c>0x0041B320</c>)와
     /// 로더(<c>0x0041B3B9</c>)뿐이다. <see cref="Anger"/> 와 <see cref="Calm"/> 는 편집 · 시험용으로만 둔다.
     /// </remarks>
     public IReadOnlyDictionary<int, int> Hostility => _hostility;
@@ -1523,14 +1523,14 @@ public sealed class Player
     /// 게임은 도시 레코드 <c>+0x04</c> 의 비트 0 으로 들고 있고, 처음 켜져 있는 101곳이
     /// 죄다 유럽·지중해다. 나머지는 항해하다 가까이 가야 켜진다(<c>0x0048D983</c>).
     /// 켤 때 어디가 켜져 있는지는 도시 표가 알고 있으므로(<c>CityExeTable.KnownAtStart</c>)
-    /// 여기에는 <b>놀이 중에 새로 안 것</b>만 담는다.
+    /// 여기에는 <b>게임 중에 새로 안 것</b>만 담는다.
     /// </remarks>
     public IReadOnlyCollection<int> KnownCities => _knownCities;
 
     /// <summary>그 도시를 알게 되었는지 적어 둔다. 처음 아는 것이면 참.</summary>
     public bool Know(int city) => city >= 0 && _knownCities.Add(city);
 
-    /// <summary>놀이 중에 알게 된 도시인지.</summary>
+    /// <summary>게임 중에 알게 된 도시인지.</summary>
     public bool Knows(int city) => _knownCities.Contains(city);
 
     /// <summary>세이브에서 아는 도시를 되돌린다.</summary>
@@ -1944,7 +1944,7 @@ public sealed class Player
     }
 
     /// <summary>
-    /// 발견한 적이 없는 것으로 되돌린다 — <b>개발 창</b>의 발견물 탭이 체크를 풀 때 쓴다. 놀이에는 이런 길이 없다.
+    /// 발견한 적이 없는 것으로 되돌린다 — <b>개발 창</b>의 발견물 탭이 체크를 풀 때 쓴다. 게임에는 이런 길이 없다.
     /// </summary>
     /// <remarks>
     /// 찾은 날·찾은 사람, 자리 사건 매듭, 보고(발표)한 기록까지 같이 지운다. 이미 받은 명성·보수·아이템과
@@ -2518,7 +2518,7 @@ public sealed class Player
     public int Gold { get; private set; }
 
     /// <summary>
-    /// 소지금을 그대로 박는다. 놀이 안에서 쓰는 길은 아니고 개발용 창에서만 부른다 —
+    /// 소지금을 그대로 박는다. 게임 안에서 쓰는 길은 아니고 개발용 창에서만 부른다 —
     /// 돈이 도는 길(교역)을 아직 흉내내지 않아 시험하려면 넣어 줄 데가 있어야 한다.
     /// </summary>
     public void SetGold(int gold) => Gold = Math.Clamp(gold, 0, MaxGold);
@@ -2550,9 +2550,9 @@ public sealed class Player
     /// 배와 선원을 다 걷는다 — <b>새 주인공은 배도 선원도 없이 시작한다</b>.
     /// </summary>
     /// <remarks>
-    /// 게임도 새 놀이를 열면 함대가 비어 있고, 조선소에서 첫 배를 사야 바다에 나간다.
+    /// 게임도 새 게임을 열면 함대가 비어 있고, 조선소에서 첫 배를 사야 바다에 나간다.
     /// 생성자가 카라벨 한 척을 얹어 두는 것은 세이브를 안 읽고 함대 창만 여는 길
-    /// (도구 쪽) 때문이라 그대로 두고, 새 놀이만 여기서 걷는다.
+    /// (도구 쪽) 때문이라 그대로 두고, 새 게임만 여기서 걷는다.
     /// </remarks>
     public void ClearShips()
     {
@@ -3043,7 +3043,7 @@ public sealed class Player
 
     /// <summary>
     /// 역사 대본(<c>HIST_EV.CDS</c> · <c>HISTCHR.CDS</c>)을 마지막으로 돌린 달(해 x 12 + 달).
-    /// 0 이면 아직 안 돌렸다 — 놀이 첫 달부터 되짚는다.
+    /// 0 이면 아직 안 돌렸다 — 게임 첫 달부터 되짚는다.
     /// </summary>
     public int HistoryMonth { get; private set; }
 

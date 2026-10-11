@@ -62,7 +62,7 @@ public sealed class Game
         return before;
     }
 
-    /// <summary>주인공을 도로 앉힌다 — 새 놀이를 짓다 말고 물러났을 때다.</summary>
+    /// <summary>주인공을 도로 앉힌다 — 새 게임을 짓다 말고 물러났을 때다.</summary>
     public void UsePlayer(Player player) => Player = player;
 
     /// <summary>
@@ -323,7 +323,7 @@ public sealed class Game
 
     /// <summary>EXE 도시 표(문화권·시장 물건). 시장과 여관이 같이 쓴다.</summary>
     /// <remarks>
-    /// 놀이 중 바뀐 나라·규모(역사 대본)를 덮어 읽도록 주인공을 이어 두고, 꺼낼 때마다 밀린 달을 먼저 센다
+    /// 게임 중 바뀐 나라·규모(역사 대본)를 덮어 읽도록 주인공을 이어 두고, 꺼낼 때마다 밀린 달을 먼저 센다
     /// (<see cref="CatchUpMonths"/>) — 성문·도시정보가 그 달의 나라를 본다.
     /// </remarks>
     public CityExeTable? CityRows
@@ -373,10 +373,10 @@ public sealed class Game
     }
 
     /// <summary>
-    /// 역사 항해자 열넷(<c>HISTCHR.CDS</c>) — 이 놀이의 <b>유일한 경쟁자</b>다.
+    /// 역사 항해자 열넷(<c>HISTCHR.CDS</c>) — 이 게임의 <b>유일한 경쟁자</b>다.
     /// </summary>
     /// <remarks>
-    /// 못 읽어도 놀이는 돈다 — 그때는 아무도 선수를 치지 않아 발견물이 늘 열려 있다.
+    /// 못 읽어도 게임은 돈다 — 그때는 아무도 선수를 치지 않아 발견물이 늘 열려 있다.
     /// </remarks>
     public HistoryVoyages? Voyagers =>
         Once(ref _voyagers, ref _voyagersTried, HistoryVoyages.Open,
@@ -462,11 +462,11 @@ public sealed class Game
              () => DiscoveryDescriptions.LastError, "발견물 설명문");
 
     /// <summary>
-    /// 사건 스틸(<c>EVSTILL.CDS</c>) 열여섯 장 — 난파 · 폭풍 · 반란 · 놀이 끝 따위다.
+    /// 사건 스틸(<c>EVSTILL.CDS</c>) 열여섯 장 — 난파 · 폭풍 · 반란 · 게임 끝 따위다.
     /// </summary>
     /// <remarks>
     /// 발견물 스틸(<see cref="Stills"/>, <c>DSTILL.CDS</c>)과 <b>짜임이 같고 파일만 다르다</b>.
-    /// 이벤트 대본의 「EVSTILL 이미지 표시」와 반란 · 놀이 끝 화면이 이것을 쓴다.
+    /// 이벤트 대본의 「EVSTILL 이미지 표시」와 반란 · 게임 끝 화면이 이것을 쓴다.
     /// </remarks>
     public DiscoveryStills? EventStills =>
         Directory.Length == 0 ? null

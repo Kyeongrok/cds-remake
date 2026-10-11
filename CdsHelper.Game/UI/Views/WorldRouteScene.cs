@@ -66,7 +66,7 @@ internal static class WorldRouteScene
     /// 계약 맺는 본체 끝(<c>0x004ADFF6</c>)이 <c>0x004AE040</c> 으로 그 힌트의 유적에 딸린 발견물
     /// (<c>0x005B0948</c> 목록)에 7번이 있는지 보고, 있으면 <c>0x0047D450(0)</c> 으로 제독 <c>+0x330</c> 을
     /// 0 으로 둔다. 그래서 계약 전에 돌아 둔 바퀴는 안 쳐 준다 — 맺은 뒤 다시 한 바퀴 돌아야 장면이 돈다.
-    /// 놀이 중에 바퀴 수를 0 으로 되돌리는 자리는 이것뿐이다.
+    /// 게임 중에 바퀴 수를 0 으로 되돌리는 자리는 이것뿐이다.
     /// </remarks>
     public static void OnSign(Engine.Game game, int hintId)
     {

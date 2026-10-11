@@ -139,9 +139,9 @@ public sealed class DisevRunner
     private Window? _shade;
 
     /// <summary>
-    /// 마지막으로 돌린 대본이 <b>게임 오버</b>(<c>4A</c>)로 끝났는지. 부른 쪽이 보고 놀이를 끝낸다.
+    /// 마지막으로 돌린 대본이 <b>게임 오버</b>(<c>4A</c>)로 끝났는지. 부른 쪽이 보고 게임을 끝낸다.
     /// </summary>
-    /// <remarks>게임은 <c>0x0044AF40(0x5A4D18, 0)</c> 으로 놀이 상태를 끝으로 돌린다(<c>0x0040BDBA</c>).</remarks>
+    /// <remarks>게임은 <c>0x0044AF40(0x5A4D18, 0)</c> 으로 게임 상태를 끝으로 돌린다(<c>0x0040BDBA</c>).</remarks>
     public static bool LastEndedInGameOver { get; private set; }
 
     /// <summary>게임 오버로 끝났을 때 세울 그림 — 육상전 전멸이면 0x0D, 해전이면 0x0C, 그 밖은 0x0B.</summary>

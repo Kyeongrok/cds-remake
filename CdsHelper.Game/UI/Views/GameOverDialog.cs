@@ -8,7 +8,7 @@ using CdsHelper.Game.Local.Helpers;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 놀이가 끝났을 때 — 사건 스틸 한 장과 <c>CONTINUE?</c> 물음이다.
+/// 게임이 끝났을 때 — 사건 스틸 한 장과 <c>CONTINUE?</c> 물음이다.
 /// </summary>
 /// <remarks>
 /// 게임의 <c>0x00410CC2</c> 어름이다.
@@ -32,7 +32,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class GameOverDialog : GameWindow
 {
-    /// <summary>놀이가 끝나는 까닭마다의 그림 번호(<c>0x00410CC2</c>).</summary>
+    /// <summary>게임이 끝나는 까닭마다의 그림 번호(<c>0x00410CC2</c>).</summary>
     public const int MutinyLost = 0x0B, FleetLost = 0x0C, LandLost = 0x0D;
 
     private bool _again;
@@ -124,13 +124,13 @@ public sealed class GameOverDialog : GameWindow
     }
 
     /// <summary>
-    /// 놀이 끝을 알린다. 다시 시작하겠다고 하면 true.
+    /// 게임 끝을 알린다. 다시 시작하겠다고 하면 true.
     /// </summary>
     /// <param name="area">
     /// 덮을 자리(화면 좌표, WPF 단위). 게임 화면만 주면 제목 줄과 위·아래 띠가 남는다.
     /// 안 주거나 빈 자리면 주인 창을 통째로 덮는다.
     /// </param>
-    /// <param name="bgm">놀이 끝 곡(8번)을 틀 이. 안 주면 곡은 그대로 돈다.</param>
+    /// <param name="bgm">게임 끝 곡(8번)을 틀 이. 안 주면 곡은 그대로 돈다.</param>
     public static bool Show(Window owner, DiscoveryStills? stills, int picture = MutinyLost,
                             Rect? area = null, BgmPlayer? bgm = null)
     {
@@ -140,7 +140,7 @@ public sealed class GameOverDialog : GameWindow
                        owner.ActualWidth > 0 ? owner.ActualWidth : owner.Width,
                        owner.ActualHeight > 0 ? owner.ActualHeight : owner.Height);
 
-        // 놀이가 끝나면 그 곡으로 갈린다. 되돌리지 않는다 — 여기서 나가면 타이틀이다.
+        // 게임이 끝나면 그 곡으로 갈린다. 되돌리지 않는다 — 여기서 나가면 타이틀이다.
         bgm?.Play(BgmPlayer.GameOverTrack);
 
         var dialog = new GameOverDialog(stills, picture, where) { Owner = owner };
@@ -148,7 +148,7 @@ public sealed class GameOverDialog : GameWindow
 
         // YES 면 첫 화면(메인메뉴)으로 가고, NO(물림도 3 이다)면 <b>게임을 끝낸다</b> — 3 이 나오면
         // 비트 0x40 을 세우고(0x00410CF6) 판 고리를 빠져나가 프로그램이 닫힌다(0x00410D14 → 0x00410D21).
-        // END GAME 처럼 놀이 창을 닫는다. 부르는 쪽은 이어서 타이틀로 돌리려 드니 한 박자 늦춰 닫는다.
+        // END GAME 처럼 게임 창을 닫는다. 부르는 쪽은 이어서 타이틀로 돌리려 드니 한 박자 늦춰 닫는다.
         if (!dialog._again && ShipMapWindow.Current is { } game)
             game.Dispatcher.BeginInvoke(game.Close, System.Windows.Threading.DispatcherPriority.Background);
         return dialog._again;

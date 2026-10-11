@@ -7,7 +7,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 지도 셰이더가 읽는 표들을 WORLD.CDS 에서 짓는다 — 물 색 표 · 수심 표 · 타일 부류 표.
 /// </summary>
 /// <remarks>
-/// 놀이의 지도(<see cref="ShipMapHost"/>)와 개발도구의 WORLD.CDS 편집기 미리보기(<see cref="MapShaderPreview"/>)가
+/// 게임의 지도(<see cref="ShipMapHost"/>)와 개발도구의 WORLD.CDS 편집기 미리보기(<see cref="MapShaderPreview"/>)가
 /// 같은 셈을 쓰도록 한 곳에 둔다. 편집기는 칠할 때마다 고친 지도로 다시 짓는다.
 /// </remarks>
 public static class MapShaderData

@@ -66,7 +66,7 @@ public sealed class Contract
     /// 딸려 온 감찰관 이름. 계약을 맺으면 <b>반드시 하나 붙는다</b>.
     /// </summary>
     /// <remarks>
-    /// 얼굴은 누구든 같고 이름만 갈린다 — 이름표와 얼굴 번호는 놀이 쪽
+    /// 얼굴은 누구든 같고 이름만 갈린다 — 이름표와 얼굴 번호는 게임 쪽
     /// <c>CdsHelper.Game.Engine.Town.Inspector</c> 에 있다(게임 <c>0x004AF450</c>).
     /// 옛 세이브에는 없어 빈 문자열일 수 있다.
     /// </remarks>

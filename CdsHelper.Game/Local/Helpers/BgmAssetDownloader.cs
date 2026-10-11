@@ -9,7 +9,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <see cref="DownloadAsync"/> 가 돌아오고, 나머지는 그 뒤로 뒤에서 하나씩 받는다.
 /// 한 벌이 130MB 라 다 받을 때까지 붙잡아 두면 첫 화면이 한참 조용하다.
 ///
-/// 앱을 켤 때 미리 받기(<c>App.PrefetchBgmAsync</c>)와 놀이 창의 받기가 겹칠 수 있어,
+/// 앱을 켤 때 미리 받기(<c>App.PrefetchBgmAsync</c>)와 게임 창의 받기가 겹칠 수 있어,
 /// 한 번에 한 곡만 받고 이미 있는 곡은 건너뛴다.
 /// </remarks>
 public static class BgmAssetDownloader

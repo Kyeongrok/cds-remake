@@ -5,7 +5,7 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.Engine;
 
 /// <summary>
-/// 함대 창 놀이의 세이브. 소지금·날짜·있는 도시·배운 기술을 적어 둔다.
+/// 함대 창 게임의 세이브. 소지금·날짜·있는 도시·배운 기술을 적어 둔다.
 /// </summary>
 /// <remarks>
 /// 파일 이름은 게임과 같은 <c>SAVEDATA.CDS</c> 지만 <b>게임 폴더에는 쓰지 않는다</b> —
@@ -37,7 +37,7 @@ public static class GameSave
     /// </summary>
     /// <remarks>
     /// 그 앞 세이브에는 둘 다 없다. 얼굴은 0 으로 두고, 운명 코드는 얼굴 번호로 물러선다 —
-    /// 새 놀이가 앞의 열여섯만 고르게 해서 그때까지는 둘이 같은 값이었다.
+    /// 새 게임이 앞의 열여섯만 고르게 해서 그때까지는 둘이 같은 값이었다.
     /// </remarks>
     public const int FaceFrom = 25;
 
@@ -73,7 +73,7 @@ public static class GameSave
     public const int HullNamesFrom = 31;
 
     /// <summary>
-    /// 적어 둔 것을 지운다 — 은퇴시킬 때다(원본은 새 놀이의 「삭제한다」에서도 지운다 — 우리는 그 줄을 「남겨 둔다」로 바꿨다).
+    /// 적어 둔 것을 지운다 — 은퇴시킬 때다(원본은 새 게임의 「삭제한다」에서도 지운다 — 우리는 그 줄을 「남겨 둔다」로 바꿨다).
     /// </summary>
     /// <remarks>
     /// 게임은 <c>0x0045F8F2</c> 에서 <c>C:SAVEDATA.CDS</c> · <c>C:SAVEDATA.TMP</c> ·
@@ -127,7 +127,7 @@ public static class GameSave
     /// <remarks>
     /// 원본은 세이브가 한 파일뿐이라 적으면 앞의 것이 사라진다. 우리는 <see cref="Path"/>(늘 가장 새 것)에 적으면서
     /// 같은 것을 여기에도 한 칸 남기고, <see cref="ManualSlots"/> 개를 넘으면 가장 오래된 칸부터 지운다.
-    /// 첫 화면의 <b>LOAD GAME</b> 과 놀이 안의 「로드」가 이 칸들을 목록으로 보여 준다.
+    /// 첫 화면의 <b>LOAD GAME</b> 과 게임 안의 「로드」가 이 칸들을 목록으로 보여 준다.
     /// </remarks>
     public static string ManualDirectory => System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -394,7 +394,7 @@ public static class GameSave
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
-    /// 있지만, 세이브 형식은 놀이 쪽 모델이 바뀌어도 그대로여야 하므로 따로 둔다.
+    /// 있지만, 세이브 형식은 게임 쪽 모델이 바뀌어도 그대로여야 하므로 따로 둔다.
     /// </summary>
     /// <param name="Found">이 계약을 맺은 뒤 발견한 것(발견물 번호).</param>
     /// <param name="Inspector">딸려 온 감찰관 이름. 판 21 앞의 세이브에는 없다.</param>
@@ -614,7 +614,7 @@ public static class GameSave
         : new Deal(c.Hint, c.Sponsor, c.City, c.Amount, c.SignedOn, c.Years, [.. c.Found],
                    c.Inspector, c.ShipsLent, c.LoanAnnounced, c.BribeOpen);
 
-    /// <summary>적어 둔 계약을 놀이 쪽 모델로. 없으면 null.</summary>
+    /// <summary>적어 둔 계약을 게임 쪽 모델로. 없으면 null.</summary>
     public static Contract? ContractOf(Data saved)
     {
         if (saved.Contract is not { } d) return null;

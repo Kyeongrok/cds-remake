@@ -4,9 +4,9 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 선수상 등급을 손으로 고쳐 둔 것. 게임 표(<see cref="Engine.Sea.Figureheads"/>) 위에 덧씌운다.
 /// </summary>
 /// <remarks>
-/// 원본 표는 <c>0x0054A0A0</c>(이름 ptr, 등급) 여덟 바이트 x 서른여섯이고 등급은 놀이 안에서
+/// 원본 표는 <c>0x0054A0A0</c>(이름 ptr, 등급) 여덟 바이트 x 서른여섯이고 등급은 게임 안에서
 /// 안 바뀐다. 여기서 고친 등급은 <b>막을 확률(등급 x 30 − 20)과 다는 삯</b>에 그대로 들어가
-/// 놀이에서 바로 듣는다.
+/// 게임에서 바로 듣는다.
 ///
 /// <b>EXE 도 구워 둔 표도 건드리지 않는다</b> — 고친 것만 따로
 /// <c>%APPDATA%\CdsHelper\exe-tables</c> 에 적어 두고 읽을 때 얹는다

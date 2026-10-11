@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
-        <!-- 놀이 exe 는 제 아이콘을 쓴다. 뷰어(CdsHelper.exe)와 나란히 놓이므로 아이콘까지 같으면 어느 쪽인지 알아볼 수가 없다. -->
+        <!-- 게임 exe 는 제 아이콘을 쓴다. 뷰어(CdsHelper.exe)와 나란히 놓이므로 아이콘까지 같으면 어느 쪽인지 알아볼 수가 없다. -->
         <ApplicationIcon>play.ico</ApplicationIcon>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <AssemblyName>CostaDelSol</AssemblyName>
@@ -15,7 +15,7 @@
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
-    <!-- 놀이 화면이 파일로 읽는 것들. 뷰어 exe 와 같은 폴더에 놓이므로 한 벌만 있으면 된다. -->
+    <!-- 게임 화면이 파일로 읽는 것들. 뷰어 exe 와 같은 폴더에 놓이므로 한 벌만 있으면 된다. -->
     <ItemGroup>
       <Content Include="..\asset\**\*">
         <Link>asset\%(RecursiveDir)%(Filename)%(Extension)</Link>
@@ -32,7 +32,7 @@
         <Link>릴리즈노트.md</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <!-- 놀이 통계를 받는 곳의 주소(PlayStats). 비어 있으면 아무것도 안 보낸다. -->
+      <!-- 게임 통계를 받는 곳의 주소(PlayStats). 비어 있으면 아무것도 안 보낸다. -->
       <Content Include="..\stats-url.txt">
         <Link>stats-url.txt</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

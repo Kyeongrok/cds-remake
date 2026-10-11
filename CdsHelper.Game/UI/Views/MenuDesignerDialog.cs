@@ -14,14 +14,14 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 게임 창은 밤색 판에 띠 단추를 얹은 몇 가지 꼴이 되풀이된다. 그 꼴을 코드에 적어 넣고
-/// 놀이를 다시 구워 보는 대신, 여기서 <b>제목을 넣고 빼고 · 줄을 적고 · 폭과 줄 수를
+/// 게임을 다시 구워 보는 대신, 여기서 <b>제목을 넣고 빼고 · 줄을 적고 · 폭과 줄 수를
 /// 굴려</b> 그 자리에서 본다.
 ///
 /// 미리보기는 <b>게임이 쓰는 그 조각들</b>로 짓는다 — 띠 단추는
 /// <see cref="GameButton"/>, 글씨는 <see cref="GameUi.GameLabel"/>(게임 글꼴), 빛깔은
 /// <see cref="GameUi"/> 의 것이다. 그래서 여기서 보이는 대로 게임에서도 보인다.
 ///
-/// <b>어디까지 놀이에 드나.</b> 「단추 여백」은 <see cref="GameSettings.BandPad"/> 라
+/// <b>어디까지 게임에 드나.</b> 「단추 여백」은 <see cref="GameSettings.BandPad"/> 라
 /// 곧바로 든다. 나머지(폭 · 줄 수 · 제목 · 글)는 <b>재어 보는 값</b>이라 창마다 코드에
 /// 옮겨 적어야 한다 — 「값 보기」가 그 수를 한 줄로 내어 준다.
 /// </remarks>
@@ -80,7 +80,7 @@ public sealed class MenuDesignerDialog : GameWindow
         Minimum = 1, Maximum = 24, Step = 1, DecimalPlaces = 0, Value = 8, Width = 84,
     };
 
-    /// <summary>띠 마구리가 앉을 좌우 여백 — <b>이것만은 놀이에 곧바로 든다</b>.</summary>
+    /// <summary>띠 마구리가 앉을 좌우 여백 — <b>이것만은 게임에 곧바로 든다</b>.</summary>
     private readonly NumericSpinner _pad = new()
     {
         Minimum = GameSettings.MinBandPad, Maximum = GameSettings.MaxBandPad,
@@ -156,8 +156,8 @@ public sealed class MenuDesignerDialog : GameWindow
     /// 게임 조각을 읽어 둔다 — <b>띠 그림과 게임 글꼴</b>이 있어야 진짜 꼴이 나온다.
     /// </summary>
     /// <remarks>
-    /// <see cref="GameUi.Sprites"/> 와 <see cref="GameUi.Font"/> 는 놀이가 뜰 때
-    /// <see cref="ShipMapWindow"/> 가 한 번 넣는다. 헬퍼에서는 놀이가 안 도니 비어 있어,
+    /// <see cref="GameUi.Sprites"/> 와 <see cref="GameUi.Font"/> 는 게임이 뜰 때
+    /// <see cref="ShipMapWindow"/> 가 한 번 넣는다. 헬퍼에서는 게임이 안 도니 비어 있어,
     /// 띠 단추가 <b>맨 네모</b>로 나고 글씨도 윈도 글꼴로 나온다. 여기서 채워 넣는다 —
     /// 세이브를 연 자리에서 게임 폴더를 찾는다.
     /// </remarks>
@@ -190,7 +190,7 @@ public sealed class MenuDesignerDialog : GameWindow
         foreach (var spin in new[] { _width, _most, _zoom })
             spin.ValueChanged += (_, _) => Draw();
 
-        // 단추 여백만은 설정에 바로 적는다 — 놀이가 그 값을 본다.
+        // 단추 여백만은 설정에 바로 적는다 — 게임이 그 값을 본다.
         _pad.ValueChanged += (_, _) =>
         {
             GameSettings.BandPad = (int)_pad.Value;
@@ -425,6 +425,6 @@ public sealed class MenuDesignerDialog : GameWindow
             + $" · 줄 {items.Length}개 (한 화면 {(int)_most.Value})"
             + $" · 가로 {wide:0}점 {(_fit.IsChecked == true ? $"(가장 긴 줄 「{longest}」에 맞춤)" : "(박은 값)")}"
             + $" · 단추 여백 {(int)_pad.Value}"
-            + "   —  여백만 놀이에 곧바로 들고, 나머지는 창마다 코드에 옮겨 적는 값입니다.";
+            + "   —  여백만 게임에 곧바로 들고, 나머지는 창마다 코드에 옮겨 적는 값입니다.";
     }
 }

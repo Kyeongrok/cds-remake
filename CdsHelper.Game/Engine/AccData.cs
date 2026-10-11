@@ -29,7 +29,7 @@ public static class AccData
 
     /// <summary>은퇴한 제독 하나.</summary>
     /// <param name="Face">얼굴 번호. MALE 그림의 자리다.</param>
-    /// <param name="RetiredOn">은퇴한 놀이 날짜.</param>
+    /// <param name="RetiredOn">은퇴한 게임 날짜.</param>
     /// <param name="City">은퇴한 도시. 다음 판에서 그 자리에 선다. 옛 파일은 −1 이다.</param>
     /// <param name="Track">행적 — 어느 날 어느 도시에 들었는지. 다음 판에서 되돌려 튼다.</param>
     public sealed record Character(string Name, string Family, string Given, int Face,

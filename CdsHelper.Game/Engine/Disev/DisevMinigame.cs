@@ -11,7 +11,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///                                                  5 발라몬의 탑(0x00431740(판자, 1))
 /// </code>
 /// 둘 다 이기면 결과를 1 로 두고(<c>43 47</c> 이 뛴다) 레지스트리 <c>MG%02d</c> 를 켜 차림표에
-/// 그 놀이를 푼다(<c>0x00406B60</c>).
+/// 그 게임을 푼다(<c>0x00406B60</c>).
 /// </remarks>
 public enum DisevMinigame
 {

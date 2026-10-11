@@ -8,7 +8,7 @@ namespace CdsHelper.Game.Engine.Discovery;
 /// 역사 항해자 열넷과 그들이 채가는 발견물 — <c>HISTCHR.CDS</c> 에서 읽는다.
 /// </summary>
 /// <remarks>
-/// <b>이 놀이에서 경쟁자가 하는 일은 이것 하나뿐이다.</b> 게임은 인물 하나하나의 나날을
+/// <b>이 게임에서 경쟁자가 하는 일은 이것 하나뿐이다.</b> 게임은 인물 하나하나의 나날을
 /// 돌리다가(<c>0x004327F0</c>) 인물 번호가 0~13 이면 그 사람의 대본을 튼다.
 /// <code>
 ///   004329b6  eax = 0x004783C0(사람)          ; 인물 ID
@@ -176,7 +176,7 @@ public sealed class HistoryVoyages
     /// </summary>
     /// <remarks>
     /// 고침이 바뀌었을 때에만 다시 얹는다(<see cref="VoyagerEdits.Revision"/>). 그래서
-    /// <b>편집 창에서 고치면 놀이가 돌아가는 중에도 곧바로 든다</b> — 표를 다시 열 것 없다.
+    /// <b>편집 창에서 고치면 게임이 돌아가는 중에도 곧바로 든다</b> — 표를 다시 열 것 없다.
     /// </remarks>
     public IReadOnlyList<Voyage> All
     {

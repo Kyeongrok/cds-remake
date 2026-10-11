@@ -8,7 +8,7 @@ using CdsHelper.Game.Local.Settings;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 게임 효과음(WAVES.CDS)을 틀어 준다. 놀이 중에 짧게 소리를 낼 때 쓴다.
+/// 게임 효과음(WAVES.CDS)을 틀어 준다. 게임 중에 짧게 소리를 낼 때 쓴다.
 /// </summary>
 /// <remarks>
 /// <see cref="WaveBank"/> 가 파트를 RIFF WAVE 통째로 풀어 주므로 그대로
@@ -166,7 +166,7 @@ public sealed class SoundBank : IDisposable
     }
 
     /// <summary>
-    /// 효과음 하나를 낸다. 못 풀거나 못 틀면 조용히 넘어간다 — 소리 때문에 놀이가 멎을 일은 없다.
+    /// 효과음 하나를 낸다. 못 풀거나 못 틀면 조용히 넘어간다 — 소리 때문에 게임이 멎을 일은 없다.
     /// </summary>
     public void Play(int part)
     {

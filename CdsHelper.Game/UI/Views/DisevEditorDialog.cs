@@ -964,7 +964,7 @@ public sealed class DisevEditorDialog : GameWindow
     /// </summary>
     private ComboBox MinigamePicker(long value)
     {
-        // 명령마다 부를 수 있는 놀이가 다르다 — 0E 04 는 코인·탑을 건너뛰고, 0E 14/1A 은 그 둘만 띄운다.
+        // 명령마다 부를 수 있는 게임이 다르다 — 0E 04 는 코인·탑을 건너뛰고, 0E 14/1A 은 그 둘만 띄운다.
         bool puzzle = _op?.Kind == "퍼즐 미니게임";
         var choices = Enum.GetValues<DisevMinigame>()
                           .Where(g => puzzle ? g.ByPuzzleCommand() : g.ByMinigameCommand())

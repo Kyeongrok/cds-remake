@@ -2,7 +2,7 @@ namespace CdsHelper.Support.Local.Models;
 
 /// <summary>
 /// 미니 게임 「코인 게임」 — 이름은 <b>천칭 퍼즐</b>이고, 무게가 다른 금화 하나를
-/// 나무 천칭 세 번으로 가려내는 놀이다.
+/// 나무 천칭 세 번으로 가려내는 게임이다.
 /// </summary>
 /// <remarks>
 /// 게임의 <c>0x004531F0</c> 이고 판을 까는 곳은 <c>0x00452B90</c> 이다.
@@ -27,7 +27,7 @@ public sealed class CoinPuzzle
     /// <summary>성한 금화의 무게. 가짜만 하나 더하거나 덜하다.</summary>
     public const int Sound = 2;
 
-    /// <summary>놀이 속에서 깨끗이 풀었을 때의 삯(<c>0x00450C79</c> 의 <c>0xBB8</c>).</summary>
+    /// <summary>게임 속에서 깨끗이 풀었을 때의 삯(<c>0x00450C79</c> 의 <c>0xBB8</c>).</summary>
     public const int Prize = 3000;
 
     /// <summary>천칭이 기운 쪽.</summary>

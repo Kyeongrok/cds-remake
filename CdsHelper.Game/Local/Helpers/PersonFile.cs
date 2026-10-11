@@ -7,7 +7,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 세이브(<c>SAVEDATA.CDS</c>)에서 <b>인물 표를 읽어 온다</b> — 281명.
 /// </summary>
 /// <remarks>
-/// <b>읽기만 한다.</b> 놀이가 늘 보는 것은 <see cref="PersonTable"/>(<c>인물표.json</c>)이고,
+/// <b>읽기만 한다.</b> 게임이 늘 보는 것은 <see cref="PersonTable"/>(<c>인물표.json</c>)이고,
 /// 이 손은 그 표를 <b>굽는 씨앗</b>일 뿐이다. 세이브를 되쓰지 않으므로 남의 판이 상할 일이 없다.
 ///
 /// 자리는 볼트 <c>72.분석-인물 이동(역사 항해사와 매달 굴림)</c> 에서 왔고, 직렬화 손

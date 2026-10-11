@@ -4,7 +4,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 도시가 지도에 <b>언제 나타나는가</b> — 신대륙 식민 도시 스물셋.
 /// </summary>
 /// <remarks>
-/// 놀이를 켤 때 지도에 없는 도시가 스물셋이다. 정적 도시 표
+/// 게임을 켤 때 지도에 없는 도시가 스물셋이다. 정적 도시 표
 /// (<c>0x004D14B0</c>, 한 줄 136바이트)의 <c>+0x62</c> 낱말 <b>비트 2</b>가 「아직 안
 /// 세워졌다」고, 판을 열 때 그 값이 도시 레코드(<c>0x005863A8</c>, 92바이트씩)의
 /// <c>+0x04</c> 로 옮겨진다(<c>0x004299B7</c>).
@@ -26,7 +26,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public static class CityFounding
 {
-    /// <summary>놀이를 켤 때 지도에 없는 도시 스물셋.</summary>
+    /// <summary>게임을 켤 때 지도에 없는 도시 스물셋.</summary>
     /// <remarks>
     /// EXE 를 다시 읽지 않고 번호로 적어 둔다 — 정적 값이라 판이 같으면 안 바뀐다.
     /// <c>0x004D14B0 + 도시*136 + 0x62</c> 의 비트 2 로 뽑은 것이다.
@@ -89,7 +89,7 @@ public static class CityFounding
         new(1535, 1, true, -1, [173], 5),       // 파트 75  오문         — 1B 0B 05 00(중국)
     ];
 
-    /// <summary>놀이가 시작하는 해. 여기서부터 달을 훑는다.</summary>
+    /// <summary>게임이 시작하는 해. 여기서부터 달을 훑는다.</summary>
     private const int FirstYear = 1480;
 
     /// <summary>

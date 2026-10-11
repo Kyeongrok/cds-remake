@@ -725,7 +725,7 @@ public sealed class DiscoveryMapDialog : GameWindow
 
     /// <summary>
     /// 발견물 점 하나를 자동이동 과녁으로 — 마우스를 올리면 흰 테두리가 서고, 오른쪽 단추로 누르면 그 자리로 걸어간다.
-    /// 걷기 시작하면 지도를 닫는다(창이 떠 있는 동안은 놀이가 멈춰 있다).
+    /// 걷기 시작하면 지도를 닫는다(창이 떠 있는 동안은 게임이 멈춰 있다).
     /// </summary>
     private void WalkTarget(System.Windows.Shapes.Ellipse dot, double cellX, double cellY)
     {

@@ -8,8 +8,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 일기토 몸짓 표 — 어느 장을 몇 초 동안, 얼마나 앞으로 나가서 낼지.
 /// </summary>
 /// <remarks>
-/// <b>모션 메이커와 놀이가 같이 보는 표다.</b> 메이커에서 고쳐 저장하면
-/// <c>asset/duel/motion.json</c> 이 되고, 놀이의 일기토 판(<see cref="UI.Views.DuelStage"/>)이
+/// <b>모션 메이커와 게임이 같이 보는 표다.</b> 메이커에서 고쳐 저장하면
+/// <c>asset/duel/motion.json</c> 이 되고, 게임의 일기토 판(<see cref="UI.Views.DuelStage"/>)이
 /// 그 파일을 읽어 돈다 — 다시 굽지 않아도 든다. 파일이 없으면 여기 박아 둔 밑값을 쓴다.
 ///
 /// 밑값은 게임 표 <c>0x00572A40</c> 에서 짚은 그대로다.
@@ -72,7 +72,7 @@ public static class DuelMotions
     public sealed record Step(int Frame, double Seconds, double Push);
 
     /// <summary>몸짓 하나.</summary>
-    /// <param name="Key">놀이가 찾아 쓰는 이름 — 이것으로 짝을 짓는다.</param>
+    /// <param name="Key">게임이 찾아 쓰는 이름 — 이것으로 짝을 짓는다.</param>
     /// <param name="Name">사람이 읽는 이름.</param>
     /// <param name="Steps">장 차례.</param>
     public sealed record Motion(string Key, string Name, Step[] Steps)
@@ -236,7 +236,7 @@ public static class DuelMotions
     /// <remarks>
     /// <b>소스 옆 <c>asset/duel</c> 을 먼저 찾는다.</b> 앱마다 <c>asset</c> 을 제 출력
     /// 폴더로 복사해 가므로(<c>CdsHelper.csproj</c> · <c>CostaDelSol.Play.csproj</c>) 굽힌
-    /// 자리에 적으면 헬퍼와 놀이가 <b>딴 파일</b>을 보게 된다. 그래서 <c>.sln</c> 이 있는
+    /// 자리에 적으면 헬퍼와 게임이 <b>딴 파일</b>을 보게 된다. 그래서 <c>.sln</c> 이 있는
     /// 저장소 뿌리를 거슬러 올라가 찾고, 못 찾으면(내놓은 판이면) 굽힌 자리를 쓴다.
     /// </remarks>
     public static string Path_()

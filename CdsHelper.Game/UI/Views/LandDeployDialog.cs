@@ -27,7 +27,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 정하고, 갈래마다 몇 부대까지인지도 기능이 정한다. 셈은 <see cref="LandRoster"/> 에 있다.
 ///
 /// <b>「전회」는 물러서는 단추가 아니라 지난번 배치를 다시 펴는 단추</b>다
-/// (<c>0x0049F540</c> 이 <c>0x0056EAB8</c> 여섯 칸을 그대로 되놓는다). 새 놀이에서 그 여섯이
+/// (<c>0x0049F540</c> 이 <c>0x0056EAB8</c> 여섯 칸을 그대로 되놓는다). 새 게임에서 그 여섯이
 /// 죄다 −1 인 것도 그래서다 — 아직 한 번도 안 싸운 것이다.
 /// </remarks>
 internal sealed class LandDeployDialog : GameWindow

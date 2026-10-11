@@ -165,7 +165,7 @@ public sealed class TavernRumorEditDialog : GameWindow
         _status.Text = $"「{TavernRumors.SetNames[_set]}」 {_rows.Count}줄 (여관 손님은 {innLines}줄)"
                      + (TavernRumorEdits.Of(_set) != null ? " · 고친 갈래" : " · 원본")
                      + (_dirty ? " · 저장 안 함" : "")
-                     + "   ·   술집과 여관이 같은 소문을 쓴다 · 「술집만」 줄은 여관 손님이 안 한다 · 놀이 앱은 다음에 열 때 읽는다";
+                     + "   ·   술집과 여관이 같은 소문을 쓴다 · 「술집만」 줄은 여관 손님이 안 한다 · 게임 앱은 다음에 열 때 읽는다";
     }
 
     private bool AskDrop() =>

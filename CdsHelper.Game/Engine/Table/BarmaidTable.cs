@@ -57,7 +57,7 @@ public sealed class BarmaidTable
 
     /// <summary>등장년도를 내는 밑값 — <c>1495 - 표값</c> 이다.</summary>
     /// <remarks>
-    /// 놀이가 시작하는 1480 년 아래로는 안 내려간다. 127명 가운데 <b>한 명</b>만
+    /// 게임이 시작하는 1480 년 아래로는 안 내려간다. 127명 가운데 <b>한 명</b>만
     /// 편집기 도감과 한 해 어긋나는데(94번), 나머지 126명이 맞으니 그쪽 오기로 본다.
     /// </remarks>
     public const int YearBase = 1495, FirstYear = 1480;

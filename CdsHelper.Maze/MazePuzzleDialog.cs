@@ -429,7 +429,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
     /// </summary>
     /// <remarks>
     /// 게임은 이 글을 두 군데서 낸다 — <b>판을 열기 전에 한 번</b>(<c>0x0042C84E</c>)과,
-    /// 놀이 도중 차림표의 「게임 설명」을 골랐을 때(<c>0x0042B839</c>)다. 둘 다
+    /// 게임 도중 차림표의 「게임 설명」을 골랐을 때(<c>0x0042B839</c>)다. 둘 다
     /// <c>0x0049E3E0</c>(제목 달린 알림창)로 낸다.
     /// </remarks>
     private static void Explain(Window owner) =>
@@ -552,7 +552,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
 
     }
 
-    /// <summary>놀이를 한 판 하고 <c>0x0042C8A0</c> 이 하듯 결과를 알린다.</summary>
+    /// <summary>게임을 한 판 하고 <c>0x0042C8A0</c> 이 하듯 결과를 알린다.</summary>
     /// <returns>
     /// 돌파했는지. 게임은 돌파 보상을 치른 갈래에서만 결과 <c>[+0x9C] = 1</c> 을 박고
     /// (<c>0x0042B154</c>) 덫·실패·포기는 0 이다 — 발견 대본(<c>0E 04 02</c>)이 이 값으로 갈라진다.

@@ -10,7 +10,7 @@
 /// 인물이 어느 도시 어느 건물에 있는지는 표에 그대로 적혀 있다.
 ///
 /// <b>세이브를 뜯지 않는다.</b> 예전에는 <c>SAVEDATA.CDS</c> 를 그때그때 읽었는데 그러면
-/// 놀이가 남의 세이브에 매인다. 지금은 <see cref="PersonTable"/>(<c>인물표.json</c>)이 원본이고
+/// 게임이 남의 세이브에 매인다. 지금은 <see cref="PersonTable"/>(<c>인물표.json</c>)이 원본이고
 /// 이 클래스는 그 위의 <b>보기</b>일 뿐이다 — 자리 값은 <see cref="PersonFile"/> 한 곳만 안다.
 /// </remarks>
 public sealed class TavernRoster
