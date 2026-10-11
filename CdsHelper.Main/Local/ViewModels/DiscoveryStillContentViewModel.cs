@@ -5,6 +5,7 @@ using System.Windows.Media.Imaging;
 using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Support.Local.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CdsHelper.Main.Local.ViewModels;
 
@@ -41,7 +42,46 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
     [ObservableProperty]
     private string _note = "";
 
+    /// <summary>발견물 표가 이미 쓰는 그림 번호 — 새 그림은 이 번호를 피해 받는다.</summary>
+    private readonly HashSet<int> _taken = [];
+
     public DiscoveryStillContentViewModel() => Reload();
+
+    /// <summary>
+    /// 그림 파일을 골라 <b>발견물 그림처럼 바꿔</b>(<see cref="DiscoveryStillFilter"/>) 다음 빈 번호로 넣는다.
+    /// </summary>
+    /// <remarks>
+    /// 여러 장을 한꺼번에 골라도 된다. 넣은 번호를 발견물 표의 그림 칸에 적으면 그 발견물의 그림이 된다.
+    /// </remarks>
+    [RelayCommand]
+    private void AddFiltered()
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "발견물 그림으로 바꿀 그림",
+            Filter = DiscoveryStillFiles.OpenFilter,
+            Multiselect = true,
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        int last = -1;
+        var failed = new List<string>();
+        foreach (string path in dialog.FileNames)
+        {
+            try
+            {
+                if (DiscoveryStillFilter.Apply(path, out int w, out int h) is not { } px) { failed.Add(Path.GetFileName(path)); continue; }
+                last = DiscoveryStillFiles.NextFreeNumber(_taken);
+                DiscoveryStillFiles.Upload(px, w, h, last);
+            }
+            catch (Exception) { failed.Add(Path.GetFileName(path)); }
+        }
+
+        Reload();
+        if (last >= 0) Selected = Stills.FirstOrDefault(s => s.Number == last) ?? Selected;
+        if (failed.Count > 0) Note = $"못 읽은 그림: {string.Join(", ", failed)}";
+        else if (last >= 0) Note = $"D{last}.png 로 넣었습니다 — {DiscoveryStillFiles.UploadDirectory()}";
+    }
 
     /// <summary>그림 폴더에서 그림을 다시 읽는다.</summary>
     public void Reload()
@@ -64,10 +104,14 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
 
         // 그림 번호 -> 발견물 이름. 표를 못 열어도 그림은 다 보인다.
         var names = new Dictionary<int, string>();
+        _taken.Clear();
         if (DiscoveryTable.Open(dir) is { } table)
             foreach (var row in table.Discoveries)
-                if (row.Picture >= 0 && !names.ContainsKey(row.Picture))
-                    names[row.Picture] = row.Name;
+            {
+                if (row.Picture < 0) continue;
+                _taken.Add(row.Picture);
+                if (!names.ContainsKey(row.Picture)) names[row.Picture] = row.Name;
+            }
 
         foreach (int i in numbers)
         {

@@ -18,13 +18,23 @@
                         </Grid.ColumnDefinitions>
 
                         <!--  어디서 읽었는지 · 몇 장인지  -->
-                        <TextBlock
+                        <DockPanel
                             Grid.Row="0"
                             Grid.ColumnSpan="2"
-                            Margin="0,0,0,8"
-                            Foreground="Gray"
-                            Text="{Binding Note}"
-                            TextTrimming="CharacterEllipsis" />
+                            Margin="0,0,0,8">
+                            <!--  아무 그림이나 발견물 그림처럼 바꿔 다음 빈 번호로 넣는다  -->
+                            <Button
+                                Padding="10,3"
+                                Command="{Binding AddFilteredCommand}"
+                                Content="그림 더하기 (발견물 그림처럼 바꿔 넣기)"
+                                DockPanel.Dock="Right"
+                                ToolTip="그림 파일을 고르면 320x240 · 바랜 밤빛 · 붓결 · 양피지 테두리로 바꿔 asset/dstill 에 다음 번호로 넣습니다" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="Gray"
+                                Text="{Binding Note}"
+                                TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
 
                         <!--  왼쪽: 그림 목록. 줄에 작은 미리보기를 붙인다  -->
                         <ListBox
