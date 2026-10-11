@@ -175,7 +175,7 @@ public sealed class DiscoveryDialog : GameWindow
     /// 말하는 사람 얼굴. 주면 글 창이 <b>얼굴 대화창</b>(<see cref="ConfirmDialog"/>)이 된다 — 발견 대본에서 부관이
     /// 그림을 보며 한마디 하는 자리가 그렇다(원본 갈무리: 그림 바로 밑에 얼굴 창이 붙고 폭은 그림보다 넓다).
     /// </param>
-    public static void Show(Window owner, DiscoveryStills? stills, int picture, string text,
+    public static void Show(Window owner, IStillSource? stills, int picture, string text,
                             string? movie = null, string? title = null, uint[]? face = null)
     {
         BitmapSource? art = null;
@@ -238,7 +238,7 @@ public sealed class DiscoveryDialog : GameWindow
     /// 보고·발표가 발견물을 다시 보일 때(<c>0x004AAF30</c>)는 DSTILL 그림을 판에 찍고(<c>0x004AD640</c>) 손을 기다릴 뿐,
     /// 이름 줄도 확인 단추도 없다. 이름은 바로 앞의 「…의 발견을 보고했다!!」가 이미 말했다.
     /// </remarks>
-    public static void ShowPicture(Window owner, DiscoveryStills? stills, int picture)
+    public static void ShowPicture(Window owner, IStillSource? stills, int picture)
     {
         if (picture < 0 || BgraOf(stills, picture, out int w, out int h) is not { } bgra) return;
 
@@ -304,12 +304,12 @@ public sealed class DiscoveryDialog : GameWindow
         movie < 0 ? null : MovieFiles.Resolve(gameDirectory, MovieFiles.DiscoveryStem(movie));
 
     /// <summary>
-    /// 그 그림 번호의 BGRA — 올려 둔 그림(<see cref="DiscoveryStillFiles"/>)이 먼저고, 없으면
-    /// 게임 폴더의 원본(<paramref name="stills"/>)이다.
+    /// 그 그림 번호의 BGRA — <b>넘겨받은 곳에서만</b> 찾는다. 발견물 그림(<see cref="DiscoveryStillFiles.Source"/>)과 사건 스틸
+    /// (EVSTILL.CDS)은 번호가 겹치므로 섞어 찾으면 안 된다 — 예전에는 사건 스틸을 낼 때도 발견물 그림 폴더를 먼저 봤다.
     /// </summary>
-    private static uint[]? BgraOf(DiscoveryStills? stills, int picture, out int w, out int h)
+    private static uint[]? BgraOf(IStillSource? stills, int picture, out int w, out int h)
     {
-        if (DiscoveryStillFiles.TryGetBgra(picture, out w, out h) is { } uploaded) return uploaded;
+        w = h = 0;
         return stills?.TryGetBgra(picture, out w, out h);
     }
 

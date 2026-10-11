@@ -379,7 +379,6 @@ public sealed class DisevEditorDialog : GameWindow
     {
         _gameDir = dir;
         _eventStills = null;
-        _stills = null;
         _itemDescriptions = null;
         _itemArt = null;
         string cache = DisevBook.Books[Math.Clamp(_book_.SelectedIndex, 0, DisevBook.Books.Length - 1)].Cache;
@@ -1137,10 +1136,9 @@ public sealed class DisevEditorDialog : GameWindow
         }
         else
         {
-            _stills ??= DiscoveryStills.Open(_gameDir);
             var users = (_names?.Discoveries ?? []).Where(d => d.Picture >= 0)
                 .GroupBy(d => d.Picture).ToDictionary(g => g.Key, g => string.Join(", ", g.Select(d => d.Name)));
-            int count = Math.Max(_stills?.Count ?? 0, users.Count == 0 ? 0 : users.Keys.Max() + 1);
+            int count = Math.Max(DiscoveryStillFiles.Count, users.Count == 0 ? 0 : users.Keys.Max() + 1);
             for (int n = 0; n < count; n++)
                 choices.Add(new ValueChoice(n, users.TryGetValue(n, out var names) ? $"{n} · {names}" : $"{n}"));
         }
@@ -1152,9 +1150,6 @@ public sealed class DisevEditorDialog : GameWindow
                                      : null)
                                  ?? choices.FirstOrDefault();
     }
-
-    /// <summary>DSTILL 그림 묶음 — 값 칸의 그림 수를 셀 때 쓴다. 게임 폴더를 새로 열면 버린다.</summary>
-    private DiscoveryStills? _stills;
 
     /// <summary>값 칸 한 줄.</summary>
     private sealed record ValueChoice(int Id, string Text)
@@ -1230,7 +1225,7 @@ public sealed class DisevEditorDialog : GameWindow
                     ? "발견물 표를 못 읽었습니다 — 게임 폴더를 골라 주세요."
                     : call == DisevCall.PlayVideo
                     ? "넣을 동영상이 없습니다 — 에셋-동영상에서 「새 동영상 추가」로 먼저 올리세요."
-                    : "DSTILL 그림을 못 읽었습니다 — 게임 폴더를 골라 주세요.";
+                    : "넣을 발견물 그림이 없습니다 — asset/dstill 에 D{번호}.png 를 넣어 주세요.";
                 return;
             }
             if (below && lines[at].Call == DisevCall.End && at == lines.Count - 1)

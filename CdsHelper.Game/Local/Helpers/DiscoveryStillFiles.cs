@@ -4,22 +4,42 @@ using System.Windows.Media.Imaging;
 
 namespace CdsHelper.Game.Local.Helpers;
 
+/// <summary>그림 번호로 BGRA 한 장을 내는 곳 — 발견물 그림(<see cref="DiscoveryStillFiles"/>)과 사건 스틸(<see cref="DiscoveryStills"/>).</summary>
+public interface IStillSource
+{
+    /// <summary>그림 한 장을 BGRA 로 푼다. 없으면 null.</summary>
+    uint[]? TryGetBgra(int picture, out int width, out int height);
+}
+
 /// <summary>
-/// 발견물 정지그림 파일 자리를 찾는다 — <b>올려 둔 것(<c>asset/dstill</c>)을 먼저</b>, 없으면
-/// 게임 폴더의 <c>DSTILL.CDS</c>(<see cref="DiscoveryStills"/>) 를 본다.
+/// 발견물 정지그림 — <c>asset/dstill</c> 의 <c>D{번호}.png</c> 다. <b>게임 폴더의 <c>DSTILL.CDS</c> 는 안 읽는다.</b>
 /// </summary>
 /// <remarks>
-/// <see cref="MovieFiles"/> 와 같은 결이다. 원본 그림은 번호로만 가리키는 Ls12 묶음이라
-/// 사람이 새로 그린 그림을 끼울 자리가 없었다 — 파일 하나(png)를 <c>D{번호}.png</c> 이름으로
-/// 올려 두면 그 번호를 쓰는 자리(<see cref="DiscoveryDialog"/>)가 원본보다 먼저 그것을 쓴다.
-/// <see cref="DiscoveryPackage"/> 가 발견물을 내보내고 불러올 때 이 자리를 쓴다.
+/// 원본 그림은 번호로만 가리키는 Ls12 묶음(<c>DSTILL.CDS</c>)이라 사람이 새로 그린 그림을 끼울 자리가 없었다.
+/// 그래서 원본 여든넉 장(<c>D0</c>~<c>D83</c>, 320x240)을 한 번 꺼내 png 로 저장소에 실어 두고, 그림은 <b>이 폴더만</b>
+/// 본다 — 새 그림은 <c>D{번호}.png</c> 한 장을 넣으면 끝이다. 번호는 발견물 표의 그림 칸이 가리킨다.
+///
+/// 찾는 차례는 저장소의 <c>asset/dstill</c>(개발 때) → <c>%APPDATA%</c> 의 올린 것 → 실행 파일 옆에 실린 것이다.
+/// 내놓은 판에서 올린 그림이 실린 그림보다 먼저다. <see cref="DiscoveryPackage"/> 가 발견물을 내보내고 불러올 때 이 자리를 쓴다.
 /// </remarks>
 public static class DiscoveryStillFiles
 {
-    /// <summary>올려 둔 그림이 든 곳.</summary>
+    /// <summary>발견물 그림을 내는 곳 — <see cref="DiscoveryDialog"/> 가 이것으로 받는다.</summary>
+    public static IStillSource Source { get; } = new Files();
+
+    private sealed class Files : IStillSource
+    {
+        public uint[]? TryGetBgra(int picture, out int width, out int height) =>
+            DiscoveryStillFiles.TryGetBgra(picture, out width, out height);
+    }
+
+    /// <summary>그림 번호의 끝(가장 큰 번호 + 1) — 원본 수보다 작지는 않다.</summary>
+    public static int Count => Math.Max(OriginalCount, UploadedNumbers() is { Count: > 0 } all ? all.Max + 1 : 0);
+
+    /// <summary>그림이 든 곳.</summary>
     public const string AssetDirectory = "asset/dstill";
 
-    /// <summary>원본 DSTILL.CDS 그림 수(볼트 <c>89</c> 확인). 새로 더하는 것은 이 뒤 번호를 받는다.</summary>
+    /// <summary>원본 그림 수(<c>D0</c>~<c>D83</c>, 볼트 <c>89</c> 확인). 새로 더하는 것은 이 뒤 번호를 받는다.</summary>
     public const int OriginalCount = 84;
 
     /// <summary>파일 고르기 창의 거르개.</summary>
@@ -27,7 +47,7 @@ public static class DiscoveryStillFiles
 
     private static string Name(int n) => $"D{n}.png";
 
-    /// <summary>올려 둔 그림 번호들(원본 자리를 갈아 끼운 것도 든다).</summary>
+    /// <summary>그림이 있는 번호들 — 실어 둔 원본과 올린 것 모두다.</summary>
     public static SortedSet<int> UploadedNumbers()
     {
         var numbers = new SortedSet<int>();
@@ -57,7 +77,7 @@ public static class DiscoveryStillFiles
         return n;
     }
 
-    /// <summary>올려 둔 그림 파일 자리. 없으면 null.</summary>
+    /// <summary>그 번호의 그림 파일 자리. 없으면 null.</summary>
     public static string? Uploaded(int n)
     {
         foreach (var dir in AssetDirectories())
@@ -68,7 +88,7 @@ public static class DiscoveryStillFiles
         return null;
     }
 
-    /// <summary>올려 둔 그림을 BGRA 로 푼다. 없으면 null.</summary>
+    /// <summary>그 번호의 그림을 BGRA 로 푼다. 없으면 null.</summary>
     public static uint[]? TryGetBgra(int n, out int width, out int height)
     {
         width = height = 0;
@@ -133,14 +153,14 @@ public static class DiscoveryStillFiles
         encoder.Save(fs);
     }
 
-    /// <summary>그 번호로 올려 둔 것을 지운다.</summary>
+    /// <summary>
+    /// 그 번호로 올려 둔 것을 지운다 — <b>올리는 폴더</b>(<see cref="UploadDirectory"/>)의 것만이다.
+    /// 내놓은 판에서는 실행 파일 옆에 실린 그림이 남아 그것으로 되돌아간다.
+    /// </summary>
     public static void Remove(int n)
     {
-        foreach (var dir in AssetDirectories())
-        {
-            var path = Path.Combine(dir, Name(n));
-            if (File.Exists(path)) File.Delete(path);
-        }
+        var path = Path.Combine(UploadDirectory(), Name(n));
+        if (File.Exists(path)) File.Delete(path);
     }
 
     /// <summary>올릴 때 쓸 폴더 — 소스 옆 <c>asset/dstill</c>, 저장소가 아니면 굽힌 자리. 없으면 만든다.</summary>
@@ -151,7 +171,7 @@ public static class DiscoveryStillFiles
         return dir;
     }
 
-    /// <summary>찾아볼 올린 폴더들. 소스 옆이 먼저다.</summary>
+    /// <summary>찾아볼 폴더들. 소스 옆이 먼저다.</summary>
     private static IEnumerable<string> AssetDirectories()
     {
         if (SourceDirectory() is { } near) yield return near;

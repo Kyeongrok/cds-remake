@@ -24,7 +24,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 그림 번호는 건물 표(<see cref="CityBuildingTable.Building.Picture"/>)와 발견물 표
 /// (<c>0x0051C54C</c>)에 적혀 있다.
 /// </remarks>
-public sealed class DiscoveryStills
+public sealed class DiscoveryStills : IStillSource
 {
     /// <summary>팔레트 파트 크기. 86색 x 3바이트.</summary>
     private const int PaletteSize = 258;
@@ -44,9 +44,6 @@ public sealed class DiscoveryStills
 
     /// <summary>왜 못 열었는지. 성공하면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";
-
-    /// <summary>게임 폴더의 DSTILL.CDS 를 연다. 없거나 형식이 아니면 null.</summary>
-    public static DiscoveryStills? Open(string gameDirectory) => Open(gameDirectory, "DSTILL.CDS");
 
     /// <summary>
     /// 같은 짜임의 다른 스틸 묶음을 연다 — <c>EVSTILL.CDS</c>(사건 스틸 열여섯)가 그것이다.

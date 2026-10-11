@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <!-- 발견물 그림 뷰어가 DSTILL.CDS 읽개(DiscoveryStills)와 발견물 표를 쓴다. -->
+      <!-- 발견물 그림 뷰어가 발견물 그림 읽개(DiscoveryStillFiles)와 발견물 표를 쓴다. -->
       <ProjectReference Include="..\CdsHelper.Game\CdsHelper.Game.csproj" />
       <ProjectReference Include="..\CdsHelper.Support\CdsHelper.Support.csproj" />
     </ItemGroup>

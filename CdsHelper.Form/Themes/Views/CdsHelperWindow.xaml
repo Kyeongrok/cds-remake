@@ -290,7 +290,7 @@
                                         <MenuItem
                                             x:Name="PART_DiscoveryStillMenu"
                                             Header="발견물 그림"
-                                            ToolTip="DSTILL.CDS 의 발견물 그림을 골라 본다" />
+                                            ToolTip="asset/dstill 의 발견물 그림을 골라 본다" />
                                         <MenuItem
                                             x:Name="PART_WaveBankMenu"
                                             Header="효과음 보기"

@@ -113,7 +113,6 @@ public sealed class Game
         _voyagers = null; _voyagersTried = false;
         _townFolk = null; _townFolkTried = false;
         _history = null; _historyTried = false;
-        _stills = null; _stillsTried = false;
         _fighters = null; _fightersTried = false;
         _book = null; _bookTried = false;
         _barmaids = null; _barmaidsTried = false;
@@ -396,7 +395,6 @@ public sealed class Game
         Once(ref _barmaids, ref _barmaidsTried, BarmaidTable.Open,
              () => BarmaidTable.LastError, "여급 표");
 
-    /// <summary>발견했을 때 뜨는 그림(DSTILL.CDS). 못 읽으면 글만 낸다.</summary>
     /// <summary>펼친 책 그림(OPENBOOK.CDS) — 도서관에서 힌트를 읽을 때 뜬다.</summary>
     public OpenBookArt? Book =>
         Once(ref _book, ref _bookTried, OpenBookArt.Open,
@@ -407,9 +405,11 @@ public sealed class Game
         Once(ref _fighters, ref _fightersTried, FighterSprites.Open,
              () => FighterSprites.LastError, "일기토 그림");
 
-    public DiscoveryStills? Stills =>
-        Once(ref _stills, ref _stillsTried, DiscoveryStills.Open,
-             () => DiscoveryStills.LastError, "발견물 그림");
+    /// <summary>
+    /// 발견했을 때 뜨는 그림 — <c>asset/dstill</c> 의 png 다(<see cref="DiscoveryStillFiles"/>). 게임 폴더의 DSTILL.CDS 는 안 읽는다.
+    /// 그 번호의 그림이 없으면 글만 낸다.
+    /// </summary>
+    public IStillSource Stills => DiscoveryStillFiles.Source;
 
     /// <summary>발견 대본이 트는 움직이는 그림(DISCOVER.CDS) — 존왕의 술잔 따위.</summary>
     public DiscoveryClips? Clips =>
@@ -882,8 +882,6 @@ public sealed class Game
     private bool _bookTried;
     private FighterSprites? _fighters;
     private bool _fightersTried;
-    private DiscoveryStills? _stills;
-    private bool _stillsTried;
     private DiscoveryClips? _clips;
     private bool _clipsTried;
     private BarmaidTable? _barmaids;

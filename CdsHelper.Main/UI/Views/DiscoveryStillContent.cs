@@ -4,7 +4,7 @@ using CdsHelper.Main.Local.ViewModels;
 
 namespace CdsHelper.Main.UI.Views;
 
-/// <summary>발견물 그림 뷰어 — DSTILL.CDS 의 그림을 골라 본다.</summary>
+/// <summary>발견물 그림 뷰어 — asset/dstill 의 그림을 골라 본다.</summary>
 public class DiscoveryStillContent : Control
 {
     static DiscoveryStillContent()

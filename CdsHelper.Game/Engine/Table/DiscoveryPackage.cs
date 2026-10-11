@@ -166,11 +166,10 @@ public static class DiscoveryPackage
         }
     }
 
-    /// <summary>그 그림 번호의 BGRA — 올려 둔 것을 먼저, 없으면 게임 폴더의 원본.</summary>
+    /// <summary>그 그림 번호의 BGRA — <c>asset/dstill</c> 의 png 다(<see cref="DiscoveryStillFiles"/>).</summary>
     private static (uint[]? Bgra, int W, int H) StillBgra(int picture, string gameDirectory)
     {
         if (DiscoveryStillFiles.TryGetBgra(picture, out int w, out int h) is { } up) return (up, w, h);
-        if (DiscoveryStills.Open(gameDirectory)?.TryGetBgra(picture, out w, out h) is { } og) return (og, w, h);
         return (null, 0, 0);
     }
 

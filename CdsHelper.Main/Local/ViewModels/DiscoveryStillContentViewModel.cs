@@ -9,10 +9,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace CdsHelper.Main.Local.ViewModels;
 
 /// <summary>
-/// 발견물 그림 뷰어 — <c>DSTILL.CDS</c> 의 그림 여든넉 장을 늘어놓고 골라 본다.
+/// 발견물 그림 뷰어 — <c>asset/dstill</c> 의 그림(<c>D{번호}.png</c>)을 늘어놓고 골라 본다.
 /// </summary>
 /// <remarks>
-/// 그림은 놀이 쪽 읽개를 그대로 쓴다(<see cref="DiscoveryStills"/>). 어느 그림이 어느
+/// 그림은 놀이 쪽 읽개를 그대로 쓴다(<see cref="DiscoveryStillFiles"/>) — 게임 폴더의 DSTILL.CDS 는 안 읽는다. 어느 그림이 어느
 /// 발견물인지는 발견물 표의 <c>+0x0C</c> 가 들고 있어서(<see cref="DiscoveryTable"/>),
 /// 표가 열리면 이름을 붙이고 안 열리면 번호만 낸다.
 ///
@@ -22,7 +22,7 @@ namespace CdsHelper.Main.Local.ViewModels;
 public partial class DiscoveryStillContentViewModel : ObservableObject
 {
     /// <summary>목록 한 줄.</summary>
-    /// <param name="Number">DSTILL.CDS 안의 그림 번호.</param>
+    /// <param name="Number">그림 번호(<c>D{번호}.png</c>).</param>
     /// <param name="Title">줄에 적을 글 — 이름을 알면 이름, 모르면 번호다.</param>
     /// <param name="Image">그림. 못 풀었으면 null 이라 줄만 남는다.</param>
     public sealed record Still(int Number, string Title, BitmapSource? Image)
@@ -43,23 +43,22 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
 
     public DiscoveryStillContentViewModel() => Reload();
 
-    /// <summary>게임 폴더에서 그림을 다시 읽는다.</summary>
+    /// <summary>그림 폴더에서 그림을 다시 읽는다.</summary>
     public void Reload()
     {
         Stills.Clear();
         Selected = null;
 
-        // 세이브를 한 번도 안 열었어도 원본 폴더가 없다는 뜻일 뿐이다 — DiscoveryStills.Open 이
-        // CdsAssetPath 로 릴리즈 cdsx 로 물러나므로(fb-ui-24 와 같은 까닭) 실행 폴더를 대신 준다.
+        // 발견물 표를 열 폴더 — 세이브를 한 번도 안 열었으면 실행 폴더를 대신 준다.
         string? save = AppSettings.LastSaveFilePath;
         string dir = !string.IsNullOrEmpty(save) && Directory.Exists(Path.GetDirectoryName(save))
             ? Path.GetDirectoryName(save)!
             : AppDomain.CurrentDomain.BaseDirectory;
 
-        var art = DiscoveryStills.Open(dir);
-        if (art == null)
+        var numbers = DiscoveryStillFiles.UploadedNumbers();
+        if (numbers.Count == 0)
         {
-            Note = DiscoveryStills.LastError;
+            Note = $"{DiscoveryStillFiles.AssetDirectory} 에 그림(D{{번호}}.png)이 없습니다";
             return;
         }
 
@@ -70,9 +69,9 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
                 if (row.Picture >= 0 && !names.ContainsKey(row.Picture))
                     names[row.Picture] = row.Name;
 
-        for (int i = 0; i < art.Count; i++)
+        foreach (int i in numbers)
         {
-            var px = art.TryGetBgra(i, out int w, out int h);
+            var px = DiscoveryStillFiles.TryGetBgra(i, out int w, out int h);
             BitmapSource? bmp = null;
             if (px != null && w > 0 && h > 0)
             {
@@ -83,7 +82,7 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
                                                                       : $"{i,3}  (이름 모름)", bmp));
         }
 
-        Note = $"{dir} · 그림 {Stills.Count}장";
+        Note = $"{DiscoveryStillFiles.AssetDirectory} · 그림 {Stills.Count}장";
         Selected = Stills.FirstOrDefault();
     }
 }
