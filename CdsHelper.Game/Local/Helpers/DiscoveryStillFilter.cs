@@ -37,15 +37,31 @@ public static class DiscoveryStillFilter
         var px = Fit(source);
         int n = Width * Height;
 
-        // 밝기 — 아래위 2% 를 잘라 펴 준다(흐린 사진도 짙고 옅은 데가 갈리게).
+        // 밝기 — 여느 밝기와 빨강 · 초록 · 파랑 가운데 <b>짙고 옅은 데가 가장 크게 갈리는 것</b>을 쓴다. 물속 사진처럼
+        // 온통 한 빛깔이면 여느 밝기로는 바탕과 몸이 한 덩어리가 된다. 그리고 아래위 2% 를 잘라 펴 준다.
         var lum = new double[n];
-        var histogram = new int[256];
-        for (int i = 0; i < n; i++)
+        double bestSpread = -1;
+        foreach (var (r, g, b) in new[] { (0.299, 0.587, 0.114), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0) })
         {
-            uint c = px[i];
-            lum[i] = (0.299 * (c >> 16 & 255) + 0.587 * (c >> 8 & 255) + 0.114 * (c & 255)) / 255.0;
-            histogram[(int)(lum[i] * 255)]++;
+            var tried = new double[n];
+            double sum = 0, squares = 0;
+            for (int i = 0; i < n; i++)
+            {
+                uint c = px[i];
+                double v = (r * (c >> 16 & 255) + g * (c >> 8 & 255) + b * (c & 255)) / 255.0;
+                tried[i] = v;
+                sum += v;
+                squares += v * v;
+            }
+            double spread = squares / n - sum / n * (sum / n);
+            // 여느 밝기를 조금 봐준다 — 엇비슷하면 눈에 보이는 대로가 낫다.
+            if (r < 1 && g < 1 && b < 1) spread *= 1.3;
+            if (spread <= bestSpread) continue;
+            bestSpread = spread;
+            lum = tried;
         }
+        var histogram = new int[256];
+        for (int i = 0; i < n; i++) histogram[(int)(lum[i] * 255)]++;
         double low = Percentile(histogram, n, 0.02), high = Percentile(histogram, n, 0.98);
         if (high - low < 0.1) { low = 0; high = 1; }
 
@@ -64,7 +80,7 @@ public static class DiscoveryStillFilter
 
                 double t = Math.Clamp((lum[at] - low) / (high - low), 0, 1);
                 // 토막 몇은 긁힌 자국이다 — 밝은 데는 어둡게, 어두운 데는 밝게 민다.
-                t = Smooth(t);                                      // 짙고 옅은 데를 더 가른다
+                t = Smooth(Math.Pow(t, 0.7));                                      // 바탕을 종이 쪽으로 띄우고, 짙고 옅은 데를 더 가른다
                 if (roll < 0.09) t += (0.45 - t) * 0.5;
                 t += (Hash(x * 3 + 1, y * 5 + 2) - 0.5) * 0.06;     // 종이 결
                 t = Math.Clamp(t, 0, 1);
@@ -76,7 +92,7 @@ public static class DiscoveryStillFilter
                 double rim = Math.Clamp(1 - edge / Rim, 0, 1) * 0.6;
 
                 uint src = px[at];
-                double srcLum = lum[at] * 255;
+                double srcLum = 0.299 * (src >> 16 & 255) + 0.587 * (src >> 8 & 255) + 0.114 * (src & 255);
                 uint packed = 0xFF000000;
                 for (int k = 0; k < 3; k++)
                 {
