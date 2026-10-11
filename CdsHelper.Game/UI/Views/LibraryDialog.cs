@@ -422,7 +422,7 @@ public sealed class LibraryDialog : GameWindow
         int hint = book.Hints[i];
         bool open = Unlocked(hint);
         int picture = _books.NeedFor(hint).Picture;
-        int illustration = open && picture >= 0 && picture < OpenBookArt.IllustrationCount
+        int illustration = open && OpenBookArt.HasIllustration(picture)
             ? OpenBookArt.FirstIllustration + picture
             : -1;
         bool readable = open && CanRead(book) && KnowsSkill(hint);

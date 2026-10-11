@@ -395,7 +395,7 @@ public sealed class Game
         Once(ref _barmaids, ref _barmaidsTried, BarmaidTable.Open,
              () => BarmaidTable.LastError, "여급 표");
 
-    /// <summary>펼친 책 그림(OPENBOOK.CDS) — 도서관에서 힌트를 읽을 때 뜬다.</summary>
+    /// <summary>펼친 책 그림(<c>asset/openbook</c>) — 도서관에서 힌트를 읽을 때 뜬다. 게임 폴더의 OPENBOOK.CDS 는 안 읽는다.</summary>
     public OpenBookArt? Book =>
         Once(ref _book, ref _bookTried, OpenBookArt.Open,
              () => OpenBookArt.LastError, "펼친 책 그림");
