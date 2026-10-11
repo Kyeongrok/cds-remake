@@ -80,7 +80,10 @@ internal sealed class ShipInfoDialog : InfoDialog
         rows.Children.Add(Line("소유자", player.Given.Length > 0 ? player.Given : player.Name));
 
         rows.Children.Add(Gap(LineHeight));
-        var crew = Line("승원수", $"{ship.Crew}");
+        // 승원수는 그 배에 <b>지금 탄</b> 선원이다(0x0046CBDD → 0x0044C7C0, 배 레코드 +0x34) — 필요 승원(+0x30 + 10)이 아니다.
+        // 예전에는 필요 승원을 찍어, 모집한 수와 달랐다.
+        var shares = player.CrewShares;
+        var crew = Line("승원수", $"{(at < shares.Count ? shares[at] : 0)}");
         bool carved = Engine.Sea.Figureheads.Known(ship.Figurehead);
         if (carved)
         {
