@@ -63,7 +63,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <summary>가까운 싸움 소리 — 0x2C 충돌 · 0x2D 백병전 · 0x30 불 · 0x1E 총격(WAVE 파트 = ID − 28).</summary>
     private const int CrashPart = 0x2C - 28, MeleePart = 0x2D - 28, IgnitePart = 0x30 - 28, GunfightPart = 0x1E - 28;
 
-    /// <summary>괴물이 가라앉는 소리 — 격침 0x2E 대신 0x2F 다(<c>0x004375F5</c>~<c>0x0043761F</c>).</summary>
+    /// <summary>
+    /// 괴물 소리 0x2F — 괴물이 가라앉을 때 격침 0x2E 대신(<c>0x004375F5</c>~<c>0x0043761F</c>), 괴물이 덮칠 때 총소리 0x1E 대신 난다
+    /// (<c>0x00437FDF</c>~<c>0x00437FF5</c>).
+    /// </summary>
     private const int MonsterSinkPart = 0x2F - 28;
 
     /// <summary>원본 기다림 한 눈(<c>0x00428000(n, 끊기)</c> = n × 50ms).</summary>
@@ -519,12 +522,16 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             image.Visibility = Visibility.Collapsed;
             return;
         }
-        int frame = 3 + ship.Way * 5 + _fireTick % (FlameTicks * 2) / FlameTicks;
+        // 덮치는 동안은 앞 석 장(방향*5 + 0·1·2)을 찍는다(0x00438108~0x00438162).
+        int frame = _monsterStrike >= 0 ? ship.Way * 5 + _monsterStrike : 3 + ship.Way * 5 + _fireTick % (FlameTicks * 2) / FlameTicks;
         image.Source = Bitmap(_art.Monster(ship.Art, frame));
         var (sx, sy) = ScreenOf(ship.X, ship.Y);
         Canvas.SetLeft(image, sx - 24);
         Canvas.SetTop(image, sy - 32);
     }
+
+    /// <summary>괴물이 덮치는 연출의 걸음(<c>[+0x86C]</c> 0~2). 덮치는 중이 아니면 −1 이다.</summary>
+    private int _monsterStrike = -1;
 
     /// <summary>괴물 그림만 다시 고른다 — 두 장을 16 눈마다 번갈아 찍는다.</summary>
     private void UpdateMonster()
@@ -1387,15 +1394,33 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <remarks>
     /// 소리 0x1E(파트 2) → 두 배 <b>가운데</b>에 blast-09~11 — <c>x = ((X쏜+X과녁)/2 + 2)*32</c>,
     /// <c>y = ((Y쏜+Y과녁)/2 + 1)*32 + 두 배 짝수X 밀림의 평균</c> → 숫자 둘. 말 창은 없다.
+    /// <b>괴물이 건 것</b>(건 쪽이 칸 8 이상이고 괴물 판)이면 총을 쏘지 않는다 — 소리는 0x2F 이고, 괴물 그림이 덮치는 석 장
+    /// (방향*5 + 0·1·2)으로 바뀌며 그 걸음마다 blast-09~11 이 한 장씩 뜬 뒤 여느 그림(방향*5 + 3)으로 돌아간다
+    /// (<c>0x00437FDF</c>~<c>0x004381B9</c>). 예전에는 괴물도 총소리를 내며 쏘았다.
     /// </remarks>
     void SeaBattle.IStage.Gunfight(SeaBattle.Ship shooter, SeaBattle.Ship target, int shooterLoss, int targetLoss)
     {
         Redraw();
-        _sfx?.PlayOver(GunfightPart);
+        bool strike = _battle.Monster && !shooter.Mine;
+        _sfx?.PlayOver(strike ? MonsterSinkPart : GunfightPart);
         Wait(Tick);
         int mx = (shooter.X + target.X) / 2, my = (shooter.Y + target.Y) / 2;
         double shift = (((shooter.X & 1) == 0 ? 16 : 0) + ((target.X & 1) == 0 ? 16 : 0)) / 2.0;
-        Blast(9, ((mx + 2) * CombatArt.Cell, (my + 1) * CombatArt.Cell + shift));
+        var at = ((mx + 2) * CombatArt.Cell, (my + 1) * CombatArt.Cell + shift);
+        if (strike)
+        {
+            for (int step = 0; step < 3; step++)
+            {
+                _monsterStrike = step;
+                UpdateMonster();
+                var puff = Sprite(_art.Path_($"blast-{9 + step:D2}"), at.Item1, at.Item2, 48, 48);
+                Wait(FxFrame);
+                if (puff is not null) _fx.Children.Remove(puff);
+            }
+            _monsterStrike = -1;
+            UpdateMonster();
+        }
+        else Blast(9, at);
         Wait(Tick);
         ShowNumbers((shooter, shooterLoss), (target, targetLoss));
         Wait(Tick);
