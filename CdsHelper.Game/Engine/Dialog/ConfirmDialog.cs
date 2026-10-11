@@ -163,6 +163,9 @@ public sealed class ConfirmDialog : GameWindow
             // 테에서 한 뼘 떨어져 시작한다 — 얼굴이 서는 창은 이미 얼굴만큼 들어가 있으므로
             // 이쪽만 손댄다.
             if (indent > 0) words.Margin = new Thickness(indent, 0, 0, 0);
+            // 여러 줄짜리는 왼쪽맞춤인데, 창 폭에 얹은 두 칸이 죄다 오른쪽으로 가 왼쪽만 테에 바짝 붙었다 —
+            // 한 칸을 왼쪽으로 돌려 양쪽 여백을 맞춘다(창 폭은 그대로다).
+            else if (lines.Count > 1) words.Margin = new Thickness(CellWidth, 0, 0, 0);
             body.Children.Add(words);
         }
         else
