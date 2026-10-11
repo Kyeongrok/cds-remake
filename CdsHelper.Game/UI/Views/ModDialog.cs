@@ -65,13 +65,13 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>줄 목록과 설명 칸의 너비.</summary>
-    private const double ListWidth = 250, TipWidth = 330;
+    private const double ListWidth = 290, TipWidth = 430;
     // 막대 줄 = 들여쓰기 18 + 이름 64 + 틈 18 + 막대 + 수치 48 — 목록 너비(250)를 넘으면 오른쪽 수치가 잘려 안 보인다
     private const double SliderWidth = 102;
 
     /// <summary>아무 줄에도 커서가 없을 때 설명 칸에 적는 글.</summary>
     private const string Greeting =
-        "원본에 없는 기능을 켜고 끄는 창입니다.\n\n「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것, 「실험」은 아직 다듬는 중인 것입니다.\n\n왼쪽 줄에 커서를 올리면 여기에 설명이 뜹니다.";
+        "원본에 없는 기능을 켜고 끄는 창입니다.\n\n「편의성」은 손을 덜어 주는 것, 「정보」는 화면에 무언가를 더 보여 주는 것, 「캐릭터」는 주인공을 만들고 부하를 거느리는 것, 「저장」은 세이브에 얽힌 것, 「일반」은 놀이 규칙·소리·진행을 바꾸는 것, 「실험」은 아직 다듬는 중인 것입니다.\n\n왼쪽 줄에 커서를 올리면 여기에 설명이 뜹니다.";
 
     /// <summary>오른쪽 설명 칸의 이름 줄.</summary>
     private readonly TextBlock _tipName = new()
@@ -152,6 +152,10 @@ public sealed class ModDialog : GameWindow
         var ui = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「폰트」 — 어느 창을 어떤 글꼴로 찍는지.
         var font = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「캐릭터」 — 주인공을 만들 때와 부하를 거느릴 때의 것.
+        var character = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「저장」 — 세이브를 언제 · 어디에 적는지.
+        var save = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「실험」 — 아직 다듬는 중인 덧그림. 모양이 바뀔 수 있다.
         var lab = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
 
@@ -326,8 +330,8 @@ public sealed class ModDialog : GameWindow
             + " 줄을 고르면 오른쪽에 맡은 기능의 효과가 펼쳐집니다. 결정(또는 두 번 누르기)으로 인물정보 판을 엽니다."
             + " 끄면 원본처럼 자리 이름(플레이어 · 부관 …)만 늘어놓습니다."));
 
-        // 게임 로드 창 — 세이브 고르기를 리디바탕 표로.
-        font.Children.Add(Toggle("게임 로드 창", GameSettings.RidiLoadList, on => GameSettings.RidiLoadList = on,
+        // 게임 로드 창 폰트 — 세이브 고르기를 리디바탕 표로. 「폰트」 탭에 있다가 「실험」으로 옮겼다.
+        lab.Children.Add(Toggle("게임 로드 창 폰트", GameSettings.RidiLoadList, on => GameSettings.RidiLoadList = on,
             "원본과 다릅니다 — 「게임 로드」 · CONTINUE 의 세이브 고르기 창을 리디바탕 글씨의 표로 띄웁니다."
             + " 캐릭터 · 도시 · 저장한 시각 · 발견물이 칸마다 나뉘어 이름이 길어도 줄이 안 어긋납니다. 두 번 누르면 곧바로 불러옵니다."
             + " 끄면 원본처럼 게임 글꼴로 띄웁니다."));
@@ -384,7 +388,7 @@ public sealed class ModDialog : GameWindow
             + " 셈 문제의 답은 늘 다리 넷 달린 괴물의 수입니다."));
 
         // 자동저장 — 원본에 없다. 손으로 적는 자리(SAVEDATA.CDS)는 안 건드리고 따로 적는다.
-        rows.Children.Add(Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
+        save.Children.Add(Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
             on => GameSettings.AutoSaveOnPort = on,
             "원본에 없는 것입니다 — 도시에 들어설 때마다 자동저장 파일(AUTOSAVE.CDS)에 적습니다."
             + " 배로 입항하든 뭍으로 성문을 지나든 마찬가지라, 항구가 없는 내륙 마을에서도 적힙니다."
@@ -441,7 +445,7 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 여관 · 술집 「부하편성」의 결정 오른쪽에 「해고」 단추가 생깁니다. 부하 줄을 눌러 잡고 「해고」를 누릅니다."
             + " 해고하면 계약이 끝나 재계약을 안 맺었을 때처럼 「또 일이 있으면 불러 주십시오!」 하고 떠나고,"
             + " 그 뒤로는 여느 인물처럼 제 갈 길을 갑니다(다시 술집에서 고용할 수 있습니다).");
-        general.Children.Add(dismiss);
+        character.Children.Add(dismiss);
         // 그 밑 — 보고 시 재계약 끄기. 부하 해고를 켰을 때만 살아 있다.
         var skip = Toggle("보고 시 재계약 끄기", GameSettings.SkipRecontract, on => GameSettings.SkipRecontract = on,
             "부하 해고를 켰을 때만 듭니다(기본 켬) — 후원자에게 보고해 계약이 끝나도 부하마다 「한번 더 제독의 배를 탈 수 있습니다」를"
@@ -450,7 +454,7 @@ public sealed class ModDialog : GameWindow
         skip.IsEnabled = dismiss.IsChecked == true;
         dismiss.Checked += (_, _) => skip.IsEnabled = true;
         dismiss.Unchecked += (_, _) => skip.IsEnabled = false;
-        general.Children.Add(skip);
+        character.Children.Add(skip);
 
         // 수에즈 운하 — 지중해와 수에즈만 사이에 바닷길.
         general.Children.Add(Toggle("수에즈 운하", GameSettings.SuezCanal,
@@ -471,7 +475,7 @@ public sealed class ModDialog : GameWindow
             + " 체크를 풀면 원본처럼 켤 때마다 둘 다 틉니다."));
 
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
-        general.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
+        character.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
             on => GameSettings.RerollOnJob = on,
             "원본에 없는 것입니다 — 새 주인공(NORMAL) 능력치 창에서 직업 단추를 누를 때마다 능력치와 보너스를 새로 굴립니다."
             + " 넣어 둔 보너스는 도로 걷힙니다. 끄면 원본처럼 직업은 기본 기술만 정합니다."));
@@ -554,6 +558,8 @@ public sealed class ModDialog : GameWindow
         pages.Children.Add(hires);
         pages.Children.Add(ui);
         pages.Children.Add(font);
+        pages.Children.Add(character);
+        pages.Children.Add(save);
         pages.Children.Add(general);
         pages.Children.Add(lab);
         info.Visibility = Visibility.Hidden;
@@ -561,6 +567,8 @@ public sealed class ModDialog : GameWindow
         hires.Visibility = Visibility.Hidden;
         ui.Visibility = Visibility.Hidden;
         font.Visibility = Visibility.Hidden;
+        character.Visibility = Visibility.Hidden;
+        save.Visibility = Visibility.Hidden;
         lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
 
@@ -571,7 +579,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, font, general, lab));
+        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, font, character, save, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -589,7 +597,7 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
     private FrameworkElement Tabs(FrameworkElement preset, FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
-                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement general,
+                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement character, FrameworkElement save, FrameworkElement general,
                                   FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
@@ -632,6 +640,8 @@ public sealed class ModDialog : GameWindow
         Add("고해상도", hires);
         Add("UI", ui);
         Add("폰트", font);
+        Add("캐릭터", character);
+        Add("저장", save);
         Add("일반", general);
         Add("실험", lab);
         Select(preset);
