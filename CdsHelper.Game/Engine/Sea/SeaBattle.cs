@@ -1069,15 +1069,18 @@ public sealed class SeaBattle
     ///   짝수 X   |dX|&lt;2 · |dY|&lt;2 면 (±1, −1) 만 남긴다 ; dY == 2 이고 dX ≠ 0 이면 뺀다
     ///   홀수 X   |dX|&lt;2 · |dY|&lt;2 면 (±1, +1) 만 남긴다 ; dY == −2 이고 dX ≠ 0 이면 뺀다
     /// </code>
-    /// 걸음 거리 2 고리와 꼭 같지는 않다 — 짝수 X 에서 (±1, −2)(거리 3)를 들이고 (±1, +2)(거리 2)를 빼며,
-    /// 홀수 X 는 그 거울이다. 원본 셈 그대로 옮긴다.
+    /// 원본 셈은 걸음 거리 2 고리와 꼭 같지 않다 — 짝수 X 에서 (±1, −2)(거리 3)를 들이고 (±1, +2)(거리 2)를 빼며,
+    /// 홀수 X 는 그 거울이다. 그 두 칸은 몸과 한 칸 떨어져 있어 괴물이 <b>멀리서</b> 치는 꼴이 된다.
+    /// <b>여기서는 원본과 다르게</b> 그 두 칸을 맞바꿔 몸에 닿은 열두 칸(거리 2 고리)만 붙잡는다 — 괴물은 멀리서 못 친다
+    /// (사용자, 2026-10-11). 위 표는 원본 것이다.
     /// </remarks>
     public static bool InMonsterReach(int dx, int dy, bool evenX)
     {
         if (Math.Abs(dx * dy) == 4) return false;
         int adx = Math.Abs(dx);
         if (adx < 2 && Math.Abs(dy) < 2 && !(adx == 1 && dy == (evenX ? -1 : 1))) return false;
-        if (dy == (evenX ? 2 : -2) && dx != 0) return false;
+        // 원본은 dY == (짝수 ? 2 : −2) 쪽을 뺀다 — 그러면 몸에서 한 칸 떨어진 (±1, ∓2) 가 남는다. 반대쪽을 뺀다.
+        if (dy == (evenX ? -2 : 2) && dx != 0) return false;
         return true;
     }
 
