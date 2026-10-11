@@ -7,7 +7,7 @@ namespace CdsHelper.Game.Engine.Land;
 /// 육상전에서 <b>적이 내는 부대 세트</b> 여덟 벌 — 맘루크·예니체리·사무라이가 여기서 나온다.
 /// </summary>
 /// <remarks>
-/// 게임은 문화권으로 진형 여덟 가운데 하나를 고른다(<c>0x004A1320</c>, 뜀표
+/// 원본은 문화권으로 진형 여덟 가운데 하나를 고른다(<c>0x004A1320</c>, 뜀표
 /// <c>0x004A13C0</c>). 어느 진형이든 얼개가 같다 — <b>첫 부대가 대장</b>이고 그 뒤에
 /// 정해진 병종이 차례로 붙고, 자리가 남으면 <b>대장을 뺀 것 가운데 하나를 굴려
 /// 되풀이</b>한다(<c>0x004A067F</c> 벌).
@@ -55,7 +55,7 @@ public static class LandFormations
     public readonly record struct Shape(string Name, string Where, bool Coin, Slot[] Units);
 
     /// <summary>
-    /// 게임에 박힌 여덟 벌. 차례가 곧 진형 번호다.
+    /// 원본에 박힌 여덟 벌. 차례가 곧 진형 번호다.
     /// </summary>
     private static readonly Shape[] Stock =
     [
@@ -123,7 +123,7 @@ public static class LandFormations
         ]),
     ];
 
-    /// <summary>고치기 전, 게임에 박힌 그대로의 진형.</summary>
+    /// <summary>고치기 전, 원본에 박힌 그대로의 진형.</summary>
     public static Shape Original(int shape) =>
         Stock[Math.Clamp(shape, 0, Count - 1)] with { };
 

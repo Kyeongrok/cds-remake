@@ -97,7 +97,7 @@ public static class WorldMapRenderer
 
     /// <summary>
     /// WORLD.CDS 칸(2바이트 리틀엔디안)에서 OCEAN.CDS 타일 번호를 뽑는다.
-    /// 게임도 하위 14비트만 쓴다(0x48A40A 의 <c>and cx,0x3FFF</c>).
+    /// 원본도 하위 14비트만 쓴다(0x48A40A 의 <c>and cx,0x3FFF</c>).
     /// </summary>
     public static int CellToTile(byte[] worldData, int offset) =>
         (worldData[offset] | (worldData[offset + 1] << 8)) & OceanTiles.TileMask;

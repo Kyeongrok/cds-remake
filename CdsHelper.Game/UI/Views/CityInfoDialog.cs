@@ -41,8 +41,8 @@ public sealed class CityInfoDialog : GameWindow
     private static readonly Brush Ink = Freeze(Color.FromRgb(0x10, 0x10, 0x18));
 
     /// <summary>
-    /// 규모 막대 — 찬 쪽은 붉고 빈 쪽은 검다. 게임 갈무리에서 뽑은 값이다(볼트 28:
-    /// 찬 쪽 <c>#87150A</c> · 빈 쪽 <c>#000000</c>). 게임은 색표 <c>0x3B</c> · <c>0x49</c> 로 칠한다(<c>0x004704F5</c>).
+    /// 규모 막대 — 찬 쪽은 붉고 빈 쪽은 검다. 원본 갈무리에서 뽑은 값이다(볼트 28:
+    /// 찬 쪽 <c>#87150A</c> · 빈 쪽 <c>#000000</c>). 원본은 색표 <c>0x3B</c> · <c>0x49</c> 로 칠한다(<c>0x004704F5</c>).
     /// </summary>
     private static readonly Brush BarFull = Freeze(Color.FromRgb(0x87, 0x15, 0x0A));
     private static readonly Brush BarEmpty = Freeze(Color.FromRgb(0x00, 0x00, 0x00));
@@ -57,7 +57,7 @@ public sealed class CityInfoDialog : GameWindow
     private const int MaxScale = 7;
 
     /// <summary>
-    /// 창 속 크기와 자리 — 게임 코드에서 옮겼다(<c>0x004706C6</c> 창 336x256, 테 8 을 뺀 속, <c>0x004703C0</c> 글).
+    /// 창 속 크기와 자리 — 원본 코드에서 옮겼다(<c>0x004706C6</c> 창 336x256, 테 8 을 뺀 속, <c>0x004703C0</c> 글).
     /// <code>
     ///   도시 이름 (8,8) · 나라 (8,24)
     ///   "규모" (24,56) — 막대 (88,58) 112x12

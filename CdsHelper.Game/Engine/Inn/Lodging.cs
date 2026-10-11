@@ -99,7 +99,7 @@ public sealed class Lodging
     /// 배우면 그 말이 <b>1</b> 이 된다(올리는 것이 아니라 박는 것이다).
     /// </remarks>
     /// <param name="rolled">
-    /// 모르는 말이라 굴렸으면 그 결과로 부른다 — 게임은 여기서 서기 벌을 돌린다(<c>0x0047FB33</c> → <c>0x004A6320</c>).
+    /// 모르는 말이라 굴렸으면 그 결과로 부른다 — 원본은 여기서 서기 벌을 돌린다(<c>0x0047FB33</c> → <c>0x004A6320</c>).
     /// 셋에 한 번이 안 걸려도 「못 배웠다」로 돈다.
     /// </param>
     /// <returns>배웠으면 말 이름, 아니면 null.</returns>
@@ -158,7 +158,7 @@ public sealed class Lodging
     }
 
     /// <summary>
-    /// 일어났을 때 할 말 하나. 게임은 <c>rand(3)</c> 으로 고른다.
+    /// 일어났을 때 할 말 하나. 원본은 <c>rand(3)</c> 으로 고른다.
     /// </summary>
     public static string WakeWord(Random random) => WakeWords[random.Next(WakeWords.Length)];
 }

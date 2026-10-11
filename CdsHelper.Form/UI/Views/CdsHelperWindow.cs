@@ -120,7 +120,7 @@ public class CdsHelperWindow : CdsWindow
         _regionManager = regionManager;
         DataContext = viewModel;
 
-        // 게임처럼 화면 한가운데에서 뜬다. 안 정해 두면 윈도가 계단식으로 흘려 놓아
+        // 원본처럼 화면 한가운데에서 뜬다. 안 정해 두면 윈도가 계단식으로 흘려 놓아
         // 구석에서 뜬다. 크기는 Themes/Views/CdsHelperWindow.xaml 의 Style 에 있다 —
         // 자리는 이쪽이다. WindowStartupLocation 은 의존 속성이 아니라 Setter 에 못 넣는다.
         //

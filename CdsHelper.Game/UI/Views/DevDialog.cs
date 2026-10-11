@@ -152,7 +152,7 @@ public sealed class DevDialog : GameWindow
             tests.Children.Add(give);
         }
 
-        // 모의전 셋 — 게임에 없는 줄이라 미니 게임 차림표에서 이 창으로 옮겼다.
+        // 모의전 셋 — 원본에 없는 줄이라 미니 게임 차림표에서 이 창으로 옮겼다.
         foreach (var (label, run) in new (string, Action?)[]
                  { ("일기토", options.Duel), ("육상전 모의전", options.LandSpar), ("모의해전", options.SeaSpar) })
         {
@@ -290,7 +290,7 @@ public sealed class DevDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        // 「색」 탭 — 게임이 쓰는 색 토큰을 늘어놓는다(개발용).
+        // 「색」 탭 — 원본이 쓰는 색 토큰을 늘어놓는다(개발용).
         var colors = ColorsPage(editor: false);
         // 「편집기 색」 — 퀘스트 편집기 · 모션 메이커 따위 도구 창의 붓만 따로 — 게임 화면 색과 섞이면 헷갈렸다.
         var toolColors = ColorsPage(editor: true);
@@ -356,7 +356,7 @@ public sealed class DevDialog : GameWindow
     }
 
     /// <summary>
-    /// 「색」 탭 — 게임이 쓰는 색 토큰. <b>코드에서 그대로 읽어 온다</b>(리플렉션) — 색을 더하거나 바꾸면 저절로 따라온다.
+    /// 「색」 탭 — 원본이 쓰는 색 토큰. <b>코드에서 그대로 읽어 온다</b>(리플렉션) — 색을 더하거나 바꾸면 저절로 따라온다.
     /// </summary>
     /// <remarks>
     /// <code>

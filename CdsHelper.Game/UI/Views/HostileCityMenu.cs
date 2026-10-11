@@ -11,8 +11,8 @@ namespace CdsHelper.Game.UI.Views;
 /// 적대 도시 앞에 서면 뜨는 차림표 — 공격한다 · 잠입한다 · 교섭한다 · 떠난다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x004A56F0</c> 이다. 규칙은 <see cref="Standoff"/> 에 모아 두었고 여기서는
-/// <b>차례</b>만 맡는다 — 게임처럼 <b>고를 때마다 다시 뜬다</b>. 문이 열리거나 물러설
+/// 원본의 <c>0x004A56F0</c> 이다. 규칙은 <see cref="Standoff"/> 에 모아 두었고 여기서는
+/// <b>차례</b>만 맡는다 — 원본처럼 <b>고를 때마다 다시 뜬다</b>. 문이 열리거나 물러설
 /// 때까지 돌고, 꺼진 칸도 자리를 안 비운다(<c>0x004A5726</c> 이 넉 줄을 먼저 깔고
 /// 그 뒤에 켜고 끈다).
 ///
@@ -39,7 +39,7 @@ internal static class HostileCityMenu
     /// <param name="GameOver">잡혀 죽었는지(<c>0x004A559F</c>).</param>
     /// <param name="MustLeave">
     /// 마을을 <b>떠나야</b> 하는지 — 잠입하다 들켜 달아났거나(<c>0x004A55A7</c>) 재판에서
-    /// 추방·벌금을 받았을 때(<c>0x004A555F</c> → <c>0x004A55A4</c>)다. 게임은 건물 객체의
+    /// 추방·벌금을 받았을 때(<c>0x004A555F</c> → <c>0x004A55A4</c>)다. 원본은 건물 객체의
     /// <c>+0xA0</c>(마을을 떠난다)을 세우고 돌아가서, 항구 차림표를 닫고 도시 화면까지 끝내
     /// 바다로 나간다. 「떠난다」·교섭 실패로 물러선 것은 이 플래그가 없어 항구 차림표에 남는다.
     /// </param>
@@ -52,7 +52,7 @@ internal static class HostileCityMenu
     /// <param name="byLand">말로 왔는지 — 마을 쪽이면 참, 배로 온 항구 쪽이면 거짓.</param>
     /// <param name="mapArea">도시 그림을 펼 자리. 비어 있으면 임자 창 한가운데다.</param>
     /// <param name="byTreaty">
-    /// 조약으로 막힌 문인지 — 게임은 그때 <b>딴 화면</b>(<c>0x0046ABB0</c>)을 쓴다.
+    /// 조약으로 막힌 문인지 — 원본은 그때 <b>딴 화면</b>(<c>0x0046ABB0</c>)을 쓴다.
     /// 차림표도 말도 벌이 다르고 교섭 주사위가 <c>rand(150)</c> 으로 헐렁하다.
     /// </param>
     /// <param name="inCity">
@@ -66,7 +66,7 @@ internal static class HostileCityMenu
                               bool byLand, Rect mapArea = default, bool byTreaty = false,
                               bool inCity = false, IGateStage? stage = null)
     {
-        // 게임도 그림부터 편다 — 도시는 그려지고 성문에서 막히는 것이다.
+        // 원본도 그림부터 편다 — 도시는 그려지고 성문에서 막히는 것이다.
         var scene = inCity ? null : GateScene.Open(owner, game, city, mapArea);
         IGateStage? fx = scene ?? stage;
 
@@ -139,14 +139,14 @@ internal static class HostileCityMenu
             switch (pick)
             {
                 case Standoff.Attack:
-                    // 물음은 하나다 — 게임이 글 둘을 넘기면 0x00469680 이 부관 있고 없고로
+                    // 물음은 하나다 — 원본이 글 둘을 넘기면 0x00469680 이 부관 있고 없고로
                     // 하나만 띄운다. 되묻는 것도 <b>부관</b>이고 <b>제목 띠가 없다</b>.
                     if (!ConfirmDialog.Ask(owner,
                             Standoff.HasAide(player) ? Standoff.SureWord : Standoff.AttackWord,
                             null, game.AideFace))
                         break;
 
-                    // 게임도 물음 뒤에 부대배치 화면부터 편다(0x0044A870 의 0x00446E60).
+                    // 원본도 물음 뒤에 부대배치 화면부터 편다(0x0044A870 의 0x00446E60).
                     // 배치가 끝나면 그 길로 싸움터로 넘어간다.
                     if (LandDeployDialog.Show(owner, game, cityName) is not { } line) break;
 
@@ -186,7 +186,7 @@ internal static class HostileCityMenu
                     if (byTreaty && Standoff.HasAide(player))
                         TalkDialog.Say(owner, game.AideFace, "", Standoff.TreatyBrokenWord);
                     // 이어서 <b>제 나라가 눈감아 주는지</b>를 굴려 설득 벌(5번)로 보인다(0x0046A79D ~ 0x0046A7D8) —
-                    // rand(150) ≤ ((운 + 1) x 100 + 명성) / 100 이면 통과다. 게임은 굴리기 전에 그 도시 나라 형편
+                    // rand(150) ≤ ((운 + 1) x 100 + 명성) / 100 이면 통과다. 원본은 굴리기 전에 그 도시 나라 형편
                     // 칸 +0x08 에 1 을 박고(0x0046A787), 못 넘으면 제 나라 형편 칸 +0x08 에도 1 을 박는다(0x0046A7F2).
                     // 그 칸을 읽는 곳은 아직 못 짚어 깃발은 옮기지 않는다.
                     if (byTreaty)
@@ -202,7 +202,7 @@ internal static class HostileCityMenu
                     return Sneak(owner, scene, game, dice, city, gate, heard, say);
 
                 case Standoff.Talk:
-                    // 게임도 돈부터 본다(0x00468BF0 → 「소지금이 모자랍니다!」). 한 번
+                    // 원본도 돈부터 본다(0x00468BF0 → 「소지금이 모자랍니다!」). 한 번
                     // 걸리면 그 자리에서는 교섭 칸이 죽는다(0x004A5800).
                     if (player.Gold <= 0)
                     {
@@ -233,7 +233,7 @@ internal static class HostileCityMenu
     /// </summary>
     /// <remarks>
     /// 어그러지면 그 자리(마을 쪽·항구 쪽)에 <b>실패 표시</b>가 서서 <b>「교섭한다」가 죽는다</b> —
-    /// 게임도 도시 레코드 <c>+0xB0</c>(마을) · <c>+0xB4</c>(항구)에 1 을 적고, 차림표를 깔
+    /// 원본도 도시 레코드 <c>+0xB0</c>(마을) · <c>+0xB4</c>(항구)에 1 을 적고, 차림표를 깔
     /// 때 그 값을 도로 읽어 칸을 끈다.
     /// <code>
     ///   4a5779  cmp [도시+0xb0], 1      ; 마을 쪽 ([도시+0x9c] 이 0 이 아닐 때)
@@ -252,7 +252,7 @@ internal static class HostileCityMenu
     {
         var player = game.Player;
 
-        // 게임도 굴리고 나서 하트를 돌린다(0x004A55EE) — 깨지면 이미 진 것이다.
+        // 원본도 굴리고 나서 하트를 돌린다(0x004A55EE) — 깨지면 이미 진 것이다.
         bool won = Standoff.Talks(player, dice, say.TalkRoll);
         scene?.PlayHeart(won);
 
@@ -308,14 +308,14 @@ internal static class HostileCityMenu
         if (turban)
             NoticeDialog.Show(owner, $"{Standoff.TurbanName}을 사용했다", "");
 
-        // 게임도 굴리고 나서 동전을 돌린다(0x004A53D0) — 멎은 쪽이 곧 결과다.
+        // 원본도 굴리고 나서 동전을 돌린다(0x004A53D0) — 멎은 쪽이 곧 결과다.
         bool got = say.IsTreaty ? Standoff.Intrudes(player, tongue, dice)
                                 : Standoff.Sneaks(player, tongue, turban, dice);
         scene?.PlayCoin(got);
 
         if (got)
         {
-            // 게임은 여기서 아무 말도 안 한다 — 0x004A53DC 가 곧장 돌아서서 도시로 든다(열린 문은 안 남는다).
+            // 원본은 여기서 아무 말도 안 한다 — 0x004A53DC 가 곧장 돌아서서 도시로 든다(열린 문은 안 남는다).
             return new Outcome(Entered: true, GameOver: false);
         }
 
@@ -395,7 +395,7 @@ internal static class HostileCityMenu
 
     /// <summary>그 도시가 쓰는 말을 얼마나 아는지. 표를 못 읽으면 0.</summary>
     /// <summary>부관(부하 자리 0)이 그 도시 나라 말을 얼마나 아는지. 없으면 0.</summary>
-    /// <remarks>게임은 <c>0x00478050(부관, 문지기)</c> 로 공유 언어를 잰다(<c>0x004A5261</c>).</remarks>
+    /// <remarks>원본은 <c>0x00478050(부관, 문지기)</c> 로 공유 언어를 잰다(<c>0x004A5261</c>).</remarks>
     private static int AideTongueAt(Engine.Game game, int city)
     {
         string mate = game.Player.MateAt(0);

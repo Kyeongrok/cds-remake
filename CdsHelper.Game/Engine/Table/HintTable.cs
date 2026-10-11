@@ -15,7 +15,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x1C  제 번호
 ///   갈래 이름표 0x00560C60[8]
 /// </code>
-/// 왕궁에서 후원자를 설득할 때 게임이 이 표를 그대로 쓴다(<c>0x004AEF50</c>) —
+/// 왕궁에서 후원자를 설득할 때 원본이 이 표를 그대로 쓴다(<c>0x004AEF50</c>) —
 /// 자금은 <c>+0x14</c> 에 후원율을 곱해 10닢 단위로 내리고, 계약 기한은 <c>+0x18</c> 에 하나를
 /// 더한 햇수다(<c>0x004AF19D</c> 가 <c>0x004D8E98 = 표 + 0x18</c> 를 읽는다).
 ///
@@ -84,7 +84,7 @@ public sealed class HintTable
     /// <param name="Text">펼친 책에 적히는 설명. 힌트 줄의 <c>+0x1C</c> 가 가리키는 글이다.</param>
     /// <param name="Discovery">
     /// 발견물 일련번호. 발견물 표의 <see cref="DiscoveryTable.Record.Hint"/> 와 <b>같은 값</b>이면
-    /// 그 발견물을 가리킨다 — 게임도 그렇게 짝을 짓는다(<c>0x004AACFD</c>).
+    /// 그 발견물을 가리킨다 — 원본도 그렇게 짝을 짓는다(<c>0x004AACFD</c>).
     /// </param>
     /// <remarks>
     /// 레코드 <b>구조체</b>는 빈 생성자가 늘 있어서, 적어 둔 JSON 을 되읽을 때 어느 것을 쓸지
@@ -275,7 +275,7 @@ public sealed class HintTable
         }
     }
 
-    /// <summary>고치기 전 게임 값. 되돌리거나 견줄 때 쓴다. 원본에 없던 번호면 null.</summary>
+    /// <summary>고치기 전 원본 값. 되돌리거나 견줄 때 쓴다. 원본에 없던 번호면 null.</summary>
     public Hint? Original(int id)
     {
         if (id < 0) return null;
@@ -307,7 +307,7 @@ public sealed class HintTable
         category >= 0 && category < CategoryNames.Count ? CategoryNames[category] : "";
 
     /// <summary>
-    /// 후원자가 낼 자금. 게임처럼 후원율을 곱해 10닢 단위로 내리고, 20닢 밑으로는 안 내려간다.
+    /// 후원자가 낼 자금. 원본처럼 후원율을 곱해 10닢 단위로 내리고, 20닢 밑으로는 안 내려간다.
     /// </summary>
     /// <param name="supportRate">후원율(%). patrons.json 의 supportRate 다.</param>
     public static int FundsFor(Hint hint, int supportRate)

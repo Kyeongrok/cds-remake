@@ -15,7 +15,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 함대 · 부하 · 짐 · 계약 · 가족 · 나라 사이)을 한자리에 모아 놓은 것이라, 무엇이 왜
 /// 그렇게 나오는지 대 볼 데가 필요할 때 쓴다. 고치는 것은 <see cref="DevDialog"/> 다.
 ///
-/// 게임에는 없는 창이라 게임 꼴을 흉내내지 않는다 — 게임데이터 창과 같은 결이다.
+/// 원본에는 없는 창이라 게임 꼴을 흉내내지 않는다 — 게임데이터 창과 같은 결이다.
 /// </remarks>
 public sealed class PlayerInfoDialog : GameWindow
 {

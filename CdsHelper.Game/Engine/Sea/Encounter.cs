@@ -2,7 +2,7 @@
 
 namespace CdsHelper.Game.Engine.Sea;
 
-/// <summary>붙는 무리의 갈래. 게임의 <c>0x004555B0(kind)</c> 인자 그대로다.</summary>
+/// <summary>붙는 무리의 갈래. 원본의 <c>0x004555B0(kind)</c> 인자 그대로다.</summary>
 public enum EnemyKind
 {
     /// <summary>갑자기 쳐들어온 무리 — 창 제목이 "적의 공격" 이다.</summary>
@@ -22,7 +22,7 @@ public enum EnemyKind
 /// 적장 한 사람 — 해전 들머리(<c>0x00440D90</c>)가 적 능력 벌과 적 배를 이 값으로 짓는다.
 /// </summary>
 /// <remarks>
-/// 능력은 모두 <b>세이브 날값(게임 값 + 1)</b>이다 — 게임도 <c>[인물+0x28]+1</c> 로 옮겨 적
+/// 능력은 모두 <b>세이브 날값(원본 값 + 1)</b>이다 — 원본도 <c>[인물+0x28]+1</c> 로 옮겨 적
 /// 벌 <c>+0x924</c>~ 에 넣는다(볼트 <c>92.분석-적 함대 배 짜기</c> 3절). 기능은 그대로다.
 /// </remarks>
 /// <param name="Id">인물 번호(262~270 조우 인물).</param>
@@ -62,23 +62,23 @@ public readonly record struct Enemy(EnemyKind Kind, string Name, int Ships, int 
 /// 바다에서 남의 함대를 만났을 때의 셈과 말 — <b>교섭 · 도망 · 응전</b>.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x004555B0(kind)</c> 이다. 돌려주는 값이 1 이면 도망 성공(부른 쪽이 그냥
+/// 원본의 <c>0x004555B0(kind)</c> 이다. 돌려주는 값이 1 이면 도망 성공(부른 쪽이 그냥
 /// 넘어간다), 5 면 교섭 성공, 0 이면 해전이다.
 /// <code>
 ///   0x004878A0  고르기 — 교섭한다(0) · 도망간다(1) · 응전한다(2)
 ///   0x00455859  교섭   0x00455B5F  도망   0x00455C38  응전
 /// </code>
 ///
-/// <b>적 함대는 우리가 지어낸다.</b> 게임은 지도 위를 돌아다니는 함대 객체를 들고 있다가
+/// <b>적 함대는 우리가 지어낸다.</b> 원본은 지도 위를 돌아다니는 함대 객체를 들고 있다가
 /// 두 칸 안으로 붙으면 그것을 넘기는데([[59.분석-해적 조우]]), 우리 쪽에는 그 객체가
-/// 없다. 그래서 척수와 적장 능력을 여기서 굴린다 — 셈식만은 게임 것 그대로다.
+/// 없다. 그래서 척수와 적장 능력을 여기서 굴린다 — 셈식만은 원본 것 그대로다.
 /// </remarks>
 public static class Encounter
 {
     // ── 말 ──────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// 갈래마다 다섯 줄씩. 게임도 <c>0x004B7C0F(5)</c> 로 하나를 뽑는다.
+    /// 갈래마다 다섯 줄씩. 원본도 <c>0x004B7C0F(5)</c> 로 하나를 뽑는다.
     /// </summary>
     private static readonly string[][] Greetings =
     [
@@ -230,7 +230,7 @@ public static class Encounter
     /// 요구액을 알린 <b>다음에</b> 따로 뜨는 예·아니오 물음(<c>0x0055FC70</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 창을 둘 낸다 — 부관이 <see cref="DemandWord"/> 로 액수를 이르고
+    /// 원본은 창을 둘 낸다 — 부관이 <see cref="DemandWord"/> 로 액수를 이르고
     /// (<c>0x00455A7B</c>), 그다음 <b>얼굴 없는 상자</b>가 이 말로 묻는다
     /// (<c>0x00455A8F</c> 의 <c>0x0049E3E0(2, …)</c>).
     /// </remarks>
@@ -293,7 +293,7 @@ public static class Encounter
     /// </summary>
     public static bool CanTalk(EnemyKind kind) => kind != EnemyKind.Chaser;
 
-    /// <summary>백 가운데 몇이면 되는지를 굴린다 — 게임의 <c>0x004B7C62</c> 다.</summary>
+    /// <summary>백 가운데 몇이면 되는지를 굴린다 — 원본의 <c>0x004B7C62</c> 다.</summary>
     public static bool Roll(int percent, Random rng) => rng.Next(100) < percent;
 
     /// <summary>
@@ -307,13 +307,13 @@ public static class Encounter
     ///   0x00455B8D  rand(eax) 가 0 이 아니면 성공
     /// </code>
     /// 두 전역은 <b>내 함대 객체</b>(<c>0x005B3928</c>)의 칸이다 — <c>+0x28</c> 피로도가
-    /// <c>0x005B3950</c>, <c>+0x2C</c> 규율이 <c>0x005B3954</c> 다. 보고가 끝나면 게임이
+    /// <c>0x005B3950</c>, <c>+0x2C</c> 규율이 <c>0x005B3954</c> 다. 보고가 끝나면 원본이
     /// 이 둘을 0 · 100 으로 되돌린다(<c>0x0041156A</c> · <c>0x00411576</c>)는 것으로 짚었다.
     ///
     /// 그래서 <b>내 값은 규율</b>이고 빼는 값은 <b>내 피로도</b>다 — 깃발(<c>edi</c>, 조우 갈래)이 0 이 아니면
     /// <c>0x005B3950</c> 을 바로 읽고(<c>0x00455B63</c>), 0 이면 함대 객체의 vt+0x0C(<c>0x00450220</c>)를 부르는데
     /// 그것도 <c>[0x005B3950]</c> 을 돌려주는 같은 값이다. 예전에는 그 깃발을 못 짚어 「적 배 수」로 적어 두었었다.
-    /// 셈의 얼개(차 + 100 을 나누어 굴린다)는 게임 것 그대로다.
+    /// 셈의 얼개(차 + 100 을 나누어 굴린다)는 원본 것 그대로다.
     /// </remarks>
     /// <param name="mateLuck">말하는 이의 운 — 제독 운과 견준다.</param>
     public static bool Escapes(Player player, in Enemy foe, Random rng, int mateLuck = 0)
@@ -363,9 +363,9 @@ public static class Encounter
     /// <summary>
     /// 바다에서 걸음을 옮기는 동안 무리가 붙는지 굴린다(<c>0x0048CABA</c>). 안 붙으면 null.
     /// </summary>
-    /// <param name="steps">그동안 걸은 걸음 수. 게임은 고리 한 바퀴(한 걸음)마다 한 번 굴린다.</param>
+    /// <param name="steps">그동안 걸은 걸음 수. 원본은 고리 한 바퀴(한 걸음)마다 한 번 굴린다.</param>
     /// <remarks>
-    /// 게임은 이 주사위를 <b>화면에 보이는 함대에 두 칸 안으로 붙지 않았을 때</b>만 굴리고
+    /// 원본은 이 주사위를 <b>화면에 보이는 함대에 두 칸 안으로 붙지 않았을 때</b>만 굴리고
     /// (<c>0x0048C049</c>, 볼트 <c>59.분석-해적 조우</c> 5·6절), 걸리면
     /// <c>0x004435B0(인물, 0, 1)</c> 로 교섭·도망·응전 창을 연다. 유럽 구역은 인물 262(해적),
     /// 81칸 표(후원자)에 뒤쫓는 이가 있으면 268(추격대) 이다(<c>0x0048CB00</c> → <c>0x0044FD60</c>) —

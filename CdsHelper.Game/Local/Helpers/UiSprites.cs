@@ -44,7 +44,7 @@ public enum BandStyle
 /// 전체를 한 폭으로 보고 가로로 자르면 안 된다 — 조각마다 폭이 달라서 엉뚱한 경계가
 /// 잡힌다(16x180 으로 보고 y36·60·96 을 경계로 삼았던 적이 있는데 전부 헛것이었다).
 ///
-/// 게임도 똑같이 짓는다 — 조각 꺼내기 <c>0x00463710(벌, 조각)</c>, 조각 시작 열 표
+/// 원본도 똑같이 짓는다 — 조각 꺼내기 <c>0x00463710(벌, 조각)</c>, 조각 시작 열 표
 /// <c>0x00552898</c> = <c>{0, 16, 24}</c>, 띠 짓는 자리 <c>0x0041F606</c>.
 /// 파트 4 는 <c>0x00463590</c> 이 게임 시작 때 객체 <c>0x005AA3B8+0x14</c> 로 읽어 둔다.
 ///
@@ -95,7 +95,7 @@ public sealed class UiSprites
     /// <summary>띠 한 벌의 크기와 조각 배치.</summary>
     private const int StyleBytes = 960, StyleCount = 3;
 
-    /// <summary>띠 높이. 게임이 늘 이 높이로 그린다.</summary>
+    /// <summary>띠 높이. 원본이 늘 이 높이로 그린다.</summary>
     public const int BandHeight = 24;
 
     /// <summary>양 끝 조각의 폭.</summary>
@@ -133,7 +133,7 @@ public sealed class UiSprites
     /// 계산기 조각 한 파트(MISC.CDS 파트 6) 통째 — 픽셀 50,112 개를 파일 차례 그대로 든다.
     /// </summary>
     /// <remarks>
-    /// <b>조각마다 폭이 다르다.</b> 게임은 이 파트를 이렇게 나눠 쓴다(<c>0x00463750</c>).
+    /// <b>조각마다 폭이 다르다.</b> 원본은 이 파트를 이렇게 나눠 쓴다(<c>0x00463750</c>).
     /// <code>
     ///   0      ~ 0x8700   판 바탕 160x216   돌무늬 틀과 위 표시줄
     ///   0x8700 + k*768    글쇠 32x24 열일곱  0 1 2 3 4 5 6 7 8 9 00 000 AC DEL MAX MIN CAN-CEL
@@ -395,7 +395,7 @@ public sealed class UiSprites
     /// <summary>
     /// 띠 하나를 BGRA 로 짓는다. 높이는 늘 <see cref="BandHeight"/> 다.
     /// 왼끝을 깔고 가운데를 <paramref name="cells"/> 번 되풀이한 뒤 오른끝을 덮는다 —
-    /// 게임이 하는 그대로다.
+    /// 원본이 하는 그대로다.
     /// </summary>
     public uint[] Band(BandStyle style, int cells, out int width)
     {
@@ -416,7 +416,7 @@ public sealed class UiSprites
     /// </summary>
     /// <remarks>
     /// 화면에 붙일 때는 이 셋을 (왼끝 고정 · 가운데 이어 깔기 · 오른끝 고정)으로 놓으면
-    /// 어떤 폭에도 맞고 도트도 안 뭉개진다. 게임이 하는 그대로다.
+    /// 어떤 폭에도 맞고 도트도 안 뭉개진다. 원본이 하는 그대로다.
     /// </remarks>
     public uint[] Piece(BandStyle style, int k, out int width)
     {

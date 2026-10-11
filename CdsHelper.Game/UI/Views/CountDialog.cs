@@ -10,7 +10,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 수를 하나 고르게 하는 작은 창 — 고를 줄 하나와 눈금 줄 몇을 얹는다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x00454AA0</c> 을 옮겼다. 인자 차례가 그대로 화면 모양이다.
+/// 원본의 <c>0x00454AA0</c> 을 옮겼다. 인자 차례가 그대로 화면 모양이다.
 /// <code>
 ///   0x00454AA0(제목, 1, 라벨, 0, 단위, 0, 최대, 라벨2, 값2, 라벨3, 값3, 0)
 ///
@@ -121,7 +121,7 @@ public sealed class CountDialog : GameWindow
 
         var pick = new StackPanel { Orientation = Orientation.Horizontal };
         pick.Children.Add(field);
-        // 값은 계산기로만 넣는다 — 게임도 칸 옆에 계산기 하나만 달아 두었다.
+        // 값은 계산기로만 넣는다 — 원본도 칸 옆에 계산기 하나만 달아 두었다.
         pick.Children.Add(Pad());
         pick.Children.Add(Label(unit));
 

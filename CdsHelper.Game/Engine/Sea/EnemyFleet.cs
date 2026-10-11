@@ -61,7 +61,7 @@ public static class EnemyFleet
     public sealed record Ship(int Hull, string HullName, int Speed, int Hp, int Capacity,
                               int Crew, int MinCrew, int Gun, int Guns, int[] Sails);
 
-    /// <summary>게임의 <c>rand(n)</c>(<c>0x004B7C0F</c>) — n 이 2 보다 작으면 0 이다.</summary>
+    /// <summary>원본의 <c>rand(n)</c>(<c>0x004B7C0F</c>) — n 이 2 보다 작으면 0 이다.</summary>
     private static int Rand(Random rng, int n) => n < 2 ? 0 : rng.Next(n);
 
     /// <summary>
@@ -113,7 +113,7 @@ public static class EnemyFleet
     /// 슬롯 <paramref name="i"/>(0 = 기함)의 선체. 규칙 줄은 <b>위에서부터 처음 맞는 것</b>이다.
     /// </summary>
     /// <remarks>
-    /// 갈래 9(표 밖 나라)는 게임이 선체 칸에 안 쓰고 앞 판 값이 남는다(<c>jmp 0x4414CB</c>).
+    /// 갈래 9(표 밖 나라)는 원본이 선체 칸에 안 쓰고 앞 판 값이 남는다(<c>jmp 0x4414CB</c>).
     /// 그 구멍은 옮길 수 없어 <b>카라벨로 갈음한다</b> — 우리 어림이다.
     /// </remarks>
     public static int HullOf(int nation, int year, int i)
@@ -143,7 +143,7 @@ public static class EnemyFleet
             case 7 or 8:        // E 맘루크·하프스·오스만 (0x004414C5)
                 return Hull.Dhow;
 
-            default:            // 갈래 9 — 게임은 앞 판 값. 우리는 카라벨.
+            default:            // 갈래 9 — 원본은 앞 판 값. 우리는 카라벨.
                 return Hull.Caravel;
         }
     }

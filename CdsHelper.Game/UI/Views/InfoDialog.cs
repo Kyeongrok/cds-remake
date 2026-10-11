@@ -10,12 +10,12 @@ namespace CdsHelper.Game.UI.Views;
 /// 커맨드 "정보" 아래에 뜨는 판들의 밑바탕 — 밤색 판에 밝은 글씨, 오른쪽 위에 닫기.
 /// </summary>
 /// <remarks>
-/// 게임의 정보 창(<c>0x00425E40</c>)은 일곱 줄이다.
+/// 원본의 정보 창(<c>0x00425E40</c>)은 일곱 줄이다.
 /// <code>
 ///   함대정보 0x0046F340 · 인물정보 0x0046DF70 · 소지품정보 0x0044CB20
 ///   힌트정보 · 계약정보 · 지도를 본다 · 돌아간다
 /// </code>
-/// 판 모양은 계약 정보 창(<see cref="ContractDialog"/>)과 같다 — 게임도 이 판들을 한 벌로
+/// 판 모양은 계약 정보 창(<see cref="ContractDialog"/>)과 같다 — 원본도 이 판들을 한 벌로
 /// 그린다. 그래서 바탕색·글씨색·닫기 단추를 여기 모아 두고 물려 쓴다.
 /// </remarks>
 internal abstract class InfoDialog : GameWindow
@@ -84,7 +84,7 @@ internal abstract class InfoDialog : GameWindow
                          params UIElement[] buttons)
     {
         // 닫기(X)는 판 <b>위에 겹쳐</b> 놓는다. 줄로 쌓으면 그만큼 속이 줄어 마지막 줄이
-        // 잘린다 — 인물정보의 "빚" 줄이 그래서 안 보였다. 게임도 판 오른쪽 위 여백에
+        // 잘린다 — 인물정보의 "빚" 줄이 그래서 안 보였다. 원본도 판 오른쪽 위 여백에
         // 얹혀 있지 제 줄을 차지하지 않는다.
         var inner = new StackPanel();
         if (title.Length > 0)
@@ -150,14 +150,14 @@ internal abstract class InfoDialog : GameWindow
     protected static UIElement Gap(double height = 10) => new Border { Height = height };
 
     /// <summary>
-    /// 묶음 머리 — 게임은 <c>━━━━━━━━기술━━━━━━━━</c> 처럼 줄표로 싼다.
+    /// 묶음 머리 — 원본은 <c>━━━━━━━━기술━━━━━━━━</c> 처럼 줄표로 싼다.
     /// </summary>
     protected static UIElement Divider(string text, byte color = GameFont.WhiteColor) =>
         Label($"   ━━━━━━━━{text}━━━━━━━━", color);
 
     /// <summary>제목 줄 오른쪽 끝의 닫기(X).</summary>
     /// <summary>
-    /// 오른쪽 위 닫기(X). 조선소·시장 창과 <b>같은 상자</b>다 — 게임도 한 가지만 쓴다.
+    /// 오른쪽 위 닫기(X). 조선소·시장 창과 <b>같은 상자</b>다 — 원본도 한 가지만 쓴다.
     /// </summary>
     private FrameworkElement CloseBox()
     {
@@ -166,7 +166,7 @@ internal abstract class InfoDialog : GameWindow
         return box;
     }
 
-    /// <summary>줄을 죽 늘어놓는 칸. 비어 있으면 자리만 비워 둔다(게임도 그렇다).</summary>
+    /// <summary>줄을 죽 늘어놓는 칸. 비어 있으면 자리만 비워 둔다(원본도 그렇다).</summary>
     protected static UIElement List(IEnumerable<string> lines, double height) =>
         List(lines, height, null);
 

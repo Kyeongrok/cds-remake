@@ -8,7 +8,7 @@
 /// 수리가 배마다의 손상을 보고 <b>개조</b>가 배마다 성능을 바꾸므로 한 겹을 두었다 —
 /// 값은 선체 것으로 시작해서 개조로 갈린다.
 ///
-/// 게임은 배 레코드(<c>0x005A4E18</c>, 108바이트)에 이렇게 담는다.
+/// 원본은 배 레코드(<c>0x005A4E18</c>, 108바이트)에 이렇게 담는다.
 /// <code>
 ///   +0x30  필요승원-10  (0x0044C770 / 0x0044C780)
 ///   +0x38  지금 추진력  +0x3C  최대 추진력   (0x0044C810·20 / 0x0044C830·40)
@@ -25,7 +25,7 @@ public sealed class Ship
     /// 개조로 값을 얼마까지 올릴 수 있는지 — 선체 기본값의 <b>몇 배</b>.
     /// </summary>
     /// <remarks>
-    /// <b>이 수는 게임 것이 아니다.</b> 게임은 선체 표(<c>0x004FC1E0</c>)에 값마다 상한을
+    /// <b>이 수는 원본 것이 아니다.</b> 원본은 선체 표(<c>0x004FC1E0</c>)에 값마다 상한을
     /// 따로 든다 — 붙박이 선체 다섯은 그 값을 <see cref="Hull.HpTop"/> 벌로 옮겨 두었고,
     /// 이 배수는 <b>등록해 넣은 배</b>처럼 상한을 모르는 선체에만 쓰인다.
     /// </remarks>
@@ -91,14 +91,14 @@ public sealed class Ship
     /// 뱃머리에 단 선수상의 번호. 안 달았으면 -1.
     /// </summary>
     /// <remarks>
-    /// 게임은 배 레코드의 <c>+0x5C</c> 에 든다(<c>0x0044CA30</c> 이 그 자리를 읽는다).
+    /// 원본은 배 레코드의 <c>+0x5C</c> 에 든다(<c>0x0044CA30</c> 이 그 자리를 읽는다).
     /// 바다 재앙 판정이 이 값으로 표 <c>0x0054A0A0</c> 을 타고 하나를 막아 준다 —
     /// 자세한 것은 <see cref="Models.Figurehead"/>.
     /// </remarks>
     public int Figurehead { get; private set; }
 
     /// <summary>
-    /// 스폰서에게 <b>빌린 배</b>인지 — 게임은 배 레코드 <c>+0x64</c> 에 1 을 박는다(<c>0x0040FA00</c>).
+    /// 스폰서에게 <b>빌린 배</b>인지 — 원본은 배 레코드 <c>+0x64</c> 에 1 을 박는다(<c>0x0040FA00</c>).
     /// 「내 배가 있나」(<c>0x00410800</c>)는 이런 배를 안 센다.
     /// </summary>
     public bool Lent { get; private set; }
@@ -122,7 +122,7 @@ public sealed class Ship
     /// <b>지금</b> 추진력 — 폭풍·충돌이 깎고 수리가 되돌린다(배 레코드 <c>+0x38</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 지금 추진력과 최대 추진력(<c>+0x3C</c>)을 <b>따로</b> 든다. 내구가
+    /// 원본은 지금 추진력과 최대 추진력(<c>+0x3C</c>)을 <b>따로</b> 든다. 내구가
     /// <see cref="Hp"/>·<see cref="MaxHp"/> 로 갈리는 것과 똑같다 — 예전에는 이 둘을
     /// 하나로 두어 <b>폭풍이 추진력을 안 깎았고</b>, 해전에서 부딪히면 최대치가 영영 줄었다.
     /// </remarks>
@@ -155,16 +155,16 @@ public sealed class Ship
     /// <remarks>
     /// 게임 배 레코드의 <c>0x0044C9B0</c>(세터) · <c>0x0044C9C0</c>(게터) 자리다.
     /// 조선소 구입 화면의 "대포수" 가 <b>이 값의 상한</b>이라 <see cref="Models.Hull.Guns"/>
-    /// 를 그대로 쓴다(게임은 선체 표 <c>+0x30</c> 에 따로 든다).
+    /// 를 그대로 쓴다(원본은 선체 표 <c>+0x30</c> 에 따로 든다).
     /// </remarks>
     public int Turrets { get; private set; }
 
     /// <summary>실은 대포 갈래(<see cref="Cannon.All"/> 의 번호). 안 실었으면 -1.</summary>
-    /// <remarks>게임의 <c>0x0044C9D0</c>·<c>0x0044C9E0</c> 자리다.</remarks>
+    /// <remarks>원본의 <c>0x0044C9D0</c>·<c>0x0044C9E0</c> 자리다.</remarks>
     public int Gun { get; private set; } = -1;
 
     /// <summary>실은 대포 문수. 포탑 수를 넘을 수 없다.</summary>
-    /// <remarks>게임의 <c>0x0044C950</c>·<c>0x0044C960</c> 자리다.</remarks>
+    /// <remarks>원본의 <c>0x0044C950</c>·<c>0x0044C960</c> 자리다.</remarks>
     public int Guns { get; private set; }
 
     /// <summary>실은 대포의 무게. 적재중량을 먹는다.</summary>
@@ -174,7 +174,7 @@ public sealed class Ship
     /// 짐을 실을 수 있는 통 수 — <b>포탑이 먹고 남은 것</b>이다(<c>0x0044C910</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>+0x44</c> 에 <b>포탑까지 담아</b> 두고 게터가 포탑 수를 빼서 준다.
+    /// 원본은 <c>+0x44</c> 에 <b>포탑까지 담아</b> 두고 게터가 포탑 수를 빼서 준다.
     /// 적재중량(<c>+0x40</c>)도 같은 꼴이라 대포 무게를 빼서 준다(<c>0x0044C8B0</c>) —
     /// 그쪽은 <c>LoadedWeight</c> 가 대포 무게를 같이 세고 있어 셈이 맞는다.
     /// </remarks>
@@ -182,10 +182,10 @@ public sealed class Ship
 
     // ── 마스트와 돛 ───────────────────────────────────────────────────────────
 
-    /// <summary>마스트 자리 셋. 게임도 셋이다.</summary>
+    /// <summary>마스트 자리 셋. 원본도 셋이다.</summary>
     public const int MastSlots = 3;
 
-    /// <summary>마스트 이름. 게임 것 그대로다(<c>0x005314B0</c> 벌).</summary>
+    /// <summary>마스트 이름. 원본 것 그대로다(<c>0x005314B0</c> 벌).</summary>
     public static readonly string[] MastNames = ["메인마스트", "세브마스트", "선미마스트"];
 
     /// <summary>돛 이름. 번호가 곧 <see cref="Sails"/> 의 값이다(<c>0x00531498</c> 벌).</summary>
@@ -200,12 +200,12 @@ public sealed class Ship
     /// 마스트마다 달린 돛(0 없음 · 1 삼각돛 · 2 사각돛).
     /// </summary>
     /// <remarks>
-    /// 게임은 배 레코드 <c>+0x68</c> 의 16비트에 <b>2비트씩 셋</b>으로 담는다 —
+    /// 원본은 배 레코드 <c>+0x68</c> 의 16비트에 <b>2비트씩 셋</b>으로 담는다 —
     /// 메인 0~1, 세브 2~3, 선미 4~5 (<c>0x00494AE0</c> 이 그 자리를 쓴다).
     /// </remarks>
     public IReadOnlyList<int> Sails => _sails;
 
-    /// <summary>서 있는 마스트 수(돛이 달린 자리). 게임의 <c>0x00422CE0</c> 이다.</summary>
+    /// <summary>서 있는 마스트 수(돛이 달린 자리). 원본의 <c>0x00422CE0</c> 이다.</summary>
     public int Masts => _sails.Count(v => v != NoSail);
 
     /// <summary>
@@ -225,7 +225,7 @@ public sealed class Ship
     /// 돛 종류를 바꿀 수 있는 배인지.
     /// </summary>
     /// <remarks>
-    /// 게임은 못 바꾸는 배에 "안됐지만, 이 타입은 돛의 종류를 바꿀 수 없네."
+    /// 원본은 못 바꾸는 배에 "안됐지만, 이 타입은 돛의 종류를 바꿀 수 없네."
     /// (<c>0x00531678</c>) 를 낸다. 마스트를 달 때 <b>삼각돛으로 못 박는</b> 배가 그쪽이다
     /// (<c>0x00494C9A</c> 의 선체 종류 1·2) — 카라벨과 대형카라벨이다.
     /// 등록해 넣은 배는 제가 들고 있는 값을 쓴다.
@@ -236,7 +236,7 @@ public sealed class Ship
     /// 마스트 하나를 세운다 — 적재용량이 25 줄고 필요승원이 둘 는다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00494AB0</c> 이다.
+    /// 원본의 <c>0x00494AB0</c> 이다.
     /// <code>
     /// 494b52  적재용량 = max(1, 적재용량 - 25)
     /// 494b67  필요승원 += 2
@@ -281,7 +281,7 @@ public sealed class Ship
     }
 
     /// <summary>돛을 더 달 수 있는지 — 최대 추진력이 상한에 안 닿았으면.</summary>
-    /// <remarks>게임은 선체 표 <c>+0x10</c>(추진력 상한)과 견준다(<c>0x004951C0</c>).</remarks>
+    /// <remarks>원본은 선체 표 <c>+0x10</c>(추진력 상한)과 견준다(<c>0x004951C0</c>).</remarks>
     public bool CanAddSail => Masts > 0 && MaxSpeed < Hull.SpeedCeiling;
 
     /// <summary>돛 한 벌을 더 달면 오르는 추진력.</summary>
@@ -291,7 +291,7 @@ public sealed class Ship
     /// 돛 추가 — 추진력을 올리고 그만큼 배가 여려진다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00495200</c> 이다.
+    /// 원본의 <c>0x00495200</c> 이다.
     /// <code>
     /// 495212  새 추진력 = min(추진력 + 10, 선체 표 +0x10)
     /// 49527f  최대내구 -= 늘어난 / 2       (적어도 1)
@@ -317,7 +317,7 @@ public sealed class Ship
     /// 포탑을 이만큼까지 달 수 있다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>min(선체 표 +0x30, 지금 포탑 + 적재용량)</c> 으로 자른다
+    /// 원본은 <c>min(선체 표 +0x30, 지금 포탑 + 적재용량)</c> 으로 자른다
     /// (<c>0x004961D6</c>). <c>+0x30</c> 은 포탑 <b>한계</b>지 처음값(<c>+0x2C</c>)이 아니고,
     /// 「적재용량」은 <b>게터 값</b>(포탑을 뺀 것)이라 둘을 더하면 <see cref="Capacity"/> 가 된다.
     /// </remarks>
@@ -327,7 +327,7 @@ public sealed class Ship
     /// 포탑 수를 바꾼다. 줄여서 대포가 넘치면 그만큼 내린다.
     /// </summary>
     /// <returns>넘쳐서 내린 대포 문수. 없으면 0.</returns>
-    /// <remarks>게임의 <c>0x004960A0</c> 이다.</remarks>
+    /// <remarks>원본의 <c>0x004960A0</c> 이다.</remarks>
     public int SetTurrets(int count)
     {
         Turrets = Math.Clamp(count, 0, MaxTurrets);
@@ -342,7 +342,7 @@ public sealed class Ship
     /// <summary>
     /// 대포를 싣는다. 갈래가 갈리면 실려 있던 것은 부르는 쪽이 되사 준 뒤에 부른다.
     /// </summary>
-    /// <remarks>게임의 <c>0x004962E0</c> 이다 — 갈래를 넣고 문수를 넣는다.</remarks>
+    /// <remarks>원본의 <c>0x004962E0</c> 이다 — 갈래를 넣고 문수를 넣는다.</remarks>
     public void Load(int kind, int count)
     {
         Gun = Cannon.Of(kind) == null ? -1 : kind;
@@ -355,11 +355,11 @@ public sealed class Ship
     /// </summary>
     /// <param name="kind">실을 대포 갈래.</param>
     /// <param name="free">
-    /// 쓸 수 있는 무게. 게임은 <b>지금 실린 대포를 다 내렸다 치고</b> 잰다
+    /// 쓸 수 있는 무게. 원본은 <b>지금 실린 대포를 다 내렸다 치고</b> 잰다
     /// (<c>0x004964FF</c>) — 갈래를 바꿔 실을 때 앞엣것이 자리를 막지 않게. 그래서 부르는
     /// 쪽이 <c>남는 중량 + <see cref="GunWeight"/></c> 를 준다.
     ///
-    /// 게임은 <b>배마다</b> 짐을 싣지만 우리는 함대가 통째로 싣는다 — 그래서 이 값도
+    /// 원본은 <b>배마다</b> 짐을 싣지만 우리는 함대가 통째로 싣는다 — 그래서 이 값도
     /// 함대 것으로 잰다.
     /// </param>
     public int RoomFor(int kind, int free)
@@ -373,7 +373,7 @@ public sealed class Ship
 
     /// <summary>손볼 데가 있는지.</summary>
     /// <remarks>
-    /// 게임도 <c>0x0044BBF0</c> 이 <b>(최대추진 − 지금추진) + (최대내구 − 지금내구)</b> 를
+    /// 원본도 <c>0x0044BBF0</c> 이 <b>(최대추진 − 지금추진) + (최대내구 − 지금내구)</b> 를
     /// 더해 0 보다 크면 고칠 배로 친다 — 추진력만 상해도 목록에 오른다.
     /// </remarks>
     public bool NeedsRepair => Damage > 0 || Speed < MaxSpeed;
@@ -386,7 +386,7 @@ public sealed class Ship
     /// </summary>
     /// <param name="amount">깎을 만큼. 음수는 0 으로 본다.</param>
     /// <param name="floor">
-    /// 더 못 내려가는 바닥. 폭풍이 <b>기함</b>을 칠 때 1 을 준다 — 게임도 기함 자리의
+    /// 더 못 내려가는 바닥. 폭풍이 <b>기함</b>을 칠 때 1 을 준다 — 원본도 기함 자리의
     /// 내구를 1 밑으로 안 내려 기함만은 안 잃는다(<c>0x00474F4E</c>).
     /// </param>
     public void Hurt(int amount, int floor = 0) =>
@@ -418,7 +418,7 @@ public sealed class Ship
     public void SetHp(int hp) => Hp = Math.Clamp(hp, 0, MaxHp);
 
     /// <summary>
-    /// 배 이름. 게임 문구에서는 뒤에 "호" 가 붙는다("산타마리아호").
+    /// 배 이름. 원본 문구에서는 뒤에 "호" 가 붙는다("산타마리아호").
     /// </summary>
     /// <remarks>
     /// 조선소 개조의 "선명변경" 으로 바꾼다. 고를 수 있는 이름은
@@ -463,7 +463,7 @@ public sealed class Ship
     public const int ReinforceStep = 10;
 
     /// <summary>
-    /// 용량증가 — 적재용량을 올린다. 게임의 <c>0x00495420</c> 이다.
+    /// 용량증가 — 적재용량을 올린다. 원본의 <c>0x00495420</c> 이다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -491,7 +491,7 @@ public sealed class Ship
     }
 
     /// <summary>
-    /// 부력증가 — 적재중량을 올린다. 게임의 <c>0x004956D0</c> 이다.
+    /// 부력증가 — 적재중량을 올린다. 원본의 <c>0x004956D0</c> 이다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -515,7 +515,7 @@ public sealed class Ship
     }
 
     /// <summary>
-    /// 보강 — 최대 내구를 올리고 <b>그 자리에서 성하게 해 준다</b>. 게임의
+    /// 보강 — 최대 내구를 올리고 <b>그 자리에서 성하게 해 준다</b>. 원본의
     /// <c>0x00495960</c> 이다.
     /// </summary>
     /// <remarks>
@@ -569,7 +569,7 @@ public sealed class Ship
         /// 돛은 <b>선체표에 적힌 대로</b> 선다.
         /// </summary>
         /// <remarks>
-        /// 게임은 배를 지을 때(<c>0x00423160</c>) 선체표 <c>+0x3C</c> 를 배 레코드 <c>+0x68</c> 에 그대로
+        /// 원본은 배를 지을 때(<c>0x00423160</c>) 선체표 <c>+0x3C</c> 를 배 레코드 <c>+0x68</c> 에 그대로
         /// 넣는다(<c>0x004232AA</c>) — 갤리온·중카락은 사각·사각·삼각, 대형카락 사각·사각, 카락 사각·삼각,
         /// 대형카라벨 삼각·삼각, 카라벨 삼각 하나다. 예전에는 어느 배나 메인마스트에 삼각돛 하나로 세웠다.
         /// 등록해 넣은 배(번호 없음)는 표에 줄이 없어 삼각돛 하나로 둔다.
@@ -593,7 +593,7 @@ public sealed class Ship
 }
 
 /// <summary>
-/// 개조 한 번이 바꾼 값들 — 게임이 개조 뒤에 띄우는 <c>"%-12s%4d → %4d"</c> 상자다.
+/// 개조 한 번이 바꾼 값들 — 원본이 개조 뒤에 띄우는 <c>"%-12s%4d → %4d"</c> 상자다.
 /// </summary>
 /// <param name="Lines">바뀐 줄. 이름과 앞뒤 값이다.</param>
 public sealed record Refit(IReadOnlyList<Refit.Line> Lines)
@@ -611,7 +611,7 @@ public sealed record Refit(IReadOnlyList<Refit.Line> Lines)
     /// 용량을 마쳤을 때 뜨는 상자(<c>0x004955A1</c>). 마스트·돛·부력·보강은 줄이 달라 따로 짓는다.
     /// </summary>
     /// <remarks>
-    /// <b>바뀐 줄만 고르지 않는다.</b> 게임은 서식 하나에 열다섯 값을 한꺼번에 넣어
+    /// <b>바뀐 줄만 고르지 않는다.</b> 원본은 서식 하나에 열다섯 값을 한꺼번에 넣어
     /// <b>늘 다섯 줄</b>을 찍는다(<c>0x00531878</c>) — 안 바뀐 줄도 그대로 나온다.
     /// <code>
     ///   %-12s%4d → %4d통      적재용량   ← 포탑을 뺀 값(0x0044C910)

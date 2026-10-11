@@ -19,13 +19,13 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class SkillLearnDialog : GameWindow
 {
-    /// <summary>줄 속 칸 — "이름 ( LVn )" 하나다. 게임은 오른쪽맞춤으로 낸다.</summary>
+    /// <summary>줄 속 칸 — "이름 ( LVn )" 하나다. 원본은 오른쪽맞춤으로 낸다.</summary>
     private static readonly GameListColumn[] Columns =
     [
         new(GameListDock.Fill, new Thickness(10, 0, 10, 0), Align: HorizontalAlignment.Right),
     ];
 
-    /// <summary>목록 바닥 폭과, 넘치면 굴리기 시작하는 키. 게임 갈무리를 재어 맞췄다.</summary>
+    /// <summary>목록 바닥 폭과, 넘치면 굴리기 시작하는 키. 원본 갈무리를 재어 맞췄다.</summary>
     private const double ListWidth = 300, ListMaxHeight = 220;
 
     private readonly Func<string, int> _levelOf;
@@ -122,10 +122,10 @@ public sealed class SkillLearnDialog : GameWindow
 
     /// <summary>
     /// 습득가능 기술 창을 띄운다. <paramref name="skills"/> 는 그 건물이 가르치는 것이다 —
-    /// 게임은 건물 표의 비트마스크로 도시마다 다르게 준다.
+    /// 원본은 건물 표의 비트마스크로 도시마다 다르게 준다.
     /// </summary>
     /// <remarks>
-    /// 자택 「교육」도 같은 창이다 — 게임은 수련(<c>0x00491421</c>)과 교육(<c>0x004618E6</c>)이 한 함수
+    /// 자택 「교육」도 같은 창이다 — 원본은 수련(<c>0x00491421</c>)과 교육(<c>0x004618E6</c>)이 한 함수
     /// <c>0x0040D590(사람, 목록, 개수, 제목)</c> 을 부르고, 교육은 첫 인자로 <b>아이</b>를 넘겨 아이 수준을 찍으며
     /// 제목이 「교육 가능 기능」(<c>0x0053A0E8</c>)이다.
     /// </remarks>

@@ -98,11 +98,11 @@ public sealed class BuildingPhoto
     private sealed record PickSnapshot(int[] Pick);
 
     /// <summary>
-    /// 문화권 이름을 표의 행으로 옮긴다. 게임은 문화권 열하나를 아홉 행으로 접는다 —
+    /// 문화권 이름을 표의 행으로 옮긴다. 원본은 문화권 열하나를 아홉 행으로 접는다 —
     /// <b>유럽 셋(이베리아·북유럽·지중해)이 한 행</b>이라 리스본이든 런던이든 같은 사진이 뜬다.
     /// </summary>
     /// <remarks>
-    /// 이름은 <c>cities.json</c> 의 것이다. 게임에 없는 "발칸"(한 도시뿐)은 지중해로 본다.
+    /// 이름은 <c>cities.json</c> 의 것이다. 원본에 없는 "발칸"(한 도시뿐)은 지중해로 본다.
     /// 모르는 이름은 유럽 행으로 물러선다 — 사진이 안 뜨는 것보다는 낫다.
     /// </remarks>
     public static int RowFor(string? culture) => culture switch

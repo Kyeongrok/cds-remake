@@ -343,7 +343,7 @@ public sealed class GameSettingsData
     /// 건드린 자리는 빠져 있어 게임 기본값이 선다.
     /// </summary>
     /// <remarks>
-    /// 게임도 띠 갈래마다 제 마스크를 든다(<c>[+0xF8]</c> 워드 셋, 레지스트리에 여섯 바이트로 적는다 —
+    /// 원본도 띠 갈래마다 제 마스크를 든다(<c>[+0xF8]</c> 워드 셋, 레지스트리에 여섯 바이트로 적는다 —
     /// <c>0x0047E2BD</c>). 예전 <see cref="BarCells"/> 는 한 벌뿐이라 쓰지 않는다.
     /// </remarks>
     public Dictionary<int, List<string>>? BarCellsByPlace { get; set; }
@@ -1615,7 +1615,7 @@ public static class GameSettings
     /// 부대배치 「전회」가 되펼 지난번 배치 — 여섯 칸, 고르는 넉 칸의 번호(−1 빈 자리).
     /// </summary>
     /// <remarks>
-    /// 게임은 정적 자리(<c>0x0056EAB8</c>)에만 들고 있어 끄면 사라지는데, 다시 켤 때마다 새로
+    /// 원본은 정적 자리(<c>0x0056EAB8</c>)에만 들고 있어 끄면 사라지는데, 다시 켤 때마다 새로
     /// 놓기가 번거로워 여기 적어 둔다.
     /// </remarks>
     public static int[]? LandDeployLast

@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Engine.Land;
 /// 육상전 한 턴을 굴린다 — 차례를 매기고, 부대를 하나씩 움직이고, 피해를 먹인다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x00449320</c>(한 턴) · <c>0x00448050</c>(부대 하나 움직이기) ·
+/// 원본의 <c>0x00449320</c>(한 턴) · <c>0x00448050</c>(부대 하나 움직이기) ·
 /// <c>0x00449250</c>(한 대 때리기) · <c>0x00448360</c>(피해 매기기)를 옮긴 것이다.
 /// 셈은 <see cref="LandUnits"/> 에 있고 여기서는 <b>차례</b>만 맡는다.
 ///
@@ -54,7 +54,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     public bool Struck { get; private set; }
 
     /// <summary>
-    /// 자리 열둘을 섞어 낸다 — 게임의 피셔–예이츠 그대로다(<c>0x00448F9A</c>).
+    /// 자리 열둘을 섞어 낸다 — 원본의 피셔–예이츠 그대로다(<c>0x00448F9A</c>).
     /// </summary>
     /// <remarks>
     /// <code>
@@ -131,7 +131,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     }
 
     /// <summary>
-    /// 몸짓마다의 말 — 게임은 무리마다 <b>셋(총·포는 다섯) 가운데 하나</b>를 집는다
+    /// 몸짓마다의 말 — 원본은 무리마다 <b>셋(총·포는 다섯) 가운데 하나</b>를 집는다
     /// (<c>0x00446D00(무리)</c> 이 <c>rand(3)</c>, <c>0x00446D90</c> 이 <c>rand(5)</c>).
     /// </summary>
     /// <remarks>
@@ -416,7 +416,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                 : dice.Next(Math.Max(1, 14 - level)) + level * 2;
         }
 
-        // OrderBy 는 제자리 차례를 지킨다 — 게임의 끼워넣기 정렬과 같은 결이다.
+        // OrderBy 는 제자리 차례를 지킨다 — 원본의 끼워넣기 정렬과 같은 결이다.
         return [.. Enumerable.Range(0, LandBattle.Slots)
                              .OrderByDescending(i => speed[i])
                              .ThenBy(TieKind)];
@@ -447,7 +447,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// 그 자리가 <b>제 편의</b> 명령. 공격은 치는 쪽 것이고 <b>방어는 맞는 쪽 것</b>이다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00448120</c>(공격)·<c>0x00448180</c>(방어)이 둘 다 <b>자리를 받아</b>
+    /// 원본의 <c>0x00448120</c>(공격)·<c>0x00448180</c>(방어)이 둘 다 <b>자리를 받아</b>
     /// 여섯보다 작으면 아군 명령(<c>+0x90</c>)을, 아니면 적 명령(<c>+0x94</c>)을 본다.
     ///
     /// 예전에는 <b>치는 쪽 명령 하나로</b> 공격도 방어도 굽혔다. 그래서 내가 돌격을
@@ -591,7 +591,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         }
 
         // 닌자의 변신술 — <b>작렬탄이 없을 때</b> 40%로 피해가 없다(0x004492AA 는 비가 아니라 작렬탄을 본다).
-        // <b>되받아쳤으면 아예 안 굴린다</b> — 게임은 되받아친 가지에서 0x004492FB 로 뛰어
+        // <b>되받아쳤으면 아예 안 굴린다</b> — 원본은 되받아친 가지에서 0x004492FB 로 뛰어
         // 닌자 칸을 통째로 건너뛴다(0x00449299).
         if (!kicked && battle.Units[to].Kind == LandUnits.Ninja && !Shells && dice.Next(100) < 40)
         {
@@ -602,7 +602,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         hurt = Math.Min(hurt, battle.Units[to].Men);
         battle.SetMen(to, battle.Units[to].Men - hurt);
 
-        // 쓰러졌으면 그 자리에서 말을 고른다 — 게임도 피해 숫자를 보인 <b>다음에</b>
+        // 쓰러졌으면 그 자리에서 말을 고른다 — 원본도 피해 숫자를 보인 <b>다음에</b>
         // 말풍선을 띄우고 그러고 나서 부대를 지운다(0x00447F50).
         bool felled = battle.Units[to].Men <= 0;
         Log(new Line($"{Name(from)}의 공격 — {Name(to)} {hurt}명", from, to, hurt, sound,
@@ -666,7 +666,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// </summary>
     /// <remarks>
     /// 앞열이 살아 있으면 앞열에서만 고른다. 앞열이 다 쓰러지면 뒷열이 앞열이 된다 —
-    /// 게임도 고를 것이 없으면 자리를 넓혀 잡는다.
+    /// 원본도 고를 것이 없으면 자리를 넓혀 잡는다.
     /// </remarks>
     private int Pick(bool foe, bool frontOnly)
     {
@@ -807,7 +807,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
     /// 곧 <b>제독 부대가 쓰러지면 남은 부대가 성해도 그대로 진다.</b> 돌격은 방어가
     /// 0.7 배라(<c>0x00448180</c>) 대장 부대로 지르면 이 문에 잘 걸린다.
     ///
-    /// <b>이 자리에서는 아무 말도 안 낸다</b> — 위 세 줄이 하는 일의 전부이고, 게임은
+    /// <b>이 자리에서는 아무 말도 안 낸다</b> — 위 세 줄이 하는 일의 전부이고, 원본은
     /// 「대장이 쓰러졌다」 따위를 따로 알리지 않는다. 쓰러지며 남기는 말은 부대를
     /// 전멸시키는 쪽(<c>0x00446C00</c>)에서 이미 나온 뒤다.
     /// </remarks>

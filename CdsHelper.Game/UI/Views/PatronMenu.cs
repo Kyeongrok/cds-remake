@@ -15,7 +15,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 왕궁만의 일이 아니다. 후원자는 총독부·상관·학자 저택 어디든 앉고, <b>앉은 자리</b>에
-/// 이 줄들이 붙는다(<see cref="TownWorks"/>). 게임도 같은 자리를 계약 상태로 갈아 끼운다
+/// 이 줄들이 붙는다(<see cref="TownWorks"/>). 원본도 같은 자리를 계약 상태로 갈아 끼운다
 /// (<c>0x0044E630</c>).
 ///
 /// 값과 판정은 <see cref="Palace"/> 가 알고(사례 · 눈감아 주기 · 보고할 것 고르기),
@@ -57,7 +57,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 후원자와 이야기하는 동안 <b>그 건물의 명령 창을 접는다</b>.
     /// </summary>
     /// <remarks>
-    /// 게임은 알현이 시작되면 명령 창을 지우고 화면 가득 대사만 낸다. 우리 명령 창은
+    /// 원본은 알현이 시작되면 명령 창을 지우고 화면 가득 대사만 낸다. 우리 명령 창은
     /// 제 창(HWND)이라 도시 그림 위에 그대로 남아, 대사 창 옆에 얹힌 채로 보였다 —
     /// 애니메이션(하트·설득)까지 그 창에 가렸다.
     ///
@@ -80,7 +80,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 이 건물에 앉아 있는 후원자. 없으면 null.
     /// </summary>
     /// <remarks>
-    /// 후원자마다 <b>앉는 도시와 건물 코드가 정해져 있다</b>(후원자 표 <c>+0x24</c> · <c>+0x28</c>) — 게임은 그 둘이 맞는
+    /// 후원자마다 <b>앉는 도시와 건물 코드가 정해져 있다</b>(후원자 표 <c>+0x24</c> · <c>+0x28</c>) — 원본은 그 둘이 맞는
     /// 사람을 시설에 물린다(<c>0x0044E5C0</c>, <see cref="SponsorTable.SeatedAt"/>). 건물 <b>종류</b>로만 맞추면 같은 종류가
     /// 둘인 도시(리스본의 말키오니 상회·리스본 상회)에서 한 사람이 두 곳에 다 앉는다.
     /// 자리를 적어 두지 않은 옛 표일 때만 예전처럼 직업·건물 종류로 앉힌다.
@@ -100,7 +100,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 왕궁의 "설득" — 후원자에게 힌트를 내밀어 자금을 받아 낸다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004AEF50</c> 을 따라간다. 차례가 이렇다.
+    /// 원본의 <c>0x004AEF50</c> 을 따라간다. 차례가 이렇다.
     /// <list type="number">
     /// <item>후원자를 찾는다. 없으면 "이 마을에는 아는 스폰서가 없습니다".</item>
     /// <item>힌트를 고르게 한다(<c>0x004AE8E0</c>). 안 고르면 "용건이 없는가".</item>
@@ -198,7 +198,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     }
 
     /// <summary>
-    /// 후원자와 말이 통하는지 — 게임의 <c>0x00468F70</c>(제독·부관·통역 가운데 가장 잘 통하는 수준)이 3 이상인지.
+    /// 후원자와 말이 통하는지 — 원본의 <c>0x00468F70</c>(제독·부관·통역 가운데 가장 잘 통하는 수준)이 3 이상인지.
     /// </summary>
     /// <remarks>
     /// 후원자는 표 <c>+0x3A</c> 에 비트가 선 말을 수준 3 으로 한다(<c>0x004AD7B0</c>). 두 사람의 통하는 수준은
@@ -300,7 +300,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 명성 관문이다. 모자라면 집사가 문간에서 돌려보낸다(게임 0x004AE260 — 어느 건물이든 건다).
         // 교회에만 서는 들머리 관문(0x004AE1F0)은 위에서 따로 봤다.
         //
-        // "명성치가 모자랍니다" 는 내지 않는다 — 게임에서도 그 줄은 디버그 깃발
+        // "명성치가 모자랍니다" 는 내지 않는다 — 원본에서도 그 줄은 디버그 깃발
         // (0x00580C6C 의 2비트)이 서 있을 때만 나오는 기록용이지 사람에게 보이는 말이 아니다.
         //
         // <b>식이 문간(0x0044E740)과 다르다.</b> 0x004AE260 은 후원자 안목(표 +0x20) x 100 을 명성 + 1500 과
@@ -360,7 +360,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         }
 
         // 관문을 넘으면 집사가 맞고, 무기를 맡기고, 안에 들여보낸 뒤 주인에게 알린다.
-        // 게임의 알현 순서 그대로다(문구도 EXE 0x005459B8~ 에서 옮겼다).
+        // 원본의 알현 순서 그대로다(문구도 EXE 0x005459B8~ 에서 옮겼다).
         //
         // 곡은 관문을 넘는 자리(집사 첫마디 앞)에서 이미 바뀌었다 — 돌려보낼 때는 그대로다. 집사 인사를
         // 건너뛰는 길(만난 적 있는 후원자 따위)도 있으니 여기서 한 번 더 건다(같은 곡이면 다시 안 튼다).
@@ -409,7 +409,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                       "모험 지원인가. 그래, 무엇을 찾으러 갈건가?"));
         }
 
-        // 이 자리에서 낯을 튼다. 게임도 이 물음 바로 뒤에 후원자의 "아직 못 만남" 표를
+        // 이 자리에서 낯을 튼다. 원본도 이 물음 바로 뒤에 후원자의 "아직 못 만남" 표를
         // 지운다(0x004AE595 — 객체 +0x28 의 비트 15). 그래야 스폰서 일람에 뜬다.
         _player.Meet(patron.Name);
 
@@ -448,7 +448,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             if (_game.Hints?.Find(mine[row]) is not { } hint) return;
             it = hint;
 
-            // 받아 줄지는 게임 셈 그대로 가린다(Persuasion 참고) — 이야기 크기, 좋아하는
+            // 받아 줄지는 원본 셈 그대로 가린다(Persuasion 참고) — 이야기 크기, 좋아하는
             // 갈래, 안목·웅변·매력 굴림 차례다.
             verdict = Decide(it, patron, _game.Sponsors?.FindByName(patron.Name), face, Say, more);
             if (verdict is not Persuasion.Verdict.AskAnother || left <= 0) break;
@@ -537,7 +537,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             return;
         }
 
-        // 계약을 적어 두고 선금을 받는다. 게임도 이 자리에서 소지금에 계약금의 절반을
+        // 계약을 적어 두고 선금을 받는다. 원본도 이 자리에서 소지금에 계약금의 절반을
         // 더한다(0x004ADF3E).
         // 감찰관은 계약마다 반드시 하나 붙는다 — 얼굴은 늘 같고 이름만 갈린다.
         string inspector = Inspector.Pick(_culture, _random);
@@ -567,7 +567,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 후원자가 감찰관을 딸려 보낸다 — 배를 대 준 바로 다음이다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004AF2B7</c>(<c>0x004AF450</c> 이 사람을 짓는다) 다음에 오는 말 두 마디다.
+    /// 원본의 <c>0x004AF2B7</c>(<c>0x004AF450</c> 이 사람을 짓는다) 다음에 오는 말 두 마디다.
     /// <code>
     ///   546CE0  "감찰관으로서 %s%s 따라가 주게. %s, 부탁하네."   후원자 얼굴
     ///   546D10  "하앗, 알겠습니다."                              감찰관 얼굴(232)
@@ -592,7 +592,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 계약 직후 스폰서가 항구에 배를 대 준다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00410620</c> 이다. 설득이 끝나면 <c>0x004AF2A3</c> 이 <b>첫 인자에 1 을
+    /// 원본의 <c>0x00410620</c> 이다. 설득이 끝나면 <c>0x004AF2A3</c> 이 <b>첫 인자에 1 을
     /// 넣어</b> 부르는데, 그 갈래는 묻지 않고 그냥 준다(그냥 찾아가 빌릴 때는 0 이고,
     /// 그때만 "배를 빌리겠습니까?" <c>0x0055C4D8</c> 를 묻는다).
     /// <code>
@@ -708,7 +708,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   기간 연장   기간 x 1.5, 자금 x 0.7  — 1년이면 2년으로
     ///   변경 없음   그대로
     /// </code>
-    /// 두 셈 다 <b>10닢 단위로 내린다</b> — 게임이 <c>x13/10/10*5*2</c> 꼴로 셈해서다
+    /// 두 셈 다 <b>10닢 단위로 내린다</b> — 원본이 <c>x13/10/10*5*2</c> 꼴로 셈해서다
     /// (<c>0x004AEE32</c> · <c>0x004AEEE4</c>).
     ///
     /// 자금을 올려 달랬는데 후원자의 재력이 못 미치면 쫓겨난다(<c>0x004AEE7D</c>) —
@@ -723,7 +723,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             [("자금 증가", years > 1), ("기간 연장", true), ("변경 없음", true)]);
 
         // <b>「변경 없음」은 바로 계약으로 간다</b> — 제안을 다시 묻지 않는다.
-        // 게임도 그 갈래가 1 을 내고(0x004AEF40), 부르는 쪽은 1 이면 계약을 맺는다
+        // 원본도 그 갈래가 1 을 내고(0x004AEF40), 부르는 쪽은 1 이면 계약을 맺는다
         // (0x004AF249 가 0 이 아니면 0x004AF28A 로 간다).
         if (at < 0 || at == 2) return true;
 
@@ -760,7 +760,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                 "그것도 그렇군. 그러면, 기간을 {0}년으로 늘리지. 그렇다면 돈은 전부 {1}닢이 되겠군."), years, funds));
         }
 
-        // <b>되묻지 않는다</b> — 게임은 새 값을 이르고 곧장 1 을 내 계약으로 간다(0x004AEE15).
+        // <b>되묻지 않는다</b> — 원본은 새 값을 이르고 곧장 1 을 내 계약으로 간다(0x004AEE15).
         return true;
     }
 
@@ -770,7 +770,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <summary>죄를 물을 때 먼저 깎는 친밀도(<c>0x0044F10E</c> 의 <c>push -0x14</c>).</summary>
     private const int ClosenessLost = 20;
 
-    /// <summary>10닢 단위로 내린다 — 게임의 <c>/10*10</c> 꼴이다.</summary>
+    /// <summary>10닢 단위로 내린다 — 원본의 <c>/10*10</c> 꼴이다.</summary>
     private static int To10(int coins) => coins / 10 * 10;
 
     /// <summary>「다른 이야기라도」 굴림을 허락하는 후원자 성미 칸(<c>0x004AE7DF</c> 의 <c>[esp+0x24]</c> = 칸 2).</summary>
@@ -803,7 +803,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int style = StyleOf(patron);
         string Pick3(string plain, string polite, string merchant) => style switch { 1 => polite, 2 => merchant, _ => plain };
 
-        // 1. 이야기가 감당할 만한가. 게임은 여기서 <b>설득 애니메이션(5번)</b>을 돌린다
+        // 1. 이야기가 감당할 만한가. 원본은 여기서 <b>설득 애니메이션(5번)</b>을 돌린다
         //    (0x004AE68D) — 감당할 만하면 청을 들어주고 아니면 엎어진다.
         int weight = Persuasion.Weight(hint.Grade, _player.Fame);
         stage?.PlayFameCheck(weight == 0);
@@ -890,7 +890,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 그 후원자에게 <b>보고</b>할 수 있는지 — 계약을 맺은 그 자리이고 맡은 것을 찾아 왔는가.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0044EA00</c> 이다.
+    /// 원본의 <c>0x0044EA00</c> 이다.
     /// <code>
     ///   0x0044E9E0  계약이 있고 그 계약을 맺은 자리인가(0x0044E550 → 0x00493DB0)
     ///   0x0044E880  보고할 것이 하나 이상인가 — 계약의 유적 번호(0x00493E60)로 모은다
@@ -904,7 +904,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 후원자가 앉은 건물의 첫 줄 — 계약 상태로 갈린다.
     /// </summary>
     /// <remarks>
-    /// 게임도 셋을 같은 자리에 갈아 끼운다(<c>0x0044E630</c> 이 <c>+0xB0</c> 을 정한다).
+    /// 원본도 셋을 같은 자리에 갈아 끼운다(<c>0x0044E630</c> 이 <c>+0xB0</c> 을 정한다).
     /// <code>
     ///   0x0044E9A0  설득     = 이 자리에 후원자가 있고 내밀 힌트가 있고 <b>계약 중이 아니다</b>
     ///   0x0044E9E0  계약중단 = 이 후원자와 <b>계약 중</b>이다
@@ -979,7 +979,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 맡은 것을 찾아 왔다고 후원자에게 알린다 — 사례를 받고 계약이 끝난다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0044ED9A</c> → <c>0x00412020</c> 이다. 사례를 셈하는 자리는
+    /// 원본의 <c>0x0044ED9A</c> → <c>0x00412020</c> 이다. 사례를 셈하는 자리는
     /// <c>0x00411D10</c> 이고, 밑값이 <b>미불(계약금/2)</b> 이다.
     /// <code>
     ///   411d1f  push 0x1E ; call 0x4B7C0F      ; rand(30)
@@ -991,7 +991,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 100닢 단위로 내린다(<c>0x004117D0</c> — 100 이하면 그대로 둔다).
     /// 받은 돈은 <c>0x0041200E</c> 가 소지금에 더한다.
     ///
-    /// 게임은 여기서 발견물의 사람 칸 2 를 채우고 깃발 <c>0x80</c> 을 세운다
+    /// 원본은 여기서 발견물의 사람 칸 2 를 채우고 깃발 <c>0x80</c> 을 세운다
     /// (<c>0x004AACA0</c>, 볼트 23) — 우리 쪽의 "알림" 과 같은 자리라 그렇게 적는다.
     /// 그래서 <b>계약으로 맡은 것은 항구에서 못 알리고 여기서만 매듭이 지어진다.</b>
     ///
@@ -1041,7 +1041,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     }
 
     /// <summary>
-    /// 발견물을 하나씩 보고한다 — 게임의 <c>0x00412020</c> 안쪽 차례 그대로다.
+    /// 발견물을 하나씩 보고한다 — 원본의 <c>0x00412020</c> 안쪽 차례 그대로다.
     /// </summary>
     /// <remarks>
     /// 발견물마다 <b>"…의 발견을 보고했다!!"</b>(<c>0x00530BA8</c>)를 내고, 동영상이나
@@ -1309,7 +1309,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   시시 · 기한 안  0x00530588 · 0x005305C0 · 0x00530610   ; 사례 닢수가 들어간다
     ///   시시 · 늦음     0x00530670 · 0x005306B8 · 0x00530728
     /// </code>
-    /// 시시 · 기한 안 대사에는 <b>사례 닢수가 들어간다</b> — 게임도 먼저 셈하고 말에 끼워 넣는다.
+    /// 시시 · 기한 안 대사에는 <b>사례 닢수가 들어간다</b> — 원본도 먼저 셈하고 말에 끼워 넣는다.
     /// </remarks>
     private void Remark(Patron patron, Palace.ReportGrade grade, bool inTime, int paid)
     {
@@ -1515,7 +1515,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 남이 먼저 보고해 버린 발견물인가(<c>0x004AADB0</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 발견물 인스턴스의 깃발 <c>0x80</c>(내가 발표함)이 안 서 있으면서 칸 2
+    /// 원본은 발견물 인스턴스의 깃발 <c>0x80</c>(내가 발표함)이 안 서 있으면서 칸 2
     /// (발표자 이름)가 차 있으면 참으로 본다. 참이면 <b>명성이 한 톨도 안 오르고</b>
     /// 사례도 계약금/4(늦었으면 0)로 깎인다.
     ///
@@ -1694,7 +1694,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 계약중단 — 계약을 깨고 위약금을 문다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0044F7A0</c> 이다. <b>기한이 지났다고 저절로 무슨 일이 나지는 않는다</b> —
+    /// 원본의 <c>0x0044F7A0</c> 이다. <b>기한이 지났다고 저절로 무슨 일이 나지는 않는다</b> —
     /// 후원자를 다시 찾아갔을 때에야 따진다.
     /// <code>
     /// 44f7aa  ebx = (남은기한 &gt; 0) ? 1 : 0                ; 0x004ADB40
@@ -2037,7 +2037,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///                      체력·매력 −5×년 · 소지금 0 · 명성 −2000 · 악명 +(rand300 + 500)×(199 − 매력)/100
     ///                      그 후원자 친밀도 0 · 소지품·보관품·배를 잃는다 → 「용케도 살아 있었군. 끈질긴 놈이군.」
     /// </code>
-    /// 항구 여부는 게임이 도시 객체 <c>+0x1C</c> 비트 0 으로 보는데, 우리는 그 도시에 항구 건물이 있는지로 가른다.
+    /// 항구 여부는 원본이 도시 객체 <c>+0x1C</c> 비트 0 으로 보는데, 우리는 그 도시에 항구 건물이 있는지로 가른다.
     /// 감옥은 <b>부하·아내·아이까지 한꺼번에</b> 잃는 유일한 자리다(<c>0x004534E0</c> · <c>0x00465900</c> ·
     /// <c>0x0047D640</c> 을 차례로 부른다) — 말 한마디 없이 사라진다. 저금과 모항은 그대로다.
     /// </remarks>
@@ -2225,7 +2225,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// <see cref="LentShips"/> 에 있다. 부하들이 안 따르면 「선장」이 일기토를 걸고,
     /// <b>지면 그 자리에서 판이 끝난다</b>(<c>0x0044AF40(4)</c>).
     ///
-    /// <b>원본과 다른 데 하나.</b> 게임은 배마다 어느 후원자가 빌려준 것인지 적어 두어 처벌한
+    /// <b>원본과 다른 데 하나.</b> 원본은 배마다 어느 후원자가 빌려준 것인지 적어 두어 처벌한
     /// 사람의 배만 고르는데, 우리 배는 빌린 것인지 아닌지만 안다. 처벌은 <b>지금 계약</b>의
     /// 후원자에게만 할 수 있으니 빌린 배도 그 사람 것뿐이라 보고 다 건다.
     /// </remarks>
@@ -2537,7 +2537,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// </summary>
     /// <remarks>
     /// 보고를 마치고 건물을 나설 때다 — 이것이 없으면 매수가 아무 이득이 없다.
-    /// 게임은 숨긴 것을 <b>한 목록으로 모아</b> <c>0x004B1710(목록, n, 0)</c> 에 한 번 넘긴다(<c>0x0041C4BB</c>).
+    /// 원본은 숨긴 것을 <b>한 목록으로 모아</b> <c>0x004B1710(목록, n, 0)</c> 에 한 번 넘긴다(<c>0x0041C4BB</c>).
     /// 「손에 넣었다」 알림은 없다 — 들어가면 말없이 채우고, 넘칠 때만 버리기 창이 뜬다.
     /// </remarks>
     private void HandHidden()
@@ -2590,7 +2590,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
     /// <summary>이름 뒤에 붙는 목적격 조사. 받침이 있으면 "을", 없으면 "를".</summary>
     /// <remarks>
-    /// 게임도 조사를 따로 끼워 넣는다 — "%s%s 데리고 왔습니다" 의 두 번째 자리가 이것이다.
+    /// 원본도 조사를 따로 끼워 넣는다 — "%s%s 데리고 왔습니다" 의 두 번째 자리가 이것이다.
     /// </remarks>
     private static string Particle(string name)
     {
@@ -2633,7 +2633,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 「스폰서 일람」 — 한 번이라도 만난 후원자를 늘어놓는다.
     /// </summary>
     /// <remarks>
-    /// 게임의 목록 짓는 곳은 <c>0x00476660</c> 이다. 후원자 81명을 죽 훑으며 두 가지를 본다.
+    /// 원본의 목록 짓는 곳은 <c>0x00476660</c> 이다. 후원자 81명을 죽 훑으며 두 가지를 본다.
     /// <code>
     ///   vtbl[0x38]  0x004ADD70  지금 그 자리에 앉아 있는 사람인가(같은 자리를 여럿이 나눠 쓴다)
     ///   vtbl[0x34]  0x004AD800  후원자 객체 +0x28 의 비트 15 — 서 있으면 뺀다
@@ -2642,7 +2642,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 보게" 하고 물을 때 지운다(<c>0x004AE595</c>). 그래서 <b>한 번 만나야 목록에 뜬다.</b>
     ///
     /// 우리 쪽은 비트를 따로 들지 않고 <see cref="Player.Met"/>(낯을 튼 사람)로 가른다.
-    /// 자리 판정은 <see cref="Patron.IsActive"/> 로 물러선다 — 게임처럼 같은 자리를 두고
+    /// 자리 판정은 <see cref="Patron.IsActive"/> 로 물러선다 — 원본처럼 같은 자리를 두고
     /// 다투는 것까지는 못 가리지만, 대가 갈려 물러난 사람은 걸러진다.
     ///
     /// 이름은 게임 표에서 가져온다 — <c>patrons.json</c> 은 "페르난 마르틴스" 인데 게임 화면은
@@ -2679,7 +2679,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 줄 오른쪽 — 권력과 친밀도. 원본 일람에는 없고 상세 창에만 있는 값이라, 하나하나 열어 보지 않게 앞으로 꺼낸다.
         var stats = mine.Select(m => $"권력 {m.Patron.Power}  친밀도 {_player.ClosenessOf(m.Patron.Name),3}").ToList();
 
-        // 고르면 상세를 띄우고 닫으면 목록으로 돌아온다 — 게임도 그렇다(0x0049348E 가
+        // 고르면 상세를 띄우고 닫으면 목록으로 돌아온다 — 원본도 그렇다(0x0049348E 가
         // 목록 짓는 데로 되돌아간다).
         // <b>도시 그림 창에 얹는다.</b> 부르는 쪽(CityPicView)이 도시 명령 창을 먼저
         // 닫는데, 그 창은 점으로 오므라드는 동안 <b>아직 살아 있고 보이기까지 한다</b>

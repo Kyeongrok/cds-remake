@@ -14,7 +14,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 해전 판 — 원본 800x600 화면 그대로 띠·바다·배를 깔고, 이동을 찍고, 「Set」으로 한 턴을 굴린다.
 /// </summary>
 /// <remarks>
-/// 셈은 <see cref="SeaBattle"/> 이 다 하고 여기서는 그리고 받기만 한다. 그림은 게임 것 그대로다
+/// 셈은 <see cref="SeaBattle"/> 이 다 하고 여기서는 그리고 받기만 한다. 그림은 원본 것 그대로다
 /// (<see cref="CombatArt"/>, 볼트 <c>61.분석-해전 그림</c>).
 /// <code>
 ///   위 띠      bar-b-00  800x32   (0, 0)
@@ -32,14 +32,14 @@ namespace CdsHelper.Game.UI.Views;
 public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 {
     /// <summary>
-    /// 해전이 어떻게 끝났는지 — 게임은 <b>기함(0 · 8)이 빠질 때</b> 판을 닫는다(<c>0x004350F0</c>).
+    /// 해전이 어떻게 끝났는지 — 원본은 <b>기함(0 · 8)이 빠질 때</b> 판을 닫는다(<c>0x004350F0</c>).
     /// </summary>
     public enum Outcome
     {
         /// <summary>내 기함이 퇴각했다(<c>+0x118 = 1</c>).</summary>
         Escaped,
 
-        /// <summary>항복했다. 게임에는 없는 앱 차림표다 — 부르는 쪽이 도망처럼 다룬다.</summary>
+        /// <summary>항복했다. 원본에는 없는 앱 차림표다 — 부르는 쪽이 도망처럼 다룬다.</summary>
         Surrendered,
 
         /// <summary>적 기함을 가라앉혔다(<c>+0x118 = 0</c>).</summary>
@@ -48,7 +48,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         /// <summary>내 기함이 가라앉았다(<c>+0x118 = 2</c> → GAME OVER).</summary>
         Defeated,
 
-        /// <summary>적 기함이 퇴각했다 — 게임은 승리 쪽(<c>+0x118 = 0</c>)으로 치고 전리품만 없다.</summary>
+        /// <summary>적 기함이 퇴각했다 — 원본은 승리 쪽(<c>+0x118 = 0</c>)으로 치고 전리품만 없다.</summary>
         EnemyRetreated,
     }
 
@@ -316,7 +316,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         //   위임 중이면 「제독이 명령하시겠습니까?」만 묻고 끝난다(0x0043EE9A).
         //   판 칸 밖(띠·기둥)을 누르면 「해전전황정보(제독·함대수)」(0x0043FAC2 → 0x00434430),
         //   배가 선 칸이면 그 배의 「해전전황정보(선박)」(0x0043FAB3 → 0x0043EBD0)다 — 아군·적 모두.
-        //   빈 바다 칸은 게임처럼 아무 일도 없다 — 예전에는 원본에 없는 「항복한다 / 게임 복귀」 차림표를 냈다.
+        //   빈 바다 칸은 원본처럼 아무 일도 없다 — 예전에는 원본에 없는 「항복한다 / 게임 복귀」 차림표를 냈다.
         MouseRightButtonUp += (_, e) =>
         {
             if (_running) return;
@@ -974,7 +974,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     ///   적 기함 퇴각       소리 0x4D · 5초 · 부관 rand(5) · 명성
     ///                      → 되찾은 배(레코드는 싸움 전 값) · 나포선이 있으면 들임 차림표   → 적이 달아남
     /// </code>
-    /// 값 치르기(<see cref="_settle"/>)와 들임·편성 창을 판 위에서 돌리고 닫는다 — 게임도 판을 닫기 전에 띄운다.
+    /// 값 치르기(<see cref="_settle"/>)와 들임·편성 창을 판 위에서 돌리고 닫는다 — 원본도 판을 닫기 전에 띄운다.
     /// 짐 창(<c>0x004879A0</c>, 빼앗은 보급품·교역품)은 들임 차림표 뒤에 뜬다(<see cref="LootDialog"/>).
     /// 승패 소리를 내는 동안은 곡을 멈췄다 잇는다(<see cref="FinishSound"/>).
     /// </remarks>
@@ -1677,7 +1677,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         }
 
         // 적 배 — 적장의 나라와 그 해로 선체를, 적장 능력으로 척수·승원·대포를 짓는다(0x00440D90).
-        // 이름은 게임이 일본 군함명 자리 채움(0x549A34)을 굴리는데 화면에는 선체 이름이 찍혀 무리 이름을 쓴다.
+        // 이름은 원본이 일본 군함명 자리 채움(0x549A34)을 굴리는데 화면에는 선체 이름이 찍혀 무리 이름을 쓴다.
         // 적의 대열은 굴린다(0x004421F6 의 rand(8)).
         // 괴물이면 배를 짓지 않고 머리(칸 8)와 몸 여섯(칸 9~14)을 올린다(0x00440D90 · 0x00442B8E).
         if (monster) battle.PlaceMonster(battle.MonsterPerson);

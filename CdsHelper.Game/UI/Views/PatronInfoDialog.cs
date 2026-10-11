@@ -12,7 +12,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 후원자 상세 창 — 「스폰서 일람」에서 한 줄을 고르면 뜬다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x004703A0</c>(창) · <c>0x0046FE??~0x00470230</c>(그리기) 를 옮겼다. 창은
+/// 원본의 <c>0x004703A0</c>(창) · <c>0x0046FE??~0x00470230</c>(그리기) 를 옮겼다. 창은
 /// <b>464 x 232</b> 이고 줄 자리가 코드에 그대로 박혀 있어 그 좌표를 그대로 쓴다.
 /// <code>
 ///   ( 96,   8)  "이름  %s"
@@ -51,7 +51,7 @@ public sealed class PatronInfoDialog : GameWindow
         return b;
     }
 
-    /// <summary>창 크기. 게임 것 그대로다.</summary>
+    /// <summary>창 크기. 원본 것 그대로다.</summary>
     private const double BoardWidth = 464, BoardHeight = 232;
 
     /// <summary>줄이 놓이는 왼쪽 끝과 줄 사이.</summary>
@@ -144,7 +144,7 @@ public sealed class PatronInfoDialog : GameWindow
         };
     }
 
-    /// <summary>게임의 <c>%-10s</c> 처럼 바이트로 세어 채운다.</summary>
+    /// <summary>원본의 <c>%-10s</c> 처럼 바이트로 세어 채운다.</summary>
     private static string Pad(string text, int width) => GameUi.Pad(text, width);
 
     /// <summary>강청색 판 위 그 자리에 검은 글씨를 얹는다.</summary>
@@ -165,7 +165,7 @@ public sealed class PatronInfoDialog : GameWindow
     /// <param name="name">화면에 낼 이름. 게임 표 이름(가운뎃점)이 있으면 그것을 준다.</param>
     /// <param name="job">직업 이름. 게임 표에서 온 것이면 그것을 준다.</param>
     /// <param name="closeness">
-    /// 친밀도(0~100). 게임은 후원자 객체 <c>+0x20</c> 에 들고 <b>0 에서 시작한다</b> —
+    /// 친밀도(0~100). 원본은 후원자 객체 <c>+0x20</c> 에 들고 <b>0 에서 시작한다</b> —
     /// 발견물을 보고할 때마다 움직인다(<c>0x004111D0</c>,
     /// <see cref="Engine.Town.Palace.ClosenessFor"/>).
     /// </param>

@@ -31,7 +31,7 @@ public sealed class EffectAnim
     /// </summary>
     /// <remarks>
     /// 이름은 그림에서 붙였는데, <b>적대 도시에서 들킨 뒤 달아나는 굴림</b>도 이 벌을 쓴다
-    /// (<c>0x004A5419</c>). 게임이 벌을 아껴 쓴 자리다.
+    /// (<c>0x004A5419</c>). 원본이 벌을 아껴 쓴 자리다.
     /// </remarks>
     public const int Load = 0;
 
@@ -41,7 +41,7 @@ public sealed class EffectAnim
     /// </summary>
     public const int Scribe = 1;
 
-    /// <summary>한 장의 한 변. 게임이 늘 이 크기로 그린다.</summary>
+    /// <summary>한 장의 한 변. 원본이 늘 이 크기로 그린다.</summary>
     public const int Size = 80;
     private const int Pixels = Size * Size;
 
@@ -51,7 +51,7 @@ public sealed class EffectAnim
     /// <summary>설득 애니메이션 번호. 후원자 건물의 명성 관문에서 돈다.</summary>
     /// <summary>대포 발사(파트 8~11). 자택 "후손을 남긴다" 가 이 벌을 돌린다.</summary>
     /// <remarks>
-    /// 게임의 껍데기가 <c>0x004A6340</c> 이고, 인자가 1 이면 소리 <c>0x2A</c>, 아니면
+    /// 원본의 껍데기가 <c>0x004A6340</c> 이고, 인자가 1 이면 소리 <c>0x2A</c>, 아니면
     /// <c>0x2B</c> 를 함께 낸다 — 여섯 벌 가운데 소리를 넘기는 것은 이것뿐이다.
     /// </remarks>
     public const int Cannon = 2;

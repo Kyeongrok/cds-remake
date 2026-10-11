@@ -37,11 +37,11 @@ public sealed class Portraits
     public const int Height = 96;
 
     /// <summary>
-    /// 게임이 들고 나온 남자 얼굴 수. 이 뒤는 <b>우리가 더 넣은 것</b>이다.
+    /// 원본이 들고 나온 남자 얼굴 수. 이 뒤는 <b>우리가 더 넣은 것</b>이다.
     /// </summary>
     /// <remarks>
     /// 손 안 댄 <c>MALE.CDS</c> 의 파트 수다(<c>FEMALE.CDS</c> 는 144장). 주인공 얼굴을
-    /// 고르는 자리가 「게임 것 앞의 열여섯」과 「더 넣은 것」을 가르는 데 쓴다.
+    /// 고르는 자리가 「원본 것 앞의 열여섯」과 「더 넣은 것」을 가르는 데 쓴다.
     /// </remarks>
     public const int GameMaleCount = 414;
     private const int Pixels = Width * Height;

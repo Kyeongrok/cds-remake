@@ -5,7 +5,7 @@ using CdsHelper.Support.Local.Helpers;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 실행 중인 CDS_95 에서 함대의 자리·방향과 게임이 실제로 그리는 함대 그림을 읽어 온다.
+/// 실행 중인 CDS_95 에서 함대의 자리·방향과 원본이 실제로 그리는 함대 그림을 읽어 온다.
 /// 읽기만 한다.
 /// </summary>
 /// <remarks>
@@ -68,7 +68,7 @@ public sealed class GameShipReader : IDisposable
 
     public bool IsAttached => _handle != IntPtr.Zero;
 
-    /// <summary>게임이 떠 있으면 붙는다. 이미 붙어 있으면 그대로 true.</summary>
+    /// <summary>원본이 떠 있으면 붙는다. 이미 붙어 있으면 그대로 true.</summary>
     public bool TryAttach()
     {
         if (_handle != IntPtr.Zero) return true;
@@ -97,7 +97,7 @@ public sealed class GameShipReader : IDisposable
         if (!IsAttached && !TryAttach()) return null;
         if (!ReadInt(PosLon, out int lon) || !ReadInt(PosLat, out int lat)) { Detach(); return null; }
         if (lon < 0 || lon > LonRawMax || lat < 0 || lat > LatRawMax) return null;
-        // 둘 다 0 은 날짜변경선 위의 북극이라 게임에 나올 수 없다 — 아직 값이 안 찬 것이다.
+        // 둘 다 0 은 날짜변경선 위의 북극이라 원본에 나올 수 없다 — 아직 값이 안 찬 것이다.
         if (lon == 0 && lat == 0) return null;
         return (lon * (double)WorldMapRenderer.UnfoldedW / LonRawMax,
                 lat * (double)WorldMapRenderer.CellH / LatRawMax);
@@ -125,13 +125,13 @@ public sealed class GameShipReader : IDisposable
 
     /// <summary>
     /// 방향을 밖에서 정해 그림을 가져온다. 게임 함대를 따라가는 대신 우리가 배를 몰 때 쓴다 —
-    /// 그림은 게임 것을 그대로 쓰되 어느 쪽을 보는지는 우리가 정한다.
+    /// 그림은 원본 것을 그대로 쓰되 어느 쪽을 보는지는 우리가 정한다.
     /// </summary>
     /// <param name="heading16">16방향(0~15).</param>
     /// <param name="onLand">참이면 말(육상·정박) 그림.</param>
     /// <param name="phase">
-    /// 말의 걸음 번호(0~7). -1 이면 게임이 들고 있는 번호(<c>0x00569550</c>)를 쓴다.
-    /// 우리가 말을 몰 때는 우리 걸음을 넣어야 다리가 움직인다 — 게임 쪽 번호는 게임이
+    /// 말의 걸음 번호(0~7). -1 이면 원본이 들고 있는 번호(<c>0x00569550</c>)를 쓴다.
+    /// 우리가 말을 몰 때는 우리 걸음을 넣어야 다리가 움직인다 — 게임 쪽 번호는 원본이
     /// 걸을 때만 는다.
     /// </param>
     public byte[]? TryReadSprite(int heading16, bool onLand, int phase = -1)

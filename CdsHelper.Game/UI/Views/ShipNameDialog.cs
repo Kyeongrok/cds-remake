@@ -17,7 +17,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 하나씩 찍어 지을 수 있고, 밑의 목록에서 <b>미리 갖춰 둔 이름</b>(<see cref="ShipNames.All"/>)
 /// 을 골라도 된다.
 ///
-/// 게임은 이 창을 <c>0x00454D30(창, 버퍼, 0x24, 목록수, 목록, "선명입력")</c> 하나로 내고
+/// 원본은 이 창을 <c>0x00454D30(창, 버퍼, 0x24, 목록수, 목록, "선명입력")</c> 하나로 내고
 /// 배를 살 때도 같은 창을 쓴다. 우리도 그렇다 — 개조의 "선명변경" 과 조선소의 "구입" 둘 다
 /// 이 창을 낸다(<see cref="HullSelectDialog"/>).
 /// <code>
@@ -200,7 +200,7 @@ public sealed class ShipNameDialog : GameWindow
     }
 
     /// <summary>
-    /// 게임의 <c>0x00423BE0</c> 그대로 이름을 받는다 — 구입과 선명변경이 같이 쓴다.
+    /// 원본의 <c>0x00423BE0</c> 그대로 이름을 받는다 — 구입과 선명변경이 같이 쓴다.
     /// </summary>
     /// <remarks>
     /// <code>

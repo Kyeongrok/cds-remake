@@ -7,10 +7,10 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 자택 보관 — 게임의 <b>「아이템 교환」</b> 창. 지닌 것과 맡겨 둔 것을 한 칸씩 맞바꾼다.
+/// 자택 보관 — 원본의 <b>「아이템 교환」</b> 창. 지닌 것과 맡겨 둔 것을 한 칸씩 맞바꾼다.
 /// </summary>
 /// <remarks>
-/// 자택 명령 창의 "보관" 으로 연다. 게임의 <c>0x004608B0</c> 을 옮겼다.
+/// 자택 명령 창의 "보관" 으로 연다. 원본의 <c>0x004608B0</c> 을 옮겼다.
 /// <code>
 ///   소지 = 16칸을 읽는다 (0x004B09D0 → 0x0047CDD0, 플레이어 +0x118)
 ///   보관 = 99칸을 읽는다 (0x004AB750 → 0x0047CE70, 플레이어 +0x158)
@@ -22,23 +22,23 @@ namespace CdsHelper.Game.UI.Views;
 /// 누르면 두 칸의 알맹이가 자리를 바꾼다. 빈 칸도 고를 수 있어서, 빈 칸과 바꾸면 그것이
 /// 곧 맡기기(또는 되찾기)다. 그래서 창 이름이 "보관" 이 아니라 "아이템 교환" 이다.
 ///
-/// <b>칸 자리는 창이 닫힐 때까지 그대로 남는다.</b> 게임이 열여섯·아흔아홉 자리 배열을
+/// <b>칸 자리는 창이 닫힐 때까지 그대로 남는다.</b> 원본이 열여섯·아흔아홉 자리 배열을
 /// 들고 빈 자리를 -1 로 두기 때문이다 — 가운데 것을 맡겨도 아랫것이 위로 올라오지 않는다.
 /// 우리 <see cref="Player"/> 는 빈 자리를 안 들고 다니므로, 이 창이 여는 동안만 제 배열을
 /// 쥐고 있다가 닫힐 때 추려 되쓴다(<see cref="Player.ReplaceBelongings"/>).
 ///
 /// 손이 간 쪽 목록만 고른 줄을 남색으로 뒤집고, 안 간 쪽은 검은 테로만 알린다 —
-/// 게임 갈무리가 그렇다(<see cref="GameList.Focused"/>).
+/// 원본 갈무리가 그렇다(<see cref="GameList.Focused"/>).
 /// </remarks>
 public sealed class StorageDialog : GameWindow
 {
-    /// <summary>빈 칸을 나타내는 값. 게임도 -1 로 둔다.</summary>
+    /// <summary>빈 칸을 나타내는 값. 원본도 -1 로 둔다.</summary>
     private const int Empty = -1;
 
-    /// <summary>목록 한 벌의 폭과 높이. 게임 갈무리를 재어 맞췄다(아홉 줄쯤 든다).</summary>
+    /// <summary>목록 한 벌의 폭과 높이. 원본 갈무리를 재어 맞췄다(아홉 줄쯤 든다).</summary>
     private const double ListWidth = 240, ListHeight = 200;
 
-    /// <summary>줄 속 칸 — 이름 하나다. 게임도 오른쪽맞춤이다.</summary>
+    /// <summary>줄 속 칸 — 이름 하나다. 원본도 오른쪽맞춤이다.</summary>
     private static readonly GameListColumn[] Columns =
     [
         new(GameListDock.Fill, new Thickness(8, 0, 10, 0), Align: HorizontalAlignment.Right),
@@ -121,7 +121,7 @@ public sealed class StorageDialog : GameWindow
         Content = GameUi.DialogEdge(stack);
 
         KeyDown += OnKey;
-        // 창을 닫을 때 한 번에 되쓴다 — 게임도 창이 끝나야 두 칸을 되쓴다.
+        // 창을 닫을 때 한 번에 되쓴다 — 원본도 창이 끝나야 두 칸을 되쓴다.
         Closed += (_, _) => _player.ReplaceBelongings(_bag, _box);
     }
 
@@ -140,7 +140,7 @@ public sealed class StorageDialog : GameWindow
             BorderBrush = GameUi.Edge,
         };
 
-    /// <summary>빈 칸은 빈 줄이다 — 게임도 이름 자리만 비워 둔다.</summary>
+    /// <summary>빈 칸은 빈 줄이다 — 원본도 이름 자리만 비워 둔다.</summary>
     private string ItemName(int itemId) =>
         itemId < 0 ? "" : _items?.Find(itemId)?.Name ?? $"아이템 {itemId}";
 

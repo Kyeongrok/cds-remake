@@ -19,7 +19,7 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 곡은 번호로만 돈다(<see cref="BgmPlayer.Play"/>) — 화면·건물이 아니라 <b>번호</b>가
 /// 재생 단위라서, <see cref="BgmPlayer.KnownTracks"/> 에 늘어놓은 스물네 곡만 갈아 끼우면
-/// 게임에서 실제로 도는 곡을 빠짐없이 덮는다.
+/// 원본에서 실제로 도는 곡을 빠짐없이 덮는다.
 /// </remarks>
 public sealed class CustomBgmDialog : GameWindow
 {

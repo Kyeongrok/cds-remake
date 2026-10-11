@@ -46,7 +46,7 @@ public static class RuseEdits
     /// <summary>표에 있는 칸인지.</summary>
     public static bool Known(int index) => index >= 0 && index < Engine.Land.LandBattle.RuseOddsCount;
 
-    /// <summary>씌운 것을 걷어 게임 값으로 되돌린다.</summary>
+    /// <summary>씌운 것을 걷어 원본 값으로 되돌린다.</summary>
     public static void Reset(int index)
     {
         if (!Map.Remove(index)) return;

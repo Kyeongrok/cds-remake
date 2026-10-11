@@ -35,7 +35,7 @@ public static class LandFormationEdits
     /// <summary>그 진형을 고쳤는지.</summary>
     public static bool Edited(int shape) => Map.ContainsKey(shape);
 
-    /// <summary>게임 값 위에 고친 것을 얹어 낸다.</summary>
+    /// <summary>원본 값 위에 고친 것을 얹어 낸다.</summary>
     public static LandFormations.Shape Apply(int shape, LandFormations.Shape stock)
     {
         if (!Map.TryGetValue(shape, out var e)) return stock;
@@ -55,7 +55,7 @@ public static class LandFormationEdits
         Save();
     }
 
-    /// <summary>씌운 것을 걷어 게임 값으로 되돌린다.</summary>
+    /// <summary>씌운 것을 걷어 원본 값으로 되돌린다.</summary>
     public static void Reset(int shape)
     {
         if (!Map.Remove(shape)) return;

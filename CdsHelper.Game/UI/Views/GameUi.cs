@@ -21,7 +21,7 @@ internal static class GameUi
     /// <summary>다이얼로그 바탕. 게임 화면에서 뽑은 <c>#311818</c> 이다.</summary>
     public static readonly Brush Back = new SolidColorBrush(Color.FromRgb(0x31, 0x18, 0x18));
     /// <summary>
-    /// 창 바깥 테. 게임은 창을 <b>거의 검정</b>으로 두른다 — 밝은 양피지색(<c>C8B490</c>)으로
+    /// 창 바깥 테. 원본은 창을 <b>거의 검정</b>으로 두른다 — 밝은 양피지색(<c>C8B490</c>)으로
     /// 두었더니 창마다 액자가 하나 더 있는 꼴이었다.
     /// </summary>
     public static readonly Brush Edge = new SolidColorBrush(Color.FromRgb(0x0B, 0x05, 0x05));
@@ -47,7 +47,7 @@ internal static class GameUi
     /// </summary>
     public static Border TitleBar(string title, Action? onClose)
     {
-        // 게임 원본 조각을 읽었으면 그것으로 짓는다 — 덩굴 무늬가 붙은 제 상자다.
+        // 원본 조각을 읽었으면 그것으로 짓는다 — 덩굴 무늬가 붙은 제 상자다.
         var framed = TitleFrame(Sprites, title, 1, onClose);
         if (framed != null) return framed;
 
@@ -142,7 +142,7 @@ internal static class GameUi
     }
 
     /// <summary>
-    /// 남회색 정보 창(도시정보·아이템·교역품)을 두르는 테. 게임은 <b>짙은 선 셋</b>을
+    /// 남회색 정보 창(도시정보·아이템·교역품)을 두르는 테. 원본은 <b>짙은 선 셋</b>을
     /// 바탕색 사이에 끼워 두른다 — 밝은 선이 아니다.
     /// </summary>
     /// <remarks>
@@ -161,8 +161,8 @@ internal static class GameUi
     ///   x=17  #141820  ┘
     ///   x=18  안쪽
     /// </code>
-    /// 한동안 <b>밝은 선 둘</b>로 그려 두었는데 그것은 창을 도드라지게 하는 요즘 투라 게임과
-    /// 사뭇 달라 보였다. 게임은 거꾸로 어두운 선으로 홈을 파듯 두른다.
+    /// 한동안 <b>밝은 선 둘</b>로 그려 두었는데 그것은 창을 도드라지게 하는 요즘 투라 원본과
+    /// 사뭇 달라 보였다. 원본은 거꾸로 어두운 선으로 홈을 파듯 두른다.
     /// </remarks>
     public static Border InfoFrame(UIElement content, Brush back) => InfoFrame(content, back, InfoLine);
 
@@ -189,12 +189,12 @@ internal static class GameUi
 
     /// <summary>테 한 줄의 굵기.</summary>
     /// <remarks>
-    /// 게임 갈무리에서 잰 값이다. 보급 화면의 왼쪽 테를 화면 점으로 세면
+    /// 원본 갈무리에서 잰 값이다. 보급 화면의 왼쪽 테를 화면 점으로 세면
     /// <c>검정 2 · 바탕 3 · 검정 2 · 바탕 5 · 검정 2</c> 인데, 그 갈무리 배율이 1.74 라
     /// 게임 점으로는 <b>1 · 2 · 1 · 3 · 1</b> 이고 모두 <b>8점</b>이다.
     ///
     /// 예전에는 <c>2 · 3 · 2 · 4 · 2</c>(13점)로 두어 테가 굵고 줄 사이가 벌어졌다 —
-    /// 게임 것은 훨씬 촘촘해서 세 줄이 거의 붙어 보인다.
+    /// 원본 것은 훨씬 촘촘해서 세 줄이 거의 붙어 보인다.
     /// </remarks>
     private const double LineWidth = 1;
 
@@ -214,10 +214,10 @@ internal static class GameUi
         return b;
     }
 
-    /// <summary>창 겹테의 검은 줄. 게임 갈무리에서 뽑았다(#110505).</summary>
+    /// <summary>창 겹테의 검은 줄. 원본 갈무리에서 뽑았다(#110505).</summary>
     public static readonly Brush EdgeDark = Frozen(Color.FromRgb(0x11, 0x05, 0x05));
 
-    // ── 미니 게임의 금빛 액자 ───────────────────────────────────────────────
+    // ── 미니 원본의 금빛 액자 ───────────────────────────────────────────────
 
     /// <summary>금빛 액자의 세 빛깔. 성배 퍼즐 갈무리를 점 단위로 재어 뽑았다.</summary>
     private static readonly Brush GoldLight = Frozen(Color.FromRgb(0xC8, 0xB1, 0x92));
@@ -228,7 +228,7 @@ internal static class GameUi
     /// 오른쪽 단추로 부르는 <b>차림표</b>. 누른 자리에 명령 창을 띄운다.
     /// </summary>
     /// <remarks>
-    /// 미니 게임은 아래 단추 줄이 없다 — 할 일을 이 차림표로 고른다. 창은 시설 명령 창과
+    /// 미니 원본은 아래 단추 줄이 없다 — 할 일을 이 차림표로 고른다. 창은 시설 명령 창과
     /// 같은 물건이라(<see cref="Engine.Menu.GameMenu"/>) 모양도 여닫는 짓시늉도 같다.
     /// 줄 하나를 고르면 차림표가 닫히고 그 일이 벌어진다.
     /// </remarks>
@@ -271,7 +271,7 @@ internal static class GameUi
     /// 미니 게임 판을 두르는 <b>금빛 액자</b>. 밤색 판도 제목도 아래 단추도 없다.
     /// </summary>
     /// <remarks>
-    /// 게임의 미니 게임(성배 퍼즐·미궁 64)은 창을 안 두른다 — 그림만 놓고 <b>금빛 테</b>를
+    /// 원본의 미니 게임(성배 퍼즐·미궁 64)은 창을 안 두른다 — 그림만 놓고 <b>금빛 테</b>를
     /// 두를 뿐이고, 할 일은 오른쪽 단추로 부르는 차림표가 맡는다
     /// (<see cref="ContextMenu(Window, Point, System.Collections.Generic.IReadOnlyList{ValueTuple{string, Action}})"/>).
     /// 밖에서 안으로 <c>검은 줄 1 · 밝은 금 1 · 금 3 · 짙은 금 1 · 검은 줄 1</c> 이다.
@@ -345,7 +345,7 @@ internal static class GameUi
     /// </summary>
     /// <remarks>
     /// 예전에는 창마다 <c>Margin 4 + 밝은 테 2</c> 로 둘렀는데, 그러면 겉테가 두껍고
-    /// <b>밝은 선이 바깥</b>에 서서 게임 것과 딴판이 된다. 게임의 밝은 선은 겉이 아니라
+    /// <b>밝은 선이 바깥</b>에 서서 원본 것과 딴판이 된다. 원본의 밝은 선은 겉이 아니라
     /// 양피지 판 바로 둘레에 있다(그 선은 <see cref="GameList"/> 가 두른다).
     /// </remarks>
     public static Border DialogEdge(UIElement content) => new()
@@ -469,7 +469,7 @@ internal static class GameUi
     /// 이 창을 <paramref name="under"/> <b>바로 아래</b> 가운데에 세운다.
     /// </summary>
     /// <remarks>
-    /// 게임은 그림판이나 설명판을 위쪽에 세우고 말 창을 그 아래에 따로 띄운다 — 한
+    /// 원본은 그림판이나 설명판을 위쪽에 세우고 말 창을 그 아래에 따로 띄운다 — 한
     /// 창에 붙이면 판이 세로로 길어지고, 겹쳐 놓으면 설명이 가린다.
     ///
     /// <paramref name="stage"/> 를 주면 <b>둘을 한 덩이로 보고</b> 그 창 가운데에
@@ -506,7 +506,7 @@ internal static class GameUi
     /// </summary>
     /// <remarks>
     /// 싸움터처럼 <b>판이 다 보여야</b> 하는 자리에 쓴다 — 가운데에 세우면 창이 판 한복판을
-    /// 가려 어느 부대가 어디 섰는지가 안 보인다. 게임도 육상전 공격명령 차림표를 판
+    /// 가려 어느 부대가 어디 섰는지가 안 보인다. 원본도 육상전 공격명령 차림표를 판
     /// 오른아래에 붙여 낸다.
     /// </remarks>
     /// <param name="pad">구석에서 띄우는 만큼. 판을 늘려 걸었으면 그 배수를 곱해 넘긴다.</param>
@@ -554,7 +554,7 @@ internal static class GameUi
     /// 이 창을 옮기면 딸린 창(<see cref="Window.OwnedWindows"/>)도 같은 만큼 따라 옮긴다.
     /// </summary>
     /// <remarks>
-    /// 게임에서는 도시 그림도 커맨드 창도 지도 안에 그려진 것이라 지도가 움직이면 함께
+    /// 원본에서는 도시 그림도 커맨드 창도 지도 안에 그려진 것이라 지도가 움직이면 함께
     /// 움직인다. 우리는 D3D 자식 창 위에 제대로 띄우려고 창(HWND)을 따로 쓰므로
     /// (<see cref="CityPicView"/> 참고) 그 값을 손으로 붙여 준다.
     ///
@@ -590,7 +590,7 @@ internal static class GameUi
     }
 
     /// <summary>
-    /// 게임 원본 조각으로 지은 제목 상자. 조각을 못 읽으면 null 이라 부르는 쪽이 물러설 수 있다.
+    /// 원본 조각으로 지은 제목 상자. 조각을 못 읽으면 null 이라 부르는 쪽이 물러설 수 있다.
     /// </summary>
     /// <summary>
     /// 게임 폴더에서 읽은 화면 조각. 게임 폴더를 알게 되면 한 번 넣어 둔다 —
@@ -687,7 +687,7 @@ internal static class GameUi
         }
 
         /// <summary>
-        /// 글자를 굵게 보이게 할지. 게임은 오른쪽 아래로 한 점 겹쳐 찍어 굵기를 낸다 —
+        /// 글자를 굵게 보이게 할지. 원본은 오른쪽 아래로 한 점 겹쳐 찍어 굵기를 낸다 —
         /// 상단 띠의 날짜·소지금 칸이 그렇다.
         /// </summary>
         /// <remarks>
@@ -734,7 +734,7 @@ internal static class GameUi
         }
 
         /// <summary>
-        /// 그 색인의 게임 색. 윈도 글꼴로 물러설 때에도 글씨색은 게임 것으로 둔다 —
+        /// 그 색인의 게임 색. 윈도 글꼴로 물러설 때에도 글씨색은 원본 것으로 둔다 —
         /// 검정으로 두면 게임 글꼴로 찍힌 옆 칸과 색이 어긋난다(띠 글씨는 <c>#010101</c> 이다).
         /// </summary>
         private static Brush PaletteBrush(byte color)
@@ -838,10 +838,10 @@ internal static class GameUi
     }
 
     /// <summary>
-    /// 게임 원본 조각으로 지은 제목 띠. 조각을 못 읽으면 null 이라 부르는 쪽이 물러설 수 있다.
+    /// 원본 조각으로 지은 제목 띠. 조각을 못 읽으면 null 이라 부르는 쪽이 물러설 수 있다.
     /// </summary>
     /// <remarks>
-    /// <b>왼끝(16) · 가운데(8, 이어 깔기) · 오른끝(16)</b> 셋을 늘어놓는다 — 게임이 하는
+    /// <b>왼끝(16) · 가운데(8, 이어 깔기) · 오른끝(16)</b> 셋을 늘어놓는다 — 원본이 하는
     /// 그대로다(<see cref="UiSprites"/>). 한 장을 9-슬라이스로 늘리는 것이 아니다.
     /// 가운데만 이어 깔면 어떤 폭에도 맞고 도트도 안 뭉개진다.
     ///
@@ -870,7 +870,7 @@ internal static class GameUi
         // 띠를 한 장으로 그린다. 왼끝·가운데·오른끝을 WPF 칸 셋으로 나눠 붙이면 칸 경계에서
         // 세로 줄이 죽죽 생긴다 — 가운데 칸 폭이 8의 배수로 안 떨어져 타일이 잘리고,
         // 화면 배율에 따라 칸 경계가 정수 자리에 안 놓이기 때문이다.
-        // 게임처럼 칸 수를 세어 통째로 찍으면 이음매가 아예 없다.
+        // 원본처럼 칸 수를 세어 통째로 찍으면 이음매가 아예 없다.
         // 그림은 <see cref="Image"/> 가 아니라 <b>배경 솔</b>로 깐다. Image 로 두면 그 그림
         // 크기가 다시 자리 계산에 먹혀 들어가, 넓어질수록 칸 수가 늘고 그래서 또 넓어지는
         // 되먹임이 생긴다(띠가 화면 끝까지 자란다). 배경 솔은 자리 계산에 끼어들지 않는다.
@@ -921,7 +921,7 @@ internal static class GameUi
         }
 
         // 글씨는 띠 전체 위에 얹는다 — 마구리를 넘어가도 가운데에 오게.
-        // 게임 비트맵 글꼴을 읽었으면 그것으로 찍는다. 획 굵기까지 게임과 같아진다.
+        // 게임 비트맵 글꼴을 읽었으면 그것으로 찍는다. 획 굵기까지 원본과 같아진다.
         FrameworkElement? label = GameFontLabel(title, textColor, scale,
                                                 UiSprites.BandHeight, shadow);
         label ??= new TextBlock
@@ -949,7 +949,7 @@ internal static class GameUi
 
     // ── 닫기(X) 단추 ────────────────────────────────────────────────────────
 
-    /// <summary>닫기 단추 한 변. 게임 것도 띠(24) 안에 위아래 4씩을 남기고 이만큼이다.</summary>
+    /// <summary>닫기 단추 한 변. 원본 것도 띠(24) 안에 위아래 4씩을 남기고 이만큼이다.</summary>
     public const int CloseBoxSize = 16;
 
     /// <summary>게임 글꼴의 한 칸 — 한글 한 자가 두 칸이다.</summary>
@@ -986,7 +986,7 @@ internal static class GameUi
 
     /// <summary>
     /// 게임 창 오른쪽 위의 닫기(X) 단추. <b>MISC.CDS 에 그런 조각은 없다</b> —
-    /// 게임이 그때그때 그리는 상자다. 그래서 여기서도 점을 찍어 짓는다.
+    /// 원본이 그때그때 그리는 상자다. 그래서 여기서도 점을 찍어 짓는다.
     /// </summary>
     /// <remarks>
     /// 갈무리를 점 단위로 재어 옮겼다(구입 창의 X 단추, 16x16).
@@ -1092,7 +1092,7 @@ internal static class GameUi
     }
 
     /// <summary>
-    /// 게임의 상단 띠 액자. 그림을 잘라 늘리지 않고 <see cref="FrameArt"/> 로 그때그때 그린다.
+    /// 원본의 상단 띠 액자. 그림을 잘라 늘리지 않고 <see cref="FrameArt"/> 로 그때그때 그린다.
     /// </summary>
     /// <remarks>
     /// 잘라 쓰면 늘릴 때 이음매가 보이고 크기마다 조각을 따로 떠야 한다. 무늬가 규칙적이라
@@ -1116,7 +1116,7 @@ internal static class GameUi
         host.Children.Add(back);
 
         // 안의 것은 액자 <b>위에</b> 얹는다 — 속에 넣지 않는다.
-        // 게임도 그렇다. 칸을 액자 속에 넣으면 테가 두 겹으로 겹쳐 글씨 자리가 좁아지고
+        // 원본도 그렇다. 칸을 액자 속에 넣으면 테가 두 겹으로 겹쳐 글씨 자리가 좁아지고
         // 읽기 나빠진다. 칸이 액자 테를 가리고 올라앉는 것이 맞다.
         // 위아래로 한 칸씩 띄워 액자 바깥 선은 남겨 둔다.
         if (content is FrameworkElement fe) fe.Margin = new Thickness(0, 1, 0, 1);
@@ -1161,7 +1161,7 @@ internal static class GameUi
     /// 게임풍 굴림대를 단 두루마리 칸. 윈도 굴림대는 숨기고 우리가 그린 것을 옆에 세운다.
     /// </summary>
     /// <remarks>
-    /// 윈도 굴림대는 모양이 게임과 너무 다르다. 그렇다고 <c>ControlTemplate</c> 을 통째로
+    /// 윈도 굴림대는 모양이 원본과 너무 다르다. 그렇다고 <c>ControlTemplate</c> 을 통째로
     /// 갈아 끼우기보다, 굴림대를 감추고 <b>화살표 조각(MISC.CDS 파트 3)</b>과 손잡이를
     /// 손으로 세우는 편이 짧고 손댈 데도 적다.
     ///
@@ -1349,7 +1349,7 @@ internal static class GameUi
     /// 게임 아이콘 한 장(16x16) — 화살표·계산기 따위. 조각을 못 읽었으면 null.
     /// </summary>
     /// <remarks>
-    /// 계산기는 게임이 값을 두들겨 넣는 칸 옆에 붙이는 표시다. 예전에는 "田" 글자로
+    /// 계산기는 원본이 값을 두들겨 넣는 칸 옆에 붙이는 표시다. 예전에는 "田" 글자로
     /// 흉내내고 있었는데, 원본에 제 그림이 있다(<see cref="UiSprites.IconCalc"/>).
     /// </remarks>
     public static Image? GameIcon(int icon, int scale = 1)
@@ -1412,7 +1412,7 @@ internal static class GameUi
         return host;
     }
 
-    /// <summary>초점 표시가 오가는 두 색. 게임도 이 둘을 번갈아 보인다.</summary>
+    /// <summary>초점 표시가 오가는 두 색. 원본도 이 둘을 번갈아 보인다.</summary>
     public static readonly Color FocusLight = Color.FromRgb(0xEC, 0xE4, 0xD2);
     public static readonly Color FocusDark = Color.FromRgb(0x14, 0x0C, 0x0A);
 
@@ -1449,7 +1449,7 @@ internal static class GameUi
     /// 한 창 안에서 초점이 오가는 단추 묶음. 방향키로 옮기고 엔터로 고른다.
     /// </summary>
     /// <remarks>
-    /// 게임은 초점이 간 단추의 <b>안쪽 테</b>를 깜빡여 지금 고른 것을 알린다. 그래서 단추마다
+    /// 원본은 초점이 간 단추의 <b>안쪽 테</b>를 깜빡여 지금 고른 것을 알린다. 그래서 단추마다
     /// 테를 한 겹 더 두고 그 색만 움직인다.
     /// </remarks>
     /// <summary>
@@ -1529,7 +1529,7 @@ internal static class GameUi
     /// 두 색을 바둑판으로 섞은 무늬. 게임 그림의 중간색은 다 이렇게 나 있다.
     /// </summary>
     /// <remarks>
-    /// 게임은 색인 팔레트(256색)를 쓰는데, 팔레트에 없는 중간색이 필요하면 이웃한 두 색을
+    /// 원본은 색인 팔레트(256색)를 쓰는데, 팔레트에 없는 중간색이 필요하면 이웃한 두 색을
     /// 한 점씩 번갈아 찍어 눈에서 섞이게 한다. 건물 이름표 바탕이 그렇게 되어 있다 —
     /// <see cref="GamePalette"/> 의 낮은 색인 값을 그림에서 되짚을 때 쓴 성질이 이것이다.
     ///
@@ -1596,7 +1596,7 @@ internal static class GameUi
     }
 
     /// <summary>술집 손님·서가 책에 커서를 올렸을 때 붙는 이름표의 테. 물음창 테와 같은 밝은 회갈색이다.</summary>
-    /// <remarks>게임은 판을 색 <c>0x11</c> 로 칠하고 테를 색 <c>0x49</c> 로 한 점 두른다(<c>0x0042DEC0</c>).</remarks>
+    /// <remarks>원본은 판을 색 <c>0x11</c> 로 칠하고 테를 색 <c>0x49</c> 로 한 점 두른다(<c>0x0042DEC0</c>).</remarks>
     private static readonly Brush HoverEdge = PaletteBrush(0x49);
 
     /// <summary>민 이름표의 판 — 색 <c>0x11</c>.</summary>
@@ -1618,7 +1618,7 @@ internal static class GameUi
     /// 흰 글씨다.
     /// </summary>
     /// <remarks>
-    /// 건물 이름표(<see cref="NameTag"/>)처럼 덩굴 띠를 두르지 않는다. 게임 갈무리의 「마르틴」 ·
+    /// 건물 이름표(<see cref="NameTag"/>)처럼 덩굴 띠를 두르지 않는다. 원본 갈무리의 「마르틴」 ·
     /// 「「XX」 XXXX XXX」 가 이 모양이다.
     /// </remarks>
     public static (Border Tag, GameLabel Text) HoverTag(string text = "")
@@ -1649,11 +1649,11 @@ internal static class GameUi
     /// <remarks>
     /// 메뉴 타이틀과 같은 진홍 띠를 <b>덩굴 마구리까지 통째로</b> 쓴다. 게임 화면에서 잰
     /// "시장" 이름표가 띠 64점이고 글자가 32점이라, 마구리 둘이 글자 <b>바깥</b>에 서 있다.
-    /// 예전에는 가운데 조각만 이어 깔았는데(마구리가 짧은 글자를 덮을까 봐), 그래서 게임 것과
+    /// 예전에는 가운데 조각만 이어 깔았는데(마구리가 짧은 글자를 덮을까 봐), 그래서 원본 것과
     /// 모양이 달랐다 — 칸 수를 <see cref="UiSprites.CellsAround"/> 로 세면 둘 다 된다.
     ///
     /// 조각을 못 읽었을 때만 민색으로 물러선다. 그때 바탕은 두 색을 바둑판으로 섞은
-    /// 무늬다(<see cref="Dither"/>) — 게임 것도 민색이 아니다.
+    /// 무늬다(<see cref="Dither"/>) — 원본 것도 민색이 아니다.
     /// </remarks>
     public static Border NameTag(string text)
     {
@@ -1684,7 +1684,7 @@ internal static class GameUi
     }
 
     /// <summary>
-    /// 게임의 <c>%-10s</c> 처럼 왼쪽에 붙이고 빈칸으로 채운다.
+    /// 원본의 <c>%-10s</c> 처럼 왼쪽에 붙이고 빈칸으로 채운다.
     /// </summary>
     /// <remarks>
     /// C 의 <c>%-10s</c> 는 <b>바이트</b>로 센다 — CP949 에서 한글 한 자가 두 바이트라
@@ -1707,7 +1707,7 @@ internal static class GameUi
     /// <param name="closed">받침이 있을 때 붙일 것("을"·"은"·"이").</param>
     /// <param name="open">받침이 없을 때 붙일 것("를"·"는"·"가").</param>
     /// <remarks>
-    /// 게임도 조사를 따로 끼워 넣는다 — 발견 알림 "%s%s [%s]%s 발견했습니다"
+    /// 원본도 조사를 따로 끼워 넣는다 — 발견 알림 "%s%s [%s]%s 발견했습니다"
     /// (<c>0x00538490</c>) 의 두 번째·네 번째 자리가 이것이다. 한글이 아닌 글자로 끝나면
     /// 받침이 없는 쪽을 쓴다.
     /// </remarks>

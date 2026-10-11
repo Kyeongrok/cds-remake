@@ -112,14 +112,14 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>실제 함대가 있을 때만 주인공 배 그림을 그린다.</summary>
     public bool ShowShip { get; set; } = true;
 
-    /// <summary>한 틱의 길이. 게임처럼 틱마다 한 걸음씩 나아간다.</summary>
+    /// <summary>한 틱의 길이. 원본처럼 틱마다 한 걸음씩 나아간다.</summary>
     private const double TickSeconds = 0.1;
 
     /// <summary>
     /// 바람이 없거나 함대를 모를 때 한 틱에 나아가는 칸 수.
     /// </summary>
     /// <remarks>
-    /// 여기 오는 일은 거의 없다 — <see cref="FleetSpeed"/> 가 붙어 있으면 게임 셈으로
+    /// 여기 오는 일은 거의 없다 — <see cref="FleetSpeed"/> 가 붙어 있으면 원본 셈으로
     /// 잰다(<see cref="Engine.Sea.Sailing"/>). 바람표를 못 읽었을 때의 물러설 자리다.
     /// </remarks>
     private const double CellsPerTick = 1.0;
@@ -138,7 +138,7 @@ public sealed class ShipMapHost : HwndHost
     /// <see cref="Engine.Sea.Sailing.DefaultTurnRate"/> 로 돈다.
     /// </summary>
     /// <remarks>
-    /// 게임은 기함 종류로 표(<c>0x00569FC0</c>)를 찾는데 지도는 함대를 모른다 —
+    /// 원본은 기함 종류로 표(<c>0x00569FC0</c>)를 찾는데 지도는 함대를 모른다 —
     /// <see cref="FleetSpeed"/> 와 같이 붙이는 쪽이 걸어 준다.
     /// </remarks>
     public Func<int>? TurnRateOf { get; set; }
@@ -167,13 +167,13 @@ public sealed class ShipMapHost : HwndHost
     private WindTable? _wind;
 
     /// <summary>
-    /// 지금 쥐고 있는 바람 — 표 값에 방위를 <c>rand(3) − 1</c> 만큼 흔든 것(<c>0x00424E50</c>). 게임은 이 값을 바람 물건
+    /// 지금 쥐고 있는 바람 — 표 값에 방위를 <c>rand(3) − 1</c> 만큼 흔든 것(<c>0x00424E50</c>). 원본은 이 값을 바람 물건
     /// <c>0x00586168</c> 에 박아 두고, 다시 읽을 때까지 그대로 쓴다.
     /// </summary>
     private (int Cell, int Month, WindTable.Flow Wind)? _heldWind;
 
     /// <summary>
-    /// 그 칸의 바람. 칸이나 달이 바뀌었거나 <see cref="ShiftWind"/> 로 흔들라고 했으면 새로 읽는다 — 게임은 지도가 넘어갈
+    /// 그 칸의 바람. 칸이나 달이 바뀌었거나 <see cref="ShiftWind"/> 로 흔들라고 했으면 새로 읽는다 — 원본은 지도가 넘어갈
     /// 때(<c>0x0047D1B0</c> 벌), 이레마다(<c>0x0044B27D</c>), 배에 오를 때(<c>0x0048EB94</c>) 다시 읽는다.
     /// </summary>
     private WindTable.Flow HeldWind(int cell, int month)
@@ -204,7 +204,7 @@ public sealed class ShipMapHost : HwndHost
             ? (state[0], state[1], new WindTable.Flow(state[2] & 0xF, state[3], state[4]))
             : null;
 
-    /// <summary>물결이 흐른 틱 수. 게임의 <c>0x00569554</c> 자리다.</summary>
+    /// <summary>물결이 흐른 틱 수. 원본의 <c>0x00569554</c> 자리다.</summary>
     private int _rippleTick;
     private double _rippleAccum;
 
@@ -215,7 +215,7 @@ public sealed class ShipMapHost : HwndHost
     public Func<int>? MonthOf { get; set; }
 
     /// <summary>
-    /// 바람·해류 화살표를 지도에 얹을지. 게임에는 없는 것이라 커맨드 창에서 끄고 켠다.
+    /// 바람·해류 화살표를 지도에 얹을지. 원본에는 없는 것이라 커맨드 창에서 끄고 켠다.
     /// 물결은 이것과 상관없이 늘 흐른다 — 그쪽이 원본 모습이다.
     /// </summary>
     public bool ShowFlowArrows
@@ -577,12 +577,12 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>
     /// 지금 뱃머리를 8방위 이름으로. 속으로는 16방위 그대로 두고 보여줄 때만 절반으로 깎는다 —
-    /// 게임도 <c>0x48ABA2</c> 에서 방위를 2로 나눠 8방위 이름표를 찾는다. 그래서 화면에 "서" 로
+    /// 원본도 <c>0x48ABA2</c> 에서 방위를 2로 나눠 8방위 이름표를 찾는다. 그래서 화면에 "서" 로
     /// 보여도 속은 4일 수도 5일 수도 있다.
     /// </summary>
     public string HeadingName => CompassNames[(_heading & 0xF) >> 1];
 
-    /// <summary>지금 뱃머리(16방위, 0 이 북) — 게임의 <c>[0x005B63C8]</c>. 사건 연출이 자리를 고를 때 본다.</summary>
+    /// <summary>지금 뱃머리(16방위, 0 이 북) — 원본의 <c>[0x005B63C8]</c>. 사건 연출이 자리를 고를 때 본다.</summary>
     public int Heading => _heading & 0xF;
 
     /// <summary>
@@ -640,13 +640,13 @@ public sealed class ShipMapHost : HwndHost
     public bool Paused { get; set; }
 
     /// <summary>
-    /// 배(말)를 옮긴 <b>걸음 수</b>. 게임의 항해 고리 한 바퀴에 맞먹는다.
+    /// 배(말)를 옮긴 <b>걸음 수</b>. 원본의 항해 고리 한 바퀴에 맞먹는다.
     /// </summary>
     /// <remarks>
-    /// 게임은 고리를 한 바퀴 돌 때마다 발밑 칸의 눈금을 하나 붙이고
+    /// 원본은 고리를 한 바퀴 돌 때마다 발밑 칸의 눈금을 하나 붙이고
     /// (<c>0x0048EF7D</c>) 마흔여덟 눈금이 하루다. 그 고리 한 바퀴가 여기서는
     /// <see cref="TickSeconds"/> 짜리 걸음 하나라, 날을 세는 쪽이 이 수를 본다.
-    /// 멎어 있거나 닻을 내렸으면 안 오른다 — 게임도 그때는 고리가 안 돈다.
+    /// 멎어 있거나 닻을 내렸으면 안 오른다 — 원본도 그때는 고리가 안 돈다.
     /// </remarks>
     public long Steps { get; private set; }
 
@@ -693,7 +693,7 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>
     /// 도시에 들어가 있는지. 참이면 지도 위에 남색 막을 씌운다 — 색을 칠하는 것이 아니라
-    /// 지도가 그 밑으로 비쳐 보인다(게임도 그렇다).
+    /// 지도가 그 밑으로 비쳐 보인다(원본도 그렇다).
     /// </summary>
     public bool InCity
     {
@@ -745,7 +745,7 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>
     /// 참이면 바다 명령(닻·상륙·출항·배 놓기·조종)을 받지 않는다. 도시 화면이 떠 있는
-    /// 동안이 그렇다 — 게임도 도시에 들어가면 함대 명령 대신 도시 커맨드만 낸다.
+    /// 동안이 그렇다 — 원본도 도시에 들어가면 함대 명령 대신 도시 커맨드만 낸다.
     /// 막는 곳을 창이 아니라 여기에 둔 것은, 지도를 만지는 길이 여럿이라
     /// (마우스·커맨드 창·조작 줄) 부르는 쪽마다 검사를 흩어 놓으면 하나씩 새기 때문이다.
     /// </summary>
@@ -992,7 +992,7 @@ public sealed class ShipMapHost : HwndHost
 
         // 덧그림 한 장을 두 가지로 나눠 쓴다. 둘이 같이 뜰 일은 없다 — 상륙하면 닻이 풀린다.
         //   정박 중  닻. 그림이 배와 같은 48x48 이고 그 안에서 왼쪽 아래에만 찍혀 있으므로
-        //           배와 같은 자리에 겹치면 게임처럼 배 왼쪽 아래에 걸린다.
+        //           배와 같은 자리에 겹치면 원본처럼 배 왼쪽 아래에 걸린다.
         //   뭍에 있을 때  대 둔 배. 어디로 상륙했는지 그 자리에 남는다.
         var overlay = (0f, 0f, 0f, 0f);
         if (ShowShip && _anchored && !_onLand && _shipKnown && _spriteReady) overlay = rect;
@@ -1038,7 +1038,7 @@ public sealed class ShipMapHost : HwndHost
     /// </summary>
     /// <remarks>
     /// 누가 어디 있는지는 <c>PersonWorld</c> 가 안다. 여기서는 <b>받아서 그리기만</b> 한다 —
-    /// 지도는 인물 표를 모르는 편이 낫다. 게임도 지도 객체가 인물 배열을 훑어 가까운
+    /// 지도는 인물 표를 모르는 편이 낫다. 원본도 지도 객체가 인물 배열을 훑어 가까운
     /// 열여섯을 채운다(<c>0x00426790</c>).
     /// </remarks>
     /// <remarks>Skin 은 그 사람 기함의 배 그림 벌(0 코구 · 1 카라벨 · 2 카락 · 3 갤리온)이다.</remarks>
@@ -1056,7 +1056,7 @@ public sealed class ShipMapHost : HwndHost
     /// 남의 그림 여덟 장을 한 번 올린다 — 배 넉 장, 말 넉 장이고 각각 북 · 서 · 남 · 동 차례다.
     /// </summary>
     /// <remarks>
-    /// 내 배·말과 같은 <c>asset/ship</c> 벌을 쓴다. 게임도 남의 배를 따로 그리지 않고 내 것과 같은
+    /// 내 배·말과 같은 <c>asset/ship</c> 벌을 쓴다. 원본도 남의 배를 따로 그리지 않고 내 것과 같은
     /// 그림 벌(바다 <c>0x00569FE4</c> · 뭍 <c>0x00569FE8</c>)을 쓴다.
     /// </remarks>
     private void UploadFolkSprites()
@@ -1087,7 +1087,7 @@ public sealed class ShipMapHost : HwndHost
     /// 가까운 사람 열여섯을 골라 화면 자리로 옮긴다.
     /// </summary>
     /// <remarks>
-    /// 게임은 인물 번호 차례로 앞에서 열여섯을 채우는데, 우리는 <b>가까운 차례</b>로 고른다 —
+    /// 원본은 인물 번호 차례로 앞에서 열여섯을 채우는데, 우리는 <b>가까운 차례</b>로 고른다 —
     /// 화면에 든 사람이 번호가 커서 밀리면 눈에 안 보여 이상하다.
     /// </remarks>
     /// <returns>지난 프레임과 <b>달라졌으면</b> 참 — 그때만 다시 그린다.</returns>
@@ -1170,10 +1170,10 @@ public sealed class ShipMapHost : HwndHost
     }
 
     /// <summary>
-    /// 그 사람이 뭍 칸에 서 있는지 — 게임은 부류가 2 이상이면 배 대신 말을 그린다.
+    /// 그 사람이 뭍 칸에 서 있는지 — 원본은 부류가 2 이상이면 배 대신 말을 그린다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0048A794</c> 가 자리를 열여섯으로 나눠 칸을 잡고 <c>0x00426710</c> 으로 부류를
+    /// 원본의 <c>0x0048A794</c> 가 자리를 열여섯으로 나눠 칸을 잡고 <c>0x00426710</c> 으로 부류를
     /// 본 뒤 <c>cmp eax, 2 / jge</c> 로 가른다. 부류표를 못 열었으면 뱃길 판정으로 물러선다.
     /// </remarks>
     private bool FolkOnLand(double cellX, double cellY)
@@ -1206,7 +1206,7 @@ public sealed class ShipMapHost : HwndHost
     /// 내 배에서 <paramref name="radiusCells"/> 칸 안(경계 포함)에 든 사람들의 번호.
     /// </summary>
     /// <remarks>
-    /// 지금 그리고 있는 사람들 가운데서 고른다 — 게임도 화면 열여섯 칸에 든 사람만 잰다
+    /// 지금 그리고 있는 사람들 가운데서 고른다 — 원본도 화면 열여섯 칸에 든 사람만 잰다
     /// (<c>0x0048C049</c>).
     /// </remarks>
     public List<int> FolkWithin(double radiusCells)
@@ -1219,7 +1219,7 @@ public sealed class ShipMapHost : HwndHost
     }
 
     /// <summary>
-    /// 칸 좌표에 48x48 그림 한 장이 놓일 화면 사각형. 게임에서 한 칸이 16점이니 세 칸이다.
+    /// 칸 좌표에 48x48 그림 한 장이 놓일 화면 사각형. 원본에서 한 칸이 16점이니 세 칸이다.
     /// </summary>
     private (float X, float Y, float W, float H) SpriteRectAt(
         double cellX, double cellY, (double X, double Y) origin)
@@ -1838,8 +1838,8 @@ public sealed class ShipMapHost : HwndHost
     /// 이것이 지난 프레임과 같으면 다시 그릴 것이 없다.
     /// </summary>
     /// <remarks>
-    /// 게임은 항해 루프를 한 번 돌 때마다 틱을 하나 올린다(<c>0x0048EF82</c>). 여기서도 한
-    /// 걸음(<see cref="TickSeconds"/>)과 같은 길이로 올린다 — 60fps 로 올리면 물결이 게임보다
+    /// 원본은 항해 루프를 한 번 돌 때마다 틱을 하나 올린다(<c>0x0048EF82</c>). 여기서도 한
+    /// 걸음(<see cref="TickSeconds"/>)과 같은 길이로 올린다 — 60fps 로 올리면 물결이 원본보다
     /// 여섯 배 빨리 흐르고, 프레임마다 지도를 다시 그리게 된다.
     ///
     /// 무늬는 <c>세기 x 틱 x 16 / 64</c> 만큼 흐르므로 세기가 1 이면 네 틱에 한 칸이다.
@@ -1851,7 +1851,7 @@ public sealed class ShipMapHost : HwndHost
 
         // 창이 떠 있는 동안에는 물결도 구름도 선다 — 도시 창이 지도를 남색 막으로 덮은
         // 때(<see cref="_inCity"/>)만이 아니라 커맨드 창·물음창으로 멈춘 때
-        // (<see cref="Paused"/>)도 그렇다. 게임은 창이 뜨면 항해 루프째로 서서
+        // (<see cref="Paused"/>)도 그렇다. 원본은 창이 뜨면 항해 루프째로 서서
         // 날짜도 구름도 그 자리에 멎는다 — 하늘만 살아 있으면 멈춘 것으로 안 보인다.
         int ticks = 0;
         if (!_inCity && !Paused)
@@ -1863,7 +1863,7 @@ public sealed class ShipMapHost : HwndHost
         int month = MonthOf?.Invoke() ?? DefaultMonth;
         if (month != _flowMonth) { _flowMonth = month; RefreshFlowGrid(month); }
 
-        // 게임은 함대가 선 칸의 바람·해류 하나로 화면 전체를 흘린다. 여기서도 그대로 한다.
+        // 원본은 함대가 선 칸의 바람·해류 하나로 화면 전체를 흘린다. 여기서도 그대로 한다.
         int cell = WindTable.CellOf((int)(_shipX * OceanTiles.TileW), (int)(_shipY * OceanTiles.TileW));
         var flow = cell < 0 ? default : _wind.CurrentAt(cell);
         var (dx, dy) = _wind.Vector(flow.Dir);
@@ -1997,7 +1997,7 @@ public sealed class ShipMapHost : HwndHost
     /// <summary>이보다 작아지면 안 그린다. 멀리서 보면 점 여섯 개라 티끌만 남는다.</summary>
     private const double CloudMinPixels = 48;
 
-    /// <summary>게임 한 점이 덮는 칸 수. 게임은 칸 하나를 16점으로 그린다.</summary>
+    /// <summary>게임 한 점이 덮는 칸 수. 원본은 칸 하나를 16점으로 그린다.</summary>
     private const double GamePixelsPerCell = OceanTiles.TileW;
 
     /// <summary>
@@ -2006,7 +2006,7 @@ public sealed class ShipMapHost : HwndHost
     /// <remarks>
     /// 게임(<c>0x004893D0</c>)은 구름을 <b>화면 좌표</b>로 들고 640x480 을 돌린다. 여기서는
     /// 지도를 키우고 줄일 수 있으니 <b>게임 점</b>(칸당 16점)으로 들고 있다가 그릴 때만
-    /// 배율을 곱한다 — 그래야 구름 한 장이 늘 지도 10칸 x 7.5칸을 덮어, 게임에서 보던
+    /// 배율을 곱한다 — 그래야 구름 한 장이 늘 지도 10칸 x 7.5칸을 덮어, 원본에서 보던
     /// 크기 그대로다. 장 수도 보이는 넓이에 맞춰 줄인다(640x480 에 여섯 장 꼴).
     /// </remarks>
     private void UpdateClouds(int windDir, int windSpeed, int ticks)
@@ -2080,7 +2080,7 @@ public sealed class ShipMapHost : HwndHost
         SubmitClouds();
     }
 
-    /// <summary>게임과 같이 3열로 벌려 놓는다(<c>0x0048906B</c>).</summary>
+    /// <summary>원본과 같이 3열로 벌려 놓는다(<c>0x0048906B</c>).</summary>
     private void PlaceClouds(int gw, int gh)
     {
         for (int i = 0; i < _cloudState.Length; i++)
@@ -2188,7 +2188,7 @@ public sealed class ShipMapHost : HwndHost
 
     private void UpdateShip(double dt, (double X, double Y) origin, double dpiX, double dpiY)
     {
-        // 그림은 게임 것을 쓴다 — 게임이 떠 있어야 배 모양이 나온다.
+        // 그림은 원본 것을 쓴다 — 원본이 떠 있어야 배 모양이 나온다.
         if (!_ship.IsAttached) _ship.TryAttach();
 
         if (SteerWithMouse)
@@ -2250,7 +2250,7 @@ public sealed class ShipMapHost : HwndHost
             return;
         }
 
-        // 게임이 떠 있으면 그 그림을(함선 종류에 맞는 4벌 중 하나), 아니면 asset/ship 의 것을 쓴다.
+        // 원본이 떠 있으면 그 그림을(함선 종류에 맞는 4벌 중 하나), 아니면 asset/ship 의 것을 쓴다.
         // 같은 그림이면 게임 메모리를 읽지도, 텍스처를 올리지도 않는다 — 뱃머리가 그대로면
         // 프레임마다 할 일이 없다.
         var key = (_heading, _onLand, _ship.IsAttached, _onLand ? _walkPhase : 0,
@@ -2260,7 +2260,7 @@ public sealed class ShipMapHost : HwndHost
         var indices = _ship.IsAttached
             ? _ship.TryReadSprite(_heading, _onLand, _onLand ? _walkPhase : -1)
             : null;
-        // 고해상도 그림은 우리 그림(asset)으로 바다에 떠 있을 때만 건다 — 게임에서 읽은 그림과 말에는 짝이 없다.
+        // 고해상도 그림은 우리 그림(asset)으로 바다에 떠 있을 때만 건다 — 원본에서 읽은 그림과 말에는 짝이 없다.
         var hi = indices == null && !_onLand ? ShipSprites.HiFrame(_heading) : null;
         _renderer.SetShipHi(hi?.Pixels, hi?.Side ?? 0);
 
@@ -2279,7 +2279,7 @@ public sealed class ShipMapHost : HwndHost
         _spriteKey = key;
     }
 
-    /// <summary>게임에서 읽은 팔레트 색인 그림을 색으로 풀어 올린다. 색인 0 은 비침이다.</summary>
+    /// <summary>원본에서 읽은 팔레트 색인 그림을 색으로 풀어 올린다. 색인 0 은 비침이다.</summary>
     private void UploadGameSprite(byte[] indices)
     {
         // 같은 그림이면 아무것도 하지 않는다. 게임 함대를 따라가는 쪽은 방향을 우리가 모르므로
@@ -2307,7 +2307,7 @@ public sealed class ShipMapHost : HwndHost
     /// 서는 것도 아니다. 한 번 뱃머리를 잡으면 막힐 때까지 그 쪽으로 간다.
     /// </summary>
     /// <remarks>
-    /// 게임의 조타 그대로다(볼트 <c>86.분석-바다 조타(커서 방향·뱃머리·이동 벡터)</c>).
+    /// 원본의 조타 그대로다(볼트 <c>86.분석-바다 조타(커서 방향·뱃머리·이동 벡터)</c>).
     /// <code>
     ///   커서 → 바라는 쪽   0x0048ECC2   기울기 1/2·2 로 가르는 8방위(늘 짝수)
     ///   한 틱 돌기·가기    0x0048D0A0   뱃머리를 1~3 눈금 돌리고 그 벡터로 나아간다
@@ -2317,9 +2317,9 @@ public sealed class ShipMapHost : HwndHost
     /// 벡터로 삼았는데, 배 그림은 뱃머리를 둘로 접은 여덟 장뿐이라(<c>h &gt;&gt; 1</c>) 홀수
     /// 방위로 갈 때마다 선체가 <b>22.5도 틀어진 채</b> 갔다 — 배가 옆으로 미끄러져 보이던
     /// 것이 그것이다. 바라는 쪽을 짝수로만 내고 이동을 뱃머리 벡터로 되돌리면, 서 있을 때는
-    /// 늘 그림과 맞고 도는 동안만 게임처럼 잠깐 어긋난다.
+    /// 늘 그림과 맞고 도는 동안만 원본처럼 잠깐 어긋난다.
     ///
-    /// 죽은 구역(<see cref="TurnDeadZoneCells"/>)은 우리 것이다 — 게임은 커서가 배 한가운데에
+    /// 죽은 구역(<see cref="TurnDeadZoneCells"/>)은 우리 것이다 — 원본은 커서가 배 한가운데에
     /// 와도 동쪽으로 돌린다.
     /// </remarks>
     private void Sail(double dt)
@@ -2345,7 +2345,7 @@ public sealed class ShipMapHost : HwndHost
             Ticks++;                       // 날 눈금은 서 있어도 쌓인다(0x0044AF90)
             Turn();
 
-            // 닻을 내렸으면 뱃머리만 돌고 그 자리에 선다 — 게임도 돌기가 닻 검사보다 앞이라,
+            // 닻을 내렸으면 뱃머리만 돌고 그 자리에 선다 — 원본도 돌기가 닻 검사보다 앞이라,
             // 서서 뱃머리를 맞춰 두었다가 닻을 올리면 곧바로 그 쪽으로 나아간다.
             if (_anchored || !_making) continue;
 
@@ -2375,7 +2375,7 @@ public sealed class ShipMapHost : HwndHost
     private static int Sector8(double dx, double dy)
     {
         double ax = Math.Abs(dx), ay = Math.Abs(dy);
-        if (ay * 2 <= ax) return dx >= 0 ? 12 : 4;             // 동 · 서 (가운데면 게임처럼 동)
+        if (ay * 2 <= ax) return dx >= 0 ? 12 : 4;             // 동 · 서 (가운데면 원본처럼 동)
         if (ax * 2 <= ay) return dy > 0 ? 8 : 0;               // 남 · 북
         return dx > 0 ? (dy > 0 ? 10 : 14) : (dy > 0 ? 6 : 2); // 남동 · 북동 · 남서 · 북서
     }
@@ -2425,7 +2425,7 @@ public sealed class ShipMapHost : HwndHost
     /// 이 걸음에 나아갈 칸 수와, 해류가 옆으로 미는 만큼.
     /// </summary>
     /// <remarks>
-    /// 게임 셈 그대로다(볼트 <c>30.분석-항해 속도(돛·바람·해류)</c>).
+    /// 원본 셈 그대로다(볼트 <c>30.분석-항해 속도(돛·바람·해류)</c>).
     /// <code>
     ///   속도  = 0x0048BCF0()                         ; 추진력 x (풍속+1) x 돛효율 / 100
     ///   부류 1 : 이동 = 9 * 속도 / 10        + 해류
@@ -2479,7 +2479,7 @@ public sealed class ShipMapHost : HwndHost
     /// 항해지도 한 장을 BGRA 로 짓는다. 지도를 못 읽었으면 null.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00416A00</c> 그대로다. 점 하나가 칸 <b>4x4</b> 고, 그 열여섯 칸 가운데
+    /// 원본의 <c>0x00416A00</c> 그대로다. 점 하나가 칸 <b>4x4</b> 고, 그 열여섯 칸 가운데
     /// 뭍이 바다보다 많으면 뭍색이다(같으면 바다). <b>안 밝힌 점은 아예 안 본다</b> — 그 자리는
     /// 양피지로 남는다. 배·도시·발견물 같은 <b>표식은 하나도 안 찍는다</b>.
     /// </remarks>
@@ -2540,7 +2540,7 @@ public sealed class ShipMapHost : HwndHost
     private const byte NearShip = 0x0A, NearCity = 0x24, NearFind = 0x38,
                        NearLand = 0x18, NearSea = 0x2E, NearPole = 0x49;
 
-    /// <summary>주변지도가 한 점에 나아가는 거리 밑값(1/16 칸). 게임은 <c>측량 + 2</c> 다.</summary>
+    /// <summary>주변지도가 한 점에 나아가는 거리 밑값(1/16 칸). 원본은 <c>측량 + 2</c> 다.</summary>
     public const int LocalStepBase = 2;
 
     /// <summary>WORLD.CDS 칸 낱말에서 <b>그림이 박힌 칸</b>(도시·발견물 그림 조각)을 뜻하는 비트.</summary>
@@ -2553,7 +2553,7 @@ public sealed class ShipMapHost : HwndHost
     /// 주변지도 한 장을 BGRA 로 짓는다. 지도를 못 읽었거나 배가 없으면 null.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00416B60(칸x, 칸y, 측량 + 2)</c> 다. 항해지도와 크기는 같은데
+    /// 원본의 <c>0x00416B60(칸x, 칸y, 측량 + 2)</c> 다. 항해지도와 크기는 같은데
     /// (<b>625 x 313</b>) <b>배 둘레를 크게 본 것</b>이고, 밝힘과 상관없이 다 보인다.
     /// <code>
     ///   416ba6  왼쪽 끝 = 배칸x * 16 - 625 * r / 2       (자리는 1/16 칸)
@@ -2715,7 +2715,7 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>발밑이 빠른 부류(부류 1 - 난바다)인지.</summary>
     /// <remarks>
-    /// 게임은 <b>부류표</b>(<c>0x004CD048</c>)에 칸 값을 그대로 넣어 본다(<c>0x00426710</c>). 예전에는 칸 값의
+    /// 원본은 <b>부류표</b>(<c>0x004CD048</c>)에 칸 값을 그대로 넣어 본다(<c>0x00426710</c>). 예전에는 칸 값의
     /// <c>0x80</c> 비트로 갈랐는데, 난바다 칸은 <c>0x800 · 0x880 · 0x900 · 0x980 ...</c> 이 물결 무늬로 섞여 있고
     /// 표에서는 <b>모두 부류 1</b> 이다 - 비트로 가르면 한 칸 걸러 느린 식(해류 없음)으로 떨어져, 역풍에 역류면
     /// 배가 칸마다 섰다 갔다 했다. 표를 못 읽었을 때만 옛 어림을 쓴다.
@@ -2749,7 +2749,7 @@ public sealed class ShipMapHost : HwndHost
     /// 말의 걸음 번호(0~7). 한 걸음 뗄 때마다 늘어 다리가 움직인다.
     /// </summary>
     /// <remarks>
-    /// 게임도 이렇게 한다 — 지도 한 틱마다 <c>0x00569550</c> 이 늘고, 그림 번호가
+    /// 원본도 이렇게 한다 — 지도 한 틱마다 <c>0x00569550</c> 이 늘고, 그림 번호가
     /// <c>(방향 &gt;&gt; 2) * 8 + 걸음</c> 이다. 우리 틱은 0.1초라 여덟 걸음이 0.8초에 돈다.
     /// 멈춰 있으면 늘지 않으므로 선 말은 다리도 선다.
     /// </remarks>
@@ -2778,12 +2778,12 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>지금 모드에서 지날 수 있는 칸인지. 배는 물을, 말은 뭍을 간다.</summary>
     /// <remarks>
-    /// 게임이 쓰는 표를 그대로 본다(<see cref="TerrainTable"/>) — 칸의 <b>첫 바이트</b>로
+    /// 원본이 쓰는 표를 그대로 본다(<see cref="TerrainTable"/>) — 칸의 <b>첫 바이트</b>로
     /// 부류를 찾고, 0·1 이면 물, 2 이상이면 뭍이다.
     ///
     /// 예전에는 그림을 그리려고 재어 둔 육지 비율이 반을 넘으면 막았다. 그것은 색을 섞는
     /// 비율이지 통행 규칙이 아니어서, 런던 앞 하구처럼 육지가 50~55% 인 칸이 막혀
-    /// 게임에서는 들어가지는 데를 못 들어갔다. 표를 못 읽을 때만 그 어림으로 물러선다.
+    /// 원본에서는 들어가지는 데를 못 들어갔다. 표를 못 읽을 때만 그 어림으로 물러선다.
     /// </remarks>
     private bool CanGo(double cellX, double cellY)
     {
@@ -2892,7 +2892,7 @@ public sealed class ShipMapHost : HwndHost
     /// 지금 선 칸의 <b>지형 부류</b>(0~6). 모르면 -1.
     /// </summary>
     /// <remarks>
-    /// 게임도 뭍 사건을 이 값으로 가른다 — <c>0x00426740</c> 이 자리를 열여섯으로 나눠
+    /// 원본도 뭍 사건을 이 값으로 가른다 — <c>0x00426740</c> 이 자리를 열여섯으로 나눠
     /// 칸을 잡고, 그 칸의 그림 번호(하위 열넉 비트)로 부류표(<c>0x004CD048</c>)를 찾는다.
     /// 짐승과 회오리는 <b>2</b>, 독충은 <b>6</b> 에서만 난다.
     /// </remarks>
@@ -3231,7 +3231,7 @@ public sealed class ShipMapHost : HwndHost
         StopAutoSail();   // 뭍에 오르면 자동항해는 뜻이 없다
 
         // 배는 지금 자리에 대 둔다 — 뭍에 있는 동안 그 자리에 남아 어디로 상륙했는지 보인다.
-        // 게임도 자리를 적어 두었다가 출항할 때 그대로 되돌린다(0x004936DE).
+        // 원본도 자리를 적어 두었다가 출항할 때 그대로 되돌린다(0x004936DE).
         _mooredX = _shipX;
         _mooredY = _shipY;
         _mooredHeading = _heading;
@@ -3254,7 +3254,7 @@ public sealed class ShipMapHost : HwndHost
         if (SeaBlocked || !_onLand) return false;
         ShiftWind();   // 배에 오르면 바람을 다시 읽는다(0x0048EB94)
 
-        // 대 둔 자리로 돌아간다 — 게임도 상륙할 때 적어 둔 자리를 그대로 되돌린다
+        // 대 둔 자리로 돌아간다 — 원본도 상륙할 때 적어 둔 자리를 그대로 되돌린다
         // (0x004936DE). 그 자리가 물이 아니게 됐으면(있을 수 없지만) 가까운 물칸으로 간다.
         var spot = _moored && !IsLand(_mooredX, _mooredY)
             ? (_mooredX, _mooredY)
@@ -3302,7 +3302,7 @@ public sealed class ShipMapHost : HwndHost
     /// 배가 닿은 도시 ID. 없으면 -1.
     /// </summary>
     /// <remarks>
-    /// <b>뭍과 같은 규칙이다.</b> 게임도 바다와 뭍을 <see cref="CityAt"/> 한 자리에서 가리고
+    /// <b>뭍과 같은 규칙이다.</b> 원본도 바다와 뭍을 <see cref="CityAt"/> 한 자리에서 가리고
     /// (<c>0x0048DA19</c>), <c>[0x005B61B4]</c> 로는 어느 표시를 볼지만 가른다 — 바다면
     /// 항구가 있는가(<c>+0x1C &amp; 1</c>), 뭍이면 성문이 있는가(<c>+0x1D &amp; 4</c>).
     /// 그 두 표시는 아직 안 든다.
@@ -3327,7 +3327,7 @@ public sealed class ShipMapHost : HwndHost
     /// 놓이므로 한 칸이다(<see cref="SpriteRectAt"/> 의 <c>size / 2</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 함대 자리를 그림 왼쪽 위께로 잡아 훑는 칸이 <c>-3 .. +1</c> 로 한쪽에
+    /// 원본은 함대 자리를 그림 왼쪽 위께로 잡아 훑는 칸이 <c>-3 .. +1</c> 로 한쪽에
     /// 쏠려 있다. 우리는 가운데에 놓으므로 그만큼을 양쪽으로 갈라 얹는다 — 그래야
     /// <b>그림끼리 닿는 순간</b> 물어본다. 안 얹으면 도시 그림 한복판까지 밀고
     /// 들어가야 물었다.
@@ -3373,7 +3373,7 @@ public sealed class ShipMapHost : HwndHost
     /// 말이 닿은 도시 ID. 없으면 -1.
     /// </summary>
     /// <remarks>
-    /// 게임 그대로다(<c>0x0048DA19</c>). 거리를 재는 것이 아니라 <b>둘레 칸을 훑는다</b>.
+    /// 원본 그대로다(<c>0x0048DA19</c>). 거리를 재는 것이 아니라 <b>둘레 칸을 훑는다</b>.
     /// <code>
     ///   0048DA21  dy = -3 .. +1
     ///   0048DA34  칸y = [0x5B63B4] &gt;&gt; 4          ; 원본값 열여섯이 한 칸
@@ -3408,7 +3408,7 @@ public sealed class ShipMapHost : HwndHost
     /// 아직 안 선 도시를 지도에서 <b>지운다</b>.
     /// </summary>
     /// <remarks>
-    /// 지도 자료에는 도시 그림이 박혀 있어 그냥 두면 안 선 도시도 보인다. 게임은 그릴
+    /// 지도 자료에는 도시 그림이 박혀 있어 그냥 두면 안 선 도시도 보인다. 원본은 그릴
     /// 때마다 도시 표 <c>+0x74</c> 의 3×3 바탕 타일로 덮는데(<c>0x0048A1E0</c>), 우리는
     /// 칸 지도를 한 장으로 올려 두므로 그 자리를 미리 갈아 끼워 둔다.
     ///
@@ -3556,7 +3556,7 @@ public sealed class ShipMapHost : HwndHost
     /// 도시에서 나오면 <b>닻을 내린 채</b> 선다 — 왼쪽 클릭으로 닻을 올려야 나아간다.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 화면(<c>0x00492430</c>)에서 돌아오자마자 <c>0x005B3A00</c> 에 1 을 놓는다
+    /// 원본은 도시 화면(<c>0x00492430</c>)에서 돌아오자마자 <c>0x005B3A00</c> 에 1 을 놓는다
     /// (<c>0x0048EB32</c>) — 바다든 뭍이든 가리지 않는다. 입항할 때 <see cref="EnterPort"/> 가
     /// 나아가기를 세워 두므로, 닻이 없으면 닻도 안 보이고 움직이지도 않는 어정쩡한 채로 남았다.
     /// </remarks>

@@ -10,7 +10,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 지도 한가운데에 사건 스틸(<c>EVSTILL.CDS</c>) 한 장을 세워 둔다 — 그 위로 부관 대사 창이 뜬다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x00472FA0(번호)</c> 가 스틸을 세우고 <c>0x00473160</c> 이 걷는다. 해상재해는
+/// 원본의 <c>0x00472FA0(번호)</c> 가 스틸을 세우고 <c>0x00473160</c> 이 걷는다. 해상재해는
 /// 재해가 <b>실제로 터졌을 때만</b> 그림을 세운다(볼트 79).
 /// <code>
 ///   0x004747C4  쥐        #2
@@ -61,7 +61,7 @@ internal sealed class EventStillPopup : Window
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
 
-        // 게임은 스틸 뒤에 <b>밤색 판</b>을 깔고 까만 줄을 두 겹 두른다 — 발견물 그림 액자와 같은 꼴이다
+        // 원본은 스틸 뒤에 <b>밤색 판</b>을 깔고 까만 줄을 두 겹 두른다 — 발견물 그림 액자와 같은 꼴이다
         // (까만 줄 · 밤색 판 · 까만 줄). 예전에는 그림만 까만 창에 올렸다.
         Content = new Border
         {

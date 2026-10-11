@@ -27,13 +27,13 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 없어도 손님이 보이게 미리 뽑아 둔 것이다(<c>tools/extract_tavern_guests.py</c>).
 /// 파일이 빠졌으면 예전처럼 MPCG.CDS 에서 그때그때 푼다.
 ///
-/// 문화권마다 쓰는 구간이 정해져 있다(<see cref="Ranges"/>). 게임은 시작을
+/// 문화권마다 쓰는 구간이 정해져 있다(<see cref="Ranges"/>). 원본은 시작을
 /// <c>0x0049D580(문화권)</c>, 개수를 <c>0x0049D500(문화권)</c> 이 낸다 — 둘 다 점프표를 쓰는
 /// switch 라 값을 읽어 옮겨 적었다.
 /// </remarks>
 public sealed class TavernGuests
 {
-    /// <summary>손님이 시작되는 파트. 게임도 손님 번호에 이 값을 더해 읽는다.</summary>
+    /// <summary>손님이 시작되는 파트. 원본도 손님 번호에 이 값을 더해 읽는다.</summary>
     private const int FirstPart = 170;
 
     /// <summary>손님 수.</summary>
@@ -49,7 +49,7 @@ public sealed class TavernGuests
     /// <summary>색을 꺼내 올 사진 팔레트 파트. 앞 64색은 어느 것이나 같다.</summary>
     private const int PalettePart = 3;
 
-    /// <summary>한 화면에 서는 손님 수. 게임도 <c>cmp eax,5</c> 로 잘라 낸다(0x0042DB18).</summary>
+    /// <summary>한 화면에 서는 손님 수. 원본도 <c>cmp eax,5</c> 로 잘라 낸다(0x0042DB18).</summary>
     public const int MaxOnScreen = 5;
 
     /// <summary>뽑아 둔 그림이 든 곳.</summary>
@@ -66,7 +66,7 @@ public sealed class TavernGuests
 
     /// <summary>문화권 이름 -> 손님 구간(시작, 개수).</summary>
     /// <remarks>
-    /// 이베리아·지중해가 같은 구간을 함께 쓴다. 합이 딱 146 이다. 게임에 없는 "발칸"(한 도시)은
+    /// 이베리아·지중해가 같은 구간을 함께 쓴다. 합이 딱 146 이다. 원본에 없는 "발칸"(한 도시)은
     /// 지중해로 본다 — <see cref="BuildingPhoto.RowFor"/> 와 같은 셈이다.
     /// </remarks>
     private static readonly Dictionary<string, (int Start, int Count)> Ranges = new()
@@ -177,7 +177,7 @@ public sealed class TavernGuests
     /// 자리 하나. <paramref name="Person"/> 은 인물 자리 번호이고, 없으면 -1 이다.
     /// </summary>
     /// <param name="Stranger">
-    /// <b>무명 손님</b>인지. 게임은 자리를 네 갈래로 채우는데(<c>0x004A1A90</c>) 마지막
+    /// <b>무명 손님</b>인지. 원본은 자리를 네 갈래로 채우는데(<c>0x004A1A90</c>) 마지막
     /// 갈래가 이름 없는 손님이고, 세는 자리에 <c>inc</c> 가 붙어 있어 <b>적어도 하나</b>는
     /// 늘 든다. 이 손님은 고용도 결투도 안 되고 그 고장 소문만 건넨다.
     /// </param>
@@ -192,11 +192,11 @@ public sealed class TavernGuests
     /// 같은 인물은 늘 같은 모습으로 선다.
     /// </param>
     /// <remarks>
-    /// 게임도 이 차례로 짓는다 — 인물이 있는 자리는 인물에서 그림을 얻고
+    /// 원본도 이 차례로 짓는다 — 인물이 있는 자리는 인물에서 그림을 얻고
     /// (<c>0x0049D440</c>: 인물 고유값을 그 문화권 남자 수로 나눈 나머지 번째),
     /// 빈 자리는 무작위 남자로 채운다(<c>0x0049D6C0</c>).
     ///
-    /// <b>여급만 도시마다 고정이고 지나가는 손님은 들어갈 때마다 바뀐다.</b> 게임도
+    /// <b>여급만 도시마다 고정이고 지나가는 손님은 들어갈 때마다 바뀐다.</b> 원본도
     /// 빈 자리를 채울 때마다 <c>rand(그 문화권 손님 수)</c> 를 새로 굴린다
     /// (<c>0x0049D6C0</c> → <c>0x0049D630</c>) — 그래서 술집을 여닫으면 서 있는 사람이
     /// 달라진다. 예전에는 <paramref name="seed"/> 로 둘 다 묶어 두어 늘 같았다.
@@ -254,7 +254,7 @@ public sealed class TavernGuests
     private const int PersonKeyBase = 1 << 12;
 
     /// <param name="scale">
-    /// 그 도시의 규모(살아 있는 도시 레코드 <c>+0x08</c>, 0~7). 무명 손님 수가 여기에 묶인다 — 게임은
+    /// 그 도시의 규모(살아 있는 도시 레코드 <c>+0x08</c>, 0~7). 무명 손님 수가 여기에 묶인다 — 원본은
     /// 앞서 앉은 수를 뺀 자리에서 <c>min(규모, rand(5 - 앉은 수)) + 1</c> 명만 세운다(<c>0x004A1B07</c>~<c>0x004A1B29</c>).
     /// 음수면 남는 자리를 다 채운다.
     /// </param>

@@ -173,7 +173,7 @@ public sealed class NationEditDialog : GameWindow
         _names is { } names && language >= 0 && language < names.LanguageNames.Count
             ? names.LanguageNames[language] : "";
 
-    /// <summary>고친 칸만 골라 적어 둔다 — 게임 값과 같으면 씌우지 않는다.</summary>
+    /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
     private void Collect()
     {
         if (_table is not { } table || _grid.ItemsSource is not List<Row> rows) return;

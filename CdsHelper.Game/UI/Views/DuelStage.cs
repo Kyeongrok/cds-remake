@@ -32,7 +32,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class DuelStage : Canvas
 {
-    /// <summary>판 크기. 게임 것과 같다(<c>0x004AA7BB</c> 의 <c>0x180</c> x <c>0x100</c>).</summary>
+    /// <summary>판 크기. 원본 것과 같다(<c>0x004AA7BB</c> 의 <c>0x180</c> x <c>0x100</c>).</summary>
     public const int StageWidth = DuelArt.ArenaWidth, StageHeight = DuelArt.ArenaHeight;
 
     /// <summary>
@@ -42,7 +42,7 @@ public sealed class DuelStage : Canvas
     /// <b>상대가 왼쪽, 내가 오른쪽</b>이다. 그림이 그렇게 그려져 있다 — 제독
     /// 스프라이트셋(0)은 <b>왼쪽을 보고</b> 상대 것은 <b>오른쪽을 본다</b>.
     ///
-    /// 자리는 게임이 판을 차릴 때 박아 넣는 값 그대로다.
+    /// 자리는 원본이 판을 차릴 때 박아 넣는 값 그대로다.
     /// <code>
     ///   004a9465  mov [ecx+0x14c], 0x98    ; 내   x = 152
     ///   004a946f  mov [ecx+0x150], 0x50    ; 상대 x =  80
@@ -189,7 +189,7 @@ public sealed class DuelStage : Canvas
                      Action? onSay, Action? onHurt, Action onDone)
     {
         _ticks = Math.Clamp(ticks, 1, Ticks);
-        // 벽에 닿았으면 이 판에는 안 옮긴다 — 게임도 <b>판 갈래를 정할 때</b> 지금 자리를
+        // 벽에 닿았으면 이 판에는 안 옮긴다 — 원본도 <b>판 갈래를 정할 때</b> 지금 자리를
         // 보고 가린다(0x004A6EF0: 상대 x >= 40 이라야 몰아붙이고, 내 x <= 200 이라야 물러난다).
         // 옮긴 <b>뒤</b> 자리로 가리면, 몸짓은 이미 나아갔는데 자리를 안 담아 되돌아간다.
         if (way < 0 && _foeLeft < WallNear) way = 0;

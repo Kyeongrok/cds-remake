@@ -330,15 +330,15 @@ public sealed class TavernHintEditDialog : GameWindow
             _grid.SelectedItem = rows.FirstOrDefault(r => r.Id == nextId);
     }
 
-    /// <summary>고친 칸만 골라 적어 둔다 — 게임 값과 같으면 씌우지 않는다.</summary>
+    /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
     private void Collect()
     {
         if (_hints is not { } hints || _grid.ItemsSource is not List<Row> rows) return;
 
         foreach (var row in rows)
         {
-            // 원본에 있던 번호면 게임 값과 다른 칸만 씌운다. 원본에 없던(여기서 더한) 번호면
-            // 견줄 게임 값이 없으니 칸 그대로 통째로 적는다.
+            // 원본에 있던 번호면 원본 값과 다른 칸만 씌운다. 원본에 없던(여기서 더한) 번호면
+            // 견줄 원본 값이 없으니 칸 그대로 통째로 적는다.
             if (hints.Original(row.Id) is { } game)
                 HintEdits.Set(row.Id,
                               row.Name == game.Name ? null : row.Name,

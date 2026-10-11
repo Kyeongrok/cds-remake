@@ -9,7 +9,7 @@ namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
 /// 건물에 들어가면 뜨는 타원 사진 창(<see cref="BuildingPhoto"/>). 도시 그림 창의
-/// <b>오른쪽 아래</b>에 붙여 띄운다 — 게임도 그 자리에 낸다. 술집·여관이면 사진 앞에
+/// <b>오른쪽 아래</b>에 붙여 띄운다 — 원본도 그 자리에 낸다. 술집·여관이면 사진 앞에
 /// 손님도 함께 세운다(<see cref="TavernGuests"/>).
 /// </summary>
 /// <remarks>
@@ -82,10 +82,10 @@ public sealed class BuildingPhotoWindow : GameWindow
 
     /// <summary>
     /// 손님에 커서를 올리면 발치에 뜨는 이름표. 세이브에서 그 술집에 앉힌 인물이면 그 이름을,
-    /// 지나가는 손님이면 성별("남"·"여")을 낸다 — 게임이 그렇게 가른다.
+    /// 지나가는 손님이면 성별("남"·"여")을 낸다 — 원본이 그렇게 가른다.
     /// </summary>
     /// <remarks>
-    /// 건물 이름표처럼 덩굴 띠를 두르지 않는다 — 게임 것은 짙은 판에 밝은 한 점 테를 두른
+    /// 건물 이름표처럼 덩굴 띠를 두르지 않는다 — 원본 것은 짙은 판에 밝은 한 점 테를 두른
     /// 민 이름표다(<see cref="GameUi.HoverTag"/>).
     /// </remarks>
     private static void AddTag(Canvas canvas, Image guest, string name, double centerX, double bottom,

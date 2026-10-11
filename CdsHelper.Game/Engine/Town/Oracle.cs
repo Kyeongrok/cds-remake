@@ -114,7 +114,7 @@ public static class Oracle
         var barmaids = game.Barmaids;
         if (player.SpouseId < 0 || barmaids?.Find(player.SpouseId) is not { } wife)
         {
-            // 아직 이 해에 안 선 여급은 뺀다 — 게임은 판에 들어와 있는 여급만 본다(vtbl+0x38).
+            // 아직 이 해에 안 선 여급은 뺀다 — 원본은 판에 들어와 있는 여급만 본다(vtbl+0x38).
             if (barmaids?.Barmaids.FirstOrDefault(b => b.Fortune == code && b.Year <= player.Date.Year) is { Name.Length: > 0 } her)
                 lines.Add($"그리고! 그대의 반려자가 될 사람이 {game.CityName(her.City)}에 있으니 빨리 구혼하라.");
         }

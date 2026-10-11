@@ -173,7 +173,7 @@ public sealed class SoundBank : IDisposable
         if (!GameSettings.SfxEnabled) return;
         try
         {
-            // 게임 것을 먼저 보고, 없으면 뽑아 둔 것으로 낸다.
+            // 원본 것을 먼저 보고, 없으면 뽑아 둔 것으로 낸다.
             var wav = _bank?.Wav(part) ?? AssetWav(part);
             if (wav == null) return;
 

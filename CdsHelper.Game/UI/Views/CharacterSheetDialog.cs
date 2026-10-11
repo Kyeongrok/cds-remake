@@ -9,7 +9,7 @@ namespace CdsHelper.Game.UI.Views;
 /// NEW GAME 마지막 걸음 — 지금까지 정한 것을 한 번 더 보여 주고 "결정" 을 받는다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0045E260</c> 이다. 화면 글은 신상 걸음의 서식을 그대로 쓴다.
+/// 원본의 <c>0x0045E260</c> 이다. 화면 글은 신상 걸음의 서식을 그대로 쓴다.
 /// <code>
 ///   0x00571B08  "%s·%s"                                  ; 명·성
 ///   0x00571B10  "%2d월%2d일생(%2d세)  %-6s  %s형"
@@ -20,15 +20,15 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 internal sealed class CharacterSheetDialog : InfoDialog
 {
-    /// <summary>게임 갈무리에 이 화면들에는 닫기(X)가 없다.</summary>
+    /// <summary>원본 갈무리에 이 화면들에는 닫기(X)가 없다.</summary>
     protected override bool ShowClose => false;
 
-    /// <summary>판과 단추 줄의 여백. 게임 것이 훨씬 촘촘하다.</summary>
+    /// <summary>판과 단추 줄의 여백. 원본 것이 훨씬 촘촘하다.</summary>
     protected override Thickness BoardPad => new(8, 6, 8, 2);
 
     protected override Thickness ButtonPad => new(0, 2, 8, 6);
 
-    /// <summary>아래 단추의 폭과 사이. 게임 것은 마구리 둘에 가운데 두 칸(48)이다.</summary>
+    /// <summary>아래 단추의 폭과 사이. 원본 것은 마구리 둘에 가운데 두 칸(48)이다.</summary>
     private const double FootWidth = 48;
 
     private static readonly Thickness FootGap = new(3, 0, 0, 0);
@@ -69,7 +69,7 @@ internal sealed class CharacterSheetDialog : InfoDialog
               new GameButton("취소", Close, width: FootWidth) { Margin = FootGap }, new GameButton("결정", Decide, width: FootWidth) { Margin = FootGap });
     }
 
-    /// <summary>배운 기술과 언어를 한 줄씩. 자리가 0 인 것도 게임처럼 다 적는다.</summary>
+    /// <summary>배운 기술과 언어를 한 줄씩. 자리가 0 인 것도 원본처럼 다 적는다.</summary>
     private static IEnumerable<string> Learned(Player player)
     {
         foreach (string name in Skill.Names)

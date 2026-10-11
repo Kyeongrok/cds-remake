@@ -64,7 +64,7 @@ public static class CityCultureEdits
         Save();
     }
 
-    /// <summary>씌운 것을 걷어 게임 값으로 되돌린다.</summary>
+    /// <summary>씌운 것을 걷어 원본 값으로 되돌린다.</summary>
     public static void Reset(int cityId)
     {
         if (!Map.Remove(cityId)) return;

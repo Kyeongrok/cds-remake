@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Engine.Town;
 /// 도서관 서가를 채우는 규칙 — 진짜 책 사이사이에 <b>읽을 수 없는 책</b>을 끼운다.
 /// </summary>
 /// <remarks>
-/// 그 마을에 놓인 책만 꽂으면 서가가 휑하다. 게임은 진짜 책 한 권을 꽂기 전에 가짜를
+/// 그 마을에 놓인 책만 꽂으면 서가가 휑하다. 원본은 진짜 책 한 권을 꽂기 전에 가짜를
 /// 몇 권 끼워 넣어 책장을 채운다(<c>0x004721E3</c>).
 /// <code>
 ///   4721e3  남은 자리가 없으면 그냥 진짜 책을 꽂는다
@@ -20,7 +20,7 @@ namespace CdsHelper.Game.Engine.Town;
 /// </code>
 /// <c>4721f7</c> 의 <c>cmp eax,1 / sbb edi,edi / inc edi</c> 는 <b>rand(3) 이 0 일 때 0,
 /// 아니면 1</b> 이다 — 세 번에 <b>두 번</b>은 자리를 하나 띄운다. 예전에는 이것을 뒤집어
-/// 읽어 세 번에 한 번만 띄웠고, 그래서 서가가 게임보다 빽빽했다.
+/// 읽어 세 번에 한 번만 띄웠고, 그래서 서가가 원본보다 빽빽했다.
 ///
 /// <b>가짜를 꽂는 쪽도 한 번 뒤집어 읽었다.</b> <c>0x00472234</c> 의 <c>je</c> 는 주사위가
 /// <b>0 일 때 건너뛰라</b>는 것이라, 꽂는 것은 세 번에 <b>두 번</b>이다. 반대로 읽어 두어서
@@ -36,13 +36,13 @@ namespace CdsHelper.Game.Engine.Town;
 /// </remarks>
 public static class Library
 {
-    /// <summary>책장 자리 수. 게임도 이만큼에서 그만 꽂는다(<c>0x004715E0</c> 의 <c>cmp 0x33</c>).</summary>
+    /// <summary>책장 자리 수. 원본도 이만큼에서 그만 꽂는다(<c>0x004715E0</c> 의 <c>cmp 0x33</c>).</summary>
     public const int Slots = 51;
 
     /// <summary>한 번에 끼우는 가짜 책의 가장 많은 수(<c>0x00472216</c> 의 <c>cmp eax,8</c>).</summary>
     public const int MaxFillers = 8;
 
-    /// <summary>세 번에 한 번 꼴로 일어난다는 뜻 — 게임이 <c>rand(3)</c> 로 던지는 주사위다.</summary>
+    /// <summary>세 번에 한 번 꼴로 일어난다는 뜻 — 원본이 <c>rand(3)</c> 로 던지는 주사위다.</summary>
     private const int Dice = 3;
 
     /// <summary>게임이 시작하는 해. 씨앗을 짓는 데 쓴다(<c>0x004721AE</c> 의 <c>sub eax,0x5c8</c>).</summary>
@@ -59,12 +59,12 @@ public static class Library
     public readonly record struct Slot(BookTable.Book? Book, bool Filler);
 
     /// <summary>
-    /// 그 마을·그 무렵의 책장은 늘 같은 모양이다. 씨앗은 게임 것을 그대로 쓴다
+    /// 그 마을·그 무렵의 책장은 늘 같은 모양이다. 씨앗은 원본 것을 그대로 쓴다
     /// (<c>0x004721A9</c>) — <b>도시 번호 + (해 - 1480) / 4</b> 다.
     /// </summary>
     /// <remarks>
-    /// 해를 넷으로 나눠 쓰므로 서가는 <b>넉 해에 한 번</b> 바뀐다. 주사위까지 게임 것이라
-    /// (<see cref="GameRandom"/>) 어느 자리에 무엇이 꽂히는지가 게임과 똑같다.
+    /// 해를 넷으로 나눠 쓰므로 서가는 <b>넉 해에 한 번</b> 바뀐다. 주사위까지 원본 것이라
+    /// (<see cref="GameRandom"/>) 어느 자리에 무엇이 꽂히는지가 원본과 똑같다.
     /// </remarks>
     public static GameRandom RandomFor(int cityId, int year) =>
         new(cityId + (year - FirstYear) / Period);

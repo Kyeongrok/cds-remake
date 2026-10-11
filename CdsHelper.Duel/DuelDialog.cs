@@ -14,11 +14,11 @@ namespace CdsHelper.Duel;
 /// 「일기토」 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 그리는 자리는 <c>0x004A7050</c> 이다. 위에 배경 384x136, 아래에 눈금판
+/// 원본의 그리는 자리는 <c>0x004A7050</c> 이다. 위에 배경 384x136, 아래에 눈금판
 /// 384x112 를 깔고, 얼굴을 오른쪽(296, 144)·왼쪽(8, 144)에 얹는다.
 /// <b>오른쪽이 나, 왼쪽이 적</b>이다.
 ///
-/// <b>그림은 게임 것 그대로다</b> — FIGHTER.CDS 에서 뽑아 <c>asset/duel</c> 에 둔다
+/// <b>그림은 원본 것 그대로다</b> — FIGHTER.CDS 에서 뽑아 <c>asset/duel</c> 에 둔다
 /// (<c>tools/extract_duel_art.py</c>). 팔레트가 8비트인 것만 다른 CDS 들과 다르다.
 ///
 /// 눈금 막대는 <c>0x004A71A9</c> 벌이 <b>한 줄씩 세로로 지워</b> 그린다. 그 자리를
@@ -29,7 +29,7 @@ namespace CdsHelper.Duel;
 ///   나(오른쪽) x 200~271, 왼쪽에 붙어 오른쪽으로 자란다  ; 0xC7 + i
 ///   첫 줄 y = 188(창) = 52(눈금판), 줄마다 16, 높이 8   ; [0xBC]
 /// </code>
-/// 게임은 몸짓 그림 33장짜리 스프라이트셋 아홉을 애니메이션으로 돌리는데, 여기서는 아직
+/// 원본은 몸짓 그림 33장짜리 스프라이트셋 아홉을 애니메이션으로 돌리는데, 여기서는 아직
 /// 안 옮겼다 — 한 수씩 눌러 주고받는 것만 한다.
 /// </remarks>
 internal sealed class DuelDialog : InfoDialog
@@ -331,7 +331,7 @@ internal sealed class DuelDialog : InfoDialog
     /// 끝난 자리 — <b>진 쪽은 엎드리고 이긴 쪽은 칼을 치켜든다</b>.
     /// </summary>
     /// <remarks>
-    /// 지면 상대가 한마디 한다. 게임은 다섯 마디를 굴려 고른다
+    /// 지면 상대가 한마디 한다. 원본은 다섯 마디를 굴려 고른다
     /// (<c>0x004A9E96</c>~<c>0x004A9EB6</c>).
     /// </remarks>
     private void Finish(bool won)

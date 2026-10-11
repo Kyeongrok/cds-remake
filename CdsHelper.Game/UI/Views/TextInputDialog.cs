@@ -13,10 +13,10 @@ namespace CdsHelper.Game.UI.Views;
 /// 「문자입력」 — 글자판을 <b>마우스로 하나씩 찍어</b> 글을 짓는 창.
 /// </summary>
 /// <remarks>
-/// 게임에는 글쇠판 입력이 없다. 글꼴이 비트맵이라 글자를 찍어 넣는 판을 따로 두고 그것을
+/// 원본에는 글쇠판 입력이 없다. 글꼴이 비트맵이라 글자를 찍어 넣는 판을 따로 두고 그것을
 /// 눌러 짓는다 — 선명입력의 오른쪽 위 작은 단추(계산기처럼 생겼다)를 누르면 이 판이 뜬다.
 ///
-/// 게임의 <c>0x004AFDF3</c> 창(400 x 280)이다. 자리는 모두 창 속 왼쪽 위에서 잰다.
+/// 원본의 <c>0x004AFDF3</c> 창(400 x 280)이다. 자리는 모두 창 속 왼쪽 위에서 잰다.
 /// <code>
 ///   입력 줄  (16,16)  304 x 16   "%-38s" 로 크림 띠를 채워 찍는다(0x004AF82F)
 ///   판       (16,48)  304 x 192  한 칸 16 x 16 — 19칸 x 12줄
@@ -29,7 +29,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   <c>가까나다따 싸아자짜차 / 라마바빠사 카타파하</c>.</item>
 /// <item><b>음절</b> — 고른 초성으로 시작하는 <b>완성형 음절 전부</b>를 코드 차례로 한 줄에 열아홉씩
 ///   깐다(<c>0x004AF4E0</c>). 범위는 표 <c>0x0057C6E8</c> 의 {처음, 끝} 이다. 가장 많은 "아" 가
-///   208자라 열두 줄(228칸)을 안 넘는다 — 게임의 굴림대는 실제로는 안 선다.</item>
+///   208자라 열두 줄(228칸)을 안 넘는다 — 원본의 굴림대는 실제로는 안 선다.</item>
 /// </list>
 /// 낱자를 모아 짓는 판이 아니다. 예전에는 첫소리·가운뎃소리·받침을 늘어놓고 모아 주었는데,
 /// 받침이 다음 자로 못 넘어가고("가" 뒤에 ㄱ·ㅏ 가 "각아") "없음" 칸이 글자 그대로 찍혔다.
@@ -40,7 +40,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <item>입력 줄의 글자를 누르면 커서가 그 자로 간다. 글 끝 뒤를 눌러서는 안 옮겨진다.</item>
 /// <item>"삭제" 는 커서 <b>앞</b> 한 자를 지우고 뒤를 당긴다.</item>
 /// <item>"뒤로" 는 그만두기다. 오른쪽 단추는 「페이지선택」(영문·한글) 차림표를 띄운다(<c>0x004B0411</c>).</item>
-/// <item>판은 <b>빈 채로</b> 열린다 — 게임이 버퍼를 0 으로 채워 잡는다.</item>
+/// <item>판은 <b>빈 채로</b> 열린다 — 원본이 버퍼를 0 으로 채워 잡는다.</item>
 /// </list>
 /// 글자를 찍은 뒤 부르는 <c>0x00428140(0)</c> 은 소리가 아니라 <b>단추를 뗄 때까지 기다리는</b> 손이다
 /// (<c>0x004B7386</c> 으로 단추를 읽어 둘 다 떨어질 때까지 돈다). 누르고 있는 동안 같은 칸이 거푸 찍히지
@@ -49,7 +49,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class TextInputDialog : GameWindow
 {
-    // ── 창 속 자리(게임 그대로) ─────────────────────────────────────────────────
+    // ── 창 속 자리(원본 그대로) ─────────────────────────────────────────────────
 
     private const double BodyWidth = 400, BodyHeight = 256;
     private const double LineX = 16, LineY = 16, PageX = 16, PageY = 48;
@@ -66,7 +66,7 @@ public sealed class TextInputDialog : GameWindow
 
     // ── 판 ────────────────────────────────────────────────────────────────────
 
-    /// <summary>영문 판 열두 줄(<c>0x0057C6B8</c>). 빈 줄은 게임도 빈 문자열이다.</summary>
+    /// <summary>영문 판 열두 줄(<c>0x0057C6B8</c>). 빈 줄은 원본도 빈 문자열이다.</summary>
     private static readonly string[] Roman =
     [
         "",
@@ -217,7 +217,7 @@ public sealed class TextInputDialog : GameWindow
 
     /// <summary>
     /// 글자를 <b>한 칸에 하나씩</b> 놓는다 — 줄을 통째로 찍으면 글꼴에 없는 글자가 폭 0 으로
-    /// 빠져 뒤 칸이 당겨진다. 게임은 칸 자리를 셈으로 가르므로 칸이 어긋나면 안 된다.
+    /// 빠져 뒤 칸이 당겨진다. 원본은 칸 자리를 셈으로 가르므로 칸이 어긋나면 안 된다.
     /// </summary>
     private static void DrawGlyphs(Canvas layer, double top, int column, string glyphs)
     {
@@ -395,7 +395,7 @@ public sealed class TextInputDialog : GameWindow
     /// </summary>
     /// <param name="owner">주인 창.</param>
     /// <param name="start">
-    /// 예전 인자라 받기만 한다 — 게임은 판을 <b>빈 채로</b> 연다(<c>0x004AF8D0</c> 가 버퍼를 0 으로 채운다).
+    /// 예전 인자라 받기만 한다 — 원본은 판을 <b>빈 채로</b> 연다(<c>0x004AF8D0</c> 가 버퍼를 0 으로 채운다).
     /// </param>
     /// <param name="maxLength">가장 긴 길이(글자 수).</param>
     /// <param name="caption">창 제목.</param>

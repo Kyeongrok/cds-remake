@@ -8,7 +8,7 @@ namespace CdsHelper.Game.Engine;
 /// <b>누적 캐릭터</b> — 은퇴한 제독을 다섯 자리에 올려 두고 다음 판에 남으로 내보내는 자리.
 /// </summary>
 /// <remarks>
-/// 게임은 자리마다 파일 둘을 쓴다(<c>0x00425220</c> 이 EXE 옆을 가리킨다).
+/// 원본은 자리마다 파일 둘을 쓴다(<c>0x00425220</c> 이 EXE 옆을 가리킨다).
 /// <code>
 ///   ACCDATA.CDS      지금 놀고 있는 제독의 <b>행적 기록</b>(0x00419F90 이 만들고 0x0041A070 이 덧붙인다)
 ///   ACCDATA%d.IDX    은퇴한 제독의 인물 레코드 — 직렬화한 CPerson 그대로(0x0041A270)
@@ -66,7 +66,7 @@ public static class AccData
     /// <summary>
     /// 은퇴한 제독을 빈 자리에 올린다(<c>0x0041AB90</c> → <c>0x0041A270</c>).
     /// </summary>
-    /// <returns>올렸으면 true. 자리가 다 찼으면 false 인데, 게임도 그때는 <b>아무 말이 없다</b>.</returns>
+    /// <returns>올렸으면 true. 자리가 다 찼으면 false 인데, 원본도 그때는 <b>아무 말이 없다</b>.</returns>
     public static bool Register(Player player)
     {
         var all = Load();
@@ -106,7 +106,7 @@ public static class AccData
     /// 올라 있는 사람들을 인물 <b>276~280</b> 자리에 앉힌다(<c>0x0041AF00</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 여기서 <c>ACCDATA%d.IDX</c> 의 인물 레코드를 그대로 그 칸에 부어 넣는다. 우리는
+    /// 원본은 여기서 <c>ACCDATA%d.IDX</c> 의 인물 레코드를 그대로 그 칸에 부어 넣는다. 우리는
     /// 적어 둔 값으로 칸을 채운다 — 이름·얼굴·능력·기능·언어·명성이다.
     ///
     /// <b>첫 자리는 은퇴한 도시</b>고, 그 뒤로는 <see cref="AccReplay"/> 가 행적대로 옮긴다

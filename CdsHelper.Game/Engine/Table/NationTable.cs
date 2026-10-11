@@ -89,7 +89,7 @@ public sealed class NationTable
 
     /// <summary>출입여부 세 가지의 이름.</summary>
     /// <remarks>
-    /// 게임에 글 표가 따로 없다 — 코드가 하는 일을 보고 붙인 이름이다.
+    /// 원본에 글 표가 따로 없다 — 코드가 하는 일을 보고 붙인 이름이다.
     /// </remarks>
     public static readonly string[] EntryNames =
         ["자유롭게 드나든다", "마을에는 못 들어간다", "항구까지 막는다"];

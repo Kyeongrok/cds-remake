@@ -7,7 +7,7 @@ namespace CdsHelper.Game.Engine.Sea;
 /// 한 번 찾은 바닷길을 적어 두는 곳 — 같은 길을 다시 물으면 찾지 않고 꺼내 쓴다.
 /// </summary>
 /// <remarks>
-/// 게임에는 없는 것이다. 먼 도시까지의 길찾기는 한 번에 반 초쯤 걸리는데, 네비게이션은 후보를 여럿 보여 주고
+/// 원본에는 없는 것이다. 먼 도시까지의 길찾기는 한 번에 반 초쯤 걸리는데, 네비게이션은 후보를 여럿 보여 주고
 /// 고른 뒤 또 잡고, 길이 막히면 다시 잡는다 — 그때마다 처음부터 찾으면 굼떠 보인다.
 ///
 /// 꺼내 쓰는 길이 둘이다.
@@ -17,7 +17,7 @@ namespace CdsHelper.Game.Engine.Sea;
 /// (<see cref="Near"/>). 도시 안에서 떠나는 자리가 몇 칸 달라졌을 때, 가다가 멈췄다 다시 갈 때, 막혀서 다시 짤 때다.</item>
 /// </list>
 /// 지도가 바뀌면(모드 「수에즈 운하」) 적어 둔 길이 안 맞는다 — 지도 지문(<see cref="Open"/>)이 다르면 다 버린다.
-/// 파일은 <c>%AppData%\CdsHelper\route-cache.json</c> 이라 게임을 껐다 켜도 남는다.
+/// 파일은 <c>%AppData%\CdsHelper\route-cache.json</c> 이라 원본을 껐다 켜도 남는다.
 /// </remarks>
 public sealed class RouteCache
 {

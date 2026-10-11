@@ -7,7 +7,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 게임 비트맵 글꼴 — 화면에 찍히는 것과 똑같은 글자를 얻는다.
 /// </summary>
 /// <remarks>
-/// 게임의 메뉴 글자는 윈도 글꼴이 아니라 게임 폴더의 글꼴 파일 두 개에서 온다.
+/// 원본의 메뉴 글자는 윈도 글꼴이 아니라 게임 폴더의 글꼴 파일 두 개에서 온다.
 /// <code>
 ///   ALL_FONT.16P  30바이트 레코드 3,478개
 ///     +0  u16 코드   리틀엔디언. 값은 KS X 1001 두 바이트를 빅엔디언으로 본 수
@@ -18,11 +18,11 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   ANKFONT.DAT   16바이트 글리프 96개
 ///     8폭 x 16행 1bpp, 한 행이 1바이트. ASCII 0x20(빈칸)부터 0x7F 까지 차례로.
 /// </code>
-/// 게임도 이 둘을 이 차례로 읽는다 — <c>0x004109C3</c> / <c>0x004109CD</c>
+/// 원본도 이 둘을 이 차례로 읽는다 — <c>0x004109C3</c> / <c>0x004109CD</c>
 /// (문자열 <c>"C:ALL_FONT.16P"</c> = <c>0x535CCC</c> · <c>"C:ANKFONT.DAT"</c> = <c>0x535CBC</c>).
 ///
 /// 한글과 ASCII 는 높이가 다르다(14 와 16). 띠에 얹을 때는 <see cref="UiSprites.BandHeight"/>
-/// 안에서 세로 가운데로 맞춘다 — 게임이 그렇게 한다.
+/// 안에서 세로 가운데로 맞춘다 — 원본이 그렇게 한다.
 ///
 /// 색은 <see cref="GamePalette"/> 색인이다. 화면에서 되짚어 보면 타이틀 글자는 <b>26</b>,
 /// 베이지 버튼 글자는 <b>17</b> 이다.
@@ -43,7 +43,7 @@ public sealed class GameFont
     public const byte InkColor = 254;
 
     /// <summary>
-    /// 베이지 띠(메뉴 줄·단추) 글자색. 게임은 짙은 갈색(<c>341C14</c>)이 아니라 <c>#010101</c> 로 찍는다.
+    /// 베이지 띠(메뉴 줄·단추) 글자색. 원본은 짙은 갈색(<c>341C14</c>)이 아니라 <c>#010101</c> 로 찍는다.
     /// </summary>
     public const byte ButtonColor = InkColor;
 
@@ -201,7 +201,7 @@ public sealed class GameFont
     /// 바탕은 비침(알파 0)이라 띠 위에 그대로 겹치면 된다. 글자가 없으면 null.
     /// </summary>
     /// <param name="shadow">
-    /// 오른쪽 아래로 한 점 그림자. 게임도 그림자를 먼저 깔고 그 위에 본 글자를 찍는다 —
+    /// 오른쪽 아래로 한 점 그림자. 원본도 그림자를 먼저 깔고 그 위에 본 글자를 찍는다 —
     /// 획이 겹쳐도 본 글자가 이긴다.
     /// </param>
     public uint[]? Render(string? text, byte color, bool shadow, byte shadowColor,

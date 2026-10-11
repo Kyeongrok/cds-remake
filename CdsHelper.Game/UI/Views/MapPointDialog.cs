@@ -16,7 +16,7 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 줄이 열 몇 개라 오른쪽에 굴림대가 선다. 굴림대는 게임 화살표 조각으로 지은 것이고
 /// (<see cref="GameUi.Scroller"/>), 창 테는 구슬 무늬 액자(<see cref="GameUi.WindowFrame"/>)다 —
-/// 윈도 굴림대와 민 테를 쓰던 것을 게임 것으로 갈았다. 줄마다 게임 띠 단추를 그대로 쓰므로
+/// 윈도 굴림대와 민 테를 쓰던 것을 원본 것으로 갈았다. 줄마다 게임 띠 단추를 그대로 쓰므로
 /// 도시 그림에서 건물을 누르는 것과 같은 모습이 된다.
 /// </remarks>
 internal sealed class MapPointDialog : GameWindow

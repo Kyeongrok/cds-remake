@@ -14,7 +14,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 일기토 판 — 부위 셋을 두고 칼을 겨룬다.
 /// </summary>
 /// <remarks>
-/// 셈은 <see cref="Duel"/> 이 다 하고 이 창은 보여 주기만 한다. 판은 게임과 같은
+/// 셈은 <see cref="Duel"/> 이 다 하고 이 창은 보여 주기만 한다. 판은 원본과 같은
 /// <b>384x248 두 층</b>이다(<c>0x004AA7BB</c> 의 <c>0x180 x 0x100</c>).
 /// <code>
 ///   위 384x136  배경 — 그림 바탕에 두 사람이 선다(asset/duel, FighterSprites)
@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 /// (<see cref="DuelArt.Slots"/>) — 눈으로 맞춘 값이 아니다.
 /// <b>왼쪽이 상대, 오른쪽이 나</b>다.
 ///
-/// 명령을 고를 때만 오른쪽 초상 자리 위에 <b>작은 명령 창</b>이 뜬다 — 게임도 그 자리다.
+/// 명령을 고를 때만 오른쪽 초상 자리 위에 <b>작은 명령 창</b>이 뜬다 — 원본도 그 자리다.
 ///
 /// 상대가 하는 말은 게임 표(<c>0x005729E0</c> 부터 여섯씩 넉 줄)를 그대로 옮겼다.
 /// </remarks>
@@ -34,7 +34,7 @@ public sealed class DuelDialog : GameWindow
     /// 막대의 <b>검은 덮개</b> — 색 <c>0x49</c>, 공용 색표에서 (24, 20, 12)다.
     /// </summary>
     /// <remarks>
-    /// 게임은 막대 줄마다 <c>S(체력+1)</c> 넘는 자리를 이 색 네모로 채운다
+    /// 원본은 막대 줄마다 <c>S(체력+1)</c> 넘는 자리를 이 색 네모로 채운다
     /// (<c>0x004A71A9</c> ~ <c>0x004A73A7</c>, <c>0x4B9663(0, 0x49, 0)</c> → <c>0x4B9C04</c>).
     /// 눈금판의 검은 홈과 같은 빛깔이다.
     /// </remarks>
@@ -44,7 +44,7 @@ public sealed class DuelDialog : GameWindow
     /// 부위 막대를 칠하는 붓 셋 — <b>게임 조각을 그대로</b> 깐다.
     /// </summary>
     /// <remarks>
-    /// 게임은 1점 폭 x 8점 높이 조각을 72번까지 찍어 막대를 그린다. 그 조각들이
+    /// 원본은 1점 폭 x 8점 높이 조각을 72번까지 찍어 막대를 그린다. 그 조각들이
     /// 눈금판 파트(<c>FIGHTER.CDS</c> 32)의 <b>앞 16바이트</b>에 들어 있어
     /// <c>asset/duel/duel-bar-*.png</c> 로 뽑아 두었다(<c>tools/extract_duel_art.py</c>).
     /// <code>
@@ -135,7 +135,7 @@ public sealed class DuelDialog : GameWindow
     private readonly StackPanel _keys = new();
 
     /// <summary>
-    /// 부위 막대 한 칸 — 게임이 찍는 차례대로 조각 넷을 겹친다(<c>0x004A7050</c>).
+    /// 부위 막대 한 칸 — 원본이 찍는 차례대로 조각 넷을 겹친다(<c>0x004A7050</c>).
     /// </summary>
     /// <remarks>
     /// 게임 막대는 <b>72점 폭에 눈금의 끝이 100 으로 박혀 있다</b>(<c>0x004A8D65</c> 가
@@ -146,7 +146,7 @@ public sealed class DuelDialog : GameWindow
     ///   |-- 파랑 ---|---- 빨강 --------|---- 검정 --------|
     ///   눈금판 그림    조각 0(잃은 값)     색 0x49(끝내 없는 몫)
     /// </code>
-    /// 게임은 파랑(눈금판) 위에 ① 옅은 나뭇결(조각 8) ② 빨강(조각 0) ③ 검은 네모를
+    /// 원본은 파랑(눈금판) 위에 ① 옅은 나뭇결(조각 8) ② 빨강(조각 0) ③ 검은 네모를
     /// 차례로 <b>막대 끝까지</b> 찍는다. 그래서 여기서도 넷을 모두 먼 끝(나는 오른쪽,
     /// 상대는 왼쪽)에 붙이고 폭만 <c>72 - 시작점</c> 으로 준다.
     /// </remarks>
@@ -198,7 +198,7 @@ public sealed class DuelDialog : GameWindow
     /// 말풍선 자리 — 상대 초상 바로 옆에서 시작해 내 초상에 조금 걸친다.
     /// </summary>
     /// <remarks>
-    /// 게임이 16x16 조각으로 짜는 자리 그대로다(<c>0x004A63C0</c>) — 창에서 가로 <c>0x60</c>~<c>0x130</c>,
+    /// 원본이 16x16 조각으로 짜는 자리 그대로다(<c>0x004A63C0</c>) — 창에서 가로 <c>0x60</c>~<c>0x130</c>,
     /// 세로 <c>0x90</c>~<c>0xE0</c>. 귀 조각은 3 · 4 · 9 · 10 이라 <b>왼쪽 아래에 꼬리</b>가 달린다(조각 9) —
     /// 꼬리가 왼쪽의 상대 초상을 가리킨다. 예전에는 꼬리 없이 오른쪽으로 치우쳐 있어 제독이 하는 말처럼 보였다.
     /// </remarks>
@@ -292,7 +292,7 @@ public sealed class DuelDialog : GameWindow
         // 판 밑에는 아무것도 안 붙인다. 게임 판은 384x248 이 전부이고, 상대의 말은
         // 제목 「일기토」가 붙은 <b>제 창</b>으로 따로 난다. 어느 판인지(맞부딪힘·공격·
         // 방어)는 명령 창의 줄 이름이 그대로 일러 준다.
-        // 명령을 고를 때만 뜨는 작은 명령 창. <b>오른쪽 아래</b>에 뜬다 — 게임도 그 자리다.
+        // 명령을 고를 때만 뜨는 작은 명령 창. <b>오른쪽 아래</b>에 뜬다 — 원본도 그 자리다.
         _keyBox.Background = GameUi.MenuBack;
         _keyBox.BorderBrush = GameUi.Edge;
         _keyBox.BorderThickness = new Thickness(1);
@@ -386,7 +386,7 @@ public sealed class DuelDialog : GameWindow
     /// 초상 자리 — 상대 (8, 144), 나 (296, 144). 판 전체 기준이고 80x96 이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>0x004A714E</c> 에서 상대 얼굴을 x 8 에, <c>0x004A70F3</c> 에서 내 얼굴을
+    /// 원본은 <c>0x004A714E</c> 에서 상대 얼굴을 x 8 에, <c>0x004A70F3</c> 에서 내 얼굴을
     /// x <c>0x128</c>(296)에 곧바로 찍는다. 84 폭 자리표(<see cref="DuelArt.Slots"/>)의 가운데에
     /// 앉히던 것은 9 · 295 로 한 점씩 어긋났다.
     /// </remarks>
@@ -424,7 +424,7 @@ public sealed class DuelDialog : GameWindow
         // 아래로 그림자가 진 것처럼 보인다. 원본의 고른 명령 글씨는 그림자가 없다.
         Bold = false,
         FallbackBrush = Brushes.White,
-        // 게임은 칸 <b>왼쪽 위</b>(x 0x70 + 0x60*쪽, y 0xA0)에 "%s" 로 곧바로 찍는다 —
+        // 원본은 칸 <b>왼쪽 위</b>(x 0x70 + 0x60*쪽, y 0xA0)에 "%s" 로 곧바로 찍는다 —
         // 가운데 맞춤이 없다(0x004A6764). 글꼴 높이가 16 이라 칸 높이와 같다.
         HorizontalAlignment = HorizontalAlignment.Left,
         VerticalAlignment = VerticalAlignment.Top,
@@ -440,7 +440,7 @@ public sealed class DuelDialog : GameWindow
 
     /// <summary>
     /// 명령 칸. 바탕을 칠하지 않는다 — 칸이 비면 눈금판 그림의 검은 홈이 그대로 보인다
-    /// (게임도 눈금판을 다시 깔아 칸을 비운다).
+    /// (원본도 눈금판을 다시 깔아 칸을 비운다).
     /// </summary>
     private static Border Framed(UIElement inner) => new() { Child = inner };
 
@@ -448,7 +448,7 @@ public sealed class DuelDialog : GameWindow
     /// 말풍선에 상대의 말을 적는다. 빈 글이면 풍선을 걷는다.
     /// </summary>
     /// <remarks>
-    /// 게임은 이 말을 <b>판 위 흰 말풍선</b>으로 낸다 — 제목 붙은 딴 창이 아니다.
+    /// 원본은 이 말을 <b>판 위 흰 말풍선</b>으로 낸다 — 제목 붙은 딴 창이 아니다.
     /// 글꼴도 판과 같은 게임 글꼴이고 바탕이 희어 검은 글씨다.
     /// </remarks>
     private void Speak(string text)
@@ -493,7 +493,7 @@ public sealed class DuelDialog : GameWindow
     private static Border Bar(out BarView view, bool mirror)
     {
         // <b>두 쪽이 서로 거울이다.</b> 내 막대는 왼쪽에 파랑이 붙어 오른쪽에서 빨개지고,
-        // 상대 막대는 오른쪽에 파랑이 붙어 <b>왼쪽에서</b> 빨개진다. 게임도 그렇다 —
+        // 상대 막대는 오른쪽에 파랑이 붙어 <b>왼쪽에서</b> 빨개진다. 원본도 그렇다 —
         // 상대 쪽 셈만 <c>neg eax; idiv [+0x16C]; add eax, 0x48</c> 로 72 에서 빼며 센다.
         // 조각은 파랑 반대쪽 끝(나는 오른쪽, 상대는 왼쪽)에 붙인다.
         var far = mirror ? HorizontalAlignment.Left : HorizontalAlignment.Right;
@@ -506,7 +506,7 @@ public sealed class DuelDialog : GameWindow
             Black = new Border { Background = BarCover, HorizontalAlignment = far },
         };
 
-        // 게임이 찍는 차례 그대로 — 눈금판(파랑) 위에 ① 나뭇결 ② 빨강 ③ 검정.
+        // 원본이 찍는 차례 그대로 — 눈금판(파랑) 위에 ① 나뭇결 ② 빨강 ③ 검정.
         var stack = new Grid();
         stack.Children.Add(view.Keep);
         stack.Children.Add(view.Fresh);
@@ -707,7 +707,7 @@ public sealed class DuelDialog : GameWindow
         var names = _duel.Choices();
         var focus = new GameUi.FocusGroup();
 
-        // 게임은 명령을 <b>세로로 쌓아</b> 낸다 — 갈무리의 상단·중단·하단 공격이 한 줄씩이다.
+        // 원본은 명령을 <b>세로로 쌓아</b> 낸다 — 갈무리의 상단·중단·하단 공격이 한 줄씩이다.
         // 폭은 <b>명령 이름 가운데 가장 긴 것</b>에 맞춰 붙박는다 — 96 으로 박아 두었더니
         // 좌우가 휑했다.
         double width = KeyWidth;
@@ -860,7 +860,7 @@ public sealed class DuelDialog : GameWindow
 
         if (_duel.Over)
         {
-            // 끝판에는 <b>비아냥도 「확인」도 없다</b> — 게임은 판이 끝나면 곧바로 뒤처리
+            // 끝판에는 <b>비아냥도 「확인」도 없다</b> — 원본은 판이 끝나면 곧바로 뒤처리
             // (0x004A9E50)로 넘어간다. 예전에는 끝판에도 「아직이다. 아직 끝나지 않았다…」 같은
             // 판 중 말풍선을 띄우고 확인 단추를 세웠다. 쓰러지는 모습만 잠깐 보여 주고 닫는다 —
             // 뒤의 말(처형·놓아 준다·모두 뺏는다, 반란 진압)은 부른 쪽이 낸다.
@@ -888,7 +888,7 @@ public sealed class DuelDialog : GameWindow
             return;
         }
 
-        // 상대의 말은 판 위 흰 말풍선으로 난다 — 게임도 그 자리다.
+        // 상대의 말은 판 위 흰 말풍선으로 난다 — 원본도 그 자리다.
         Speak(Taunt(turn));
 
         _stage?.Rest();
@@ -917,11 +917,11 @@ public sealed class DuelDialog : GameWindow
     /// <summary>판이 끝나고 닫히기까지 — 끝맺는 몸짓 한 바퀴(16눈금)에 한 박자 더.</summary>
     private const int EndTicks = 18;
 
-    // 「이번 판에 무엇이 오갔는지」를 한 줄로 적던 줄은 걷었다. 게임은 그런 줄을 안
+    // 「이번 판에 무엇이 오갔는지」를 한 줄로 적던 줄은 걷었다. 원본은 그런 줄을 안
     // 낸다 — 오간 명령은 눈금판 가운데 라벨 둘이, 맞고 안 맞고는 그림과 체력 막대가
     // 일러 준다. 말풍선에는 상대의 <b>비아냥</b>만 뜬다.
 
-    /// <summary>상대가 하는 말. 어느 줄에서 고를지는 게임과 같다(<c>0x004A6E77</c>).</summary>
+    /// <summary>상대가 하는 말. 어느 줄에서 고를지는 원본과 같다(<c>0x004A6E77</c>).</summary>
     private string Taunt(in Duel.Turn turn)
     {
         if (turn.Was == Duel.Phase.Clash) return "";
@@ -943,7 +943,7 @@ public sealed class DuelDialog : GameWindow
     /// <param name="foeSet">상대 스프라이트셋(1~8).</param>
     /// <param name="bgm">
     /// 배경음악. 주면 판이 도는 동안 일기토 곡(<see cref="BgmPlayer.DuelTrack"/>, 트랙 11)을 틀고
-    /// 끝나면 앞서 돌던 곡으로 되돌린다 — 게임도 들머리에서 곡을 갈아 튼다(<c>0x004AA8A0</c>).
+    /// 끝나면 앞서 돌던 곡으로 되돌린다 — 원본도 들머리에서 곡을 갈아 튼다(<c>0x004AA8A0</c>).
     /// </param>
     public static bool Show(Window owner, Duel duel, GameRandom dice, uint[]? face,
                             FighterSprites? art = null, int foeSet = 1,

@@ -11,12 +11,12 @@ namespace CdsHelper.Game.UI.Views;
 /// 게임이 끝났을 때 — 사건 스틸 한 장과 <c>CONTINUE?</c> 물음이다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x00410CC2</c> 어름이다.
+/// 원본의 <c>0x00410CC2</c> 어름이다.
 /// <code>
 ///   410CC2  끝난 까닭에 따라 그림 번호를 고른다 — 0x0B · 0x0C · 0x0D
 ///   410CD0  0x00472FA0(그림번호)          ; EVSTILL 한 장을 화면 가운데에 세운다
-///   410CDA  0x0049E3E0(0x2002, "CONTINUE?", "게임을 다시 시작하겠습니까?")
-///   410CF1  NO(3) 면 [0x005A4D18] |= 0x40 — 판 고리를 빠져나가 게임이 끝난다. YES 면 메인메뉴(0x0045F530)
+///   410CDA  0x0049E3E0(0x2002, "CONTINUE?", "원본을 다시 시작하겠습니까?")
+///   410CF1  NO(3) 면 [0x005A4D18] |= 0x40 — 판 고리를 빠져나가 원본이 끝난다. YES 면 메인메뉴(0x0045F530)
 /// </code>
 /// 그림은 <c>EVSTILL.CDS</c> 에 있다 — 발견물 스틸과 짜임이 같아 같은 손으로 읽는다
 /// (<see cref="Engine.Game.EventStills"/>).
@@ -70,7 +70,7 @@ public sealed class GameOverDialog : GameWindow
         Content = page;
 
         // 그림이 다 깔린 뒤에 물음창을 그 위로 얹는다. 물음은 <b>여느 물음창</b>이다 —
-        // 게임도 알림과 물음이 한 함수라(0x00469060) 여기만 딴 상자를 지을 까닭이 없다.
+        // 원본도 알림과 물음이 한 함수라(0x00469060) 여기만 딴 상자를 지을 까닭이 없다.
         Loaded += (_, _) =>
         {
             // 물음창을 <b>그림 아래로</b> 내려 앉힌다. 가운데에 두면 그림 한가운데를 덮는다.
@@ -146,7 +146,7 @@ public sealed class GameOverDialog : GameWindow
         var dialog = new GameOverDialog(stills, picture, where) { Owner = owner };
         dialog.ShowDialog();
 
-        // YES 면 첫 화면(메인메뉴)으로 가고, NO(물림도 3 이다)면 <b>게임을 끝낸다</b> — 3 이 나오면
+        // YES 면 첫 화면(메인메뉴)으로 가고, NO(물림도 3 이다)면 <b>원본을 끝낸다</b> — 3 이 나오면
         // 비트 0x40 을 세우고(0x00410CF6) 판 고리를 빠져나가 프로그램이 닫힌다(0x00410D14 → 0x00410D21).
         // END GAME 처럼 게임 창을 닫는다. 부르는 쪽은 이어서 타이틀로 돌리려 드니 한 박자 늦춰 닫는다.
         if (!dialog._again && ShipMapWindow.Current is { } game)

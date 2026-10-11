@@ -255,7 +255,7 @@ public sealed class BookEditDialog : GameWindow
             _grid.SelectedItem = rows.FirstOrDefault(r => r.Id == nextId);
     }
 
-    /// <summary>고친 칸만 골라 적어 둔다 — 게임 값과 같으면 씌우지 않는다.</summary>
+    /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
     private void Collect()
     {
         if (_books is not { } books || _grid.ItemsSource is not List<Row> rows) return;

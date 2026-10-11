@@ -6,7 +6,7 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 인물정보 — <b>부하가 하나라도 있으면</b> 게임처럼 누구를 볼지 먼저 묻고,
+/// 인물정보 — <b>부하가 하나라도 있으면</b> 원본처럼 누구를 볼지 먼저 묻고,
 /// 아무도 없으면 곧바로 제독의 판을 낸다.
 /// </summary>
 /// <remarks>
@@ -127,7 +127,7 @@ internal static class PersonInfoMenu
     private const int FirstMateSlot = 0, NavigatorSlot = 1, SurveyorSlot = 2, InterpreterSlot = 3;
 
     /// <summary>
-    /// 그 자리에서 <b>실제로 쓰이는 기능</b>인지 — 게임은 기능마다 제독과 정해진 한 자리를 견준다(<c>0x0047CCA0</c>).
+    /// 그 자리에서 <b>실제로 쓰이는 기능</b>인지 — 원본은 기능마다 제독과 정해진 한 자리를 견준다(<c>0x0047CCA0</c>).
     /// </summary>
     /// <remarks>
     /// <code>

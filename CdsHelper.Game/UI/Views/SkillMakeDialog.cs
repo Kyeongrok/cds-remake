@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// NEW GAME 셋째 걸음 — 기술 열셋과 언어 열넷에 보너스 포인트를 찍는다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0045DE20</c> 이다.
+/// 원본의 <c>0x0045DE20</c> 이다.
 /// <code>
 ///   0x00560A10  기술 열셋 — 항해술 운용술 검술 포술 사격술 의학 웅변
 ///                           측량 역사학 회계 조선기술 신학 과학
@@ -30,15 +30,15 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 internal sealed class SkillMakeDialog : InfoDialog
 {
-    /// <summary>게임 갈무리에 이 화면들에는 닫기(X)가 없다.</summary>
+    /// <summary>원본 갈무리에 이 화면들에는 닫기(X)가 없다.</summary>
     protected override bool ShowClose => false;
 
-    /// <summary>판과 단추 줄의 여백. 게임 것이 훨씬 촘촘하다.</summary>
+    /// <summary>판과 단추 줄의 여백. 원본 것이 훨씬 촘촘하다.</summary>
     protected override Thickness BoardPad => new(8, 6, 8, 2);
 
     protected override Thickness ButtonPad => new(0, 2, 8, 6);
 
-    /// <summary>아래 단추의 폭과 사이. 게임 것은 마구리 둘에 가운데 두 칸(48)이다.</summary>
+    /// <summary>아래 단추의 폭과 사이. 원본 것은 마구리 둘에 가운데 두 칸(48)이다.</summary>
     private const double FootWidth = 48;
 
     private static readonly Thickness FootGap = new(3, 0, 0, 0);

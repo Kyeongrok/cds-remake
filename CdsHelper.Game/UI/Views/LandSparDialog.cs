@@ -17,7 +17,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 도시도 나라도 없이 싸움만 돌려 본다. 양쪽 여섯 자리의 병종과 병력 합을 골라
 /// <see cref="LandBattle"/> 의 모의전 생성자에 그대로 넘긴다.
 ///
-/// 게임에 없는 화면이라 밤색 판이 아니라 <b>여느 개발 창</b>의 꼴로 짓는다 —
+/// 원본에 없는 화면이라 밤색 판이 아니라 <b>여느 개발 창</b>의 꼴로 짓는다 —
 /// 부대 편성 창(<see cref="LandFormationDialog"/>)과 같은 결이다.
 /// </remarks>
 internal sealed class LandSparDialog : GameWindow
@@ -47,8 +47,8 @@ internal sealed class LandSparDialog : GameWindow
     /// <b>지난번에 차렸던 짜임</b> — 창을 다시 열면 이대로 되편다.
     /// </summary>
     /// <remarks>
-    /// 게임의 부대배치 화면에도 「전회」 단추가 있어 지난번 배치(<c>0x0056EAB8</c> 여섯 칸)를
-    /// 그대로 되편다(<see cref="LandDeployDialog"/>). 모의전은 게임에 없는 화면이지만 같은
+    /// 원본의 부대배치 화면에도 「전회」 단추가 있어 지난번 배치(<c>0x0056EAB8</c> 여섯 칸)를
+    /// 그대로 되편다(<see cref="LandDeployDialog"/>). 모의전은 원본에 없는 화면이지만 같은
     /// 결로 둔다 — 같은 짜임으로 여러 판을 굴려 보는 자리이기 때문이다.
     ///
     /// 게임의 그 여섯 칸은 세이브에 안 적혀 게임을 새로 열면 죄다 −1 이지만, 이쪽은
@@ -228,7 +228,7 @@ internal sealed class LandSparDialog : GameWindow
     /// 아군으로 세울 수 있는 병종인지 — <b>여덟뿐</b>이다.
     /// </summary>
     /// <remarks>
-    /// 게임이 배치 화면에 미리 읽어 두는 부대 그림이 파트 8~15 여덟 장이고
+    /// 원본이 배치 화면에 미리 읽어 두는 부대 그림이 파트 8~15 여덟 장이고
     /// (<c>0x004A020B</c>), <see cref="LandUnitArt.DeploySheet"/> 가 그 자리를 낸다 —
     /// 기병 · 중장기병 · 화승총대 · 머스켓총대 · 포병 · 캐논포병 · 제독 · 무적제독이다.
     /// 곧 <b>플레이어가 낼 수 있는 병종은 그 여덟이 전부</b>다.
@@ -245,7 +245,7 @@ internal sealed class LandSparDialog : GameWindow
     /// </summary>
     /// <remarks>
     /// 마을 공략이면 <b>도시</b>를 고른다 — 그 도시의 나라·문화권·규모로 판을 세우고
-    /// 적은 게임처럼 진형표에서 지어낸다. 들싸움이면 <b>뭍에서 마주치는 부대 열여섯</b>
+    /// 적은 원본처럼 진형표에서 지어낸다. 들싸움이면 <b>뭍에서 마주치는 부대 열여섯</b>
     /// (<see cref="LandFieldFoes"/>) 가운데 하나를 고르고, 그 벌의 병력을 굴려 넣는다.
     /// </remarks>
     private void FillTargets()

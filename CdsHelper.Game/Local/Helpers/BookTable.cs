@@ -58,7 +58,7 @@ public sealed class BookTable
     /// 힌트를 알아들으려면 있어야 하는 것 — 기능 자리와 <b>먼저 발견해 두어야 할 것들</b>.
     /// </summary>
     /// <remarks>
-    /// 기능만으로는 안 되는 힌트가 있다. 게임은 <c>0x00463E50</c> 에서 기능을 보기 전에
+    /// 기능만으로는 안 되는 힌트가 있다. 원본은 <c>0x00463E50</c> 에서 기능을 보기 전에
     /// <c>0x0042CCC0</c> 으로 <b>선행 발견물 여덟 칸</b>을 먼저 훑는다 — 한 칸이라도
     /// 아직 못 찾았으면 그 힌트는 안 들어온다.
     /// <code>
@@ -132,7 +132,7 @@ public sealed class BookTable
         }
     }
 
-    /// <summary><see cref="BookEdits"/> 로 덧씌우기 전의 원본 게임 값. 표 밖이면 null.</summary>
+    /// <summary><see cref="BookEdits"/> 로 덧씌우기 전의 원본 값. 표 밖이면 null.</summary>
     public Book? Original(int id) => id >= 0 && id < _books.Count ? _books[id] : null;
 
     /// <summary>그 힌트를 알아들으려면 있어야 하는 것. 번호가 표 밖이면 기능 -1(조건 없음).</summary>
@@ -141,7 +141,7 @@ public sealed class BookTable
 
     /// <summary>
     /// 그 도시 도서관 서가에 꽂히는 책. 그 도시에 놓였고 <paramref name="year"/> 까지
-    /// 나온 것만 고른다. 게임도 들어갈 때마다 이렇게 훑는다(색인을 안 만든다).
+    /// 나온 것만 고른다. 원본도 들어갈 때마다 이렇게 훑는다(색인을 안 만든다).
     /// </summary>
     public List<Book> InLibrary(int cityId, int year)
     {

@@ -80,7 +80,7 @@ public class WorldEditContent : ContentControl
 
     /// <summary>
     /// 도시 숨김 — 도시(3x3)·발견물(2x2) 칸을 그 바탕 타일(도시 표 <c>+0x74</c> · 발견물 표 <c>+0x54</c>)로 보이고 칠하지 않는다.
-    /// 그 칸의 파일 값은 도시 그림 타일이고 바탕은 표 쪽 자료라, 칠하면 도시 그림이 깨진다. 게임의 「도시 분리」와 같은 바탕이다.
+    /// 그 칸의 파일 값은 도시 그림 타일이고 바탕은 표 쪽 자료라, 칠하면 도시 그림이 깨진다. 원본의 「도시 분리」와 같은 바탕이다.
     /// </summary>
     private bool _hideCities = true;
     private readonly System.Windows.Controls.Primitives.ToggleButton _hideButton = new()

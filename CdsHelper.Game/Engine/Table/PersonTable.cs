@@ -62,7 +62,7 @@ public sealed class PersonTable
 
     /// <summary>고용 상태. 2 라야 부하로 삼을 수 있다.</summary>
     /// <remarks>
-    /// 게임의 인물 갈래 <c>+0xE8</c>(세이브 <c>+0x62</c>)다. 말을 걸면 <c>0x004A4DE0</c> 이 뜀표 <c>0x004A4E40</c> 으로
+    /// 원본의 인물 갈래 <c>+0xE8</c>(세이브 <c>+0x62</c>)다. 말을 걸면 <c>0x004A4DE0</c> 이 뜀표 <c>0x004A4E40</c> 으로
     /// 가른다 — <b>0 역사 항해자 · 4 누적 캐릭터</b>는 일기토 차림표(<c>0x004A4AA0</c>), 1·2 는 고용 쪽(<c>0x004A4BB0</c>),
     /// 3 은 <c>0x004A45E0</c> 이다.
     /// </remarks>
@@ -105,7 +105,7 @@ public sealed class PersonTable
         public int Dest { get; set; } = -1;
 
         /// <summary>
-        /// 떠나 온 도시. 길 위에 있는 동안만 선다(게임의 <c>[인물+0x100]</c> 출발 좌표 몫이다).
+        /// 떠나 온 도시. 길 위에 있는 동안만 선다(원본의 <c>[인물+0x100]</c> 출발 좌표 몫이다).
         /// </summary>
         public int From { get; set; } = -1;
 
@@ -124,7 +124,7 @@ public sealed class PersonTable
         /// <summary>여자 얼굴이면 참이다. 옛 인물표에는 없으므로 기본값은 거짓이다.</summary>
         public bool Female { get; set; }
 
-        /// <summary>능력 여섯. <b>세이브에 적힌 날값</b>이라 게임이 쓰는 값보다 하나 크다.</summary>
+        /// <summary>능력 여섯. <b>세이브에 적힌 날값</b>이라 원본이 쓰는 값보다 하나 크다.</summary>
         public int[] Stats { get; set; } = new int[StatCount];
 
         /// <summary>기술 열셋(0~3). 차례는 <see cref="Support.Local.Models.Skill.Names"/> 와 같다.</summary>
@@ -184,7 +184,7 @@ public sealed class PersonTable
     /// 이 표를 구운 해. 적힌 나이가 그 해의 나이다. 모르면 0.
     /// </summary>
     /// <remarks>
-    /// <b>게임은 사람에게 해마다 한 살을 먹인다.</b> 1480년 세이브와 1517년 세이브를
+    /// <b>원본은 사람에게 해마다 한 살을 먹인다.</b> 1480년 세이브와 1517년 세이브를
     /// 맞대 보면 나이 차가 사람마다 <b>꼭 37</b>이다(코론 29↔66 · 페르난 46↔83 ·
     /// 에스칸데 7↔44). 그러니 표에 적힌 나이는 「그 해의 나이」일 뿐이고, 다른 해를
     /// 셈하려면 해를 알아야 한다.
@@ -197,7 +197,7 @@ public sealed class PersonTable
     /// <summary>
     /// 그 사람이 그 해에 <b>돌아다니는가</b> — 등장했고 열여덟에서 예순 사이다.
     /// </summary>
-    /// <remarks>게임의 <c>0x004322B0</c> 이다. 이 문턱이 곧 사람이 나타나고 스러지는 때다.</remarks>
+    /// <remarks>원본의 <c>0x004322B0</c> 이다. 이 문턱이 곧 사람이 나타나고 스러지는 때다.</remarks>
     public bool ActiveOn(Row row, int on)
     {
         if (row.Appear == 0) return false;

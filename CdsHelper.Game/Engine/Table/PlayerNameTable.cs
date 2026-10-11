@@ -35,7 +35,7 @@ public sealed class PlayerNameTable
 
     private const int FamilyVa = 0x0057B208, GivenVa = 0x0057B2C8;
 
-    /// <summary>성 수와 명 줄 수. 게임이 자르는 값 그대로다(<c>0x30</c> · <c>0x25</c>).</summary>
+    /// <summary>성 수와 명 줄 수. 원본이 자르는 값 그대로다(<c>0x30</c> · <c>0x25</c>).</summary>
     public const int FamilyCount = 48, GivenCount = 37;
 
     /// <summary>

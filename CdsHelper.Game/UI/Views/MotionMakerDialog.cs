@@ -27,7 +27,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   적군   스프라이트셋 1~8(문화권)    왼쪽에 서서 오른쪽을 본다
 ///   자리   상대 60 · 나 173  <see cref="DuelStage"/> 가 갈무리로 재어 둔 그 자리다
 /// </code>
-/// 한 장은 <b>0.1초</b>가 밑값이고 장마다 따로 늘리고 줄인다. 게임의 눈금 하나는 실은
+/// 한 장은 <b>0.1초</b>가 밑값이고 장마다 따로 늘리고 줄인다. 원본의 눈금 하나는 실은
 /// 0.067초(1/15초)지만 여기서는 손으로 맞추기 좋게 0.1초씩 끊는다 — 0.1 단위로 굴러가는
 /// 스피너가 장마다 하나씩 붙는다.
 /// </remarks>
@@ -53,7 +53,7 @@ public sealed class MotionMakerDialog : GameWindow
     /// 앞으로 나가는 거리의 한계와 한 번에 굴리는 폭.
     /// </summary>
     /// <remarks>
-    /// 게임이 쓰는 값이 죄다 열의 배수라(내지름 30 · 다가섬 40 · 한 걸음 10) 다섯씩
+    /// 원본이 쓰는 값이 죄다 열의 배수라(내지름 30 · 다가섬 40 · 한 걸음 10) 다섯씩
     /// 굴린다. 그 사이 값은 칸에 곧바로 적어 넣으면 된다.
     /// </remarks>
     private const double MaxPush = 150, PushStep = 5;
@@ -98,7 +98,7 @@ public sealed class MotionMakerDialog : GameWindow
         /// 그 장 동안 <b>제자리에서 앞으로</b> 나가는 거리(점). 뒤로 물러나면 음수다.
         /// </summary>
         /// <remarks>
-        /// 게임은 내지를 때 치는 쪽을 <b>서른 점</b> 앞으로 보낸다
+        /// 원본은 내지를 때 치는 쪽을 <b>서른 점</b> 앞으로 보낸다
         /// (<c>0x004A794A</c> 의 <c>sub eax,0x1E</c>). 갈무리 두 장(상단1 · 상단2)의
         /// 배경을 맞춰 재어 보아도 조각이 <b>30.9점</b> 옮겨 가 그 값과 맞는다.
         ///
@@ -1499,7 +1499,7 @@ public sealed class MotionMakerDialog : GameWindow
             seconds.ValueChanged += (_, e) => { step.Seconds = e.NewValue; Tell(); };
             cell.Children.Add(Titled("초", seconds, "이 장이 머무는 시간(초)"));
 
-            // 그 장 동안 앞으로 나가는 거리. 게임의 내지름이 30점이다.
+            // 그 장 동안 앞으로 나가는 거리. 원본의 내지름이 30점이다.
             var push = new NumericSpinner
             {
                 Minimum = -MaxPush,

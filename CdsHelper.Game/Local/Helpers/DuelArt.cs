@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 일기토 화면 그림 — <c>FIGHTER.CDS</c> 에서 미리 뽑아 둔 <c>asset/duel</c> 을 읽는다.
 /// </summary>
 /// <remarks>
-/// 게임의 일기토 판은 <c>0x180 x 0x100</c>(384x256)이고 두 층이다
+/// 원본의 일기토 판은 <c>0x180 x 0x100</c>(384x256)이고 두 층이다
 /// (<c>0x004AA7BB</c>). 위가 배경, 아래가 눈금판이다.
 /// <code>
 ///   duel-field · wood · sand · tavern · mosque · temple · deck   384x136  배경 일곱
@@ -90,7 +90,7 @@ public sealed class DuelArt
     /// </summary>
     /// <remarks>
     /// 예전에는 「눈금판은 제 팔레트가 없어 배경 것을 같이 쓴다」고 보고 배경마다 한 장씩
-    /// 뽑았다. <b>틀렸다</b> — 눈금판 색인이 11~73 이라 죄다 74 밑이고, 게임은 74 부터
+    /// 뽑았다. <b>틀렸다</b> — 눈금판 색인이 11~73 이라 죄다 74 밑이고, 원본은 74 부터
     /// 그림마다의 팔레트를 얹으므로(<see cref="GamePalette.OwnPaletteBase"/>) 그 아래는
     /// <b>공용 색표</b>를 본다.
     ///

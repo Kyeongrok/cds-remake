@@ -10,16 +10,16 @@ using CdsHelper.Support.UI.Units;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 메뉴 디자이너 — 게임에 나는 창들을 손잡이로 짜 보고 눈으로 맞대는 자리.
+/// 메뉴 디자이너 — 원본에 나는 창들을 손잡이로 짜 보고 눈으로 맞대는 자리.
 /// </summary>
 /// <remarks>
 /// 게임 창은 밤색 판에 띠 단추를 얹은 몇 가지 꼴이 되풀이된다. 그 꼴을 코드에 적어 넣고
 /// 게임을 다시 구워 보는 대신, 여기서 <b>제목을 넣고 빼고 · 줄을 적고 · 폭과 줄 수를
 /// 굴려</b> 그 자리에서 본다.
 ///
-/// 미리보기는 <b>게임이 쓰는 그 조각들</b>로 짓는다 — 띠 단추는
+/// 미리보기는 <b>원본이 쓰는 그 조각들</b>로 짓는다 — 띠 단추는
 /// <see cref="GameButton"/>, 글씨는 <see cref="GameUi.GameLabel"/>(게임 글꼴), 빛깔은
-/// <see cref="GameUi"/> 의 것이다. 그래서 여기서 보이는 대로 게임에서도 보인다.
+/// <see cref="GameUi"/> 의 것이다. 그래서 여기서 보이는 대로 원본에서도 보인다.
 ///
 /// <b>어디까지 게임에 드나.</b> 「단추 여백」은 <see cref="GameSettings.BandPad"/> 라
 /// 곧바로 든다. 나머지(폭 · 줄 수 · 제목 · 글)는 <b>재어 보는 값</b>이라 창마다 코드에
@@ -387,7 +387,7 @@ public sealed class MenuDesignerDialog : GameWindow
             });
         }
 
-        // 한 화면에 낼 줄 수만큼만 보이고 나머지는 굴려 본다 — 게임도 그렇다.
+        // 한 화면에 낼 줄 수만큼만 보이고 나머지는 굴려 본다 — 원본도 그렇다.
         double tall = most * (UiSprites.BandHeight + 5);
         var scroll = new ScrollViewer
         {

@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 자택의 「연표를 본다」와 커맨드의 「항해일지를 본다」 — 발견·보고를 날짜 차례로 늘어놓는 한 창이다.
 /// </summary>
 /// <remarks>
-/// 게임도 창 하나를 두 갈래로 쓴다(<c>0x00424590</c> 연표 · <c>0x004246C0</c> 항해일지, 그림 <c>0x00423ED0</c>).
+/// 원본도 창 하나를 두 갈래로 쓴다(<c>0x00424590</c> 연표 · <c>0x004246C0</c> 항해일지, 그림 <c>0x00423ED0</c>).
 /// <code>
 ///   판     592 x 448, MISC.CDS 파트 8 을 통째로 깐다(asset/ui/misc-08.png)
 ///   줄     한 쪽에 19 줄, 줄 높이 20, 날짜 칸 x=8 · 본문 x=104 폭 472
@@ -58,7 +58,7 @@ public sealed class ChronicleDialog : GameWindow
 
     private ChronicleDialog(IEnumerable<Row> rows, string caption)
     {
-        // 날짜 차례다 — 게임도 그린 뒤가 아니라 목록을 세울 때 정렬한다(0x004241D0).
+        // 날짜 차례다 — 원본도 그린 뒤가 아니라 목록을 세울 때 정렬한다(0x004241D0).
         _rows = [.. rows.OrderBy(r => r.When.Year * 12 + r.When.Month)];
 
         Title = caption;
@@ -181,7 +181,7 @@ public sealed class ChronicleDialog : GameWindow
     /// 자택의 <b>연표</b> — 세상에 알려진 발견물을 싣는다(<c>0x00424590</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 발견물마다 사람 칸 2(알린 사람)가 차 있으면 싣는다. 그 이름이 제독이면 「발견」 줄을 먼저 넣고,
+    /// 원본은 발견물마다 사람 칸 2(알린 사람)가 차 있으면 싣는다. 그 이름이 제독이면 「발견」 줄을 먼저 넣고,
     /// 「보고」 줄은 누가 알렸든 넣는다(<c>0x004245FA</c> ~ <c>0x0042466E</c>). 남이 알린 것은
     /// <see cref="Player.Scooped"/> 다 — 그 날짜를 안 적던 세이브에서 온 것은 줄을 세울 수 없어 뺀다.
     /// </remarks>
@@ -222,7 +222,7 @@ public sealed class ChronicleDialog : GameWindow
     private static string NameOf(DiscoveryTable? table, int id) => table?.NameOf(id) ?? $"발견물 {id}";
 
     /// <summary>
-    /// 창을 연다. <b>줄이 없어도 빈 책을 그대로 연다</b> — 게임은 줄 수를 안 보고 창을 세운다
+    /// 창을 연다. <b>줄이 없어도 빈 책을 그대로 연다</b> — 원본은 줄 수를 안 보고 창을 세운다
     /// (<c>0x00424590</c> · <c>0x004246C0</c> → <c>0x004241D0</c>). 따로 알리는 말도 없다.
     /// </summary>
     private static void Open(Window owner, List<Row> rows, string caption)

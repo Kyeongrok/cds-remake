@@ -23,7 +23,7 @@ public static class Vitality
     /// <summary>경고 문턱 — 이보다 낮아지면 부관이 쉬라고 한다.</summary>
     public const int Faint = 100, Pale = 300;
 
-    /// <summary>이레째 날인지를 셀 밑날. 게임은 연월일을 날수로 바꿔(0x0042E6A0) 7로 나눈다.</summary>
+    /// <summary>이레째 날인지를 셀 밑날. 원본은 연월일을 날수로 바꿔(0x0042E6A0) 7로 나눈다.</summary>
     private static readonly DateTime Epoch = new(1480, 1, 1);
 
     /// <summary>

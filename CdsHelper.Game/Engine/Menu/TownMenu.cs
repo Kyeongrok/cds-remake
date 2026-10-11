@@ -14,9 +14,9 @@ namespace CdsHelper.Game.Engine.Menu;
 ///   <item>여기 — 그 일에 손을 달아 준다. 조건이 어긋나면 <b>손을 안 달아</b> 줄이 흐려진다.</item>
 ///   <item><see cref="ITownScreen"/> — 실제로 창을 띄우고 돈을 세는 도시 화면.</item>
 /// </list>
-/// 제목은 건물 이름이다(게임도 그렇다).
+/// 제목은 건물 이름이다(원본도 그렇다).
 ///
-/// <b>흐린 줄은 지운 줄이 아니다.</b> 게임도 눌리지 않는 줄을 자리에 그대로 둔다 —
+/// <b>흐린 줄은 지운 줄이 아니다.</b> 원본도 눌리지 않는 줄을 자리에 그대로 둔다 —
 /// 이를테면 배를 팔 수 없어도 「선박 매각」은 눌리고, 그때 "기함을 처분하는 일은
 /// 불가능합니다!"(<c>0x0044B96F</c>) 가 뜬다. 그래서 그 줄은 여기서 막지 않는다.
 /// </remarks>
@@ -50,7 +50,7 @@ internal static class TownMenu
     public const int InvestRow = 10;
 
     /// <summary>
-    /// 이야기 대본에 올리는 줄 번호 — 게임은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
+    /// 이야기 대본에 올리는 줄 번호 — 원본은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
     /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
     /// </summary>
     /// <remarks>
@@ -144,7 +144,7 @@ internal static class TownMenu
             TownWork.SpecialOrder when screen.CanSpecialOrder => screen.SpecialOrder,
             // 함대가 닿아 있으면 켜진다(0x0044BD60). 기함뿐이면 눌러야 막힌다(0x0044B863 의 cmp esi,1 / jle).
             TownWork.SellShip when screen.CanSellShip => screen.SellShip,
-            // 게임도 고칠 배가 없으면 이 줄을 흐리게 둔다(0x0044BD40).
+            // 원본도 고칠 배가 없으면 이 줄을 흐리게 둔다(0x0044BD40).
             TownWork.RepairShip when screen.CanRepairShip => screen.RepairShip,
             TownWork.RefitShip when screen.CanRefitShip => screen.RefitShip,
 
@@ -164,7 +164,7 @@ internal static class TownMenu
             TownWork.Educate when screen.CanEducate => screen.Educate,
             TownWork.Rest => screen.OpenRestMenu,
             TownWork.Savings => screen.OpenSavingsMenu,
-            // 게임도 지닌 것이 없으면 이 줄을 흐리게 둔다 — 맡길 것이 없으면 열 일도 없다.
+            // 원본도 지닌 것이 없으면 이 줄을 흐리게 둔다 — 맡길 것이 없으면 열 일도 없다.
             TownWork.Store when screen.HasItems => screen.OpenStorage,
 
             // 백과사전 — 갈래마다 한 권씩, 발견한 것이 한 쪽씩 쌓인다.

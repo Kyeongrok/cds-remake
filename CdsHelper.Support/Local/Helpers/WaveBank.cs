@@ -161,7 +161,7 @@ public sealed class WaveInfo
     /// <summary>파트 번호(0부터).</summary>
     public int Part { get; init; }
 
-    /// <summary>게임이 쓰는 사운드 ID. 파트 번호에 28 을 더한 값이다.</summary>
+    /// <summary>원본이 쓰는 사운드 ID. 파트 번호에 28 을 더한 값이다.</summary>
     public int SoundId => Part + WaveBank.FirstSoundId;
 
     public int FormatTag { get; set; }

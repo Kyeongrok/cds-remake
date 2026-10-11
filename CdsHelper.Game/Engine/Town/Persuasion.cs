@@ -24,7 +24,7 @@
 /// </remarks>
 public static class Persuasion
 {
-    /// <summary>가린 끝. 값은 게임이 내는 것 그대로다(<c>0x004AE8C5</c> 가 이 값을 낸다).</summary>
+    /// <summary>가린 끝. 값은 원본이 내는 것 그대로다(<c>0x004AE8C5</c> 가 이 값을 낸다).</summary>
     public enum Verdict
     {
         /// <summary>좋아하는 갈래다 — 두말없이 원조한다. 자금이 많다.</summary>

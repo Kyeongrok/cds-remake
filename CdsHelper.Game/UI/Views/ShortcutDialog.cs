@@ -6,7 +6,7 @@ using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
 
-/// <summary>게임에서 쓰는 단축키를 확인하고 다시 지정하는 창.</summary>
+/// <summary>원본에서 쓰는 단축키를 확인하고 다시 지정하는 창.</summary>
 /// <remarks>
 /// 탭이 둘이다 — 「일반」은 창을 여는 글쇠, 「항해」는 뱃머리를 세우는 글쇠다(<see cref="GameSettings.SailActions"/>).
 /// 항해 글쇠는 숫자판이 없는 자판을 위해 얹은 것이라, 숫자판 조타(1~9 · 5 · 0)는 이것과 상관없이 늘 먹는다.

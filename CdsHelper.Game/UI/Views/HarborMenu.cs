@@ -62,7 +62,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// 스폰서가 대 준 배가 있으면 항구 사람이 아는 체를 한다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00476EC0</c> 이다.
+    /// 원본의 <c>0x00476EC0</c> 이다.
     /// <code>
     ///   476EC0  계약 물건(0x0061D1D0) 이 있다
     ///   476ECD  배를 빌렸다(0x0061D1E8 == 1)   ; 0x0041079D 가 박아 둔 깃발
@@ -72,7 +72,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// </code>
     /// 얼굴은 <b>항구 화자</b>다(<c>0x00476EF6</c> 이 시설 객체의 <c>+0x80</c> 을 넘긴다).
     ///
-    /// <b>딱 한 번만 나온다</b> — 게임은 인사를 낸 바로 뒤 <c>0x00476F40</c> 에서 깃발을
+    /// <b>딱 한 번만 나온다</b> — 원본은 인사를 낸 바로 뒤 <c>0x00476F40</c> 에서 깃발을
     /// 1 에서 2 로 올리고, 물음(<c>0x00476ECD</c>)은 1 일 때만 참이다.
     /// </remarks>
     private void GreetLoan()
@@ -145,7 +145,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// "출항" 을 눌렀을 때의 관문. 나가도 좋으면 true.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00477220</c> 차례 그대로다.
+    /// 원본의 <c>0x00477220</c> 차례 그대로다.
     /// <code>
     ///   477253  선원 0 이하        "선원이 모자랍니다. 이래서는 출항할 수 없습니다!"   막는다
     ///   47726D  선원 &lt; 필요       "…함대의 속도가 늦어지지만, 괜찮으십니까?"          YES/NO
@@ -367,14 +367,14 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     ];
 
     /// <summary>
-    /// 함대편성 창. 게임처럼 제목 없이 줄만 쌓고, 마지막 줄만 회녹색 띠가 된다.
+    /// 함대편성 창. 원본처럼 제목 없이 줄만 쌓고, 마지막 줄만 회녹색 띠가 된다.
     /// "편성 종료" 를 누르면 항구 창으로 되돌아간다 — 창을 닫는 것이 아니라 담긴 것만 갈린다.
     /// </summary>
     public GameMenu FleetMenu() => new(
         [.. Facility.FleetMenu.Select(item => (item, FleetAction(item)))]);
 
     /// <summary>
-    /// 함대편성 줄의 켜짐. 게임의 조건을 그대로 옮겼다.
+    /// 함대편성 줄의 켜짐. 원본의 조건을 그대로 옮겼다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -420,7 +420,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         _menu.Pop();
     }
 
-    /// <summary>기함을 바꾼다. 게임의 <c>0x0046A2F0</c> 자리다.</summary>
+    /// <summary>기함을 바꾼다. 원본의 <c>0x0046A2F0</c> 자리다.</summary>
     /// <remarks>
     /// 배 목록 표(<c>0x0049D3F0</c>, 묶음 3 <c>0x005602C8</c>)를 방식 2 로 연다 — <b>지금 기함 줄은 흐리다</b>.
     /// </remarks>
@@ -438,7 +438,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         _menu.Refresh();   // 기함이 바뀌면 줄 켜짐도 다시 잰다
     }
 
-    /// <summary>맡겨 둔 배를 함대에 넣는다. 게임의 <c>0x0046A350</c> 자리다.</summary>
+    /// <summary>맡겨 둔 배를 함대에 넣는다. 원본의 <c>0x0046A350</c> 자리다.</summary>
     /// <remarks>
     /// 한 척 받고 끝나지 않는다 — 물리거나 맡긴 배가 떨어질 때까지 목록을 다시 연다(<c>0x0046A3DE</c> →
     /// <c>0x0046A355</c>). 받다가 여덟 척이 차면 「이 이상 편입할 수 없습니다.」(<c>0x005453D0</c>)다.
@@ -466,7 +466,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         _menu.Refresh();
     }
 
-    /// <summary>함대의 배를 이 마을에 맡긴다. 게임의 <c>0x0046A400</c> 자리다.</summary>
+    /// <summary>함대의 배를 이 마을에 맡긴다. 원본의 <c>0x0046A400</c> 자리다.</summary>
     /// <remarks>
     /// 배 목록 표(묶음 4 <c>0x005602D0</c>)를 방식 2 로 연다 — <b>기함은 못 맡긴다</b>(그 줄이 흐리다).
     /// </remarks>
@@ -483,7 +483,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         _menu.Refresh();
     }
 
-    /// <summary>배를 없앤다. 게임의 <c>0x0046A490</c> 자리다 — 묻지 않는다.</summary>
+    /// <summary>배를 없앤다. 원본의 <c>0x0046A490</c> 자리다 — 묻지 않는다.</summary>
     /// <remarks>
     /// 배 목록 표(묶음 4 <c>0x005602D4</c>)를 방식 3 으로 연다 — <b>기함과 빌린 배는 흐리다</b>.
     /// </remarks>
@@ -502,10 +502,10 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     }
 
     /// <summary>
-    /// 선원편성 창. 모집·해고 두 줄과 돌아가기다 — 게임의 <c>0x004774E0</c> 그대로다.
+    /// 선원편성 창. 모집·해고 두 줄과 돌아가기다 — 원본의 <c>0x004774E0</c> 그대로다.
     /// </summary>
     /// <remarks>
-    /// "선원해고" 는 태운 선원이 있어야 눌린다. 게임도 고르는 창을 지으며 그 줄의 켜짐을
+    /// "선원해고" 는 태운 선원이 있어야 눌린다. 원본도 고르는 창을 지으며 그 줄의 켜짐을
     /// <c>0x0040E360() &gt; 0</c>(지금 선원 수)으로 정한다(<c>0x0047753E</c>).
     /// </remarks>
     public GameMenu CrewMenu() => new(
@@ -515,7 +515,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// "선원편성" 을 눌렀을 때. <b>늘 선원모집 · 선원해고 · 돌아간다 창을 낸다.</b>
     /// </summary>
     /// <remarks>
-    /// 예전에는 선원이 하나도 없으면 창을 건너뛰고 곧장 모집으로 갔다. 게임은 그러지 않는다 —
+    /// 예전에는 선원이 하나도 없으면 창을 건너뛰고 곧장 모집으로 갔다. 원본은 그러지 않는다 —
     /// 창(<c>0x004774E0</c>)은 늘 서고 해고할 사람이 없을 때 "선원해고" 줄만 흐려진다
     /// (<see cref="CrewAction"/>).
     /// </remarks>
@@ -533,11 +533,11 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     private int CrewPrice => CrewHire.PriceFor(_player.Fame);
 
     /// <summary>
-    /// 선원을 모집한다. 게임의 <c>0x00477330</c> 차례 그대로다.
+    /// 선원을 모집한다. 원본의 <c>0x00477330</c> 차례 그대로다.
     /// </summary>
     /// <remarks>
     /// 정원이 찼으면 아예 묻지 않고 물린다. 값을 못 치르면 다시 묻고, 다 태우고 나서도
-    /// 최저 승원에 모자라면 한 번 더 권한다 — 게임도 그 자리에서 되돌아간다.
+    /// 최저 승원에 모자라면 한 번 더 권한다 — 원본도 그 자리에서 되돌아간다.
     ///
     /// 막는 말 둘은 <b>부관이 있으면 다른 말</b>이다(<c>0x00469680</c>).
     /// <code>
@@ -591,7 +591,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     }
 
     /// <summary>
-    /// 선원을 해고한다. 게임의 <c>0x00477460</c> 차례 그대로다 — 삯은 돌려주지 않는다.
+    /// 선원을 해고한다. 원본의 <c>0x00477460</c> 차례 그대로다 — 삯은 돌려주지 않는다.
     /// </summary>
     private void FireCrew()
     {
@@ -642,7 +642,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     ///   0047777B  마을정보 목록 — 고를 때마다 값을 물고 한 곳씩 일러 준다
     ///   004775F0  목록은 <b>같은 지역 무리</b>(표 +0x1C)의 도시다. 지금 있는 마을은 뺀다
     /// </code>
-    /// 값을 못 치를 때까지 목록으로 되돌아온다 — 게임도 그 자리에서 돈다.
+    /// 값을 못 치를 때까지 목록으로 되돌아온다 — 원본도 그 자리에서 돈다.
     /// </remarks>
     public void CityInfo()
     {
@@ -719,7 +719,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         Harbor.Announceable(_player, _game.Discoveries?.Table, _game.Hints);
 
     /// <summary>
-    /// 발견물을 알린다. 게임의 <c>0x00476E10</c> → <c>0x0047EA80</c> 차례다.
+    /// 발견물을 알린다. 원본의 <c>0x00476E10</c> → <c>0x0047EA80</c> 차례다.
     /// </summary>
     /// <remarks>
     /// 알리면 명성이 <b>보수 ÷ 70</b>(적어도 10)만큼 오른다(<c>0x0047E849</c> 가 보수를

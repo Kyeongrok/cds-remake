@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// <b>왜 모달을 걷었나.</b> 원본은 창이 하나라 대화 상자가 떠 있어도 오른쪽 위 닫기
-/// 단추로 게임을 끝낼 수 있다. 우리는 상자마다 창을 띄우고 <c>ShowDialog()</c> 로
+/// 단추로 원본을 끝낼 수 있다. 우리는 상자마다 창을 띄우고 <c>ShowDialog()</c> 로
 /// 모달을 걸었는데, 그러면 WPF 가 <b>주인 창의 입력을 통째로</b> 막아 그 창에 우리가
 /// 그린 닫기 단추(<see cref="ChromeTitleBar"/>)까지 같이 죽는다.
 ///
@@ -95,7 +95,7 @@ public class GameWindow : Window
     private static void OnKeyUnderBox(object sender, KeyEventArgs e)
     {
         if (sender is not Window window || BoxBlocking(window) is not { } box) return;
-        if (e.Key == Key.System) return;   // Alt+F4 따위는 그 창 몫이다 — 상자가 떠 있어도 게임은 닫힌다
+        if (e.Key == Key.System) return;   // Alt+F4 따위는 그 창 몫이다 — 상자가 떠 있어도 원본은 닫힌다
         e.Handled = true;
 
         if (!box.IsActive) box.Activate();

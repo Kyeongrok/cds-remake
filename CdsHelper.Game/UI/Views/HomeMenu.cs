@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 달수와 지문은 <see cref="Home"/> 가 알고, 여기서는 묻고 알리는 차례만 맡는다.
-/// 게임의 휴양 창이 <c>0x00460660</c>, 저금 창이 <c>0x004609C0</c> 이다.
+/// 원본의 휴양 창이 <c>0x00460660</c>, 저금 창이 <c>0x004609C0</c> 이다.
 ///
 /// 보관(<c>StorageDialog</c>)과 기능(<see cref="GameSystemMenu"/>)은 자택 줄이지만
 /// 여기 없다 — 보관은 창 하나로 끝나고, 기능은 도시 일이 아니라 판 일이다.
@@ -35,7 +35,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
 
     /// <summary>
     /// 자택에 들면 먼저 하는 일 — 아직 안 알린 아이를 소개하고, 맏딸이 나이 차고
-    /// 저금이 넉넉하면 결혼 이야기를 듣는다. 게임의 <c>0x0045FFC0</c> 이다.
+    /// 저금이 넉넉하면 결혼 이야기를 듣는다. 원본의 <c>0x0045FFC0</c> 이다.
     /// </summary>
     /// <remarks>
     /// <see cref="CityPicView"/> 가 건물에 들 때마다(<c>Greet</c>) 자택이면 이것을 부른다.
@@ -238,7 +238,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     public bool CanLeaveHeir => Home.CanLeaveHeir(_player);
 
     /// <summary>
-    /// "후손을 남긴다" — 게임의 <c>0x00461330</c> 이다.
+    /// "후손을 남긴다" — 원본의 <c>0x00461330</c> 이다.
     /// </summary>
     /// <remarks>
     /// 차례가 이렇다.
@@ -252,7 +252,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     ///   461401  0x00469850(5) — 닷새가 간다
     /// </code>
     /// 컨디션 관문은 옮겼다 — 100 밑이면 아내가 「안색이 안 좋은데요…」 하고 끝난다. 아내 상태(사람 칸 <c>+0x04</c> 가 2)
-    /// 관문은 우리 쪽에 그 칸이 없어 늘 지나간 것으로 둔다. 애니메이션이 대포인 것은 게임 그대로다.
+    /// 관문은 우리 쪽에 그 칸이 없어 늘 지나간 것으로 둔다. 애니메이션이 대포인 것은 원본 그대로다.
     /// </remarks>
     public void LeaveHeir()
     {
@@ -301,7 +301,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     // ── 교육 ────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// 「교육」 — 게임의 <c>0x004617D0</c> 이다. 맏아들에게 아버지가 더 잘하는 기능·언어를 한 단계 가르친다.
+    /// 「교육」 — 원본의 <c>0x004617D0</c> 이다. 맏아들에게 아버지가 더 잘하는 기능·언어를 한 단계 가르친다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -318,7 +318,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// 날을 보내는 동안 <b>제독 컨디션이 지난 날의 10분의 1</b> 만큼 찬다(<c>0x0046155B</c> → <c>0x00469820</c>) —
     /// 수련과 같은 셈이다. <c>0x004A5AE0(0x14, 1)</c> 은 애니메이션이 아니라 <b>20밀리초 멈춤</b>
     /// (<c>0x00428000</c> 이 그만큼 기다리다 글쇠·클릭이 오면 곧바로 빠진다)이라 옮길 것이 없다.
-    /// 아내가 없으면 막는 말도 없이 끝난다 — 게임 그대로다.
+    /// 아내가 없으면 막는 말도 없이 끝난다 — 원본 그대로다.
     /// </remarks>
     /// <summary>
     /// 자택 「은퇴한다」(<c>0x00462050</c>) — 두 번 묻고, 그림 15 를 세우고, 세이브를 지운 뒤 끝낸다.
@@ -329,16 +329,16 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     ///   비트 0x40     「…단, 누적 캐릭터가 5명 등록되어 있기 때문에 …」                     0x0053A538
     ///   비트 0x10     「…단, %s%s 등록하면 현재 등록되어 있는 누적 캐릭터가 모두 삭제됩니다.」 0x0053A5B0
     ///   아니면        「…은퇴시키고 누적 캐릭터로 등록하겠습니다. 괜찮습니까?」               0x0053A498
-    ///   두 번째 물음  「%s%s 모험가로서 게임에 복귀할 수 없게 됩니다만, 괜찮습니까?」          0x0053A630
+    ///   두 번째 물음  「%s%s 모험가로서 원본에 복귀할 수 없게 됩니다만, 괜찮습니까?」          0x0053A630
     ///   EVSTILL 15 · 곡 0x0C · 「%s%s 모험가로서의 일생을 마쳤다...」                          0x0053A670
     ///   그 뒤 0x0041AB90 이 세이브(SAVEDATA.CDS·TMP·ACCDATA.CDS)를 지우고 끝낸다
     /// </code>
-    /// 비트 0x40 을 세우는 코드는 게임에 없어 셋째 물음은 절대 안 뜬다 — 옮기지 않는다.
+    /// 비트 0x40 을 세우는 코드는 원본에 없어 셋째 물음은 절대 안 뜬다 — 옮기지 않는다.
     /// 비트 0x10 은 NEW GAME 에서 「누적캐릭터를 등장시키지 않는다」를 고른 판이다
     /// (<see cref="Player.SkipsCumulative"/>) — 등록하기 앞서 올라 있던 다섯을 모두 지운다(<c>0x0041AD55</c>).
     /// 초심자용이 아니면 누적 캐릭터 다섯 자리에 올린다(<see cref="Engine.AccData"/>) — 행적도
     /// 함께 올라가, 다음 판에서 인물 276~280 으로 서서 옛 발자취를 되짚는다
-    /// (<see cref="Engine.AccReplay"/>). 부하·아내·아이는 게임도 <b>안 건드린다</b>(세이브째 사라진다).
+    /// (<see cref="Engine.AccReplay"/>). 부하·아내·아이는 원본도 <b>안 건드린다</b>(세이브째 사라진다).
     /// </remarks>
     /// <returns>은퇴했으면 참 — 부르는 쪽이 첫 화면으로 돌아간다.</returns>
     public bool Retire()
@@ -379,7 +379,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     }
 
     /// <summary>
-    /// 은퇴 그림(EVSTILL 15)과 곡 — 게임은 <b>소리</b> <c>0x0C</c> 를 틀고(<c>0x0046216C</c> 의
+    /// 은퇴 그림(EVSTILL 15)과 곡 — 원본은 <b>소리</b> <c>0x0C</c> 를 틀고(<c>0x0046216C</c> 의
     /// <c>0x004225A0(0x0C, 0)</c>) 소리는 CD 트랙보다 2 작으므로 트랙으로는 14 다.
     /// </summary>
     private const int RetireStill = 15, RetireTrack = 0x0C + 2;
@@ -425,7 +425,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             return;
         }
 
-        // 고르는 창은 수련과 같은 「습득가능 기술」 벌이다 — 게임은 둘 다 0x0040D590 을 부르고, 교육은
+        // 고르는 창은 수련과 같은 「습득가능 기술」 벌이다 — 원본은 둘 다 0x0040D590 을 부르고, 교육은
         // 아이를 넘겨(0x004618E5) 줄마다 <b>아이 수준</b>을 「이름 ( LVn )」으로 찍는다. 하나 고르면 창을 닫는다.
         var names = teachable.Select(t => t.Skill ? Skill.Names[t.Index] : Skill.Languages[t.Index]).ToList();
         int pick = -1;
@@ -486,7 +486,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     // ── 세대교체 ────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// 「세대교체」 — 게임의 <c>0x00461A90</c> 이다. 맏아들이 제독 자리를 잇는다.
+    /// 「세대교체」 — 원본의 <c>0x00461A90</c> 이다. 맏아들이 제독 자리를 잇는다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -503,8 +503,8 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     ///   딸이 있으면 작별 인사 · 아이 칸을 비운다
     ///   후원자 친밀도 0 · 배신 표시를 지운다(0x00461E40) · 여급 친밀도를 지운다 · 낯튼 사람을 잊는다
     /// </code>
-    /// 게임이 18세 밑·계약 중일 때 내는 건 아내 대사뿐이라, 아내가 없으면 아무 말 없이 끝난다 — 그대로 옮겼다.
-    /// 얼굴(운명 코드)은 아버지 것을 그대로 쓴다(게임도 아이 칸 +0x334 에 아버지 값을 넣어 두었다 되돌린다).
+    /// 원본이 18세 밑·계약 중일 때 내는 건 아내 대사뿐이라, 아내가 없으면 아무 말 없이 끝난다 — 그대로 옮겼다.
+    /// 얼굴(운명 코드)은 아버지 것을 그대로 쓴다(원본도 아이 칸 +0x334 에 아버지 값을 넣어 두었다 되돌린다).
     /// </remarks>
     public void Succeed()
     {
@@ -534,7 +534,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
 
         string father = _player.CallName;
 
-        // 명성·악명만 깎여 물려진다. <b>소지금과 저금은 그대로 간다</b> — 게임도 아들 칸에 2/3·4/5 를 적어 두지만
+        // 명성·악명만 깎여 물려진다. <b>소지금과 저금은 그대로 간다</b> — 원본도 아들 칸에 2/3·4/5 를 적어 두지만
         // 제독 자리로 옮길 때 그 두 칸(+0xF4·+0xF8)을 안 베껴 원래 값이 그대로 남는다(0x0047D4B0).
         _player.Fame = Home.InheritedFame(_player.Fame);
         _player.Infamy = Home.InheritedInfamy(_player.Infamy);
@@ -608,7 +608,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// 아이 이름 — 이름 표에서 <b>쓰이지 않는 이름</b>을 하나 굴린다(<c>0x004611E0</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 이름 표에서 제독·아내·아이들이 쓰는 이름을 빼고 하나 뽑는다(<c>0x004611E0</c>) — 아들은 주인공 이름 목록 서른일곱,
+    /// 원본은 이름 표에서 제독·아내·아이들이 쓰는 이름을 빼고 하나 뽑는다(<c>0x004611E0</c>) — 아들은 주인공 이름 목록 서른일곱,
     /// 딸은 여자 이름 열여섯(<see cref="PlayerNameTable.Girls"/>)이다. 성은 아버지 것을 그대로 붙인다.
     /// 표를 못 읽으면 예전처럼 「제 이름 N세」로 물러선다.
     /// </remarks>
@@ -637,7 +637,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         : _boyNames ??= Local.Helpers.PlayerNameTable.Open(_game.Directory)?.GivenFor(_player.Nation) ?? [];
 
     /// <summary>
-    /// 이름 표에서 <b>이미 쓰이는 이름</b>을 뺀다 — 게임은 표를 세울 때 이름마다 <c>0x004ABBB0</c> 에
+    /// 이름 표에서 <b>이미 쓰이는 이름</b>을 뺀다 — 원본은 표를 세울 때 이름마다 <c>0x004ABBB0</c> 에
     /// 물어 참이면 끈다(<c>0x00455150</c>).
     /// </summary>
     /// <remarks>
@@ -657,7 +657,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     }
 
     /// <summary>
-    /// 자택의 휴양 창 — 한 달 휴양 · 장기 휴양 · 취소. 게임의 <c>0x00460660</c> 그대로다.
+    /// 자택의 휴양 창 — 한 달 휴양 · 장기 휴양 · 취소. 원본의 <c>0x00460660</c> 그대로다.
     /// </summary>
     public GameMenu RestMenu() => new(
         [.. Facility.RestMenu.Select(item => (item, RestAction(item)))]);
@@ -678,7 +678,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         _menu.Pop();
     }
 
-    /// <summary>몇 달이고 쉰다. 게임처럼 한 해까지만 고를 수 있다.</summary>
+    /// <summary>몇 달이고 쉰다. 원본처럼 한 해까지만 고를 수 있다.</summary>
     private void RestLong()
     {
         var owner = Owner;
@@ -693,11 +693,11 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// 그만큼 쉰다. 값은 안 든다 — 내 집이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>0x004A2AD0(개월 x 30, 1)</c> 로 <b>날수</b>를 넘긴다 — 달력 달이 아니라
+    /// 원본은 <c>0x004A2AD0(개월 x 30, 1)</c> 로 <b>날수</b>를 넘긴다 — 달력 달이 아니라
     /// 서른 날이다. 쉬고 나면 아내가 있으면 아내가, 없으면 지문이 셋 중 하나를 낸다
     /// (<c>0x004607FE</c> 의 <c>rand(3)</c>). 우리 쪽에는 아내가 없어 지문만 쓴다.
     ///
-    /// 쉬면 <b>하루에 피로 -1, 사기 +3</b> 씩 돌아온다 — 게임은 그것을 날을 넘기는 자리
+    /// 쉬면 <b>하루에 피로 -1, 사기 +3</b> 씩 돌아온다 — 원본은 그것을 날을 넘기는 자리
     /// (<c>0x004A2AD0</c>)에서 함께 하므로 <see cref="Player.AdvanceDays"/> 가 맡는다.
     /// 그래서 한 달만 쉬어도 폭풍 몇 번 분이 한꺼번에 풀린다.
     /// </remarks>
@@ -721,11 +721,11 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     }
 
     /// <summary>
-    /// 자택의 저금 창 — 저금한다 · 꺼낸다 · 중지한다. 게임의 <c>0x004609C0</c> 그대로다.
+    /// 자택의 저금 창 — 저금한다 · 꺼낸다 · 중지한다. 원본의 <c>0x004609C0</c> 그대로다.
     /// </summary>
     /// <remarks>
     /// 제목이 <c>"저금 %8ld 닢"</c>(<c>0x005398C0</c>) 이라 지금 맡겨 둔 돈이 창 이름에 붙는다.
-    /// 줄의 켜짐도 게임과 같다 — 저금은 소지금이, 꺼내기는 저금이 있어야 눌린다.
+    /// 줄의 켜짐도 원본과 같다 — 저금은 소지금이, 꺼내기는 저금이 있어야 눌린다.
     /// </remarks>
     /// <summary>
     /// 소지금도 저금도 없으면 창이 <b>아예 안 열린다</b>(<c>0x00460A01</c>).
@@ -751,7 +751,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// 저금한다. 소지금과 저금 칸이 남은 만큼만 맡길 수 있다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00460AC9</c> 그대로다 — 저금이 이미 백만 닢이면 "더 이상 저금할 수
+    /// 원본의 <c>0x00460AC9</c> 그대로다 — 저금이 이미 백만 닢이면 "더 이상 저금할 수
     /// 없습니다"(<c>0x00539948</c>) 로 물리고, 아니면 <c>min(백만 - 저금, 소지금)</c> 까지 받는다.
     /// </remarks>
     private void Deposit()
@@ -779,7 +779,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// <summary>
     /// 저금을 꺼낸다. 소지금도 백만 닢에서 막히므로 그만큼만 꺼낼 수 있다.
     /// </summary>
-    /// <remarks>게임의 <c>0x00460B5F</c> 그대로다.</remarks>
+    /// <remarks>원본의 <c>0x00460B5F</c> 그대로다.</remarks>
     private void Withdraw()
     {
         var owner = Owner;

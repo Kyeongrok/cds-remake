@@ -303,7 +303,7 @@ public sealed class DiscoveryEditDialog : GameWindow
             _grid.SelectedItem = rows.FirstOrDefault(r => r.Id == nextId);
     }
 
-    /// <summary>고친 칸만 골라 적어 둔다 — 게임 값과 같으면 씌우지 않는다.</summary>
+    /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
     private void Collect()
     {
         if (_discoveries is not { } table || _grid.ItemsSource is not List<Row> rows) return;
@@ -316,7 +316,7 @@ public sealed class DiscoveryEditDialog : GameWindow
                 row.X1, row.Y1, row.X2, row.Y2, row.Picture, row.Movie,
                 Clip: table.Original(row.Id)?.Clip ?? -1);
 
-            // 원본에 있던 번호이고 게임 값과 똑같아졌으면 씌운 것을 걷는다.
+            // 원본에 있던 번호이고 원본 값과 똑같아졌으면 씌운 것을 걷는다.
             if (table.Original(row.Id) is { } game && SameCore(edited, game))
                 DiscoveryEdits.Reset(row.Id);
             else

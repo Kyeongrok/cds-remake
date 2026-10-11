@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 그 갈래 책에 <b>한 쪽씩</b> 쌓인다.
 /// </summary>
 /// <remarks>
-/// 게임의 갈래는 여덟이고 이름표가 EXE 에 그대로 있다(<c>0x00560C60</c>).
+/// 원본의 갈래는 여덟이고 이름표가 EXE 에 그대로 있다(<c>0x00560C60</c>).
 /// <code>
 ///   지리 · 역사 · 보물 · 종교 · 교역품 · 미신 · 생물 · 민족
 /// </code>
@@ -26,7 +26,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   0x00471BAA  책 이름표 "「%s」"
 /// </code>
 /// 책장 그림과 책등은 도서관 열람 화면과 같은 <c>BOOKSHEL.CDS</c> 다
-/// (<see cref="BookShelf"/>). 게임 갈무리에서 백과사전 책등은 <b>빨강</b>이다.
+/// (<see cref="BookShelf"/>). 원본 갈무리에서 백과사전 책등은 <b>빨강</b>이다.
 ///
 /// 책등을 누르면 그 갈래 책이 <c>ENC.CDS</c> 화면으로 펴진다(<see cref="EncyclopediaPageDialog"/>,
 /// <c>0x00470F60</c> → <c>0x00471FB0</c> → <c>0x00471FF0</c> → <c>0x00462E60</c>). 책등 풍선은
@@ -103,7 +103,7 @@ public sealed class EncyclopediaDialog : GameWindow
             for (int k = 0; k < filler; k++) AddBook(-1, slot++, spines[SpineGreen]);
         }
 
-        // 책등 밑에 뜨는 이름표 — 게임도 「지리」 처럼 낫표를 두른다.
+        // 책등 밑에 뜨는 이름표 — 원본도 「지리」 처럼 낫표를 두른다.
         _tagText = new GameUi.GameLabel(GameFont.WhiteColor) { FallbackBrush = GameUi.Text };
         _tag = new Border
         {

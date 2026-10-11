@@ -3,7 +3,7 @@ using Prism.Events;
 namespace CdsHelper.Support.Local.Events;
 
 /// <summary>
-/// 게임에서 인식된 현재 좌표를 지도에 전달하는 이벤트
+/// 원본에서 인식된 현재 좌표를 지도에 전달하는 이벤트
 /// </summary>
 public class CurrentCoordinateEvent : PubSubEvent<CurrentCoordinateEventArgs>
 {

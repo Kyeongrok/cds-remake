@@ -90,7 +90,7 @@ public sealed class TradePost
     /// 그 도시의 특산품(<c>0x0042A030</c>) — 세워져 있고 파는 품목이어야 한다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <b>살아 있는</b> 도시 레코드 <c>+0x04</c> 의 비트 2(아직 안 세움)를 본다(<c>0x0042A038</c>).
+    /// 원본은 <b>살아 있는</b> 도시 레코드 <c>+0x04</c> 의 비트 2(아직 안 세움)를 본다(<c>0x0042A038</c>).
     /// 식민 도시 스물셋은 이 비트를 켠 채 시작하고, 도시를 세우는 대본이 끈다
     /// (<c>0x0040A038</c> · <c>0x0040A074</c>: <c>and word [eax+4], 0xFFFB</c>). 그래서 EXE 첫값이 아니라
     /// 지금 서 있는지(<see cref="CityFounding.Standing"/>)로 가린다.
@@ -295,7 +295,7 @@ public sealed class TradePost
     /// <remarks>
     /// 게임 주사위(<see cref="GameRandom"/>)라야 원본과 같은 갈래가 나온다 — <c>srand</c>(<c>0x004B7BFB</c>) 뒤
     /// <c>rand % 4</c>(<c>0x004B7C0F</c>)다. <see cref="Random"/> 으로 굴리던 때는 같은 도시 같은 해에 딴 말이 나왔다.
-    /// 게임은 굴린 뒤 씨를 되돌려 놓는데(<c>0x00481B27</c>) 우리는 새로 지어 쓰므로 흔들 것이 없다.
+    /// 원본은 굴린 뒤 씨를 되돌려 놓는데(<c>0x00481B27</c>) 우리는 새로 지어 쓰므로 흔들 것이 없다.
     /// </remarks>
     public static int BoastKind(int city, int year) =>
         new GameRandom(city + (year - 1480) / 8).Next(4);
@@ -325,7 +325,7 @@ public sealed class TradePost
 
     /// <summary>
     /// 그 도시 재고 칸. 이번 달에 손대지 않은 도시는 한도까지 차 있다 —
-    /// 게임은 매달 1일에 재고를 통째로 한도로 되돌린다(<c>0x0042A280</c>).
+    /// 원본은 매달 1일에 재고를 통째로 한도로 되돌린다(<c>0x0042A280</c>).
     /// </summary>
     public int[] StockOf(Player player, int city) =>
         player.TradeStock.TryGetValue(city, out var cells) && cells[MonthCell] == MonthKey(player.Date)
@@ -432,7 +432,7 @@ public sealed class TradePost
 
     /// <summary>거래를 한다(<c>0x00481430</c>). 따져 보아 안 되면 아무것도 안 바꾼다.</summary>
     /// <remarks>
-    /// 판 것은 그 도시 재고에 <b>안 더한다</b> — 게임도 그렇다. 대신 오간 돈이 시세를 민다.
+    /// 판 것은 그 도시 재고에 <b>안 더한다</b> — 원본도 그렇다. 대신 오간 돈이 시세를 민다.
     /// <code>
     ///   순지출 = 산 돈 - 번 돈
     ///   시세  += clamp(순지출 / (200 x (5 x 규모 + 10)), -50, 50)      ; 1~250
@@ -471,7 +471,7 @@ public sealed class TradePost
     /// 흥정 메뉴가 뜨는지(<c>0x00481400</c>) — 값이 있고, 그 도시를 가진 <b>나라의 말</b>이 2 이상.
     /// </summary>
     /// <remarks>
-    /// 게임은 주인공 · 부관(<c>0x0047CC60(0, 0)</c>) · 통역(<c>0x0047CC60(3, 0)</c>) 셋 가운데 가장 높은 수준을
+    /// 원본은 주인공 · 부관(<c>0x0047CC60(0, 0)</c>) · 통역(<c>0x0047CC60(3, 0)</c>) 셋 가운데 가장 높은 수준을
     /// 본다(<c>0x00468FE0</c>).
     /// </remarks>
     /// <param name="crewTongue">

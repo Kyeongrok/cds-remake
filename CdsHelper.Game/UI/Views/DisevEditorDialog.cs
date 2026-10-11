@@ -1174,7 +1174,7 @@ public sealed class DisevEditorDialog : GameWindow
     /// 바이트를 그 자리에 끼우지 않는다 — 덩이를 줄 나무(<see cref="DisevTree"/>)로 풀어 줄을 넣고 빼고,
     /// 파트를 다시 짠다(<see cref="DisevBook.JoinChunks"/>). 그래야 덩이 밖으로 뛰는 분기·절대 이동도 라벨을 따라
     /// 새 자리로 다시 셈한다. 위로 넣으면 그 명령으로 뛰던 분기는 <b>새 명령부터</b> 돈다(라벨이 새 줄로 옮는다).
-    /// DSTILL 그림은 게임처럼 <b>다음 대사와 한 창에</b> 뜬다.
+    /// DSTILL 그림은 원본처럼 <b>다음 대사와 한 창에</b> 뜬다.
     /// </remarks>
     private void EditLines(bool below, bool remove)
     {
@@ -1326,7 +1326,7 @@ public sealed class DisevEditorDialog : GameWindow
     /// 고친 것을 <c>발견이벤트.json</c> 에 적어 둔다 — 원본 <c>DISEV.CDS</c> 는 안 건드린다.
     /// </summary>
     /// <remarks>
-    /// 적어 두면 <b>우리 게임에는 곧장 든다</b> — 발견하러 가면 그 대본이 돈다
+    /// 적어 두면 <b>우리 원본에는 곧장 든다</b> — 발견하러 가면 그 대본이 돈다
     /// (<see cref="DisevRunner.Open"/> 이 이 책을 읽는다).
     /// </remarks>
     private void Save()

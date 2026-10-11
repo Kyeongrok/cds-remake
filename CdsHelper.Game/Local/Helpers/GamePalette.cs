@@ -1,7 +1,7 @@
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 게임이 낮은 색인(0~73)에 공용으로 깔아 두는 색표 256색. 도시 그림·아이템 그림·인물
+/// 원본이 낮은 색인(0~73)에 공용으로 깔아 두는 색표 256색. 도시 그림·아이템 그림·인물
 /// 초상화가 함께 쓴다. 한 색이 3바이트 R,G,B 순이다.
 /// </summary>
 /// <remarks>
@@ -18,7 +18,7 @@ public static class GamePalette
     /// <summary>그림마다 제 팔레트가 얹히기 시작하는 색인. 그 아래만 이 표를 쓴다.</summary>
     public const int OwnPaletteBase = 74;
 
-    // 0~73 만 진짜 값이다. 0~9 는 게임이 딴 데 쓰는 자리라 회색 하나로 채워져 있다.
+    // 0~73 만 진짜 값이다. 0~9 는 원본이 딴 데 쓰는 자리라 회색 하나로 채워져 있다.
     // (Rgb 보다 먼저 적어야 한다 — 정적 필드는 적힌 차례대로 채워진다.)
     private static readonly byte[] Low =
     [

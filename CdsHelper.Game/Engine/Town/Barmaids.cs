@@ -19,7 +19,7 @@ public static class Barmaids
 {
     /// <summary>궁합을 잴 때 쓰는 주인공의 운명 코드.</summary>
     /// <remarks>
-    /// <b>나이 보정을 안 한다.</b> 게임의 궁합 판정(<c>0x00465E76</c>)은 나이를 얹는 게터
+    /// <b>나이 보정을 안 한다.</b> 원본의 궁합 판정(<c>0x00465E76</c>)은 나이를 얹는 게터
     /// (<c>0x0047CAF0</c>, 서른여섯부터 +16)가 아니라 날것 게터 <c>0x0047CB10</c>
     /// (<c>[제독+0x08]</c>)을 부른다. 그래서 <b>나이를 먹어도 궁합은 안 바뀐다</b>.
     ///
@@ -120,7 +120,7 @@ public static class Barmaids
 
     /// <summary>잡담 한 번에 오르는 폭. 궁합이 맞으면 갑절이다.</summary>
     /// <remarks>
-    /// 게임은 잡담마다 딴 폭을 주는데 그 표는 아직 못 짚었다. 첫 대화의 50 대 3 을
+    /// 원본은 잡담마다 딴 폭을 주는데 그 표는 아직 못 짚었다. 첫 대화의 50 대 3 을
     /// 결로 삼아 <b>맞으면 4, 아니면 2</b> 로 둔다 — 우리가 정한 값이다.
     /// </remarks>
     /// <remarks>
@@ -397,7 +397,7 @@ public static class Barmaids
     /// <summary>연적을 이기면 오르는 명성, 지면 오르는 악명(<c>0x004659F3</c> · <c>0x00465A2C</c>).</summary>
     public const int RivalFameUp = 100, RivalInfamyUp = 500;
 
-    /// <summary>맺어졌다고 알리는 서식(<c>0x00539080</c>). 게임 것 그대로다.</summary>
+    /// <summary>맺어졌다고 알리는 서식(<c>0x00539080</c>). 원본 것 그대로다.</summary>
     public const string Married = "{0}는(은) {1}와(과) 결혼했습니다";
 
     /// <summary>그 유혹어 아이템이 읊는 말들. 번호가 표 밖이면 빈 벌이다.</summary>

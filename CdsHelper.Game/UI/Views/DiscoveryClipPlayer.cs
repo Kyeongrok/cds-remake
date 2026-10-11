@@ -12,7 +12,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 대본 명령 <c>00 0C [u16 n]</c> 이 하는 일이다(<c>0x00408429</c> → <c>0x00466C90</c>).
-/// 게임은 240x176 을 화면 가운데에 놓고(<c>0x005AA2D0</c> 틀의 한가운데) 장마다 기다리기
+/// 원본은 240x176 을 화면 가운데에 놓고(<c>0x005AA2D0</c> 틀의 한가운데) 장마다 기다리기
 /// 손 <c>0x00459CC0</c> 을 한 번씩 돈다 — 기다리는 값은 <c>0x14 / 10 = 2</c> 이다.
 /// 그 눈금이 몇 밀리초인지는 아직 못 짚어 <see cref="FrameTime"/> 은 눈대중이다.
 /// </remarks>
@@ -26,7 +26,7 @@ public static class DiscoveryClipPlayer
     /// 올려 둔 편(<see cref="DiscoveryClipFiles"/>)이 먼저고, 없으면 원본(<paramref name="clips"/>)
     /// 이다 — 올려 둔 것은 <b>240x176 이 아닐 수 있어</b> 그 크기로 편다.
     /// </remarks>
-    /// <param name="bgm">도는 동안 멈춰 둘 곡 — 게임은 DISCOVER.CDS 편을 틀기 전에 CDAudioPause, 끝나면 CDAudioResume 을
+    /// <param name="bgm">도는 동안 멈춰 둘 곡 — 원본은 DISCOVER.CDS 편을 틀기 전에 CDAudioPause, 끝나면 CDAudioResume 을
     /// 부른다(<c>0x0040846B</c>~<c>0x004085B1</c> · <c>0x004AB038</c>~<c>0x004AB154</c>).</param>
     public static void Play(Window owner, DiscoveryClips? clips, int clip, BgmPlayer? bgm = null)
     {

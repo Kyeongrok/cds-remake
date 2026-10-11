@@ -30,7 +30,7 @@ public sealed class DiscoveryDialog : GameWindow
     /// <summary>
     /// 그림에 두르는 액자 — 까만 줄 · 밤색 판 · 까만 줄이다.
     /// </summary>
-    /// <remarks>게임 갈무리에서 잰 값이다. 판이 여덟 점쯤이고 줄은 한 점씩이다.</remarks>
+    /// <remarks>원본 갈무리에서 잰 값이다. 판이 여덟 점쯤이고 줄은 한 점씩이다.</remarks>
     private const double FrameLine = 1, FrameWide = 8;
 
     /// <summary>액자가 그림 좌우로 더 먹는 폭.</summary>
@@ -40,7 +40,7 @@ public sealed class DiscoveryDialog : GameWindow
     private static readonly Brush FrameEdge = Frozen(Color.FromRgb(0x11, 0x09, 0x09));
     private static readonly Brush FrameFill = Frozen(Color.FromRgb(0x4A, 0x2E, 0x24));
 
-    /// <summary>동영상 칸의 크기. 게임 것이 320x240 이다.</summary>
+    /// <summary>동영상 칸의 크기. 원본 것이 320x240 이다.</summary>
     private const double MovieWidth = 320, MovieHeight = 240;
 
     /// <summary>그림에 바짝 붙는 까만 줄, 그 바깥에 밤색 판, 다시 까만 줄.</summary>
@@ -73,7 +73,7 @@ public sealed class DiscoveryDialog : GameWindow
     /// 발견물 <b>그림만</b> 띄우는 창.
     /// </summary>
     /// <remarks>
-    /// 게임은 그림과 알림을 <b>따로</b> 띄운다 — 알림만 끌 수 있고 그림은 제자리에
+    /// 원본은 그림과 알림을 <b>따로</b> 띄운다 — 알림만 끌 수 있고 그림은 제자리에
     /// 남는다. 예전에는 둘을 한 창에 붙여 두어 같이 움직였다.
     /// </remarks>
     private sealed class Still : GameWindow
@@ -102,7 +102,7 @@ public sealed class DiscoveryDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
-        // 해설(제목 띠가 붙는 것)은 게임도 넓게 편다 — 한 줄이 예순두 칸쯤이다.
+        // 해설(제목 띠가 붙는 것)은 원본도 넓게 편다 — 한 줄이 예순두 칸쯤이다.
         bool comment = !string.IsNullOrEmpty(title);
         var stack = new StackPanel
         {
@@ -316,11 +316,11 @@ public sealed class DiscoveryDialog : GameWindow
     /// <summary>그림이 없을 때의 글 칸 너비. 게임 알림창의 가장 좁은 폭이다.</summary>
     private const double MinWidth_ = 272;
 
-    /// <summary>해설 한 줄의 칸 수. 게임 갈무리의 창 폭(확인 단추와 견주어 약 517점)에서 잰 값이다.</summary>
+    /// <summary>해설 한 줄의 칸 수. 원본 갈무리의 창 폭(확인 단추와 견주어 약 517점)에서 잰 값이다.</summary>
     private const int CommentCells = 62;
 
     /// <summary>
-    /// 알림 칸의 테. 공용 테(<see cref="GameUi.Edge"/>)는 거의 검정인데 게임 것은 밝은 회갈색이다 —
+    /// 알림 칸의 테. 공용 테(<see cref="GameUi.Edge"/>)는 거의 검정인데 원본 것은 밝은 회갈색이다 —
     /// 물음창(<see cref="ConfirmDialog"/>)과 같은 빛이다.
     /// </summary>
     private static readonly Brush PanelEdge = Frozen(Color.FromRgb(0x9B, 0x8D, 0x7D));

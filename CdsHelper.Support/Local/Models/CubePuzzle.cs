@@ -4,7 +4,7 @@
 /// 미니 게임 「화살표 입방체 퍼즐」 — 화살표가 그려진 입방체를 굴려 좌대를 옮긴다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0049B3C0</c> 이 껍데기, <c>0x0049B310</c> 이 한 판, <c>0x0049BE10</c> 이
+/// 원본의 <c>0x0049B3C0</c> 이 껍데기, <c>0x0049B310</c> 이 한 판, <c>0x0049BE10</c> 이
 /// 본체다. 설명 글은 <c>0x0056DB38</c> 벌에 그대로 있다.
 /// <code>
 ///   성공조건 [자기가 타고 있는 좌대를 움직여서 출구로 이동한다]
@@ -27,7 +27,7 @@
 public sealed class CubePuzzle
 {
     /// <summary>
-    /// 판 한 변. 게임이 <c>0x0049B9FD</c> 에서 <c>CPoint(5, 5)</c> 를 넘긴다.
+    /// 판 한 변. 원본이 <c>0x0049B9FD</c> 에서 <c>CPoint(5, 5)</c> 를 넘긴다.
     /// </summary>
     public const int Side = 5;
 
@@ -182,7 +182,7 @@ public sealed class CubePuzzle
     public bool GotGold { get; private set; }
 
     /// <summary>
-    /// 판을 짓는다 — 게임의 <c>0x0049CFB0</c> 차례 그대로다.
+    /// 판을 짓는다 — 원본의 <c>0x0049CFB0</c> 차례 그대로다.
     /// </summary>
     /// <remarks>
     /// <code>

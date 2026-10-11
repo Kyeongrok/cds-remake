@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 얼굴과 그 <b>중년 얼굴</b>의 짝.
 /// </summary>
 /// <remarks>
-/// 게임은 주인공 얼굴 서른둘을 <b>앞 열여섯은 젊은 얼굴, 뒤 열여섯은 그 중년 얼굴</b>로
+/// 원본은 주인공 얼굴 서른둘을 <b>앞 열여섯은 젊은 얼굴, 뒤 열여섯은 그 중년 얼굴</b>로
 /// 짝지어 두고, 서른여섯 살부터 <c>얼굴 + 16</c> 을 띄운다
 /// (<see cref="BarmaidTable.AgedFaceStep"/>).
 ///
@@ -16,7 +16,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///
 /// <list type="number">
 ///   <item>사람이 짝지어 둔 것이 있으면 그것이 이긴다.</item>
-///   <item>없으면 <b>앞 열여섯만</b> <c>+16</c> 로 물러선다 — 게임 그대로다.</item>
+///   <item>없으면 <b>앞 열여섯만</b> <c>+16</c> 로 물러선다 — 원본 그대로다.</item>
 ///   <item>그것도 아니면 <b>안 바꾼다</b>. 중년 얼굴이 없으면 젊은 얼굴 그대로 늙는다.</item>
 /// </list>
 /// </remarks>
@@ -25,7 +25,7 @@ public static class PortraitAges
     /// <summary>적어 둘 파일 이름.</summary>
     private const string CacheName = "초상화-중년짝";
 
-    /// <summary>게임이 짝지어 둔 젊은 얼굴 수와, 중년 얼굴까지의 거리.</summary>
+    /// <summary>원본이 짝지어 둔 젊은 얼굴 수와, 중년 얼굴까지의 거리.</summary>
     public const int Paired = 16, Step = 16;
 
     /// <summary>짝지어 둔 한 줄.</summary>
@@ -63,7 +63,7 @@ public static class PortraitAges
         if (face < 0) return face;
 
         int aged = Map.TryGetValue((face, female), out int paired) ? paired
-                 // 게임이 짝지어 둔 앞 열여섯만 저절로 +16 이 된다.
+                 // 원본이 짝지어 둔 앞 열여섯만 저절로 +16 이 된다.
                  : face < Paired ? face + Step
                  // 새로 넣은 얼굴에는 중년 얼굴이 없다.
                  : -1;

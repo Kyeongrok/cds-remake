@@ -13,15 +13,15 @@ namespace CdsHelper.Game.UI.Views;
 /// 미니 게임 「성배 퍼즐」 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x00467D50</c> 이다. 규칙과 판정은 <see cref="GrailPuzzle"/> 에 모아 두었다.
+/// 원본의 <c>0x00467D50</c> 이다. 규칙과 판정은 <see cref="GrailPuzzle"/> 에 모아 두었다.
 /// <code>
 ///   0x00559068  게임 설명
 ///   0x0056DFB0  "%d번째"          — 지금 몇 수인지
 ///   0x0056DFC8  "한 수 되돌립니까?"
 ///   0x0056DFE8  "다시 할 수 없습니다"
-///   0x0056E048  "게임을 포기하겠습니까?"
+///   0x0056E048  "원본을 포기하겠습니까?"
 /// </code>
-/// <b>그림은 게임 것 그대로다</b> — MGGRAPH.CDS 에서 뽑아 <c>asset/minigame</c> 에
+/// <b>그림은 원본 것 그대로다</b> — MGGRAPH.CDS 에서 뽑아 <c>asset/minigame</c> 에
 /// 둔다(<c>tools/extract_minigame_art.py</c>). 조각 크기는 <c>0x00549E98</c> 표에
 /// 있고 <b>조각 n 이 곧 파트 n+3</b> 이다.
 /// <code>
@@ -29,7 +29,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   조각 26~35 · 36~45  24x72  성배 열       — 빈 것과 찬 것
 ///   조각 48            368x432 배경
 /// </code>
-/// 그릇 자리도 게임이 쓰는 좌표를 그대로 쓴다.
+/// 그릇 자리도 원본이 쓰는 좌표를 그대로 쓴다.
 /// <code>
 ///   0x0046810E  바가지 셋 — x = 12 · 60 · 108, y = 0x90 (144)
 ///   0x004681AE  성배 열   — x = 0x00559040 의 열 값, y = 0x13E (318)
@@ -38,10 +38,10 @@ namespace CdsHelper.Game.UI.Views;
 /// </code>
 /// <b>버리는 곳은 석상이 든 뿔잔</b>이다. 바가지를 거기에 놓으면 비워진다(<see cref="GrailPuzzle.Drop"/> 의
 /// 종류 2 갈래, <c>0x00467C34</c>). 뿔잔도 항아리도 배경 그림에 이미 그려져 있어 조각을 따로 안 얹는다.
-/// 값은 게임처럼 <b>분수</b>로 적는다 — 위가 든 물, 아래가 용량이다. 잡은 그릇에는
+/// 값은 원본처럼 <b>분수</b>로 적는다 — 위가 든 물, 아래가 용량이다. 잡은 그릇에는
 /// 흰 네모를 두른다.
 ///
-/// <b>바가지를 끌어다 놓는다.</b> 게임과 같다 — 바가지를 집어 큰 항아리에 놓으면
+/// <b>바가지를 끌어다 놓는다.</b> 원본과 같다 — 바가지를 집어 큰 항아리에 놓으면
 /// 물이 떠지고, 성배나 다른 바가지에 놓으면 부어진다. 무슨 일이 일어날지는
 /// <b>놓는 자리</b>가 정한다(<see cref="GrailPuzzle.Drop"/>). 끌지 않고 딸깍 눌렀다
 /// 놓으면 집힌 채로 있어서, 다음에 누른 자리에 놓인다.
@@ -103,7 +103,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
         Canvas.SetTop(_count, 12);
         _scene.Children.Add(_count);
 
-        // 성배를 먼저 얹고 바가지를 나중에 — 겹치는 데는 없지만 차례는 게임과 같다.
+        // 성배를 먼저 얹고 바가지를 나중에 — 겹치는 데는 없지만 차례는 원본과 같다.
         for (int i = 0; i < GrailPuzzle.Grails; i++)
             Art(GrailPuzzle.FirstGrail + i, GrailX[i], GrailY, GrailW, GrailH);
         for (int i = 0; i < GrailPuzzle.Dippers; i++)
@@ -130,7 +130,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
         double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
-        // 게임은 미니 게임에 밤색 판도 제목도 아래 단추도 안 두른다 — 그림에 금빛 액자만
+        // 원본은 미니 원본에 밤색 판도 제목도 아래 단추도 안 두른다 — 그림에 금빛 액자만
         // 두르고, 할 일은 오른쪽 단추 차림표가 맡는다.
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -203,7 +203,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
                        ? $"grail-dipper-full-{d}.png" : $"grail-dipper-{d}.png");
     }
 
-    /// <summary>그릇 한 자리 — 누르는 칸과, 게임처럼 <b>분수</b>로 적는 값.</summary>
+    /// <summary>그릇 한 자리 — 누르는 칸과, 원본처럼 <b>분수</b>로 적는 값.</summary>
     private void Spot(int slot, int x, int y, int width, int height, bool label = true)
     {
         var box = new Border
@@ -223,7 +223,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
 
         if (!label) return;
 
-        // 든 물 / 가로줄 / 용량. 게임도 이렇게 두 줄로 쌓아 적는다.
+        // 든 물 / 가로줄 / 용량. 원본도 이렇게 두 줄로 쌓아 적는다.
         bool grail = slot >= GrailPuzzle.FirstGrail;
         var now = new GameUi.GameLabel(GameFont.WhiteColor) { Bold = false, FallbackBrush = Ring };
         var cap = new GameUi.GameLabel(GameFont.WhiteColor) { Bold = false, FallbackBrush = Ring };
@@ -336,13 +336,13 @@ internal sealed class GrailPuzzleDialog : InfoDialog
         _pick = -1;
         Sync();
 
-        // 물이 실제로 옮겨졌을 때만 소리가 난다 — 게임도 붓는 몸짓을 도는 자리에서
+        // 물이 실제로 옮겨졌을 때만 소리가 난다 — 원본도 붓는 몸짓을 도는 자리에서
         // 낸다(0x00467A90). 헛손질에는 아무 소리도 안 난다.
         if (_game.Moves != was) _sfx?.Play(SoundBank.PourPart);
 
         if (_game.Over != null)
         {
-            // 다 채웠으면 수를 얼마나 썼든 소리가 난다 — 게임도 「모든 성배를 성수로
+            // 다 채웠으면 수를 얼마나 썼든 소리가 난다 — 원본도 「모든 성배를 성수로
             // 채웠다!」 바로 앞에서 낸다(0x0046860A).
             if (_game.Over is not (GrailPuzzle.Result.GaveUp or GrailPuzzle.Result.Spilled))
                 _sfx?.Play(SoundBank.GrailWonPart);
@@ -353,7 +353,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
     /// <summary>효과음 벌. 게임 폴더를 모르면 null 이라 조용히 논다.</summary>
     private SoundBank? _sfx;
 
-    /// <summary>오른쪽 단추 차림표의 줄. 게임 갈무리 차례 그대로다.</summary>
+    /// <summary>오른쪽 단추 차림표의 줄. 원본 갈무리 차례 그대로다.</summary>
     private IReadOnlyList<(string, Action?)> Commands() =>
     [
         // 되돌릴 수 없어도 줄은 살아 있다 — 고르면 0x00467930 이 「경고 / 다시 할 수 없습니다」를 낸다
@@ -422,7 +422,7 @@ internal sealed class GrailPuzzleDialog : InfoDialog
     /// 게임을 한 판 하고, <c>0x004684D0</c> 이 하듯 결과를 알린 뒤 상금을 준다.
     /// </summary>
     /// <remarks>
-    /// 게임은 「대실패」와 「다시 한번 찬스」 뒤에 "다시 도전하겠습니까?" 를 묻고
+    /// 원본은 「대실패」와 「다시 한번 찬스」 뒤에 "다시 도전하겠습니까?" 를 묻고
     /// 그러겠다면 문제를 <b>새로 굴려</b> 다시 시작한다(<c>0x00468511</c> 로 돌아간다).
     /// </remarks>
     /// <returns>

@@ -45,7 +45,7 @@ public static class FigureheadEdits
     /// <summary>등급이 들 수 있는 끝 — 삯 표(<c>0x0056E280</c>)가 넷이다.</summary>
     public const int MaxGrade = 3;
 
-    /// <summary>씌운 것을 걷어 게임 값으로 되돌린다.</summary>
+    /// <summary>씌운 것을 걷어 원본 값으로 되돌린다.</summary>
     public static void Reset(int index)
     {
         if (!Map.Remove(index)) return;

@@ -9,7 +9,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 신규 캐릭터 창의 <b>「이름 일람」</b> — 갖춰 둔 이름을 늘어놓고 하나를 고른다.
 /// </summary>
 /// <remarks>
-/// 게임 갈무리 그대로다.
+/// 원본 갈무리 그대로다.
 /// <code>
 ///   ┌ 이름 일람 ────────────┐
 ///   │ [ 베니토           ]▣ │  ← 고른 것이 위 칸에 적힌다(계산기로 직접 칠 수도)
@@ -25,17 +25,17 @@ namespace CdsHelper.Game.UI.Views;
 /// 명 서른일곱이고 명은 국적에 따라 표기가 갈린다.
 ///
 /// 예전에는 도시 건물 고르는 창(<see cref="MapPointDialog"/>)을 빌려 썼는데, 그쪽은
-/// 줄마다 띠 단추가 서는 딴 모양이라 게임 것과 달랐다.
+/// 줄마다 띠 단추가 서는 딴 모양이라 원본 것과 달랐다.
 /// </remarks>
 public sealed class NameListDialog : GameWindow
 {
-    /// <summary>줄 속 칸 — 이름 하나. 게임은 왼쪽맞춤이다.</summary>
+    /// <summary>줄 속 칸 — 이름 하나. 원본은 왼쪽맞춤이다.</summary>
     private static readonly GameListColumn[] Columns =
     [
         new(GameListDock.Fill, new Thickness(6, 0, 6, 0)),
     ];
 
-    /// <summary>목록 바닥 폭과, 넘치면 굴리기 시작하는 키. 게임 갈무리를 재어 맞췄다.</summary>
+    /// <summary>목록 바닥 폭과, 넘치면 굴리기 시작하는 키. 원본 갈무리를 재어 맞췄다.</summary>
     private const double ListWidth = 300, ListMaxHeight = 224;
 
     /// <summary>위 칸의 키와 아래 단추 폭.</summary>

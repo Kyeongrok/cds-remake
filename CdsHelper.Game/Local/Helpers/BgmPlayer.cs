@@ -14,7 +14,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class BgmPlayer : IDisposable
 {
-    /// <summary>게임을 시작할 때 준비 여부를 확인할 대표 곡.</summary>
+    /// <summary>원본을 시작할 때 준비 여부를 확인할 대표 곡.</summary>
     public const int RequiredTrack = TitleTrack;
 
     /// <summary>타이틀 화면에서 도는 곡.</summary>
@@ -67,11 +67,11 @@ public sealed class BgmPlayer : IDisposable
     /// 해상에서 그 자리에 맞는 곡. 위경도로 구간을 갈라 고른다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0048D5D8</c> 을 그대로 옮겼다. 배 자리를 담아 두는 두 값
+    /// 원본의 <c>0x0048D5D8</c> 을 그대로 옮겼다. 배 자리를 담아 두는 두 값
     /// (<c>0x005B63B0</c> · <c>0x005B63B4</c>)은 <b>칸 좌표에 16 을 곱한 것</b>이다 —
-    /// 켜 놓은 게임에서 칸 좌표와 맞대어 비율이 정확히 16 인 것을 확인했다.
+    /// 켜 놓은 원본에서 칸 좌표와 맞대어 비율이 정확히 16 인 것을 확인했다.
     ///
-    /// 게임이 견주는 값을 도로 풀면 경계가 다 딱 떨어진다.
+    /// 원본이 견주는 값을 도로 풀면 경계가 다 딱 떨어진다.
     /// <code>
     ///   Y  3888 = 북위 55      X 12778 = 서경 65
     ///   Y  6666 = 북위 30      X 25000 = 동경 45
@@ -86,13 +86,13 @@ public sealed class BgmPlayer : IDisposable
     ///   북위 20 위                        13
     ///   동경 21~130                       13   그 밖은 24
     /// </code>
-    /// <b>바뀌는 것은 지금 곡이 끝난 뒤다</b> — 게임도 이 갈래에서만
+    /// <b>바뀌는 것은 지금 곡이 끝난 뒤다</b> — 원본도 이 갈래에서만
     /// <c>CDAudioNextPlayTrack</c>(기다렸다 바꾸기)을 쓴다. 그래서 경계를 넘고도 한동안
     /// 옛 곡이 이어져, 듣는 쪽에서는 경계가 더 북쪽인 것처럼 느껴진다.
     /// </remarks>
     public static int SeaTrackAt(double cellX, double cellY)
     {
-        // 게임이 쓰는 값 그대로 견준다(칸 x 16).
+        // 원본이 쓰는 값 그대로 견준다(칸 x 16).
         int x = (int)(cellX * PositionScale);
         int y = (int)(cellY * PositionScale);
 
@@ -113,7 +113,7 @@ public sealed class BgmPlayer : IDisposable
     /// 게임 소리 번호를 CD 트랙 번호로 옮기는 값.
     /// </summary>
     /// <remarks>
-    /// 게임은 안에서 <b>소리 번호</b>로 부르고 <c>koeicda.dll</c> 에는 CD 트랙으로 넘긴다.
+    /// 원본은 안에서 <b>소리 번호</b>로 부르고 <c>koeicda.dll</c> 에는 CD 트랙으로 넘긴다.
     /// 둘의 차이가 늘 2 다 — 알고 있던 곡 여섯으로 맞대어 확인했다.
     /// <code>
     ///   소리 8  -> 트랙 10  도시(이베리아)     소리 20 -> 트랙 22  술집
@@ -156,7 +156,7 @@ public sealed class BgmPlayer : IDisposable
     /// 그 도시에서 돌 곡. 문화권마다 다르다 — 세우타처럼 중근동에 드는 도시는 딴 곡이 돈다.
     /// </summary>
     /// <remarks>
-    /// 이름으로 받는 길이다. 자료에 적힌 이름은 "이슬람" 인데 게임에서 부르는 말은
+    /// 이름으로 받는 길이다. 자료에 적힌 이름은 "이슬람" 인데 원본에서 부르는 말은
     /// "중근동" 이다 — 둘 다 받는다. 번호를 알면 <see cref="CityTrackForCulture"/> 가 낫다.
     /// </remarks>
     public static int CityTrackFor(string? culturalSphere) => CityTrackFor(culturalSphere, -1);
@@ -165,7 +165,7 @@ public sealed class BgmPlayer : IDisposable
     /// 이름으로 고르되, <b>표에 없는 이름</b>(「발칸」 따위)이거나 이름이 비었으면 EXE 문화권 번호로 고른다.
     /// </summary>
     /// <remarks>
-    /// 게임은 이름을 안 보고 도시 레코드 <c>+0x58</c> 의 번호만 본다(<c>0x004929E7</c>). 앱 도시 자료에는
+    /// 원본은 이름을 안 보고 도시 레코드 <c>+0x58</c> 의 번호만 본다(<c>0x004929E7</c>). 앱 도시 자료에는
     /// 칸디아가 「발칸」으로 적혀 있어 이름으로만 고르면 기본 곡(이베리아, 10)이 났다 — 원본은 지중해(5)다.
     /// </remarks>
     public static int CityTrackFor(string? culturalSphere, int exeCulture) => culturalSphere switch
@@ -191,7 +191,7 @@ public sealed class BgmPlayer : IDisposable
     public const int SponsorTrack = 21;
 
     /// <summary>
-    /// 게임에서 실제로 도는 곡 번호를 사람이 읽을 이름과 함께 늘어놓은 것 — BGM 갈아 끼우기
+    /// 원본에서 실제로 도는 곡 번호를 사람이 읽을 이름과 함께 늘어놓은 것 — BGM 갈아 끼우기
     /// 창(<see cref="Views.CustomBgmDialog"/>)이 목록을 그릴 때 쓴다. 원본에 없는 자리다.
     /// </summary>
     public static readonly (int Track, string Label)[] KnownTracks =
@@ -291,11 +291,11 @@ public sealed class BgmPlayer : IDisposable
 
     /// <summary>
     /// 지금 곡을 끝까지 들려 준 뒤에 갈아탄다. <b>해상에서 해역이 바뀔 때</b> 쓴다 —
-    /// 게임은 그때만 곡을 자르지 않고 기다린다.
+    /// 원본은 그때만 곡을 자르지 않고 기다린다.
     /// </summary>
     /// <remarks>
     /// 도시에 들어가거나 건물에 들어설 때는 이것이 아니라 <see cref="Play"/> 다.
-    /// 그쪽은 곡을 그 자리에서 자른다 — 게임도 그렇다.
+    /// 그쪽은 곡을 그 자리에서 자른다 — 원본도 그렇다.
     ///
     /// 아무것도 안 돌고 있으면 기다릴 것이 없으므로 바로 튼다.
     /// </remarks>
@@ -361,7 +361,7 @@ public sealed class BgmPlayer : IDisposable
     private double _volume = 1;
 
     /// <summary>
-    /// 곡을 그 자리에서 멈춘다 — <see cref="Resume"/> 이 멈춘 자리부터 잇는다. 게임의 CDAudioPause
+    /// 곡을 그 자리에서 멈춘다 — <see cref="Resume"/> 이 멈춘 자리부터 잇는다. 원본의 CDAudioPause
     /// (<c>0x00422B50</c> → koeicda.dll)다. 해전이 끝나 승패 소리를 낼 동안 쓴다.
     /// </summary>
     public void Pause()
@@ -369,7 +369,7 @@ public sealed class BgmPlayer : IDisposable
         if (_track >= 0) _player.Pause();
     }
 
-    /// <summary>멈춘 곡을 잇는다 — 게임의 CDAudioResume(<c>0x00422B90</c>).</summary>
+    /// <summary>멈춘 곡을 잇는다 — 원본의 CDAudioResume(<c>0x00422B90</c>).</summary>
     public void Resume()
     {
         if (_track >= 0 && _enabled) _player.Play();

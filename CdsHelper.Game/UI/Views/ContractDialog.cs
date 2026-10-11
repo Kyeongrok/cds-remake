@@ -40,9 +40,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 나눠 달수를 내며, 햇수가 있으면 달수는 0 일 때 안 적는다(<c>0x0047F444</c>).
 ///
 /// <b>발견물</b> 은 이 계약을 맺은 뒤에 발견한 것이고, <b>증거품</b> 은 그것들이 준 물건 중
-/// 아직 지니고 있는 것이다. 게임은 후원자에게 보고할 때 이 둘을 내민다.
+/// 아직 지니고 있는 것이다. 원본은 후원자에게 보고할 때 이 둘을 내민다.
 ///
-/// 계약이 없으면 이 창을 열지 않고 게임처럼 한 줄로 물린다 — "계약을 맺지 않았습니다"
+/// 계약이 없으면 이 창을 열지 않고 원본처럼 한 줄로 물린다 — "계약을 맺지 않았습니다"
 /// (<c>0x00533228</c>, 부르는 곳 <c>0x00426018</c>).
 /// </remarks>
 public sealed class ContractDialog : GameWindow
@@ -64,7 +64,7 @@ public sealed class ContractDialog : GameWindow
     }
 
     /// <summary>
-    /// 글이 놓이는 판의 크기. 발견물·증거품 칸이 게임처럼 넉넉히 비도록 못 박는다.
+    /// 글이 놓이는 판의 크기. 발견물·증거품 칸이 원본처럼 넉넉히 비도록 못 박는다.
     /// </summary>
     /// <remarks>
     /// <b>원본은 가로세로가 거의 같다.</b> 화면으로 재 보면 판이 1.05:1 인데 예전 값
@@ -222,7 +222,7 @@ public sealed class ContractDialog : GameWindow
     };
 
     /// <summary>
-    /// 계약 정보 창을 연다. 계약이 없으면 게임처럼 한 줄로 물린다.
+    /// 계약 정보 창을 연다. 계약이 없으면 원본처럼 한 줄로 물린다.
     /// </summary>
     /// <param name="hintName">제목에 쓸 힌트 이름.</param>
     /// <param name="sponsorName">

@@ -111,7 +111,7 @@ public sealed class DisevRunner
     /// </remarks>
     /// <remarks>
     /// <b>밑값은 참이다</b> — 해석기가 들어서며 1 을 넣는다(<c>0x00408125</c>). 예전에는 거짓으로 두고
-    /// 결과를 모르면 43 45 를 늘 뛰게 했는데, 이제 물음(0B 0A)·선택지·판정이 결과를 세우므로 게임대로 둔다.
+    /// 결과를 모르면 43 45 를 늘 뛰게 했는데, 이제 물음(0B 0A)·선택지·판정이 결과를 세우므로 원본대로 둔다.
     /// </remarks>
     private bool _result = true;
 
@@ -463,7 +463,7 @@ public sealed class DisevRunner
     /// 조건 덩이가 통과인지 — <c>Or</c>(50) 로 모으고 나머지는 AND 로 잇는다(<c>0x00407EB1</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 조건 하나를 셈한 뒤 <b>바로 다음 바이트가 0x50 인지</b>를 본다.
+    /// 원본은 조건 하나를 셈한 뒤 <b>바로 다음 바이트가 0x50 인지</b>를 본다.
     /// <code>
     ///   004073ba  and  = 1          ; [esp+0x2c] — 덩이 전체
     ///   004073c2  orAcc = 0         ; [esp+0x28] — 슬롯을 열 때 한 번만 지운다
@@ -478,7 +478,7 @@ public sealed class DisevRunner
     /// <c>A 50 B C 50 D</c> 면 뒤 덩이가 <c>D|A|B|C</c> 가 된다. 원본 그대로 둔다.
     ///
     /// 뜻을 모르는 <b>조건식</b>은 통과로 친다 — 막으면 대본이 통째로 안 돈다. 다만 바이트
-    /// 자체를 못 읽으면 게임도 그 파트를 안 튼다(<c>0x00407F09</c>).
+    /// 자체를 못 읽으면 원본도 그 파트를 안 튼다(<c>0x00407F09</c>).
     ///
     /// 조건 덩이에서 <b>쓸 수 있는 명령은 정해져 있다</b> — <c>0x004073F1</c> 이
     /// <c>바이트 - 2</c> 를 <c>0x00407FA0</c> 의 갈래표에 넣고, 갈래 24 로 떨어지면
@@ -500,7 +500,7 @@ public sealed class DisevRunner
             if (line.Call is DisevCall.End) break;
             if (line.Call is DisevCall.Or) continue;   // 앞 조건이 이미 거둬 갔다
 
-            // 모르는 조건이 끼면 게임은 그 파트를 통째로 안 튼다(0x00407F09) — 참으로 흘리면 안 된다.
+            // 모르는 조건이 끼면 원본은 그 파트를 통째로 안 튼다(0x00407F09) — 참으로 흘리면 안 된다.
             if (line.Call is not { } call) return false;
             bool value = ignoreRandomChance && call == DisevCall.RandomChance
                 ? true
@@ -628,7 +628,7 @@ public sealed class DisevRunner
             // 짜여 같은 해에서 달을 보는 갈래(0x004077C3)에 영영 안 닿는다 — 달은 읽기만 한다.
             case DisevCall.YearMonthIs:
                 return year >= I("Year");
-            // 6D · 6E — 주인공이 든 이야기 책이 STORY0 · STORY1 인가(0x0040BC5E · 0x0040BC98). 새 게임을 열 때
+            // 6D · 6E — 주인공이 든 이야기 책이 STORY0 · STORY1 인가(0x0040BC5E · 0x0040BC98). 새 원본을 열 때
             // 0x004AB420 이 [0x0062989C] 에 그 이름을 적는다(0x0045E932 · 0x0045EB9F). 돌고 있는 책이 아니다 —
             // 예전에는 돌고 있는 책과 견주어 발견 대본(DISEV) 안에서는 늘 거짓이라 라몬·에밀리오 대사가 빠졌다.
             case DisevCall.Story0: return player.ActiveStoryBook == "이야기0";
@@ -1223,7 +1223,7 @@ public sealed class DisevRunner
     /// <summary>
     /// 그 발견물의 사람 칸 0·1 에 이름이 있는지(<c>0x004AAD80</c>) — 주인공이 찾았거나, 오늘까지 역사 항해자가 찾았거나.
     /// </summary>
-    /// <remarks>칸 1 은 게임이 들고 있지만 앱은 대본 날짜로 셈한다(<see cref="Discovery.HistoryVoyages.TakenBy"/>).</remarks>
+    /// <remarks>칸 1 은 원본이 들고 있지만 앱은 대본 날짜로 셈한다(<see cref="Discovery.HistoryVoyages.TakenBy"/>).</remarks>
     private bool FoundByAnyone(int discovery) =>
         _game.Player.HasFound(discovery) || (_game.Voyagers?.TakenBy(discovery, _game.Player.Date) ?? -1) >= 0;
 
@@ -1231,7 +1231,7 @@ public sealed class DisevRunner
     /// 다중 선택지를 띄우고 고른 값(자리 + 밑값)을 낸다. 선택지는 <c>81 5E</c>(여기서는 「/」)로 갈린다.
     /// </summary>
     /// <remarks>
-    /// 게임은 앞 대사 창 밑에 세로 메뉴를 세운다(<c>0x004878A0</c>). 물러나면 마지막 줄을 고른 것으로 친다 —
+    /// 원본은 앞 대사 창 밑에 세로 메뉴를 세운다(<c>0x004878A0</c>). 물러나면 마지막 줄을 고른 것으로 친다 —
     /// 대본의 마지막 선택지가 늘 「도망간다」·「떠난다」 쪽은 아니지만, 메뉴를 그냥 닫을 길을 막을 수는 없다.
     /// </remarks>
     /// <param name="wide"><c>18 0A</c> 인지 — 교섭은 이 명령에만 붙어 있다(<c>0x0040914F</c>). <c>10 0A</c>
@@ -1322,7 +1322,7 @@ public sealed class DisevRunner
             case DisevMinigame.Sphinx:
                 return SphinxQuizDialog.Play(_owner, _game.Random);
             // 미궁은 딴 어셈블리(CdsHelper.Maze)라 띄우는 쪽이 걸어 둔 자리로 부른다.
-            // 게임은 돌파 보상을 치른 갈래에서만 결과 1 을 박는다(0x0042B154) — 덫·실패·포기는 0.
+            // 원본은 돌파 보상을 치른 갈래에서만 결과 1 을 박는다(0x0042B154) — 덫·실패·포기는 0.
             // 걸려 있지 않으면 대본이 막히지 않게 이긴 것으로 친다.
             case DisevMinigame.Maze:
                 return UI.Views.ShipMapWindow.MazeGame?.Invoke(_owner, _game.Random, _game.Player, _game.Sfx) ?? true;
@@ -1489,7 +1489,7 @@ public sealed class DisevRunner
     /// </remarks>
     private const int NameRoom = 20;
 
-    /// <summary>CP949 로 적었을 때의 바이트 수 — 게임이 세는 길이다.</summary>
+    /// <summary>CP949 로 적었을 때의 바이트 수 — 원본이 세는 길이다.</summary>
     private static int Bytes(string text) =>
         System.Text.Encoding.GetEncoding(949).GetByteCount(text);
 
@@ -1498,7 +1498,7 @@ public sealed class DisevRunner
     /// </summary>
     /// <remarks>
     /// 지은 이름은 발견물 표에 덧씌워(<see cref="Local.Helpers.DiscoveryTable.SetName"/>)
-    /// 그 뒤로는 일람이든 지도든 어디서든 그 이름이 보인다 — 게임도 레코드를 갈아 버린다.
+    /// 그 뒤로는 일람이든 지도든 어디서든 그 이름이 보인다 — 원본도 레코드를 갈아 버린다.
     /// </remarks>
     private bool NameDiscovery(int discovery, string suffix)
     {
@@ -1591,7 +1591,7 @@ public sealed class DisevRunner
     }
 
     /// <summary>
-    /// 부대배치 화면 — 게임도 판을 열기 전에 편다(<c>0x0044A963</c> → <c>0x00446E60</c>).
+    /// 부대배치 화면 — 원본도 판을 열기 전에 편다(<c>0x0044A963</c> → <c>0x00446E60</c>).
     /// </summary>
     /// <remarks>게임 화면에는 물리는 길이 없다. 창을 닫으면 제독 부대 하나만 세운다.</remarks>
     private int[] Deploy(Support.Local.Models.Player.MateInfo? aide)
@@ -1611,7 +1611,7 @@ public sealed class DisevRunner
     /// 아이템을 하나 얻고 <b>그 물건의 정보 창</b>을 낸다.
     /// </summary>
     /// <remarks>
-    /// 게임은 손에 넣은 자리에서 그림·갈래·설명이 든 창을 띄운다 — 소지품 창에서 물건을
+    /// 원본은 손에 넣은 자리에서 그림·갈래·설명이 든 창을 띄운다 — 소지품 창에서 물건을
     /// 눌렀을 때 뜨는 것과 같은 창이다(<see cref="ItemInfoDialog"/>).
     /// 소지품 열여섯 칸이 다 찼으면 <b>버릴 것을 고르게 한다</b>(<c>0x00409F93</c>) — 안 버리면 못 든다.
     /// </remarks>
@@ -1680,11 +1680,11 @@ public sealed class DisevRunner
     }
 
     /// <summary>
-    /// 능력치 한 칸을 그만큼 움직인다. 게임의 뜀표(<c>0x004094C7</c> 의 <c>0x0040C228</c>, 0~29)를 따른다 —
-    /// 표에 없는 칸(5·9·12~16·19·24~)은 게임도 지나간다.
+    /// 능력치 한 칸을 그만큼 움직인다. 원본의 뜀표(<c>0x004094C7</c> 의 <c>0x0040C228</c>, 0~29)를 따른다 —
+    /// 표에 없는 칸(5·9·12~16·19·24~)은 원본도 지나간다.
     /// </summary>
     /// <remarks>
-    /// 번호는 <see cref="DisevScript.StatNames"/> 표 그대로다. 갈래마다 게임이 하는 일은 이렇다.
+    /// 번호는 <see cref="DisevScript.StatNames"/> 표 그대로다. 갈래마다 원본이 하는 일은 이렇다.
     /// <code>
     ///    0  0x004094CE  함대 피로도            vt+0x10(n)            1  0x004094E5  규율 0x00474060(n)
     ///    2  0x004094F8  총 선원 수             vt+4(n) — 0~정원      3  0x0040950F  소지금 0x0047CBC0(n)
@@ -1876,7 +1876,7 @@ public sealed class DisevRunner
         Hero => _game.Faces?.TryGetBgra(
             Local.Helpers.PortraitAges.At(_game.Player.Face, _game.Player.Age, false, _game.Faces), female: false),
         Inspector or "검사관" => _game.Faces?.TryGetBgra(Town.Inspector.Face, female: false),
-        // 執事 — 게임은 인물 275 를 세우고 얼굴을 229 로 박는다(0x0040CA16~0x0040CA40).
+        // 執事 — 원본은 인물 275 를 세우고 얼굴을 229 로 박는다(0x0040CA16~0x0040CA40).
         Butler => _game.Faces?.TryGetBgra(ButlerFace, female: false),
         // 国王 — 원본에 없는 화자. 지금 들어온 왕궁에 앉은 국왕(도시 창이 걸어 둔 Game.RulerFace)이다. 모드 「작위」 대본이 쓴다.
         King => _game.RulerFace?.Invoke(),

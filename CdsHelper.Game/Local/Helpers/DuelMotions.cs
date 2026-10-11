@@ -24,7 +24,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public static class DuelMotions
 {
-    /// <summary>눈금 하나의 길이. 게임이 1/15초로 돈다.</summary>
+    /// <summary>눈금 하나의 길이. 원본이 1/15초로 돈다.</summary>
     public const double Tick = 0.067;
 
     /// <summary>

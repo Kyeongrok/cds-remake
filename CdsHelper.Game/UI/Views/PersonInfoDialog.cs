@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 「인물정보」 — 제독 자신을 보여 주는 판.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0046DF70</c> 이다. 줄 글은 그쪽 서식 그대로다(<c>0x00570EE8</c> 벌).
+/// 원본의 <c>0x0046DF70</c> 이다. 줄 글은 그쪽 서식 그대로다(<c>0x00570EE8</c> 벌).
 /// <code>
 ///   "체  력/%4d"      "    명성치/%8d"
 ///   "지  력/%4d"      "    악명치/%8d"
@@ -32,13 +32,13 @@ namespace CdsHelper.Game.UI.Views;
 internal sealed class PersonInfoDialog : InfoDialog
 {
     /// <summary>
-    /// 판 크기(그림 점). 게임 갈무리를 재어 맞췄다 — 판 바탕이 <b>430 x 270</b> 이고,
+    /// 판 크기(그림 점). 원본 갈무리를 재어 맞췄다 — 판 바탕이 <b>430 x 270</b> 이고,
     /// 좌우 여백 14 씩과 아래 단추 줄을 빼면 속이 이만큼이다.
     /// </summary>
     private const double BoardWidth = 402, BoardHeight = 224;
 
     /// <summary>
-    /// 초상화를 몇 배로 그릴지. 게임은 <b>조각 그대로</b> 80x96 이다 —
+    /// 초상화를 몇 배로 그릴지. 원본은 <b>조각 그대로</b> 80x96 이다 —
     /// 두 배로 걸면 얼굴만 커져 글자와 어긋난다.
     /// </summary>
     private const int FaceScale = 1;
@@ -164,7 +164,7 @@ internal sealed class PersonInfoDialog : InfoDialog
     /// 술집에서 「부하로 고용한다」를 눌렀을 때의 판 — 단추가 <b>특기 · 결정 · 중단</b>이다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0046DBC0(인물, 1)</c> 이다. 결정(id 0)만 참을 내고, 특기(id 2)는 특기 창을
+    /// 원본의 <c>0x0046DBC0(인물, 1)</c> 이다. 결정(id 0)만 참을 내고, 특기(id 2)는 특기 창을
     /// 띄운 뒤 이 판으로 돌아온다.
     /// </remarks>
     private PersonInfoDialog(in HireSheet who, uint[]? face)

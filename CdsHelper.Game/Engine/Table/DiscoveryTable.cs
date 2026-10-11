@@ -20,7 +20,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x44~0x50  세계지도 사각형 x1,y1,x2,y2 (칸) — 147개에만 있다
 ///   +0x54~0x5A  찾으면 지울 바탕 타일 2x2 (u16 넷, 44개) — 읽는 곳은 0x004AAE90 하나뿐이다(<see cref="EraseOffset"/>)
 /// </code>
-/// 게임은 항해 루프를 한 번 돌 때마다 <c>0x0048D3F0</c> 에서 지금 칸을 이 사각형들과
+/// 원본은 항해 루프를 한 번 돌 때마다 <c>0x0048D3F0</c> 에서 지금 칸을 이 사각형들과
 /// 견준다. 자세한 차례는 <see cref="Engine.Discovery.DiscoveryLog"/> 에 적었다.
 ///
 /// 이름과 사각형은 <see cref="Support.Local.Helpers.GameMapCoords"/> 에도 있지만 그쪽은
@@ -97,7 +97,7 @@ public sealed class DiscoveryTable
     /// </param>
     /// <param name="Indirect">
     /// 참이면 자리에 가도 잡히지 않는다 — 유적 속 물건·인물·비보처럼 다른 길로 얻는 것이다.
-    /// 게임은 새 판을 열며 이런 줄의 깃발 <c>0x04</c> 를 지운다(<c>0x004AA97B</c>).
+    /// 원본은 새 판을 열며 이런 줄의 깃발 <c>0x04</c> 를 지운다(<c>0x004AA97B</c>).
     /// </param>
     /// <param name="OpenAtStart">
     /// 참이면 처음부터 위치 판정에 걸린다. 거짓이면 <see cref="Hint"/> 를 가리키는 힌트를
@@ -105,7 +105,7 @@ public sealed class DiscoveryTable
     /// </param>
     /// <param name="OnLand">참이면 뭍에서, 거짓이면 바다에서 발견된다.</param>
     /// <param name="Once">
-    /// 거짓이면 게임에서 여러 사람이 거듭 발견할 수 있는 것이다(생물·교역품·도시 건물).
+    /// 거짓이면 원본에서 여러 사람이 거듭 발견할 수 있는 것이다(생물·교역품·도시 건물).
     /// 이 게임에서는 한 판에 한 번으로 다룬다 — 원본도 한 판 안에서는 한 번만 뜬다.
     /// </param>
     /// <remarks>
@@ -148,7 +148,7 @@ public sealed class DiscoveryTable
         [JsonIgnore] public bool IsCounterfeit => Id is >= 230 and <= 257;
 
         /// <summary>
-        /// 좁을수록 앞세우려고 재는 값. 게임이 쓰는 것 그대로 <b>가로 길이의 제곱</b>이다
+        /// 좁을수록 앞세우려고 재는 값. 원본이 쓰는 것 그대로 <b>가로 길이의 제곱</b>이다
         /// (<c>0x004256D9</c>) — 세로는 안 본다.
         /// </summary>
         [JsonIgnore] public int Span => (X2 - X1) * (X2 - X1);
@@ -196,7 +196,7 @@ public sealed class DiscoveryTable
     /// 게임 안에서 <b>이름을 지어 준</b> 발견물(대본 <c>1F 0B</c> · <c>0x004AAB00</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 발견물 레코드의 이름 칸을 그대로 갈아 버려서, 그 뒤로는 일람이든 지도든
+    /// 원본은 발견물 레코드의 이름 칸을 그대로 갈아 버려서, 그 뒤로는 일람이든 지도든
     /// 어디서든 새 이름이 보인다. 우리도 표를 읽는 길목(<see cref="Find"/> ·
     /// <see cref="Discoveries"/>)에서 덧씌워 같은 꼴로 만든다. 판마다 다르므로 세이브에
     /// 적어 두었다가(<c>Player.NamedDiscoveries</c>) 판을 열 때 <see cref="ResetNames"/> 로 건다.
@@ -231,7 +231,7 @@ public sealed class DiscoveryTable
     /// 그 도시 시장에 <b>물건으로 나오는</b> 발견물(<c>0x004B0BA0</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 구입 목록을 만들 때 이것들을 <b>여느 재고보다 앞에</b> 놓는다
+    /// 원본은 구입 목록을 만들 때 이것들을 <b>여느 재고보다 앞에</b> 놓는다
     /// (<c>0x004B0AD0</c> 이 먼저, <c>0x004B0A80</c> 이 그 뒤다). 조건은 셋이다 —
     /// 아직 안 찾았고(깃발 <c>0x44</c> 가 꺼져 있고), 주는 아이템이 있고(<c>+0x30</c>),
     /// <c>+0x34</c> 가 이 도시다. 스물여덟 줄(<see cref="Record.IsCounterfeit"/>)이 걸린다.
@@ -243,7 +243,7 @@ public sealed class DiscoveryTable
             if (row.OnSale && row.SoldIn == cityId) yield return row;
     }
 
-    /// <summary><see cref="DiscoveryEdits"/> 로 덧씌우기 전의 원본 게임 값. 표 밖이면 null.</summary>
+    /// <summary><see cref="DiscoveryEdits"/> 로 덧씌우기 전의 원본 값. 표 밖이면 null.</summary>
     public Record? Original(int id) => id >= 0 && id < _rows.Length ? _rows[id] : null;
 
     /// <summary>그 번호의 이름. 표 밖이면 번호로 물러선다.</summary>

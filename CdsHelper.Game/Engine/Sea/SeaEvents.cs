@@ -4,7 +4,7 @@ namespace CdsHelper.Game.Engine.Sea;
 
 /// <summary>바다에서 하루를 넘길 때 일어날 수 있는 일.</summary>
 /// <remarks>
-/// 게임은 일곱 갈래를 굴리고(<c>0x004746CD</c> 의 <c>rand(7)</c>) 갈래마다 딴 처리로
+/// 원본은 일곱 갈래를 굴리고(<c>0x004746CD</c> 의 <c>rand(7)</c>) 갈래마다 딴 처리로
 /// 뛴다(점프표 <c>0x00474D7C</c>).
 /// <code>
 ///   0  0x004746F9   쥐          3  0x00474B4A  반란
@@ -62,12 +62,12 @@ public sealed record SeaEventResult(SeaEventKind Kind, IReadOnlyList<int> Hurt,
     /// <summary>어느 배든 상했는지.</summary>
     public bool AnyHurt => Hurt.Any(h => h > 0);
 
-    /// <summary>폭풍이면 "폭풍", 눈보라면 "눈보라". 게임 문구에 그대로 끼운다.</summary>
+    /// <summary>폭풍이면 "폭풍", 눈보라면 "눈보라". 원본 문구에 그대로 끼운다.</summary>
     public string Word => Kind == SeaEventKind.Storm ? "폭풍" : "눈보라";
 }
 
 /// <summary>
-/// 바다 사건 판정. 게임의 <c>0x00474680</c>(일어나는가)과 <c>0x00474DA0</c>(뒷정리)을
+/// 바다 사건 판정. 원본의 <c>0x00474680</c>(일어나는가)과 <c>0x00474DA0</c>(뒷정리)을
 /// 옮긴 것이다.
 /// </summary>
 /// <remarks>
@@ -128,7 +128,7 @@ public static class SeaEvents
 
     /// <summary>괴혈병을 막는 기능의 자리(<c>0x0047484C</c> · <c>0x0047486A</c> 의 <c>cmp 3</c>).</summary>
     /// <remarks>
-    /// 게임은 <b>과학</b>(기능 12)을 먼저 보고 그 다음 <b>의학</b>(기능 5)을 본다. 어느 쪽이든
+    /// 원본은 <b>과학</b>(기능 12)을 먼저 보고 그 다음 <b>의학</b>(기능 5)을 본다. 어느 쪽이든
     /// 자리가 3 이면 괴혈병이 안 터지고 <b>보리를 먹여</b> 넘긴다. 전염병 쪽에는 이 관문이 없다.
     ///
     /// 누구 것을 보는가는 <c>0x0047CCA0(기능, 0, -1, -1, -1)</c> — <b>제독과 부하 자리 0</b>
@@ -147,7 +147,7 @@ public static class SeaEvents
 
     /// <summary>안 일어나게 하는 밑값(<c>add edi, 0x1A</c>).</summary>
     /// <remarks>
-    /// 게임의 안전 값은 <c>항해술 x 25 + 신앙심 + 26</c> 이다(<c>0x004746A6</c>~<c>0x004746BF</c>).
+    /// 원본의 안전 값은 <c>항해술 x 25 + 신앙심 + 26</c> 이다(<c>0x004746A6</c>~<c>0x004746BF</c>).
     /// 신앙심(<c>0x005B60D4</c>)이 그대로 얹히므로 <b>100 이면 자리 넷과 맞먹는다</b>.
     ///
     /// 그리고 항해술은 제독 것만 보지 않는다 — <c>0x0047CCA0(0, 1, -1, -1, -1)</c> 이
@@ -178,7 +178,7 @@ public static class SeaEvents
     /// <param name="lat">지금 위도(북이 양수).</param>
     /// <param name="rng">주사위.</param>
     /// <param name="mateAt">
-    /// 그 자리의 부하 신상. 게임은 기능마다 <b>제독과 어느 한 자리</b>를 견주므로(<c>0x0047CCA0</c>)
+    /// 그 자리의 부하 신상. 원본은 기능마다 <b>제독과 어느 한 자리</b>를 견주므로(<c>0x0047CCA0</c>)
     /// 부르는 쪽이 자리 번호로 찾아 준다. 안 주면 제독 것만 본다.
     /// </param>
     public static SeaEventKind? Roll(Player player, double lat, Random rng,
@@ -256,7 +256,7 @@ public static class SeaEvents
     /// 기함에 단 선수상 번호. 안 달았으면 -1.
     /// </summary>
     /// <remarks>
-    /// 게임도 <b>기함</b> 것만 본다 — 다섯 갈래가 하나같이 <c>0x00473CD0</c>(기함 번호)로
+    /// 원본도 <b>기함</b> 것만 본다 — 다섯 갈래가 하나같이 <c>0x00473CD0</c>(기함 번호)로
     /// 배를 집어 <c>[배+0x5C]</c> 를 읽는다. 함대에 몇 척이 있든 뱃머리는 하나다.
     /// </remarks>
     public static int FigureheadOf(Player player)
@@ -291,7 +291,7 @@ public static class SeaEvents
     /// 재해가 서 있는 동안 바다에서 하루를 난다 — 쥐는 식량을 먹고 병은 선원을 죽인다.
     /// </summary>
     /// <remarks>
-    /// 게임의 바다 하루 뒷정리 <c>0x00474DA0</c> 앞머리다.
+    /// 원본의 바다 하루 뒷정리 <c>0x00474DA0</c> 앞머리다.
     /// <code>
     ///   474db0  쥐    → 식량 원값 -100
     ///   474dd2  괴혈병 → 죽는 수  = rand(2) + 3 - 부하 의학
@@ -345,7 +345,7 @@ public static class SeaEvents
     /// 그 위도에서 부는 것. 띠 밖이면 <c>null</c>.
     /// </summary>
     /// <remarks>
-    /// 게임은 위도를 <c>0x005B63B4</c> 에 0~20000 으로 들고(10000 이 적도) 띠를 이렇게 나눈다.
+    /// 원본은 위도를 <c>0x005B63B4</c> 에 0~20000 으로 들고(10000 이 적도) 띠를 이렇게 나눈다.
     /// <code>
     ///   폭풍     0x1C37~0x22B9 · 0x2B67~0x31E9   = 적도에서 10~25도
     ///   눈보라   0x0683~0x0D06 · 0x411A~0x479D   = 적도에서 60~75도
@@ -384,7 +384,7 @@ public static class SeaEvents
     public sealed record Day(bool WaterLow, bool FoodLow, bool WaterOut, bool FoodOut,
                              int Tired, int Cold, int Weary, int Dead = 0, string Short = "");
 
-    /// <summary>추위가 한 단씩 오르는 위도(도). 게임 값 <c>0x1C36·0x1E61·0x208D</c> 다.</summary>
+    /// <summary>추위가 한 단씩 오르는 위도(도). 원본 값 <c>0x1C36·0x1E61·0x208D</c> 다.</summary>
     public static readonly double[] ColdLats = [65, 70, 75];
 
     // ── 극지방 ───────────────────────────────────────────────────────────────
@@ -500,7 +500,7 @@ public static class SeaEvents
     /// 승원이 모자라졌을 때의 말. 넉넉하면 빈 글이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 배마다 견주지만 우리는 함대가 통째로 태우므로 <b>합</b>으로 본다. 부관이 있으면
+    /// 원본은 배마다 견주지만 우리는 함대가 통째로 태우므로 <b>합</b>으로 본다. 부관이 있으면
     /// 부관이(<c>0x005357D8</c> · <c>0x00535820</c>), 없으면 알림 상자로(<c>0x00535860</c> · <c>0x005358A0</c>)
     /// 이른다 — <c>0x0047CC50(0) == −1</c> 이 가른다(<c>0x0047598C</c>). 배가 두 척 이상이면 앞의 말이다.
     /// </remarks>
@@ -542,7 +542,7 @@ public static class SeaEvents
     /// 바다에서 하루를 난다 — 식량과 물을 축내고, 그만큼 지친다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00475470</c>(항해 하루치)이다. 부르는 곳은 <c>0x0044B1A2</c> 하나다.
+    /// 원본의 <c>0x00475470</c>(항해 하루치)이다. 부르는 곳은 <c>0x0044B1A2</c> 하나다.
     /// <code>
     /// 4755e6  소모 = max(1, 선원수 * 5 / 6)      ; 식량·물 각각
     /// 475624  사흘치 밑으로 <b>떨어진 그 날</b> "얼마 남지 않았습니다!"
@@ -613,7 +613,7 @@ public static class SeaEvents
     /// 우리 선체 값이 게임 화면에서 옮긴 그 값이라 <b>기준 100 을 그대로 쓴다</b>.
     /// 추진력도 같은 만큼 깎는다 — 수리로만 되돌아온다(<see cref="Support.Local.Models.Ship.SlowDown"/>).
     ///
-    /// 기함은 안 잃는다. 게임도 기함 자리의 내구를 1 밑으로 안 내린다(<c>ebp</c>).
+    /// 기함은 안 잃는다. 원본도 기함 자리의 내구를 1 밑으로 안 내린다(<c>ebp</c>).
     /// </remarks>
     public static SeaEventResult Resolve(Player player, SeaEventKind kind, Random rng)
     {

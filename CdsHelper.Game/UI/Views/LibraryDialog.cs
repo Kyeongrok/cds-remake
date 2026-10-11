@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 도서관 → 열람 의 책장 화면. 그 도시에 놓인 책을 책등으로 꽂아 두고, 누르면 읽는다.
 /// </summary>
 /// <remarks>
-/// 책등 색은 게임 규칙 그대로다(볼트 <c>20.분석-도서관 책과 책등 색</c>).
+/// 책등 색은 원본 규칙 그대로다(볼트 <c>20.분석-도서관 책과 책등 색</c>).
 /// <list type="bullet">
 ///   <item><b>초록</b> — 이 책이 나에게 더 줄 힌트가 없다(안 읽었어도 초록일 수 있다).</item>
 ///   <item><b>파랑</b> — 지금 읽으면 새 힌트가 들어온다.</item>
@@ -31,7 +31,7 @@ public sealed class LibraryDialog : GameWindow
     /// <remarks>
     /// 게임 화면에 책장 그림을 맞춰 끼워(1.74배로 맞았다) 책등 자리를 되돌린 값이다 —
     /// 첫 칸 x 30, 간격 16.1, 줄 사이 80.5. 간격이 책등 너비(32)의 절반이라 책이 반쯤씩
-    /// 겹쳐 꽂힌다. 게임도 그렇다.
+    /// 겹쳐 꽂힌다. 원본도 그렇다.
     /// </remarks>
     private static readonly double[] ShelfTops = [66, 146.5, 227];
 
@@ -64,7 +64,7 @@ public sealed class LibraryDialog : GameWindow
     /// </remarks>
     private readonly Action<string>? _say;
 
-    /// <summary>닫기 조각의 크기와 양피지 모서리에서 떨어진 거리. 게임 갈무리에서 잰 값이다.</summary>
+    /// <summary>닫기 조각의 크기와 양피지 모서리에서 떨어진 거리. 원본 갈무리에서 잰 값이다.</summary>
     private const double CloseSize = 16, CloseInset = 10;
     private readonly OpenBookArt? _book;
     private readonly Func<int, string>? _hintText;
@@ -139,14 +139,14 @@ public sealed class LibraryDialog : GameWindow
             else if (shelved[i].Filler) AddFiller(i, spines);
         }
 
-        // 게임에는 제목 띠가 없다 — 양피지 오른쪽 위에 닫기 조각만 얹혀 있다.
+        // 원본에는 제목 띠가 없다 — 양피지 오른쪽 위에 닫기 조각만 얹혀 있다.
         var close = GameUi.CloseBox(Close, _scale);
         Canvas.SetLeft(close, (BookShelf.ShelfWidth - CloseSize - CloseInset) * _scale);
         Canvas.SetTop(close, CloseInset * _scale);
         Panel.SetZIndex(close, 30);
         _layer.Children.Add(close);
 
-        // 서가는 <b>테두리를 두르지 않는다</b> — 게임은 양피지 그림 그대로 띄운다.
+        // 서가는 <b>테두리를 두르지 않는다</b> — 원본은 양피지 그림 그대로 띄운다.
         // 여느 창처럼 밝은 줄(<see cref="GameUi.Edge"/>)을 두르면 그림 밖에 액자가 하나
         // 더 생겨 원본과 다르게 보인다.
         Content = new Border { Background = GameUi.Back, Child = box };
@@ -158,7 +158,7 @@ public sealed class LibraryDialog : GameWindow
     }
 
     /// <summary>
-    /// 읽을 수 없는 책 한 권. 게임이 책 번호 -1 로 끼워 넣는 것이라 늘 초록이고,
+    /// 읽을 수 없는 책 한 권. 원본이 책 번호 -1 로 끼워 넣는 것이라 늘 초록이고,
     /// 이름표도 없고 눌러도 열리지 않는다 — 서가를 채우는 것이 하는 일의 전부다.
     /// </summary>
     private void AddFiller(int slot, BitmapSource[] spines)
@@ -288,7 +288,7 @@ public sealed class LibraryDialog : GameWindow
         return left ? 2 : 0;                                    // 빨강 / 초록
     }
 
-    /// <summary>책을 읽으려면 그 언어가 있어야 하는 자리 — 게임도 <c>3</c> 이다.</summary>
+    /// <summary>책을 읽으려면 그 언어가 있어야 하는 자리 — 원본도 <c>3</c> 이다.</summary>
     /// <remarks><c>0x00463E41</c> 의 <c>cmp eax,3 / jl</c> 이다.</remarks>
     private const int ReadLevel = 3;
 
@@ -300,7 +300,7 @@ public sealed class LibraryDialog : GameWindow
     /// <c>LevelOf</c>(기술 칸)를 봐서 <b>언어 자리가 늘 0 으로 읽혔고</b>, 그래서 파란 책이
     /// 한 권도 안 나오고 아무 책도 못 읽었다.
     ///
-    /// 게임은 <b>함대에 탄 사람 전부</b>를 훑어 그 언어를 가장 잘 아는 이를 찾는다
+    /// 원본은 <b>함대에 탄 사람 전부</b>를 훑어 그 언어를 가장 잘 아는 이를 찾는다
     /// (<c>0x0047CD20</c>) — 부하가 대신 읽어 준다. 그래서 로드리고·데·에스코베토 같은
     /// 말 잘하는 부하를 들이면 읽을 수 있는 책이 확 는다. 부하의 언어는 인물 표에서 이름으로 찾는다.
     /// </remarks>
@@ -497,7 +497,7 @@ public sealed class LibraryDialog : GameWindow
 
     /// <summary>글자마다 <c>x</c> 로 가린다. 띄어쓰기는 그대로 둔다.</summary>
     /// <summary>
-    /// 못 읽는 책의 이름 — 게임은 글자마다 영문 X 가 아니라 <b>온각 ×</b>(CP949 <c>A1BF</c>, 두 칸 폭)로 가린다.
+    /// 못 읽는 책의 이름 — 원본은 글자마다 영문 X 가 아니라 <b>온각 ×</b>(CP949 <c>A1BF</c>, 두 칸 폭)로 가린다.
     /// </summary>
     private static string Masked(string text) =>
         new([.. text.Select(c => c == ' ' ? ' ' : '×')]);

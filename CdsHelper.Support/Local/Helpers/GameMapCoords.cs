@@ -1,7 +1,7 @@
 ﻿namespace CdsHelper.Support.Local.Helpers;
 
 /// <summary>
-/// 게임 원본 표 — 도시 226개, 발견물 274개. 지도 마커와 발견 여부가 모두 여기를 기준으로 돈다.
+/// 원본 표 — 도시 226개, 발견물 274개. 지도 마커와 발견 여부가 모두 여기를 기준으로 돈다.
 /// </summary>
 /// <remarks>
 /// cds-helper 가 원래 쓰던 cities.json / 발견물.json 은 좌표가 <b>정수 도(degree)</b> 였다.
@@ -11,7 +11,7 @@
 /// <para>출처</para>
 /// <list type="bullet">
 ///   <item>도시 — cds95-mod plugins-src/WorldMapKR/src/city_coords.h.
-///         TradeUtilKR 의 워프 16바이트에서 뽑은 경도/위도 필드로, 게임이 함대 위치에 쓰는
+///         TradeUtilKR 의 워프 16바이트에서 뽑은 경도/위도 필드로, 원본이 함대 위치에 쓰는
 ///         바로 그 값이다. 단위는 경도 0~40000(0=서경180), 위도 0~20000(0=북위90).</item>
 ///   <item>발견물 — CDS_95.EXE 의 92바이트 x 274 표(RVA 0x11C540, VA 0x51C540, 파일 0x11AB40).
 ///         +0x00 이름 char*(cp949) / +0x04 분류 / +0x18 보상금 / +0x44~0x50 좌표.

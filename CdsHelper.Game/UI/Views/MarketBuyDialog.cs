@@ -22,7 +22,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 문구는 EXE 에서 그대로 옮겼다(<c>0x00544730</c> 벌). 값이 여럿일 때 "이것들의" 로 갈리는
 /// 것까지 있지만 지금은 한 번에 하나만 고를 수 있어 "이" 쪽만 쓴다.
 ///
-/// <b>돈 검사는 YES 를 고른 뒤다.</b> 목록에서도 값 알림에서도 막지 않는다 — 게임이
+/// <b>돈 검사는 YES 를 고른 뒤다.</b> 목록에서도 값 알림에서도 막지 않는다 — 원본이
 /// 그렇게 한다(구입 본체 <c>0x004B3AAD</c> 에서 소지금과 값을 견준다). 살 돈이 없는 줄도
 /// 고를 수 있고 값도 알려 준다.
 /// </remarks>
@@ -32,7 +32,7 @@ public sealed class MarketBuyDialog : GameWindow
     /// 줄 속 칸 — 값 · (갈래) · 이름. 오른쪽 것을 먼저 줘야 바깥에 선다.
     /// </summary>
     /// <remarks>
-    /// <b>셋 다 오른쪽맞춤이고 앞의 둘은 폭이 못 박혀 있다.</b> 게임 갈무리를 재어 보면
+    /// <b>셋 다 오른쪽맞춤이고 앞의 둘은 폭이 못 박혀 있다.</b> 원본 갈무리를 재어 보면
     /// 이름 끝·갈래 끝·값 끝이 줄마다 <b>같은 자리</b>에 선다 — "(병기)" 처럼 짧은 갈래가
     /// 와도 이름 끝이 밀리지 않는다. 폭을 안 박으면 갈래 길이에 따라 이름이 흔들린다.
     /// </remarks>
@@ -43,7 +43,7 @@ public sealed class MarketBuyDialog : GameWindow
         new(GameListDock.Fill, new Thickness(10, 0, 0, 0), Align: HorizontalAlignment.Right),
     ];
 
-    /// <summary>목록 바닥 폭. 게임 갈무리를 재어 맞췄다 — 이보다 넓으면 이름 칸이 휑하다.</summary>
+    /// <summary>목록 바닥 폭. 원본 갈무리를 재어 맞췄다 — 이보다 넓으면 이름 칸이 휑하다.</summary>
     private const double ListWidth = 356;
 
     private readonly Player _player;
@@ -89,18 +89,18 @@ public sealed class MarketBuyDialog : GameWindow
         Background = GameUi.Back;
 
         // 이 마을이 파는 <b>모조품</b>이 목록 맨 앞에 선다(0x004B38C7 이 그쪽을 먼저 채운다).
-        // 이미 찾은 것은 빠진다 — 게임은 깃발 0x44 로 거른다(0x004B0BA5).
+        // 이미 찾은 것은 빠진다 — 원본은 깃발 0x44 로 거른다(0x004B0BA5).
         (_stock, _asDiscovery) = Offer(player, market, cityId, found, game?.Hints);
         _list = new GameList(Columns, Cells, _stock.Length, "  지금 내놓은 물건이 없다.  ")
         {
-            // 게임은 한 번에 여럿을 산다 — 고른 줄이 여럿이면 값도 한꺼번에 부른다.
+            // 원본은 한 번에 여럿을 산다 — 고른 줄이 여럿이면 값도 한꺼번에 부른다.
             Pick = GameListPick.Many,
             Margin = new Thickness(0),
             BorderBrush = GameUi.Edge,
         };
 
         _decide = new GameButton("결정", Decide, width: 110) { On = false };
-        // 게임도 아무것도 안 고른 동안은 이 단추가 흐리다.
+        // 원본도 아무것도 안 고른 동안은 이 단추가 흐리다.
         _list.SelectionChanged += () => _decide.On = _list.Chosen.Count > 0;
 
         var buttons = new StackPanel

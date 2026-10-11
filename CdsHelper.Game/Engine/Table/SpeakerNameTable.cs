@@ -34,7 +34,7 @@ public sealed class SpeakerNameTable
 
     private SpeakerNameTable(Snapshot snapshot)
     {
-        // 후원자를 먼저 본다 — 게임도 후원자 표부터 찾는다.
+        // 후원자를 먼저 본다 — 원본도 후원자 표부터 찾는다.
         foreach (var e in snapshot.Names) _byName.TryAdd(e.Name, e);
     }
 

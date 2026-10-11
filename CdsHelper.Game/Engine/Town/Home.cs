@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Engine.Town;
 /// 자택에서 쉬는 규칙. 값은 안 든다 — 내 집이다.
 /// </summary>
 /// <remarks>
-/// 게임은 <c>0x004A2AD0(개월 x 30, 1)</c> 로 <b>날수</b>를 넘긴다 — 달력 달이 아니라
+/// 원본은 <c>0x004A2AD0(개월 x 30, 1)</c> 로 <b>날수</b>를 넘긴다 — 달력 달이 아니라
 /// 서른 날이다. 쉬면 하루에 피로 -1 · 사기 +3 씩 돌아오는데, 그것은 날을 넘기는 자리가
 /// 함께 하므로 <see cref="Support.Local.Models.Player.AdvanceDays"/> 가 맡는다.
 /// 그래서 한 달만 쉬어도 폭풍 몇 번 분이 한꺼번에 풀린다.
@@ -16,15 +16,15 @@ public static class Home
     /// <summary>장기 휴양으로 고를 수 있는 가장 긴 달수(<c>0x00460782</c> 의 <c>push 0xC</c>).</summary>
     public const int MaxRestMonths = 12;
 
-    /// <summary>휴양 한 달을 며칠로 세는지. 게임도 서른 날이다.</summary>
+    /// <summary>휴양 한 달을 며칠로 세는지. 원본도 서른 날이다.</summary>
     public const int DaysPerMonth = 30;
 
     /// <summary>그만큼 쉬면 며칠이 가는지.</summary>
     public static int RestDays(int months) => DaysPerMonth * months;
 
-    /// <summary>쉬고 나서 나오는 지문 셋. 게임 것 그대로다(<c>0x00539840</c> 벌).</summary>
+    /// <summary>쉬고 나서 나오는 지문 셋. 원본 것 그대로다(<c>0x00539840</c> 벌).</summary>
     /// <remarks>
-    /// 게임은 아내가 있으면 <b>아내가</b>, 없으면 이 셋 가운데 하나를 낸다
+    /// 원본은 아내가 있으면 <b>아내가</b>, 없으면 이 셋 가운데 하나를 낸다
     /// (<c>0x004607FE</c> 의 <c>rand(3)</c>).
     /// </remarks>
     public static readonly string[] RestWords =
@@ -49,7 +49,7 @@ public static class Home
     /// <summary>
     /// 후손 하나를 얻는 데 드는 날.
     /// </summary>
-    /// <remarks>게임도 끝에 <c>0x00469850(5)</c> 로 닷새를 넘긴다(<c>0x00461401</c>).</remarks>
+    /// <remarks>원본도 끝에 <c>0x00469850(5)</c> 로 닷새를 넘긴다(<c>0x00461401</c>).</remarks>
     public const int HeirDays = 5;
 
     /// <summary>주사위 폭과 되는 눈(<c>0x004613CC</c> 의 <c>rand(8) &lt; 2</c>).</summary>
@@ -257,10 +257,10 @@ public static class Home
     /// 후손을 남길 수 있는지 — <b>아내가 있어야 한다</b>.
     /// </summary>
     /// <remarks>
-    /// 게임은 줄의 켜짐을 <c>0x00460650</c> 하나로 정한다 — <c>[0x005B61B0] != -1</c>,
+    /// 원본은 줄의 켜짐을 <c>0x00460650</c> 하나로 정한다 — <c>[0x005B61B0] != -1</c>,
     /// 곧 아내가 있느냐다. 안 되면 줄이 흐릴 뿐 사라지지는 않는다.
     ///
-    /// 게임은 그 뒤로 관문을 둘 더 둔다. 체력(<c>[0x005B60D8] &gt;= 100</c>)은
+    /// 원본은 그 뒤로 관문을 둘 더 둔다. 체력(<c>[0x005B60D8] &gt;= 100</c>)은
     /// <see cref="HeirCondition"/> 으로 옮겼고, <c>[아내+4] == 2</c> 는 <b>사람 갈래</b>가
     /// 여급(2)인지를 보는 것이라 아내가 있으면 언제나 참이다 — 옮길 것이 없다.
     /// </remarks>
@@ -270,7 +270,7 @@ public static class Home
     /// 이번에 후손을 얻었는지. <b>여덟에 둘</b>이라 네 번에 한 번 꼴이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 굴리기 전에 빈 아이 칸이 있고(<c>0x004AB9F0</c>) 막내가 이미 태어났는지(아내 <c>+0x38 == -1</c>)를 본다 —
+    /// 원본은 굴리기 전에 빈 아이 칸이 있고(<c>0x004AB9F0</c>) 막내가 이미 태어났는지(아내 <c>+0x38 == -1</c>)를 본다 —
     /// 둘 다 차 있거나 배 속에 아이가 있으면 굴림과 상관없이 안 된다.
     /// </remarks>
     public static bool HeirBorn(Player player, Random random) =>

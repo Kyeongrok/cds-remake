@@ -66,7 +66,7 @@ public sealed class ShipPickDialog : GameWindow
         [0, 8, 6, 11, 13],
     ];
 
-    /// <summary>창마다 지금 묶음 — 게임처럼 닫아도 남는다. 열쇠는 창 제목이다.</summary>
+    /// <summary>창마다 지금 묶음 — 원본처럼 닫아도 남는다. 열쇠는 창 제목이다.</summary>
     private static readonly Dictionary<string, int> Remembered = [];
 
     private static readonly Brush HeadFill = Frozen(Color.FromRgb(0xDE, 0xC6, 0xAD));

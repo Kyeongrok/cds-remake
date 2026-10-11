@@ -43,19 +43,19 @@ public static class Sailing
 {
     /// <summary>누산기가 <b>한 걸음</b>을 넘기는 값. 방위 벡터의 크기와 같다.</summary>
     /// <remarks>
-    /// 게임은 누산기가 <c>±0x20</c> 을 넘으면 <c>0x40</c> 씩 덜어내며 한 걸음씩 옮긴다
+    /// 원본은 누산기가 <c>±0x20</c> 을 넘으면 <c>0x40</c> 씩 덜어내며 한 걸음씩 옮긴다
     /// (<c>0x0048D2BA</c>). 벡터의 크기가 곧 이 값이라, 한 틱에 배는 <b>이동값 걸음</b>을
     /// 간다.
     /// </remarks>
     public const int CellUnits = 64;
 
-    /// <summary>한 칸에 든 걸음 수. 게임의 자리 단위가 <b>1/16 칸</b>이다.</summary>
+    /// <summary>한 칸에 든 걸음 수. 원본의 자리 단위가 <b>1/16 칸</b>이다.</summary>
     /// <remarks>
     /// 위도 값(<c>0x005B63B4</c>)이 0~20000 인데 지도가 세로 1250칸이라 한 칸이 16 이다.
     /// 발견 판정도(<c>칸 = 0x5B63B4 / 16</c>), 주변지도가 배 자리를 넘길 때도
     /// (<c>0x00426150</c>) 같은 값으로 나눈다.
     ///
-    /// <b>여기를 빠뜨려 배가 게임보다 네 배 느렸다.</b> 걸음을 <see cref="CellUnits"/> 로
+    /// <b>여기를 빠뜨려 배가 원본보다 네 배 느렸다.</b> 걸음을 <see cref="CellUnits"/> 로
     /// 나눠 곧장 칸으로 삼았는데, 그것은 누산기 눈금이지 칸이 아니다.
     /// </remarks>
     public const int StepsPerCell = 16;
@@ -67,7 +67,7 @@ public static class Sailing
     /// 배 종류마다 한 틱에 <b>뱃머리가 도는 눈금 수</b>. 게임 표(<c>0x00569FC0</c>, int32 x8)다.
     /// </summary>
     /// <remarks>
-    /// 차례는 선체 번호(<see cref="Hull.GameId"/> — 게임에서는 기함 레코드 <c>+0x28</c>)다.
+    /// 차례는 선체 번호(<see cref="Hull.GameId"/> — 원본에서는 기함 레코드 <c>+0x28</c>)다.
     /// 눈금 하나가 22.5도라, 코구는 한 틱에 67.5도를 돌고 대형카락·중카락은 22.5도밖에
     /// 못 돈다. 자세한 것은 볼트 <c>86.분석-바다 조타(커서 방향·뱃머리·이동 벡터)</c>.
     /// </remarks>
@@ -91,12 +91,12 @@ public static class Sailing
     public const int CalmSpeed = 1;
 
     /// <summary>
-    /// 함대 속도. 게임의 <c>0x0048BCF0</c> 이다.
+    /// 함대 속도. 원본의 <c>0x0048BCF0</c> 이다.
     /// </summary>
     /// <param name="player">함대.</param>
     /// <param name="sails">돛 효율표. 못 읽었으면 null — 그때는 돛이 없는 셈 친다.</param>
     /// <param name="windDir">풍향(16방위).</param>
-    /// <param name="windSpeed">풍속. 0(무풍)이면 셈 없이 <see cref="CalmSpeed"/> 다 — 게임은
+    /// <param name="windSpeed">풍속. 0(무풍)이면 셈 없이 <see cref="CalmSpeed"/> 다 — 원본은
     /// <c>0x00424F40</c> 이 적어 준 풍속(<c>[esp+0x18]</c>)이 0 이면 곧바로 1 을 돌려준다(<c>0x0048BD22</c>).</param>
     /// <param name="heading">뱃머리(16방위).</param>
     /// <param name="onLand">뭍에 있는지.</param>
@@ -117,7 +117,7 @@ public static class Sailing
             var ship = player.Ships[i];
             int v = ship.Speed * (windSpeed + 1) * sails.Efficiency(ship.Sails, relative) / 100;
 
-            // 사람이 모자라면 느려지되 <b>반토막 밑으로는 안 떨어진다</b> — 게임은 두 값 가운데 큰 쪽을
+            // 사람이 모자라면 느려지되 <b>반토막 밑으로는 안 떨어진다</b> — 원본은 두 값 가운데 큰 쪽을
             // 남긴다(0x0048BE1C: 선원비례값 < (v+1)/2 이면 (v+1)/2). 예전에는 작은 쪽을 골라
             // 모자랄수록 반보다 더 느려졌다.
             int need = ship.Crew;
@@ -172,7 +172,7 @@ public static class Sailing
     /// 그 배에 탄 선원 수.
     /// </summary>
     /// <remarks>
-    /// 게임은 배마다 선원을 따로 담는데(<c>배+0x34</c>) 우리는 함대가 통째로 태운다.
+    /// 원본은 배마다 선원을 따로 담는데(<c>배+0x34</c>) 우리는 함대가 통째로 태운다.
     /// 그래서 <b>필요승원에 견주어 나눠 준다</b> — 함대 선원이 최저 승원에 못 미치면
     /// 배마다 고르게 모자란 셈이 된다.
     /// </remarks>
@@ -187,7 +187,7 @@ public static class Sailing
     /// 속도를 한 틱에 나아갈 칸 수로. 발밑 부류가 1 이면 빠른 식, 아니면 느린 식이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 부류표(<c>0x004CD048</c>)에서 부류 1 인 칸(난바다)만 빠른 식으로 보고, 부류 0 인 바다 칸
+    /// 원본은 부류표(<c>0x004CD048</c>)에서 부류 1 인 칸(난바다)만 빠른 식으로 보고, 부류 0 인 바다 칸
     /// (뭍 가까운 얕은 바다)은 느린 식이다. 두 부류는 <b>덩어리로</b> 갈려 있다 - 난바다 한가운데서
     /// 칸마다 식이 바뀌지는 않는다.
     /// </remarks>
@@ -203,7 +203,7 @@ public static class Sailing
     /// 해류가 미는 만큼(칸). 빠른 부류의 칸에서만 받는다.
     /// </summary>
     /// <remarks>
-    /// 게임은 배와 해류를 <b>같은 누산기</b>에 더한다(<c>0x0048D24C</c> · <c>0x0048D29C</c>).
+    /// 원본은 배와 해류를 <b>같은 누산기</b>에 더한다(<c>0x0048D24C</c> · <c>0x0048D29C</c>).
     /// <code>
     ///   배    누산기 += 벡터[뱃머리] * 이동값            (x 는 * 경도보정 / 100)
     ///   해류  누산기 += 벡터[해류방위] * 세기 / 8        (x 는 * 경도보정 / 100)
@@ -215,7 +215,7 @@ public static class Sailing
     ///
     /// <b>여기를 잘못 옮겨 배가 밀렸다.</b> 예전에는 걸음을 <see cref="CellUnits"/> 로 한 번만
     /// 나눠 해류가 <c>세기/8</c> <b>칸</b>이 되었는데, 배 쪽은 <c>이동값/64</c> 칸이라 해류가
-    /// 64배로 세졌다. 역풍에 배가 뒤로 밀려나던 것이 이것이다 — 게임에서는 삼각돛이 정면
+    /// 64배로 세졌다. 역풍에 배가 뒤로 밀려나던 것이 이것이다 — 원본에서는 삼각돛이 정면
     /// 역풍에서도 1 을 내며 앞으로 나아간다.
     ///
     /// 걸음을 칸으로 바꾸는 것은 <see cref="StepsPerCell"/> 몫이다. 배와 해류가 같은
@@ -231,7 +231,7 @@ public static class Sailing
     /// 경도 보정 — 위도가 높을수록 경도 한 칸이 짧다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>65536*cos</c> 표(<c>0x005695F8</c>)를 63도에서 자르고 보간해 쓴다.
+    /// 원본은 <c>65536*cos</c> 표(<c>0x005695F8</c>)를 63도에서 자르고 보간해 쓴다.
     /// 우리는 그냥 <c>1 / cos</c> 을 쓴다 — 게임 보간에는 부호가 뒤집힌 데가 있는데
     /// (더해야 할 자리에서 빼지 않는다) 어긋남이 0.5% 라 굳이 옮기지 않는다.
     /// </remarks>
@@ -241,6 +241,6 @@ public static class Sailing
         return 1.0 / Math.Max(0.25, Math.Cos(capped * Math.PI / 180.0));
     }
 
-    /// <summary>경도 보정을 자르는 위도(게임은 <c>7000</c> = 63도에서 자른다).</summary>
+    /// <summary>경도 보정을 자르는 위도(원본은 <c>7000</c> = 63도에서 자른다).</summary>
     public const double MaxLatForScale = 63;
 }

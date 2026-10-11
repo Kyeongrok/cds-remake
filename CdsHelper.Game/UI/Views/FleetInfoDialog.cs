@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 커맨드 → 정보 → 함대정보.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0046F340</c> 이다. 화면을 재어 맞췄다(갈무리 1.7778배).
+/// 원본의 <c>0x0046F340</c> 이다. 화면을 재어 맞췄다(갈무리 1.7778배).
 /// <code>
 ///   판 속     375 x 382
 ///   배 단추   304 x 24 · 가운데 · 위에서 17 부터 붙여 쌓는다
@@ -20,7 +20,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   아래 줄   대열 · 짐 · 취소
 /// </code>
 /// <b>배 하나하나의 자세한 것은 이 판에 없다</b> — 이름 단추를 누르면 그 배의 판이 열린다
-/// (<see cref="ShipInfoDialog"/>). 게임도 목록이 먼저고 배는 그 다음이다.
+/// (<see cref="ShipInfoDialog"/>). 원본도 목록이 먼저고 배는 그 다음이다.
 ///
 /// 「대열」은 함대배치도(<c>0x0046F619</c> → <c>0x00433F30</c>)를 열고, 「짐」은 보급물자와 교역품일람을
 /// 늘어놓는 판(<see cref="CargoView"/>)이다.
@@ -54,7 +54,7 @@ internal sealed class FleetInfoDialog : InfoDialog
     {
         var rows = new StackPanel();
 
-        // 배 목록. 이름 단추를 붙여 쌓는다 — 게임도 줄 사이가 벌어져 있지 않다.
+        // 배 목록. 이름 단추를 붙여 쌓는다 — 원본도 줄 사이가 벌어져 있지 않다.
         var ships = new StackPanel
         {
             Width = ShipWidth,
@@ -116,7 +116,7 @@ internal sealed class FleetInfoDialog : InfoDialog
     /// 찬 만큼 붉게 물드는 막대와 그 옆의 숫자.
     /// </summary>
     /// <remarks>
-    /// 숫자는 게임처럼 자릿수를 맞춰 적는다 — 게임 글꼴은 ASCII 가 8점으로 고정이라
+    /// 숫자는 원본처럼 자릿수를 맞춰 적는다 — 게임 글꼴은 ASCII 가 8점으로 고정이라
     /// 빈칸으로 밀면 줄마다 자리가 딱 맞는다.
     /// </remarks>
     private static UIElement Bar(int now, int max)

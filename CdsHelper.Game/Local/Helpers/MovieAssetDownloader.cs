@@ -8,7 +8,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </summary>
 /// <remarks>
 /// 원본 AVI 는 Indeo 5 코덱이라 요즘 윈도에서는 안 틀리고, 게임 폴더가 없으면 아예 없다. 그래서
-/// 같은 이름 줄기(<c>I28_0000.mp4</c>)로 바꿔 릴리즈에 올려 두고 게임을 켤 때 빠진 것만 받는다.
+/// 같은 이름 줄기(<c>I28_0000.mp4</c>)로 바꿔 릴리즈에 올려 두고 원본을 켤 때 빠진 것만 받는다.
 ///
 /// <b>이미 갈아 끼운 것(<see cref="MovieFiles.Uploaded"/>)은 안 받는다</b> — 새로 만든 동영상이 있으면 그것이 먼저다.
 /// 받은 것은 <c>%LOCALAPPDATA%\CdsHelper\movie</c> 에 둔다. 단일 파일 exe 는 굽힌 자리가 임시 풀림

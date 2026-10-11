@@ -18,7 +18,7 @@ public enum FacilityKind
     Guild,        // 조합
     Home,         // 자택 — 내 집이다(저택 = 귀족 저택은 딴 건물이다)
     Gate,         // 성문
-    // 그 밖(코드 12~15 — 저택·상관·학자 저택 …). 제 일이 없는 자리다 — 게임의 다섯 벌(0x0051A250~)이
+    // 그 밖(코드 12~15 — 저택·상관·학자 저택 …). 제 일이 없는 자리다 — 원본의 다섯 벌(0x0051A250~)이
     // 인사 칸에 문간 관문(0x0040D370)을, 차림표에 여섯 줄(0x0040D3F0)을 둔다:
     // 후원자 줄(0x0044EAE0) · 감찰관을 매수 · 배를 빌린다 · 수련(0x00490D60) · 해설(0x004A2A10) ·
     // 「%s에서 나온다」(0x004A2A40). 모두 조건 줄이라 다 옮겨 두었다(TownWorks.LinesOf).
@@ -29,7 +29,7 @@ public enum FacilityKind
 /// 시설 한 채 — 이름과 명령 창에 늘어놓을 줄, 그리고 들어가 있는 동안 도는 곡.
 /// </summary>
 /// <remarks>
-/// 게임도 같은 모양이다. 시설 객체 표(<c>0x56A038</c>) 하나를 공통 실행(<c>0x4A2530</c>)이
+/// 원본도 같은 모양이다. 시설 객체 표(<c>0x56A038</c>) 하나를 공통 실행(<c>0x4A2530</c>)이
 /// 돌리고, 시설마다 다른 것은 가상함수표의 메뉴 칸(<c>+0x34~+0x48</c>)뿐이다. 그래서 여기서도
 /// 창을 시설마다 만들지 않고 이 표로 짓는다.
 ///
@@ -42,12 +42,12 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public string ExitItem => Menu[^1];
 
     /// <summary>
-    /// 게임에 있는 시설들 — 건물 코드 0~11 이 이 가운데 하나다(<see cref="CodeName"/>).
+    /// 원본에 있는 시설들 — 건물 코드 0~11 이 이 가운데 하나다(<see cref="CodeName"/>).
     /// 12~15 는 <see cref="For"/> 가 나가기 한 줄짜리 <see cref="FacilityKind.Other"/> 로 짓는다.
     /// </summary>
     public static readonly Facility[] All =
     [
-        // "발표" 는 발표할 발견물이 있을 때만 뜬다 — 게임도 그 줄의 <b>보임</b> 쪽을
+        // "발표" 는 발표할 발견물이 있을 때만 뜬다 — 원본도 그 줄의 <b>보임</b> 쪽을
         // 조건(0x00476DE0)으로 켠다(CityPicDialog.BuildMenu 가 없으면 뺀다).
         new(FacilityKind.Harbor, "항구",
             ["출항", "보급", "함대편성", "선원편성", "마을정보", Announce, "마을로 돌아간다"]),
@@ -81,7 +81,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
         // 도시마다 다르다(CityPicDialog.BuildMenu 가 맨 앞에 끼워 넣는다).
         //
         // "감찰관을 매수"(조건 0x44EA30)와 "배를 빌린다"(조건 0x44EA80)도 조건이 맞을 때만
-        // 나온다. 게임은 조건이 어긋난 줄을 흐리게 두지 않고 아예 감춘다 — 두카레 궁전
+        // 나온다. 원본은 조건이 어긋난 줄을 흐리게 두지 않고 아예 감춘다 — 두카레 궁전
         // 화면에도 설득과 나가기 두 줄만 떴다. 조건은 이렇다:
         //   감찰관을 매수 — 계약한 뒤 한 자리에서 발견물이 둘 이상 나왔을 때
         //                   (코드도 개수를 세어 cmp eax,1 / jle 로 둘 미만이면 끈다)
@@ -110,12 +110,12 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     ];
 
     /// <summary>
-    /// 어느 시설에서 "기능" 을 골랐을 때 뜨는 줄들. 게임은 여기서 저장·로드까지 한다.
+    /// 어느 시설에서 "기능" 을 골랐을 때 뜨는 줄들. 원본은 여기서 저장·로드까지 한다.
     /// </summary>
     public static readonly string[] SystemMenu = ["저장", "로드", "게임 종료", "게임 재개"];
 
     /// <summary>
-    /// 항구에서 "함대편성" 을 골랐을 때 뜨는 줄들. 게임처럼 제목 없이 줄만 쌓인다.
+    /// 항구에서 "함대편성" 을 골랐을 때 뜨는 줄들. 원본처럼 제목 없이 줄만 쌓인다.
     /// </summary>
     public static readonly string[] FleetMenu =
         ["기함 변경", "선박 편입", "선박 삭제", "선박 파기", FleetExit];
@@ -124,12 +124,12 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public const string FleetExit = "편성 종료";
 
     /// <summary>
-    /// 조선소에서 배를 고른 뒤 뜨는 <b>개조</b> 창의 줄. 게임 것 열한 줄 그대로다
+    /// 조선소에서 배를 고른 뒤 뜨는 <b>개조</b> 창의 줄. 원본 것 열한 줄 그대로다
     /// (<c>0x00532228</c> 벌 — <c>0x004966E0</c> 이 쌓는다).
     /// </summary>
     /// <remarks>
-    /// 게임도 할 수 없는 줄은 <b>흐리게</b> 둔다(줄마다 켜짐 칸이 둘씩 딸린다). 우리는 줄을
-    /// 빼지 않고 그대로 늘어놓되, 못 하는 줄도 <b>골라 보고 까닭을 듣게</b> 한다 — 게임도
+    /// 원본도 할 수 없는 줄은 <b>흐리게</b> 둔다(줄마다 켜짐 칸이 둘씩 딸린다). 우리는 줄을
+    /// 빼지 않고 그대로 늘어놓되, 못 하는 줄도 <b>골라 보고 까닭을 듣게</b> 한다 — 원본도
     /// 그 말을 갖춰 두었다(<see cref="ShipyardMenu"/> 의 <c>RefitBlocked</c>).
     /// 빌린 배의 「선명변경」만은 처음부터 흐리다(<c>0x004967C2</c>).
     /// </remarks>
@@ -166,7 +166,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public const string RefitExit = "개조를 그만둔다";
 
     /// <summary>
-    /// 선원편성 창의 줄. 게임 것 그대로다(<c>0x00545250</c> 벌 — 항구 <c>0x004774E0</c>).
+    /// 선원편성 창의 줄. 원본 것 그대로다(<c>0x00545250</c> 벌 — 항구 <c>0x004774E0</c>).
     /// </summary>
     public static readonly string[] CrewMenu = ["선원모집", "선원해고", CrewExit];
 
@@ -180,7 +180,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     /// 후원자가 앉은 건물의 첫 줄. 계약 상태로 갈린다.
     /// </summary>
     /// <remarks>
-    /// 게임은 그 자리를 문자열 풀 <c>0x00549DF8</c> 에서 시설 객체 <c>+0xB0</c>(계약 상태)로
+    /// 원본은 그 자리를 문자열 풀 <c>0x00549DF8</c> 에서 시설 객체 <c>+0xB0</c>(계약 상태)로
     /// 골라 넣는다(<c>0x0044EAE0</c>) — 0 설득 · 1 계약중단 · <b>2 보고</b> · 3 계약중단.
     /// 상태를 정하는 곳은 <c>0x0044E630</c> 이고, -1 이면 그 줄 자체가 없다.
     /// 셋 다 옮겼다 — 계약이 없으면 설득, 계약 중인데 보고할 것이 없으면 계약중단,
@@ -195,7 +195,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public const string Borrow = "배를 빌린다";
 
     /// <summary>
-    /// 자택 휴양 창의 줄. 게임 것 그대로다(<c>0x00539778</c> 벌 — 휴양 <c>0x00460660</c>).
+    /// 자택 휴양 창의 줄. 원본 것 그대로다(<c>0x00539778</c> 벌 — 휴양 <c>0x00460660</c>).
     /// </summary>
     public static readonly string[] RestMenu = ["한 달 휴양", "장기 휴양", RestExit];
 
@@ -203,7 +203,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public const string RestExit = "취소";
 
     /// <summary>
-    /// 자택 저금 창의 줄. 게임 것 그대로다(<c>0x005398D0</c> 벌 — 저금 <c>0x004609C0</c>).
+    /// 자택 저금 창의 줄. 원본 것 그대로다(<c>0x005398D0</c> 벌 — 저금 <c>0x004609C0</c>).
     /// </summary>
     public static readonly string[] SavingsMenu = ["저금한다", "꺼낸다", SavingsExit];
 
@@ -211,7 +211,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     public const string SavingsExit = "중지한다";
 
     /// <summary>
-    /// 건물 코드 0~11 이 가리키는 시설 — 게임은 종류 이름이 아니라 <b>코드</b>로 건물 갈래를 고른다.
+    /// 건물 코드 0~11 이 가리키는 시설 — 원본은 종류 이름이 아니라 <b>코드</b>로 건물 갈래를 고른다.
     /// </summary>
     /// <remarks>
     /// 그래서 코드 2 인 「성」·「총독부」·「황궁」도 왕궁 갈래라 「왕궁을 나온다」(<c>0x00544D08</c>)가

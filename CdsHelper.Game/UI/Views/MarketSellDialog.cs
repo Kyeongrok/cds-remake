@@ -30,7 +30,7 @@ public sealed class MarketSellDialog : GameWindow
     /// 줄 속 칸 — (갈래) · 이름. 둘 다 오른쪽맞춤이다.
     /// </summary>
     /// <remarks>
-    /// <b>값 칸은 없다.</b> 게임의 "소지품 일람" 은 이름과 갈래만 낸다 — 얼마를 쳐 주는지는
+    /// <b>값 칸은 없다.</b> 원본의 "소지품 일람" 은 이름과 갈래만 낸다 — 얼마를 쳐 주는지는
     /// 결정을 누른 뒤 "으~음. 금화 %ld닢이란 말이군." 으로 부른다.
     /// </remarks>
     private static readonly GameListColumn[] Columns =
@@ -42,7 +42,7 @@ public sealed class MarketSellDialog : GameWindow
     /// <summary>소지품이 늘면 창이 화면을 넘지 않게 여기서 자른다.</summary>
     private const double ListMaxHeight = 420;
 
-    /// <summary>목록 바닥 폭. 게임 갈무리를 재어 맞췄다 — 이보다 넓으면 이름 칸이 휑하다.</summary>
+    /// <summary>목록 바닥 폭. 원본 갈무리를 재어 맞췄다 — 이보다 넓으면 이름 칸이 휑하다.</summary>
     private const double ListWidth = 356;
 
     private readonly Player _player;
@@ -72,7 +72,7 @@ public sealed class MarketSellDialog : GameWindow
 
         _list = new GameList(Columns, Cells, _held.Count, maxHeight: ListMaxHeight)
         {
-            // 게임은 한 번에 여럿을 판다 — 고른 줄이 여럿이면 값도 합쳐서 부른다.
+            // 원본은 한 번에 여럿을 판다 — 고른 줄이 여럿이면 값도 합쳐서 부른다.
             Pick = GameListPick.Many,
             Margin = new Thickness(0),
             BorderBrush = GameUi.Edge,
@@ -144,7 +144,7 @@ public sealed class MarketSellDialog : GameWindow
     private uint[]? _face;
 
     /// <summary>
-    /// 매각 창을 연다. 지닌 것이 없으면 창 대신 게임 그대로의 한 마디만 낸다.
+    /// 매각 창을 연다. 지닌 것이 없으면 창 대신 원본 그대로의 한 마디만 낸다.
     /// </summary>
     /// <remarks>두 마디 다 장사꾼 얼굴이다(<c>0x004B3C95</c> · <c>0x004B3CB3</c>).</remarks>
     public static void Show(Window owner, Player player, Market market, ItemTable items, int cityId,

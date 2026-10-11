@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 미니 게임 「화살표 입방체 퍼즐」 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0049B3C0</c> 이고, 규칙은 <see cref="CubePuzzle"/> 에 모아 두었다.
+/// 원본의 <c>0x0049B3C0</c> 이고, 규칙은 <see cref="CubePuzzle"/> 에 모아 두었다.
 ///
 /// 이 게임은 <b>제 그림 파일이 없다</b> — <c>0x0049B422</c> 가 <c>0x00455DE0</c> 을
 /// 부르니 <b>MGGRAPH.CDS</b> 를 함께 쓴다. 쓰는 파트는 열둘이다.
@@ -27,7 +27,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   파트 14    512x352  배경
 /// </code>
 ///
-/// <b>칸 자리는 게임에서 뽑았다</b>(<c>0x0049BD40</c>). 밑자리와 간격이 그 위 두 조각에
+/// <b>칸 자리는 원본에서 뽑았다</b>(<c>0x0049BD40</c>). 밑자리와 간격이 그 위 두 조각에
 /// 박혀 있다.
 /// <code>
 ///   0049bd00  [0x0061E2A0] = Point(0xA0, 0x40)   ; 밑자리 (160, 64)
@@ -229,7 +229,7 @@ internal sealed class CubePuzzleDialog : GameWindow
         double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
-        // 게임은 미니 게임에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 금빛 액자뿐이고
+        // 원본은 미니 원본에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 금빛 액자뿐이고
         // 할 일은 오른쪽 단추 차림표가 맡는다. 미궁·성배와 같은 결이다.
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -281,7 +281,7 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// 입방체가 굴러가는 짓시늉. 다 돌면 그때 모델을 움직인다.
     /// </summary>
     /// <remarks>
-    /// 게임도 단추를 누르면 <b>입방체가 90 도 굴러가는 도중</b>이 보이고, 다 구른 뒤에야
+    /// 원본도 단추를 누르면 <b>입방체가 90 도 굴러가는 도중</b>이 보이고, 다 구른 뒤에야
     /// 좌대가 옮겨간다. 도는 동안은 다른 단추를 안 받는다.
     /// </remarks>
     private void Spin(int way, Action done)
@@ -403,7 +403,7 @@ internal sealed class CubePuzzleDialog : GameWindow
     }
 
     /// <summary>
-    /// 오른쪽 단추 차림표 — 게임은 <b>「게임 설명」과 「게임 복귀」 두 줄뿐</b>이다.
+    /// 오른쪽 단추 차림표 — 원본은 <b>「게임 설명」과 「게임 복귀」 두 줄뿐</b>이다.
     /// </summary>
     /// <remarks>
     /// 넘어뜨리고 돌리는 것은 왼쪽 칸의 화살표 여섯이 맡으므로 차림표에 안 둔다.
@@ -453,7 +453,7 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// 좌대가 <b>한 칸 미끄러지는</b> 짓시늉. 입방체가 다 구른 뒤에 돈다.
     /// </summary>
     /// <remarks>
-    /// 게임도 입방체가 서고 나서 좌대가 스르르 옮겨간다. 예전에는 한 판에 툭 옮겨 놓아
+    /// 원본도 입방체가 서고 나서 좌대가 스르르 옮겨간다. 예전에는 한 판에 툭 옮겨 놓아
     /// 너무 빨랐다.
     /// </remarks>
     private void Slide(int fromX, int fromY, Action done)
@@ -545,7 +545,7 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// <returns>출구로 나갔으면 true — 0x0049B388 이 판 상태가 0 이 아니면 1 을 낸다. 두 번 다 떨어지면 false.</returns>
     public static bool Play(Window owner, Player player, Random rng, Local.Helpers.SoundBank? sfx = null)
     {
-        // 판을 열기 전에 설명부터 낸다 — 게임도 그렇다.
+        // 판을 열기 전에 설명부터 낸다 — 원본도 그렇다.
         Explain(owner);
 
         // 떨어지면 <b>한 판만</b> 더 준다 — 0x0049B3C0 이 알림 뒤 0x0049B310 으로 jmp 해 두 번째 판의 결과를

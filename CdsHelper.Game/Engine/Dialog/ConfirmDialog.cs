@@ -13,16 +13,16 @@ namespace CdsHelper.Game.UI.Views;
 /// 알림창이 된다(<see cref="Tell"/>).
 /// </summary>
 /// <remarks>
-/// 게임도 이 둘이 <b>한 함수</b>다(<c>0x00469060</c>). 첫 인자가 창의 종류라서 <c>0</c> 이면
+/// 원본도 이 둘이 <b>한 함수</b>다(<c>0x00469060</c>). 첫 인자가 창의 종류라서 <c>0</c> 이면
 /// 확인만, <c>2</c> 면 YES/NO 다 — 부르는 자리 146 곳 가운데 117 곳이 확인, 21 곳이 YES/NO 다.
 /// YES 를 고르면 <c>2</c> 가 나온다.
 ///
-/// 얼굴은 부르는 쪽이 넘길 때만 선다(<c>face</c>). 게임도 그렇다 — 여느 물음·알림(<c>0x00469060</c>)은
+/// 얼굴은 부르는 쪽이 넘길 때만 선다(<c>face</c>). 원본도 그렇다 — 여느 물음·알림(<c>0x00469060</c>)은
 /// 얼굴 자리에 <c>-1</c> 을 넘겨(<c>0x0049E44A</c>) 글만 내고, 사람이 말하는 창만 <c>0x004691F0</c> →
 /// <c>0x00478280</c> 으로 그 사람 얼굴을 붙인다(<see cref="TalkDialog"/>).
 /// 입항 물음도 이 창이다 — 예전에는 손으로 지은 딴 창(PortDialog)이 따로 있었다.
 ///
-/// <b>자리는 재지 않고 게임 코드에서 그대로 옮겼다</b> — 창을 짓는 곳이 <c>0x0049D7B0</c>,
+/// <b>자리는 재지 않고 원본 코드에서 그대로 옮겼다</b> — 창을 짓는 곳이 <c>0x0049D7B0</c>,
 /// 글을 찍는 곳이 <c>0x0049DFD0</c> 다. 갈무리를 재어 맞추던 예전 값(308 x 100)은 갈무리가
 /// 몇 배로 늘어난 것인지를 잘못 짚어 가로로 부풀고 위 여백이 모자랐다.
 /// <code>
@@ -38,7 +38,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   사이      6      단추 줄    24
 ///                    아래 여백  15 + 테 1   →  모두 80
 /// </code>
-/// 글은 창 한가운데에 놓인다 — 게임도 한 줄일 때는 남는 칸의 반만큼 밀어 가운데로 맞춘다.
+/// 글은 창 한가운데에 놓인다 — 원본도 한 줄일 때는 남는 칸의 반만큼 밀어 가운데로 맞춘다.
 /// 상자에는 <b>밝은 테가 한 점</b> 둘린다(게임 색표의 <c>0x2B</c> = 212,200,176).
 /// </remarks>
 public sealed class ConfirmDialog : GameWindow
@@ -79,7 +79,7 @@ public sealed class ConfirmDialog : GameWindow
             Height = ButtonHeight,
             Margin = new Thickness(0, TextGap, 0, 0),
         };
-        // 초점이 간 단추의 안쪽 테가 깜빡인다 — 게임이 지금 고른 것을 그렇게 알린다.
+        // 초점이 간 단추의 안쪽 테가 깜빡인다 — 원본이 지금 고른 것을 그렇게 알린다.
         if (bare)
         {
             // 단추 없는 창(종류 3) — 단추 줄도 그 앞 사이도 없다.
@@ -97,24 +97,24 @@ public sealed class ConfirmDialog : GameWindow
         }
         else
         {
-            // 알림창은 확인 하나뿐이다. 폭은 YES/NO 와 같다 — 게임 갈무리에서 잰 폭이 같다.
+            // 알림창은 확인 하나뿐이다. 폭은 YES/NO 와 같다 — 원본 갈무리에서 잰 폭이 같다.
             var ok = _focus.Add("확인", () => { DialogResult = true; }, ButtonWidth);
             ok.Height = ButtonHeight;
             buttons.Children.Add(ok);
         }
 
-        // 글이 길면 창도 그만큼 넓어진다 — 게임처럼 8점 칸으로 세되 서른 칸 밑으로는 안 줄인다.
+        // 글이 길면 창도 그만큼 넓어진다 — 원본처럼 8점 칸으로 세되 서른 칸 밑으로는 안 줄인다.
         var lines = Wrap(text);
         double widest = 0;
         foreach (string line in lines) widest = Math.Max(widest, GameUi.Font?.TextWidth(line) ?? 0);
         int cells = Math.Max(MinCells, (int)Math.Ceiling(widest / CellWidth));
-        // 얼굴이 서면 그만큼 창이 넓어진다 — 게임도 96 을 더한다(0x0049DA18 의 and eax,0x60).
+        // 얼굴이 서면 그만큼 창이 넓어진다 — 원본도 96 을 더한다(0x0049DA18 의 and eax,0x60).
         // 설명 글처럼 왼쪽을 들인 글은 그만큼 넓혀야 오른쪽 끝 글자가 안 잘린다 — 예전에는 들인 폭을 안 셈했다.
         double barWidth = cells * CellWidth + CellWidth * 2 + (face != null ? FaceColumn : indent);
 
         var stack = new StackPanel { Width = barWidth };
 
-        // 게임은 물음창에도 진홍 장식 띠로 제목을 얹는다("게임 로드" 따위).
+        // 원본은 물음창에도 진홍 장식 띠로 제목을 얹는다("게임 로드" 따위).
         bool titled = !string.IsNullOrEmpty(title);
         if (titled && GameUi.TitleFrame(GameUi.Sprites, title!) is { } bar)
         {
@@ -159,7 +159,7 @@ public sealed class ConfirmDialog : GameWindow
         var body = new StackPanel { Margin = new Thickness(0, BodyGap, 0, 0) };
         if (face == null)
         {
-            // 미니게임 설명처럼 <b>왼쪽을 한 번 더 들이는</b> 글이 있다. 게임도 설명 글은
+            // 미니게임 설명처럼 <b>왼쪽을 한 번 더 들이는</b> 글이 있다. 원본도 설명 글은
             // 테에서 한 뼘 떨어져 시작한다 — 얼굴이 서는 창은 이미 얼굴만큼 들어가 있으므로
             // 이쪽만 손댄다.
             if (indent > 0) words.Margin = new Thickness(indent, 0, 0, 0);
@@ -201,7 +201,7 @@ public sealed class ConfirmDialog : GameWindow
     }
 
     /// <summary>
-    /// 본문을 줄로 가른다 — 게임 셈 그대로다(<c>0x0049D851</c> ~ <c>0x0049D9AF</c>).
+    /// 본문을 줄로 가른다 — 원본 셈 그대로다(<c>0x0049D851</c> ~ <c>0x0049D9AF</c>).
     /// </summary>
     /// <remarks>
     /// 칸은 반각 한 자가 1, 한글·전각이 2 다. <b>두 칸짜리 글자 앞에서만</b> 끊는다 — 그 자리까지 찬 칸이
@@ -272,7 +272,7 @@ public sealed class ConfirmDialog : GameWindow
         return b;
     }
 
-    /// <summary>제목 띠의 높이. 게임도 제목이 붙으면 창이 이만큼 길어진다.</summary>
+    /// <summary>제목 띠의 높이. 원본도 제목이 붙으면 창이 이만큼 길어진다.</summary>
     private const double BarHeight = UiSprites.BandHeight;
 
     /// <summary>창 위(또는 제목 띠)와 본문 사이, 본문과 단추 줄 사이.</summary>
@@ -284,7 +284,7 @@ public sealed class ConfirmDialog : GameWindow
     /// <summary>글자 한 칸. 반각 한 자 · 한글 반 자가 이만큼이다.</summary>
     private const double CellWidth = UiSprites.MidWidth;
 
-    /// <summary>가장 좁은 창의 칸 수. 게임도 서른 칸(= 272점) 밑으로는 안 줄인다.</summary>
+    /// <summary>가장 좁은 창의 칸 수. 원본도 서른 칸(= 272점) 밑으로는 안 줄인다.</summary>
     private const int MinCells = 30;
 
     /// <summary>얼굴 왼쪽에 더 두는 여백. 창 안쪽 여백(7)만으로는 얼굴이 테에 붙어 보인다.</summary>
@@ -348,7 +348,7 @@ public sealed class ConfirmDialog : GameWindow
     /// <b>단추 없이</b> 글만 띄워 두고 곧바로 돌아온다 — 게임 알림의 <b>종류 3</b> 이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>0x0049E3E0(3, 제목, 글)</c> 로 창을 세워 둔 채(<c>0x0049E46A</c> 가 창을 따로 지어
+    /// 원본은 <c>0x0049E3E0(3, 제목, 글)</c> 로 창을 세워 둔 채(<c>0x0049E46A</c> 가 창을 따로 지어
     /// <c>0x0056EA78</c> 에 걸어 둔다) 이어서 고르기 창을 내고, 고른 뒤에 <c>0x0049E510</c> 으로 걷는다.
     /// 「모험 중단」(<c>0x0045F667</c>)과 누적 캐릭터 물음(<c>0x0041AEA0</c>)이 그렇다.
     /// 부르는 쪽이 다 쓴 뒤 <see cref="Window.Close"/> 로 걷는다.

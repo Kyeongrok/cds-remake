@@ -8,7 +8,7 @@ namespace CdsHelper.Game.Engine;
 /// 함대 창 게임의 세이브. 소지금·날짜·있는 도시·배운 기술을 적어 둔다.
 /// </summary>
 /// <remarks>
-/// 파일 이름은 게임과 같은 <c>SAVEDATA.CDS</c> 지만 <b>게임 폴더에는 쓰지 않는다</b> —
+/// 파일 이름은 원본과 같은 <c>SAVEDATA.CDS</c> 지만 <b>게임 폴더에는 쓰지 않는다</b> —
 /// 거기 있는 것은 진짜 게임 세이브라 덮어쓰면 그 판이 날아간다. 그래서 설정 파일과 같은
 /// 자리(<c>%APPDATA%\CdsHelper</c>)에 둔다. 속은 게임 형식이 아니라 우리 것(JSON)이다.
 /// </remarks>
@@ -76,7 +76,7 @@ public static class GameSave
     /// 적어 둔 것을 지운다 — 은퇴시킬 때다(원본은 새 게임의 「삭제한다」에서도 지운다 — 우리는 그 줄을 「남겨 둔다」로 바꿨다).
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>0x0045F8F2</c> 에서 <c>C:SAVEDATA.CDS</c> · <c>C:SAVEDATA.TMP</c> ·
+    /// 원본은 <c>0x0045F8F2</c> 에서 <c>C:SAVEDATA.CDS</c> · <c>C:SAVEDATA.TMP</c> ·
     /// <c>C:ACCDATA.CDS</c> 셋을 지운다. 우리 것은 한 파일뿐이고, <b>게임 폴더의
     /// SAVEDATA.CDS 는 건드리지 않는다</b> — 그쪽은 우리 것이 아니라 읽기만 한다.
     /// </remarks>
@@ -405,7 +405,7 @@ public static class GameSave
 
     /// <summary>지금 상태를 적는다. 실패하면 까닭을 돌려준다(성공이면 빈 문자열).</summary>
     /// <param name="suspended">
-    /// 중단저장인지 — 게임은 중단이면 <c>SAVEDATA.TMP</c> 로 적고, 그것을 불러온 판에 「아직 저장 안 됨」
+    /// 중단저장인지 — 원본은 중단이면 <c>SAVEDATA.TMP</c> 로 적고, 그것을 불러온 판에 「아직 저장 안 됨」
     /// 비트(<c>0x005A4D18 &amp; 0x80</c>)를 세운다(<c>0x00478E2B</c>). 우리는 파일이 하나라 이 칸으로 든다.
     /// </param>
     /// <param name="path">

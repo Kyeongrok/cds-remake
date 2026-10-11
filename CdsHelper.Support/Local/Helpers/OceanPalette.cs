@@ -1,7 +1,7 @@
 ﻿namespace CdsHelper.Support.Local.Helpers;
 
 /// <summary>
-/// 게임이 해상(항해) 화면에 올려 두는 팔레트 256색. OCEAN.CDS 타일의 8bpp 인덱스를 색으로 푸는 데 쓴다.
+/// 원본이 해상(항해) 화면에 올려 두는 팔레트 256색. OCEAN.CDS 타일의 8bpp 인덱스를 색으로 푸는 데 쓴다.
 /// </summary>
 /// <remarks>
 /// 원본은 cds_95.exe 0x0062B3F0 에 올라가는 값이고, cds95-mod 의

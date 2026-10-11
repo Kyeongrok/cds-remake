@@ -31,7 +31,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <see cref="GameUi.InfoFrame(UIElement, Brush, Brush)"/> 를 색만 바꿔 쓴다.
 /// <b>제목 줄도 없다.</b>
 ///
-/// 단추 글은 게임 것 그대로다(<c>0x00545650</c> 벌 — 결정·최대·10일분·일지정·전회분).
+/// 단추 글은 원본 것 그대로다(<c>0x00545650</c> 벌 — 결정·최대·10일분·일지정·전회분).
 /// 품목 이름도 그렇다(<c>0x0055F248</c>~, 갈래 분기는 <c>0x004208A0</c>).
 ///
 /// <b>날수는 선원수로 센다.</b> 게임 <c>0x00494010</c> 이
@@ -70,16 +70,16 @@ public sealed class SupplyDialog : GameWindow
         return b;
     }
 
-    /// <summary>글이 놓이는 판의 크기. 품목과 총계 사이가 게임처럼 비도록 키를 못 박는다.</summary>
+    /// <summary>글이 놓이는 판의 크기. 품목과 총계 사이가 원본처럼 비도록 키를 못 박는다.</summary>
     /// <remarks>
-    /// 게임 갈무리를 재어 맞췄다. 머리글이 <b>한 줄짜리 문자열</b>이라
+    /// 원본 갈무리를 재어 맞췄다. 머리글이 <b>한 줄짜리 문자열</b>이라
     /// (<c>0x0055F2F8</c> — 전각 빈칸으로 칸을 벌려 놓은 것이다) 폭을 셀 수 있다.
     /// <code>
     ///   머리글 62칸 x 8점 = 496점        ← 이것으로 갈무리 배율 1.74 를 얻었다
     ///   창 바깥                563 x 412 점
     ///   테 8 + 여백 10 + 글 527 + 여백 10 + 테 8 = 563
     /// </code>
-    /// 예전에는 <c>620</c> 이라 창이 <c>674</c> 로 나왔다 — 게임보다 <b>111점 넓었다</b>.
+    /// 예전에는 <c>620</c> 이라 창이 <c>674</c> 로 나왔다 — 원본보다 <b>111점 넓었다</b>.
     /// 키는 그때도 맞았다(412).
     /// </remarks>
     private const double BoardWidth = 537, BoardHeight = 300;   // 계산기 칸(17)만큼 넓혔다
@@ -89,7 +89,7 @@ public sealed class SupplyDialog : GameWindow
     private const double UnitWidth = 134, HaveWidth = 84, AddWidth = 118, CostWidth = 92;
 
     /// <summary>
-    /// 한 무리 안의 단추 사이. 게임 갈무리에서 단추 사이가 단추 폭의 한 켜쯤(열 점 안팎)이다.
+    /// 한 무리 안의 단추 사이. 원본 갈무리에서 단추 사이가 단추 폭의 한 켜쯤(열 점 안팎)이다.
     /// </summary>
     private const double ButtonGap = 6;
 
@@ -160,7 +160,7 @@ public sealed class SupplyDialog : GameWindow
         for (int i = 0; i < Supply.Count; i++) rows.Children.Add(ItemRow(i));
         foreach (var cargo in player.CargoHold) rows.Children.Add(CargoRow(cargo));
 
-        // 총계는 판 아래쪽에 붙는다 — 게임은 품목과 총계 사이를 통째로 비워 둔다.
+        // 총계는 판 아래쪽에 붙는다 — 원본은 품목과 총계 사이를 통째로 비워 둔다.
         var totalRow = new StackPanel
         {
             Orientation = Orientation.Horizontal,
@@ -215,7 +215,7 @@ public sealed class SupplyDialog : GameWindow
         page.Children.Add(board);
         page.Children.Add(buttons);
 
-        // 제목 줄이 없으므로(게임에도 없다) 판 아무 데나 잡아 옮긴다.
+        // 제목 줄이 없으므로(원본에도 없다) 판 아무 데나 잡아 옮긴다.
         var frame = GameUi.InfoFrame(page, Back, Line);
         GameUi.EnableDrag(this, frame);
         Content = frame;
@@ -485,7 +485,7 @@ public sealed class SupplyDialog : GameWindow
         bool moved = false;
         for (int i = 0; i < step; i++)
         {
-            // <b>왜 못 싣는지 말해 준다</b> — 게임도 누를 때마다 낸다. 한 번 눌러 여러 통이
+            // <b>왜 못 싣는지 말해 준다</b> — 원본도 누를 때마다 낸다. 한 번 눌러 여러 통이
             // 올라가는 자리(Shift)에서는 첫 걸음에서 막혔을 때만 낸다.
             if (by > 0 && WhyNot(index) is { Length: > 0 } why)
             {
@@ -503,10 +503,10 @@ public sealed class SupplyDialog : GameWindow
     }
 
     /// <summary>
-    /// 게임의 "최대" — <b>식량과 물을 같은 통 수로</b> 실을 수 있는 데까지 맞춘다.
+    /// 원본의 "최대" — <b>식량과 물을 같은 통 수로</b> 실을 수 있는 데까지 맞춘다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0040F670</c> → <c>0x0040ED20</c> 다. 자재·탄약은 지금 실린 그대로 두고
+    /// 원본의 <c>0x0040F670</c> → <c>0x0040ED20</c> 다. 자재·탄약은 지금 실린 그대로 두고
     /// (보충량 0), 식량과 물을 <b>한 쌍씩</b> 센다.
     /// <code>
     ///   40ed4b  칸 = (용량 - 자재 - 탄약) / 2
@@ -642,7 +642,7 @@ public sealed class SupplyDialog : GameWindow
     private void TenDays() => FillDays(10);
 
     /// <remarks>
-    /// 게임의 <c>0x0040F600(날수)</c> 다 — <b>식량과 물을 똑같이</b> 그 날수치 총량으로 맞춘다.
+    /// 원본의 <c>0x0040F600(날수)</c> 다 — <b>식량과 물을 똑같이</b> 그 날수치 총량으로 맞춘다.
     /// <code>
     ///   40f61d  통 = (날수 * 선원 + 9) / 10
     ///   40f62c  식량 총량 = 통 · 물 총량 = 통
@@ -728,7 +728,7 @@ public sealed class SupplyDialog : GameWindow
     public static void Show(Window owner, Player player, int rate = 100, int cityFlags = AmmoBit,
                             uint[]? mateFace = null, Func<Player.Cargo, (string Name, string Origin)>? cargoText = null)
     {
-        // 배가 없으면 조용히 물린다. 게임은 항구 차림표의 보급 줄을 배 · 선원이 있어야 켜므로(0x00476CE0)
+        // 배가 없으면 조용히 물린다. 원본은 항구 차림표의 보급 줄을 배 · 선원이 있어야 켜므로(0x00476CE0)
         // 여기 닿는 말이 없다 — EXE 에 없는 말을 지어내지 않는다.
         if (player.Ships.Count == 0) return;
         var dialog = new SupplyDialog(player, rate, cityFlags, cargoText) { Owner = owner };

@@ -7,7 +7,7 @@ namespace CdsHelper.Game.Engine.Sea;
 /// 바닷길 찾기가 쓰는 <b>걸음 값</b> — 그 칸을 그 쪽으로 한 칸 지나는 데 드는 틱 수.
 /// </summary>
 /// <remarks>
-/// 게임에는 없는 것이다. 바람과 해류 때문에 돌아가는 편이 빠른 구간이 있어, 자동항해가 거리 대신
+/// 원본에는 없는 것이다. 바람과 해류 때문에 돌아가는 편이 빠른 구간이 있어, 자동항해가 거리 대신
 /// <b>시간</b>으로 길을 고르게 하려고 둔다. 셈은 배가 실제로 움직이는 것(<c>ShipMapHost.Push</c>)과 같은
 /// 식을 쓴다 — 함대 속도(<see cref="Sailing.SpeedOf"/>) → 칸(<see cref="Sailing.CellsPerTick"/>) + 해류
 /// (<see cref="Sailing.Drift"/>), 가로는 경도 보정(<see cref="Sailing.LonScale"/>).
@@ -15,7 +15,7 @@ namespace CdsHelper.Game.Engine.Sea;
 /// <b>어림인 데가 셋이다.</b>
 /// <list type="bullet">
 /// <item>바람은 길을 짤 때의 달 것을 끝까지 쓴다 — 긴 항해가 6월에서 7월로 넘어가면 표가 바뀐다.</item>
-/// <item>게임이 풍향을 이레마다 한 눈금씩 흔드는 것은 넣지 않는다 — 표에 적힌 풍향 그대로다.</item>
+/// <item>원본이 풍향을 이레마다 한 눈금씩 흔드는 것은 넣지 않는다 — 표에 적힌 풍향 그대로다.</item>
 /// <item>함대가 달라지면(돛 · 선원) 답도 달라진다 — 길을 짤 때의 함대로 센다.</item>
 /// </list>
 /// 바람 표는 바다를 50 × 25 로 나눈 것이라(한 칸이 지도 50 × 50 칸) 값도 그 칸마다 여덟 쪽씩만 세어 둔다.

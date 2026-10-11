@@ -41,7 +41,7 @@ internal sealed record GameMenuRow(string Text, Action? Run = null, BandStyle? S
 /// </remarks>
 internal sealed class GameMenu : Border
 {
-    /// <summary>창을 두르는 테. 게임은 밝은 선 <b>한 점</b>에 짙은 여백 여섯 점이다.</summary>
+    /// <summary>창을 두르는 테. 원본은 밝은 선 <b>한 점</b>에 짙은 여백 여섯 점이다.</summary>
     private const double BoxEdge = 1, BoxPad = 6;
 
     /// <summary>창을 자연 폭보다 이만큼 넓게 잡는다.</summary>
@@ -59,17 +59,17 @@ internal sealed class GameMenu : Border
         for (int i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
-            // 게임은 창의 마지막 줄(나가기·취소)만 회녹색으로 낸다 — 도서관의 "도서관을
+            // 원본은 창의 마지막 줄(나가기·취소)만 회녹색으로 낸다 — 도서관의 "도서관을
             // 나온다", 도시정보의 "취소" 가 그것이다.
             var style = row.Style
                         ?? (i == rows.Count - 1 ? BandStyle.Alt : BandStyle.Button);
             // 메뉴는 줄을 붙여 쌓으므로 단추끼리 벌리는 여백을 덮는다.
             // 죽은 줄은 <b>손만 떼면</b> 된다 — 손이 없는 띠는 GameButton 이 글씨를
-            // 회색(색인 21)으로 찍는다. 게임도 띠는 그대로 두고 글씨만 흐리게 낸다.
+            // 회색(색인 21)으로 찍는다. 원본도 띠는 그대로 두고 글씨만 흐리게 낸다.
             Action? run = row.Dim ? null : row.Run;
             var button = new GameButton(row.Text, run, style) { Margin = default };
 
-            // 창이 뜨면 <b>첫 줄에 초점</b>이 가 있다 — 게임도 그 줄의 안쪽 테가 깜빡인다.
+            // 창이 뜨면 <b>첫 줄에 초점</b>이 가 있다 — 원본도 그 줄의 안쪽 테가 깜빡인다.
             if (row.Run != null && !row.Dim)
             {
                 int at = _picks.Count;

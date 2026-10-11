@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 도시 일이 아니라 <b>판 일</b>이다. 시설 차림표에서 뻗어 나올 뿐이라 도시 창 안에 들어
 /// 있었는데, 하는 일은 판을 적고 첫 화면으로 돌아가는 것뿐이라 여기로 갈라 두었다.
 ///
-/// 게임도 이 넷이 한 덩이다 — 저장 <c>0x004A2800</c> · 로드 <c>0x004A2830</c> ·
+/// 원본도 이 넷이 한 덩이다 — 저장 <c>0x004A2800</c> · 로드 <c>0x004A2830</c> ·
 /// 게임 종료 <c>0x004A2860</c> 이 나란히 놓여 있고 고르는 자리가 <c>0x004A292B</c> 다.
 /// </remarks>
 internal static class GameSystemMenu
@@ -47,12 +47,12 @@ internal static class GameSystemMenu
     };
 
     /// <summary>
-    /// 지금 판(소지금·날짜·있는 도시·배운 기술)을 적는다. 게임처럼 <b>겹쳐 쓸지 먼저 묻고</b>
+    /// 지금 판(소지금·날짜·있는 도시·배운 기술)을 적는다. 원본처럼 <b>겹쳐 쓸지 먼저 묻고</b>
     /// 다 적은 뒤에 겹쳐 썼다고 알린다 — 세이브 자리가 하나뿐이라 적는 일은 늘 겹쳐 쓰기다.
     /// 게임 폴더가 아니라 우리 자리에 쓴다 — <see cref="Engine.GameSave"/> 참고.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004A2800</c> 그대로다 — 물음(<c>0x00568CB8</c>) · 쓰기 · 알림(<c>0x00568CE0</c>).
+    /// 원본의 <c>0x004A2800</c> 그대로다 — 물음(<c>0x00568CB8</c>) · 쓰기 · 알림(<c>0x00568CE0</c>).
     /// 물음에 YES 가 아니면 아무것도 쓰지 않고 그냥 돌아간다.
     /// </remarks>
     public static void Save(Window view, Engine.Game game, GameMenuHost menu)
@@ -82,13 +82,13 @@ internal static class GameSystemMenu
     }
 
     /// <summary>
-    /// 적어 둔 판을 도로 불러온다. 게임처럼 <b>한 번 묻고</b> 곧바로 불러온다.
+    /// 적어 둔 판을 도로 불러온다. 원본처럼 <b>한 번 묻고</b> 곧바로 불러온다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004A2830</c> 이다 — 물음이 <c>0x00568CF8</c>("데이터를 불러 오겠습니다.
+    /// 원본의 <c>0x004A2830</c> 이다 — 물음이 <c>0x00568CF8</c>("데이터를 불러 오겠습니다.
     /// 좋습니까?")다. YES 가 아니면 아무것도 안 한다.
     ///
-    /// <b>지금 판은 사라진다</b> — 적어 두지 않은 것은 되돌릴 길이 없다. 게임도 그렇다.
+    /// <b>지금 판은 사라진다</b> — 적어 두지 않은 것은 되돌릴 길이 없다. 원본도 그렇다.
     /// </remarks>
     public static void Load(Window view, GameMenuHost menu)
     {
@@ -126,7 +126,7 @@ internal static class GameSystemMenu
     /// 되돌리는 일은 함대 창이 맡는다 — 시설 창은 그 창이 거느린 것이라 곧 닫힌다.
     /// 물어보고 나서 하는 것은 되돌릴 수 없기 때문이다(적어 두지 않은 것은 사라진다).
     ///
-    /// 문구는 게임 것 그대로다(<c>0x00568D20</c>). <b>아직 저장하지 않은 판</b>이면 한 번 더 묻는다
+    /// 문구는 원본 것 그대로다(<c>0x00568D20</c>). <b>아직 저장하지 않은 판</b>이면 한 번 더 묻는다
     /// (<c>0x00568D38</c> · 상태비트 <c>0x005A4D18 &amp; 0x80</c>, 우리는 <see cref="Engine.Game.Unsaved"/>).
     /// </remarks>
     /// <param name="cityMenu">

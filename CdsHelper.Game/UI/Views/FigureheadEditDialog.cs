@@ -166,7 +166,7 @@ public sealed class FigureheadEditDialog : GameWindow
                      + "   ·   등급은 0~3, 고친 것은 게임 안에서도 그대로 쓰인다";
     }
 
-    /// <summary>고친 칸만 골라 적어 둔다 — 게임 값과 같으면 씌우지 않는다.</summary>
+    /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
     private void Collect()
     {
         if (_grid.ItemsSource is not List<Row> rows) return;

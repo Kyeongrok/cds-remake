@@ -20,9 +20,9 @@ namespace CdsHelper.Game.UI.Views;
 ///   ENTER         CAN/CEL
 /// </code>
 /// <b>AC</b> 는 통째로 지우고 <b>DEL</b> 은 한 자리 지운다. <b>MAX·MIN</b> 은 그 칸이 받을
-/// 수 있는 가장 큰 값과 작은 값을 바로 넣는다 — 게임에도 있는 단추다.
+/// 수 있는 가장 큰 값과 작은 값을 바로 넣는다 — 원본에도 있는 단추다.
 ///
-/// 판 조각은 MISC.CDS 에서 온다(<see cref="GameUi"/> 의 띠 단추와 같은 벌) — 게임도
+/// 판 조각은 MISC.CDS 에서 온다(<see cref="GameUi"/> 의 띠 단추와 같은 벌) — 원본도
 /// 같은 조각으로 찍는다. 조각을 못 읽으면 민색 네모로 물러선다.
 ///
 /// 위 칸의 값은 <b>게임 숫자 글꼴</b>로 찍는다(MISC.CDS 파트 7, 24x24 기울임체 열 장 ·
@@ -57,7 +57,7 @@ internal sealed class NumberPadDialog : GameWindow
         ShowInTaskbar = false;
         Background = GameUi.Back;
 
-        // 숫자 표시줄도 게임 글꼴이다. 게임은 계산기 칸을 <b>기울여 찍지 않는다</b> —
+        // 숫자 표시줄도 게임 글꼴이다. 원본은 계산기 칸을 <b>기울여 찍지 않는다</b> —
         // 예전에는 WPF 글자를 기울여 계산기처럼 보이게 했었다.
         _screen = new GameUi.GameLabel(GameFont.BlackColor)
         {
@@ -174,7 +174,7 @@ internal sealed class NumberPadDialog : GameWindow
     /// </summary>
     /// <remarks>
     /// 배치는 표 <c>0x00569370</c>(갈래·번호·ID) 그대로다 — 왼쪽 세 칸이 숫자, 오른쪽 칸이
-    /// AC · DEL · MAX · MIN. 게임은 CANCEL 을 물릴 수 있는 창일 때만 세우는데 이 판은 늘 물릴
+    /// AC · DEL · MAX · MIN. 원본은 CANCEL 을 물릴 수 있는 창일 때만 세우는데 이 판은 늘 물릴
     /// 수 있어 늘 세운다.
     /// </remarks>
     private UIElement? GameBoard()

@@ -19,7 +19,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   <item>도시 창을 끌면 쪽지도 같은 사이를 두고 따라온다.</item>
 ///   <item>쪽지를 끌면 그 거리가 새로 적히고, 다음에 다른 도시에 들어가도 그 자리에 뜬다.</item>
 /// </list>
-/// 게임에는 없는 덧그림이라 창 테도 없고 작업표시줄에도 안 뜬다. 초점도 뺏지 않는다 —
+/// 원본에는 없는 덧그림이라 창 테도 없고 작업표시줄에도 안 뜬다. 초점도 뺏지 않는다 —
 /// 끌고 놓으면 곧바로 도시 창에 초점을 돌려준다.
 /// </remarks>
 public sealed class FleetLabelWindow : Window

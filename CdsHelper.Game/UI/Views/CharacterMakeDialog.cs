@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// NEW GAME 의 첫 걸음 — 성·명·연령·생일·혈액형·국적을 받는다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0045BF80</c> 이다(만들기 본체는 <c>0x0045EBE0</c>).
+/// 원본의 <c>0x0045BF80</c> 이다(만들기 본체는 <c>0x0045EBE0</c>).
 /// <code>
 ///   0x00571AAC  명   0x00571AB0 성   0x00571AB8 연령   0x00571AC0 생일
 ///   0x00571AC8  월   0x00571ACC 일   0x00571AD0 혈액형
@@ -37,7 +37,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 속을 384 로 넓혔다. 테도 검은 베벨 다섯 겹에서 <b>밝은 줄 둘</b>로 줄였다.
 ///
 /// <b>어긋난 데 둘을 그대로 뒀다.</b> 생일 줄의 첫 숫자칸이 연령 줄보다 <b>16(글자 한 칸)</b>
-/// 오른쪽에 있고, 행 피치가 생일부터 27 · 29 로 벌어진다. 재어 보니 게임이 그렇다.
+/// 오른쪽에 있고, 행 피치가 생일부터 27 · 29 로 벌어진다. 재어 보니 원본이 그렇다.
 ///
 /// 이름 칸 오른쪽 작은 단추는 <see cref="TextInputDialog"/> 를, 숫자 칸 것은
 /// <see cref="NumberPadDialog"/> 를 연다. "일람" 은 미리 갖춰 둔 이름을 늘어놓는다.
@@ -117,7 +117,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     /// 게임이 새 게임에서 고르게 하는 초상화 수 — <b>앞의 열여섯</b>이다.
     /// </summary>
     /// <remarks>
-    /// 여기서는 <b>더 넣은 얼굴까지 다 고르게 한다</b>. 게임이 열여섯으로 묶어 둔 까닭은
+    /// 여기서는 <b>더 넣은 얼굴까지 다 고르게 한다</b>. 원본이 열여섯으로 묶어 둔 까닭은
     /// 뒤 열여섯이 그 중년 얼굴이라서인데(<c>얼굴 + 16</c>), 그 짝을
     /// <see cref="PortraitAges"/> 가 또렷하게 들고 있으므로 고르는 쪽을 묶을 까닭이 없다.
     /// 중년 얼굴이 없는 얼굴은 <b>나이가 들어도 안 바뀔 뿐</b>이다.
@@ -415,7 +415,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     }
 
     /// <summary>
-    /// 생일 줄. 첫 숫자칸이 연령 줄보다 <b>글자 한 칸(28)</b> 오른쪽이다 — 게임이 그렇다.
+    /// 생일 줄. 첫 숫자칸이 연령 줄보다 <b>글자 한 칸(28)</b> 오른쪽이다 — 원본이 그렇다.
     /// </summary>
     private void BirthRow()
     {
@@ -480,7 +480,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     /// <summary>고른 것을 도드라지게 하고 별자리를 다시 적는다.</summary>
     private void Mark()
     {
-        // 게임은 <b>고른 것이 밝은 베이지</b>고 안 고른 것이 어두운 쪽이다 —
+        // 원본은 <b>고른 것이 밝은 베이지</b>고 안 고른 것이 어두운 쪽이다 —
         // 직업 단추와 같은 규칙이다(AbilityMakeDialog).
         for (int i = 0; i < _bloods.Count; i++)
             _bloods[i].Band = i == _blood ? BandStyle.Button : BandStyle.Alt;
@@ -493,7 +493,7 @@ internal sealed class CharacterMakeDialog : GameWindow
     /// 주인공이 고를 수 있는 얼굴들.
     /// </summary>
     /// <remarks>
-    /// 게임은 <b>앞의 열여섯</b>(<see cref="GameFaceChoices"/>)만 내준다 — 뒤 열여섯이
+    /// 원본은 <b>앞의 열여섯</b>(<see cref="GameFaceChoices"/>)만 내준다 — 뒤 열여섯이
     /// 그 중년 얼굴이라 짝이 어긋나면 안 되기 때문이다. 나머지 사백 남짓은 인물표가
     /// 쓰는 남의 얼굴이라 주인공이 쓸 것이 아니다.
     ///
@@ -540,8 +540,8 @@ internal sealed class CharacterMakeDialog : GameWindow
     /// 그 얼굴이 지고 나올 <b>운명 자리</b>(0~15).
     /// </summary>
     /// <remarks>
-    /// 게임은 앞의 열여섯만 고르게 해서 <b>얼굴 번호가 곧 자리</b>였다 — 그 열여섯은
-    /// 게임 그대로 둔다. 더 넣은 얼굴에는 매인 자리가 없으므로 <b>열여섯 가운데 하나를
+    /// 원본은 앞의 열여섯만 고르게 해서 <b>얼굴 번호가 곧 자리</b>였다 — 그 열여섯은
+    /// 원본 그대로 둔다. 더 넣은 얼굴에는 매인 자리가 없으므로 <b>열여섯 가운데 하나를
     /// 굴려</b> 준다. 자리는 얼굴에 딸린 값이 아니라 여급 궁합에만 쓰이므로
     /// (<see cref="FortuneCodes"/>) 굴려도 어긋날 데가 없다.
     /// </remarks>
@@ -554,16 +554,16 @@ internal sealed class CharacterMakeDialog : GameWindow
         int.TryParse(box.Text, out int n) ? n : fallback;
 
     /// <summary>
-    /// "다음" — 게임처럼 빈 칸을 먼저 따진다.
+    /// "다음" — 원본처럼 빈 칸을 먼저 따진다.
     /// </summary>
     /// <remarks>
     /// 물리는 창에는 <b>제목 줄이 붙는다</b> — "입력 에러" 다(<c>0x00571538</c> 벌).
-    /// 성과 명을 따로 따지는 것도 게임 그대로다 — 같은 문구가 두 벌 있다
+    /// 성과 명을 따로 따지는 것도 원본 그대로다 — 같은 문구가 두 벌 있다
     /// (<c>0x0045D1D6</c> · <c>0x0045D1EF</c>).
     /// </remarks>
     private void Next()
     {
-        // 따지는 차례도 게임 그대로다(0x0045CC74 ~ 0x0045D01F) — 명 · 성 · 달 · 날 · 나이 · 혈액형 · 국적 · 겹치는 이름.
+        // 따지는 차례도 원본 그대로다(0x0045CC74 ~ 0x0045D01F) — 명 · 성 · 달 · 날 · 나이 · 혈액형 · 국적 · 겹치는 이름.
         if (_given.Text.Trim().Length == 0 || _family.Text.Trim().Length == 0)
         {
             NoticeDialog.Show(this, "이름을 정확히 입력해 주십시오", InputError);

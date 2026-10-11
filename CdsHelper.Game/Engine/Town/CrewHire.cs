@@ -16,7 +16,7 @@ public static class CrewHire
     /// 선원 한 사람 값. 명성이 높을수록 싸고, 아무리 높아도 열 닢 밑으로는 안 내려간다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00477370</c> 그대로다 — <c>(10000 - 명성) / 400</c> 을 하고 10 과 견줘
+    /// 원본의 <c>0x00477370</c> 그대로다 — <c>(10000 - 명성) / 400</c> 을 하고 10 과 견줘
     /// 큰 쪽을 쓴다. 명성(<c>0x005B614C</c>)이 1700 이면 스무 닢, 6000 을 넘으면 열 닢이다.
     /// </remarks>
     public static int PriceFor(int fame) => Math.Max(LeastPrice, (Base - fame) / FameDivisor);

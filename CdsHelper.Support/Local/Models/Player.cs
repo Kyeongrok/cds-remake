@@ -2,7 +2,7 @@
 
 /// <summary>배를 산 결과.</summary>
 /// <summary>
-/// 함대에 남아 있는 해상재해. 게임의 함대 <c>+0xD4</c> 비트 0·1·2 다(볼트 80).
+/// 함대에 남아 있는 해상재해. 원본의 함대 <c>+0xD4</c> 비트 0·1·2 다(볼트 80).
 /// </summary>
 [Flags]
 public enum SeaAilment
@@ -51,7 +51,7 @@ public enum LearnResult
 /// 함대 창의 주인공. 소지금과 가진 배를 들고 있는다 — 조선소에서 배를 사면 여기서 돈이 빠진다.
 /// </summary>
 /// <remarks>
-/// 세이브 파일에서 읽는 <see cref="PlayerData"/> 와는 다르다. 그쪽은 게임이 적어 둔 값을
+/// 세이브 파일에서 읽는 <see cref="PlayerData"/> 와는 다르다. 그쪽은 원본이 적어 둔 값을
 /// 보여 주는 것이고, 이쪽은 함대 창에서 우리가 굴리는 값이다.
 /// </remarks>
 public sealed class Player
@@ -60,7 +60,7 @@ public sealed class Player
     /// 함대에 둘 수 있는 배의 수. 넘으면 더 못 산다.
     /// </summary>
     /// <remarks>
-    /// 게임도 여덟이다 — 항구 함대편성의 "선박 편입" 이 <c>0x0046A24A</c> 에서
+    /// 원본도 여덟이다 — 항구 함대편성의 "선박 편입" 이 <c>0x0046A24A</c> 에서
     /// <c>cmp eax, 8</c> 으로 막고, 함대 객체도 여덟 칸이다.
     /// </remarks>
     public const int MaxShips = 8;
@@ -103,7 +103,7 @@ public sealed class Player
     /// </summary>
     /// <remarks>
     /// 세이브에서 읽어 오지 않고 여기서 들고 있는다 — 함대 창은 세이브와 따로 굴러가기
-    /// 때문이다(<see cref="PlayerData"/> 참고). <b>처음에는 비어 있다</b> — 게임도 신상
+    /// 때문이다(<see cref="PlayerData"/> 참고). <b>처음에는 비어 있다</b> — 원본도 신상
     /// 창을 빈 칸으로 열고 사람이 적어 넣는다.
     /// </remarks>
     public string Name { get; set; } = "";
@@ -112,7 +112,7 @@ public sealed class Player
     /// 사람들이 부르는 이름 — <b>명</b>만이다. 비었으면 <see cref="Name"/>.
     /// </summary>
     /// <remarks>
-    /// 게임의 제독 이름(<c>0x005B60A0</c> 가상 함수 0 = <c>0x0041B2F0</c>)은 <c>+0xBC</c> 칸을 돌려주는데, 거기에는
+    /// 원본의 제독 이름(<c>0x005B60A0</c> 가상 함수 0 = <c>0x0041B2F0</c>)은 <c>+0xBC</c> 칸을 돌려주는데, 거기에는
     /// 신상 창의 <b>명 칸(+0xC0)만</b> 베껴 넣는다(<c>0x0045E395</c>). 「명·성」(<c>0x00571B08</c>)으로 붙인 것은
     /// 신상 창에 보이려고 따로 짓는 글(<c>0x0062B2F0</c>)일 뿐이다. 그래서 후원자·대본·알림이 부르는 이름은 명 하나다.
     /// </remarks>
@@ -136,10 +136,10 @@ public sealed class Player
     public string Given { get; set; } = "";
 
     /// <summary>
-    /// 나이. 게임은 25로 시작한다. <b>생년월일과 오늘 날짜로 센다</b>(<c>0x0047CB20</c>).
+    /// 나이. 원본은 25로 시작한다. <b>생년월일과 오늘 날짜로 센다</b>(<c>0x0047CB20</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 나이 칸을 들고 있지 않다 — 올해 − 태어난 해이고, 올해 생일이 아직이면 하나 뺀다.
+    /// 원본은 나이 칸을 들고 있지 않다 — 올해 − 태어난 해이고, 올해 생일이 아직이면 하나 뺀다.
     /// 예전에는 박아 둔 값이라 해가 바뀌어도 안 늘어서, 서른여섯부터 달라지는 얼굴·여급 궁합·
     /// 성미가 영영 안 바뀌었다. 넣을 때는 그 나이가 되게 태어난 해를 거꾸로 맞춘다.
     /// </remarks>
@@ -192,7 +192,7 @@ public sealed class Player
     /// <summary>운명 자리를 넣는다. 0~15 를 벗어나면 잘라 넣는다.</summary>
     public void SetFortune(int fortune) => Fortune = Math.Clamp(fortune, 0, MaxFortune);
 
-    /// <summary>운명 자리의 위. 게임도 젊은 얼굴 열여섯 벌만 쓴다.</summary>
+    /// <summary>운명 자리의 위. 원본도 젊은 얼굴 열여섯 벌만 쓴다.</summary>
     public const int MaxFortune = 15;
 
     /// <summary>국적 이름. 번호가 표 밖이면 첫째다.</summary>
@@ -231,7 +231,7 @@ public sealed class Player
     /// <summary>신상을 한꺼번에 박는다. NEW GAME 의 첫 걸음이 부른다.</summary>
     /// <param name="fortune">
     /// 그 얼굴이 지고 나올 <b>운명 자리</b>. 안 넘기면 얼굴 번호를 그대로 쓴다 —
-    /// 게임이 앞의 열여섯만 고르게 하던 때의 셈이다.
+    /// 원본이 앞의 열여섯만 고르게 하던 때의 셈이다.
     /// </param>
     public void SetProfile(string family, string given, int age, int month, int day,
                            int blood, int nation, int face, int? fortune = null)
@@ -246,7 +246,7 @@ public sealed class Player
         Blood = Math.Clamp(blood, 0, BloodTypes.Length - 1);
         Nation = Math.Clamp(nation, 0, Nations.Length - 1);
         Face = Math.Max(0, face);
-        // 운명 자리는 부르는 쪽이 정해 넘긴다 — 게임은 앞의 열여섯만 고르게 해서
+        // 운명 자리는 부르는 쪽이 정해 넘긴다 — 원본은 앞의 열여섯만 고르게 해서
         // 얼굴 번호가 곧 자리였지만, 얼굴을 더 넣으면 그 셈이 안 통한다.
         SetFortune(fortune ?? Face);
     }
@@ -259,7 +259,7 @@ public sealed class Player
 
     /// <summary>악명치 — 인물정보 판의 명성 맞은편 칸이다.</summary>
     /// <remarks>
-    /// 게임은 나쁜 짓(해적질·약탈·흥정)으로 올리고, 매달 1일에 30 씩 깎는다(<c>0x0047CFD0</c>,
+    /// 원본은 나쁜 짓(해적질·약탈·흥정)으로 올리고, 매달 1일에 30 씩 깎는다(<c>0x0047CFD0</c>,
     /// <see cref="InfamyDecayPerMonth"/>).
     /// </remarks>
     public int Infamy { get; set; }
@@ -333,7 +333,7 @@ public sealed class Player
     public void AdjustAbility(int which, int by)
     {
         if (which < 0 || which >= Abilities.Length) return;
-        // 게임은 <b>보이는 값</b> 1~100 으로 자른 뒤 도로 1 을 뺀다(0x00432C50 → 0x0049E560).
+        // 원본은 <b>보이는 값</b> 1~100 으로 자른 뒤 도로 1 을 뺀다(0x00432C50 → 0x0049E560).
         Abilities[which] = Math.Clamp(Ability.Display(Abilities[which]) + by, 1, Ability.Max)
                            - 1;
     }
@@ -419,7 +419,7 @@ public sealed class Player
     /// 명성. 후원자를 만나려면 그 사람이 요구하는 만큼 있어야 한다.
     /// </summary>
     /// <remarks>
-    /// 게임은 알현의 첫 관문에서 이것을 본다(<c>0x004AE1F0</c> → <c>0x0044E740</c>) —
+    /// 원본은 알현의 첫 관문에서 이것을 본다(<c>0x004AE1F0</c> → <c>0x0044E740</c>) —
     /// 모자라면 집사가 "…님은 바쁘셔서 만나실 수 없습니다" 로 돌려보낸다.
     /// 요구치는 후원자마다 다르다(<c>patrons.json</c> 의 fame, 0 부터 9900 까지).
     ///
@@ -466,7 +466,7 @@ public sealed class Player
 
     /// <summary>모항 — 새 판을 연 도시. 모르면 -1.</summary>
     /// <remarks>
-    /// 게임은 도시 레코드 <c>+0x1D</c> 의 비트 8 로 든다. NEW GAME 이 시작 도시에만 세우고
+    /// 원본은 도시 레코드 <c>+0x1D</c> 의 비트 8 로 든다. NEW GAME 이 시작 도시에만 세우고
     /// (<c>0x0045E449</c> · <c>0x0045E7BE</c> · <c>0x0045EA28</c>) 그 뒤로 옮기는 곳은 없다.
     /// 항구 「발표」가 이 비트를 본다(<c>0x00476DE0</c>) — <b>발표는 모항에서만</b> 된다.
     /// 도착 대사 「제독, 역시 모항이 좋군요.」(<c>0x004687BE</c>)도 같은 비트다.
@@ -547,7 +547,7 @@ public sealed class Player
 
     /// <summary>낯을 튼 사람. 이 사람들만 이름이 보이고 말을 걸 수 있다.</summary>
     /// <remarks>
-    /// 게임은 인물 객체의 <c>vtbl[0x34]</c> 로 이것을 가른다 — 참이면 이름 대신 "남자"·"여"
+    /// 원본은 인물 객체의 <c>vtbl[0x34]</c> 로 이것을 가른다 — 참이면 이름 대신 "남자"·"여"
     /// 로 부르고 한잔 사는 것만 되고, 거짓이면 "[이름]이 있다" 로 부르고 말을 걸 수 있다
     /// (볼트 <c>14.분석-술집 화면과 대사</c>).
     /// </remarks>
@@ -568,7 +568,7 @@ public sealed class Player
     /// 후원자마다의 친밀도(0~<see cref="MaxCloseness"/>). 움직인 적 있는 사람만 들어 있다.
     /// </summary>
     /// <remarks>
-    /// 게임은 후원자 객체 <c>+0x20</c> 에 들고 <b>0 에서 시작한다</b> — 후원자 정보 창의
+    /// 원본은 후원자 객체 <c>+0x20</c> 에 들고 <b>0 에서 시작한다</b> — 후원자 정보 창의
     /// 「친밀도」가 이 값이다. 후원자 표의 <c>+0x30</c> 은 이름은 같아도 딴 값이다:
     /// 그쪽은 낼 자금을 가르는 밑값이고(<c>0x004AF086</c> 이 표를 읽는다) 게임 내내 안 바뀐다.
     ///
@@ -647,7 +647,7 @@ public sealed class Player
     /// 자리별 부하. 색인이 <see cref="MateRoles"/> 의 자리고, 빈 자리는 빈 문자열이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 부하를 든 차례가 아니라 <b>자리</b>로 든다 — 부관·항해사·측량사·통역이다.
+    /// 원본은 부하를 든 차례가 아니라 <b>자리</b>로 든다 — 부관·항해사·측량사·통역이다.
     /// 여관·술집의 "부하편성" 에서 두 줄을 눌러 자리를 맞바꾼다.
     /// </remarks>
     public IReadOnlyList<string> Mates => _mates;
@@ -737,7 +737,7 @@ public sealed class Player
     /// 부관이 다친다 — 일기토를 대신 치른 뒤에 부른다.
     /// </summary>
     /// <remarks>
-    /// 게임도 부관을 내보내면 그 사람의 컨디션(인물 <c>+0x38</c>)에서 깎는데, 제독 쪽과
+    /// 원본도 부관을 내보내면 그 사람의 컨디션(인물 <c>+0x38</c>)에서 깎는데, 제독 쪽과
     /// <b>길이 다르다</b> — 컨디션이 잃은 값 <b>이하면 100 으로 세우고 거기서 끝난다</b>
     /// (<c>0x004AA5EF</c> 의 <c>jmp 0x4AA639</c>). 제독만 100 을 세운 뒤 이어서 뺀다
     /// (<c>0x004AA622</c>).
@@ -793,7 +793,7 @@ public sealed class Player
     /// 소지품 — 산 것·주운 것이 든 차례대로다. 값은 아이템 번호(<c>item.json</c> 의 id)다.
     /// </summary>
     /// <remarks>
-    /// 게임은 플레이어 객체 <c>+0x118</c> 에 <b>열여섯 칸</b>을 두고 빈 칸은 -1 로 둔다
+    /// 원본은 플레이어 객체 <c>+0x118</c> 에 <b>열여섯 칸</b>을 두고 빈 칸은 -1 로 둔다
     /// (읽기 <c>0x0047CDD0</c> · 쓰기 <c>0x0047CDB0</c>). 꽉 차면 "이 이상 가질 수
     /// 없습니다!"(<c>0x00544830</c>) 로 물린다.
     ///
@@ -801,7 +801,7 @@ public sealed class Player
     /// </remarks>
     public IReadOnlyList<int> Items => _items;
 
-    /// <summary>소지품 칸 수. 게임도 열여섯이다.</summary>
+    /// <summary>소지품 칸 수. 원본도 열여섯이다.</summary>
     public const int MaxItems = 16;
 
     /// <summary>
@@ -876,12 +876,12 @@ public sealed class Player
     /// 자택에 보관해 둔 것. 소지품과 같은 아이템 번호다.
     /// </summary>
     /// <remarks>
-    /// 게임은 소지품 열여섯 칸 바로 뒤(<c>+0x158</c>)에 <b>아흔아홉 칸</b>을 둔다
+    /// 원본은 소지품 열여섯 칸 바로 뒤(<c>+0x158</c>)에 <b>아흔아홉 칸</b>을 둔다
     /// (읽기 <c>0x0047CE70</c> · 쓰기 <c>0x0047CE50</c>). 자택의 "보관" 이 두 칸을 주고받는다.
     /// </remarks>
     public IReadOnlyList<int> Stored => _stored;
 
-    /// <summary>보관 칸 수. 게임도 아흔아홉이다.</summary>
+    /// <summary>보관 칸 수. 원본도 아흔아홉이다.</summary>
     public const int MaxStored = 99;
 
     /// <summary>보관 칸이 꽉 찼는지.</summary>
@@ -910,7 +910,7 @@ public sealed class Player
     /// 한 번 쓴다.
     /// </summary>
     /// <remarks>
-    /// 게임은 두 칸을 열여섯·아흔아홉 자리 배열로 들고 빈 자리를 -1 로 남긴다. 교환 창도
+    /// 원본은 두 칸을 열여섯·아흔아홉 자리 배열로 들고 빈 자리를 -1 로 남긴다. 교환 창도
     /// 그 배열을 그대로 주무르다가 끝날 때 되쓴다(<c>0x0047CDB0</c> · <c>0x0047CE50</c>).
     /// 우리 쪽은 빈 자리를 안 들고 다니므로 <b>여기서 추려</b> 넣는다.
     /// </remarks>
@@ -932,7 +932,7 @@ public sealed class Player
     public bool CanAfford(int price) => Gold >= price;
 
     /// <summary>
-    /// 소지금과 저금의 위쪽 끝. 게임도 백만 닢에서 자른다.
+    /// 소지금과 저금의 위쪽 끝. 원본도 백만 닢에서 자른다.
     /// </summary>
     /// <remarks>
     /// 돈을 더하는 자리(<c>0x0047CBC0</c> 소지금 · <c>0x0047CC00</c> 저금)가 둘 다
@@ -953,7 +953,7 @@ public sealed class Player
     /// <summary>
     /// 자택에 맡겨 둔 돈. 소지금과 따로 두며 백만 닢까지 담긴다.
     /// </summary>
-    /// <remarks>게임은 플레이어 객체의 소지금(<c>+0xF4</c>) 옆에 나란히 둔다.</remarks>
+    /// <remarks>원본은 플레이어 객체의 소지금(<c>+0xF4</c>) 옆에 나란히 둔다.</remarks>
     public int Savings { get; private set; }
 
     /// <summary>예금을 그 값으로 둔다(세대교체 — 4/5 만 물려준다).</summary>
@@ -993,7 +993,7 @@ public sealed class Player
     /// 있는 만큼만 치른다 — 모자라도 물리지 않고 0 까지만 깎인다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0047CBC0</c> 이 이렇게 한다 — 소지금을 <c>0x0049E5A0</c> 으로
+    /// 원본의 <c>0x0047CBC0</c> 이 이렇게 한다 — 소지금을 <c>0x0049E5A0</c> 으로
     /// <c>0 ~ 1,000,000</c> 사이에 가둔다. 뭍을 걷는 하루 여행비가 이 길로 나간다.
     /// 물건 값처럼 <b>못 사면 안 사야 하는</b> 자리는 <see cref="Pay"/> 를 쓴다.
     /// </remarks>
@@ -1041,7 +1041,7 @@ public sealed class Player
     /// 게임 안에서 날짜를 앞으로 옮긴다 — 달이 넘어갈 때마다 달 넘김을 먹인다.
     /// </summary>
     /// <remarks>
-    /// 게임은 일이 1 이 되는 날마다 <c>0x0044B2A0</c> 을 돌고, 그 첫 줄이 제독 달 넘김
+    /// 원본은 일이 1 이 되는 날마다 <c>0x0044B2A0</c> 을 돌고, 그 첫 줄이 제독 달 넘김
     /// <c>0x0047CFD0</c> 이다 — <c>0x004800E0(1, −30)</c> 으로 <b>악명을 30 깎는다</b>(0 밑으로는 안 간다).
     /// 명성은 저절로 안 바뀐다. 날·달·해 고리 어디에도 명성을 만지는 곳이 없다.
     ///
@@ -1075,11 +1075,11 @@ public sealed class Player
     private const string Rage = "울컥";
     private const int RageGold = 10_000;
 
-    /// <summary>게임이 달을 날로 셀 때 쓰는 날수. 달력 달이 아니라 서른 날이다.</summary>
+    /// <summary>원본이 달을 날로 셀 때 쓰는 날수. 달력 달이 아니라 서른 날이다.</summary>
     public const int DaysPerMonth = 30;
 
     /// <summary>
-    /// 날을 넘긴다(자택 휴양). 게임은 달을 셀 때도 <b>서른 날</b>로 세므로 이쪽을 쓴다.
+    /// 날을 넘긴다(자택 휴양). 원본은 달을 셀 때도 <b>서른 날</b>로 세므로 이쪽을 쓴다.
     /// </summary>
     /// <remarks>
     /// 휴양은 <c>0x004A2AD0(개월 x 30, 1)</c> 로 날수를 넘긴다 — 달력 달이 아니라 30일이다.
@@ -1096,7 +1096,7 @@ public sealed class Player
     /// 마을에서 날을 넘긴 값을 몸에 먹인다 — <b>하루에 피로 -1, 사기 +3</b>.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004A2AD0(날수, 모드)</c> 가 하는 일이다. 휴양만이 아니라 숙박·수련처럼
+    /// 원본의 <c>0x004A2AD0(날수, 모드)</c> 가 하는 일이다. 휴양만이 아니라 숙박·수련처럼
     /// <b>마을에서 날이 가는 모든 자리</b>가 이 하나를 거친다.
     /// <code>
     /// 4a2b06  0x474030(함대, -날수)      ; 피로도 -= 날수     (+0x28)
@@ -1120,13 +1120,13 @@ public sealed class Player
 
     /// <summary>피로도가 더 못 올라가는 자리.</summary>
     /// <remarks>
-    /// 게임은 함대 객체 <c>+0x28</c> 에 0~100 으로 든다(<c>0x00474030</c> 이 그 폭으로 자른다).
+    /// 원본은 함대 객체 <c>+0x28</c> 에 0~100 으로 든다(<c>0x00474030</c> 이 그 폭으로 자른다).
     /// </remarks>
     public const int MaxFatigue = 100;
 
     /// <summary>선원들이 지친 만큼(0~<see cref="MaxFatigue"/>).</summary>
     /// <remarks>
-    /// 폭풍을 맞으면 20~30 오르고 자택에서 휴양하면 도로 0 이 된다. 게임은 이 값이
+    /// 폭풍을 맞으면 20~30 오르고 자택에서 휴양하면 도로 0 이 된다. 원본은 이 값이
     /// 80 을 넘으면 반란을 굴린다(<c>0x00474B5B</c> 의 <c>cmpl $0x50</c>).
     /// </remarks>
     public int Fatigue { get; private set; }
@@ -1142,9 +1142,9 @@ public sealed class Player
 
     /// <summary>선원들의 사기(0~<see cref="MaxMorale"/>). 꽉 찬 채로 시작한다.</summary>
     /// <remarks>
-    /// 게임은 함대 객체 <c>+0x2C</c> 에 든다(<c>0x00474060</c> 이 0~100 으로 자른다).
+    /// 원본은 함대 객체 <c>+0x2C</c> 에 든다(<c>0x00474060</c> 이 0~100 으로 자른다).
     /// 폭풍이 10~20 깎고(<c>0x00474D2D</c>) 반란을 눌러 앉히면 30 오른다
-    /// (<c>0x004753EA</c>). 값이 50·30·10 을 <b>아래로 지날 때</b> 게임이 한 마디씩 적지만
+    /// (<c>0x004753EA</c>). 값이 50·30·10 을 <b>아래로 지날 때</b> 원본이 한 마디씩 적지만
     /// (<c>0x004754FB</c> 아래 셋), 그건 안 보이는 힌트 판으로 가는 글이라 옮길 것이 아니다
     /// — 「대원들이 불만을 품기 시작했습니다!」·「대원들의 불만이 심해지고 있습니다!」 들이다.
     /// 0 이 되면 그 자리에서 반란이다(<c>0x00475579</c>).
@@ -1159,7 +1159,7 @@ public sealed class Player
 
     /// <summary>마을을 떠난 뒤로 바다에서 지낸 날수.</summary>
     /// <remarks>
-    /// 게임의 <c>0x005A4D40</c> 자리다 — 사건은 이 값이 <b>열을 넘어야</b> 굴러가고
+    /// 원본의 <c>0x005A4D40</c> 자리다 — 사건은 이 값이 <b>열을 넘어야</b> 굴러가고
     /// (<c>0x00474680</c>), 반란은 이레마다 본다(<c>0x00474B4F</c> 의 <c>idiv 7</c>).
     /// 마을에 들어가면 0 으로 돌아간다.
     /// </remarks>
@@ -1175,14 +1175,14 @@ public sealed class Player
     /// 아내 이름. 없으면 빈 문자열이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>0x005B61B0</c> 에 아내 번호를 들고 <b>-1 이면 없는 것</b>으로 본다
+    /// 원본은 <c>0x005B61B0</c> 에 아내 번호를 들고 <b>-1 이면 없는 것</b>으로 본다
     /// (<c>0x00460650</c> 이 그 값 하나로 "후손을 남긴다" 줄의 켜짐을 정한다).
     /// 우리는 아직 사람 표를 안 들고 있어 이름만 든다.
     /// </remarks>
     public string Spouse { get; private set; } = "";
 
     /// <summary>
-    /// 아이 하나 — 게임의 아이 배열 한 칸(<c>0x005B5A28</c>, 828바이트 x 둘).
+    /// 아이 하나 — 원본의 아이 배열 한 칸(<c>0x005B5A28</c>, 828바이트 x 둘).
     /// </summary>
     /// <param name="Name">이름.</param>
     /// <param name="Daughter">딸인지(<c>+0x10</c> 이 1).</param>
@@ -1218,7 +1218,7 @@ public sealed class Player
         public bool IsBornBy(DateTime now) => Born <= now;
     }
 
-    /// <summary>게임이 드는 아이 칸 수 — 둘이다.</summary>
+    /// <summary>원본이 드는 아이 칸 수 — 둘이다.</summary>
     public const int MaxChildren = 2;
 
     private readonly List<Child> _children = [];
@@ -1283,7 +1283,7 @@ public sealed class Player
         return now;
     }
 
-    /// <summary>친밀도의 위. 게임도 0~100 으로 자른다.</summary>
+    /// <summary>친밀도의 위. 원본도 0~100 으로 자른다.</summary>
     public const int MaxLiking = 100;
 
     private readonly HashSet<int> _giftedBarmaids = [];
@@ -1419,7 +1419,7 @@ public sealed class Player
     /// 함대에 남아 있는 해상재해. 터지면 서고, 항해가 끝나야(상륙·입항) 풀린다.
     /// </summary>
     /// <remarks>
-    /// 게임은 함대 <c>+0xD4</c> 비트로 든다(세터 <c>0x00474630</c>). 항해일수를 0 으로 돌리는
+    /// 원본은 함대 <c>+0xD4</c> 비트로 든다(세터 <c>0x00474630</c>). 항해일수를 0 으로 돌리는
     /// 세 자리(<c>0x0048B56A</c> · <c>0x0048DC4F</c> · <c>0x0048E6AD</c>)가 이 값도 함께 0 으로 둔다.
     /// </remarks>
     public SeaAilment Ailments { get; private set; }
@@ -1446,7 +1446,7 @@ public sealed class Player
     /// 아이템을 산다. 값을 치르고 소지품에 넣는다. 돈이 모자라면 아무것도 하지 않는다.
     /// </summary>
     /// <remarks>
-    /// 게임도 돈 검사를 <b>YES 를 고른 뒤</b>에 한다(구입 본체 0x004B3AAD 에서 소지금과
+    /// 원본도 돈 검사를 <b>YES 를 고른 뒤</b>에 한다(구입 본체 0x004B3AAD 에서 소지금과
     /// 값을 견준다). 그래서 여기서도 물어보는 것과 치르는 것을 갈라 두었다 —
     /// 부르는 쪽이 물음창을 먼저 띄우고 이것을 마지막에 부른다.
     /// </remarks>
@@ -1469,7 +1469,7 @@ public sealed class Player
     /// 나라마다의 <b>적대도</b>. 0 이면 여느 나라다.
     /// </summary>
     /// <remarks>
-    /// 게임은 나라마다 열여섯 바이트짜리 형편 레코드를 <c>0x005859C0</c> 에 두고 적대도를
+    /// 원본은 나라마다 열여섯 바이트짜리 형편 레코드를 <c>0x005859C0</c> 에 두고 적대도를
     /// <c>+0x0C</c> 에 적는다(<c>0x00429D90</c>). 그 판은 <c>.bss</c> 라 켤 때는 죄다 0 이고
     /// 세이브에 통째로 실린다(<c>0x0047858E</c>, 일흔여덟 칸).
     ///
@@ -1509,7 +1509,7 @@ public sealed class Player
     /// 적대 도시 가운데 <b>문이 열린</b> 곳. 공략·잠입·교섭에 성공하면 는다.
     /// </summary>
     /// <remarks>
-    /// 게임의 「제독, 이것으로 마을에 들어갈 수 있습니다」(<c>0x00551C28</c>) 다. 한 번
+    /// 원본의 「제독, 이것으로 마을에 들어갈 수 있습니다」(<c>0x00551C28</c>) 다. 한 번
     /// 열리면 그 도시는 적대도와 상관없이 그냥 들어간다.
     /// </remarks>
     public IReadOnlyCollection<int> OpenedGates => _openedGates;
@@ -1520,7 +1520,7 @@ public sealed class Player
     /// <b>아는 도시</b> — 지도에 뜨는 도시들.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 레코드 <c>+0x04</c> 의 비트 0 으로 들고 있고, 처음 켜져 있는 101곳이
+    /// 원본은 도시 레코드 <c>+0x04</c> 의 비트 0 으로 들고 있고, 처음 켜져 있는 101곳이
     /// 죄다 유럽·지중해다. 나머지는 항해하다 가까이 가야 켜진다(<c>0x0048D983</c>).
     /// 켤 때 어디가 켜져 있는지는 도시 표가 알고 있으므로(<c>CityExeTable.KnownAtStart</c>)
     /// 여기에는 <b>게임 중에 새로 안 것</b>만 담는다.
@@ -1546,7 +1546,7 @@ public sealed class Player
     /// <b>들어가 본 도시</b> — 바다 커맨드 「도시좌표」가 고르게 하는 도시들.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 레코드 <c>+0x04</c> 의 비트 <c>0x80</c> 으로 든다. 도시 화면을 열 때
+    /// 원본은 도시 레코드 <c>+0x04</c> 의 비트 <c>0x80</c> 으로 든다. 도시 화면을 열 때
     /// 켜고(<c>0x004928B5</c>) 「도시좌표」(<c>0x00426A29</c> · <c>0x00426B3E</c>)만 읽는다.
     /// 도시 표의 처음 낱말(<c>+0x62</c>)에는 이 비트가 선 곳이 하나도 없다 — 알기만 하는 도시
     /// (비트 0)와 다르다.
@@ -1572,7 +1572,7 @@ public sealed class Player
     /// 일기토에 이겨 <b>처형한</b> 인물 번호들.
     /// </summary>
     /// <remarks>
-    /// 게임은 인물 레코드의 등장 칸(<c>+0xF4</c>)을 0 으로 두어(<c>0x004AA35D</c> 의 <c>0x00432180(0)</c>)
+    /// 원본은 인물 레코드의 등장 칸(<c>+0xF4</c>)을 0 으로 두어(<c>0x004AA35D</c> 의 <c>0x00432180(0)</c>)
     /// 세이브에 그대로 남긴다. 우리 인물 세상은 날짜로 다시 셈해 짓는 것이라 이 칸에 따로 적어 두고,
     /// 세상을 지을 때마다 덮는다. 이 칸 앞의 세이브는 아무도 안 죽인 것으로 연다.
     /// </remarks>
@@ -1598,7 +1598,7 @@ public sealed class Player
     /// 누적 캐릭터를 <b>등장시킨</b> 판이면 그 판을 연 날, 아니면 null.
     /// </summary>
     /// <remarks>
-    /// 게임은 NEW GAME 에서 은퇴한 제독을 인물 276~280 에 앉히고(<c>0x0041AF00</c>) 그 인물 레코드를 통째로
+    /// 원본은 NEW GAME 에서 은퇴한 제독을 인물 276~280 에 앉히고(<c>0x0041AF00</c>) 그 인물 레코드를 통째로
     /// 세이브에 적는다 — 지난 날수 <c>+0x110</c> · 대본 위치 <c>+0x114</c> · 늦어짐(<c>0x00432290</c>) ·
     /// 함대 선체 여덟 칸(<c>0x00432160</c>, 인물 <c>0x114</c>~<c>0x118</c> 만 — <c>0x00432034</c>)이다.
     /// 우리 인물 세상은 날짜로 다시 짓는 것이라 앉힌 날만 적어 두고, 세상을 지을 때마다 다시 앉혀
@@ -1660,7 +1660,7 @@ public sealed class Player
     /// 해전 뒤끝에 수도로 돌려보낸 사람들(<c>0x00432400</c> — <c>0x0048CCD7</c> 이 부른다).
     /// </summary>
     /// <remarks>
-    /// 게임은 인물 레코드의 소재·목적지·날 셈을 세이브에 그대로 적는다(<c>0x00431E90</c>). 우리 인물 세상은
+    /// 원본은 인물 레코드의 소재·목적지·날 셈을 세이브에 그대로 적는다(<c>0x00431E90</c>). 우리 인물 세상은
     /// 날짜로 다시 짓는 것이라 돌려보낸 일을 여기 적어 두고, 세상을 따라잡을 때 그날에 다시 돌려보낸다
     /// (<c>PersonWorld.Advance</c>). 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
     /// </remarks>
@@ -1685,7 +1685,7 @@ public sealed class Player
     /// <summary>
     /// 후원자 하나의 배 칸 — 그 해(<paramref name="Year"/>)까지 해 넘김을 먹인 칸 다섯(선체 번호, 빈 칸 −1).
     /// </summary>
-    /// <remarks>게임은 후원자 런타임 객체 <c>+0x34</c> 의 다섯 칸으로 들고 세이브에 적는다(<c>0x004AD9D0</c>).</remarks>
+    /// <remarks>원본은 후원자 런타임 객체 <c>+0x34</c> 의 다섯 칸으로 들고 세이브에 적는다(<c>0x004AD9D0</c>).</remarks>
     public sealed record PatronDock(int Year, List<int> Slots);
 
     /// <summary>
@@ -1720,7 +1720,7 @@ public sealed class Player
     /// 교섭이 어그러진 자리. <b>마을 쪽과 항구 쪽을 따로</b> 센다.
     /// </summary>
     /// <remarks>
-    /// 게임도 도시 레코드에 <c>+0xB0</c>(항구)와 <c>+0xB4</c>(마을) 두 자리를 둔다
+    /// 원본도 도시 레코드에 <c>+0xB0</c>(항구)와 <c>+0xB4</c>(마을) 두 자리를 둔다
     /// (<c>0x004A56A7</c>). 한 번 어그러지면 그 자리에서는 <b>「떠난다」가 꺼져</b>
     /// 물러설 수 없다.
     /// </remarks>
@@ -1762,7 +1762,7 @@ public sealed class Player
     /// 발견한 발견물 번호. 게임 발견물 표(274줄)의 줄 번호다.
     /// </summary>
     /// <remarks>
-    /// 게임은 발견물마다 164바이트 칸을 두고 발견자·발표자 이름과 그 연월까지 적는다.
+    /// 원본은 발견물마다 164바이트 칸을 두고 발견자·발표자 이름과 그 연월까지 적는다.
     /// 여기서는 주인공이 하나뿐이라 번호만 든다. 보고·발표(<c>0x0047E680</c> — 왕궁 보고와 모항 항구 발표)는
     /// 따로 든다 — <see cref="Announced"/> · <see cref="AnnouncedOn"/>, 남이 먼저 발표한 것은 <see cref="Scoop"/>.
     /// </remarks>
@@ -1845,7 +1845,7 @@ public sealed class Player
     /// 지금까지의 행적. 은퇴하면 이것이 누적 캐릭터의 <c>ACCDATA%d.ACC</c> 가 된다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>ACCDATA.CDS</c> 에 <b>스물다섯 자리</b>에서 스물세 갈래를 쌓는다. 우리는 그 가운데
+    /// 원본은 <c>ACCDATA.CDS</c> 에 <b>스물다섯 자리</b>에서 스물세 갈래를 쌓는다. 우리는 그 가운데
     /// 되돌려 틀 때 쓰는 <b>갈래 1(도시 입항)</b>과 <b>0x15 · 0x16(배가 들고 남)</b>만 적는다 —
     /// 나머지를 적어 봐야 읽는 데가 없다.
     /// </remarks>
@@ -1857,7 +1857,7 @@ public sealed class Player
     /// 대본으로 <b>이름을 지어 준</b> 발견물(<c>1F 0B</c>, <c>0x004AAB00</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 이름을 발견물 레코드에 그대로 써 넣어서 그 뒤로는 어디서든 그 이름이 보인다.
+    /// 원본은 이름을 발견물 레코드에 그대로 써 넣어서 그 뒤로는 어디서든 그 이름이 보인다.
     /// 우리는 표를 안 건드리고 이 칸에 적어 두었다가 판을 열 때 표에 덧씌운다.
     /// </remarks>
     public IReadOnlyDictionary<int, string> NamedDiscoveries => _namedDiscoveries;
@@ -1970,7 +1970,7 @@ public sealed class Player
     /// 찾은 사람 · 보고한 사람의 이름 — 발견물 인스턴스 칸 0 · 칸 2 의 이름이다(<c>0x004AABA0(0)</c> · <c>(2)</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 찾을 때·보고할 때 <b>그때의 제독 이름</b>을 칸에 베껴 둔다. 그래서 세대교체 뒤에도 아버지가
+    /// 원본은 찾을 때·보고할 때 <b>그때의 제독 이름</b>을 칸에 베껴 둔다. 그래서 세대교체 뒤에도 아버지가
     /// 보고한 쪽의 「발견자」는 아버지 이름이다(백과사전 <c>0x00462B63</c>). 이름을 안 적던 옛 세이브에서
     /// 온 것은 칸이 없어 지금 제독 이름으로 본다.
     /// </remarks>
@@ -2020,7 +2020,7 @@ public sealed class Player
     /// <summary>
     /// 지금 맺고 있는 계약. 없으면 null — 도시 커맨드의 "계약 정보" 가 이것을 낸다.
     /// </summary>
-    /// <remarks>게임도 계약을 하나만 든다(<c>0x0061D1D0</c>).</remarks>
+    /// <remarks>원본도 계약을 하나만 든다(<c>0x0061D1D0</c>).</remarks>
     public Contract? Contract { get; private set; }
 
     /// <summary>
@@ -2037,8 +2037,8 @@ public sealed class Player
     public IReadOnlyCollection<int> OpenedHints => _openedHints;
 
     /// <summary>
-    /// 계약을 맺는다. 선금은 그 자리에서 받는다 — 게임도 그렇다(<c>0x004ADF3E</c>).
-    /// 이미 맺은 것이 있으면 갈아 끼운다(게임도 계약을 하나만 든다).
+    /// 계약을 맺는다. 선금은 그 자리에서 받는다 — 원본도 그렇다(<c>0x004ADF3E</c>).
+    /// 이미 맺은 것이 있으면 갈아 끼운다(원본도 계약을 하나만 든다).
     /// </summary>
     public void Sign(Contract contract)
     {
@@ -2094,7 +2094,7 @@ public sealed class Player
     }
 
     /// <summary>
-    /// 감찰관을 처벌해 <b>배신한 후원자</b> 한 사람 — 게임의 후원자 플래그 비트 13(<c>0x0044FC6D</c>).
+    /// 감찰관을 처벌해 <b>배신한 후원자</b> 한 사람 — 원본의 후원자 플래그 비트 13(<c>0x0044FC6D</c>).
     /// </summary>
     /// <param name="Sponsor">후원자 이름.</param>
     /// <param name="City">계약을 맺었던 도시.</param>
@@ -2131,10 +2131,10 @@ public sealed class Player
     private readonly Dictionary<string, DateTime> _sulks = [];
 
     /// <summary>
-    /// 기분이 상한 후원자와 그 날 — 게임의 후원자 플래그 비트 14. 켜져 있으면 설득을 문간에서 돌려보낸다.
+    /// 기분이 상한 후원자와 그 날 — 원본의 후원자 플래그 비트 14. 켜져 있으면 설득을 문간에서 돌려보낸다.
     /// </summary>
     /// <remarks>
-    /// 날은 세이브 모양을 지키려고 남겨 둔 것이고 셈에는 안 쓴다 — 게임의 비트 14 는 날짜를 안 들고,
+    /// 날은 세이브 모양을 지키려고 남겨 둔 것이고 셈에는 안 쓴다 — 원본의 비트 14 는 날짜를 안 들고,
     /// <b>마을에서 날을 넘길 때 81명 것을 한꺼번에</b> 지운다(<see cref="PassTownDays"/>).
     /// </remarks>
     public IReadOnlyDictionary<string, DateTime> Sulks => _sulks;
@@ -2152,7 +2152,7 @@ public sealed class Player
     public void ClearSulks() => _sulks.Clear();
 
     /// <summary>
-    /// 마을에서 날을 넘긴다 — 게임의 <c>0x004A2AD0(날수, 모드)</c> 다.
+    /// 마을에서 날을 넘긴다 — 원본의 <c>0x004A2AD0(날수, 모드)</c> 다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -2205,7 +2205,7 @@ public sealed class Player
     private readonly HashSet<int> _activeGoods = [];
 
     /// <summary>
-    /// 발견으로 판매가 켜진 교역품 번호 — 게임의 판매 게이트 <c>0x0058BAB0[교역품]</c> 를 1 로 세운 것들이다.
+    /// 발견으로 판매가 켜진 교역품 번호 — 원본의 판매 게이트 <c>0x0058BAB0[교역품]</c> 를 1 로 세운 것들이다.
     /// </summary>
     /// <remarks>
     /// 새 판은 교역품 표 <c>+0x84</c> 로 게이트를 채우는데(<c>0x0042E2A0</c>) 상아·후추·커피 따위 27종이 꺼진 채
@@ -2231,7 +2231,7 @@ public sealed class Player
 
     /// <summary>발표한 발견물 번호.</summary>
     /// <remarks>
-    /// 게임은 발견물 인스턴스의 깃발 <c>0x80</c> 으로 든다. 발표하면 명성이 오르고, 한 번
+    /// 원본은 발견물 인스턴스의 깃발 <c>0x80</c> 으로 든다. 발표하면 명성이 오르고, 한 번
     /// 발표한 것은 다시 못 한다.
     /// </remarks>
     public IReadOnlyCollection<int> Announced => _announced;
@@ -2292,7 +2292,7 @@ public sealed class Player
     /// <b>남이 먼저 발표해 버린</b> 발견물 — 번호 → 그 사람 이름.
     /// </summary>
     /// <remarks>
-    /// 게임은 발견물 인스턴스의 칸 2(발표자)에 그 사람 이름과 연월을 적는다
+    /// 원본은 발견물 인스턴스의 칸 2(발표자)에 그 사람 이름과 연월을 적는다
     /// (<c>0x004AACA0</c>). 칸 2 가 비어 있지 않으면 그 발견물은 이미 세상에 알려진 것이라,
     /// 내가 보고해도 명성이 안 오르고 사례가 계약금/4 로 깎인다(<c>0x004117F0</c>).
     ///
@@ -2508,9 +2508,9 @@ public sealed class Player
     {
         CityId = cityId;
         CityName = cityId >= 0 ? cityName : "";
-        // 마을에 들면 항해일이 끊긴다 — 게임도 입항하면 0x5A4D40 을 도로 0 으로 둔다.
+        // 마을에 들면 항해일이 끊긴다 — 원본도 입항하면 0x5A4D40 을 도로 0 으로 둔다.
         if (cityId >= 0) DaysAtSea = 0;
-        // 들어가 본 도시로 적는다 — 게임도 도시 화면을 열며 레코드 +0x04 에 0x80 을 켠다(0x004928B5).
+        // 들어가 본 도시로 적는다 — 원본도 도시 화면을 열며 레코드 +0x04 에 0x80 을 켠다(0x004928B5).
         if (cityId >= 0) _visitedCities.Add(cityId);
     }
 
@@ -2537,7 +2537,7 @@ public sealed class Player
     /// 기함이 함대에서 몇째 자리인지. 배가 없으면 -1 이다.
     /// </summary>
     /// <remarks>
-    /// 항구 함대편성의 "기함 변경" 으로 바꾼다. 게임은 배가 <b>두 척 이상</b>일 때만 그 줄을
+    /// 항구 함대편성의 "기함 변경" 으로 바꾼다. 원본은 배가 <b>두 척 이상</b>일 때만 그 줄을
     /// 켠다(<c>0x0046A220</c>) — 한 척뿐이면 바꿀 것이 없다.
     /// </remarks>
     public int Flagship { get; private set; }
@@ -2559,7 +2559,7 @@ public sealed class Player
         _ships.Clear();
         Flagship = 0;
         // 배가 없으면 정원이 0 이라 선원도 0 이다. 배를 사도 선원은 안 붙는다 —
-        // 게임도 항구에서 고용해야 는다(<see cref="Buy"/> 가 선원을 안 건드린다).
+        // 원본도 항구에서 고용해야 는다(<see cref="Buy"/> 가 선원을 안 건드린다).
         Crew = 0;
     }
 
@@ -2577,13 +2577,13 @@ public sealed class Player
     /// 그 마을에 맡겨 둔 배. 함대에서 <b>삭제</b>하면 여기로 오고, <b>편입</b>하면 도로 나간다.
     /// </summary>
     /// <remarks>
-    /// 게임도 마을마다 배를 맡아 둔다 — 편입·삭제가 그 마을의 수를 세어 줄을 켠다
+    /// 원본도 마을마다 배를 맡아 둔다 — 편입·삭제가 그 마을의 수를 세어 줄을 켠다
     /// (<c>0x0040E280(도시, 0)</c>).
     /// </remarks>
     public IReadOnlyList<Ship> DockedAt(int cityId) =>
         _docked.TryGetValue(cityId, out var list) ? list : [];
 
-    /// <summary>한 마을에 맡길 수 있는 배의 수. 게임도 여덟이다.</summary>
+    /// <summary>한 마을에 맡길 수 있는 배의 수. 원본도 여덟이다.</summary>
     public const int MaxDocked = 8;
 
     /// <summary>
@@ -2727,7 +2727,7 @@ public sealed class Player
     public IReadOnlyDictionary<int, List<Ship>> Docked => _docked;
 
     /// <summary>배를 폭풍에 놓친다. 마지막 한 척과 기함은 안 없어진다.</summary>
-    /// <remarks>게임의 <c>0x00473E60</c> 자리다 — 함대에서 빼기만 하고 마을에 안 맡긴다.</remarks>
+    /// <remarks>원본의 <c>0x00473E60</c> 자리다 — 함대에서 빼기만 하고 마을에 안 맡긴다.</remarks>
     public bool LoseShip(int index)
     {
         if (_ships.Count <= 1 || index < 0 || index >= _ships.Count) return false;
@@ -2764,7 +2764,7 @@ public sealed class Player
     /// 함대에 편입해 둔 빌린 배의 척수(<c>0x0040FB80</c>) — <b>항구에 대 놓은 것은 안 친다</b>.
     /// </summary>
     /// <remarks>
-    /// 게임은 함대 자리 여덟을 돌며 배마다 <c>0x0040FBE0</c> 으로 거른다 — 빌려준 사람이
+    /// 원본은 함대 자리 여덟을 돌며 배마다 <c>0x0040FBE0</c> 으로 거른다 — 빌려준 사람이
     /// 지금 그 자리에 앉은 후원자일 때만 센다. 우리는 계약이 하나뿐이라 <c>Lent</c> 만 본다.
     /// </remarks>
     public int LentInFleet => _ships.Count(s => s.Lent);
@@ -2774,7 +2774,7 @@ public sealed class Player
     /// </summary>
     /// <remarks>
     /// 함대에 편입해 둔 것도, 항구에 대 놓은 것도 다 가져간다. <b>남는 배가 없어도 거둬 간다</b> —
-    /// 게임은 그때 짐을 대신 팔아 준다(부르는 쪽이 한다).
+    /// 원본은 그때 짐을 대신 팔아 준다(부르는 쪽이 한다).
     /// </remarks>
     /// <returns>거둬 간 척수.</returns>
     public int TakeBackLentShips()
@@ -2802,7 +2802,7 @@ public sealed class Player
         if (Flagship > index) Flagship--;
         else if (Flagship == index) Flagship = 0;
         Flagship = Math.Clamp(Flagship, 0, Math.Max(0, _ships.Count - 1));
-        // 배가 줄면 정원도 준다 — 넘치는 선원은 내린다. 게임은 선원을 배마다 들고 있어(배 레코드 +0x34) 배가 빠지면
+        // 배가 줄면 정원도 준다 — 넘치는 선원은 내린다. 원본은 선원을 배마다 들고 있어(배 레코드 +0x34) 배가 빠지면
         // 그 배의 선원도 함께 빠진다. 안 맞추면 빌린 배를 다 돌려주고 <b>배가 한 척도 없는데 선원만 남아</b>,
         // 성문의 「탐험을 떠난다」(선원 수 > 0, 0x00468910)가 열렸다.
         if (Crew > MaxCrew) Crew = MaxCrew;
@@ -2815,7 +2815,7 @@ public sealed class Player
     /// 식량·물은 <b>단위</b>, 자재·탄약은 통이다.
     /// </summary>
     /// <remarks>
-    /// 게임도 식량·물만 열 배로 들고 화면에 낼 때 <c>(값 + 9) / 10</c> 으로 통을 낸다
+    /// 원본도 식량·물만 열 배로 들고 화면에 낼 때 <c>(값 + 9) / 10</c> 으로 통을 낸다
     /// (<c>0x0040EA15</c>). 하루 소모가 통보다 잘아서 통으로만 들면 셀 수가 없다.
     /// </remarks>
     private readonly int[] _supplies = new int[Supply.Count];
@@ -2852,7 +2852,7 @@ public sealed class Player
     /// 지난번 항구 보급에서 <b>맞춘 통 수</b> — 보급 창 「전회분」이 이것으로 되돌린다.
     /// </summary>
     /// <remarks>
-    /// 게임은 함대 전역에 넷을 든다 — 식량 <c>0x005B3970</c> · 물 <c>0x005B396C</c> · 자재 <c>0x005B3974</c> ·
+    /// 원본은 함대 전역에 넷을 든다 — 식량 <c>0x005B3970</c> · 물 <c>0x005B396C</c> · 자재 <c>0x005B3974</c> ·
     /// 탄약 <c>0x005B3978</c>(읽기 <c>0x0040E960</c> · 쓰기 <c>0x0040E9B0</c>). 보급을 결정할 때
     /// <c>0x0040F541</c> 이 그때 맞춘 총량을 적는다. 새 판은 0 이다.
     /// </remarks>
@@ -2869,7 +2869,7 @@ public sealed class Player
 
     /// <summary>짐 칸 하나 — 교역품 종류 · 갯수 · 원산지 도시 · 한 개 무게 · 유통 기한.</summary>
     /// <remarks>
-    /// 게임은 함대 전역 객체(<c>0x005B3928</c>)의 <c>+0x54</c> 에 <c>{종류, 갯수, 원산지, 기한}</c>
+    /// 원본은 함대 전역 객체(<c>0x005B3928</c>)의 <c>+0x54</c> 에 <c>{종류, 갯수, 원산지, 기한}</c>
     /// 16바이트 x 8칸을 둔다(읽기 <c>0x004742B0</c> · 쓰기 <c>0x004742F0</c>). 무게는 교역품 표에 있지만
     /// 이 모델은 그 표를 모르므로 실을 때 함께 적어 둔다.
     ///
@@ -2952,7 +2952,7 @@ public sealed class Player
     /// </summary>
     /// <remarks>
     /// 게임 도시 레코드(<c>0x005863A8</c> + 도시 x 92)의 <c>+0x44~+0x54</c>(공통품)와
-    /// <c>+0x18</c>(특산품)이다. 게임은 매달 1일에 한도까지 통째로 다시 채우므로(<c>0x0042A280</c>)
+    /// <c>+0x18</c>(특산품)이다. 원본은 매달 1일에 한도까지 통째로 다시 채우므로(<c>0x0042A280</c>)
     /// 끝 칸에 그 재고를 적은 달을 둔다 — 달이 바뀌었거나 여기 없는 도시는 규칙 쪽이 한도로 본다.
     /// </remarks>
     public IReadOnlyDictionary<int, int[]> TradeStock => _tradeStock;
@@ -3174,7 +3174,7 @@ public sealed class Player
     /// 발견 대본이 <b>세우거나(<c>26 08</c>) 없앤(<c>22 08</c>)</b> 도시 — 참이면 세움.
     /// </summary>
     /// <remarks>
-    /// 게임은 도시 레코드 <c>+0x04</c> 의 비트 4(「안 서 있다」)를 지우고(<c>0x0040A038</c>)
+    /// 원본은 도시 레코드 <c>+0x04</c> 의 비트 4(「안 서 있다」)를 지우고(<c>0x0040A038</c>)
     /// 세운다(<c>0x00409DC8</c>). 날짜로 되짚는 <c>CityFounding</c> 보다 이 값이 먼저다.
     /// 아스텍을 무너뜨리면(발견 이벤트 263) 테노치티틀란이 없어지고 멕시코가 선다.
     /// </remarks>
@@ -3214,7 +3214,7 @@ public sealed class Player
     private readonly HashSet<int> _historyDone = [];
 
     /// <summary>
-    /// 「그 달부터」(<c>1B</c>) 조건으로 한 번 돈 역사 대본 칸(파트 x 100 + 칸). 게임은 몸통이 조건을 깨서
+    /// 「그 달부터」(<c>1B</c>) 조건으로 한 번 돈 역사 대본 칸(파트 x 100 + 칸). 원본은 몸통이 조건을 깨서
     /// 다시 안 돌게 하는데, 우리는 도시 세우기를 따로 셈하므로 한 번 돈 것을 적어 둔다.
     /// </summary>
     public IReadOnlyCollection<int> HistoryDone => _historyDone;
@@ -3265,7 +3265,7 @@ public sealed class Player
     /// 지금 태우고 있는 선원 수. 식량·물이 며칠 가는지가 이것으로 갈린다.
     /// </summary>
     /// <remarks>
-    /// 게임도 배 여덟 칸의 선원수를 더한다(<c>0x004745F0</c>). 항구의 "선원편성" 에서
+    /// 원본도 배 여덟 칸의 선원수를 더한다(<c>0x004745F0</c>). 항구의 "선원편성" 에서
     /// 모집하고 해고한다 — 배를 사도 선원이 따라오지는 않는다.
     /// </remarks>
     public int Crew { get; private set; }
@@ -3274,7 +3274,7 @@ public sealed class Player
     /// 최저 승원 수 — 배마다의 필요승인을 더한 것. 이보다 적으면 배가 제대로 안 간다.
     /// </summary>
     /// <remarks>
-    /// 게임은 배 레코드 <c>+0x30</c> 에 <b>필요승인에서 10을 뺀</b> 값을 담고 읽을 때 도로
+    /// 원본은 배 레코드 <c>+0x30</c> 에 <b>필요승인에서 10을 뺀</b> 값을 담고 읽을 때 도로
     /// 더한다(<c>0x0044C780</c>). 선체 표(<c>0x004FC1E0</c>, 64바이트 x 8)의 <c>+0x34</c> 가
     /// 그 값이다.
     /// </remarks>
@@ -3284,7 +3284,7 @@ public sealed class Player
     /// 태울 수 있는 선원 수(정원). 필요승인의 <b>다섯 배</b>다.
     /// </summary>
     /// <remarks>
-    /// 게임은 선체 표 <c>+0x34</c> 에 5 를 곱하고 50 을 더한다(<c>0x0044C790</c>).
+    /// 원본은 선체 표 <c>+0x34</c> 에 5 를 곱하고 50 을 더한다(<c>0x0044C790</c>).
     /// <c>+0x34</c> 가 필요승인 - 10 이므로 <c>(필요승인-10)*5 + 50 = 필요승인*5</c> 로 같다 —
     /// 카라벨 15명이면 75명, 갤리온 40명이면 200명이다.
     ///
@@ -3297,7 +3297,7 @@ public sealed class Player
     /// 선원을 그만큼 태운다(음수면 내린다). 0 과 정원 사이로 잘린다.
     /// </summary>
     /// <returns>실제로 늘거나 준 수.</returns>
-    /// <remarks>게임의 <c>0x0040E3F0</c> 과 같다 — 그쪽도 0~정원으로 자른 뒤 싣는다.</remarks>
+    /// <remarks>원본의 <c>0x0040E3F0</c> 과 같다 — 그쪽도 0~정원으로 자른 뒤 싣는다.</remarks>
     public int AddCrew(int count)
     {
         int before = Crew;
@@ -3316,7 +3316,7 @@ public sealed class Player
     /// 배마다 태운 선원 — <see cref="Ships"/> 차례대로다. 합은 늘 <see cref="Crew"/> 다.
     /// </summary>
     /// <remarks>
-    /// 게임은 배 레코드 <c>+0x34</c> 마다 승원을 들고, 함대 선원은 그 합이다(<c>0x004745F0</c>).
+    /// 원본은 배 레코드 <c>+0x34</c> 마다 승원을 들고, 함대 선원은 그 합이다(<c>0x004745F0</c>).
     /// 우리는 모집·해고가 함대 총수를 움직이므로, 합이 어긋나거나 배 수가 바뀌면 바다 커맨드
     /// 「편성」의 <b>최적화</b>(<c>0x004744F0</c>)와 같은 규칙으로 다시 나눈다.
     /// </remarks>
@@ -3378,7 +3378,7 @@ public sealed class Player
         return true;
     }
 
-    /// <summary>해전에 들어설 때의 대열(0~7). 게임의 함대 <c>+0xDC</c> 다 — 새 판은 0.</summary>
+    /// <summary>해전에 들어설 때의 대열(0~7). 원본의 함대 <c>+0xDC</c> 다 — 새 판은 0.</summary>
     public int Formation { get; private set; }
 
     /// <summary>대열을 고른다(<c>0x00475A50</c>).</summary>
@@ -3488,7 +3488,7 @@ public sealed class Player
     /// 값 없이 배를 한 척 받는다 — 스폰서가 계약을 맺으며 대 주는 배다.
     /// </summary>
     /// <remarks>
-    /// 게임은 세상 배 표(<c>0x005A4E18</c>)에 이미 있는 배를 골라 <c>+0x64</c> 에 1 을
+    /// 원본은 세상 배 표(<c>0x005A4E18</c>)에 이미 있는 배를 골라 <c>+0x64</c> 에 1 을
     /// 박아 「대출」로 표시할 뿐 새 배를 짓지 않는다(<c>0x0040FA00</c>). 우리 쪽에는 그런
     /// 배 무리가 없어 새로 세운다.
     ///

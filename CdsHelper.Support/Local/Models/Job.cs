@@ -115,7 +115,7 @@ public static class Ability
     public const int FaithRoll = 80, FaithBase = 21;
 
     /// <summary>
-    /// 나이대 보정. 게임은 스택에 세 벌(여섯씩 열여덟 칸)을 깔고 나이로 고른다.
+    /// 나이대 보정. 원본은 스택에 세 벌(여섯씩 열여덟 칸)을 깔고 나이로 고른다.
     /// </summary>
     /// <remarks>
     /// <code>

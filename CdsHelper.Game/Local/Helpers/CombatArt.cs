@@ -17,7 +17,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   bar-a-00 …        640x32   상단 정보 띠
 ///   monster0-00 ~ 3-29 96x96   괴물 네 마리 x 서른 장(파트 13~16)
 /// </code>
-/// <b>격자 한 칸은 32점</b>이다 — 게임이 칸 좌표에 <c>shl eax, 5</c> 를 먹인다.
+/// <b>격자 한 칸은 32점</b>이다 — 원본이 칸 좌표에 <c>shl eax, 5</c> 를 먹인다.
 /// </remarks>
 public sealed class CombatArt
 {

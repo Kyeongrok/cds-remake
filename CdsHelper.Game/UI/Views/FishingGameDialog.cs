@@ -14,9 +14,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 미니 게임 「낚시 게임」 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0047BDD0</c> 이고, 규칙은 <see cref="FishingGame"/> 에 모아 두었다.
+/// 원본의 <c>0x0047BDD0</c> 이고, 규칙은 <see cref="FishingGame"/> 에 모아 두었다.
 ///
-/// <b>그림은 게임 것 그대로다</b> — FISHING.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다
+/// <b>그림은 원본 것 그대로다</b> — FISHING.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다
 /// (<c>tools/extract_minigame_art.py</c>). 자리 표는 EXE 의 <c>0x00569194</c> 이고
 /// 배경은 <c>0x0047ADF2</c> 가 <b>336x392</b> 를 통째로 찍는다.
 ///
@@ -26,7 +26,7 @@ namespace CdsHelper.Game.UI.Views;
 ///
 /// 바늘은 <b>스스로 내려간다</b> — 한 틱에 한 점이고 한 줄이 마흔 틱이다
 /// (<c>0x0047AB0F</c>). 옆으로 가는 동안은 가로로도 한 틱에 한 점씩 밀려 딱 한 칸을
-/// 옮겨 간다. 게임은 <c>0x00428000(0, 0)</c> 으로 <b>안 기다리고</b> 그리는 대로
+/// 옮겨 간다. 원본은 <c>0x00428000(0, 0)</c> 으로 <b>안 기다리고</b> 그리는 대로
 /// 도는데, 여기서는 20밀리초에 한 틱으로 잡았다(다 내려가는 데 여섯 해 남짓).
 ///
 /// <b>바다 것들은 처음부터 다 보인다.</b> 어디에 오징어와 낙지가 있는지 보고 피해
@@ -47,8 +47,8 @@ internal sealed class FishingGameDialog : InfoDialog
 
     /// <summary>물빛 세로줄 자리. 그림에서 잰 것이다(첫 세로줄 x 48, 가로줄은 y 103 부터 40 마다).</summary>
     /// <remarks>
-    /// 게임은 배경을 <c>(8, 0)</c> 에 찍는다(<c>0x0047AE06</c>). 그래서 아래 자리들은 모두
-    /// 게임이 그리는 자리에서 <b>x 만 8 을 뺀 값</b>이다. y 는 그대로다.
+    /// 원본은 배경을 <c>(8, 0)</c> 에 찍는다(<c>0x0047AE06</c>). 그래서 아래 자리들은 모두
+    /// 원본이 그리는 자리에서 <b>x 만 8 을 뺀 값</b>이다. y 는 그대로다.
     /// </remarks>
     private const int Step = 40;
 
@@ -57,7 +57,7 @@ internal sealed class FishingGameDialog : InfoDialog
 
     private const int BeastSize = 32, HookSize = 16, FishW = 32, FishH = 16, BigW = 64, BigH = 32;
 
-    /// <summary>한 틱에 얼마나 쉴지. 게임은 안 쉬고 그리는 대로 돈다.</summary>
+    /// <summary>한 틱에 얼마나 쉴지. 원본은 안 쉬고 그리는 대로 돈다.</summary>
     private static readonly TimeSpan TickTime = TimeSpan.FromMilliseconds(TickMs);
 
     /// <summary>
@@ -85,7 +85,7 @@ internal sealed class FishingGameDialog : InfoDialog
 
         Lay(Picture("fish-bg.png"), 0, 0, SceneWidth, SceneHeight);
 
-        // 바다 것들 — 게임은 (칸*40+0x24, 줄*40+0x72) 에 찍는다(0x0047B1B2).
+        // 바다 것들 — 원본은 (칸*40+0x24, 줄*40+0x72) 에 찍는다(0x0047B1B2).
         // 첫 가로줄(y 103) 밑이 0 줄이다. 그 위 물낯 띠에는 아무것도 없다.
         for (int at = 0; at < FishingGame.Cells; at++)
         {
@@ -152,7 +152,7 @@ internal sealed class FishingGameDialog : InfoDialog
         double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
-        // 게임은 미니 게임에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 그림에 금빛
+        // 원본은 미니 원본에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 그림에 금빛
         // 테만 두르고, 할 일은 오른쪽 단추 차림표가 맡는다(성배 퍼즐·미궁 64 와 같다).
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -270,7 +270,7 @@ internal sealed class FishingGameDialog : InfoDialog
     /// 걸린 것을 <b>끌어 올린다</b>. 다 올라오면 창을 닫는다.
     /// </summary>
     /// <remarks>
-    /// 게임도 무엇이든 걸리면 그 자리에서 멎지 않고 줄을 감아 올린다. 내려갈 때보다
+    /// 원본도 무엇이든 걸리면 그 자리에서 멎지 않고 줄을 감아 올린다. 내려갈 때보다
     /// 빠르게 올린다 — 기다리는 맛이 없는 대목이라 <see cref="ReelStep"/> 만큼씩 당긴다.
     /// </remarks>
     private void Reel()
@@ -316,7 +316,7 @@ internal sealed class FishingGameDialog : InfoDialog
 
         // 바늘은 <b>사다리 위에서만</b> 간다 — 가로줄을 건널 때는 높이가 멎고,
         // 다 건넌 뒤에 세로줄을 내려간다(FishingGame.DrawX · DrawY).
-        // 게임은 0x0047B6FE 에서 (x=[0xF4], y=[0xF8], 16, 16) 으로 찍는다 — [0xF4] 는 칸*40+0x2E 에서
+        // 원본은 0x0047B6FE 에서 (x=[0xF4], y=[0xF8], 16, 16) 으로 찍는다 — [0xF4] 는 칸*40+0x2E 에서
         // 시작해 건널 때 틱만큼 밀린다. 높이는 <b>그림 윗변</b>이라 바늘 고리가 줄 위에 놓인다.
         Canvas.SetLeft(_hook, 0x2E - 8 + _game.DrawX);
         Canvas.SetTop(_hook, _game.DrawY);
@@ -413,7 +413,7 @@ internal sealed class FishingGameDialog : InfoDialog
     /// 한 판 한다. 결과 글은 <c>0x0047AD31</c> 의 뜀표 그대로다.
     /// </summary>
     /// <returns>
-    /// <b>대어를 낚았는지</b>. 게임은 대어 갈래에서만 결과 <c>[+0x9C] = 1</c> 을 박고
+    /// <b>대어를 낚았는지</b>. 원본은 대어 갈래에서만 결과 <c>[+0x9C] = 1</c> 을 박고
     /// (<c>0x0047AD6C</c>) 나머지는 0 이라, 발견 대본(<c>0E 04 03</c>)은 대어만 이긴 것으로 친다.
     /// </returns>
     public static bool Play(Window owner, Random rng)

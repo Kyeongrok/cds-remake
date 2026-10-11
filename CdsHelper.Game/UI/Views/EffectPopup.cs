@@ -83,7 +83,7 @@ internal sealed class EffectPopup : Window
 
     /// <summary>
     /// 부르는 창에 맞춰 한 벌을 돌린다 — 도시 그림 위면 그림 한가운데(<see cref="CityPicView"/>),
-    /// 아니면 그 창 한가운데에 뜬다. 게임은 굴린 뒤 <c>0x004A6140(벌, 결과, 소리)</c> 으로 돌린다.
+    /// 아니면 그 창 한가운데에 뜬다. 원본은 굴린 뒤 <c>0x004A6140(벌, 결과, 소리)</c> 으로 돌린다.
     /// </summary>
     public static void PlayOn(Window? owner, Engine.Game game, int anim, bool won)
     {

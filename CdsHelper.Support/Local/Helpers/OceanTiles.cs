@@ -3,7 +3,7 @@ using System.IO;
 namespace CdsHelper.Support.Local.Helpers;
 
 /// <summary>
-/// OCEAN.CDS — 게임이 해상 화면을 그릴 때 쓰는 타일 그림. 세계지도를 게임과 같은 그림으로
+/// OCEAN.CDS — 원본이 해상 화면을 그릴 때 쓰는 타일 그림. 세계지도를 원본과 같은 그림으로
 /// 그리는 데 쓴다.
 /// </summary>
 /// <remarks>
@@ -17,7 +17,7 @@ namespace CdsHelper.Support.Local.Helpers;
 ///
 /// 세계지도는 칸 하나를 <c>scale</c> 픽셀로 그리므로 16x16 타일을 그대로 쓸 수 없다.
 /// 대신 타일마다 scale x scale 평균색을 미리 계산해 두고 그걸 칠한다 — 그리는 비용이
-/// 지금(팔레트 계산)과 같으면서 그림은 게임 것이 된다.
+/// 지금(팔레트 계산)과 같으면서 그림은 원본 것이 된다.
 /// </remarks>
 public sealed class OceanTiles
 {

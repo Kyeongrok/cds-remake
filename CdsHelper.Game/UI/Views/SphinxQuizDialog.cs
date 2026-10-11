@@ -4,10 +4,10 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 미니 게임 「스핑크스 퀴즈」 — 게임처럼 <b>알림 창과 고르기 창만으로</b> 흘러간다.
+/// 미니 게임 「스핑크스 퀴즈」 — 원본처럼 <b>알림 창과 고르기 창만으로</b> 흘러간다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0047BFE0</c> 이고, 규칙은 <see cref="SphinxQuiz"/> 에 모아 두었다.
+/// 원본의 <c>0x0047BFE0</c> 이고, 규칙은 <see cref="SphinxQuiz"/> 에 모아 두었다.
 /// 이 게임은 따로 판을 안 세운다 — <c>0x0049E3E0</c>(알림)과 <c>0x004878A0</c>(고르기)만
 /// 번갈아 부른다. 그래서 여기서도 <see cref="NoticeDialog"/> 와
 /// <see cref="MapPointDialog"/> 로만 낸다.

@@ -14,7 +14,7 @@ namespace CdsHelper.Game.UI.Views;
 /// NEW GAME 둘째 걸음 — 굴린 능력치를 보너스 포인트로 손보고 직업을 고른다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0045D6C0</c> 이고, 굴리는 것은 <c>0x0045D450</c> 이다.
+/// 원본의 <c>0x0045D6C0</c> 이고, 굴리는 것은 <c>0x0045D450</c> 이다.
 /// <code>
 ///   0x00560A88  능력치 여섯 — 체력 지력 무력 매력 운 (신앙심은 안 보인다)
 ///   0x00560AA8  직업 여덟   — 화면에는 탐험가 발굴자 사냥꾼 정복자 넷만
@@ -23,13 +23,13 @@ namespace CdsHelper.Game.UI.Views;
 ///   45d568      값 = 생일보정 + rand(나이) + 직업보정 + 나이보정 + 50, 20~100 으로 자른다
 ///   45d5d5      보너스 = 합으로 갈린다 — 잘 굴렸을수록 덜 준다
 /// </code>
-/// <b>직업을 바꿔도 다시 굴리지 않는다</b> — 게임 그대로다. 굴리는 <c>0x0045D450</c> 을 부르는 데는
+/// <b>직업을 바꿔도 다시 굴리지 않는다</b> — 원본 그대로다. 굴리는 <c>0x0045D450</c> 을 부르는 데는
 /// <c>0x0045D022</c> 한 곳뿐인데, 그 자리는 <b>앞 걸음(신상)의 끝</b>이다 — 이 화면에
 /// 들어오기 전에 이미 굴려 놓는다는 뜻이다. 그래서 직업 보정표는 새 게임에서는
 /// 늘 0번 줄(탐험가, 값이 다 0)로 걸리고, 표의 나머지 줄은 부하·NPC 쪽에서만 쓰인다.
 /// 직업 단추는 <b>기본 기술</b>만 정한다(다음 걸음, 고르는 자리 <c>0x0045D8DA</c>).
 ///
-/// 다시 굴리고 싶으면 게임처럼 "취소" 로 신상 걸음까지 물러났다가 다시 오면 된다.
+/// 다시 굴리고 싶으면 원본처럼 "취소" 로 신상 걸음까지 물러났다가 다시 오면 된다.
 /// </remarks>
 internal sealed class AbilityMakeDialog : InfoDialog
 {
@@ -37,7 +37,7 @@ internal sealed class AbilityMakeDialog : InfoDialog
     /// 판 크기(그림 점). 잰 값이 <b>1.75배로 늘어난 화면</b>에서 나온 것이라 도로 나눴다 —
     /// 띠 단추만 제 크기(24)로 그려져 있어 혼자 작아 보였다.
     /// </summary>
-    /// <summary>게임 갈무리에 이 화면들에는 닫기(X)가 없다.</summary>
+    /// <summary>원본 갈무리에 이 화면들에는 닫기(X)가 없다.</summary>
     protected override bool ShowClose => false;
 
     /// <summary>판을 원본 좌표 그대로 캔버스에 짓는다 — 여백은 테(8점)가 다 맡는다.</summary>
@@ -162,7 +162,7 @@ internal sealed class AbilityMakeDialog : InfoDialog
             _values[i].HorizontalAlignment = HorizontalAlignment.Right;
             Put(body, new Grid { Width = 4 * Cell, Children = { _values[i] } }, 8 + 6 * Cell, y);
 
-            // 게임은 화살표 둘을 세로로 쌓지 않고 나란히 놓는다.
+            // 원본은 화살표 둘을 세로로 쌓지 않고 나란히 놓는다.
             Put(body, Arrow(up: true, () => Move(which, +1)), 104, y);
             Put(body, Arrow(up: false, () => Move(which, -1)), 120, y);
 
@@ -397,13 +397,13 @@ internal sealed class AbilityMakeDialog : InfoDialog
         for (int i = 0; i < _targetLabels.Length; i++)
             if (_targetLabels[i] is { } label) label.Text = _targets[i] is { } want ? $"{want}" : "";
 
-        // 고른 직업은 <b>띠 무늬를 갈아</b> 알린다. 게임은 <b>고른 것이 밝은 베이지</b>고
+        // 고른 직업은 <b>띠 무늬를 갈아</b> 알린다. 원본은 <b>고른 것이 밝은 베이지</b>고
         // 안 고른 것이 어두운 쪽이다 — 우리가 거꾸로 걸고 있었다.
         for (int i = 0; i < _jobs.Count; i++)
             _jobs[i].Band = i == _job ? BandStyle.Button : BandStyle.Alt;
     }
 
-    /// <summary>"다음" — 보너스를 다 안 썼으면 게임처럼 한 번 묻는다.</summary>
+    /// <summary>"다음" — 보너스를 다 안 썼으면 원본처럼 한 번 묻는다.</summary>
     private void Next()
     {
         if (_left > 0 && !ConfirmDialog.Ask(this,

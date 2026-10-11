@@ -150,7 +150,7 @@ public class AutoPlayService : IDisposable
                             State = AutoPlayState.LeavingBuilding,
                             Message = $"{detection.SceneDetail}에서 나가는 중..."
                         });
-                        // 우클릭 또는 ESC로 건물 나가기 (게임에 따라 조정 필요)
+                        // 우클릭 또는 ESC로 건물 나가기 (원본에 따라 조정 필요)
                         GameWindowHelper.SendRightClick(centerX, centerY);
                         await Task.Delay(1500, token);
                         break;
@@ -335,7 +335,7 @@ public class AutoPlayService : IDisposable
         var targetX = centerX + dx;
         var targetY = centerY + dy;
 
-        // 항해 중에는 이동만 (클릭 아님) — 게임이 커서 방향으로 항해
+        // 항해 중에는 이동만 (클릭 아님) — 원본이 커서 방향으로 항해
         GameWindowHelper.MoveCursorRelative(hWnd, targetX, targetY);
 
         RaiseStatus(new AutoPlayStatus

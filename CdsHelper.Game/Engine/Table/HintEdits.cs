@@ -16,7 +16,7 @@ public static class HintEdits
     /// <summary>적어 둘 파일 이름(<c>힌트-고친것.json</c>).</summary>
     private const string CacheName = "힌트-고친것";
 
-    /// <summary>고쳐 둔 한 줄. 안 고친 칸은 null 이라 게임 값이 그대로 남는다.</summary>
+    /// <summary>고쳐 둔 한 줄. 안 고친 칸은 null 이라 원본 값이 그대로 남는다.</summary>
     /// <param name="Discovery">
     /// 가리킬 발견물 <b>일련번호</b>. 표에서 몇째 줄인지가 아니다
     /// (<see cref="HintTable.Hint.Discovery"/>).
@@ -39,7 +39,7 @@ public static class HintEdits
     /// <summary>그 힌트에 씌워 둔 것. 안 고쳤으면 null.</summary>
     public static Entry? Of(int id) => Map.TryGetValue(id, out var e) ? e : null;
 
-    /// <summary>게임 값 위에 고친 것을 얹어 낸다.</summary>
+    /// <summary>원본 값 위에 고친 것을 얹어 낸다.</summary>
     public static HintTable.Hint Apply(HintTable.Hint game)
     {
         if (Of(game.Id) is not { } e) return game;
@@ -85,7 +85,7 @@ public static class HintEdits
         Save();
     }
 
-    /// <summary>씌운 것을 걷어 게임 값으로 되돌린다.</summary>
+    /// <summary>씌운 것을 걷어 원본 값으로 되돌린다.</summary>
     public static void Reset(int id)
     {
         if (!Map.Remove(id)) return;

@@ -32,7 +32,7 @@ public static class Foraging
     /// 선원 수 보정(<c>0x0048DEC6</c>) — 손이 많으면 잘 찾는다.
     /// </summary>
     /// <remarks>
-    /// 30 이하면 −10, 100 위면 +10, 그 사이는 0 이다. 게임은 8척의 선원을 다 더한 값을 쓴다.
+    /// 30 이하면 −10, 100 위면 +10, 그 사이는 0 이다. 원본은 8척의 선원을 다 더한 값을 쓴다.
     /// </remarks>
     public static int CrewBonus(int crew) => crew <= 30 ? -10 : crew >= 100 ? 10 : 0;
 

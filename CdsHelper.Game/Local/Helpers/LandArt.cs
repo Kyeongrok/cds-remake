@@ -50,7 +50,7 @@ public sealed class LandArt
     /// </summary>
     /// <remarks>
     /// 파트 6 은 189,440바이트라 나누어떨어지는 꼴이 넷이나 되어 오래 못 짚었는데,
-    /// 고를 것 없이 <b>게임이 찍는 크기</b>가 답이었다. <c>0x0049FEFB</c> 가
+    /// 고를 것 없이 <b>원본이 찍는 크기</b>가 답이었다. <c>0x0049FEFB</c> 가
     /// <c>0x004B5CB9(0, 0, 0x250, 0x140, 판)</c> 으로 <b>592 x 320</b> 을 (0,0)에 찍는다.
     /// 592 x 320 = 189,440 이라 자투리 없이 딱 맞고, 줄 우선으로 읽으면 그림이 선다.
     /// </remarks>
@@ -108,7 +108,7 @@ public sealed class LandArt
     /// 그 병종의 몸짓 한 장을 BGRA 로 푼다. 못 풀면 null.
     /// </summary>
     /// <param name="kind">병종 0~23.</param>
-    /// <param name="friend">아군 자리인지 — 게임은 슬롯 0~5 를 아군으로 본다.</param>
+    /// <param name="friend">아군 자리인지 — 원본은 슬롯 0~5 를 아군으로 본다.</param>
     /// <param name="culture">상대 문화권 0~10. 몇몇 병종의 그림이 이것으로 갈린다.</param>
     /// <param name="frame">몸짓 0~7.</param>
     public uint[]? TryGetUnit(int kind, bool friend, int culture, int frame,
@@ -192,7 +192,7 @@ public sealed class LandArt
     /// 그 자리가 아니면 null.
     /// </summary>
     /// <remarks>
-    /// 파트 52 는 5,760바이트라 24x24 짜리 열 자다. 게임도 그렇게 읽는다 — 자리는
+    /// 파트 52 는 5,760바이트라 24x24 짜리 열 자다. 원본도 그렇게 읽는다 — 자리는
     /// <c>0x0049FD62</c> 가 <c>숫자 x 0x240 + 0xF00</c> 으로 잡는데, <c>0xF00</c> 은
     /// 파트 51 과 52 를 한 버퍼에 이어 붙일 때 파트 52 가 시작하는 자리고(<c>0x0044A710</c>)
     /// <c>0x240</c> 이 24x24 다. 찍는 크기도 <c>0x18 x 0x18</c> 이다.
@@ -219,7 +219,7 @@ public sealed class LandArt
     /// 말풍선을 짜는 <b>16x16 조각</b> 한 장(파트 51). 그 자리가 아니면 null.
     /// </summary>
     /// <remarks>
-    /// 게임은 판 위 말을 창이 아니라 <b>말풍선</b>으로 낸다. 짜는 자리가
+    /// 원본은 판 위 말을 창이 아니라 <b>말풍선</b>으로 낸다. 짜는 자리가
     /// <c>0x00445B20</c> 인데, 파트 51·52 를 한 버퍼에 이어 붙인 뱅크(<c>0x005A4A8C</c>)
     /// 에서 <c>+0x300</c>·<c>+0x400</c>·<c>+0x100</c>(또는 <c>+0x900</c>)·
     /// <c>+0x200</c>(또는 <c>+0xA00</c>) 넷을 가져다 쓴다 — 곧 파트 51 의 조각
@@ -365,7 +365,7 @@ public sealed class LandArt
 }
 
 /// <summary>
-/// 병종에서 <c>LANDDATA.CDS</c> 파트를 고르는 표 — 게임의 <c>0x0044A1F0</c> 이다.
+/// 병종에서 <c>LANDDATA.CDS</c> 파트를 고르는 표 — 원본의 <c>0x0044A1F0</c> 이다.
 /// </summary>
 /// <remarks>
 /// 아군(슬롯 0~5)과 적(6~11)이 다른 그림을 쓰는 병종이 여섯이고, 문화권으로 갈리는
@@ -431,6 +431,6 @@ public static class LandUnitArt
         21 => 28,                                                 // 주술사
         22 => 34,                                                 // 고승
         23 => 39,                                                 // 표범
-        _ => friend ? 8 : 16,                                     // 표 밖 — 게임도 이렇게 물러선다
+        _ => friend ? 8 : 16,                                     // 표 밖 — 원본도 이렇게 물러선다
     };
 }

@@ -110,7 +110,7 @@ internal sealed class GameButton : Border
     }
 
     /// <summary>
-    /// 초점이 왔는지. 오면 안쪽 테가 0.5초마다 깜빡인다 — 게임이 지금 고른 줄을 그렇게 알린다.
+    /// 초점이 왔는지. 오면 안쪽 테가 0.5초마다 깜빡인다 — 원본이 지금 고른 줄을 그렇게 알린다.
     /// </summary>
     public bool Focused
     {

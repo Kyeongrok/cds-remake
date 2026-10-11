@@ -13,9 +13,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 미니 게임 「코인 게임」(천칭 퍼즐) 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x004531F0</c> 이고, 규칙은 <see cref="CoinPuzzle"/> 에 모아 두었다.
+/// 원본의 <c>0x004531F0</c> 이고, 규칙은 <see cref="CoinPuzzle"/> 에 모아 두었다.
 ///
-/// <b>그림은 게임 것 그대로다</b> — BALANCE.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다
+/// <b>그림은 원본 것 그대로다</b> — BALANCE.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다
 /// (<c>tools/extract_minigame_art.py</c>). 자리 표가 EXE 에 셋으로 나뉘어 있다.
 /// <code>
 ///   0x00549E10  파트 0 — 금화 32x32 <b>스물여덟 장</b>
@@ -37,7 +37,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 옮겨 적었다.
 /// 배경에 <b>오른쪽 흰 테 칸</b>과 <b>아래 검은 칸</b>이 비어 있다 — 금화를 늘어놓는
 /// 데와 자취를 적는 데다. <b>그 둘 말고는 아무것도 얹지 않는다</b> — 게임 화면에 없는
-/// 것을 덧대면 그만큼 게임이 아니게 된다.
+/// 것을 덧대면 그만큼 원본이 아니게 된다.
 ///
 /// <b>천칭은 한 장이 아니라 조각을 겹쳐 세운다.</b> 기둥과 받침을 놓고, 평형이면 곧은
 /// 대에 접시 둘을 걸고, 기울면 그 벌(나무 천칭 192x144)로 갈아 끼운다. 자리는 게임
@@ -95,7 +95,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     /// 옮기면 아래 값이 된다.
     /// </remarks>
     /// <remarks>
-    /// 뒤에 <c>0x004527F4</c> 에서 셈을 그대로 읽었다 — 게임은
+    /// 뒤에 <c>0x004527F4</c> 에서 셈을 그대로 읽었다 — 원본은
     /// <c>x = 46*칸 + 0x122</c> · <c>y = 46*줄 + 0x28</c> 이니 테 여덟을 빼면 아래다.
     /// </remarks>
     private const int TrayX = 282, TrayY = 32, TrayStep = 46, TrayPer = 3;
@@ -105,7 +105,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     /// </summary>
     /// <remarks>
     /// 예전에는 한 줄을 통째로 글로 이어 붙여 <see cref="StackPanel"/> 에 쌓았더니
-    /// 줄이 가운데로 몰려 「2-」·「3-」이 들쭉날쭉했다. 게임은 <c>0x004520F0</c> 부터
+    /// 줄이 가운데로 몰려 「2-」·「3-」이 들쭉날쭉했다. 원본은 <c>0x004520F0</c> 부터
     /// <b>자리를 하나하나 대고</b> 찍는다.
     /// <code>
     ///   0x004520F0  "1-" "2-" "3-" 을 x 0x2C, y 0x138·0x14C·0x160 에
@@ -247,7 +247,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
-        // 게임은 미니 게임에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 그림에 금빛
+        // 원본은 미니 원본에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 그림에 금빛
         // 테만 두르고, 할 일은 오른쪽 단추 차림표가 맡는다(성배 퍼즐·미궁 64 와 같다).
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -268,7 +268,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         Sync();
     }
 
-    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 게임 그대로다.</summary>
+    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 원본 그대로다.</summary>
     /// <remarks>
     /// <c>0x00451BCA</c> 가 «무게를 단다(WEIGH)» · «금화를 내린다(CLEAR)» · «가짜 금화 선택(DECIDE)» ·
     /// «게임 설명» · «게임 속행»(<c>0x0053B048</c>~<c>0x0053B0A0</c>) 다섯을 넘긴다 — 판의 단추 셋이
@@ -284,7 +284,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         ("게임 속행", () => { }),   // 차림표만 닫는다
     ];
 
-    /// <summary>단추 하나. 그림은 게임 것을 그대로 쓴다.</summary>
+    /// <summary>단추 하나. 그림은 원본 것을 그대로 쓴다.</summary>
     private void Button(int at, string art, Action run)
     {
         var image = new Image
@@ -537,7 +537,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
             (leftPile, rightPile) = (WoodPile[down][0], WoodPile[down][1]);
         }
 
-        // 쟁반 — 접시에 올린 것만 숨긴다. <b>빈자리는 그대로 둔다</b> — 게임도 남은
+        // 쟁반 — 접시에 올린 것만 숨긴다. <b>빈자리는 그대로 둔다</b> — 원본도 남은
         // 금화를 앞으로 당기지 않는다(1·2 를 올리면 3 이 첫 줄 오른쪽에 홀로 남는다).
         for (int i = 0; i < _game.Coins; i++)
         {
@@ -557,7 +557,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         Pile(_game.Left.Count, leftPile);
         Pile(_game.Right.Count, rightPile);
 
-        // 검은 칸에는 <b>늘 세 줄</b>이 서 있다 — 게임도 「1-」「2-」「3-」을 미리 그어
+        // 검은 칸에는 <b>늘 세 줄</b>이 서 있다 — 원본도 「1-」「2-」「3-」을 미리 그어
         // 두고 잰 차례대로 채운다. 아직 안 잰 첫 줄에는 지금 접시에 올린 것을 보인다.
         _log.Children.Clear();
         for (int n = 0; n < CoinPuzzle.Weighings; n++)
@@ -599,7 +599,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     /// 거꾸로 놓이고, 오른 접시는 <see cref="LogRightStart"/> 에서 오른쪽으로 적는다.
     /// 두 자리 수는 왼쪽으로 여덟 점 더 물러나 <b>오른끝이 그대로</b> 맞는다.
     ///
-    /// 도는 차례는 <b>금화 번호 순</b>이다 — 게임이 금화를 0번부터 훑으며 어느 접시에
+    /// 도는 차례는 <b>금화 번호 순</b>이다 — 원본이 금화를 0번부터 훑으며 어느 접시에
     /// 있는지 보기 때문이다. 올린 차례가 아니다.
     /// </remarks>
     private void Numbers(IReadOnlyList<int> left, IReadOnlyList<int> right, int y)
@@ -673,7 +673,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     /// <remarks>
     /// 삯 3000닢은 <b>게임 속 천칭</b>에서만 나온다 — <c>0x00450C4C</c> 가
     /// <c>[0x154] != 0</c> 일 때만 <c>0x0047CBC0(0xBB8)</c> 을 부르는데, 그 값은
-    /// 들어올 때 받은 인자이고 미니 게임은 0 을 준다(<c>0x0045FB54</c>).
+    /// 들어올 때 받은 인자이고 미니 원본은 0 을 준다(<c>0x0045FB54</c>).
     /// </remarks>
     /// <returns>
     /// 가려냈는지. 발견 대본 <c>0E 14|1A … 04 04 00</c> 은 <c>0x004531F0(1)</c> 이 1 을 돌려줄 때만
@@ -708,7 +708,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
                 Environment.NewLine + "순식간에 장치가 작동되어 방이 무너져 간다.",
                 "클리어 실패");
         }
-        // 미니 게임은 방이 무너지지 않는다 — 한 줄로 끝난다(0x00450D3F · 0x0053AEC8).
+        // 미니 원본은 방이 무너지지 않는다 — 한 줄로 끝난다(0x00450D3F · 0x0053AEC8).
         else if (dialog._game.Missed)
         {
             NoticeDialog.Show(owner, " 가려야 할 금화를 잘못 고른 것 같다. 천칭은 기울어지고 말았다.",

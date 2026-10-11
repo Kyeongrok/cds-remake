@@ -13,7 +13,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x000  258바이트   86색 팔레트, 한 색이 (파랑, 빨강, 초록) — 색인 160~245 에 얹는다
 ///   +0x102  240x176     8bpp 색인 한 장씩 이어 붙음, 위에서 아래로
 /// </code>
-/// 장 수는 게임이 <c>(길이 − 0x300) / 240 / 176</c> 으로 센다(<c>0x00408541</c>). 머리가
+/// 장 수는 원본이 <c>(길이 − 0x300) / 240 / 176</c> 으로 센다(<c>0x00408541</c>). 머리가
 /// 실제로는 0x102 라 <b>마지막 한 장은 안 튼다</b> — 파트 4 는 25장이 들었지만 24장만 돈다.
 /// 팔레트 밖 색인(대개 <c>0x49</c> 검정)은 공용 팔레트다. DSTILL 과 같은 짜임이다.
 /// </remarks>
@@ -31,7 +31,7 @@ public sealed class DiscoveryClips
     /// <summary>제 팔레트가 얹히는 첫 색인.</summary>
     private const int OwnPaletteBase = 160;
 
-    /// <summary>게임이 장 수를 셀 때 빼는 머리 크기(<c>0x00408541</c>).</summary>
+    /// <summary>원본이 장 수를 셀 때 빼는 머리 크기(<c>0x00408541</c>).</summary>
     private const int CountedHeader = 0x300;
 
     private readonly Ls12Reader _archive;

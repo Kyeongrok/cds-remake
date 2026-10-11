@@ -41,7 +41,7 @@ internal sealed class GameMenuHost(Window owner)
     /// 뿌리 메뉴를 연다. 쌓여 있던 겹은 버린다.
     /// </summary>
     /// <param name="at">
-    /// 띄울 화면 자리(WPF 단위). 안 주면 <b>주인 창 한가운데</b>다 — 게임이 시설 명령 창을
+    /// 띄울 화면 자리(WPF 단위). 안 주면 <b>주인 창 한가운데</b>다 — 원본이 시설 명령 창을
     /// 내는 자리다(볼트 <c>15.분석-시설 화면 엔진</c>).
     /// </param>
     public void Open(Func<GameMenu> build, Point? at = null)
@@ -81,7 +81,7 @@ internal sealed class GameMenuHost(Window owner)
     {
         if (_closing || _window == null) return;
         _closing = true;
-        // 점으로 오므라든 뒤에 닫힌다 — 게임도 그렇게 걷는다.
+        // 점으로 오므라든 뒤에 닫힌다 — 원본도 그렇게 걷는다.
         _window.CloseZoomed();
     }
 
@@ -105,7 +105,7 @@ internal sealed class GameMenuHost(Window owner)
         }
 
         _window.SetContent(content);
-        // 줄 수가 달라지면 크기도 달라진다 — 게임처럼 다시 한가운데로 민다.
+        // 줄 수가 달라지면 크기도 달라진다 — 원본처럼 다시 한가운데로 민다.
         if (at is { } spot) _window.MoveTo(spot); else _window.Recenter();
         _window.Activate();
     }

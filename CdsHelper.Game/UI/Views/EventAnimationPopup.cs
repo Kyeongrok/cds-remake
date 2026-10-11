@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 지도 위에 사건 애니메이션(<c>EVANIME.CDS</c>) 한 장면을 끝까지 돌리고 닫힌다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0048E820(장면)</c> 이다. 장면 번호를 지도 창 <c>+0x108</c> 에 두고
+/// 원본의 <c>0x0048E820(장면)</c> 이다. 장면 번호를 지도 창 <c>+0x108</c> 에 두고
 /// <c>+0x10C</c>(걸음)를 0 으로 놓은 뒤, <c>+0x108</c> 이 -1 이 될 때까지 메시지를 돌린다.
 /// <code>
 ///   0x0048B120  GetTickCount 가 0x005697D4 보다 100ms 넘게 갔으면 결과 2(한 걸음)
@@ -176,7 +176,7 @@ internal sealed partial class EventAnimationPopup : Window
 
         var timer = new DispatcherTimer(StepSpan, DispatcherPriority.Normal, (_, _) => Tick(),
                                         Dispatcher.CurrentDispatcher);
-        Tick();                                  // 게임도 여는 즉시 첫 걸음(걸음 0)을 그린다
+        Tick();                                  // 원본도 여는 즉시 첫 걸음(걸음 0)을 그린다
         try
         {
             if (frame.Continue) Dispatcher.PushFrame(frame);
@@ -270,10 +270,10 @@ internal sealed partial class EventAnimationPopup : Window
 
         public abstract bool Load(EventAnimation anims);
 
-        /// <param name="w">지도 폭(게임 점). 게임의 <c>[0x005AA2D8]</c>.</param>
-        /// <param name="h">지도 키(게임 점). 게임의 <c>[0x005AA2DC]</c>.</param>
+        /// <param name="w">지도 폭(게임 점). 원본의 <c>[0x005AA2D8]</c>.</param>
+        /// <param name="h">지도 키(게임 점). 원본의 <c>[0x005AA2DC]</c>.</param>
         /// <param name="ship">함대 그림 한가운데(게임 점).</param>
-        /// <param name="rng">게임의 <c>0x004B7C0F(n)</c> 자리.</param>
+        /// <param name="rng">원본의 <c>0x004B7C0F(n)</c> 자리.</param>
         public abstract void Start(int w, int h, Point? ship, Random rng);
 
         /// <summary>한 걸음을 그린다. 장면이 끝났으면 true.</summary>
@@ -316,10 +316,10 @@ internal sealed partial class EventAnimationPopup : Window
     ///     52              끝(0x0049939A)
     /// </code>
     /// <b>장 번호가 스물두 장을 넘어선다</b> — 마지막 걸음들이 26번까지 가리키는데 띠에는
-    /// 스물두 장뿐이라 여기서는 마지막 장에 붙여 둔다. 게임은 버퍼 밖을 그대로 읽는 듯한데
+    /// 스물두 장뿐이라 여기서는 마지막 장에 붙여 둔다. 원본은 버퍼 밖을 그대로 읽는 듯한데
     /// 그것까지 흉내낼 값어치가 없다.
     ///
-    /// 검은 막은 우리 것이다 — 게임은 팔레트를 단계별로 어둡게 하지만(<c>0x0049A1A0</c>)
+    /// 검은 막은 우리 것이다 — 원본은 팔레트를 단계별로 어둡게 하지만(<c>0x0049A1A0</c>)
     /// 우리는 지도 위에 검은 네모를 덮어 같은 꼴을 낸다.
     /// </remarks>
     /// <summary>

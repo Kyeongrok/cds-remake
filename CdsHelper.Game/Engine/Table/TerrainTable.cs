@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 칸을 지날 수 있는지 가르는 표. CDS_95.EXE 에 박혀 있다.
 /// </summary>
 /// <remarks>
-/// WORLD.CDS 의 한 칸은 16비트다. 게임은 그것을 이렇게 읽는다(칸 읽개 <c>0x00426D70</c>,
+/// WORLD.CDS 의 한 칸은 16비트다. 원본은 그것을 이렇게 읽는다(칸 읽개 <c>0x00426D70</c>,
 /// 부류 판정 <c>0x00426710</c>).
 /// <code>
 ///   타일  = 낱말 &amp; 0x3FFF        아래 14비트
@@ -24,7 +24,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <b>우리가 오래 틀렸던 자리다.</b> 그동안은 그림을 그리려고 재어 둔 육지 비율
 /// (<c>WorldMapRenderer.GetCoastLandRatio</c>)이 반을 넘으면 막았는데, 그것은 색을 섞는
 /// 비율이지 통행 규칙이 아니다. 그래서 런던 앞 하구처럼 육지가 50~55% 인 칸이
-/// 막혀 게임에서는 들어가지는 데를 못 들어갔다. 이 표로는 그 칸들이 다 물이다.
+/// 막혀 원본에서는 들어가지는 데를 못 들어갔다. 이 표로는 그 칸들이 다 물이다.
 /// </remarks>
 public sealed class TerrainTable
 {
@@ -37,7 +37,7 @@ public sealed class TerrainTable
     /// 표 칸 수. <b>칸 값 열네 비트</b>로 찾는다.
     /// </summary>
     /// <remarks>
-    /// 게임은 이렇게 짚는다(<c>0x00426710</c>).
+    /// 원본은 이렇게 짚는다(<c>0x00426710</c>).
     /// <code>
     ///   ax = 칸 값(word)
     ///   ax &amp;= 0x3FFF                       ; 위 두 비트를 버린다

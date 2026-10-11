@@ -21,7 +21,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x6A 등장 여부(u32)  +0x72 목적지 도시(i16) +0x74 날 셈(i32)
 /// </code>
 /// <b>등장 여부는 +0x6A 다.</b> +0x0A 는 등급이고, 그것으로 자리(술집·여관)가 갈린다 —
-/// 게임이 달마다 <c>[인물+0x3C] &gt;= 2 ? 술집 : 여관</c> 으로 놓는다.
+/// 원본이 달마다 <c>[인물+0x3C] &gt;= 2 ? 술집 : 여관</c> 으로 놓는다.
 ///
 /// 칸 수 281 은 EXE 가 못박은 값이다(<c>0x004319D0</c> 의 <c>cmp eax, 0x119</c>).
 /// </remarks>
@@ -32,7 +32,7 @@ public static class PersonFile
 
     /// <summary>알맹이 기준 <b>해</b>가 놓인 자리(낱말).</summary>
     /// <remarks>
-    /// 표에 적힌 나이는 <b>그 세이브의 그 해</b> 나이다 — 게임이 해마다 한 살씩 먹인다.
+    /// 표에 적힌 나이는 <b>그 세이브의 그 해</b> 나이다 — 원본이 해마다 한 살씩 먹인다.
     /// 그래서 표를 구울 때 해를 함께 적어 두어야 다른 해의 나이를 셀 수 있다.
     /// </remarks>
     private const int YearRel = 0x02;
@@ -120,7 +120,7 @@ public static class PersonFile
     /// </summary>
     /// <remarks>
     /// 세이브에는 "없음" 이 <c>-1</c> 로도 <c>255</c> 로도 적혀 있다(1517년 판에 둘 다 있다).
-    /// 게임은 둘을 똑같이 없는 것으로 본다 — <c>0x00429950</c> 이 <c>0xE2</c> 이상이면 0 을
+    /// 원본은 둘을 똑같이 없는 것으로 본다 — <c>0x00429950</c> 이 <c>0xE2</c> 이상이면 0 을
     /// 돌려주기 때문이다. 표에서는 한 가지로 눕혀 둔다.
     /// </remarks>
     private static int Where(int city) =>

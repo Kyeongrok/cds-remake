@@ -56,7 +56,7 @@ public enum TownWork
 
 /// <summary>일 하나가 <b>어느 자리에 무슨 이름으로</b> 나오는지.</summary>
 /// <param name="Work">하는 일.</param>
-/// <param name="Name">명령 창에 뜨는 줄 이름. 게임 문구 그대로다.</param>
+/// <param name="Name">명령 창에 뜨는 줄 이름. 원본 문구 그대로다.</param>
 /// <param name="At">그 이름으로 이 일이 나오는 시설들.</param>
 public sealed record TownCommand(TownWork Work, string Name, params FacilityKind[] At);
 
@@ -69,7 +69,7 @@ public sealed record TownCommand(TownWork Work, string Name, params FacilityKind
 /// 화면은 일마다 손을 달아 주면 된다 — 손이 안 달린 일은 줄이 흐리게 나온다.
 ///
 /// 술집 앞 세 줄(와인·브랜디·럼주)은 여기 없다. 그것은 일이 아니라 <b>그 도시가 파는 술</b>
-/// 이라 도시마다 문구가 갈린다 — 게임도 술 표(<c>0x4FF978</c>)에서 도시 번호로 골라 붙인다.
+/// 이라 도시마다 문구가 갈린다 — 원본도 술 표(<c>0x4FF978</c>)에서 도시 번호로 골라 붙인다.
 /// </remarks>
 public static class TownWorks
 {
@@ -144,7 +144,7 @@ public static class TownWorks
         Array.Find(All, row => row.Work == work)?.Name ?? "";
 
     /// <summary>
-    /// 줄을 늘리고 줄이는 조건. 게임은 조건이 어긋난 줄을 <b>흐리게 두지 않고 아예 감춘다</b>.
+    /// 줄을 늘리고 줄이는 조건. 원본은 조건이 어긋난 줄을 <b>흐리게 두지 않고 아예 감춘다</b>.
     /// </summary>
     /// <param name="Teaches">건물 표에 가르침 비트가 섰는지 — 수련이 붙는다.</param>
     /// <param name="Poor">주머니가 가벼운지 — 여관 허드렛일이 그때만 나온다.</param>
@@ -205,7 +205,7 @@ public static class TownWorks
             items.Remove(NameOf(TownWork.OddJob));
 
         // 항구의 발표는 모항이고 알릴 발견물이 있을 때만 뜬다
-        // (게임도 0x00477974 가 0x00476DE0 의 값을 그 줄의 보임 칸에 넣는다).
+        // (원본도 0x00477974 가 0x00476DE0 의 값을 그 줄의 보임 칸에 넣는다).
         if (facility.Kind == FacilityKind.Harbor && !state.CanAnnounce)
             items.Remove(NameOf(TownWork.Announce));
 
@@ -240,7 +240,7 @@ public static class TownWorks
 
         // 후원자가 앉은 건물이면 그 줄이 맨 앞에 붙는다 — 왕궁만이 아니라 총독부·상관·
         // 학자 저택 어디든 그렇다. 계약을 맺은 자리이고 맡은 것을 찾아 왔으면 "보고" 다
-        // (게임도 같은 자리를 계약 상태로 갈아 끼운다 — 0x0044EAE0).
+        // (원본도 같은 자리를 계약 상태로 갈아 끼운다 — 0x0044EAE0).
         if (state.PatronRow is { Length: > 0 } row) items.Insert(0, row);
 
         // 「감찰관을 매수」는 후원자 줄 바로 밑이다(0x0044EAE0 이 둘째 칸에 넣는다).

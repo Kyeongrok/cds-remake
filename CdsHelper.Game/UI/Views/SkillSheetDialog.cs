@@ -14,13 +14,13 @@ namespace CdsHelper.Game.UI.Views;
 /// <c>━━━━━━━━기술━━━━━━━━</c> 을 두른다. 줄은 <b>왼쪽 칸을 다 채우고 오른쪽 칸으로</b>
 /// 넘어간다 — 기술은 일곱·여섯, 어학은 일곱·일곱이다.
 ///
-/// 예전에는 힌트 일람 창을 빌려 한 줄로 스물일곱 개를 세로로 쌓았는데, 게임은 두 칸이라
+/// 예전에는 힌트 일람 창을 빌려 한 줄로 스물일곱 개를 세로로 쌓았는데, 원본은 두 칸이라
 /// 모양이 아주 달랐다.
 /// </remarks>
 internal sealed class SkillSheetDialog : InfoDialog
 {
     /// <summary>
-    /// 판 크기. 폭은 두 칸 줄(44칸 = 352점)에 맞춘다 — 게임 갈무리는 오른쪽 여백이 왼쪽만큼만
+    /// 판 크기. 폭은 두 칸 줄(44칸 = 352점)에 맞춘다 — 원본 갈무리는 오른쪽 여백이 왼쪽만큼만
     /// 남는다. 424 로 두었더니 값 칸 오른쪽이 휑하게 비었다.
     /// </summary>
     private const double BoardWidth = 356, BoardHeight = 322;
@@ -62,7 +62,7 @@ internal sealed class SkillSheetDialog : InfoDialog
 
     /// <summary>
     /// 목록을 반으로 갈라 왼쪽·오른쪽 칸에 나란히 적는다. 홀수면 왼쪽이 하나 더 갖는다 —
-    /// 게임도 기술 열셋을 일곱·여섯으로 가른다.
+    /// 원본도 기술 열셋을 일곱·여섯으로 가른다.
     /// </summary>
     private static void AddPairs(StackPanel rows, IReadOnlyList<string> names,
                                  Func<int, int> levelAt)

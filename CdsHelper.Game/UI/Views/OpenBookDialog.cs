@@ -27,7 +27,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   마우스 올림   창 아래 모서리 밖에 96x24 「다음장」/「앞장」(0x00465360)
 /// </code>
 /// 면이 화면에 나올 때마다(처음 펼 때 한 번, 넘길 때마다 한 번) 부른 쪽 알림을 부른다 —
-/// 게임이 그 자리에서 힌트를 주고 띠 말을 내는 <c>0x00464A30</c> 이다.
+/// 원본이 그 자리에서 힌트를 주고 띠 말을 내는 <c>0x00464A30</c> 이다.
 /// </remarks>
 public sealed class OpenBookDialog : GameWindow
 {
@@ -169,7 +169,7 @@ public sealed class OpenBookDialog : GameWindow
         MouseRightButtonUp += (_, _) => Close();
 
         ShowSpread();
-        // 창을 열 때 한 번 — 게임도 창을 세우며 0x00464A30 을 부른다(0x00464890).
+        // 창을 열 때 한 번 — 원본도 창을 세우며 0x00464A30 을 부른다(0x00464890).
         Loaded += (_, _) => _shown?.Invoke(_index);
     }
 

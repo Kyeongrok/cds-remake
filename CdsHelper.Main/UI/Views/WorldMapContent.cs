@@ -871,7 +871,7 @@ public class WorldMapContent : ContentControl
     {
         if (_overlayCanvas == null || _discoveryVisualHost == null) return;
 
-        // 게임 원본 좌표표가 먼저다. 없을 때만 DB 의 도 단위 값을 쓴다.
+        // 원본 좌표표가 먼저다. 없을 때만 DB 의 도 단위 값을 쓴다.
         var (px, py) = TryDiscoveryCells(GameMapCoords.IndexFromDbId(d.Id), out var gx1, out var gy1, out var gx2, out var gy2)
             ? CellToPixel((gx1 + gx2 + 1) / 2.0, (gy1 + gy2 + 1) / 2.0)
             : LatLonToPixel(d.LatFrom!.Value, d.LonFrom!.Value);
@@ -906,7 +906,7 @@ public class WorldMapContent : ContentControl
         double x1, y1, x2, y2;
         if (TryDiscoveryCells(GameMapCoords.IndexFromDbId(d.Id), out var gx1, out var gy1, out var gx2, out var gy2))
         {
-            // 게임 원본 좌표표. 칸 끝을 포함해야 하므로 오른쪽/아래를 한 칸 늘린다.
+            // 원본 좌표표. 칸 끝을 포함해야 하므로 오른쪽/아래를 한 칸 늘린다.
             var (cx1, cy1, cx2, cy2) = ClampSpan(Math.Min(gx1, gx2), Math.Min(gy1, gy2),
                                                  Math.Max(gx1, gx2) + 1, Math.Max(gy1, gy2) + 1);
             (x1, y1) = CellToPixel(cx1, cy1);
@@ -1008,7 +1008,7 @@ public class WorldMapContent : ContentControl
     {
         if (_overlayCanvas == null) return;
 
-        // 게임 원본 좌표표(경도 0~40000 / 위도 0~20000)가 먼저다. DB 의 도 단위 값은
+        // 원본 좌표표(경도 0~40000 / 위도 0~20000)가 먼저다. DB 의 도 단위 값은
         // 반올림으로 3~4칸씩 밀리고 부호가 뒤집힌 것도 있어 표에 없는 ID 일 때만 쓴다.
         var (px, py) = GameMapCoords.TryCityCell(cityId, out var gcx, out var gcy)
             ? CellToPixel(gcx, gcy)
@@ -1482,7 +1482,7 @@ public class WorldMapContent : ContentControl
     }
 
     /// <summary>
-    /// 펼친 칸 좌표(x 0~2500, y 0~1250)를 지도 픽셀로. 게임 원본 좌표표를 쓰는 마커가 이 길로 온다 —
+    /// 펼친 칸 좌표(x 0~2500, y 0~1250)를 지도 픽셀로. 원본 좌표표를 쓰는 마커가 이 길로 온다 —
     /// 도 단위를 거치지 않아 반올림이 끼지 않는다.
     /// </summary>
     private static (double px, double py) CellToPixel(double cellX, double cellY)

@@ -4,7 +4,7 @@ namespace CdsHelper.Support.Local.Models;
 /// 미니 게임 「스핑크스 퀴즈」 — 수수께끼 하나와 셈 문제 셋.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0047BFE0</c> 이다. 글은 <c>0x0056EEB8</c> 벌에 그대로 있다.
+/// 원본의 <c>0x0047BFE0</c> 이다. 글은 <c>0x0056EEB8</c> 벌에 그대로 있다.
 ///
 /// 먼저 그 유명한 수수께끼를 낸다.
 /// <code>

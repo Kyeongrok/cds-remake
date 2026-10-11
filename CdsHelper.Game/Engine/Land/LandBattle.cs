@@ -6,7 +6,7 @@ namespace CdsHelper.Game.Engine.Land;
 /// 육상전 한 판 — 열두 부대와 턴.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>CLandWar</c>(<c>0x005A47E8</c>)에 맞먹는다. 부대 열둘은 앞 여섯이 아군,
+/// 원본의 <c>CLandWar</c>(<c>0x005A47E8</c>)에 맞먹는다. 부대 열둘은 앞 여섯이 아군,
 /// 뒤 여섯이 적이고 레코드가 40바이트씩이다(<c>+0xAC</c>부터).
 ///
 /// 판을 세우고 값을 치르는 것이 이 클래스고, 한 턴을 굴리는 것은
@@ -85,7 +85,7 @@ public sealed class LandBattle
     /// 0 이면 <c>0x00448440</c> 이 산 후열 부대의 열을 0 으로, 자리를 3 당긴다 — 그림도 앞줄로 옮긴다 <c>0x004470D0</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 한 대 칠 때마다(<c>0x0044886D</c> · <c>0x004488EC</c> · <c>0x00448A14</c>), 한꺼번에 쓰러뜨린 뒤
+    /// 원본은 한 대 칠 때마다(<c>0x0044886D</c> · <c>0x004488EC</c> · <c>0x00448A14</c>), 한꺼번에 쓰러뜨린 뒤
     /// (<c>0x00448530</c>), 판을 열 때(<c>0x00449CC2</c>) 이것을 본다. 예전에는 자리를 슬롯 번호로 못박아, 앞열이
     /// 비면 근접이 헛치고 후열에만 놓은 부대는 적 근접이 거의 못 쳤다.
     /// </remarks>
@@ -328,7 +328,7 @@ public sealed class LandBattle
     /// 아군이 <b>다 쓰러져</b> 끝났는지. 물러난 것과 다르다.
     /// </summary>
     /// <remarks>
-    /// 게임은 이때 <c>0x00449908</c> 에서 바로 게임 오버(<c>0x0044AF40(3)</c>)를 건다 — 들싸움만
+    /// 원본은 이때 <c>0x00449908</c> 에서 바로 게임 오버(<c>0x0044AF40(3)</c>)를 건다 — 들싸움만
     /// 「적이 봐 준」 문이 있다. 판이 이것을 적어 두면 발견 대본이 보고 멈춘다.
     /// </remarks>
     public bool Wiped { get; internal set; }
@@ -709,7 +709,7 @@ public sealed class LandBattle
     /// <summary>
     /// 적 대장의 실제 기능(검술 · 포술 · 사격술). 인물을 아는 판만 준다 — 없으면 도시 규모 등급을 쓴다(<c>0x00449FBB</c>).
     /// </summary>
-    /// <remarks>게임은 <c>0x00446F70(기능, 6)</c> 으로 적 대장 인물 레코드를 본다.</remarks>
+    /// <remarks>원본은 <c>0x00446F70(기능, 6)</c> 으로 적 대장 인물 레코드를 본다.</remarks>
     public (int Sword, int Gunnery, int Shooting)? FoeSkills { get; init; }
 
     /// <summary>적 대장의 신학. 대본 판은 그 인물 것이고, 마을 공략·들싸움은 0 이다(<c>0x00449E50</c>).</summary>
@@ -858,7 +858,7 @@ public sealed class LandBattle
     /// <remarks>
     /// <c>0x0044AA30</c> 을 부르는 데가 넷이고 그 첫 인자가 이것이다. 갈래마다 갈리는
     /// 것이 여럿인데, 우리 판이 보는 것은 <b>열 턴을 넘겼을 때</b>다
-    /// (<see cref="TimeUpWon"/>). 그 밖에 게임은 일기토 문(<c>0x004479B0</c>)과 증원
+    /// (<see cref="TimeUpWon"/>). 그 밖에 원본은 일기토 문(<c>0x004479B0</c>)과 증원
     /// (<c>0x00449930</c>)도 갈래로 가른다.
     /// </remarks>
     public int Sort { get; } = Town;

@@ -15,7 +15,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 육상전 싸움터 — 배치가 끝나면 이 화면으로 넘어간다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0044A870</c> 이 펴는 판이다. 자리를 손으로 짐작하지 않았다 —
+/// 원본의 <c>0x0044A870</c> 이 펴는 판이다. 자리를 손으로 짐작하지 않았다 —
 /// <c>0x00445258</c>~<c>0x004453B9</c> 가 열두 자리를 못 박는 그 값 그대로다.
 /// <code>
 ///   아군  (112,208) (176,256) (240,304) / (48,256) (112,304) (176,352)
@@ -99,7 +99,7 @@ internal sealed class LandBattleScene : GameWindow
             Children = { _board },
         };
 
-        // 차림표가 떠 있어도 판은 손을 받는다 — 게임의 차림표(0x004878A0)는 제 고리를 돌리면서도
+        // 차림표가 떠 있어도 판은 손을 받는다 — 원본의 차림표(0x004878A0)는 제 고리를 돌리면서도
         // 판 창의 손 처리(0x00446A70)를 그대로 부른다. 그래서 상자가 떠도 판을 덮지 않고,
         // 손을 받을지는 아래 처리가 <see cref="_boardLive"/> 로 가른다.
         Cover(this);
@@ -316,7 +316,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 판이 손을 받는 때 — <b>공격명령·묘책 차림표가 떠 있는 동안</b>이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 차림표 고리 안에서 판 창의 손 처리(<c>0x00446A70</c>)를 부른다. 몸짓이 도는 동안이나
+    /// 원본은 차림표 고리 안에서 판 창의 손 처리(<c>0x00446A70</c>)를 부른다. 몸짓이 도는 동안이나
     /// 알림 창이 떠 있을 때는 여기서 손을 안 받는다.
     /// </remarks>
     private bool _boardLive;
@@ -415,7 +415,7 @@ internal sealed class LandBattleScene : GameWindow
 
     /// <summary>
     /// 차림표를 판 가운데에 세운다 — 주인이 구석의 공격명령 차림표라 제 가운데에 맞추면 구석에
-    /// 몰린다. 게임은 자리를 안 넘기면 화면 가운데에 편다(<c>0x004861F1</c>).
+    /// 몰린다. 원본은 자리를 안 넘기면 화면 가운데에 편다(<c>0x004861F1</c>).
     /// </summary>
     private void CenterOnBoard(Window box)
     {
@@ -431,7 +431,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 병사수를 찍을 때인지 — <b>차림표가 떠 있는 동안만</b> 참이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>+0x3C</c> 의 0x80 비트로 이것을 가른다. <c>0x00449CE8</c> 이 「제N턴」을
+    /// 원본은 <c>+0x3C</c> 의 0x80 비트로 이것을 가른다. <c>0x00449CE8</c> 이 「제N턴」을
     /// 내걸기 직전에 세우고 <c>0x00449D82</c> 가 명령을 받자마자 지운다. 묘책 차림표도
     /// 같다(<c>0x00449B26</c> · <c>0x00449B5D</c>).
     /// </remarks>
@@ -440,7 +440,7 @@ internal sealed class LandBattleScene : GameWindow
     /// <summary>이번 차림표가 <b>새 턴의 첫 차림표</b>인지(<c>0x00449DC4</c> 의 <c>[ebp-0x14]</c>).</summary>
     /// <remarks>
     /// 애니메이션을 껐다 켜거나 묘책을 걸거나 퇴각을 물리면 차림표가 다시 뜨는데, 그때는
-    /// <b>「제N턴」을 다시 내걸지 않고 일기토 칸도 다시 굴리지 않는다</b>. 게임은 턴을
+    /// <b>「제N턴」을 다시 내걸지 않고 일기토 칸도 다시 굴리지 않는다</b>. 원본은 턴을
     /// 굴린 <c>0x00449A20</c> 이 참을 내야 이 값을 다시 세운다.
     /// </remarks>
     private bool _newTurn = true;
@@ -491,7 +491,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 싸움 차림표를 <b>판 오른아래</b>에 붙인다.
     /// </summary>
     /// <remarks>
-    /// 가운데에 세우면 창이 판 한복판을 가려 어느 부대가 어디 섰는지가 안 보인다. 게임도
+    /// 가운데에 세우면 창이 판 한복판을 가려 어느 부대가 어디 섰는지가 안 보인다. 원본도
     /// 공격명령·묘책 차림표를 판 오른아래에 낸다. 여백은 <b>판 점</b>으로 잡고 늘려 건
     /// 배수를 곱한다 — 그래야 창을 키워도 구석에서 떨어진 만큼이 같아 보인다.
     /// </remarks>
@@ -500,7 +500,7 @@ internal sealed class LandBattleScene : GameWindow
     /// <summary>차림표를 판 구석에서 띄우는 만큼(판 점).</summary>
     private const double MenuPad = 16;
 
-    /// <summary>이번 턴에 묘책을 이미 걸었는지 — 게임도 턴마다 하나뿐이다(<c>0x00449BA0</c>의 <c>+0x54</c>).</summary>
+    /// <summary>이번 턴에 묘책을 이미 걸었는지 — 원본도 턴마다 하나뿐이다(<c>0x00449BA0</c>의 <c>+0x54</c>).</summary>
     private bool _ruseThisTurn;
 
     /// <summary>
@@ -532,7 +532,7 @@ internal sealed class LandBattleScene : GameWindow
 
     /// <summary>이번 턴에 걸어 둔 묘책(<c>+0x54</c>). 아직 안 걸었으면 −1 이다.</summary>
     /// <remarks>
-    /// 게임은 차림표(<c>0x004490D0</c>)가 낸 값을 <c>+0x54</c> 에 적어 두기만 하고
+    /// 원본은 차림표(<c>0x004490D0</c>)가 낸 값을 <c>+0x54</c> 에 적어 두기만 하고
     /// (<c>0x00449B64</c>) 턴을 굴리는 <c>0x00449320</c> 첫머리에서야 그 갈래로 갈라
     /// 터뜨린다. 그러니 묘책을 걸고 <b>퇴각이나 일기토를 고르면 아무 일도 안 일어난다</b> —
     /// 그 둘은 <c>0x00449320</c> 을 안 거친다(<c>0x00449ACC</c>·<c>0x00449A72</c>).
@@ -552,7 +552,7 @@ internal sealed class LandBattleScene : GameWindow
         foreach (var line in said)
         {
             if (line.Sound >= 0) _game?.Sfx?.Play(line.Sound);
-            // 게임은 「기습성공!…」도 알림이다 — 물음이 아니라 읽고 넘기는 줄이다(0x0049E3E0).
+            // 원본은 「기습성공!…」도 알림이다 — 물음이 아니라 읽고 넘기는 줄이다(0x0049E3E0).
             if (line.Text.Length > 0) NoticeDialog.Show(this, line.Text, "");
         }
         Redraw();
@@ -562,7 +562,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 「일기토」 — 제독이 적 대장과 맞선다(<c>0x004478A0</c> → <c>0x004AA700</c>).
     /// </summary>
     /// <remarks>
-    /// 게임도 여느 일대일 결투 판을 그대로 불러 쓴다. 이기면 싸움이 그 자리에서
+    /// 원본도 여느 일대일 결투 판을 그대로 불러 쓴다. 이기면 싸움이 그 자리에서
     /// 끝나고, 지면 그대로 진다. 마을 공략에서는 <b>적이 먼저 거는 일은 없다</b>
     /// (<c>0x004479D7</c> 이 갈래 2·4 를 걸러 낸다).
     /// </remarks>
@@ -658,7 +658,7 @@ internal sealed class LandBattleScene : GameWindow
     /// </summary>
     /// <remarks>
     /// <b>부대 하나가 한 차례에 한 일을 묶어서</b> 보인다 — 총병·포병은 맞은편 앞열을
-    /// 통째로 치므로 줄이 여럿인데, 게임은 <b>다 쏘고 나서</b> 피해를 한꺼번에 띄운다.
+    /// 통째로 치므로 줄이 여럿인데, 원본은 <b>다 쏘고 나서</b> 피해를 한꺼번에 띄운다.
     /// 한 발 쏘고 숫자 띄우고를 되풀이하지 않는다.
     ///
     /// 그 한 묶음의 차례가 셋이다 — <b>나가서 (여러 번) 치고</b>, 나간 그 자리에 선 채로
@@ -817,7 +817,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 부대 곁에 <b>말풍선</b>을 띄웠다 지운다.
     /// </summary>
     /// <remarks>
-    /// 게임은 싸움 중의 말을 창으로 안 내고 판 위에 말풍선으로 낸다(<c>0x00445B20</c>).
+    /// 원본은 싸움 중의 말을 창으로 안 내고 판 위에 말풍선으로 낸다(<c>0x00445B20</c>).
     /// 둥근 상자의 <b>네 귀</b>를 조각으로 놓고 사이를 흰 칸으로 메운다 — 조각은
     /// <see cref="LandArt.TryGetBubble"/> 를 본다.
     ///
@@ -829,7 +829,7 @@ internal sealed class LandBattleScene : GameWindow
     /// </code>
     /// 곧 풍선은 <b>말하는 부대 바깥쪽</b>으로 펴지고 꼬리가 그 부대를 가리킨다.
     ///
-    /// 머무는 시간은 아직 게임에서 못 찾았다 — 읽을 만큼으로 잡아 두었다.
+    /// 머무는 시간은 아직 원본에서 못 찾았다 — 읽을 만큼으로 잡아 두었다.
     /// </remarks>
     private void Balloon(int slot, string text)
     {
@@ -888,7 +888,7 @@ internal sealed class LandBattleScene : GameWindow
     }
 
     /// <summary>
-    /// 그 말이 먹는 <b>칸 수</b>. 게임은 CP949 바이트를 반으로 나눠 센다 — 한글 한 자가
+    /// 그 말이 먹는 <b>칸 수</b>. 원본은 CP949 바이트를 반으로 나눠 센다 — 한글 한 자가
     /// 한 칸(16점)이고 로마자는 반 칸이다.
     /// </summary>
     private static int Cells(string text)
@@ -976,7 +976,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 눈금 하나 — <b>50밀리초</b>다.
     /// </summary>
     /// <remarks>
-    /// 게임의 시계 <c>0x004BA4BB</c> 가 <c>GetTickCount() / 50</c> 을 낸다. 몸짓을 돌리는
+    /// 원본의 시계 <c>0x004BA4BB</c> 가 <c>GetTickCount() / 50</c> 을 낸다. 몸짓을 돌리는
     /// 자리는 죄다 <c>0x00428000(2, 0)</c> 으로 <b>두 눈금</b>을 쉬므로 한 장이 100밀리초다.
     /// </remarks>
     private const int Tick = 50;
@@ -1005,7 +1005,7 @@ internal sealed class LandBattleScene : GameWindow
     ///
     /// 갈무리(「중장기병 공격 모션」, 0.1초 간격 열여섯 장)에서 치는 동안의 자세가
     /// 치켜듦(2장) → 왼쪽 찌름(4장) → 오른아래 뻗음(6장) → 제자리(0장) 로 <b>한 장씩
-    /// 건너뛰어</b> 보인다. 곧 게임은 여덟 장을 <b>한 눈금씩</b> 넘기고, 0.1초로 뜬 갈무리가
+    /// 건너뛰어</b> 보인다. 곧 원본은 여덟 장을 <b>한 눈금씩</b> 넘기고, 0.1초로 뜬 갈무리가
     /// 그 가운데 하나씩만 잡은 것이다. 도는 시간은 400밀리초로 예전과 같다.
     ///
     /// <b>차례는 1 부터 돌아 0 으로 닫는다</b>(1·2·3·4·5·6·7·0). 갈무리에 잡힌 넷이
@@ -1050,7 +1050,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 피해 숫자가 넉 장 동안 <b>왼위로 떠오르는</b> 자리(판 점).
     /// </summary>
     /// <remarks>
-    /// 이 값만은 <b>게임 코드가 아니라 갈무리에서 쟀다</b> — 숫자 조각 두 자의 자리 사이가
+    /// 이 값만은 <b>원본 코드가 아니라 갈무리에서 쟀다</b> — 숫자 조각 두 자의 자리 사이가
     /// 41점으로 찍힌 판이라 배수가 1.71 이고, 장마다 14점씩 움직인 것이 판 점으로 8 이다.
     /// 세로는 넉 장 내내 한 걸음씩이고 가로는 <b>한 장 늦게</b> 따라붙는다.
     ///
@@ -1095,7 +1095,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 친다. 총·포·지원은 제자리에서 몸짓만 돌린다(<c>0x00448A5E</c> 가 <c>+0x1C</c> 에
     /// 0x100 을 세운다).
     ///
-    /// <b>돌아오는 것은 여기서 안 한다</b> — 게임은 나간 그 자리에 선 채로 피해 숫자를
+    /// <b>돌아오는 것은 여기서 안 한다</b> — 원본은 나간 그 자리에 선 채로 피해 숫자를
     /// 보이고, 그것이 진 뒤에 돌아온다(<see cref="Home"/>).
     /// </remarks>
     private void Swing(IReadOnlyList<LandFight.Line> bout)
@@ -1112,7 +1112,7 @@ internal sealed class LandBattleScene : GameWindow
         var blows = bout.Where(line => line.Target >= 0).ToList();
 
         // <b>지원 갈래는 노린 데가 없어도 제자리에서 돈다</b> — 비·회복·춤이 그것이다.
-        // 게임도 0x004485A0 을 그대로 부르고, 지원(21~23)만 <b>두 바퀴</b>를 돌린다
+        // 원본도 0x004485A0 을 그대로 부르고, 지원(21~23)만 <b>두 바퀴</b>를 돌린다
         // (0x004485E7 어름의 <c>eax = 2</c>). 소리도 바퀴마다 한 번씩 난다.
         int rounds = 1;
         if (blows.Count == 0)
@@ -1269,7 +1269,7 @@ internal sealed class LandBattleScene : GameWindow
         if (_game is not { } game) return;
 
         // 모의전은 <b>값을 안 치른다</b> — 선원도 돈도 명성도 그대로 둔다.
-        // 미니 게임에서 셈만 돌려 보는 자리이기 때문이다.
+        // 미니 원본에서 셈만 돌려 보는 자리이기 때문이다.
         if (_battle.IsMock)
         {
             NoticeDialog.Show(this, won ? "모의전에서 이겼다" : retreated ? "모의전을 물렸다"
@@ -1407,7 +1407,7 @@ internal sealed class LandBattleScene : GameWindow
                 _board.Children.Add(Mark(At(art, x, y)));
             }
 
-            // 병사수는 <b>차림표가 떠 있는 동안만</b> 찍는다. 게임은 0x00449CE8 이
+            // 병사수는 <b>차림표가 떠 있는 동안만</b> 찍는다. 원본은 0x00449CE8 이
             // 차림표를 열기 직전에 +0x3C 에 0x80 을 세우고 0x00449D82 가 닫자마자
             // 지운다 — 그래서 몸짓이 도는 동안에는 숫자가 하나도 안 보인다.
             if (!_showMen) continue;
@@ -1529,7 +1529,7 @@ internal sealed class LandBattleScene : GameWindow
     /// 부대 그림을 세로로 늘리는 배수.
     /// </summary>
     /// <remarks>
-    /// LANDDATA 의 부대 조각은 96x48 인데 게임은 <b>96x96 으로 늘려</b> 찍는다
+    /// LANDDATA 의 부대 조각은 96x48 인데 원본은 <b>96x96 으로 늘려</b> 찍는다
     /// (<c>0x004B6963(0x60, 0x60)</c>). 배치 화면에서 말 세 마리 무리를 재면 원본이
     /// 121x120 으로 거의 정사각인데 조각 그대로 찍으면 2:1 로 납작해진다 —
     /// 싸움터도 같은 조각이라 같이 늘린다.

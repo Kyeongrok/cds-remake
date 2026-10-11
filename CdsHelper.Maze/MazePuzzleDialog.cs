@@ -13,9 +13,9 @@ namespace CdsHelper.Maze;
 /// 미니 게임 「미궁 64 퍼즐」 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0042C8A0</c> 이다. 규칙과 판정은 <see cref="MazePuzzle"/> 에 모아 두었다.
+/// 원본의 <c>0x0042C8A0</c> 이다. 규칙과 판정은 <see cref="MazePuzzle"/> 에 모아 두었다.
 ///
-/// <b>그림은 게임 것 그대로다</b> — MAZE.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다
+/// <b>그림은 원본 것 그대로다</b> — MAZE.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다
 /// (<c>tools/extract_minigame_art.py</c>). 바탕에 <b>네 층의 돌바닥이 비스듬히</b>
 /// 그려져 있고, 밟은 칸에 바닥 조각을 얹는 식이다 — 1인칭이 아니다.
 /// <code>
@@ -99,7 +99,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
     };
     /// <summary>
     /// 왼쪽 위 <b>UNDO 쪽지</b>에 적히는 취소 횟수. 쪽지 그림은 배경에 그려져 있고
-    /// (「UNDO」 글자까지), 숫자만 게임이 얹는다.
+    /// (「UNDO」 글자까지), 숫자만 원본이 얹는다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -112,7 +112,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
     /// </remarks>
     private readonly GameUi.GameLabel _undo = new(GameFont.BlackColor) { Bold = false };
 
-    /// <summary>지금 짚은 방향. 게임의 <c>[0x2FC]</c> 다.</summary>
+    /// <summary>지금 짚은 방향. 원본의 <c>[0x2FC]</c> 다.</summary>
     private int _point = -1;
 
     /// <summary>상금 갈래인지(<c>+0x310</c>) — 발견 대본이 걸 때만이다. 상자 말과 덫 말이 갈린다.</summary>
@@ -160,9 +160,9 @@ internal sealed class MazePuzzleDialog : InfoDialog
         double zoom = GameUi.PixelZoom(this, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
-        // 게임은 미니 게임에 밤색 판도 제목도 아래 단추도 안 두른다 — 그림에 금빛 액자만
+        // 원본은 미니 원본에 밤색 판도 제목도 아래 단추도 안 두른다 — 그림에 금빛 액자만
         // 두르고, 할 일은 오른쪽 단추 차림표가 맡는다. 셈(밟은 방·상자·취소·다시)은
-        // 게임에서도 판 안 왼쪽 위의 UNDO 쪽지에 적히므로 따로 띠를 두지 않는다.
+        // 원본에서도 판 안 왼쪽 위의 UNDO 쪽지에 적히므로 따로 띠를 두지 않는다.
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -243,7 +243,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
             if (next >= 0) Step(next);
         };
 
-        // 짚으면 금빛 조각으로 갈린다 — 게임의 [0x2FC] 자리다.
+        // 짚으면 금빛 조각으로 갈린다 — 원본의 [0x2FC] 자리다.
         image.MouseEnter += (_, _) => { _point = way; Sync(); };
         image.MouseLeave += (_, _) => { if (_point == way) { _point = -1; Sync(); } };
 
@@ -352,9 +352,9 @@ internal sealed class MazePuzzleDialog : InfoDialog
         if (result != MazePuzzle.Result.Playing) Close();
     }
 
-    /// <summary>오른쪽 단추 차림표의 줄. 게임 갈무리 차례 그대로다.</summary>
+    /// <summary>오른쪽 단추 차림표의 줄. 원본 갈무리 차례 그대로다.</summary>
     /// <remarks>
-    /// 글귀와 차례는 게임 것 그대로다(<c>0x00559BE8</c>~<c>0x00559C30</c>) —
+    /// 글귀와 차례는 원본 것 그대로다(<c>0x00559BE8</c>~<c>0x00559C30</c>) —
     /// 「보물 상자를 연다」는 상자를 밟고 섰을 때만 끼워진다.
     /// </remarks>
     private IReadOnlyList<(string, Action?)> Commands()
@@ -392,7 +392,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
         }
 
         // 상금 갈래면 상자마다 금화를 알린다 — n 번째 상자가 10^n 닢이다(0x0042AA05). 셈은 끝에 한 번에
-        // 치른다(0x0042B11A). 미니 게임은 마지막 상자면 보물, 아니면 다음 상자의 열쇠다.
+        // 치른다(0x0042B11A). 미니 원본은 마지막 상자면 보물, 아니면 다음 상자의 열쇠다.
         if (_stakes)
             NoticeDialog.Show(this, $"금화 {(int)Math.Pow(10, number)}닢을 손에 넣었다!", "보물 발견");
         else
@@ -428,7 +428,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
     /// (<c>0x00559D40</c>, 제목 <c>0x00559D30</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 이 글을 두 군데서 낸다 — <b>판을 열기 전에 한 번</b>(<c>0x0042C84E</c>)과,
+    /// 원본은 이 글을 두 군데서 낸다 — <b>판을 열기 전에 한 번</b>(<c>0x0042C84E</c>)과,
     /// 게임 도중 차림표의 「게임 설명」을 골랐을 때(<c>0x0042B839</c>)다. 둘 다
     /// <c>0x0049E3E0</c>(제목 달린 알림창)로 낸다.
     /// </remarks>
@@ -478,7 +478,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
     /// Esc(<c>0x0042B3B1</c>) — 발밑에 안 연 상자가 있으면 그것을 열고, 없으면 포기를 묻는다(첫째 갈래).
     /// </summary>
     /// <remarks>
-    /// 상자를 열고 난 뒤에도 그 상자가 열린 채(<c>+0x2AC</c> ≥ 2)가 아니면 게임은 그대로 포기 물음으로
+    /// 상자를 열고 난 뒤에도 그 상자가 열린 채(<c>+0x2AC</c> ≥ 2)가 아니면 원본은 그대로 포기 물음으로
     /// 흘러든다(<c>0x0042B414</c>) — 판이 끝났으면 물을 것이 없다.
     /// </remarks>
     private void Escape()
@@ -494,7 +494,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
     }
 
     /// <summary>
-    /// 포기의 맺음 말 — 게임은 <b>둘 가운데 하나만</b> 낸다. 상금 갈래(<c>[+0x310] != 0</c>)면 바닥이 울리고,
+    /// 포기의 맺음 말 — 원본은 <b>둘 가운데 하나만</b> 낸다. 상금 갈래(<c>[+0x310] != 0</c>)면 바닥이 울리고,
     /// 미니 게임이면 「게임 오버입니다」다(<c>0x0042B459</c> · <c>0x0042B7EB</c> · <c>0x0042B8AE</c>).
     /// </summary>
     private static string GaveUpWords(GiveUpWay way, bool stakes) => (way, stakes) switch
@@ -508,7 +508,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
 
     private void Sync()
     {
-        // 게임이 적는 것은 취소 횟수 하나뿐이다("%d/3", 0x0053CED4).
+        // 원본이 적는 것은 취소 횟수 하나뿐이다("%d/3", 0x0053CED4).
         _undo.Text = $"{_game.Undone}/{MazePuzzle.MaxUndo}";
 
         var floor = Picture("maze-floor.png");
@@ -554,17 +554,17 @@ internal sealed class MazePuzzleDialog : InfoDialog
 
     /// <summary>게임을 한 판 하고 <c>0x0042C8A0</c> 이 하듯 결과를 알린다.</summary>
     /// <returns>
-    /// 돌파했는지. 게임은 돌파 보상을 치른 갈래에서만 결과 <c>[+0x9C] = 1</c> 을 박고
+    /// 돌파했는지. 원본은 돌파 보상을 치른 갈래에서만 결과 <c>[+0x9C] = 1</c> 을 박고
     /// (<c>0x0042B154</c>) 덫·실패·포기는 0 이다 — 발견 대본(<c>0E 04 02</c>)이 이 값으로 갈라진다.
     /// </returns>
     public static bool Play(Window owner, Random rng,
                             CdsHelper.Support.Local.Models.Player? player = null,
                             CdsHelper.Game.Local.Helpers.SoundBank? sfx = null)
     {
-        // 판을 열기 전에 설명부터 낸다 — 게임도 그렇다(0x0042C84E).
+        // 판을 열기 전에 설명부터 낸다 — 원본도 그렇다(0x0042C84E).
         Explain(owner);
 
-        // 상금 갈래(+0x310)는 발견 대본이 걸 때뿐이다(0x0042C8A0(1)). 미니 게임은 0 이라 말도 다르고
+        // 상금 갈래(+0x310)는 발견 대본이 걸 때뿐이다(0x0042C8A0(1)). 미니 원본은 0 이라 말도 다르고
         // 금화도 없다(0x0042B11A).
         bool stakes = player != null;
 
@@ -582,7 +582,7 @@ internal sealed class MazePuzzleDialog : InfoDialog
 
             case MazePuzzle.Result.Failed:
                 // 발견 대본이 거는 미궁은 <b>상금 갈래</b>다(0x00408D80 이 0x0042C8A0(1)).
-                // 그 갈래의 실패 말이 이것이고(0x0042B0C8), 미니 게임은 문이 닫힌다(0x0042B0D4).
+                // 그 갈래의 실패 말이 이것이고(0x0042B0C8), 미니 원본은 문이 닫힌다(0x0042B0D4).
                 NoticeDialog.Show(owner, stakes
                     ? "이번엔 되돌아 오지 않았지만, 바닥이 불길한 소리를 내기 시작했다!"
                     : "이번엔 되돌아 오지 않았지만 문이 닫히고 말았다. 이제 탈출은 불가능하다.",
@@ -598,12 +598,12 @@ internal sealed class MazePuzzleDialog : InfoDialog
             // 연 상자 수만큼 금화를 준다(0x0042B11A 의 점프표).
             case MazePuzzle.Result.Cleared:
             case MazePuzzle.Result.Perfect:
-                // 미니 게임에서 상자 넷을 다 열고 한 번도 안 무르고 안 되돌아갔으면 말이 따로 있다
+                // 미니 원본에서 상자 넷을 다 열고 한 번도 안 무르고 안 되돌아갔으면 말이 따로 있다
                 // (0x0042AFF9 → 0x00559A80).
                 NoticeDialog.Show(owner, !stakes && dialog._game.Over == MazePuzzle.Result.Perfect
                     ? "축하하네! 자네는 실수하지 않고 미궁을 돌파해 보물을 손에 넣었네!"
                     : "축하하네! 드디어 자네는 미궁을 돌파했네!", "게임 클리어");
-                // <b>말없이 넣어 준다</b> — 코인 게임과 달리 알리는 글이 없다(0x0042B136 이
+                // <b>말없이 넣어 준다</b> — 코인 원본과 달리 알리는 글이 없다(0x0042B136 이
                 // 곧바로 0x0047CBC0 으로 간다).
                 if (stakes && dialog._game.Prize > 0) player!.Earn(dialog._game.Prize);
                 break;

@@ -10,7 +10,7 @@ namespace CdsHelper.Game.Engine.Market;
 /// 역사 대본이 도시 상태를 바꾼다 — <c>HIST_EV.CDS</c> 79파트와 <c>HISTCHR.CDS</c> 역사 항해자 열넷.
 /// </summary>
 /// <remarks>
-/// 게임은 달이 바뀔 때마다(<c>0x0044B2A0</c>) 이 차례로 돈다.
+/// 원본은 달이 바뀔 때마다(<c>0x0044B2A0</c>) 이 차례로 돈다.
 /// <code>
 ///   인물마다 vtbl+0x40     HISTCHR 0~13 — 사람 대본(0x004327F0 → 0x0040CF70)
 ///   도시마다 0x0042A280     재고를 채우고 시세를 흔든다
@@ -79,7 +79,7 @@ public sealed class CityHistory
     public delegate bool FoundCheck(int discovery, DateTime when);
 
     /// <summary>
-    /// 한 달을 돈다 — 그 달이 막 시작되었을 때 게임이 하는 몫. 사람 대본 먼저, 그 다음 HIST_EV.
+    /// 한 달을 돈다 — 그 달이 막 시작되었을 때 원본이 하는 몫. 사람 대본 먼저, 그 다음 HIST_EV.
     /// </summary>
     public void RunMonth(Player player, int year, int month, CityExeTable? cities, NationTable? nations,
                          FoundCheck found)

@@ -16,7 +16,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   +0x20  전수 언어 비트           +0x24  도시 번호
 /// </code>
 ///
-/// <b>궁합은 얼굴 코드다.</b> 게임은 <c>0x00465E70</c> 에서 이렇게 본다.
+/// <b>궁합은 얼굴 코드다.</b> 원본은 <c>0x00465E70</c> 에서 이렇게 본다.
 /// <code>
 ///   내 코드   = 0x0047CB10() = [0x005B60A0 + 8]     ; 주인공의 표시 얼굴 코드
 ///   그녀 코드 = [0x00517B0C + 번호 * 40]             ; 곧 이 표의 +0x14
@@ -41,7 +41,7 @@ public sealed class BarmaidTable
     public const int Count = 127;
 
     /// <summary>
-    /// 서른여섯 살부터 주인공 얼굴 코드에 더하는 값 — 게임 값이다.
+    /// 서른여섯 살부터 주인공 얼굴 코드에 더하는 값 — 원본 값이다.
     /// </summary>
     /// <remarks>
     /// 코드 공간의 짜임은 <see cref="FortuneCodes"/> 에 적어 두었다 — 0~15 가 젊은 제독,
@@ -166,7 +166,7 @@ public sealed class BarmaidTable
     /// 그 나이의 주인공이 내는 <b>표시 얼굴 코드</b>. 서른여섯부터 열여섯이 더 붙는다.
     /// </summary>
     /// <param name="fortune">
-    /// 주인공의 운명 코드(0~15). <b>초상화 번호가 아니다</b> — 게임은 이것을 주인공 객체의
+    /// 주인공의 운명 코드(0~15). <b>초상화 번호가 아니다</b> — 원본은 이것을 주인공 객체의
     /// <c>+0x08</c> 에 따로 들고 있고, 우리도 <c>Player.Fortune</c> 에 따로 적어 둔다.
     /// </param>
     /// <param name="age">지금 나이.</param>

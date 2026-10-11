@@ -30,7 +30,7 @@ public sealed class HullSelectDialog : GameWindow
     private static readonly double[] Widths = [108, 64, 64, 80, 80, 80, 64];
 
     /// <summary>
-    /// 머리글 띠와 줄 띠의 색. 게임 갈무리에서 그대로 뽑았다 — 머리글이 한 톤 짙다.
+    /// 머리글 띠와 줄 띠의 색. 원본 갈무리에서 그대로 뽑았다 — 머리글이 한 톤 짙다.
     /// </summary>
     private static readonly Brush HeadFill = Frozen(Color.FromRgb(0xDE, 0xC6, 0xAD));
     private static readonly Brush RowFill = Frozen(Color.FromRgb(0xFF, 0xEF, 0xD6));
@@ -86,13 +86,13 @@ public sealed class HullSelectDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        // 표는 밑판 없이 띠만 늘어놓는다 — 게임도 머리글과 줄이 곧 띠고, 그 둘레는
+        // 표는 밑판 없이 띠만 늘어놓는다 — 원본도 머리글과 줄이 곧 띠고, 그 둘레는
         // 창 바탕(짙은 밤색)이 그대로 보인다.
         stack.Children.Add(new Border
         {
             Margin = new Thickness(8, 4, 8, 0),
             // 배를 등록해 넣으면 줄이 얼마든 늘 수 있다 — 화면 밖으로 자라지 않게 굴린다.
-            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 원본과 너무 다르다.
             Child = GameUi.Scroller(BuildTable(), TableMaxHeight),
         });
         stack.Children.Add(buttons);

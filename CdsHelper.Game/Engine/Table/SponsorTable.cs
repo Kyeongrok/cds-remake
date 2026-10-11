@@ -16,7 +16,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 얼굴 번호는 <see cref="Portraits"/> 의 파트 번호다 — 성별에 따라 MALE.CDS 나 FEMALE.CDS
 /// 에서 꺼낸다. 여자 후원자는 둘뿐이다(이자벨 1세, 루크레치아·보르지아).
 ///
-/// 후원자가 81명인 것은 게임 코드와도 맞는다 — 스폰서를 훑는 자리가 <c>cmp ebx, 0x51</c> 이다.
+/// 후원자가 81명인 것은 원본 코드와도 맞는다 — 스폰서를 훑는 자리가 <c>cmp ebx, 0x51</c> 이다.
 /// 이름에 가운뎃점(·)이 들어가고 차례도 <c>patrons.json</c> 과 달라서, 짝은 이름에서
 /// 가운뎃점과 빈칸을 떼고 맞춘다(<see cref="FindByName"/>). 81명 모두 맞는다.
 ///
@@ -38,7 +38,7 @@ public sealed class SponsorTable
     /// 후원자를 만나러 가면 먼저 이 사람이 나와 안내한다. <b>어느 후원자에게 가든 같은 얼굴이고
     /// 이름이 없다</b> — 후원자 표(81명)에도 없다.
     ///
-    /// 게임에서도 후원자와 따로 논다. 시설이 후원자를 물릴 때(<c>0x0044E5D5</c> 의 루프)
+    /// 원본에서도 후원자와 따로 논다. 시설이 후원자를 물릴 때(<c>0x0044E5D5</c> 의 루프)
     /// 끝에서 <c>this[+0xB8] = this[+0x80]</c> 로 화자를 넣는데, 이 값은 후원자를 못 찾아도
     /// 그대로 들어간다. 그래서 대사 창의 얼굴은 늘 이 사람이고, 후원자 이름만 문구에 끼워진다.
     ///
@@ -47,7 +47,7 @@ public sealed class SponsorTable
     public const int StewardFace = 229;
 
     /// <summary>후원자 한 줄.</summary>
-    /// <param name="Index">표에서의 차례(0~80). 게임이 쓰는 번호다.</param>
+    /// <param name="Index">표에서의 차례(0~80). 원본이 쓰는 번호다.</param>
     /// <param name="Name">이름. 가운뎃점이 들어 있다("아르발로·데·브라간사").</param>
     /// <param name="Face">얼굴 번호. <see cref="Portraits"/> 의 파트 번호다.</param>
     /// <param name="IsFemale">여자면 true — 얼굴을 FEMALE.CDS 에서 꺼낸다.</param>
@@ -106,7 +106,7 @@ public sealed class SponsorTable
         /// 부르는 말. 집사도 후원자도 이 말로 부른다("자노·프레고소 <b>각하</b>의 집사입니다").
         /// </summary>
         /// <remarks>
-        /// 게임의 <c>0x004A2EA0</c> 그대로다 — 직업 코드에서 14 를 빼 점프표(<c>0x004A2EE4</c>)를
+        /// 원본의 <c>0x004A2EA0</c> 그대로다 — 직업 코드에서 14 를 빼 점프표(<c>0x004A2EE4</c>)를
         /// 타고, 표 밖이면 "변호사" 로 물러선다. 총독·귀족·관리가 다 "각하" 를 쓴다.
         /// </remarks>
         public string Honorific => JobCode switch
@@ -158,7 +158,7 @@ public sealed class SponsorTable
     /// 그 해에 그 도시 그 건물에 앉는 후원자. 없으면 null.
     /// </summary>
     /// <remarks>
-    /// 게임이 시설마다 후원자를 물리는 루프(<c>0x0044E5C0</c>) 그대로다.
+    /// 원본이 시설마다 후원자를 물리는 루프(<c>0x0044E5C0</c>) 그대로다.
     /// <code>
     ///   44e5d5  i = 0..80  후원자 i 의 도시(+0x24) == 시설 도시(+0x90)
     ///   44e5f7             · 건물(+0x28) == 시설 건물 코드(vtbl[0x48])

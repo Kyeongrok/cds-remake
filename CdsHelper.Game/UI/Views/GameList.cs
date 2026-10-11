@@ -37,11 +37,11 @@ internal enum GameListPick
     Swap,
 
     /// <summary>
-    /// 여러 줄을 골라 둔다. 시장 구입·매각이 그렇다 — 게임도 한 번에 여럿을 사고판다.
+    /// 여러 줄을 골라 둔다. 시장 구입·매각이 그렇다 — 원본도 한 번에 여럿을 사고판다.
     /// </summary>
     /// <remarks>
     /// 고른 줄은 남색으로 뒤집히고, 지금 <b>손이 가 있는 줄</b>은 검은 테로 따로 알린다.
-    /// 둘은 다른 것이다 — 게임 갈무리에도 남색 줄 둘 가운데 하나에만 테가 둘려 있다.
+    /// 둘은 다른 것이다 — 원본 갈무리에도 남색 줄 둘 가운데 하나에만 테가 둘려 있다.
     /// </remarks>
     Many,
 }
@@ -131,12 +131,12 @@ internal sealed class GameList : Border
         _cells = cells;
         _emptyText = emptyText;
 
-        // 게임은 줄을 어두운 창 바탕이 아니라 밝은 칸 위에 얹는다.
+        // 원본은 줄을 어두운 창 바탕이 아니라 밝은 칸 위에 얹는다.
         Background = GameUi.PageFill;
         BorderBrush = GameUi.ItemEdge;
         BorderThickness = new Thickness(1);
         Margin = new Thickness(6, 4, 6, 4);
-        // 굴림대는 게임 것을 쓴다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+        // 굴림대는 원본 것을 쓴다 — 윈도 굴림대는 모양이 원본과 너무 다르다.
         Child = maxHeight > 0 ? GameUi.Scroller(_stack, maxHeight) : _stack;
 
         Fill(count);
@@ -183,7 +183,7 @@ internal sealed class GameList : Border
     /// <summary>
     /// 이 목록에 손이 가 있는지. 목록이 <b>둘 나란히</b> 놓이는 창(자택 교환)에서 쓴다 —
     /// 손이 간 쪽은 고른 줄을 남색으로 뒤집고, 안 간 쪽은 검은 테로만 알린다.
-    /// 게임 갈무리가 그렇다.
+    /// 원본 갈무리가 그렇다.
     /// </summary>
     public bool Focused
     {

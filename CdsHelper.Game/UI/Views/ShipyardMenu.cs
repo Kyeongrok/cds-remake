@@ -13,7 +13,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 값과 조건은 <see cref="Shipyard"/> 가 알고, 여기서는 <b>묻고 알리는 차례</b>만 맡는다.
-/// 게임도 조선소 화면 하나가 이 셋을 다 거느린다(<c>0x0044B820</c> 매각 ·
+/// 원본도 조선소 화면 하나가 이 셋을 다 거느린다(<c>0x0044B820</c> 매각 ·
 /// <c>0x0044B9C0</c> 수리 · <c>0x00496960</c> 개조).
 ///
 /// 도시 그림 창이 들고 있던 것을 그대로 옮겼다 — 배를 손보는 일은 도시가 아니라
@@ -44,7 +44,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     private Window Owner => _menu.Window ?? _view;
 
     /// <summary>
-    /// 조선소 주인 얼굴. <b>이 집의 말은 모두 이 얼굴을 세운다</b> — 게임도 그렇다.
+    /// 조선소 주인 얼굴. <b>이 집의 말은 모두 이 얼굴을 세운다</b> — 원본도 그렇다.
     /// </summary>
     private uint[]? Face => _game.SpeakerFace(BuildingCode, _culture);
 
@@ -60,7 +60,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     private bool Ask(string text) => ConfirmDialog.Ask(Owner, text, face: Face);
 
     /// <summary>
-    /// 들어설 때 목수가 건네는 한마디. 게임의 <c>0x0044B4A0</c> 자리다 — 문구가
+    /// 들어설 때 목수가 건네는 한마디. 원본의 <c>0x0044B4A0</c> 자리다 — 문구가
     /// <c>0x00530F38</c> 이고, 얼굴은 이 마을 문화권이 정한다(리스본은 402, 이슬람권은
     /// 315 다).
     /// </summary>
@@ -85,7 +85,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     }
 
     /// <summary>
-    /// 배를 산다. 게임의 <c>0x0044B5A0</c> 자리다.
+    /// 배를 산다. 원본의 <c>0x0044B5A0</c> 자리다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -355,11 +355,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         return n < 0 ? null : MovieFiles.Resolve(_game.Directory, MovieFiles.HullStem(n));
     }
 
-    /// <summary>고칠 배가 있는지. 없으면 게임처럼 "수리" 줄이 흐리다.</summary>
+    /// <summary>고칠 배가 있는지. 없으면 원본처럼 "수리" 줄이 흐리다.</summary>
     public bool CanRepair => RepairTargets().Count > 0;
 
     /// <summary>
-    /// 조선소에 배를 판다. 게임의 <c>0x0044B820</c> 자리다.
+    /// 조선소에 배를 판다. 원본의 <c>0x0044B820</c> 자리다.
     /// </summary>
     /// <remarks>
     /// 값은 산 값의 <b>6할</b>에 도시 시세를 먹인 것이다(<see cref="Hull.SellPrice"/> ·
@@ -427,7 +427,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     }
 
     /// <summary>
-    /// 배를 고친다. 게임의 <c>0x0044B9C0</c> 자리다.
+    /// 배를 고친다. 원본의 <c>0x0044B9C0</c> 자리다.
     /// </summary>
     /// <remarks>
     /// 고칠 배는 <b>함대와 이 마을에 맡겨 둔 배</b>를 다 훑어 모은다(<c>0x0044BC50</c>).
@@ -446,7 +446,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 이 마을에서 고칠 수 있는 배 — 함대 먼저, 그 뒤가 이 마을이 맡은 배다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0044BC50(도시, 0)</c> 이다. 이 목록이 비면 조선소 차림표의 <b>"수리" 줄이
+    /// 원본의 <c>0x0044BC50(도시, 0)</c> 이다. 이 목록이 비면 조선소 차림표의 <b>"수리" 줄이
     /// 꺼진다</b>(<c>0x0044BD40</c> 이 <c>0x0044BC50 &gt; 0</c> 을 본다) — 그래서 평소에는
     /// "수리가 필요한 배는 없네!" 를 볼 일이 없다.
     /// </remarks>
@@ -507,7 +507,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 우리 선체 다섯에는 다우선이 없으므로, 유럽권 밖(문화권 3~9)의 조선소에서는
     /// <b>어느 배도 못 고친다</b> — 원본 규칙 그대로다.
     ///
-    /// 배를 고르면 열한 줄짜리 개조 창이 뜨고(<c>0x004966E0</c>), 한 줄을 마치면 게임은
+    /// 배를 고르면 열한 줄짜리 개조 창이 뜨고(<c>0x004966E0</c>), 한 줄을 마치면 원본은
     /// <b>그 줄만 꺼</b>(<c>0x0049690A</c>) 같은 배를 계속 손보게 둔다. 우리도 그렇게 한다 —
     /// 더 못 늘리는 줄은 저절로 흐려진다.
     /// </remarks>
@@ -610,7 +610,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         Facility.RefitTurrets => () => ChangeTurrets(ship),
         Facility.RefitCannon => () => BuyCannon(ship),
         Facility.RefitFigurehead => () => Carve(ship),
-        // 빌린 배는 <b>이름을 못 바꾼다</b> — 게임이 그 줄을 흐리게 둔다(0x004967C2 가
+        // 빌린 배는 <b>이름을 못 바꾼다</b> — 원본이 그 줄을 흐리게 둔다(0x004967C2 가
         // 제독의 소유주 번호와 배 주인을 견준다). 이 줄만은 처음부터 흐리다.
         Facility.RefitRename when !ship.Lent => () => RenameShip(ship),
         _ => null,
@@ -622,7 +622,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     private IReadOnlyList<int> Stock() => Figureheads.StockFor(_culture);
 
     /// <summary>지금 지니고 있는 선수상들 — 소지품에서 갈래 6 을 골라낸 것이다.</summary>
-    /// <remarks>게임의 <c>0x00495BA0</c> 이 소지품을 훑어 같은 목록을 짓는다.</remarks>
+    /// <remarks>원본의 <c>0x00495BA0</c> 이 소지품을 훑어 같은 목록을 짓는다.</remarks>
     /// <remarks>원본은 갈래 6 인 칸을 <b>전부</b> 늘어놓는다 — 재고와 겹쳐도, 같은 것이 둘이어도 빼지 않는다.</remarks>
     private List<int> Carried() =>
         [.. _player.Items.Select(Figureheads.FromItem).Where(Figureheads.Known)];
@@ -631,7 +631,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 선수상 — 조선소에서 사거나, 지니고 있는 것을 뱃머리에 단다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00495D10</c> 이 목록을 짓는다 — <b>조선소 재고</b>(<c>0x00429DF0</c>)와
+    /// 원본의 <c>0x00495D10</c> 이 목록을 짓는다 — <b>조선소 재고</b>(<c>0x00429DF0</c>)와
     /// <b>내 소지품</b>(<c>0x00495BA0</c>)을 이어 붙인 것이다. 값은 어디서 온 것이냐에 따라
     /// 다르다.
     /// <code>
@@ -649,7 +649,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     {
         var owner = Owner;
 
-        // 재고가 앞, 지닌 것이 뒤다 — 게임도 그 차례로 잇는다.
+        // 재고가 앞, 지닌 것이 뒤다 — 원본도 그 차례로 잇는다.
         var stock = Stock();
         var carried = Carried();
         var offer = new List<int>(stock);
@@ -753,7 +753,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 마스트 추가 — 돛대를 하나 더 세운다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00494BD0</c> 이다.
+    /// 원본의 <c>0x00494BD0</c> 이다.
     /// <code>
     /// 494a50  코구·다우는 못 늘리고, 카라벨은 둘까지, 그 밖은 셋까지
     /// 494c2c  값 = 선체 구입값 / 5
@@ -820,7 +820,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 돛종류 변경 — 마스트 하나의 돛을 삼각↔사각으로 바꾼다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00494F10</c> 이다. 값은 <b>선체 구입값 / 20</b>(<c>0x004950CB</c>).
+    /// 원본의 <c>0x00494F10</c> 이다. 값은 <b>선체 구입값 / 20</b>(<c>0x004950CB</c>).
     /// <code>
     ///   0x005316A8  "어느 마스트의 돛을 바꿀건가?"
     ///   0x005316D8  "삼각돛을 순풍에 뛰어난 사각돛으로 바꿀 건가?"
@@ -934,7 +934,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 돛 추가 — 추진력을 올리고 그만큼 배가 여려진다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00495320</c> 이다. 값은 <b>선체 구입값 / 20</b>.
+    /// 원본의 <c>0x00495320</c> 이다. 값은 <b>선체 구입값 / 20</b>.
     /// <code>
     ///   0x005317D8  "이 이상 돛을 단다면 마스트가 부러지네."
     ///   0x00531800  "금화 %ld닢이 드네."
@@ -959,7 +959,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 포탑수변경 — 대포를 걸 자리를 늘리거나 줄인다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00496190</c> 이다.
+    /// 원본의 <c>0x00496190</c> 이다.
     /// <code>
     /// 4961d6  상한 = min(선체 표 +0x30, 지금 포탑 + 적재용량)
     /// 496213  0x00454AA0("포탑수 결정", "포탑수", "문", 상한, "최대포탑수", "현재의 포탑수")
@@ -1009,7 +1009,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 대포구입 — 포탑에 걸 대포를 골라 싣는다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004963E0</c> 이다.
+    /// 원본의 <c>0x004963E0</c> 이다.
     /// <code>
     /// 49643e  포탑이 0 이면 "포탑이 없으면 대포는 실을 수 없네."   0x005320E8
     /// 496473  "어느 대포를 실을 건가?"                            0x00532110
@@ -1136,12 +1136,12 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 선명변경 — 배 이름을 바꾼다. 값은 안 든다.
     /// </summary>
     /// <remarks>
-    /// 게임은 <c>0x00495B90</c> → <c>0x00423BE0</c> 으로 <b>선명입력</b> 창을 띄운다.
+    /// 원본은 <c>0x00495B90</c> → <c>0x00423BE0</c> 으로 <b>선명입력</b> 창을 띄운다.
     /// 미리 갖춰 둔 이름 스물하나가 먼저 뜨고(포인터 표 <c>0x0053C178</c>), 오른쪽 위 작은
     /// 단추를 누르면 글자판이 떠서 하나씩 찍어 지을 수 있다 —
     /// <see cref="ShipNameDialog"/> · <see cref="TextInputDialog"/> 가 그 둘이다.
     ///
-    /// 게임은 배를 <b>살 때도</b> 같은 창(<c>0x00423BE0</c>)으로 이름을 받는다 — 우리도
+    /// 원본은 배를 <b>살 때도</b> 같은 창(<c>0x00423BE0</c>)으로 이름을 받는다 — 우리도
     /// <see cref="ShipNameDialog.Settle"/> 하나를 둘이 같이 쓴다.
     /// </remarks>
     /// <remarks>
@@ -1159,14 +1159,14 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// 개조 한 줄을 치른다 — 값을 알리고, 물어보고, 고치고, 바뀐 값을 보여 준다.
     /// </summary>
     /// <remarks>
-    /// 차례와 문구는 게임 것 그대로다(<c>0x004955D0</c> 벌).
+    /// 차례와 문구는 원본 것 그대로다(<c>0x004955D0</c> 벌).
     /// <code>
     ///   0x00531938  "금화 %ld닢이 드네."
     ///   0x005319A8  "돈이 모자라는 것 같군."
     ///   0x00531950  "용량과 함께 적재용량도 조금 올라가지만, 스피드와 내구력이 조금 떨어지네. 괜찮겠나?"
     ///   0x00531920  "이 이상은 무리로군."
     /// </code>
-    /// 게임처럼 <b>돈 검사를 물어보기 앞</b>에 한다 — 시장 구입과는 차례가 반대다.
+    /// 원본처럼 <b>돈 검사를 물어보기 앞</b>에 한다 — 시장 구입과는 차례가 반대다.
     /// </remarks>
     private void DoRefit(Ship ship, string item)
     {
@@ -1186,7 +1186,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             _ => ship.GrowCapacity(),
         };
 
-        // 게임이 개조 뒤에 띄우는 "%-12s%4d → %4d" 상자. 배가 바뀌었으니 줄의 흐림도 다시 잡는다.
+        // 원본이 개조 뒤에 띄우는 "%-12s%4d → %4d" 상자. 배가 바뀌었으니 줄의 흐림도 다시 잡는다.
         ShowRefit(owner, change, ship);
     }
 

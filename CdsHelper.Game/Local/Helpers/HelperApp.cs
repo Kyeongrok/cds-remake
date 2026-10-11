@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 게임에서 <b>도구 앱</b>(Editor.exe)을 띄운다.
+/// 원본에서 <b>도구 앱</b>(Editor.exe)을 띄운다.
 /// </summary>
 /// <remarks>
 /// 두 exe 는 따로 도는 앱이고, 게임 쪽(CostaDelSol.Play)은 도구 쪽(CdsHelper.Form)을 참조하지

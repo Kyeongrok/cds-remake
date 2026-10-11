@@ -264,7 +264,7 @@ public static class DisevScript
         new(Sig(0x0E, 0x1A), 9, "퍼즐 미니게임"),
         // 2F 0D [u16 인물] — 그 인물이 이끄는 적과 육상전(0x0040A40B → 0x0044AA30(3, 아군, 적, 0, 지형)).
         // 2F 08 [u16 도시] — 그 도시와 육상전(0x0040A3B2 → 0x0044AA30(4, 아군, 0, 도시, 7)).
-        // 결과는 「이겼는가」로 남아 43 47 이 이기면 뛴다. 전멸하면 게임이 먼저 게임 오버를 걸고
+        // 결과는 「이겼는가」로 남아 43 47 이 이기면 뛴다. 전멸하면 원본이 먼저 게임 오버를 걸고
         // 해석기가 그 자리에서 빠진다(0x0040A471 → 0x0040BDB3).
         new(Sig(0x2F, 0x0D), 4, "육상전(인물)"),
         // 0D 0D [u16 인물] — 그 인물이 이끄는 적과 <b>해전</b>. 바다 괴물 넷이 이것으로 덤빈다
@@ -296,7 +296,7 @@ public static class DisevScript
         ("플라밍고 떼", 0x16), ("모르포 나비 떼", 0x17), ("유빙·빙산", 0x0E), ("유빙·빙산", 0x0E),
     ];
 
-    /// <summary>특수 조우 연출 번호의 이름. 8 넘으면 게임이 건너뛴다(<c>0x004085E1</c>).</summary>
+    /// <summary>특수 조우 연출 번호의 이름. 8 넘으면 원본이 건너뛴다(<c>0x004085E1</c>).</summary>
     public static string EncounterName(int n) =>
         n >= 0 && n < Encounters.Length ? Encounters[n].Name : "(없음 — 게임이 건너뜀)";
 
@@ -655,7 +655,7 @@ public static class DisevScript
             }
             case "퍼즐 미니게임":
             {
-                // 가운데 바이트가 04 가 아니면 게임은 아무것도 안 한다(0x00408E13).
+                // 가운데 바이트가 04 가 아니면 원본은 아무것도 안 한다(0x00408E13).
                 if (raw.Length < 9 || raw[6] != 0x04) return $"{kind}: (가운데 바이트가 04 가 아님 — 게임이 건너뜀)";
                 int game = U16(raw, 7);
                 string name = ((DisevMinigame)game).ByPuzzleCommand() ? MinigameName(game) : "(없음 — 게임이 건너뜀)";

@@ -120,7 +120,7 @@ internal sealed class App : Application
     /// <remarks>
     /// 개발도구(<c>Editor.exe</c>)의 <c>UpdateService</c> 와 같은 저장소(GitHub 릴리즈)를 본다. Setup.exe 로 깔지 않은
     /// 판(단일 파일 exe · 개발 중 빌드)은 <see cref="UpdateManager.IsInstalled"/> 가 거짓이라 아무것도 안 한다.
-    /// 「아니오」면 게임을 끌 때 적용된다(<see cref="UpdateManager.WaitExitThenApplyUpdates"/>).
+    /// 「아니오」면 원본을 끌 때 적용된다(<see cref="UpdateManager.WaitExitThenApplyUpdates"/>).
     /// 인터넷이 없거나 GitHub 이 막혀도 게임은 그대로 돈다 — 조용히 넘어간다.
     /// </remarks>
     private static async Task CheckForUpdateAsync(ShipMapWindow window)

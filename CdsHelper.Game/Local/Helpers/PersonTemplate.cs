@@ -54,7 +54,7 @@ public sealed class PersonTemplate
                                            bool Female = false)
     {
         /// <summary>
-        /// 별자리. <b>생일 칸이 없어</b> 게임이 <c>(얼굴 + 혈액형 + 나라) % 12</c> 로 지어낸다
+        /// 별자리. <b>생일 칸이 없어</b> 원본이 <c>(얼굴 + 혈액형 + 나라) % 12</c> 로 지어낸다
         /// (<c>0x004780B0</c>). 비센테(194+0+1)%12=3 → 게좌.
         /// </summary>
         [JsonIgnore]

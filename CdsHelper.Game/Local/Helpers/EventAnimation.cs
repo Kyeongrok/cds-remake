@@ -95,7 +95,7 @@ public sealed class EventAnimation
     /// <summary>얹는 팔레트 색 수(<c>0x56</c>).</summary>
     private const int PaletteColors = 0x56;
 
-    /// <summary>파일 이름. 게임은 <c>"C:EvAnime.CDS"</c>(<c>0x0056E2A8</c>)로 연다.</summary>
+    /// <summary>파일 이름. 원본은 <c>"C:EvAnime.CDS"</c>(<c>0x0056E2A8</c>)로 연다.</summary>
     private const string FileName = "EvAnime.CDS";
 
     /// <summary>파일에 든 파트 수. 그림 31개 뒤에 팔레트가 32~51 에 있다.</summary>
@@ -135,7 +135,7 @@ public sealed class EventAnimation
     /// 그림 파트 하나를 띠째로 BGRA 로 푼다. 색인 0 은 알파 0 이다. 못 풀면 null.
     /// </summary>
     /// <param name="part">그림 파트.</param>
-    /// <param name="width">띠 폭. 게임이 <c>0x0049A210</c> 에 넘기는 값이다.</param>
+    /// <param name="width">띠 폭. 원본이 <c>0x0049A210</c> 에 넘기는 값이다.</param>
     /// <param name="frameHeight">한 프레임 높이. 그리는 손(<c>0x0049A700</c>)에 넘기는 값이다.</param>
     /// <param name="palettePart">팔레트 파트.</param>
     /// <summary>

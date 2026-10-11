@@ -16,7 +16,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 술집 미니 게임 「포카」의 카드판. 규칙은 <see cref="Poker"/> 에 모아 두었다.
 /// </summary>
 /// <remarks>
-/// 게임의 들머리는 <c>0x0042F690</c> → <c>0x00406470</c>(<see cref="Play"/>), 판을 여는 손은
+/// 원본의 들머리는 <c>0x0042F690</c> → <c>0x00406470</c>(<see cref="Play"/>), 판을 여는 손은
 /// <c>0x004059E0</c>, 한 판은 <c>0x00405CF7</c> 이다. 볼트 67 §19 의 상태 기계를 그대로 따라
 /// <b>차례대로 적힌 코드</b>로 돌린다 — 기다림(<c>0x00482D50(n)</c> = n x 500ms)과 단추 입력은
 /// 속 고리(<see cref="DispatcherFrame"/>)로 기다린다.
@@ -971,7 +971,7 @@ internal sealed class PokerDialog : GameWindow
         SyncGold();
     }
 
-    /// <summary>게임은 <c>+0x5C8</c> 과 전역 금화 <c>0x005B6194</c> 를 늘 같이 쓴다.</summary>
+    /// <summary>원본은 <c>+0x5C8</c> 과 전역 금화 <c>0x005B6194</c> 를 늘 같이 쓴다.</summary>
     private void SyncGold() => _player.SetGold(Math.Max(0, _poker.Purse));
 
     /// <summary>말풍선에 띄우고 n x 0.5초 뒤 걷는다(<c>0x00402F70(글, t)</c>).</summary>

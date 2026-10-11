@@ -6,7 +6,7 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 함대 그림 8방향. 게임이 안 켜져 있어도 배를 그릴 수 있게 <c>asset/ship</c> 에 넣어 둔 것이다.
+/// 함대 그림 8방향. 원본이 안 켜져 있어도 배를 그릴 수 있게 <c>asset/ship</c> 에 넣어 둔 것이다.
 /// </summary>
 /// <remarks>
 /// 원본은 실행 중인 CDS_95 의 배 아틀라스(VA 0x5D68C8)에서 클래스 0 의 8방향을 뜬 것이다.
@@ -15,7 +15,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///
 /// 파일은 <c>asset/ship/ship_0.png</c> ~ <c>ship_7.png</c>(배)와
 /// <c>asset/horse/horse_0.png</c> ~ <c>horse_7.png</c>(말), 한 장 48x48 이고 비침은 알파 0 이다.
-/// 말은 게임이 16방향을 넷으로 접어 쓰므로 두 장씩 같은 그림이다.
+/// 말은 원본이 16방향을 넷으로 접어 쓰므로 두 장씩 같은 그림이다.
 ///
 /// 말은 <b>걷는 그림</b>이 따로 있다 — <c>asset/horse/horse_walk.png</c> 한 장에
 /// 8칸(걸음) x 4줄(방향)이 들어 있다(<c>tools/extract_horse_walk.py</c>). 이것이 있으면
@@ -23,7 +23,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 색인이 아니라 색이 그대로 들어 있으므로 그림판으로 열어 고쳐도 그대로 나온다.
 ///
 /// 번호는 게임 방향(반시계)을 둘로 접은 것이다 — 0 북, 2 서, 4 남, 6 동.
-/// 게임이 떠 있으면 <see cref="GameShipReader"/> 가 읽은 것을 쓰고, 없을 때 이 표로 물러선다.
+/// 원본이 떠 있으면 <see cref="GameShipReader"/> 가 읽은 것을 쓰고, 없을 때 이 표로 물러선다.
 /// </remarks>
 public static class ShipSprites
 {
@@ -35,7 +35,7 @@ public static class ShipSprites
     public const string ShipDirectory = "asset/ship";
     public const string HorseDirectory = "asset/horse";
 
-    /// <summary>배 그림 벌 수(0~3). 게임의 함선 등급과 같은 차례다.</summary>
+    /// <summary>배 그림 벌 수(0~3). 원본의 함선 등급과 같은 차례다.</summary>
     public const int SkinCount = 4;
 
     private static int _skin = -1;
@@ -54,7 +54,7 @@ public static class ShipSprites
 
     /// <summary>
     /// 어느 벌의 배 그림을 쓸지(0~3). <c>asset/ship-g0</c> ~ <c>ship-g3</c> 에서 읽는다 —
-    /// 게임의 <c>CDS95Util/shipskin</c> 에 있는 넉 벌을 풀어 둔 것이다.
+    /// 원본의 <c>CDS95Util/shipskin</c> 에 있는 넉 벌을 풀어 둔 것이다.
     /// -1 이면 예전처럼 <see cref="ShipDirectory"/> 를 쓴다.
     /// </summary>
     /// <remarks>바꾸면 들고 있던 그림을 버린다 — 다음에 그릴 때 새 벌로 다시 읽는다.</remarks>
@@ -113,7 +113,7 @@ public static class ShipSprites
     /// <summary>말이 한 걸음 도는 데 드는 그림 수. 게임 아틀라스가 방향마다 여덟 장이다.</summary>
     public const int WalkPhases = 8;
 
-    /// <summary>말 그림의 방향 수. 게임은 16방향을 넷으로 접어 쓴다.</summary>
+    /// <summary>말 그림의 방향 수. 원본은 16방향을 넷으로 접어 쓴다.</summary>
     private const int WalkRows = 4;
 
     /// <summary>걷는 그림 한 장(<c>horse_walk.png</c>)에서 잘라 둔 것. [줄][걸음].</summary>
@@ -251,12 +251,12 @@ public static class ShipSprites
     /// 걷는 그림 한 장. 방향과 걸음으로 고른다. 그림이 없으면 null 이라 낱장으로 물러선다.
     /// </summary>
     /// <remarks>
-    /// 게임이 고르는 그대로다(렌더러 <c>0x48A82E</c>).
+    /// 원본이 고르는 그대로다(렌더러 <c>0x48A82E</c>).
     /// <code>
     ///   dd    = (16방향 + 1) &amp; 0xF
     ///   프레임 = (dd &gt;&gt; 2) * 8 + 걸음번호
     /// </code>
-    /// 걸음 번호는 게임에서 <c>0x00569550</c> 에 있고 지도 한 틱마다 는다.
+    /// 걸음 번호는 원본에서 <c>0x00569550</c> 에 있고 지도 한 틱마다 는다.
     /// </remarks>
     private static uint[]? Walk(int heading16, int phase)
     {

@@ -4,7 +4,7 @@
 /// 밝힌 바다 — 항해지도에 드러나는 자리다. 칸 <b>4x4</b> 를 한 점으로 묶어 비트 하나로 든다.
 /// </summary>
 /// <remarks>
-/// 게임도 같은 모양이다(<c>0x005AA898</c>).
+/// 원본도 같은 모양이다(<c>0x005AA898</c>).
 /// <code>
 ///   0x00468EA0  seen(x, y)    비트 = 표[x/8 + y*79] &amp; (1 &lt;&lt; (x &amp; 7))
 ///   0x00468D90  mark(칸x, 칸y) 배 둘레를 원으로 칠한다 — 반지름 = 측량 * 8 + 56 칸
@@ -23,11 +23,11 @@ public sealed class ExploredMap
     /// <summary>점의 가로·세로 수. 칸 2500x1250 을 넷으로 나눈 것이다.</summary>
     public const int Width = 625, Height = 313;
 
-    /// <summary>한 줄의 바이트 수. 게임이 <c>x/8 + y*79</c> 로 짚는다.</summary>
+    /// <summary>한 줄의 바이트 수. 원본이 <c>x/8 + y*79</c> 로 짚는다.</summary>
     public const int Stride = 79;
 
     /// <summary>
-    /// 배가 지나며 밝히는 반지름의 밑값(칸). 게임은 <c>측량 * 8 + 56</c> 이다(<c>0x00468D90</c>).
+    /// 배가 지나며 밝히는 반지름의 밑값(칸). 원본은 <c>측량 * 8 + 56</c> 이다(<c>0x00468D90</c>).
     /// </summary>
     public const int SightCells = 56;
 
@@ -72,7 +72,7 @@ public sealed class ExploredMap
     /// 배가 선 칸 둘레를 밝힌다. 반지름은 <b>칸</b> 단위다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00468D90</c> 그대로다 — <b>칸 좌표</b>에서 4칸 걸음으로 원 안을 훑고,
+    /// 원본의 <c>0x00468D90</c> 그대로다 — <b>칸 좌표</b>에서 4칸 걸음으로 원 안을 훑고,
     /// 가로는 2500 으로 돌린다(날짜변경선 너머도 밝는다).
     /// <code>
     ///   for dy = -R .. R step 4, dx = -R .. R step 4:

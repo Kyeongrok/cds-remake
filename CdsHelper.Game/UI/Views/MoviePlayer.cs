@@ -10,7 +10,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 동영상 한 편을 <b>화면 가득</b> 튼다. 다 돌거나 아무 데나 누르면 닫힌다.
 /// </summary>
 /// <remarks>
-/// 발견물 동영상(<c>AVI\I{번호:00}_0000.AVI</c>)이 이 길로 나온다. 게임도 액자에 넣지
+/// 발견물 동영상(<c>AVI\I{번호:00}_0000.AVI</c>)이 이 길로 나온다. 원본도 액자에 넣지
 /// 않고 화면을 통째로 덮는다 — 320x240 짜리라 위아래에 검은 띠가 남는다.
 ///
 /// DISEV 의 「미디어 · 동영상 · AVI n」 명령이 하는 일이 이것이다(<c>00 02 [u16]</c>,
@@ -26,7 +26,7 @@ public static class MoviePlayer
     /// </summary>
     /// <param name="owner">덮을 창. 이 창의 화면을 가득 채운다.</param>
     /// <param name="path">틀 파일. 없으면 아무 일도 없다.</param>
-    /// <param name="bgm">도는 동안 멈춰 둘 곡 — 게임은 AVI 를 틀기 전에 CDAudioPause, 끝나면 CDAudioResume 을 부른다
+    /// <param name="bgm">도는 동안 멈춰 둘 곡 — 원본은 AVI 를 틀기 전에 CDAudioPause, 끝나면 CDAudioResume 을 부른다
     /// (<c>0x00408359</c>~<c>0x00408372</c> · <c>0x0047373C</c> · <c>0x004AAFC0</c>).</param>
     public static void Play(Window owner, string? path, Local.Helpers.BgmPlayer? bgm = null)
     {
@@ -66,7 +66,7 @@ public static class MoviePlayer
             screen.Close();
         }
 
-        // 다 돌면 닫힌다. 기다리기 싫으면 아무 데나 눌러도 닫힌다 — 게임도 그렇다.
+        // 다 돌면 닫힌다. 기다리기 싫으면 아무 데나 눌러도 닫힌다 — 원본도 그렇다.
         player.MediaEnded += (_, _) => Finish();
         // 코덱이 없거나 파일이 깨졌으면 그냥 지나간다.
         player.MediaFailed += (_, _) => Finish();

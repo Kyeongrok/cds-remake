@@ -16,7 +16,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 값도 얼굴도 눈으로 고른 것이라 인물표와 아무 상관이 없었다. 여기서는 <b>표에 있는
 /// 사람</b>을 그대로 세운다 — 얼굴도 능력도 기능도 그 사람 것이다.
 ///
-/// 게임에 없는 화면이라 밤색 판이 아니라 <b>여느 개발 창</b>의 꼴로 짓는다 —
+/// 원본에 없는 화면이라 밤색 판이 아니라 <b>여느 개발 창</b>의 꼴로 짓는다 —
 /// 모의전 창(<see cref="LandSparDialog"/>)과 같은 결이다.
 /// </remarks>
 internal sealed class DuelFoeDialog : GameWindow

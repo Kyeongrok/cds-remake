@@ -12,20 +12,20 @@ namespace CdsHelper.Game.UI.Views;
 /// (커맨드 창의 "힌트 정보"), 하나를 고르게 하기도 한다(왕궁의 "설득").
 /// </summary>
 /// <remarks>
-/// 게임도 창 하나를 두 군데에서 쓴다. 고르는 쪽(<see cref="Pick"/>)은 EXE 의
+/// 원본도 창 하나를 두 군데에서 쓴다. 고르는 쪽(<see cref="Pick"/>)은 EXE 의
 /// <c>0x004769A0</c> 이 하는 일 그대로다 — 목록을 띄우고 고른 힌트 번호를 내며,
 /// 중단하면 -1 이다. 힌트는 책을 읽으면 는다(볼트 <c>20.분석-도서관 책과 책등 색</c>).
 /// </remarks>
 public sealed class HintListDialog : GameWindow
 {
-    /// <summary>목록 칸의 폭과 가장 높은 자리. 게임 갈무리에서 잰 값이다.</summary>
+    /// <summary>목록 칸의 폭과 가장 높은 자리. 원본 갈무리에서 잰 값이다.</summary>
     /// <remarks>
     /// 글자 높이를 자로 삼아 원본과 대 보면 판이 <b>한 뼘 넓었다</b> — 제목 글씨 폭에 견준
     /// 판 폭이 원본은 4.8배인데 우리는 5.4배였다. 300 에서 264 로 줄여 맞췄다.
     /// </remarks>
     private const double ListWidth = 264, ListMaxHeight = 280;
 
-    /// <summary>고른 줄의 바탕. 게임 갈무리에서 집은 파랑이다.</summary>
+    /// <summary>고른 줄의 바탕. 원본 갈무리에서 집은 파랑이다.</summary>
     private static readonly Brush PickFill = Frozen(Color.FromRgb(0x43, 0x56, 0x7A));
 
     /// <summary>고른 줄의 테. 바탕보다 훨씬 짙은 남색이다.</summary>
@@ -52,7 +52,7 @@ public sealed class HintListDialog : GameWindow
         return b;
     }
 
-    /// <summary>줄 좌우 여백. 게임은 종이 테에 바짝 붙여 찍는다.</summary>
+    /// <summary>줄 좌우 여백. 원본은 종이 테에 바짝 붙여 찍는다.</summary>
     private const double RowPad = 3;
 
     /// <summary>배경 판을 창 테에서 물려 놓는 만큼. 도시 명령 창과 같은 세 점이다.</summary>
@@ -216,7 +216,7 @@ public sealed class HintListDialog : GameWindow
             list.Children.Add(row);
         }
 
-        // 고르는 창이라도 아직 아무것도 안 골랐으면 결정은 흐리다 — 게임도 그렇다.
+        // 고르는 창이라도 아직 아무것도 안 골랐으면 결정은 흐리다 — 원본도 그렇다.
         _decide = new GameButton("결정", Decide, BandStyle.Button, ButtonWidth)
         {
             Height = UiSprites.BandHeight,
@@ -255,7 +255,7 @@ public sealed class HintListDialog : GameWindow
             // <b>가로로 넓고 세로는 줄 수를 따라간다.</b> 게임 창이 그렇다 — 두 줄이면
             // 두 줄만큼만 높고, 길어지면 그때 늘어나다 스무 줄쯤에서 멎고 굴러간다.
             // 예전에는 280x300 으로 박아 두어 줄이 몇 없어도 아래가 텅 비었다.
-            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 원본과 너무 다르다.
             Child = GameUi.Scroller(new Border
             {
                 // 얼굴을 붙이면 그만큼 넓힌다 — 이름 칸 폭은 그대로 둔다.
@@ -561,7 +561,7 @@ public sealed class HintListDialog : GameWindow
     /// 고를 것이 없으면 <paramref name="whenEmpty"/> 로 알리고 -1 을 낸다.
     /// </summary>
     /// <remarks>
-    /// 게임도 창 하나를 「취득 힌트 일람」과 「스폰서 일람」 두 군데에 쓴다
+    /// 원본도 창 하나를 「취득 힌트 일람」과 「스폰서 일람」 두 군데에 쓴다
     /// (<c>0x004769A0</c> 와 <c>0x00476660</c> 이 같은 모양이다).
     /// </remarks>
     /// <param name="header">줄 위에 얹을 머리글. 빈 글이면 안 얹는다.</param>

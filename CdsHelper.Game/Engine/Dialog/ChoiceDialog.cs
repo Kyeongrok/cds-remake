@@ -20,7 +20,7 @@ namespace CdsHelper.Game.UI.Views;
 ///     새로운 주인공으로 시작한다(NORMAL)
 ///     취소
 /// </code>
-/// 마지막 줄은 <see cref="GameMenu"/> 가 알아서 회녹색 띠로 낸다 — 게임도 나가기 줄을
+/// 마지막 줄은 <see cref="GameMenu"/> 가 알아서 회녹색 띠로 낸다 — 원본도 나가기 줄을
 /// 그렇게 갈라 놓는다.
 /// </remarks>
 internal sealed class ChoiceDialog : GameWindow
@@ -41,7 +41,7 @@ internal sealed class ChoiceDialog : GameWindow
         {
             int pick = i;
             // 꺼진 줄은 <b>자리를 지킨 채</b> 죽는다 — 할 일을 안 주면 GameMenu 가 흐린
-            // 단추로 낸다. 게임도 넉 줄을 먼저 깔고 그 뒤에 켜고 끈다(0x004A5726).
+            // 단추로 낸다. 원본도 넉 줄을 먼저 깔고 그 뒤에 켜고 끈다(0x004A5726).
             // 나가기 줄이 없는 창은 <b>마지막 줄도 단추</b>다 — 안 그러면 GameMenu 가 끝 줄을
             // 회녹색 나가기 띠로 낸다. 싸움의 공격명령(끝이 「애니메이션」)과 묘책(끝이
             // 「심판」)이 그런 창이라, 그 줄들은 나가기가 아니라 여느 명령이다.
@@ -118,7 +118,7 @@ internal sealed class ChoiceDialog : GameWindow
     /// </summary>
     /// <remarks>
     /// 스폰서의 계약 제안이 이 모양이다 — 제목 띠에 「기간N년 금화 N닢」이 서고 그 아래
-    /// 승낙한다·교섭한다 두 줄이 같은 무늬로 놓인다. 게임은 이 창을
+    /// 승낙한다·교섭한다 두 줄이 같은 무늬로 놓인다. 원본은 이 창을
     /// <c>0x00469A70</c> 으로 낸다(<c>0x004AF22A</c> 가 줄 수 2 를 넘긴다).
     /// </remarks>
     public static int Pick(Window owner, string title, IReadOnlyList<string> rows)

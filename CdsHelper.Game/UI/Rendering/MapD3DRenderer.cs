@@ -803,7 +803,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     }
 
     /// <summary>
-    /// 지도에 함께 낼 남의 배 수. <b>게임과 같이 열여섯</b>이다(<c>0x004267A6</c> 의
+    /// 지도에 함께 낼 남의 배 수. <b>원본과 같이 열여섯</b>이다(<c>0x004267A6</c> 의
     /// <c>cmp … 0x10</c>).
     /// </summary>
     public const int MaxFolk = 16;
@@ -839,7 +839,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// 원본은 남의 배도 내 기함 벌 하나로 그리지만(<c>0x00569FE4</c>), 우리는 그 사람 기함 선체의 벌로 그린다.
     /// </summary>
     /// <remarks>
-    /// 게임은 사람 자리의 부류가 2 이상(뭍)이면 배 대신 <b>말</b>을 그린다(<c>0x0048A799</c> 의
+    /// 원본은 사람 자리의 부류가 2 이상(뭍)이면 배 대신 <b>말</b>을 그린다(<c>0x0048A799</c> 의
     /// <c>cmp eax, 2 / jge</c> → 뭍 그림 벌 <c>0x00569FE8</c>). 곧은 길로 가다 뭍을 만나면 말로,
     /// 다시 바다로 나오면 배로 바뀐다. 셰이더는 <c>Folk[k].z * 48</c> 로 줄을 내리므로 장수를
     /// 모른다 — 여기 값만 맞추면 된다.
@@ -897,7 +897,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _folkReady = true;
     }
 
-    /// <summary>지도 위에 떠 있는 구름 수. 게임과 같다(<c>0x004890DB</c>).</summary>
+    /// <summary>지도 위에 떠 있는 구름 수. 원본과 같다(<c>0x004890DB</c>).</summary>
     public const int MaxClouds = 6;
 
     /// <summary>
@@ -929,7 +929,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// 물결. 해류 방위 벡터와 세기, 그리고 흐른 틱 수다. 세기가 0 이면 물결이 안 인다.
     /// </summary>
     /// <remarks>
-    /// 게임이 그리는 칸마다 하는 판정(<c>0x0048A4D8</c>~)을 픽셀 셰이더로 옮긴 것이다.
+    /// 원본이 그리는 칸마다 하는 판정(<c>0x0048A4D8</c>~)을 픽셀 셰이더로 옮긴 것이다.
     /// 원본은 화면 격자의 열·행으로 띠를 세는데 여기서는 <b>지도 칸</b>으로 센다 —
     /// 지도를 밀거나 키워도 물결이 바다에 붙어 있어야 한다. 자세한 것은
     /// <see cref="WindTable.InRippleBand"/>.
@@ -951,7 +951,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// <summary>고해상도 바다에서 해류 결·띠의 짙기(0~1). 0 이면 잔물결만 흐르고 결과 띠는 안 선다.</summary>
     public float FlowAmount { get; set; } = 0.5f;
 
-    /// <summary>바람·해류 화살표를 얹을지. 게임에는 없는 것이라 커맨드 창에서 끄고 켠다.</summary>
+    /// <summary>바람·해류 화살표를 얹을지. 원본에는 없는 것이라 커맨드 창에서 끄고 켠다.</summary>
     public bool ShowArrows { get; set; }
 
     /// <summary>
@@ -1146,7 +1146,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
 
     /// <summary>
     /// 지도 위에 씌우는 막(색과 짙기). 알파가 0 이면 아무것도 안 씌운다 —
-    /// 도시에 들어가 있는 동안 게임이 지도를 이렇게 덮는다(색을 칠하는 것이 아니라 비쳐 보인다).
+    /// 도시에 들어가 있는 동안 원본이 지도를 이렇게 덮는다(색을 칠하는 것이 아니라 비쳐 보인다).
     /// </summary>
     public (float R, float G, float B, float A) Cover { get; set; }
 
@@ -1368,7 +1368,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// 칸 지도 위에 덮어 둘 것 — <b>아직 안 선 도시를 지우는</b> 바탕 타일이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 그릴 때마다 칸마다 도시를 되짚어 갈아 끼우는데(<c>0x0048A1E0</c>), 우리는
+    /// 원본은 그릴 때마다 칸마다 도시를 되짚어 갈아 끼우는데(<c>0x0048A1E0</c>), 우리는
     /// 칸 지도를 한 장으로 올려 두므로 <b>올릴 때 한 번</b> 덮는다. 도시가 새로 서면
     /// <see cref="Erase"/> 를 다시 불러 한 장을 새로 짓는다.
     /// </remarks>

@@ -21,7 +21,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   └─────────┴──────────┘
 ///          [결정]  [중단]
 /// </code>
-/// 발견물 쪽은 지금까지 찾은 것이 <b>찾은 차례대로</b> 놓인다. 고를 수는 없다 — 게임도
+/// 발견물 쪽은 지금까지 찾은 것이 <b>찾은 차례대로</b> 놓인다. 고를 수는 없다 — 원본도
 /// 결정이 소지품 줄에만 걸린다.
 ///
 /// 줄을 고르고 결정을 누르면 그 아이템 창이 뜬다(<see cref="ItemInfoDialog"/>) —
@@ -94,7 +94,7 @@ public sealed class BelongingsDialog : GameWindow
         Background = GameUi.Back;
 
         // 제목 띠 둘은 맨 위에 나란히, 그 밑이 통째로 양피지 칸이다.
-        // 게임도 그렇게 나뉘어 있다 — 창 바탕은 갈색이고 줄이 놓이는 데만 밝다.
+        // 원본도 그렇게 나뉘어 있다 — 창 바탕은 갈색이고 줄이 놓이는 데만 밝다.
         var bands = new Grid();
         bands.ColumnDefinitions.Add(new ColumnDefinition());
         bands.ColumnDefinitions.Add(new ColumnDefinition());
@@ -120,7 +120,7 @@ public sealed class BelongingsDialog : GameWindow
         columns.Children.Add(rightList.Host);
         Discoveries = rightList.Items;
 
-        // 발견물 쪽은 고를 수 없다 — 게임도 결정이 소지품 줄에만 걸린다.
+        // 발견물 쪽은 고를 수 없다 — 원본도 결정이 소지품 줄에만 걸린다.
         foreach (var name in discoveries)
             Discoveries.Children.Add(new Border
             {
@@ -244,7 +244,7 @@ public sealed class BelongingsDialog : GameWindow
         var host = new Border
         {
             Background = GameUi.PageFill,
-            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 게임과 너무 다르다.
+            // 굴림대는 게임 것(MISC.CDS 파트 3 화살표)이다 — 윈도 굴림대는 모양이 원본과 너무 다르다.
             // 칸 높이는 창이 정하므로 높이 한도는 두지 않는다.
             Child = GameUi.Scroller(items, double.PositiveInfinity),
         };
@@ -342,7 +342,7 @@ public sealed class BelongingsDialog : GameWindow
             _rows[i].Row.Background = on ? Picked : Brushes.Transparent;
             _rows[i].Row.Child = Line(_rows[i].ItemId, _rows[i].Name, on);
         }
-        _decide.On = true;      // 게임도 아무것도 안 고른 동안은 이 단추가 흐리다
+        _decide.On = true;      // 원본도 아무것도 안 고른 동안은 이 단추가 흐리다
         // 보관 · 판매는 <b>실제 소지품 칸</b>만 — 뒤에 붙은 「아직 안 알린 발견물」 줄은 지닌 것이 아니다.
         bool real = index < _player.Items.Count;
         if (_storeButton != null) _storeButton.On = real;

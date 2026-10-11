@@ -15,7 +15,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 게임 세이브의 인물표에서 오고(<see cref="Engine.Game.Roster"/>), 그림은
 /// 손님 그림(<see cref="Engine.Game.Guests"/>)에서 온다.
 ///
-/// 명령 창이 아니라 <b>건물 사진 창</b>에 붙는다 — 게임도 술집에 들어서면 사진 앞에
+/// 명령 창이 아니라 <b>건물 사진 창</b>에 붙는다 — 원본도 술집에 들어서면 사진 앞에
 /// 손님이 서고, 그 사람을 눌러 말을 건다.
 /// </remarks>
 /// <param name="view">이 술집을 낸 도시 창. 대사 창의 주인이다.</param>
@@ -24,10 +24,10 @@ namespace CdsHelper.Game.UI.Views;
 /// <param name="culture">이 마을 문화권 이름. 손님 그림을 고르는 데 쓴다.</param>
 /// <param name="cultureNo">이 마을 문화권 번호. 주인 얼굴이 여기 따라 갈린다.</param>
 /// <param name="hideMenu">
-/// 손님과 이야기하는 동안 시설 명령 창을 접어 두라는 부탁. 게임은 손님을 누르면
+/// 손님과 이야기하는 동안 시설 명령 창을 접어 두라는 부탁. 원본은 손님을 누르면
 /// <b>명령 창을 지우고 그 자리에</b> 고르는 줄을 낸다.
 /// </param>
-/// <param name="leave">술집을 나가라는 부탁 — 설득을 한 번 하고 나면 게임이 그렇게 한다.</param>
+/// <param name="leave">술집을 나가라는 부탁 — 설득을 한 번 하고 나면 원본이 그렇게 한다.</param>
 internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, string culture,
                                  int cultureNo, Action<bool>? hideMenu = null,
                                  Action? leave = null)
@@ -52,7 +52,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 인사 대신 <b>포카를 걸어 오는</b> 말 셋. 같은 표(<c>0x005473D8</c>)의 뒤쪽이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 굴림 하나로 인사와 이 권유를 함께 뽑는다(<c>0x0042E997</c>) — 포카를 할 수
+    /// 원본은 굴림 하나로 인사와 이 권유를 함께 뽑는다(<c>0x0042E997</c>) — 포카를 할 수
     /// 있는 마을이면 <c>rand(8)</c> 로 굴려 <b>5~7 이 이 셋</b>이고, 아니면 <c>rand(5)</c>
     /// 라 영영 안 나온다. 그래서 <b>여덟 번에 세 번</b>이 권유다.
     /// </remarks>
@@ -107,7 +107,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </summary>
     /// <remarks>
     /// <b>말하는 이는 술집 주인이 아니라 앉아 있는 손님</b>이다. 말이 "여어, 함께
-    /// 마시자구" 인 것부터가 취객의 말이고, 게임도 그렇게 짓는다 — <c>0x0042E976</c> 이
+    /// 마시자구" 인 것부터가 취객의 말이고, 원본도 그렇게 짓는다 — <c>0x0042E976</c> 이
     /// <c>0x004A1D10</c> 으로 <b>손님 자리를 하나 집어</b> 그 자리의 화자로 창을 낸다
     /// (자리 배열은 화면 객체 <c>+0x18</c>, 한 칸 <c>0x18</c> 바이트다).
     ///
@@ -118,7 +118,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 예전에는 화자표의 <b>술집 주인</b> 얼굴을 썼는데, 주인이 할 말이 아니다.
     /// </remarks>
     /// <remarks>
-    /// <b>들어설 때마다 말을 걸지는 않는다.</b> 게임은 <c>0x0042E985</c> 에서
+    /// <b>들어설 때마다 말을 걸지는 않는다.</b> 원본은 <c>0x0042E985</c> 에서
     /// <c>rand(3) != 0</c> 이면 그냥 나간다 — <b>세 번에 한 번</b>만 누가 말을 건다.
     /// 그래서 들락거려도 말이 잇달아 나오지 않는다.
     /// </remarks>
@@ -135,7 +135,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         if (_game.Random.Next(GreetDice) != 0) return;
 
-        // 자리에서 얼굴을 못 구하면 그 마을 술집 화자로 물러선다 — 게임은 늘
+        // 자리에서 얼굴을 못 구하면 그 마을 술집 화자로 물러선다 — 원본은 늘
         // 얼굴을 걸고 말하므로 얼굴 없는 창이 뜨는 것이 더 어긋난다.
         var face = DrinkerFace() ?? _game.SpeakerFace(BuildingCode, _cultureNo);
 
@@ -371,11 +371,11 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     ///   <item>아니면 <b>다섯 가지 가운데 하나</b>(<c>0x0042F07F</c>). 소지금이 100닢
     ///         이하면 넷 중에서 뽑는다 — 한턱은 낼 돈이 있어야 낸다.</item>
     /// </list>
-    /// 게임은 취한 뒤 화면을 어둡게 했다 밝히는데(<c>0x004A59F0</c>), 우리는 말 창만 낸다.
+    /// 원본은 취한 뒤 화면을 어둡게 했다 밝히는데(<c>0x004A59F0</c>), 우리는 말 창만 낸다.
     /// </remarks>
     private void Drunk()
     {
-        // 취기는 안 지운다 — 게임은 술집에 들어설 때(생성자)만 0 으로 둔다. 그래서 한 번 취하면
+        // 취기는 안 지운다 — 원본은 술집에 들어설 때(생성자)만 0 으로 둔다. 그래서 한 번 취하면
         // 그 뒤로는 한 잔마다 또 취한다.
 
         string first = _player.MateAt(0);
@@ -669,7 +669,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 말을 거는 취객의 얼굴 — <b>이름 없는 손님</b> 가운데 맨 앞자리 사람이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 자리 배열을 앞에서부터 훑어 <b>인물이 안 앉은 첫 자리</b>를 집는다
+    /// 원본은 자리 배열을 앞에서부터 훑어 <b>인물이 안 앉은 첫 자리</b>를 집는다
     /// (<c>0x004A1D10</c>).
     /// <code>
     ///   자리 한 칸 24바이트, 배열은 화면 객체 +8
@@ -824,7 +824,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     ///   그 뒤로      이야기한다 · 설득한다 · 떠난다
     /// </code>
     /// 낯 트기 전은 지나가는 여성과 <b>똑같이</b> 나온다 — 얼굴도 이름도 안 보인다.
-    /// 게임의 선물 창(<c>0x00466AC9</c> 「무엇을 보내시겠습니까?」)은 차림표의 「선물을 보낸다」 줄이다
+    /// 원본의 선물 창(<c>0x00466AC9</c> 「무엇을 보내시겠습니까?」)은 차림표의 「선물을 보낸다」 줄이다
     /// (<see cref="Gift"/>).
     /// </remarks>
     private void MeetBarmaid(BarmaidTable.Barmaid her)
@@ -852,7 +852,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var face = FaceOfMaid(her);
 
         // <b>그 여급과</b> 통하는 말이 하나도 없으면 이야기가 안 된다 — 한 마디만 듣고 끝난다.
-        // 게임은 0x004664D1 에서 0x00468F70(여급) 을 부른다 — 제독·부관·통역 가운데 여급이 하는 말(표 +0x20 비트)을
+        // 원본은 0x004664D1 에서 0x00468F70(여급) 을 부른다 — 제독·부관·통역 가운데 여급이 하는 말(표 +0x20 비트)을
         // 가장 잘하는 수준이다. 예전에는 <b>도시 나라 말</b>을 제독 혼자 보아서, 포르투갈어 3 인 제독이 포르투갈어를
         // 하는 보르도 여급에게 「알아들을 수 없다」는 말을 들었다.
         if (TongueWith(her) <= 0)
@@ -937,7 +937,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             bool any = !talked || OwnTongueWith(her) >= FluentTongue;
             if (!any) return;
 
-            // 한 번 인사를 나눈 뒤로는 <b>줄만 다시 뜬다</b> — 게임은 "무슨 일이시죠?" 를
+            // 한 번 인사를 나눈 뒤로는 <b>줄만 다시 뜬다</b> — 원본은 "무슨 일이시죠?" 를
             // 되풀이하지 않는다. 빈 글이면 대사 창을 건너뛴다(TalkDialog.Ask).
             words = "";
         }
@@ -984,7 +984,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 「선물을 보낸다」(<c>0x00466A80</c>) — 소지품에서 선물 갈래(<see cref="Barmaids.GiftCategory"/>)만 골라 낸다.
     /// </summary>
     /// <remarks>
-    /// 낼 것이 없으면 <b>아무 말 없이</b> 차림표로 돌아간다 — 게임도 목록이 비면 창을 안 띄운다.
+    /// 낼 것이 없으면 <b>아무 말 없이</b> 차림표로 돌아간다 — 원본도 목록이 비면 창을 안 띄운다.
     /// 고르면 그 물건이 소지품에서 빠지고 친밀도가 <c>친밀도 x (값/200) / 100</c> 만큼 오른 뒤,
     /// 오른 자리에 맞는 말이 나온다(<c>0x00466B70</c>).
     /// </remarks>
@@ -1254,7 +1254,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     }
 
     /// <summary>
-    /// 이름 없는 손님을 눌렀을 때. 게임 문구를 그대로 옮겼다(<c>0x0054AC40</c>·<c>0x0054AB98</c>).
+    /// 이름 없는 손님을 눌렀을 때. 원본 문구를 그대로 옮겼다(<c>0x0054AC40</c>·<c>0x0054AB98</c>).
     /// </summary>
     /// <remarks>
     /// 남자 손님도 먼저 눈에 띈 것을 알리고 묻는다 — 술집은 「술을 마시고 있는 남자가 있다」
@@ -1347,7 +1347,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// <remarks>
     /// <b>이미 고용한 사람은 뺀다.</b> 부하가 되면 배를 타고 따라다니지 술집에 남아
     /// 있을 까닭이 없다. 인물 표에는 그대로 그 도시 그 건물이 적혀 있으므로
-    /// (게임은 고용 칸을 3 으로 바꿔 표에서 걷는다) 여기서 걸러 낸다.
+    /// (원본은 고용 칸을 3 으로 바꿔 표에서 걷는다) 여기서 걸러 낸다.
     /// </remarks>
     private IReadOnlyList<TavernRoster.Person> Sitting(byte building)
     {
@@ -1359,14 +1359,14 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <remarks>
     /// 고용상태(2 고용가능)로 아는 사이를 가르면 <b>처음 들어간 여관에서도 이름이 뜬다</b>.
-    /// 게임은 사람마다 「모르는 사이」 깃발을 들고 있다가 용건을 물을 때(<c>0x004A4BB0</c> →
+    /// 원본은 사람마다 「모르는 사이」 깃발을 들고 있다가 용건을 물을 때(<c>0x004A4BB0</c> →
     /// <c>0x004321C0</c>, <c>[인물+0xF8] = 0</c>) 걷는다 — 곧 실제로 말을 걸어야 안다.
     /// </remarks>
     private bool Known(TavernRoster.Person who) =>
         _player.HasMet(who.Name) || _player.HasMate(who.Name);
 
     /// <summary>
-    /// 인물을 눌렀을 때. <b>낯을 텄는지에 따라 두 갈래</b>다 — 게임도 인물 객체의
+    /// 인물을 눌렀을 때. <b>낯을 텄는지에 따라 두 갈래</b>다 — 원본도 인물 객체의
     /// <c>vtbl[0x34]</c> 하나로 이렇게 가른다(<c>0x0042F3D0</c>).
     /// </summary>
     /// <remarks>
@@ -1377,7 +1377,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     ///   <item><b>아는 사람</b> — "[이름]이 있다"(<c>0x0054AC20</c>)로 부르고
     ///         <b>말을 건다</b>가 뜬다. 말을 걸면 용건을 묻는다.</item>
     /// </list>
-    /// 말을 걸었을 때 뜰 줄은 게임이 인물 갈래(<c>+0xE8</c>)로 고르는데(<c>0x004A4DE0</c>),
+    /// 말을 걸었을 때 뜰 줄은 원본이 인물 갈래(<c>+0xE8</c>)로 고르는데(<c>0x004A4DE0</c>),
     /// 우리는 세이브의 고용상태(1 대화만 · 2 고용가능 · 3 고용중)로 대신한다.
     /// </remarks>
     /// <param name="inn">
@@ -1394,7 +1394,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         bool known = Known(who);
 
         // <b>이 줄에는 얼굴이 안 붙는다.</b> 「…이 있다」 는 그 사람이 하는 말이 아니라
-        // 눈에 띄었다는 서술이라 게임도 그냥 알림으로 낸다. 얼굴은 말을 걸고 나서부터다.
+        // 눈에 띄었다는 서술이라 원본도 그냥 알림으로 낸다. 얼굴은 말을 걸고 나서부터다.
         // 이름표는 게임 표(0x005609C8)의 「남자」·「여」다.
         string label = female ? "여" : "남자";
 
@@ -1450,10 +1450,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             return;
         }
         TalkDialog.Say(_view, face, "", "무슨 용건인가?");
-        // 용건을 묻고 나면 아는 사이가 된다 — 게임도 여기서 「모르는 사이」 깃발을 걷는다(0x004321C0).
+        // 용건을 묻고 나면 아는 사이가 된다 — 원본도 여기서 「모르는 사이」 깃발을 걷는다(0x004321C0).
         _player.Meet(who.Name);
 
-        // 게임은 차림표를 <b>되풀이해</b> 낸다. 「정보를 듣는다」는 한 번 들으면 줄이 사라지고,
+        // 원본은 차림표를 <b>되풀이해</b> 낸다. 「정보를 듣는다」는 한 번 들으면 줄이 사라지고,
         // 자리·말 검사에서 물리면 차림표로 돌아온다. 인물 판을 물리면 창이 닫힌다(0x004A4D73).
         // 앞 두 줄(정보 · 고용)이 다 감춰지면 창을 닫는다(0x004A4D8C).
         bool heard = false;
@@ -1497,7 +1497,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 그 사람이 소문을 꺼낼 문화권 — 제 나라 수도의 문화권이고, 모르면 이 술집 마을 것이다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004A4590</c> 이다. 도시(<c>0x00429970</c>)의 <c>+0x58</c> 문화권을 밑값으로
+    /// 원본의 <c>0x004A4590</c> 이다. 도시(<c>0x00429970</c>)의 <c>+0x58</c> 문화권을 밑값으로
     /// 두었다가, 인물의 나라 형편 칸(<c>0x00477EA0</c>)에서 수도를 얻으면 그 도시의 <c>+0x58</c>
     /// 로 덮는다. 나라는 세이브에 없어 인물 밑표(<see cref="PersonTemplate"/>)에서 온다.
     /// </remarks>
@@ -1524,7 +1524,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     ///   <item>판이 열린다(<see cref="DuelDialog"/>).</item>
     ///   <item>이기면 <b>처형한다 · 놓아 준다 · 모두 뺏는다</b>를 고른다
     ///         (<c>0x004A8380(3)</c>, <see cref="Triumph"/>). 예전에는 "술집 판은 종류가 8 이라
-    ///         안 뜬다" 고 적어 두었는데 실제 게임에서는 뜬다 — 반란 판(7)만 이 줄이 없다.</item>
+    ///         안 뜬다" 고 적어 두었는데 실제 원본에서는 뜬다 — 반란 판(7)만 이 줄이 없다.</item>
     ///   <item>지면 도망·용서·죽음으로 갈린다(<see cref="Engine.Town.Duel.FateOf"/>).</item>
     ///   <item>이기든 지든 <b>남은 부위의 평균만큼 체력이 준다</b>.</item>
     /// </list>
@@ -1726,7 +1726,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         "저런 녀석, 혼 줄을 내버리겠습니다.",
     ];
 
-    /// <summary>부관 몫. 무기·방어구는 제독의 것을 그대로 쓴다(게임도 그렇다).</summary>
+    /// <summary>부관 몫. 무기·방어구는 제독의 것을 그대로 쓴다(원본도 그렇다).</summary>
     private Engine.Town.Duel.Fighter MateSide(in Player.MateInfo mate) =>
         new(mate.Name, mate.Body, mate.Might, mate.Sword, mate.Luck,
             Best(Engine.Town.Duel.WeaponCategory), Best(Engine.Town.Duel.ArmorCategory));
@@ -1791,7 +1791,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// 이긴 뒤 — <b>처형한다 · 놓아 준다 · 모두 뺏는다</b>(<c>0x004A8380(3)</c>).
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x004AA2D2</c> ~ <c>0x004AA588</c> 이다. 진 사람이 고른 것에 따라 한 마디 한다.
+    /// 원본의 <c>0x004AA2D2</c> ~ <c>0x004AA588</c> 이다. 진 사람이 고른 것에 따라 한 마디 한다.
     /// <code>
     ///   처형한다    「죽어야 하나...? 내가...」 다섯(0x005347F8~) → 그 인물이 사라진다(0x00432180(0))
     ///   놓아 준다   「제길, 기억해 두어라.」 다섯(0x005348A8~)   → 「명성이 10 올라갔다」
@@ -2039,7 +2039,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>
     /// 「부하로 고용한다」. 인물 판을 물렸거나, <b>결정</b>하고 자리·말 검사를 넘어 판정까지 갔으면 true —
-    /// 게임은 그때 붙든 못 붙든 차림표를 닫는다(<c>0x004A4BB0</c>). 자리·말 검사에서 물리면 false 라 차림표로 돌아간다.
+    /// 원본은 그때 붙든 못 붙든 차림표를 닫는다(<c>0x004A4BB0</c>). 자리·말 검사에서 물리면 false 라 차림표로 돌아간다.
     /// </summary>
     /// <remarks>
     /// <code>
@@ -2226,7 +2226,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         row == null ? FluentTongue
                     : Shared(row.Languages, i => _player.TongueOf(Skill.Languages[i]));
 
-    /// <summary>언어 열넷 중 <c>max(min(갑, 을))</c> — 게임의 <c>0x00478050</c> 이다.</summary>
+    /// <summary>언어 열넷 중 <c>max(min(갑, 을))</c> — 원본의 <c>0x00478050</c> 이다.</summary>
     private static int Shared(IReadOnlyList<int> theirs, Func<int, int> ours)
     {
         int best = 0;
@@ -2267,7 +2267,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>이름 뒤에 붙는 주격 조사. 받침이 있으면 "이", 없으면 "가".</summary>
     /// <remarks>
-    /// 게임도 조사를 따로 끼워 넣는다 — "%s%s 있다"(<c>0x0054ABF0</c>) 의 두 번째 자리다.
+    /// 원본도 조사를 따로 끼워 넣는다 — "%s%s 있다"(<c>0x0054ABF0</c>) 의 두 번째 자리다.
     /// </remarks>
     private static string Subject(string name)
     {
@@ -2287,12 +2287,12 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     /// <summary>한잔 산다. 정말 샀으면 true — 낯을 트는 것은 부르는 쪽이 판단한다.</summary>
     /// <remarks>
-    /// <b>샀다고 알리지 않는다.</b> 게임에는 그런 문구가 없다 — 값만 빠지고 곧바로
+    /// <b>샀다고 알리지 않는다.</b> 원본에는 그런 문구가 없다 — 값만 빠지고 곧바로
     /// 상대가 말을 잇는다. 돈이 모자랄 때 물리는 "돈 먼저 지불하게."(<c>0x0054AC98</c>)만
-    /// 게임 것이다.
+    /// 원본 것이다.
     /// </remarks>
     /// <summary>
-    /// 이 방문에 술을 한잔이라도 샀는지. 게임은 술집 화면 객체의 <c>+0xB4</c> 에 적는다.
+    /// 이 방문에 술을 한잔이라도 샀는지. 원본은 술집 화면 객체의 <c>+0xB4</c> 에 적는다.
     /// </summary>
     /// <remarks>「정보를 듣는다」가 이것을 본다 — 마시기 전에는 입을 안 연다.</remarks>
     private bool _drank;

@@ -11,7 +11,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 성문 앞 — 막힌 도시에 다가서면 <b>그림은 그려지고</b> 문지기에게 문에서 막힌다.
 /// </summary>
 /// <remarks>
-/// 들어가겠다고 대답하면 게임은 도시 그림부터 편다. 그 위에서 문지기가
+/// 들어가겠다고 대답하면 원본은 도시 그림부터 편다. 그 위에서 문지기가
 /// <c>0x00551D28</c> "외국인은 들어올 수 없다." 를 말하고, 그제야 공격·잠입·교섭·떠난다가
 /// 뜬다(<c>0x004A5210</c> 이 차림표 <c>0x004A56F0</c> 의 앞머리다).
 ///
@@ -31,7 +31,7 @@ internal sealed class GateScene : GameWindow, IGateStage
     /// 한 장이 머무는 참. <b>벌마다 따로 잡는다.</b>
     /// </summary>
     /// <remarks>
-    /// 게임은 벌마다 「몇 걸음에 한 장」인지가 다른데(<see cref="EffectAnim.HeartStep"/> 2 ·
+    /// 원본은 벌마다 「몇 걸음에 한 장」인지가 다른데(<see cref="EffectAnim.HeartStep"/> 2 ·
     /// <see cref="EffectAnim.CoinStep"/> 1) 그 걸음이 몇 밀리초인지는 아직 못 짚었다 —
     /// 창 고리가 도는 대로 세기 때문이다(<c>0x004A5DDE</c>).
     ///
@@ -118,7 +118,7 @@ internal sealed class GateScene : GameWindow, IGateStage
     /// 교섭하는 하트를 돌린다(<c>0x004A6360</c> → <c>0x004A6140(3, 성공여부, -1)</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 <b>굴림을 하고 나서</b> 이것을 돌린다 — 그래서 하트가 깨지면 이미 진 것이다.
+    /// 원본은 <b>굴림을 하고 나서</b> 이것을 돌린다 — 그래서 하트가 깨지면 이미 진 것이다.
     /// 파트 <b>3</b> 이 하트고(<see cref="EffectAnim.Heart"/>), 소리는 없다.
     /// </remarks>
     public void PlayHeart(bool won) => Play(EffectAnim.Heart, won);
@@ -129,7 +129,7 @@ internal sealed class GateScene : GameWindow, IGateStage
     /// <remarks>
     /// 하트와 달리 <b>한 걸음에 한 장</b>이라 두 배 빠르게 돌고, 스무 걸음 남짓 돌다가
     /// 되면 첫째 장 · 어그러지면 넷째 장에서 멎는다(<see cref="EffectAnim.CoinFrames"/>).
-    /// 게임도 굴림을 하고 나서 돌리므로 멎은 쪽이 곧 결과다.
+    /// 원본도 굴림을 하고 나서 돌리므로 멎은 쪽이 곧 결과다.
     /// </remarks>
     public void PlayCoin(bool won) => Play(EffectAnim.Coin, won);
 

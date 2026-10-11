@@ -9,7 +9,7 @@ namespace CdsHelper.Game.Engine.Town;
 /// <remarks>
 /// 값은 다 <b>선체값에 견준 비율</b>이다. 게임 선체값은 만~이십오만 닢인데 우리
 /// <see cref="Hull.Price"/> 는 조선소 화면에서 옮긴 100~500 짜리 사다리라 자릿수가
-/// 다르다 — 그래서 액수가 아니라 나누는 수만 게임 것을 쓴다.
+/// 다르다 — 그래서 액수가 아니라 나누는 수만 원본 것을 쓴다.
 ///
 /// 묻고 알리는 것은 화면(<see cref="UI.Views.CityPicView"/>)이 맡는다. 여기 있는 것은
 /// 얼마인지와 무엇을 잃는지뿐이다.
@@ -36,7 +36,7 @@ public static class Shipyard
     public static int SellPrice(Ship ship, int cityRate) =>
         Math.Max(1, ship.Hull.SellPrice * cityRate / 100);
 
-    /// <summary>손상 한 점을 고치는 값의 밑수. 게임은 여기에 <c>rand(4)</c> 를 더한다.</summary>
+    /// <summary>손상 한 점을 고치는 값의 밑수. 원본은 여기에 <c>rand(4)</c> 를 더한다.</summary>
     public const int RepairRate = 26;
 
     /// <summary>
@@ -58,7 +58,7 @@ public static class Shipyard
     /// 이 마을에서 고칠 수 있는 배 — 함대 먼저, 그 뒤가 이 마을이 맡은 배다.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x0044BC50(도시, 0)</c> 이다. 이 목록이 비면 조선소 차림표의 <b>"수리" 줄이
+    /// 원본의 <c>0x0044BC50(도시, 0)</c> 이다. 이 목록이 비면 조선소 차림표의 <b>"수리" 줄이
     /// 꺼진다</b>(<c>0x0044BD40</c> 이 <c>0x0044BC50 &gt; 0</c> 을 본다) — 그래서 평소에는
     /// "수리가 필요한 배는 없네!" 를 볼 일이 없다.
     /// </remarks>
@@ -102,7 +102,7 @@ public static class Shipyard
     public static int SailCost(Ship ship, int rate) => Base(ship, rate) / SailDivisor;
 
     /// <summary>
-    /// 그 줄이 무엇을 얻고 무엇을 잃는지 알려 주는 물음. 게임 문구 그대로다
+    /// 그 줄이 무엇을 얻고 무엇을 잃는지 알려 주는 물음. 원본 문구 그대로다
     /// (<c>0x00531938</c> 벌).
     /// </summary>
     public static string RefitWarning(string item) => item switch

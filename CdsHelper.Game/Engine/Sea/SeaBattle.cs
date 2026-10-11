@@ -1655,7 +1655,7 @@ public sealed class SeaBattle
     }
 
     /// <summary>
-    /// 게임이 쓰는 정수 제곱근(<c>0x004B7C2C</c>) — 뉴턴 법이라 <c>Math.Sqrt</c> 와 값이 갈릴 수 있다.
+    /// 원본이 쓰는 정수 제곱근(<c>0x004B7C2C</c>) — 뉴턴 법이라 <c>Math.Sqrt</c> 와 값이 갈릴 수 있다.
     /// </summary>
     private static int Isqrt(int value)
     {
@@ -1763,7 +1763,7 @@ public sealed class SeaBattle
     /// <summary>잠수폭탄 아이템 번호.</summary>
     public const int MineItem = 0;
 
-    /// <summary>게임의 <c>rand(n)</c>(<c>0x004B7C0F</c>) — n 이 2 보다 작으면 0.</summary>
+    /// <summary>원본의 <c>rand(n)</c>(<c>0x004B7C0F</c>) — n 이 2 보다 작으면 0.</summary>
     private int Rand(int n) => n < 2 ? 0 : _rng.Next(n);
 
     /// <summary>
@@ -2252,7 +2252,7 @@ public sealed class SeaBattle
     /// 먼저 판을 뜬 기함(0 또는 8). 아직 둘 다 떠 있으면 null.
     /// </summary>
     /// <remarks>
-    /// 게임은 배 상태(<c>+0x30C</c>)가 바뀔 때마다 <c>0x004350F0(배)</c> 를 부르고, <b>기함이 빠질 때</b>
+    /// 원본은 배 상태(<c>+0x30C</c>)가 바뀔 때마다 <c>0x004350F0(배)</c> 를 부르고, <b>기함이 빠질 때</b>
     /// 판을 닫는다(볼트 93 의 5절). 한 박자에 두 기함이 함께 빠져도 먼저 바뀐 쪽이 끝을 정한다.
     /// </remarks>
     public Ship? FirstFlagOut
@@ -2272,7 +2272,7 @@ public sealed class SeaBattle
     public bool Over => AllMineGone || AllEnemyGone || FirstFlagOut != null;
 
     /// <summary>
-    /// 가라앉힌 적 배 수(상태 1). 게임의 꺾음 m 은 이것과 <see cref="EnemyCaptured"/> 의 합이다
+    /// 가라앉힌 적 배 수(상태 1). 원본의 꺾음 m 은 이것과 <see cref="EnemyCaptured"/> 의 합이다
     /// (<c>0x004350F0</c> 승리 갈래). 일기토로 이긴 적 기함도 상태 1 이라 여기에 든다.
     /// </summary>
     public int EnemyDowned => Ships.Count(s => !s.Mine && s.State == ShipState.Sunk);
@@ -2290,7 +2290,7 @@ public sealed class SeaBattle
 
     /// <summary>「바람은 %s풍입니다. 퇴각지점은 바람이 부는 %s쪽에 있습니다.」(<c>0x0056B4E8</c>).</summary>
     /// <remarks>
-    /// 게임은 방위 넷 [북·동·남·서](<c>0x0056B4D0</c>~)에서 <c>push ecx ; push eax ; push 서식</c> 으로 넣는다
+    /// 원본은 방위 넷 [북·동·남·서](<c>0x0056B4D0</c>~)에서 <c>push ecx ; push eax ; push 서식</c> 으로 넣는다
     /// (<c>0x0043C5EB</c>~<c>0x0043C64C</c>) — 첫 %s(풍향)가 eax, 둘째(퇴각 쪽)가 ecx 다.
     /// <code>
     ///   바람 0     남풍 / 북쪽        바람 3     북풍 / 남쪽

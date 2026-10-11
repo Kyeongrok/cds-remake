@@ -4,7 +4,7 @@
 /// 미니 게임 「성배 퍼즐」 — 대·중·소 바가지로 성배 열을 성수로 딱 맞게 채우는 게임.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x004684D0</c> 이 바깥 껍데기, <c>0x00467D50</c> 이 본체다. 화면 설명은
+/// 원본의 <c>0x004684D0</c> 이 바깥 껍데기, <c>0x00467D50</c> 이 본체다. 화면 설명은
 /// <c>0x00559068</c> 에 그대로 있다.
 /// <code>
 ///   성공조건 [바로 앞에 있는 10개의 성배를 성수로 채워라.]
@@ -110,7 +110,7 @@ public sealed class GrailPuzzle
     /// <summary>끝났으면 그 결과. 아직이면 null.</summary>
     public Result? Over { get; private set; }
 
-    /// <param name="problem">문제 번호. 게임은 <c>rand(24)</c> 로 고른다.</param>
+    /// <param name="problem">문제 번호. 원본은 <c>rand(24)</c> 로 고른다.</param>
     public GrailPuzzle(int problem)
     {
         Problem = ((problem % Problems.Length) + Problems.Length) % Problems.Length;

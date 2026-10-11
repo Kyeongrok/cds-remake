@@ -13,8 +13,8 @@ namespace CdsHelper.Game.UI.Views;
 /// 육상전 <b>부대배치</b> 화면 — 여섯 자리에 부대를 놓고 「결정」을 누른다.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x0049E000</c>~<c>0x004A0500</c> 이다(볼트 <c>65.분석-육상전</c> 4절).
-/// 자리와 크기를 손으로 짐작하지 않았다 — 게임이 그림을 어디에 얹는지 그대로 옮겼다.
+/// 원본의 <c>0x0049E000</c>~<c>0x004A0500</c> 이다(볼트 <c>65.분석-육상전</c> 4절).
+/// 자리와 크기를 손으로 짐작하지 않았다 — 원본이 그림을 어디에 얹는지 그대로 옮겼다.
 /// <code>
 ///   0049ec00  자리 여섯   (16,16) (128,16) (240,16) (16,160) (128,160) (240,160)
 ///   0049ecd1  고르는 넉 칸 (368,16) (480,16) (368,160) (480,160)
@@ -54,7 +54,7 @@ internal sealed class LandDeployDialog : GameWindow
     /// </summary>
     /// <remarks>
     /// 조각은 96x48 이 맞다 — LANDDATA 파트 8~50 이 192x192 에 2열 4행으로 여덟 장씩
-    /// 들어 있고 한 칸이 96x48 이다. 그런데 <b>게임은 그걸 96x96 으로 늘려 찍는다</b>
+    /// 들어 있고 한 칸이 96x48 이다. 그런데 <b>원본은 그걸 96x96 으로 늘려 찍는다</b>
     /// (<c>0x004B6963(0x60, 0x60)</c>). 실제 화면에서 말 세 마리 무리를 재면 121x120 으로
     /// <b>거의 정사각</b>인데, 조각 그대로 찍으면 2:1 로 납작해진다.
     /// </remarks>
@@ -80,13 +80,13 @@ internal sealed class LandDeployDialog : GameWindow
     private const int HalfCell = 4, NameCells = 12;
 
     /// <summary>
-    /// 지난번 배치 — 게임의 <c>0x0056EAB8</c> 여섯 칸이다.
+    /// 지난번 배치 — 원본의 <c>0x0056EAB8</c> 여섯 칸이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 정적 자리에 들고 있어 한 판 안에서만 살아 있지만, 여기서는 설정 파일
+    /// 원본은 정적 자리에 들고 있어 한 판 안에서만 살아 있지만, 여기서는 설정 파일
     /// (<see cref="GameSettings.LandDeployLast"/>)에도 적어 <b>껐다 켜도</b> 남긴다. 병종 번호가 아니라
     /// <b>고르는 넉 칸의 번호</b>로 적어 둔다 — 기능이 오르면 같은 자리라도 병종이
-    /// 달라지는데, 게임의 <c>0x0049F370</c> 이 되놓을 때 바로 그 옮김을 한다.
+    /// 달라지는데, 원본의 <c>0x0049F370</c> 이 되놓을 때 바로 그 옮김을 한다.
     /// </remarks>
     private static readonly int[] LastPicked = LoadLast();
 
@@ -356,13 +356,13 @@ internal sealed class LandDeployDialog : GameWindow
     /// 게임 글꼴 한 마디 — <b>흰 글씨에 그림자 없이</b> 찍는다.
     /// </summary>
     /// <remarks>
-    /// 배치 판은 돌빛 바탕이라 단추색(17)으로 두면 글자가 바탕에 어둡게 묻힌다. 게임도
+    /// 배치 판은 돌빛 바탕이라 단추색(17)으로 두면 글자가 바탕에 어둡게 묻힌다. 원본도
     /// 이 자리는 흰 글씨를 그림자 없이 얹는다.
     /// </remarks>
     private static FrameworkElement? Word(string text) =>
         GameUi.GameFontLabel(text, GameFont.WhiteColor, 1, GameUi.ItemTextHeight, shadow: false);
 
-    /// <summary>게임이 이름 길이를 재는 방식 — 바이트 수다(<c>0x0049FDC3</c>).</summary>
+    /// <summary>원본이 이름 길이를 재는 방식 — 바이트 수다(<c>0x0049FDC3</c>).</summary>
     private static int Bytes(string text) =>
         System.Text.Encoding.GetEncoding(949).GetByteCount(text);
 
@@ -488,7 +488,7 @@ internal sealed class LandDeployDialog : GameWindow
                        || Math.Abs(now.Y - _grabbed.Y) >= DragSlop;
         Release();
 
-        // 끌지 않고 딸깍했으면 게임의 「선택」 차림표를 편다(0x0049F010).
+        // 끌지 않고 딸깍했으면 원본의 「선택」 차림표를 편다(0x0049F010).
         if (!dragged)
         {
             if (from < SlotCount) Choose(from);
@@ -581,7 +581,7 @@ internal sealed class LandDeployDialog : GameWindow
                 return;
             }
 
-        // 게임이 세는 것은 대장을 뺀 셋뿐이다 — 갈래 셈에서 대장 부대를 빼고(0x0049F49F)
+        // 원본이 세는 것은 대장을 뺀 셋뿐이다 — 갈래 셈에서 대장 부대를 빼고(0x0049F49F)
         // 다시 하나를 더하기 때문에(0x0049F4B5) 대장 한 자리가 셈에서 상쇄된다.
         int units = counts[LandRoster.Melee] + counts[LandRoster.Shot] + counts[LandRoster.Cannon];
         if (units > _roster.Men)

@@ -13,9 +13,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 미니 게임 「발라몬의 탑 퍼즐」 화면.
 /// </summary>
 /// <remarks>
-/// 게임의 <c>0x00431740</c> 이고, 규칙은 <see cref="TowerPuzzle"/> 에 모아 두었다.
+/// 원본의 <c>0x00431740</c> 이고, 규칙은 <see cref="TowerPuzzle"/> 에 모아 두었다.
 ///
-/// <b>그림은 게임 것 그대로다</b> — TOWER.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다.
+/// <b>그림은 원본 것 그대로다</b> — TOWER.CDS 에서 뽑아 <c>asset/minigame</c> 에 둔다.
 /// 자리 표는 EXE 의 <c>0x00547400</c> 이고 <c>[200704, 303104, 405504]</c> 다.
 /// <code>
 ///   0       448x448   배경 — 돌 받침 셋
@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </code>
 /// 받침 자리는 배경에서 재어 썼다 — 위 하나, 아래 둘이 세모꼴로 놓인다.
 /// <b>그림 말고는 아무것도 얹지 않는다</b> — 게임 화면에 없는 것을 덧대면 그만큼
-/// 게임이 아니게 된다. 들고 있는 판자는 떠 있는 그림 자체가 알려 준다.
+/// 원본이 아니게 된다. 들고 있는 판자는 떠 있는 그림 자체가 알려 준다.
 ///
 /// 판자는 <b>끌어다 옮길 수</b> 있고, 딸깍 두 번(집을 기둥 · 놓을 기둥)으로도 옮긴다.
 /// 규칙은 <see cref="TowerPuzzle.Tap"/> 하나라 둘이 같은 길로 든다 — 끌기는 「집기
@@ -51,7 +51,7 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     /// <b>값은 게임 화면을 448x448 로 되돌려 잰 것이다.</b> <c>y</c> 는 판자 <b>칸</b>의
     /// 가운데다 — 칸이 160x80 이므로 그림은 <c>y − 40</c> 에서 시작한다.
     ///
-    /// <b>게임은 칸으로 쌓는다, 잉크로가 아니다.</b> 같은 배치를 나란히 놓고 재 보면
+    /// <b>원본은 칸으로 쌓는다, 잉크로가 아니다.</b> 같은 배치를 나란히 놓고 재 보면
     /// 높이가 같은 왼·오른 받침인데 판자 밑이 <c>368</c> 과 <c>372</c> 로 넉 점 다르다.
     /// 놓인 판자가 서로 달라(잉크 밑이 49 · 54) 생기는 차이니, 칸을 맞춰 놓고 두꺼운
     /// 판자가 더 아래로 삐져나오게 두는 것이다.
@@ -144,7 +144,7 @@ internal sealed class TowerPuzzleDialog : InfoDialog
         double zoom = GameUi.SceneZoom(this, SceneWidth, SceneHeight, Zoom);
         _scene.LayoutTransform = new ScaleTransform(zoom, zoom);
 
-        // 게임은 미니 게임에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 그림에 금빛
+        // 원본은 미니 원본에 밤색 판도 제목도 아래 단추 줄도 안 두른다 — 그림에 금빛
         // 테만 두르고, 할 일은 오른쪽 단추 차림표가 맡는다(성배 퍼즐·미궁 64 와 같다).
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -167,12 +167,12 @@ internal sealed class TowerPuzzleDialog : InfoDialog
         Sync();
     }
 
-    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 게임 그대로다.</summary>
+    /// <summary>오른쪽 단추가 부르는 차림표 — 줄과 차례가 원본 그대로다.</summary>
     /// <remarks>
     /// <c>0x00430A71</c> 이 «포기»(<c>0x0056BAE0</c>) · «게임 설명»(<c>0x0056BAE8</c>) ·
     /// «게임 재개»(<c>0x0056BAF8</c>) 셋을 이 차례로 <c>0x004878A0</c> 에 넘기고, 0 이 포기 물음
     /// (<c>0x00430AB6</c>), 1 이 설명(<c>0x00430B0F</c>)이다. 예전에는 설명을 맨 위에 두고
-    /// «포기한다» · «게임 복귀» 로 딴 미니 게임의 말을 빌려 썼다.
+    /// «포기한다» · «게임 복귀» 로 딴 미니 원본의 말을 빌려 썼다.
     /// </remarks>
     private IReadOnlyList<(string, Action?)> Commands() =>
     [
@@ -369,7 +369,7 @@ internal sealed class TowerPuzzleDialog : InfoDialog
             Canvas.SetTop(_spot[peg], top);
             _spot[peg].Height = PegY[peg] + SpotBelow - top;
 
-            // 집은 기둥에 테를 두르지 않는다 — 게임에 없는 표시다. 판자가 떠 있는 것으로
+            // 집은 기둥에 테를 두르지 않는다 — 원본에 없는 표시다. 판자가 떠 있는 것으로
             // 어디서 집었는지 이미 보인다.
         }
 
@@ -412,12 +412,12 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     /// 판자를 몇 장 쓸지 묻고 한 판 한다.
     /// </summary>
     /// <remarks>
-    /// 게임도 <c>0x0045FB79</c> 에서 «판자를 몇 장 사용하겠습니까?»(<c>0x00571E90</c>)
+    /// 원본도 <c>0x0045FB79</c> 에서 «판자를 몇 장 사용하겠습니까?»(<c>0x00571E90</c>)
     /// 를 먼저 묻는다 — <c>0x00481FE0(4, 4, 8, 1, 1)</c> 이라 넷에서 여덟까지다.
     ///
     /// <b>그 <c>0x00481FE0</c> 이 계산기다</b> — 나이·생일을 받는 것과 같은 물건이라
     /// (<see cref="NumberPadDialog"/>) 넷째·다섯째 인자가 <c>MIN·MAX</c> 단추가 넣는
-    /// 값이다. 예전에는 «4장 · 5장 …» 을 늘어놓은 목록으로 물었는데, 게임은 목록을 안
+    /// 값이다. 예전에는 «4장 · 5장 …» 을 늘어놓은 목록으로 물었는데, 원본은 목록을 안
     /// 낸다.
     /// </remarks>
     public static void Play(Window owner, Random rng)
@@ -439,7 +439,7 @@ internal sealed class TowerPuzzleDialog : InfoDialog
     /// 대본 <c>0E 14|1A [u32 판자] 04 05 00</c> 이 <c>0x00431740(판자, 1)</c> 을 부른다 — 묻지 않는다.
     /// 돌려준 값이 1 이어야 이긴 것이다(<c>0x00408E71</c>).
     ///
-    /// 판자 수가 0 이면 게임이 <c>rand(5) + 4</c> 로 넷에서 여덟 가운데 굴린다(<c>0x00431247</c> ·
+    /// 판자 수가 0 이면 원본이 <c>rand(5) + 4</c> 로 넷에서 여덟 가운데 굴린다(<c>0x00431247</c> ·
     /// <c>0x00431251</c>). 예전에는 0 을 넷으로 눌러 늘 네 장이었다.
     /// </remarks>
     public static bool Play(Window owner, Random rng, int planks)

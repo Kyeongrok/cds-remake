@@ -21,7 +21,7 @@ using CdsHelper.Game.Local.Settings;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 입항한 도시의 그림(CITYCG.CDS)을 지도 한가운데에 띄운다. 게임처럼 건물(항구·조선소)을
+/// 입항한 도시의 그림(CITYCG.CDS)을 지도 한가운데에 띄운다. 원본처럼 건물(항구·조선소)을
 /// 누르면 그 건물의 명령 창이 열린다.
 /// </summary>
 /// <remarks>
@@ -60,7 +60,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <remarks>
     /// 발견을 보고하는 동안 게임 화면이 파래진다 — 바다에서 발견할 때 지도가 파래지는 것과
     /// 같은 몫이고(<see cref="Rendering.ShipMapHost.Shaded"/>), 도시 그림에도 있어야
-    /// 후원자에게 보고하는 대목이 게임과 같아진다.
+    /// 후원자에게 보고하는 대목이 원본과 같아진다.
     /// </remarks>
     private readonly System.Windows.Shapes.Rectangle _shade = new()
     {
@@ -319,7 +319,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 띄울 창을 못 고르기 때문이다.
         Closing += (_, _) => Owner?.Activate();
 
-        // 창 크기는 <b>틀을 두른 그림</b> 크기다(416x336 — 게임도 CITYFRM.CDS 로 여덟 점 틀을 두른다, 0x004924DB).
+        // 창 크기는 <b>틀을 두른 그림</b> 크기다(416x336 — 원본도 CITYFRM.CDS 로 여덟 점 틀을 두른다, 0x004924DB).
         // 틀을 못 읽으면 그림 크기 그대로다. 제목 줄이 없어(WindowStyle.None) 테가 붙지 않는다.
         var frame = CityFrame.TryGetBgra(game.Directory, CityFrame.GoldPart);
         _frameBorder = frame != null ? CityFrame.Border : 0;
@@ -327,8 +327,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                fullH = (CityPictures.Height + _frameBorder * 2) * scale;
 
         // 지도를 덮는 남색 막은 이 창이 아니라 지도(D3D) 쪽에서 씌운다 — 그래야 이 그림을
-        // 끌어 옮겨도 막이 따라오지 않는다. 게임도 막과 그림이 따로다.
-        // 처음 자리는 게임처럼 지도 한가운데다(옮기는 것은 손으로).
+        // 끌어 옮겨도 막이 따라오지 않는다. 원본도 막과 그림이 따로다.
+        // 처음 자리는 원본처럼 지도 한가운데다(옮기는 것은 손으로).
         if (mapArea.Width > 0 && mapArea.Height > 0)
         {
             WindowStartupLocation = WindowStartupLocation.Manual;
@@ -475,7 +475,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 도시 그림에 그려진 마을 사람들. <b>건물보다 먼저</b> 깐다 — 자리가 겹치면 건물이 이긴다(0x00491DC0).
         foreach (var folk in _game.TownFolk?.InCity(cityId) ?? []) AddFolk(folk, scale);
 
-        // 게임 건물 표에 적힌 그대로 얹는다 — 그 도시에 있는 건물만, 게임이 쓰는 자리에.
+        // 게임 건물 표에 적힌 그대로 얹는다 — 그 도시에 있는 건물만, 원본이 쓰는 자리에.
         // 코드가 <b>큰</b> 것부터 깔아 낮은 것이 위에 오게 한다 — 겹치면 낮은 코드가 이긴다(0x00491D58).
         bool harborPlaced = false;
         foreach (var building in Enumerable.Reverse(Standing(cityId)))
@@ -485,7 +485,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
 
         // 표에 항구가 없는데 함대가 여기 닻을 내렸으면 아무 데나 눌러도 항구 명령 창이 열린다(건물 판이
-        // 먼저 먹는다) — 배를 두고 갇히지 않게 둔 우리 쪽 비상구다. 게임은 항구 줄이 없으면 시설을 아예
+        // 먼저 먹는다) — 배를 두고 갇히지 않게 둔 우리 쪽 비상구다. 원본은 항구 줄이 없으면 시설을 아예
         // 안 연다(0x004A2566) — <b>뭍 한가운데 마을</b>(항구 없는 90곳)에서 빈 자리를 눌러 항구가 뜨던 것은
         // 원본에 없는 길이라 막는다. 그 마을은 성문으로 나선다.
         _harborPlaced = harborPlaced;
@@ -523,10 +523,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 끌려갈 때에도 같은 길로 이어진다.
         GameUi.CarryOwnedWindows(this);
 
-        // 오른쪽 단추는 게임처럼 도시 커맨드 창을 연다.
+        // 오른쪽 단추는 원본처럼 도시 커맨드 창을 연다.
         //
         // ESC 는 <b>열려 있는 창만</b> 닫는다. 예전에는 그림 창까지 닫아 버려서 아무것도
-        // 안 열린 채로 ESC 를 누르면 그대로 바다로 나갔다 — 게임에는 그런 길이 없다.
+        // 안 열린 채로 ESC 를 누르면 그대로 바다로 나갔다 — 원본에는 그런 길이 없다.
         // 도시를 나가는 길은 항구의 "출항" 하나뿐이다(HarborMenu.ConfirmSail).
         KeyDown += (_, e) =>
         {
@@ -748,7 +748,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
-    /// 건물이나 도시 명령 창이 떠 있는지. 게임은 창이 열린 채로는 <b>다른 건물을 못 누른다</b> —
+    /// 건물이나 도시 명령 창이 떠 있는지. 원본은 창이 열린 채로는 <b>다른 건물을 못 누른다</b> —
     /// 먼저 창을 닫아야 한다. 예전에는 눌러지는 대로 그 건물 창으로 갈아탔다.
     /// </summary>
     private bool MenuOpen => Menus.FacilityWindow != null || _cityMenu.IsOpen;
@@ -759,14 +759,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </summary>
     private void Enter(CityBuildingTable.Building building, bool arrived = false)
     {
-        // 건물이 곧 발견물이면 <b>그것이 맨 먼저</b>다 — 게임은 시설을 열기(0x00490AD0) 전에 도시 화면
+        // 건물이 곧 발견물이면 <b>그것이 맨 먼저</b>다 — 원본은 시설을 열기(0x00490AD0) 전에 도시 화면
         // 쪽에서 발견 대본을 돌리고(0x00492A5E~0x00492AF9), 결과가 밑값 2 로 남으면 건물에 안 든다.
         if (!Discover(building)) return;
 
         // 왕궁이면 그 자리 국왕 얼굴을 걸어 둔다 — 대본의 화자 「국왕」(모드 「작위」)이 쓴다.
         _game.RulerFace = building.Code == PalaceCode ? () => RulerFaceOf(building.Code, building.Kind) : null;
 
-        // 초심자 개인 이야기(이야기0/1)가 <b>맨 먼저</b>다 — 게임은 들어서자마자 0x004AB5A0 으로
+        // 초심자 개인 이야기(이야기0/1)가 <b>맨 먼저</b>다 — 원본은 들어서자마자 0x004AB5A0 으로
         // 건물 사건을 보고, 장면이 돌았으면 보복·문간 관문·차림표를 다 건너뛰고 건물을 나선다
         // (0x004A266A → 0x004A26BC). 그래서 명성이 모자라도 이야기의 저택에는 불려 들어간다.
         if (CheckStory(building.Code)) return;
@@ -782,7 +782,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (arrived) facility = ArrivalHarbor(facility);
         _openKind = facility.Kind;
         _pickedCode = building.Code;
-        // 명령 창 제목은 건물 이름이다 — 게임도 "베렌의 탑", "홍경정" 으로 낸다.
+        // 명령 창 제목은 건물 이름이다 — 원본도 "베렌의 탑", "홍경정" 으로 낸다.
         ShowMenu(() => BuildMenu(facility, building.Name, building.Code, building.TeachMask,
                                  building.Kind),
                  BuildingTrack(building.Code));
@@ -808,7 +808,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 건물에 들어가 있는 동안 도는 곡. 없으면(null) 도시 곡이 그대로 돈다.
     /// </summary>
     /// <remarks>
-    /// 게임은 시설 갈래가 아니라 <b>건물 코드</b>로 가른다(<c>0x004929C4</c>) — 왕궁 2 는 소리
+    /// 원본은 시설 갈래가 아니라 <b>건물 코드</b>로 가른다(<c>0x004929C4</c>) — 왕궁 2 는 소리
     /// <c>0x12</c>, 교회 3 은 <c>0x0E</c>, 술집 4 는 <c>0x14</c> 다. 왕궁과 술집은 도시 문화권이
     /// 0·1·2(이베리아·북유럽·지중해)일 때만 바뀌고(<c>0x00492B1B</c> · <c>0x00492B35</c> 의
     /// <c>test edi, edi</c>), 그 밖의 문화권에서는 문화권 곡이 그대로 돈다. 교회만 문화권을
@@ -865,7 +865,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 저절로 지나 부관 인사만 하고 도시 그림이다.
     /// </summary>
     /// <remarks>
-    /// 게임은 닿을 때 들어온 건물을 「닿아서 들어옴」(<c>+0x98</c>)으로 돌린다(<c>0x004A2530</c>).
+    /// 원본은 닿을 때 들어온 건물을 「닿아서 들어옴」(<c>+0x98</c>)으로 돌린다(<c>0x004A2530</c>).
     /// 성문(코드 10)이면 차림표 없이 곧장 나서기 갈래(<c>0x004A2740</c> → 칸 10 <c>0x00468790</c>)를
     /// 돌고(<c>0x004A2612</c>), 항구면 차림표를 연다. 그 차림표에서 「마을에 들어간다」를 골라야
     /// 같은 칸 10 이 돌아 부관이 「이 마을에서 잠깐 쉽시다」 한다.
@@ -966,7 +966,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
         if (end.Entered) return true;
 
-        // 들켜 달아났거나 추방·벌금을 받았으면 마을을 떠난다 — 게임은 +0xA0 이 서 있으면 항구 차림표를
+        // 들켜 달아났거나 추방·벌금을 받았으면 마을을 떠난다 — 원본은 +0xA0 이 서 있으면 항구 차림표를
         // 닫고(0x004779C0 의 줄 7 → 0x004A2740 이 1 을 돌려준다) 도시 화면까지 끝낸다(0x004A26CA).
         // 닿자마자 뜬 항구에서 곧장 나가는 것이라 출항과 같이 나오는 열흘은 없다(0x00477319).
         if (end.MustLeave)
@@ -1229,7 +1229,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>
     /// 이 마을 자택으로 곧바로 들어선다. 새 판이 시작될 때 쓴다 —
-    /// <b>게임도 판을 열면 자택 명령 창이 이미 떠 있다.</b>
+    /// <b>원본도 판을 열면 자택 명령 창이 이미 떠 있다.</b>
     /// </summary>
     /// <remarks>자택이 없는 마을이면 아무 일도 없다(고향이 아닌 데서 부를 일은 없다).</remarks>
     public void EnterHome()
@@ -1249,7 +1249,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     ///
     /// 힌트로 열리는 것도 있으므로 <see cref="DiscoveryLog.IsOpen"/> 을 거친다.
     ///
-    /// 게임은 대본의 결과 코드(밑값 2)로 <b>건물에 들지</b>를 가른다(<c>0x00492B06</c>):
+    /// 원본은 대본의 결과 코드(밑값 2)로 <b>건물에 들지</b>를 가른다(<c>0x00492B06</c>):
     /// <code>
     ///   0 · 1   발견물 줄 +0x17 비트 0(깃발 0x0100)을 세우고 건물에 든다 — 그 사건은 다시 안 뜬다
     ///   2       안 든다 — 발견 장면만 보고 도시 그림으로 돌아간다
@@ -1294,7 +1294,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         Engine.Discovery.DiscoveryLog.Settle(_player, row.Id, scripted);   // 0x00492B49
 
         // 대본이 없을 때만 그림 한 장으로 알린다.
-        // 게임 문구는 "%s%s 발견했다!"(0x00544720) 다 — 이름 뒤에 을/를 이 붙는다.
+        // 원본 문구는 "%s%s 발견했다!"(0x00544720) 다 — 이름 뒤에 을/를 이 붙는다.
         if (!scripted)
             DiscoveryDialog.Show(this, _game.Stills, building.Picture,
                                  $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");
@@ -1312,7 +1312,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 도시 표 <c>+0x64</c> 의 발견물 넷(<see cref="CityExeTable.DiscoveriesOf"/>)을 차례로 돌며 열려 있고
     /// 아직 못 찾은 것(<c>0x004AAD20</c>)이면 그 번호의 발견 대본을 튼다. 이런 발견물은 지도에 사각형이
     /// 없어(<c>-1</c>) 바다 판정(<see cref="DiscoveryLog.At"/>)으로는 영영 안 잡힌다 — 예전에는 인도항로
-    /// 계약을 맺고 캘리컷에 들어가도 아무 일이 없었다. 대본이 결과 0·1 로 끝나면 게임은 발견물 줄의
+    /// 계약을 맺고 캘리컷에 들어가도 아무 일이 없었다. 대본이 결과 0·1 로 끝나면 원본은 발견물 줄의
     /// <c>+0x17</c> 비트 0(깃발 <c>0x0100</c>)을 세워(<c>0x0049294A</c>) 그 사건을 다시 안 튼다.
     /// 거르는 것은 바다 판정과 같은 <see cref="DiscoveryLog.CanFire"/> 다.
     /// </remarks>
@@ -1355,7 +1355,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 초심자(EASY) 캐릭터의 개인 퀘스트라인(이야기0·이야기1) 한 장면을 체크한다.
     /// </summary>
     /// <remarks>
-    /// 건물에 들어서는 <b>맨 첫머리</b>에서 건다(게임의 <c>0x004AB5A0</c>). 장면이 결과 코드 1(<c>4D</c>)로
+    /// 건물에 들어서는 <b>맨 첫머리</b>에서 건다(원본의 <c>0x004AB5A0</c>). 장면이 결과 코드 1(<c>4D</c>)로
     /// 끝났으면 true — 그러면 부르는 쪽은 문간 관문도 차림표도 안 연다.
     /// 이야기0/1 은 발견물 표에 없는 대신 <see cref="Engine.Discovery.StoryLog"/> 가 건물·도시·
     /// 연도·명성 같은 조건을 그때그때 살펴 지금 틀 장면을 찾아 준다. 새로운 주인공(NORMAL)은
@@ -1402,7 +1402,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 후원자가 앉은 건물의 <b>명성 관문</b>. 통과하면 true, 문 앞에서 돌아섰으면 false 다.
     /// </summary>
     /// <remarks>
-    /// 명성이 모자라면 설득이 엎어지고 <b>명령 창이 아예 안 열린다</b> — 게임도 그 자리에서
+    /// 명성이 모자라면 설득이 엎어지고 <b>명령 창이 아예 안 열린다</b> — 원본도 그 자리에서
     /// 도시 그림으로 돌아가고 집사가 돌려보내는 소리(효과음 파트 1)를 낸다.
     ///
     /// <b>왕궁과 교회는 뺀다.</b> 그 둘은 후원자를 못 만나도 건물 자체에는 들어간다 —
@@ -1418,12 +1418,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 명성 관문은 "설득" 을 누를 때 집사가 대신 본다(<see cref="PatronMenu.Persuade"/> ·
         // 게임 0x004AE1F0).
         //
-        // <b>왕궁은 막는다.</b> 후원자가 앉은 건물들과 한 벌이다 — 게임도 그 다섯 벌의
+        // <b>왕궁은 막는다.</b> 후원자가 앉은 건물들과 한 벌이다 — 원본도 그 다섯 벌의
         // 가상함수표 첫 칸이 다 0x0040D370(문간 관문)이다(볼트 22 참고). 한때 왕궁까지
         // 빼 두었는데 그것이 틀렸다.
         if (facility.Kind is FacilityKind.Church) return true;
 
-        // <b>이미 만난 후원자면 문을 안 본다.</b> 게임의 관문(0x0044E740)은 후원자 +0x28 비트 15(첫 알현 전)가
+        // <b>이미 만난 후원자면 문을 안 본다.</b> 원본의 관문(0x0044E740)은 후원자 +0x28 비트 15(첫 알현 전)가
         // 서 있을 때만 명성을 잰다(vtbl+0x34 = 0x004AD800). 첫 알현(0x004AE595)이나 이야기 대본의 38 12 가
         // 그 비트를 지운다 — 라몬의 파브리스, 에밀리오의 에란쪼가 명성 없이 열리는 까닭이다.
         if (_player.HasMet(patron.Name) ||
@@ -1441,7 +1441,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         _game.Sfx?.Play(SoundBank.TurnedAwayPart);
 
-        // 문지기가 내쫓는다. 얼굴은 그 건물의 화자 그대로다 — 게임도 시설 객체가 든
+        // 문지기가 내쫓는다. 얼굴은 그 건물의 화자 그대로다 — 원본도 시설 객체가 든
         // 같은 얼굴을 쓴다(0x0040D385 가 +0x84 를 넘긴다).
         ConfirmDialog.Tell(this, "너 같은 녀석이 들어올 장소가 아니다! 꺼지지 못할까!",
                            face: _game.SpeakerFace(building.Code, _cultureNo));
@@ -1457,13 +1457,13 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 후원자가 앉은 건물에 들어설 때 도는 <b>설득 애니메이션</b>(MPEFFECT 5번).
     /// </summary>
     /// <remarks>
-    /// 게임은 이것을 명성 관문 안에서 돌린다 — <c>0x0044E740</c> 이 후원자의 필요 명성과 내
+    /// 원본은 이것을 명성 관문 안에서 돌린다 — <c>0x0044E740</c> 이 후원자의 필요 명성과 내
     /// 명성을 견주고, 그 결과를 그대로 애니메이션의 인자로 넘긴다(우리도 <paramref name="passed"/>
     /// 로 받는다). 그림 넉 장이 곧 결말까지
     /// 담고 있어서, <b>통과면 청을 들어주는 셋째 장에서 멈추고 모자라면 엎어지는 끝 장까지</b>
     /// 간다. 자세한 것은 볼트 <c>22.분석-애니메이션(MPEFFECT·EVANIME)</c> 참고.
     ///
-    /// 한 번 만난 뒤에는 게임도 관문을 건너뛴다(후원자 비트 15) — <see cref="PassFameGate"/> 가
+    /// 한 번 만난 뒤에는 원본도 관문을 건너뛴다(후원자 비트 15) — <see cref="PassFameGate"/> 가
     /// 그것을 보므로 이 애니메이션도 <b>첫 알현 때만</b> 돈다.
     /// </remarks>
     public void PlayFameCheck(bool passed) => PlayMpEffect(EffectAnim.Persuade, passed);
@@ -1472,7 +1472,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 자택 "후손을 남긴다" 의 애니메이션 — <b>MPEFFECT 2번(대포)</b>이다.
     /// </summary>
     /// <remarks>
-    /// 게임도 그렇다(<c>0x004613E3</c> 이 <c>0x004A6340</c> 을 부른다). 그 껍데기는 인자가
+    /// 원본도 그렇다(<c>0x004613E3</c> 이 <c>0x004A6340</c> 을 부른다). 그 껍데기는 인자가
     /// 1 이면 소리 <c>0x2A</c>, 아니면 <c>0x2B</c> 를 함께 낸다 — 되고 안 되고가 곧 소리다.
     /// 장은 0 → 1 → 결말 셋뿐이고 한 장이 하트의 다섯 배 머문다(<c>0x004A5D20</c>, 장 간격 10).
     /// </remarks>
@@ -1514,7 +1514,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <remarks>
     /// <b>도는 동안 시설 명령 창을 접는다.</b> 명령 창은 제 창(HWND)이라 도시 그림 <b>위에</b>
     /// 뜨는데, 애니메이션은 그림 위에 얹히므로 창에 통째로 가려 안 보였다 — 후원자에게
-    /// 이야기를 내밀 때 도는 하트가 그래서 한 번도 안 나왔다. 게임도 이때는 명령 창을 지운다.
+    /// 이야기를 내밀 때 도는 하트가 그래서 한 번도 안 나왔다. 원본도 이때는 명령 창을 지운다.
     /// </remarks>
     /// <param name="span">한 장이 머무는 참. 안 주면 <see cref="FrameSpan"/> 이다.</param>
     private void PlayEffect(int anim, int[] order, TimeSpan? span = null, int sound = -1)
@@ -1532,7 +1532,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
         // 그림 한가운데에 놓는다. 예전에는 누른 건물 위에 놓았는데, 건물이 구석에 있으면
-        // 애니메이션도 구석으로 밀려 났다 — 게임은 늘 화면 가운데에서 돈다.
+        // 애니메이션도 구석으로 밀려 났다 — 원본은 늘 화면 가운데에서 돈다.
         Canvas.SetLeft(image, (CityPictures.Width * _scale - side) / 2);
         Canvas.SetTop(image, (CityPictures.Height * _scale - side) / 2);
         Panel.SetZIndex(image, 30);
@@ -1591,7 +1591,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// "수련" — 맡은 사람이 먼저 묻고, 창을 닫을 때 아무것도 안 배웠으면 한마디 한다.
     /// </summary>
     /// <remarks>
-    /// <b>건물마다 사람도 말도 다르다.</b> 게임은 문구를 <c>0x00490D90(교회, 조합, 그밖)</c>
+    /// <b>건물마다 사람도 말도 다르다.</b> 원본은 문구를 <c>0x00490D90(교회, 조합, 그밖)</c>
     /// 으로 고른다 — 건물 종류로 셋 중 하나를 집는 갈래표다(<c>0x00490DDC</c>).
     /// <code>
     ///   0x0055A7E8  교회    "주의 배움의 터전에 잘 오셨습니다. 어떤 학문, 기능을 배우고 싶습니까?"
@@ -1607,7 +1607,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>건물에 들어설 때 그 시설 사람이 건네는 한마디.</summary>
     /// <remarks>
-    /// 인사말도 얼굴도 <b>시설이 든다</b> — 게임도 시설 객체마다 제 인사 자리가 있다
+    /// 인사말도 얼굴도 <b>시설이 든다</b> — 원본도 시설 객체마다 제 인사 자리가 있다
     /// (조선소 <c>0x0044B4A0</c>). 도시 창이 하는 일은 어느 시설인지 가르는 것뿐이고,
     /// 시설은 이 창이 든 문화권(<see cref="_cultureNo"/>)으로 제 화자를 찾는다.
     ///
@@ -1646,7 +1646,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 모항의 시설에서 아내·아이와 마주친다(<c>0x004A1EB0</c>).
     /// </summary>
     /// <remarks>
-    /// 게임은 인사 다음, <b>후원자가 앉아 있지 않을 때만</b> 이 자리를 본다 — 왕궁에 후원자가
+    /// 원본은 인사 다음, <b>후원자가 앉아 있지 않을 때만</b> 이 자리를 본다 — 왕궁에 후원자가
     /// 앉은 날에는 가족 대사 여섯 줄이 안 나온다. 규칙과 문구는 <see cref="FamilyVisit"/> 에 있다.
     /// </remarks>
     private void MeetFamily(Facility facility, CityBuildingTable.Building building)
@@ -1753,7 +1753,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 자택 사진 앞에 세우는 <b>아내</b>. 아내가 없거나 얼굴을 못 읽으면 빈 목록이다.
     /// </summary>
     /// <remarks>
-    /// 게임도 자택 인물 목록에는 <b>아내 하나</b>만 넣고(<c>0x004A19D0</c> 이 건물 11 일 때만),
+    /// 원본도 자택 인물 목록에는 <b>아내 하나</b>만 넣고(<c>0x004A19D0</c> 이 건물 11 일 때만),
     /// 아이는 아예 못 누른다. 눌렀을 때 도는 것은 <c>0x00414AD0</c> → <c>0x004149F0</c> 이다.
     /// </remarks>
     private IReadOnlyList<BuildingPhotoWindow.GuestArt> WifeArt()
@@ -1808,7 +1808,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
-    /// 건물 <b>위에</b> 이름표를 띄운다. 게임은 밑에 붙이는데, 우리 커서는 이름표를 덮고
+    /// 건물 <b>위에</b> 이름표를 띄운다. 원본은 밑에 붙이는데, 우리 커서는 이름표를 덮고
     /// 앉아 글자가 가린다 — 커서가 누르는 자리는 늘 이름표 아래가 되게 위로 올렸다.
     /// 그림 꼭대기에 붙은 건물이라 위로 넘칠 때만 밑으로 돌린다.
     /// </summary>
@@ -1821,7 +1821,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         double x = (area.X + area.Width / 2) * scale - w / 2;
         Canvas.SetLeft(tag, Math.Clamp(x, 0, Math.Max(0, CityPictures.Width * scale - w)));
 
-        // 게임은 이름표를 건물 <b>아래</b>에 붙인다. 그림 밑단을 넘칠 때만 위로 올린다.
+        // 원본은 이름표를 건물 <b>아래</b>에 붙인다. 그림 밑단을 넘칠 때만 위로 올린다.
         double below = (area.Y + area.Height) * scale + 2;
         double bottom = CityPictures.Height * scale;
         Canvas.SetTop(tag, below + h <= bottom ? below : Math.Max(0, area.Y * scale - h - 2));
@@ -1916,10 +1916,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 : null));
 
     /// <summary>
-    /// 인물 정보. <b>부하가 하나라도 있으면</b> 게임처럼 누구를 볼지 먼저 묻고,
+    /// 인물 정보. <b>부하가 하나라도 있으면</b> 원본처럼 누구를 볼지 먼저 묻고,
     /// 아무도 없으면 곧바로 제독의 판을 낸다.
     /// </summary>
-    /// <remarks>도시 안이라 함대좌표는 게임처럼 <c>---</c> 다.</remarks>
+    /// <remarks>도시 안이라 함대좌표는 원본처럼 <c>---</c> 다.</remarks>
     private void ShowPerson() => PersonInfoMenu.Show(this, _game, _cityMenu);
 
     /// <summary>함대 정보 판.</summary>
@@ -1928,7 +1928,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                                                     cargoInfo: (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind, c.Shelf), game: _game));
 
     /// <summary>
-    /// 정보 판 하나를 띄우는 동안 도시 커맨드 창을 감춰 두었다가 <b>도로 편다</b> — 게임은 판을 닫으면 차림표를
+    /// 정보 판 하나를 띄우는 동안 도시 커맨드 창을 감춰 두었다가 <b>도로 편다</b> — 원본은 판을 닫으면 차림표를
     /// 다시 낸다(<c>0x004934A3</c> 가 <c>0x110</c> 을 적어 <c>0x00492FE7</c> 로 되돌아간다). 창이 닫히는 것은
     /// 취소 · 맵 포인트 · 게임 종료뿐이다.
     /// </summary>
@@ -2041,7 +2041,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     private Lodging? _lodging;
 
-    /// <summary>셋 중 하나를 고르는 데 쓴다. 게임도 rand(3) 으로 고른다.</summary>
+    /// <summary>셋 중 하나를 고르는 데 쓴다. 원본도 rand(3) 으로 고른다.</summary>
     private readonly Random _random = new();
 
     /// <summary>
@@ -2050,7 +2050,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <remarks>
     /// YES 면 <b>한 해</b>가 통째로 가고(피로가 다 풀리고 규율이 가득 찬다) 컨디션이 10~19 차며,
     /// 그 고장 말을 배울 수도 있다(<see cref="Lodging.LearnTongue"/>). 삯은 시세를 먹인 1200 닢이다.
-    /// 게임은 <b>삯을 알리고 나서</b> 돈을 넣는데, 셈이 같으니 여기서는 알림 뒤에 넣는다.
+    /// 원본은 <b>삯을 알리고 나서</b> 돈을 넣는데, 셈이 같으니 여기서는 알림 뒤에 넣는다.
     /// NO 면 아무 말 없이 끝난다.
     /// </remarks>
     private void OddJob()
@@ -2175,7 +2175,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>얻은 힌트를 늘어놓는다. 이름은 판이 찾아 준다.</summary>
     private void ShowHints()
     {
-        // 게임은 그냥 늘어놓기만 하지 않는다 — 한 줄을 고르고 결정하면 그 이야기를 편다.
+        // 원본은 그냥 늘어놓기만 하지 않는다 — 한 줄을 고르고 결정하면 그 이야기를 편다.
         //
         // 보고까지 마친 힌트는 여기서 빠진다(원본 힌트 상태 15). 발견만 해서는 안 빠지는
         // 것이 옳다 — 까닭은 DiscoveryLog.IsHintDone 에 적어 두었다.
@@ -2187,7 +2187,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         while (true)
         {
-            // 힌트가 없으면 게임도 설득 때와 같은 「설득 가능한 힌트가 없습니다」를 낸다.
+            // 힌트가 없으면 원본도 설득 때와 같은 「설득 가능한 힌트가 없습니다」를 낸다.
             // 정보 제공 등급 「상세」면 이름 아래에 그 힌트가 가리키는 발견물을 단다.
             int at = HintListDialog.Pick(owner, [.. ids.Select(HintNameOf)],
                                          subtitles: [.. ids.Select(_game.HintDiscoveryNames)],
@@ -2253,7 +2253,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             new TownWorks.TownState(
                 Teaches: TownWorks.Teaches(teachMask),
                 Poor: _player.Gold <= Lodging.OddJobMaxGold,   // 0x0047FE70 의 jle — 100닢이면 뜬다
-                // 게임도 알릴 것이 있고 <b>모항</b>일 때만 줄을 켠다(0x00476DE0).
+                // 원본도 알릴 것이 있고 <b>모항</b>일 때만 줄을 켠다(0x00476DE0).
                 CanAnnounce: _cityId == _player.HomePort && Port.Announceable().Count > 0,
                 PatronRow: patron == null ? null : Patrons.PatronRow(patron),
                 PatronBribe: patron != null && Patrons.CanBribe(patron),
@@ -2280,7 +2280,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 스톡홀름·이스파한·우르겐치·카슈가르 왕궁은 역사 대본이 세우기 전까지 안 들어가진다.
     /// </summary>
     /// <remarks>
-    /// 차례는 <b>건물 코드 차례</b>다 — 게임은 도시 낱말(<c>+0x1C</c>)의 비트 0~15 를 훑어(<c>0x00491D58</c>)
+    /// 차례는 <b>건물 코드 차례</b>다 — 원본은 도시 낱말(<c>+0x1C</c>)의 비트 0~15 를 훑어(<c>0x00491D58</c>)
     /// 자리가 겹치면 <b>코드가 낮은 건물</b>을 집는다. 맵 포인트 목록도 같은 차례다.
     /// </remarks>
     private List<CityBuildingTable.Building> Standing(int cityId) =>
@@ -2342,7 +2342,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 그 건물에 앉은 후원자의 얼굴. 없으면 null — 그때는 화자표의 시설 사람이 선다.
     /// </summary>
     /// <remarks>
-    /// 게임은 대사 얼굴을 시설 객체 <c>+0x88</c> 에서 꺼내는데, 후원자가 앉은 건물이면 그 자리가 <b>후원자</b>다 —
+    /// 원본은 대사 얼굴을 시설 객체 <c>+0x88</c> 에서 꺼내는데, 후원자가 앉은 건물이면 그 자리가 <b>후원자</b>다 —
     /// 교회 수련에서 신부 대신 그 교회 후원자(페르난 마르틴스 따위)가 말한다.
     /// </remarks>
     private uint[]? PatronFaceAt(int buildingCode)
@@ -2374,7 +2374,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 손님과 이야기하는 동안 시설 명령 창을 감춘다.
     /// </summary>
     /// <remarks>
-    /// 게임은 손님을 누르면 <b>명령 창을 지우고 그 자리에</b> "말을 건다 · 무시한다" 를
+    /// 원본은 손님을 누르면 <b>명령 창을 지우고 그 자리에</b> "말을 건다 · 무시한다" 를
     /// 낸다. 우리는 창이 따로라 겹쳐 보였다 — 이야기하는 동안만 접어 둔다.
     /// </remarks>
     private void HideMenu(bool hide)
@@ -2527,7 +2527,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 성문의 「탐험을 떠난다」 관문 — 나서도 좋으면 true.
     /// </summary>
     /// <remarks>
-    /// 게임의 <c>0x00468900</c> 이다.
+    /// 원본의 <c>0x00468900</c> 이다.
     /// <code>
     ///   468903  편성 안 된 배가 있나(0x004688A0)   — 있으면 못 나간다
     ///   468910  함대 선원 수(0x0040E360) &gt; 0      — 있으면 그대로 나간다
@@ -2630,12 +2630,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 설득 — 끝나면 <b>그 건물에서 나온다</b>.
     /// </summary>
     /// <remarks>
-    /// 게임도 설득이 끝나면 명령 창으로 안 돌아가고 도시 그림으로 물러선다. 시설의
+    /// 원본도 설득이 끝나면 명령 창으로 안 돌아가고 도시 그림으로 물러선다. 시설의
     /// "고른 것 처리"(<c>0x0044ED1A</c>)가 <b>설득 본체가 돌려준 값을 그대로 제 반환값으로
     /// 내보내므로</b>(<c>0x0044ED28</c> → <c>0x0044ED30</c> → <c>0x0044EE05</c>) 설득이
     /// 화면을 접을 수 있다 — 다른 줄들은 제 값을 따로 만들어 낸다.
     ///
-    /// 문전박대도 마찬가지다. 명성이 모자라 집사가 돌려보내면 게임은 그 자리에서 도시
+    /// 문전박대도 마찬가지다. 명성이 모자라 집사가 돌려보내면 원본은 그 자리에서 도시
     /// 그림으로 돌아간다(<see cref="PatronMenu.Persuade"/>).
     /// </remarks>
     void ITownScreen.Persuade(Patron patron)
@@ -2660,7 +2660,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>
     /// 자동항해 목적지를 골랐을 때 — 어느 건물에 있든 그 자리에서 출항한다. 떠났으면 참.
     /// </summary>
-    /// <remarks>게임에는 없는 길이다. 출항 관문(<see cref="HarborMenu.ConfirmSail"/>)은 그대로 거친다.</remarks>
+    /// <remarks>원본에는 없는 길이다. 출항 관문(<see cref="HarborMenu.ConfirmSail"/>)은 그대로 거친다.</remarks>
     internal bool SailNow()
     {
         if (!CanSailOut) return false;
@@ -2870,7 +2870,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
-    /// 그림 배율. 게임처럼 지도의 반쯤을 덮는 크기로 잡는다(자리가 좁아도 1배는 쓴다).
+    /// 그림 배율. 원본처럼 지도의 반쯤을 덮는 크기로 잡는다(자리가 좁아도 1배는 쓴다).
     /// </summary>
     private static int PickScale(double areaWidth, double areaHeight)
     {

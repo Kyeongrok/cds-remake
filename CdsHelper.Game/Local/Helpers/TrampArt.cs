@@ -9,7 +9,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 술집 포카 그림 — <c>TRAMP.CDS</c> 와 팔레트 <c>TRAMP.P</c>.
 /// </summary>
 /// <remarks>
-/// 게임은 <c>0x00401800</c> 에서 둘을 읽고(<c>0x0052F638</c> <c>C:Tramp.CDS</c> ·
+/// 원본은 <c>0x00401800</c> 에서 둘을 읽고(<c>0x0052F638</c> <c>C:Tramp.CDS</c> ·
 /// <c>0x0052F644</c> <c>C:Tramp.P</c>), 다 읽으면 <c>[포카+0x4C0] = 1</c> 을 박는다. 못 읽으면
 /// 들머리(<c>0x00406470</c>)가 <b>아무 말 없이</b> 나간다 — 우리도 <see cref="Open"/> 이 null 이면 그렇다.
 ///
@@ -24,7 +24,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </code>
 /// 카드 쉰두 장은 <b>무늬 x 13 + 끗수</b> 차례다(<see cref="Engine.Town.Poker.PictureOf"/>).
 ///
-/// <b>TRAMP.P 는 날것 팔레트</b>다(423바이트 = 141색, 바이트 차례 파랑·빨강·초록). 게임은 이것을
+/// <b>TRAMP.P 는 날것 팔레트</b>다(423바이트 = 141색, 바이트 차례 파랑·빨강·초록). 원본은 이것을
 /// 공용 팔레트의 <b>74번부터</b> 얹는다(<c>0x004BA161(0x4A, 0xAC, +0xB6)</c>). 그 아래는 공용
 /// 색표(<see cref="GamePalette"/>)다 — 창·말풍선 바탕 10, 글자 0x49 가 거기서 온다.
 ///
