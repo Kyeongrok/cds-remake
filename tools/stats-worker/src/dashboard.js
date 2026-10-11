@@ -35,7 +35,7 @@ export const DASHBOARD_HTML = `<!doctype html>
   th.sort { cursor: pointer; }
   th.sort.on { color: var(--gold); }
   td.wrap { white-space: normal; word-break: break-all; }
-  tr.chapter td { background: var(--bg); font-weight: 600; border-top: 2px solid var(--line); cursor: pointer; }
+  tr.chapter td { background: var(--bg); font-weight: 600; border-top: 2px solid var(--line); text-align: left; }
   td.indent { padding-left: 22px; }
   td.bar { width: 28%; padding-right: 0; }
   td.bar i { display: block; height: 10px; background: var(--bar); border-radius: 3px; min-width: 1px; }
@@ -56,10 +56,7 @@ export const DASHBOARD_HTML = `<!doctype html>
   </div>
   <div class="tiles" id="tiles"></div>
   <section><h2>모드 옵션 <small>설치별 마지막 값</small></h2><div class="tabs" id="modtabs"></div><div class="scroll"><table id="mods"></table></div></section>
-  <div class="two">
-    <section><h2>도시 순위</h2><div class="scroll"><table id="cities"></table></div></section>
-    <section><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table></div></section>
-  </div>
+  <section><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table></div></section>
   <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회</small></h2><div class="scroll"><table id="voyages"></table></div></section>
   <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
   <section><h2>전투</h2><table id="battles"></table></section>
@@ -77,11 +74,52 @@ const EMPTY = (cols) => '<tr><td colspan="' + cols + '" class="dim name">아직 
 const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'ModPreset', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
 // 값에 이름이 있는 단계 옵션 — 수 대신 이름으로 적는다. ModPreset 은 모드 창 「권장」에서 고른 단계다.
 const LEVEL_NAMES = { ModPreset: ['오리지널', '초보', '중수', '고수'], InfoLevel: ['기본', '일반', '상세'] };
+// 옵션 이름 — 게임은 GameSettings 의 속성 이름으로 보낸다. 모드 창(ModDialog)에 적힌 글로 바꿔 보이고, 여기 없는 것은 속성 이름 그대로 나온다.
+const MOD_NAMES = {
+  ShowShipSpeed: '배 속도', FleetCard: '접근 함대 정보', ShowSeaDays: '항해 일수', ShowDiscoveryCount: '발견물 수', ShowFlowArrows: '바람·해류 화살표',
+  ShowMiniMap: '미니맵', MiniMapFound: '찾은 발견물', MiniMapYet: '못 찾은 발견물', MiniMapCities: '도시', MiniMapWind: '풍향', MiniMapCurrent: '해류',
+  ShowDiscoveryMapMenu: '발견물 지도', DiscoveryMapSpots: '발견물 지도 — 발견물', DiscoveryMapCities: '발견물 지도 — 도시', DiscoveryMapGrid: '발견물 지도 — 격자',
+  DiscoveryMapWind: '발견물 지도 — 풍향', DiscoveryMapCurrent: '발견물 지도 — 해류',
+  ShowBarmaidBookMenu: '여급 수첩', ShowPersonMoveMenu: '인물 이동', PlaceShipByCtrlClick: 'Ctrl+클릭 배 놓기',
+  ShowContractHintOverlay: '현재 계약 힌트', ShowFleetOverlay: '현재 함대 선박 이름', ShowHintOverlay: '현재 힌트 목록', ShowSkillOverlay: '기능·언어',
+  ShowCoordOverlay: '좌표 상자(개발)', ShowPeopleOverlay: '만난 사람 상자(개발)',
+  AutoFlee: '자동 도망', AutoCrew: '선원 자동 모집', AskLendShips: '배 빌림 묻기', AutoSupply: '자동 보급', AutoSupplyMax: '자동 보급 — 최대로', AutoFundRaise: '자금 증가 기본',
+  AutoSaveOnPort: '도시 자동저장', AutoOpenShipMap: '켤 때 함대 창 바로 띄우기', SteadyHelm: '자동항해 — 최소 조타',
+  ShowVitalityInfo: '생명력 정보', RidiFont: '리디바탕 글꼴', RidiLoadList: '리디바탕 — 게임 로드 창', HintBrowser: '향상된 힌트 보기', PatronListEnhanced: '향상된 후원자 정보',
+  EnhancedItemArt: '향상된 아이템 이미지', PersonInfoEnhanced: '향상된 인물정보 목록', PersonInfoList: '인물정보 고르기 목록', ItemListPictures: '아이템 창 개선',
+  KeepCharacterDraft: '캐릭터 작성 기억', RerollOnJob: '직업 누르면 다시 굴림', WheelZoom: '휠 확대', NoWeight: '중량 없음', HandyInventory: '편리한 인벤토리', QuickStorage: '편리한 보관함',
+  CargoPriceRank: '적하 시세 순위', SphinxHelper: '스핑크스 퀴즈 도우미',
+  LandAutoWalk: '뭍 자동이동', CaptureMirror: '녹화용 창 합치기', ShipCentered: '배 중심', LandDetail: '뭍 세부 질감', PixelFilter: '도트 확대 필터', ShipWake: '배 항적',
+  SmoothClouds: '부드러운 구름', SeaEffect: '바다 입체 효과', HiResSea: '고해상도 바다',
+  Nobility: '작위', MateDismiss: '부하 해고', SkipRecontract: '보고 시 재계약 끄기', SuezCanal: '수에즈 운하', SpecialOrder: '특별주문', PlayOpeningMovie: '오프닝 동영상 틀기',
+  BgmEnabled: '배경음악', SfxEnabled: '효과음', CustomBgmEnabled: '커스텀 BGM', DuelImmortal: '일기토 불사(개발)',
+  InfoLevel: '정보 제공 등급', ModPreset: '권장 단계', SeaRaidScale: '해적·이슬람 함대 확률 배수(차례)', MutinyRate: '바다 반란 몫(%)', PortDays: '항구 드나드는 날수',
+  Resolution: '게임 창 크기(고른 차례)', ScreenWidth: '모니터 너비(점)', ScreenHeight: '모니터 높이(점)', ScreenScale: '모니터 배율(%)',
+};
+// 옵션이 모드 창의 어느 탭에 있는지 — 탭 차례는 모드 창(ModDialog.Tabs)과 같다. 모드 창 밖에서 바꾸는 것은 「그 밖」 · 「화면」 · 「개발」로 모은다.
+const MOD_TABS = [
+  ['권장', ['ModPreset']],
+  ['편의성', ['PlaceShipByCtrlClick', 'AutoFlee', 'AutoSupply', 'AutoSupplyMax', 'AutoCrew', 'AskLendShips', 'AutoFundRaise', 'KeepCharacterDraft', 'WheelZoom', 'NoWeight',
+    'HandyInventory', 'QuickStorage', 'CargoPriceRank', 'SphinxHelper', 'AutoSaveOnPort', 'PortDays']],
+  ['정보', ['ShowShipSpeed', 'FleetCard', 'ShowSeaDays', 'ShowDiscoveryCount', 'ShowFlowArrows', 'ShowContractHintOverlay', 'ShowFleetOverlay', 'ShowHintOverlay', 'ShowSkillOverlay', 'InfoLevel']],
+  ['미니맵', ['ShowMiniMap', 'MiniMapFound', 'MiniMapYet', 'MiniMapCities', 'MiniMapWind', 'MiniMapCurrent']],
+  ['고해상도', ['SeaEffect', 'HiResSea', 'LandDetail', 'PixelFilter', 'ShipWake', 'SmoothClouds']],
+  ['UI', ['ShowDiscoveryMapMenu', 'ShowBarmaidBookMenu', 'ShowPersonMoveMenu', 'ShowVitalityInfo', 'HintBrowser', 'PatronListEnhanced', 'EnhancedItemArt', 'PersonInfoEnhanced', 'ItemListPictures']],
+  ['폰트', ['RidiFont', 'RidiLoadList']],
+  ['일반', ['CustomBgmEnabled', 'MateDismiss', 'SkipRecontract', 'SuezCanal', 'SpecialOrder', 'PlayOpeningMovie', 'RerollOnJob', 'SeaRaidScale']],
+  ['실험', ['LandAutoWalk', 'CaptureMirror', 'ShipCentered', 'Nobility']],
+  ['그 밖', ['BgmEnabled', 'SfxEnabled', 'AutoOpenShipMap', 'SteadyHelm', 'PersonInfoList', 'DiscoveryMapSpots', 'DiscoveryMapCities', 'DiscoveryMapGrid', 'DiscoveryMapWind', 'DiscoveryMapCurrent']],
+  ['화면', ['Resolution', 'ScreenWidth', 'ScreenHeight', 'ScreenScale']],
+  ['개발', ['DuelImmortal', 'MutinyRate', 'ShowCoordOverlay', 'ShowPeopleOverlay']],
+];
+const OTHER_TAB = MOD_TABS.findIndex(([label]) => label === '그 밖');
+const modTabOf = (name) => { const i = MOD_TABS.findIndex(([, names]) => names.includes(name)); return i < 0 ? OTHER_TAB : i; };
+const modName = (name) => '<span title="' + esc(name) + '">' + esc(MOD_NAMES[name] || name) + '</span>';
 const SEA = [['Won', '승리'], ['Defeated', '패배'], ['Escaped', '퇴각'], ['Surrendered', '항복']];
 
 let data = null;
-const state = { version: '' }, sorts = { cities: 'n', discoveries: 'n', voyages: 'n', errors: 'n' };
-let modTab = 'bool';
+const state = { version: '' }, sorts = { discoveries: 'n', voyages: 'n', errors: 'n' };
+let modTab = 'all';
 
 const COLS = [['n', '횟수'], ['installs', '설치']];
 const bar = (v, top) => '<td class="bar"><i style="width:' + (100 * v / Math.max(1, top)).toFixed(1) + '%"></i></td>';
@@ -103,18 +141,19 @@ function rankTable(id, label, rows, nameOf) {
   bindSort(id);
 }
 
+// 모드 옵션 — 모드 창의 탭마다 묶는다. 묶음 안에서는 켬·끔 옵션을 켠 설치가 많은 차례로, 단계 옵션은 그 밑에 값마다 설치 수로 적는다.
 function renderMods() {
-  const bools = data.mods.filter((m) => !LEVELS.includes(m.name)), levels = data.mods.filter((m) => LEVELS.includes(m.name));
-  tabs('modtabs', [['bool', '켬 · 끔 옵션 (' + bools.length + ')'], ['level', '단계 옵션 (' + levels.length + ')']], modTab, (k) => { modTab = k; });
-  if (modTab === 'bool') {
-    $('mods').innerHTML = '<tr><th>#</th><th class="name">옵션</th><th>켠 설치</th><th>설치</th><th>비율</th><th></th></tr>'
-      + (bools.length ? bools.map((m, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(m.name) + '</td><td>' + n(m.enabled) + '</td><td>' + n(m.installs) + '</td><td>'
-          + pct(m.enabled, m.installs) + '</td>' + bar(m.enabled, m.installs) + '</tr>').join('') : EMPTY(6));
-    return;
-  }
-  $('mods').innerHTML = '<tr><th class="name">옵션</th><th>설치</th><th>평균값</th><th class="name">값마다 설치 수</th></tr>'
-    + (levels.length ? levels.map((m) => '<tr><td class="name">' + esc(m.name) + '</td><td>' + n(m.installs) + '</td><td>' + (Math.round(m.average * 100) / 100) + '</td><td class="name wrap">'
-        + (data.modValues || []).filter((v) => v.name === m.name).map((v) => '<b>' + esc((LEVEL_NAMES[m.name] || [])[v.value] || n(v.value)) + '</b> <span class="dim">× ' + n(v.installs) + '</span>').join(' &nbsp;·&nbsp; ') + '</td></tr>').join('') : EMPTY(4));
+  const groups = MOD_TABS.map(([label], i) => ({ label, i, rows: data.mods.filter((m) => modTabOf(m.name) === i) })).filter((g) => g.rows.length);
+  if (modTab !== 'all' && !groups.some((g) => String(g.i) === modTab)) modTab = 'all';
+  tabs('modtabs', [['all', '전체 (' + data.mods.length + ')'], ...groups.map((g) => [String(g.i), g.label + ' (' + g.rows.length + ')'])], modTab, (k) => { modTab = k; });
+  const shown = groups.filter((g) => modTab === 'all' || String(g.i) === modTab);
+  $('mods').innerHTML = '<tr><th>#</th><th class="name">옵션</th><th>켠 설치</th><th>설치</th><th>비율</th><th></th></tr>'
+    + (shown.length ? shown.map((g) => '<tr class="chapter"><td colspan="6">' + esc(g.label) + ' <span class="dim">' + g.rows.length + '</span></td></tr>'
+        + g.rows.map((m, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + modName(m.name) + '</td>' + (LEVELS.includes(m.name)
+          ? '<td class="dim">단계</td><td>' + n(m.installs) + '</td><td colspan="2" class="name wrap">'
+            + (data.modValues || []).filter((v) => v.name === m.name).map((v) => '<b>' + esc((LEVEL_NAMES[m.name] || [])[v.value] || n(v.value)) + '</b> <span class="dim">× ' + n(v.installs) + '</span>').join(' &nbsp;·&nbsp; ')
+            + ' <span class="dim">(평균 ' + (Math.round(m.average * 100) / 100) + ')</span></td>'
+          : '<td>' + n(m.enabled) + '</td><td>' + n(m.installs) + '</td><td>' + pct(m.enabled, m.installs) + '</td>' + bar(m.enabled, m.installs)) + '</tr>').join('')).join('') : EMPTY(6));
 }
 
 // 항해 — 구간마다 횟수 · 설치 수와, 날수 · 선회의 합을 횟수로 나눈 평균.
@@ -156,12 +195,11 @@ function renderBattles() {
 
 function render() {
   const kind = (k) => (data.kinds || []).find((r) => r.kind === k) || { n: 0, keys: 0 };
-  $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('city').n, '도시 방문'], [kind('discovery').n, '발견'],
+  $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('discovery').n, '발견'],
       [kind('voyage').n, '항해'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
     .map(([v, label]) => '<div class="tile"><b>' + n(v) + '</b><span>' + label + '</span></div>').join('');
 
   renderMods();
-  rankTable('cities', '도시', data.cities, (r) => esc(r.name || '#' + r.key));
   rankTable('discoveries', '발견물', data.discoveries, (r) => esc(r.name || '#' + r.key));
   renderVoyages();
   renderNavs();

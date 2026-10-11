@@ -8,14 +8,14 @@ using CdsHelper.Game.Local.Settings;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 놀이 통계 — 무엇을 발견하고 어느 도시에 들르고 어디서 어디로 며칠 걸려 가고 얼마나 싸우는지 세어 받는 곳으로 보낸다.
+/// 놀이 통계 — 무엇을 발견하고 어디서 어디로 며칠 걸려 가고 얼마나 싸우는지 세어 받는 곳으로 보낸다.
 /// </summary>
 /// <remarks>
 /// 받는 곳은 <c>tools/stats-worker</c>(Cloudflare Worker + D1)다. 모드 옵션은 켤 때 한 번 찍는다.
 /// <code>
-///   discovery     발견물 번호                  city    도시 번호
-///   voyage        「떠난 도시>닿은 도시」 횟수    battle  sea:Won · sea:Escaped · land:win · land:lose …
-///   voyage_days   같은 열쇠, 걸린 날수의 합      error   「오류 갈래@클래스.메서드」
+///   discovery     발견물 번호                  battle  sea:Won · sea:Escaped · land:win · land:lose …
+///   voyage        「떠난 도시>닿은 도시」 횟수    error   「오류 갈래@클래스.메서드」
+///   voyage_days   같은 열쇠, 걸린 날수의 합
 ///   voyage_turns  같은 열쇠, 뱃머리를 돌린 횟수의 합
 ///   nav           네비게이션 — pick:quick · helm:steady · end:arrived · trip:auto …
 /// </code>
@@ -97,9 +97,6 @@ public static class PlayStats
 
     /// <summary>발견물 하나를 새로 발견했다.</summary>
     public static void Found(int id, string? name) => Count("discovery", id.ToString(), name);
-
-    /// <summary>도시에 들어섰다.</summary>
-    public static void City(int id, string? name) => Count("city", id.ToString(), name);
 
     /// <summary>
     /// 배로 한 도시를 떠나 다른 도시에 닿았다 — 어디서 어디로, 며칠 걸려, 뱃머리를 몇 번 돌려 갔는지.
