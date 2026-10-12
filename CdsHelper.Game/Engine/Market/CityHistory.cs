@@ -81,8 +81,12 @@ public sealed class CityHistory
     /// <summary>
     /// 한 달을 돈다 — 그 달이 막 시작되었을 때 원본이 하는 몫. 사람 대본 먼저, 그 다음 HIST_EV.
     /// </summary>
+    /// <param name="captured">
+    /// 사람 대본이 도시의 나라를 바꿀 때마다 불린다(사람, 도시) — 원본은 대본 주인이 인물이면
+    /// 「%s%s [%s]%s 공략했습니다」(<c>0x005387C0</c>)를 띄운다(<c>0x00409B11</c>). HIST_EV 는 주인이 없어 조용하다.
+    /// </param>
     public void RunMonth(Player player, int year, int month, CityExeTable? cities, NationTable? nations,
-                         FoundCheck found)
+                         FoundCheck found, Action<int, int>? captured = null)
     {
         var when = new DateTime(year, month, 1);
 
@@ -91,7 +95,9 @@ public sealed class CityHistory
         {
             var part = _persons[who];
             if (Pick(part, year, month, when, player, cities, found, -1) is not { } body) continue;
-            Run(part, body.Body, BodyEnd(part, body.Body), player, cities, nations, when, statesOnly: true);
+            int owner = who;
+            Run(part, body.Body, BodyEnd(part, body.Body), player, cities, nations, when, statesOnly: true,
+                captured == null ? null : city => captured(owner, city));
             SpeakLines(part, body.Body, BodyEnd(part, body.Body), player, who, when);
         }
 
@@ -213,7 +219,7 @@ public sealed class CityHistory
     /// </summary>
     /// <param name="statesOnly">사람 대본 — 명령 짜임이 넓어 상태·나라 명령 꼴만 훑어 찾는다.</param>
     private static void Run(byte[] p, int i, int end, Player player, CityExeTable? cities, NationTable? nations,
-                            DateTime when, bool statesOnly)
+                            DateTime when, bool statesOnly, Action<int>? captured = null)
     {
         end = Math.Min(end, p.Length);
         if (statesOnly)
@@ -225,7 +231,11 @@ public sealed class CityHistory
                 if (city >= CityExeTable.Count) continue;
                 // 상태(18)와, 역사 항해자가 공략한 도시의 나라(00) — 고아·말라카는 포르투갈, 쿠스코는 에스파니아.
                 if (p[i + 4] == 0x18 && value < CityState.Names.Length) player.SetCityState(city, value);
-                else if (p[i + 4] == 0x00 && value < NationTable.Count) ChangeNation(player, cities, nations, city, value);
+                else if (p[i + 4] == 0x00 && value < NationTable.Count)
+                {
+                    ChangeNation(player, cities, nations, city, value);
+                    captured?.Invoke(city);
+                }
             }
             return;
         }

@@ -245,9 +245,12 @@ public sealed class Game
 
                 if (key > player.HistoryMonth)
                 {
-                    History?.RunMonth(player, year, month, CityRows, Nations, Found);
                     // 한참 밀린 달(옛 세이브)은 알리지 않는다 — 수십 건이 한꺼번에 뜬다.
-                    RunVoyagerReports(player, when, when, tell: now - key < 12);
+                    bool tell = now - key < 12;
+                    if (tell) TellVoyagerFinds(player, when);
+                    History?.RunMonth(player, year, month, CityRows, Nations, Found,
+                                      tell ? TellVoyagerCapture : null);
+                    RunVoyagerReports(player, when, when, tell);
                 }
             }
             player.SetRatesMonth(now);
@@ -263,9 +266,36 @@ public sealed class Game
     private int _reportsKey;
 
     /// <summary>
-    /// 역사 항해자가 막 발표한 것들 — 지도 창이 꺼내 「%s%s [%s]%s 보고했습니다」(<c>0x00538CF0</c>)를 띄운다.
+    /// 역사 항해자가 막 한 일들 — 지도 창이 꺼내 「%s%s [%s]%s 발견했습니다」(<c>0x00538490</c>) ·
+    /// 「… 공략했습니다」(<c>0x005387C0</c>) · 「… 보고했습니다」(<c>0x00538CF0</c>)를 띄운다.
     /// </summary>
-    public Queue<(string Who, int Discovery)> VoyagerReports { get; } = new();
+    public Queue<(string Who, string What, string Did)> VoyagerReports { get; } = new();
+
+    /// <summary>
+    /// 그 달에 역사 항해자가 찾은 것을 알린다 — 대본의 <c>01 0B</c>(<c>0x00408829</c>).
+    /// </summary>
+    /// <remarks>
+    /// 알림은 이름을 올리기(<c>0x004AAC10</c>) <b>앞</b>에 뜨고, 보는 것은 둘뿐이다 — 발견물 깃발 <c>0x04</c>
+    /// (자리로 잡히는 것, 표 <c>+0x20</c> 이 0)와 <b>칸 2 가 비었는지</b>(아직 아무도 보고하지 않았다).
+    /// 그래서 내가 먼저 찾아 두었어도 보고 전이면 뜬다.
+    /// </remarks>
+    private void TellVoyagerFinds(Player player, DateTime when)
+    {
+        if (Voyagers is not { } voyagers || Discoveries is not { } log) return;
+
+        var told = new HashSet<(int, int)>();
+        foreach (var voyage in voyagers.All)
+        {
+            if (voyage.On != when || !told.Add((voyage.Voyager, voyage.Discovery))) continue;
+            if (log.Table.Find(voyage.Discovery) is not { } row || row.Indirect) continue;
+            if (player.HasAnnounced(row.Id) || player.Scooped.ContainsKey(row.Id)) continue;
+            VoyagerReports.Enqueue((HistoryVoyages.NameOf(voyage.Voyager), row.Name, "발견했습니다"));
+        }
+    }
+
+    /// <summary>역사 항해자가 도시를 제 나라 것으로 만들었다 — 대본의 <c>21 08 [도시] 00</c>(<c>0x00409B11</c>).</summary>
+    private void TellVoyagerCapture(int voyager, int city) =>
+        VoyagerReports.Enqueue((HistoryVoyages.NameOf(voyager), CityName(city), "공략했습니다"));
 
     /// <summary>
     /// 그 사이에 든 역사 항해자의 발표(<c>3F</c>, <c>0x0040AF28</c>)를 돌린다.
@@ -295,7 +325,7 @@ public sealed class Game
 
                 string who = HistoryVoyages.NameOf(report.Voyager);
                 if (!player.Scoop(row.Id, who, report.On)) continue;
-                if (tell) VoyagerReports.Enqueue((who, row.Id));
+                if (tell) VoyagerReports.Enqueue((who, row.Name, "보고했습니다"));
             }
         }
     }

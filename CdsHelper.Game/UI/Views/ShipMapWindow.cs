@@ -4768,7 +4768,8 @@ public sealed class ShipMapWindow : Window
     /// 스물네 칸씩 <b>순간이동</b>하듯 뛰었다 — 원본은 눈금마다 조금씩 옮긴다.
     /// </remarks>
     /// <summary>
-    /// 역사 항해자가 막 발표한 것을 알린다 — 「%s%s [%s]%s 보고했습니다」(<c>0x00538CF0</c>, <c>0x0040AFFF</c>).
+    /// 역사 항해자가 막 한 일을 알린다 — 「%s%s [%s]%s 보고했습니다」(<c>0x00538CF0</c>, <c>0x0040AFFF</c>),
+    /// 「… 발견했습니다」(<c>0x00538490</c>, <c>0x004088B4</c>), 「… 공략했습니다」(<c>0x005387C0</c>, <c>0x00409B9F</c>).
     /// </summary>
     /// <remarks>그리는 길에서 불리므로 창은 한 박자 뒤에 띄운다. 달 셈은 여기서 한 번 밀어 준다.</remarks>
     private void TellVoyagerReports()
@@ -4783,10 +4784,10 @@ public sealed class ShipMapWindow : Window
             {
                 while (_game.VoyagerReports.TryDequeue(out var told))
                 {
-                    string what = _game.Discoveries?.Table.Find(told.Discovery)?.Name ?? "";
-                    if (what.Length == 0) continue;
+                    string what = told.What;
+                    if (what.Length == 0 || told.Who.Length == 0) continue;
                     NoticeDialog.Show(this, $"{told.Who}{GameUi.Josa(told.Who, "이", "가")} "
-                                            + $"[{what}]{GameUi.Josa(what, "을", "를")} 보고했습니다");
+                                            + $"[{what}]{GameUi.Josa(what, "을", "를")} {told.Did}");
                 }
             }
             finally { _tellingReports = false; }
