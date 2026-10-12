@@ -618,7 +618,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         var order = _spots.OrderBy(sp => sp.Building.Code).ToList();
         int at = order.FindIndex(sp => sp.Building.Code == _pickedCode);
 
-        switch (key)
+        switch (GameUi.Arrow(key))
         {
             case Key.Up or Key.Left:
                 at = at < 0 ? order.Count - 1 : (at - 1 + order.Count) % order.Count;

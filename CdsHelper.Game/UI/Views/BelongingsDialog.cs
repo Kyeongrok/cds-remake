@@ -411,7 +411,7 @@ public sealed class BelongingsDialog : GameWindow
 
     private void OnKey(object sender, KeyEventArgs e)
     {
-        switch (e.Key)
+        switch (GameUi.Arrow(e.Key))
         {
             case Key.Escape:
                 Close();

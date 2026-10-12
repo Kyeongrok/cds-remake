@@ -1478,6 +1478,21 @@ internal static class GameUi
         };
     }
 
+    /// <summary>
+    /// 숫자판 8 · 2 · 4 · 6 을 방향키로 읽는다 — 원본은 차림표도 숫자판으로 고른다. 나머지 글쇠는 그대로다.
+    /// </summary>
+    /// <remarks>
+    /// 숫자를 치는 창(<see cref="CountDialog"/> 따위)에서는 쓰지 않는다 — 거기서는 숫자판이 숫자다.
+    /// </remarks>
+    public static Key Arrow(Key key) => key switch
+    {
+        Key.NumPad8 => Key.Up,
+        Key.NumPad2 => Key.Down,
+        Key.NumPad4 => Key.Left,
+        Key.NumPad6 => Key.Right,
+        _ => key,
+    };
+
     public sealed class FocusGroup
     {
         private readonly List<GameButton> _items = [];
@@ -1508,7 +1523,7 @@ internal static class GameUi
         public bool HandleKey(Key key)
         {
             if (_items.Count == 0) return false;
-            switch (key)
+            switch (Arrow(key))
             {
                 case Key.Left or Key.Up:
                     Focus((_index - 1 + _items.Count) % _items.Count);

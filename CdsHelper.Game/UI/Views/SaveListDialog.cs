@@ -124,7 +124,7 @@ public sealed class SaveListDialog : GameWindow
 
         KeyDown += (_, e) =>
         {
-            switch (e.Key)
+            switch (GameUi.Arrow(e.Key))
             {
                 case Key.Escape: Cancel(); break;
                 case Key.Enter: Decide(); break;

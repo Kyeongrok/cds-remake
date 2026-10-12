@@ -186,13 +186,13 @@ public sealed class StorageDialog : GameWindow
         // 위아래는 손이 간 쪽 목록이 받고, 좌우로 손을 옮긴다.
         if ((_onBag ? _bagList : _boxList).HandleKey(e.Key)) { e.Handled = true; return; }
 
-        switch (e.Key)
+        switch (GameUi.Arrow(e.Key))
         {
             case Key.Escape:
                 Close();
                 break;
             case Key.Left or Key.Right:
-                Hand(e.Key == Key.Left);
+                Hand(GameUi.Arrow(e.Key) == Key.Left);
                 e.Handled = true;
                 break;
             case Key.Enter:

@@ -246,7 +246,7 @@ internal sealed class GameList : Border
     /// </summary>
     public bool HandleKey(Key key)
     {
-        switch (key)
+        switch (GameUi.Arrow(key))
         {
             case Key.Up: Move(-1); return true;
             case Key.Down: Move(+1); return true;

@@ -154,7 +154,7 @@ public sealed class PersonListDialog : GameWindow
 
         KeyDown += (_, e) =>
         {
-            switch (e.Key)
+            switch (GameUi.Arrow(e.Key))
             {
                 case Key.Escape: Close(); break;
                 case Key.Enter: Decide(); break;

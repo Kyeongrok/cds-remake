@@ -211,7 +211,7 @@ internal sealed class GameMenu : Border
         if (e.Handled || _picks.Count == 0) return;
         if (Keyboard.FocusedElement is TextBox or PasswordBox or ComboBox) return;
 
-        switch (e.Key)
+        switch (GameUi.Arrow(e.Key))
         {
             case Key.Up or Key.Left:
                 Step(-1);

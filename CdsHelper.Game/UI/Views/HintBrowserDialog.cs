@@ -236,7 +236,7 @@ public sealed class HintBrowserDialog : GameWindow
 
     private void OnKey(object sender, KeyEventArgs e)
     {
-        switch (e.Key)
+        switch (GameUi.Arrow(e.Key))
         {
             case Key.Escape: Close(); break;
             case Key.Up: Select(Math.Max(0, _at - 1)); break;
