@@ -222,6 +222,7 @@ internal sealed class CubePuzzleDialog : GameWindow
 
         // 게임 화면에는 <b>수를 세는 글이 없다</b> — 화살표 · 입방체 · 화살표뿐이다.
         Cube();
+        HelpButton();
 
         _scene.Background = Brushes.Transparent;
         _scene.MouseLeftButtonDown += (_, e) => e.Handled = true;
@@ -275,6 +276,31 @@ internal sealed class CubePuzzleDialog : GameWindow
 
         _cube = new CubeArt(_scene, new Point(BoxX + BoxW / 2.0, BoxY + BoxH / 2.0),
                             CubeFill, CubeEdge, ArrowFill, 206);
+    }
+
+    /// <summary>「설명보기」 단추의 너비와 판 모서리에서 떨어진 거리(그림 점).</summary>
+    private const int HelpWidth = 84, HelpInset = 8;
+
+    /// <summary>
+    /// 판 오른쪽 아래의 「설명보기」 단추 — <b>원본에는 없다</b>. 우리 쪽에서 더했다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 설명을 오른쪽 단추 차림표의 「게임 설명」으로만 다시 볼 수 있는데, 미니 게임 가운데
+    /// 규칙을 다시 읽을 일이 가장 잦은 것이 이 게임이라 눈에 보이는 단추를 하나 둔다.
+    /// 판은 y 284 에서 끝나므로 그 아래 빈 바탕에 앉는다.
+    /// </remarks>
+    private void HelpButton()
+    {
+        var button = GameUi.PushButton("설명보기", () => { if (!_turning) Explain(); }, HelpWidth);
+        button.Margin = new Thickness(0);
+        // 초점을 안 받는다 — 받으면 스페이스(수평 회전)가 이 단추를 다시 누르는 글쇠가 된다.
+        button.Focusable = false;
+        button.Loaded += (_, _) =>
+            Canvas.SetTop(button, SceneHeight - HelpInset - button.ActualHeight);
+        Canvas.SetLeft(button, SceneWidth - HelpInset - HelpWidth);
+        Canvas.SetTop(button, SceneHeight - HelpInset - 24);
+        Panel.SetZIndex(button, 220);
+        _scene.Children.Add(button);
     }
 
     /// <summary>
