@@ -89,6 +89,8 @@ public sealed class EncyclopediaPageDialog : GameWindow
 
         _previous = Corner(EncyclopediaArt.PreviousCorner, PreviousX, () => Turn(_index - 1));
         _next = Corner(EncyclopediaArt.NextCorner, NextX, () => Turn(_index + 1));
+        _previousMark = FocusMark(PreviousX);
+        _nextMark = FocusMark(NextX);
 
         var close = GameUi.CloseBox(Close, scale);
         close.Margin = new Thickness(0);
@@ -121,9 +123,84 @@ public sealed class EncyclopediaPageDialog : GameWindow
         Deactivated += (_, _) => _hover.IsOpen = false;
         Closed += (_, _) => _hover.IsOpen = false;
         KeyDown += OnKey;
+        PreviewKeyDown += (_, e) => { if (FocusKey(e.Key)) e.Handled = true; };
         MouseRightButtonUp += (_, _) => Close();
 
         ShowPage();
+    }
+
+    // ── 글쇠 초점 ──────────────────────────────────────────────────────────────
+
+    /// <summary>초점이 도는 셋 — 만든 차례 그대로 「앞장」(id 0) · 「다음장」(id 1) · 「삽화」(id 2)다.</summary>
+    private const int FocusPrevious = 0, FocusNext = 1, FocusPlate = 2, FocusCount = 3;
+
+    /// <summary>
+    /// 글쇠 초점이 간 것. 열 때는 <b>「삽화」</b>다 — 기본 위젯이 없어 마지막 초점 가능 자식을 잡는다
+    /// (<c>0x00458E90</c>).
+    /// </summary>
+    private int _focus = FocusPlate;
+
+    private readonly FrameworkElement _previousMark, _nextMark;
+    private GameButton? _plate;
+    private Action? _plateRun;
+
+    /// <summary>
+    /// Tab · Shift+Tab 으로 셋을 돌고 Space · Enter 로 누른다 — 이 창은 글쇠 거르기가 바탕 창 것
+    /// 그대로라(<c>0x00459990</c>) 초점 돌리기만 듣는다. 안 보이는 화살표는 건너뛴다.
+    /// </summary>
+    private bool FocusKey(Key key)
+    {
+        switch (key)
+        {
+            case Key.Tab:
+                int way = (Keyboard.Modifiers & ModifierKeys.Shift) != 0 ? -1 : +1;
+                for (int i = 0; i < FocusCount; i++)
+                {
+                    _focus = (_focus + way + FocusCount) % FocusCount;
+                    if (_focus == FocusPrevious && !CanGoBack) continue;
+                    if (_focus == FocusNext && !CanGoOn) continue;
+                    break;
+                }
+                ShowFocus();
+                return true;
+
+            case Key.Enter or Key.Space:
+                // 흐린 「삽화」는 초점은 받아도 안 눌린다(0x00412970 이 켜짐 비트를 본다).
+                if (_focus == FocusPrevious) { if (CanGoBack) Turn(_index - 1); }
+                else if (_focus == FocusNext) { if (CanGoOn) Turn(_index + 1); }
+                else _plateRun?.Invoke();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>초점 표시를 맞춘다 — 단추는 안쪽 테(<c>0x00412B50</c>), 화살표는 둘레 테다.</summary>
+    private void ShowFocus()
+    {
+        _previousMark.Visibility = _focus == FocusPrevious && CanGoBack ? Visibility.Visible : Visibility.Collapsed;
+        _nextMark.Visibility = _focus == FocusNext && CanGoOn ? Visibility.Visible : Visibility.Collapsed;
+        if (_plate != null) _plate.Focused = _focus == FocusPlate;
+    }
+
+    /// <summary>쪽 넘김 화살표에 초점이 갔을 때 두르는 테.</summary>
+    private FrameworkElement FocusMark(double x)
+    {
+        var mark = new Border
+        {
+            Width = CornerSize * _scale,
+            Height = CornerSize * _scale,
+            BorderBrush = Brushes.Black,
+            BorderThickness = new Thickness(_scale),
+            IsHitTestVisible = false,
+            Visibility = Visibility.Collapsed,
+        };
+        Canvas.SetLeft(mark, x * _scale);
+        Canvas.SetTop(mark, CornerY * _scale);
+        Panel.SetZIndex(mark, 6);
+        _canvas.Children.Add(mark);
+        return mark;
     }
 
     private bool CanGoBack => _index > 0;
@@ -220,6 +297,9 @@ public sealed class EncyclopediaPageDialog : GameWindow
         Canvas.SetTop(plate, PlateY * _scale);
         Panel.SetZIndex(plate, 5);
         _layer.Children.Add(plate);
+        _plate = plate;
+        _plateRun = run;
+        ShowFocus();
     }
 
     /// <summary>삽화를 튼다 — 동영상 → 움직이는 그림 → 그림(<c>0x004AAF30</c>).</summary>
