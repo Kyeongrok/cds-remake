@@ -18,6 +18,7 @@ namespace CdsHelper.Game.Local.Helpers;
 ///   voyage_days   같은 열쇠, 걸린 날수의 합      hire    고용한 부하의 인물 번호
 ///   voyage_turns  같은 열쇠, 뱃머리를 돌린 횟수의 합  dismiss 해고한 부하의 인물 번호
 ///   nav           네비게이션 — pick:quick · helm:steady · end:arrived · trip:auto …
+///   event         바다 · 육지에서 하루를 넘길 때의 일 — sea:day · sea:eligible · sea:Storm · land:day · land:Beast …
 /// </code>
 /// 받는 쪽은 열쇠마다 수를 <b>더하기만</b> 한다 — 그래서 항해는 횟수 · 날수 · 선회를 갈래 셋으로 갈라 보내고,
 /// 평균은 보는 쪽이 나눠서 낸다. 차림표 줄(menu)은 예전에 셌는데 이제 안 센다.
@@ -125,6 +126,15 @@ public static class PlayStats
     /// <c>from:city</c> · <c>end:arrived</c> 따위.
     /// </summary>
     public static void Nav(string what) => Count("nav", what, null);
+
+    /// <summary>
+    /// 바다 · 육지에서 하루를 넘기며 난 일 — <c>sea:Storm</c> · <c>sea:Plague</c> · <c>land:Beast</c> 따위.
+    /// </summary>
+    /// <remarks>
+    /// 재해가 <b>얼마나 드물게</b> 나는지 보려는 것이라 밑수도 함께 센다 — <c>sea:day</c>(바다에서 넘긴 날) ·
+    /// <c>sea:eligible</c>(그 가운데 재해 주사위를 굴릴 수 있던 날, 항해 열흘째부터) · <c>land:day</c>(육지에서 넘긴 날).
+    /// </remarks>
+    public static void Event(string what) => Count("event", what, null);
 
     /// <summary>해전 한 판이 끝났다.</summary>
     public static void SeaBattle(string outcome) => Count("battle", $"sea:{outcome}", null);

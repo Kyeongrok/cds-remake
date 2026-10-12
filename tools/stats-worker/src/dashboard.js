@@ -64,6 +64,7 @@ export const DASHBOARD_HTML = `<!doctype html>
   <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회</small></h2><div class="scroll"><table id="voyages"></table></div></section>
   <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
   <section><h2>전투</h2><table id="battles"></table></section>
+  <section><h2>사건 <small>바다 · 육지에서 하루를 넘길 때 — 밑수(넘긴 날)와 견줘 본다</small></h2><table id="events"></table></section>
   <section><h2>오류</h2><div class="scroll"><table id="errors"></table></div></section>
   <section><h2>날짜별 · 버전별</h2><table id="days"></table></section>
 </main>
@@ -200,6 +201,20 @@ function renderBattles() {
         + row('육상전', landAll, landWin, landLose, '-', '-', landAll - landWin - landLose) : EMPTY(8));
 }
 
+const EVENT_NAMES = { 'sea:day': '바다에서 넘긴 날', 'sea:eligible': '재해 주사위를 굴릴 수 있던 날(항해 열흘째부터)', 'land:day': '육지에서 넘긴 날',
+  'sea:Storm': '폭풍', 'sea:Blizzard': '눈보라', 'sea:Rats': '쥐', 'sea:Scurvy': '괴혈병', 'sea:Plague': '전염병', 'sea:Weakening': '괴혈병 귀띔',
+  'sea:StrangeIllness': '전염병 귀띔', 'sea:BarleyByMe': '보리로 막음(제독)', 'sea:BarleyByMate': '보리로 막음(부관)', 'sea:RatsKilled': '쥐 퇴치(부관)',
+  'sea:Mutiny': '반란', 'sea:Siren': '세이렌', 'sea:Iceberg': '빙산', 'land:Heat': '더위', 'land:Cold': '추위', 'land:HotSpring': '온천',
+  'land:Rockfall': '낙석', 'land:Swamp': '늪', 'land:Quicksand': '유사', 'land:Beast': '짐승 · 습격', 'land:Meteor': '유성', 'land:Tornado': '회오리' };
+function renderEvents() {
+  const rows = data.events || [], of = (key) => rows.find((r) => r.key === key)?.n || 0;
+  const base = { sea: of('sea:day'), land: of('land:day') };
+  $('events').innerHTML = '<tr><th class="name">곳</th><th class="name">일</th><th>횟수</th><th>설치</th><th>넘긴 날 가운데</th></tr>'
+    + (rows.length ? ['sea', 'land'].map((where) => rows.filter((r) => r.key.startsWith(where + ':')).sort((a, b) => b.n - a.n)
+        .map((r, i) => '<tr><td class="name">' + (i ? '' : where === 'sea' ? '바다' : '육지') + '</td><td class="name">' + esc(EVENT_NAMES[r.key] || r.key) + '</td><td>' + n(r.n)
+          + '</td><td>' + n(r.installs) + '</td><td>' + (base[where] ? (100 * r.n / base[where]).toFixed(2) + '%' : '-') + '</td></tr>').join('')).join('') : EMPTY(5));
+}
+
 function render() {
   const kind = (k) => (data.kinds || []).find((r) => r.kind === k) || { n: 0, keys: 0 };
   $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('discovery').n, '발견'], [kind('hire').n, '부하 고용'], [kind('dismiss').n, '부하 해고'],
@@ -213,6 +228,7 @@ function render() {
   renderVoyages();
   renderNavs();
   renderBattles();
+  renderEvents();
   rankTable('errors', '오류 갈래 @ 난 자리', data.errors, (r) => { const [type, at] = r.key.split('@'); return esc(type) + (at ? ' <span class="dim">@ ' + esc(at) + '</span>' : ''); });
 
   $('days').innerHTML = '<tr><th class="name">날짜</th><th class="name">버전</th><th>설치</th><th>덩이</th></tr>'

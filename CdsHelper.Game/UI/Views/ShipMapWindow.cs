@@ -5829,9 +5829,12 @@ public sealed class ShipMapWindow : Window
 
         var (lat, lon) = _host.ShipLatLon;
 
+        PlayStats.Event("land:day");
+
         // 차례가 있다(0x00427311~) — 하루에 하나만 터진다.
         if (LandEvents.Heat(dice, ground))
         {
+            PlayStats.Event("land:Heat");
             Refresh(dice, EventAnimation.Oasis,
                     ["제독, 더, 덥다... 더 이상 못참겠다.", "아이구.", "제독! 아니!"],
                     ["물이다-.", "맛있다! 최곱니다!"]);
@@ -5839,6 +5842,7 @@ public sealed class ShipMapWindow : Window
         }
         if (LandEvents.Cold(dice, ground, lat, lon))
         {
+            PlayStats.Event("land:Cold");
             Refresh(dice, EventAnimation.Oasis,
                     ["추, 추워..., 몸이 얼 것 같습니다!", "비, 빛입니다! 가 봅시다.", "제독, 저 집에 들어갑시다."],
                     ["으샤-, 기분좋다!"]);
@@ -5846,20 +5850,21 @@ public sealed class ShipMapWindow : Window
         }
         if (LandEvents.HotSpring(dice, ground, lat))
         {
+            PlayStats.Event("land:HotSpring");
             Refresh(dice, EventAnimation.Oasis,
                     ["제독, 웬지 무더워졌군요.", "앗, 온천이다. 갑시다."],
                     ["기분좋군요, 제독.", "이 후에 술이라도 마실까요?"]);
             return;
         }
-        if (LandEvents.Rockfall(dice, ground)) { Mishap(dice, EventAnimation.Landslide, "앗! 제독, 위에!"); return; }
-        if (LandEvents.Swamp(dice, ground)) { Mishap(dice, EventAnimation.Swamp, "제독, 큰일입니다. 늪입니다!"); return; }
-        if (LandEvents.Quicksand(dice, ground)) { Mishap(dice, EventAnimation.Quicksand, "제독, 큰일입니다. 유사입니다!"); return; }
+        if (LandEvents.Rockfall(dice, ground)) { PlayStats.Event("land:Rockfall"); Mishap(dice, EventAnimation.Landslide, "앗! 제독, 위에!"); return; }
+        if (LandEvents.Swamp(dice, ground)) { PlayStats.Event("land:Swamp"); Mishap(dice, EventAnimation.Swamp, "제독, 큰일입니다. 늪입니다!"); return; }
+        if (LandEvents.Quicksand(dice, ground)) { PlayStats.Event("land:Quicksand"); Mishap(dice, EventAnimation.Quicksand, "제독, 큰일입니다. 유사입니다!"); return; }
 
-        if (LandEvents.Meet(dice, ground, lat, lon) is { } met) { MeetBeast(dice, met); return; }
+        if (LandEvents.Meet(dice, ground, lat, lon) is { } met) { PlayStats.Event("land:Beast"); MeetBeast(dice, met); return; }
 
         // 마지막이 공통 꼬리다 — 유성, 그리고 삼 년에 두 해는 회오리다(0x00427D05 · 0x00427DA3).
-        if (LandEvents.Meteor(dice, _game.Player.Date.Month)) { Meteor(); return; }
-        if (LandEvents.Tornado(dice, ground, _game.Player.Date.Year)) Tornado(dice);
+        if (LandEvents.Meteor(dice, _game.Player.Date.Month)) { PlayStats.Event("land:Meteor"); Meteor(); return; }
+        if (LandEvents.Tornado(dice, ground, _game.Player.Date.Year)) { PlayStats.Event("land:Tornado"); Tornado(dice); }
     }
 
     /// <summary>
@@ -6457,12 +6462,13 @@ public sealed class ShipMapWindow : Window
         var rng = _game.Random;
         var (lat, _) = _host.ShipLatLon;
 
-        if (SeaEvents.Siren(rng, lat)) { Siren(rng); return; }
+        if (SeaEvents.Siren(rng, lat)) { PlayStats.Event("sea:Siren"); Siren(rng); return; }
         if (SeaEvents.Christmas(player.Date)) { Feast(rng, "메리크리스마스, 제독.", "오늘밤은 마음껏 마시자, 건배!", gift: false); return; }
         if (SeaEvents.Birthday(player)) { Feast(rng, "제독의 생일에 건배다.", "제독, 오늘밤은 마셔도 괜찮겠지요?", gift: true); return; }
 
         if (SeaEvents.Iceberg(rng, player.Date, lat))
         {
+            PlayStats.Event("sea:Iceberg");
             _asking = true;
             _host.Paused = true;
             try
@@ -6596,7 +6602,10 @@ public sealed class ShipMapWindow : Window
     private void CheckSeaEvent()
     {
         var (lat, _) = _host.ShipLatLon;
+        PlayStats.Event("sea:day");
+        if (_game.Player.DaysAtSea > SeaEvents.MinDaysAtSea) PlayStats.Event("sea:eligible");
         if (SeaEvents.Roll(_game.Player, lat, _game.Random, MateSheetAt) is not { } kind) return;
+        PlayStats.Event($"sea:{kind}");
 
         if (kind == SeaEventKind.Mutiny) { Mutiny(); return; }
         if (Plagued(kind)) return;
