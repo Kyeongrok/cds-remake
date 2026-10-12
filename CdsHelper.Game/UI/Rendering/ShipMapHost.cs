@@ -824,6 +824,7 @@ public sealed class ShipMapHost : HwndHost
         if (_world == null || _canalOriginal == null) return;
         Engine.Sea.SuezCanal.Restore(_world, _canalOriginal);
         Engine.Sea.SuezCanal.Apply(_world, _terrain);
+        Engine.Sea.SeaPathfinder.Forget(_world);
         _routes.Open(_world);   // 지도가 바뀌었다 — 적어 둔 바닷길은 그 지도의 것만 쓴다
         _renderer.UpdateWorld(_world);
         if (_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);

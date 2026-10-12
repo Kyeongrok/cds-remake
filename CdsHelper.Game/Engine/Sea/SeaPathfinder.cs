@@ -73,9 +73,14 @@ public static class SeaPathfinder
             if (Nearest(ok, sx, sy) is not { } s) return null;
             (sx, sy) = s;
         }
-        if (!ok(gx, gy))
+        // 닿는 칸은 떠나는 칸과 <b>이어진</b> 데서 고른다 — 호수나 막힌 만은 아무리 훑어도 못 닿는데, 그것을 알아내려고
+        // 둘레를 다섯 번 넓혀 가며 바다를 통째로 훑으면 몇 초씩 멎는다(길잡이는 커서가 옮겨 갈 때마다 묻는다).
+        int[] region = RegionOf(world, terrain, land);
+        int home = region[sy * MapW + sx];
+        bool joined(int x, int y) => y >= 0 && y < MapH && region[y * MapW + Wrap(x)] == home;
+        if (!joined(gx, gy))
         {
-            if (Nearest(ok, gx, gy) is not { } g) return null;
+            if (Nearest(joined, gx, gy) is not { } g) return null;
             (gx, gy) = g;
         }
 
@@ -366,6 +371,51 @@ public static class SeaPathfinder
                 }
         return near;
     });
+
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<byte[], int[]> Seas = new(), Lands = new();
+
+    /// <summary>
+    /// 칸마다 그 칸이 든 <b>덩어리</b>의 번호 — 네 이웃으로 이어진 바다(또는 걸을 수 있는 뭍) 하나가 한 덩어리다.
+    /// 못 지나는 칸은 0. 지도마다 한 번만 센다.
+    /// </summary>
+    /// <remarks>
+    /// 대각 걸음은 옆 두 칸 가운데 하나라도 열려 있어야 떼므로(<see cref="TryAStar"/>), 길이 있는지는 네 이웃으로
+    /// 이어졌는지와 같다.
+    /// </remarks>
+    private static int[] RegionOf(byte[] world, TerrainTable terrain, bool land) => (land ? Lands : Seas).GetValue(world, w =>
+    {
+        var region = new int[MapW * MapH];
+        var todo = new Stack<int>();
+        int count = 0;
+        for (int start = 0; start < region.Length; start++)
+        {
+            if (region[start] != 0 || !Passable(w, terrain, start % MapW, start / MapW, land)) continue;
+            region[start] = ++count;
+            todo.Push(start);
+            while (todo.Count > 0)
+            {
+                int at = todo.Pop(), x = at % MapW, y = at / MapW;
+                for (int k = 0; k < 4; k++)
+                {
+                    int nx = Wrap(x + Steps[k].Dx), ny = y + Steps[k].Dy;
+                    if (ny < 0 || ny >= MapH) continue;
+                    int ni = ny * MapW + nx;
+                    if (region[ni] != 0 || !Passable(w, terrain, nx, ny, land)) continue;
+                    region[ni] = count;
+                    todo.Push(ni);
+                }
+            }
+        }
+        return region;
+    });
+
+    /// <summary>지도 낱말이 바뀌었다(모드 「수에즈 운하」) — 그 지도에서 세어 둔 것을 버린다.</summary>
+    public static void Forget(byte[] world)
+    {
+        Shores.Remove(world);
+        Seas.Remove(world);
+        Lands.Remove(world);
+    }
 
     /// <summary>그 길을 다 가는 데 드는 틱 수(어림) — 짧은 길과 빠른 길을 견줄 때 쓴다.</summary>
     public static double RouteTicks(byte[] world, TerrainTable terrain, IReadOnlyList<(double X, double Y)> route, SailCost pace)
