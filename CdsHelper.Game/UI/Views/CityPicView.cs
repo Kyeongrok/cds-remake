@@ -2249,7 +2249,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         var patron = PatronAt(code, kind);
 
-        return TownMenu.Build(facility, title, code, teachMask, patron,
+        var menu = TownMenu.Build(facility, title, code, teachMask, patron,
             new TownWorks.TownState(
                 Teaches: TownWorks.Teaches(teachMask),
                 Poor: _player.Gold <= Lodging.OddJobMaxGold,   // 0x0047FE70 의 jle — 100닢이면 뜬다
@@ -2266,6 +2266,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
                 Wed: Home.CanLeaveHeir(_player)),
             this);
+        // 줄 끝을 넘으면 사진 속 사람들로 이어진다 — 줄과 사람이 한 고리다(0x004A2320).
+        menu.Ring = () => _photoWindow;
+        return menu;
     }
 
     /// <summary>

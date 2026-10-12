@@ -20,7 +20,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <b>초점을 뺏지 않는다</b>(<see cref="Window.ShowActivated"/> = false). 이 창은 보여 주기만
 /// 하는 것이라, 초점을 가져가면 방금 연 명령 창이 뒤로 밀려 방향키가 안 먹는다.
 /// </remarks>
-public sealed class BuildingPhotoWindow : GameWindow
+public sealed class BuildingPhotoWindow : GameWindow, Engine.Menu.IMenuRing
 {
     /// <summary>
     /// 손님 한 명. 그림과 크기, 커서를 올렸을 때 뜰 이름표, 눌렀을 때 할 일을 함께 든다.
@@ -66,7 +66,10 @@ public sealed class BuildingPhotoWindow : GameWindow
             Canvas.SetTop(image, h - g.Height * scale);
             canvas.Children.Add(image);
 
-            AddTag(canvas, image, g.Name, left + g.Width * scale / 2.0, h, g.LiveName);
+            var (show, hide) = AddTag(canvas, image, g.Name, left + g.Width * scale / 2.0, h, g.LiveName);
+            _people.Add((show, hide, g.Click));
+            // 쥐가 사람 위로 오면 글쇠로 띄운 이름표는 걷는다 — 이름표는 하나만 뜬다(0x0042E1A0).
+            image.MouseEnter += (_, _) => { if (_at >= 0) _people[_at].Hide(); show(); };
 
             if (g.Click is { } run)
             {
@@ -88,14 +91,14 @@ public sealed class BuildingPhotoWindow : GameWindow
     /// 건물 이름표처럼 덩굴 띠를 두르지 않는다 — 원본 것은 짙은 판에 밝은 한 점 테를 두른
     /// 민 이름표다(<see cref="GameUi.HoverTag"/>).
     /// </remarks>
-    private static void AddTag(Canvas canvas, Image guest, string name, double centerX, double bottom,
-                               Func<string>? live = null)
+    private static (Action Show, Action Hide) AddTag(Canvas canvas, Image guest, string name,
+                                                     double centerX, double bottom, Func<string>? live = null)
     {
         var (tag, text) = GameUi.HoverTag(name);
         Panel.SetZIndex(tag, 10);
         canvas.Children.Add(tag);
 
-        guest.MouseEnter += (_, _) =>
+        void Show()
         {
             if (live != null) text.Text = live();
             tag.Visibility = Visibility.Visible;
@@ -104,8 +107,61 @@ public sealed class BuildingPhotoWindow : GameWindow
             double th = tag.ActualHeight > 0 ? tag.ActualHeight : 24;
             Canvas.SetLeft(tag, Math.Clamp(centerX - tw / 2, 0, Math.Max(0, canvas.Width - tw)));
             Canvas.SetTop(tag, bottom - th);       // 발치에 맞춰 놓는다
-        };
-        guest.MouseLeave += (_, _) => tag.Visibility = Visibility.Collapsed;
+        }
+        void Hide() => tag.Visibility = Visibility.Collapsed;
+
+        guest.MouseLeave += (_, _) => Hide();
+        return (Show, Hide);
+    }
+
+    // ── 글쇠로 사람 고르기 ─────────────────────────────────────────────────────
+    //
+    // 사람은 칸 차례, 곧 <b>화면 왼쪽부터</b> 돈다(0x0042DAF0 이 칸 번호로 id 0x64~0x68 을 준다).
+    // 고른 사람의 표시는 <b>이름표뿐</b>이다(0x0042CD00 → 0x0042DEC0) — 그림에 테가 생기지도,
+    // 쥐 커서가 옮겨 가지도 않는다. 초점은 차림표 창이 쥐고 있어 글쇠는 그쪽에서 넘겨받는다.
+
+    /// <summary>서 있는 사람들 — 이름표를 띄우고 걷는 손과, 눌렀을 때 할 일.</summary>
+    private readonly List<(Action Show, Action Hide, Action? Click)> _people = [];
+
+    /// <summary>글쇠 초점이 간 사람. 없으면 −1.</summary>
+    private int _at = -1;
+
+    bool Engine.Menu.IMenuRing.Active => _at >= 0;
+
+    bool Engine.Menu.IMenuRing.Enter(int way)
+    {
+        if (_people.Count == 0 || !IsVisible) return false;
+        Pick(way > 0 ? 0 : _people.Count - 1);
+        return true;
+    }
+
+    bool Engine.Menu.IMenuRing.Move(int way)
+    {
+        int next = _at + way;
+        if (next < 0 || next >= _people.Count) return false;
+        Pick(next);
+        return true;
+    }
+
+    void Engine.Menu.IMenuRing.Run()
+    {
+        if (_at < 0 || _at >= _people.Count) return;
+        var run = _people[_at].Click;
+        _people[_at].Hide();
+        run?.Invoke();
+    }
+
+    void Engine.Menu.IMenuRing.Clear()
+    {
+        if (_at >= 0 && _at < _people.Count) _people[_at].Hide();
+        _at = -1;
+    }
+
+    private void Pick(int index)
+    {
+        if (_at >= 0 && _at < _people.Count) _people[_at].Hide();
+        _at = index;
+        _people[index].Show();
     }
 
     /// <summary>BGRA 한 장을 도트 그대로(안 섞고) 늘려 놓는다.</summary>

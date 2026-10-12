@@ -20,6 +20,31 @@ internal sealed record GameMenuRow(string Text, Action? Run = null, BandStyle? S
                                    bool Dim = false);
 
 /// <summary>
+/// 차림표 줄 뒤로 글쇠 초점이 이어지는 것들 — 시설 화면의 <b>사진 속 사람들</b>이 이것이다.
+/// </summary>
+/// <remarks>
+/// 원본 시설 화면은 차림표 줄과 사람이 <b>고리 하나</b>로 이어진다(<c>0x00469CF0</c> · <c>0x004A2320</c>).
+/// 마지막 줄에서 「다음」이면 첫 사람으로, 마지막 사람에서 「다음」이면 첫 줄로 간다. 초점은 늘 하나다.
+/// </remarks>
+internal interface IMenuRing
+{
+    /// <summary>지금 이쪽이 초점을 쥐고 있는가.</summary>
+    bool Active { get; }
+
+    /// <summary>차림표에서 넘어온다 — 「다음」(+1)이면 첫 것, 「앞」(−1)이면 마지막 것. 설 것이 없으면 false.</summary>
+    bool Enter(int way);
+
+    /// <summary>옆으로 옮긴다. 끝을 넘어 차림표로 돌아가야 하면 false.</summary>
+    bool Move(int way);
+
+    /// <summary>초점 간 것을 누른다(Enter · Space).</summary>
+    void Run();
+
+    /// <summary>초점을 내려놓는다.</summary>
+    void Clear();
+}
+
+/// <summary>
 /// 게임 명령 창 하나 — 제목 줄과 단추들을 세로로 쌓고 상자로 두른다.
 /// </summary>
 /// <remarks>
@@ -111,6 +136,7 @@ internal sealed class GameMenu : Border
     /// <summary>그 줄로 초점을 옮긴다 — 깜빡이는 안쪽 테가 곧 이것이다.</summary>
     private void Focus(int index)
     {
+        if (index >= 0 && index < _picks.Count) Ring?.Invoke()?.Clear();   // 초점은 하나다
         if (index < 0 || index >= _picks.Count || index == _at) return;
         if (_at >= 0 && _at < _picks.Count) _picks[_at].Focused = false;
         _at = index;
@@ -132,9 +158,48 @@ internal sealed class GameMenu : Border
     }
 
     /// <summary>
-    /// 방향키로 옮기고 <b>엔터·스페이스로 고른다</b>.
+    /// 줄 뒤로 이어지는 고리를 찾는 길 — 시설 차림표만 단다. 사진 창이 다시 서기도 하므로 그때그때 묻는다.
+    /// </summary>
+    public Func<IMenuRing?>? Ring { get; set; }
+
+    /// <summary>줄의 초점을 내려놓는다 — 고리 쪽으로 넘어갈 때다(<c>0x004A22B0</c>).</summary>
+    private void Blur()
+    {
+        if (_at >= 0 && _at < _picks.Count) _picks[_at].Focused = false;
+        _at = -1;
+    }
+
+    /// <summary>
+    /// 「다음」(+1) · 「앞」(−1) 한 걸음. 끝을 넘으면 고리로 넘어가고, 고리가 비었으면 감긴다.
+    /// </summary>
+    private void Step(int way)
+    {
+        var ring = Ring?.Invoke();
+        if (ring is { Active: true })
+        {
+            if (ring.Move(way)) return;
+            ring.Clear();
+            Focus(way > 0 ? 0 : _picks.Count - 1);
+            return;
+        }
+
+        int next = _at + way;
+        if ((next < 0 || next >= _picks.Count) && _at >= 0 && ring?.Enter(way) == true)
+        {
+            Blur();
+            return;
+        }
+        Focus((next + _picks.Count) % _picks.Count);
+    }
+
+    /// <summary>
+    /// 방향키 · Tab 으로 옮기고 <b>엔터·스페이스로 고른다</b>.
     /// </summary>
     /// <remarks>
+    /// Tab 은 「다음」, Shift+Tab 은 「앞」이다 — 원본 차림표는 줄이 단추라 공통 창의 초점 돌리기가 그대로
+    /// 듣는다(<c>0x00459990</c> → <c>0x00459420</c> · <c>0x004594A0</c>). 시설 차림표는 여기에 더해 Tab · ↓ · → 가
+    /// 같은 「다음」, Shift+Tab · ↑ · ← 가 같은 「앞」이 되어(<c>0x00469C80</c>) 줄과 사람을 한 고리로 돈다.
+    ///
     /// 물음창 쪽은 <see cref="GameUi.FocusGroup"/> 이 진작 이렇게 했는데 차림표 쪽에는
     /// 손이 아예 없어, 초점 테는 깜빡이면서도 엔터가 안 먹었다. 같은 결로 맞춘다.
     ///
@@ -149,12 +214,25 @@ internal sealed class GameMenu : Border
         switch (e.Key)
         {
             case Key.Up or Key.Left:
-                Focus((_at - 1 + _picks.Count) % _picks.Count);
+                Step(-1);
                 break;
             case Key.Down or Key.Right:
-                Focus((_at + 1) % _picks.Count);
+                Step(+1);
+                break;
+            case Key.Tab:
+                Step((Keyboard.Modifiers & ModifierKeys.Shift) != 0 ? -1 : +1);
                 break;
             case Key.Enter or Key.Space:
+                // 사람에게 초점이 가 있으면 그 사람을 누른다(0x0042CD40 → 0x004A5100). 말을 마치고 차림표가
+                // 다시 서면 초점은 첫 줄이다.
+                if (Ring?.Invoke() is { Active: true } ring)
+                {
+                    e.Handled = true;
+                    ring.Run();
+                    Ring?.Invoke()?.Clear();
+                    Focus(0);
+                    return;
+                }
                 if (_at < 0 || _at >= _picks.Count) return;
                 // 누르면 창이 닫히면서 이 상자가 걷힌다 — 손을 먼저 떼어 두 번 안 먹게 한다.
                 var run = _picks[_at].Run;
