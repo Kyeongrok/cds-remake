@@ -155,6 +155,83 @@ public sealed class LibraryDialog : GameWindow
 
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
         MouseRightButtonUp += (_, _) => Close();
+
+        _spines = spines;
+        _picked = _spots.Count - 1;
+        PreviewKeyDown += (_, e) => { if (PickByKey(e.Key)) e.Handled = true; };
+        MouseMove += (_, e) => MouseMoved(e.GetPosition(this));
+    }
+
+    // ── 글쇠로 고르기 ──────────────────────────────────────────────────────────
+
+    /// <summary>글쇠가 도는 책들 — <b>꽂힌 칸 차례</b>(윗단 왼쪽부터)다. 채움 책은 안 든다.</summary>
+    private readonly List<(BookTable.Book Book, Image Image, double X, double Y)> _spots = [];
+
+    private readonly BitmapSource[] _spines;
+
+    /// <summary>
+    /// 글쇠 초점이 간 책(<c>[서가+0x64]</c>). 열 때는 <b>마지막 책</b>이다 — 서가에 기본 위젯이 없어
+    /// 원본이 마지막 초점 가능 자식을 잡는다(<c>0x004593F0</c>). 이때는 이름표가 안 뜬다.
+    /// </summary>
+    private int _picked;
+
+    /// <summary>지금 뜬 이름표가 글쇠로 띄운 것인지(<c>[서가+0xA8]</c>)와, 그때의 쥐 자리.</summary>
+    private bool _keyTag;
+    private Point _keyTagMouse;
+
+    /// <summary>
+    /// Tab 으로 책을 돌고 Space · Enter 로 편다 — 서가는 공통 창의 초점 돌리기를 그대로 쓴다(<c>0x00459990</c>).
+    /// </summary>
+    /// <remarks>
+    /// <code>
+    ///   Tab          다음 책(0x00459420) — 끝에서 처음으로 감긴다
+    ///   Shift+Tab    앞 책(0x004594A0)
+    ///   Space·Enter  초점 간 책을 편다(0x00470FB0)
+    ///   방향키       아무 일도 없다
+    /// </code>
+    /// 읽을 수 없는 초록 채움 책(책 번호 -1)은 초점을 못 받아 건너뛴다(<c>0x00470D70</c>). 닫기 조각도
+    /// 도는 차례에 안 낀다. 고른 책의 표시는 <b>이름표뿐</b>이다(<c>0x00471020</c>) — 책등에 테가 생기지도,
+    /// 쥐 커서가 옮겨 가지도 않는다.
+    /// </remarks>
+    private bool PickByKey(Key key)
+    {
+        if (_spots.Count == 0) return false;
+
+        switch (key)
+        {
+            case Key.Tab:
+                bool back = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+                _picked = (_picked + (back ? -1 : 1) + _spots.Count) % _spots.Count;
+                var at = _spots[_picked];
+                ShowTag(at.Book, at.X, at.Y);
+                _keyTag = true;
+                _keyTagMouse = Mouse.GetPosition(this);
+                return true;
+
+            case Key.Enter or Key.Space:
+                var open = _spots[_picked];
+                Read(open.Book, open.Image, _spines);
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// 글쇠로 띄운 이름표는 <b>쥐가 움직일 때까지</b> 남는다(<c>0x00471E00</c>) — 움직이면 쥐 아래 책의
+    /// 이름표로 돌아가고, 쥐 아래에 책이 없으면 지운다.
+    /// </summary>
+    private void MouseMoved(Point at)
+    {
+        if (!_keyTag || at == _keyTagMouse) return;
+        _keyTag = false;
+
+        foreach (var spot in _spots)
+            if (spot.Image.IsMouseOver) { ShowTag(spot.Book, spot.X, spot.Y); return; }
+        _tag.Visibility = Visibility.Collapsed;
+        _hovering = false;
+        _say?.Invoke("");
     }
 
     /// <summary>
@@ -198,9 +275,12 @@ public sealed class LibraryDialog : GameWindow
         Canvas.SetLeft(image, x * _scale);
         Canvas.SetTop(image, y * _scale);
 
-        image.MouseEnter += (_, _) => ShowTag(book, x, y);
+        _spots.Add((book, image, x, y));
+
+        image.MouseEnter += (_, _) => { _keyTag = false; ShowTag(book, x, y); };
         image.MouseLeave += (_, _) =>
         {
+            if (_keyTag) return;    // 글쇠로 띄운 이름표는 쥐가 움직일 때 MouseMoved 가 정리한다
             _tag.Visibility = Visibility.Collapsed;
             // 책을 펴는 동안에는 띠를 안 지운다 — 책 창이 뜨면 책등에서 쥐가 벗어나
             // 이 줄이 바로 돌아, 「무슨 말인지 잘 모르겠습니다」가 스쳐 지나가 버렸다.
@@ -403,6 +483,14 @@ public sealed class LibraryDialog : GameWindow
             Shown(book, 0);
 
         image.Source = spines[SpineColor(book)];   // 읽고 나면 색이 바뀐다
+
+        // 책을 덮고 서가가 다시 보이면 초점은 또 마지막 책이다 — 직전에 고른 책을 기억하지 않는다(0x00458E90).
+        _picked = _spots.Count - 1;
+        if (_keyTag)
+        {
+            _keyTag = false;
+            _tag.Visibility = Visibility.Collapsed;
+        }
     }
 
     /// <summary>

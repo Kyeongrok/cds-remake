@@ -130,6 +130,69 @@ public sealed class EncyclopediaDialog : GameWindow
         // 오른쪽 단추는 닫지 않고 「서적 선택」 차림표를 낸다(0x00471DD0 — 사건 2 이면 0x00471C10).
         // 바탕 처리기(0x00459B20)는 사건 2 를 거들떠보지 않는다.
         MouseRightButtonUp += (_, e) => { e.Handled = true; PickBook(); };
+
+        _picked = _spots.Count - 1;
+        PreviewKeyDown += (_, e) => { if (PickByKey(e.Key)) e.Handled = true; };
+        MouseMove += (_, e) => MouseMoved(e.GetPosition(this));
+    }
+
+    // ── 글쇠로 고르기 — 도서관 서가와 같은 장치다(같은 서가 클래스의 모드 1, 0x004722F0) ──────────
+
+    /// <summary>글쇠가 도는 갈래 책들 — 꽂힌 칸 차례다. 빈 책등은 안 든다.</summary>
+    private readonly List<(int Category, Image Image, double X, double Top)> _spots = [];
+
+    /// <summary>글쇠 초점이 간 책. 열 때는 <b>마지막 권</b>이고 이름표는 안 뜬다(<c>0x004593F0</c>).</summary>
+    private int _picked;
+
+    /// <summary>지금 뜬 이름표가 글쇠로 띄운 것인지(<c>[서가+0xA8]</c>)와, 그때의 쥐 자리.</summary>
+    private bool _keyTag;
+    private Point _keyTagMouse;
+
+    /// <summary>
+    /// Tab · Shift+Tab 으로 갈래 책을 돌고(<c>0x00459420</c> · <c>0x004594A0</c>, 끝에서 감긴다) Space · Enter 로
+    /// 편다(<c>0x00470FB0</c>). 방향키는 아무 일도 없다. 고른 책의 표시는 이름표뿐이다(<c>0x00471020</c>).
+    /// </summary>
+    private bool PickByKey(Key key)
+    {
+        if (_spots.Count == 0) return false;
+
+        switch (key)
+        {
+            case Key.Tab:
+                bool back = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+                _picked = (_picked + (back ? -1 : 1) + _spots.Count) % _spots.Count;
+                var at = _spots[_picked];
+                ShowTag(at.Category, at.X, at.Top);
+                _keyTag = true;
+                _keyTagMouse = Mouse.GetPosition(this);
+                return true;
+
+            case Key.Enter or Key.Space:
+                int category = _spots[_picked].Category;
+                // 책을 덮고 서가가 다시 보이면 초점은 또 마지막 권이다(0x00458E90).
+                _picked = _spots.Count - 1;
+                _keyTag = false;
+                _tag.Visibility = Visibility.Collapsed;
+                Read(category);
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// 글쇠로 띄운 이름표는 <b>쥐가 움직일 때까지</b> 남는다(<c>0x00471E00</c>) — 움직이면 쥐 아래 책의
+    /// 이름표로 돌아가고, 쥐 아래에 책이 없으면 지운다.
+    /// </summary>
+    private void MouseMoved(Point at)
+    {
+        if (!_keyTag || at == _keyTagMouse) return;
+        _keyTag = false;
+
+        foreach (var spot in _spots)
+            if (spot.Image.IsMouseOver) { ShowTag(spot.Category, spot.X, spot.Top); return; }
+        _tag.Visibility = Visibility.Collapsed;
     }
 
     /// <summary>서가에 꽂힌 갈래 책들 — 꽂은 차례 그대로다(<c>0x00471870(0)</c> 이 빈 책등을 빼고 모은다).</summary>
@@ -171,8 +234,10 @@ public sealed class EncyclopediaDialog : GameWindow
         if (category < 0) return;
         _books.Add(category);
         image.Cursor = Cursors.Hand;
-        image.MouseEnter += (_, _) => ShowTag(category, x, top);
-        image.MouseLeave += (_, _) => _tag.Visibility = Visibility.Collapsed;
+        _spots.Add((category, image, x, top));
+        image.MouseEnter += (_, _) => { _keyTag = false; ShowTag(category, x, top); };
+        // 글쇠로 띄운 이름표는 쥐가 움직일 때 MouseMoved 가 정리한다.
+        image.MouseLeave += (_, _) => { if (!_keyTag) _tag.Visibility = Visibility.Collapsed; };
         image.MouseLeftButtonDown += (_, e) => e.Handled = true;
         image.MouseLeftButtonUp += (_, e) => { e.Handled = true; Read(category); };
     }
