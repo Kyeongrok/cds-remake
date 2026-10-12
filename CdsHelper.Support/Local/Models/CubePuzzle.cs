@@ -37,49 +37,80 @@ public sealed class CubePuzzle
     /// <summary>이기면 받는 금화(<c>0x0049B366</c> 의 <c>0x3E8</c>).</summary>
     public const int Prize = 1000;
 
-    /// <summary>네 방향 — 북·동·남·서. 화살표 번호가 이 차례다.</summary>
+    /// <summary>
+    /// 좌대가 가는 네 쪽 — 번호는 <b>윗면의 어느 귀퉁이를 가리키는가</b>다(<c>0x0049D1B0</c>, 뜀표 <c>0x0049D244</c>).
+    /// </summary>
+    /// <remarks>
+    /// 0 은 가까운 귀퉁이 V0 — 한 줄 아래, 1 은 V1 — 오른쪽 칸, 2 는 먼 귀퉁이 V2 — 한 줄 위(출구 쪽), 3 은 V3 — 왼쪽 칸이다.
+    /// 윗면 마름모에서 V0 이 아래, V1 이 오른쪽, V2 가 위, V3 이 왼쪽에 비치므로 <b>보이는 쪽이 곧 가는 쪽</b>이다.
+    /// </remarks>
     public static readonly (int Dx, int Dy, string Name)[] Ways =
-        [(0, -1, "북"), (1, 0, "동"), (0, 1, "남"), (-1, 0, "서")];
+        [(0, 1, "아래"), (1, 0, "오른쪽"), (0, -1, "위"), (-1, 0, "왼쪽")];
+
+    /// <summary>입방체 여덟 귀퉁이(<c>0x00585EE8</c>~, 정적 초기화 <c>0x0041BF60</c>).</summary>
+    private static readonly int[][] Corner =
+    [
+        [-100, -100, 100], [100, -100, 100], [100, 100, 100], [-100, 100, 100],
+        [-100, -100, -100], [100, -100, -100], [100, 100, -100], [-100, 100, -100],
+    ];
 
     /// <summary>
-    /// 입방체의 여섯 면에 그려진 화살표. 값은 <see cref="Ways"/> 의 번호다.
+    /// 면 여섯의 귀퉁이 넷(<c>0x004ACB7D</c>~<c>0x004ACE38</c>) — <b>차례가 뜻이 있다</b>.
     /// </summary>
     /// <remarks>
-    /// <b>마주 보는 면은 대칭</b>이라 했으니, 위·아래가 같은 쪽을 가리키게 짝을 맞춘다.
-    /// 곧 굴려서 어느 면이 올라오든 «보이는 화살표» 가 곧 갈 쪽이다.
+    /// 0 이 위(z=+100), 1 이 아래, 2 가 처음에 보이는 오른쪽 옆면(y=−100), 3 이 그 맞은편, 4 가 보이는 왼쪽 옆면(x=−100),
+    /// 5 가 그 맞은편이다. 마주 보는 면은 같은 차례의 귀퉁이가 입방체를 뚫고 마주 본다 — 설명 글의
+    /// 「반대편의 면이 그대로 비치는 것처럼」이 이것이다.
     /// </remarks>
-    private readonly int[] _face = new int[6];
+    private static readonly int[][] FaceCorners =
+    [
+        [0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5],
+    ];
+
+    /// <summary>단추 번호 — 넘어뜨리기 넷(2~5)과 수평 돌리기 둘(6 · 7). 원본 단추 id 그대로다(<c>0x0049C353</c>~).</summary>
+    public const int TipUpLeft = 2, TipDownLeft = 3, TipUpRight = 4, TipDownRight = 5, SpinLeft = 6, SpinRight = 7;
 
     /// <summary>
-    /// 입방체가 <b>얼마나 돌아 있는가</b> — 몸 좌표를 판 좌표로 옮기는 정수 행렬이다.
+    /// 면마다 귀퉁이 넷의 <b>지금 자리</b> — 원본도 좌표 스물넷을 통째로 돌린다(<c>0x004ACFF0</c>). 면 갈아치기 표는 없다.
+    /// </summary>
+    private readonly int[][][] _corner = new int[6][][];
+
+    /// <summary>
+    /// 면마다 화살표가 가리키는 <b>귀퉁이 번호</b>(0~3) — 면 가운데에서 그 귀퉁이 쪽으로 난다. 한 번 정하면 안 바뀐다.
     /// </summary>
     /// <remarks>
-    /// 예전에는 「위·북·동 면 번호 셋 + 수평으로 몇 번 돌렸나」로 들었는데 <b>그것으로는
-    /// 모자랐다</b>. 넘어뜨리기를 섞으면 윗면이 판 위에서 얼마나 돌아 있는지가 그 셋에 안
-    /// 잡혀서, 그림은 오른쪽을 가리키는데 좌대는 위로 가는 일이 생겼다.
-    /// 회전은 회전으로 들어야 어긋날 데가 없다.
+    /// <c>rand(4)</c> 셋을 마주 보는 면 둘에 똑같이 넣는다(<c>0x004ACE4A</c>~<c>0x004ACE67</c>) — 다른 조건은 없다.
     /// </remarks>
-    private int[,] _rot = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+    private readonly int[] _arrow = new int[6];
 
-    /// <summary>면 여섯의 법선. 0 이 위, 5 가 아래, 1·4 가 남북, 2·3 이 동서다.</summary>
-    private static readonly int[][] Normal =
-    [
-        [0, 0, 1], [0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, -1, 0], [0, 0, -1],
-    ];
+    /// <summary>그 면 그 귀퉁이의 지금 좌표. 그림(입방체)이 쓴다.</summary>
+    public (int X, int Y, int Z) CornerAt(int face, int index)
+    {
+        var p = _corner[face][index];
+        return (p[0], p[1], p[2]);
+    }
+
+    /// <summary>그 면의 화살표가 가리키는 귀퉁이 번호.</summary>
+    public int ArrowOf(int face) => _arrow[face];
 
     /// <summary>
-    /// 면 k 를 <b>윗면 본에서 만들어 내는</b> 회전 — 그 면을 위로 올리는 회전의 거꾸로다.
+    /// 단추가 입방체를 90 도 돌린 끝 자리(<c>0x004ACFF0</c>, 뜀표 <c>0x004AD0D4</c>).
     /// </summary>
-    private static readonly int[][,] FromTop =
-    [
-        Spin(0, 0), Spin(0, -1), Spin(1, 1), Spin(1, -1), Spin(0, 1), Spin(0, 2),
-    ];
+    private static int[] Turned(int button, int[] p) => button switch
+    {
+        TipUpLeft => [p[0], p[2], -p[1]],      // 보이는 오른쪽 옆면이 위로
+        TipDownLeft => [-p[2], p[1], p[0]],    // 위가 보이는 왼쪽 옆면으로
+        TipUpRight => [p[2], p[1], -p[0]],     // 보이는 왼쪽 옆면이 위로
+        TipDownRight => [p[0], -p[2], p[1]],   // 위가 보이는 오른쪽 옆면으로
+        SpinLeft => [-p[1], p[0], p[2]],       // 위에서 보아 시계 반대쪽
+        _ => [p[1], -p[0], p[2]],              // 시계 쪽
+    };
 
-    /// <summary>윗면에서 화살표 값이 가리키는 쪽 — 면의 대각선이다.</summary>
-    private static readonly int[][] TopWay =
-    [
-        [-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0],
-    ];
+    private void Turn(int button)
+    {
+        foreach (var face in _corner)
+            for (int i = 0; i < 4; i++) face[i] = Turned(button, face[i]);
+    }
 
     /// <summary>좌대가 선 자리.</summary>
     public int X { get; private set; }
@@ -101,71 +132,26 @@ public sealed class CubePuzzle
     public bool? Over { get; private set; }
 
     /// <summary>
-    /// 지금 <b>화면에 보이는 그대로</b>, 윗면 화살표가 가리키는 쪽.
+    /// 지금 윗면 화살표가 가리키는 쪽(<see cref="Ways"/> 번호) — <c>0x0041B700</c>.
     /// </summary>
     /// <remarks>
-    /// 회전 행렬에서 곧장 뽑는다 — 위에 온 면을 찾고, 그 면에 그려진 화살표를 판 좌표로
-    /// 옮기면 네 대각선 중 하나가 나온다. 그림도 같은 셈을 쓰므로 <b>보이는 쪽과 가는
-    /// 쪽이 어긋날 수 없다</b>.
+    /// 귀퉁이 넷이 모두 윗면(z=+100)에 있는 면을 찾고(<c>0x0041B8A0</c>), 그 면의 화살표 귀퉁이가 V0~V3 가운데
+    /// 어느 것인지 본다. 그림도 같은 좌표를 비추므로 보이는 쪽과 가는 쪽이 어긋날 수 없다.
     /// </remarks>
     public int Arrow
     {
         get
         {
-            int up = UpFace();
-            var dir = Apply(_rot, Apply(FromTop[up], TopWay[_face[up] & 3]));
-            return dir[0] < 0 ? (dir[1] < 0 ? 0 : 3) : (dir[1] < 0 ? 1 : 2);
+            for (int f = 0; f < 6; f++)
+            {
+                if (!_corner[f].All(c => c[2] == 100)) continue;
+                var p = _corner[f][_arrow[f]];
+                for (int k = 0; k < 4; k++)
+                    if (Corner[k][0] == p[0] && Corner[k][1] == p[1]) return k;
+            }
+            return 0;
         }
     }
-
-    /// <summary>지금 위에 온 면. 돌린 법선이 <c>+Z</c> 인 면이다.</summary>
-    private int UpFace()
-    {
-        for (int i = 0; i < 6; i++)
-            if (Apply(_rot, Normal[i])[2] > 0) return i;
-        return 0;
-    }
-
-    /// <summary>그 축으로 90 도씩 <paramref name="quarter"/> 번 도는 정수 행렬.</summary>
-    private static int[,] Spin(int axis, int quarter)
-    {
-        int[,] m = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
-        int[,] one = axis switch
-        {
-            0 => new[,] { { 1, 0, 0 }, { 0, 0, -1 }, { 0, 1, 0 } },
-            1 => new[,] { { 0, 0, 1 }, { 0, 1, 0 }, { -1, 0, 0 } },
-            _ => new[,] { { 0, -1, 0 }, { 1, 0, 0 }, { 0, 0, 1 } },
-        };
-        for (int i = 0; i < ((quarter % 4) + 4) % 4; i++) m = Times(one, m);
-        return m;
-    }
-
-    private static int[] Apply(int[,] m, int[] v) =>
-    [
-        m[0, 0] * v[0] + m[0, 1] * v[1] + m[0, 2] * v[2],
-        m[1, 0] * v[0] + m[1, 1] * v[1] + m[1, 2] * v[2],
-        m[2, 0] * v[0] + m[2, 1] * v[1] + m[2, 2] * v[2],
-    ];
-
-    private static int[,] Times(int[,] a, int[,] b)
-    {
-        var m = new int[3, 3];
-        for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-            m[i, j] = a[i, 0] * b[0, j] + a[i, 1] * b[1, j] + a[i, 2] * b[2, j];
-        return m;
-    }
-
-    /// <summary>
-    /// 그 면에 <b>그려진</b> 화살표(0~3). 입방체를 그릴 때 쓴다.
-    /// </summary>
-    /// <remarks>
-    /// 면에 칠해진 것이라 입방체가 돌아도 안 바뀐다 — 어느 쪽을 가리키는지는 <b>입방체가
-    /// 얼마나 돌아 있는가</b>가 정한다. 그래서 그림 쪽은 제 회전 행렬을 따로 들고
-    /// 이 값을 그대로 얹는다. 면 번호는 <c>0</c> 이 위, <c>5</c> 가 아래,
-    /// <c>1</c>·<c>4</c> 가 남북, <c>2</c>·<c>3</c> 이 동서다(마주 보는 면은 <c>5-i</c>).
-    /// </remarks>
-    public int PaintedArrow(int face) => _face[face];
 
     /// <summary>바닥이 있는 칸. 줄마다 하나씩 뚫려 있다.</summary>
     private readonly bool[,] _floor = new bool[Side, Side];
@@ -196,10 +182,13 @@ public sealed class CubePuzzle
     /// </remarks>
     public CubePuzzle(Random rng)
     {
-        // <b>마주 보는 면은 대칭</b>이라 했으니 짝끼리 같은 쪽을 가리키게 둔다.
-        _face[0] = _face[5] = rng.Next(4);
-        _face[1] = _face[3] = rng.Next(4);
-        _face[2] = _face[4] = rng.Next(4);
+        for (int f = 0; f < 6; f++)
+            _corner[f] = [.. FaceCorners[f].Select(v => (int[])Corner[v].Clone())];
+
+        // 마주 보는 면 둘에 같은 값을 넣는다(0x004ACE4A) — 귀퉁이 차례가 마주 보게 짜여 있어 비친 꼴이 된다.
+        _arrow[0] = _arrow[1] = rng.Next(4);
+        _arrow[2] = _arrow[3] = rng.Next(4);
+        _arrow[4] = _arrow[5] = rng.Next(4);
 
         X = rng.Next(Side);
         Y = Side - 1;
@@ -238,25 +227,18 @@ public sealed class CubePuzzle
     }
 
     /// <summary>
-    /// 수직으로 90도 굴린다 — 그 쪽으로 넘어뜨린다.
+    /// 수직으로 90도 굴린다 — 넘어뜨리기 단추 넷 가운데 하나다.
     /// </summary>
     /// <remarks>
-    /// 넘어뜨리면 그 쪽 옆면이 위로 온다. 그러고 나서 <b>새로 위에 온 면의
-    /// 화살표</b>가 가리키는 쪽으로 좌대가 한 칸 움직인다 — 넘어뜨린 쪽이 아니다.
+    /// 다 구르면 <b>새로 위에 온 면의 화살표</b>가 가리키는 쪽으로 좌대가 한 칸 움직인다(<c>0x0049C660</c>) —
+    /// 넘어뜨린 쪽이 아니다.
     /// </remarks>
-    /// <param name="way">넘어뜨릴 쪽(<see cref="Ways"/> 번호).</param>
-    public void Roll(int way)
+    /// <param name="button"><see cref="TipUpLeft"/> · <see cref="TipDownLeft"/> · <see cref="TipUpRight"/> · <see cref="TipDownRight"/>.</param>
+    public void Roll(int button)
     {
         if (Over != null) return;
 
-        // 그쪽 면이 위로 오게 넘어뜨린다 — 그림 쪽(CubeArt) 과 같은 회전이다.
-        _rot = Times(way switch
-        {
-            0 => Spin(0, 1),      // 북 — 남쪽 면이 위로
-            1 => Spin(1, -1),     // 동
-            2 => Spin(0, -1),     // 남
-            _ => Spin(1, 1),      // 서
-        }, _rot);
+        Turn(button);
 
         JustSpun = false;
         Moves++;
@@ -283,12 +265,19 @@ public sealed class CubePuzzle
         if (Over == null) { Over = false; GaveUp = true; }
     }
 
-    /// <summary>수평으로 90도 돌린다. 좌대는 안 움직이고, 연달아는 못 한다.</summary>
-    public bool Spin()
+    /// <summary>
+    /// 수평으로 90도 돌린다. 좌대는 안 움직이고, 연달아는 못 한다.
+    /// </summary>
+    /// <remarks>
+    /// 원본에는 깃발이 따로 없다 — 수평 단추를 누르면 <b>두 단추가 다 꺼져</b> 사라지고(<c>0x0049CC6C</c>),
+    /// 넘어뜨리기가 끝나야 다시 켜진다(<c>0x0049CB97</c>). 그래서 왼쪽으로 돌린 뒤 오른쪽으로도 못 돌린다.
+    /// </remarks>
+    /// <param name="clockwise">위에서 보아 시계 쪽인가(<see cref="SpinRight"/>). 아니면 <see cref="SpinLeft"/>.</param>
+    public bool Spin(bool clockwise)
     {
         if (Over != null || JustSpun) return false;
 
-        _rot = Times(Spin(2, 1), _rot);
+        Turn(clockwise ? SpinRight : SpinLeft);
         JustSpun = true;
         Moves++;
         return true;

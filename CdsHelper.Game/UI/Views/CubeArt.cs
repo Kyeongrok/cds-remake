@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -7,219 +7,137 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 「화살표 입방체 퍼즐」 왼쪽 칸의 <b>입방체</b> — 여섯 꼭짓점을 돌려 그때그때 비춘다.
+/// 「화살표 입방체 퍼즐」 왼쪽 칸의 <b>입방체</b> — 모델이 든 귀퉁이 좌표를 그때그때 비춘다.
 /// </summary>
 /// <remarks>
-/// 이 그림은 <c>MGGRAPH.CDS</c> 에 없다(이 게임이 쓰는 파트 열둘을 다 짚었다). 면마다
-/// 화살표가 돌아가고 <b>넘어뜨릴 때 굴러가는 도중까지 보이므로</b> 원본도 그때그때
-/// 그리는 것으로 보인다. 그래서 여기서도 작은 3차원으로 그린다.
+/// 원본의 입방체 객체(<c>0x004AC9E0</c>, 그리기 <c>0x004ACF80</c>)를 옮긴 것이다. 그림 파일이 아니라
+/// 면마다 세 조각(면 · 화살촉 · 화살대)을 지어(<c>0x0041B600</c> · <c>0x0041B900</c>) 먼 면부터 덧칠한다
+/// (<c>0x004AD230</c>) — 뒷면을 가려내지 않고 여섯 면을 다 그린다.
 ///
-/// <b>비추는 법.</b> 몸 좌표 축 셋을 화면 벡터 셋으로 곧장 옮긴다 — 원본 갈무리에서 잰
-/// 윗면 마름모(110 x 50)와 옆면 높이(68)가 그대로 이 셋이다.
+/// <b>비추는 법</b>(<c>0x004AD490</c>) — 돌린 각 A = 225 도, 기운 각 B = 30 도, 눈까지 800, 배율 300 이다.
 /// <code>
-///   +X → ( 55,  25)     오른쪽 아래
-///   +Y → (-55,  25)     왼쪽 아래
-///   +Z → (  0, -68)     위
+///   u  = x·cosA + y·sinA            d = z·sinB + u·cosB            k = 300 / (800 − d)
+///   X  = (y·cosA − x·sinA)·k        Y = (z·cosB − u·sinB)·k        멀기 = 800 − d
+///   화면 = 상자 가운데 + (X, −Y)
 /// </code>
-/// 이 비춤이 <b>안 보이는 쪽</b>은 <c>(1, 1, 0.735)</c> 다(세 벡터를 더해 0 이 되는 쪽).
-/// 면의 법선을 이것과 견주어 앞을 보는 셋만 그린다 — 늘 위 · 왼쪽 · 오른쪽 셋이다.
-///
-/// <b>면 번호</b>는 <see cref="CubePuzzle"/> 것을 그대로 쓴다 — 0 이 <c>+Z</c>(위),
-/// 5 가 <c>-Z</c>, 1 이 <c>+Y</c>, 4 가 <c>-Y</c>, 2 가 <c>+X</c>, 3 이 <c>-X</c> 다.
-/// 마주 보는 면이 <c>5-i</c> 라는 모델의 규칙과 맞는다.
+/// <b>화살표</b>는 면 가운데에서 <b>귀퉁이 쪽</b>으로 난다 — 값 a 가 그 면의 a 번 귀퉁이다.
 /// </remarks>
 internal sealed class CubeArt
 {
-    /// <summary>비춤 벡터 — 원본에서 잰 마름모 110x50 과 옆면 68 이 이 값이다.</summary>
-    private static readonly Vector Ax = new(55, 25), Ay = new(-55, 25), Az = new(0, -68);
-
-    /// <summary>안 보이는 쪽. 면 법선과 이것을 곱해 앞뒤를 가린다.</summary>
-    private static readonly double[] View = [1, 1, 50.0 / 68.0];
-
-    /// <summary>면 여섯의 법선.</summary>
-    private static readonly double[][] Normal =
-    [
-        [0, 0, 1],    // 0 위
-        [0, 1, 0],    // 1
-        [1, 0, 0],    // 2
-        [-1, 0, 0],   // 3
-        [0, -1, 0],   // 4
-        [0, 0, -1],   // 5 아래
-    ];
-
-    /// <summary>
-    /// 면 여섯을 <b>윗면 본</b>에서 만들어 내는 회전.
-    /// </summary>
-    /// <remarks>
-    /// <b>이것이 화살표가 가리키는 쪽을 모델과 맞추는 열쇠다.</b> 면마다 제멋대로 «오른쪽·위»
-    /// 를 잡으면, 그 면이 위로 올라왔을 때 그려진 쪽과 <see cref="CubePuzzle"/> 가 셈한 쪽이
-    /// 어긋난다(위로 가는 화살표가 떴는데 좌대는 왼쪽으로 가는 식이다).
-    ///
-    /// 그래서 <b>윗면 하나만</b> 본을 만들고, 나머지 다섯은 «그 면을 위로 올리는 회전의
-    /// 거꾸로» 를 먹여 만든다. 그러면 면 k 가 굴러 위로 올라올 때 그 회전이 상쇄되어
-    /// 화살표가 정확히 <c>Ways[값]</c> 쪽을 가리킨다.
-    /// <code>
-    ///   0 (+Z)  그대로          1 (+Y)  X 축 -90      2 (+X)  Y 축 +90
-    ///   3 (-X)  Y 축 -90        4 (-Y)  X 축 +90      5 (-Z)  X 축 180
-    /// </code>
-    /// </remarks>
-    private static readonly double[][,] FromTop =
-    [
-        Identity(), Turn(0, -90), Turn(1, 90), Turn(1, -90), Turn(0, 90), Turn(0, 180),
-    ];
-
-    /// <summary>
-    /// 윗면에서 화살표 값이 가리키는 쪽 — <b>면의 대각선</b>이다.
-    /// </summary>
-    /// <remarks>
-    /// 판의 네 쪽이 이 비춤에서 가로·세로로 나오기 때문이다.
-    /// <code>
-    ///   북 = -X-Y → 화면 (   0, -50)      동 = +X-Y → (110, 0)
-    ///   남 = +X+Y → 화면 (   0,  50)      서 = -X+Y → (-110, 0)
-    /// </code>
-    /// </remarks>
-    private static readonly double[][] TopWay =
-    [
-        [-D, -D, 0], [D, -D, 0], [D, D, 0], [-D, D, 0],
-    ];
-
-    private const double D = 0.70710678;
-
-    /// <summary>화살표 꼴 — 칸 가운데를 0 으로 두고 위(+)를 본다.</summary>
-    private static readonly (double X, double Y)[] Arrow =
-    [
-        (0.00, 0.42), (0.30, 0.10), (0.13, 0.10),
-        (0.13, -0.40), (-0.13, -0.40), (-0.13, 0.10), (-0.30, 0.10),
-    ];
+    private const double Eye = 800, Focal = 300;
+    private static readonly double CosA = Math.Cos(225 * Math.PI / 180), SinA = Math.Sin(225 * Math.PI / 180);
+    private static readonly double CosB = Math.Cos(30 * Math.PI / 180), SinB = Math.Sin(30 * Math.PI / 180);
 
     private readonly Polygon[] _face = new Polygon[6];
-    private readonly Polygon[] _mark = new Polygon[6];
+    private readonly Polygon[] _head = new Polygon[6];
+    private readonly Polygon[] _shaft = new Polygon[6];
     private readonly Point _center;
-
-    /// <summary>지금 얼마나 돌아 있는가 — 몸 좌표를 판 좌표로 옮기는 행렬이다.</summary>
-    private double[,] _rot = Identity();
+    private readonly int _zIndex;
 
     public CubeArt(Canvas scene, Point center, Brush fill, Brush edge, Brush arrow, int zIndex)
     {
         _center = center;
+        _zIndex = zIndex;
 
         for (int i = 0; i < 6; i++)
         {
-            _face[i] = new Polygon
-            {
-                Fill = fill,
-                Stroke = edge,
-                StrokeThickness = 1,
-                IsHitTestVisible = false,
-            };
-            Panel.SetZIndex(_face[i], zIndex);
+            _face[i] = new Polygon { Fill = fill, Stroke = edge, StrokeThickness = 1, IsHitTestVisible = false };
+            _head[i] = new Polygon { Fill = arrow, IsHitTestVisible = false };
+            _shaft[i] = new Polygon { Fill = arrow, IsHitTestVisible = false };
             scene.Children.Add(_face[i]);
-
-            _mark[i] = new Polygon { Fill = arrow, IsHitTestVisible = false };
-            Panel.SetZIndex(_mark[i], zIndex + 1);
-            scene.Children.Add(_mark[i]);
+            scene.Children.Add(_head[i]);
+            scene.Children.Add(_shaft[i]);
         }
     }
 
-    /// <summary>넘어뜨리거나 돌릴 때 입방체가 어느 축으로 도는가.</summary>
+    /// <summary>
+    /// 그 단추 쪽으로 <paramref name="degrees"/> 만큼 더 돌린 모습으로 그린다 — 0 이면 지금 그대로다.
+    /// </summary>
     /// <remarks>
-    /// 모델의 <c>Roll</c> 이 하는 면 갈아치기와 같은 회전이다 — 북으로 넘어뜨리면
-    /// 위 면이 북으로 가니 <c>+X</c> 축으로 +90 도다. 수평 돌리기는 <c>+Z</c> 축이다.
+    /// 원본은 15 도씩 여섯 걸음으로 돈다(<c>0x004ACFF0</c>). 축은 단추마다 다르다 — 2 · 5 가 x 축,
+    /// 3 · 4 가 y 축, 6 · 7 이 z 축이고 짝끼리 도는 쪽이 반대다(<c>0x00463CD0</c> · <c>0x00463BF0</c> · <c>0x00463B10</c>).
     /// </remarks>
-    public static (int Axis, int Turn) Spin(int way) => way switch
+    public void Draw(CubePuzzle game, int button, double degrees)
     {
-        0 => (0, +1),    // 북 — X 축
-        1 => (1, -1),    // 동 — Y 축
-        2 => (0, -1),    // 남
-        3 => (1, +1),    // 서
-        _ => (2, +1),    // 수평 — Z 축
-    };
+        var far = new double[6];
+        var corners = new double[6][][];
 
-    /// <summary>그 축으로 <paramref name="degrees"/> 만큼 더 돌린 모습으로 그린다.</summary>
-    public void Draw(CubePuzzle game, int axis, double degrees)
-    {
-        var now = Multiply(Turn(axis, degrees), _rot);
-
-        for (int i = 0; i < 6; i++)
+        for (int f = 0; f < 6; f++)
         {
-            var n = Apply(now, Normal[i]);
-            bool front = n[0] * View[0] + n[1] * View[1] + n[2] * View[2] > 0.001;
+            corners[f] = new double[4][];
+            for (int i = 0; i < 4; i++)
+            {
+                var (x, y, z) = game.CornerAt(f, i);
+                corners[f][i] = Turned(button, degrees, [x, y, z]);
+                far[f] = Math.Max(far[f], Depth(corners[f][i]));
+            }
+        }
 
-            _face[i].Visibility = front ? Visibility.Visible : Visibility.Collapsed;
-            _mark[i].Visibility = _face[i].Visibility;
-            if (!front) continue;
+        // 먼 면부터 칠한다 — 열쇠는 면 귀퉁이 넷 가운데 가장 먼 것이다.
+        int[] order = [.. Enumerable.Range(0, 6).OrderByDescending(f => far[f])];
+        for (int rank = 0; rank < 6; rank++)
+        {
+            int f = order[rank];
+            var v = corners[f];
+            int a = game.ArrowOf(f);
 
-            _face[i].Points = Corners(now, i);
-            _mark[i].Points = Mark(now, i, game.PaintedArrow(i));
+            // 화살표 꼴(0x0041B900) — 가운데 C 에서 귀퉁이 a 쪽으로 반쯤 나간 촉 T, 양옆 귀퉁이 쪽으로 삼분의 일씩 벌린 P1 · P3.
+            var c = Mid(v[a], v[(a + 2) & 3]);
+            var tip = Mid(v[a], c);
+            var p1 = Third(v[(a + 1) & 3], c);
+            var p3 = Third(v[(a + 3) & 3], c);
+            var s1 = Mid(c, p1);
+            var s3 = Mid(c, p3);
+            double[] back = [(v[(a + 2) & 3][0] - c[0]) / 2, (v[(a + 2) & 3][1] - c[1]) / 2, (v[(a + 2) & 3][2] - c[2]) / 2];
+
+            _face[f].Points = Points(v[0], v[1], v[2], v[3]);
+            _head[f].Points = Points(tip, p1, p3);
+            _shaft[f].Points = Points(s1, s3, Plus(s3, back), Plus(s1, back));
+
+            Panel.SetZIndex(_face[f], _zIndex + rank * 2);
+            Panel.SetZIndex(_head[f], _zIndex + rank * 2 + 1);
+            Panel.SetZIndex(_shaft[f], _zIndex + rank * 2 + 1);
         }
     }
 
-    /// <summary>돌린 것을 굳힌다 — 애니메이션이 끝나면 부른다.</summary>
-    public void Settle(int axis, int quarter) =>
-        _rot = Multiply(Turn(axis, quarter * 90.0), _rot);
-
-    /// <summary>그 면 네 귀퉁이의 화면 자리 — 윗면 본을 그 면으로 돌려 만든다.</summary>
-    private PointCollection Corners(double[,] rot, int face)
+    /// <summary>그 단추의 축으로 돌린 자리.</summary>
+    private static double[] Turned(int button, double degrees, double[] p)
     {
-        var points = new PointCollection();
-        foreach (var (sx, sy) in new[] { (-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5) })
-            points.Add(Screen(Apply(rot, Apply(FromTop[face], [sx, sy, 0.5]))));
-        return points;
-    }
+        if (degrees == 0) return p;
 
-    /// <summary>그 면에 그려진 화살표. 윗면 본에서 그려 그 면으로 돌린다.</summary>
-    private PointCollection Mark(double[,] rot, int face, int way)
-    {
-        var dir = TopWay[way & 3];
-        var perp = new[] { dir[1], -dir[0], 0.0 };
-
-        var points = new PointCollection();
-        foreach (var (ax, ay) in Arrow)
-        {
-            double[] p =
-            [
-                perp[0] * ax + dir[0] * ay,
-                perp[1] * ax + dir[1] * ay,
-                0.502,
-            ];
-            points.Add(Screen(Apply(rot, Apply(FromTop[face], p))));
-        }
-        return points;
-    }
-
-    /// <summary>몸 좌표를 화면 자리로.</summary>
-    private Point Screen(double[] p) =>
-        _center + Ax * p[0] + Ay * p[1] + Az * p[2];
-
-    private static double[] Apply(double[,] m, double[] v) =>
-    [
-        m[0, 0] * v[0] + m[0, 1] * v[1] + m[0, 2] * v[2],
-        m[1, 0] * v[0] + m[1, 1] * v[1] + m[1, 2] * v[2],
-        m[2, 0] * v[0] + m[2, 1] * v[1] + m[2, 2] * v[2],
-    ];
-
-    private static double[,] Identity() =>
-        new double[,] { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
-
-    /// <summary>그 축으로 도는 행렬.</summary>
-    private static double[,] Turn(int axis, double degrees)
-    {
-        double t = degrees * Math.PI / 180.0;
+        double t = degrees * Math.PI / 180;
+        if (button is CubePuzzle.TipDownRight or CubePuzzle.TipUpRight or CubePuzzle.SpinLeft) t = -t;
         double c = Math.Cos(t), s = Math.Sin(t);
-        return axis switch
+
+        return button switch
         {
-            0 => new double[,] { { 1, 0, 0 }, { 0, c, -s }, { 0, s, c } },
-            1 => new double[,] { { c, 0, s }, { 0, 1, 0 }, { -s, 0, c } },
-            _ => new double[,] { { c, -s, 0 }, { s, c, 0 }, { 0, 0, 1 } },
+            CubePuzzle.TipUpLeft or CubePuzzle.TipDownRight => [p[0], c * p[1] + s * p[2], c * p[2] - s * p[1]],
+            CubePuzzle.TipDownLeft or CubePuzzle.TipUpRight => [c * p[0] - s * p[2], p[1], c * p[2] + s * p[0]],
+            _ => [c * p[0] + s * p[1], c * p[1] - s * p[0], p[2]],
         };
     }
 
-    private static double[,] Multiply(double[,] a, double[,] b)
+    private static double Depth(double[] p) => Eye - (p[2] * SinB + (p[0] * CosA + p[1] * SinA) * CosB);
+
+    private Point Screen(double[] p)
     {
-        var m = new double[3, 3];
-        for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-            m[i, j] = a[i, 0] * b[0, j] + a[i, 1] * b[1, j] + a[i, 2] * b[2, j];
-        return m;
+        double u = p[0] * CosA + p[1] * SinA;
+        double k = Focal / (Eye - (p[2] * SinB + u * CosB));
+        return new Point(_center.X + (p[1] * CosA - p[0] * SinA) * k, _center.Y - (p[2] * CosB - u * SinB) * k);
     }
+
+    private PointCollection Points(params double[][] corners)
+    {
+        var points = new PointCollection();
+        foreach (var p in corners) points.Add(Screen(p));
+        return points;
+    }
+
+    private static double[] Mid(double[] a, double[] b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+
+    /// <summary>(a + 2·c) / 3 — 가운데 c 에서 a 쪽으로 삼분의 일.</summary>
+    private static double[] Third(double[] a, double[] c) =>
+        [(a[0] + 2 * c[0]) / 3, (a[1] + 2 * c[1]) / 3, (a[2] + 2 * c[2]) / 3];
+
+    private static double[] Plus(double[] a, double[] b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }

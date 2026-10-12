@@ -39,10 +39,8 @@ namespace CdsHelper.Game.UI.Views;
 /// 기울기 항의 밑값이 <c>5 * 11 = 55</c> 이고 첫 칸 x 가 215 다. 원본 갈무리에서 잰
 /// 돌 블록 여덟이 <b>한 점도 안 틀리고</b> 이 자리에 앉는다.
 ///
-/// <b>아직 못 찾은 것.</b> 왼쪽 칸 가운데의 <b>입방체 상자</b>(면마다 화살표가 새겨진 회색
-/// 입방체)는 미리 구운 그림이 아니다 — MGGRAPH 에서 이 게임이 쓰는 파트 열둘을 다 짚었고
-/// 그 안에 없다. 돌 때마다 면을 그려 내는 것으로 보이는데 그 자리를 아직 못 짚었다.
-/// 그때까지는 지금 위에 온 화살표를 글로 적어 둔다.
+/// 왼쪽 칸 가운데의 <b>입방체 상자</b>는 미리 구운 그림이 아니라 그때그때 그리는 3차원이다 —
+/// <see cref="CubeArt"/> 가 원본의 비춤(<c>0x004AD490</c>)과 화살표 꼴(<c>0x0041B900</c>)을 그대로 쓴다.
 /// </remarks>
 internal sealed class CubePuzzleDialog : GameWindow
 {
@@ -92,22 +90,24 @@ internal sealed class CubePuzzleDialog : GameWindow
     private static readonly int[] TurnArt = [0, 3, 1, 4, 2, 5];
 
     /// <summary>
-    /// 화살표 여섯이 하는 일 — 앞의 넷이 넘어뜨리기, 뒤의 둘이 수평 회전이다.
+    /// 칸마다 앉는 단추의 번호 — 원본 단추 id 다(자리 <c>0x0049B610</c>, 그림 <c>0x0049B6D0</c>).
     /// </summary>
     /// <remarks>
-    /// <b>단추는 판의 동서남북이 아니라 입방체의 축 쪽으로 넘어뜨린다.</b> 2x2 로 놓인
-    /// 넷이 화면의 11시 · 1시 · 7시 · 5시 를 가리키고, 그쪽으로 넘어뜨리면 <b>그 반대쪽
-    /// 면이 위로 온다</b>.
     /// <code>
-    ///   11시  -X 로 넘어뜨린다 → 오른쪽 면(+X)이 위로 → 모델의 「동」
-    ///    1시  -Y             → 왼쪽 면(+Y)이 위로   → 「북」
-    ///    7시  +Y             → 뒤(-Y)가 위로        → 「남」
-    ///    5시  +X             → 뒤(-X)가 위로        → 「서」
+    ///   id 2 (16,16)  파트 3  왼쪽 위로 넘어뜨린다      id 4 (80,16)  파트 6  오른쪽 위로
+    ///   id 3 (16,64)  파트 4  왼쪽 아래로               id 5 (80,64)  파트 7  오른쪽 아래로
+    ///   id 7 (16,288) 파트 5  수평 — 시계 쪽            id 6 (80,288) 파트 8  수평 — 시계 반대쪽
     /// </code>
-    /// 좌대가 어느 쪽으로 가는지는 <b>위로 온 면의 화살표</b>가 정하므로(모델의 <c>Roll</c>),
-    /// 여기서는 어느 면이 올라오는지만 맞으면 된다.
+    /// 좌대가 어느 쪽으로 가는지는 <b>위로 온 면의 화살표</b>가 정한다(모델의 <c>Roll</c>).
     /// </remarks>
-    private static readonly int[] TurnWay = [1, 0, 2, 3, -1, -1];
+    private static readonly int[] TurnId =
+    [
+        CubePuzzle.TipUpLeft, CubePuzzle.TipUpRight, CubePuzzle.TipDownLeft, CubePuzzle.TipDownRight,
+        CubePuzzle.SpinRight, CubePuzzle.SpinLeft,
+    ];
+
+    /// <summary>수평 돌리기 단추 둘 — 한 번 돌리면 넘어뜨릴 때까지 <b>둘 다 사라진다</b>(<c>0x0049CC6C</c> · <c>0x0049B7F0</c>).</summary>
+    private readonly List<Image> _spinButtons = [];
 
     private readonly CubePuzzle _game;
     private readonly Canvas _scene = new() { Width = SceneWidth, Height = SceneHeight };
@@ -246,12 +246,18 @@ internal sealed class CubePuzzleDialog : GameWindow
 
         KeyDown += (_, e) =>
         {
-            if (e.Key == Key.Up) Roll(0);
-            else if (e.Key == Key.Right) Roll(1);
-            else if (e.Key == Key.Down) Roll(2);
-            else if (e.Key == Key.Left) Roll(3);
-            else if (e.Key == Key.Space) DoSpin();
-            else if (e.Key == Key.Escape) Close();
+            // 원본은 여섯 단추에 글쇠가 따로 없다(Tab 초점과 Space · Enter 뿐) — 방향키는 우리 쪽에서 붙였다.
+            // 넘어뜨리기 넷이 대각선이라 ← ↑ 가 위쪽 두 단추, ↓ → 가 아래쪽 두 단추다.
+            bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+            switch (GameUi.Arrow(e.Key))
+            {
+                case Key.Left: Roll(CubePuzzle.TipUpLeft); break;
+                case Key.Up: Roll(CubePuzzle.TipUpRight); break;
+                case Key.Down: Roll(CubePuzzle.TipDownLeft); break;
+                case Key.Right: Roll(CubePuzzle.TipDownRight); break;
+                case Key.Space: DoSpin(clockwise: !shift); break;
+                case Key.Escape: Close(); break;
+            }
         };
 
         Sync();
@@ -315,7 +321,6 @@ internal sealed class CubePuzzleDialog : GameWindow
         if (_turning) return;
         _turning = true;
 
-        var (axis, quarter) = CubeArt.Spin(way);
         int step = 0;
 
         var timer = new System.Windows.Threading.DispatcherTimer
@@ -325,11 +330,10 @@ internal sealed class CubePuzzleDialog : GameWindow
         timer.Tick += (_, _) =>
         {
             step++;
-            _cube?.Draw(_game, axis, quarter * 90.0 * step / TurnSteps);
+            _cube?.Draw(_game, way, 90.0 * step / TurnSteps);
             if (step < TurnSteps) return;
 
             timer.Stop();
-            _cube?.Settle(axis, quarter);
             _turning = false;
             done();
         };
@@ -388,10 +392,11 @@ internal sealed class CubePuzzleDialog : GameWindow
         {
             e.Handled = true;
             _sfx?.Play(0x1C - 28);   // 화살표를 누르면 사운드 0x1C(파트 0)를 낸다(단추 0x0049B7C0 → 0x0049B7D7)
-            int way = TurnWay[at];
-            if (way >= 0) Roll(way); else DoSpin();
+            int id = TurnId[at];
+            if (id is CubePuzzle.SpinLeft or CubePuzzle.SpinRight) DoSpin(id == CubePuzzle.SpinRight); else Roll(id);
         };
 
+        if (TurnId[at] is CubePuzzle.SpinLeft or CubePuzzle.SpinRight) _spinButtons.Add(image);
         _scene.Children.Add(image);
     }
 
@@ -508,18 +513,12 @@ internal sealed class CubePuzzleDialog : GameWindow
         timer.Start();
     }
 
-    private void DoSpin()
+    private void DoSpin(bool clockwise)
     {
-        if (_turning || _game.Over != null) return;
+        // 한 번 돌리면 두 단추가 사라지므로 원본에서는 다시 누를 길이 없다 — 글쇠로 눌러도 그냥 안 받는다.
+        if (_turning || _game.Over != null || _game.JustSpun) return;
 
-        // 연달아 못 돌리는 것은 굴리기 전에 가린다 — 헛돌고 나서 물리면 이상하다.
-        if (_game.JustSpun)
-        {
-            NoticeDialog.Show(this, "2번 계속해서 수평으로 회전할 수 없다.", "게임 설명");
-            return;
-        }
-
-        Spin(4, () => { _game.Spin(); Sync(); });
+        Spin(clockwise ? CubePuzzle.SpinRight : CubePuzzle.SpinLeft, () => { _game.Spin(clockwise); Sync(); });
     }
 
     /// <summary>게임 EXE 의 설명 글 그대로(<c>0x0056E2B8</c>, 정적 초기화 <c>0x0049C620</c> 가 전역 <c>0x0056DC88</c> 에 담는다).
@@ -539,6 +538,8 @@ internal sealed class CubePuzzleDialog : GameWindow
     private void Sync()
     {
         _cube?.Draw(_game, 0, 0);
+        foreach (var button in _spinButtons)
+            button.Visibility = _game.JustSpun ? Visibility.Hidden : Visibility.Visible;
 
         var stone = Picture("cube-stand.png");
 
