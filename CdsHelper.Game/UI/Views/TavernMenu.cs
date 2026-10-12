@@ -1583,7 +1583,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var duel = new Engine.Town.Duel(mate is { } m ? MateSide(m) : Mine(),
                                         Theirs(who, dice), Shielded(), Environment.TickCount);
         DuelDialog.Show(_view, duel, dice, face, _game.Fighters,
-                        FighterSprites.SetForCulture(_cultureNo),
+                        // 이름 있는 사람은 <b>그 사람 나라의 수도 문화권</b>으로 입는다 — 0x004A49C1 이 문화권 자리에 -1 을
+                        // 넘겨 0x004A88EA 가 인물에서 찾는다. 예전에는 도시 문화권을 써서 산토도밍고의 서양인이 원주민 차림이었다.
+                        // 술주정꾼(0x0042ECAE · 0x0042FCFF · 0x004659FA)만 0x004A2B70 이 낸 문화권을 넘긴다.
+                        FoeSet(who.Index),
                         myFace: _game.DuelFace(mate),
                         arena: DuelArt.TavernFor(_cultureNo),
                         bgm: _game.Bgm);
