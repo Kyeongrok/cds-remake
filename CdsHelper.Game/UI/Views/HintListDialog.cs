@@ -296,8 +296,10 @@ public sealed class HintListDialog : GameWindow
             // 0x00465850(6, 번호)로 아이템에 옮겨 0x00406870 으로 찍는다).
             var side = new StackPanel { Orientation = Orientation.Horizontal };
             side.Children.Add(page);
-            side.Children.Add(new Border
+            // 고르기 전에는 칸째 접어 둔다 — 빈 칸이 어색하다. 줄을 고르면 펴지며 창이 그만큼 넓어진다.
+            side.Children.Add(_previewPane = new Border
             {
+                Visibility = Visibility.Collapsed,
                 Width = ItemArt.Width,
                 Height = ItemArt.Height,
                 Margin = new Thickness(6, 3, 3, 0),
@@ -305,6 +307,13 @@ public sealed class HintListDialog : GameWindow
                 Child = _previewImage,
             });
             stack.Children.Add(side);
+
+            // 펴지며 창이 넓어지면 가운데를 지키도록 왼쪽으로 반만큼 민다(설명 칸과 같다).
+            SizeChanged += (_, e) =>
+            {
+                if (e.WidthChanged && e.PreviousSize.Width > 0)
+                    Left -= (e.NewSize.Width - e.PreviousSize.Width) / 2;
+            };
         }
         stack.Children.Add(buttons);
 
@@ -391,6 +400,17 @@ public sealed class HintListDialog : GameWindow
     /// <summary>오른쪽 설명 칸 판 — 줄을 고르기 전에는 접어 둔다.</summary>
     private Border? _describePane;
 
+    /// <summary>곁 그림 칸 — 줄을 고르기 전에는 접어 둔다.</summary>
+    private Border? _previewPane;
+
+    /// <summary>곁 그림을 갈아 끼우고 칸을 편다.</summary>
+    private void ShowPreview(int index)
+    {
+        if (_preview == null) return;
+        _previewImage.Source = _preview(index);
+        if (_previewPane != null) _previewPane.Visibility = Visibility.Visible;
+    }
+
     /// <summary>줄 번호로 곁 그림을 내는 것. 없으면 곁 그림 칸이 없다.</summary>
     private readonly Func<int, ImageSource?>? _preview;
 
@@ -412,7 +432,7 @@ public sealed class HintListDialog : GameWindow
         set: (i, on) => { if (on) _chosen.Add(i); else _chosen.Remove(i); },
         changed: at =>
         {
-            if (_preview != null) _previewImage.Source = _preview(at);
+            ShowPreview(at);
             for (int i = 0; i < _rows.Count; i++) Paint(i, _chosen.Contains(i));
             _decide.On = _decideReady = _chosen.Count > 0;
         },
@@ -421,7 +441,7 @@ public sealed class HintListDialog : GameWindow
     /// <summary>한 줄을 고른다. 고르고 나야 결정이 살아난다.</summary>
     private void Select(int index)
     {
-        if (_preview != null) _previewImage.Source = _preview(index);
+        ShowPreview(index);
         if (_describe != null)
         {
             ShowDescription(_describe(index));
