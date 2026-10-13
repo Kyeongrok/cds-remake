@@ -5769,7 +5769,9 @@ public sealed class ShipMapWindow : Window
                                        scale: bandScale, nation: bandNation)
             {
                 MyCulture = _game.MyCulture,
-                FoeFace = _game.PersonFace(LandFieldFoes.FirstLeader + at),
+                FoeFace = _game.PersonFace(bandLeader),
+                // 일기토에 나서는 것도 그 무리의 대장이다(0x004478B1 — [+0x9C] 의 인물). 안 넘기면 얼굴 없이 「적장」으로 선다.
+                FoePerson = bandLeader,
             };
             if (LandBattleScene.Run(this, _game, field, roll)) return;
             if (!field.Wiped) return;

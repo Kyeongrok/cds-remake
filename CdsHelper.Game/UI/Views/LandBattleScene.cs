@@ -606,11 +606,16 @@ internal sealed class LandBattleScene : GameWindow
         string arena = _battle.Terrain switch { 2 => "duel-wood", 3 => "duel-sand", _ => DuelArt.Field };
 
         // 무기·방어구·방패는 어느 판이든 판을 지을 때 쥔다(0x004A8500 — 0x004A85EC · 0x004A8829 · 0x004A89D4).
-        var duel = new Duel(Duel.Equipped(mine, me.Items, game.Items), Duel.Armed(foe, 1, dice, game.Items),
+        // 상대 차림은 그 인물 나라의 수도 문화권이다 — 문화권 자리에 −1 을 넘겨 0x004A88EA 가 인물에서 찾는다.
+        int foeSet = game.PersonTemplates?.Find(_battle.FoePerson) is { } who
+                     && game.Nations?.Find(who.Nation) is { } nation
+            ? FighterSprites.SetForCulture(game.CityRows?.CultureOf(nation.Capital) ?? 0) : 1;
+        var duel = new Duel(Duel.Equipped(mine, me.Items, game.Items), Duel.Armed(foe, foeSet, dice, game.Items),
                             me.Items.Contains(Duel.EdithShieldId), dice.Next());
         // 오른쪽 칸은 제독 얼굴이다 — 안 넘기면 검게 빈다.
         var myFace = game.Faces?.TryGetBgra(PortraitAges.At(me.Face, me.Age, false, game.Faces), female: false);
-        bool won = DuelDialog.Show(this, duel, dice, foeFace, myFace: myFace, arena: arena, bgm: _game?.Bgm);
+        bool won = DuelDialog.Show(this, duel, dice, foeFace, game.Fighters, foeSet,
+                                   myFace: myFace, arena: arena, bgm: _game?.Bgm);
         // 이기면 승리 차림표가 뜨고 무력 성장 굴림이 붙는다 — 판 종류(+0x1C4)가 0(들판)·1(마을 공략)이라
         // 2·5·7 이상을 거르는 0x004AA2B1 을 지나 0x004AA2D2 의 0x004A8380(3) 에 닿고, 끝에 0x004AA592 가 돈다.
         if (won)
