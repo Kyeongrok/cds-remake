@@ -781,6 +781,8 @@ public sealed class ModDialog : GameWindow
             Margin = new Thickness(0, 0, 0, 8),
         });
 
+        var radios = new RadioButton[Presets.Length];
+        bool undoing = false;
         for (int i = 0; i < Presets.Length; i++)
         {
             int index = i;
@@ -794,7 +796,25 @@ public sealed class ModDialog : GameWindow
                 VerticalContentAlignment = VerticalAlignment.Center,
             };
             // 처음 채운 뒤에 건다 — 창을 열 때 지난번에 고른 묶음을 다시 먹이지 않는다(그 뒤 손으로 바꾼 줄이 되돌아간다).
-            radio.Checked += (_, _) => { GameSettings.ModPreset = index; Apply(pick); };
+            radio.Checked += (_, _) =>
+            {
+                if (undoing) return;
+                // 지난번 묶음을 고른 뒤 손으로 바꾼 줄이 있으면 먼저 묻는다 — 새 묶음이 그 줄들을 제 값으로 덮는다.
+                int before = Math.Clamp(GameSettings.ModPreset, 0, Presets.Length - 1);
+                var changed = Strayed(Presets[before]);
+                if (changed.Count > 0 && !ConfirmDialog.Ask(this,
+                        $"직접 바꾼 옵션이 있습니다({string.Join(", ", changed.Take(4))}{(changed.Count > 4 ? $" 외 {changed.Count - 4}개" : "")}).\n"
+                        + $"「{pick.Name}」{GameUi.Josa(pick.Name, "을", "를")} 고르면 그 단계의 설정값으로 바뀝니다. 바꾸시겠습니까?", "권장 옵션"))
+                {
+                    undoing = true;
+                    try { radios[before].IsChecked = true; }
+                    finally { undoing = false; }
+                    return;
+                }
+                GameSettings.ModPreset = index;
+                Apply(pick);
+            };
+            radios[i] = radio;
             Watch(radio, "권장 옵션 — " + pick.Name, pick.Summary
                 + (pick.On.Length > 0 ? "\n\n켜는 것: " + string.Join(", ", pick.On) : "")
                 + (pick.Off.Length > 0 ? "\n\n끄는 것: " + string.Join(", ", pick.Off) : ""));
@@ -808,6 +828,19 @@ public sealed class ModDialog : GameWindow
             Foreground = GameUi.Text, Opacity = 0.8, FontSize = 12, LineHeight = 18, TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 12, 0, 0),
         });
+    }
+
+    /// <summary>그 묶음을 고른 뒤 손으로 바꿔 묶음과 달라진 줄들의 이름.</summary>
+    private List<string> Strayed(Preset pick)
+    {
+        var names = new List<string>();
+        foreach (string label in pick.On)
+            if (_boxes.TryGetValue(label, out var box) && box.IsChecked != true) names.Add(label);
+        foreach (string label in pick.Off)
+            if (_boxes.TryGetValue(label, out var box) && box.IsChecked == true) names.Add(label);
+        foreach (var (label, index) in pick.Picks)
+            if (_combos.TryGetValue(label, out var combo) && combo.SelectedIndex != index) names.Add(label);
+        return names;
     }
 
     /// <summary>묶음을 먹인다 — 줄의 체크 칸을 바꿔 그 줄의 손(설정 적기 · 지도에 곧바로 먹이기)이 그대로 돌게 한다.</summary>
