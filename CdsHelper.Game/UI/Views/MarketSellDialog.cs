@@ -35,15 +35,17 @@ public sealed class MarketSellDialog : GameWindow
     /// </remarks>
     private static readonly GameListColumn[] Columns =
     [
-        new(GameListDock.Right, new Thickness(0, 0, 10, 0), 114, HorizontalAlignment.Right),
+        new(GameListDock.Right, new Thickness(0, 0, 10, 0), 144, HorizontalAlignment.Right),
         new(GameListDock.Fill, new Thickness(10, 0, 0, 0), Align: HorizontalAlignment.Right),
     ];
 
     /// <summary>소지품이 늘면 창이 화면을 넘지 않게 여기서 자른다.</summary>
     private const double ListMaxHeight = 420;
 
-    /// <summary>목록 바닥 폭. 원본 갈무리를 재어 맞췄다 — 이보다 넓으면 이름 칸이 휑하다.</summary>
-    private const double ListWidth = 356;
+    /// <summary>
+    /// 목록 바닥 폭. 원본 갈무리를 잰 356 에서 갈래 칸을 넓힌 만큼(30) 늘렸다 — 가장 긴 「(교역품 · 미술품)」이 114 에서는 잘렸다.
+    /// </summary>
+    private const double ListWidth = 386;
 
     private readonly Player _player;
     private readonly Market _market;
