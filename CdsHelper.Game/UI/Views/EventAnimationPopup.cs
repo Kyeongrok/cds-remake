@@ -137,7 +137,7 @@ internal sealed partial class EventAnimationPopup : Window
         // (0x004229A9 가 그 값이 2 면 되풀이로 튼다) — 장면 끝에 끌 때까지 돈다.
         if (play.SoundPart >= 0) sfx?.PlayLoop(play.SoundPart);
 
-        var popup = new EventAnimationPopup(area, scale) { Owner = owner };
+        var popup = new EventAnimationPopup(area, scale) { Owner = GameWindow.Alive(owner) };
         popup.Show();
         // 16번 장면만 누르면 곧장 끝난다 — 0x0048E8A4 가 누름(3)을 받으면 걸음 -1 로 불러(0x0049B0FD) 치운다.
         void Click(object? _, System.Windows.Input.MouseButtonEventArgs e) { play.Cancelled = true; e.Handled = true; }

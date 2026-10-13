@@ -34,7 +34,7 @@ internal sealed class SeaDaysBadge : Window
 
     public SeaDaysBadge(Window owner)
     {
-        Owner = owner;
+        Owner = GameWindow.Alive(owner, this);
         Title = "항해 일수";
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;

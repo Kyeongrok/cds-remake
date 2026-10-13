@@ -107,5 +107,5 @@ public sealed class SkillBoardDialog : Window
 
     /// <summary>창을 연다.</summary>
     public static void Show(Window owner, Player player, PersonTable? people) =>
-        new SkillBoardDialog(player, people) { Owner = owner }.ShowDialog();
+        new SkillBoardDialog(player, people) { Owner = GameWindow.Alive(owner) }.ShowDialog();
 }

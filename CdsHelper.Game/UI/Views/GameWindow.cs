@@ -203,6 +203,33 @@ public class GameWindow : Window
     private bool? _result;
 
     /// <summary>
+    /// 주인 창. <b>닫혔거나 아직 안 뜬 창</b>을 넣으면 터지는 대신 살아 있는 윗창으로 물러선다.
+    /// </summary>
+    /// <remarks>
+    /// WPF 는 그런 창을 주인으로 삼으면 <c>InvalidOperationException</c> 을 던진다(<c>Window.set_Owner</c>) — 오류 통계의
+    /// 맨 윗줄이었다. 모달을 걷은 탓에 주인이 먼저 닫히면 <see cref="ShowDialog"/> 가 그대로 돌아오고, 부르던 쪽은
+    /// 이어서 다음 상자를 <b>닫힌 그 창</b>을 주인 삼아 띄운다(딴 데를 누르면 닫히는 고르기 창이 그렇다).
+    /// 그럴 때는 그 창의 주인을 거슬러 올라가 살아 있는 첫 창을, 없으면 지도 창을 쓴다. 그것도 없으면 주인 없이 뜬다.
+    /// </remarks>
+    public new Window? Owner
+    {
+        get => base.Owner;
+        set => base.Owner = Alive(value, this);
+    }
+
+    /// <summary>주인 삼을 수 있는 창 — <paramref name="wanted"/> 가 죽었으면 그 윗창, 없으면 지도 창, 그것도 없으면 null.</summary>
+    /// <remarks>이 갈래가 아닌 창(효과 창 · 쪽지 창)도 주인을 걸 때 이것을 거친다.</remarks>
+    internal static Window? Alive(Window? wanted, Window? self = null)
+    {
+        for (var w = wanted; w != null; w = w.Owner)
+            if (!ReferenceEquals(w, self) && Shown(w)) return w;
+        return wanted != null && ShipMapWindow.Current is Window map && !ReferenceEquals(map, self) && Shown(map) ? map : null;
+    }
+
+    /// <summary>창 손잡이가 살아 있는지 — 한 번도 안 떴거나 닫힌 창은 0 이다.</summary>
+    private static bool Shown(Window w) => new System.Windows.Interop.WindowInteropHelper(w).Handle != IntPtr.Zero;
+
+    /// <summary>
     /// 닫힐 때까지 기다린다. <b>모달은 안 건다.</b>
     /// </summary>
     public new bool? ShowDialog()

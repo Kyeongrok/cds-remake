@@ -104,7 +104,7 @@ internal sealed class EventStillPopup : Window
         double areaH = area.Height > 0 ? area.Height : owner.ActualHeight;
         int scale = Math.Max(1, Math.Min(4, (int)Math.Min(areaW * 0.5 / w, areaH * 0.5 / h)));
 
-        var popup = new EventStillPopup(bmp, scale, area) { Owner = owner };
+        var popup = new EventStillPopup(bmp, scale, area) { Owner = GameWindow.Alive(owner) };
         popup.Show();
         return popup;
     }

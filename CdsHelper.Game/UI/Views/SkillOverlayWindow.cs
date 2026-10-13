@@ -42,7 +42,7 @@ public sealed class SkillOverlayWindow : Window
         _fontSize = fontSize;
 
         Title = "기능·언어";
-        Owner = anchor;
+        Owner = GameWindow.Alive(anchor, this);
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         ShowInTaskbar = false;

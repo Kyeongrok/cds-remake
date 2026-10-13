@@ -98,7 +98,7 @@ internal sealed class EffectPopup : Window
     {
         if (game.Effects is not { } effects) return;
 
-        var popup = new EffectPopup(area) { Owner = owner };
+        var popup = new EffectPopup(area) { Owner = GameWindow.Alive(owner) };
         var span = SpanOf(anim);
         int sound = SoundOf(anim, won);
         var art = new BitmapSource?[EffectAnim.FrameCount];

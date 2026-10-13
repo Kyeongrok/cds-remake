@@ -65,7 +65,7 @@ public sealed class FleetLabelWindow : Window
         _text.FontSize = fontSize;
 
         Title = "함대";
-        Owner = anchor;
+        Owner = GameWindow.Alive(anchor, this);
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         ShowInTaskbar = false;

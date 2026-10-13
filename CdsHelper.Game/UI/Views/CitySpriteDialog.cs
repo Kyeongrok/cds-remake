@@ -104,7 +104,7 @@ public sealed class CitySpriteDialog : Window
         KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
     }
 
-    public static void Show(Window owner) => new CitySpriteDialog { Owner = owner }.ShowDialog();
+    public static void Show(Window owner) => new CitySpriteDialog { Owner = GameWindow.Alive(owner) }.ShowDialog();
 
     // ── 읽기 · 뽑기 ─────────────────────────────────────────────────────
 

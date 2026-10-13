@@ -671,5 +671,5 @@ public sealed class BuildingListDialog : Window
 
     /// <summary>창을 연다.</summary>
     public static void Show(Window owner) =>
-        new BuildingListDialog { Owner = owner }.ShowDialog();
+        new BuildingListDialog { Owner = GameWindow.Alive(owner) }.ShowDialog();
 }
