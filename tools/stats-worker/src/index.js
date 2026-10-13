@@ -45,18 +45,20 @@ async function postPlay(request, env) {
        ON CONFLICT (kind, key, version, install) DO UPDATE SET n = n + excluded.n, name = excluded.name`)
       .bind(version, b.install, JSON.stringify(counts), b.batch));
 
-  // 모드 옵션은 설치마다 마지막 값 하나만 남긴다. 값이 그대로면 안 쓴다.
+  // 모드 옵션은 설치마다 마지막 값 한 벌을 한 줄(JSON)로 남긴다. 그대로면 안 쓴다.
+  // 예전에는 옵션마다 한 줄(mods 표)이라 새 설치 하나에 백 줄 넘게 쓰였고, 그것으로 D1 하루 쓰기 한도(십만 줄)가 찼다.
   if (b.mods && typeof b.mods === 'object' && !Array.isArray(b.mods)) {
     const mods = Object.entries(b.mods).slice(0, MAX_MODS)
       .filter(([name, value]) => /^[A-Za-z0-9_]{1,48}$/.test(name) && Number.isFinite(value))
-      .map(([name, value]) => ({ name, value: int(value, 1_000_000) }));
+      .map(([name, value]) => [name, int(value, 1_000_000)])
+      .sort((a, b) => (a[0] < b[0] ? -1 : 1));   // 차례를 맞춰야 「그대로」를 글로 견줄 수 있다
     if (mods.length)
       rows.push(env.DB.prepare(
-        `INSERT INTO mods (install, name, value, version, updated_at)
-         SELECT ?, json_extract(value, '$.name'), json_extract(value, '$.value'), ?, ? FROM json_each(?) WHERE ${fresh}
-         ON CONFLICT (install, name) DO UPDATE SET value = excluded.value, version = excluded.version, updated_at = excluded.updated_at
-         WHERE mods.value <> excluded.value`)
-        .bind(b.install, version, now, JSON.stringify(mods), b.batch));
+        `INSERT INTO options (install, version, updated_at, body)
+         SELECT ?, ?, ?, ? WHERE ${fresh}
+         ON CONFLICT (install) DO UPDATE SET version = excluded.version, updated_at = excluded.updated_at, body = excluded.body
+         WHERE options.body <> excluded.body`)
+        .bind(b.install, version, now, JSON.stringify(Object.fromEntries(mods)), b.batch));
   }
 
   rows.push(env.DB.prepare(`INSERT OR IGNORE INTO batches (batch, received_at, install, version) VALUES (?, ?, ?, ?)`)
@@ -85,9 +87,14 @@ async function snapshot(env, version, whole) {
   const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind(version).first();
   if (kept && Date.now() - Date.parse(kept.made_at) < SNAPSHOT_TTL) return JSON.parse(kept.body);
 
-  const body = await aggregate(env, version, whole);
-  await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)')
-    .bind(version, body.madeAt, JSON.stringify(body)).run();
+  // 새로 세거나 적어 두다 막히면(D1 하루 한도) 대시보드째 죽지 않게 한다 — 못 세면 낡은 것이라도 내고, 못 적으면 센 것만 낸다.
+  let body;
+  try { body = await aggregate(env, version, whole); }
+  catch (e) { if (!kept) throw e; console.error(e && e.stack || e); return JSON.parse(kept.body); }
+  try {
+    await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)')
+      .bind(version, body.madeAt, JSON.stringify(body)).run();
+  } catch (e) { console.error(e && e.stack || e); }
   return body;
 }
 
@@ -102,7 +109,7 @@ async function aggregate(env, version, whole) {
     all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, COUNT(DISTINCT install) AS installs
          FROM tally WHERE 1 = 1 ${cond} GROUP BY kind, key`, ...args),
     // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다.
-    whole ? whole.modValues : all('SELECT name, value, COUNT(*) AS installs FROM mods GROUP BY name, value ORDER BY name, value'),
+    whole ? whole.modValues : all('SELECT j.key AS name, j.value AS value, COUNT(*) AS installs FROM options, json_each(options.body) AS j GROUP BY j.key, j.value ORDER BY j.key, j.value'),
     all(`SELECT substr(received_at, 1, 10) AS day, version, COUNT(DISTINCT install) AS installs, COUNT(*) AS batches
          FROM batches WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
     whole ? whole.versions : all('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),

@@ -38,6 +38,6 @@ D1 무료 판은 하루에 읽기 오백만 줄 · 쓰기 십만 줄까지다(�
 
 - `batches` — 덩이 하나에 한 줄(설치 번호 · 버전 · 받은 때).
 - `tally` — 셈. (갈래 · 열쇠 · 버전 · 설치)마다 한 줄이고 받을 때마다 더한다. `kind` 는 `discovery`(발견물 번호) · `hire` · `dismiss`(고용 · 해고한 부하의 인물 번호 — 해고는 부하편성의 「해고」와 재계약 거절만) · `voyage` · `voyage_days` · `voyage_turns`(열쇠는 셋 다 「떠난 도시 번호>닿은 도시 번호」 — 횟수 · 날수의 합 · 선회의 합) · `nav`(`pick:quick` · `helm:steady` · `from:city` · `end:arrived` · `trip:auto` …) · `event`(바다 · 육지에서 하루를 넘길 때의 일 — `sea:day` · `sea:eligible` · `sea:Storm` · `land:day` · `land:Beast` …) · `battle`(`sea:Won` · `sea:Defeated` · `sea:Escaped` · `land:win` · `land:lose`) · `error`(「오류 갈래@클래스.메서드」 — 오류 글은 안 싣는다).
-- `mods` — 설치마다 지금 켜 둔 옵션(`GameSettings` 의 참·거짓 값 전부와 단계 옵션 몇). 보낼 때마다 마지막 값으로 덮는다. 주 모니터 해상도(`ScreenWidth` · `ScreenHeight`, 화면 점)와 배율(`ScreenScale`, %)도 여기 실린다 — 게임 창 크기는 `Resolution`(고른 차례)이다.
+- `options` — 설치마다 지금 켜 둔 옵션(`GameSettings` 의 참·거짓 값 전부와 단계 옵션 몇) 한 벌을 한 줄(JSON)로. 보낼 때마다 마지막 값으로 덮는다(예전의 `mods` 표는 옵션마다 한 줄이라 하루 쓰기 한도를 채웠다 — `migrate-options.sql` 로 옮긴다). 주 모니터 해상도(`ScreenWidth` · `ScreenHeight`, 화면 점)와 배율(`ScreenScale`, %)도 여기 실린다 — 게임 창 크기는 `Resolution`(고른 차례)이다.
 
 이름 · 계정 · IP · 세이브 내용은 적지 않는다. 차림표 줄(`menu`)은 예전에 받았는데 이제 안 받는다 — 줄 글에 회원이 지은 이름(배 이름 따위)이 섞여 들어올 수 있었다. 들른 도시(`city`)도 이제 안 받는다. 표에 남은 옛 줄은 집계에 안 든다(지우려면 `DELETE FROM tally WHERE kind IN ('menu', 'city')`).

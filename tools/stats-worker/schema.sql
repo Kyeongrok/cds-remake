@@ -28,12 +28,12 @@ CREATE TABLE IF NOT EXISTS snapshots (
   body    TEXT NOT NULL
 );
 
--- 설치마다 지금 켜 둔 옵션 — 보낼 때마다 마지막 값으로 덮는다.
-CREATE TABLE IF NOT EXISTS mods (
-  install    TEXT NOT NULL,
-  name       TEXT NOT NULL,       -- GameSettings 의 속성 이름
-  value      INTEGER NOT NULL,    -- 참·거짓은 1·0, 단계 옵션은 그 값
+-- 설치마다 지금 켜 둔 옵션 — 한 설치에 한 줄, 보낼 때마다 마지막 값 한 벌로 덮는다.
+-- 예전에는 mods 표에 옵션마다 한 줄씩 적었다 — 새 설치 하나에 백 줄 넘게 쓰여 D1 하루 쓰기 한도(십만 줄)가 찼다.
+-- 그 표는 옛 자료째 남아 있고 이제 안 쓴다(migrate-options.sql 로 옮겼다).
+CREATE TABLE IF NOT EXISTS options (
+  install    TEXT PRIMARY KEY,
   version    TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  PRIMARY KEY (install, name)
-);
+  body       TEXT NOT NULL        -- {"GameSettings 의 속성 이름": 값} — 참·거짓은 1·0, 단계 옵션은 그 값
+) WITHOUT ROWID;
