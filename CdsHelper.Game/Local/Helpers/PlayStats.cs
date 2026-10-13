@@ -39,6 +39,9 @@ public static class PlayStats
     /// </summary>
     private static readonly TimeSpan FlushEvery = TimeSpan.FromMinutes(30);
 
+    /// <summary>도시를 나설 때 보내는 덩이 사이의 가장 짧은 틈.</summary>
+    private static readonly TimeSpan LeaveGap = TimeSpan.FromMinutes(10);
+
     /// <summary>열쇠·이름의 가장 긴 길이. 받는 쪽도 같은 데서 자른다.</summary>
     private const int MaxKey = 96;
 
@@ -180,7 +183,18 @@ public static class PlayStats
     }
 
     /// <summary>
-    /// 모은 셈을 줄에 세우고 뒤에서 보낸다. 도시를 나설 때와 끌 때 부른다 — 보내지 못하고 꺼져도 줄에 남아 다음에 간다.
+    /// 도시를 나설 때 부른다 — 앞서 보낸 지 <see cref="LeaveGap"/> 이 지났을 때만 줄에 세운다.
+    /// 항구를 잇달아 들르면 몇 분마다 한 덩이씩 나가, 하는 사람이 늘자 받는 곳의 하루 쓰기 한도가 찼다.
+    /// </summary>
+    public static void FlushOnLeave()
+    {
+        bool due;
+        lock (Gate) due = DateTime.UtcNow - _flushedAt >= LeaveGap;
+        if (due) Flush();
+    }
+
+    /// <summary>
+    /// 모은 셈을 줄에 세우고 뒤에서 보낸다. 끌 때와 오류가 났을 때, 그리고 때가 찼을 때 부른다 — 보내지 못하고 꺼져도 줄에 남아 다음에 간다.
     /// </summary>
     public static void Flush()
     {

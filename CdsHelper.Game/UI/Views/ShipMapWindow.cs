@@ -7508,7 +7508,7 @@ public sealed class ShipMapWindow : Window
             if (!dialog.Sailed && !dialog.Explored) return;
 
             // 도시에서 한 일의 셈은 나설 때 한 덩이로 보낸다 — 몇 분마다 보내면 받는 곳(D1)의 하루 한도가 찬다.
-            PlayStats.Flush();
+            PlayStats.FlushOnLeave();
 
             // 나선 자리에서 하루를 새로 센다 — 들어오기 전에 쌓인 눈금이 남아 있으면 나서자마자 날이 넘어가
             // 규율이 깎였다. 원본에 있는 것이 아니라 우리가 넣은 것이다.
