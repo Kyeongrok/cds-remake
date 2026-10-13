@@ -1761,7 +1761,7 @@ public sealed class ShipMapHost : HwndHost
     /// </summary>
     private void SyncRoute((double X, double Y) origin)
     {
-        if (_autoRoute is not { Count: > 0 } route)
+        if (_autoRoute is not { Count: > 0 } route || !Local.Settings.GameSettings.ShowAutoRoute)
         {
             if (_routeShown > 0) { _renderer.SetRoute([]); _routeShown = 0; }
             return;

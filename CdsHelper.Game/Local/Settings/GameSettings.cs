@@ -285,6 +285,9 @@ public sealed class GameSettingsData
     /// <summary>지도를 마우스 휠로 키우고 줄일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool WheelZoom { get; set; }
 
+    /// <summary>자동항해 · 육지 자동이동으로 갈 길을 지도 위에 선으로 그릴지. 켜 두고 시작한다.</summary>
+    public bool ShowAutoRoute { get; set; } = true;
+
     /// <summary>녹화용 — 도시 화면을 지도 창 안에 비춰 그릴지(CaptureMirror). 실험이라 꺼 두고 시작한다.</summary>
     public bool CaptureMirror { get; set; }
 
@@ -1205,6 +1208,13 @@ public static class GameSettings
     {
         get => Get(d => d.CaptureMirror);
         set => Set(d => d.CaptureMirror = value);
+    }
+
+    /// <summary>자동항해 경로 표시 — 갈 길을 지도 위에 선으로 그린다. 끄면 선 없이 배만 간다.</summary>
+    public static bool ShowAutoRoute
+    {
+        get => Get(d => d.ShowAutoRoute);
+        set => Set(d => d.ShowAutoRoute = value);
     }
 
     /// <summary>휠 확대 — 항해 · 뭍 지도를 마우스 휠로 키우고 줄인다. 끄면(기본) 휠이 아무 일도 안 한다.</summary>
