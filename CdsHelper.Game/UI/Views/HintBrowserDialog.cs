@@ -227,10 +227,10 @@ public sealed class HintBrowserDialog : GameWindow
         _body.Text = hint.Text;
 
         // 출전 — 그 힌트를 펼침면에 담은 책. 어느 책으로 얻었는지는 안 적어 두므로 실린 책을 다 든다.
-        // 술집 · 후원자처럼 책 밖에서만 얻는 힌트는 줄이 없다.
+        // 술집 · 후원자처럼 책 밖에서만 얻는 힌트는 줄이 없다. 같은 책이 말(언어)만 달리 여러 권 있어도 한 줄로 든다.
         var books = _game.Books?.Books.Where(b => b.Hints.Contains(hint.Id)).ToList() ?? [];
         _source.Text = string.Join(Environment.NewLine,
-            books.Select(b => b.Author.Length > 0 ? $"『{b.Title}』 {b.Author}" : $"『{b.Title}』"));
+            books.Select(b => b.Author.Length > 0 ? $"『{b.Title}』 {b.Author}" : $"『{b.Title}』").Distinct());
         _source.Visibility = books.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
