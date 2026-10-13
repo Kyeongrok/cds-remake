@@ -53,14 +53,17 @@ internal sealed class MapPointDialog : GameWindow
             rows.Children.Add(button);
         }
 
-        var bar = GameUi.TitleBar(title, Close);
-        GameUi.EnableDrag(this, bar);
-
         var scroller = GameUi.Scroller(rows, RowsShown * RowHeight);
         scroller.Margin = new Thickness(3, 2, 3, 3);
 
         var stack = new StackPanel();
-        stack.Children.Add(bar);
+        // 제목이 비면 띠 자체를 안 세운다 — 스핑크스 퀴즈의 고르기 창이 빈 띠만 얹고 있었다. 닫는 것은 Esc · 오른쪽 단추다.
+        if (title.Length > 0)
+        {
+            var bar = GameUi.TitleBar(title, Close);
+            GameUi.EnableDrag(this, bar);
+            stack.Children.Add(bar);
+        }
         stack.Children.Add(scroller);
 
         // 테는 도시 명령 창과 같은 한 점이다(GameMenu.BoxEdge). 무늬 액자를 두르면
@@ -103,7 +106,7 @@ internal sealed class MapPointDialog : GameWindow
     /// <summary>
     /// 창을 띄우고 고른 줄 번호를 낸다. 물렀으면 -1.
     /// </summary>
-    /// <param name="title">제목 줄. 미니 게임 고르기처럼 다른 데서도 쓴다.</param>
+    /// <param name="title">제목 줄. 미니 게임 고르기처럼 다른 데서도 쓴다. 비우면 제목 띠가 없다.</param>
     /// <param name="rowWidth">줄 하나의 너비. 짧은 이름만 늘어놓을 때는 좁힌다.</param>
     /// <param name="enabled">줄마다 누를 수 있는지. 없으면 다 된다 — 안 되는 줄은 흐리게 선다.</param>
     public static int Ask(Window owner, IReadOnlyList<string> names,
