@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CdsHelper.Support.Local.Helpers;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.Local.Helpers;
@@ -184,6 +185,7 @@ public static class ShipSprites
     /// 등록해 넣은 배는 그 배의 폴더에). 정사각이고 한 변이 48 의 배수(96 · 144 · 192 … <see cref="HiMaxWidth"/>)여야 한다.
     /// 48x48 과 <b>같은 자리·같은 크기로</b> 놓이므로 배를 그 틀 안에 같은 비율로 그리면 된다. 비침은 알파다.
     /// 여덟 방향 가운데 있는 것만 쓰고 없는 방향은 원본으로 남는다.
+    /// 붙박이 벌은 편집기가 리마스터해 적어 둔 자리도 본다(<see cref="ShipHiArt.Find"/>).
     ///
     /// 돌려주는 점은 <b>알파를 곱해 둔</b> 것이다 — 늘려 그릴 때 가장자리에 검은 테가 끼지 않는다.
     /// </remarks>
@@ -194,9 +196,10 @@ public static class ShipSprites
         {
             if (HiFrames[i] is { } kept) return kept.Side > 0 ? kept : null;
 
-            string dir = _folder ?? Path.Combine(AppContext.BaseDirectory,
-                                                 _skin >= 0 ? $"asset/ship-g{_skin}" : ShipDirectory);
-            var made = LoadHiPng(Path.Combine(dir, $"ship_{i}_hd.png"));
+            string? path = _folder != null
+                ? Path.Combine(_folder, ShipHiArt.FileName(i))
+                : ShipHiArt.Find(_skin >= 0 ? $"ship-g{_skin}" : "ship", i);
+            var made = path == null ? null : LoadHiPng(path);
             HiFrames[i] = made ?? ([], 0);
             return made;
         }

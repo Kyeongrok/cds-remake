@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using CdsHelper.Support.Local.Helpers;
 using CdsHelper.Support.Local.Models;
 using CdsHelper.Support.UI.Units;
@@ -39,10 +40,16 @@ public sealed class ShipRegistryDialog : Window
     private readonly WrapPanel _slots;
     private readonly Button _saveButton;
     private readonly Button _deleteButton;
+    private readonly WrapPanel _hiSlots;
+    private readonly Button _modelButton;
+    private readonly Button _remasterButton;
+    private readonly Button _hiClearButton;
+    private readonly CheckBox _descreen;
 
     private List<ShipRegistry.Design> _designs = [];
     private ShipRegistry.Design? _current;
     private bool _filling;
+    private bool _busy;
 
     public ShipRegistryDialog()
     {
@@ -72,6 +79,19 @@ public sealed class ShipRegistryDialog : Window
 
         _saveButton = MakeButton("저장", Save);
         _deleteButton = MakeButton("지우기", Delete);
+
+        _hiSlots = new WrapPanel();
+        _modelButton = MakeButton("모델 받기 (64MB)", DownloadModel, UpscaleModelAsset.Credit);
+        _remasterButton = MakeButton("여덟 장 리마스터", Remaster, "48x48 그림을 모델로 4배 키워 고해상도 그림을 만든다");
+        _hiClearButton = MakeButton("고해상도 지우기", ClearHi);
+        _descreen = new CheckBox
+        {
+            Content = "돛 점무늬 지우기",
+            IsChecked = true,
+            VerticalAlignment = VerticalAlignment.Center,
+            ToolTip = "원본 돛에 찍힌 파란 점을 지우고 키운다 — 그대로 키우면 물방울무늬가 된다",
+        };
+
         _form = BuildForm();
 
         Content = BuildContent();
@@ -169,6 +189,15 @@ public sealed class ShipRegistryDialog : Window
             $"한 장 {ShipRegistry.SpriteWidth}x{ShipRegistry.SpriteWidth} 로 맞춰 굽는다 — 큰 그림은 비율 그대로 줄여 " +
             "한가운데에 놓고 둘레는 비워 둔다. 번호는 0 북에서 반시계로 돈다. " +
             "이미지 크기 줄이기의 2행 4열 나누기로 뽑은 여덟 장을 그대로 넣으면 된다."));
+
+        form.Children.Add(Section("고해상도 그림 (리마스터)"));
+        form.Children.Add(Row(_modelButton, _remasterButton, _hiClearButton, _descreen));
+        form.Children.Add(new Border { Height = 6 });
+        form.Children.Add(_hiSlots);
+        form.Children.Add(Note(
+            $"위 여덟 장을 업스케일 모델로 {ShipRegistry.SpriteWidth * HiScale}x{ShipRegistry.SpriteWidth * HiScale} 로 키워 " +
+            "같은 폴더에 ship_{방향}_hd.png 로 둔다. 바다에서는 이 그림이 있는 방향만 고해상도로 뜨고 없는 방향은 원본으로 남는다. " +
+            $"모델은 {UpscaleModelAsset.Credit}."));
 
         return form;
     }
@@ -306,6 +335,7 @@ public sealed class ShipRegistryDialog : Window
             {
                 _name.Text = "";
                 _slots.Children.Clear();
+                _hiSlots.Children.Clear();
                 return;
             }
 
@@ -326,6 +356,7 @@ public sealed class ShipRegistryDialog : Window
         }
 
         FillSlots();
+        FillHiSlots();
         _status.Text = ShipRegistry.HasAllSprites(design!.Id)
             ? "그림이 다 찼습니다 — 조선소 구입 표에 나옵니다."
             : "그림이 여덟 장 다 차야 조선소에 나옵니다.";
@@ -487,6 +518,207 @@ public sealed class ShipRegistryDialog : Window
         Hull.Reload();
         FillSlots();
         _status.Text = "그림을 다 지웠습니다 — 이 배는 조선소에 안 나옵니다.";
+    }
+
+    // ── 고해상도 그림 ───────────────────────────────────────────────────────
+
+    /// <summary>업스케일 모델의 배율. 48 이 192 가 된다.</summary>
+    private const int HiScale = 4;
+
+    private const double HiSlotSize = 120;
+
+    /// <summary>바다 위에서 어떻게 보일지 가늠하도록 깔아 두는 물빛.</summary>
+    private static readonly Brush Sea = new SolidColorBrush(Color.FromRgb(0x28, 0x50, 0x8C));
+
+    /// <summary>붙박이면 그 그림벌 폴더 이름(<c>ship-g2</c>), 등록해 넣은 배면 null.</summary>
+    private static string? SkinFolder(ShipRegistry.Design design) => design.IsBuiltin
+        ? $"ship-g{Math.Max(0, Hull.Builtin.FirstOrDefault(h => h.Name == design.Builtin)?.Skin ?? 0)}"
+        : null;
+
+    private static string SourcePath(ShipRegistry.Design design, int direction) => design.IsBuiltin
+        ? ShipRegistry.BuiltinSpritePath(Hull.Builtin.FirstOrDefault(h => h.Name == design.Builtin)?.Skin ?? 0, direction)
+        : ShipRegistry.SpritePath(design.Id, direction);
+
+    /// <summary>지금 있는 고해상도 그림. 없으면 null.</summary>
+    private static string? HiPath(ShipRegistry.Design design, int direction)
+    {
+        if (SkinFolder(design) is { } skin) return ShipHiArt.Find(skin, direction);
+
+        string path = Path.Combine(ShipRegistry.FolderOf(design.Id), ShipHiArt.FileName(direction));
+        return File.Exists(path) ? path : null;
+    }
+
+    /// <summary>고해상도 그림을 적을 자리.</summary>
+    private static string HiSavePath(ShipRegistry.Design design, int direction)
+    {
+        string folder = SkinFolder(design) is { } skin ? ShipHiArt.SaveDirectory(skin) : ShipRegistry.FolderOf(design.Id);
+        return Path.Combine(folder, ShipHiArt.FileName(direction));
+    }
+
+    private void FillHiSlots()
+    {
+        _hiSlots.Children.Clear();
+        if (_current is not { } design) return;
+
+        for (int i = 0; i < ShipRegistry.Directions; i++)
+        {
+            var image = HiPath(design, i) is { } path ? ReadImage(path) : null;
+
+            var frame = new Border
+            {
+                Width = HiSlotSize,
+                Height = HiSlotSize,
+                Background = Sea,
+                Child = image == null
+                    ? new TextBlock
+                    {
+                        Text = "없음",
+                        FontSize = 10,
+                        Foreground = Brushes.LightGray,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                    }
+                    : new Image { Source = image, Stretch = Stretch.Uniform },
+            };
+            if (image != null) RenderOptions.SetBitmapScalingMode(frame.Child, BitmapScalingMode.HighQuality);
+
+            var stack = new StackPanel { Margin = new Thickness(0, 0, 8, 8) };
+            stack.Children.Add(frame);
+            stack.Children.Add(new TextBlock
+            {
+                Text = image == null
+                    ? $"{i}  {ShipRegistry.DirectionNames[i]}"
+                    : $"{i}  {ShipRegistry.DirectionNames[i]}  {image.PixelWidth}x{image.PixelHeight}",
+                FontSize = 11,
+                Foreground = Brushes.DimGray,
+                TextAlignment = TextAlignment.Center,
+                Width = HiSlotSize,
+                Margin = new Thickness(0, 2, 0, 0),
+            });
+            _hiSlots.Children.Add(stack);
+        }
+
+        RefreshHiButtons();
+    }
+
+    private static BitmapSource? ReadImage(string path)
+    {
+        try
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.StreamSource = new MemoryStream(File.ReadAllBytes(path));
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+            image.EndInit();
+            image.Freeze();
+            return image;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void RefreshHiButtons()
+    {
+        _modelButton.Content = UpscaleModelAsset.Exists ? "모델 다시 받기" : "모델 받기 (64MB)";
+        _modelButton.IsEnabled = !_busy;
+        _remasterButton.IsEnabled = !_busy && _current != null && UpscaleModelAsset.Exists;
+        _hiClearButton.IsEnabled = !_busy && _current != null;
+        _list.IsEnabled = !_busy;
+    }
+
+    private void SetBusy(bool busy)
+    {
+        _busy = busy;
+        RefreshHiButtons();
+    }
+
+    private async void DownloadModel()
+    {
+        if (_busy) return;
+
+        SetBusy(true);
+        try
+        {
+            var progress = new Progress<double>(done => _status.Text = $"모델을 받는 중 — {done:P0}");
+            _status.Text = "모델을 받는 중…";
+            await UpscaleModelAsset.DownloadAsync(progress);
+            _status.Text = $"모델을 받았습니다 — {UpscaleModelAsset.CachePath}";
+        }
+        catch (Exception ex)
+        {
+            _status.Text = $"모델을 받지 못했습니다 — {ex.Message}";
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    /// <summary>있는 방향을 다 키운다. 모델 한 번 돌리는 데 몇 초씩 걸려 뒤에서 돈다.</summary>
+    private async void Remaster()
+    {
+        if (_busy || _current is not { } design) return;
+
+        var jobs = Enumerable.Range(0, ShipRegistry.Directions)
+            .Select(i => (Source: SourcePath(design, i), Target: HiSavePath(design, i)))
+            .Where(job => File.Exists(job.Source))
+            .ToList();
+        if (jobs.Count == 0)
+        {
+            _status.Text = "키울 그림이 없습니다 — 8방향 그림을 먼저 넣어 주세요.";
+            return;
+        }
+
+        bool descreen = _descreen.IsChecked == true;
+        string model = UpscaleModelAsset.CachePath;
+
+        SetBusy(true);
+        try
+        {
+            _status.Text = "모델을 올리는 중…";
+            var progress = new Progress<int>(done => _status.Text = $"리마스터 중 — {done}/{jobs.Count}");
+            await Task.Run(() =>
+            {
+                using var remaster = new ShipRemaster(model);
+                for (int n = 0; n < jobs.Count; n++)
+                {
+                    remaster.RemasterFile(jobs[n].Source, jobs[n].Target, descreen);
+                    ((IProgress<int>)progress).Report(n + 1);
+                }
+            });
+
+            _status.Text = $"{jobs.Count}장을 리마스터했습니다 — {Path.GetDirectoryName(jobs[0].Target)}";
+        }
+        catch (Exception ex)
+        {
+            _status.Text = $"리마스터하지 못했습니다 — {ex.Message}";
+        }
+        finally
+        {
+            SetBusy(false);
+            FillHiSlots();
+        }
+    }
+
+    private void ClearHi()
+    {
+        if (_current is not { } design) return;
+
+        // 붙박이는 찾는 자리가 여럿이라(소스 옆 · %APPDATA% · 굽힌 자리) 안 보일 때까지 걷는다.
+        int gone = 0;
+        for (int i = 0; i < ShipRegistry.Directions; i++)
+        {
+            for (int tries = 0; tries < 3 && HiPath(design, i) is { } path; tries++)
+            {
+                try { File.Delete(path); gone++; } catch { break; }
+            }
+        }
+
+        FillHiSlots();
+        _status.Text = gone == 0 ? "지울 고해상도 그림이 없습니다." : "고해상도 그림을 지웠습니다 — 바다에서 원본 그림으로 돌아갑니다.";
     }
 
     // ── 만들기·저장·지우기 ──────────────────────────────────────────────────
