@@ -68,9 +68,9 @@ internal sealed class AbilityMakeDialog : InfoDialog
     private static readonly string[] HelpLines =
     [
         "[모드] 직업을 누르면 다시 굴린다.",
-        "계산기로 바라는 값을 적는다.",
-        "적은 값을 다 채운 판이면 멈춘다.",
-        "적은 값과 신상은 3시간 기억한다.",
+        "계산기로 원하는 값을 정한다.",
+        "값이 모두 그 이상 나오면 멈춘다.",
+        "정한 값과 신상은 3시간 기억한다.",
     ];
 
     /// <summary>설명 줄 사이와 설명이 차지하는 높이.</summary>
@@ -134,6 +134,8 @@ internal sealed class AbilityMakeDialog : InfoDialog
         // 세 시간 안에 적어 둔 바라는 값이 있으면 그대로 채운다(CharacterMakeDialog 와 한 벌).
         if (GameSettings.RerollOnJob && GameSettings.CharacterDraft?.Targets is { } saved)
             for (int i = 0; i < Math.Min(saved.Length, _targets.Length); i++) _targets[i] = saved[i];
+        if (GameSettings.RerollOnJob) _bonusTarget = GameSettings.CharacterDraft?.BonusTarget;
+        _initialBonus = _left + _added.Sum();
 
         // 굴리는 자리(0x0045D450)에서 컨디션·소지금·명성·악명도 함께 정해 둔다 — 컨디션은 보너스를 얹기 전 체력이다.
         if (again)
@@ -188,6 +190,16 @@ internal sealed class AbilityMakeDialog : InfoDialog
         Put(body, Text("보너스"), 8, 144);
         Put(body, Text("포인트:"), 24, 160);
         Put(body, new Grid { Width = 4 * Cell, Children = { _bonus } }, 24 + 7 * Cell, 160);
+
+        // 모드면 보너스 포인트에도 계산기를 단다 — 능력치 칸의 계산기와 같은 줄(x)에 세운다.
+        // 적은 값은 능력치에 적은 값들과 <b>함께 다</b> 채워야 멎는다(TargetsMet).
+        if (GameSettings.RerollOnJob)
+        {
+            Put(body, GameUi.CalcButton(AskBonusTarget, ArrowWidth), 140, 160);
+            _bonusTargetLabel = Text("");
+            _bonusTargetLabel.HorizontalAlignment = HorizontalAlignment.Right;
+            Put(body, new Grid { Width = 3 * Cell, Children = { _bonusTargetLabel } }, 160, 160);
+        }
 
         for (int i = 0; i < Job.Choosable; i++)
         {
@@ -351,8 +363,31 @@ internal sealed class AbilityMakeDialog : InfoDialog
         }
     }
 
+    /// <summary>보너스 포인트의 바라는 값. 계산기로 적었을 때만 있다.</summary>
+    private int? _bonusTarget;
+
+    /// <summary>이 창을 열 때 받은 보너스 포인트 — 보너스 계산기가 처음 보여 줄 값이다.</summary>
+    private readonly int _initialBonus;
+
+    /// <summary>보너스 계산기 옆에 적어 둔 바라는 값을 보이는 글. 모드를 안 켰으면 없다.</summary>
+    private GameUi.GameLabel? _bonusTargetLabel;
+
+    /// <summary>굴릴 수 있는 보너스 포인트의 끝(<see cref="Ability.BonusFor"/> — 합이 250 이하일 때 20 + 0~10).</summary>
+    private const int BonusMax = 30;
+
+    /// <summary>보너스 포인트의 바라는 값을 계산기로 받는다.</summary>
+    private void AskBonusTarget()
+    {
+        if (NumberPadDialog.Ask(this, _bonusTarget ?? _initialBonus, 0, BonusMax) is { } n)
+        {
+            _bonusTarget = n;
+            Sync();
+        }
+    }
+
     /// <summary>
-    /// 적어 둔 바라는 값을 다 채웠는지 — 보너스로 넣은 것은 빼고 굴린 값으로 잰다. 하나도 안 적었으면 거짓이다.
+    /// 적어 둔 바라는 값을 <b>다</b> 채웠는지 — 능력치는 보너스로 넣은 것을 빼고 굴린 값으로, 보너스 포인트는
+    /// 넣은 것을 도로 합친 받은 값으로 잰다. 하나도 안 적었으면 거짓이다.
     /// </summary>
     private bool TargetsMet()
     {
@@ -362,6 +397,11 @@ internal sealed class AbilityMakeDialog : InfoDialog
             if (_targets[i] is not { } want) continue;
             any = true;
             if (_stats[i] - _added[i] < want) return false;
+        }
+        if (_bonusTarget is { } bonus)
+        {
+            any = true;
+            if (_left + _added.Sum() < bonus) return false;
         }
         return any;
     }
@@ -396,6 +436,7 @@ internal sealed class AbilityMakeDialog : InfoDialog
         _bonus.Text = $"{_left}";
         for (int i = 0; i < _targetLabels.Length; i++)
             if (_targetLabels[i] is { } label) label.Text = _targets[i] is { } want ? $"{want}" : "";
+        if (_bonusTargetLabel is { } bonusLabel) bonusLabel.Text = _bonusTarget is { } bonusWant ? $"{bonusWant}" : "";
 
         // 고른 직업은 <b>띠 무늬를 갈아</b> 알린다. 원본은 <b>고른 것이 밝은 베이지</b>고
         // 안 고른 것이 어두운 쪽이다 — 우리가 거꾸로 걸고 있었다.
@@ -413,7 +454,7 @@ internal sealed class AbilityMakeDialog : InfoDialog
 
         // 바라는 값도 다음에 새로 지을 때 채우게 적어 둔다.
         if (GameSettings.RerollOnJob)
-            GameSettings.EditCharacterDraft(d => d.Targets = [.. _targets]);
+            GameSettings.EditCharacterDraft(d => (d.Targets, d.BonusTarget) = ([.. _targets], _bonusTarget));
 
         _ok = true;
         Close();

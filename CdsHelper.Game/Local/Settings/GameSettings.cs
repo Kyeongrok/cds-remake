@@ -21,6 +21,9 @@ public sealed class CharacterDraft
     /// <summary>능력치 창에서 계산기로 적은 바라는 값(모드 「직업 누르면 다시 굴림」). 안 적은 칸은 null.</summary>
     public int?[]? Targets { get; set; }
 
+    /// <summary>같은 창에서 보너스 포인트에 적은 바라는 값. 안 적었으면 null.</summary>
+    public int? BonusTarget { get; set; }
+
     /// <summary>마지막으로 적은 때(UTC).</summary>
     public DateTime SavedAt { get; set; }
 }
