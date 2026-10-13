@@ -100,6 +100,12 @@ public static class ShipSprites
         }
     }
 
+    /// <summary>그림은 그대로인데 <b>고르는 규칙</b>이 바뀌었을 때 부른다(모드 「선박 업스케일링」) — 다음 틱에 다시 올린다.</summary>
+    public static void Invalidate()
+    {
+        lock (Gate) Generation++;
+    }
+
     /// <summary>어느 배의 그림을 쓸지 한 번에 정한다 — 폴더와 벌 번호를 같이 맞춘다.</summary>
     public static void Use(Hull? hull)
     {
@@ -191,6 +197,10 @@ public static class ShipSprites
     /// </remarks>
     public static (uint[] Pixels, int Side)? HiFrame(int heading16)
     {
+        // 붙박이 벌의 고해상도 그림은 모드 「선박 업스케일링」을 켰을 때만 쓴다. 등록해 넣은 배는 넣은 사람이
+        // 제 폴더에 일부러 둔 것이라 늘 쓴다.
+        if (_folder == null && !Settings.GameSettings.ShipUpscale) return null;
+
         int i = (heading16 & 0xF) >> 1;
         lock (Gate)
         {

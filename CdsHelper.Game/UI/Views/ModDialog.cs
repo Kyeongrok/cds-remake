@@ -435,6 +435,15 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 덧그림입니다 — 바다에 뜬 내 배 뒤로 지나온 길을 따라 물거품 항적이 벌어지며 스러지고,"
             + " 배 밑에 옅은 그림자가 깔리고 배가 살짝 출렁입니다. 빠를수록 항적이 길고, 서면 사라집니다."
             + " 켜 둔 동안은 화면을 계속 다시 그립니다. 남의 배와 뭍의 말에는 안 듭니다."));
+        hires.Children.Add(Toggle("선박 업스케일링", GameSettings.ShipUpscale,
+            on =>
+            {
+                GameSettings.ShipUpscale = on;
+                Local.Helpers.ShipSprites.Invalidate();
+            },
+            "원본에 없는 덧그림입니다 — 바다에 뜬 내 배를 원본 48x48 도트 대신, 그것을 업스케일 모델(Rebout Blend 4x)로"
+            + " 네 배 키운 192x192 그림으로 그립니다. 지도를 키워도 배의 윤곽이 계단지지 않습니다."
+            + " 끄면(기본) 원본 도트 그대로입니다. 남의 배와 뭍의 말에는 안 듭니다."));
         hires.Children.Add(Toggle("부드러운 구름", options.SmoothCloudsOn(), options.SetSmoothClouds,
             "원본 구름은 한 점 걸러 찍은 바둑판 무늬로 반투명을 흉내 내서, 지도를 키우면 격자가 그대로 커집니다."
             + " 켜면 그 무늬를 참 반투명으로 풀어 매끈하게 늘려 그립니다. 비치는 정도는 원본과 같습니다."));

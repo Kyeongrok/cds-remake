@@ -131,6 +131,9 @@ public sealed class GameSettingsData
     /// <summary>배 항적(항적·그림자·출렁임). 꺼 두고 시작한다.</summary>
     public bool ShipWake { get; set; }
 
+    /// <summary>선박 업스케일링(붙박이 배를 4배로 키운 그림으로). 꺼 두고 시작한다.</summary>
+    public bool ShipUpscale { get; set; }
+
     /// <summary>뭍 세부 질감(지형마다 화면 해상도 잔무늬). 꺼 두고 시작한다.</summary>
     public bool LandDetail { get; set; }
 
@@ -1499,6 +1502,13 @@ public static class GameSettings
     {
         get => Get(d => d.ShipWake);
         set => Set(d => d.ShipWake = value);
+    }
+
+    /// <summary>선박 업스케일링 — 모드 창 「고해상도」에서 켜고 끈다.</summary>
+    public static bool ShipUpscale
+    {
+        get => Get(d => d.ShipUpscale);
+        set => Set(d => d.ShipUpscale = value);
     }
 
     /// <summary>고해상도 바다 — 모드 창 「실험」에서 켜고 끈다.</summary>
