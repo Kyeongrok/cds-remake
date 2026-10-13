@@ -909,7 +909,10 @@ public sealed class ShipMapHost : HwndHost
         }
         catch (Exception ex)
         {
+            // 화면을 못 걸면 지도가 빈 채로 선다 — 까닭을 상태 줄에 적고, 한 번은 통계에도 남긴다.
+            if (SwapChainError.Length == 0) PlayStats.Error(ex);
             SwapChainError = ex.Message;
+            Status = $"그래픽 화면을 열지 못했습니다 — {ex.Message}";
         }
     }
 
@@ -924,22 +927,34 @@ public sealed class ShipMapHost : HwndHost
             using var dxgiDevice = _renderer.Device.QueryInterface<IDXGIDevice>();
             using var adapter = dxgiDevice.GetAdapter();
             using var factory = adapter.GetParent<IDXGIFactory2>();
-            var desc = new SwapChainDescription1
+            // 새 방식(Flip)부터 걸어 보고, 장치나 드라이버가 못 받으면 옛 방식으로 물러선다 — 못 걸면 지도가 빈 채로 선다.
+            (SwapEffect Effect, Scaling Scaling, uint Buffers)[] ways =
+            [
+                (SwapEffect.FlipDiscard, Scaling.None, 2),
+                (SwapEffect.FlipSequential, Scaling.Stretch, 2),
+                (SwapEffect.Discard, Scaling.Stretch, 1),
+            ];
+            for (int i = 0; i < ways.Length && _swapChain == null; i++)
             {
-                Width = (uint)w,
-                Height = (uint)h,
-                Format = Format.B8G8R8A8_UNorm,
-                BufferCount = 2,
-                BufferUsage = Usage.RenderTargetOutput,
-                SampleDescription = new SampleDescription(1, 0),
-                SwapEffect = SwapEffect.FlipDiscard,
-                Scaling = Scaling.None,
-            };
-            _swapChain = factory.CreateSwapChainForHwnd(_renderer.Device, _hwnd, desc);
+                var desc = new SwapChainDescription1
+                {
+                    Width = (uint)w,
+                    Height = (uint)h,
+                    Format = Format.B8G8R8A8_UNorm,
+                    BufferCount = ways[i].Buffers,
+                    BufferUsage = Usage.RenderTargetOutput,
+                    SampleDescription = new SampleDescription(1, 0),
+                    SwapEffect = ways[i].Effect,
+                    Scaling = ways[i].Scaling,
+                };
+                try { _swapChain = factory.CreateSwapChainForHwnd(_renderer.Device, _hwnd, desc); }
+                catch when (i < ways.Length - 1) { }
+            }
         }
         else
         {
-            _swapChain.ResizeBuffers(2, (uint)w, (uint)h, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
+            // 버퍼 수 0 은 「지금 그대로」다 — 물러선 방식은 한 장이다.
+            _swapChain.ResizeBuffers(0, (uint)w, (uint)h, Format.B8G8R8A8_UNorm, SwapChainFlags.None);
         }
 
         using var back = _swapChain.GetBuffer<ID3D11Texture2D>(0);

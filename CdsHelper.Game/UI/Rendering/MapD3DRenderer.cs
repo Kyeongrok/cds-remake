@@ -1190,6 +1190,9 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     public int TargetWidth => _targetW;
     public int TargetHeight => _targetH;
 
+    /// <summary>그래픽 카드 대신 소프트웨어 장치(WARP)로 열었는지.</summary>
+    public bool Software { get; private set; }
+
     /// <summary>
     /// 장치와 텍스처를 올린다. <paramref name="worldData"/> 는 WORLD.CDS 원본,
     /// <paramref name="ocean"/> 은 풀어 둔 OCEAN.CDS 타일.
@@ -1199,8 +1202,15 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         var flags = DeviceCreationFlags.BgraSupport;
         var levels = new[] { FeatureLevel.Level_11_0, FeatureLevel.Level_10_1, FeatureLevel.Level_10_0 };
         // out 인자의 형을 적어 둬야 한다 — var 로 두면 FeatureLevel 을 내는 오버로드와 헷갈린다.
-        D3D11.D3D11CreateDevice(null, DriverType.Hardware, flags, levels,
-                                out ID3D11Device dev, out ID3D11DeviceContext ctx).CheckError();
+        var made = D3D11.D3D11CreateDevice(null, DriverType.Hardware, flags, levels,
+                                           out ID3D11Device dev, out ID3D11DeviceContext ctx);
+        // 그래픽 카드로 못 열면(드라이버가 없거나 너무 옛 장치) 윈도의 소프트웨어 장치(WARP)로 물러선다 — 느려도 지도는 뜬다.
+        if (made.Failure)
+        {
+            made = D3D11.D3D11CreateDevice(null, DriverType.Warp, flags, levels, out dev, out ctx);
+            Software = made.Success;
+        }
+        made.CheckError();
         _device = dev;
         _ctx = ctx;
 

@@ -149,7 +149,17 @@ public static class PlayStats
     public static void Error(Exception ex)
     {
         var at = ex.TargetSite;
-        Count("error", $"{ex.GetType().Name}@{at?.DeclaringType?.Name}.{at?.Name}", null);
+        string key = $"{ex.GetType().Name}@{at?.DeclaringType?.Name}.{at?.Name}";
+        // 난 자리가 남의 라이브러리(WPF · DirectX) 안이면 어디서 불렀는지 알 수 없다 — 우리 코드의 첫 자리와 오류 번호를 덧붙인다.
+        if (at?.DeclaringType?.Namespace?.StartsWith("CdsHelper") != true)
+        {
+            var mine = new System.Diagnostics.StackTrace(ex).GetFrames()
+                .Select(f => f.GetMethod())
+                .FirstOrDefault(m => m?.DeclaringType?.Namespace?.StartsWith("CdsHelper") == true);
+            if (mine != null) key += $"<{mine.DeclaringType?.Name}.{mine.Name}";
+            key += $":{ex.HResult:X8}";
+        }
+        Count("error", key, null);
         Flush();
     }
 

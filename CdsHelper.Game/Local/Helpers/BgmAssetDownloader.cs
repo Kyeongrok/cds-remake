@@ -62,7 +62,10 @@ public static class BgmAssetDownloader
         }
         catch (Exception ex)
         {
-            return (false, ex.Message);
+            // 「see inner exception」만으로는 까닭을 알 수 없다 — 속 오류의 글까지 잇는다.
+            string why = ex.Message;
+            for (var inner = ex.InnerException; inner != null; inner = inner.InnerException) why += " → " + inner.Message;
+            return (false, why);
         }
     }
 

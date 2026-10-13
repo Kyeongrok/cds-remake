@@ -3270,7 +3270,19 @@ public sealed class ShipMapWindow : Window
             var loading = LoadingDialog.Open(this, "지도를 읽는 중...");
             try
             {
-                if (!_host.Start(_game.Directory)) { _status.Text = _host.Status; return; }
+                bool up;
+                try { up = _host.Start(_game.Directory); }
+                catch (Exception ex)
+                {
+                    // 그래픽 장치를 못 열면 지도가 흰 화면으로 선다 — 까닭을 알리고 통계에 남긴다.
+                    PlayStats.Error(ex);
+                    loading.Close();
+                    _status.Text = $"지도를 열지 못했습니다 — {ex.Message}";
+                    MessageBox.Show(this, "지도 화면을 열지 못했습니다. 그래픽 드라이버를 최신으로 올린 뒤 다시 켜 보세요.\n\n"
+                                          + ex.Message, "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                if (!up) { _status.Text = _host.Status; return; }
                 _host.ShowFlowArrows = GameSettings.ShowFlowArrows;
                 _host.SeaEffect = GameSettings.SeaEffect;
                 _host.SeaBrightness = GameSettings.SeaBrightness;
@@ -7630,8 +7642,10 @@ public sealed class ShipMapWindow : Window
                 if (!download.Success)
                 {
                     Say($"BGM 다운로드 실패: {download.Error}");
-                    MessageBox.Show($"BGM 다운로드 실패:\n{download.Error}", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    // 배경음악만 안 나올 뿐 게임은 그대로 된다 — 겁주는 오류 창 대신 그렇게 알린다.
+                    MessageBox.Show("배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n"
+                                    + "(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n" + download.Error,
+                                    "BGM 다운로드", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
