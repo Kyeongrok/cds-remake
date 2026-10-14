@@ -786,7 +786,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 쪽에서 발견 대본을 돌리고(0x00492A5E~0x00492AF9), 결과가 밑값 2 로 남으면 건물에 안 든다.
         // 시나리오 이야기는 발견 이벤트보다도 먼저 본다(원본에 없는 길) — 로마의 산·피에트로 대성당처럼 발견 이벤트가
         // 명성으로 문을 막는 건물에서는, 원본 차례대로라면 막힌 채 끝나 장면이 영영 안 돈다.
-        if (Engine.Scenarios.IsBook(_player.ActiveStoryBook))
+        bool storyDone = Engine.Scenarios.IsBook(_player.ActiveStoryBook);
+        if (storyDone)
         {
             _game.RulerFace = building.Code == PalaceCode ? () => RulerFaceOf(building.Code, building.Kind) : null;
             if (CheckStory(building.Code)) return;
@@ -800,7 +801,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 초심자 개인 이야기(이야기0/1)가 <b>맨 먼저</b>다 — 원본은 들어서자마자 0x004AB5A0 으로
         // 건물 사건을 보고, 장면이 돌았으면 보복·문간 관문·차림표를 다 건너뛰고 건물을 나선다
         // (0x004A266A → 0x004A26BC). 그래서 명성이 모자라도 이야기의 저택에는 불려 들어간다.
-        if (CheckStory(building.Code)) return;
+        // 시나리오 책은 위에서 이미 돌렸다 — 또 돌리면 건물을 안 막는 장면(「벌써 돌아왔는가？」)이 두 번 나왔다.
+        if (!storyDone && CheckStory(building.Code)) return;
 
         // 배신한 후원자의 나라에서는 건물에 들어서다 보복을 당한다(0x004A267D → 0x00450140).
         if (Ambushed()) return;
