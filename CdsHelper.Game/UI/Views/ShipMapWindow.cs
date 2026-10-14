@@ -522,7 +522,6 @@ public sealed class ShipMapWindow : Window
             // 원본에 없는 줄은 모드 창에서 켜야 뜬다.
             label => label switch
             {
-                DiscoveryMapRow => GameSettings.ShowDiscoveryMapMenu,
                 BarmaidBookRow => GameSettings.ShowBarmaidBookMenu,
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
                 _ => true,
@@ -547,8 +546,7 @@ public sealed class ShipMapWindow : Window
             ("릴리즈 노트", ShowReleaseNotes),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
-            // 어디에 무엇이 있는지 한눈에 — 게임 항해지도는 표식을 안 찍는다(볼트 91).
-            (DiscoveryMapRow, ShowDiscoveryMap),
+            // 「발견물 지도」는 커맨드 「정보」로 옮겼다 — 게임 화면 안에서 여는 편이 찾기 쉽다.
             // 「도구 앱」은 개발 창으로 옮겼다 — 표를 손보는 길이라 개발 쪽이 맞다.
             // 원본에 없는 편의 기능(컨디션·미니맵·바람 화살표·기능·언어·출입 일수)은 모드 창에 모아 두었다.
             ("모드", ShowModDialog),
@@ -749,7 +747,7 @@ public sealed class ShipMapWindow : Window
     /// 바탕은 항해지도를 짓는 손을 그대로 쓰되 <b>다 밝힌 지도</b>로 부른다. 게임에는 없는
     /// 창이라 햄버거 차림표에 둔다 — 원본 항해지도는 표식을 하나도 안 찍는다.
     /// </remarks>
-    /// <summary>햄버거의 발견물 지도 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
+    /// <summary>커맨드 「정보」의 발견물 지도 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string DiscoveryMapRow = "발견물 지도";
 
     /// <summary>도시락 단추를 보일지 다시 정한다 — 모드 창을 닫을 때 부른다.</summary>
@@ -3970,6 +3968,11 @@ public sealed class ShipMapWindow : Window
             ? new (string, Action?)[] { ("작위정보", () => Info(() => PersonInfoDialog.ShowNobility(this, _game))) }
             : [],
         ("지도를 본다", () => CommandMenu.Push(MapMenuBox)),
+        // 원본에 없는 줄 — 어디에 무엇이 있는지 한눈에 보는 발견물 지도(게임 항해지도는 표식을 안 찍는다).
+        // 예전에는 햄버거에 있었다. 모드 「발견물 지도」를 켜야 선다.
+        .. GameSettings.ShowDiscoveryMapMenu
+            ? new (string, Action?)[] { (DiscoveryMapRow, () => Info(ShowDiscoveryMap)) }
+            : [],
         // 「돌아간다」는 커맨드로 되짚지 않고 <b>커맨드 창을 통째로 닫는다</b> — 0x00425E40 이 돌아가면
         // 0x0048B636 → 0x0048B798 로 창이 끝난다.
         ("돌아간다", CommandMenu.Close),

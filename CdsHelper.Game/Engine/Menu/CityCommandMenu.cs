@@ -28,12 +28,13 @@ internal static class CityCommandMenu
     /// <param name="ShowPatrons">후원자 정보(스폰서 일람).</param>
     /// <param name="ShowMap">지도를 본다 — 한 겹 더 들어간다.</param>
     /// <param name="ShowNobility">작위 — 모드 「작위」를 켰을 때만 있다. null 이면 줄이 안 선다.</param>
+    /// <param name="ShowDiscoveryMap">발견물 지도 — 원본에 없는 줄, 모드 「발견물 지도」를 켰을 때만 있다. null 이면 줄이 안 선다.</param>
     /// <param name="Quit">게임 종료.</param>
     /// <param name="Cancel">취소 — 창을 닫는다. 제목 줄의 닫기도 이것이다.</param>
     internal readonly record struct Actions(
         Action EnterMapPoint, Action ShowPerson, Action? ShowFleet, Action ShowBelongings,
         Action ShowCityInfo, Action ShowHints, Action ShowContract, Action ShowPatrons,
-        Action ShowMap, Action Quit, Action Cancel, Action? ShowNobility = null);
+        Action ShowMap, Action Quit, Action Cancel, Action? ShowNobility = null, Action? ShowDiscoveryMap = null);
 
     /// <summary>도시 커맨드 창 한 벌.</summary>
     public static GameMenu Build(string cityName, in Actions on)
@@ -52,6 +53,7 @@ internal static class CityCommandMenu
         // 원본에 없는 줄 — 모드 「작위」를 켰을 때만 후원자 정보 밑에 선다.
         if (on.ShowNobility != null) rows.Add(("작위 정보", on.ShowNobility));
         rows.Add(("지도를 본다", on.ShowMap));
+        if (on.ShowDiscoveryMap != null) rows.Add(("발견물 지도", on.ShowDiscoveryMap));
         rows.Add(("게임 종료", on.Quit));
         rows.Add(("취소", on.Cancel));
         return new(cityName, on.Cancel, [.. rows]);

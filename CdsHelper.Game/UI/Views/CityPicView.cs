@@ -1948,6 +1948,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             Cancel: CloseCityMenu,
             ShowNobility: Engine.Town.Nobility.Enabled
                 ? () => KeepCityMenu(() => PersonInfoDialog.ShowNobility(this, _game))
+                : null,
+            // 바다 「정보」와 같은 발견물 지도 — 지도 창이 연다(단축키 D 와 같은 길).
+            ShowDiscoveryMap: Local.Settings.GameSettings.ShowDiscoveryMapMenu && Owner is ShipMapWindow
+                ? () => KeepCityMenu(() => (Owner as ShipMapWindow)?.MapByKey())
                 : null));
 
     /// <summary>

@@ -200,12 +200,12 @@ public sealed class ModDialog : GameWindow
         info.Children.Add(Toggle("자동항해 경로 표시", GameSettings.ShowAutoRoute, on => GameSettings.ShowAutoRoute = on,
             "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다. 끄면 선 없이 배만 움직입니다. 기본은 켜져 있습니다."));
 
-        // 발견물 지도 — 햄버거 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
+        // 발견물 지도 — 커맨드 「정보」 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
         ui.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,
             "처음 하시는 분께 추천합니다. 세계지도 위에 발견물과 도시가 어디 있는지 한눈에 보여 주는 창입니다."
             + " 원본 항해지도는 지나간 바다만 밝혀 줄 뿐 표식이 없어서, 힌트를 듣고도 어디로 가야 할지 막막하기 쉽습니다.\n\n"
-            + "여는 법 — 햄버거 메뉴의 「발견물 지도」, 또는 D 키(단축키 창에서 바꿀 수 있습니다).\n\n"
+            + "여는 법 — 커맨드 「정보」의 「발견물 지도」, 또는 D 키(단축키 창에서 바꿀 수 있습니다).\n\n"
             + "보는 법\n"
             + " · 회색 점: 아직 못 찾은 발견물\n"
             + " · 빨간 점: 이미 찾은 발견물\n"

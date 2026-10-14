@@ -219,7 +219,7 @@ public sealed class GameSettingsData
     /// <summary>도시에 들어가면 아직 남은 힌트 열 개를 함대 쪽지 아래에 띄울지.</summary>
     public bool ShowHintOverlay { get; set; }
 
-    /// <summary>햄버거에 「발견물 지도」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
+    /// <summary>커맨드 「정보」에 「발견물 지도」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowDiscoveryMapMenu { get; set; }
 
     /// <summary>
@@ -934,7 +934,7 @@ public static class GameSettings
 
 
     /// <summary>
-    /// 햄버거에 <b>발견물 지도</b> 줄을 낼지. 모드 창의 「발견물 지도」가 켜고 끈다.
+    /// 커맨드 「정보」에 <b>발견물 지도</b> 줄을 낼지. 모드 창의 「발견물 지도」가 켜고 끈다.
     /// </summary>
     /// <remarks>
     /// 꺼 두면 줄도 안 뜨고 단축키(<see cref="MapKey"/>)도 안 먹는다 — 원본 항해지도는
