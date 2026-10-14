@@ -2043,6 +2043,360 @@
             }
           ]
         ]
+      },
+      {
+        "Index": 16,
+        "Step": 16,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "마르틴 신부！ 큰일 났네． 로마에서 칙서가 왔어．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "교황 레오 １０세가 마르틴 루터를 파문했다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "그뿐이 아닐세． 황제께서도 자네를 법 밖의 사람으로 선포하셨네． 누구든 자네를 잡아 바치면 상을 받고， 죽여도 죄가 되지 않는다는군．"
+              }
+            },
+            {
+              "OpCode": "77 1C",
+              "Call": "SetNationEntry",
+              "Args": {
+                "Nation": 9,
+                "Entry": 2
+              },
+              "Note": "나라 출입여부 설정"
+            },
+            {
+              "OpCode": "77 1C",
+              "Call": "SetNationEntry",
+              "Args": {
+                "Nation": 14,
+                "Entry": 2
+              },
+              "Note": "나라 출입여부 설정"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "교황령과 신성 로마 제국이 루터에게 문을 닫았다！ 루터에게 현상금이 걸렸다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "칙서를 불태우겠습니다． 사람의 말로 하느님의 말씀을 묶을 수는 없습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "용기는 알겠네만 여기 있으면 붙잡히고 말 걸세． 제노바로 가게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "그 공화국 상인들은 교황의 칙서보다 금화를 더 믿는다네． 제노바 총독부에 내 편지를 내밀면 자네를 숨겨 줄 걸세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "··· 알겠습니다． 살아남아야 말씀을 전할 수 있겠지요． 제노바로 가겠습니다．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 17,
+        "Step": 17,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "도시 조건: 28"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "제노바 부두에 내리자 누군가 앞을 가로막았다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Person": 231,
+                "Text": "거기 수도사！ 그 얼굴， 현상금이 걸린 마르틴 루터로군！ 황제 폐하께 끌고 가 주마！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "하느님， 이 몸을 지켜 주소서···！"
+              }
+            },
+            {
+              "OpCode": "26 0F",
+              "Call": "SetDuelSet",
+              "Args": {
+                "Set": 4
+              },
+              "Note": "일기토 연출 세트: 4"
+            },
+            {
+              "OpCode": "0C 0D",
+              "Call": "Duel",
+              "Args": {
+                "Person": 231
+              },
+              "Note": "일기토: 인물 231"
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L016D",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "루터는 병사를 뿌리치고 간신히 골목으로 몸을 숨겼다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···하마터면 붙잡힐 뻔했다． 숨을 고르고 다시 오자．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "Label": "L016D",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Person": 231,
+                "Text": "크윽··· 수도사 주제에 이렇게 셀 줄이야···"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "하느님께서 아직 나를 부르지 않으신 모양이다． 서둘러 총독부로 가자．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 18,
+        "Step": 18,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "도시 조건: 28"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "루터는 함부르크 신부의 편지를 내밀었다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "성문",
+                "Text": "··· 함부르크의 그 수도사로군． 총독 각하께서 만나시겠다네． 들어오게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "제노바 총독은 루터를 조용히 맞아들였다． 이곳에서는 교황의 칼도 황제의 칼도 닿지 않는다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "목숨을 구해 주셔서 감사합니다． 숨어 있는 동안 무엇을 하면 좋겠습니까．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "··· 그렇다． 성서를 독일말로 옮기자． 라틴어를 모르는 농부도， 아이도 제 눈으로 말씀을 읽을 수 있게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "그러면 누구도 금화를 받고 은총을 팔지 못하리라．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 500
+                }
+              },
+              "Note": "명성 + 500"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "루터는 제노바에 몸을 숨기고 성서를 번역하기 시작했다．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
       }
     ]
   },
