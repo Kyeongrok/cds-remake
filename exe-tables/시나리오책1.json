@@ -552,9 +552,289 @@
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
+                "Speaker": "교회",
+                "Text": "···젊은 사제들이 흔히 앓는 병이지． 그럴 때는 길을 걸어 보게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "옛 순례자들은 투르의 산 마르탄 교회를 떠나 툴루즈의 산·세르난 교회를 거쳐， 성 야고보가 잠든 라코루냐의 산티아고 대성당까지 걸었다네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "교회마다 순례자임을 밝히면 다음 길을 일러 줄 걸세． 순례자가 아니면 문도 열어 주지 않으니 차례를 지키게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "투르， 툴루즈， 그리고 산티아고··· 알겠습니다． 순례자로서 다녀오겠습니다．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 5,
+        "Step": 5,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "02 0B",
+              "Call": "Discovered",
+              "Args": {
+                "Discovery": 54
+              },
+              "Note": "발견됨 조건: 발견물 ID 54"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "성 마르탱은 추위에 떠는 거지에게 제 외투를 반으로 갈라 주었다고 했다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "나는 무엇을 갈라 줄 수 있는가． 내게 있는 것이라곤 죄뿐인데．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 6,
+        "Step": 6,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "02 0B",
+              "Call": "Discovered",
+              "Args": {
+                "Discovery": 55
+              },
+              "Note": "발견됨 조건: 발견물 ID 55"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "툴루즈까지 왔다． 발바닥이 갈라졌지만 걸음을 멈출 수는 없다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "서쪽으로． 에스파니아 북서쪽 끝의 라코루냐로．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 7,
+        "Step": 7,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "02 0B",
+              "Call": "Discovered",
+              "Args": {
+                "Discovery": 50
+              },
+              "Note": "발견됨 조건: 발견물 ID 50"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "성 야고보의 무덤 앞에 섰다． 수많은 순례자의 무릎이 닳게 한 돌바닥이다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "그들은 여기서 죄를 용서받았다고 믿고 돌아갔겠지． 그런데 왜 내 마음은 여전히 무거운가．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···함부르크로 돌아가 신부님께 여쭈어 보자．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 8,
+        "Step": 8,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "돌아왔군， 순례자여． 성 야고보께서는 무어라 하시던가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "아무 말씀도 없으셨습니다． 발로 걸어 닿을 수 있는 곳에는 평안이 없었습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
                 "Speaker": "주인공",
                 "Text": "밤을 새워 기도하고 끼니를 걸러 보아도， 하느님의 진노만 더 또렷이 보일 뿐입니다．"
               }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 300
+                }
+              },
+              "Note": "명성 + 300"
             },
             {
               "OpCode": "00 0A",
@@ -569,15 +849,7 @@
               "Call": "Say",
               "Args": {
                 "Speaker": "교회",
-                "Text": "이베리아의 라코루냐에 성 야고보를 모신 산·티아고 성당이 있네． 예부터 참회하는 이들이 찾는 곳이지．"
-              }
-            },
-            {
-              "OpCode": "00 0A",
-              "Call": "Say",
-              "Args": {
-                "Speaker": "교회",
-                "Text": "식량도 물도 싣지 말고 바다를 건너 그 성당에서 기도하고， 같은 몸으로 돌아오게． 그것이 자네의 금식일세．"
+                "Text": "이번에는 발이 아니라 배로 가게． 식량도 물도 싣지 말고 바다를 건너 그 산티아고 대성당에서 다시 기도하고， 같은 몸으로 돌아오게． 그것이 자네의 금식일세．"
               }
             },
             {
@@ -610,8 +882,8 @@
         ]
       },
       {
-        "Index": 5,
-        "Step": 5,
+        "Index": 9,
+        "Step": 9,
         "Slots": [
           {
             "Condition": 0,
@@ -862,8 +1134,8 @@
         ]
       },
       {
-        "Index": 6,
-        "Step": 6,
+        "Index": 10,
+        "Step": 10,
         "Slots": [
           {
             "Condition": 0,
