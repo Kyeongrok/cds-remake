@@ -208,6 +208,7 @@ public sealed class GameFont
     public int TextWidth(string? text)
     {
         if (string.IsNullOrEmpty(text)) return 0;
+        text = Lang.T(text);
         var mask = new byte[MaxWidth * MaxHeight];
         int total = 0;
         foreach (var ch in text)
@@ -228,6 +229,8 @@ public sealed class GameFont
     {
         width = TextWidth(text);
         if (width <= 0 || height <= 0) return null;
+        // 일본어로 켰으면 글 통째로 번역표에서 찾아 바꾼다(이름 · 메뉴 줄) — 폭도 바꾼 글로 쟀다(TextWidth).
+        text = Lang.T(text!);
 
         int stride = width + (shadow ? 1 : 0);
         var bgra = new uint[stride * height];

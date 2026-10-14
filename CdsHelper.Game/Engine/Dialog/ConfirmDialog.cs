@@ -65,6 +65,10 @@ public sealed class ConfirmDialog : GameWindow
     private ConfirmDialog(string text, string? title, bool yesNo, uint[]? face,
                           double indent, bool bare = false)
     {
+        // 일본어로 켰으면 글 통째로 번역표에서 찾아 바꾼다(줄을 가르기 전에) — 대사 · 알림이 다 이 창을 지난다.
+        text = Lang.T(text);
+        if (title != null) title = Lang.T(title);
+
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
