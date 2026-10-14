@@ -110,6 +110,8 @@ public sealed class Portraits
     /// <param name="female">여자 얼굴이면 true.</param>
     public uint[]? TryGetBgra(int face, bool female)
     {
+        if (face >= ShippedBase) return Shipped(face, female);
+
         var archive = female ? _female : _male;
         if (face < 0 || face >= archive.PartCount) return null;
 
@@ -127,6 +129,75 @@ public sealed class Portraits
         // 줄이지 않고 넣은 그림이 있으면 이 배열에 짝지어 둔다 — Bitmap 이 그것을 건다.
         if (Hd(face, female) is { } hd) HdOf.AddOrUpdate(bgra, hd);
         return bgra;
+    }
+
+    // ── 앱에 실어 보내는 얼굴 ──────────────────────────────────────────
+
+    /// <summary>
+    /// 이 번호부터는 초상화 벌이 아니라 <b>앱에 실린 그림</b>(<c>asset/face/male-9001.png</c>)에서 읽는다.
+    /// </summary>
+    /// <remarks>
+    /// 「초상화 넣기」로 넣은 얼굴은 그 PC 의 초상화 벌(<see cref="PortraitStore"/>)에만 든다 — 번호도 PC 마다 달라
+    /// 앱에 실어 보내는 시나리오(<see cref="Engine.Scenarios"/>)의 주인공 얼굴로는 못 쓴다. 그래서 실어 보낼 얼굴은
+    /// 벌 밖의 큰 번호를 주고 그림 파일로 따로 싣는다. 그림은 줄이지 않은 것을 그대로 건다(<see cref="Bitmap"/>).
+    /// </remarks>
+    public const int ShippedBase = 9000;
+
+    private static readonly Dictionary<(bool Female, int Face), (uint[] Bgra, BitmapSource Art)?> ShippedCache = [];
+
+    /// <summary>실어 보낸 얼굴 그림 자리. 실행 파일 옆의 <c>asset/face</c> 다.</summary>
+    public static string ShippedPathOf(bool female, int face) =>
+        Path.Combine(AppContext.BaseDirectory, "asset", "face", $"{(female ? "female" : "male")}-{face}.png");
+
+    /// <summary>실어 보낸 얼굴 한 장 — 80x96 으로 줄인 색 배열에 본디 그림을 짝지어 낸다. 그림이 없으면 null.</summary>
+    private static uint[]? Shipped(int face, bool female)
+    {
+        (uint[] Bgra, BitmapSource Art)? kept;
+        lock (ShippedCache)
+        {
+            if (!ShippedCache.TryGetValue((female, face), out kept))
+                ShippedCache[(female, face)] = kept = LoadShipped(ShippedPathOf(female, face));
+        }
+        if (kept is not { } found) return null;
+
+        // 부르는 쪽이 배열을 고쳐도 담아 둔 것이 안 상하게 베껴 준다.
+        var bgra = (uint[])found.Bgra.Clone();
+        HdOf.AddOrUpdate(bgra, found.Art);
+        return bgra;
+    }
+
+    private static (uint[] Bgra, BitmapSource Art)? LoadShipped(string path)
+    {
+        if (!File.Exists(path)) return null;
+        try
+        {
+            using var file = File.OpenRead(path);
+            var art = new BitmapImage();
+            art.BeginInit();
+            art.CacheOption = BitmapCacheOption.OnLoad;
+            art.StreamSource = file;
+            art.EndInit();
+            art.Freeze();
+
+            // 얼굴을 색 배열로 받는 자리(80x96)에 넘길 줄인 것.
+            var small = new TransformedBitmap(art, new System.Windows.Media.ScaleTransform(
+                (double)Width / art.PixelWidth, (double)Height / art.PixelHeight));
+            var plain = new FormatConvertedBitmap(small, PixelFormats.Bgra32, null, 0);
+            int w = Math.Min(Width, plain.PixelWidth), h = Math.Min(Height, plain.PixelHeight);
+            var got = new uint[w * h];
+            plain.CopyPixels(new System.Windows.Int32Rect(0, 0, w, h), got, w * 4, 0);
+
+            var bgra = new uint[Pixels];
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    bgra[y * Width + x] = got[y * w + x] | 0xFF000000u;
+            return (bgra, art);
+        }
+        catch (Exception e) when (e is IOException or NotSupportedException or UnauthorizedAccessException
+                                      or ArgumentException or InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     // ── 줄이지 않고 넣은 그림 ──────────────────────────────────────────────────
