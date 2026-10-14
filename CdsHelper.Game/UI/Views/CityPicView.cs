@@ -784,6 +784,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         // 건물이 곧 발견물이면 <b>그것이 맨 먼저</b>다 — 원본은 시설을 열기(0x00490AD0) 전에 도시 화면
         // 쪽에서 발견 대본을 돌리고(0x00492A5E~0x00492AF9), 결과가 밑값 2 로 남으면 건물에 안 든다.
+        // 시나리오 이야기는 발견 이벤트보다도 먼저 본다(원본에 없는 길) — 로마의 산·피에트로 대성당처럼 발견 이벤트가
+        // 명성으로 문을 막는 건물에서는, 원본 차례대로라면 막힌 채 끝나 장면이 영영 안 돈다.
+        if (Engine.Scenarios.IsBook(_player.ActiveStoryBook))
+        {
+            _game.RulerFace = building.Code == PalaceCode ? () => RulerFaceOf(building.Code, building.Kind) : null;
+            if (CheckStory(building.Code)) return;
+        }
+
         if (!Discover(building)) return;
 
         // 왕궁이면 그 자리 국왕 얼굴을 걸어 둔다 — 대본의 화자 「국왕」(모드 「작위」)이 쓴다.
