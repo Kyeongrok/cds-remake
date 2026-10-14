@@ -167,7 +167,7 @@ public sealed class ScenarioEditDialog : GameWindow
     {
         _status.Text = (head.Length > 0 ? head + "\n" : "")
             + "나라는 나라 표의 번호(0 포르투갈 · 1 에스파니아 · 14 신성 로마 제국 …)   ·   본거지는 도시 번호(-1 이면 그 나라 수도, 함부르크 44) — 자택이 없는 도시면 「자택 자리 고르기」로 그림 위에 올린다\n"
-            + "직업 " + string.Join(" · ", Enumerable.Range(0, 4).Select(i => $"{i} {Job.Of(i).Name}"))
+            + "직업 " + string.Join(" · ", Enumerable.Range(0, Job.All.Length).Select(i => $"{i} {Job.Of(i).Name}"))
             + "   ·   혈액형 0~3   ·   얼굴은 운명 자리 번호(라몬 5 · 에밀리오 14)\n"
             + "능력 여섯: " + string.Join(",", Ability.Names) + $" ({Ability.Min}~{Ability.Max})\n"
             + "기능 열셋: " + string.Join(",", Skill.Names) + "\n"
@@ -189,7 +189,7 @@ public sealed class ScenarioEditDialog : GameWindow
             if (Numbers(row.Tongues, Skill.Languages.Length) is not { } tongues) { Guide($"{at} 언어는 수 {Skill.Languages.Length}개를 쉼표로 적습니다."); return null; }
             if (row.Nation < 0 || (_game?.Nations is { } nations && nations.Find(row.Nation) == null)) { Guide($"{at} 나라 표에 없는 나라 번호입니다."); return null; }
             if (row.HomeCity >= 0 && _game != null && _game.CityTable.Find(row.HomeCity) == null) { Guide($"{at} 도시 표에 없는 본거지 번호입니다."); return null; }
-            if (row.Job is < 0 or > 3) { Guide($"{at} 직업은 0~3 입니다."); return null; }
+            if (row.Job < 0 || row.Job >= Job.All.Length) { Guide($"{at} 직업은 0~{Job.All.Length - 1} 입니다."); return null; }
             if (row.Month is < 1 or > 12 || row.Day < 1 || row.Day > DateTime.DaysInMonth(2001, row.Month)) { Guide($"{at} 생일이 달력에 없습니다."); return null; }
             if (string.IsNullOrWhiteSpace(row.Given)) { Guide($"{at} 이름이 비었습니다."); return null; }
 

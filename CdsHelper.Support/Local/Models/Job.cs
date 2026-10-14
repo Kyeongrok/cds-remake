@@ -42,7 +42,7 @@ public sealed record Job(string Name, int[] Bias, (int Skill, int Level)[] Skill
     /// <summary>새 게임에서 고를 수 있는 직업 넷. 게임 화면에도 이 넷만 뜬다.</summary>
     public const int Choosable = 4;
 
-    /// <summary>여덟. 앞의 넷만 새 게임에서 고른다.</summary>
+    /// <summary>원본 여덟과 원본에 없는 학생. 앞의 넷만 새 게임에서 고른다.</summary>
     public static readonly Job[] All =
     [
         new("탐험가", [0, 0, 0, 0, 0, 0],
@@ -67,7 +67,14 @@ public sealed record Job(string Name, int[] Bias, (int Skill, int Level)[] Skill
             [(Skill.Accounting, 3), (Skill.Rhetoric, 2), (Skill.Sailing, 1)], []),
         new("군인", [2, 2, 2, -5, 2, 0],
             [(Skill.Gunnery, 3), (Skill.Sword, 2), (Skill.Handling, 1)], []),
+
+        // 원본에 없는 직업 — 시나리오 주인공(루터)이 쓴다. 새 게임에서는 못 고르고, 기울기 · 처음 기술은 없다
+        // (시나리오가 기술과 언어를 손으로 준다).
+        new("학생", [0, 0, 0, 0, 0, 0], [], []),
     ];
+
+    /// <summary>학생(원본에 없는 직업)의 번호.</summary>
+    public const int Student = 8;
 
     /// <summary>번호로 찾는다. 표 밖이면 탐험가.</summary>
     public static Job Of(int index) =>

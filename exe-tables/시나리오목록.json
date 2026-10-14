@@ -13,7 +13,7 @@
         "Face": 9001,
         "Nation": 14,
         "Blood": 0,
-        "Job": 0,
+        "Job": 8,
         "Abilities": [
           55,
           88,
@@ -59,7 +59,7 @@
           "Face": 9001,
           "Nation": 14,
           "Blood": 0,
-          "Job": 0,
+          "Job": 8,
           "Abilities": [
             55,
             88,
