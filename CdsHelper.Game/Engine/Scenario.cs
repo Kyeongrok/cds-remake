@@ -41,10 +41,18 @@ public static class Scenarios
     /// <summary>책 이름의 머리 — 뒤에 번호가 붙는다(<c>시나리오책1</c>).</summary>
     private const string BookPrefix = "시나리오책";
 
-    /// <summary>JSON 으로 적어 두는 알맹이.</summary>
-    internal sealed record Snapshot(List<Scenario> Scenarios);
+    /// <summary>JSON 으로 적어 두는 알맹이. <c>Nations</c> 는 시나리오가 들고 오는 나라(원본 나라 표 뒤에 붙는다)다.</summary>
+    internal sealed record Snapshot(List<Scenario> Scenarios, List<NationTable.Nation>? Nations = null);
 
     private static List<Scenario>? _all;
+    private static List<NationTable.Nation>? _nations;
+
+    /// <summary>
+    /// 시나리오가 들고 오는 나라 — 원본 나라 표(0~77) 뒤에 붙는다(<see cref="Table.NationTable.Find"/>).
+    /// 루터파처럼 원본에 없는 나라를 대본이 주인공의 나라로 삼을 때 쓴다.
+    /// </summary>
+    public static IReadOnlyList<NationTable.Nation> ExtraNations =>
+        _nations ??= TableCache.Read<Snapshot>(CacheName)?.Data.Nations ?? [];
 
     /// <summary>지어 둔 시나리오 전부. 하나도 없으면 빈 목록.</summary>
     public static IReadOnlyList<Scenario> All =>
@@ -82,7 +90,8 @@ public static class Scenarios
     public static void Save(IEnumerable<Scenario> scenarios)
     {
         _all = [.. scenarios.Where(Sound)];
-        TableCache.Write(CacheName, new TableCache.Cached<Snapshot>("", new Snapshot(_all), "손으로 지음"));
+        // 나라는 이 창에서 안 고친다 — 적어 둔 것을 그대로 다시 싣는다.
+        TableCache.Write(CacheName, new TableCache.Cached<Snapshot>("", new Snapshot(_all, [.. ExtraNations]), "손으로 지음"));
     }
 
     /// <summary>아직 안 쓴 책 이름.</summary>

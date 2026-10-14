@@ -836,6 +836,25 @@ public sealed class DisevRunner
                 _game.Player.SetHistoryNation(I("City"), _game.Player.Nation);
                 return null;
 
+            // 76 1C [나라] — 주인공의 나라를 바꾼다(원본에 없는 명령). 시나리오가 들고 온 나라(Scenarios.ExtraNations)도 된다.
+            // 그 나라 도시는 이 뒤로 제 나라 도시로 친다 — 대본은 본거지를 26 1C 1A 로 함께 넘긴다.
+            case DisevCall.SetPlayerNation:
+                if (I("Nation") is var nation && _game.Nations?.Find(nation) != null) _game.Player.Nation = nation;
+                return null;
+
+            // 77 1C [나라] [출입여부] — 그 나라가 주인공에게 문을 여닫는다(원본에 없는 명령). Standoff.EntryOf 가 본다.
+            case DisevCall.SetNationEntry:
+                _game.Player.SetHostility(I("Nation"), Math.Clamp(I("Entry"), 0, 2));
+                return null;
+
+            // 78 1C [문화권] [출입여부] — 수도가 그 문화권에 있는 나라 모두에(주인공의 나라는 빼고). 원본에 없는 명령이다.
+            case DisevCall.SetCultureEntry:
+                if (_game.Nations is { } all && _game.CityRows is { } cityRows)
+                    foreach (var n in all.Nations)
+                        if (n.Id != _game.Player.Nation && n.Capital >= 0 && cityRows.CultureOf(n.Capital) == I("Culture"))
+                            _game.Player.SetHostility(n.Id, Math.Clamp(I("Entry"), 0, 2));
+                return null;
+
             // 22 00 [나라] — 그 나라를 <b>망하게</b> 한다. 나라 레코드(0x005859C0 + 나라 x 16)의 +0x04 에
             // 2 를 넣는다(0x00409DAD). 역사 대본이 쓰는 것과 같은 칸이다.
             case DisevCall.DestroyNation:

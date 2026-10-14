@@ -1512,6 +1512,13 @@ public sealed class Player
         _hostility[nation] = 0;
     }
 
+    /// <summary>그 나라의 적대도를 그 값으로 박는다 — 대본(종교개혁 따위)이 쓴다. 원본에 없는 길이다.</summary>
+    public void SetHostility(int nation, int value)
+    {
+        if (nation < 0) return;
+        _hostility[nation] = Math.Max(0, value);
+    }
+
     /// <summary>
     /// 적대 도시 가운데 <b>문이 열린</b> 곳. 공략·잠입·교섭에 성공하면 는다.
     /// </summary>

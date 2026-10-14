@@ -117,11 +117,18 @@ public sealed class NationTable
     /// 나라 전부. 색인이 곧 나라 번호다.
     /// </summary>
     /// <remarks>사람이 고쳐 둔 것이 있으면 그것이 이긴다(<see cref="NationEdits"/>).</remarks>
-    public IReadOnlyList<Nation> Nations => [.. _nations.Select(NationEdits.Apply)];
+    /// <remarks>
+    /// 사람이 고쳐 둔 것이 있으면 그것이 이긴다(<see cref="NationEdits"/>). 시나리오가 들고 온 나라
+    /// (<see cref="Engine.Scenarios.ExtraNations"/>)가 뒤에 붙는다 — 원본에 없는 나라다.
+    /// </remarks>
+    public IReadOnlyList<Nation> Nations =>
+        [.. _nations.Select(NationEdits.Apply), .. Engine.Scenarios.ExtraNations.Where(n => n.Id >= _nations.Length).Select(NationEdits.Apply)];
 
-    /// <summary>그 나라. 범위 밖이면 null.</summary>
+    /// <summary>그 나라. 없으면 null.</summary>
     public Nation? Find(int id) =>
-        id >= 0 && id < _nations.Length ? NationEdits.Apply(_nations[id]) : null;
+        id >= 0 && id < _nations.Length ? NationEdits.Apply(_nations[id])
+        : id >= _nations.Length && Engine.Scenarios.ExtraNations.FirstOrDefault(n => n.Id == id) is { Name: not null } extra ? NationEdits.Apply(extra)
+        : null;
 
     /// <summary>고치기 전, EXE 에 적힌 그대로의 나라. 범위 밖이면 null.</summary>
     public Nation? Original(int id) => id >= 0 && id < _nations.Length ? _nations[id] : null;
