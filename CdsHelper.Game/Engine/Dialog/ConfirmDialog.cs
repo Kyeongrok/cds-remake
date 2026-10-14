@@ -194,6 +194,10 @@ public sealed class ConfirmDialog : GameWindow
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.Escape) { DialogResult = false; return; }
+            // 되풀이 글쇠는 안 받는다 — 글쇠로 배나 말을 몰아 도시에 닿으면 쥐고 있던 방향키가 이 창에
+            // 되풀이로 들어와 초점이 YES 에서 NO 로 넘어갔고, 그 뒤 Enter 를 치면 NO 가 눌려 YES 가 안 먹는 것처럼 보였다.
+            // 단추가 둘뿐이라 되풀이로 오갈 일이 없다.
+            if (e.IsRepeat) { e.Handled = true; return; }
             // 방향키로 옮기고 엔터로 고른다 — 어느 단추에 초점이 가 있는지는 깜빡임이 알린다.
             if (_focus.HandleKey(e.Key)) e.Handled = true;
         };
