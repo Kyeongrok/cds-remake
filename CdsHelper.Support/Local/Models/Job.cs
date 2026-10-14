@@ -71,10 +71,12 @@ public sealed record Job(string Name, int[] Bias, (int Skill, int Level)[] Skill
         // 원본에 없는 직업 — 시나리오 주인공(루터)이 쓴다. 새 게임에서는 못 고르고, 기울기 · 처음 기술은 없다
         // (시나리오가 기술과 언어를 손으로 준다).
         new("학생", [0, 0, 0, 0, 0, 0], [], []),
+        // 원본에 없는 직업 — 루터가 서품을 받으면 학생에서 사제가 된다(대본 7A).
+        new("사제", [0, 0, 0, 0, 0, 0], [], []),
     ];
 
-    /// <summary>학생(원본에 없는 직업)의 번호.</summary>
-    public const int Student = 8;
+    /// <summary>원본에 없는 직업 학생 · 사제의 번호.</summary>
+    public const int Student = 8, Priest = 9;
 
     /// <summary>번호로 찾는다. 표 밖이면 탐험가.</summary>
     public static Job Of(int index) =>

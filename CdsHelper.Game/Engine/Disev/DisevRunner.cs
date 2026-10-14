@@ -861,6 +861,11 @@ public sealed class DisevRunner
                 if (I("Nation") is var nation && _game.Nations?.Find(nation) != null) _game.Player.Nation = nation;
                 return null;
 
+            // 7A [직업] — 주인공의 직업을 바꾼다(원본에 없는 명령). 표 밖이면 그대로 둔다.
+            case DisevCall.SetJob:
+                if (I("Job") is var job && job >= 0 && job < Support.Local.Models.Job.All.Length) _game.Player.JobIndex = job;
+                return null;
+
             // 77 1C [나라] [출입여부] — 그 나라가 주인공에게 문을 여닫는다(원본에 없는 명령). Standoff.EntryOf 가 본다.
             case DisevCall.SetNationEntry:
                 _game.Player.SetHostility(I("Nation"), Math.Clamp(I("Entry"), 0, 2));

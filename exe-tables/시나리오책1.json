@@ -538,7 +538,7 @@
               "GotoIf": {
                 "Call": "ResultFalse"
               },
-              "Target": "L0317",
+              "Target": "L033F",
               "Note": "결과 거짓 시 이동"
             },
             {
@@ -571,6 +571,21 @@
               "Args": {
                 "Speaker": "교회",
                 "Text": "···일어나게． 이제 자네는 사제일세， 마르틴 신부．"
+              }
+            },
+            {
+              "OpCode": "7A",
+              "Call": "SetJob",
+              "Args": {
+                "Job": 9
+              },
+              "Note": "미확인 명령/데이터"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "직업이 학생에서 사제가 되었다！"
               }
             },
             {
@@ -626,7 +641,7 @@
               "Note": "다음 단계"
             },
             {
-              "Label": "L0317",
+              "Label": "L033F",
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
