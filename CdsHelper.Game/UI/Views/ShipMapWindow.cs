@@ -346,6 +346,7 @@ public sealed class ShipMapWindow : Window
     public ShipMapWindow()
     {
         UiFont.Install();   // 모드 「리디바탕 글꼴」 — 뜨는 창마다 글꼴을 건다
+        Lang.InstallWpfHook();   // 일본어면 보통 윈도 글자(TextBlock)도 번역표로 바꾼다
         Title = AppVersion is { Length: > 0 } version ? $"대항해시대3  v{version}" : "대항해시대3";
         // 크기는 설정에 적어 둔 것으로 선다(기본은 예전 그대로 1200x800).
         Width = 1200;
