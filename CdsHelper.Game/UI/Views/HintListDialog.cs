@@ -106,6 +106,8 @@ public sealed class HintListDialog : GameWindow
         _marks = marks;
         _preview = preview;
         _multi = multi;
+        _choosing = choosing;
+        _open = i => usable == null || i >= usable.Count || usable[i];
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -341,7 +343,74 @@ public sealed class HintListDialog : GameWindow
         };
 
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Cancel(); };
+        PreviewKeyDown += OnKey;
         MouseRightButtonUp += (_, _) => Cancel();
+    }
+
+    /// <summary>고르는 창인지 — 늘어놓기만 하는 창은 글쇠로 고를 줄이 없다.</summary>
+    private readonly bool _choosing;
+
+    /// <summary>그 줄을 고를 수 있는지(막힌 줄은 건너뛴다).</summary>
+    private readonly Func<int, bool> _open;
+
+    /// <summary>글쇠 커서가 선 줄. 아직 안 움직였으면 -1.</summary>
+    private int _cursor = -1;
+
+    /// <summary>
+    /// 글쇠로 고른다 — 위/아래(숫자판 8/2) · Tab(Shift+Tab 은 거꾸로)으로 줄을 옮기고 Enter 로 결정한다.
+    /// 한 줄 고르기는 커서가 선 줄이 곧 고른 줄이고, 여럿 고르기(발표)는 Space 로 그 줄을 켜고 끈다.
+    /// 원본 차림표(<c>0x00487770</c>)처럼 막힌 줄은 건너뛰고 끝에서 감긴다.
+    /// </summary>
+    private void OnKey(object? sender, KeyEventArgs e)
+    {
+        if (!_choosing || _rows.Count == 0) return;
+        switch (GameUi.Arrow(e.Key))
+        {
+            case Key.Up or Key.Left:
+                Step(-1);
+                break;
+            case Key.Down or Key.Right:
+                Step(+1);
+                break;
+            case Key.Tab:
+                Step((Keyboard.Modifiers & ModifierKeys.Shift) != 0 ? -1 : +1);
+                break;
+            case Key.Space when _multi:
+                if (_cursor >= 0) Select(_cursor);
+                else Step(+1);
+                break;
+            case Key.Enter or Key.Space:
+                // 여럿 고르기에서 아무것도 안 켰으면 커서 줄을 켜고 결정한다.
+                if (_multi && _chosen.Count == 0 && _cursor >= 0) Select(_cursor);
+                if (_decideReady) Decide();
+                else Step(+1);
+                break;
+            default:
+                return;
+        }
+        e.Handled = true;
+    }
+
+    /// <summary>커서를 다음(+1) · 앞(-1) 고를 수 있는 줄로 옮긴다.</summary>
+    private void Step(int way)
+    {
+        int start = _cursor >= 0 ? _cursor : _multi ? -1 : _picked;
+        for (int k = 1; k <= _rows.Count; k++)
+        {
+            int at = start < 0
+                ? (way > 0 ? k - 1 : _rows.Count - k)
+                : ((start + way * k) % _rows.Count + _rows.Count) % _rows.Count;
+            if (!_open(at)) continue;
+            _cursor = at;
+            if (_multi)
+            {
+                for (int i = 0; i < _rows.Count; i++) Paint(i, _chosen.Contains(i));
+                ShowPreview(at);
+            }
+            else Select(at);
+            _rows[at].BringIntoView();
+            return;
+        }
     }
 
     /// <summary>줄 번호로 오른쪽 설명 글을 내는 것. 없으면 설명 칸이 없다.</summary>
@@ -455,7 +524,7 @@ public sealed class HintListDialog : GameWindow
             return;
         }
 
-        _picked = index;
+        _picked = _cursor = index;
         // 고른 줄은 <b>남색 바탕에 흰 글씨</b>다 — 종이 위 검은 글씨를 그대로 두면
         // 바탕에 묻힌다. 테는 바탕보다 훨씬 짙어 한 겹 파인 것처럼 보인다.
         for (int i = 0; i < _rows.Count; i++) Paint(i, i == index);
@@ -469,7 +538,8 @@ public sealed class HintListDialog : GameWindow
     {
         // 고르지 않은 줄은 제 바탕으로 — 도드라진 줄이면 갈색이 남는다.
         _rows[i].Background = on ? PickFill : RestFill(i);
-        _rows[i].BorderBrush = on ? PickEdge : Brushes.Transparent;
+        // 여럿 고르기의 글쇠 커서는 테만 짙게 둘러 어느 줄에 섰는지 보인다.
+        _rows[i].BorderBrush = on || (_multi && i == _cursor) ? PickEdge : Brushes.Transparent;
         // 얼굴 · 둘째 줄이 붙은 줄은 글씨가 판 안에 들어 있다 — 든 글씨를 다 뒤집는다.
         // 글씨색만 뒤집는다 — 겹쳐 찍기는 어느 줄에서도 안 한다.
         foreach (var label in LabelsIn(_rows[i].Child))
