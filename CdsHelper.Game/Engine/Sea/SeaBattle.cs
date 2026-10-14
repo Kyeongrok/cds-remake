@@ -403,6 +403,9 @@ public sealed class SeaBattle
             case 2: x = _rng.Next(21) + 1; y = _rng.Next(7) + 9; way = 0; break;
             default: x = 12 - _rng.Next(12); y = _rng.Next(15) + 1; way = _rng.Next(2) + 1; break;
         }
+        // 짝수 X 의 맨 아래 줄(Y 15)이면 몸 조각 하나가 판 밖(Y 16)에 놓인다 — 원본 굴림 그대로면 생기는 자리다.
+        // 그 뒤 걸음(StepFree)은 이 자리를 막으므로 처음 자리도 한 줄 올린다.
+        if (y == Rows - 2 && (x & 1) == 0) y--;
 
         MonsterPerson = person;
         EnemySide = new Side(Gunnery: 0, Might: might, Defense: 20, Mind: 0, Charm: 0,
