@@ -57,15 +57,25 @@ internal sealed class FishingGameDialog : InfoDialog
 
     private const int BeastSize = 32, HookSize = 16, FishW = 32, FishH = 16, BigW = 64, BigH = 32;
 
-    /// <summary>한 틱에 얼마나 쉴지. 원본은 안 쉬고 그리는 대로 돈다.</summary>
-    private static readonly TimeSpan TickTime = TimeSpan.FromMilliseconds(TickMs);
+    /// <summary>타이머를 부르는 간격. 원본은 안 쉬고 그리는 대로 돈다.</summary>
+    private static readonly TimeSpan TickTime = TimeSpan.FromMilliseconds(15);
 
     /// <summary>
     /// 한 틱에 드는 밀리초. 한 줄(<see cref="FishingGame.TicksPerRow"/> = 40틱)이
-    /// <c>40 x 40 = 1.6초</c>다.
+    /// <c>40 x 28 ≈ 1.1초</c>다.
     /// </summary>
-    /// <remarks>예전에는 20ms 라 한 줄이 0.8초였는데 눈으로 좇기에 너무 빨랐다.</remarks>
-    private const int TickMs = 40;
+    /// <remarks>
+    /// 예전에는 20ms 라 한 줄이 0.8초였는데 눈으로 좇기에 너무 빨랐고, 40ms 는 답답했다.
+    /// 틱은 흐른 시간으로 센다(<see cref="Beat"/>) — 윈도 타이머는 15.6ms 눈금이라 40ms 를 걸면
+    /// 47ms 마다 오고, 화면이 바쁘면 더 늦어 PC 마다 빠르기가 달랐다.
+    /// </remarks>
+    private const int TickMs = 28;
+
+    /// <summary>떨어뜨린 뒤 흐른 시간 — 몇 틱을 돌아야 하는지 잰다.</summary>
+    private readonly System.Diagnostics.Stopwatch _since = new();
+
+    /// <summary>지금까지 돈 틱 수.</summary>
+    private long _beats;
 
     private readonly FishingGame _game;
     private readonly Canvas _scene = new() { Width = SceneWidth, Height = SceneHeight };
@@ -247,12 +257,27 @@ internal sealed class FishingGameDialog : InfoDialog
         if (_game.Started || _game.Got != FishingGame.Catch.None) return;
 
         _game.Drop();
+        _since.Restart();
+        _beats = 0;
         _clock.Start();
         Sync();
     }
 
-    /// <summary>한 틱.</summary>
+    /// <summary>타이머가 올 때마다 흐른 시간만큼 틱을 돈다(한 번에 너무 많이 몰리지 않게 다섯까지).</summary>
     private void Beat()
+    {
+        long due = (long)(_since.Elapsed.TotalMilliseconds / TickMs);
+        for (int n = 0; _beats < due && n < 5; n++)
+        {
+            _beats++;
+            OneBeat();
+            if (!_clock.IsEnabled) return;
+        }
+        _beats = Math.Max(_beats, due - 5);   // 오래 멎었으면(창 끌기 따위) 밀린 것은 버린다
+    }
+
+    /// <summary>한 틱.</summary>
+    private void OneBeat()
     {
         // 걸린 뒤에는 셈을 멈추고 끌어 올리는 것만 보인다.
         if (_reeling >= 0) { Reel(); return; }
