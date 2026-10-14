@@ -267,7 +267,7 @@ public sealed class BgmPlayer : IDisposable
     /// <summary>게임 폴더에 BGM이 준비되어 있는지 확인한다.</summary>
     public static bool IsAvailable(string gameDir) =>
         File.Exists(Path.Combine(gameDir, "bgm", $"Track{RequiredTrack:D2}.mp3"))
-        || File.Exists(BgmAssetDownloader.CachePath(RequiredTrack));
+        || BgmAssetDownloader.Existing(RequiredTrack) != null;
 
     /// <summary>곡을 틀지. 끄면 소리를 멈추고, 켜면 마지막으로 틀라던 곡부터 다시 돈다.</summary>
     public bool Enabled
@@ -324,7 +324,7 @@ public sealed class BgmPlayer : IDisposable
             ? custom
             : Path.Combine(_dir, "bgm", $"Track{track:D2}.mp3");
         if (!File.Exists(path))
-            path = BgmAssetDownloader.CachePath(track);
+            path = BgmAssetDownloader.Existing(track) ?? BgmAssetDownloader.CachePath(track);
         if (!File.Exists(path))
         {
             LastError = $"{path} 없음";

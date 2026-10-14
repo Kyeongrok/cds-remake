@@ -32,12 +32,28 @@ public static class BgmAssetDownloader
     private static readonly object RestLock = new();
     private static Task? _rest;
 
-    public static string CachePath(int track) =>
+    /// <summary>받아 둔 곡 자리(있든 없든).</summary>
+    public static string CachePath(int track) => Path.Combine(CacheDirectory, $"Track{track:D2}.mp3");
+
+    /// <summary>
+    /// 다운로드한 BGM 파일이 저장되는 폴더 — <c>%LocalAppData%\CdsHelpergm</c>(동영상과 같은 자리).
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 실행 파일 옆(<c>bgm</c>)에 받았다. 설치판(Velopack)은 업데이트마다 실행 파일 폴더(<c>current</c>)를
+    /// 통째로 갈아 끼워, 업데이트할 때마다 130MB 를 다시 받았다. 그 바깥에 두면 업데이트를 넘어 남는다.
+    /// </remarks>
+    public static string CacheDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CdsHelper", "bgm");
+
+    /// <summary>예전 자리(실행 파일 옆)의 곡 — 한 파일 판처럼 갈아 끼우지 않는 판에는 남아 있다.</summary>
+    public static string LegacyPath(int track) =>
         Path.Combine(AppContext.BaseDirectory, "bgm", $"Track{track:D2}.mp3");
 
-    /// <summary>다운로드한 BGM 파일이 저장되는 폴더.</summary>
-    public static string CacheDirectory =>
-        Path.Combine(AppContext.BaseDirectory, "bgm");
+    /// <summary>그 곡이 받아져 있으면 그 자리 — 새 자리 먼저, 없으면 예전 자리. 둘 다 없으면 null.</summary>
+    public static string? Existing(int track) =>
+        File.Exists(CachePath(track)) ? CachePath(track)
+        : File.Exists(LegacyPath(track)) ? LegacyPath(track)
+        : null;
 
     /// <summary>
     /// 먼저 쓰는 곡 셋을 받고 돌아온다. 나머지는 뒤에서 이어 받는다.
@@ -101,6 +117,13 @@ public static class BgmAssetDownloader
     {
         string target = CachePath(track);
         if (File.Exists(target)) return;
+        // 예전 자리에 받아 둔 것이 있으면 내려받지 않고 새 자리로 옮겨 놓는다.
+        if (File.Exists(LegacyPath(track)))
+        {
+            Directory.CreateDirectory(CacheDirectory);
+            File.Copy(LegacyPath(track), target, overwrite: true);
+            return;
+        }
 
         await OneAtATime.WaitAsync(cancellationToken);
         try

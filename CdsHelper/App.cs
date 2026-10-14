@@ -103,6 +103,7 @@ internal class App : PrismApplication
                         && Directory.Exists(saved)
                 ? saved
                 : AppDomain.CurrentDomain.BaseDirectory;
+            // 받는 쪽이 이미 받은 곡은 건너뛰고, 예전 자리(실행 파일 옆)의 곡은 내려받지 않고 새 자리로 옮긴다.
             if (!File.Exists(Path.Combine(dir, "bgm", $"Track{BgmPlayer.RequiredTrack:D2}.mp3")))
                 await BgmAssetDownloader.DownloadAsync();
         }
