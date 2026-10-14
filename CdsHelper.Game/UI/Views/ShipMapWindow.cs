@@ -97,6 +97,12 @@ public sealed class ShipMapWindow : Window
     /// <summary>방금 물어본 도시. 떠났다 다시 와야 다시 묻는다.</summary>
     private int _askedCity = -1;
 
+    /// <summary>
+    /// 대 둔 배 곁에서 승선을 이미 물었는지. 배에 타 있는 동안은 참이라 상륙하자마자(배 곁에 내린다) 묻지 않고,
+    /// 배에서 멀어지면 거짓이 되어 다시 다가올 때 한 번 묻는다(<see cref="CheckBoard"/>).
+    /// </summary>
+    private bool _askedBoard = true;
+
     /// <summary>다이얼로그가 떠 있는 동안 또 묻지 않게.</summary>
     private bool _asking;
 
@@ -640,6 +646,7 @@ public sealed class ShipMapWindow : Window
             CheckDiscovery();
             SpotCities();
             CheckPort();
+            CheckBoard();
             PassTime();
             MarkSeen();
             FillBarTexts();
@@ -4270,6 +4277,32 @@ public sealed class ShipMapWindow : Window
                 _host.Paused = false;
                 _asking = false;
             }
+        }
+    }
+
+    /// <summary>
+    /// 걸어서 대 둔 배 곁에 닿으면 한 번 승선을 묻는다 — 원본에 없는 물음이다. 원본은 커맨드 창의 「승선」 줄로만
+    /// 오르는데(<c>0x0048B3ED</c>), 글쇠로 걷는 분은 배에 닿아도 아무 것도 안 떠 오를 길을 못 찾았다.
+    /// 도시에 다가갈 때 묻는 것(<see cref="CheckPort"/>)과 같은 꼴로, 아니오면 떠났다 다시 와야 또 묻는다.
+    /// </summary>
+    private void CheckBoard()
+    {
+        if (!_host.IsOnLand) { _askedBoard = true; return; }
+        if (!_host.IsNearMoor(2)) { _askedBoard = false; return; }
+        if (_askedBoard || _asking || _host.Paused) return;
+        _askedBoard = true;
+
+        _asking = true;
+        _host.Paused = true;
+        try
+        {
+            if (ConfirmDialog.Ask(this, "배에 승선하겠습니까?") && _host.Embark())
+                _game.Bgm.Play(SeaTrackHere());
+        }
+        finally
+        {
+            _host.Paused = false;
+            _asking = false;
         }
     }
 
