@@ -49,7 +49,7 @@ public enum DisevCall
     Result, ResultFalse, LastConditionFalse, LastCondition, NoAide, HasAide, ChoiceIs, ChoiceIsNot,
     HintActive, HintInactive, HasItem, LacksItem, Discovered, NotDiscovered, DiscoveryDone, DiscoveryNotDone,
     YearAtLeast, YearBefore, YearAtMost, YearAfter, YearIs, YearBetween, YearOutside, YearMonthIs,
-    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, DiscoveryOpenIs, GoodsOnSale, GoodsNotOnSale, SponsorVisitEnded, HasFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
+    InNation, InCity, NotInCity, InBuilding, NotInBuilding, BuildingCommand, SpeechIs, DiscoveryOpenIs, GoodsOnSale, GoodsNotOnSale, SponsorVisitEnded, HasFleet, NoFleet, InCulture, PersonUnmet, PersonMet, SponsorActive, SponsorInactive,
     CityNationCheck, CityNationIs, CityStanding, CityGone, BuildingStanding, BuildingGone, LeftCityBySea, LeftCityOnLand,
     Story0, NotStory0, Story1, NotStory1, Unknown0015, NoContract, Or, RandomChance,
     GreaterThan, GreaterOrEqual, LessThan, LessOrEqual, EqualTo, NotEqualTo,
@@ -223,6 +223,9 @@ public static class DisevCalls
         C(DisevCall.SponsorVisitEnded, null, "65"),
         // 59 — 함대에 배가 한 척이라도 있으면 참(0x00407DA9 → 0x00473CD0 이 여덟 자리를 훑는다).
         C(DisevCall.HasFleet, null, "59"),
+        // 79 — 원본에 없는 꼴. 함대에 배가 한 척도 없으면 참(59 의 반대). 시나리오가 배 없이 항구에 든 것을 본다 —
+        // 선원 0 으로 가리면 배를 사고 아직 선원을 안 태운 때도 걸렸다.
+        C(DisevCall.NoFleet, null, "79"),
         C(DisevCall.InCulture, null, "17 19 u16", "Culture"),
         C(DisevCall.PersonUnmet, DisevCall.PersonMet, "37 0D u16", "Person"),
         C(DisevCall.SponsorActive, DisevCall.SponsorInactive, "37 12 u16", "Sponsor"),

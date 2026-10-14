@@ -558,6 +558,7 @@ public sealed class DisevEditorDialog : GameWindow
             DisevCall.YearBetween => $"{N("From")}~{N("To")}년",
             DisevCall.YearMonthIs => $"{N("Year")}년 {N("Month")}월",
             DisevCall.HasFleet => "함대 있음",
+            DisevCall.NoFleet => "함대 없음",
             DisevCall.NoContract => "계약 없음",
             DisevCall.NoAide => "부관 없음",
             DisevCall.HasItem => $"{_items?.Find((int)N("Item"))?.Name ?? $"아이템 {N("Item")}"} 지님",

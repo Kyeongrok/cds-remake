@@ -591,6 +591,7 @@ public sealed class DisevRunner
             // 41 10 — 건물에 들어선 사건이면 그 건물이 아닐 때 참, 딴 사건(도시에 들어섬 따위)이면 거짓(0x00407CE8)
             case DisevCall.NotInBuilding: return _event.Kind == DisevEvent.BuildingKind && _building != I("Building");
             case DisevCall.HasFleet: return player.Ships.Count > 0;                   // 59 (0x00407DA9)
+            case DisevCall.NoFleet: return player.Ships.Count == 0;                   // 79 — 원본에 없는 꼴
             // 42 10 [건물] 21 [명령] — 건물 차림표에서 그 명령을 고른 사건(갈래 4)이고 건물(+0x14)·명령(+0x18)이
             // 같으면 참(0x00407D31). 초심자 이야기가 설득·출항·외출 앞에서 이것으로 설명하고 단계를 올린다 —
             // 예전에는 이 사건을 안 올려 이야기가 파트 4 에서 멈췄다.

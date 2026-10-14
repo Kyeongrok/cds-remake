@@ -85,18 +85,9 @@
               "Note": "건물 조건: 0(항구)"
             },
             {
-              "OpCode": "2C",
-              "Call": "LessThan",
-              "Args": {
-                "A": {
-                  "Stat": 2,
-                  "Name": "총 선원 수"
-                },
-                "B": {
-                  "Const": 1
-                }
-              },
-              "Note": "조건: 총 선원 수 < 1"
+              "OpCode": "79",
+              "Call": "NoFleet",
+              "Note": "미확인 명령/데이터"
             },
             {
               "OpCode": "FF",
@@ -267,18 +258,9 @@
               "Note": "건물 조건: 0(항구)"
             },
             {
-              "OpCode": "2C",
-              "Call": "LessThan",
-              "Args": {
-                "A": {
-                  "Stat": 2,
-                  "Name": "총 선원 수"
-                },
-                "B": {
-                  "Const": 1
-                }
-              },
-              "Note": "조건: 총 선원 수 < 1"
+              "OpCode": "79",
+              "Call": "NoFleet",
+              "Note": "미확인 명령/데이터"
             },
             {
               "OpCode": "FF",
@@ -442,18 +424,9 @@
               "Note": "건물 조건: 0(항구)"
             },
             {
-              "OpCode": "2C",
-              "Call": "LessThan",
-              "Args": {
-                "A": {
-                  "Stat": 2,
-                  "Name": "총 선원 수"
-                },
-                "B": {
-                  "Const": 1
-                }
-              },
-              "Note": "조건: 총 선원 수 < 1"
+              "OpCode": "79",
+              "Call": "NoFleet",
+              "Note": "미확인 명령/데이터"
             },
             {
               "OpCode": "FF",
