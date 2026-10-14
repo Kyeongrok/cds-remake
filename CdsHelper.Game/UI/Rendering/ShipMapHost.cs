@@ -2753,7 +2753,7 @@ public sealed class ShipMapHost : HwndHost
     {
         if (_world == null) return false;
         var (_, _, _, _, off) = RawAt(_shipX, _shipY);
-        if (_terrain != null) return _terrain.ClassOfCell(CellValue(_shipX, _shipY)) == 1;
+        if (_terrain != null) return _terrain.ClassOfCell(SailCellValue(_shipX, _shipY)) == 1;
         return (WorldMapRenderer.CellToTile(_world, off) & 0x80) != 0;
     }
 
@@ -2818,8 +2818,7 @@ public sealed class ShipMapHost : HwndHost
     {
         if (_terrain != null && _world != null)
         {
-            int cell = CellValue(cellX, cellY);
-            return _onLand ? _terrain.CanWalk(cell) : _terrain.CanSail(cell);
+            return _onLand ? _terrain.CanWalk(CellValue(cellX, cellY)) : _terrain.CanSail(SailCellValue(cellX, cellY));
         }
 
         double land = LandRatioAt(cellX, cellY);
@@ -2883,7 +2882,13 @@ public sealed class ShipMapHost : HwndHost
     /// 지형 표는 이 값 열네 비트로 찾는다(<see cref="Engine.Table.TerrainTable"/>). 아래
     /// 한 바이트만으로 찾으면 같은 지형이라도 속성이 다른 칸을 못 지나는 것으로 본다.
     /// </remarks>
-    private int CellValue(double cellX, double cellY)
+    private int CellValue(double cellX, double cellY) => CellAt(RawAt(cellX, cellY).Offset);
+
+    /// <summary>
+    /// 배가 지날 수 있는지 볼 칸 값 — 못 찾은 발견물 자리는 덮어 그린 값(<see cref="_placeCells"/>)이다.
+    /// <b>배에만</b> 쓴다. 뭍 걷기 · 그림에까지 쓰면 덮개 칸의 부류가 어긋나 상륙한 말이 발견물 둘레에 끼었다.
+    /// </summary>
+    private int SailCellValue(double cellX, double cellY)
     {
         var at = RawAt(cellX, cellY);
         return _placeCells.TryGetValue((at.CellX, at.CellY), out ushort shown) ? shown : CellAt(at.Offset);
