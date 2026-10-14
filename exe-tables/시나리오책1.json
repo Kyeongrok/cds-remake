@@ -497,6 +497,589 @@
             }
           ]
         ]
+      },
+      {
+        "Index": 4,
+        "Step": 4,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "마르틴 신부． 사제복이 몸에 익었는가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "신부님． 미사를 드리고 고해를 들어도， 제 안의 죄는 조금도 가벼워지지 않습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "밤을 새워 기도하고 끼니를 걸러 보아도， 하느님의 진노만 더 또렷이 보일 뿐입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "···자네처럼 제 영혼을 들볶는 사제는 처음 보네． 좋네， 끝까지 가 보게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "이베리아의 라코루냐에 성 야고보를 모신 산·티아고 성당이 있네． 예부터 참회하는 이들이 찾는 곳이지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "식량도 물도 싣지 말고 바다를 건너 그 성당에서 기도하고， 같은 몸으로 돌아오게． 그것이 자네의 금식일세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "다만 명심하게． 굶주린 배는 하루하루가 다르네． 선원들이 쓰러지기 전에 닿아야 하네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "빈 통으로 바다를 건넌다··· 육신을 쳐서 복종시키라 했던가． 가자．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 5,
+        "Step": 5,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
+          },
+          {
+            "Condition": 4,
+            "Body": 5
+          },
+          {
+            "Condition": 6,
+            "Body": 7
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 2
+              },
+              "Note": "도시 조건: 2"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 63,
+                  "Name": "식량(통)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 식량(통) < 1"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 64,
+                  "Name": "물(통)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 물(통) < 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "입술이 갈라지고 무릎이 떨린다． 그래도··· 닿았다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "북쪽에서 온 순례자여． 빈 통으로 바다를 건넜다는 소문이 벌써 항구에 돌았네． 이리 와 무릎을 꿇게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "주여， 제가 굶은 날수를 세지 마시고 제 죄도 세지 마소서．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···이상하다． 이토록 몸을 괴롭혔는데도 마음은 조금도 놓이지 않는다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "금식은 하느님께 치르는 값이 아니라네． 빈 손을 내미는 연습일 뿐이지． 돌아가는 길에도 그 손을 채우지 말게．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 2
+              },
+              "Note": "도시 조건: 2"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "배에는 아직 식량과 물이 남아 있다． 이래서는 금식이라 할 수 없다． 통을 비우고 다시 오자．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "5F",
+              "Call": "LeftCityBySea",
+              "Note": "바다로 나섬 조건"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 63,
+                  "Name": "식량(통)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 식량(통) >= 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "통에 식량이 실려 있다． 이것은 금식의 순례다． 비우고 떠나야 하는데···"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "5F",
+              "Call": "LeftCityBySea",
+              "Note": "바다로 나섬 조건"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 64,
+                  "Name": "물(통)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 물(통) >= 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "통에 물이 실려 있다． 이것은 금식의 순례다． 비우고 떠나야 하는데···"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 6,
+        "Step": 6,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 63,
+                  "Name": "식량(통)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 식량(통) < 1"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 64,
+                  "Name": "물(통)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 물(통) < 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "돌아왔군！ 그 몰골 좀 보게． 뼈만 남았어．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "다녀왔습니다． 가는 길도 오는 길도 통은 비어 있었습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "그래， 무엇을 얻었는가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···아무것도 얻지 못했습니다． 아무리 굶어도 하느님의 은총을 살 수는 없다는 것만 알았습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "허허허． 그것을 알았다면 헛걸음은 아니었네． 그 깨달음을 잊지 말게．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 23,
+                "StatName": "신앙심",
+                "Value": {
+                  "Const": 5
+                }
+              },
+              "Note": "신앙심 + 5"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "신앙심이 ５ 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 7,
+                "StatName": "체력",
+                "Value": {
+                  "Const": 2
+                }
+              },
+              "Note": "체력 + 2"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "체력이 ２ 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 500
+                }
+              },
+              "Note": "명성 + 500"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "내 힘으로는 닿을 수 없다． 그렇다면 은총은 어디에서 오는가··· 성서를 다시 펴야겠다．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "통에서 빵 냄새가 나는군． 돌아오는 길에 채웠는가？ 비우고 다시 오게．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
       }
     ]
   },

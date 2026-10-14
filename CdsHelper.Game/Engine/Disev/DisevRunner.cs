@@ -1952,6 +1952,9 @@ public sealed class DisevRunner
             // 기능 열셋의 단계 — 원본에 없는 칸이다(원본은 과학 하나만 25 로 낸다). 50 항해술 … 61 신학 · 62 과학.
             >= DisevScript.SkillStatBase and < DisevScript.SkillStatBase + 13 =>
                 player.LevelOf(Support.Local.Models.Skill.Names[(int)N(stat) - DisevScript.SkillStatBase]),
+            // 배에 실린 식량 · 물(통) — 원본에 없는 칸이다. 금식 순례처럼 「빈 통으로 왔는가」를 가릴 때 쓴다.
+            DisevScript.FoodStat => Support.Local.Models.Supply.BarrelsOf(player.SupplyUnitsOf(Support.Local.Models.SupplyKind.Food)),
+            DisevScript.WaterStat => Support.Local.Models.Supply.BarrelsOf(player.SupplyUnitsOf(Support.Local.Models.SupplyKind.Water)),
             _ => null,
         };
     }
