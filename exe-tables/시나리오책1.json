@@ -1,0 +1,505 @@
+{
+  "Stamp": "",
+  "Data": {
+    "Parts": [
+      {
+        "Index": 0,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 11
+              },
+              "Note": "건물 조건: 11(자택)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "스토테른하임의 들판에서 벼락이 내 곁에 떨어진 지도 벌써 여러 날이 지났다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "그때 나는 땅에 엎드려 외쳤다． 「성 안나여， 살려 주소서！ 수도사가 되겠나이다！」"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "아버지는 내가 법률가가 되기를 바라신다． 하지만 하늘에 한 맹세를 물릴 수는 없다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···가자． 성 게레온 교회의 신부님을 찾아뵙고 길을 여쭙자．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 1,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "어서 오게， 젊은이． 얼굴에 근심이 가득하군． 무슨 일로 왔는가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "신부님． 저는 벼락 아래에서 하느님께 서원을 드렸습니다． 사제가 되고 싶습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "허허， 두려움에 쫓겨 한 맹세로군． 하지만 두려움으로 시작한 길도 믿음으로 끝날 수 있는 법이지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "다만 사제복은 맹세만으로 입는 것이 아닐세． 성서를 읽고 풀 줄 알아야 하네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "이 교회에서는 신학을 가르치지 못하네． 쾰른의 사도 교회를 찾아가게． 거기라면 자네를 받아 줄 걸세．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "런던의 캔터베리 대성당， 코펜하겐의 룬트 대성당에서도 배울 수 있지． 신학을 세 단계까지 닦거든 돌아오게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "적지만 여비에 보태게． 하느님께서 자네의 길을 지켜 주시기를．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 1000
+              },
+              "Note": "금화 +1000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "금화 １０００닢을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "신학을 닦고 돌아오라··· 길은 멀지만 맹세한 몸이다． 먼저 배를 구해 쾰른으로 가자．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 2,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 61,
+                  "Name": "신학 단계"
+                },
+                "B": {
+                  "Const": 3
+                }
+              },
+              "Note": "조건: 신학 단계 >= 3"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "「의인은 믿음으로 말미암아 살리라．」"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···수없이 읽은 구절인데， 이제야 이 말씀이 닫힌 문처럼 열리는구나．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "배울 만큼 배웠다． 함부르크로 돌아가 신부님을 뵙자．"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "벌써 돌아왔는가？ 아직 배움이 모자라네．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "신학을 세 단계까지 닦고 오게． 쾰른의 사도 교회가 가장 가깝네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 3,
+        "Step": 3,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "오， 돌아왔군． 눈빛이 달라졌어． 그래， 무엇을 배웠는가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "사람은 제 공로가 아니라 오직 믿음으로 의롭다 하심을 얻는다는 것을 배웠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "···대담한 말이군． 하지만 성서를 제대로 읽은 자의 말일세．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "묻겠네． 가난과 순결과 순명을 지키며， 평생 말씀을 섬기겠는가？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L02B3",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "예． 하느님의 도우심으로 그리하겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "좋네． 무릎을 꿇게．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "···일어나게． 이제 자네는 사제일세， 마르틴 신부．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 23,
+                "StatName": "신앙심",
+                "Value": {
+                  "Const": 5
+                }
+              },
+              "Note": "신앙심 + 5"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "신앙심이 ５ 올라갔다！"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 300
+                }
+              },
+              "Note": "명성 + 300"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "사제복은 생각보다 무겁다． 그러나 이 무게가 나를 바로 세우리라．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "하느님， 이 몸을 당신의 도구로 써 주소서．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L02B3",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···아직은 대답을 드리지 못하겠습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "마음이 서지 않았군． 서두를 것 없네． 마음이 정해지거든 다시 오게．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  "Source": "DISEV.CDS",
+  "Version": 15
+}

@@ -1,0 +1,102 @@
+{
+  "Stamp": "",
+  "Data": {
+    "Scenarios": [
+      {
+        "Book": "시나리오책1",
+        "Title": "루터의 서원",
+        "Given": "마르틴",
+        "Family": "루터",
+        "BirthYear": 1460,
+        "Month": 11,
+        "Day": 10,
+        "Face": 0,
+        "Nation": 14,
+        "Blood": 0,
+        "Job": 0,
+        "Abilities": [
+          55,
+          88,
+          40,
+          80,
+          60,
+          95
+        ],
+        "Skills": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "Tongues": [
+          0,
+          0,
+          1,
+          3,
+          0,
+          0
+        ],
+        "Gold": 3000,
+        "Fame": 1000,
+        "HomeCity": 44,
+        "HomeX": 250,
+        "HomeY": 115,
+        "Hero": {
+          "Given": "마르틴",
+          "Family": "루터",
+          "BirthYear": 1460,
+          "Month": 11,
+          "Day": 10,
+          "Face": 0,
+          "Nation": 14,
+          "Blood": 0,
+          "Job": 0,
+          "Abilities": [
+            55,
+            88,
+            40,
+            80,
+            60,
+            95
+          ],
+          "Skills": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "Tongues": [
+            0,
+            0,
+            1,
+            3,
+            0,
+            0
+          ],
+          "Gold": 3000,
+          "StoryBook": "시나리오책1"
+        }
+      }
+    ]
+  },
+  "Source": "손으로 지음",
+  "Version": 1
+}
