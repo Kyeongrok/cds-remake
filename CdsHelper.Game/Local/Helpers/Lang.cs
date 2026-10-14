@@ -46,6 +46,38 @@ public static class Lang
         return Table().TryGetValue(korean, out var ja) && ja.Length > 0 ? ja : korean;
     }
 
+    private static Dictionary<string, Dictionary<string, List<string>>>? _books;
+
+    /// <summary>
+    /// 대본 대사의 일본어 — 책 · 파트 · 파트 안 대사 차례(<c>대사</c> 명령을 토막 · 명령 차례로 센 번호)로 찾는다.
+    /// 일본어판 원본 대본(DISEV.CDS · STORY · 개인 이야기)을 한국어 책과 같은 자리끼리 짝지어 구운
+    /// <c>lang/ja-books.json</c> 이다(tools/ja-books). 일본어가 아니거나 그 자리가 없으면 null.
+    /// </summary>
+    /// <param name="count">이 파트의 대사 수 — 구울 때와 다르면(대본을 고쳤으면) 짝이 어긋나므로 안 쓴다.</param>
+    public static string? ScriptLine(string book, int part, int index, int count)
+    {
+        if (!IsJapanese || index < 0) return null;
+        if (_books == null)
+        {
+            try
+            {
+                string path = Path.Combine(AppContext.BaseDirectory, "lang", "ja-books.json");
+                _books = File.Exists(path)
+                    ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, List<string>>>>(File.ReadAllText(path)) ?? []
+                    : [];
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Lang] 대본 번역을 못 읽었습니다 — {ex.Message}");
+                _books = [];
+            }
+        }
+        return _books.TryGetValue(book, out var parts) && parts.TryGetValue(part.ToString(), out var lines)
+               && lines.Count == count && index < lines.Count && lines[index].Length > 0
+            ? lines[index]
+            : null;
+    }
+
     /// <summary>번역표 — 한 번 읽어 들고 있는다. 못 읽으면 빈 표.</summary>
     private static Dictionary<string, string> Table()
     {

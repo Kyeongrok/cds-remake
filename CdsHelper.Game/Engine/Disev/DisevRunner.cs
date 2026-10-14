@@ -251,7 +251,7 @@ public sealed class DisevRunner
         if (raw.Length == 0) return false;
         if (DisevPart.Parse(raw, out _) is not { } part) return false;
 
-        var runner = new DisevRunner(owner, game, cache, ev);
+        var runner = new DisevRunner(owner, game, cache, ev) { _partIndex = partIndex, _part = part };
         int body = runner.PickBody(part);
         if (body < 0) return false;
 
@@ -743,7 +743,7 @@ public sealed class DisevRunner
             case DisevCall.Say:
             case DisevCall.AskYesNo:
             case DisevCall.SayBare:
-                Speak(line.Raw, line.Args);
+                Speak(line.Raw, line.Args, line.Op.Offset);
                 return null;
 
             case DisevCall.AskChoice:
@@ -1826,7 +1826,34 @@ public sealed class DisevRunner
         if (part >= 0) _game.Sfx?.Play(part);
     }
 
-    private void Speak(byte[] raw, JsonObject args)
+    /// <summary>돌고 있는 파트 번호와 그 파트 — 일본어 대사를 같은 자리에서 찾는 데 쓴다(<see cref="JapaneseLine"/>).</summary>
+    private int _partIndex = -1;
+    private DisevPart? _part;
+
+    /// <summary>이 파트의 대사 명령 자리들(토막 · 명령 차례) — 한 번 세어 둔다.</summary>
+    private List<int>? _dialogueOffsets;
+
+    /// <summary>
+    /// 그 자리 대사의 일본어(<see cref="Local.Helpers.Lang.ScriptLine"/>). 일본어가 아니거나 짝이 없으면 null.
+    /// 대사 차례는 구울 때와 같은 잣대로 센다 — 토막 차례대로 <see cref="DisevScript.Parse"/> 가 「대사」로 본 명령.
+    /// </summary>
+    private string? JapaneseLine(int offset)
+    {
+        if (!Local.Helpers.Lang.IsJapanese || _part == null || _partIndex < 0) return null;
+        if (_dialogueOffsets == null)
+        {
+            _dialogueOffsets = [];
+            foreach (int start in _part.ChunkStarts)
+            {
+                var (from, to) = _part.ChunkRange(start);
+                foreach (var op in DisevScript.Parse(_part.Data, from, to))
+                    if (op.Kind == "대사") _dialogueOffsets.Add(op.Offset);
+            }
+        }
+        return Local.Helpers.Lang.ScriptLine(_cache, _partIndex, _dialogueOffsets.IndexOf(offset), _dialogueOffsets.Count);
+    }
+
+    private void Speak(byte[] raw, JsonObject args, int offset = -1)
     {
         // 창 플래그 한 바이트가 앞에 붙을 수 있다. 0A 부터가 알맹이다.
         int textStart = raw.Length > 0 && raw[0] == 0x0A ? 1 : 2;
@@ -1839,8 +1866,10 @@ public sealed class DisevRunner
         var (speaker, body) = DisevScript.DecodeDialogue(raw.AsSpan(textStart, end - textStart),
                                                         _game.Player.CallName);
         if (body.Length == 0) return;
+        // 일본어로 켰으면 같은 자리의 원본 일본어 대사로 바꾼다 — %P 는 제독 이름 자리다.
+        if (JapaneseLine(offset) is { } japanese) body = japanese.Replace("%P", _game.Player.CallName);
         // 대사 속 이름도 표준 표기로 — 「이슈탈문을 발견했다！」가 표의 이름(이슈타르 문)과 어긋나지 않게.
-        body = Local.Helpers.StandardText.Apply(body);
+        else body = Local.Helpers.StandardText.Apply(body);
         // <도시> — 지금 있는 도시 이름(원본에 없는 자리표, 마을대사 책이 쓴다).
         if (body.Contains("<도시>")) body = body.Replace("<도시>", _game.Player.CityName);
         // 대사 사건이 넘긴 자리표(<금액> · <개월> 따위)를 그때 값으로.
