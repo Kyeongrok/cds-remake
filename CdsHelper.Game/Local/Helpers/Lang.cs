@@ -47,7 +47,7 @@ public static class Lang
         lock (Seen)
         {
             if (Seen.TryGetValue(korean, out var known)) return known;
-            string made = ByTemplate(korean) ?? ByLines(korean) ?? korean;
+            string made = ByTemplate(korean) ?? ByLines(korean) ?? ByWords(korean) ?? korean;
             if (Seen.Count > 20000) Seen.Clear();
             Seen[korean] = made;
             return made;
@@ -80,6 +80,23 @@ public static class Lang
             {
                 if (sender is System.Windows.Window { Title.Length: > 0 } window) window.Title = T(window.Title);
             }));
+    }
+
+    /// <summary>
+    /// 띄어 쓴 이름(「바르톨로메우 디아스」 — 이름과 성)을 낱말마다 찾아 원본처럼 「＝」로 잇는다. 셋 넘는 낱말이거나
+    /// 하나라도 못 찾으면 null — 문장을 낱말로 쪼개 옮기지는 않는다.
+    /// </summary>
+    private static string? ByWords(string korean)
+    {
+        var words = korean.Split(' ');
+        if (words.Length is < 2 or > 3) return null;
+        var done = new string[words.Length];
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (!Table().TryGetValue(words[i], out var ja) || ja.Length == 0 || HasHangul(ja)) return null;
+            done[i] = ja;
+        }
+        return string.Join("＝", done);
     }
 
     /// <summary>한 번 맞춰 본 글 — 틀 맞추기는 비싸서 결과를 들고 있는다.</summary>
@@ -122,14 +139,30 @@ public static class Lang
             if (literal.Length > 0 && !korean.Contains(literal)) continue;
             var m = pattern.Match(korean);
             if (!m.Success) continue;
-            return System.Text.RegularExpressions.Regex.Replace(japanese, @"\{(\d+)\}", x =>
+            string made = Hole.Replace(japanese, x =>
             {
-                var g = m.Groups["a" + x.Groups[1].Value];
+                var g = m.Groups[GroupOf(x.Value)];
                 return g.Success ? T(g.Value) : "";
             });
+            // 자리에 든 글이 번역이 안 돼 한글이 남으면 틀이 엉뚱한 글에 걸린 것이다(「{0}의 {1}」 따위) —
+            // 한국어 · 일본어가 섞여 나오느니 다음 틀을 본다.
+            if (HasHangul(made) && !HasHangul(japanese)) continue;
+            return made;
         }
         return null;
     }
+
+    /// <summary>
+    /// 틀의 자리 — 코드가 채우는 <c>{0}</c> 과, 대사가 낼 때 채우는 <c>&lt;금액&gt;</c> · <c>&lt;제독&gt;</c> 같은 이름 자리.
+    /// </summary>
+    private static readonly System.Text.RegularExpressions.Regex Hole =
+        new(@"\{\d+\}|<[^<>\s]{1,8}>", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>자리 글 → 정규식 무리 이름(글자만 남긴다).</summary>
+    private static string GroupOf(string hole) =>
+        "h" + string.Concat(hole.Select(ch => char.IsLetterOrDigit(ch) ? ch.ToString() : ((int)ch).ToString("X")));
+
+    private static bool HasHangul(string text) => text.Any(ch => ch is >= '가' and <= '힣');
 
     /// <summary>한국어 조사 — 자리 바로 뒤에 붙는 자리는 이것들로만 맞춘다.</summary>
     private const string Particles = "이라는|라는|이라고|라고|으로|로|에게|에서|에|의|이|가|을|를|은|는|와|과|이야|야|아|이여|여|";
@@ -139,25 +172,28 @@ public static class Lang
         var list = new List<(System.Text.RegularExpressions.Regex, string, string)>();
         foreach (var (key, ja) in Table())
         {
-            if (ja.Length == 0 || !key.Contains('{')) continue;
-            var parts = System.Text.RegularExpressions.Regex.Split(key, @"(\{\d+\})");
+            if (ja.Length == 0 || !Hole.IsMatch(key)) continue;
             var regex = new System.Text.StringBuilder("^");
             string longest = "";
-            for (int i = 0; i < parts.Length; i++)
+            var used = new HashSet<string>();
+            int at = 0;
+            int previousEnd = -1;   // 바로 앞 자리가 끝난 곳 — 이 자리가 거기서 곧장 이어지면 조사 자리다
+            foreach (System.Text.RegularExpressions.Match hole in Hole.Matches(key))
             {
-                var hole = System.Text.RegularExpressions.Regex.Match(parts[i], @"^\{(\d+)\}$");
-                if (!hole.Success)
-                {
-                    regex.Append(System.Text.RegularExpressions.Regex.Escape(parts[i]));
-                    if (parts[i].Length > longest.Length) longest = parts[i];
-                    continue;
-                }
-                bool afterHole = i >= 2 && parts[i - 1].Length == 0
-                                 && System.Text.RegularExpressions.Regex.IsMatch(parts[i - 2], @"^\{\d+\}$");
-                string name = "a" + hole.Groups[1].Value;
-                regex.Append(afterHole ? $"(?<{name}>{Particles})" : $"(?<{name}>.+?)");
+                string literal = key[at..hole.Index];
+                regex.Append(System.Text.RegularExpressions.Regex.Escape(literal));
+                if (literal.Length > longest.Length) longest = literal;
+                string name = GroupOf(hole.Value);
+                // 같은 자리가 두 번 나오면 뒤엣것은 앞엣것과 같은 글이어야 한다.
+                if (!used.Add(name)) regex.Append(@"\k<").Append(name).Append('>');
+                else if (previousEnd == hole.Index && hole.Value.StartsWith('{'))
+                    regex.Append($"(?<{name}>{Particles})");
+                else regex.Append($"(?<{name}>.+?)");
+                at = previousEnd = hole.Index + hole.Length;
             }
-            regex.Append('$');
+            string tail = key[at..];
+            regex.Append(System.Text.RegularExpressions.Regex.Escape(tail)).Append('$');
+            if (tail.Length > longest.Length) longest = tail;
             // 글자가 하나도 없는 틀(「{0}{1}」)은 아무 글에나 걸리고 자기 자신을 다시 부른다 — 안 쓴다.
             if (longest.Trim().Length == 0) continue;
             try
