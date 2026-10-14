@@ -2028,6 +2028,10 @@ public sealed class ShipMapHost : HwndHost
     private void UpdateClouds(int windDir, int windSpeed, int ticks)
     {
         double scale = 1.0 / (_cellsPerPixel * GamePixelsPerCell);   // 실픽셀 / 게임점
+        // 「부드러운 구름」을 끄면 구름이 원본 그대로 바둑판 점무늬라, 한 점이 온 실픽셀 몇 개가 아니면
+        // (기본 배율 0.75 면 1.5) 점이 2·1·2·1 픽셀로 번갈아 찍혀 줄무늬가 지고 군데군데 꽉 차거나 비어 보였다.
+        // 그때는 정수 배로 맞춘다 — 구름이 조금 커지거나 작아질 뿐 무늬는 깨지지 않는다.
+        if (!_renderer.SmoothClouds && scale > 0) scale = Math.Max(1, Math.Round(scale));
         if (_cloudsHidden || scale <= 0 || _pixelW <= 0 || _pixelH <= 0
             || CloudSprites.Width * scale < CloudMinPixels)
         {
@@ -2160,7 +2164,9 @@ public sealed class ShipMapHost : HwndHost
             _centerX = nx;
             _centerY = ny;
             // 구름은 화면 자리로 들고 있어 그냥 두면 바다가 흘러도 화면에 붙어 선다 — 지도가 흐른 만큼 같이 민다.
-            ScrollClouds(moveX * GamePixelsPerCell, moveY * GamePixelsPerCell);
+            // 구름 배율을 정수로 맞췄으면 게임 점과 구름 점이 어긋난다 — 화면 픽셀로 바꿔 구름 점으로 민다.
+            if (_cloudScale > 0)
+                ScrollClouds(moveX / _cellsPerPixel / _cloudScale, moveY / _cellsPerPixel / _cloudScale);
             return;
         }
 
