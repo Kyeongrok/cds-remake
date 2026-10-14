@@ -23,6 +23,11 @@
       </Content>
       <!-- BGM은 릴리즈의 별도 bgm.zip으로 배포하고 실행 파일에는 넣지 않는다. -->
       <Content Remove="..\asset\bgm\**\*" />
+      <!-- 화면 글 번역표(Lang) — 일본어 따위. -->
+      <Content Include="..\lang\*.json">
+        <Link>lang\%(Filename)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <Content Include="..\exe-tables\**\*.json">
         <Link>exe-tables\%(RecursiveDir)%(Filename)%(Extension)</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

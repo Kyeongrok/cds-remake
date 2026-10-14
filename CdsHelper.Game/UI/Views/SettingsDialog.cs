@@ -25,6 +25,7 @@ public sealed class SettingsDialog : GameWindow
     private readonly Border _sfxVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sizeRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _mapRow = new() { Padding = new Thickness(8, 2, 8, 2) };
+    private readonly Border _langRow = new() { Padding = new Thickness(8, 2, 8, 2) };
 
     /// <summary>해상 지도 배율을 바꿨을 때 지도에 곧바로 먹이는 손. 없으면 다음에 켤 때 든다.</summary>
     private readonly Action<double>? _onMapScale;
@@ -47,6 +48,7 @@ public sealed class SettingsDialog : GameWindow
         _sfxVolRow.Child = VolumeRow("효과음  ", GameSettings.SfxVolume, StepSfx);
         _sizeRow.Child = SizeRow();
         _mapRow.Child = MapRow();
+        _langRow.Child = LanguageRow();
 
         var title = GameUi.TitleBar("설정", Close);
         GameUi.EnableDrag(this, title);
@@ -59,6 +61,7 @@ public sealed class SettingsDialog : GameWindow
         stack.Children.Add(_sfxVolRow);
         stack.Children.Add(_sizeRow);
         stack.Children.Add(_mapRow);
+        stack.Children.Add(_langRow);
         stack.Children.Add(new StackPanel
         {
             Orientation = Orientation.Horizontal,
@@ -157,6 +160,31 @@ public sealed class SettingsDialog : GameWindow
         row.Children.Add(Value($"화면 {GameSettings.WindowSize.Name}"));
         row.Children.Add(new GameButton("▶", () => StepSize(+1), BandStyle.Button, StepWidth));
         return row;
+    }
+
+    /// <summary>
+    /// 언어 한 줄 — <c>◀ 언어 한국어 ▶</c>. 원본에 없는 것이다. 고르면 설정에만 적고 <b>다시 켤 때</b> 먹는다
+    /// (<see cref="Lang.Current"/>) — 이미 떠 있는 창과 읽어 둔 표까지 그 자리에서 바꾸지는 못한다.
+    /// </summary>
+    private UIElement LanguageRow()
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(new GameButton("◀", () => StepLanguage(-1), BandStyle.Button, StepWidth));
+        string name = Lang.All.FirstOrDefault(l => l.Code == GameSettings.Language).Name ?? Lang.All[0].Name;
+        row.Children.Add(Value($"언어 {name}"));
+        row.Children.Add(new GameButton("▶", () => StepLanguage(+1), BandStyle.Button, StepWidth));
+        return row;
+    }
+
+    /// <summary>언어를 한 칸 옮긴다. 다시 켜야 먹는다고 알린다.</summary>
+    private void StepLanguage(int by)
+    {
+        int count = Lang.All.Length;
+        int at = Array.FindIndex(Lang.All, l => l.Code == GameSettings.Language);
+        GameSettings.Language = Lang.All[((at < 0 ? 0 : at) + by + count) % count].Code;
+        _langRow.Child = LanguageRow();
+        if (GameSettings.Language != Lang.Current)
+            NoticeDialog.Show(this, "게임을 다시 켜면 바뀝니다 / 再起動すると切り替わります");
     }
 
     /// <summary>크기를 한 칸 옮기고 그 자리에서 창에 먹인다. 끝에서 다시 처음으로 돈다.</summary>

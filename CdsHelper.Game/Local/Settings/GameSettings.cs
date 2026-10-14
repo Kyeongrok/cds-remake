@@ -43,6 +43,9 @@ public sealed class GameSettingsData
     /// <summary>효과음(닻·거절 따위)을 낼지. 기본은 켬.</summary>
     public bool SfxEnabled { get; set; } = true;
 
+    /// <summary>화면 글의 언어(<see cref="Helpers.Lang"/>) — "ko" 한국어 · "ja" 일본어. 기본은 한국어.</summary>
+    public string Language { get; set; } = "ko";
+
     /// <summary>효과음 폴더(<c>%LocalAppData%\CdsHelper\sfx</c>)에 넣어 둔 파일로 효과음을 갈아 낄지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CustomSfxEnabled { get; set; }
 
@@ -655,6 +658,15 @@ public static class GameSettings
     {
         get => Get(d => d.SfxEnabled);
         set => Set(d => d.SfxEnabled = value);
+    }
+
+    /// <summary>
+    /// 화면 글의 언어 — 「설정」 창에서 고른다. 바꾸면 다시 켤 때 먹는다(<see cref="Helpers.Lang.Current"/>).
+    /// </summary>
+    public static string Language
+    {
+        get => Get(d => d.Language is { Length: > 0 } code ? code : "ko");
+        set => Set(d => d.Language = value);
     }
 
     /// <summary>커스텀 효과음 — 효과음 폴더의 <c>sfx-번호.wav</c> 가 있으면 그 번호 소리를 그것으로 낸다(모드 창).</summary>
