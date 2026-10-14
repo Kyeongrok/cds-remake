@@ -43,8 +43,11 @@ public sealed class GameSettingsData
     /// <summary>효과음(닻·거절 따위)을 낼지. 기본은 켬.</summary>
     public bool SfxEnabled { get; set; } = true;
 
-    /// <summary>화면 글의 언어(<see cref="Helpers.Lang"/>) — "ko" 한국어 · "ja" 일본어. 기본은 한국어.</summary>
-    public string Language { get; set; } = "ko";
+    /// <summary>
+    /// 화면 글의 언어(<see cref="Helpers.Lang"/>) — "ko" 한국어 · "ja" 일본어. 비었으면 아직 안 고른 것이라
+    /// 윈도 표시 언어를 따른다(<see cref="GameSettings.Language"/>).
+    /// </summary>
+    public string Language { get; set; } = "";
 
     /// <summary>효과음 폴더(<c>%LocalAppData%\CdsHelper\sfx</c>)에 넣어 둔 파일로 효과음을 갈아 낄지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CustomSfxEnabled { get; set; }
@@ -665,7 +668,9 @@ public static class GameSettings
     /// </summary>
     public static string Language
     {
-        get => Get(d => d.Language is { Length: > 0 } code ? code : "ko");
+        // 안 골랐으면 윈도 표시 언어를 따른다 — 일본어 윈도에서 처음 켜면 일본어다.
+        get => Get(d => d.Language is { Length: > 0 } code ? code
+                       : System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ja" ? "ja" : "ko");
         set => Set(d => d.Language = value);
     }
 
