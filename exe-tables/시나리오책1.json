@@ -1352,6 +1352,227 @@
             }
           ]
         ]
+      },
+      {
+        "Index": 11,
+        "Step": 11,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 조건: 44"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 3
+              },
+              "Note": "건물 조건: 3(교회)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "마르틴 신부， 요즘 장터가 시끄럽네． 테첼이라는 도미니코회 수도사가 면벌부를 팔고 다니지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "「금화가 헌금함에 떨어져 짤랑 소리를 내는 순간， 연옥의 영혼이 튀어 오른다」고 외친다더군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···돈으로 죄를 씻는다니요． 굶고 걷고 매질하고도 얻지 못한 평안을 금화 몇 닢에 판다는 말입니까．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "사람은 오직 믿음으로 의롭게 됩니다． 은총은 사고파는 물건이 아닙니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "그 말을 입 밖에 내면 돌이킬 수 없네． 로마가 가만있지 않을 걸세．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Text": "면벌부를 반박하는 95개조의 논제를 교회 문에 내걸겠습니까？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L0523",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "마르틴 루터는 면벌부를 반박하는 95개조의 논제를 교회 문에 내걸었다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "누구든 와서 따져 보라． 나는 성서 밖의 것에는 무릎 꿇지 않겠다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "논제는 인쇄되어 몇 주 만에 온 독일로， 온 유럽으로 퍼져 나갔다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "교회",
+                "Text": "···이제 자네는 교황청의 적일세． 그리고 많은 이들의 희망이기도 하지．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "종교개혁이 일어났다！ 루터를 따르는 제후와 도시들이 「루터파 동맹」으로 뭉쳤다．"
+              }
+            },
+            {
+              "OpCode": "76 1C",
+              "Call": "SetPlayerNation",
+              "Args": {
+                "Nation": 78
+              },
+              "Note": "주인공 국적 변경"
+            },
+            {
+              "OpCode": "26 1C 1A 00 08",
+              "Call": "ChangeCityNation",
+              "Args": {
+                "City": 44
+              },
+              "Note": "도시 국적 변경: 도시 44 → 주인공 나라"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "함부르크가 루터파 동맹에 가담했다．"
+              }
+            },
+            {
+              "OpCode": "78 1C",
+              "Call": "SetCultureEntry",
+              "Args": {
+                "Culture": 0,
+                "Entry": 2
+              },
+              "Note": "문화권 출입여부 설정"
+            },
+            {
+              "OpCode": "78 1C",
+              "Call": "SetCultureEntry",
+              "Args": {
+                "Culture": 1,
+                "Entry": 2
+              },
+              "Note": "문화권 출입여부 설정"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "이베리아와 북유럽의 가톨릭 나라들이 루터파에 문을 닫았다！ 그 항구에는 이제 쉽게 들어갈 수 없다．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 1000
+                }
+              },
+              "Note": "명성 + 1000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "여기 내가 서 있습니다． 나는 달리 어찌할 수 없습니다． 하느님， 나를 도우소서．"
+              }
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계"
+            },
+            {
+              "Label": "L0523",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "···아직은 때가 아니다．"
+              }
+            },
+            {
+              "OpCode": "4D",
+              "Call": "EndFailed",
+              "Note": "이벤트 결과 코드 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
       }
     ]
   },

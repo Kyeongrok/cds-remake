@@ -95,6 +95,16 @@
           "StoryBook": "시나리오책1"
         }
       }
+    ],
+    "Nations": [
+      {
+        "Id": 78,
+        "Name": "루터파 동맹",
+        "Language": 3,
+        "Capital": 44,
+        "Sect": 0,
+        "Entry": 0
+      }
     ]
   },
   "Source": "손으로 지음",
