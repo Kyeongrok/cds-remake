@@ -23,12 +23,15 @@ namespace CdsHelper.Game.Engine;
 /// <param name="HomeX">자택 건물 상자의 왼쪽 위(도시 그림 좌표) — 그 도시에 자택이 없을 때 그림 위에 올린다.</param>
 /// <param name="Ship">처음부터 가진 배의 선체 번호(0 코구 · 1 카라벨 …). -1 이면 배 없이 시작한다.</param>
 /// <param name="Crew">처음 태운 선원 수. 배가 있어야 뜻이 있고, 배 정원으로 잘린다.</param>
+/// <param name="StartYear">게임을 시작하는 해. 0 이면 여느 판처럼 1480년 1월 1일이다(원본에 없는 칸).</param>
+/// <param name="StartMonth">시작 달.</param>
+/// <param name="StartDay">시작 날.</param>
 public sealed record Scenario(
     string Book, string Title, string Given, string Family,
     int BirthYear, int Month, int Day, int Face, int Nation, int Blood, int Job,
     int[] Abilities, int[] Skills, int[] Tongues, int Gold, int Fame,
     int HomeCity = -1, int HomeX = Scenarios.DefaultHomeX, int HomeY = Scenarios.DefaultHomeY,
-    int Ship = -1, int Crew = 0)
+    int Ship = -1, int Crew = 0, int StartYear = 0, int StartMonth = 1, int StartDay = 1)
 {
     /// <summary>앉힐 주인공 — 초심자용 주인공과 같은 모양이다.</summary>
     public Beginner.Hero Hero => new(Given, Family, BirthYear, Month, Day, Face, Nation, Blood, Job,

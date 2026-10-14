@@ -7,7 +7,7 @@
         "Title": "루터의 서원",
         "Given": "마르틴",
         "Family": "루터",
-        "BirthYear": 1460,
+        "BirthYear": 1463,
         "Month": 11,
         "Day": 10,
         "Face": 9001,
@@ -53,7 +53,7 @@
         "Hero": {
           "Given": "마르틴",
           "Family": "루터",
-          "BirthYear": 1460,
+          "BirthYear": 1463,
           "Month": 11,
           "Day": 10,
           "Face": 9001,
@@ -95,7 +95,10 @@
           "StoryBook": "시나리오책1"
         },
         "Ship": -1,
-        "Crew": 0
+        "Crew": 0,
+        "StartYear": 1483,
+        "StartMonth": 11,
+        "StartDay": 10
       }
     ],
     "Nations": [

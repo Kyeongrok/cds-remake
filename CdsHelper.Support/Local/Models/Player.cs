@@ -1038,6 +1038,12 @@ public sealed class Player
     /// 게임 안에서 흐른 것이 아니라 회복·짐 썩음은 셈하지 않는다. 시세·역사는 다음에 물을 때
     /// 따라잡는다(<c>Game.CatchUpMonths</c> 가 뒤로 간 달도 받는다).
     /// </remarks>
+    /// <summary>
+    /// 시작 날짜를 박는다 — 시나리오가 1480년 1월 1일이 아닌 날에 판을 열 때 쓴다. 달 넘김은 먹이지 않는다
+    /// (흐른 것이 아니라 거기서 시작한다). 시세 · 역사는 다음에 물을 때 1480년부터 따라잡는다.
+    /// </summary>
+    public void SetStartDate(DateTime date) => Date = date;
+
     public void SetYear(int year)
     {
         year = Math.Clamp(year, DateTime.MinValue.Year, DateTime.MaxValue.Year);

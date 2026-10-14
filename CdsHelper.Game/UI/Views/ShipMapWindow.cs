@@ -2523,6 +2523,13 @@ public sealed class ShipMapWindow : Window
 
         // 새 주인공은 배가 없다 — 조선소에서 첫 배를 사야 바다에 나간다.
         _game.Player.ClearShips();
+        // 시나리오는 1480년이 아닌 날에 시작할 수 있다(원본에 없는 길) — 루터는 그가 태어난 1483년 11월 10일이다.
+        if (Scenarios.Find(_game.Player.ActiveStoryBook) is { StartYear: >= 1480 } dated)
+        {
+            int month = Math.Clamp(dated.StartMonth, 1, 12);
+            _game.Player.SetStartDate(new DateTime(dated.StartYear, month,
+                                                   Math.Clamp(dated.StartDay, 1, DateTime.DaysInMonth(dated.StartYear, month))));
+        }
         // 시나리오는 배와 선원을 들고 시작할 수 있다(원본에 없는 길) — 루터는 배 살 돈이 없어 성 밖으로도 못 나갔다.
         if (Scenarios.Find(_game.Player.ActiveStoryBook) is { Ship: >= 0 } given)
         {

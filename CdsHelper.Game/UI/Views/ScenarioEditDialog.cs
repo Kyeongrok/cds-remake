@@ -71,6 +71,9 @@ public sealed class ScenarioEditDialog : GameWindow
         Col("명성", nameof(Row.Fame), 56);
         Col("배", nameof(Row.Ship), 40);
         Col("선원", nameof(Row.Crew), 44);
+        Col("시작해", nameof(Row.StartYear), 52);
+        Col("월", nameof(Row.StartMonth), 32);
+        Col("일", nameof(Row.StartDay), 32);
 
         _add.Click += (_, _) => Add();
         _remove.Click += (_, _) => Remove();
@@ -127,6 +130,9 @@ public sealed class ScenarioEditDialog : GameWindow
         public int Fame { get; set; }
         public int Ship { get; set; } = -1;
         public int Crew { get; set; }
+        public int StartYear { get; set; }
+        public int StartMonth { get; set; } = 1;
+        public int StartDay { get; set; } = 1;
     }
 
     private void Col(string header, string path, double width, bool readOnly = false) =>
@@ -150,6 +156,7 @@ public sealed class ScenarioEditDialog : GameWindow
             Skills = string.Join(",", s.Skills),
             Tongues = string.Join(",", s.Tongues),
             Gold = s.Gold, Fame = s.Fame, Ship = s.Ship, Crew = s.Crew,
+            StartYear = s.StartYear, StartMonth = s.StartMonth, StartDay = s.StartDay,
         })];
         _grid.ItemsSource = _rows;
         _grid.SelectedItem = _rows.FirstOrDefault(r => r.Book == pick) ?? _rows.FirstOrDefault();
@@ -192,7 +199,8 @@ public sealed class ScenarioEditDialog : GameWindow
                 [.. skills.Select(s => Math.Max(0, s))], [.. tongues.Select(t => Math.Max(0, t))],
                 Math.Max(0, row.Gold), Math.Max(0, row.Fame),
                 Math.Max(-1, row.HomeCity), row.HomeX, row.HomeY,
-                Math.Clamp(row.Ship, -1, 7), Math.Max(0, row.Crew)));
+                Math.Clamp(row.Ship, -1, 7), Math.Max(0, row.Crew),
+                row.StartYear, Math.Clamp(row.StartMonth, 1, 12), Math.Clamp(row.StartDay, 1, 31)));
         }
         return made;
     }
