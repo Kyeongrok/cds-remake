@@ -142,13 +142,32 @@ public sealed class GameFont
     /// 한 글자를 <paramref name="mask"/>(폭 <see cref="MaxWidth"/> 로 재는 칸)에
     /// 1=획 / 0=바탕으로 푼다. 글꼴에 없는 글자면 false — 그 자리는 건너뛴다.
     /// </summary>
+    /// <remarks>
+    /// 일본어로 켰으면(<see cref="Lang"/>) 한글이 아닌 글자는 원본 일본어판처럼 MS 고딕으로 찍는다(<see cref="GdiGlyphs"/>).
+    /// 한국어일 때도 이 글꼴에 없는 글자(한자 · 「ー」 따위)는 MS 고딕으로 메운다 — 예전에는 0폭으로 사라지거나
+    /// CP949 가 모르는 글자가 「?」로 찍혔다.
+    /// </remarks>
     public bool TryGlyph(char ch, byte[] mask, out int width, out int height)
+    {
+        if (Lang.IsJapanese && !IsHangul(ch) && GdiGlyphs.TryGlyph(ch, mask, out width, out height)) return true;
+        if (TryOwnGlyph(ch, mask, out width, out height)) return true;
+        return !IsHangul(ch) && GdiGlyphs.TryGlyph(ch, mask, out width, out height);
+    }
+
+    /// <summary>한글(자모 · 완성형)인지 — MS 고딕에 없어 늘 이 글꼴로 찍는다.</summary>
+    private static bool IsHangul(char ch) =>
+        ch is >= '\uAC00' and <= '\uD7A3' or >= '\u1100' and <= '\u11FF' or >= '\u3130' and <= '\u318F';
+
+    /// <summary>이 글꼴(ALL_FONT.16P · ANKFONT.DAT)로 찍는다.</summary>
+    private bool TryOwnGlyph(char ch, byte[] mask, out int width, out int height)
     {
         width = height = 0;
         Array.Clear(mask);
 
         var bytes = Cp949.GetBytes([ch]);
         if (bytes.Length == 0) return false;
+        // CP949 가 모르는 글자는 「?」(0x3F)로 바뀌어 온다 — 진짜 「?」가 아니면 없는 글자다.
+        if (bytes.Length == 1 && bytes[0] == (byte)'?' && ch != '?') return false;
 
         if (bytes.Length >= 2)
         {
