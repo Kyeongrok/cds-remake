@@ -353,6 +353,12 @@ public sealed class ModDialog : GameWindow
             + " 곧바로 자금 증가(자금 x1.3, 기간 절반)를 고릅니다. 스폰서 재력이 모자라거나 기간이 1년이라 원본대로면"
             + " 「탐욕스러운 놈!」 하고 쫓겨날 판이면, 대신 제안 그대로 승낙합니다."));
 
+        // 미니게임 통과 — 발견물 사건의 미니게임을 건너뛰고 이긴 것으로 친다.
+        rows.Children.Add(Toggle("미니게임 통과", GameSettings.SkipMinigames, on => GameSettings.SkipMinigames = on,
+            "원본에 없는 것입니다 — 발견물을 찾을 때 나오는 미니게임(성배 퍼즐 · 스핑크스 퀴즈 · 미궁 · 낚시 · 큐브 퍼즐 ·"
+            + " 천칭 퍼즐 · 발라몬의 탑)을 하지 않고 이긴 것으로 칩니다. 실패해서 게임오버가 나는 일도 없습니다."
+            + " 메뉴의 「MINI GAME」에서 따로 하는 판은 그대로 할 수 있습니다."));
+
         // 휠 확대 — 지도를 마우스 휠로 키우고 줄인다. 원본에 없어 꺼 둔다.
         rows.Children.Add(Toggle("캐릭터 작성 기억", GameSettings.KeepCharacterDraft,
             on => GameSettings.KeepCharacterDraft = on,

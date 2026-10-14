@@ -1102,7 +1102,7 @@ public sealed class DisevRunner
 
             // 미니게임 한 판 — 이겼는지를 들고 있다가 조건 47 이 읽는다.
             case DisevCall.Minigame:
-                _result = PlayMinigame(I("Game"));
+                _result = SkipMinigame((DisevMinigame)I("Game")) ?? PlayMinigame(I("Game"));
                 // 이기면 MINI GAME 차림표에 그 줄이 풀린다(0x00408D47 벌 → 0x00406B60(n)).
                 if (_result) Local.Settings.GameSettings.UnlockMinigame(I("Game"));
                 return null;
@@ -1113,6 +1113,9 @@ public sealed class DisevRunner
             case DisevCall.PuzzleMinigame1A:
                 switch ((DisevMinigame)I("Game"))
                 {
+                    case DisevMinigame.Coin or DisevMinigame.Tower when SkipMinigame((DisevMinigame)I("Game")) is { } skipped:
+                        _result = skipped;
+                        break;
                     case DisevMinigame.Coin:
                         _result = CoinPuzzleDialog.Play(_owner, _game.Random, _game.Player, _game.AideFace);
                         break;
@@ -1336,6 +1339,18 @@ public sealed class DisevRunner
 
     /// <summary>이만큼은 줘야 마음에 들어 한다(<c>0x00409312</c> 의 <c>cmp 0x64</c>).</summary>
     private const int AppeaseLeast = 100;
+
+    /// <summary>
+    /// 모드 「미니게임 통과」면 판을 띄우지 않고 이긴 것으로 친다(원본에 없는 길). 꺼져 있거나 판이 없는 번호면 null.
+    /// </summary>
+    private bool? SkipMinigame(DisevMinigame game)
+    {
+        if (!Local.Settings.GameSettings.SkipMinigames) return null;
+        if (game is not (DisevMinigame.Grail or DisevMinigame.Sphinx or DisevMinigame.Maze or DisevMinigame.Fishing
+                         or DisevMinigame.Cube or DisevMinigame.Coin or DisevMinigame.Tower)) return null;
+        NoticeDialog.Show(_owner, "미니게임을 통과한 것으로 합니다");
+        return true;
+    }
 
     /// <summary>
     /// 미니게임 한 판(<c>0x00408D16</c> 의 뜀표). 이겼으면 true.

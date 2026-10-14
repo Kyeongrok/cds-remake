@@ -312,6 +312,9 @@ public sealed class GameSettingsData
     /// <summary>스폰서 제안에서 고르기 없이 자금 증가를 고를지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool AutoFundRaise { get; set; }
 
+    /// <summary>발견물 사건의 미니게임을 건너뛰고 이긴 것으로 칠지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool SkipMinigames { get; set; }
+
     /// <summary>뭍에서 발견물 지도로 자동이동할지. 실험이라 꺼 두고 시작한다.</summary>
     public bool LandAutoWalk { get; set; }
 
@@ -1178,6 +1181,16 @@ public static class GameSettings
     {
         get => Get(d => d.AutoFundRaise);
         set => Set(d => d.AutoFundRaise = value);
+    }
+
+    /// <summary>
+    /// 미니게임 통과 — 발견물 사건이 띄우는 미니게임(성배 · 스핑크스 · 미궁 · 낚시 · 큐브 · 천칭 · 발라몬의 탑)을
+    /// 하지 않고 이긴 것으로 친다. 메뉴 「MINI GAME」에서 따로 하는 판은 그대로 한다.
+    /// </summary>
+    public static bool SkipMinigames
+    {
+        get => Get(d => d.SkipMinigames);
+        set => Set(d => d.SkipMinigames = value);
     }
 
     /// <summary>수에즈 운하 — 지중해와 수에즈만 사이에 배가 지나갈 바닷길을 뚫는다(Engine.Sea.SuezCanal). 판을 다시 열 때 든다.</summary>
