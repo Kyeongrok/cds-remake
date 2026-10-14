@@ -769,8 +769,12 @@ internal static class GameUi
                 if (_text == value) return;
                 _text = value;
                 Redraw();
+                TextChanged?.Invoke();
             }
         }
+
+        /// <summary>글이 바뀌었을 때 — 나이 칸을 고치면 초상이 따라 바뀌는 데 쓴다.</summary>
+        public event Action? TextChanged;
 
         private void Redraw()
         {

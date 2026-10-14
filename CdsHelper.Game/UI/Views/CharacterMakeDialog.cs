@@ -178,6 +178,7 @@ internal sealed class CharacterMakeDialog : GameWindow
         _family.Text = player.Family;
         _given.Text = player.Given;
         _age.Text = $"{player.Age}";
+        _age.TextChanged += ShowFace;
         _month.Text = $"{(fresh ? FreshBirthMonth : player.BirthMonth)}";
         _day.Text = $"{(fresh ? FreshBirthDay : player.BirthDay)}";
 
@@ -524,9 +525,15 @@ internal sealed class CharacterMakeDialog : GameWindow
         ShowFace();
     }
 
+    /// <remarks>
+    /// <b>나이에 맞는 얼굴</b>을 보인다 — 원본 앞 열여섯은 서른여섯부터 중년 얼굴(+16)로 그려지므로
+    /// (<see cref="PortraitAges.At"/>), 젊은 얼굴만 보이면 게임에 들어가서 고른 것과 다른 얼굴이 나온다.
+    /// 고르는 번호(<see cref="_face"/>)는 젊은 얼굴 그대로다.
+    /// </remarks>
     private void ShowFace()
     {
-        var px = _faces?.TryGetBgra(_face, female: false);
+        int shown = PortraitAges.At(_face, Number(_age, 25), female: false, _faces);
+        var px = _faces?.TryGetBgra(shown, female: false);
         if (px == null) { _portrait.Source = null; return; }
 
         var bmp = Portraits.Bitmap(px);
