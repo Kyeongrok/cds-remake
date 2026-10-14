@@ -2096,17 +2096,28 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         var inn = _lodging ??= new Lodging(_game.CityRows, _game.Rates);
         var face = _game.SpeakerFace(InnCode, _cultureNo);
-        if (!ConfirmDialog.Ask(this, Lodging.OddJobAsk, face: face)) return;
+        if (!ConfirmDialog.Ask(Menu.Window ?? this, Lodging.OddJobAsk, face: face)) return;
 
         int pay = inn.OddJobPay(_cityId);
-        // 한 해가 가는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
-        DayPass.Blackout(this, () => _player.PassTownDays(Lodging.OddJobDays));
-        _player.SetCondition(_player.Condition + Lodging.OddJobRest(_random));
-        TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
+        // 일하는 한 해 동안은 여관 창을 접는다 — 접지 않으면 어둠이 걷힌 뒤 여관 창이 다시 앞에 서서 주인의 말과
+        // 삯 알림을 덮었다. 화면이 까매졌다 밝으며 한 해가 간 것을 먼저 보이고, 말을 다 듣고 나서 여관 창을 다시 낸다.
+        bool wasShown = Menus.FacilityWindow is { Visibility: Visibility.Visible };
+        if (wasShown) HideMenu(true);
+        try
+        {
+            // 한 해가 가는 동안 화면이 덮였다 밝는다(0x004A5AE0(0x14, 1)).
+            DayPass.Blackout(this, () => _player.PassTownDays(Lodging.OddJobDays));
+            _player.SetCondition(_player.Condition + Lodging.OddJobRest(_random));
+            TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
 
-        ConfirmDialog.Tell(this, Lodging.OddJobDone, face: face);
-        NoticeDialog.Show(this, $"금화 {pay}닢을 손에 넣었다!");
-        _player.Earn(pay);
+            ConfirmDialog.Tell(this, Lodging.OddJobDone, face: face);
+            NoticeDialog.Show(this, $"금화 {pay}닢을 손에 넣었다!");
+            _player.Earn(pay);
+        }
+        finally
+        {
+            if (wasShown) HideMenu(false);
+        }
     }
 
     /// <summary>여관 건물 코드(화자표) — 주인은 여자다.</summary>
