@@ -46,7 +46,9 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     /// 아내 얼굴 — 그 여급의 얼굴(FEMALE.CDS). 아내 말은 이름 제목 없이 얼굴과 함께 낸다(여느 대사 창처럼).
     /// </summary>
     private uint[]? WifeFace() =>
-        _game.Barmaids?.Find(_player.SpouseId) is { } her ? _game.Faces?.TryGetBgra(her.Face, female: true) : null;
+        _game.Barmaids?.Find(_player.SpouseId) is { } her ? _game.Faces?.TryGetBgra(her.Face, female: true)
+        : _player.Spouse.Length > 0 ? _game.Faces?.TryGetBgra(Local.Helpers.Portraits.NamedWifeFace, female: true)
+        : null;
 
     public void Greet()
     {

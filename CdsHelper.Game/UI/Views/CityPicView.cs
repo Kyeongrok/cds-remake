@@ -1804,7 +1804,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>아내 얼굴 — 그 여급의 얼굴(FEMALE.CDS). 없으면 null.</summary>
     private uint[]? WifeFace() =>
-        _game.Barmaids?.Find(_player.SpouseId) is { } her ? _game.Faces?.TryGetBgra(her.Face, female: true) : null;
+        _game.Barmaids?.Find(_player.SpouseId) is { } her ? _game.Faces?.TryGetBgra(her.Face, female: true)
+        : _player.Spouse.Length > 0 ? _game.Faces?.TryGetBgra(Local.Helpers.Portraits.NamedWifeFace, female: true)
+        : null;
 
     /// <summary>초상화 크기(FEMALE.CDS 한 장).</summary>
     private const int PortraitW = 80, PortraitH = 96;

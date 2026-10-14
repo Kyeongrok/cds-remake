@@ -143,6 +143,12 @@ public sealed class Portraits
     /// </remarks>
     public const int ShippedBase = 9000;
 
+    /// <summary>
+    /// 여급이 아닌 아내의 얼굴 — 개발 창 「맞는다」 · 대본으로 맞은 아내(카타리나)는 여급 표에 없어 얼굴을 못 찾았다.
+    /// 카타리나 폰 보라(크라나흐, 1526 · 퍼블릭 도메인)를 <c>asset/face/female-9001.png</c> 로 싣는다.
+    /// </summary>
+    public const int NamedWifeFace = ShippedBase + 1;
+
     private static readonly Dictionary<(bool Female, int Face), (uint[] Bgra, BitmapSource Art)?> ShippedCache = [];
 
     /// <summary>실어 보낸 얼굴 그림 자리. 실행 파일 옆의 <c>asset/face</c> 다.</summary>
