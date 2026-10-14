@@ -148,19 +148,39 @@ internal sealed class CubePuzzleDialog : GameWindow
     /// </remarks>
     private const int TurnMillis = 420;
 
-    /// <summary>한 칸 그리는 간격(ms). 16 이면 초당 예순 번이라 이만하면 부드럽다.</summary>
+    /// <summary>
+    /// 한 칸 그리는 간격(ms). 진척은 칸 수가 아니라 흐른 시간으로 잰다 — 윈도 타이머는 15.6ms 눈금이라
+    /// 16ms 를 걸면 31ms 마다 와서, 칸 수로 세면 PC 에 따라 두 배 가까이 느려졌다.
+    /// </summary>
     private const int TurnTick = 16;
-
-    /// <summary>90 도를 몇 칸에 나눠 도는지 — 위 둘에서 나온다.</summary>
-    private const int TurnSteps = TurnMillis / TurnTick;
 
     /// <summary>
     /// 좌대가 <b>한 칸 미끄러지는 데 걸리는 시간(ms)</b>. 걸음 빠르기는 이것만 만진다.
     /// </summary>
     private const int MoveMillis = 320;
 
-    /// <summary>한 칸을 몇 번에 나눠 가는지.</summary>
-    private const int MoveSteps = MoveMillis / TurnTick;
+    /// <summary>
+    /// <paramref name="millis"/> 동안 0 에서 1 로 가는 진척을 <paramref name="frame"/> 에 넘기고, 다 가면
+    /// <paramref name="done"/> 을 부른다. 흐른 시간으로 재므로 타이머가 늦게 와도 걸리는 시간은 같다.
+    /// </summary>
+    private static void Animate(int millis, Action<double> frame, Action done)
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var timer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(TurnTick),
+        };
+        timer.Tick += (_, _) =>
+        {
+            double t = Math.Min(1.0, clock.Elapsed.TotalMilliseconds / millis);
+            frame(t);
+            if (t < 1.0) return;
+
+            timer.Stop();
+            done();
+        };
+        timer.Start();
+    }
 
     /// <summary>
     /// 입방체 상자 자리와 크기 — 원본 갈무리에서 점 단위로 쟀다.
@@ -321,23 +341,11 @@ internal sealed class CubePuzzleDialog : GameWindow
         if (_turning) return;
         _turning = true;
 
-        int step = 0;
-
-        var timer = new System.Windows.Threading.DispatcherTimer
+        Animate(TurnMillis, t => _cube?.Draw(_game, way, 90.0 * t), () =>
         {
-            Interval = TimeSpan.FromMilliseconds(TurnTick),
-        };
-        timer.Tick += (_, _) =>
-        {
-            step++;
-            _cube?.Draw(_game, way, 90.0 * step / TurnSteps);
-            if (step < TurnSteps) return;
-
-            timer.Stop();
             _turning = false;
             done();
-        };
-        timer.Start();
+        });
     }
 
     /// <summary>
@@ -492,25 +500,16 @@ internal sealed class CubePuzzleDialog : GameWindow
         var from = Spot(fromX, fromY);
         var to = Spot(_game.X, _game.Y);
         _turning = true;
-        int step = 0;
 
-        var timer = new System.Windows.Threading.DispatcherTimer
+        Animate(MoveMillis, t =>
         {
-            Interval = TimeSpan.FromMilliseconds(TurnTick),
-        };
-        timer.Tick += (_, _) =>
-        {
-            step++;
-            double t = (double)step / MoveSteps;
             Canvas.SetLeft(_hero, from.X + (to.X - from.X) * t + HeroDx);
             Canvas.SetTop(_hero, from.Y + (to.Y - from.Y) * t + HeroDy);
-            if (step < MoveSteps) return;
-
-            timer.Stop();
+        }, () =>
+        {
             _turning = false;
             done();
-        };
-        timer.Start();
+        });
     }
 
     private void DoSpin(bool clockwise)
