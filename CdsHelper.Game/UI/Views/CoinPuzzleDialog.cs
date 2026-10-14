@@ -344,15 +344,6 @@ internal sealed class CoinPuzzleDialog : InfoDialog
     private Point _grabbed;
     private bool _dragging;
 
-    /// <summary>
-    /// 지금 고른 금화(<c>+0x11C</c>) — 「가짜 금화 선택」이 이것을 쓴다.
-    /// </summary>
-    /// <remarks>
-    /// 원본은 목록 창 없이 <b>판에서 누른 닢</b>을 그대로 쓴다(<c>0x00450AB9</c>). 아무것도
-    /// 안 누르고 눌러도 처음 값 0(1번 금화)이 잡히는 것까지 그대로다.
-    /// </remarks>
-    private int Chosen { get; set; }
-
     /// <summary>끌었다고 치는 거리(판 점).</summary>
     private const double DragSlop = 4;
 
@@ -396,9 +387,10 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         var now = e.GetPosition(_scene);
         Release();
 
-        // <b>끌지 않고 딸깍하면 고를 뿐이다</b> — 원본 설명도 「누른 체 이동」만 이른다
-        // (0x0053B0C0). 「가짜 금화 선택(DECIDE)」이 이 고른 닢을 쓴다(인스턴스 +0x11C).
-        if (!dragged) { Chosen = coin; Sync(); return; }
+        // <b>끌지 않고 딸깍하면 아무 일도 없다</b> — 원본 설명도 「누른 체 이동」만 이른다(0x0053B0C0).
+        // 예전에는 딸깍한 닢이 몰래 답으로 잡혀(원본 +0x11C), 그 뒤 DECIDE 를 누르면 접시에 올린 닢이
+        // 아니라 그 닢으로 판정해 곧장 게임오버가 났다.
+        if (!dragged) return;
 
         if (In(now, LeftPan)) Tap(coin, left: true, dropped: true);
         else if (In(now, RightPan)) Tap(coin, left: false, dropped: true);
@@ -451,8 +443,8 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         {
             NoticeDialog.Explain(this,
                 "더 이상 천칭으로 금화의 무게를 달 수는 없습니다." + Environment.NewLine +
-                "지금까지 얻은 결과를 분석해서 무게가 다른 금화를" + Environment.NewLine +
-                "선택해 주십시오.", "천칭 퍼즐");
+                "지금까지 얻은 결과를 분석해서 무게가 다른 금화 한 닢을" + Environment.NewLine +
+                "접시에 올리고 「가짜 금화 선택」을 눌러 주십시오.", "천칭 퍼즐");
             return;
         }
         if (_game.Left.Count == 0 && _game.Right.Count == 0)
@@ -470,16 +462,25 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         Sync();
     }
 
-    /// <summary>「가짜 금화 선택(DECIDE)」 — 어느 닢인지 고르게 하고 한 번 더 묻는다.</summary>
+    /// <summary>「가짜 금화 선택(DECIDE)」 — <b>접시에 올린 한 닢</b>을 답으로 한 번 더 묻는다.</summary>
+    /// <remarks>
+    /// 원본은 DECIDE 뒤에 판에서 누른 닢을 묻는다(0x00451C39 → 0x00450A60). 이 리메이크는 답할 닢을
+    /// 접시에 올리게 한다 — 무엇을 답으로 내는지 눈에 보여야 한 번의 실수로 게임오버가 나지 않는다.
+    /// </remarks>
     private void DoDecide()
     {
         if (_game.Won != null) return;
 
-        // 목록 창은 없다 — 판에서 누른 닢을 그대로 쓴다(0x00450AB9).
+        var onPan = _game.Left.Concat(_game.Right).ToList();
+        if (onPan.Count != 1)
+        {
+            NoticeDialog.Show(this, " 무게가 다르다고 생각하는 금화 한 닢만 접시에 올려 주십시오", "천칭 퍼즐");
+            return;
+        }
         if (!ConfirmDialog.Ask(this, "이 금화가 딴 것과 무게가 다르다고 단정해도 좋습니까?",
                                "천칭 퍼즐")) return;
 
-        if (_game.Decide(Chosen)) { Close(); return; }
+        if (_game.Decide(onPan[0])) { Close(); return; }
 
         // 첫 실패는 끝이 아니다(0x00450CE4) — 판을 새로 깔고 한 번 더 준다. 다만 미니 게임이면
         // 여기서 끝난다(0x00450C9C).
@@ -493,7 +494,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
             // 알림 상자가 아니라 부관이 얼굴을 띄우고 이른다(0x00450D1C → 0x00478280).
             TalkDialog.Say(this, _aide, "천칭 퍼즐",
                 " 한번 더 방이 흔들리면 찌그러질 겁니다. 빨리 가짜 금화를 발견해서 이곳으로부터 탈출합시다.");
-            Chosen = 0;
+            _game.Clear();
             Sync();
             return;
         }
@@ -543,9 +544,7 @@ internal sealed class CoinPuzzleDialog : InfoDialog
         {
             _coin[i].Visibility = _game.PanOf(i) != 0 ? Visibility.Collapsed : Visibility.Visible;
 
-            // 고른 닢은 <b>손이 얹힌 벌</b>로 갈아 끼운다 — 파트 0 의 13~25 가 그것이다
-            // (자리 표 0x00549E10). 「가짜 금화 선택」이 이 닢을 쓴다.
-            _coin[i].Background = new ImageBrush(i == Chosen ? Held(i) : Face(i))
+            _coin[i].Background = new ImageBrush(Face(i))
             {
                 Stretch = Stretch.Fill,
             };
