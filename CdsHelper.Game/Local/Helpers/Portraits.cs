@@ -149,6 +149,12 @@ public sealed class Portraits
     /// </summary>
     public const int NamedWifeFace = ShippedBase + 1;
 
+    /// <summary>
+    /// 요한 테첼(도미니코회 면벌부 설교자) — 루터 시나리오의 대본이 화자 「#9002」로 세운다.
+    /// 사용자가 그린 초상화를 얼굴 위주로 잘라 <c>asset/face/male-9002.png</c> 로 싣는다.
+    /// </summary>
+    public const int TetzelFace = ShippedBase + 2;
+
     private static readonly Dictionary<(bool Female, int Face), (uint[] Bgra, BitmapSource Art)?> ShippedCache = [];
 
     /// <summary>실어 보낸 얼굴 그림 자리. 실행 파일 옆의 <c>asset/face</c> 다.</summary>

@@ -1886,7 +1886,11 @@ public sealed class DisevRunner
         if (args["Person"] is { } p)
         {
             int id = p.GetValue<int>();
-            var face = _game.PersonFace(id);
+            // 9000 넘는 번호는 인물 표가 아니라 앱에 실은 얼굴 그림이다(asset/face/male-9002.png 따위) — 시나리오가
+            // 인물 표에 없는 실존 인물(요한 테첼)을 세울 때 쓴다. 화자 꼬리표는 여느 인물처럼 「#9002」 다.
+            var face = id >= Local.Helpers.Portraits.ShippedBase
+                ? _game.Faces?.TryGetBgra(id, female: false)
+                : _game.PersonFace(id);
             return face != null ? (face, null) : (MissingFace, $"[초상화 없음] 인물 {id}");
         }
         if (args["Sponsor"] is { } s)
