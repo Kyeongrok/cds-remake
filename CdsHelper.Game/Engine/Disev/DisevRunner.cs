@@ -1949,6 +1949,9 @@ public sealed class DisevRunner
             Town.Nobility.MeritStat => Town.Nobility.MeritOf(_game),             // 40 공적
             Town.Nobility.RankStat => player.NobleRank,                          // 41 작위
             Town.Nobility.HomeCapitalStat => Town.Nobility.InHomeCapital(_game) ? 1 : 0,   // 42 본국 수도에 있음
+            // 기능 열셋의 단계 — 원본에 없는 칸이다(원본은 과학 하나만 25 로 낸다). 50 항해술 … 61 신학 · 62 과학.
+            >= DisevScript.SkillStatBase and < DisevScript.SkillStatBase + 13 =>
+                player.LevelOf(Support.Local.Models.Skill.Names[(int)N(stat) - DisevScript.SkillStatBase]),
             _ => null,
         };
     }
