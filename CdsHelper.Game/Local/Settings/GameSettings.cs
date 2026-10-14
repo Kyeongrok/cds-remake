@@ -318,6 +318,9 @@ public sealed class GameSettingsData
     /// <summary>작위 제도(공적 · 작위 · 혜택)를 쓸지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool Nobility { get; set; }
 
+    /// <summary>NEW GAME 에 손으로 지은 시나리오(Engine.Scenarios)를 올릴지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool ScenarioMode { get; set; }
+
     /// <summary>스핑크스 퀴즈에서 정답 줄에 표를 달지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SphinxHelper { get; set; }
 
@@ -1267,6 +1270,13 @@ public static class GameSettings
     {
         get => Get(d => d.Nobility);
         set => Set(d => d.Nobility = value);
+    }
+
+    /// <summary>시나리오 모드 — NEW GAME 차림표에 「시나리오로 시작한다」가 붙는다(Engine.Scenarios). 모드 창에서 켜고 끈다.</summary>
+    public static bool ScenarioMode
+    {
+        get => Get(d => d.ScenarioMode);
+        set => Set(d => d.ScenarioMode = value);
     }
 
     /// <summary>정보 제공 등급 값.</summary>

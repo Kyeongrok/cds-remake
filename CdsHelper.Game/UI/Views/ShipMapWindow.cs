@@ -2469,9 +2469,22 @@ public sealed class ShipMapWindow : Window
                 // 신상·능력치 창을 띄운 채 게임 창을 닫으면 그 창이 물린 것으로 돌아와 여기로 되돌아온다 —
                 // 닫힌 창을 주인으로 NEW GAME 차림표를 다시 띄우면 WPF 가 던지므로 그만둔다.
                 if (_closed) return;
-                int at = ChoiceDialog.Ask(this, "NEW GAME",
-                    ["초심자용 주인공으로 시작한다(EASY)", "새로운 주인공으로 시작한다(NORMAL)"]);
+                // 모드 「시나리오 모드」를 켰고 지어 둔 시나리오가 있으면 셋째 줄이 붙는다 — 원본에 없는 것이다.
+                var scenarios = Scenarios.Enabled ? Scenarios.All : [];
+                string[] ways = ["초심자용 주인공으로 시작한다(EASY)", "새로운 주인공으로 시작한다(NORMAL)"];
+                if (scenarios.Count > 0) ways = [.. ways, "시나리오로 시작한다"];
+                int at = ChoiceDialog.Ask(this, "NEW GAME", ways);
                 if (at < 0) return;
+
+                if (at == 2)
+                {
+                    int which = ChoiceDialog.Ask(this, "시작할 시나리오를 선택해 주십시오",
+                        [.. scenarios.Select(s => $"{s.Title} — {s.Given}({(s.Nation == 0 ? "포르투갈" : "에스파니아")})")]);
+                    if (which < 0) { _game.NewPlayer(); continue; }
+                    Beginner.Apply(_game.Player, scenarios[which].Hero, scenarios[which].Fame);
+                    made = true;
+                    continue;
+                }
 
                 if (at == 0)
                 {
@@ -2640,7 +2653,7 @@ public sealed class ShipMapWindow : Window
             {
                 // 초심자용 캐릭터는 못 올린다(0x0045F886). 자리가 다 찼어도 마찬가지고, 둘 다 알린 뒤
                 // <b>타이틀로</b> 나간다(0x0045F89B · 0x0045F853 이 차림표를 부순다).
-                if (Beginner.IsBeginnerBook(saved.ActiveStoryBook))
+                if (Beginner.IsPremadeBook(saved.ActiveStoryBook))
                 {
                     ConfirmDialog.Tell(this,
                         $"[{name}]{GameUi.Josa(name, "은", "는")} 초심자용 캐릭터입니다. 은퇴할 수 없습니다.",
@@ -3694,6 +3707,8 @@ public sealed class ShipMapWindow : Window
         HelperApp = RunHelperApp,
         // 묘책 확률 표(0x00549B80) — 보고 고치면 게임에도 바로 든다.
         RuseTable = () => RuseEditDialog.Show(this),
+        // 시나리오(미리 만든 주인공 + 이야기 책) 짓기 — 모드 「시나리오 모드」를 켜면 NEW GAME 에 나온다.
+        Scenarios = () => ScenarioEditDialog.Show(this),
         Duel = PlayDuel,
         LandSpar = () => LandSparDialog.Play(this, _game),
         SeaSpar = MockSeaBattle,

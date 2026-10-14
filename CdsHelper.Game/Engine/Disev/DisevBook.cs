@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CdsHelper.Game.Local.Helpers;
 
@@ -40,7 +41,11 @@ public sealed class DisevBook
     /// Ls12 아카이브에 같은 명령을 쓴다(파트 열일곱). 다른 것은 파트 번호가 발견물 번호가
     /// 아니라 <b>마당 안의 장면 번호</b>라는 것뿐이라, 읽고 고치는 길은 그대로 쓴다.
     /// </remarks>
-    public static readonly (string Cache, string Title, string Source)[] Books =
+    public static (string Cache, string Title, string Source)[] Books =>
+        [.. BuiltIn, .. Scenarios.All.Select(s => (s.Book, $"시나리오({s.Title})", ""))];
+
+    /// <summary>앱에 박아 둔 책 — 뒤에 손으로 지은 시나리오의 책(<see cref="Scenarios"/>)이 붙어 <see cref="Books"/> 가 된다.</summary>
+    private static readonly (string Cache, string Title, string Source)[] BuiltIn =
     [
         (CacheName, "발견 이벤트", "DISEV.CDS"),
         ("이야기0", "이야기 0(라몬)", "STORY0.CDS"),
@@ -65,7 +70,7 @@ public sealed class DisevBook
     /// 이야기 관리자(<c>0x004AB420</c>)에 건다. 표 밖이면 null.
     /// </summary>
     public static string? PersonalStory(int nation, int job) =>
-        nation is 0 or 1 && job is >= 0 and < 4 ? Books[3 + nation * 4 + job].Cache : null;
+        nation is 0 or 1 && job is >= 0 and < 4 ? BuiltIn[3 + nation * 4 + job].Cache : null;
 
     /// <summary>
     /// 알맹이 모양 판. 1 은 파트 통째 <c>Hex</c>, 2 는 덩이별 16진 글, 3 은 덩이마다 분기로 가른
@@ -105,7 +110,7 @@ public sealed class DisevBook
     internal sealed record Snapshot(List<Entry> Parts);
 
     private readonly List<byte[]> _parts;
-    private readonly bool[] _edited;
+    private readonly List<bool> _edited;
     private readonly string _stamp;
 
     /// <summary>이 책이 적히는 이름(<see cref="Books"/> 의 첫 칸).</summary>
@@ -117,7 +122,7 @@ public sealed class DisevBook
     private DisevBook(List<byte[]> parts, string stamp, string cache)
     {
         _parts = parts;
-        _edited = new bool[parts.Count];
+        _edited = [.. new bool[parts.Count]];
         _stamp = stamp;
         _cache = cache;
     }
@@ -142,10 +147,10 @@ public sealed class DisevBook
     public int Count => _parts.Count;
 
     /// <summary>고친 파트가 하나라도 있는지.</summary>
-    public bool HasChanges => Array.IndexOf(_edited, true) >= 0;
+    public bool HasChanges => _edited.Contains(true);
 
     /// <summary>그 파트를 고쳤는지.</summary>
-    public bool IsEdited(int index) => index >= 0 && index < _edited.Length && _edited[index];
+    public bool IsEdited(int index) => index >= 0 && index < _edited.Count && _edited[index];
 
     /// <summary>그 파트의 알맹이. 밖에서 고치지 못하게 베껴 준다.</summary>
     public byte[] Part(int index) =>
@@ -223,6 +228,87 @@ public sealed class DisevBook
         return book;
     }
 
+    /// <summary>
+    /// 파트 하나짜리 <b>빈 책</b>을 지어 적어 두고 연다 — 시나리오의 이야기 책을 처음 만들 때다. 원본에 없는 길이다.
+    /// </summary>
+    /// <remarks>적어 둔 것이 있어도 <b>덮어쓴다</b>.</remarks>
+    public static DisevBook? CreateBlank(string cache)
+    {
+        LastError = "";
+        if (BlankPart(0) is not { } part) return null;
+        var book = new DisevBook([part], "", cache);
+        book.Write();
+        return book;
+    }
+
+    /// <summary>
+    /// 본보기 파트 — 슬롯 하나에 「건물 11 에 들면 대사 한 줄을 하고 다음 단계로」가 든다.
+    /// </summary>
+    /// <remarks>
+    /// 조건을 비워 두면 사건마다 늘 걸려, 책을 든 주인공이 어디를 가든 빈 장면이 돈다. 그래서 본보기는 조건을 하나 걸고
+    /// 단계를 올려(<c>06 4D</c>) 한 번만 돌게 해 둔다 — 고쳐 쓰라고 둔 것이다.
+    /// </remarks>
+    private static byte[]? BlankPart(int index)
+    {
+        var entry = new Entry(index, index, [new SlotEntry(0, 1)],
+        [
+            [
+                new DisevLine { Call = DisevCall.InBuilding, Args = new JsonObject { ["Building"] = 11 } },
+                new DisevLine { Call = DisevCall.End },
+            ],
+            [
+                new DisevLine { Call = DisevCall.Say, Args = new JsonObject { ["Text"] = "（대사를　적는다）" } },
+                new DisevLine { Call = DisevCall.NextStep },
+                new DisevLine { Call = DisevCall.End },
+            ],
+        ]);
+        if (Join(entry, out string why) is { } data && DisevPart.Parse(data, out why) != null) return data;
+        LastError = $"빈 파트를 못 지었습니다 — {why}";
+        return null;
+    }
+
+    /// <summary>책 끝에 본보기 파트를 하나 붙인다. 붙인 파트의 번호를 돌려주고, 못 지었으면 -1 이다.</summary>
+    /// <remarks>이야기 책은 단계 카운터가 곧 파트 번호라(<see cref="Discovery.StoryLog"/>) 끝에만 붙인다.</remarks>
+    public int AddPart()
+    {
+        LastError = "";
+        if (BlankPart(_parts.Count) is not { } part) return -1;
+        _parts.Add(part);
+        _edited.Add(true);
+        return _parts.Count - 1;
+    }
+
+    /// <summary>
+    /// 그 파트에 슬롯을 하나 더한다 — 조건 덩이와 본문 덩이가 끝(FF)만 든 채로 붙는다.
+    /// </summary>
+    /// <remarks>슬롯은 앞에서부터 처음 통과하는 하나가 돈다. 새 슬롯은 맨 뒤라, 앞의 것이 다 안 맞을 때 걸린다.</remarks>
+    public bool AddSlot(int index)
+    {
+        LastError = "";
+        if (index < 0 || index >= _parts.Count) return false;
+        if (DisevPart.Parse(_parts[index], out string why) is not { } part)
+        {
+            LastError = why;
+            return false;
+        }
+
+        var starts = part.ChunkStarts;
+        var chunks = DisevTree.BuildPart(part);
+        var slots = part.Slots.Select(s => new SlotEntry(IndexOf(starts, s.Condition), IndexOf(starts, s.Body))).ToList();
+        slots.Add(new SlotEntry(chunks.Count, chunks.Count + 1));
+        chunks.Add([new DisevLine { Call = DisevCall.End }]);
+        chunks.Add([new DisevLine { Call = DisevCall.End }]);
+
+        if (Join(new Entry(index, part.Step, slots, chunks), out why) is not { } data || DisevPart.Parse(data, out why) == null)
+        {
+            LastError = why;
+            return false;
+        }
+        _parts[index] = data;
+        _edited[index] = true;
+        return true;
+    }
+
     /// <summary>앱 옆에 실린 원본 대본을 읽는다. 없거나 깨졌으면 null 이고 까닭은 <see cref="LastError"/> 다.</summary>
     private static TableCache.Cached<Snapshot>? ReadBundle(string cache)
     {
@@ -250,7 +336,7 @@ public sealed class DisevBook
     public void Save()
     {
         Write();
-        Array.Clear(_edited);
+        for (int i = 0; i < _edited.Count; i++) _edited[i] = false;
     }
 
     /// <summary>

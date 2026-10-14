@@ -25,6 +25,12 @@ public static class Beginner
     /// </summary>
     public static bool IsBeginnerBook(string? book) => book is "이야기0" or "이야기1";
 
+    /// <summary>
+    /// 미리 만든 주인공인지 — 초심자용 둘과 시나리오(<see cref="Scenarios"/>)의 주인공이다.
+    /// 둘 다 누적 캐릭터로 못 올린다.
+    /// </summary>
+    public static bool IsPremadeBook(string? book) => IsBeginnerBook(book) || Scenarios.IsBook(book);
+
     /// <summary>미리 만든 주인공 한 사람.</summary>
     /// <param name="Skills">기능 열셋(<see cref="Skill.Names"/> 차례).</param>
     /// <param name="Tongues">언어(<see cref="Skill.Languages"/> 차례, 모자라면 0).</param>
@@ -56,7 +62,7 @@ public static class Beginner
     /// <summary>
     /// 새로 앉힌 주인공(<see cref="Game.NewPlayer"/> 뒤, 1480년 1월 1일)에 그 사람을 박는다.
     /// </summary>
-    public static void Apply(Player player, Hero hero)
+    public static void Apply(Player player, Hero hero, int fame = Fame)
     {
         // 나이는 오늘과 생일로 태어난 해를 되짚는 셈이라, 태어난 해가 맞게 나이를 거꾸로 낸다.
         var today = player.Date;
@@ -75,7 +81,7 @@ public static class Beginner
             player.SetTongue(Skill.Languages[i], i < hero.Tongues.Length ? hero.Tongues[i] : 0);
 
         player.SetGold(hero.Gold);
-        player.Fame = Fame;
+        player.Fame = fame;
 
         // 개인 이야기(STORY0/1.CDS)를 겪게 묶는다 — 건물·도시·연도 조건이 맞을 때마다
         // StoryLog 가 장면을 찾아 튼다(CityPicView.CheckStory).

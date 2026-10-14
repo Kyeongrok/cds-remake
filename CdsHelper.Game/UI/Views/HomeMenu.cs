@@ -345,7 +345,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
     {
         var player = _game.Player;
         string me = player.CallName;
-        bool novice = Engine.Beginner.IsBeginnerBook(player.ActiveStoryBook);
+        bool novice = Engine.Beginner.IsPremadeBook(player.ActiveStoryBook);
         string first = novice
             ? $"{me}{GameUi.Josa(me, "을", "를")} 은퇴시키겠습니다. 단, 초심자용 캐릭터는 "
               + "누적 캐릭터로 등록할 수 없습니다. 좋습니까?"

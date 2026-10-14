@@ -80,8 +80,8 @@ public sealed class DisevEditorDialog : GameWindow
     /// </summary>
     private readonly TextBox _json = new()
     {
-        IsReadOnly = true,
         AcceptsReturn = true,
+        AcceptsTab = true,
         TextWrapping = TextWrapping.Wrap,
         VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
         FontFamily = new FontFamily("Consolas, D2Coding, 맑은 고딕"),
@@ -96,6 +96,15 @@ public sealed class DisevEditorDialog : GameWindow
 
     private readonly Button _applyOp = Bar("명령 적용");
     private readonly Button _wide = Bar("전각으로");
+
+    /// <summary>JSON 탭에서 고친 덩이를 통째로 넣는다 — 어떤 명령이든 적을 수 있는 길이다.</summary>
+    private readonly Button _applyJson = Bar("JSON 적용");
+
+    /// <summary>시나리오 책 끝에 본보기 파트를 붙인다.</summary>
+    private readonly Button _addPart = Bar("파트 추가");
+
+    /// <summary>지금 파트에 슬롯(조건 덩이 + 본문 덩이)을 더한다.</summary>
+    private readonly Button _addSlot = Bar("슬롯 추가");
 
     /// <summary>더할 명령 갈래 — 지금은 동영상 재생 · DSTILL 그림 둘이다(<see cref="AddKinds"/>).</summary>
     private readonly ComboBox _addKind = new() { Width = 150, Margin = new Thickness(6, 0, 4, 0), VerticalContentAlignment = VerticalAlignment.Center };
@@ -162,6 +171,9 @@ public sealed class DisevEditorDialog : GameWindow
 
         _open.Click += (_, _) => Pick();
         _applyOp.Click += (_, _) => ApplyOp();
+        _applyJson.Click += (_, _) => ApplyJson();
+        _addPart.Click += (_, _) => AddPart();
+        _addSlot.Click += (_, _) => AddSlot();
         _addAbove.Click += (_, _) => EditLines(below: false, remove: false);
         _addBelow.Click += (_, _) => EditLines(below: true, remove: false);
         _removeOp.Click += (_, _) => EditLines(below: false, remove: true);
@@ -188,14 +200,14 @@ public sealed class DisevEditorDialog : GameWindow
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(10, 8, 10, 0),
-            Children = { _open, _revert, _revertAll, _save },
+            Children = { _open, _revert, _revertAll, _addPart, _addSlot, _save },
         };
 
         var formBar = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(4, 0, 10, 4),
-            Children = { _applyOp, _wide },
+            Children = { _applyOp, _wide, _applyJson },
         };
 
         // 순서도·표에서 명령 하나를 고르면 그 위나 아래에 새 명령을 넣는다.
@@ -239,6 +251,14 @@ public sealed class DisevEditorDialog : GameWindow
 
         foreach (var (_, title, _) in DisevBook.Books) _book_.Items.Add(title);
         _book_.SelectedIndex = 0;
+        // 창을 띄운 채로 시나리오를 새로 지어도 그 책이 보이게, 펼칠 때 목록을 다시 맞춘다.
+        _book_.DropDownOpened += (_, _) =>
+        {
+            var books = DisevBook.Books;
+            if (books.Length == _book_.Items.Count) return;
+            for (int i = _book_.Items.Count; i < books.Length; i++) _book_.Items.Add(books[i].Title);
+            while (_book_.Items.Count > books.Length) _book_.Items.RemoveAt(_book_.Items.Count - 1);
+        };
 
         var picker = new DockPanel { Width = 240, Margin = new Thickness(10, 6, 4, 6) };
         DockPanel.SetDock(_find, Dock.Top);
@@ -404,6 +424,8 @@ public sealed class DisevEditorDialog : GameWindow
         FillAddValues();
         ShowAddTarget();
         if (_discoveries.Items.Count > 0) _discoveries.SelectedIndex = 0;
+        // 파트는 시나리오 책에만 붙인다 — 발견 이벤트는 파트 번호가 발견물 번호고, 원본 이야기는 파트 수가 정해져 있다.
+        _addPart.IsEnabled = Engine.Scenarios.IsBook(cache);
 
         string missing = _names == null ? "  (CDS_95.EXE 를 못 읽어 이름 없이 번호로만 보입니다)" : "";
         _status.Text = $"{DisevBook.PathOf(_book.Cache)} — 파트 {_book.Count}개{missing}";
@@ -1265,6 +1287,89 @@ public sealed class DisevEditorDialog : GameWindow
         if (chunkIndex < _chunks.Items.Count) _chunks.SelectedIndex = chunkIndex;
         if (select >= 0 && select < _ops.Items.Count) _ops.SelectedIndex = select;
         _status.Text = message + " — 아직 적어 두지 않았습니다. 「저장」을 눌러야 들어갑니다.";
+    }
+
+    /// <summary>
+    /// JSON 탭의 글을 고른 덩이로 넣는다 — 줄 나무를 통째로 갈아 끼우고 파트를 다시 짠다(<see cref="DisevBook.JoinChunks"/>).
+    /// </summary>
+    /// <remarks>
+    /// 단추로 넣을 수 있는 명령은 몇 가지뿐이라, 대사 · 조건 · 분기까지 새로 적으려면 이 길을 쓴다.
+    /// 줄의 모양은 다른 덩이의 JSON 을 본뜨면 된다 — <c>Call</c> · <c>Args</c> 만 읽고 <c>OpCode</c> · <c>Note</c> 는 안 본다.
+    /// </remarks>
+    private void ApplyJson()
+    {
+        if (_book == null || _part == null || _chunks.SelectedItem is not ChunkRow chunk) return;
+        int chunkIndex = _part.ChunkStarts.ToList().IndexOf(chunk.Start);
+        if (chunkIndex < 0) return;
+
+        List<DisevLine>? lines;
+        try { lines = System.Text.Json.JsonSerializer.Deserialize<List<DisevLine>>(_json.Text); }
+        catch (System.Text.Json.JsonException ex)
+        {
+            _status.Text = $"JSON 을 못 읽었습니다 — {ex.Message}";
+            return;
+        }
+        if (lines is not { Count: > 0 })
+        {
+            _status.Text = "덩이가 비었습니다 — 적어도 끝(End) 한 줄은 있어야 합니다.";
+            return;
+        }
+        if (lines[^1].Call != DisevCall.End) lines.Add(new DisevLine { Call = DisevCall.End });
+
+        var chunks = DisevTree.BuildPart(_part);
+        chunks[chunkIndex] = lines;
+        byte[]? rebuilt;
+        string error;
+        // 손으로 적은 인자가 어긋나면(수 자리에 글 따위) 짓다가 던질 수 있다 — 까닭만 적고 그만둔다.
+        try { rebuilt = DisevBook.JoinChunks(_part, chunks, out error); }
+        catch (Exception ex) when (ex is FormatException or InvalidOperationException or ArgumentException or OverflowException)
+        {
+            _status.Text = $"못 고쳤습니다 — {ex.Message}";
+            return;
+        }
+        if (rebuilt == null || DisevPart.Parse(rebuilt, out error) == null)
+        {
+            _status.Text = $"못 고쳤습니다 — {error}";
+            return;
+        }
+
+        int part = SelectedPart;
+        _book.Replace(part, rebuilt);
+        RefreshDiscoveries();
+        ShowPart();
+        if (chunkIndex < _chunks.Items.Count) _chunks.SelectedIndex = chunkIndex;
+        _status.Text = $"파트 {part} 의 덩이 {chunkIndex} 를 JSON 대로 갈았습니다 — 아직 적어 두지 않았습니다. 「저장」을 눌러야 들어갑니다.";
+    }
+
+    /// <summary>시나리오 책 끝에 본보기 파트를 붙인다.</summary>
+    private void AddPart()
+    {
+        if (_book == null) return;
+        int added = _book.AddPart();
+        if (added < 0)
+        {
+            _status.Text = $"파트를 못 붙였습니다 — {DisevBook.LastError}";
+            return;
+        }
+        RefreshDiscoveries();
+        _discoveries.SelectedItem = _discoveries.Items.OfType<PartRow>().FirstOrDefault(r => r.Index == added);
+        _status.Text = $"파트 {added} 를 붙였습니다 — 아직 적어 두지 않았습니다. 「저장」을 눌러야 들어갑니다.";
+    }
+
+    /// <summary>지금 파트에 빈 슬롯을 하나 더한다.</summary>
+    private void AddSlot()
+    {
+        if (_book == null || SelectedPart < 0) return;
+        int part = SelectedPart;
+        if (!_book.AddSlot(part))
+        {
+            _status.Text = $"슬롯을 못 더했습니다 — {DisevBook.LastError}";
+            return;
+        }
+        RefreshDiscoveries();
+        ShowPart();
+        if (_chunks.Items.Count > 0) _chunks.SelectedIndex = _chunks.Items.Count - 1;
+        _status.Text = $"파트 {part} 에 슬롯을 더했습니다(조건 · 본문 덩이가 끝에 붙었다). 조건이 비면 늘 걸리니 조건부터 적으세요 — 아직 적어 두지 않았습니다. 「저장」을 눌러야 들어갑니다.";
     }
 
     /// <summary>고친 덩이를 파트에 넣고 화면을 다시 그린다.</summary>

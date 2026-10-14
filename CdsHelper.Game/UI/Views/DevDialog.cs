@@ -47,6 +47,9 @@ public sealed class DevDialog : GameWindow
         /// <summary>묘책 확률 표(<c>0x00549B80</c>) 보고 고치기 — 창을 닫은 뒤 부른다.</summary>
         public Action? RuseTable { get; init; }
 
+        /// <summary>시나리오(미리 만든 주인공 + 이야기 책) 짓기 — 창을 닫은 뒤 부른다.</summary>
+        public Action? Scenarios { get; init; }
+
         /// <summary>싸움 셈을 돌려 보는 세 가지 — 일기토 · 육상전 모의전 · 모의해전. 창을 닫은 뒤 부른다.</summary>
         public Action? Duel { get; init; }
 
@@ -202,6 +205,23 @@ public sealed class DevDialog : GameWindow
                 VerticalAlignment = VerticalAlignment.Center,
             });
             line.Children.Add(GameUi.PushButton("묘책 확률…", () => { Close(); ruses(); }, 180));
+            rows.Children.Add(line);
+        }
+
+        // 시나리오 — 미리 만든 주인공과 이야기 책을 짓는다(모드 「시나리오 모드」).
+        if (options.Scenarios is { } scenarios)
+        {
+            var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+            line.Children.Add(new TextBlock
+            {
+                Text = "짓기",
+                Width = 64,
+                Foreground = GameUi.Text,
+                FontWeight = FontWeights.Bold,
+                FontSize = 15,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            line.Children.Add(GameUi.PushButton("시나리오…", () => { Close(); scenarios(); }, 180));
             rows.Children.Add(line);
         }
 

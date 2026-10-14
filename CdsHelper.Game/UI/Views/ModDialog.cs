@@ -460,6 +460,13 @@ public sealed class ModDialog : GameWindow
             + " 패시브는 도구 앱 「요소 → 패시브」에서 만들고 고칩니다."
             + " 인물정보에 작위와 공적, 「작위」 단추가 나옵니다."));
 
+        // 시나리오 모드 — 손으로 지은 주인공과 이야기로 시작한다.
+        lab.Children.Add(Toggle("시나리오 모드", GameSettings.ScenarioMode, on => GameSettings.ScenarioMode = on,
+            "원본에 없는 것입니다 — 켜면 NEW GAME 에 「시나리오로 시작한다」가 붙어, 라몬 · 에밀리오처럼 미리 만든 주인공과 그 사람의 이야기로 시작합니다."
+            + " 지어 둔 시나리오가 하나도 없으면 줄이 안 나옵니다."
+            + " 시나리오는 개발 창의 「시나리오…」에서 짓고, 장면은 대본 편집기로 적습니다."
+            + " 시나리오의 주인공은 초심자용 주인공처럼 누적 캐릭터로 등록할 수 없습니다."));
+
         // 특별주문 — 조선소에서 가진 배와 옵션까지 똑같은 배를 산다.
         // 부하 해고 — 부하편성 오른쪽 단추에 「해고한다」.
         var dismiss = Toggle("부하 해고", GameSettings.MateDismiss, on => GameSettings.MateDismiss = on,
