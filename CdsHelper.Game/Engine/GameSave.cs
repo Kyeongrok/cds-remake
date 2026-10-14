@@ -390,7 +390,8 @@ public static class GameSave
         List<Player.Recall>? Recalls = null,
         int? DayTicks = null, int? Heading = null, List<int>? Wind = null,
         double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null,
-        Dictionary<int, int>? AccPlayed = null, string? GameId = null);
+        Dictionary<int, int>? AccPlayed = null, string? GameId = null,
+        Dictionary<int, int>? PlagueSpread = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -564,7 +565,9 @@ public static class GameSave
                             // 누적 캐릭터마다 튼 행적 줄 수(인물 +0x114). 이 칸 앞의 세이브는 불러온 날로 가늠한다.
                             AccPlayed: player.AccPlayed.Count > 0 ? player.AccPlayed.ToDictionary(e => e.Key, e => e.Value) : null,
                             // 이 판의 표지 — 은퇴·삭제할 때 그 판의 자동저장 칸을 가린다. 이 칸 앞의 세이브는 이름으로 가린다.
-                            GameId: player.GameId.Length > 0 ? player.GameId : null);
+                            GameId: player.GameId.Length > 0 ? player.GameId : null,
+                            // 함대가 병을 옮긴 도시와 그 달. 이 칸 앞의 세이브는 불러온 달에 옮은 것으로 친다.
+                            PlagueSpread: player.PlagueSpread.ToDictionary(e => e.Key, e => e.Value));
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

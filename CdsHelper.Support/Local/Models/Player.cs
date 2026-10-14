@@ -3046,13 +3046,64 @@ public sealed class Player
         if (cityId < 0) return;
         if (state == 0) _cityStates.Remove(cityId);
         else _cityStates[cityId] = state;
+        // 대본이 다른 상태로 바꿨으면 함대가 옮긴 병은 끝난 셈이다.
+        if (state != PlagueState) _plagueSpread.Remove(cityId);
     }
 
     /// <summary>세이브에서 도시 상태를 되돌린다.</summary>
-    public void RestoreCityStates(IReadOnlyDictionary<int, int>? states)
+    /// <param name="spread">
+    /// 함대가 병을 옮긴 달. null 이면 이 칸 앞의 세이브라 언제 옮았는지 모른다 — 전염병인 도시를 모두
+    /// <paramref name="nowKey"/> 에 옮은 것으로 쳐서, 영영 안 풀리던 병도 이제부터 가라앉게 한다.
+    /// </param>
+    public void RestoreCityStates(IReadOnlyDictionary<int, int>? states,
+                                  IReadOnlyDictionary<int, int>? spread = null, int nowKey = 0)
     {
         _cityStates.Clear();
+        _plagueSpread.Clear();
         foreach (var (city, state) in states ?? new Dictionary<int, int>()) SetCityState(city, state);
+        if (spread != null)
+        {
+            foreach (var (city, key) in spread)
+                if (CityStateOf(city) == PlagueState) _plagueSpread[city] = key;
+        }
+        else if (nowKey > 0)
+        {
+            foreach (var (city, state) in _cityStates)
+                if (state == PlagueState) _plagueSpread[city] = nowKey;
+        }
+    }
+
+    /// <summary>도시 상태 「전염병」(<c>CityState.Plague</c>).</summary>
+    private const int PlagueState = 1;
+
+    private readonly Dictionary<int, int> _plagueSpread = [];
+
+    /// <summary>
+    /// 함대가 옮긴 전염병과 옮은 달(해 x 12 + 달). 원본은 한 번 옮으면 영영 안 풀린다(<c>0x00477124</c>) —
+    /// 이 리메이크는 몇 달 뒤 가라앉힌다(<see cref="EasePlague"/>). 역사 대본이 건 전염병은 여기 없다.
+    /// </summary>
+    public IReadOnlyDictionary<int, int> PlagueSpread => _plagueSpread;
+
+    /// <summary>함대가 그 도시에 병을 옮겼다 — 상태를 전염병으로 박고 옮은 달을 적는다.</summary>
+    public void SpreadPlague(int cityId, int monthKey)
+    {
+        if (cityId < 0) return;
+        SetCityState(cityId, PlagueState);
+        _plagueSpread[cityId] = monthKey;
+    }
+
+    /// <summary>
+    /// 옮은 지 <paramref name="months"/> 달이 된 전염병을 가라앉혀 통상으로 돌린다. 가라앉힌 도시를 돌려준다.
+    /// </summary>
+    public List<int> EasePlague(int monthKey, int months)
+    {
+        var eased = _plagueSpread.Where(e => monthKey - e.Value >= months).Select(e => e.Key).ToList();
+        foreach (int city in eased)
+        {
+            _plagueSpread.Remove(city);
+            if (CityStateOf(city) == PlagueState) SetCityState(city, 0);
+        }
+        return eased;
     }
 
     /// <summary>

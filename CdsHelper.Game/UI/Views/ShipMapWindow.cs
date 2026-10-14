@@ -3382,7 +3382,8 @@ public sealed class ShipMapWindow : Window
             _game.Player.RestoreTradeStock(saved.TradeStock);
             // 도시 시세·상태와 역사 대본 진행. 옛 세이브면 시세는 100, 상태는 1480년부터 되짚어 채운다.
             _game.Player.RestoreCityRates(saved.CityRates, saved.RatesMonth);
-            _game.Player.RestoreCityStates(saved.CityStates);
+            _game.Player.RestoreCityStates(saved.CityStates, saved.PlagueSpread,
+                                           CityHistory.MonthKey(_game.Player.Date.Year, _game.Player.Date.Month));
             _game.Player.RestoreCityScales(saved.CityScales);
             _game.Player.RestoreCityBuildings(saved.CityBuildings);
             _game.Player.SetLastSupply(saved.LastSupply);
@@ -4348,15 +4349,18 @@ public sealed class ShipMapWindow : Window
     }
 
     /// <summary>
-    /// 함대의 전염병이 마을에 옮는다 — 상태가 통상일 때만 전염병이 되고 영영 안 풀린다(<c>0x00477124</c>).
+    /// 함대의 전염병이 마을에 옮는다 — 상태가 통상일 때만 전염병이 된다(<c>0x00477124</c>).
     /// </summary>
     /// <remarks>
     /// 원본은 입항의 열흘을 흘린 뒤, 병을 풀기(<c>0x00476F50</c>) 전에 이것을 본다. 말은 얼굴 없는 창이다.
+    /// 원본은 옮은 병이 영영 안 풀린다 — 상태를 바꾸는 곳이 시작 표(0x00429AB6) · 세이브(0x00429BD4) ·
+    /// 역사 대본(0x00409BBF) · 여기 넷뿐이다. 수십 년이 지나도 그대로라 이 리메이크는
+    /// <see cref="Game.PlagueMonths"/> 달 뒤 가라앉힌다(<see cref="Game.CatchUpMonths"/>).
     /// </remarks>
     private void SpreadPlague(int city)
     {
         if (_game.Rates.StateOf(city) != CityState.Normal) return;
-        _game.Player.SetCityState(city, CityState.Plague);
+        _game.Player.SpreadPlague(city, CityHistory.MonthKey(_game.Player.Date.Year, _game.Player.Date.Month));
         NoticeDialog.Show(this, CityState.SpreadWord);
     }
 

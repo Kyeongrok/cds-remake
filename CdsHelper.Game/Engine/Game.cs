@@ -202,6 +202,11 @@ public sealed class Game
     private const int MaxDriftMonths = 36;
 
     /// <summary>
+    /// 함대가 옮긴 전염병이 가라앉기까지 달 수(원본에 없는 규칙) — 원본은 영영 안 풀린다(<c>0x00477124</c>).
+    /// </summary>
+    public const int PlagueMonths = 6;
+
+    /// <summary>
     /// 달이 바뀐 만큼 원본의 달 셈(<c>0x0044B2A0</c>)을 따라잡는다 — 시세 흔들림, 그 다음 역사 대본.
     /// </summary>
     /// <remarks>
@@ -257,6 +262,9 @@ public sealed class Game
                                       tell ? TellVoyagerCapture : null);
                     RunVoyagerReports(player, when, when, tell);
                 }
+
+                // 함대가 옮긴 병은 반년이면 가라앉는다 — 역사 대본이 건 병은 대본이 푼다.
+                player.EasePlague(key, PlagueMonths);
             }
             player.SetRatesMonth(now);
             player.SetHistoryMonth(now);
