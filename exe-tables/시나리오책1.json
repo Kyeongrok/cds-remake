@@ -530,7 +530,7 @@
               "GotoIf": {
                 "Call": "ResultFalse"
               },
-              "Target": "L02B3",
+              "Target": "L02B7",
               "Note": "결과 거짓 시 이동"
             },
             {
@@ -548,6 +548,14 @@
                 "Speaker": "교회",
                 "Text": "좋네． 무릎을 꿇게．"
               }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 슬롯 77"
             },
             {
               "OpCode": "00 0A",
@@ -610,7 +618,7 @@
               "Note": "다음 단계"
             },
             {
-              "Label": "L02B3",
+              "Label": "L02B7",
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
