@@ -803,8 +803,12 @@ public sealed class ShipMapWindow : Window
         Func<double, double, (bool, string)>? walk = GameSettings.LandAutoWalk && _host.IsOnLand
             ? (x, y) => _host.StartAutoWalk(x, y)
             : null;
+        // 대본이 발견을 안 적는 사건(코페르니쿠스의 망원경 따위)은 사건을 마쳤으면 찾은 것으로 찍는다.
+        var done = _game.Player.Settled
+            .Where(id => !_game.Player.HasFound(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id))
+            .ToHashSet();
         DiscoveryMapDialog.Show(this, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
-                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk);
+                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk, done);
     }
 
     /// <summary>

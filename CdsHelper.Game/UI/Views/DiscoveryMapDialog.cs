@@ -186,7 +186,8 @@ public sealed class DiscoveryMapDialog : GameWindow
                                Func<double, double, string>? autoSail,
                                IReadOnlyList<(string Name, double X, double Y, bool Library)>? cities,
                                IReadOnlyDictionary<int, (double X, double Y)>? inTown,
-                               Func<double, double, (bool Ok, string Message)>? walk)
+                               Func<double, double, (bool Ok, string Message)>? walk,
+                               IReadOnlySet<int>? eventsDone)
     {
         _walk = walk;
         _warp = warp;
@@ -262,7 +263,7 @@ public sealed class DiscoveryMapDialog : GameWindow
                 (x, y) = town;
             else continue;
 
-            bool found = player.HasFound(row.Id);
+            bool found = player.HasFound(row.Id) || eventsDone?.Contains(row.Id) == true;
             var spotDot = Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
                             MarkSize, found ? Found : Yet, row.Name, label: true, layer: _spotLayer);
             if (walk != null && spotDot is System.Windows.Shapes.Ellipse dot) WalkTarget(dot, x, y);
@@ -765,6 +766,7 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// </param>
     /// <param name="cities">찍을 도시(이름 · 칸 자리). 없으면 「도시」 단추가 안 나온다.</param>
     /// <param name="inTown">건물 속에서 찾는 발견물의 자리 — 발견물 번호 → 그 도시 칸 자리.</param>
+    /// <param name="eventsDone">대본이 발견을 안 적지만 사건을 마친 발견물 — 찾은 것으로 찍는다.</param>
     public static void Show(Window owner, uint[]? chart, int width, int height,
                             DiscoveryTable? table, Player player, (double X, double Y)? ship,
                             WindTable? wind = null,
@@ -772,10 +774,11 @@ public sealed class DiscoveryMapDialog : GameWindow
                             Func<double, double, string>? autoSail = null,
                             IReadOnlyList<(string Name, double X, double Y, bool Library)>? cities = null,
                             IReadOnlyDictionary<int, (double X, double Y)>? inTown = null,
-                            Func<double, double, (bool Ok, string Message)>? walk = null)
+                            Func<double, double, (bool Ok, string Message)>? walk = null,
+                            IReadOnlySet<int>? eventsDone = null)
     {
         if (chart == null || table == null || width <= 0 || height <= 0) return;
-        new DiscoveryMapDialog(chart, width, height, table, player, ship, wind, warp, autoSail, cities, inTown, walk)
+        new DiscoveryMapDialog(chart, width, height, table, player, ship, wind, warp, autoSail, cities, inTown, walk, eventsDone)
         { Owner = owner }.ShowDialog();
     }
 }

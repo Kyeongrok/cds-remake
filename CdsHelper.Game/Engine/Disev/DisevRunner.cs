@@ -433,6 +433,24 @@ public sealed class DisevRunner
     }
 
     /// <summary>
+    /// 그 발견물 대본이 발견을 적는지(<c>01 0B</c>). 사람 · 비보(코페르니쿠스 · 튀니스의 비보 따위)는
+    /// 대본이 물건만 주고 끝나 발견으로는 영영 안 적힌다 — 그런 것은 사건이 끝났는지(<see cref="Player.IsSettled"/>)로 본다.
+    /// 대본이 없으면 true(대본 없이 곧장 적는다).
+    /// </summary>
+    public static bool RecordsDiscovery(Game game, int discoveryId)
+    {
+        if (Open(game.Directory, DisevBook.CacheName) is not { } book || discoveryId < 0 || discoveryId >= book.Count) return true;
+        if (DisevPart.Parse(book.Part(discoveryId), out _) is not { } part) return true;
+
+        foreach (int start in part.ChunkStarts)
+        {
+            var (from, to) = part.ChunkRange(start);
+            if (Lines(part, from, to).Any(line => line.Call == DisevCall.Discover)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// 조건이 맞는 첫 슬롯의 본문 자리. 없으면 -1.
     /// </summary>
     /// <remarks>
