@@ -2483,7 +2483,7 @@ public sealed class ShipMapWindow : Window
                 if (at == 2)
                 {
                     int which = ChoiceDialog.Ask(this, "시작할 시나리오를 선택해 주십시오",
-                        [.. scenarios.Select(s => $"{s.Title} — {s.Given}({_game.Nations?.Find(s.Nation)?.Name ?? $"나라 {s.Nation}"})")]);
+                        [.. scenarios.Select(s => $"{s.Title} · {s.Given}({_game.Nations?.Find(s.Nation)?.Name ?? $"나라 {s.Nation}"})")]);
                     if (which < 0) { _game.NewPlayer(); continue; }
                     Beginner.Apply(_game.Player, scenarios[which].Hero, scenarios[which].Fame);
                     made = true;
