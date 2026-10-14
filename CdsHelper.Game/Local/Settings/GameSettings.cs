@@ -360,6 +360,12 @@ public sealed class GameSettingsData
     /// </remarks>
     public Dictionary<int, List<string>>? BarCellsByPlace { get; set; }
 
+    /// <summary>
+    /// 겹쳐 보기 쪽지(함대 · 힌트 · 발견물 수 · 배 속도 · 기능·언어)를 옮겨 둔 자리 — 갈래 이름 → 주인 창 왼쪽 위에서 잰 [가로, 세로].
+    /// 안 옮긴 갈래는 빠져 있어 처음 자리에 뜬다.
+    /// </summary>
+    public Dictionary<string, double[]>? NotePlaces { get; set; }
+
     /// <summary>지도 위에 바람·해류 화살표를 얹을지.</summary>
     public bool ShowFlowArrows { get; set; }
 
@@ -1371,6 +1377,15 @@ public static class GameSettings
     public static IReadOnlyList<string>? BarCellsAt(int place) =>
         Get<IReadOnlyList<string>?>(d =>
             d.BarCellsByPlace is { } map && map.TryGetValue(place, out var cells) ? [.. cells] : null);
+
+    /// <summary>그 쪽지를 옮겨 둔 자리(주인 창 왼쪽 위에서 잰 거리). 안 옮겼으면 null.</summary>
+    public static (double Dx, double Dy)? NotePlace(string note) =>
+        Get<(double, double)?>(d =>
+            d.NotePlaces is { } map && map.TryGetValue(note, out var at) && at.Length == 2 ? (at[0], at[1]) : null);
+
+    /// <summary>그 쪽지를 옮긴 자리를 적어 둔다 — 게임을 다시 켜도 그 자리에 뜬다.</summary>
+    public static void SetNotePlace(string note, double dx, double dy) =>
+        Set(d => (d.NotePlaces ??= new())[note] = [dx, dy]);
 
     /// <summary>그 자리의 상단 띠 칸을 적어 둔다.</summary>
     public static void SetBarCellsAt(int place, IEnumerable<string> cells)

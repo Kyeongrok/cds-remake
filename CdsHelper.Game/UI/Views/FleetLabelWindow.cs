@@ -32,10 +32,18 @@ public sealed class FleetLabelWindow : Window
 
 
     /// <summary>
-    /// 주인 창 왼쪽 위에서 잰 쪽지 자리. 한 번 옮겨 두면 앱이 도는 동안 그대로다 —
-    /// 도시에 드나들 때마다 쪽지가 제자리로 돌아가면 옮긴 뜻이 없다.
+    /// 주인 창 왼쪽 위에서 잰 쪽지 자리. 끌어 옮긴 자리는 설정에 적어 게임을 다시 켜도 그대로다
+    /// (<see cref="Local.Settings.GameSettings.NotePlace"/>) — 예전에는 앱이 도는 동안만 기억해 다시 켜면 제자리로 돌아갔다.
     /// </summary>
-    private static readonly Dictionary<Slot, (double Dx, double Dy)> Moved = [];
+    private static readonly Dictionary<Slot, (double Dx, double Dy)> Moved = Load();
+
+    private static Dictionary<Slot, (double Dx, double Dy)> Load()
+    {
+        var moved = new Dictionary<Slot, (double Dx, double Dy)>();
+        foreach (var slot in Enum.GetValues<Slot>())
+            if (Local.Settings.GameSettings.NotePlace(slot.ToString()) is { } at) moved[slot] = at;
+        return moved;
+    }
 
     /// <summary>
     /// 쪽지 갈래 — 갈래마다 옮긴 자리를 따로 기억한다. 셋 다 도시 창 곁이 처음 자리다(발견물 수는 오른쪽 아래).
@@ -167,7 +175,11 @@ public sealed class FleetLabelWindow : Window
     }
 
     /// <summary>지금 자리를 주인 창에서 잰 거리로 적어 둔다.</summary>
-    private void Remember() => Moved[_slot] = (Left - _anchor.Left, Top - _anchor.Top);
+    private void Remember()
+    {
+        Moved[_slot] = (Left - _anchor.Left, Top - _anchor.Top);
+        Local.Settings.GameSettings.SetNotePlace(_slot.ToString(), Left - _anchor.Left, Top - _anchor.Top);
+    }
 
     /// <summary>
     /// 적어 둔 거리대로 자리를 잡는다. 아직 옮긴 적이 없으면 <b>그림 오른쪽</b>에 붙이고,
@@ -209,7 +221,6 @@ public sealed class FleetLabelWindow : Window
             Moved[_slot] = (dx, dy);
         }
 
-        Left = _anchor.Left + dx;
-        Top = _anchor.Top + dy;
+        (Left, Top) = OverlayNotes.OnScreen(_anchor.Left + dx, _anchor.Top + dy, width, height);
     }
 }

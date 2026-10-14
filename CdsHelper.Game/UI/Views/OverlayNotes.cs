@@ -8,13 +8,39 @@
 /// 위에 뜰 수 있다 — 보고하며 동영상을 틀면 쪽지가 영상 위에 그대로 얹혀 보였다. 그래서 동영상을 트는 손이
 /// <see cref="Hold"/> 로 잡아 두는 동안 쪽지들은 보여야 할 때도 감춰 두고, 놓으면 그때 보여야 할 것만 도로 낸다.
 /// 잡아 둔 동안 글이 바뀌어도(<see cref="FleetLabelWindow.Set"/>) 보일지는 놓을 때 정해진다.
+///
+/// <b>다른 프로그램으로 넘어가 있는 동안에도 걷는다.</b> 쪽지는 초점을 안 받는 창이라, 알트탭으로 나가거나
+/// 작업표시줄로 게임을 내리면 바탕화면에 쪽지만 남아 떠 있었고 돌아와서는 전체 화면 뒤에 묻혔다.
+/// 게임 창이 다시 앞에 오면 도로 낸다 — 그때 다시 띄우므로 맨 위에 선다.
 /// </remarks>
 internal static class OverlayNotes
 {
     private static int _held;
 
-    /// <summary>지금 걷어 두는 중인지.</summary>
-    public static bool Held => _held > 0;
+    /// <summary>이 앱의 창이 앞에 있는지 — 다른 프로그램으로 넘어가면 거짓이다.</summary>
+    private static bool _front = true;
+
+    static OverlayNotes()
+    {
+        if (System.Windows.Application.Current is not { } app) return;
+        app.Activated += (_, _) => { _front = true; Changed?.Invoke(); };
+        app.Deactivated += (_, _) => { _front = false; Changed?.Invoke(); };
+    }
+
+    /// <summary>지금 걷어 두는 중인지 — 동영상이 돌거나 다른 프로그램이 앞에 있을 때다.</summary>
+    public static bool Held => _held > 0 || !_front;
+
+    /// <summary>
+    /// 쪽지 자리를 화면 안으로 들인다 — 옮겨 둔 자리를 다음에 다시 쓰는데, 그새 창 크기나 모니터가 바뀌어
+    /// 화면 밖으로 나가면 다시 끌어올 수가 없다.
+    /// </summary>
+    public static (double Left, double Top) OnScreen(double left, double top, double width, double height)
+    {
+        double minX = System.Windows.SystemParameters.VirtualScreenLeft, minY = System.Windows.SystemParameters.VirtualScreenTop;
+        double maxX = minX + System.Windows.SystemParameters.VirtualScreenWidth - Math.Max(width, 40);
+        double maxY = minY + System.Windows.SystemParameters.VirtualScreenHeight - Math.Max(height, 20);
+        return (Math.Clamp(left, minX, Math.Max(minX, maxX)), Math.Clamp(top, minY, Math.Max(minY, maxY)));
+    }
 
     /// <summary>잡거나 놓을 때 알린다 — 쪽지들이 제 보임을 다시 맞춘다.</summary>
     public static event Action? Changed;

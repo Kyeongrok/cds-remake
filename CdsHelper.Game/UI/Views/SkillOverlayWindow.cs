@@ -23,8 +23,12 @@ public sealed class SkillOverlayWindow : Window
     /// <summary>도시 창과 쪽지 사이.</summary>
     private const double Gap = 10;
 
-    /// <summary>주인 창 왼쪽 위에서 잰 자리. 한 번 옮겨 두면 앱이 도는 동안 그대로다.</summary>
-    private static double _dx = double.NaN, _dy;
+    /// <summary>주인 창 왼쪽 위에서 잰 자리. 끌어 옮긴 자리는 설정에 적어 게임을 다시 켜도 그대로다.</summary>
+    private static double _dx = Local.Settings.GameSettings.NotePlace(NoteName)?.Dx ?? double.NaN,
+                          _dy = Local.Settings.GameSettings.NotePlace(NoteName)?.Dy ?? 0;
+
+    /// <summary>설정에 자리를 적을 때 쓰는 이름.</summary>
+    private const string NoteName = "Skill";
 
     private readonly Window _anchor;
     private readonly Border _frame;
@@ -68,6 +72,7 @@ public sealed class SkillOverlayWindow : Window
             DragMove();
             _dx = Left - _anchor.Left;
             _dy = Top - _anchor.Top;
+            Local.Settings.GameSettings.SetNotePlace(NoteName, _dx, _dy);
             _anchor.Activate();
         };
 
@@ -236,7 +241,6 @@ public sealed class SkillOverlayWindow : Window
             if (_anchor.Left + _dx < SystemParameters.VirtualScreenLeft) _dx = _anchor.ActualWidth + Gap;
         }
 
-        Left = _anchor.Left + _dx;
-        Top = _anchor.Top + _dy;
+        (Left, Top) = OverlayNotes.OnScreen(_anchor.Left + _dx, _anchor.Top + _dy, width, ActualHeight);
     }
 }
