@@ -73,7 +73,8 @@ internal sealed class LibraryMenu(Window view, Engine.Game game, int cityId, str
                            _game.Player, books, _buildings, _game.HintName,
                            _game.Book, id => _game.Hints?.Find(id)?.Text ?? "", say,
                            _game.Sfx, Reported,
-                           id => _game.Discoveries?.Table.Find(id)?.Name ?? $"발견물 {id}");
+                           id => _game.Discoveries?.Table.Find(id)?.Name ?? $"발견물 {id}",
+                           id => _game.Discoveries?.Named(_game.Player, id, _game.Player.Date) ?? _game.Player.HasFound(id));
     }
 
     /// <summary>

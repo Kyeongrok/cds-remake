@@ -430,10 +430,12 @@ public sealed class LibraryDialog : GameWindow
     {
         if (hint == SealedHint) return false;
 
-        // 먼저 찾아 두어야 할 것이 남아 있으면 아무리 배워도 안 들어온다.
+        // 먼저 찾아 두어야 할 것이 남아 있으면 아무리 배워도 안 들어온다. 「찾았다」는 발견물 칸 0 · 1 에
+        // 이름이 있는지다(0x0042CCE3 → 0x004AAD80) — 역사 항해자가 찾은 것도 친다. 예전에는 주인공이 찾은
+        // 것만 쳐서, 디아스가 먼저 희망봉을 찾으면 「인도 항로」가 영영 안 읽혔다.
         if (_books.NeedFor(hint).Parents is { } parents)
             foreach (int id in parents)
-                if (!_player.HasFound(id)) return false;
+                if (!IsKnown(id)) return false;
         return true;
     }
 
@@ -536,7 +538,7 @@ public sealed class LibraryDialog : GameWindow
 
         var need = _books.NeedFor(hint);
         foreach (int id in need.Parents ?? [])
-            lines.Add($"{Mark(_player.HasFound(id))} 선행 발견: {DiscoveryName?.Invoke(id) ?? $"발견물 {id}"}");
+            lines.Add($"{Mark(IsKnown(id))} 선행 발견: {DiscoveryName?.Invoke(id) ?? $"발견물 {id}"}");
         if (need.Skill >= 0 && need.Level > 0)
             lines.Add($"{Mark(KnowsSkill(hint))} {SkillOf(hint)} {need.Level}");
         if (book.Language >= 0)
@@ -546,6 +548,11 @@ public sealed class LibraryDialog : GameWindow
 
     /// <summary>발견물 이름 — 읽기 조건의 선행 발견물에 쓴다. 없으면 번호로 적는다.</summary>
     private Func<int, string>? DiscoveryName { get; init; }
+
+    /// <summary>그 발견물을 누가 찾았는지(주인공이든 역사 항해자든, <c>0x004AAD80</c>). 없으면 주인공만 본다.</summary>
+    private Func<int, bool>? Known { get; init; }
+
+    private bool IsKnown(int id) => Known?.Invoke(id) ?? _player.HasFound(id);
 
     /// <summary>
     /// 펼침면 <c>i</c> 가 화면에 나왔다 — 힌트를 주고 아래 띠에 말을 낸다(<c>0x00464A30</c>).
@@ -610,7 +617,8 @@ public sealed class LibraryDialog : GameWindow
                             Func<int, string> hintName,
                             OpenBookArt? book = null, Func<int, string>? hintText = null,
                             Action<string>? say = null, SoundBank? sfx = null,
-                            Func<int, bool>? reported = null, Func<int, string>? discoveryName = null)
+                            Func<int, bool>? reported = null, Func<int, string>? discoveryName = null,
+                            Func<int, bool>? known = null)
     {
         var art = BookShelf.Open(gameDirectory);
         if (art == null)
@@ -636,6 +644,7 @@ public sealed class LibraryDialog : GameWindow
         {
             Owner = owner,
             DiscoveryName = discoveryName,
+            Known = known,
         }.ShowDialog();
     }
 }

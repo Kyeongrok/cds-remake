@@ -87,7 +87,9 @@ public static class ItemHintReading
             }
         }
 
-        if (need.Parents is { } parents && parents.Any(id => !player.HasFound(id)))
+        // 선행 발견은 역사 항해자가 찾은 것도 친다(0x0046EAC5 → 0x0042CCC0 → 0x004AAD80).
+        if (need.Parents is { } parents
+            && parents.Any(id => !(game.Discoveries?.Named(player, id, player.Date) ?? player.HasFound(id))))
         {
             word = "뭔가 쓰여져 있으나 그 의미를 알 수 없다";
             return Outcome.Failed;
