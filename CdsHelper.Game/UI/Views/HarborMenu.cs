@@ -149,7 +149,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// <code>
     ///   477253  선원 0 이하        "선원이 모자랍니다. 이래서는 출항할 수 없습니다!"   막는다
     ///   47726D  선원 &lt; 필요       "…함대의 속도가 늦어지지만, 괜찮으십니까?"          YES/NO
-    ///   47728F  버틸 날 0 이하     "이것만으로는 보급 물자가 모자랍니다!"              막는다
+    ///   47728F  버틸 날 0 이하     "이것만으로는 보급 물자가 모자랍니다!"              막는다 → 이 리메이크는 YES/NO
     ///   4772A5  버틸 날 &lt; 20      "%d일 정도 항해할 수 있다고 생각합니다. 출항하겠습니까?"  YES/NO
     ///   4772B7  그 밖              "준비 만반입니다. 언제라도 출항할 수 있습니다!…"    YES/NO
     /// </code>
@@ -210,13 +210,14 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         uint[]? face = SailFace();
 
         int days = _player.SupplyDaysLeft;
+        // 원본은 여기서 출항을 <b>막는다</b>(0x0047728F). 이 리메이크는 묻고 보낸다 — 빈 통으로 떠나야 하는
+        // 시나리오(루터의 금식 순례)가 있고, 굶는 것을 알고 떠나는 것도 고를 수 있어야 한다.
         if (days <= 0)
         {
-            ConfirmDialog.Tell(owner, "이것만으로는 보급 물자가 모자랍니다!", face: face);
-            return false;
+            if (!ConfirmDialog.Ask(owner, "이것만으로는 보급 물자가 모자랍니다! 그래도 출항하시겠습니까?", face: face))
+                return false;
         }
-
-        if (days < ReadyDays
+        else if (days < ReadyDays
                 ? !ConfirmDialog.Ask(owner, $"{days}일 정도 항해할 수 있다고 생각합니다. 출항하겠습니까?", face: face)
                 : !sure && !ConfirmDialog.Ask(owner, "준비 만반입니다. 언제라도 출항할 수 있습니다! 출항하겠습니까?", face: face))
             return false;
