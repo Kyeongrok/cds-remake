@@ -299,6 +299,13 @@ public sealed class ShipMapHost : HwndHost
     private List<int> _lastHiddenCities = [];
     private List<(int X, int Y, ushort[] Block)> _lastHiddenPlaces = [];
 
+    /// <summary>
+    /// 못 찾은 발견물 자리에 덮어 그린 칸 값 — 지날 수 있는지도 이것으로 본다(<see cref="CellValue"/>).
+    /// 무제국(발견물 92)은 WORLD.CDS 에 섬(뭍)으로 적혀 있고 찾기 전에는 바다 칸으로 덮어 그리는데, 지날 수 있는지는
+    /// 덮기 전 값으로 봐서 배가 보이지 않는 벽에 막혀 그 바다 발견물에 닿지 못했다.
+    /// </summary>
+    private Dictionary<(int X, int Y), ushort> _placeCells = [];
+
     /// <summary>발견물 그림 블록의 자리 → 블록 번호(도시 226 뒤).</summary>
     private readonly Dictionary<(int X, int Y), int> _placeSprite = [];
 
@@ -2746,7 +2753,7 @@ public sealed class ShipMapHost : HwndHost
     {
         if (_world == null) return false;
         var (_, _, _, _, off) = RawAt(_shipX, _shipY);
-        if (_terrain != null) return _terrain.ClassOfCell(CellAt(off)) == 1;
+        if (_terrain != null) return _terrain.ClassOfCell(CellValue(_shipX, _shipY)) == 1;
         return (WorldMapRenderer.CellToTile(_world, off) & 0x80) != 0;
     }
 
@@ -2876,7 +2883,11 @@ public sealed class ShipMapHost : HwndHost
     /// 지형 표는 이 값 열네 비트로 찾는다(<see cref="Engine.Table.TerrainTable"/>). 아래
     /// 한 바이트만으로 찾으면 같은 지형이라도 속성이 다른 칸을 못 지나는 것으로 본다.
     /// </remarks>
-    private int CellValue(double cellX, double cellY) => CellAt(RawAt(cellX, cellY).Offset);
+    private int CellValue(double cellX, double cellY)
+    {
+        var at = RawAt(cellX, cellY);
+        return _placeCells.TryGetValue((at.CellX, at.CellY), out ushort shown) ? shown : CellAt(at.Offset);
+    }
 
     /// <summary>WORLD.CDS 의 그 자리에 적힌 칸 값.</summary>
     private int CellAt(int offset) =>
@@ -3469,8 +3480,15 @@ public sealed class ShipMapHost : HwndHost
         }
 
         // 아직 못 찾은 발견물도 같은 손으로 가린다 — 그쪽은 2×2 다.
+        var placeCells = new Dictionary<(int X, int Y), ushort>();
         foreach (var (x, y, block) in placeList)
+        {
             Lay(x, y, block, DiscoveryTable.EraseWidth, DiscoveryTable.Keep);
+            for (int i = 0; i < block.Length; i++)
+                if (block[i] != DiscoveryTable.Keep)
+                    placeCells[(x + i % DiscoveryTable.EraseWidth, y + i / DiscoveryTable.EraseWidth)] = block[i];
+        }
+        _placeCells = placeCells;
 
         _renderer.Erase(patch);
     }
