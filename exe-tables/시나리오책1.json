@@ -9,6 +9,10 @@
           {
             "Condition": 0,
             "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
           }
         ],
         "Chunks": [
@@ -70,6 +74,58 @@
               "Call": "End",
               "Note": "덩이/갈래 끝"
             }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 0
+              },
+              "Note": "건물 조건: 0(항구)"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 2,
+                  "Name": "총 선원 수"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 총 선원 수 < 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "배가 없으니 항구에서는 할 일이 없구나． 바다로 나가려면 조선소에서 배를 사야 한다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "하지만 지금 가진 돈으로는 배 한 척도 못 산다． 먼저 성 게레온 교회의 신부님을 찾아뵙자．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
           ]
         ]
       },
@@ -80,6 +136,10 @@
           {
             "Condition": 0,
             "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
           }
         ],
         "Chunks": [
@@ -196,6 +256,58 @@
               "Call": "End",
               "Note": "덩이/갈래 끝"
             }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 0
+              },
+              "Note": "건물 조건: 0(항구)"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 2,
+                  "Name": "총 선원 수"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 총 선원 수 < 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "배가 없으니 항구에서는 할 일이 없구나． 바다로 나가려면 조선소에서 배를 사야 한다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "하지만 지금 가진 돈으로는 배 한 척도 못 산다． 먼저 성 게레온 교회의 신부님을 찾아뵙자．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
           ]
         ]
       },
@@ -210,6 +322,10 @@
           {
             "Condition": 2,
             "Body": 3
+          },
+          {
+            "Condition": 4,
+            "Body": 5
           }
         ],
         "Chunks": [
@@ -308,6 +424,58 @@
               "Args": {
                 "Speaker": "교회",
                 "Text": "신학을 세 단계까지 닦고 오게． 쾰른의 사도 교회가 가장 가깝네．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 0
+              },
+              "Note": "건물 조건: 0(항구)"
+            },
+            {
+              "OpCode": "2C",
+              "Call": "LessThan",
+              "Args": {
+                "A": {
+                  "Stat": 2,
+                  "Name": "총 선원 수"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "조건: 총 선원 수 < 1"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "배가 없으니 항구에서는 할 일이 없구나． 바다로 나가려면 먼저 조선소에서 배를 사야겠다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "주인공",
+                "Text": "신부님이 주신 헌금이면 코구 한 척은 살 수 있다． 배를 사고 나서 선원을 모으자．"
               }
             },
             {
