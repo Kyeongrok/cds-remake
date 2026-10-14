@@ -21,11 +21,14 @@ namespace CdsHelper.Game.Engine;
 /// <param name="Nation">나라 표의 번호 — 고르는 둘(0 · 1)만이 아니라 어느 나라든 된다.</param>
 /// <param name="HomeCity">시작 도시이자 모항. -1 이면 그 나라의 수도다.</param>
 /// <param name="HomeX">자택 건물 상자의 왼쪽 위(도시 그림 좌표) — 그 도시에 자택이 없을 때 그림 위에 올린다.</param>
+/// <param name="Ship">처음부터 가진 배의 선체 번호(0 코구 · 1 카라벨 …). -1 이면 배 없이 시작한다.</param>
+/// <param name="Crew">처음 태운 선원 수. 배가 있어야 뜻이 있고, 배 정원으로 잘린다.</param>
 public sealed record Scenario(
     string Book, string Title, string Given, string Family,
     int BirthYear, int Month, int Day, int Face, int Nation, int Blood, int Job,
     int[] Abilities, int[] Skills, int[] Tongues, int Gold, int Fame,
-    int HomeCity = -1, int HomeX = Scenarios.DefaultHomeX, int HomeY = Scenarios.DefaultHomeY)
+    int HomeCity = -1, int HomeX = Scenarios.DefaultHomeX, int HomeY = Scenarios.DefaultHomeY,
+    int Ship = -1, int Crew = 0)
 {
     /// <summary>앉힐 주인공 — 초심자용 주인공과 같은 모양이다.</summary>
     public Beginner.Hero Hero => new(Given, Family, BirthYear, Month, Day, Face, Nation, Blood, Job,

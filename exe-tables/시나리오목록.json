@@ -93,7 +93,9 @@
           ],
           "Gold": 3000,
           "StoryBook": "시나리오책1"
-        }
+        },
+        "Ship": 0,
+        "Crew": 10
       }
     ],
     "Nations": [
