@@ -673,8 +673,8 @@ public sealed class ShipMapHost : HwndHost
     /// </summary>
     public bool PathAssist { get; set; }
 
-    /// <summary>길찾기 보정이 마지막으로 셈한 커서 칸과 그 첫 길목.</summary>
-    private (int X, int Y) _assistFrom = (int.MinValue, int.MinValue);
+    /// <summary>길찾기 보정이 마지막으로 셈한 배 칸 · 커서 칸과 그 첫 길목.</summary>
+    private (int X, int Y, int ToX, int ToY) _assistFrom = (int.MinValue, int.MinValue, int.MinValue, int.MinValue);
     private (double X, double Y)? _assistStep;
 
     /// <summary>
@@ -3120,13 +3120,17 @@ public sealed class ShipMapHost : HwndHost
 
     /// <summary>
     /// 커서 칸으로 가는 바닷길의 <b>첫 길목</b>. 길을 못 찾거나 이미 그 자리면 null 이다.
-    /// 같은 칸을 두 번 셈하지 않게 마지막 결과를 쥐고 있는다.
+    /// 배 칸과 커서 칸이 그대로면 셈하지 않고 마지막 결과를 쓴다.
     /// </summary>
+    /// <remarks>
+    /// 예전에는 커서 칸만 보고 결과를 쥐고 있어서, 커서를 가만두면 배가 첫 길목을 지나친 뒤에도 그 길목으로
+    /// 되돌아가려 해 해안선 · 좁은 물길에서 뱅글뱅글 돌았다. 배가 한 칸 옮길 때마다 다시 셈한다.
+    /// </remarks>
     private (double X, double Y)? NextWaypoint(double toX, double toY)
     {
         if (_world == null || _terrain == null) return null;
 
-        var want = ((int)Math.Floor(toX), (int)Math.Floor(toY));
+        var want = ((int)Math.Floor(_shipX), (int)Math.Floor(_shipY), (int)Math.Floor(toX), (int)Math.Floor(toY));
         if (want == _assistFrom) return _assistStep;
 
         _assistFrom = want;
