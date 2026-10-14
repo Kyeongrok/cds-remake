@@ -415,6 +415,7 @@ public sealed class ModDialog : GameWindow
 
         // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 곡 등록 창은 햄버거에 있던 것을 이 줄 밑 단추로 옮겼다.
         general.Children.Add(CustomBgmControls());
+        general.Children.Add(CustomSfxControls());
 
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
         // 배 중심 — 가장자리에서 화면을 넘기지 않고 배를 늘 한가운데에 둔다. 아직 다듬는 중이라 실험에 둔다.
@@ -713,6 +714,54 @@ public sealed class ModDialog : GameWindow
         group.Children.Add(box);
         group.Children.Add(open);
         return group;
+    }
+
+    /// <summary>커스텀 효과음 켜고 끄기와 그 밑의 「효과음 폴더 열기」 단추.</summary>
+    /// <remarks>
+    /// 폴더를 열 때 원본 효과음을 <c>원본</c> 폴더에 꺼내 둔다 — 번호만으로는 어느 소리인지 알 수 없어서다.
+    /// 바꾸고 싶은 소리를 그 폴더에서 들어 보고, 같은 이름의 새 파일을 효과음 폴더에 넣으면 그 소리가 바뀐다.
+    /// </remarks>
+    private UIElement CustomSfxControls()
+    {
+        var box = Toggle("커스텀 효과음", GameSettings.CustomSfxEnabled,
+            on => GameSettings.CustomSfxEnabled = on,
+            "원본에 없는 기능입니다 — 효과음 폴더에 넣어 둔 wav 파일로 효과음을 갈아 낍니다."
+            + " 아래 「효과음 폴더 열기」를 누르면 폴더가 열리고, 그 안 「원본」 폴더에 지금 효과음이 sfx-00.wav ~ sfx-49.wav 로 꺼내집니다."
+            + " 바꾸고 싶은 소리를 「원본」에서 찾아 들어 보고, 같은 이름의 새 파일을 효과음 폴더(원본 폴더 바깥)에 넣으면 그 소리가 바뀝니다."
+            + " 지우면 원래 소리로 돌아옵니다. 업데이트해도 폴더는 그대로 남습니다.");
+
+        var open = GameUi.PushButton("효과음 폴더 열기", OpenSfxDirectory, 160);
+        open.HorizontalAlignment = HorizontalAlignment.Left;
+        open.Margin = new Thickness(18, 2, 0, 2);
+        open.IsEnabled = box.IsChecked == true;
+        open.Opacity = open.IsEnabled ? 1 : 0.4;
+        box.Checked += (_, _) => { open.IsEnabled = true; open.Opacity = 1; };
+        box.Unchecked += (_, _) => { open.IsEnabled = false; open.Opacity = 0.4; };
+        Watch(open, "효과음 폴더 열기", "효과음 폴더를 열고 「원본」 폴더에 지금 효과음을 꺼내 둡니다. 커스텀 효과음을 켜야 누를 수 있습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(open);
+        return group;
+    }
+
+    /// <summary>효과음 폴더를 열고, 원본 효과음을 「원본」 폴더에 꺼내 둔다.</summary>
+    private void OpenSfxDirectory()
+    {
+        try
+        {
+            System.IO.Directory.CreateDirectory(Local.Helpers.SoundBank.CustomDirectory);
+            int count = Local.Helpers.SoundBank.Current?.ExportOriginals() ?? 0;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Local.Helpers.SoundBank.CustomDirectory)
+            {
+                UseShellExecute = true,
+            });
+            if (count == 0) NoticeDialog.Show(this, "원본 효과음을 꺼내지 못했습니다 — 게임 폴더의 WAVES.CDS 를 못 읽었습니다.");
+        }
+        catch (Exception ex)
+        {
+            NoticeDialog.Show(this, $"효과음 폴더를 열지 못했습니다 — {ex.Message}");
+        }
     }
 
     // ── 권장 옵션 ────────────────────────────────────────────────────────

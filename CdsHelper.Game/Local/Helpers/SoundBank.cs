@@ -126,6 +126,64 @@ public sealed class SoundBank : IDisposable
             : null;
     }
 
+    /// <summary>
+    /// 갈아 낀 효과음이 드는 곳 — <c>%LocalAppData%\CdsHelper\sfx</c>. 실행 파일 폴더 바깥이라 업데이트해도 남는다
+    /// (설치판은 업데이트마다 실행 파일 폴더를 통째로 갈아 끼운다). 파일 이름은 <c>sfx-번호.wav</c>(번호는 파트, 두 자리).
+    /// </summary>
+    public static string CustomDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CdsHelper", "sfx");
+
+    /// <summary>원본 효과음을 꺼내 두는 곳 — 어느 번호가 어느 소리인지 들어 보고 고르라고 둔다.</summary>
+    public static string OriginalsDirectory => Path.Combine(CustomDirectory, "원본");
+
+    /// <summary>갈아 낀 파일을 읽어 든 것 — 파일이 바뀌면(고친 시각) 다시 읽는다.</summary>
+    private readonly Dictionary<int, (DateTime Stamp, byte[] Wav)> _custom = [];
+
+    /// <summary>
+    /// 그 파트의 소리 — 모드 「커스텀 효과음」이 켜져 있고 효과음 폴더에 그 번호 파일이 있으면 그것, 아니면 원본
+    /// (게임 폴더의 WAVES.CDS), 그것도 없으면 뽑아 둔 것이다.
+    /// </summary>
+    private byte[]? WavOf(int part)
+    {
+        if (GameSettings.CustomSfxEnabled && CustomWav(part) is { } custom) return custom;
+        return OriginalWav(part);
+    }
+
+    /// <summary>원본 소리 — 게임 폴더의 WAVES.CDS, 없으면 뽑아 둔 것.</summary>
+    private byte[]? OriginalWav(int part) => _bank?.Wav(part) ?? AssetWav(part);
+
+    private byte[]? CustomWav(int part)
+    {
+        string path = Path.Combine(CustomDirectory, $"sfx-{part:D2}.wav");
+        try
+        {
+            if (!File.Exists(path)) return null;
+            var stamp = File.GetLastWriteTimeUtc(path);
+            if (_custom.TryGetValue(part, out var held) && held.Stamp == stamp) return held.Wav;
+            var wav = File.ReadAllBytes(path);
+            _custom[part] = (stamp, wav);
+            return wav;
+        }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>
+    /// 원본 효과음 전부를 <see cref="OriginalsDirectory"/> 에 <c>sfx-번호.wav</c> 로 꺼낸다. 꺼낸 수를 낸다.
+    /// 이미 있는 파일은 덮어쓴다 — 게임 폴더가 바뀌었을 수 있다.
+    /// </summary>
+    public int ExportOriginals()
+    {
+        Directory.CreateDirectory(OriginalsDirectory);
+        int count = 0;
+        for (int part = 0; part < AssetParts; part++)
+        {
+            if (OriginalWav(part) is not { } wav) continue;
+            File.WriteAllBytes(Path.Combine(OriginalsDirectory, $"sfx-{part:D2}.wav"), wav);
+            count++;
+        }
+        return count;
+    }
+
     /// <summary>뽑아 둔 효과음 한 자락. 없으면 null.</summary>
     private byte[]? AssetWav(int part)
     {
@@ -174,7 +232,7 @@ public sealed class SoundBank : IDisposable
         try
         {
             // 원본 것을 먼저 보고, 없으면 뽑아 둔 것으로 낸다.
-            var wav = _bank?.Wav(part) ?? AssetWav(part);
+            var wav = WavOf(part);
             if (wav == null) return;
 
             // SoundPlayer 는 스트림을 물고 있으므로 틀 때마다 새로 잡아 넘긴다.
@@ -198,6 +256,9 @@ public sealed class SoundBank : IDisposable
     {
         if (volume >= GameSettings.MaxVolume) return wav;
         if (wav.Length <= WavHeader) return wav;
+        // 갈아 낀 파일은 8비트가 아닐 수 있다(16비트 · 머리가 긴 것). 줄이는 셈은 8비트 무음 128 을 밑삼으므로
+        // 그런 파일은 손대지 않고 그대로 낸다 — 크기 손잡이가 안 먹을 뿐 소리는 깨지지 않는다.
+        if (!Plain8Bit(wav)) return wav;
 
         var made = (byte[])wav.Clone();
         for (int i = WavHeader; i < made.Length; i++)
@@ -217,6 +278,13 @@ public sealed class SoundBank : IDisposable
             System.Diagnostics.Debug.WriteLine($"[SoundBank] 소리를 끊지 못했습니다 — {ex.Message}");
         }
     }
+
+    /// <summary>머리 44바이트짜리 8비트 PCM WAV 인지 — 게임 효과음이 다 이 꼴이다.</summary>
+    private static bool Plain8Bit(byte[] wav) =>
+        wav.Length > WavHeader
+        && wav[0] == (byte)'R' && wav[1] == (byte)'I' && wav[2] == (byte)'F' && wav[3] == (byte)'F'
+        && wav[34] == 8 && wav[35] == 0
+        && wav[36] == (byte)'d' && wav[37] == (byte)'a' && wav[38] == (byte)'t' && wav[39] == (byte)'a';
 
     /// <summary>WAV 머리 길이와 8비트 소리의 무음 자리.</summary>
     private const int WavHeader = 44, Silence = 128;
@@ -239,7 +307,7 @@ public sealed class SoundBank : IDisposable
         if (!GameSettings.SfxEnabled) return;
         try
         {
-            var wav = _bank?.Wav(part) ?? AssetWav(part);
+            var wav = WavOf(part);
             if (wav == null) return;
 
             // 크기를 줄인 벌마다 따로 적는다 — 돌고 있는 파일을 덮어쓰지 않는다.
@@ -284,7 +352,7 @@ public sealed class SoundBank : IDisposable
         if (!GameSettings.SfxEnabled) return;
         try
         {
-            var wav = _bank?.Wav(part) ?? AssetWav(part);
+            var wav = WavOf(part);
             if (wav == null) return;
 
             int volume = GameSettings.SfxVolume;

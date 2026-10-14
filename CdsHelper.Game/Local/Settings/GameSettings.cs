@@ -43,6 +43,9 @@ public sealed class GameSettingsData
     /// <summary>효과음(닻·거절 따위)을 낼지. 기본은 켬.</summary>
     public bool SfxEnabled { get; set; } = true;
 
+    /// <summary>효과음 폴더(<c>%LocalAppData%\CdsHelper\sfx</c>)에 넣어 둔 파일로 효과음을 갈아 낄지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool CustomSfxEnabled { get; set; }
+
     /// <summary>배경음악·효과음의 크기(0~100). 기본은 다 크게.</summary>
     public int BgmVolume { get; set; } = GameSettings.MaxVolume;
 
@@ -652,6 +655,13 @@ public static class GameSettings
     {
         get => Get(d => d.SfxEnabled);
         set => Set(d => d.SfxEnabled = value);
+    }
+
+    /// <summary>커스텀 효과음 — 효과음 폴더의 <c>sfx-번호.wav</c> 가 있으면 그 번호 소리를 그것으로 낸다(모드 창).</summary>
+    public static bool CustomSfxEnabled
+    {
+        get => Get(d => d.CustomSfxEnabled);
+        set => Set(d => d.CustomSfxEnabled = value);
     }
 
     /// <summary>해상 지도 배율의 아래·위·기본과 한 칸.</summary>
