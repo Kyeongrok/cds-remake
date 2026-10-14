@@ -107,7 +107,18 @@ public sealed class TextInputDialog : GameWindow
     /// <summary>초성 고르기 칸 표 — 칸마다 초성 번호, 없으면 -1.</summary>
     private readonly int[,] _leadCells = new int[Rows, Columns];
 
-    private enum Page { Roman, Initials, Syllables }
+    private enum Page { Roman, Initials, Syllables, Kana }
+
+    /// <summary>
+    /// 일본어로 켰을 때의 가나 판(원본에 없는 판 — 한국어판에는 한글 판뿐이다). 오십음 차례로 한 줄에 열아홉씩 깐다.
+    /// </summary>
+    private const string Hiragana =
+        "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"
+        + "がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょゎー・";
+
+    /// <summary>가타카나 판 — 히라가나를 옮기고 「ヴ」를 더한다.</summary>
+    private static readonly string Katakana =
+        new string(Hiragana.Select(ch => ch is >= 'ぁ' and <= 'ゖ' ? (char)(ch + 0x60) : ch).ToArray()) + "ヴ";
 
     private Page _page;
 
@@ -156,10 +167,11 @@ public sealed class TextInputDialog : GameWindow
         Place(body, pageBack, PageX, PageY);
 
         // 오른쪽 단추 다섯. 게임 차례 그대로다.
-        (string Text, Action Run)[] buttons =
-        [
-            ("결정", Decide), ("뒤로", Cancel), ("영문", ShowRoman), ("한글", ShowInitials), ("삭제", Delete),
-        ];
+        // 일본어로 켰으면 「한글」 자리에 「かな」, 그 밑에 「カナ」를 둔다 — 판은 한글 대신 가나다.
+        (string Text, Action Run)[] buttons = Lang.IsJapanese
+            ? [("決定", Decide), ("戻る", Cancel), ("英数", ShowRoman), ("かな", () => ShowKana(Hiragana)),
+               ("削除", Delete), ("カナ", () => ShowKana(Katakana))]
+            : [("결정", Decide), ("뒤로", Cancel), ("영문", ShowRoman), ("한글", ShowInitials), ("삭제", Delete)];
         for (int i = 0; i < buttons.Length; i++)
         {
             var button = new GameButton(buttons[i].Text, buttons[i].Run, width: ButtonWidth)
@@ -184,8 +196,9 @@ public sealed class TextInputDialog : GameWindow
         MouseRightButtonUp += (_, e) =>
         {
             e.Handled = true;
-            GameUi.ContextMenuAt(this, e.GetPosition(this),
-                                 [("영문", ShowRoman), ("한글", ShowInitials)]);
+            GameUi.ContextMenuAt(this, e.GetPosition(this), Lang.IsJapanese
+                ? [("英数", ShowRoman), ("かな", () => ShowKana(Hiragana)), ("カナ", () => ShowKana(Katakana))]
+                : [("영문", ShowRoman), ("한글", ShowInitials)]);
         };
     }
 
@@ -262,6 +275,18 @@ public sealed class TextInputDialog : GameWindow
             for (int c = 0; c < numbers[r].Length; c++)
                 _leadCells[r + 1, c + 1] = numbers[r][c];
             DrawRow(r + 1, 1, Initials[r]);
+        }
+    }
+
+    /// <summary>가나 판을 깐다 — 한 줄에 열아홉씩.</summary>
+    private void ShowKana(string kana)
+    {
+        ClearPage(Page.Kana);
+        for (int r = 0; r < Rows && r * Columns < kana.Length; r++)
+        {
+            string row = kana.Substring(r * Columns, Math.Min(Columns, kana.Length - r * Columns));
+            for (int c = 0; c < row.Length; c++) _cells[r, c] = row[c].ToString();
+            DrawRow(r, 0, row);
         }
     }
 
