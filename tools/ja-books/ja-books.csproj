@@ -7,6 +7,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="C:\Users\ocean\git\cds\cds-helper\CdsHelper.Game\CdsHelper.Game.csproj" />
+    <ProjectReference Include="..\..\CdsHelper.Game\CdsHelper.Game.csproj" />
   </ItemGroup>
 </Project>
