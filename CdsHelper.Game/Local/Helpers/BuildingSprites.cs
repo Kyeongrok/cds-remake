@@ -44,6 +44,87 @@ public static class BuildingSprites
         public override string ToString() => $"{Culture} · {Kind} {Variant + 1}  ({Members.Count}곳 · {Points}점)";
     }
 
+    private static uint[]? _home;
+
+    /// <summary>
+    /// 자택 건물 그림(96x80 BGRA, 비침 알파 0) — 리스본 · 세비야 도시 그림에서 뽑는다. 못 뽑으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 자택은 두 도시에만 있어 <see cref="Extract"/> 의 여러 도시 맞대기로는 배경이 많이 남는다. 그래서
+    /// 상자 가운데에서 두 그림의 색이 가까운 점들 가운데 <b>가장 큰 덩어리</b>(집의 테두리와 벽)를 잡고,
+    /// 그 덩어리의 가로 · 세로 폭 안을 리스본 그림으로 채운다 — 지붕은 두 도시의 색이 달라 안 맞으므로 이렇게 메운다.
+    /// 도시 그림에 섞어 칠하지 않고 그림 위에 따로 올리는 데 쓴다(CityPicView).
+    /// </remarks>
+    public static uint[]? Home(CityPictures pictures, CityBuildingTable table)
+    {
+        if (_home != null) return _home;
+        const int Lisbon = 0, Seville = 7, Loose = 40;
+        if (table.Find(Lisbon, CityBuildingTable.HomeKind) is not { } a || table.Find(Seville, CityBuildingTable.HomeKind) is not { } b) return null;
+        if (pictures.TryGetBgra(Lisbon) is not { } pa || pictures.TryGetBgra(Seville) is not { } pb) return null;
+
+        // 상자 가운데(집이 앉은 자리)에서만 견준다 — 가장자리에는 이웃 건물이 걸친다.
+        var mask = new bool[BoxW * BoxH];
+        for (int y = BoxH / 4; y < BoxH * 7 / 10; y++)
+            for (int x = BoxW / 4; x < BoxW * 3 / 4; x++)
+            {
+                uint ca = At(pa, a.X + x, a.Y + y), cb = At(pb, b.X + x, b.Y + y);
+                int dr = (int)((ca >> 16) & 255) - (int)((cb >> 16) & 255);
+                int dg = (int)((ca >> 8) & 255) - (int)((cb >> 8) & 255);
+                int db = (int)(ca & 255) - (int)(cb & 255);
+                mask[y * BoxW + x] = ca != 0 && dr * dr + dg * dg + db * db <= Loose * Loose;
+            }
+
+        // 가장 큰 덩어리(여덟 방향으로 이어진 점들).
+        var label = new int[mask.Length];
+        int best = 0, bestSize = 0, next = 0;
+        var stack = new Stack<int>();
+        for (int i = 0; i < mask.Length; i++)
+        {
+            if (!mask[i] || label[i] != 0) continue;
+            int size = 0;
+            label[i] = ++next;
+            stack.Push(i);
+            while (stack.Count > 0)
+            {
+                int p = stack.Pop();
+                size++;
+                for (int dy = -1; dy <= 1; dy++)
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        int nx = p % BoxW + dx, ny = p / BoxW + dy;
+                        if (nx < 0 || ny < 0 || nx >= BoxW || ny >= BoxH) continue;
+                        int q = ny * BoxW + nx;
+                        if (!mask[q] || label[q] != 0) continue;
+                        label[q] = next;
+                        stack.Push(q);
+                    }
+            }
+            if (size > bestSize) (best, bestSize) = (next, size);
+        }
+        if (bestSize < 200) return null;
+
+        // 덩어리의 줄마다 · 칸마다 폭을 재고, 둘 다 안쪽인 점을 리스본 그림으로 채운다.
+        int[] rowLo = new int[BoxH], rowHi = new int[BoxH], colLo = new int[BoxW], colHi = new int[BoxW];
+        Array.Fill(rowLo, -1);
+        Array.Fill(colLo, -1);
+        for (int y = 0; y < BoxH; y++)
+            for (int x = 0; x < BoxW; x++)
+            {
+                if (label[y * BoxW + x] != best) continue;
+                if (rowLo[y] < 0) rowLo[y] = x;
+                rowHi[y] = x;
+                if (colLo[x] < 0) colLo[x] = y;
+                colHi[x] = y;
+            }
+
+        var bgra = new uint[BoxW * BoxH];
+        for (int y = 0; y < BoxH; y++)
+            for (int x = 0; x < BoxW; x++)
+                if (rowLo[y] >= 0 && x >= rowLo[y] && x <= rowHi[y] && colLo[x] >= 0 && y >= colLo[x] && y <= colHi[x])
+                    bgra[y * BoxW + x] = At(pa, a.X + x, a.Y + y) | 0xFF000000u;
+        return _home = bgra;
+    }
+
     /// <summary>모든 문화권·갈래·변형의 건물 그림을 뽑는다. <paramref name="cultureOf"/> 는 도시 → 문화권 이름.</summary>
     public static List<Sprite> Extract(CityPictures pictures, CityBuildingTable table, Func<int, string> cultureOf,
                                        int minMembers = 2)

@@ -400,11 +400,34 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 도트 그림이라 늘릴 때 섞으면 뭉개진다 — 게임 화면처럼 각을 살린다.
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
 
+        // 그림 위에 따로 올리는 건물 — 도시 그림에 섞어 칠하지 않고 한 겹 위에 얹는다.
+        // 지금은 시나리오가 본거지로 삼은 도시의 자택 하나다(원본 그림에는 리스본 · 세비야에만 자택이 그려져 있다).
+        var raised = new Canvas { Width = image.Width, Height = image.Height, IsHitTestVisible = false };
+        if (game.Player.HomePort == cityId && game.Buildings?.ExtraHome(cityId) is { } home
+            && game.CityPics is { } pictures && BuildingSprites.Home(pictures, game.Buildings) is { } art)
+        {
+            var sprite = BitmapSource.Create(BuildingSprites.BoxW, BuildingSprites.BoxH, 96, 96,
+                                             PixelFormats.Bgra32, null, art, BuildingSprites.BoxW * 4);
+            sprite.Freeze();
+            var house = new Image
+            {
+                Source = sprite,
+                Width = BuildingSprites.BoxW * scale,
+                Height = BuildingSprites.BoxH * scale,
+                Stretch = Stretch.Fill,
+            };
+            RenderOptions.SetBitmapScalingMode(house, GameUi.SpriteScaling);
+            Canvas.SetLeft(house, home.X * scale);
+            Canvas.SetTop(house, home.Y * scale);
+            raised.Children.Add(house);
+        }
+
         var picBox = new Grid
         {
             Width = image.Width,
             Height = image.Height,
-            Children = { image, _layer },
+            ClipToBounds = true,
+            Children = { image, raised, _layer },
         };
 
         // 틀 위에 그림을 여덟 점 안쪽으로 얹는다. 건물 자리 셈은 그림(picBox) 기준이라 그대로다.

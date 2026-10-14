@@ -2479,7 +2479,7 @@ public sealed class ShipMapWindow : Window
                 if (at == 2)
                 {
                     int which = ChoiceDialog.Ask(this, "시작할 시나리오를 선택해 주십시오",
-                        [.. scenarios.Select(s => $"{s.Title} — {s.Given}({(s.Nation == 0 ? "포르투갈" : "에스파니아")})")]);
+                        [.. scenarios.Select(s => $"{s.Title} — {s.Given}({_game.Nations?.Find(s.Nation)?.Name ?? $"나라 {s.Nation}"})")]);
                     if (which < 0) { _game.NewPlayer(); continue; }
                     Beginner.Apply(_game.Player, scenarios[which].Hero, scenarios[which].Fame);
                     made = true;
@@ -2582,7 +2582,13 @@ public sealed class ShipMapWindow : Window
     /// <summary>새 판이 여는 도시 — 나라가 1 이면 세비야(7), 아니면 리스본(0). 이름이 아니라 번호로 찾는다. 없으면 번호 -1.</summary>
     private (int Id, string Name) StartCity()
     {
+        // 시나리오의 주인공은 표에 적은 본거지에서, 본거지를 안 적었으면 제 나라 수도에서 연다(원본에 없는 길이다).
         int want = _game.Player.Nation == 1 ? CityNames.SevilleId : CityNames.LisbonId;
+        if (Scenarios.Find(_game.Player.ActiveStoryBook) is { } scenario)
+        {
+            int home = scenario.HomeCity >= 0 ? scenario.HomeCity : _game.Nations?.Find(scenario.Nation)?.Capital ?? -1;
+            if (home >= 0 && _game.CityTable.Find(home) != null) want = home;
+        }
         return _game.CityTable.Find(want) is { } found ? (found.Id, found.Name) : (-1, "");
     }
 
@@ -3708,7 +3714,7 @@ public sealed class ShipMapWindow : Window
         // 묘책 확률 표(0x00549B80) — 보고 고치면 게임에도 바로 든다.
         RuseTable = () => RuseEditDialog.Show(this),
         // 시나리오(미리 만든 주인공 + 이야기 책) 짓기 — 모드 「시나리오 모드」를 켜면 NEW GAME 에 나온다.
-        Scenarios = () => ScenarioEditDialog.Show(this),
+        Scenarios = () => ScenarioEditDialog.Show(this, _game),
         Duel = PlayDuel,
         LandSpar = () => LandSparDialog.Play(this, _game),
         SeaSpar = MockSeaBattle,

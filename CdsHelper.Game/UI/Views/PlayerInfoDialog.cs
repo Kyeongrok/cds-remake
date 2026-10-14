@@ -90,8 +90,7 @@ public sealed class PlayerInfoDialog : GameWindow
         Row("별자리", p.Zodiac);
         Row("혈액형", p.Blood >= 0 && p.Blood < Player.BloodTypes.Length
                        ? Player.BloodTypes[p.Blood] + "형" : "-");
-        Row("국적", p.Nation >= 0 && p.Nation < Player.Nations.Length
-                     ? Player.Nations[p.Nation] : "-");
+        Row("국적", p.Nation >= 0 ? p.NationName : "-");
         Row("직업", p.Work.Name);
         Row("얼굴", p.Face);
         Row("행운", $"{p.Fortune} / {Player.MaxFortune}");

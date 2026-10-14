@@ -1,6 +1,9 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Engine;
 using CdsHelper.Game.Engine.Disev;
 using CdsHelper.Support.Local.Models;
@@ -31,13 +34,16 @@ public sealed class ScenarioEditDialog : GameWindow
     private readonly Button _add = Push("새 시나리오");
     private readonly Button _remove = Push("이 줄 지우기");
     private readonly Button _script = Push("대본 열기");
+    private readonly Button _spot = Push("자택 자리 고르기");
+    private readonly Engine.Game? _game;
     private readonly Button _save = Push("저장");
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
 
     private List<Row> _rows = [];
 
-    public ScenarioEditDialog()
+    public ScenarioEditDialog(Engine.Game? game = null)
     {
+        _game = game;
         Title = "시나리오 짓기";
         Width = 1240;
         Height = 560;
@@ -53,6 +59,9 @@ public sealed class ScenarioEditDialog : GameWindow
         Col("날", nameof(Row.Day), 36);
         Col("얼굴", nameof(Row.Face), 44);
         Col("나라", nameof(Row.Nation), 40);
+        Col("본거지", nameof(Row.HomeCity), 50);
+        Col("자택 X", nameof(Row.HomeX), 50);
+        Col("자택 Y", nameof(Row.HomeY), 50);
         Col("혈액형", nameof(Row.Blood), 50);
         Col("직업", nameof(Row.Job), 40);
         Col("능력 여섯", nameof(Row.Abilities), 130);
@@ -64,13 +73,14 @@ public sealed class ScenarioEditDialog : GameWindow
         _add.Click += (_, _) => Add();
         _remove.Click += (_, _) => Remove();
         _script.Click += (_, _) => OpenScript();
+        _spot.Click += (_, _) => PickSpot();
         _save.Click += (_, _) => Save();
 
         var bar = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(10, 0, 10, 0),
-            Children = { _add, _remove, _script, _save },
+            Children = { _add, _remove, _script, _spot, _save },
         };
 
         var page = new DockPanel();
@@ -103,6 +113,9 @@ public sealed class ScenarioEditDialog : GameWindow
         public int Day { get; set; }
         public int Face { get; set; }
         public int Nation { get; set; }
+        public int HomeCity { get; set; } = -1;
+        public int HomeX { get; set; }
+        public int HomeY { get; set; }
         public int Blood { get; set; }
         public int Job { get; set; }
         public string Abilities { get; set; } = "";
@@ -128,6 +141,7 @@ public sealed class ScenarioEditDialog : GameWindow
             Book = s.Book, Title = s.Title, Given = s.Given, Family = s.Family,
             BirthYear = s.BirthYear, Month = s.Month, Day = s.Day,
             Face = s.Face, Nation = s.Nation, Blood = s.Blood, Job = s.Job,
+            HomeCity = s.HomeCity, HomeX = s.HomeX, HomeY = s.HomeY,
             Abilities = string.Join(",", s.Abilities),
             Skills = string.Join(",", s.Skills),
             Tongues = string.Join(",", s.Tongues),
@@ -141,7 +155,8 @@ public sealed class ScenarioEditDialog : GameWindow
     private void Guide(string head)
     {
         _status.Text = (head.Length > 0 ? head + "\n" : "")
-            + "나라 0 포르투갈 · 1 에스파니아   ·   직업 " + string.Join(" · ", Enumerable.Range(0, 4).Select(i => $"{i} {Job.Of(i).Name}"))
+            + "나라는 나라 표의 번호(0 포르투갈 · 1 에스파니아 · 14 신성 로마 제국 …)   ·   본거지는 도시 번호(-1 이면 그 나라 수도, 함부르크 44) — 자택이 없는 도시면 「자택 자리 고르기」로 그림 위에 올린다\n"
+            + "직업 " + string.Join(" · ", Enumerable.Range(0, 4).Select(i => $"{i} {Job.Of(i).Name}"))
             + "   ·   혈액형 0~3   ·   얼굴은 운명 자리 번호(라몬 5 · 에밀리오 14)\n"
             + "능력 여섯: " + string.Join(",", Ability.Names) + $" ({Ability.Min}~{Ability.Max})\n"
             + "기능 열셋: " + string.Join(",", Skill.Names) + "\n"
@@ -161,7 +176,8 @@ public sealed class ScenarioEditDialog : GameWindow
             if (Numbers(row.Abilities, 6) is not { } abilities) { Guide($"{at} 능력은 수 여섯을 쉼표로 적습니다."); return null; }
             if (Numbers(row.Skills, Skill.Names.Length) is not { } skills) { Guide($"{at} 기능은 수 {Skill.Names.Length}개를 쉼표로 적습니다."); return null; }
             if (Numbers(row.Tongues, Skill.Languages.Length) is not { } tongues) { Guide($"{at} 언어는 수 {Skill.Languages.Length}개를 쉼표로 적습니다."); return null; }
-            if (row.Nation is not (0 or 1)) { Guide($"{at} 나라는 0(포르투갈) 이나 1(에스파니아)입니다."); return null; }
+            if (row.Nation < 0 || (_game?.Nations is { } nations && nations.Find(row.Nation) == null)) { Guide($"{at} 나라 표에 없는 나라 번호입니다."); return null; }
+            if (row.HomeCity >= 0 && _game != null && _game.CityTable.Find(row.HomeCity) == null) { Guide($"{at} 도시 표에 없는 본거지 번호입니다."); return null; }
             if (row.Job is < 0 or > 3) { Guide($"{at} 직업은 0~3 입니다."); return null; }
             if (row.Month is < 1 or > 12 || row.Day < 1 || row.Day > DateTime.DaysInMonth(2001, row.Month)) { Guide($"{at} 생일이 달력에 없습니다."); return null; }
             if (string.IsNullOrWhiteSpace(row.Given)) { Guide($"{at} 이름이 비었습니다."); return null; }
@@ -170,7 +186,8 @@ public sealed class ScenarioEditDialog : GameWindow
                 row.BirthYear, row.Month, row.Day, Math.Max(0, row.Face), row.Nation, Math.Clamp(row.Blood, 0, 3), row.Job,
                 [.. abilities.Select(a => Math.Clamp(a, Ability.Min, Ability.Max))],
                 [.. skills.Select(s => Math.Max(0, s))], [.. tongues.Select(t => Math.Max(0, t))],
-                Math.Max(0, row.Gold), Math.Max(0, row.Fame)));
+                Math.Max(0, row.Gold), Math.Max(0, row.Fame),
+                Math.Max(-1, row.HomeCity), row.HomeX, row.HomeY));
         }
         return made;
     }
@@ -237,10 +254,84 @@ public sealed class ScenarioEditDialog : GameWindow
         DisevEditorDialog.Show(this, row.Book);
     }
 
-    /// <summary>창을 띄운다.</summary>
-    public static void Show(Window? owner)
+    /// <summary>
+    /// 본거지 도시 그림을 띄워 자택 자리를 누르게 한다 — 누른 곳에 집이 앉도록 건물 상자의 왼쪽 위를 적는다.
+    /// </summary>
+    /// <remarks>자택 그림은 도시 그림에 섞지 않고 위에 올린다(<see cref="BuildingSprites.Home"/>). 본디 자택이 있는 도시(리스본 · 세비야)면 고를 것이 없다.</remarks>
+    private void PickSpot()
     {
-        var window = new ScenarioEditDialog();
+        if (_grid.SelectedItem is not Row row || Collect() == null) return;
+        if (_game?.CityPics is not { } pictures || _game.Buildings is not { } table)
+        {
+            Guide("도시 그림이나 건물 표를 못 읽었습니다.");
+            return;
+        }
+        int city = row.HomeCity >= 0 ? row.HomeCity : _game.Nations?.Find(row.Nation)?.Capital ?? -1;
+        if (pictures.TryGetBgra(city) is not { } bgra)
+        {
+            Guide("본거지 도시의 그림이 없습니다.");
+            return;
+        }
+        if (table.Find(city, CityBuildingTable.HomeKind) is { } own && table.ExtraHome(city) == null && Scenarios.HomeSpot(city) == null)
+        {
+            Guide($"그 도시에는 본디 자택이 있습니다({own.X}, {own.Y}) — 고를 것이 없습니다.");
+            return;
+        }
+
+        const int Zoom = 2;
+        // 집은 상자 가운데보다 조금 위에 앉아 있다 — 누른 곳이 집 한가운데가 되게 이만큼 뺀다.
+        const int HouseX = 48, HouseY = 37;
+
+        var picture = BitmapSource.Create(CityPictures.Width, CityPictures.Height, 96, 96,
+                                          PixelFormats.Bgra32, null, bgra, CityPictures.Width * 4);
+        var back = new Image { Source = picture, Width = CityPictures.Width * Zoom, Height = CityPictures.Height * Zoom, Stretch = Stretch.Fill };
+        RenderOptions.SetBitmapScalingMode(back, BitmapScalingMode.NearestNeighbor);
+
+        var house = new Image { Width = BuildingSprites.BoxW * Zoom, Height = BuildingSprites.BoxH * Zoom, Stretch = Stretch.Fill, IsHitTestVisible = false };
+        RenderOptions.SetBitmapScalingMode(house, BitmapScalingMode.NearestNeighbor);
+        if (BuildingSprites.Home(pictures, table) is { } art)
+            house.Source = BitmapSource.Create(BuildingSprites.BoxW, BuildingSprites.BoxH, 96, 96,
+                                               PixelFormats.Bgra32, null, art, BuildingSprites.BoxW * 4);
+
+        var canvas = new Canvas { Width = back.Width, Height = back.Height, ClipToBounds = true, Children = { back, house } };
+        int x = row.HomeX, y = row.HomeY;
+        void Place()
+        {
+            Canvas.SetLeft(house, x * Zoom);
+            Canvas.SetTop(house, y * Zoom);
+        }
+        Place();
+
+        var note = new TextBlock { Margin = new Thickness(8, 4, 8, 4), Text = "집을 앉힐 곳을 누르세요. 창을 닫으면 그 자리가 표에 들어갑니다." };
+        var window = new Window
+        {
+            Title = "자택 자리 고르기",
+            Owner = this,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ResizeMode = ResizeMode.NoResize,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = new StackPanel { Children = { canvas, note } },
+        };
+        canvas.MouseLeftButtonDown += (_, e) =>
+        {
+            var at = e.GetPosition(canvas);
+            x = (int)(at.X / Zoom) - HouseX;
+            y = (int)(at.Y / Zoom) - HouseY;
+            Place();
+            note.Text = $"자택 상자 ({x}, {y}) — 창을 닫으면 표에 들어갑니다.";
+        };
+        window.ShowDialog();
+
+        row.HomeX = x;
+        row.HomeY = y;
+        _grid.Items.Refresh();
+        Guide($"「{row.Title}」 자택 자리 ({x}, {y}) — 「저장」을 눌러야 적힙니다.");
+    }
+
+    /// <summary>창을 띄운다.</summary>
+    public static void Show(Window? owner, Engine.Game? game = null)
+    {
+        var window = new ScenarioEditDialog(game);
         if (owner != null) window.Owner = owner;
         window.ShowDialog();
     }

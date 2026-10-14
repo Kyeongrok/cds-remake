@@ -196,7 +196,14 @@ public sealed class Player
     public const int MaxFortune = 15;
 
     /// <summary>국적 이름. 번호가 표 밖이면 첫째다.</summary>
-    public string NationName => Nations[Math.Clamp(Nation, 0, Nations.Length - 1)];
+    public string NationName =>
+        Nation >= 0 && Nation < Nations.Length ? Nations[Nation] : NationNameOf?.Invoke(Nation) ?? Nations[0];
+
+    /// <summary>
+    /// 고르는 둘 밖의 나라 이름을 찾아 주는 길 — 나라 표를 든 쪽(게임)이 건다. 시나리오의 주인공은
+    /// 나라 표의 어느 나라든 될 수 있어(신성 로마 제국 따위) 이 표만으로는 이름을 못 낸다.
+    /// </summary>
+    public static Func<int, string?>? NationNameOf { get; set; }
 
     /// <summary>혈액형 이름.</summary>
     public string BloodName => BloodTypes[Math.Clamp(Blood, 0, BloodTypes.Length - 1)];
@@ -244,7 +251,7 @@ public sealed class Player
         // 생일을 먼저 넣어야 나이에서 태어난 해가 바로 나온다.
         Age = Math.Clamp(age, MinAge, MaxAge);
         Blood = Math.Clamp(blood, 0, BloodTypes.Length - 1);
-        Nation = Math.Clamp(nation, 0, Nations.Length - 1);
+        Nation = Math.Max(0, nation);   // 고르는 것은 둘이지만 시나리오의 주인공은 나라 표의 어느 나라든 된다
         Face = Math.Max(0, face);
         // 운명 자리는 부르는 쪽이 정해 넘긴다 — 원본은 앞의 열여섯만 고르게 해서
         // 얼굴 번호가 곧 자리였지만, 얼굴을 더 넣으면 그 셈이 안 통한다.

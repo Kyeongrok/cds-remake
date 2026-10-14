@@ -155,8 +155,26 @@ public sealed class CityBuildingTable
     public IReadOnlyList<Building> Buildings => _buildings;
 
     /// <summary>그 도시의 건물들. 없으면 빈 목록.</summary>
-    public IReadOnlyList<Building> InCity(int cityId) =>
-        _byCity.TryGetValue(cityId, out var list) ? list : [];
+    /// <remarks>
+    /// 시나리오가 그 도시를 본거지로 삼았는데 자택이 없으면 자택 줄을 하나 지어 붙인다(<see cref="Engine.Scenarios.HomeSpot"/>) —
+    /// 원본 표에는 자택이 리스본 · 세비야에만 있다.
+    /// </remarks>
+    public IReadOnlyList<Building> InCity(int cityId)
+    {
+        IReadOnlyList<Building> rows = _byCity.TryGetValue(cityId, out var list) ? list : [];
+        return ExtraHome(cityId) is { } home ? [.. rows, home] : rows;
+    }
+
+    /// <summary>자택의 갈래 · 이름 글(리스본 · 세비야 줄 그대로).</summary>
+    public const string HomeKind = "자택";
+
+    /// <summary>그 도시에 시나리오가 올린 자택 줄. 본디 자택이 있거나 올린 것이 없으면 null.</summary>
+    public Building? ExtraHome(int cityId)
+    {
+        if (Engine.Scenarios.HomeSpot(cityId) is not { } spot) return null;
+        if (_byCity.TryGetValue(cityId, out var list) && list.Any(b => b.Code == CityExeTable.HomeCode)) return null;
+        return new Building(cityId, CityExeTable.HomeCode, HomeKind, HomeKind, spot.X, spot.Y, 0);
+    }
 
     /// <summary>그 도시의 그 종류 건물. 없으면 null.</summary>
     public Building? Find(int cityId, string kind)

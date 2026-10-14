@@ -28,7 +28,12 @@ public sealed class Game
     public Player Player { get; private set; } = new();
 
     /// <summary>판을 짓는다 — 신도시의 발견물 조건이 이 판의 발견을 보게 건다.</summary>
-    public Game() => CityFounding.Discovered = FoundBy;
+    public Game()
+    {
+        CityFounding.Discovered = FoundBy;
+        // 고르는 둘 밖의 나라(시나리오의 주인공)는 나라 표에서 이름을 찾는다.
+        Player.NationNameOf = id => Nations?.Find(id)?.Name;
+    }
 
     /// <summary>모드 「중량 없음」을 주인공 쪽 무게 셈에 건다 — 설정은 이쪽에만 있다.</summary>
     static Game()
