@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 /// (<see cref="Shield"/>) — 제목 줄은 그대로 살아 닫기 단추가 눌린다.
 ///
 /// <b>지도 위에 그리지 않는 까닭.</b> 지도는 WPF 가 아니라 D3D 자식 창이라
-/// (<see cref="ShipMapHost"/>) airspace 규칙상 WPF 그림이 늘 그 밑에 깔린다. 상자를
+/// (<see cref="WorldMapHost"/>) airspace 규칙상 WPF 그림이 늘 그 밑에 깔린다. 상자를
 /// 지도 창 <i>안에</i> 그리면 지도에 가려 안 보인다. 그래서 창은 창대로 두고 모달만
 /// 걷었다.
 ///

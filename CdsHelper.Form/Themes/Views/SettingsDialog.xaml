@@ -54,7 +54,7 @@
                         <!-- 렌더링 -->
                         <GroupBox Grid.Row="2" Header="렌더링" Padding="10" Margin="0,10,0,0">
                             <StackPanel>
-                                <CheckBox x:Name="PART_AutoOpenShipMapCheckBox"
+                                <CheckBox x:Name="PART_AutoOpenWorldMapCheckBox"
                                           Content="앱을 켤 때 함대 보기(Direct3D) 바로 열기"
                                           VerticalContentAlignment="Center" />
                                 <TextBlock Text="게임은 CostaDelSol.exe 로 따로 켭니다."

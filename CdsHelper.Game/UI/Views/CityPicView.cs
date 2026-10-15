@@ -59,7 +59,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </summary>
     /// <remarks>
     /// 발견을 보고하는 동안 게임 화면이 파래진다 — 바다에서 발견할 때 지도가 파래지는 것과
-    /// 같은 몫이고(<see cref="Rendering.ShipMapHost.Shaded"/>), 도시 그림에도 있어야
+    /// 같은 몫이고(<see cref="Rendering.WorldMapHost.Shaded"/>), 도시 그림에도 있어야
     /// 후원자에게 보고하는 대목이 원본과 같아진다.
     /// </remarks>
     private readonly System.Windows.Shapes.Rectangle _shade = new()
@@ -137,7 +137,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </summary>
     /// <remarks>
     /// 마을이 닫히고 뭍으로 나선다 — 배는 항구에 대 둔 채 말을 타고 걷는다. 되돌아오는
-    /// 것은 뭍 커맨드의 "승선" 이 맡는다(<see cref="Rendering.ShipMapHost.Embark"/>).
+    /// 것은 뭍 커맨드의 "승선" 이 맡는다(<see cref="Rendering.WorldMapHost.Embark"/>).
     /// </remarks>
     public bool Explored { get; private set; }
 
@@ -450,7 +450,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         picBox.Margin = new Thickness(_frameBorder * scale);
         frameBox.Children.Add(picBox);
 
-        // 사건이 도는 동안 그림을 파랗게 덮는 막. 지도 쪽의 ShipMapHost.Shaded 와 같은 몫이다.
+        // 사건이 도는 동안 그림을 파랗게 덮는 막. 지도 쪽의 WorldMapHost.Shaded 와 같은 몫이다.
         // <b>금테까지</b> 덮는다 — 그림 칸에만 깔았더니 나중에 두른 테만 밝게 남았다.
         _shade.Width = fullW;
         _shade.Height = fullH;

@@ -11464,47 +11464,47 @@
   "args": 1
  },
  "북 (위)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:848",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:850",
   "args": 0
  },
  "남 (아래)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:848",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:850",
   "args": 0
  },
  "서 (왼쪽)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:849",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:851",
   "args": 0
  },
  "동 (오른쪽)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:849",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:851",
   "args": 0
  },
  "북서": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:850",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:852",
   "args": 0
  },
  "북동": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:850",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:852",
   "args": 0
  },
  "남서": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:851",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:853",
   "args": 0
  },
  "남동": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:851",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:853",
   "args": 0
  },
  "정지 · 출발": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:852",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:854",
   "args": 0
  },
  "커맨드 창": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:852",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:854",
   "args": 0
  },
  "전체 화면": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:1472",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:1474",
   "args": 0
  },
  "지형표를 읽지 못했습니다 ({0})": {
@@ -11512,207 +11512,207 @@
   "args": 1
  },
  "함대 창의 자식 창을 만들지 못했습니다 (Win32 {0})": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:808",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:808",
   "args": 1
  },
  "WORLD.CDS 를 읽지 못했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:849",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:849",
   "args": 0
  },
  "OCEAN.CDS 를 읽지 못했습니다 ({0})": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:866",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:866",
   "args": 1
  },
  "그래픽 화면을 열지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:922",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:922",
   "args": 1
  },
  "가장 빠른 길": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1358",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1358",
   "args": 0
  },
  "덜 걷는 길": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1360",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1360",
   "args": 0
  },
  "가장 가까운 해안": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1362",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1362",
   "args": 0
  },
  "북북동": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1412",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1412",
   "args": 0
  },
  "동북동": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1412",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1412",
   "args": 0
  },
  "동남동": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1412",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1412",
   "args": 0
  },
  "남남동": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1412",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1412",
   "args": 0
  },
  "남남서": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1413",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1413",
   "args": 0
  },
  "서남서": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1413",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1413",
   "args": 0
  },
  "서북서": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1413",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1413",
   "args": 0
  },
  "북북서": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1413",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1413",
   "args": 0
  },
  "{0}위{1} {2}경{3}": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1428",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1428",
   "args": 4
  },
  "{0}  {1}  {2}{3}": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1442",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1442",
   "args": 4
  },
  "도착  {0}": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1444",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1444",
   "args": 1
  },
  "지도를 아직 읽지 못했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1501",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1501",
   "args": 0
  },
  "도시 안에서는 자동항해를 쓸 수 없습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1502",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1502",
   "args": 0
  },
  "바다에 있을 때만 자동항해를 쓸 수 있습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1503",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1503",
   "args": 0
  },
  "바닷길을 찾지 못했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1506",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1506",
   "args": 0
  },
  "이미 그 자리 가까이 있습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1507",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1507",
   "args": 0
  },
  "항로를 잡았습니다. 경유 지점 {0}곳{1}": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1523",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1523",
   "args": 2
  },
  ", 바람과 해류를 타서 가장 짧은 길보다 {0}% 빠릅니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1551",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1551",
   "args": 1
  },
  "도시 안에서는 자동이동을 쓸 수 없습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1622",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1622",
   "args": 0
  },
  "뭍에 있을 때만 자동이동을 쓸 수 있습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1623",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1623",
   "args": 0
  },
  "뭍길을 찾지 못했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1626",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1626",
   "args": 0
  },
  "그 자리로 걸어갑니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1641",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1641",
   "args": 0
  },
  "도착했습니다. 닻을 내렸습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1668",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1668",
   "args": 0
  },
  "도착했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1724",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1724",
   "args": 0
  },
  "길이 막혀 자동항해를 멈췄습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:1771",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1771",
   "args": 0
  },
  "{0} 중 {1}, {2} 칸 · 방향 {3} · ": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2247",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2247",
   "args": 4
  },
  "자동이동": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2247",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2247",
   "args": 0
  },
  "자동항해": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2247",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2247",
   "args": 0
  },
  "멈춤(창이 떠 있다)": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2248",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2248",
   "args": 0
  },
  "마디 {0}/{1} 쪽으로": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2248",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2248",
   "args": 2
  },
  "{0} {1}, {2} 칸 · 방향 {3} · ": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2249",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2249",
   "args": 4
  },
  "배": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2249",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2249",
   "args": 0
  },
  "멈춰 서 있다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2251",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2251",
   "args": 0
  },
  "닻을 내리고 정박 중": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2251",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2251",
   "args": 0
  },
  "바다에 막혔습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2252",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2252",
   "args": 0
  },
  "육지에 막혔습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2252",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2252",
   "args": 0
  },
  "가던 쪽으로(커서 놓침)": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2253",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2253",
   "args": 0
  },
  "커서 쪽으로 이동 중": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2254",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2254",
   "args": 0
  },
  "커서 쪽으로 항해 중": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2254",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2254",
   "args": 0
  },
  " · 그림은 구워 둔 것": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2255",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2255",
   "args": 0
  },
  "게임 함대 {0}, {1} 칸": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2266",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2266",
   "args": 2
  },
  "게임이 아직 항해 중이 아닙니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2270",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2270",
   "args": 0
  },
  "게임(cds_95)이 떠 있지 않습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:2270",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2270",
   "args": 0
  },
  "[{0}] 입항 — {1}, {2} 칸": {
-  "at": "CdsHelper.Game/UI/Rendering/ShipMapHost.cs:3601",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:3601",
   "args": 3
  },
  "[모드] 직업을 누르면 다시 굴린다.": {

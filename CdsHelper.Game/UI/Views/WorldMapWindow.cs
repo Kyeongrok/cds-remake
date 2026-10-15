@@ -34,7 +34,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class WorldMapWindow : Window
 {
-    private readonly ShipMapHost _host = new();
+    private readonly WorldMapHost _host = new();
     private readonly TextBlock _status = new()
     {
         Foreground = Brushes.Gainsboro,
@@ -91,7 +91,7 @@ public sealed class WorldMapWindow : Window
     /// <summary>상단 정보 띠의 첫 표시를 끝냈는지.</summary>
     private bool _barReady;
 
-    /// <summary>지도를 한 번 띄웠는지. <see cref="ShipMapHost.Start"/> 는 한 번만 부른다.</summary>
+    /// <summary>지도를 한 번 띄웠는지. <see cref="WorldMapHost.Start"/> 는 한 번만 부른다.</summary>
     private bool _started;
 
     /// <summary>방금 물어본 도시. 떠났다 다시 와야 다시 묻는다.</summary>
@@ -945,7 +945,7 @@ public sealed class WorldMapWindow : Window
                 if (plans.Any(had => SameRoute(had.Route, found.Route))) continue;
                 goals.Add(goal);
                 plans.Add(new AutoSailDialog.Plan(goal.Label, DaysNote(found.Ticks, walk), found.Route,
-                                                  goal.Afoot ? (cx, cy) : null, ShipMapHost.DescribeRoute(found.Route)));
+                                                  goal.Afoot ? (cx, cy) : null, WorldMapHost.DescribeRoute(found.Route)));
             }
             if (plans.Count == 0) return (false, "바닷길을 찾지 못했습니다", []);
 
@@ -981,7 +981,7 @@ public sealed class WorldMapWindow : Window
     /// <param name="Afoot">배를 대고 걸어가야 하는지(항구 없는 내륙 도시).</param>
     /// <param name="Tag">게임 통계에 적는 이름 — quick · short · land-fast · land-lesswalk · land-near.</param>
     private readonly record struct SailGoal(string Label, double X, double Y, int City, bool Exact, bool Afoot,
-                                            ShipMapHost.RouteKind Kind, string Tag);
+                                            WorldMapHost.RouteKind Kind, string Tag);
 
     /// <summary>네비게이션에서 고른 길 — 도시 안에서 골랐으면 출항한 뒤 이것으로 건다.</summary>
     private SailGoal _sailGoal;
@@ -1003,20 +1003,20 @@ public sealed class WorldMapWindow : Window
         if (harbor)
         {
             var (x, y, exact) = _host.PortCellOf(id) is { } port ? (port.X, port.Y, true) : (cx, cy, false);
-            got.Add(new SailGoal("가장 빠른 길", x, y, id, exact, false, ShipMapHost.RouteKind.Quick, "quick"));
-            got.Add(new SailGoal("가장 짧은 길", x, y, id, exact, false, ShipMapHost.RouteKind.Short, "short"));
+            got.Add(new SailGoal("가장 빠른 길", x, y, id, exact, false, WorldMapHost.RouteKind.Quick, "quick"));
+            got.Add(new SailGoal("가장 짧은 길", x, y, id, exact, false, WorldMapHost.RouteKind.Short, "short"));
             return got;
         }
 
         foreach (var (cell, label) in _host.LandingCellsOf(id))
-            got.Add(new SailGoal(label, cell.X, cell.Y, -1, true, true, ShipMapHost.RouteKind.Auto, label switch
+            got.Add(new SailGoal(label, cell.X, cell.Y, -1, true, true, WorldMapHost.RouteKind.Auto, label switch
             {
                 "가장 빠른 길" => "land-fast",
                 "덜 걷는 길" => "land-lesswalk",
                 _ => "land-near",
             }));
         if (got.Count == 0)
-            got.Add(new SailGoal("가장 가까운 바다", cx, cy, -1, false, true, ShipMapHost.RouteKind.Auto, "land-near"));
+            got.Add(new SailGoal("가장 가까운 바다", cx, cy, -1, false, true, WorldMapHost.RouteKind.Auto, "land-near"));
         return got;
     }
 
@@ -1114,7 +1114,7 @@ public sealed class WorldMapWindow : Window
     /// 지도 위에 사건 애니메이션 한 장면을 돌린다 — 원본의 <c>0x0048E820(장면)</c>.
     /// </summary>
     /// <remarks>
-    /// 게임 한 점은 지도가 구름을 그리는 배율(<see cref="ShipMapHost.GamePixelScale"/>)대로 잡는다 —
+    /// 게임 한 점은 지도가 구름을 그리는 배율(<see cref="WorldMapHost.GamePixelScale"/>)대로 잡는다 —
     /// 그래야 덤불이 배 그림(48점) 곁에 제 크기로 선다. 너무 멀리 보거나 가까이 보면 장면이
     /// 티끌만 하거나 지도를 넘치므로, 지도 폭이 게임 점 320~1280 사이가 되게 묶는다(원본 640).
     /// </remarks>
@@ -1152,7 +1152,7 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>
     /// 도시 화면을 여닫는다. 들어가 있는 동안은 바다 명령이 전부 막힌다 —
-    /// 막는 일 자체는 <see cref="ShipMapHost.SeaBlocked"/> 가 하고, 여기서는 그 김에
+    /// 막는 일 자체는 <see cref="WorldMapHost.SeaBlocked"/> 가 하고, 여기서는 그 김에
     /// 조작 줄 단추도 흐려 둔다. 눌러도 안 먹는 단추가 멀쩡해 보이면 헷갈린다.
     /// </summary>
     private void SetInCity(bool on)
@@ -1548,7 +1548,7 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>
     /// 배 속도 쪽지를 맞춘다 — 모드를 켰고, 지도가 앞이고, <b>바다</b>(뭍·도시 아님)일 때만 「배 속도 N」을 띄운다.
-    /// 값은 지도가 걸음마다 잰 함대 속도(<see cref="Rendering.ShipMapHost.LastSpeed"/>)다.
+    /// 값은 지도가 걸음마다 잰 함대 속도(<see cref="Rendering.WorldMapHost.LastSpeed"/>)다.
     /// </summary>
     private void SyncSpeedNote()
     {
@@ -1691,7 +1691,7 @@ public sealed class WorldMapWindow : Window
     private IEnumerable<string> SpeedLines()
     {
         var (dir, speed, relative) = _host.LastWind;
-        string where = ShipMapHost.Compass[(dir & 0xF) >> 1];
+        string where = WorldMapHost.Compass[(dir & 0xF) >> 1];
 
         var ships = _game.Player.Ships;
         var flag = ships.Count > 0
@@ -1708,7 +1708,7 @@ public sealed class WorldMapWindow : Window
 
         var flow = _host.LastFlow;
         yield return flow.Speed > 0
-            ? $"해류      {ShipMapHost.Compass[(flow.Dir & 0xF) >> 1]} {flow.Speed}"
+            ? $"해류      {WorldMapHost.Compass[(flow.Dir & 0xF) >> 1]} {flow.Speed}"
             : "해류      없음(느린 칸에서는 안 받는다)";
     }
 
@@ -2063,7 +2063,7 @@ public sealed class WorldMapWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 타이틀 무늬 로드 실패: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 타이틀 무늬 로드 실패: {ex.Message}");
             return BarFill;
         }
     }
@@ -4584,7 +4584,7 @@ public sealed class WorldMapWindow : Window
     /// </remarks>
     private void PassTime()
     {
-        // 도시 안에서도 고리는 돈다(<see cref="ShipMapHost.Ticks"/>). 그 바퀴를 여기서 버리지 않으면 도시를
+        // 도시 안에서도 고리는 돈다(<see cref="WorldMapHost.Ticks"/>). 그 바퀴를 여기서 버리지 않으면 도시를
         // 나서는 첫 틱에 밀린 바퀴가 한꺼번에 날로 넘어간다 — 성문을 나서자마자 이틀이 가 규율이 8 깎였다.
         if (_asking || _host.Paused || _host.SeaBlocked) { _steps = _host.Ticks; return; }
 
@@ -7167,7 +7167,7 @@ public sealed class WorldMapWindow : Window
     private string WindLine()
     {
         var (dir, speed, _) = _host.LastWind;
-        string where = ShipMapHost.Compass[(dir & 0xF) >> 1];
+        string where = WorldMapHost.Compass[(dir & 0xF) >> 1];
         return $"풍향: {where}/풍속:{speed}";
     }
 
@@ -7175,7 +7175,7 @@ public sealed class WorldMapWindow : Window
     private string CurrentLine()
     {
         var (dir, speed) = _host.LastFlow;
-        string where = ShipMapHost.Compass[(dir & 0xF) >> 1];
+        string where = WorldMapHost.Compass[(dir & 0xF) >> 1];
         return $"해류: {where}/속도:{speed}";
     }
 
@@ -7232,7 +7232,7 @@ public sealed class WorldMapWindow : Window
     /// 사건이 도는 동안 지도를 파랗게 덮거나 걷는다.
     /// </summary>
     /// <remarks>
-    /// 덮는 일은 <b>그리는 쪽</b>이 한다(<see cref="Rendering.ShipMapHost.Shaded"/>).
+    /// 덮는 일은 <b>그리는 쪽</b>이 한다(<see cref="Rendering.WorldMapHost.Shaded"/>).
     /// 지도 칸은 <c>HwndHost</c> 라 그 위에 WPF 사각형을 얹어 봐야 밑에 깔린다 —
     /// 처음에 그렇게 넣었다가 화면에서 아무 일도 안 일어나 옮겼다.
     /// </remarks>
@@ -7697,11 +7697,11 @@ public sealed class WorldMapWindow : Window
 
         GameUi.Sprites = UiSprites.Open(dir);
         if (GameUi.Sprites == null)
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 화면 조각 없음: {UiSprites.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 화면 조각 없음: {UiSprites.LastError}");
 
         GameUi.Font = GameFont.Open(dir);
         if (GameUi.Font == null)
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 게임 글꼴 없음: {GameFont.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 게임 글꼴 없음: {GameFont.LastError}");
     }
 
     /// <summary>조각·글꼴을 마지막으로 연 게임 폴더(모르면 빈 문자열). 아직 안 열었으면 null.</summary>
@@ -7779,7 +7779,7 @@ public sealed class WorldMapWindow : Window
         if (_game.Bgm.LastError.Length > 0)
         {
             _status.Text = _game.Bgm.LastError;
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] BGM — {_game.Bgm.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] BGM — {_game.Bgm.LastError}");
         }
     }
 }

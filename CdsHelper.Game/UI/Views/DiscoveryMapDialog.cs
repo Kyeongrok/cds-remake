@@ -26,7 +26,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   열 때   함대 자리를 가운데 두고 중간 배율로 연다(ZOOM_START)
 ///   이름표  배율이 어느 구간일 때만 단다 — 너무 키우면 이름이 그림을 덮는다
 /// </code>
-/// 바탕은 항해지도를 짓는 손(<see cref="Rendering.ShipMapHost.Chart"/>)을 <b>온 지도를 밝힌
+/// 바탕은 항해지도를 짓는 손(<see cref="Rendering.WorldMapHost.Chart"/>)을 <b>온 지도를 밝힌
 /// 채</b> 부른 것이라 점 하나가 칸 <c>4x4</c> 다 — 모드처럼 타일을 다시 그리지는 않으므로
 /// 아주 키우면 네모가 커질 뿐이다.
 ///

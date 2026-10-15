@@ -35,7 +35,9 @@ public sealed class GameSettingsData
     public CharacterDraft? CharacterDraft { get; set; }
 
     /// <summary>앱을 켤 때 함대 보기(Direct3D) 창을 바로 띄울지. 기본은 켬.</summary>
-    public bool AutoOpenShipMap { get; set; } = true;
+    /// <remarks>저장 키는 예전 이름(AutoOpenShipMap) 그대로다 — 바꾸면 켜 두었던 값을 잃는다.</remarks>
+    [System.Text.Json.Serialization.JsonPropertyName("AutoOpenShipMap")]
+    public bool AutoOpenWorldMap { get; set; } = true;
 
     /// <summary>함대 창에서 배경음악을 틀지. 기본은 켬.</summary>
     public bool BgmEnabled { get; set; } = true;
@@ -520,7 +522,7 @@ public static class GameSettings
             var moved = new GameSettingsData();
             bool any = false;
 
-            any |= Bool("AutoOpenShipMap", v => moved.AutoOpenShipMap = v);
+            any |= Bool("AutoOpenShipMap", v => moved.AutoOpenWorldMap = v);
             any |= Bool("BgmEnabled", v => moved.BgmEnabled = v);
             any |= Bool("SfxEnabled", v => moved.SfxEnabled = v);
             any |= Bool("ShowCoordOverlay", v => moved.ShowCoordOverlay = v);
@@ -632,10 +634,10 @@ public static class GameSettings
     /// 앱을 켤 때 함대 보기(Direct3D) 창을 바로 띄울지. 기본은 <b>켬</b>이다 — 이 앱이
     /// 하는 일이 곧 그 창이라, 켤 때마다 메뉴에서 한 번 더 누르게 할 까닭이 없다.
     /// </summary>
-    public static bool AutoOpenShipMap
+    public static bool AutoOpenWorldMap
     {
-        get => Get(d => d.AutoOpenShipMap);
-        set => Set(d => d.AutoOpenShipMap = value);
+        get => Get(d => d.AutoOpenWorldMap);
+        set => Set(d => d.AutoOpenWorldMap = value);
     }
 
     /// <summary>함대 창의 배경음악을 틀지. 설정 창에서 켜고 끈다.</summary>

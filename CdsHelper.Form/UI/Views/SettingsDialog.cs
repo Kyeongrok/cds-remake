@@ -8,7 +8,7 @@ namespace CdsHelper.Form.UI.Views;
 
 [TemplatePart(Name = PART_MarkerSizeSlider, Type = typeof(Slider))]
 [TemplatePart(Name = PART_DefaultViewComboBox, Type = typeof(ComboBox))]
-[TemplatePart(Name = PART_AutoOpenShipMapCheckBox, Type = typeof(CheckBox))]
+[TemplatePart(Name = PART_AutoOpenWorldMapCheckBox, Type = typeof(CheckBox))]
 [TemplatePart(Name = PART_OkButton, Type = typeof(Button))]
 [TemplatePart(Name = PART_CancelButton, Type = typeof(Button))]
 [TemplatePart(Name = PART_OpenDbFolderButton, Type = typeof(Button))]
@@ -16,14 +16,14 @@ public class SettingsDialog : Window
 {
     private const string PART_MarkerSizeSlider = "PART_MarkerSizeSlider";
     private const string PART_DefaultViewComboBox = "PART_DefaultViewComboBox";
-    private const string PART_AutoOpenShipMapCheckBox = "PART_AutoOpenShipMapCheckBox";
+    private const string PART_AutoOpenWorldMapCheckBox = "PART_AutoOpenWorldMapCheckBox";
     private const string PART_OkButton = "PART_OkButton";
     private const string PART_CancelButton = "PART_CancelButton";
     private const string PART_OpenDbFolderButton = "PART_OpenDbFolderButton";
 
     private Slider? _markerSizeSlider;
     private ComboBox? _defaultViewComboBox;
-    private CheckBox? _autoOpenShipMapCheckBox;
+    private CheckBox? _autoOpenWorldMapCheckBox;
 
     public static readonly DependencyProperty MarkerSizeProperty =
         DependencyProperty.Register(nameof(MarkerSize), typeof(double), typeof(SettingsDialog),
@@ -62,7 +62,7 @@ public class SettingsDialog : Window
 
         _markerSizeSlider = GetTemplateChild(PART_MarkerSizeSlider) as Slider;
         _defaultViewComboBox = GetTemplateChild(PART_DefaultViewComboBox) as ComboBox;
-        _autoOpenShipMapCheckBox = GetTemplateChild(PART_AutoOpenShipMapCheckBox) as CheckBox;
+        _autoOpenWorldMapCheckBox = GetTemplateChild(PART_AutoOpenWorldMapCheckBox) as CheckBox;
 
         if (GetTemplateChild(PART_OkButton) is Button okButton)
             okButton.Click += OnOkClick;
@@ -84,8 +84,8 @@ public class SettingsDialog : Window
             _defaultViewComboBox.SelectedValue = AppSettings.DefaultView;
         }
 
-        if (_autoOpenShipMapCheckBox != null)
-            _autoOpenShipMapCheckBox.IsChecked = GameSettings.AutoOpenShipMap;
+        if (_autoOpenWorldMapCheckBox != null)
+            _autoOpenWorldMapCheckBox.IsChecked = GameSettings.AutoOpenWorldMap;
     }
 
     private void OnOkClick(object sender, RoutedEventArgs e)
@@ -101,9 +101,9 @@ public class SettingsDialog : Window
             AppSettings.DefaultView = selectedView;
         }
 
-        if (_autoOpenShipMapCheckBox != null)
+        if (_autoOpenWorldMapCheckBox != null)
         {
-            GameSettings.AutoOpenShipMap = _autoOpenShipMapCheckBox.IsChecked == true;
+            GameSettings.AutoOpenWorldMap = _autoOpenWorldMapCheckBox.IsChecked == true;
         }
 
         DialogResult = true;

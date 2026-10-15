@@ -22,7 +22,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 글자·범례·눈금·호버·스크롤은 하나도 없다. 제목은 <c>0x0055F1A8</c> "항해지도" /
 /// <c>0x0055F1F0</c> "주변지도" 다.
 ///
-/// 그림은 지도 쪽(<see cref="ShipMapHost.Chart"/> · <see cref="ShipMapHost.LocalChart"/>)이
+/// 그림은 지도 쪽(<see cref="WorldMapHost.Chart"/> · <see cref="WorldMapHost.LocalChart"/>)이
 /// 짓는다. 밝힘은 주인공이 든다(<see cref="Support.Local.Models.ExploredMap"/>) — 세이브에 함께 적힌다.
 /// </remarks>
 public sealed class SeaChartDialog : GameWindow
@@ -77,7 +77,7 @@ public sealed class SeaChartDialog : GameWindow
     /// <summary>
     /// 항해지도를 편다 — 밝힌 자리만 드러나고 표식은 없다(<c>0x00416A00</c>).
     /// </summary>
-    public static void ShowWorld(Window owner, ShipMapHost host,
+    public static void ShowWorld(Window owner, WorldMapHost host,
                                  Support.Local.Models.ExploredMap seen) =>
         Open(owner, "항해지도", host.Chart(seen, out int w, out int h), w, h);
 
@@ -87,7 +87,7 @@ public sealed class SeaChartDialog : GameWindow
     /// </summary>
     /// <param name="cityShown">지도에 뜨는 도시인지(알고 서 있는지).</param>
     /// <param name="survey">측량술. 한 점이 <c>(측량 + 2) / 16</c> 칸이다.</param>
-    public static void ShowAround(Window owner, ShipMapHost host,
+    public static void ShowAround(Window owner, WorldMapHost host,
                                   Engine.Discovery.DiscoveryLog? log,
                                   Support.Local.Models.Player player,
                                   Func<int, bool>? cityShown, int survey) =>

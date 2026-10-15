@@ -89,7 +89,7 @@ const MOD_NAMES = {
   ShowContractHintOverlay: '현재 계약 힌트', ShowFleetOverlay: '현재 함대 선박 이름', ShowHintOverlay: '현재 힌트 목록', ShowSkillOverlay: '기능·언어',
   ShowCoordOverlay: '좌표 상자(개발)', ShowPeopleOverlay: '만난 사람 상자(개발)',
   AutoFlee: '자동 도망', AutoCrew: '선원 자동 모집', AskLendShips: '배 빌림 묻기', AutoSupply: '자동 보급', AutoSupplyMax: '자동 보급 — 최대로', AutoFundRaise: '자금 증가 기본',
-  ExtraDiscoveries: '추가 발견물', AutoSaveOnPort: '도시 자동저장', AutoOpenShipMap: '켤 때 함대 창 바로 띄우기', SteadyHelm: '자동항해 — 최소 조타',
+  ExtraDiscoveries: '추가 발견물', AutoSaveOnPort: '도시 자동저장', AutoOpenShipMap: '켤 때 함대 창 바로 띄우기', AutoOpenWorldMap: '켤 때 함대 창 바로 띄우기', SteadyHelm: '자동항해 — 최소 조타',
   ShowVitalityInfo: '생명력 정보', RidiFont: '리디바탕 글꼴', RidiLoadList: '게임 로드 창 폰트', HintBrowser: '향상된 힌트 보기', PatronListEnhanced: '향상된 후원자 정보',
   EnhancedItemArt: '향상된 아이템 이미지', PersonInfoEnhanced: '향상된 인물정보 목록', PersonInfoList: '인물정보 고르기 목록', ItemListPictures: '아이템 창 개선',
   KeepCharacterDraft: '캐릭터 작성 기억', RerollOnJob: '직업 누르면 다시 굴림', WheelZoom: '휠 확대', NoWeight: '중량 없음', HandyInventory: '편리한 인벤토리', QuickStorage: '편리한 보관함',
@@ -116,7 +116,7 @@ const MOD_TABS = [
   ['저장', ['AutoSaveOnPort']],
   ['일반', ['CustomBgmEnabled', 'SuezCanal', 'SpecialOrder', 'PlayOpeningMovie', 'SeaRaidScale', 'PersonRollDays', 'PersonMoveOdds', 'PersonRestDays']],
   ['실험', ['LandAutoWalk', 'CaptureMirror', 'ShipCentered', 'Nobility', 'RidiLoadList']],
-  ['그 밖', ['BgmEnabled', 'SfxEnabled', 'AutoOpenShipMap', 'SteadyHelm', 'PersonInfoList', 'DiscoveryMapSpots', 'DiscoveryMapCities', 'DiscoveryMapGrid', 'DiscoveryMapWind', 'DiscoveryMapCurrent']],
+  ['그 밖', ['BgmEnabled', 'SfxEnabled', 'AutoOpenShipMap', 'AutoOpenWorldMap', 'SteadyHelm', 'PersonInfoList', 'DiscoveryMapSpots', 'DiscoveryMapCities', 'DiscoveryMapGrid', 'DiscoveryMapWind', 'DiscoveryMapCurrent']],
   ['화면', ['Resolution', 'ScreenWidth', 'ScreenHeight', 'ScreenScale']],
   ['개발', ['DuelImmortal', 'MutinyRate', 'ShowCoordOverlay', 'ShowPeopleOverlay']],
 ];

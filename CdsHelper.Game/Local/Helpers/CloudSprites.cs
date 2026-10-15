@@ -19,7 +19,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 맞춘다(<c>0x004890CF</c>) — 격자 짝이 어긋나면 무늬가 뭉개진다.
 ///
 /// 큰 것 셋(0~2)과 작은 것 셋(3~5)이 있고, 구름 여섯은 그중 하나를 밑번호로 잡아
-/// 세 장을 돌려 쓴다. 어느 구름이 어느 것을 쓰는지는 <see cref="ShipMapHost"/> 쪽에 있다.
+/// 세 장을 돌려 쓴다. 어느 구름이 어느 것을 쓰는지는 <see cref="WorldMapHost"/> 쪽에 있다.
 /// </remarks>
 public sealed class CloudSprites
 {

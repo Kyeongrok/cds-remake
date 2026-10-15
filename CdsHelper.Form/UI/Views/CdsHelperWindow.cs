@@ -47,7 +47,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_FigureheadEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_PassiveEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_RumorEditMenu, Type = typeof(MenuItem))]
-[TemplatePart(Name = PART_ShipMapMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_GameMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_HelpMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldEditMenu, Type = typeof(MenuItem))]
@@ -89,7 +89,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_FigureheadEditMenu = "PART_FigureheadEditMenu";
     private const string PART_PassiveEditMenu = "PART_PassiveEditMenu";
     private const string PART_RumorEditMenu = "PART_RumorEditMenu";
-    private const string PART_ShipMapMenu = "PART_ShipMapMenu";
+    private const string PART_GameMapMenu = "PART_GameMapMenu";
     private const string PART_HelpMenu = "PART_HelpMenu";
     private const string PART_WorldMapMenu = "PART_WorldMapMenu";
     private const string PART_WorldEditMenu = "PART_WorldEditMenu";
@@ -289,9 +289,9 @@ public class CdsHelperWindow : CdsWindow
             shipRegistryMenu.Click += OnShipRegistryMenuClick;
         }
 
-        if (GetTemplateChild(PART_ShipMapMenu) is MenuItem shipMapMenu)
+        if (GetTemplateChild(PART_GameMapMenu) is MenuItem gameMapMenu)
         {
-            shipMapMenu.Click += OnShipMapMenuClick;
+            gameMapMenu.Click += OnWorldMapMenuClick;
         }
 
         if (GetTemplateChild(PART_HelpMenu) is MenuItem helpMenu)
@@ -328,7 +328,7 @@ public class CdsHelperWindow : CdsWindow
             _accordionMenu.SelectItemByTag(AppSettings.DefaultView);
         }
 
-        OpenShipMapIfWanted();
+        OpenWorldMapIfWanted();
 
         _menuPopup = GetTemplateChild(PART_MenuPopup) as Popup;
         _hamburgerButton = GetTemplateChild(PART_HamburgerButton) as Button;
@@ -579,7 +579,7 @@ public class CdsHelperWindow : CdsWindow
     }
 
     // 게임 화면처럼 지도 위에 함대만 띄우는 창. 세계지도 탭과 달리 D3D 로 그린다.
-    private void OnShipMapMenuClick(object sender, RoutedEventArgs e) => OpenShipMap();
+    private void OnWorldMapMenuClick(object sender, RoutedEventArgs e) => OpenWorldMap();
 
     /// <summary>
     /// 사운드테스트 — 게임 타이틀에 있던 줄을 이리로 옮겼다(<c>0x0045FBCD</c>).
@@ -593,7 +593,7 @@ public class CdsHelperWindow : CdsWindow
         var map = Application.Current.Windows.OfType<CdsHelper.Game.UI.Views.WorldMapWindow>().FirstOrDefault();
         if (map == null)
         {
-            OpenShipMap();
+            OpenWorldMap();
             map = Application.Current.Windows.OfType<CdsHelper.Game.UI.Views.WorldMapWindow>().FirstOrDefault();
         }
         if (map == null) return;
@@ -602,7 +602,7 @@ public class CdsHelperWindow : CdsWindow
         map.SoundTest();
     }
 
-    private void OpenShipMap()
+    private void OpenWorldMap()
     {
         // 미궁 64 퍼즐은 CdsHelper.Maze 에 따로 있다. 그쪽이 CdsHelper.Game 을 물고
         // 있어서 게임 쪽에서 곧장 못 부른다 — 띄우는 여기서 걸어 준다.
@@ -613,11 +613,11 @@ public class CdsHelperWindow : CdsWindow
     }
 
     /// <summary>설정에서 켜 뒀으면 앱을 띄울 때 함대 보기도 같이 연다.</summary>
-    private void OpenShipMapIfWanted()
+    private void OpenWorldMapIfWanted()
     {
-        if (!GameSettings.AutoOpenShipMap) return;
+        if (!GameSettings.AutoOpenWorldMap) return;
         // 본 창이 자리를 잡은 뒤에 연다 — Owner 가 아직 뜨지 않은 채로 열면 가운데가 안 맞는다.
-        Dispatcher.BeginInvoke(new Action(OpenShipMap), System.Windows.Threading.DispatcherPriority.Loaded);
+        Dispatcher.BeginInvoke(new Action(OpenWorldMap), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void OnHelpMenuClick(object sender, RoutedEventArgs e)

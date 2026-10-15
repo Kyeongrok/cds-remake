@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 대신 airspace 규칙대로 이 자식 창은 WPF 콘텐츠보다 늘 위에 그려진다. 이 창 안에서
 /// D3D 화면 위에 WPF 로 무언가를 얹으려 해도 가려진다.
 /// </remarks>
-public sealed class ShipMapHost : HwndHost
+public sealed class WorldMapHost : HwndHost
 {
     // 창 클래스를 새로 등록하지 않고 미리 있는 STATIC 을 쓴다. 스왑체인을 걸 HWND 하나가
     // 필요할 뿐이고, 정적 컨트롤은 기본적으로 WM_NCHITTEST 에 HTTRANSPARENT 를 돌려주므로
@@ -860,7 +860,7 @@ public sealed class ShipMapHost : HwndHost
         Engine.Sea.SuezCanal.Apply(_world, _terrain);
         _routes.Open(_world);
         if (_terrain == null)
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 지형표 없음: {TerrainTable.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 지형표 없음: {TerrainTable.LastError}");
 
         var ocean = OceanTiles.LoadFromDirectory(gameDir);
         if (ocean == null) { Status = $"OCEAN.CDS 를 읽지 못했습니다 ({OceanTiles.LastError})"; return false; }
@@ -871,7 +871,7 @@ public sealed class ShipMapHost : HwndHost
         // 닻. 배 그림과 같은 48x48 이라 배가 놓일 자리에 그대로 겹치면 된다.
         var anchorSprite = AnchorSprite.LoadFromDirectory(gameDir);
         if (anchorSprite == null)
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 닻 없음: {AnchorSprite.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 닻 없음: {AnchorSprite.LastError}");
         else
         {
             _anchorPixels = [.. anchorSprite.Pixels];    // 덧그림을 나눠 쓰므로 들고 있는다
@@ -881,14 +881,14 @@ public sealed class ShipMapHost : HwndHost
         // 바람·해류. 못 열어도 지도는 그대로 돈다 — 물결이 안 일고 화살표가 안 나올 뿐이다.
         _wind = WindTable.Open(gameDir);
         if (_wind == null)
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 바람표 없음: {WindTable.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 바람표 없음: {WindTable.LastError}");
         else
             _renderer.SetRippleTiles(_wind.BuildRippleTiles(_terrain));
 
         // 구름. 없으면 안 뜰 뿐 나머지는 그대로 돈다.
         var clouds = CloudSprites.LoadFromDirectory(gameDir);
         if (clouds == null)
-            System.Diagnostics.Debug.WriteLine($"[ShipMap] 구름 없음: {CloudSprites.LastError}");
+            System.Diagnostics.Debug.WriteLine($"[WorldMap] 구름 없음: {CloudSprites.LastError}");
         else
             _renderer.SetCloudSprites(clouds.Bgra);
 

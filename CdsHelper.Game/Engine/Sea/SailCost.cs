@@ -8,7 +8,7 @@ namespace CdsHelper.Game.Engine.Sea;
 /// </summary>
 /// <remarks>
 /// 원본에는 없는 것이다. 바람과 해류 때문에 돌아가는 편이 빠른 구간이 있어, 자동항해가 거리 대신
-/// <b>시간</b>으로 길을 고르게 하려고 둔다. 셈은 배가 실제로 움직이는 것(<c>ShipMapHost.Push</c>)과 같은
+/// <b>시간</b>으로 길을 고르게 하려고 둔다. 셈은 배가 실제로 움직이는 것(<c>WorldMapHost.Push</c>)과 같은
 /// 식을 쓴다 — 함대 속도(<see cref="Sailing.SpeedOf"/>) → 칸(<see cref="Sailing.CellsPerTick"/>) + 해류
 /// (<see cref="Sailing.Drift"/>), 가로는 경도 보정(<see cref="Sailing.LonScale"/>).
 ///
@@ -55,7 +55,7 @@ public sealed class SailCost
     /// </summary>
     public long Signature { get; }
 
-    /// <param name="fleetSpeed">풍향 · 풍속 · 뱃머리로 함대 속도를 내는 손(<c>ShipMapHost.FleetSpeed</c> 의 바다 쪽).</param>
+    /// <param name="fleetSpeed">풍향 · 풍속 · 뱃머리로 함대 속도를 내는 손(<c>WorldMapHost.FleetSpeed</c> 의 바다 쪽).</param>
     public SailCost(WindTable wind, int month, Func<int, int, int, int> fleetSpeed)
     {
         double fastest = Slowest;

@@ -651,7 +651,7 @@ public static class SeaPathfinder
     }
 
     /// <summary>
-    /// 그 칸의 원본 낱말(두 바이트) — <see cref="Rendering.ShipMapHost"/> 의 <c>RawAt</c>·
+    /// 그 칸의 원본 낱말(두 바이트) — <see cref="Rendering.WorldMapHost"/> 의 <c>RawAt</c>·
     /// <c>CellAt</c> 과 같은 자리 셈이다(짝수 행이 왼쪽 절반, 홀수 행이 오른쪽 절반).
     /// </summary>
     private static int CellValue(byte[] world, int x, int y)
