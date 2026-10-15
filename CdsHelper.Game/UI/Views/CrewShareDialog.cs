@@ -137,8 +137,21 @@ internal sealed class CrewShareDialog : InfoDialog
         return box;
     }
 
+    /// <summary>
+    /// 창을 연 뒤 배 수가 바뀌었는지 — 그러면 줄이 배와 어긋나 <c>Ships[i]</c> 가 범위를 넘는다(오류 통계
+    /// 「ArgumentOutOfRangeException &lt;CrewShare…」). 모달이 아니라 창이 떠 있는 사이 함대가 바뀔 수 있다.
+    /// 어긋났으면 아무것도 적지 않고 닫는다.
+    /// </summary>
+    private bool Stale()
+    {
+        if (_player.Ships.Count == _shares.Length) return false;
+        GameWindow.TryClose(this);
+        return true;
+    }
+
     private void Bump(int at, int by)
     {
+        if (Stale()) return;
         var ship = _player.Ships[at];
         if (by > 0)
         {
@@ -157,6 +170,7 @@ internal sealed class CrewShareDialog : InfoDialog
 
     private void Optimize()
     {
+        if (Stale()) return;
         var fresh = Player.OptimizeCrew(_player.Ships, _shares.Sum() + _free);
         for (int i = 0; i < _shares.Length; i++) _shares[i] = fresh[i];
         _free = 0;
@@ -165,6 +179,7 @@ internal sealed class CrewShareDialog : InfoDialog
 
     private void Decide()
     {
+        if (Stale()) return;
         if (_free != 0)
         {
             NoticeDialog.Show(this, "선원의 분배가 끝나지 않았습니다");
@@ -176,6 +191,7 @@ internal sealed class CrewShareDialog : InfoDialog
 
     private void Sync()
     {
+        if (Stale()) return;
         for (int i = 0; i < _shares.Length; i++)
         {
             _counts[i].Text = $" {_shares[i],3}";
