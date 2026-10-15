@@ -8,15 +8,15 @@ using CdsHelper.Game.Local.Helpers;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 지금까지 얻은 힌트를 늘어놓는 「취득 힌트 일람」. 그냥 보여 주기도 하고
-/// (커맨드 창의 "힌트 정보"), 하나를 고르게 하기도 한다(왕궁의 "설득").
+/// 줄을 늘어놓고 하나를 고르게 하는 <b>목록 창</b> — 「취득 힌트 일람」에서 시작했지만 게임 로드 · 조선소 ·
+/// 자동항해 · 아이템 고르기 따위도 다 이 창을 쓴다. 그래서 힌트 이름(HintListDialog)을 떼었다.
 /// </summary>
 /// <remarks>
 /// 원본도 창 하나를 두 군데에서 쓴다. 고르는 쪽(<see cref="Pick"/>)은 EXE 의
 /// <c>0x004769A0</c> 이 하는 일 그대로다 — 목록을 띄우고 고른 힌트 번호를 내며,
 /// 중단하면 -1 이다. 힌트는 책을 읽으면 는다(볼트 <c>20.분석-도서관 책과 책등 색</c>).
 /// </remarks>
-public sealed class HintListDialog : GameWindow
+public sealed class ListPickDialog : GameWindow
 {
     /// <summary>목록 칸의 폭과 가장 높은 자리. 원본 갈무리에서 잰 값이다.</summary>
     /// <remarks>
@@ -92,7 +92,7 @@ public sealed class HintListDialog : GameWindow
 
     private readonly GameButton _decide;
 
-    private HintListDialog(IReadOnlyList<string> hints, bool choosing, string caption,
+    private ListPickDialog(IReadOnlyList<string> hints, bool choosing, string caption,
                            string header = "", IReadOnlyList<uint[]?>? faces = null,
                            IReadOnlyList<string>? subtitles = null, IReadOnlyList<bool>? marks = null,
                            bool multi = false, IReadOnlyList<string>? rightTexts = null,
@@ -643,7 +643,7 @@ public sealed class HintListDialog : GameWindow
             NoticeDialog.Show(owner, whenEmpty);
             return;
         }
-        new HintListDialog(hints, choosing: false, caption) { Owner = owner }.ShowDialog();
+        new ListPickDialog(hints, choosing: false, caption) { Owner = owner }.ShowDialog();
     }
 
     /// <summary>
@@ -685,7 +685,7 @@ public sealed class HintListDialog : GameWindow
             return -1;
         }
 
-        var dlg = new HintListDialog(items, choosing: true, caption, header, faces, subtitles, marks,
+        var dlg = new ListPickDialog(items, choosing: true, caption, header, faces, subtitles, marks,
                                      rightTexts: rightTexts, usable: usable, preview: preview,
                                      listWidth: listWidth, faceHeight: faceHeight, maxHeight: maxHeight,
                                      describe: describe) { Owner = owner };
@@ -705,7 +705,7 @@ public sealed class HintListDialog : GameWindow
     {
         if (items.Count == 0) return [];
 
-        var dlg = new HintListDialog(items, choosing: true, caption, multi: true) { Owner = owner };
+        var dlg = new ListPickDialog(items, choosing: true, caption, multi: true) { Owner = owner };
         if (preset != null)
             foreach (int i in preset)
                 if (i >= 0 && i < items.Count) dlg.Select(i);

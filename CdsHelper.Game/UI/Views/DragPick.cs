@@ -9,7 +9,7 @@ namespace CdsHelper.Game.UI.Views;
 /// <remarks>
 /// 누른 줄이 꺼져 있었으면 끄는 동안 지나간 줄을 <b>다 켜고</b>, 켜져 있었으면 <b>다 끈다</b> — 누른 줄에서 지금 줄까지의
 /// 사이만 그렇게 하고, 사이 밖으로 되돌아 나간 줄은 누르기 전 모양으로 돌린다. 끌지 않고 떼면 한 줄만 켜고 끄는
-/// 여느 누르기와 같다. 시장 구입·매각(<see cref="GameList"/>)과 발표·버리기 고르기(<see cref="HintListDialog"/>)가 쓴다.
+/// 여느 누르기와 같다. 시장 구입·매각(<see cref="GameList"/>)과 발표·버리기 고르기(<see cref="ListPickDialog"/>)가 쓴다.
 /// </remarks>
 internal sealed class DragPick
 {

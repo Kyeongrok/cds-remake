@@ -10,7 +10,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 세이브 고르기 표(모드 폰트 「게임 로드 창」) — 리디바탕 글씨로 칸을 나눠 그린다.
 /// </summary>
 /// <remarks>
-/// 원본 꼴(<see cref="HintListDialog"/>)은 게임 비트맵 글꼴이 고정폭이라 빈칸을 채워 칸을 맞춘다. 리디바탕은 글자 폭이 제각각이라
+/// 원본 꼴(<see cref="ListPickDialog"/>)은 게임 비트맵 글꼴이 고정폭이라 빈칸을 채워 칸을 맞춘다. 리디바탕은 글자 폭이 제각각이라
 /// 그렇게는 칸이 어긋나서, 칸마다 따로 세운 표로 그린다. 틀 · 바탕 · 고른 줄 색은 공용 목록 창과 같다.
 /// </remarks>
 public sealed class SaveListDialog : GameWindow

@@ -432,7 +432,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         Persuasion.Verdict verdict;
         while (true)
         {
-            int row = HintListDialog.Pick(_view, names, "제안 선택", marks: liked, usable: usable);
+            int row = ListPickDialog.Pick(_view, names, "제안 선택", marks: liked, usable: usable);
             if (row < 0)
             {
                 // 0x004AF415 — 반말 쪽만 제독 이름을 부른다. 다시 띄운 목록에서 물러나도 이 말이다.
@@ -2690,10 +2690,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             // 모드 「향상된 후원자 정보」를 끄면 원본처럼 이름만 늘어놓는다.
             int row = Local.Settings.GameSettings.PatronListEnhanced
-                ? HintListDialog.Pick(owner, names, "스폰서 일람",
+                ? ListPickDialog.Pick(owner, names, "스폰서 일람",
                                       "아는 스폰서가 없습니다", faces: faces,
                                       subtitles: likes, rightTexts: stats, listWidth: StatsListWidth)
-                : HintListDialog.Pick(owner, names, "스폰서 일람", "아는 스폰서가 없습니다");
+                : ListPickDialog.Pick(owner, names, "스폰서 일람", "아는 스폰서가 없습니다");
             if (row < 0 || row >= mine.Count) return;
 
             var (patron, sponsor) = mine[row];

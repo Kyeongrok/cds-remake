@@ -3270,7 +3270,7 @@ public sealed class ShipMapWindow : Window
             return pick >= 0 && pick < slots.Count ? slots[pick].File : null;
         }
 
-        int at = HintListDialog.Pick(owner, rows, caption, whenEmpty,
+        int at = ListPickDialog.Pick(owner, rows, caption, whenEmpty,
                                      header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
                                      // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
                                      listWidth: 580,
@@ -3746,7 +3746,7 @@ public sealed class ShipMapWindow : Window
         int last = -1;
         while (true)
         {
-            int at = HintListDialog.Pick(this, lines, "아이템 넣기 - 아이템 고르기", "아이템이 없습니다", preselect: last);
+            int at = ListPickDialog.Pick(this, lines, "아이템 넣기 - 아이템 고르기", "아이템이 없습니다", preselect: last);
             if (at < 0) return;
             last = at;
             string failed = GameSave.AddItem(file, items[at].Id);
@@ -4204,7 +4204,7 @@ public sealed class ShipMapWindow : Window
         while (true)
         {
             // 정보 제공 등급 「상세」면 이름 아래에 그 힌트가 가리키는 발견물을 단다.
-            int at = HintListDialog.Pick(owner, [.. ids.Select(id => _game.HintName(id))],
+            int at = ListPickDialog.Pick(owner, [.. ids.Select(id => _game.HintName(id))],
                                          subtitles: [.. ids.Select(_game.HintDiscoveryNames)],
                                          rightTexts: [.. ids.Select(id => _game.Hints?.Find(id) is { } hint
                                              ? _game.Hints.CategoryOf(hint.Category) : "")]);

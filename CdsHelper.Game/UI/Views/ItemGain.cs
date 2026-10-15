@@ -77,7 +77,7 @@ public static class ItemGain
             if (Gone(owner))
                 return cancellable ? null : [.. all.Take(game.Player.ItemLimit)];
 
-            var got = HintListDialog.PickMany(owner, names, "삭제 아이템의 선택", [.. picked]);
+            var got = ListPickDialog.PickMany(owner, names, "삭제 아이템의 선택", [.. picked]);
             if (got.Count == 0)
             {
                 if (cancellable) return null;

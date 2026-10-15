@@ -223,7 +223,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         Say("가진 배와 똑같은 배를 만들어 주겠네. 어느 배와 똑같이 만들 건가?");
         while (true)
         {
-            int at = HintListDialog.Pick(owner,
+            int at = ListPickDialog.Pick(owner,
                 [.. ships.Select(s => $"{GameUi.Pad(s.Name, 14)}{s.Hull.Name}")],
                 "특별주문", "지을 수 있는 배가 없습니다",
                 // 목록 값은 이 마을에서 안 파는 대포를 뺀 값이다 — 바꿔 달면 고른 뒤 다시 매긴다.
@@ -301,7 +301,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         var sold = CannonsSold();
         while (true)
         {
-            int pick = HintListDialog.Pick(Owner,
+            int pick = ListPickDialog.Pick(Owner,
                 [.. sold.Select(i => Cannon.All[i]).Select(c => $"{GameUi.Pad(c.Name, 12)}{c.Price,6}닢{c.Weight,5}")],
                 "대포 선택", "대포가 없네.", GunHead);
             if (pick < 0 || pick >= sold.Count) return null;
@@ -657,7 +657,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         if (offer.Count == 0) return;
 
         Say("어느 상을 달겠나?");                                   // 0x00531C10
-        int at = HintListDialog.Pick(owner,
+        int at = ListPickDialog.Pick(owner,
             [.. offer.Select((i, k) => $"{NameOf(i),-12}{CostOf(i, k < stock.Count),7}닢")],
             "선수상 선택", "달 수 있는 선수상이 없습니다", CarveHead, preview: k => FigureheadPicture(offer[k]));
         if (at < 0) return;
@@ -1035,7 +1035,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         Say("어느 대포를 실을 건가?");
         while (true)
         {
-            int pick = HintListDialog.Pick(owner,
+            int pick = ListPickDialog.Pick(owner,
                 [.. sold.Select(i => Cannon.All[i]).Select(c => $"{GameUi.Pad(c.Name, 12)}{c.Price,6}닢{c.Weight,5}")],
                 "대포 선택", "대포가 없네.", GunHead);
             if (pick < 0 || pick >= sold.Count) return;

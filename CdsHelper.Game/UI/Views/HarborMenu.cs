@@ -746,7 +746,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
         IReadOnlyList<int> picked = [];
         while (true)
         {
-            picked = HintListDialog.PickMany(owner, [.. rows.Select(r => r.Name)], "발표할 발견물 선택", picked);
+            picked = ListPickDialog.PickMany(owner, [.. rows.Select(r => r.Name)], "발표할 발견물 선택", picked);
             if (picked.Count == 0) return;
 
             int gives = picked.Count(i => rows[i].GivesItem);

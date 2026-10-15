@@ -12,7 +12,7 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 /// <remarks>
 /// 글씨는 <b>리디바탕</b>이다 — 기능 · 언어가 여러 줄로 길어 게임 비트맵 글꼴보다 읽기 쉽다. 틀 · 바탕 · 고른 줄 색은
-/// 공용 목록 창(<see cref="HintListDialog"/>)과 같다. 줄 글에서 앞에 <c>~</c> 가 붙은 낱말은 흐린 색(<c>#80786C</c>)이다 —
+/// 공용 목록 창(<see cref="ListPickDialog"/>)과 같다. 줄 글에서 앞에 <c>~</c> 가 붙은 낱말은 흐린 색(<c>#80786C</c>)이다 —
 /// 그 자리에서 안 쓰이는 기능 · 언어다. 설명 칸은 줄을 고르기 전에는 접혀 있고, 펴질 때 창이 가운데를 지킨다.
 /// </remarks>
 public sealed class PersonListDialog : GameWindow
