@@ -50002,6 +50002,140 @@
             }
           ]
         ]
+      },
+      {
+        "Index": 275,
+        "Step": 275,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "2E 1A",
+              "Call": "RandomChance",
+              "Args": {
+                "Denominator": 3,
+                "Success": 1
+              },
+              "Note": "무작위 확률 조건: 1 / 3"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독！ 저 바위 위를 보십시오． 원숭이 떼가 둘러앉아 있습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "감찰관",
+                "Text": "모두 배를 내밀고 해를 향해 앉아 있군． 기도라도 올리는 것인가？"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "아침 햇볕에 몸을 데우는 모양입니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "〈여우원숭이〉 냐아－옹！"
+              }
+            },
+            {
+              "OpCode": "00 01",
+              "Call": "ShowDStill",
+              "Args": {
+                "Id": 85
+              },
+              "Note": "DSTILL 이미지 표시: 슬롯 85"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "감찰관",
+                "Text": "얼굴은 여우 같은데 우는 소리는 고양이로군．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "꼬리를 보십시오． 흑백 줄무늬가 깃발처럼 섰습니다．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "앞장선 것은 암컷입니다． 이 무리는 암컷이 이끄는 모양입니다．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 75
+              },
+              "Note": "음원 재생: 슬롯 75"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "여우원숭이를 발견했다！"
+              }
+            },
+            {
+              "OpCode": "01 0B",
+              "Call": "Discover",
+              "Args": {
+                "Discovery": 275
+              },
+              "Note": "발견물 등록/발견 처리: ID 275"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "감찰관",
+                "Text": "이 섬에는 다른 땅에서 볼 수 없는 짐승이 사는구나．"
+              }
+            },
+            {
+              "OpCode": "4C",
+              "Call": "EndDone",
+              "Note": "이벤트 결과 코드 0"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
       }
     ]
   },

@@ -1,5 +1,5 @@
 {
-  "Stamp": "1줄",
+  "Stamp": "2줄",
   "Data": {
     "Discoveries": [
       {
@@ -18,6 +18,32 @@
         "X2": 1194,
         "Y2": 240,
         "Picture": 84,
+        "Movie": -1,
+        "Erase": [
+          65535,
+          65535,
+          65535,
+          65535
+        ],
+        "SoldIn": -1,
+        "Clip": -1
+      },
+      {
+        "Id": 275,
+        "Name": "여우원숭이",
+        "Category": 6,
+        "Hint": 801,
+        "Reward": 30000,
+        "ItemId": -1,
+        "Indirect": false,
+        "OpenAtStart": true,
+        "OnLand": true,
+        "Once": false,
+        "X1": 1552,
+        "Y1": 780,
+        "X2": 1574,
+        "Y2": 800,
+        "Picture": 85,
         "Movie": -1,
         "Erase": [
           65535,
