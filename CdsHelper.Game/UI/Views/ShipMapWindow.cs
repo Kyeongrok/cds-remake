@@ -3755,6 +3755,8 @@ public sealed class ShipMapWindow : Window
         // 「발견물」 탭 — 체크로 찾은 것을 바꿨으면 지도의 발견물·유적 그림을 다시 맞춘다.
         Discoveries = _game.Discoveries?.Table,
         DiscoveriesChanged = () => HideCities(),
+        // 인물 · 비보는 대본이 발견을 안 적는다 — 발견물 지도처럼 사건을 마쳤으면 찾은 것으로 본다.
+        EventDone = id => _game.Player.IsSettled(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id),
     });
 
     /// <summary>

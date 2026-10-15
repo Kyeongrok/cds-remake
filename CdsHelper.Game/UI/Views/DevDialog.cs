@@ -69,6 +69,12 @@ public sealed class DevDialog : GameWindow
 
         /// <summary>발견물 체크를 바꾸고 창을 닫은 뒤 — 지도의 발견물 그림을 다시 맞춘다.</summary>
         public Action? DiscoveriesChanged { get; init; }
+
+        /// <summary>
+        /// 대본이 발견을 안 적지만 사건을 마친 발견물인지 — 인물(다 빈치 · 코페르니쿠스 따위) · 비보가 그렇다.
+        /// 발견물 지도(<see cref="DiscoveryMapDialog"/>)가 찾은 것으로 찍는 것과 같은 셈이다. 없으면 아무것도 그렇게 안 친다.
+        /// </summary>
+        public Func<int, bool>? EventDone { get; init; }
     }
 
     /// <summary>발견물 탭에서 체크를 하나라도 바꿨는지.</summary>
@@ -317,7 +323,7 @@ public sealed class DevDialog : GameWindow
         var pages = new List<(string, FrameworkElement)> { ("일반", rows), ("테스트", tests) };
         if (options.Discoveries is { } table)
         {
-            pages.Add(("발견물", FindsPage(table)));
+            pages.Add(("발견물", FindsPage(table, options.EventDone)));
             Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
         }
         pages.Add(("색", colors));
@@ -516,8 +522,13 @@ public sealed class DevDialog : GameWindow
     /// 적는다(<see cref="Player.Announce"/>) — 그래야 후원자 · 왕궁의 「제안 선택」에 안 뜬다. 보고로 드는 명성 · 보수 ·
     /// 아이템은 안 준다. 체크는 보고까지 된 것에만 서 있고, 찾기만 하고 보고 전인 것은 「(보고 전)」으로 적혀 비어 있다.
     /// 체크를 풀면 보고한 기록까지 지운다(<see cref="Player.Undiscover"/>).
+    ///
+    /// 인물(다 빈치 · 코페르니쿠스 · 아기랄 · 마리나 · 틀락스칼라족 · 토파크) · 비보는 원본 대본에 발견을 적는 명령
+    /// (<c>01 0B</c>)이 없다 — 사건을 마쳐도 찾은 것으로 영영 안 적히고(<c>38 0D</c> 은 인물 칸 <c>+0xF8</c> 만 지운다,
+    /// <c>0x004321B0</c>), 사건 매듭(<see cref="Player.Settle"/>)만 남는다. 그래서 찾은 것 · 보고한 것만 보면 늘 비어
+    /// 있었다. 발견물 지도와 같이 <paramref name="eventDone"/> 이 참인 것도 체크해 「(사건)」으로 적는다.
     /// </remarks>
-    private FrameworkElement FindsPage(DiscoveryTable table)
+    private FrameworkElement FindsPage(DiscoveryTable table, Func<int, bool>? eventDone)
     {
         var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 560 };
         var count = new TextBlock { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
@@ -528,17 +539,20 @@ public sealed class DevDialog : GameWindow
         var boxes = new List<(CheckBox Box, DiscoveryTable.Record Row)>();
         bool bulk = false;
 
-        void Count() => count.Text = $"  {_player.Announced.Count} / {boxes.Count}";
+        // 체크된 줄을 센다 — 보고한 것에 사건만 마친 인물 · 비보까지 든다.
+        void Count() => count.Text = $"  {boxes.Count(b => b.Box.IsChecked == true)} / {boxes.Count}";
 
         foreach (var row in table.Discoveries)
         {
             if (row.Name.Length == 0) continue;
             int id = row.Id;
+            bool byEvent = !_player.HasFound(id) && eventDone?.Invoke(id) == true;
             var box = new CheckBox
             {
                 Content = $"{id,3}  {row.Name}" + (row.CategoryName.Length > 0 ? $"  [{row.CategoryName}]" : "")
-                          + (_player.HasFound(id) && !_player.HasAnnounced(id) ? "  (보고 전)" : ""),
-                IsChecked = _player.HasAnnounced(id),
+                          + (_player.HasFound(id) && !_player.HasAnnounced(id) ? "  (보고 전)" : "")
+                          + (byEvent ? "  (사건)" : ""),
+                IsChecked = _player.HasAnnounced(id) || byEvent,
                 Foreground = GameUi.Text,
                 FontSize = 14,
                 Margin = new Thickness(0, 2, 0, 2),
@@ -554,6 +568,8 @@ public sealed class DevDialog : GameWindow
             box.Unchecked += (_, _) =>
             {
                 if (_player.Undiscover(id)) _findsChanged = true;
+                // 사건만 마친 것(인물 · 비보)은 찾은 기록이 없어 매듭만 푼다 — 그 자리 사건이 다시 뜬다.
+                else if (_player.Unsettle(id)) _findsChanged = true;
                 if (!bulk) Count();
             };
             boxes.Add((box, row));

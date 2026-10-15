@@ -1815,6 +1815,11 @@ public sealed class Player
     }
 
     /// <summary>
+    /// 매듭을 푼다 — <b>개발 창</b>의 발견물 탭이 사건만 마친 것(인물 · 비보)의 체크를 풀 때 쓴다. 게임에는 이런 길이 없다.
+    /// </summary>
+    public bool Unsettle(int discovery) => _settled.Remove(discovery);
+
+    /// <summary>
     /// 세이브를 되돌릴 때 매듭지은 것을 채운다. 이 칸이 없던 옛 세이브는 <b>찾은 것</b>을 다 넣는다 —
     /// 그때까지는 찾은 것이면 다시 안 떴으므로 그대로 이어진다.
     /// </summary>
