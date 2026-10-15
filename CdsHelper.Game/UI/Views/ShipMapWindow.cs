@@ -693,6 +693,8 @@ public sealed class ShipMapWindow : Window
             FocusWatch.After("지도창 초점 잃음");
         };
         StateChanged += (_, _) => SyncOverlay();
+        // 함대 · 힌트 같은 쪽지도 접힐 때 걷는다 — 작업표시줄이나 _ 단추로 접으면 Deactivated 가 안 와 바탕화면에 남았다.
+        OverlayNotes.Follow(this);
 
         // 육상전·일기토가 열려도 비·눈이 그친다(0x0044AA31 · 0x004AA87F) — 발견 대본의 육상전이나
         // 바다 조우의 일기토는 이 창 밖에서 열리므로 판 쪽이 알린다.

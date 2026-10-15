@@ -27,8 +27,33 @@ internal static class OverlayNotes
         app.Deactivated += (_, _) => { _front = false; Changed?.Invoke(); };
     }
 
-    /// <summary>지금 걷어 두는 중인지 — 동영상이 돌거나 다른 프로그램이 앞에 있을 때다.</summary>
-    public static bool Held => _held > 0 || !_front;
+    /// <summary>게임 창이 작업표시줄로 접혀 있는지.</summary>
+    private static bool _minimized;
+
+    /// <summary>지금 걷어 두는 중인지 — 동영상이 돌거나 다른 프로그램이 앞에 있거나 게임 창이 접혀 있을 때다.</summary>
+    public static bool Held => _held > 0 || !_front || _minimized;
+
+    /// <summary>
+    /// 게임 창이 접히고 펴지는 것을 따른다 — 접히면 쪽지를 걷고, 펴지면 보여야 할 것만 도로 낸다.
+    /// </summary>
+    /// <remarks>
+    /// 작업표시줄 아이콘이나 제목 줄 _ 단추로 접으면 접힌 창이 그대로 활성 창으로 남아 앱의
+    /// <c>Deactivated</c> 가 안 온다 — 쪽지가 바탕화면에 남아 있다가 어딘가를 눌러야 그제야 사라졌다.
+    /// 쪽지는 도시 그림·함대 창에 딸린 창이라 게임 창이 접혀도 같이 접히지 않는다. 그래서 창 상태를 따로 본다.
+    /// </remarks>
+    public static void Follow(System.Windows.Window main)
+    {
+        void Sync()
+        {
+            bool minimized = main.WindowState == System.Windows.WindowState.Minimized;
+            if (minimized == _minimized) return;
+            _minimized = minimized;
+            Changed?.Invoke();
+        }
+        main.StateChanged += (_, _) => Sync();
+        main.Closed += (_, _) => { _minimized = false; };
+        Sync();
+    }
 
     /// <summary>
     /// 쪽지 자리를 화면 안으로 들인다 — 옮겨 둔 자리를 다음에 다시 쓰는데, 그새 창 크기나 모니터가 바뀌어
