@@ -2284,7 +2284,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 ["현재 함대", .. _player.Ships.Select(s => $"{s.Name}({s.Hull.Name})")])
             : "");
         _hintNote?.Set(GameSettings.ShowHintOverlay
-            ? string.Join(Environment.NewLine, ["현재 힌트", .. GameInfo.HintNames(_game).Take(10)])
+            ? string.Join(Environment.NewLine, ["현재 힌트", .. GameInfo.HintNames(_game)])
             : "");
         // 발견물 수 — 찾은 것 / 발견물 표 전체(모조품까지 든 274).
         int total = _game.Discoveries?.Table.Discoveries.Count ?? 0;
