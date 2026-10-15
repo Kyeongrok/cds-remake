@@ -82,7 +82,10 @@ internal static class TableCache
             var cached = JsonSerializer.Deserialize<Cached<T>>(File.ReadAllText(path));
             return cached?.Data == null ? null : cached;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        // 옛 모양으로 적힌 파일은 표의 생성자가 빈 칸(null)을 받아 NullReferenceException 을 낸다 — 오류 통계에
+        // 「..ctor<TableCache.Read」 · 「PopulatePropertyInfo<TableCache.Read」로 올라왔다. 깨진 것과 같이 친다.
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
+                                      or NullReferenceException or NotSupportedException or ArgumentException)
         {
             return null;   // 깨졌으면 없는 셈 치고 원본에서 다시 읽는다
         }
