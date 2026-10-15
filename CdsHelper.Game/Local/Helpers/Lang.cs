@@ -32,14 +32,17 @@ public static class Lang
     /// 표 머리, 지도 위 쪽지, 불러오는 창 따위)이다. 그럴 언어가 아니면 아무것도 안 건다.
     /// </summary>
     /// <remarks>
-    /// 화면에 붙을 때 한 번 바꾸고, <b>붙어 있는 동안 글이 바뀌면 그때마다</b> 또 바꾼다 — 쪽지 · 띠처럼 붙인 뒤에
-    /// 글을 갈아 끼우는 칸이 많다(예전에는 붙을 때 한 번만 바꿔 그런 칸이 한국어로 남았다).
-    /// 앱을 켜자마자 불러야 한다 — 맨 먼저 뜨는 창(불러오는 창 따위)도 놓치지 않게. 스레드마다 따로 뜨는 창도 잡힌다.
+    /// 칸이 <b>처음 자리를 잡을 때</b>(SizeChanged) 바꾸고, 그 뒤로는 글이 바뀔 때마다 또 바꾼다 — 쪽지 · 띠처럼
+    /// 붙인 뒤에 글을 갈아 끼우는 칸이 많다.
+    /// Loaded 를 쓰면 안 된다 — WPF 는 Loaded 를 <b>제 손(인스턴스 처리기)이 걸린 칸에만</b> 돌려서, 클래스 훅으로는
+    /// 창 말고는 하나도 안 온다(예전 훅이 그래서 글 칸을 하나도 못 바꿨다). SizeChanged 는 칸마다 레이아웃이 직접 올린다.
+    /// 바뀐 글은 렌더 전에 다시 재므로 한국어가 한 장면도 안 비친다.
+    /// 앱을 켜자마자 불러야 한다. 스레드마다 따로 뜨는 창도 잡힌다.
     /// <code>
     ///   TextBlock.Text           묶인 글(Binding)은 건너뛴다 — 묶음이 끊긴다. 언어 이름처럼 일부러 안 바꿀 글은 묶어 넣는다.
     ///   ContentControl.Content   글이면(체크 상자 · 단추 이름 따위)
     ///   ToolTip                  글이면
-    ///   Window.Title
+    ///   Window.Title             창이 뜰 때
     /// </code>
     /// </remarks>
     public static void InstallWpfHook()
@@ -52,30 +55,28 @@ public static class Lang
         var content = System.ComponentModel.DependencyPropertyDescriptor.FromProperty(
             System.Windows.Controls.ContentControl.ContentProperty, typeof(System.Windows.Controls.ContentControl));
 
-        System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.Controls.TextBlock),
-            System.Windows.FrameworkElement.LoadedEvent, new System.Windows.RoutedEventHandler((sender, _) =>
-            {
-                if (sender is not System.Windows.Controls.TextBlock block) return;
-                Swap(block);
-                Follow(block, text, Swap);
-            }));
-        System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.Controls.ContentControl),
-            System.Windows.FrameworkElement.LoadedEvent, new System.Windows.RoutedEventHandler((sender, _) =>
-            {
-                if (sender is not System.Windows.Controls.ContentControl control
-                    || sender is System.Windows.Window) return;
-                SwapContent(control);
-                Follow(control, content, SwapContent);
-            }));
         System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.FrameworkElement),
-            System.Windows.FrameworkElement.LoadedEvent, new System.Windows.RoutedEventHandler((sender, _) =>
+            System.Windows.FrameworkElement.SizeChangedEvent, new System.Windows.SizeChangedEventHandler((sender, _) =>
             {
+                switch (sender)
+                {
+                    case System.Windows.Controls.TextBlock block:
+                        Swap(block);
+                        Follow(block, text, Swap);
+                        break;
+                    case System.Windows.Window:
+                        break;
+                    case System.Windows.Controls.ContentControl control:
+                        SwapContent(control);
+                        Follow(control, content, SwapContent);
+                        break;
+                }
                 if (sender is System.Windows.FrameworkElement { ToolTip: string tip } element)
                 {
                     string done = T(tip);
                     if (done != tip) element.ToolTip = done;
                 }
-            }));
+            }), handledEventsToo: true);
         System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.Window),
             System.Windows.FrameworkElement.LoadedEvent, new System.Windows.RoutedEventHandler((sender, _) =>
             {
@@ -104,8 +105,8 @@ public static class Lang
     }
 
     /// <summary>
-    /// 붙어 있는 동안 그 값이 바뀌면 다시 바꾼다. 떨어지면 끊는다 — 지켜보는 손이 칸을 붙잡아 안 걷히는 일이 없게.
-    /// 바꾼 글을 다시 넣으면 또 불리지만, 이미 번역된 글은 그대로 나오므로 거기서 멈춘다.
+    /// 붙어 있는 동안 그 값이 바뀌면 다시 바꾼다. 떨어지면 끊고 다시 붙으면 잇는다 — 지켜보는 손이 칸을 붙잡아
+    /// 안 걷히는 일이 없게. 바꾼 글을 다시 넣으면 또 불리지만, 이미 번역된 글은 그대로 나오므로 거기서 멈춘다.
     /// </summary>
     private static void Follow<TElement>(TElement element, System.ComponentModel.DependencyPropertyDescriptor property, Action<TElement> swap)
         where TElement : System.Windows.FrameworkElement
@@ -114,14 +115,20 @@ public static class Lang
         EventHandler changed = (_, _) => swap(element);
         Watched.Add(element, changed);
         property.AddValueChanged(element, changed);
-        System.Windows.RoutedEventHandler? unloaded = null;
-        unloaded = (_, _) =>
+        bool on = true;
+        element.Unloaded += (_, _) =>
         {
+            if (!on) return;
+            on = false;
             property.RemoveValueChanged(element, changed);
-            Watched.Remove(element);
-            element.Unloaded -= unloaded;
         };
-        element.Unloaded += unloaded;
+        element.Loaded += (_, _) =>
+        {
+            if (on) return;
+            on = true;
+            swap(element);
+            property.AddValueChanged(element, changed);
+        };
     }
 
     /// <summary>지켜보는 칸들 — 두 번 걸지 않게.</summary>

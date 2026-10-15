@@ -77,7 +77,9 @@ internal sealed class LoadingDialog
         var mid = owner.PointToScreen(new Point(owner.ActualWidth / 2, owner.ActualHeight / 2));
         double left = mid.X / dpi.DpiScaleX - W / 2, top = mid.Y / dpi.DpiScaleY - H / 2;
 
-        string tip = Tips[Random.Shared.Next(Tips.Length)];
+        // 글은 여기서(화면 실에서) 번역해 넘긴다 — 쪽지는 제 실에서 맨 먼저 뜨는 창이라 윈도 글자 훅을 믿지 않는다.
+        string tip = Local.Helpers.Lang.T(Tips[Random.Shared.Next(Tips.Length)]);
+        text = Local.Helpers.Lang.T(text);
         var thread = new Thread(() =>
         {
             var label = new TextBlock
