@@ -107,26 +107,41 @@ public sealed class SkillOverlayWindow : Window
     public void Refresh(Engine.Game game)
     {
         var people = PersonTable.Open();
+        string? hint = GameSettings.ShowContractHintOverlay
+            ? game.Player.Contract is { } contract ? game.HintName(contract.Hint) : "없음"
+            : null;
+        var skills = GameSettings.ShowSkillOverlay ? SkillBoardDialog.Build(game.Player, people, language: false) : null;
+        var tongues = GameSettings.ShowSkillOverlay ? SkillBoardDialog.Build(game.Player, people, language: true) : null;
+
+        // 도시 창이 다시 활성화될 때마다(대사 창이 닫힐 때마다) 불린다 — 보일 것이 그대로면 판을 다시 짓지 않는다.
+        // 새로 지으면 창이 제 크기를 다시 재며 한 번 꿀렁거린다.
+        string shown = string.Join("|", new[] { hint ?? "-" }
+            .Concat((skills ?? []).Concat(tongues ?? []).Select(i => $"{i.Name}={i.BestLevel}"))
+            .Append(skills == null ? "-" : "+"));
+        if (shown == _shown) return;
+        _shown = shown;
+
         var content = new StackPanel();
-        if (GameSettings.ShowContractHintOverlay)
+        if (hint != null)
         {
             content.Children.Add(Text("현재 계약 힌트"));
-            content.Children.Add(Text(game.Player.Contract is { } contract
-                ? game.HintName(contract.Hint)
-                : "없음"));
+            content.Children.Add(Text(hint));
         }
 
         // 기능·언어는 제 체크상자가 따로 있다 — 계약 힌트만 켰으면 힌트만 낸다.
-        if (GameSettings.ShowSkillOverlay)
+        if (skills != null && tongues != null)
         {
             var columns = new StackPanel { Orientation = Orientation.Horizontal };
-            columns.Children.Add(Column("기능", SkillBoardDialog.Build(game.Player, people, language: false)));
-            columns.Children.Add(Column("언어", SkillBoardDialog.Build(game.Player, people, language: true)));
+            columns.Children.Add(Column("기능", skills));
+            columns.Children.Add(Column("언어", tongues));
             content.Children.Add(columns);
         }
 
         _frame.Child = content;
     }
+
+    /// <summary>지금 판에 보이는 것을 한 줄로 적은 것 — 같으면 다시 안 짓는다.</summary>
+    private string? _shown;
 
     /// <summary>한 갈래(기능·언어) — 이름 · 제일 높은 값을 안에 적은 막대.</summary>
     private UIElement Column(string title, List<SkillDisplayItem> items)
@@ -186,10 +201,13 @@ public sealed class SkillOverlayWindow : Window
         return grid;
     }
 
-    /// <summary>함대 쪽지(<see cref="FleetLabelWindow"/>)와 같은 글씨 — 흰 굵은 글씨에 까만 그림자.</summary>
+    /// <summary>
+    /// 함대 쪽지(<see cref="FleetLabelWindow"/>)와 같은 글씨 — 흰 굵은 글씨에 까만 그림자.
+    /// 지을 때 번역해 둔다 — 윈도 글자 훅에 맡기면 한국어 크기로 한 번 잰 뒤 다시 재서 창이 꿀렁거린다.
+    /// </summary>
     private TextBlock Text(string text) => new()
     {
-        Text = text,
+        Text = Lang.T(text),
         FontSize = _fontSize,
         FontWeight = FontWeights.Bold,
         Foreground = Brushes.White,
