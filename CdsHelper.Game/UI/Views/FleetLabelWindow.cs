@@ -66,20 +66,16 @@ public sealed class FleetLabelWindow : Window
     private readonly Window _anchor;
     private readonly Slot _slot;
 
+    /// <summary>이 쪽지의 갈래 — 창 이름 표(<see cref="WindowNames"/>)가 키로 쓴다.</summary>
+    public Slot Kind => _slot;
+
     private FleetLabelWindow(Window anchor, double fontSize, Slot slot)
     {
         _anchor = anchor;
         _slot = slot;
         _text.FontSize = fontSize;
 
-        // 화면에는 안 나오는 이름이다 — 창 주인 보기(개발)에서 쪽지를 가리려고 갈래마다 달리 단다.
-        Title = slot switch
-        {
-            Slot.Hint => "힌트 쪽지",
-            Slot.Found => "발견물 수 쪽지",
-            Slot.Speed => "배 속도 쪽지",
-            _ => "함대 쪽지",
-        };
+        // 제목은 달지 않는다 — 화면에 안 나오고, 갈래는 창 이름 표(WindowNames)가 Kind 로 가린다.
         Owner = GameWindow.Alive(anchor, this);
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;

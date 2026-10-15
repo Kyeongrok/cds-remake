@@ -164,8 +164,10 @@ public sealed class WindowTreeWindow : Window
     {
         if (w == null) return "(없음)";
         if (!_ids.TryGetValue(w, out int id)) _ids[w] = id = _nextId++;
+        // 이름은 키로 표에서 찾는다(번역되지 않는다). 제목은 덧붙여 보일 뿐이다 — 번역되면 바뀐다.
+        string name = WindowNames.NameOf(w) is { } known ? $" [{known}]" : "";
         string title = string.IsNullOrWhiteSpace(w.Title) ? "" : $" 「{w.Title}」";
-        return $"{w.GetType().Name}#{id}{title}";
+        return $"{WindowNames.KeyOf(w)}#{id}{name}{title}";
     }
 
     private void Note(string line)

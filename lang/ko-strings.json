@@ -14069,22 +14069,6 @@
   "at": "CdsHelper.Game/UI/Views/FleetInfoDialog.cs:186",
   "args": 0
  },
- "힌트 쪽지": {
-  "at": "CdsHelper.Game/UI/Views/FleetLabelWindow.cs:78",
-  "args": 0
- },
- "발견물 수 쪽지": {
-  "at": "CdsHelper.Game/UI/Views/FleetLabelWindow.cs:79",
-  "args": 0
- },
- "배 속도 쪽지": {
-  "at": "CdsHelper.Game/UI/Views/FleetLabelWindow.cs:80",
-  "args": 0
- },
- "함대 쪽지": {
-  "at": "CdsHelper.Game/UI/Views/FleetLabelWindow.cs:81",
-  "args": 0
- },
  "함대배치도": {
   "at": "CdsHelper.Game/UI/Views/FormationDialog.cs:75",
   "args": 0
@@ -22568,6 +22552,370 @@
   "at": "CdsHelper.Game/UI/Views/VoyagerEditDialog.cs:248",
   "args": 1
  },
+ "세계지도": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:28",
+  "args": 0
+ },
+ "도시 화면": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:29",
+  "args": 0
+ },
+ "성문 장면": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:32",
+  "args": 0
+ },
+ "육상전": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:33",
+  "args": 0
+ },
+ "창 주인 보기(개발)": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:36",
+  "args": 0
+ },
+ "함대 쪽지": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:39",
+  "args": 0
+ },
+ "힌트 쪽지": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:40",
+  "args": 0
+ },
+ "발견물 수 쪽지": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:41",
+  "args": 0
+ },
+ "배 속도 쪽지": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:42",
+  "args": 0
+ },
+ "기능 · 언어 쪽지": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:43",
+  "args": 0
+ },
+ "알림 · 물음": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:47",
+  "args": 0
+ },
+ "고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:48",
+  "args": 0
+ },
+ "목록 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:49",
+  "args": 0
+ },
+ "맵 포인트": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:50",
+  "args": 0
+ },
+ "숫자판": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:51",
+  "args": 0
+ },
+ "수 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:52",
+  "args": 0
+ },
+ "글 넣기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:53",
+  "args": 0
+ },
+ "이름 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:54",
+  "args": 0
+ },
+ "배 이름": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:55",
+  "args": 0
+ },
+ "배 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:56",
+  "args": 0
+ },
+ "선체 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:57",
+  "args": 0
+ },
+ "사람 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:58",
+  "args": 0
+ },
+ "건물 고르기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:59",
+  "args": 0
+ },
+ "저장 목록": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:60",
+  "args": 0
+ },
+ "인물 판": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:65",
+  "args": 0
+ },
+ "함대 카드": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:67",
+  "args": 0
+ },
+ "배 정보": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:68",
+  "args": 0
+ },
+ "해상 배 정보": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:69",
+  "args": 0
+ },
+ "아이템 정보": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:71",
+  "args": 0
+ },
+ "힌트 설명": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:76",
+  "args": 0
+ },
+ "힌트 보기(향상)": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:77",
+  "args": 0
+ },
+ "연대기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:80",
+  "args": 0
+ },
+ "백과사전": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:81",
+  "args": 0
+ },
+ "백과사전 쪽": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:82",
+  "args": 0
+ },
+ "기능 판": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:83",
+  "args": 0
+ },
+ "기능 일람": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:84",
+  "args": 0
+ },
+ "부하 명단": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:85",
+  "args": 0
+ },
+ "짐 보기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:86",
+  "args": 0
+ },
+ "짐 순위": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:87",
+  "args": 0
+ },
+ "해전 정보": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:88",
+  "args": 0
+ },
+ "육상전 정보": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:89",
+  "args": 0
+ },
+ "육상 부대 정보": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:90",
+  "args": 0
+ },
+ "정보 판": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:91",
+  "args": 0
+ },
+ "시장 사기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:95",
+  "args": 0
+ },
+ "시장 팔기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:96",
+  "args": 0
+ },
+ "창고": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:98",
+  "args": 0
+ },
+ "짐 버리기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:99",
+  "args": 0
+ },
+ "선원 편성": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:100",
+  "args": 0
+ },
+ "진형": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:101",
+  "args": 0
+ },
+ "펼친 책": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:103",
+  "args": 0
+ },
+ "기능 배우기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:104",
+  "args": 0
+ },
+ "포커": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:106",
+  "args": 0
+ },
+ "전리품": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:108",
+  "args": 0
+ },
+ "부대 배치": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:111",
+  "args": 0
+ },
+ "육상 진형": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:112",
+  "args": 0
+ },
+ "육상 겨루기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:113",
+  "args": 0
+ },
+ "일기토 상대": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:114",
+  "args": 0
+ },
+ "이야기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:115",
+  "args": 0
+ },
+ "도시 문화": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:116",
+  "args": 0
+ },
+ "입방체 퍼즐": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:119",
+  "args": 0
+ },
+ "동전 퍼즐": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:120",
+  "args": 0
+ },
+ "탑 퍼즐": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:122",
+  "args": 0
+ },
+ "미궁 퍼즐": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:123",
+  "args": 0
+ },
+ "낚시": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:124",
+  "args": 0
+ },
+ "효과 연출": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:127",
+  "args": 0
+ },
+ "사건 연출": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:128",
+  "args": 0
+ },
+ "사건 그림": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:129",
+  "args": 0
+ },
+ "배 그림": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:131",
+  "args": 0
+ },
+ "주인공 만들기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:135",
+  "args": 0
+ },
+ "능력 정하기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:136",
+  "args": 0
+ },
+ "기능 정하기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:137",
+  "args": 0
+ },
+ "BGM 갈아 끼우기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:141",
+  "args": 0
+ },
+ "초상화 책": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:142",
+  "args": 0
+ },
+ "초상화 더하기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:143",
+  "args": 0
+ },
+ "개발": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:146",
+  "args": 0
+ },
+ "게임 데이터": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:147",
+  "args": 0
+ },
+ "동작 만들기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:149",
+  "args": 0
+ },
+ "발견 대본 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:150",
+  "args": 0
+ },
+ "발견물 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:151",
+  "args": 0
+ },
+ "책 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:152",
+  "args": 0
+ },
+ "나라 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:153",
+  "args": 0
+ },
+ "인물 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:154",
+  "args": 0
+ },
+ "인물 옮기기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:155",
+  "args": 0
+ },
+ "묘책 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:157",
+  "args": 0
+ },
+ "시나리오 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:158",
+  "args": 0
+ },
+ "술집 힌트 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:159",
+  "args": 0
+ },
+ "술집 소문 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:160",
+  "args": 0
+ },
+ "역사 항해자 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:161",
+  "args": 0
+ },
+ "선수상 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:162",
+  "args": 0
+ },
+ "도시 문화 편집": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:163",
+  "args": 0
+ },
+ "도시 그림 조각": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:164",
+  "args": 0
+ },
  "창 주인 보기 (개발)": {
   "at": "CdsHelper.Game/UI/Views/WindowTreeWindow.cs:62",
   "args": 0
@@ -22642,10 +22990,6 @@
  },
  "출처": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:549",
-  "args": 0
- },
- "개발": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:556",
   "args": 0
  },
  "지도창 초점 잃음": {
@@ -25580,10 +25924,6 @@
  },
  "대본 편집": {
   "at": "CdsHelper.Support/Local/Settings/AppSettings.cs:203",
-  "args": 0
- },
- "세계지도": {
-  "at": "CdsHelper.Support/Local/Settings/AppSettings.cs:207",
   "args": 0
  },
  "데이터 내보내기": {
