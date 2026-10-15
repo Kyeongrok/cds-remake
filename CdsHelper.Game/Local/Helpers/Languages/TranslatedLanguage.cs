@@ -39,7 +39,7 @@ public abstract class TranslatedLanguage : ILanguage
         lock (_seen)
         {
             if (_seen.TryGetValue(korean, out var known)) return known;
-            string made = ByTemplate(korean) ?? ByLines(korean) ?? ByWords(korean) ?? korean;
+            string made = ByTemplate(korean) ?? ByLines(korean) ?? ByWords(korean) ?? BySegments(korean) ?? korean;
             if (_seen.Count > 20000) _seen.Clear();
             _seen[korean] = made;
             return made;
@@ -74,6 +74,31 @@ public abstract class TranslatedLanguage : ILanguage
         }
         return string.Join(NameJoiner, done);
     }
+
+    /// <summary>
+    /// 조각을 구분자로 이은 글(「항구 · 베렌의 탑」, 「궁합 코드 3  ·  사자자리」, 「명성: 1200」)을 조각마다 찾는다 —
+    /// 코드가 자리만으로 잇는 글(<c>$"{kind} · {name}"</c>)은 고정된 글자가 없어 틀로는 못 맞춘다.
+    /// 한글이 든 조각이 하나라도 번역이 안 되면 null(섞어 내지 않는다). 구분자는 그대로 둔다.
+    /// </summary>
+    private string? BySegments(string korean)
+    {
+        var pieces = Separator.Split(korean);
+        if (pieces.Length < 3) return null;   // 구분자가 하나도 없다
+        bool any = false;
+        for (int i = 0; i < pieces.Length; i += 2)   // 짝수 칸이 조각, 홀수 칸이 구분자
+        {
+            string piece = pieces[i].Trim();
+            if (!HasHangul(piece)) continue;
+            string done = Text(piece);
+            if (HasHangul(done)) return null;
+            pieces[i] = pieces[i].Replace(piece, done);
+            any = true;
+        }
+        return any ? string.Concat(pieces) : null;
+    }
+
+    /// <summary>조각 구분자 — 가운뎃점 · 콜론 · 두 칸 넘는 띄움 · 줄표 · 빗금 · 괄호.</summary>
+    private static readonly Regex Separator = new(@"(\s*[·・]\s*|:\s+|\s{2,}|\s+[—–-]\s+|\s*/\s*|\s*[()（）\[\]]\s*)", RegexOptions.Compiled);
 
     /// <summary>여러 줄 글은 줄마다 따로 찾는다. 하나도 못 찾으면 null.</summary>
     private string? ByLines(string korean)
