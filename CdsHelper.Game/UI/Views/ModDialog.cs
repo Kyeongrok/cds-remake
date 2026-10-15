@@ -278,12 +278,6 @@ public sealed class ModDialog : GameWindow
             "계약을 맺을 때 내 배가 한 척이라도 있으면 후원자가 「배를 빌리겠습니까?」를 묻습니다(원본 그대로)."
             + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖춘 판에서 물음이 성가실 때 씁니다."));
 
-        // 생명력 — 원본 탐험정보에 없는 줄이다. 「정보」 탭에서 빼 「UI」 탭에 둔다.
-        ui.Children.Add(Toggle("생명력 정보", GameSettings.ShowVitalityInfo,
-            on => GameSettings.ShowVitalityInfo = on,
-            "원본에 없는 것입니다 — 양상·탐험·도시정보 창에 「생명력」(제독 HP) 줄을 내고, 켜면 상단 띠에도 세울 수 있습니다."
-            + " 끄면 정보 창에서 빠지고 띠에서도 걷힙니다."));
-
         // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
         font.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
             on => { GameSettings.RidiFont = on; UiFont.Refresh(); },
