@@ -18,8 +18,11 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public static class DiscoveryClipPlayer
 {
-    /// <summary>한 장이 머무는 참. 원본 눈금(2)을 어림한 값이다.</summary>
-    private static readonly TimeSpan FrameTime = TimeSpan.FromMilliseconds(100);
+    /// <summary>
+    /// 한 장이 머무는 참. 원본 눈금(2)을 100ms 로 어림했었는데 느릿느릿 넘어간다고 해(사용자, 2026-10-16)
+    /// 두 배 빠르게 50ms 로 둔다.
+    /// </summary>
+    private static readonly TimeSpan FrameTime = TimeSpan.FromMilliseconds(50);
 
     /// <summary>그 편을 끝까지 틀고 돌아온다. 못 풀면 아무 일도 없다.</summary>
     /// <remarks>
