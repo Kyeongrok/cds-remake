@@ -945,8 +945,15 @@ public sealed class Player
     /// 돈을 더하는 자리(<c>0x0047CBC0</c> 소지금 · <c>0x0047CC00</c> 저금)가 둘 다
     /// <c>0x0049E5A0(지금, 더할값, 0, 0xF4240)</c> 으로 0~1000000 사이에 가둔다.
     /// 넘치면 "금화는 더 이상 늘릴 수 없습니다"(<c>0x0055A488</c>) 가 뜬다.
+    /// 모드 「소지금 상한 10배」(<see cref="RichCap"/>)면 천만 닢이다.
     /// </remarks>
-    public const int MaxGold = 1_000_000;
+    public static int MaxGold => RichCap() ? BaseMaxGold * 10 : BaseMaxGold;
+
+    /// <summary>원본의 소지금 · 저금 위쪽 끝(<c>0xF4240</c>).</summary>
+    public const int BaseMaxGold = 1_000_000;
+
+    /// <summary>모드 「소지금 상한 10배」가 켜졌는지. 설정은 Game 쪽에 있어 판이 이 물음을 걸어 둔다.</summary>
+    public static Func<bool> RichCap { get; set; } = () => false;
 
     /// <summary>
     /// 돈을 받는다(매각·사례). 소지금은 <see cref="MaxGold"/> 에서 잘린다.

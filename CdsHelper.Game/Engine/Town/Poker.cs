@@ -43,8 +43,8 @@ public sealed class Poker
     /// <summary>끗수 몇 개. 10 은 끗수 8, Q 는 10, A 는 12 다.</summary>
     private const int Ten = 8, Queen = 10, Ace = 12, Deuce = 0;
 
-    /// <summary>소지금 위쪽 끝(<c>0x004059B0</c> 의 <c>0xF4240</c>).</summary>
-    public const int GoldCap = 1_000_000;
+    /// <summary>소지금 위쪽 끝(<c>0x004059B0</c> 의 <c>0xF4240</c>). 모드 「소지금 상한 10배」를 따른다.</summary>
+    public static int GoldCap => Support.Local.Models.Player.MaxGold;
 
     /// <summary>이보다 적게 가졌으면 한 번 더 묻는다(<c>0x0040655E</c> 의 <c>0x2710</c>).</summary>
     public const int PoorGold = 10_000;

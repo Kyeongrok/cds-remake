@@ -374,6 +374,11 @@ public sealed class ModDialog : GameWindow
             + " 교역소 · 보급 · 전리품 · 약탈에서 「중량을 초과하고 있습니다」로 막히지 않고, 짐 덜기 창도 무게 때문에는 안 뜹니다."
             + " 용량(통 수)과 대포 수 한도는 그대로입니다."));
 
+        // 소지금 상한 10배 — 백만 닢 대신 천만 닢에서 자른다.
+        rows.Children.Add(Toggle("소지금 상한 10배", GameSettings.RichCap, on => GameSettings.RichCap = on,
+            "원본과 다릅니다 — 소지금과 저금의 상한이 1,000,000닢에서 10,000,000닢으로 늘어납니다."
+            + " 끄면 원본대로 백만 닢에서 잘립니다 — 백만 닢이 넘는 돈을 가진 채 끄면 그 돈이 백만 닢으로 줄어들 수 있습니다."));
+
         // 편리한 인벤토리 — 소지품 창에서 바로 보관 · 판매.
         rows.Children.Add(Toggle("편리한 인벤토리", GameSettings.HandyInventory, on => GameSettings.HandyInventory = on,
             "원본에 없는 것입니다 — 소지품 정보 창에 「보관함」 · 「판매」 단추가 붙습니다."
