@@ -120,5 +120,6 @@ public static class Scenarios
     /// <summary>앉혀도 터지지 않을 줄인지 — 손으로 고친 파일이 어긋났을 때를 거른다.</summary>
     private static bool Sound(Scenario s) =>
         !string.IsNullOrWhiteSpace(s.Book) && s.Abilities is { Length: 6 } && s.Skills != null && s.Tongues != null
-        && s.Nation >= 0 && s.Job is >= 0 and < 4 && s.Month is >= 1 and <= 12 && s.Day is >= 1 and <= 31;
+        // 직업은 새 게임에서 고르는 넷(Job.Choosable)이 아니라 표 전부로 본다 — 루터는 원본에 없는 학생(8)이다.
+        && s.Nation >= 0 && s.Job >= 0 && s.Job < Support.Local.Models.Job.All.Length && s.Month is >= 1 and <= 12 && s.Day is >= 1 and <= 31;
 }
