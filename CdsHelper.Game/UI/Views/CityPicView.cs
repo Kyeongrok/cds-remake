@@ -2044,13 +2044,16 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         int price = inn.PriceAt(_cityId);
 
         // 여관 주인이 얼굴을 띄우고 묻는다(0x0047FC5B — 시설 +0x80).
-        if (!ConfirmDialog.Ask(this, $"선불이네. 우리 집은 한 달에 금화 {price}닢인데, 머물고 갈텐가?",
+        // 여관 창이 떠 있으면 그 위에 얹는다 — 도시 화면에 얹으면 여관 창과 형제가 되어, 쥐가 여관 창 단추에
+        // 오르는 순간(초점이 옮겨 가) 여관 창이 알림 위로 올라온다.
+        var owner = Menu.Window ?? this;
+        if (!ConfirmDialog.Ask(owner, $"선불이네. 우리 집은 한 달에 금화 {price}닢인데, 머물고 갈텐가?",
                                face: _game.SpeakerFace(InnCode, _cultureNo)))
             return;
 
         if (!_player.CanAfford(price))
         {
-            NoticeDialog.Show(this, "소지금이 모자랍니다");
+            NoticeDialog.Show(owner, "소지금이 모자랍니다");
             return;
         }
 
@@ -2060,7 +2063,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         _player.Note(Player.TraceInnStay);   // 0x0047FCA8 — 행적에 숙박을 적는다
         TellTongue(inn.LearnTongue(_player, _cityId, _game.Nations, _random, won => PlayMpEffect(EffectAnim.Scribe, won)));
         HomeInnBonus();
-        NoticeDialog.Show(this, Lodging.WakeWord(_random));
+        NoticeDialog.Show(owner, Lodging.WakeWord(_random));
         // 한 달 묵으면 HP 가 30~59 찬다(0x0047FCFF).
         _player.SetCondition(_player.Condition + Vitality.InnRest(_random));
     }
@@ -2125,7 +2128,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private void TellTongue(string? tongue)
     {
         if (tongue is { Length: > 0 })
-            NoticeDialog.Show(this, $"{tongue}{GameUi.Josa(tongue, "을", "를")} 조금 습득했다!");
+            NoticeDialog.Show(Menu.Window ?? this, $"{tongue}{GameUi.Josa(tongue, "을", "를")} 조금 습득했다!");
     }
 
     /// <summary>
