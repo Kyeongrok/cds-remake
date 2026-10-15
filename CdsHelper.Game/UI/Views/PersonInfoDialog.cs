@@ -108,18 +108,19 @@ internal sealed class PersonInfoDialog : InfoDialog
         int next = Engine.Town.Nobility.ToNext(player.NobleRank, merit);
         var lines = new List<string>
         {
-            $"지금 작위: {Engine.Town.Nobility.NameOf(player.NobleRank)}   공적: {merit}"
-                + (next > 0 ? $"   다음 작위까지: {next}" : ""),
-            $"  (발견물 보고 {Engine.Town.Nobility.DiscoveryMeritOf(game)} · 교역소 투자 {Engine.Town.Nobility.InvestMeritOf(player.TotalInvested)}"
-                + $", 투자 {player.TotalInvested}닢)",
+            // 조각마다 번역한다 — 이은 글 통째로는 번역표에 없다.
+            Lang.T($"지금 작위: {Engine.Town.Nobility.NameOf(player.NobleRank)}   공적: {merit}")
+                + (next > 0 ? Lang.T($"   다음 작위까지: {next}") : ""),
+            Lang.T($"  (발견물 보고 {Engine.Town.Nobility.DiscoveryMeritOf(game)} · 교역소 투자 {Engine.Town.Nobility.InvestMeritOf(player.TotalInvested)}"
+                + $", 투자 {player.TotalInvested}닢)"),
             "",
         };
         for (int rank = 1; rank <= Engine.Town.Nobility.MaxRank; rank++)
         {
             var perks = Engine.Town.Passives.All.Where(p => p.Rank == rank).ToList();
             string mark = player.NobleRank >= rank ? "●" : "○";
-            string what = perks.Count > 0 ? string.Join(" · ", perks.Select(p => p.Name)) : "-";
-            lines.Add($"{mark} {Engine.Town.Nobility.Names[rank]}({Engine.Town.Nobility.Thresholds[rank]}) : {what}");
+            string what = perks.Count > 0 ? string.Join(" · ", perks.Select(p => Lang.T(p.Name))) : "-";
+            lines.Add($"{mark} {Lang.T(Engine.Town.Nobility.Names[rank])}({Engine.Town.Nobility.Thresholds[rank]}) : {what}");
         }
         NoticeDialog.Show(owner, string.Join(Environment.NewLine, lines), "작위");
     }
