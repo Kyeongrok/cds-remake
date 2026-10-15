@@ -26,7 +26,7 @@ internal static class CityInfoMenu
                         Fame = "명성", City = "도시명", Fatigue = "피로도", Morale = "규율",
                         Crew = "선원·대원", Stores = "물·식량", DaysLeft = "남은일수",
                         Wind = "풍향·풍속", Language = "언어", Rate = "시세",
-                        Current = "해류", Vitality = "생명력";
+                        Current = "해류";
 
     /// <summary>
     /// 게임 도시정보 창의 줄 차례. 화면에서 그대로 옮겼다.
@@ -37,11 +37,13 @@ internal static class CityInfoMenu
     /// <b>풍향/풍속</b> · <b>해류</b> · <b>생명력</b> 이다.
     /// 「규칙」은 함대 값 <c>0x005B3954</c> 고(<c>0x0047DF4E</c>), 「생명력」은 제독 컨디션
     /// <c>0x005B60D8</c> 이다(<c>0x0047DFC9</c>).
+    /// <para><b>생명력 줄은 일부러 뺐다</b>(사용자, 2026-10-16) — 한때 모드로 켜고 끄다가 기능을 걷었다.
+    /// 마지막 줄이라 뒤에 띠 기본값(비트 차례)이 어긋나지 않는다.</para>
     /// </remarks>
     public static readonly string[] Rows =
     [
         Date, Crew, Stores, Coord, Gold, Fatigue,
-        Fame, City, Language, Rate, DaysLeft, Morale, Wind, Current, Vitality,
+        Fame, City, Language, Rate, DaysLeft, Morale, Wind, Current,
     ];
 
     /// <summary>
@@ -77,8 +79,6 @@ internal static class CityInfoMenu
         var items = new List<(string Text, Action? Run)>();
         foreach (var row in Rows)
         {
-            // 「생명력」은 원본 탐험정보에 없는 줄이라 모드 창에서 켰을 때만 낸다.
-            if (row == Vitality && !GameSettings.ShowVitalityInfo) continue;
             bool? on = state(row);
             items.Add((Label(row, on == true, width), on == null ? null : () => toggle(row)));
         }

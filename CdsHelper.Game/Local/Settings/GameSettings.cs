@@ -242,9 +242,6 @@ public sealed class GameSettingsData
     /// <summary>바다에서 해적·이슬람 함대가 붙는 확률 배수의 차례(<see cref="GameSettings.SeaRaidScales"/>). 원본은 x1.</summary>
     public int SeaRaidScale { get; set; } = GameSettings.DefaultSeaRaidScale;
 
-    /// <summary>정보 창·상단 띠에 「생명력」 줄을 낼지. 원본 탐험정보에는 없어 꺼 두고 시작한다.</summary>
-    public bool ShowVitalityInfo { get; set; }
-
     /// <summary>소지품일람 줄마다 아이템 그림과 효과를 낼지(스폰서 일람처럼). 원본은 이름만이라 꺼 두고 시작한다.</summary>
     public bool ItemListPictures { get; set; }
 
@@ -1104,15 +1101,6 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.SeaRaidScale), 0, SeaRaidScales.Length - 1);
         set => Set(d => d.SeaRaidScale = Math.Clamp(value, 0, SeaRaidScales.Length - 1));
-    }
-
-    /// <summary>
-    /// 정보 창(양상·탐험·도시정보)과 상단 띠에 「생명력」(제독 HP) 줄을 낼지 — 모드 창에서 켜고 끈다.
-    /// </summary>
-    public static bool ShowVitalityInfo
-    {
-        get => Get(d => d.ShowVitalityInfo);
-        set => Set(d => d.ShowVitalityInfo = value);
     }
 
     /// <summary>

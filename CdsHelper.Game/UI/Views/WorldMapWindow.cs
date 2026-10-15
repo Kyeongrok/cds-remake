@@ -140,7 +140,6 @@ public sealed class WorldMapWindow : Window
     /// <summary>바람과 배 속도. 게임 띠에는 없는 칸이라 꺼 둔 채로 낸다.</summary>
     private readonly GameButton _windText = new("") { Lit = true, Margin = default };
     private readonly GameButton _currentText = new("") { Lit = true, Margin = default };
-    private readonly GameButton _hpCell = new("") { Lit = true, Margin = default };
 
     /// <summary>실어 둔 물과 식량(통).</summary>
     private readonly GameButton _stores = new("") { Lit = true, Margin = default };
@@ -313,8 +312,6 @@ public sealed class WorldMapWindow : Window
             string name = CityInfoMenu.Rows[i];
             if (!_infoCells.TryGetValue(name, out var cell)) continue;
             bool on = saved?.Contains(name) ?? ((BarDefaults[place] >> i) & 1) != 0;
-            // 「생명력」은 모드 창에서 켰을 때만 띠에 선다 — 예전에 켜 둔 판이어도 끄면 걷힌다.
-            if (name == CityInfoMenu.Vitality && !GameSettings.ShowVitalityInfo) on = false;
             cell.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
         }
     }
@@ -467,7 +464,6 @@ public sealed class WorldMapWindow : Window
         gameCells.Children.Add(InfoCell(CityInfoMenu.Morale, _morale));
         gameCells.Children.Add(InfoCell(CityInfoMenu.Wind, _windText));
         gameCells.Children.Add(InfoCell(CityInfoMenu.Current, _currentText));
-        gameCells.Children.Add(InfoCell(CityInfoMenu.Vitality, _hpCell));
 
         // 원본처럼 액자를 깔고 그 위에 칸들을 얹는다(asset/ui/misc-00.png).
         // 그림이 없으면 예전처럼 민색 띠로 물러선다.
@@ -1950,7 +1946,6 @@ public sealed class WorldMapWindow : Window
         // 커서 쪽 길찾기 보정은 항해사(자리 1)와 나침반이 있을 때만 든다(0x0048ECEF).
         _host.PathAssist = _game.Player.MateAt(NavigatorSlot).Length > 0
                            && _game.Player.Items.Contains(CompassItem);
-        _hpCell.Text = $"HP:{_game.Player.Condition,4}";
         // 원본은 뭍이면 「대원」, 바다면 「선원」이다(0x0056BEA8 의 %s).
         // 글을 통째로 둘로 나눠 둔다 — 낱말을 자리로 끼우면 번역표의 「선원{0}명」 틀에 안 맞아 한국어로 남았다.
         _crew.Text = _host.IsOnLand ? $"대원{_game.Player.Crew,4}명" : $"선원{_game.Player.Crew,4}명";
@@ -1984,7 +1979,6 @@ public sealed class WorldMapWindow : Window
         for (int i = 0; i < CityInfoMenu.Rows.Length; i++)
         {
             string name = CityInfoMenu.Rows[i];
-            if (name == CityInfoMenu.Vitality && !GameSettings.ShowVitalityInfo) continue;
             bool on = saved?.Contains(name) ?? ((BarDefaults[0] >> i) & 1) != 0;
             if (on && _infoCells.TryGetValue(name, out var cell) && cell is GameButton { } shown)
                 row.Children.Add(new GameButton(shown.Text) { Lit = true, Margin = default });
