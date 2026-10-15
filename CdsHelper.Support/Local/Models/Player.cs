@@ -1883,11 +1883,19 @@ public sealed class Player
     public IReadOnlyDictionary<int, string> NamedDiscoveries => _namedDiscoveries;
 
     /// <summary>그 발견물의 이름을 적어 둔다.</summary>
+    /// <remarks>
+    /// 대본의 이름 · 꼬리말에는 자리표(<c>&lt;협&gt;</c> 따위)가 그대로 들어 있다 — 글자로 풀어 적는다.
+    /// 예전 세이브에 「신세계해&lt;협&gt;」으로 적힌 것도 되돌릴 때 이리 와서 풀린다.
+    /// </remarks>
     public void NameDiscovery(int id, string name)
     {
         if (id < 0 || string.IsNullOrWhiteSpace(name)) return;
-        _namedDiscoveries[id] = name.Trim();
+        _namedDiscoveries[id] = PlainDiscoveryName(name);
     }
+
+    /// <summary>대본 글자리표(<c>※Ｗ 협 · ※Ｘ 대륙 · ※Ｍ 남방대륙</c>)를 글자로 푼 이름.</summary>
+    public static string PlainDiscoveryName(string name) =>
+        name.Replace("<남방대륙>", "남방대륙").Replace("<대륙>", "대륙").Replace("<협>", "협").Trim();
 
     /// <summary>세이브에서 되돌린다.</summary>
     public void RestoreNamedDiscoveries(IEnumerable<KeyValuePair<int, string>>? named)

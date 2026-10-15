@@ -1165,8 +1165,9 @@ public sealed class DisevRunner
             // 1F 0A [이름] 0B [발견물] — 대본이 <b>기본 이름</b>을 박는다. 무르고 나서
             // 43 47 이 이리로 흘러온다 — 묻지 않고 그대로 정한다.
             case DisevCall.SetDiscoveryName:
-                if (args["Name"]?.GetValue<string>() is { Length: > 0 } fixedName)
+                if (args["Name"]?.GetValue<string>() is { Length: > 0 } rawName)
                 {
+                    string fixedName = Support.Local.Models.Player.PlainDiscoveryName(rawName);
                     _game.Player.NameDiscovery(I("Discovery"), fixedName);
                     Local.Helpers.DiscoveryTable.SetName(I("Discovery"), fixedName);
                 }
@@ -1560,7 +1561,8 @@ public sealed class DisevRunner
     /// </remarks>
     private bool NameDiscovery(int discovery, string suffix)
     {
-        suffix ??= "";
+        // 꼬리말의 자리표(「해<협>」)는 글자로 푼다 — 안 풀면 이름에 「<협>」이 그대로 남았다.
+        suffix = Support.Local.Models.Player.PlainDiscoveryName(suffix ?? "");
         while (true)
         {
             // 남는 칸은 <b>바이트</b>로 센다(0x00409917) — 꼬리말 한글 한 자가 두 칸을 먹는다.
