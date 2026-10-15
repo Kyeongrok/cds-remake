@@ -94,7 +94,7 @@ public sealed class GameOverDialog : GameWindow
     private const double DropRatio = 0.2;
 
     /// <summary>벽지 무늬 — 타이틀 화면 것을 그대로 깐다.</summary>
-    private static Brush Wallpaper() => ShipMapWindow.TitleBackground();
+    private static Brush Wallpaper() => WorldMapWindow.TitleBackground();
 
     /// <summary>사건 스틸 한 장을 밤색 액자에 넣는다. 못 읽으면 null.</summary>
     /// <param name="tall">액자까지 넣은 높이 — 물음창을 그 아래에 앉히는 데 쓴다.</param>
@@ -149,7 +149,7 @@ public sealed class GameOverDialog : GameWindow
         // YES 면 첫 화면(메인메뉴)으로 가고, NO(물림도 3 이다)면 <b>원본을 끝낸다</b> — 3 이 나오면
         // 비트 0x40 을 세우고(0x00410CF6) 판 고리를 빠져나가 프로그램이 닫힌다(0x00410D14 → 0x00410D21).
         // END GAME 처럼 게임 창을 닫는다. 부르는 쪽은 이어서 타이틀로 돌리려 드니 한 박자 늦춰 닫는다.
-        if (!dialog._again && ShipMapWindow.Current is { } game)
+        if (!dialog._again && WorldMapWindow.Current is { } game)
             game.Dispatcher.BeginInvoke(game.Close, System.Windows.Threading.DispatcherPriority.Background);
         return dialog._again;
     }

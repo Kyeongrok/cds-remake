@@ -257,7 +257,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
 
         // 아래 띠는 지도 창의 것이다 — 주인을 거슬러 올라가 찾는다.
         for (Window? w = Owner; w != null; w = w.Owner)
-            if (w is ShipMapWindow map)
+            if (w is WorldMapWindow map)
             {
                 map.Say(string.Join("   ", notes));
                 break;

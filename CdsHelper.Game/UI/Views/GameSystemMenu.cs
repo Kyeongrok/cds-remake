@@ -66,7 +66,7 @@ internal static class GameSystemMenu
     /// </summary>
     /// <remarks>
     /// 자택 「기능 → 저장」이 밟는 차례와 같다. V 글쇠가 이 자리를 곧바로 부른다
-    /// (<see cref="ShipMapWindow.SaveByKey"/>).
+    /// (<see cref="WorldMapWindow.SaveByKey"/>).
     /// </remarks>
     /// <returns>적기까지 갔는지(물음에 YES 를 골랐는지).</returns>
     public static bool Save(Window owner, Engine.Game game)
@@ -92,7 +92,7 @@ internal static class GameSystemMenu
     /// </remarks>
     public static void Load(Window view, GameMenuHost menu)
     {
-        if (view.Owner is not ShipMapWindow map) { menu.Close(); return; }
+        if (view.Owner is not WorldMapWindow map) { menu.Close(); return; }
         // 어느 칸을 열지 먼저 고르고 묻는다 — 손으로 적은 세이브가 열 칸까지 남는다.
         if (map.PickManualSave(menu.Window ?? view) is not { } file) return;
         if (!ConfirmDialog.Ask(menu.Window ?? view, "데이터를 불러 오겠습니다. 좋습니까?")) return;
@@ -116,7 +116,7 @@ internal static class GameSystemMenu
         }
 
         menu.Close();
-        if (view.Owner is ShipMapWindow map) map.ReturnToTitle();
+        if (view.Owner is WorldMapWindow map) map.ReturnToTitle();
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ internal static class GameSystemMenu
     /// </param>
     public static void Quit(Window view, Engine.Game game, GameMenuHost menu, GameMenuHost? cityMenu = null)
     {
-        if (view.Owner is not ShipMapWindow map) { menu.Close(); cityMenu?.Close(); return; }
+        if (view.Owner is not WorldMapWindow map) { menu.Close(); cityMenu?.Close(); return; }
 
         var shown = cityMenu?.Window;
         if (shown != null) shown.Visibility = Visibility.Hidden;

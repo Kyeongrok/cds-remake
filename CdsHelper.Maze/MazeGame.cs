@@ -9,7 +9,7 @@ namespace CdsHelper.Maze;
 /// 화면(<see cref="MazePuzzleDialog"/>)은 CdsHelper.Game 의 밤색 판을 물려받는데 그
 /// 판이 안쪽 것이라 화면도 안쪽으로 둘 수밖에 없다. 그래서 부르는 자리만 이렇게
 /// 따로 낸다 — 띄우는 쪽(CdsHelper.Form)이
-/// <c>ShipMapWindow.MazeGame = MazeGame.Play</c> 로 걸어 준다.
+/// <c>WorldMapWindow.MazeGame = MazeGame.Play</c> 로 걸어 준다.
 /// </remarks>
 public static class MazeGame
 {

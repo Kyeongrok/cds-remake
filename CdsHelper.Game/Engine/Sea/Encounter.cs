@@ -212,7 +212,7 @@ public static class Encounter
     private static string One(string[] lines, Random rng) => lines[rng.Next(lines.Length)];
 
     /// <summary>
-    /// 추격대장이 이름을 대며 거는 말은 <c>0x0055F6A8</c> 이고 ShipMapWindow 가 짓는다.
+    /// 추격대장이 이름을 대며 거는 말은 <c>0x0055F6A8</c> 이고 WorldMapWindow 가 짓는다.
     /// </summary>
     /// <remarks>
     /// <b>추격대(갈래 1)에만</b> 있다 — <c>0x004556E7</c> 이 그 사람을 찾아(<c>0x0044FD60</c>)

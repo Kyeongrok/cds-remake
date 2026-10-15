@@ -157,7 +157,7 @@ public sealed class MenuDesignerDialog : GameWindow
     /// </summary>
     /// <remarks>
     /// <see cref="GameUi.Sprites"/> 와 <see cref="GameUi.Font"/> 는 게임이 뜰 때
-    /// <see cref="ShipMapWindow"/> 가 한 번 넣는다. 헬퍼에서는 게임이 안 도니 비어 있어,
+    /// <see cref="WorldMapWindow"/> 가 한 번 넣는다. 헬퍼에서는 게임이 안 도니 비어 있어,
     /// 띠 단추가 <b>맨 네모</b>로 나고 글씨도 윈도 글꼴로 나온다. 여기서 채워 넣는다 —
     /// 세이브를 연 자리에서 게임 폴더를 찾는다.
     /// </remarks>

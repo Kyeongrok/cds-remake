@@ -32,7 +32,7 @@ namespace CdsHelper.Game.UI.Views;
 /// airspace 규칙상 D3D 화면 위에는 WPF 를 얹을 수 없으므로, 조작 줄은 화면 위가 아니라
 /// 위아래로 나눠 놓았다.
 /// </remarks>
-public sealed class ShipMapWindow : Window
+public sealed class WorldMapWindow : Window
 {
     private readonly ShipMapHost _host = new();
     private readonly TextBlock _status = new()
@@ -343,7 +343,7 @@ public sealed class ShipMapWindow : Window
         }
     }
 
-    public ShipMapWindow()
+    public WorldMapWindow()
     {
         UiFont.Install();   // 모드 「리디바탕 글꼴」 — 뜨는 창마다 글꼴을 건다
         Lang.InstallWpfHook();   // 일본어면 보통 윈도 글자(TextBlock)도 번역표로 바꾼다
@@ -2886,7 +2886,7 @@ public sealed class ShipMapWindow : Window
     /// 시설 창·상자들은 저마다 딴 창이라 글쇠가 지도까지 올라오지 않는다. 그래서 창 쪽에서
     /// 이 자리를 찾아 부른다. 헬퍼 앱에서는 게임이 안 도니 늘 <c>null</c> 이다.
     /// </remarks>
-    internal static ShipMapWindow? Current { get; private set; }
+    internal static WorldMapWindow? Current { get; private set; }
 
     /// <summary>
     /// V 글쇠로 저장한다 — 자택 「기능 → 저장」과 같은 차례다.

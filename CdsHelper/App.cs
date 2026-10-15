@@ -33,7 +33,7 @@ internal class App : PrismApplication
         DispatcherUnhandledException += (s, args) =>
         {
             // 게임 창을 닫는 사이 늦게 뜨려던 창이 내는 오류는 조용히 넘긴다 — 닫힌 창을 주인으로 삼으려던 것이다.
-            if (CdsHelper.Game.UI.Views.ShipMapWindow.ShuttingDown) { args.Handled = true; return; }
+            if (CdsHelper.Game.UI.Views.WorldMapWindow.ShuttingDown) { args.Handled = true; return; }
             MessageBox.Show($"DispatcherUnhandledException:\n{args.Exception.Message}\n\n{args.Exception.StackTrace}", "UI 오류", MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
         };
@@ -45,7 +45,7 @@ internal class App : PrismApplication
         // 여기서 벌어지는데, 앱 설정이 먼저 저장되면 옛 값이 지워진 뒤라 놓치게 된다.
         GameSettings.Load();
 
-        // BGM 은 게임 창(ShipMapWindow)을 열어야 받아지는데, 헬퍼는 그 창을 안 거치고도
+        // BGM 은 게임 창(WorldMapWindow)을 열어야 받아지는데, 헬퍼는 그 창을 안 거치고도
         // 오래 쓴다 — 여기서도 조용히 미리 받아 둔다(물음창 없이, 실패해도 그냥 넘어간다).
         PrefetchBgmAsync();
 

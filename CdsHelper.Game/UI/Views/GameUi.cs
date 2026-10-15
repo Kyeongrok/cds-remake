@@ -400,7 +400,7 @@ internal static class GameUi
         double dpi = visual == null ? 1 : VisualTreeHelper.GetDpi(visual).DpiScaleX;
         if (dpi <= 0) dpi = 1;
 
-        if (ShipMapWindow.Current is { ActualWidth: > 0, ActualHeight: > 0 } room)
+        if (WorldMapWindow.Current is { ActualWidth: > 0, ActualHeight: > 0 } room)
             while (zoom > 1 && (w * zoom / dpi > room.ActualWidth * FitMargin || h * zoom / dpi > room.ActualHeight * 0.85))
                 zoom--;
         return zoom / dpi;

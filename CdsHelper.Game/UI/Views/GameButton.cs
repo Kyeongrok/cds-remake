@@ -24,7 +24,7 @@ namespace CdsHelper.Game.UI.Views;
 ///   GameUi.MenuItem              무늬 셋 · 흐림       초점 없음 · 켜고 끄기 없음
 ///   GameUi.BandButton            켜고 끄기            초점 없음 · Button 무늬만
 ///   GameUi.FocusGroup.Add        초점                 켜고 끄기 없음 · Button 무늬만
-///   ShipMapWindow.TitleMenuItem  초점(따로 구현)       나머지 없음
+///   WorldMapWindow.TitleMenuItem  초점(따로 구현)       나머지 없음
 /// </code>
 /// 넷째는 <c>FocusLight</c>·<c>FocusDark</c>·<c>FocusBlink</c> 를 제 것으로 다시 선언하고
 /// 깜빡임을 손수 굴리기까지 했다 — <see cref="GameUi"/> 에 같은 값이 이미 있는데도.

@@ -59,7 +59,7 @@ public sealed class LibraryDialog : GameWindow
     /// 못 읽는 책이 어느 말로 적혔는지 이르는 곳 — <b>게임 화면 맨 아래 띠</b>다.
     /// </summary>
     /// <remarks>
-    /// 왕궁에서 "명성치가 모자랍니다." 가 뜨는 그 자리다(<see cref="ShipMapWindow.Say"/>).
+    /// 왕궁에서 "명성치가 모자랍니다." 가 뜨는 그 자리다(<see cref="WorldMapWindow.Say"/>).
     /// 책장 밑에 따로 띠를 두는 것이 아니다.
     /// </remarks>
     private readonly Action<string>? _say;

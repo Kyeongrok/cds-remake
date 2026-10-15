@@ -3,7 +3,7 @@
 타이틀 화면 바탕에서 반복 무늬 한 칸을 잘라 asset/title/title-tile.png 로 저장한다.
 
 앱은 이 한 칸을 바둑판처럼 깔아 타이틀 바탕을 만든다
-(CdsHelper.Game/UI/Views/ShipMapWindow.cs 의 TitleBackground).
+(CdsHelper.Game/UI/Views/WorldMapWindow.cs 의 TitleBackground).
 화면 전체를 그대로 넣지 않는 것은 창 크기가 제각각이라서다 — 한 칸만 두면
 어떤 크기에서도 무늬가 이어진다.
 

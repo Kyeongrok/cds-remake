@@ -128,7 +128,7 @@ public sealed class ShipMapHost : HwndHost
     /// 함대 속도를 물어보는 이 — (풍향, 풍속, 뱃머리, 뭍인지) 를 받아 게임 속도를 낸다.
     /// </summary>
     /// <remarks>
-    /// 지도는 함대도 돛 효율표도 모른다. 그래서 붙이는 쪽(<see cref="ShipMapWindow"/>)이
+    /// 지도는 함대도 돛 효율표도 모른다. 그래서 붙이는 쪽(<see cref="WorldMapWindow"/>)이
     /// 손을 하나 걸어 준다 — <see cref="MonthOf"/> 와 같은 얼개다.
     /// </remarks>
     public Func<int, int, int, bool, int>? FleetSpeed { get; set; }

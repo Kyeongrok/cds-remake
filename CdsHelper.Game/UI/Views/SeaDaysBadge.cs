@@ -93,7 +93,7 @@ internal sealed class SeaDaysBadge : Window
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             // 투명 창을 띄우다 그림 판을 못 붙이면(CompositionTarget.SetRootVisual) 이 동그라미는 버린다 —
-            // 덤으로 띄우는 쪽지라 게임을 멈출 일이 아니다. 다음 번에 새로 짓는다(ShipMapWindow.SyncDaysBadge).
+            // 덤으로 띄우는 쪽지라 게임을 멈출 일이 아니다. 다음 번에 새로 짓는다(WorldMapWindow.SyncDaysBadge).
             _closed = true;
             OverlayNotes.Changed -= Apply;
             GameWindow.TryClose(this);

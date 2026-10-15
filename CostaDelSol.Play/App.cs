@@ -14,7 +14,7 @@ namespace CostaDelSol.Play;
 /// 게임만 띄우는 실행 파일 — <c>CostaDelSol.exe</c>.
 /// </summary>
 /// <remarks>
-/// 개발도구(<c>Editor.exe</c>)를 거치지 않고 <see cref="ShipMapWindow"/> 를 바로 연다.
+/// 개발도구(<c>Editor.exe</c>)를 거치지 않고 <see cref="WorldMapWindow"/> 를 바로 연다.
 /// 두 exe 는 <b>같은 폴더에 나란히</b> 놓이고 설정도 같은 자리를 본다
 /// (<c>%APPDATA%\CdsHelper</c>) — 개발도구에서 세이브를 열어 두었으면 이쪽도 그 게임 폴더를
 /// 그대로 쓴다.
@@ -43,7 +43,7 @@ internal sealed class App : Application
         DispatcherUnhandledException += (_, args) =>
         {
             // 게임 창을 닫는 사이 늦게 뜨려던 창이 내는 오류는 조용히 넘긴다 — 닫힌 창을 주인으로 삼으려던 것이다.
-            if (CdsHelper.Game.UI.Views.ShipMapWindow.ShuttingDown) { args.Handled = true; return; }
+            if (CdsHelper.Game.UI.Views.WorldMapWindow.ShuttingDown) { args.Handled = true; return; }
             PlayStats.Error(args.Exception);
             CrashReport.Report(args.Exception, fatal: false);
             args.Handled = true;
@@ -76,12 +76,12 @@ internal sealed class App : Application
         CdsHelper.Game.Local.Helpers.Lang.InstallWpfHook();
 
         // 미궁은 딴 어셈블리에 있어 게임 쪽에서 곧장 못 부른다 — 여기서 걸어 준다.
-        // 일기토는 이제 게임 쪽(ShipMapWindow.PlayDuel)이 제 판을 곧장 부른다.
-        ShipMapWindow.MazeGame = CdsHelper.Maze.MazeGame.Play;
+        // 일기토는 이제 게임 쪽(WorldMapWindow.PlayDuel)이 제 판을 곧장 부른다.
+        WorldMapWindow.MazeGame = CdsHelper.Maze.MazeGame.Play;
 
         // 게임 창은 주인이 없다. 창이 <c>CenterOwner</c> 로 서 있어 주인이 없으면
         // 자리가 어정쩡하게 잡힌다 — 여기서는 화면 한가운데로 못 박는다.
-        var window = new ShipMapWindow { WindowStartupLocation = WindowStartupLocation.CenterScreen };
+        var window = new WorldMapWindow { WindowStartupLocation = WindowStartupLocation.CenterScreen };
         MainWindow = window;
         window.Show();
 
@@ -104,7 +104,7 @@ internal sealed class App : Application
     /// 「업데이트됐다」는 것은 <b>켠 판이 마지막으로 노트를 보여 준 판과 다르다</b>로 안다
     /// (<see cref="GameSettings.NotesSeenVersion"/>). 노트에 지금 판 대목이 없으면(개발 중 빌드) 아무것도 안 한다.
     /// </remarks>
-    private static void ShowReleaseNotes(ShipMapWindow window)
+    private static void ShowReleaseNotes(WorldMapWindow window)
     {
         if (typeof(App).Assembly.GetName().Version is not { } version) return;
         string current = ReleaseNotes.Trim(version).ToString();
@@ -122,7 +122,7 @@ internal sealed class App : Application
     /// (<see cref="GameSettings.SendStats"/>) 다시 알리지 않는다. 보낼 수 없는 판(받는 곳 주소가 없거나
     /// 손으로 빌드한 판)에서는 알리지도 켜지도 않는다.
     /// </summary>
-    private static void AskStats(ShipMapWindow window)
+    private static void AskStats(WorldMapWindow window)
     {
         if (GameSettings.SendStats == true || !PlayStats.CanUploadBuild || !window.IsLoaded) return;
         NoticeDialog.Show(window,
@@ -140,7 +140,7 @@ internal sealed class App : Application
     /// 「아니오」면 원본을 끌 때 적용된다(<see cref="UpdateManager.WaitExitThenApplyUpdates"/>).
     /// 인터넷이 없거나 GitHub 이 막혀도 게임은 그대로 돈다 — 조용히 넘어간다.
     /// </remarks>
-    private static async Task CheckForUpdateAsync(ShipMapWindow window)
+    private static async Task CheckForUpdateAsync(WorldMapWindow window)
     {
         try
         {

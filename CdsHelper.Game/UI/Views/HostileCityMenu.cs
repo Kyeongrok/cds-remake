@@ -71,7 +71,7 @@ internal static class HostileCityMenu
         IGateStage? fx = scene ?? stage;
 
         // 그림이 펴졌으면 이미 도시에 닿은 것이라 곡도 그 도시 것으로 바뀐다.
-        // 못 들어가고 물러서면 부르는 쪽이 뭍·바다 곡으로 되돌린다(ShipMapWindow.PassGate).
+        // 못 들어가고 물러서면 부르는 쪽이 뭍·바다 곡으로 되돌린다(WorldMapWindow.PassGate).
         if (scene != null)
             game.Bgm.Play(BgmPlayer.CityTrackForCulture(game.CityRows?.CultureOf(city) ?? 0));
         try

@@ -13,7 +13,7 @@ namespace CdsHelper.Game.Engine;
 /// 한 판. 게임 폴더와 거기서 읽어 온 표들, 제독, 주사위, 소리를 한자리에 든다.
 /// </summary>
 /// <remarks>
-/// 화면(<see cref="UI.Views.ShipMapWindow"/> · <see cref="UI.Views.CityPicView"/>)들은 이것을
+/// 화면(<see cref="UI.Views.WorldMapWindow"/> · <see cref="UI.Views.CityPicView"/>)들은 이것을
 /// 받아 쓴다. 예전에는 화면마다 제 표를 열어, 이를테면 힌트 표가 네 군데서 따로 열렸다.
 ///
 /// 표는 <b>처음 쓸 때</b> 연다 — 도시 그림만 20MB 라 미리 읽으면 첫 화면이 늦다.

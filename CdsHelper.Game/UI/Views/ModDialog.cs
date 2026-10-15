@@ -508,7 +508,7 @@ public sealed class ModDialog : GameWindow
 
         // 수에즈 운하 — 지중해와 수에즈만 사이에 바닷길.
         general.Children.Add(Toggle("수에즈 운하", GameSettings.SuezCanal,
-            on => { GameSettings.SuezCanal = on; ShipMapWindow.Current?.RefreshSuezCanal(); },
+            on => { GameSettings.SuezCanal = on; WorldMapWindow.Current?.RefreshSuezCanal(); },
             "원본에 없는 것입니다(운하는 1869년) — 포트사이드와 수에즈 사이 지협에 두 칸 폭의 바닷길을 뚫어, 지중해에서 홍해로"
             + " 배로 곧장 지나갈 수 있게 합니다."));
 

@@ -937,7 +937,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     ///     0x00468874  성문이면 0x005519C0 「출발할 때는…」, 항구면 0x005519F0 「출항할 때에는…」
     /// </code>
     /// 적대 도시 차림표(<c>0x004687FD</c>)는 이 칸 안에서 돈다 — <b>뭍으로 온 성문</b>은 도시 그림을
-    /// 열기 전에 이미 봤고(<c>ShipMapWindow.PassGate</c>), <b>배로 닿은 항구</b>는 배를 댈 때 출입여부
+    /// 열기 전에 이미 봤고(<c>WorldMapWindow.PassGate</c>), <b>배로 닿은 항구</b>는 배를 댈 때 출입여부
     /// 2 만 봤으므로(<c>0x004770BD</c>) 여기서 「마을에 들어간다」를 고를 때 1 을 본다.
     /// </remarks>
     private void LeaveGateway(FacilityKind kind, bool arrived)
@@ -981,7 +981,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 뚫었으면 참. 물러섰으면 항구 차림표를 도로 열어 두고 거짓 — 출항은 할 수 있어야 한다.
     /// </summary>
     /// <remarks>
-    /// 조약은 여기서 다시 안 본다 — 배를 댈 때 이미 봤다(<c>ShipMapWindow.PassGate</c>).
+    /// 조약은 여기서 다시 안 본다 — 배를 댈 때 이미 봤다(<c>WorldMapWindow.PassGate</c>).
     /// 도시 그림은 이미 떠 있으므로 차림표만 그 위에 낸다. 잠입하다 잡혀 죽으면 게임 오버다.
     /// </remarks>
     private bool PassTownGate()
@@ -994,7 +994,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (end.GameOver)
         {
             GameOverDialog.Show(this, _game.EventStills, end.Picture, bgm: _game.Bgm);
-            if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+            if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
             return false;
         }
         if (end.Entered) return true;
@@ -1162,7 +1162,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _ => "정신이 드나? 바보같은 녀석, 얌전히 용서를 빌었더라면 도와 주었을 것을..., 쓸데없는 수고를 하게 하다니!",
         });
         GameOverDialog.Show(this, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
-        if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+        if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
         return true;
     }
 
@@ -1213,7 +1213,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         TavernMenu.LostDuel(this, _player, duel, face, new GameRandom(Environment.TickCount),
                             mateFought: false, canFlee: false, canSpare: false);
         GameOverDialog.Show(this, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
-        if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+        if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
     }
 
     /// <summary>
@@ -1310,16 +1310,16 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (Engine.Disev.DisevRunner.Probe(this, _game, row.Id) == Engine.Disev.DisevRunner.ScriptState.Held) return true;
 
         // 발견 대본(DISEV)이 있으면 <b>그것이 다 한다</b> — 동영상 · 대사 · 육상전까지. 바다·뭍 발견
-        // (ShipMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
+        // (WorldMapWindow.CheckDiscovery)과 같은 길이다. 예전에는 건물 발견만 그림 한 장으로 끝내서
         // 파르테논 신전에서 동영상도 육상전도 안 났다.
-        // 대본이 도는 동안 도시 그림이 파래진다 — 바다·뭍 발견의 지도(ShipMapWindow.Tint)와 같은 몫이다.
+        // 대본이 도는 동안 도시 그림이 파래진다 — 바다·뭍 발견의 지도(WorldMapWindow.Tint)와 같은 몫이다.
         bool scripted = RunShaded(row.Id);
         // 대본이 게임 오버로 끝났으면(파르테논 육상전에서 전멸하거나 물러나 저주를 받으면) 발견을
-        // 적지 않고 게임을 끝낸다 — 바다·뭍 발견과 같은 차례다(ShipMapWindow.CheckDiscovery).
+        // 적지 않고 게임을 끝낸다 — 바다·뭍 발견과 같은 차례다(WorldMapWindow.CheckDiscovery).
         if (Engine.Disev.DisevRunner.LastEndedInGameOver)
         {
             GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
-            if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+            if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
             return false;
         }
 
@@ -1367,7 +1367,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (Engine.Disev.DisevRunner.LastEndedInGameOver)
             {
                 GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
-                if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+                if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
                 return true;
             }
 
@@ -1420,7 +1420,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (Engine.Disev.DisevRunner.LastEndedInGameOver)
         {
             GameOverDialog.Show(this, _game.EventStills, Engine.Disev.DisevRunner.LastGameOverPicture, bgm: _game.Bgm);
-            if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+            if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
             return true;
         }
         // 결과 코드가 1(4D)일 때만 건물에 못 든다(0x004AB4AC). 도서관 안내처럼 말만 하고 끝나면 그대로 들어간다.
@@ -1482,7 +1482,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 「명성치가 모자랍니다.」(0x00544BA0 · 왕궁 0x00544BF0)는 아래 띠로 간다(0x0040D3B0 → 0x0040E0A0 — 소리 0x1D 가 같이 난다).
         // 0x00580C48 은 화면 맨 아래 31점 높이로 지어지는 띠 창이다(0x0040DF80). 예전에는 [0x00580C6C]&2 를
         // 디버그 깃발로 보고 안 냈는데, 그 칸은 띠 창 자신의 깃발(+0x24)이다.
-        (Owner as ShipMapWindow)?.Say(building.Code == PalaceCode ? "명성치가 모자랍니다!" : "명성치가 모자랍니다.");
+        (Owner as WorldMapWindow)?.Say(building.Code == PalaceCode ? "명성치가 모자랍니다!" : "명성치가 모자랍니다.");
         _game.Sfx?.Play(SoundBank.BandNoticePart);
         return false;
     }
@@ -1951,8 +1951,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 ? () => KeepCityMenu(() => PersonInfoDialog.ShowNobility(this, _game))
                 : null,
             // 바다 「정보」와 같은 발견물 지도 — 지도 창이 연다(단축키 D 와 같은 길).
-            ShowDiscoveryMap: Local.Settings.GameSettings.ShowDiscoveryMapMenu && Owner is ShipMapWindow
-                ? () => KeepCityMenu(() => (Owner as ShipMapWindow)?.MapByKey())
+            ShowDiscoveryMap: Local.Settings.GameSettings.ShowDiscoveryMapMenu && Owner is WorldMapWindow
+                ? () => KeepCityMenu(() => (Owner as WorldMapWindow)?.MapByKey())
                 : null));
 
     /// <summary>
@@ -2021,7 +2021,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </remarks>
     private void LookAtChart()
     {
-        if (Owner is not ShipMapWindow map) { CloseCityMenu(); return; }
+        if (Owner is not WorldMapWindow map) { CloseCityMenu(); return; }
         map.ShowSeaChart(this, _cityMenu.Window);
     }
 
@@ -2672,7 +2672,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         CloseMenu();
         GameOverDialog.Show(this, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
-        if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+        if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
     }
 
     void ITownScreen.LeaveTavern()
@@ -2870,11 +2870,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!HomeRooms.Retire()) return;
         CloseMenu();
         Close();
-        if (Owner is ShipMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
+        if (Owner is WorldMapWindow map) Dispatcher.BeginInvoke(map.ReturnToTitle);
     }
 
     void ITownScreen.ReadBooks() =>
-        Books.Read(Menu.Window ?? this, text => (Owner as ShipMapWindow)?.Say(text));
+        Books.Read(Menu.Window ?? this, text => (Owner as WorldMapWindow)?.Say(text));
 
 
     bool ITownScreen.IsDrink(string item) => DrinkAt(item) != null;

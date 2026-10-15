@@ -585,16 +585,16 @@ public class CdsHelperWindow : CdsWindow
     /// 사운드테스트 — 게임 타이틀에 있던 줄을 이리로 옮겼다(<c>0x0045FBCD</c>).
     /// </summary>
     /// <remarks>
-    /// 소리를 트는 것은 게임 쪽 <c>ShipMapWindow</c> 다(배경음악·효과음 둘 다 그쪽이 쥐고 있다).
+    /// 소리를 트는 것은 게임 쪽 <c>WorldMapWindow</c> 다(배경음악·효과음 둘 다 그쪽이 쥐고 있다).
     /// 이미 떠 있는 창이 있으면 그것에 물어보고, 없으면 새로 띄워 놓고 부른다.
     /// </remarks>
     private void OnSoundTestMenuClick(object sender, RoutedEventArgs e)
     {
-        var map = Application.Current.Windows.OfType<CdsHelper.Game.UI.Views.ShipMapWindow>().FirstOrDefault();
+        var map = Application.Current.Windows.OfType<CdsHelper.Game.UI.Views.WorldMapWindow>().FirstOrDefault();
         if (map == null)
         {
             OpenShipMap();
-            map = Application.Current.Windows.OfType<CdsHelper.Game.UI.Views.ShipMapWindow>().FirstOrDefault();
+            map = Application.Current.Windows.OfType<CdsHelper.Game.UI.Views.WorldMapWindow>().FirstOrDefault();
         }
         if (map == null) return;
 
@@ -606,9 +606,9 @@ public class CdsHelperWindow : CdsWindow
     {
         // 미궁 64 퍼즐은 CdsHelper.Maze 에 따로 있다. 그쪽이 CdsHelper.Game 을 물고
         // 있어서 게임 쪽에서 곧장 못 부른다 — 띄우는 여기서 걸어 준다.
-        CdsHelper.Game.UI.Views.ShipMapWindow.MazeGame = CdsHelper.Maze.MazeGame.Play;
+        CdsHelper.Game.UI.Views.WorldMapWindow.MazeGame = CdsHelper.Maze.MazeGame.Play;
 
-        var win = new CdsHelper.Game.UI.Views.ShipMapWindow { Owner = this };
+        var win = new CdsHelper.Game.UI.Views.WorldMapWindow { Owner = this };
         win.Show();
     }
 

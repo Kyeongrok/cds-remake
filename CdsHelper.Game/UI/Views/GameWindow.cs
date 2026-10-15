@@ -39,7 +39,7 @@ public class GameWindow : Window
     /// </summary>
     /// <remarks>
     /// 상자마다 제 창이라 글쇠가 지도까지 안 올라온다. 그래서 창 갈래 하나에 걸어 두고
-    /// 함대 창(<see cref="ShipMapWindow.Current"/>)을 찾아 부른다.
+    /// 함대 창(<see cref="WorldMapWindow.Current"/>)을 찾아 부른다.
     ///
     /// <b>글자 칸에서는 안 먹는다</b> — 이름을 적다가 v 를 치면 저장을 물어 오면 곤란하다.
     /// 고침 글쇠(Ctrl·Alt)를 짚은 것도 넘긴다.
@@ -140,56 +140,56 @@ public class GameWindow : Window
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.SaveKey, Key.V))
         {
-            ShipMapWindow.Current?.SaveByKey(window);
+            WorldMapWindow.Current?.SaveByKey(window);
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.MapKey, Key.D))
         {
-            ShipMapWindow.Current?.MapByKey();
+            WorldMapWindow.Current?.MapByKey();
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.ModKey, Key.M))
         {
-            ShipMapWindow.Current?.ModByKey();
+            WorldMapWindow.Current?.ModByKey();
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.NavKey, Key.R))
         {
-            ShipMapWindow.Current?.NavByKey();
+            WorldMapWindow.Current?.NavByKey();
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.ItemsKey, Key.I))
         {
-            ShipMapWindow.Current?.ItemsByKey(window);
+            WorldMapWindow.Current?.ItemsByKey(window);
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.HintsKey, Key.H))
         {
-            ShipMapWindow.Current?.HintsByKey(window);
+            WorldMapWindow.Current?.HintsByKey(window);
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.PersonKey, Key.X))
         {
-            ShipMapWindow.Current?.PersonByKey(window);
+            WorldMapWindow.Current?.PersonByKey(window);
             e.Handled = true;
             return;
         }
 
         if (e.Key == KeyOf(Local.Settings.GameSettings.PatronKey, Key.P))
         {
-            ShipMapWindow.Current?.PatronsByKey(window);
+            WorldMapWindow.Current?.PatronsByKey(window);
             e.Handled = true;
         }
     }
@@ -223,7 +223,7 @@ public class GameWindow : Window
     {
         for (var w = wanted; w != null; w = w.Owner)
             if (!ReferenceEquals(w, self) && Shown(w)) return w;
-        return wanted != null && ShipMapWindow.Current is Window map && !ReferenceEquals(map, self) && Shown(map) ? map : null;
+        return wanted != null && WorldMapWindow.Current is Window map && !ReferenceEquals(map, self) && Shown(map) ? map : null;
     }
 
     /// <summary>창 손잡이가 살아 있는지 — 한 번도 안 떴거나 닫힌 창은 0 이다.</summary>

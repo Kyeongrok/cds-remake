@@ -151,7 +151,7 @@ internal static class PersonInfoMenu
     /// 오른쪽 설명 칸 — 그 사람이 그 자리에서 <b>맡고 있는</b> 기능 · 언어가 무슨 효과를 주는지.
     /// </summary>
     /// <remarks>
-    /// 효과는 엔진이 실제로 그 자리를 보는 곳에서 모았다(SeaEvents · LandBattle · SeaCombat · ShipMapWindow 의 측량 · 운용술).
+    /// 효과는 엔진이 실제로 그 자리를 보는 곳에서 모았다(SeaEvents · LandBattle · SeaCombat · WorldMapWindow 의 측량 · 운용술).
     /// 도서관은 네 자리 모두의 기능을 보므로 끝에 따로 적는다.
     /// </remarks>
     /// <param name="slot">부하 자리. −1 이면 제독이다.</param>

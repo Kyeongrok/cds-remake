@@ -807,7 +807,7 @@ public sealed class DisevRunner
             case DisevCall.SpecialEncounter:
             {
                 int n = I("Scene");
-                if (n < DisevScript.Encounters.Length && _owner is UI.Views.ShipMapWindow map)
+                if (n < DisevScript.Encounters.Length && _owner is UI.Views.WorldMapWindow map)
                     map.PlayEventScene(DisevScript.Encounters[n].Scene);
                 return null;
             }
@@ -1093,7 +1093,7 @@ public sealed class DisevRunner
             // 0D 0D [인물] — 그 인물(괴물)과 해전. 지도 창에서만 연다 — 판을 열 손이 거기 있다.
             case DisevCall.SeaBattle:
             {
-                if (_owner is not UI.Views.ShipMapWindow sea) return null;
+                if (_owner is not UI.Views.WorldMapWindow sea) return null;
 
                 var end = sea.SeaFight(I("Person"));
                 _result = end.Won;
@@ -1384,7 +1384,7 @@ public sealed class DisevRunner
             // 원본은 돌파 보상을 치른 갈래에서만 결과 1 을 박는다(0x0042B154) — 덫·실패·포기는 0.
             // 걸려 있지 않으면 대본이 막히지 않게 이긴 것으로 친다.
             case DisevMinigame.Maze:
-                return UI.Views.ShipMapWindow.MazeGame?.Invoke(_owner, _game.Random, _game.Player, _game.Sfx) ?? true;
+                return UI.Views.WorldMapWindow.MazeGame?.Invoke(_owner, _game.Random, _game.Player, _game.Sfx) ?? true;
             // 낚시는 대어일 때만 이긴 것이다(0x0047AD6C).
             case DisevMinigame.Fishing:
                 return FishingGameDialog.Play(_owner, _game.Random);

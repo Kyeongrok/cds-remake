@@ -63,7 +63,7 @@ description: 원본(CDS_95.EXE)에 있는데 앱에 없는 것을 하나 옮긴�
 ### 2. 구현
 
 - 규칙은 `CdsHelper.Game/Engine/...`, 화면은 `UI/Views/...`, 저장 값은 `CdsHelper.Support` 의 `Player` 에 둔다.
-- 세이브에 새 칸을 더하면 `Engine/GameSave.cs` 의 `Data` 와 `Save`, 그리고 `ShipMapWindow` 의 되돌리는 자리를
+- 세이브에 새 칸을 더하면 `Engine/GameSave.cs` 의 `Data` 와 `Save`, 그리고 `WorldMapWindow` 의 되돌리는 자리를
   함께 고친다. **옛 세이브가 열려야 한다**(없는 칸은 null 로 물러선다).
 - 주석은 기존 문체대로 「~한다」로 쓰고 근거 주소(`0x004xxxxx`)를 함께 적는다. 문구는 원본 그대로 옮긴다.
 - 여러 줄을 정확히 바꿀 때는 파이썬 패치 글(`patchlib.py` 의 `patch`)을 스크래치패드에 지어 쓴다 —

@@ -2088,7 +2088,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private void EndGame()
     {
         GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
-        if (_view.Owner is ShipMapWindow map) _view.Dispatcher.BeginInvoke(map.ReturnToTitle);
+        if (_view.Owner is WorldMapWindow map) _view.Dispatcher.BeginInvoke(map.ReturnToTitle);
     }
 
     /// <summary>
@@ -2246,7 +2246,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             // 베였다 — 그 자리에서 판이 끝난다(0x0044AF40(4)). 배는 손대지 않는다.
             GameOverDialog.Show(_view, _game.EventStills, GameOverDialog.MutinyLost, bgm: _game.Bgm);
-            if (_view.Owner is ShipMapWindow map)
+            if (_view.Owner is WorldMapWindow map)
                 _view.Dispatcher.BeginInvoke(map.ReturnToTitle);
             return false;
         }
