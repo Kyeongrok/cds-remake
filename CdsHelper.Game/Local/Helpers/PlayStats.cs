@@ -162,6 +162,15 @@ public static class PlayStats
             if (mine != null) key += $"<{mine.DeclaringType?.Name}.{mine.Name}";
             key += $":{ex.HResult:X8}";
         }
+        else
+        {
+            // 우리 코드 안에서 났어도 작은 속성(ShipyardMenu.get__player 따위)이면 어디서 불렀는지 몰라 못 고친다 —
+            // 부른 자리(다른 메서드인 첫 우리 쪽 자리)를 덧붙인다.
+            var caller = new System.Diagnostics.StackTrace(ex).GetFrames()
+                .Select(f => f.GetMethod())
+                .FirstOrDefault(m => m != null && m != at && m.DeclaringType?.Namespace?.StartsWith("CdsHelper") == true);
+            if (caller != null) key += $"<{caller.DeclaringType?.Name}.{caller.Name}";
+        }
         Count("error", key, null);
         Flush();
     }
