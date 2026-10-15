@@ -2821,15 +2821,20 @@ public sealed class ShipMapWindow : Window
     /// <param name="owner">창의 주인. 도시 그림이다.</param>
     /// <param name="menu">잠깐 감출 커맨드 창. 닫으면 도로 낸다.</param>
     internal void ShowSeaChart(Window owner, Window? menu) =>
-        WithMenuHidden(menu, () => SeaChartDialog.ShowWorld(owner, _host, _game.Player.Explored));
+        WithMenuHidden(menu, () => SeaChartDialog.ShowWorld(owner, _host, _game.Player.Explored), holdNotes: true);
 
     /// <summary>
     /// 커맨드 창을 감춘 채 지도 창을 띄우고, 닫히면 그 창을 도로 낸다 — 원본은 지도를 닫으면
     /// 「지도를 본다」 메뉴를 다시 띄운다(<c>0x0042617F</c>).
     /// </summary>
-    private static void WithMenuHidden(Window? menu, Action show)
+    /// <param name="holdNotes">
+    /// 겹쳐 보기 쪽지도 걷어 둘지 — 지도 창(640 폭)이 도시 그림보다 넓어 왼쪽 쪽지를 덮고 한 글자 폭만 남겨,
+    /// 쪽지가 짜부라진 듯 보였다.
+    /// </param>
+    private static void WithMenuHidden(Window? menu, Action show, bool holdNotes = false)
     {
         if (menu != null) menu.Visibility = Visibility.Hidden;
+        using var notes = holdNotes ? OverlayNotes.Hold() : null;
         try { show(); }
         finally
         {
@@ -4035,10 +4040,10 @@ public sealed class ShipMapWindow : Window
     private GameMenu MapMenuBox() => new("지도를 본다", null,
     [
         ("항해지도", () => WithMenuHidden(CommandMenu.Window, () =>
-            SeaChartDialog.ShowWorld(this, _host, _game.Player.Explored))),
+            SeaChartDialog.ShowWorld(this, _host, _game.Player.Explored), holdNotes: true)),
         ("주변지도", () => WithMenuHidden(CommandMenu.Window, () =>
             SeaChartDialog.ShowAround(this, _host, _game.Discoveries, _game.Player,
-                                      _game.CityVisible, SurveyLevel()))),
+                                      _game.CityVisible, SurveyLevel()), holdNotes: true)),
         ("돌아간다", CommandMenu.Pop),
     ]);
 
