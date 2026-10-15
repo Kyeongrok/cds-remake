@@ -36,6 +36,8 @@ public abstract class TranslatedLanguage : ILanguage
     {
         if (string.IsNullOrEmpty(korean)) return korean;
         if (Table().TryGetValue(korean, out var done) && done.Length > 0) return done;
+        // 한글이 없으면 이미 번역된 글(칸마다 번역해 이은 줄 따위)이다 — 다시 맞춰 보지 않는다.
+        if (!korean.Any(c => c is >= '가' and <= '힣')) return korean;
         lock (_seen)
         {
             if (_seen.TryGetValue(korean, out var known)) return known;

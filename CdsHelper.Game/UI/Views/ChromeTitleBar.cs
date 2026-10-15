@@ -267,7 +267,7 @@ internal static class ChromeTitleBar
     /// </summary>
     /// <remarks>
     /// 어느 언어로 켜 있든 찾을 수 있게 단추 글은 영어로, 목록은 그 언어 제 이름(한국어 · 日本語)으로 둔다 —
-    /// 윈도 글자 갈고리(<see cref="Lang.InstallWpfHook"/>)가 이름을 번역하지 않게 글을 묶어 넣는다.
+    /// 윈도 글자 훅(<see cref="Lang.InstallWpfHook"/>)가 이름을 번역하지 않게 글을 묶어 넣는다.
     /// 고르면 설정에만 적고 <b>다시 켤 때</b> 먹는다(<see cref="Lang.Current"/>는 켤 때 한 번 정한다).
     /// </remarks>
     private static FrameworkElement LanguageButton(Window win)
@@ -338,7 +338,7 @@ internal static class ChromeTitleBar
         return button;
     }
 
-    /// <summary>번역 갈고리가 안 건드리는 글 — 글을 묶어 넣으면 갈고리가 건너뛴다.</summary>
+    /// <summary>번역 훅이 안 건드리는 글 — 글을 묶어 넣으면 훅이 건너뛴다.</summary>
     private static TextBlock Fixed(string text, double size)
     {
         var block = new TextBlock { Foreground = Title, FontSize = size, VerticalAlignment = VerticalAlignment.Center };

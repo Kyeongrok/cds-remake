@@ -3215,7 +3215,7 @@ public sealed class ShipMapWindow : Window
     private static string? PickSave(Window owner, List<GameSave.AutoSlot> slots, string caption, string whenEmpty)
     {
         static string Row(string name, string city, string at, string found) =>
-            GameUi.Pad(name, 28) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + found;
+            GameUi.Pad(name, 28) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + Lang.T(found);
 
         var rows = slots.Select(s =>
         {

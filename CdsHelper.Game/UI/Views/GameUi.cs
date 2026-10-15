@@ -1712,11 +1712,22 @@ internal static class GameUi
     /// </remarks>
     /// <param name="text">채울 말.</param>
     /// <param name="width">몇 칸으로 맞출지(바이트).</param>
+    /// <remarks>
+    /// 칸 글은 <b>먼저 번역하고</b>(<see cref="Lang.T"/>) 그 번역의 폭으로 채운다 — 한국어로 채운 줄을 통째로 번역하면
+    /// 이름 길이가 바뀌어 칸이 어긋났다(일본어 불러오기 창). 반각 가나(<c>U+FF61~FF9F</c>)는 한 칸이다.
+    /// </remarks>
     public static string Pad(string text, int width)
     {
+        text = Lang.T(text);
+        return text + new string(' ', Math.Max(0, width - Cells(text)));
+    }
+
+    /// <summary>게임 글꼴에서 그 글이 먹는 칸 수 — 반각 하나가 한 칸, 전각(한글 · 가나 · 한자)이 두 칸.</summary>
+    public static int Cells(string text)
+    {
         int cells = 0;
-        foreach (char c in text) cells += c < 0x80 ? 1 : 2;
-        return cells >= width ? text : text + new string(' ', width - cells);
+        foreach (char c in text) cells += c < 0x80 || c is >= '\uFF61' and <= '\uFF9F' ? 1 : 2;
+        return cells;
     }
 
     /// <summary>
