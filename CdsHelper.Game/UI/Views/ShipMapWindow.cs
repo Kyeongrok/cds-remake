@@ -1952,7 +1952,8 @@ public sealed class ShipMapWindow : Window
                            && _game.Player.Items.Contains(CompassItem);
         _hpCell.Text = $"HP:{_game.Player.Condition,4}";
         // 원본은 뭍이면 「대원」, 바다면 「선원」이다(0x0056BEA8 의 %s).
-        _crew.Text = $"{(_host.IsOnLand ? "대원" : "선원")}{_game.Player.Crew,4}명";
+        // 글을 통째로 둘로 나눠 둔다 — 낱말을 자리로 끼우면 번역표의 「선원{0}명」 틀에 안 맞아 한국어로 남았다.
+        _crew.Text = _host.IsOnLand ? $"대원{_game.Player.Crew,4}명" : $"선원{_game.Player.Crew,4}명";
         _stores.Text = $"물{_game.Player.SupplyOf(SupplyKind.Water),4}통" +
                        $" 식량{_game.Player.SupplyOf(SupplyKind.Food),4}통";
         // 「남은일수」는 <b>계약 기한</b>이다 — 보급이 아니다(0x0047DEF8).
