@@ -1076,9 +1076,14 @@ public sealed class SeaBattle
     /// 홀수 X 는 그 거울이다. 그 두 칸은 몸과 한 칸 떨어져 있어 괴물이 <b>멀리서</b> 치는 꼴이 된다.
     /// <b>여기서는 원본과 다르게</b> 그 두 칸을 맞바꿔 몸에 닿은 열두 칸(거리 2 고리)만 붙잡는다 — 괴물은 멀리서 못 친다
     /// (사용자, 2026-10-11). 위 표는 원본 것이다.
+    ///
+    /// 원본은 dX · dY 를 <b>−2~2 로만 돌리며</b>(<c>0x0043634F</c>~<c>0x00436449</c>) 이 셈을 대므로 다섯 칸 네모 밖은
+    /// 애초에 안 본다. 예전에는 이 울타리가 없어 총격 과녁(<see cref="MonsterGunTarget"/>)이 판 어디의 배든 붙잡았고,
+    /// 기함(칸 0)을 먼저 보므로 괴물이 사거리 없이 늘 기함만 쳤다.
     /// </remarks>
     public static bool InMonsterReach(int dx, int dy, bool evenX)
     {
+        if (dx is < -2 or > 2 || dy is < -2 or > 2) return false;
         if (Math.Abs(dx * dy) == 4) return false;
         int adx = Math.Abs(dx);
         if (adx < 2 && Math.Abs(dy) < 2 && !(adx == 1 && dy == (evenX ? -1 : 1))) return false;
