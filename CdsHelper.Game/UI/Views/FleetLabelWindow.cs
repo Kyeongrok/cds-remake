@@ -72,7 +72,14 @@ public sealed class FleetLabelWindow : Window
         _slot = slot;
         _text.FontSize = fontSize;
 
-        Title = "함대";
+        // 화면에는 안 나오는 이름이다 — 창 주인 보기(개발)에서 쪽지를 가리려고 갈래마다 달리 단다.
+        Title = slot switch
+        {
+            Slot.Hint => "힌트 쪽지",
+            Slot.Found => "발견물 수 쪽지",
+            Slot.Speed => "배 속도 쪽지",
+            _ => "함대 쪽지",
+        };
         Owner = GameWindow.Alive(anchor, this);
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
