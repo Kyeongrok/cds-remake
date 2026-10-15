@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
@@ -230,7 +231,8 @@ public sealed class HintBrowserDialog : GameWindow
         // 술집 · 후원자처럼 책 밖에서만 얻는 힌트는 줄이 없다. 같은 책이 말(언어)만 달리 여러 권 있어도 한 줄로 든다.
         var books = _game.Books?.Books.Where(b => b.Hints.Contains(hint.Id)).ToList() ?? [];
         _source.Text = string.Join(Environment.NewLine,
-            books.Select(b => b.Author.Length > 0 ? $"『{b.Title}』 {b.Author}" : $"『{b.Title}』").Distinct());
+            // 책 이름 · 저자는 따로 번역해 잇는다 — 이은 글은 번역표에 없다.
+            books.Select(b => b.Author.Length > 0 ? $"『{Lang.T(b.Title)}』 {Lang.T(b.Author)}" : $"『{Lang.T(b.Title)}』").Distinct());
         _source.Visibility = books.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 

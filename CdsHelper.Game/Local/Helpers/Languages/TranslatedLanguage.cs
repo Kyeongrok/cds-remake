@@ -41,7 +41,8 @@ public abstract class TranslatedLanguage : ILanguage
         lock (_seen)
         {
             if (_seen.TryGetValue(korean, out var known)) return known;
-            string made = ByTemplate(korean) ?? ByLines(korean) ?? ByWords(korean) ?? BySegments(korean) ?? korean;
+            string made = ByTemplate(korean, out string? weak) ?? ByLines(korean) ?? ByWords(korean) ?? BySegments(korean)
+                          ?? weak ?? korean;
             if (_seen.Count > 20000) _seen.Clear();
             _seen[korean] = made;
             return made;
@@ -125,8 +126,13 @@ public abstract class TranslatedLanguage : ILanguage
     /// 자리 바로 뒤에 또 자리가 붙은 꼴(「{0}{1} 데리고」)은 뒷자리가 거의 늘 한국어 조사다(<c>GameUi.Josa</c>) —
     /// 그 자리는 조사로만 맞춘다. 자리 글이 번역이 안 돼 한글이 남으면 틀이 엉뚱한 글에 걸린 것이라 다음 틀을 본다.
     /// </remarks>
-    private string? ByTemplate(string korean)
+    /// <param name="weak">
+    /// 끝의 조사 자리가 비어서야 맞은 틀의 결과 — 조사가 빠진 글이라 맞은 것인지, 그저 「{0}의 {1}」 꼴 이름
+    /// (「텔레호의 수룡(미신)」)에 걸린 것인지 모른다. 다른 길이 다 못 찾을 때만 쓴다(이름 끝에 「が」가 붙었다).
+    /// </param>
+    private string? ByTemplate(string korean, out string? weak)
     {
+        weak = null;
         _templates ??= BuildTemplates();
         foreach (var (pattern, translated, literal) in _templates)
         {
@@ -139,9 +145,25 @@ public abstract class TranslatedLanguage : ILanguage
                 return g.Success ? Text(g.Value) : "";
             });
             if (HasHangul(made) && !HasHangul(translated)) continue;
+            if (EndsWithEmptyParticle(pattern, m))
+            {
+                weak ??= made;
+                continue;
+            }
             return made;
         }
         return null;
+    }
+
+    /// <summary>틀이 조사 자리로 끝나고 그 자리가 비었는지.</summary>
+    private static bool EndsWithEmptyParticle(Regex pattern, Match m)
+    {
+        string text = pattern.ToString();
+        int open = text.LastIndexOf("(?<", StringComparison.Ordinal);
+        if (open < 0 || !text.EndsWith("|)$", StringComparison.Ordinal)
+            || !text.AsSpan(open).Contains(Particles.AsSpan(), StringComparison.Ordinal)) return false;
+        int close = text.IndexOf('>', open);
+        return m.Groups[text[(open + 3)..close]].Length == 0;
     }
 
     /// <summary>틀의 자리 — 코드가 채우는 <c>{0}</c> 과, 대사가 낼 때 채우는 <c>&lt;금액&gt;</c> · <c>&lt;제독&gt;</c> 같은 이름 자리.</summary>
@@ -179,7 +201,8 @@ public abstract class TranslatedLanguage : ILanguage
                 // 같은 자리가 두 번 나오면 뒤엣것은 앞엣것과 같은 글이어야 한다.
                 if (!used.Add(name)) regex.Append(@"\k<").Append(name).Append('>');
                 else if (previousEnd == hole.Index && hole.Value.StartsWith('{')) regex.Append($"(?<{name}>{Particles})");
-                else regex.Append($"(?<{name}>.+?)");
+                // 자리는 줄을 넘지 않는다 — 넘으면 여러 줄 글 통째가 한 틀에 걸린다(「현재 힌트」 쪽지 끝에 「が」가 붙었다).
+                else regex.Append($"(?<{name}>[^\\n]+?)");
                 at = previousEnd = hole.Index + hole.Length;
             }
             string tail = key[at..];
@@ -197,7 +220,22 @@ public abstract class TranslatedLanguage : ILanguage
 
     // ── 표 읽기 ─────────────────────────────────────────────────────────────
 
-    private Dictionary<string, string> Table() => _table ??= Load<Dictionary<string, string>>($"{Code}.json");
+    private Dictionary<string, string> Table() => _table ??= WithStandardKeys(Load<Dictionary<string, string>>($"{Code}.json"));
+
+    /// <summary>
+    /// 열쇠마다 표준 표기 판(<see cref="StandardText.Apply"/>)도 함께 단다 — 표 글은 보일 때 표준 표기로 바뀌어
+    /// (「테레호」 → 「텔레호」, 「피카 페타 저」 → 「피가페타 저」) 원본 표기로 적힌 열쇠와 안 맞았다.
+    /// 힌트 설명 · 책 저자가 한국어로 남고, 이름은 엉뚱한 틀(「{0}의 {1}{2}」)에 걸려 「が」가 붙었다.
+    /// </summary>
+    private static Dictionary<string, string> WithStandardKeys(Dictionary<string, string> table)
+    {
+        foreach (var (key, value) in table.ToList())
+        {
+            string standard = StandardText.Apply(key);
+            if (standard != key) table.TryAdd(standard, value);
+        }
+        return table;
+    }
 
     /// <summary><c>lang/</c> 의 파일 하나를 읽는다. 없거나 못 읽으면 빈 것.</summary>
     private static T Load<T>(string file) where T : new()
