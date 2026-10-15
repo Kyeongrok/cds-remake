@@ -11,7 +11,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <c>0x00494900</c> 으로 이 그림 창을 세우고, 돛을 달거나 바꾸면 다시 그린다(<c>0x004949E0</c>).
 /// 그림을 짓는 것은 <c>0x00472BC0</c> → <c>0x00472880</c> 이다.
 /// <code>
-///   파트 0        제 팔레트 256색 — 색인 74 부터 얹힌다(74 아래는 공용 색표)
+///   파트 0        팔레트 768바이트 — <b>0xC0 바이트째부터</b> 172색을 색인 74~245 에 얹는다
+///                 (0x00472E80 → 0x004BA161(74, 172, 팔레트+0xC0)). 한 색은 (파랑, 빨강, 초록) 차례다
 ///   파트 1~6      선체 바탕 320x240 여섯 벌
 ///   파트 7~25     마스트·돛 조각 — 크기는 표 0x00560FE8(파트마다 폭·높이)
 ///   0x005610B8    선체 번호 → 바탕 벌  [0,0,1,2,3,4,5,1]   ; 코구·카라벨이 한 벌, 다우는 대형카라벨 벌
@@ -19,7 +20,9 @@ namespace CdsHelper.Game.Local.Helpers;
 ///                 마스트 셋의 삼각돛(파트,x,y) x3 · 사각돛(파트,x,y) x3
 /// </code>
 /// 덧댄 마스트는 <b>선체표에는 없던 마스트를 세웠을 때</b>만 그린다(<c>0x00472BE8</c> — 표 +0x3C 의
-/// 세브·선미 비트가 0 인데 배 +0x68 에는 있을 때). 조각의 바탕 색인 74 는 비친다.
+/// 세브·선미 비트가 0 인데 배 +0x68 에는 있을 때).
+/// 조각마다 맨 첫 점의 색인(바탕, 74)을 0 으로 바꿔(<c>0x0041F9D0</c>) 비치게 하므로, 선체 바탕 그림의 바탕도
+/// 흰색(팔레트 맨 앞을 74 로 읽은 색)이 아니라 비어서 창의 검은 바탕이 보인다.
 /// </remarks>
 public static class ShipStill
 {
@@ -30,6 +33,9 @@ public static class ShipStill
 
     /// <summary>비치는 색인 — 조각의 바탕이다.</summary>
     private const int Hollow = 74;
+
+    /// <summary>팔레트 파트 속에서 색인 74 의 색이 시작하는 자리(<c>0x00472F1D</c>).</summary>
+    private const int PaletteOffset = 0xC0;
 
     /// <summary>
     /// 파트마다 폭·높이(<c>0x00560FE8</c>). 파트 7 만 표에 63x127 로 적혀 있는데 풀면 8192바이트라
@@ -125,7 +131,7 @@ public static class ShipStill
         }
     }
 
-    /// <summary>조각 하나를 얹는다. 바탕(<paramref name="opaque"/>)이면 74 도 흰 바탕으로 칠한다.</summary>
+    /// <summary>조각 하나를 얹는다. 바탕(<paramref name="opaque"/>)이면 74 자리를 비운다(투명).</summary>
     private static bool Draw(uint[] bgra, byte[] palette, byte[]?[] parts, Piece piece, bool opaque)
     {
         if (piece.Part <= 0 || piece.Part >= parts.Length || parts[piece.Part] is not { } data) return false;
@@ -141,7 +147,12 @@ public static class ShipStill
                 int tx = piece.X + x;
                 if (tx < 0 || tx >= Width) continue;
                 int v = data[y * w + x];
-                if (v == Hollow && !opaque) continue;
+                if (v == Hollow)
+                {
+                    // 0x0041F9D0 — 바탕은 색인 0(비침)이 된다. 선체 바탕이면 비워 창의 검은 바탕이 보이게 한다.
+                    if (opaque) bgra[ty * Width + tx] = 0;
+                    continue;
+                }
                 bgra[ty * Width + tx] = ColorOf(v, palette);
             }
         }
@@ -150,11 +161,16 @@ public static class ShipStill
 
     private static uint ColorOf(int v, byte[] palette)
     {
-        byte[] rgb;
-        int k;
-        if (v >= GamePalette.OwnPaletteBase) { rgb = palette; k = (v - GamePalette.OwnPaletteBase) * 3; }
-        else { rgb = GamePalette.Rgb; k = v * 3; }
-        if (k + 2 >= rgb.Length) return 0xFF000000u;
-        return 0xFF000000u | ((uint)rgb[k] << 16) | ((uint)rgb[k + 1] << 8) | rgb[k + 2];
+        if (v >= GamePalette.OwnPaletteBase)
+        {
+            // 0xC0 바이트째부터 읽고, 한 색은 도시 그림 · 건물 사진과 같은 (파랑, 빨강, 초록) 차례다 —
+            // 맨 앞부터 빨강 · 초록 · 파랑으로 읽으면 색이 뒤섞이고 바탕이 희게 나온다.
+            int k = PaletteOffset + (v - GamePalette.OwnPaletteBase) * 3;
+            if (k + 2 >= palette.Length) return 0xFF000000u;
+            return 0xFF000000u | ((uint)palette[k + 1] << 16) | ((uint)palette[k + 2] << 8) | palette[k];
+        }
+        int j = v * 3;
+        if (j + 2 >= GamePalette.Rgb.Length) return 0xFF000000u;
+        return 0xFF000000u | ((uint)GamePalette.Rgb[j] << 16) | ((uint)GamePalette.Rgb[j + 1] << 8) | GamePalette.Rgb[j + 2];
     }
 }
