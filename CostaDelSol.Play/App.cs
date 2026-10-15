@@ -58,6 +58,8 @@ internal sealed class App : Application
         // 게임 자료가 CP949 라 코드페이지를 먼저 열어 둔다.
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         GameSettings.Load();
+        // 일본어면 윈도 글자도 번역한다 — 맨 먼저 뜨는 창(불러오는 창 따위)도 놓치지 않게 게임 창보다 먼저 건다.
+        CdsHelper.Game.Local.Helpers.Lang.InstallWpfHook();
 
         // 미궁은 딴 어셈블리에 있어 게임 쪽에서 곧장 못 부른다 — 여기서 걸어 준다.
         // 일기토는 이제 게임 쪽(ShipMapWindow.PlayDuel)이 제 판을 곧장 부른다.

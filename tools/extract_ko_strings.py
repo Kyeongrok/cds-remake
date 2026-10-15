@@ -133,7 +133,8 @@ def chain_at(clean, m):
 
 found = {}
 for path in sorted(glob.glob(os.path.join(ROOT, 'CdsHelper.Game', '**', '*.cs'), recursive=True)
-                   + glob.glob(os.path.join(ROOT, 'CdsHelper.Support', '**', '*.cs'), recursive=True)):
+                   + glob.glob(os.path.join(ROOT, 'CdsHelper.Support', '**', '*.cs'), recursive=True)
+                   + glob.glob(os.path.join(ROOT, 'CostaDelSol.Play', '**', '*.cs'), recursive=True)):
     if any(s in path for s in SKIP_FILES):
         continue
     src = open(path, encoding='utf-8-sig').read()
