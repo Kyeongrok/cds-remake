@@ -41,9 +41,25 @@ public sealed class MenuWindow : GameWindow
     {
         if (Owner is not { } owner) return;
         UpdateLayout();
-        Left = Math.Max(0, owner.Left + (owner.Width - ActualWidth) / 2);
-        Top = Math.Max(0, owner.Top + (owner.Height - ActualHeight) / 2);
+        PlaceInside(owner.Left + (owner.Width - ActualWidth) / 2, owner.Top + (owner.Height - ActualHeight) / 2);
     }
+
+    /// <summary>
+    /// 그 자리에 두되 <b>게임 창 안</b>으로 들인다 — 주인(도시 그림)보다 큰 차림표(줄 많은 도시 커맨드)를
+    /// 그 한가운데에 맞추면 게임 창 아래로 삐져나갔다. 게임 창보다 크면 위 · 왼쪽에 붙인다.
+    /// </summary>
+    private void PlaceInside(double left, double top)
+    {
+        Rect room = Owner is { } owner ? RoomOf(GameUi.RootOf(owner)) : SystemParameters.WorkArea;
+        Left = Math.Max(0, Math.Clamp(left, room.Left, Math.Max(room.Left, room.Right - ActualWidth)));
+        Top = Math.Max(0, Math.Clamp(top, room.Top, Math.Max(room.Top, room.Bottom - ActualHeight)));
+    }
+
+    /// <summary>게임 창이 차지한 자리. 최대화면 Left · Top 이 되돌릴 자리를 가리키므로 작업 영역을 쓴다.</summary>
+    private static Rect RoomOf(Window root) =>
+        root.WindowState == WindowState.Maximized || root.ActualWidth <= 0
+            ? SystemParameters.WorkArea
+            : new Rect(root.Left, root.Top, root.ActualWidth, root.ActualHeight);
 
     // ── 여닫는 짓시늉 ────────────────────────────────────────────────────────
 
@@ -206,8 +222,8 @@ public sealed class MenuWindow : GameWindow
         var window = new MenuWindow(content) { Owner = owner };
         window.Show();      // 크기를 알아야 자리를 잡는다
 
-        window.Left = Math.Max(0, owner.Left + (owner.Width - window.ActualWidth) / 2);
-        window.Top = Math.Max(0, owner.Top + (owner.Height - window.ActualHeight) / 2);
+        window.PlaceInside(owner.Left + (owner.Width - window.ActualWidth) / 2,
+                           owner.Top + (owner.Height - window.ActualHeight) / 2);
         window.Grow();
         return window;
     }
