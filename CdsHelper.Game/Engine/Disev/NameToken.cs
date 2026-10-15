@@ -71,6 +71,8 @@ public static class NameToken
     public static string Of(string word, int kind)
     {
         if (kind < 0 || kind >= Table.Length) return "";
+        // 한국어 조사를 안 쓰는 언어(일본어)면 붙이지 않는다(Lang.Current.UsesKoreanParticles).
+        if (!Lang.Current.UsesKoreanParticles) return "";
 
         var (open, closed) = Table[kind];
         int tail = FinalOf(word);

@@ -94,6 +94,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     /// <summary>「으로부터 / 로부터」 — 앞 글자에 받침이 있으면 「으」가 붙는다.</summary>
     private static string FromParticle(string word)
     {
+        if (!Lang.Current.UsesKoreanParticles) return "";   // 조사를 안 쓰는 언어(일본어)
         if (word.Length == 0) return "으로부터";
 
         char last = word[^1];

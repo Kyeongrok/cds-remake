@@ -2260,10 +2260,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     }
 
     /// <summary>이름 뒤에 붙는 목적격 조사. 받침이 있으면 "을", 없으면 "를".</summary>
-    private static string Object(string name) => HasBatchim(name) ? "을" : "를";
+    private static string Object(string name) => !Lang.Current.UsesKoreanParticles ? "" : HasBatchim(name) ? "을" : "를";
 
     /// <summary>이름 뒤에 붙는 보조사. 받침이 있으면 "은", 없으면 "는".</summary>
-    private static string Topic(string name) => HasBatchim(name) ? "은" : "는";
+    private static string Topic(string name) => !Lang.Current.UsesKoreanParticles ? "" : HasBatchim(name) ? "은" : "는";
 
     private static bool HasBatchim(string name) =>
         name.Length > 0 && name[^1] is >= '가' and <= '힣' && (name[^1] - '가') % 28 != 0;
@@ -2274,6 +2274,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     /// </remarks>
     private static string Subject(string name)
     {
+        if (!Lang.Current.UsesKoreanParticles) return "";   // 조사를 안 쓰는 언어(일본어)
         if (name.Length == 0) return "가";
         char last = name[^1];
         if (last is < '가' or > '힣') return "가";       // 한글이 아니면 그냥 둔다

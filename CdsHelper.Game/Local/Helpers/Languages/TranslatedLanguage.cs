@@ -21,6 +21,9 @@ public abstract class TranslatedLanguage : ILanguage
     public bool TranslatesWpfText => true;
     public bool HasScriptLines => true;
 
+    /// <summary>한국어 조사는 안 붙인다 — 이름만 남아 번역되고, 조사는 번역된 문장 틀이 제 말로 붙인다.</summary>
+    public bool UsesKoreanParticles => false;
+
     /// <summary>띄어 쓴 이름(이름 · 성)을 이을 때 사이에 넣는 글 — 일본어는 원본처럼 「＝」.</summary>
     protected virtual string NameJoiner => " ";
 

@@ -61,11 +61,11 @@ def strip_comments(src):
 STR = re.compile(r'(\$@|@\$|\$|@)?"((?:[^"\\\n]|\\.|"")*)"')
 
 
-def template(prefix, body):
-    """$"…{식}…" 를 {0} … 틀로. 이스케이프는 실제 글자로 푼다."""
+def template(prefix, body, first=0):
+    """$"…{식}…" 를 {0} … 틀로. 이스케이프는 실제 글자로 푼다. 자리 번호는 first 부터."""
     interp = prefix and '$' in prefix
     verbatim = prefix and '@' in prefix
-    text, args, i = [], 0, 0
+    text, args, i = [], first, 0
     while i < len(body):
         c = body[i]
         if interp and c == '{':
@@ -86,7 +86,49 @@ def template(prefix, body):
         if verbatim and body.startswith('""', i):
             text.append('"'); i += 2; continue
         text.append(c); i += 1
-    return ''.join(text), args
+    return ''.join(text), args - first
+
+
+# 「"…" + "…"」 사슬 — 화면에는 이어진 한 글로 간다. 사이에 낀 짧은 값은 {n} 자리, Environment.NewLine 은 줄바꿈.
+EXPR = re.compile(r'[A-Za-z_][\w.]*(?:\([^()+;\n]*\))?(?:\[[^\[\]+;\n]*\])?')
+NEWLINE = re.compile(r'Environment\.NewLine')
+
+
+def chain_at(clean, m):
+    """m(글) 에서 시작하는 + 사슬을 한 틀로. 사슬이 아니면 None."""
+    parts = []          # (kind, value) — 'lit' (prefix, body) | 'hole' | 'nl'
+    before = re.search(r'([A-Za-z_][\w.]*(?:\([^()+;\n]*\))?)\s*\+\s*$', clean[max(0, m.start() - 120):m.start()])
+    if before and not before.group(1).endswith('return'):
+        parts.append(('hole', None))
+    parts.append(('lit', (m.group(1) or '', m.group(2))))
+    pos = m.end()
+    while True:
+        rest = re.match(r'\s*\+(?![+=])\s*', clean[pos:])
+        if not rest:
+            break
+        at = pos + rest.end()
+        lit = STR.match(clean, at)
+        if lit:
+            parts.append(('lit', (lit.group(1) or '', lit.group(2)))); pos = lit.end(); continue
+        nl = NEWLINE.match(clean, at)
+        if nl:
+            parts.append(('nl', None)); pos = nl.end(); continue
+        ex = EXPR.match(clean, at)
+        if ex and ex.end() > at:
+            parts.append(('hole', None)); pos = ex.end(); continue
+        break
+    if len(parts) < 2 or sum(1 for k, _ in parts if k == 'lit') < 1:
+        return None, pos
+    out, n = [], 0
+    for kind, value in parts:
+        if kind == 'hole':
+            out.append('{%d}' % n); n += 1
+        elif kind == 'nl':
+            out.append('\n')
+        else:
+            text, used = template(value[0], value[1], n)
+            out.append(text); n += used
+    return ''.join(out), pos
 
 
 found = {}
@@ -107,9 +149,14 @@ for path in sorted(glob.glob(os.path.join(ROOT, 'CdsHelper.Game', '**', '*.cs'),
         if 'Debug.WriteLine' in line or 'Trace.' in line:
             continue
         text, args = template(prefix, body)
+        lineno = clean.count('\n', 0, m.start()) + 1
         if text not in found:
-            lineno = clean.count('\n', 0, m.start()) + 1
             found[text] = {'at': f'{rel}:{lineno}', 'args': args}
+        # 이 글이 + 사슬의 머리면 이어진 글도 적는다(조각은 조각대로 둔다).
+        if re.search(r'\+\s*$', clean[max(0, m.start() - 40):m.start()]) is None:
+            joined, _ = chain_at(clean, m)
+            if joined and joined != text and HANGUL.search(joined) and joined not in found:
+                found[joined] = {'at': f'{rel}:{lineno}', 'args': joined.count('{'), 'chain': True}
 
 out = os.path.join(ROOT, 'lang', 'ko-strings.json')
 with open(out, 'w', encoding='utf-8', newline='\n') as f:

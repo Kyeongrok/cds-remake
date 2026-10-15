@@ -2458,6 +2458,7 @@ public sealed class SeaBattle
     /// </summary>
     public static string FromJosa(string word)
     {
+        if (!Local.Helpers.Lang.Current.UsesKoreanParticles) return "";
         if (word.Length == 0) return "로부터";
         char last = word[^1];
         if (last is < '가' or > '힣') return "로부터";
@@ -2537,6 +2538,7 @@ public sealed class SeaBattle
 
     private static string Josa(string word, string batchim, string plain)
     {
+        if (!Local.Helpers.Lang.Current.UsesKoreanParticles) return "";
         if (word.Length == 0) return plain;
         char last = word[^1];
         if (last < 0xAC00 || last > 0xD7A3) return plain;

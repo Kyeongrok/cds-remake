@@ -1732,6 +1732,8 @@ internal static class GameUi
     /// </remarks>
     public static string Josa(string word, string closed, string open)
     {
+        // 한국어 조사를 안 쓰는 언어(일본어)면 붙이지 않는다 — 조사는 번역된 문장 틀이 붙인다.
+        if (!Lang.Current.UsesKoreanParticles) return "";
         if (word.Length == 0) return open;
         char last = word[^1];
         if (last is < '가' or > '힣') return open;

@@ -2594,6 +2594,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// </remarks>
     private static string Particle(string name)
     {
+        if (!Lang.Current.UsesKoreanParticles) return "";   // 조사를 안 쓰는 언어(일본어)
         if (name.Length == 0) return "를";
         char last = name[^1];
         if (last is < '가' or > '힣') return "를";       // 한글이 아니면 그냥 둔다

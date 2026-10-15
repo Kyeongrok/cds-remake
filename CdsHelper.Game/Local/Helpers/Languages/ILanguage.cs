@@ -48,6 +48,12 @@ public interface ILanguage
 
     /// <summary>보통 윈도 글자(TextBlock) · 창 제목도 바꾸는지.</summary>
     bool TranslatesWpfText { get; }
+
+    /// <summary>
+    /// 이름 뒤에 한국어 조사(을/를 · 이/가 …)를 붙이는지. 아니면 조사 손(<c>GameUi.Josa</c> · <c>NameToken.Of</c> 따위)이
+    /// 빈 글을 낸다 — 「해적선이」가 「해적선」으로 남아 이름만 번역되고, 그 언어의 조사는 번역된 문장 틀이 붙인다.
+    /// </summary>
+    bool UsesKoreanParticles { get; }
 }
 
 /// <summary>한국어 — 코드 속 글이 곧 화면 글이다. 아무것도 안 바꾼다.</summary>
@@ -64,4 +70,5 @@ public sealed class KoreanLanguage : ILanguage
 
     public IReadOnlyList<(string Label, string? Glyphs)> InputPages { get; } = [("한글", null)];
     public bool TranslatesWpfText => false;
+    public bool UsesKoreanParticles => true;
 }
