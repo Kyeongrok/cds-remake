@@ -109,7 +109,8 @@ public sealed class PatronInfoDialog : GameWindow
         }
 
         var cancel = new GameButton("취소", Close);
-        Canvas.SetLeft(cancel, 386);
+        // 오른쪽 끝(386 + 48 = 434)에 맞춘다 — 왼쪽 끝을 박으면 일본어 「キャンセル」처럼 긴 이름이 창 밖으로 삐져나간다.
+        Canvas.SetRight(cancel, BoardWidth - 434);
         Canvas.SetTop(cancel, 188);
         board.Children.Add(cancel);
 
