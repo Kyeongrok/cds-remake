@@ -591,6 +591,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         _spots.Add((building, tag, a, scale));
         spot.MouseEnter += (_, _) =>
         {
+            // 명령 창이 떠 있으면 커서를 올려도 아무 반응이 없다 — 원본은 창이 도는 동안 도시 화면이 사건을
+            // 받지 않는다(0x00487820 이 고를 때까지 안 돌아온다). 반응하면 누를 수 있을 것처럼 보인다.
+            if (Unreachable(spot)) return;
             ShowTag(tag, a, scale);
             _pickedCode = building.Code;   // 커서를 올리면 글쇠 고름도 그리로 간다(0x00491C7B)
         };
@@ -691,7 +694,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         };
         Canvas.SetLeft(spot, a.X * scale);
         Canvas.SetTop(spot, a.Y * scale);
-        spot.MouseEnter += (_, _) => ShowTag(tag, a, scale);
+        spot.MouseEnter += (_, _) =>
+        {
+            if (Unreachable(spot)) return;   // 명령 창이 떠 있으면 반응하지 않는다(건물과 같다)
+            ShowTag(tag, a, scale);
+        };
         spot.MouseLeave += (_, _) => tag.Visibility = Visibility.Collapsed;
         spot.MouseLeftButtonDown += (_, e) => e.Handled = true;
         spot.MouseLeftButtonUp += (_, e) =>
@@ -775,6 +782,16 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 먼저 창을 닫아야 한다. 예전에는 눌러지는 대로 그 건물 창으로 갈아탔다.
     /// </summary>
     private bool MenuOpen => Menus.FacilityWindow != null || _cityMenu.IsOpen;
+
+    /// <summary>
+    /// 명령 창이 떠 있어 그 자리를 못 누르는지 — 그러면 손 모양 커서도 거둔다. 창이 닫히면 다시 손이다.
+    /// </summary>
+    private bool Unreachable(FrameworkElement spot)
+    {
+        bool shut = MenuOpen;
+        spot.Cursor = shut ? null : Cursors.Hand;
+        return shut;
+    }
 
     /// <summary>
     /// 건물 하나에 들어간다. 그림에서 눌러도, 커맨드의 "맵 포인트에 들어간다" 로 골라도
