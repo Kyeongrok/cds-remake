@@ -545,6 +545,8 @@ public sealed class ShipMapWindow : Window
             ("단축키", () => { ShortcutDialog.Show(this); _refreshNav(); }),
             // 업데이트한 뒤 한 번 뜨고 마는 글을 다시 본다 — 새 판 둘의 대목이다.
             ("릴리즈 노트", ShowReleaseNotes),
+            // 원본에 없던 발견물(돌묵상어 · 여우원숭이)의 글과 그림이 어디서 왔는지.
+            ("출처", () => NoticeDialog.Notes(this, ExtraCredits, "출처")),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
             // 「발견물 지도」는 커맨드 「정보」로 옮겼다 — 게임 화면 안에서 여는 편이 찾기 쉽다.
@@ -2999,6 +3001,26 @@ public sealed class ShipMapWindow : Window
         new PatronMenu(owner, _game, "", CommandMenu, CommandMenu, 0, 0, -1).ShowPatrons(owner);
 
     /// <summary>햄버거 「릴리즈 노트」 — 가장 새 두 판의 노트를 다시 띄운다.</summary>
+    /// <summary>
+    /// 더해 넣은 발견물의 출처 — 설명 · 힌트 · 대사는 위키백과 문서(CC BY-SA 4.0)를 바탕으로 썼고, 그림은
+    /// 위키미디어 공용의 퍼블릭 도메인 그림을 발견물 그림처럼 바꾼 것이다(<c>asset/dstill/README.md</c>).
+    /// </summary>
+    private const string ExtraCredits =
+        "원본에 없던 발견물의 글과 그림은 아래에서 가져왔습니다.\n" +
+        "\n" +
+        "■ 돌묵상어\n" +
+        "  글: 위키백과 「돌묵상어」\n" +
+        "      ko.wikipedia.org/wiki/돌묵상어 (CC BY-SA 4.0)\n" +
+        "  그림: Greg Skomal / NOAA Fisheries Service\n" +
+        "      위키미디어 공용, 퍼블릭 도메인\n" +
+        "\n" +
+        "■ 여우원숭이\n" +
+        "  글: 위키백과 「호랑꼬리여우원숭이」\n" +
+        "      ko.wikipedia.org/wiki/호랑꼬리여우원숭이 (CC BY-SA 4.0)\n" +
+        "  그림: Charles d'Orbigny, Dictionnaire universel\n" +
+        "      d'histoire naturelle (1849) 도판\n" +
+        "      위키미디어 공용, 퍼블릭 도메인";
+
     private void ShowReleaseNotes()
     {
         string notes = ReleaseNotes.Recent(ReleaseNotes.Read());
