@@ -65,8 +65,12 @@ public sealed class PatronInfoDialog : GameWindow
         ["지리", "역사", "보물", "종교", "교역품", "미신", "생물", "민족"];
 
     /// <summary>그 후원자가 좋아하는 갈래를 한 줄로 — 「지리 · 보물」. 스폰서 일람이 이름 아래에 단다.</summary>
+    /// <remarks>
+    /// 낱말마다 번역해 잇는다 — 이은 줄을 통째로 맡기면 넷 넘는 줄은 번역표에 없어 한국어로 남고,
+    /// 셋 이하는 띄어 쓴 이름처럼 「地理＝交易品＝生物」로 이어졌다.
+    /// </remarks>
     public static string LikesText(Patron patron) =>
-        string.Join(" ", Categories.Where((_, i) => patron.Likes(i)));
+        string.Join(" ", Categories.Where((_, i) => patron.Likes(i)).Select(Lang.T));
 
     /// <summary>초상화가 놓이는 자리. 글줄이 <see cref="LineX"/> 에서 시작하니 그 앞이다.</summary>
     private const double FaceX = 8, FaceY = 8;
