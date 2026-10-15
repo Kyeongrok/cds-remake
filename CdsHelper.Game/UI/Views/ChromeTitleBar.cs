@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
 // 파일에 담긴 그림(System.IO.Path)과 이름이 겹치기 쉬워 별명을 달아 쓴다.
+using CdsHelper.Game.Local.Helpers;
 using ShapePath = System.Windows.Shapes.Path;
 
 namespace CdsHelper.Game.UI.Views;
@@ -138,6 +139,7 @@ internal static class ChromeTitleBar
         DockRight(bar, Button(GlyphKind.Close, () => SystemCommands.CloseWindow(win)));
         DockRight(bar, maximize);
         DockRight(bar, Button(GlyphKind.Minimize, () => SystemCommands.MinimizeWindow(win)));
+        DockRight(bar, LanguageButton(win));
         if (apps.Length > 0)
         {
             var bento = MenuButton(apps, shown, GlyphKind.Apps, "도구");
@@ -258,6 +260,90 @@ internal static class ChromeTitleBar
 
         button.Tag = (Action)Open;
         return button;
+    }
+
+    /// <summary>
+    /// 최소화 왼쪽의 「Language」 단추 — 누르면 언어 목록이 내려온다. 원본에 없는 것이다.
+    /// </summary>
+    /// <remarks>
+    /// 어느 언어로 켜 있든 찾을 수 있게 단추 글은 영어로, 목록은 그 언어 제 이름(한국어 · 日本語)으로 둔다 —
+    /// 윈도 글자 갈고리(<see cref="Lang.InstallWpfHook"/>)가 이름을 번역하지 않게 글을 묶어 넣는다.
+    /// 고르면 설정에만 적고 <b>다시 켤 때</b> 먹는다(<see cref="Lang.Current"/>는 켤 때 한 번 정한다).
+    /// </remarks>
+    private static FrameworkElement LanguageButton(Window win)
+    {
+        DateTime closedAt = DateTime.MinValue;
+        var button = new Border
+        {
+            Height = Height,
+            Padding = new Thickness(12, 0, 12, 0),
+            Background = Brushes.Transparent,
+            Cursor = Cursors.Hand,
+            ToolTip = "Language",
+            Child = Fixed("Language", 12),
+        };
+        WindowChrome.SetIsHitTestVisibleInChrome(button, true);
+        button.MouseEnter += (_, _) => button.Background = Hover;
+        button.MouseLeave += (_, _) => button.Background = Brushes.Transparent;
+        button.MouseLeftButtonDown += (_, e) => e.Handled = true;
+        button.MouseLeftButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            if ((DateTime.UtcNow - closedAt).TotalMilliseconds < 250) return;
+
+            var popup = new Popup
+            {
+                PlacementTarget = button,
+                Placement = PlacementMode.Bottom,
+                StaysOpen = false,
+                AllowsTransparency = true,
+                Focusable = true,
+            };
+            var rows = new StackPanel();
+            string chosen = Lang.All.FirstOrDefault(l => l.Code == Local.Settings.GameSettings.Language)?.Code
+                            ?? Lang.Current.Code;
+            foreach (var language in Lang.All)
+            {
+                var row = new Border
+                {
+                    Background = Brushes.Transparent,
+                    Padding = new Thickness(14, 7, 14, 7),
+                    Cursor = Cursors.Hand,
+                    Child = Fixed((language.Code == chosen ? "✓ " : "　 ") + language.Name, 13),
+                };
+                row.MouseEnter += (_, _) => row.Background = Hover;
+                row.MouseLeave += (_, _) => row.Background = Brushes.Transparent;
+                row.MouseLeftButtonUp += (_, args) =>
+                {
+                    args.Handled = true;
+                    popup.IsOpen = false;
+                    Local.Settings.GameSettings.Language = language.Code;
+                    if (language.Code != Lang.Current.Code)
+                        NoticeDialog.Show(win, "게임을 다시 켜면 바뀝니다 / 再起動すると切り替わります");
+                };
+                rows.Children.Add(row);
+            }
+            popup.Child = new Border
+            {
+                Background = Frame,
+                BorderBrush = MenuEdge,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(0, 4, 0, 4),
+                MinWidth = 140,
+                Child = rows,
+            };
+            popup.Closed += (_, _) => closedAt = DateTime.UtcNow;
+            popup.IsOpen = true;
+        };
+        return button;
+    }
+
+    /// <summary>번역 갈고리가 안 건드리는 글 — 글을 묶어 넣으면 갈고리가 건너뛴다.</summary>
+    private static TextBlock Fixed(string text, double size)
+    {
+        var block = new TextBlock { Foreground = Title, FontSize = size, VerticalAlignment = VerticalAlignment.Center };
+        block.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding { Source = text, Mode = System.Windows.Data.BindingMode.OneTime });
+        return block;
     }
 
     /// <summary>차림표 한 줄. <paramref name="run"/> 이 null 이면 흐려 두고 안 먹는다.</summary>
