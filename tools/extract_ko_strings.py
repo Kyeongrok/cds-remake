@@ -27,22 +27,7 @@ def strip_comments(src):
             continue
         if c == '"' or (c in '$@' and i + 1 < n and src[i + 1] in '"$@'):
             # 글 하나를 통째로 건넌다(아래 scan 이 다시 읽는다).
-            j = i
-            while j < n and src[j] in '$@':
-                j += 1
-            verbatim = '@' in src[i:j]
-            j += 1
-            while j < n:
-                if verbatim and src[j] == '"' and j + 1 < n and src[j + 1] == '"':
-                    j += 2
-                    continue
-                if not verbatim and src[j] == '\\':
-                    j += 2
-                    continue
-                if src[j] == '"':
-                    j += 1
-                    break
-                j += 1
+            j = string_end(src, i)
             out.append(src[i:j])
             i = j
             continue
@@ -58,7 +43,118 @@ def strip_comments(src):
     return ''.join(out)
 
 
-STR = re.compile(r'(\$@|@\$|\$|@)?"((?:[^"\\\n]|\\.|"")*)"')
+def string_end(src, i):
+    """i 에서 시작하는 글("…" · $"…" · @"…" · $@"…")이 끝난 다음 자리.
+
+    $"…{식}…" 의 식 자리는 코드라, 그 속의 글(<c>{Josa(x, "은", "는")}</c> · <c>{(on ? "끄기" : "켜기")}</c>)과
+    글자(<c>'"'</c>)를 따로 건너뛴다 — 따옴표에서 글이 끝난 것으로 보면 글이 조각나 깨진 틀(「)} 금화 …」)이 된다.
+    """
+    n = len(src)
+    j = i
+    while j < n and src[j] in '$@':
+        j += 1
+    interp = '$' in src[i:j]
+    verbatim = '@' in src[i:j]
+    j += 1
+    while j < n:
+        c = src[j]
+        if verbatim and c == '"' and src.startswith('""', j):
+            j += 2; continue
+        if not verbatim and c == '\\':
+            j += 2; continue
+        if c == '"':
+            return j + 1
+        if not verbatim and c == '\n':
+            return j          # 닫히지 않은 글 — 줄 끝에서 멈춘다
+        if interp and c == '{':
+            if src.startswith('{{', j):
+                j += 2; continue
+            j = hole_end(src, j + 1); continue
+        j += 1
+    return j
+
+
+def hole_end(src, j):
+    """보간 식 자리 속(여는 { 다음)에서 시작해 닫는 } 다음 자리."""
+    n, depth = len(src), 1
+    while j < n and depth:
+        c = src[j]
+        if c == '"' or (c in '$@' and j + 1 < n and src[j + 1] in '"$@'):
+            j = string_end(src, j); continue
+        if c == "'":
+            k = j + 1
+            while k < n and src[k] != "'":
+                k += 2 if src[k] == '\\' else 1
+            j = k + 1; continue
+        if c == '{': depth += 1
+        elif c == '}': depth -= 1
+        j += 1
+    return j
+
+
+class _Match:
+    """re.Match 꼴 — group(1) 머리, group(2) 몸."""
+    def __init__(self, src, start, end):
+        k = start
+        while src[k] in '$@':
+            k += 1
+        self._prefix = src[start:k] or None
+        self._body = src[k + 1:end - 1] if end > k + 1 and src[end - 1] == '"' else src[k + 1:end]
+        self._start, self._end = start, end
+
+    def group(self, i):
+        return self._prefix if i == 1 else self._body
+
+    def start(self):
+        return self._start
+
+    def end(self):
+        return self._end
+
+
+_HEAD = re.compile(r'(\$@|@\$|\$|@)?"')
+
+
+class STR:
+    """글 찾기 — 보간 자리 속 글까지 바르게 건넌다. 자리 속 글도 따로 하나씩 낸다(조사 · 단추 이름)."""
+
+    @staticmethod
+    def match(src, at):
+        m = _HEAD.match(src, at)
+        if not m:
+            return None
+        return _Match(src, at, string_end(src, at))
+
+    @staticmethod
+    def finditer(src, start=0, end=None):
+        end = len(src) if end is None else end
+        i = start
+        while True:
+            m = _HEAD.search(src, i, end)
+            if not m:
+                return
+            at = m.start()
+            if at > 0 and src[at - 1] == "'":   # '"' 글자
+                i = at + 1; continue
+            stop = string_end(src, at)
+            found = _Match(src, at, stop)
+            yield found
+            if found.group(1) and '$' in found.group(1):
+                # 자리 속 글 — 몸 안에서 다시 찾는다.
+                body_start = at + len(found.group(1)) + 1
+                k = body_start
+                while k < stop - 1:
+                    ch = src[k]
+                    if ch == '{' and not src.startswith('{{', k):
+                        h = hole_end(src, k + 1)
+                        yield from STR.finditer(src, k + 1, h - 1)
+                        k = h; continue
+                    if ch == '{':
+                        k += 2; continue
+                    if ch == '\\' and '@' not in found.group(1):
+                        k += 2; continue
+                    k += 1
+            i = stop
 
 
 def template(prefix, body, first=0):
@@ -71,11 +167,7 @@ def template(prefix, body, first=0):
         if interp and c == '{':
             if body.startswith('{{', i):
                 text.append('{'); i += 2; continue
-            depth, j = 1, i + 1
-            while j < len(body) and depth:
-                if body[j] == '{': depth += 1
-                elif body[j] == '}': depth -= 1
-                j += 1
+            j = hole_end(body, i + 1)
             text.append('{%d}' % args); args += 1; i = j; continue
         if interp and body.startswith('}}', i):
             text.append('}'); i += 2; continue
