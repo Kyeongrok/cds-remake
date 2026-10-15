@@ -439,14 +439,15 @@ public sealed class DiscoveryMapDialog : GameWindow
         var show = Z >= LabelFrom && Z <= LabelTo ? Visibility.Visible : Visibility.Collapsed;
         foreach (var tag in _labels) tag.Visibility = show;
 
-        _note.Text = $"발견물 {_found}곳 · 찾은 것 {_done}곳 · 배율 x{Z:0.#}"
-                   + Environment.NewLine + "(휠 키우기·줄이기 · 끌어서 옮기기"
-                   + (_warp != null ? " · 오른쪽 단추 그 자리로 옮기기" : "")
-                   + (_autoSail != null ? " · Shift+오른쪽 단추 그 자리로 자동항해" : "")
-                   + " · 빨강 찾음 · 회색 아직 · 파랑 내 자리"
-                   + " · 주황 도시(「도」 도서관)"
+        // 조각마다 따로 번역한다 — 붙는 조각이 그때그때 달라 이은 글 통째로는 번역표에 없다.
+        _note.Text = Lang.T($"발견물 {_found}곳 · 찾은 것 {_done}곳 · 배율 x{Z:0.#}")
+                   + Environment.NewLine + Lang.T("(휠 키우기·줄이기 · 끌어서 옮기기")
+                   + (_warp != null ? Lang.T(" · 오른쪽 단추 그 자리로 옮기기") : "")
+                   + (_autoSail != null ? Lang.T(" · Shift+오른쪽 단추 그 자리로 자동항해") : "")
+                   + Lang.T(" · 빨강 찾음 · 회색 아직 · 파랑 내 자리")
+                   + Lang.T(" · 주황 도시(「도」 도서관)")
                    + (_hasFlows
-                       ? $" · 보라 풍향 {(WindTable.IsFirstHalf(_month) ? "1~6월" : "7~12월")} · 청록 해류)"
+                       ? Lang.T($" · 보라 풍향 {(WindTable.IsFirstHalf(_month) ? "1~6월" : "7~12월")} · 청록 해류)")
                        : ")")
                    + _said;
     }
@@ -462,7 +463,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         {
             bool on = get();
             layer.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
-            if (button?.Child is TextBlock label) label.Text = $"{name} {(on ? "끄기" : "켜기")}";
+            if (button?.Child is TextBlock label) label.Text = $"{Lang.T(name)} {Lang.T(on ? "끄기" : "켜기")}";
         }
 
         flip = () => { set(!get()); Refresh(); };
