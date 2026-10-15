@@ -10005,6 +10005,42 @@
   "at": "CdsHelper.Game/Local/Helpers/CombatArt.cs:60",
   "args": 1
  },
+ "오류가 나서 게임이 꺼집니다.": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:55",
+  "args": 0
+ },
+ "오류가 났습니다.": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:55",
+  "args": 0
+ },
+ "버그 리포트를 보내 주시면 고치는 데 큰 도움이 됩니다.": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:56",
+  "args": 0
+ },
+ "오류 내용을 클립보드에 복사했습니다. 그대로 붙여 넣어 보내 주세요.": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:58",
+  "args": 0
+ },
+ "오류 내용을 파일로도 저장했습니다:": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:59",
+  "args": 0
+ },
+ "오류": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:62",
+  "args": 0
+ },
+ "대항해시대3 리메이크 {0}{1}": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:72",
+  "args": 2
+ },
+ "(개발 판)": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:72",
+  "args": 0
+ },
+ " — 꺼짐": {
+  "at": "CdsHelper.Game/Local/Helpers/CrashReport.cs:72",
+  "args": 0
+ },
  "DISCOVER.CDS 에 파트가 없습니다": {
   "at": "CdsHelper.Game/Local/Helpers/DiscoveryClips.cs:56",
   "args": 0
@@ -21052,10 +21088,6 @@
   "args": 1,
   "chain": true
  },
- "오류": {
-  "at": "CdsHelper.Game/UI/Views/ShipMapWindow.cs:3359",
-  "args": 0
- },
  "[{0}] 에서 이어 간다 — {1}": {
   "at": "CdsHelper.Game/UI/Views/ShipMapWindow.cs:3581",
   "args": 2
@@ -25507,28 +25539,28 @@
   "args": 1
  },
  "테스트 중 오류와 통계 데이터를 수집해서 더 좋은 결과물을 만들기 위해 수집 합니다.": {
-  "at": "CostaDelSol.Play/App.cs:114",
+  "at": "CostaDelSol.Play/App.cs:129",
   "args": 0
  },
  "통계 보내기": {
-  "at": "CostaDelSol.Play/App.cs:115",
+  "at": "CostaDelSol.Play/App.cs:130",
   "args": 0
  },
  "업데이트를 확인합니다.": {
-  "at": "CostaDelSol.Play/App.cs:135",
+  "at": "CostaDelSol.Play/App.cs:150",
   "args": 0
  },
  "새 버전({0})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?": {
-  "at": "CostaDelSol.Play/App.cs:144",
+  "at": "CostaDelSol.Play/App.cs:159",
   "args": 1
  },
  "새 버전({0})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?\n(진행 중인 판은 저장되지 않습니다. 아니오를 고르면 게임을 끌 때 적용됩니다.)": {
-  "at": "CostaDelSol.Play/App.cs:144",
+  "at": "CostaDelSol.Play/App.cs:159",
   "args": 1,
   "chain": true
  },
  "\n(진행 중인 판은 저장되지 않습니다. 아니오를 고르면 게임을 끌 때 적용됩니다.)": {
-  "at": "CostaDelSol.Play/App.cs:145",
+  "at": "CostaDelSol.Play/App.cs:160",
   "args": 0
  }
 }

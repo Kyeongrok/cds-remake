@@ -45,9 +45,23 @@ internal sealed class App : Application
             // 게임 창을 닫는 사이 늦게 뜨려던 창이 내는 오류는 조용히 넘긴다 — 닫힌 창을 주인으로 삼으려던 것이다.
             if (CdsHelper.Game.UI.Views.ShipMapWindow.ShuttingDown) { args.Handled = true; return; }
             PlayStats.Error(args.Exception);
-            MessageBox.Show($"{args.Exception.Message}\n\n{args.Exception.StackTrace}",
-                            "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            CrashReport.Report(args.Exception, fatal: false);
             args.Handled = true;
+        };
+
+        // UI 스레드 밖(따로 뜬 창의 스레드 · 뒤에서 도는 일)에서 난 오류는 위에서 못 잡고 곧장 게임을 끈다 —
+        // 꺼지기 전에 적고 알려 회원이 보고할 수 있게 한다.
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            if (args.ExceptionObject is not Exception ex) return;
+            try { PlayStats.Error(ex); } catch { }
+            CrashReport.Report(ex, fatal: args.IsTerminating);
+        };
+        // 기다려 주지 않은 일(Task)의 오류는 게임을 끄지 않는다 — 통계에만 남긴다.
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            try { PlayStats.Error(args.Exception); } catch { }
+            args.SetObserved();
         };
 
         Startup += (_, _) => Begin();
@@ -77,6 +91,7 @@ internal sealed class App : Application
 
         // 게임 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
         PlayStats.Start(typeof(App).Assembly);
+        CrashReport.Start(typeof(App).Assembly);
         Exit += (_, _) => PlayStats.Flush();
 
         _ = CheckForUpdateAsync(window);
