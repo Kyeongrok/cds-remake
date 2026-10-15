@@ -143,13 +143,14 @@ public sealed class GameFont
     /// 1=획 / 0=바탕으로 푼다. 글꼴에 없는 글자면 false — 그 자리는 건너뛴다.
     /// </summary>
     /// <remarks>
-    /// 일본어로 켰으면(<see cref="Lang"/>) 한글이 아닌 글자는 원본 일본어판처럼 MS 고딕으로 찍는다(<see cref="GdiGlyphs"/>).
+    /// 언어가 윈도 글꼴로 찍으라는 글자(<see cref="Languages.ILanguage.DrawsWithSystemFont"/> — 일본어면 한글이 아닌 글자 전부)는
+    /// 원본 일본어판처럼 MS 고딕으로 찍는다(<see cref="GdiGlyphs"/>).
     /// 한국어일 때도 이 글꼴에 없는 글자(한자 · 「ー」 따위)는 MS 고딕으로 메운다 — 예전에는 0폭으로 사라지거나
     /// CP949 가 모르는 글자가 「?」로 찍혔다.
     /// </remarks>
     public bool TryGlyph(char ch, byte[] mask, out int width, out int height)
     {
-        if (Lang.IsJapanese && !IsHangul(ch) && GdiGlyphs.TryGlyph(ch, mask, out width, out height)) return true;
+        if (Lang.Current.DrawsWithSystemFont(ch) && GdiGlyphs.TryGlyph(ch, mask, out width, out height)) return true;
         if (TryOwnGlyph(ch, mask, out width, out height)) return true;
         return !IsHangul(ch) && GdiGlyphs.TryGlyph(ch, mask, out width, out height);
     }

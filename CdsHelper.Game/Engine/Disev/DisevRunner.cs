@@ -1834,12 +1834,12 @@ public sealed class DisevRunner
     private List<int>? _dialogueOffsets;
 
     /// <summary>
-    /// 그 자리 대사의 일본어(<see cref="Local.Helpers.Lang.ScriptLine"/>). 일본어가 아니거나 짝이 없으면 null.
+    /// 그 자리 대사의 지금 언어 판(<see cref="Local.Helpers.Languages.ILanguage.ScriptLine"/>). 원본 대본을 안 쓰는 언어거나 짝이 없으면 null.
     /// 대사 차례는 구울 때와 같은 잣대로 센다 — 토막 차례대로 <see cref="DisevScript.Parse"/> 가 「대사」로 본 명령.
     /// </summary>
     private string? JapaneseLine(int offset)
     {
-        if (!Local.Helpers.Lang.IsJapanese || _part == null || _partIndex < 0) return null;
+        if (!Local.Helpers.Lang.Current.HasScriptLines || _part == null || _partIndex < 0) return null;
         if (_dialogueOffsets == null)
         {
             _dialogueOffsets = [];
@@ -1850,7 +1850,7 @@ public sealed class DisevRunner
                     if (op.Kind == "대사") _dialogueOffsets.Add(op.Offset);
             }
         }
-        return Local.Helpers.Lang.ScriptLine(_cache, _partIndex, _dialogueOffsets.IndexOf(offset), _dialogueOffsets.Count);
+        return Local.Helpers.Lang.Current.ScriptLine(_cache, _partIndex, _dialogueOffsets.IndexOf(offset), _dialogueOffsets.Count);
     }
 
     private void Speak(byte[] raw, JsonObject args, int offset = -1)
@@ -1866,7 +1866,7 @@ public sealed class DisevRunner
         var (speaker, body) = DisevScript.DecodeDialogue(raw.AsSpan(textStart, end - textStart),
                                                         _game.Player.CallName);
         if (body.Length == 0) return;
-        // 일본어로 켰으면 같은 자리의 원본 일본어 대사로 바꾼다 — %P 는 제독 이름 자리다.
+        // 언어가 원본 대본을 들고 있으면(일본어) 같은 자리의 원본 대사로 바꾼다 — %P 는 제독 이름 자리다.
         if (JapaneseLine(offset) is { } japanese) body = japanese.Replace("%P", _game.Player.CallName);
         // 대사 속 이름도 표준 표기로 — 「이슈탈문을 발견했다！」가 표의 이름(이슈타르 문)과 어긋나지 않게.
         else body = Local.Helpers.StandardText.Apply(body);

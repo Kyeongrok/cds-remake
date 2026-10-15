@@ -170,7 +170,7 @@ public sealed class SettingsDialog : GameWindow
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal };
         row.Children.Add(new GameButton("◀", () => StepLanguage(-1), BandStyle.Button, StepWidth));
-        string name = Lang.All.FirstOrDefault(l => l.Code == GameSettings.Language).Name ?? Lang.All[0].Name;
+        string name = Lang.All.FirstOrDefault(l => l.Code == GameSettings.Language)?.Name ?? Lang.All[0].Name;
         row.Children.Add(Value($"언어 {name}"));
         row.Children.Add(new GameButton("▶", () => StepLanguage(+1), BandStyle.Button, StepWidth));
         return row;
@@ -183,7 +183,7 @@ public sealed class SettingsDialog : GameWindow
         int at = Array.FindIndex(Lang.All, l => l.Code == GameSettings.Language);
         GameSettings.Language = Lang.All[((at < 0 ? 0 : at) + by + count) % count].Code;
         _langRow.Child = LanguageRow();
-        if (GameSettings.Language != Lang.Current)
+        if (GameSettings.Language != Lang.Current.Code)
             NoticeDialog.Show(this, "게임을 다시 켜면 바뀝니다 / 再起動すると切り替わります");
     }
 

@@ -1,68 +1,39 @@
-using System.IO;
-using System.Text.Json;
+using CdsHelper.Game.Local.Helpers.Languages;
 using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 화면 글의 언어 — 한국어(기본)와 일본어. 원본에 없는 것이다.
+/// 화면 글의 언어 — 지금 켠 언어 전략(<see cref="ILanguage"/>)을 들고, 글을 내는 출구가 이것에 맡긴다. 원본에 없는 것이다.
 /// </summary>
 /// <remarks>
-/// 코드 속 글은 한국어로 적혀 있다. 일본어일 때는 <b>한국어 글 그대로를 열쇠로</b> 번역표
-/// (<c>lang/ja.json</c>)에서 찾아 바꿔 낸다(<see cref="T"/>). 표에 없는 글은 한국어로 남는다 —
-/// 글을 하나씩 감싸고 표를 채워 가며 차례로 옮긴다.
-///
-/// 게임 데이터(대본 · 이름 · 설명)는 이 표가 아니라 일본어판 게임 폴더의 원본 파일에서 읽는다.
+/// 출구는 몇 곳뿐이다(<see cref="ILanguage"/> 참고) — 대화 창(ConfirmDialog), 게임 글꼴(GameFont), 대본 대사
+/// (DisevRunner.Speak), 이름 입력판, 윈도 글자. 코드 속 글은 한국어로 적혀 있고 언어는 출구에서만 갈린다.
 /// 언어를 바꾸면 다시 켜야 다 바뀐다 — 이미 지어 둔 창과 읽어 둔 표는 그대로다.
 /// </remarks>
 public static class Lang
 {
-    /// <summary>한국어.</summary>
-    public const string Korean = "ko";
-
-    /// <summary>일본어.</summary>
-    public const string Japanese = "ja";
-
-    /// <summary>고를 수 있는 언어 — (코드, 그 언어로 적은 이름).</summary>
-    public static readonly (string Code, string Name)[] All = [(Korean, "한국어"), (Japanese, "日本語")];
+    /// <summary>고를 수 있는 언어 — 설정 창이 이 차례로 돈다.</summary>
+    public static readonly ILanguage[] All = [new KoreanLanguage(), new JapaneseLanguage()];
 
     /// <summary>
     /// 이번에 켠 언어 — 앱을 켤 때 설정에서 한 번 읽고 그대로 둔다. 설정을 바꿔도 다시 켜기 전에는 안 바뀐다
     /// (창마다 반쯤만 바뀌어 섞이지 않게).
     /// </summary>
-    public static string Current { get; } = GameSettings.Language;
+    public static ILanguage Current { get; } = All.FirstOrDefault(l => l.Code == GameSettings.Language) ?? All[0];
 
-    /// <summary>일본어로 켰는지.</summary>
-    public static bool IsJapanese => Current == Japanese;
-
-    private static Dictionary<string, string>? _ja;
-
-    /// <summary>
-    /// 그 글의 지금 언어 판. 한국어면 그대로, 일본어면 번역표에서 찾고 없으면 그대로 낸다.
-    /// </summary>
-    public static string T(string korean)
-    {
-        if (!IsJapanese || string.IsNullOrEmpty(korean)) return korean;
-        if (Table().TryGetValue(korean, out var ja) && ja.Length > 0) return ja;
-        lock (Seen)
-        {
-            if (Seen.TryGetValue(korean, out var known)) return known;
-            string made = ByTemplate(korean) ?? ByLines(korean) ?? ByWords(korean) ?? korean;
-            if (Seen.Count > 20000) Seen.Clear();
-            Seen[korean] = made;
-            return made;
-        }
-    }
+    /// <summary>그 글의 지금 언어 판(<see cref="ILanguage.Text"/>).</summary>
+    public static string T(string korean) => string.IsNullOrEmpty(korean) ? korean : Current.Text(korean);
 
     private static bool _hooked;
 
     /// <summary>
     /// 보통 윈도 글자(TextBlock)로 그리는 글도 바꾼다 — 게임 글꼴(<see cref="GameFont"/>)을 안 지나는 창(모드 · 설정 설명,
-    /// 표 머리 따위)이다. 글 칸이 화면에 붙을 때 한 번 바꾼다. 일본어가 아니면 아무것도 안 건다.
+    /// 표 머리 따위)이다. 글 칸이 화면에 붙을 때 한 번 바꾼다. 그럴 언어가 아니면 아무것도 안 건다.
     /// </summary>
     public static void InstallWpfHook()
     {
-        if (_hooked || !IsJapanese) return;
+        if (_hooked || !Current.TranslatesWpfText) return;
         _hooked = true;
         System.Windows.EventManager.RegisterClassHandler(typeof(System.Windows.Controls.TextBlock),
             System.Windows.FrameworkElement.LoadedEvent, new System.Windows.RoutedEventHandler((sender, _) =>
@@ -80,182 +51,5 @@ public static class Lang
             {
                 if (sender is System.Windows.Window { Title.Length: > 0 } window) window.Title = T(window.Title);
             }));
-    }
-
-    /// <summary>
-    /// 띄어 쓴 이름(「바르톨로메우 디아스」 — 이름과 성)을 낱말마다 찾아 원본처럼 「＝」로 잇는다. 셋 넘는 낱말이거나
-    /// 하나라도 못 찾으면 null — 문장을 낱말로 쪼개 옮기지는 않는다.
-    /// </summary>
-    private static string? ByWords(string korean)
-    {
-        var words = korean.Split(' ');
-        if (words.Length is < 2 or > 3) return null;
-        var done = new string[words.Length];
-        for (int i = 0; i < words.Length; i++)
-        {
-            if (!Table().TryGetValue(words[i], out var ja) || ja.Length == 0 || HasHangul(ja)) return null;
-            done[i] = ja;
-        }
-        return string.Join("＝", done);
-    }
-
-    /// <summary>한 번 맞춰 본 글 — 틀 맞추기는 비싸서 결과를 들고 있는다.</summary>
-    private static readonly Dictionary<string, string> Seen = [];
-
-    /// <summary>
-    /// 여러 줄 글은 줄마다 따로 찾는다 — 설명 글이 줄 단위로 번역표에 들어 있을 수 있다. 하나도 못 찾으면 null.
-    /// </summary>
-    private static string? ByLines(string korean)
-    {
-        if (!korean.Contains('\n')) return null;
-        var lines = korean.Split('\n');
-        bool any = false;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i].TrimEnd('\r');
-            if (line.Length == 0) continue;
-            string done = T(line);
-            if (!ReferenceEquals(done, line) && done != line) { lines[i] = done; any = true; }
-        }
-        return any ? string.Join('\n', lines) : null;
-    }
-
-    /// <summary>번역표의 틀(「{0}」 자리가 있는 열쇠) — 정규식과 일본어 틀.</summary>
-    private static List<(System.Text.RegularExpressions.Regex Pattern, string Japanese, string Literal)>? _templates;
-
-    /// <summary>
-    /// 이름이 끼는 글(「[{0}]에 들어간다」 꼴)을 틀로 맞춰 바꾼다. 자리에 든 글도 번역표로 바꿔 넣는다.
-    /// 못 맞추면 null.
-    /// </summary>
-    /// <remarks>
-    /// 자리 바로 뒤에 또 자리가 붙은 꼴(「{0}{1} 데리고」)은 뒷자리가 거의 늘 한국어 조사다(<c>GameUi.Josa</c>) —
-    /// 그 자리는 조사로만 맞춘다. 앞자리를 짧게 잡아 이름이 쪼개지지 않게.
-    /// </remarks>
-    private static string? ByTemplate(string korean)
-    {
-        _templates ??= BuildTemplates();
-        foreach (var (pattern, japanese, literal) in _templates)
-        {
-            if (literal.Length > 0 && !korean.Contains(literal)) continue;
-            var m = pattern.Match(korean);
-            if (!m.Success) continue;
-            string made = Hole.Replace(japanese, x =>
-            {
-                var g = m.Groups[GroupOf(x.Value)];
-                return g.Success ? T(g.Value) : "";
-            });
-            // 자리에 든 글이 번역이 안 돼 한글이 남으면 틀이 엉뚱한 글에 걸린 것이다(「{0}의 {1}」 따위) —
-            // 한국어 · 일본어가 섞여 나오느니 다음 틀을 본다.
-            if (HasHangul(made) && !HasHangul(japanese)) continue;
-            return made;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// 틀의 자리 — 코드가 채우는 <c>{0}</c> 과, 대사가 낼 때 채우는 <c>&lt;금액&gt;</c> · <c>&lt;제독&gt;</c> 같은 이름 자리.
-    /// </summary>
-    private static readonly System.Text.RegularExpressions.Regex Hole =
-        new(@"\{\d+\}|<[^<>\s]{1,8}>", System.Text.RegularExpressions.RegexOptions.Compiled);
-
-    /// <summary>자리 글 → 정규식 무리 이름(글자만 남긴다).</summary>
-    private static string GroupOf(string hole) =>
-        "h" + string.Concat(hole.Select(ch => char.IsLetterOrDigit(ch) ? ch.ToString() : ((int)ch).ToString("X")));
-
-    private static bool HasHangul(string text) => text.Any(ch => ch is >= '가' and <= '힣');
-
-    /// <summary>한국어 조사 — 자리 바로 뒤에 붙는 자리는 이것들로만 맞춘다.</summary>
-    private const string Particles = "이라는|라는|이라고|라고|으로|로|에게|에서|에|의|이|가|을|를|은|는|와|과|이야|야|아|이여|여|";
-
-    private static List<(System.Text.RegularExpressions.Regex, string, string)> BuildTemplates()
-    {
-        var list = new List<(System.Text.RegularExpressions.Regex, string, string)>();
-        foreach (var (key, ja) in Table())
-        {
-            if (ja.Length == 0 || !Hole.IsMatch(key)) continue;
-            var regex = new System.Text.StringBuilder("^");
-            string longest = "";
-            var used = new HashSet<string>();
-            int at = 0;
-            int previousEnd = -1;   // 바로 앞 자리가 끝난 곳 — 이 자리가 거기서 곧장 이어지면 조사 자리다
-            foreach (System.Text.RegularExpressions.Match hole in Hole.Matches(key))
-            {
-                string literal = key[at..hole.Index];
-                regex.Append(System.Text.RegularExpressions.Regex.Escape(literal));
-                if (literal.Length > longest.Length) longest = literal;
-                string name = GroupOf(hole.Value);
-                // 같은 자리가 두 번 나오면 뒤엣것은 앞엣것과 같은 글이어야 한다.
-                if (!used.Add(name)) regex.Append(@"\k<").Append(name).Append('>');
-                else if (previousEnd == hole.Index && hole.Value.StartsWith('{'))
-                    regex.Append($"(?<{name}>{Particles})");
-                else regex.Append($"(?<{name}>.+?)");
-                at = previousEnd = hole.Index + hole.Length;
-            }
-            string tail = key[at..];
-            regex.Append(System.Text.RegularExpressions.Regex.Escape(tail)).Append('$');
-            if (tail.Length > longest.Length) longest = tail;
-            // 글자가 하나도 없는 틀(「{0}{1}」)은 아무 글에나 걸리고 자기 자신을 다시 부른다 — 안 쓴다.
-            if (longest.Trim().Length == 0) continue;
-            try
-            {
-                list.Add((new System.Text.RegularExpressions.Regex(regex.ToString(),
-                              System.Text.RegularExpressions.RegexOptions.Singleline), ja, longest));
-            }
-            catch (ArgumentException) { /* 틀이 깨졌으면 건너뛴다 */ }
-        }
-        // 글자가 많이 박힌 틀부터 — 짧은 틀(「{0}」 따위)이 먼저 걸리지 않게.
-        list.Sort((a, b) => b.Item3.Length.CompareTo(a.Item3.Length));
-        return list;
-    }
-
-    private static Dictionary<string, Dictionary<string, List<string>>>? _books;
-
-    /// <summary>
-    /// 대본 대사의 일본어 — 책 · 파트 · 파트 안 대사 차례(<c>대사</c> 명령을 토막 · 명령 차례로 센 번호)로 찾는다.
-    /// 일본어판 원본 대본(DISEV.CDS · STORY · 개인 이야기)을 한국어 책과 같은 자리끼리 짝지어 구운
-    /// <c>lang/ja-books.json</c> 이다(tools/ja-books). 일본어가 아니거나 그 자리가 없으면 null.
-    /// </summary>
-    /// <param name="count">이 파트의 대사 수 — 구울 때와 다르면(대본을 고쳤으면) 짝이 어긋나므로 안 쓴다.</param>
-    public static string? ScriptLine(string book, int part, int index, int count)
-    {
-        if (!IsJapanese || index < 0) return null;
-        if (_books == null)
-        {
-            try
-            {
-                string path = Path.Combine(AppContext.BaseDirectory, "lang", "ja-books.json");
-                _books = File.Exists(path)
-                    ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, List<string>>>>(File.ReadAllText(path)) ?? []
-                    : [];
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[Lang] 대본 번역을 못 읽었습니다 — {ex.Message}");
-                _books = [];
-            }
-        }
-        return _books.TryGetValue(book, out var parts) && parts.TryGetValue(part.ToString(), out var lines)
-               && lines.Count == count && index < lines.Count && lines[index].Length > 0
-            ? lines[index]
-            : null;
-    }
-
-    /// <summary>번역표 — 한 번 읽어 들고 있는다. 못 읽으면 빈 표.</summary>
-    private static Dictionary<string, string> Table()
-    {
-        if (_ja != null) return _ja;
-        try
-        {
-            string path = Path.Combine(AppContext.BaseDirectory, "lang", "ja.json");
-            _ja = File.Exists(path)
-                ? JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path)) ?? []
-                : [];
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[Lang] 번역표를 못 읽었습니다 — {ex.Message}");
-            _ja = [];
-        }
-        return _ja;
     }
 }

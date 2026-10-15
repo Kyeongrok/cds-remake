@@ -109,17 +109,6 @@ public sealed class TextInputDialog : GameWindow
 
     private enum Page { Roman, Initials, Syllables, Kana }
 
-    /// <summary>
-    /// 일본어로 켰을 때의 가나 판(원본에 없는 판 — 한국어판에는 한글 판뿐이다). 오십음 차례로 한 줄에 열아홉씩 깐다.
-    /// </summary>
-    private const string Hiragana =
-        "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"
-        + "がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょゎー・";
-
-    /// <summary>가타카나 판 — 히라가나를 옮기고 「ヴ」를 더한다.</summary>
-    private static readonly string Katakana =
-        new string(Hiragana.Select(ch => ch is >= 'ぁ' and <= 'ゖ' ? (char)(ch + 0x60) : ch).ToArray()) + "ヴ";
-
     private Page _page;
 
     // ── 글 ────────────────────────────────────────────────────────────────────
@@ -167,11 +156,13 @@ public sealed class TextInputDialog : GameWindow
         Place(body, pageBack, PageX, PageY);
 
         // 오른쪽 단추 다섯. 게임 차례 그대로다.
-        // 일본어로 켰으면 「한글」 자리에 「かな」, 그 밑에 「カナ」를 둔다 — 판은 한글 대신 가나다.
-        (string Text, Action Run)[] buttons = Lang.IsJapanese
-            ? [("決定", Decide), ("戻る", Cancel), ("英数", ShowRoman), ("かな", () => ShowKana(Hiragana)),
-               ("削除", Delete), ("カナ", () => ShowKana(Katakana))]
-            : [("결정", Decide), ("뒤로", Cancel), ("영문", ShowRoman), ("한글", ShowInitials), ("삭제", Delete)];
+        // 글자 판은 언어가 준다(Lang.Current.InputPages) — 한국어는 「한글」 하나, 일본어는 「かな」 · 「カナ」.
+        // 첫 판이 원본의 「한글」 자리(넷째)에 서고 「삭제」 뒤로 나머지 판이 붙는다. 단추 글은 출구(GameFont)가 옮긴다.
+        var pages = PageButtons();
+        (string Text, Action Run)[] buttons =
+        [
+            ("결정", Decide), ("뒤로", Cancel), ("영문", ShowRoman), .. pages.Take(1), ("삭제", Delete), .. pages.Skip(1),
+        ];
         for (int i = 0; i < buttons.Length; i++)
         {
             var button = new GameButton(buttons[i].Text, buttons[i].Run, width: ButtonWidth)
@@ -196,9 +187,7 @@ public sealed class TextInputDialog : GameWindow
         MouseRightButtonUp += (_, e) =>
         {
             e.Handled = true;
-            GameUi.ContextMenuAt(this, e.GetPosition(this), Lang.IsJapanese
-                ? [("英数", ShowRoman), ("かな", () => ShowKana(Hiragana)), ("カナ", () => ShowKana(Katakana))]
-                : [("영문", ShowRoman), ("한글", ShowInitials)]);
+            GameUi.ContextMenuAt(this, e.GetPosition(this), [("영문", ShowRoman), .. PageButtons()]);
         };
     }
 
@@ -278,7 +267,11 @@ public sealed class TextInputDialog : GameWindow
         }
     }
 
-    /// <summary>가나 판을 깐다 — 한 줄에 열아홉씩.</summary>
+    /// <summary>언어가 주는 글자 판들의 단추 — 글자가 없으면 한글 초성 판, 있으면 그 글자를 까는 판.</summary>
+    private (string Text, Action Run)[] PageButtons() =>
+        [.. Lang.Current.InputPages.Select(p => (p.Label, p.Glyphs is { } glyphs ? (Action)(() => ShowKana(glyphs)) : ShowInitials))];
+
+    /// <summary>글자를 한 줄 열아홉씩 까는 판(일본어의 가나 판 따위).</summary>
     private void ShowKana(string kana)
     {
         ClearPage(Page.Kana);
