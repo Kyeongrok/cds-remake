@@ -811,13 +811,18 @@ public sealed class ShipMapWindow : Window
         Func<double, double, (bool, string)>? walk = GameSettings.LandAutoWalk && _host.IsOnLand
             ? (x, y) => _host.StartAutoWalk(x, y)
             : null;
-        // 대본이 발견을 안 적는 사건(코페르니쿠스의 망원경 따위)은 사건을 마쳤으면 찾은 것으로 찍는다.
-        var done = _game.Player.Settled
-            .Where(id => !_game.Player.HasFound(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id))
-            .ToHashSet();
         DiscoveryMapDialog.Show(this, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
-                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk, done);
+                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk,
+                                EventsDoneDiscoveries());
     }
+
+    /// <summary>
+    /// 대본이 발견을 안 적는 사건(코페르니쿠스의 망원경 · 돌고래 따위) 가운데 사건을 마친 것 — 발견물 지도와
+    /// 미니맵이 찾은 것으로 찍는다.
+    /// </summary>
+    private HashSet<int> EventsDoneDiscoveries() => _game.Player.Settled
+        .Where(id => !_game.Player.HasFound(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id))
+        .ToHashSet();
 
     /// <summary>
     /// 발견물 지도에서 오른쪽 단추로 짚은 칸으로 함대를 옮긴다. 옮긴 칸을 돌려준다.
@@ -1478,7 +1483,7 @@ public sealed class ShipMapWindow : Window
 
         if (room && _host.ShipCell is { } cell)
         {
-            _mini.Update(_game.Discoveries?.Table, _game.Player, cell.CellX, cell.CellY);
+            _mini.Update(_game.Discoveries?.Table, _game.Player, cell.CellX, cell.CellY, EventsDoneDiscoveries);
             _mini.SyncMarks();
             // 도시 점 — 지금 아는 도시만(발견물 지도와 같다). 아는 도시는 드물게 늘므로 몇 초에 한 번만 다시 센다.
             if (GameSettings.MiniMapCities && (_miniCitiesAt is not { } last || now - last >= MiniCityEvery))

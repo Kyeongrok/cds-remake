@@ -56,7 +56,7 @@ internal sealed class MiniMapView : Border
     private readonly Ellipse _ship = new() { Width = GameSettings.MiniMapShipSize, Height = GameSettings.MiniMapShipSize, Fill = Mine, Stroke = Brushes.White, StrokeThickness = 0.8 };
     private readonly TranslateTransform _shift = new();
 
-    /// <summary>점을 마지막으로 찍었을 때의 찾은 발견물 수 — 달라지면 다시 찍는다.</summary>
+    /// <summary>점을 마지막으로 찍었을 때의 찾은 발견물 수 · 마친 사건 수 — 달라지면 다시 찍는다.</summary>
     private int _markedFound = -1;
 
     public MiniMapView()
@@ -245,21 +245,28 @@ internal sealed class MiniMapView : Border
     }
 
     /// <summary>배 자리(칸)로 가운데를 옮기고, 찾은 발견물이 늘었으면 점을 다시 찍는다.</summary>
-    public void Update(DiscoveryTable? table, Player player, double cellX, double cellY)
+    /// <param name="eventsDone">
+    /// 대본이 발견을 안 적지만 사건을 마친 발견물(돌고래 따위) — 발견물 지도처럼 찾은 것으로 찍는다.
+    /// 찾은 수나 마친 사건 수가 바뀔 때만 부른다.
+    /// </param>
+    public void Update(DiscoveryTable? table, Player player, double cellX, double cellY,
+                       Func<IReadOnlySet<int>>? eventsDone = null)
     {
-        if (table != null && player.Discoveries.Count != _markedFound)
+        int mark = player.Discoveries.Count * 4096 + player.Settled.Count;
+        if (table != null && mark != _markedFound)
         {
+            var done = eventsDone?.Invoke();
             _foundLayer.Children.Clear();
             _yetLayer.Children.Clear();
             foreach (var row in table.Discoveries)
             {
                 if (!row.HasPlace) continue;
-                bool found = player.HasFound(row.Id);
+                bool found = player.HasFound(row.Id) || done?.Contains(row.Id) == true;
                 double x = (row.X1 + row.X2) / 2.0 / ExploredMap.CellsPerBlock;
                 double y = (row.Y1 + row.Y2) / 2.0 / ExploredMap.CellsPerBlock;
                 (found ? _foundLayer : _yetLayer).Children.Add(Dot(x, y, found ? Found : Yet));
             }
-            _markedFound = player.Discoveries.Count;
+            _markedFound = mark;
         }
 
         double px = cellX / ExploredMap.CellsPerBlock, py = cellY / ExploredMap.CellsPerBlock;
