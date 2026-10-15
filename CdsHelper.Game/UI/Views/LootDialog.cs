@@ -99,9 +99,20 @@ public sealed class LootDialog : GameWindow
         right.Children.Add(decide);
         right.Children.Add(new GameButton("취소", () => { Reset(); Paint(); }) { Margin = new Thickness(0) });
 
+        // 「최대」·「10일분」은 원본에 없다 — 보급 창의 같은 이름 단추처럼 한 번에 채운다(풀에 있는 만큼만).
+        var left = new StackPanel { Orientation = Orientation.Horizontal };
+        left.Children.Add(new GameButton("최대", Fill) { Margin = new Thickness(0, 0, 6, 0) });
+        left.Children.Add(new GameButton("10일분", TenDays) { Margin = new Thickness(0) });
+
+        var buttons = new DockPanel { LastChildFill = false };
+        DockPanel.SetDock(left, Dock.Left);
+        DockPanel.SetDock(right, Dock.Right);
+        buttons.Children.Add(left);
+        buttons.Children.Add(right);
+
         var page = new StackPanel();
         page.Children.Add(new Border { Width = BoardWidth, Margin = new Thickness(14, 10, 14, 6), Child = _body });
-        page.Children.Add(new Border { Margin = new Thickness(10, 0, 10, 10), Child = right });
+        page.Children.Add(new Border { Margin = new Thickness(10, 0, 10, 10), Child = buttons });
 
         var frame = GameUi.InfoFrame(page, Back, Line);
         GameUi.EnableDrag(this, frame);
@@ -171,7 +182,7 @@ public sealed class LootDialog : GameWindow
                                                                               v => _now[at] = v)),
                 Cell(Label($"{s.UnitWeight,6}"), UnitWidth),
                 Cell(Label($"{_original[i],6}통"), HaveWidth),
-                Cell(Spin(_now[i] - _original[i], () => BumpSupply(at, +1), () => BumpSupply(at, -1),
+                Cell(Spin(_now[i] - _original[i], _ => BumpSupply(at, +1), _ => BumpSupply(at, -1),
                           () => Enter(s.Name, _now[at], _original[at] + _pool, _original[at], s.UnitWeight,
                                       v => _now[at] = v)), AddWidth)));
         }
@@ -186,7 +197,7 @@ public sealed class LootDialog : GameWindow
                                                                      v => r.Now = v)),
                 Cell(Label($"{r.Goods.UnitWeight,6}"), UnitWidth),
                 Cell(Label($"{r.Original,6}통"), HaveWidth),
-                Cell(Spin(r.Now - r.Original, () => BumpGoods(at, +1), () => BumpGoods(at, -1),
+                Cell(Spin(r.Now - r.Original, _ => BumpGoods(at, +1), _ => BumpGoods(at, -1),
                           () => Enter(GoodsName(r.Goods.Kind), r.Now, r.Original, r.Original, r.Goods.UnitWeight,
                                       v => r.Now = v)), AddWidth)));
         }
@@ -230,18 +241,80 @@ public sealed class LootDialog : GameWindow
         return label;
     }
 
-    private void BumpSupply(int i, int by)
+    /// <summary>↑↓ 한 번 — 더 못 움직이면 <c>false</c>(누르고 있던 되풀이가 멈춘다).</summary>
+    private bool BumpSupply(int i, int by)
     {
         int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step;
-        _now[i] = Math.Clamp(_now[i] + by * step, 0, _original[i] + _pool);
+        int to = Math.Clamp(_now[i] + by * step, 0, _original[i] + _pool);
+        if (to == _now[i]) return false;
+        _now[i] = to;
         Paint();
+        return true;
     }
 
-    private void BumpGoods(int k, int by)
+    private bool BumpGoods(int k, int by)
     {
         int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step;
-        _rows[k].Now = Math.Clamp(_rows[k].Now + by * step, 0, _rows[k].Original);
+        int to = Math.Clamp(_rows[k].Now + by * step, 0, _rows[k].Original);
+        if (to == _rows[k].Now) return false;
+        _rows[k].Now = to;
         Paint();
+        return true;
+    }
+
+    /// <summary>남은 용량(통) — 넘쳐 있으면 0.</summary>
+    private int RoomLeft => Math.Max(0, _player.Capacity - Barrels);
+
+    /// <summary>보급품 i 를 무게 여유로 몇 통 더 실을 수 있나. 「중량 없음」이면 끝없다.</summary>
+    private int ByWeight(int i)
+    {
+        int unit = Supply.All[i].UnitWeight;
+        if (Player.IgnoresWeight() || unit <= 0) return Player.NoWeightRoom;
+        return Math.Max(0, WeightLimit - Weight) / unit;
+    }
+
+    /// <summary>
+    /// 「최대」 — 풀에 남은 보급품을 실을 수 있는 데까지 싣는다. 식량과 물은 <b>한 통씩 번갈아</b> 올리고
+    /// (보급 창 「최대」처럼 짝으로), 그다음 탄약 · 자재 차례다.
+    /// </summary>
+    private void Fill()
+    {
+        int food = (int)SupplyKind.Food, water = (int)SupplyKind.Water;
+        bool moved = false;
+        while (true)
+        {
+            int pick = PoolLeft(food) > 0 && (PoolLeft(water) <= 0 || _now[food] <= _now[water]) ? food
+                     : PoolLeft(water) > 0 ? water : -1;
+            if (pick < 0 || RoomLeft <= 0 || ByWeight(pick) <= 0) break;
+            _now[pick]++;
+            moved = true;
+        }
+        foreach (int i in new[] { (int)SupplyKind.Ammo, (int)SupplyKind.Material })
+        {
+            int n = Math.Min(PoolLeft(i), Math.Min(RoomLeft, ByWeight(i)));
+            if (n <= 0) continue;
+            _now[i] += n;
+            moved = true;
+        }
+        if (moved) Paint();
+    }
+
+    /// <summary>
+    /// 「10일분」 — 식량·물을 열흘 갈 만큼(선원수만큼의 통)까지 채운다(<see cref="Supply.BarrelsForDays"/>).
+    /// 이미 그보다 많으면 그대로 두고, 풀 · 용량 · 무게가 허락하는 데까지만이다.
+    /// </summary>
+    private void TenDays()
+    {
+        int want = Supply.BarrelsForDays(10, _player.Crew);
+        bool moved = false;
+        foreach (int i in new[] { (int)SupplyKind.Food, (int)SupplyKind.Water })
+        {
+            int n = Math.Min(Math.Max(0, want - _now[i]), Math.Min(PoolLeft(i), Math.Min(RoomLeft, ByWeight(i))));
+            if (n <= 0) continue;
+            _now[i] += n;
+            moved = true;
+        }
+        if (moved) Paint();
     }
 
     /// <summary>교역품 줄을 미탑재품과 맞바꾼다(<c>0x004880B0</c>).</summary>
@@ -321,12 +394,13 @@ public sealed class LootDialog : GameWindow
     /// 계산기는 원본에 없다 — 보급 창처럼 <b>실을 총량</b>을 적는 창(이름을 눌렀을 때와 같은 것)을 연다.
     /// 화살표로 하나씩 올리기가 너무 번거로웠다.
     /// </remarks>
-    private static UIElement Spin(int delta, Action up, Action down, Action calc)
+    /// <remarks>↑↓ 는 누르고 있으면 되풀이한다(<see cref="HoldRepeat"/>).</remarks>
+    private static UIElement Spin(int delta, Func<bool, bool> up, Func<bool, bool> down, Action calc)
     {
         var spin = new StackPanel { Orientation = Orientation.Horizontal };
         spin.Children.Add(Label(delta < 0 ? $"－{-delta,4}" : $"＋{delta,4}"));
-        spin.Children.Add(Arrow(UiSprites.IconUp, up));
-        spin.Children.Add(Arrow(UiSprites.IconDown, down));
+        spin.Children.Add(Repeating(UiSprites.IconUp, up));
+        spin.Children.Add(Repeating(UiSprites.IconDown, down));
         var box = Arrow(UiSprites.IconCalc, calc);
         if (box is FrameworkElement f) f.ToolTip = "실을 양을 적는다";
         spin.Children.Add(box);
@@ -334,6 +408,22 @@ public sealed class LootDialog : GameWindow
     }
 
     private static UIElement Arrow(int icon, Action run)
+    {
+        var box = IconBox(icon);
+        box.MouseLeftButtonDown += (_, e) => e.Handled = true;
+        box.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
+        return box;
+    }
+
+    /// <summary>누르고 있으면 되풀이하는 화살표 — 수를 올리고 내린다.</summary>
+    private static UIElement Repeating(int icon, Func<bool, bool> run)
+    {
+        var box = IconBox(icon);
+        HoldRepeat.Attach(box, run);
+        return box;
+    }
+
+    private static FrameworkElement IconBox(int icon)
     {
         FrameworkElement box = GameUi.GameIcon(icon)
             ?? (FrameworkElement)new Border
@@ -347,8 +437,6 @@ public sealed class LootDialog : GameWindow
         box.Margin = new Thickness(1, 0, 0, 0);
         box.Cursor = Cursors.Hand;
         box.VerticalAlignment = VerticalAlignment.Center;
-        box.MouseLeftButtonDown += (_, e) => e.Handled = true;
-        box.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
         return box;
     }
 
