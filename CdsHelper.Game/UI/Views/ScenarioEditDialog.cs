@@ -172,7 +172,7 @@ public sealed class ScenarioEditDialog : GameWindow
             + "능력 여섯: " + string.Join(",", Ability.Names) + $" ({Ability.Min}~{Ability.Max})\n"
             + "기능 열셋: " + string.Join(",", Skill.Names) + "\n"
             + "언어 여섯: " + string.Join(",", Skill.Languages) + "\n"
-            + "게임은 1480년 1월 1일에 시작한다 — 나이는 태어난 해로 셈한다. 고친 뒤 「저장」을 눌러야 적힌다. 모드 「시나리오 모드」를 켜면 NEW GAME 에 나온다.";
+            + "게임은 1480년 1월 1일에 시작한다 — 나이는 태어난 해로 셈한다. 고친 뒤 「저장」을 눌러야 적힌다. 모드 「시나리오 모드(베타)」를 켜면 NEW GAME 에 나온다.";
     }
 
     /// <summary>줄들을 시나리오로 거둔다. 어긋난 칸이 있으면 null 이고 까닭을 아래에 적는다.</summary>
