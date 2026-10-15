@@ -2834,16 +2834,13 @@ public sealed class ShipMapWindow : Window
     /// </param>
     private static void WithMenuHidden(Window? menu, Action show, bool holdNotes = false)
     {
-        if (menu != null) menu.Visibility = Visibility.Hidden;
+        GameWindow.TrySetVisibility(menu, Visibility.Hidden);
         using var notes = holdNotes ? OverlayNotes.Hold() : null;
         try { show(); }
         finally
         {
-            if (menu != null)
-            {
-                menu.Visibility = Visibility.Visible;
-                menu.Activate();
-            }
+            // 판을 보는 사이 명령 창이 닫혔거나 닫히는 중이면 펴지 않는다.
+            if (GameWindow.TrySetVisibility(menu, Visibility.Visible)) menu!.Activate();
         }
     }
 

@@ -1007,7 +1007,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             Sailed = true;
             SailedOnArrival = true;
             _gateway = null;
-            Close();
+            // 추방되며 게임이 첫 화면으로 돌아가는 따위로 이미 닫히는 중일 수 있다(Window.InternalClose 가 던졌다).
+            GameWindow.TryClose(this);
             return false;
         }
 
@@ -1974,15 +1975,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private void KeepCityMenu(Action show)
     {
         var menu = _cityMenu.Window;
-        if (menu != null) menu.Visibility = Visibility.Hidden;
+        GameWindow.TrySetVisibility(menu, Visibility.Hidden);
         try { show(); }
         finally
         {
-            if (menu != null && menu.IsLoaded)
-            {
-                menu.Visibility = Visibility.Visible;
-                menu.Activate();
-            }
+            // 판을 보는 사이 명령 창이 닫혔거나 닫히는 중이면 펴지 않는다.
+            if (menu is { IsLoaded: true } && GameWindow.TrySetVisibility(menu, Visibility.Visible)) menu.Activate();
         }
     }
 

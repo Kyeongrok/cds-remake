@@ -230,6 +230,29 @@ public class GameWindow : Window
     private static bool Shown(Window w) => new System.Windows.Interop.WindowInteropHelper(w).Handle != IntPtr.Zero;
 
     /// <summary>
+    /// 감추거나 다시 편다. 닫혔거나 <b>닫히는 중</b>인 창이면 아무것도 안 한다.
+    /// </summary>
+    /// <remarks>
+    /// 정보 판을 띄우는 동안 명령 창을 감췄다 펴는데, 그 사이 명령 창이 닫히기 시작하면(맵 포인트 · 게임 종료 ·
+    /// 오므라들며 닫히는 차림표) WPF 가 <c>InvalidOperationException</c> 을 던졌다(<c>Window.CoerceVisibility</c> ·
+    /// <c>Window.VerifyCanShow</c>). 닫히는 중인지는 물어볼 길이 없어 받아 넘긴다.
+    /// </remarks>
+    /// <returns>바꿨으면 true.</returns>
+    internal static bool TrySetVisibility(Window? window, Visibility visibility)
+    {
+        if (window == null || !Shown(window)) return false;
+        try { window.Visibility = visibility; return true; }
+        catch (InvalidOperationException) { return false; }
+    }
+
+    /// <summary>닫는다. 이미 닫히는 중이면(<c>Window.InternalClose</c> 가 던진다) 그대로 둔다.</summary>
+    internal static void TryClose(Window window)
+    {
+        try { window.Close(); }
+        catch (InvalidOperationException) { /* 이미 닫히는 중이다 */ }
+    }
+
+    /// <summary>
     /// 닫힐 때까지 기다린다. <b>모달은 안 건다.</b>
     /// </summary>
     public new bool? ShowDialog()
