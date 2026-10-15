@@ -16,6 +16,12 @@ public static class Home
     /// <summary>장기 휴양으로 고를 수 있는 가장 긴 달수(<c>0x00460782</c> 의 <c>push 0xC</c>).</summary>
     public const int MaxRestMonths = 12;
 
+    /// <summary>모드 「장기 휴양 120개월」을 켰을 때의 가장 긴 달수. 원본에 없는 것이다.</summary>
+    public const int LongRestMonths = 120;
+
+    /// <summary>지금 고를 수 있는 가장 긴 달수 — 모드를 켰으면 120, 아니면 원본대로 12.</summary>
+    public static int RestMonthsLimit => Local.Settings.GameSettings.LongRest ? LongRestMonths : MaxRestMonths;
+
     /// <summary>휴양 한 달을 며칠로 세는지. 원본도 서른 날이다.</summary>
     public const int DaysPerMonth = 30;
 

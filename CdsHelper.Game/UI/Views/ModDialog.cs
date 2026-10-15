@@ -379,6 +379,11 @@ public sealed class ModDialog : GameWindow
             "원본과 다릅니다 — 소지금과 저금의 상한이 1,000,000닢에서 10,000,000닢으로 늘어납니다."
             + " 끄면 원본대로 백만 닢에서 잘립니다 — 백만 닢이 넘는 돈을 가진 채 끄면 그 돈이 백만 닢으로 줄어들 수 있습니다."));
 
+        // 장기 휴양 120개월 — 자택에서 한 번에 열 해까지 쉰다.
+        rows.Children.Add(Toggle("장기 휴양 120개월", GameSettings.LongRest, on => GameSettings.LongRest = on,
+            "원본과 다릅니다 — 자택의 「장기 휴양」에서 고를 수 있는 달수가 12개월에서 120개월로 늘어납니다."
+            + " 쉬는 동안 그만큼 날짜가 흐릅니다."));
+
         // 편리한 인벤토리 — 소지품 창에서 바로 보관 · 판매.
         rows.Children.Add(Toggle("편리한 인벤토리", GameSettings.HandyInventory, on => GameSettings.HandyInventory = on,
             "원본에 없는 것입니다 — 소지품 정보 창에 「보관함」 · 「판매」 단추가 붙습니다."

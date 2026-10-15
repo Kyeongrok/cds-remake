@@ -687,7 +687,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
 
         // 물음 뒤에 계산기 판이 곧바로 뜬다(0x00460788 → 0x00481FE0, 1~12) — 수 적기 창이 아니다.
         GameDialog.Show(owner, "몇 개월 동안 휴양하겠습니까?");
-        if (NumberPadDialog.Ask(owner, 1, 1, Home.MaxRestMonths) is { } months && months > 0) Rest(months);
+        if (NumberPadDialog.Ask(owner, 1, 1, Home.RestMonthsLimit) is { } months && months > 0) Rest(months);
         _menu.Pop();
     }
 

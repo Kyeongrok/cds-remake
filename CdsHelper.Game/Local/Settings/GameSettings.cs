@@ -255,6 +255,9 @@ public sealed class GameSettingsData
     /// <summary>소지금 · 저금 상한을 열 배(천만 닢)로 할지. 원본은 백만 닢이라 꺼 두고 시작한다.</summary>
     public bool RichCap { get; set; }
 
+    /// <summary>자택 장기 휴양을 120개월까지 고를지. 원본은 12개월이라 꺼 두고 시작한다.</summary>
+    public bool LongRest { get; set; }
+
     /// <summary>윈도 글꼴로 찍는 창 글씨를 리디바탕으로 쓸지. 켜 두고 시작한다.</summary>
     public bool RidiFont { get; set; } = true;
 
@@ -1139,6 +1142,13 @@ public static class GameSettings
     {
         get => Get(d => d.RichCap);
         set => Set(d => d.RichCap = value);
+    }
+
+    /// <summary>장기 휴양 120개월 — 자택의 장기 휴양을 12개월이 아니라 120개월까지 고른다. 모드 창에서 켜고 끈다.</summary>
+    public static bool LongRest
+    {
+        get => Get(d => d.LongRest);
+        set => Set(d => d.LongRest = value);
     }
 
     /// <summary>리디바탕 글꼴 — 게임 비트맵 글꼴이 아닌 창 글씨(모드 창 · 향상된 힌트 보기 따위)를 리디바탕으로. 모드 창에서 켜고 끈다.</summary>
