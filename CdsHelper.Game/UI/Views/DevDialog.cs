@@ -248,6 +248,22 @@ public sealed class DevDialog : GameWindow
             rows.Children.Add(line);
         }
 
+        // 창 주인 보기 — 떠 있는 창을 주인 나무로 늘어놓는다. 게임을 하면서 보도록 따로 뜬다.
+        {
+            var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+            line.Children.Add(new TextBlock
+            {
+                Text = "창",
+                Width = 64,
+                Foreground = GameUi.Text,
+                FontWeight = FontWeights.Bold,
+                FontSize = 15,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            line.Children.Add(GameUi.PushButton("창 주인 보기…", () => { Close(); WindowTreeWindow.Open(); }, 180));
+            rows.Children.Add(line);
+        }
+
         // 게임 폴더에 원본 CDS가 없을 때 내려받는 CDSX 에셋은 실행 폴더에 둔다.
         var cdsxLine = new StackPanel
         {
