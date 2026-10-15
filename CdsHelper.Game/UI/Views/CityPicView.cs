@@ -2221,13 +2221,19 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     private string HintNameOf(int id) => _game.HintName(id);
 
     /// <summary>얻은 힌트를 늘어놓는다. 이름은 판이 찾아 준다.</summary>
-    private void ShowHints()
+    /// <remarks>
+    /// 다른 정보 판처럼 보는 동안 커맨드 창을 감춰 둔다(<see cref="KeepCityMenu"/>). 그래서 판의 주인은
+    /// 커맨드 창이 아니라 도시 화면이다 — 감춘 창을 주인으로 삼지 않는다.
+    /// </remarks>
+    private void ShowHints() => KeepCityMenu(ShowHintsBody);
+
+    private void ShowHintsBody()
     {
         // 원본은 그냥 늘어놓기만 하지 않는다 — 한 줄을 고르고 결정하면 그 이야기를 편다.
         //
         // 보고까지 마친 힌트는 여기서 빠진다(원본 힌트 상태 15). 발견만 해서는 안 빠지는
         // 것이 옳다 — 까닭은 DiscoveryLog.IsHintDone 에 적어 두었다.
-        var owner = _cityMenu.Window ?? this;
+        Window owner = this;
         var ids = _game.Discoveries?.LiveHints(_player) ?? [.. _player.Hints.Order()];
 
         // 모드 「향상된 힌트 보기」 — 목록과 설명을 한 창에 나란히.
