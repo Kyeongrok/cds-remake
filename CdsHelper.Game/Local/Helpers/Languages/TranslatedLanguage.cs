@@ -41,8 +41,8 @@ public abstract class TranslatedLanguage : ILanguage
         lock (_seen)
         {
             if (_seen.TryGetValue(korean, out var known)) return known;
-            string made = ByTemplate(korean, out string? weak) ?? ByLines(korean) ?? ByWords(korean) ?? BySegments(korean)
-                          ?? weak ?? korean;
+            string made = ByTemplate(korean, out string? weak) ?? ByLines(korean) ?? ByWords(korean) ?? ByDottedName(korean)
+                          ?? BySegments(korean) ?? weak ?? korean;
             if (_seen.Count > 20000) _seen.Clear();
             _seen[korean] = made;
             return made;
@@ -76,6 +76,23 @@ public abstract class TranslatedLanguage : ILanguage
             done[i] = word;
         }
         return string.Join(NameJoiner, done);
+    }
+
+    /// <summary>
+    /// 가운뎃점으로 이은 사람 이름(「비센테·야녜스·핀손」 — 이름 「비센테」와 성 「야녜스·핀손」)을 두 토막으로 나눠
+    /// 찾고 <see cref="NameJoiner"/> 로 잇는다. 성 자체에 가운뎃점이 있어 낱낱이 쪼개면 못 찾으므로 자를 곳을 다 본다.
+    /// </summary>
+    private string? ByDottedName(string korean)
+    {
+        if (korean.Contains(' ') || korean.Length > 24) return null;
+        for (int at = korean.IndexOf('·'); at > 0; at = korean.IndexOf('·', at + 1))
+        {
+            if (!Table().TryGetValue(korean[..at], out var head) || head.Length == 0 || HasHangul(head)) continue;
+            string tail = korean[(at + 1)..];
+            string rest = Table().TryGetValue(tail, out var found) && found.Length > 0 ? found : ByDottedName(tail) ?? tail;
+            if (!HasHangul(rest)) return head + NameJoiner + rest;
+        }
+        return null;
     }
 
     /// <summary>

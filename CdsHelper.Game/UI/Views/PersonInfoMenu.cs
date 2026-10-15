@@ -84,11 +84,11 @@ internal static class PersonInfoMenu
         var open = new List<Action>();
         var notes = new List<string>();
 
-        names.Add(player.Name);
+        names.Add(Lang.T(player.Name));
         faces.Add(portraits?.TryGetBgra(PortraitAges.At(player.Face, player.Age, false, portraits), female: false));
         skills.Add(SkillLine(i => player.LevelOf(Skill.Names[i]), _ => true) + "\n"
                    + LanguageLine(i => player.TongueOf(Skill.Languages[i]), true));
-        roles.Add("플레이어");
+        roles.Add(Lang.T("플레이어"));
         open.Add(() => PersonInfoDialog.Show(owner, player, game.Directory, game));
         notes.Add(Explain(-1, player.Name, i => player.LevelOf(Skill.Names[i]), i => player.TongueOf(Skill.Languages[i])));
 
@@ -98,14 +98,14 @@ internal static class PersonInfoMenu
             if (name.Length == 0) continue;
             var info = game.MateInfo(name);
             var row = game.World?.People.FirstOrDefault(r => r.Name == name);
-            names.Add(name);
+            names.Add(Lang.T(name));
             faces.Add(info is { } who ? game.MateFace(who) : null);
             int at = slot;
             skills.Add(row is { } r
                 ? SkillLine(i => i < r.Skills.Length ? r.Skills[i] : 0, i => ActiveSkill(at, i)) + "\n"
                   + LanguageLine(i => i < r.Languages.Length ? r.Languages[i] : 0, at is FirstMateSlot or InterpreterSlot)
                 : "");
-            roles.Add(Player.MateRoles[slot]);
+            roles.Add(Lang.T(Player.MateRoles[slot]));
             notes.Add(Explain(slot, name,
                               i => row is { } sr && i < sr.Skills.Length ? sr.Skills[i] : 0,
                               i => row is { } lr && i < lr.Languages.Length ? lr.Languages[i] : 0));
@@ -157,14 +157,14 @@ internal static class PersonInfoMenu
     /// <param name="slot">부하 자리. −1 이면 제독이다.</param>
     private static string Explain(int slot, string name, Func<int, int> skillOf, Func<int, int> tongueOf)
     {
-        var lines = new List<string> { slot < 0 ? $"{name} (제독)" : $"{name} ({Player.MateRoles[slot]})", "" };
+        var lines = new List<string> { $"{Lang.T(name)} ({Lang.T(slot < 0 ? "제독" : Player.MateRoles[slot])})", "" };
         bool any = false;
         for (int i = 0; i < Skill.Names.Length; i++)
         {
             int level = skillOf(i);
             if (level <= 0 || (slot >= 0 && !ActiveSkill(slot, i))) continue;
             if (EffectOf(slot, i) is not { Length: > 0 } effect) continue;
-            lines.Add($"● {Skill.Names[i]}{level} : {effect}");
+            lines.Add($"● {Lang.T(Skill.Names[i])}{level} : {Lang.T(effect)}");
             any = true;
         }
 
@@ -172,17 +172,17 @@ internal static class PersonInfoMenu
         var tongues = Enumerable.Range(0, Skill.Languages.Length).Where(i => tongueOf(i) > 0).ToList();
         if (speaks && tongues.Count > 0)
         {
-            lines.Add($"● 언어 : {string.Join(" · ", tongues.Select(i => $"{Skill.Languages[i]}{tongueOf(i)}"))}");
-            lines.Add(slot < 0 ? "    그 말을 쓰는 도시 사람과 말이 통한다." : "    제독보다 잘 알아들으면 통역해 준다.");
+            lines.Add($"● {Lang.T("언어")} : {string.Join(" · ", tongues.Select(i => $"{Lang.T(Skill.Languages[i])}{tongueOf(i)}"))}");
+            lines.Add("    " + Lang.T(slot < 0 ? "그 말을 쓰는 도시 사람과 말이 통한다." : "제독보다 잘 알아들으면 통역해 준다."));
             any = true;
         }
-        if (!any) lines.Add(slot < 0 ? "지닌 기능이 없다." : "이 자리에서 쓰이는 기능이 없다.");
+        if (!any) lines.Add(Lang.T(slot < 0 ? "지닌 기능이 없다." : "이 자리에서 쓰이는 기능이 없다."));
 
         // 「누구 값을 쓰는가」는 줄마다 되풀이하지 않고 끝에 한 번만 적는다.
         lines.Add("");
-        lines.Add(slot < 0
+        lines.Add(Lang.T(slot < 0
             ? "※ 제독과 맡은 부하 가운데 높은 값을 쓴다."
-            : "※ 제독과 견주어 높은 값을 쓴다. 흐린 기능은 이 자리에서 안 쓰인다.");
+            : "※ 제독과 견주어 높은 값을 쓴다. 흐린 기능은 이 자리에서 안 쓰인다."));
         return string.Join("\n", lines);
     }
 
@@ -193,15 +193,15 @@ internal static class PersonInfoMenu
         Skill.Handling => slot switch
         {
             FirstMateSlot => "배에 쥐가 생기기 전에 미리 퇴치할 확률이 오른다.",
-            NavigatorSlot => "뭍을 걸을 때 여행비가 준다.",
-            _ => "뭍을 걸을 때 여행비가 줄고(항해사 몫), 쥐를 미리 퇴치한다(부관 몫).",
+            NavigatorSlot => "육지를 걸을 때 여행비가 준다.",
+            _ => "육지를 걸을 때 여행비가 줄고(항해사 몫), 쥐를 미리 퇴치한다(부관 몫).",
         },
         Skill.Sword => "해전 백병전 · 육상전 근접 공격 · 일기토.",
         Skill.Gunnery => "해전 포격 · 육상전 포병.",
         Skill.Shooting => "해전 · 육상전 사격과 일기토.",
         Skill.Medicine => "괴혈병 · 전염병을 다스려 선원이 덜 죽는다.",
         Skill.Science => "3 이면 괴혈병을 보리로 눌러 앉힌다.",
-        Skill.Shipwright => "뭍에서 배를 고칠 수 있다.",
+        Skill.Shipwright => "육지에서 배를 고칠 수 있다.",
         Skill.Survey => "지도에서 도시를 알아보는 거리가 는다(측량 + 2칸), 도시 좌표도 보인다.",
         Skill.Rhetoric => slot < 0 ? "부하를 고용 · 재계약할 때 계약금이 준다." : "",
         _ => slot < 0 ? "도서관에서 이 기능이 필요한 힌트를 알아듣는다." : "",
@@ -213,8 +213,8 @@ internal static class PersonInfoMenu
     {
         var parts = new List<string>();
         for (int i = 0; i < Skill.Languages.Length; i++)
-            if (levelOf(i) is var level && level > 0) parts.Add($"{(active ? "" : "~")}{Skill.Languages[i]}{level}");
-        return parts.Count > 0 ? Wrapped(parts) : "언어 없음";
+            if (levelOf(i) is var level && level > 0) parts.Add($"{(active ? "" : "~")}{Lang.T(Skill.Languages[i])}{level}");
+        return parts.Count > 0 ? Wrapped(parts) : Lang.T("언어 없음");
     }
 
     /// <summary>낱말을 띄어 잇는다 — 줄 접기는 목록 창(리디바탕 글씨)이 폭에 맞춰 한다. 흐린 표시 <c>~</c> 는 그대로 둔다.</summary>
@@ -226,8 +226,8 @@ internal static class PersonInfoMenu
     {
         var parts = new List<string>();
         for (int i = 0; i < Skill.Names.Length; i++)
-            if (levelOf(i) is var level && level > 0) parts.Add($"{(active(i) ? "" : "~")}{Skill.Names[i]}{level}");
-        return parts.Count > 0 ? Wrapped(parts) : "기능 없음";
+            if (levelOf(i) is var level && level > 0) parts.Add($"{(active(i) ? "" : "~")}{Lang.T(Skill.Names[i])}{level}");
+        return parts.Count > 0 ? Wrapped(parts) : Lang.T("기능 없음");
     }
 
     /// <summary>
