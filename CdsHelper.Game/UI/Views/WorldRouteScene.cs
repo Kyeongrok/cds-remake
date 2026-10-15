@@ -17,8 +17,11 @@ namespace CdsHelper.Game.UI.Views;
 ///   0x0047D460  계약이 있고, 바퀴 수(0x005B63D0)가 0 이 아니고, 지금 도시가 계약을 맺은 도시다
 ///   0x00492073  계약의 유적 번호가 발견물 7번(세계일주항로)의 것과 같다(0x00493E60)
 ///   0x00492099  발견물 7번의 칸 2 가 비어 있다 — 아직 발표하지 않았다(0x004AABA0)
-///   0x004920D0  부관이 타고 있다(0x0047CC60(0,1) 의 +4 가 1)
+///   0x004920D0  말할 사람이 있다(0x0047CC60(0,1) 의 +4 가 1)
 /// </code>
+/// 마지막 관문은 부관을 요구하지 않는다 — <c>0x0047CC60</c> 은 부관 칸이 비면 둘째 인자가 1 일 때
+/// <b>제독 자신</b>을 돌려준다(<c>0x0047CC73</c>~<c>0x0047CC80</c> 의 <c>adc</c> · <c>and</c>). 그래서 부관이 없으면
+/// 제독이 부관 몫 대사를 한다. 예전에는 부관이 없으면 장면을 막아 세계일주 계약을 끝낼 수 없었다.
 /// <b>한 번만 도는 깃발은 없다.</b> 보고하면 계약이 끝나(<c>0x0044EE30</c>) 첫 관문이 막히므로
 /// 그것으로 갈음한다 — 보고 전에 그 도시를 다시 드나들면 장면도 다시 돈다(원본 그대로다).
 ///
@@ -40,7 +43,7 @@ internal static class WorldRouteScene
     /// <summary>
     /// 관문을 다 넘었는지 본다(<c>0x0047D460</c> · <c>0x00492040</c> 머리).
     /// </summary>
-    public static bool Due(Engine.Game game, int cityId, bool hasMate)
+    public static bool Due(Engine.Game game, int cityId)
     {
         var player = game.Player;
         if (player.Contract is not { } contract) return false;
@@ -48,7 +51,6 @@ internal static class WorldRouteScene
         if (contract.City != game.CityName(cityId)) return false;
         // 칸 2 가 비어야 한다(0x00492099) — 누적 캐릭터가 먼저 발표해 남의 이름이 올라도 막힌다.
         if (player.HasAnnounced(Discovery) || player.ScoopedBy(Discovery) != null) return false;
-        if (!hasMate) return false;
 
         // 맡은 이야기가 세계일주항로를 가리키는가 — 힌트의 유적 번호로 견준다(0x00493E60).
         return Targets(game, contract.Hint);

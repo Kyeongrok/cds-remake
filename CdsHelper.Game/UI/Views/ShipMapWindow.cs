@@ -7566,8 +7566,12 @@ public sealed class ShipMapWindow : Window
 
         // 지구를 돌고 계약을 맺은 도시로 돌아왔으면 그 자리에서 세계일주 장면이 돈다
         // (0x00492040) — 항구 명령 창보다 먼저다.
-        if (WorldRouteScene.Due(_game, city, _game.Player.MateAt(0).Length > 0))
-            WorldRouteScene.Play(dialog, _game, _game.Faces?.TryGetBgra(Inspector.Face, female: false), MateFace());
+        // 부관이 없으면 제독 자신이 부관 몫 대사를 한다(0x0047CC60(0,1) 이 제독을 돌려준다).
+        if (WorldRouteScene.Due(_game, city))
+            WorldRouteScene.Play(dialog, _game, _game.Faces?.TryGetBgra(Inspector.Face, female: false),
+                                 _game.Player.MateAt(0).Length > 0
+                                     ? MateFace()
+                                     : _game.Faces?.TryGetBgra(PortraitAges.At(_game.Player.Face, _game.Player.Age, false, _game.Faces), female: false));
         // 들어가는 데 열흘 — 다만 새 판은 이미 자택 안에서 시작하므로 날을 안 보낸다.
         // 원본도 새 판은 1월 1일에 자택 명령 창이 떠 있다. 여기서 열흘을 보내 1월 11일이 되었었다.
         // 세이브를 열어 이어 가는 도시도 이미 들어와 있던 것이라 날을 안 보낸다 — 예전에는 불러올
