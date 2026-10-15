@@ -110,7 +110,8 @@ public sealed class DiscoveryDialog : GameWindow
         };
 
         // 해설은 여러 줄이라 왼쪽에 붙이고, 발견 알림은 한 줄이라 가운데다.
-        var lines = Wrap(text, stack.Width - SidePad * 2);
+        // 끊기 전에 번역한다 — 끊은 한국어 토막은 번역표의 글과 안 맞아 그대로 남는다(더해 넣은 대본의 대사 따위).
+        var lines = Wrap(Local.Helpers.Lang.T(text), stack.Width - SidePad * 2);
         var words = new StackPanel();
         foreach (string line in lines)
             words.Children.Add(new GameUi.GameLabel(GameFont.WhiteColor, GameUi.ItemTextHeight)
