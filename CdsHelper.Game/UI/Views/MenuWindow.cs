@@ -29,12 +29,11 @@ public sealed class MenuWindow : GameWindow
     /// 우리는 창을 그대로 두고 알맹이만 갈아 끼우므로, 열한 줄짜리 자택 차림표에서
     /// 네 줄짜리 <b>기능</b> 으로 들어가면 <b>왼쪽 위에 그대로 걸려</b> 있었다.
     /// </remarks>
-    /// <summary>정해 준 자리로 옮긴다. 화면 밖으로는 안 나간다.</summary>
+    /// <summary>정해 준 자리로 옮긴다. 게임 창 밖으로는 안 나간다(<see cref="PlaceInside"/>).</summary>
     public void MoveTo(Point at)
     {
         UpdateLayout();
-        Left = Math.Max(0, Math.Min(at.X, SystemParameters.VirtualScreenWidth - ActualWidth));
-        Top = Math.Max(0, Math.Min(at.Y, SystemParameters.VirtualScreenHeight - ActualHeight));
+        PlaceInside(at.X, at.Y);
     }
 
     public void Recenter()
@@ -45,8 +44,12 @@ public sealed class MenuWindow : GameWindow
     }
 
     /// <summary>
-    /// 그 자리에 두되 <b>게임 창 안</b>으로 들인다 — 주인(도시 그림)보다 큰 차림표(줄 많은 도시 커맨드)를
+    /// 그 자리에 두되 <b>게임 창 안</b>으로 들인다. 차림표 창을 놓는 길은 모두 이것을 지난다 — 가운데(<see cref="ShowCentered"/> ·
+    /// <see cref="Recenter"/>)와 누른 자리(<see cref="ShowAt"/> · <see cref="MoveTo"/>) 둘 다다. 예전에는 앞의 둘만 들여,
+    /// 도시 그림 아래쪽을 오른쪽으로 눌러 연 도시 커맨드가 화면 끝까지만 밀려 게임 창 아래로 삐져나갔다.
+    /// <para> — 주인(도시 그림)보다 큰 차림표(줄 많은 도시 커맨드)를
     /// 그 한가운데에 맞추면 게임 창 아래로 삐져나갔다. 게임 창보다 크면 위 · 왼쪽에 붙인다.
+    /// </para>
     /// </summary>
     private void PlaceInside(double left, double top)
     {
@@ -230,15 +233,14 @@ public sealed class MenuWindow : GameWindow
 
     /// <summary>
     /// 정해 준 자리(화면 좌표, WPF 단위)에 왼쪽 위 모서리를 맞춰 띄운다. 상단 띠에서 부르는
-    /// 도시정보 창처럼 누른 자리 밑에 붙여야 하는 것에 쓴다. 화면 밖으로는 안 나가게 민다.
+    /// 도시정보 창처럼 누른 자리 밑에 붙여야 하는 것에 쓴다. 게임 창 밖으로는 안 나가게 민다.
     /// </summary>
     public static MenuWindow ShowAt(Window owner, UIElement content, Point at)
     {
         var window = new MenuWindow(content) { Owner = owner };
-        window.Show();      // 크기를 알아야 화면 안으로 밀어 넣을 수 있다
+        window.Show();      // 크기를 알아야 게임 창 안으로 밀어 넣을 수 있다
 
-        window.Left = Math.Max(0, Math.Min(at.X, SystemParameters.VirtualScreenWidth - window.ActualWidth));
-        window.Top = Math.Max(0, Math.Min(at.Y, SystemParameters.VirtualScreenHeight - window.ActualHeight));
+        window.PlaceInside(at.X, at.Y);
         window.Grow();
         return window;
     }
