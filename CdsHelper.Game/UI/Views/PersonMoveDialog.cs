@@ -349,15 +349,29 @@ public sealed class PersonMoveDialog : GameWindow
                                     string? format = null, double fontSize = 13, bool bold = false)
     {
         var label = new FrameworkElementFactory(typeof(TextBlock));
+        // 묶인 글은 번역 훅이 안 건드린다(Lang.Hook) — 묶음에서 바로 옮긴다.
         label.SetBinding(TextBlock.TextProperty, new Binding(path)
         {
-            StringFormat = format,
+            Converter = new Translated(format),
         });
         label.SetValue(TextBlock.FontSizeProperty, fontSize);
         label.SetValue(TextBlock.FontWeightProperty, bold ? FontWeights.Bold : FontWeights.Normal);
         label.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 0, 2));
         label.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
         parent.AppendChild(label);
+    }
+
+    /// <summary>카드 칸 글을 지금 언어로 — 값(이름 · 도시 · 상태 글)을 옮기고 틀(「현재: {0}」)에 넣는다.</summary>
+    private sealed class Translated(string? format) : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            object shown = value is string text ? Lang.T(text) : value;
+            return format == null ? shown?.ToString() ?? "" : string.Format(Lang.T(format), shown);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
+            throw new NotSupportedException();
     }
 
     private string CityOf(int city) => city >= 0 ? _game.CityName(city) : "—";
@@ -410,7 +424,7 @@ public sealed class PersonMoveDialog : GameWindow
             if (person.Id < PersonTable.MovingEnd && person.Hire == PersonTable.Hireable)
             {
                 int need = TavernMenu.HireFame(_game.Player, person.Fame);
-                hireFame = $"고용 가능 명성 {need} (지금 {_game.Player.Fame}{(_game.Player.Fame >= need ? " · 충분" : " · 모자람")})";
+                hireFame = $"고용 가능 명성 {need} (지금 {_game.Player.Fame} · {Lang.T(_game.Player.Fame >= need ? "충분" : "모자람")})";
             }
 
             rows.Add(new Row(person.Id, person.Name, _world.Table.AgeOn(person, date.Year),
@@ -430,9 +444,10 @@ public sealed class PersonMoveDialog : GameWindow
         var learned = names
             .Select((name, i) => (name, level: i < values.Length ? values[i] : 0))
             .Where(x => x.level > 0)
-            .Select(x => $"{x.name} {x.level}");
+            .Select(x => $"{Lang.T(x.name)} {x.level}");
         string text = string.Join(" · ", learned);
-        return text.Length == 0 ? $"{label}: 없음" : $"{label}: {text}";
+        // 조각을 이어 붙인 글이라 통째로는 번역 표에 없다 — 조각마다 옮긴다.
+        return $"{Lang.T(label)}: {(text.Length == 0 ? Lang.T("없음") : text)}";
     }
 
     /// <summary>언젠가 스스로 떠날 수 있는 사람인가.</summary>
