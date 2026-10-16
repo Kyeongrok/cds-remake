@@ -31,4 +31,12 @@
       <Folder Include="Engine\Menu\" />
     </ItemGroup>
 
+    <!-- 하드코어 랭킹 서명 열쇠 — 릴리즈 빌드가 GitHub 비밀(HARDCORE_KEY)을 환경 변수로 넘긴다. 손으로 빌드하면 비어 있다. -->
+    <ItemGroup Condition="'$(HARDCORE_KEY)' != ''">
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>HardcoreKey</_Parameter1>
+        <_Parameter2>$(HARDCORE_KEY)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>

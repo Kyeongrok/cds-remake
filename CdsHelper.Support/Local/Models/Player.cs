@@ -133,6 +133,12 @@ public sealed class Player
     /// </summary>
     public bool Hardcore { get; set; }
 
+    /// <summary>
+    /// 하드코어 판에서 <b>한 번이라도</b> 켠 · 줄인 모드와 쓴 개발 기능(<c>HardcoreRules</c> 의 열쇠). 끄거나 되돌려도 안 지운다 —
+    /// 랭킹에 함께 올라간다. 세이브에는 봉인(HMAC)과 함께 적혀, 손으로 고치면 「변조」가 붙는다.
+    /// </summary>
+    public HashSet<string> HardcoreMarks { get; } = [];
+
     // ── 신상 (NEW GAME 첫 걸음) ────────────────────────────────────────────────
 
     /// <summary>성. 게임 화면의 첫 칸이다.</summary>

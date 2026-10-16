@@ -616,7 +616,11 @@ public static class GameSettings
         Load();
         write(_data);
         Save();
+        Changed?.Invoke();
     }
+
+    /// <summary>설정 하나가 바뀌었다 — 하드코어 판이 켠 모드를 적어 둔다(<see cref="Engine.HardcoreRules"/>).</summary>
+    public static event Action? Changed;
 
     // ── 값들 ────────────────────────────────────────────────────────────────
 

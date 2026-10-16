@@ -3,10 +3,14 @@
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
 //   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
+//   POST /v1/hardcore    하드코어 판 하나가 끝난 기록 — 판 표지(gameId)마다 한 번만 들어간다.
+//   GET  /v1/ranking     하드코어 랭킹(발견물 수 차례) 상위 100.
+//   GET  /ranking        하드코어 랭킹 페이지.
 //
 // 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다.
 
 import { DASHBOARD_HTML } from './dashboard.js';
+import { RANKING_HTML } from './ranking.js';
 
 const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
 // 차림표 줄(menu) · 들른 도시(city)는 이제 안 받는다 — 옛 판이 보내도 여기서 걸러진다. 표에 남은 옛 줄은 집계에도 안 든다.
@@ -65,6 +69,55 @@ async function postPlay(request, env) {
     .bind(b.batch, now, b.install, version));
   const done = await env.DB.batch(rows);
   return json(done[done.length - 1].meta.changes ? { ok: true } : { ok: true, duplicate: true });   // 안 들어갔으면 다시 보낸 것이다
+}
+
+// 하드코어 판 하나가 끝났다 — 이름은 NEW GAME 에서 지은 주인공 이름이다. 판마다 한 줄만 받고, 말이 안 되는 값(발견물 수 · 날짜)은 거른다.
+// 기록은 게임에 박힌 열쇠로 서명되어 온다(HMAC-SHA256, CdsHelper.Game/Engine/HardcoreRules.cs) — 이 Worker 의 비밀 HARDCORE_KEY 로 대 본다.
+// marks 는 그 판이 한 번이라도 켠 · 줄인 모드와 쓴 개발 기능이다(「tampered」는 세이브 봉인이 안 맞았다는 뜻).
+const MAX_DISCOVERIES = 400, MAX_NAME = 32, MAX_MARKS = 64, MARK = /^[A-Za-z0-9_:=\-\uAC00-\uD7A3]{1,48}$/;
+
+async function hmacHex(key, message) {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, enc.encode(message)));
+  return [...sig].map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+async function postHardcore(request, env) {
+  const raw = await request.text();
+  if (raw.length > 4096) return json({ error: 'too large' }, 413);
+  let b;
+  try { b = JSON.parse(raw); } catch { return json({ error: 'bad json' }, 400); }
+  const name = text(b && b.name, MAX_NAME).trim(), died = text(b && b.died, 10);
+  if (!b || b.v !== 1 || !isId(b.gameId) || !isId(b.install) || !name
+      || !Number.isInteger(b.discoveries) || b.discoveries < 0 || b.discoveries > MAX_DISCOVERIES
+      || !/^1[4-9]\d\d-\d\d-\d\d$/.test(died) || died < '1480-01-01'
+      || !Array.isArray(b.marks) || b.marks.length > MAX_MARKS || !b.marks.every((m) => typeof m === 'string' && MARK.test(m))
+      || typeof b.sig !== 'string')
+    return json({ error: 'bad record' }, 400);
+
+  // 게임과 같은 차례로 이어 붙여 서명을 대 본다 — 열쇠가 없으면(아직 안 걸었으면) 아무것도 안 받는다.
+  if (!env.HARDCORE_KEY) return json({ error: 'not configured' }, 503);
+  const nation = text(b.nation, MAX_NAME), cause = int(b.cause, 99);
+  const marks = [...new Set(b.marks)].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0));
+  const want = await hmacHex(env.HARDCORE_KEY, [b.gameId, name, nation, b.discoveries, died, cause, marks.join(',')].join('|'));
+  if (want !== b.sig.toLowerCase()) return json({ error: 'bad signature' }, 400);
+
+  const done = await env.DB.prepare(
+    `INSERT OR IGNORE INTO hardcore (game_id, install, version, name, nation, discoveries, died, cause, marks, received_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(b.gameId, b.install, text(b.version, 32), name, nation, b.discoveries, died, cause, JSON.stringify(marks),
+          new Date().toISOString())
+    .run();
+  return json(done.meta.changes ? { ok: true } : { ok: true, duplicate: true });
+}
+
+// 하드코어 랭킹 — 색인(hardcore_rank)을 따라 앞 100줄만 읽는다.
+async function getRanking(env) {
+  const rows = await env.DB.prepare(
+    `SELECT name, nation, discoveries, died, cause, marks, version, received_at AS at
+     FROM hardcore ORDER BY discoveries DESC, died LIMIT 100`).all();
+  return json({ ranking: rows.results.map((r) => ({ ...r, marks: JSON.parse(r.marks) })) });
 }
 
 // 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
@@ -148,6 +201,10 @@ export default {
     try {
       if (request.method === 'POST' && pathname === '/v1/play') return await postPlay(request, env);
       if (request.method === 'GET' && pathname === '/v1/dashboard') return await getDashboard(url, env);
+      if (request.method === 'POST' && pathname === '/v1/hardcore') return await postHardcore(request, env);
+      if (request.method === 'GET' && pathname === '/v1/ranking') return await getRanking(env);
+      if (request.method === 'GET' && pathname === '/ranking')
+        return new Response(RANKING_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
       if (request.method === 'GET' && (pathname === '/dashboard' || pathname === '/'))
         return new Response(DASHBOARD_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
       return json({ error: 'not found' }, 404);

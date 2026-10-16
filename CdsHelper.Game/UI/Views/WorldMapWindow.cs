@@ -543,6 +543,8 @@ public sealed class WorldMapWindow : Window
             ("릴리즈 노트", ShowReleaseNotes),
             // 원본에 없던 발견물(돌묵상어 · 여우원숭이)의 글과 그림이 어디서 왔는지.
             ("출처", () => NoticeDialog.Notes(this, ExtraCredits, "출처")),
+            // 하드코어 판이 게임 오버가 될 때까지 발견한 발견물 수의 순위 — 받는 곳의 웹 페이지를 연다.
+            ("하드코어 랭킹", OpenHardcoreRanking),
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
             // 「발견물 지도」는 커맨드 「정보」로 옮겼다 — 게임 화면 안에서 여는 편이 찾기 쉽다.
@@ -573,6 +575,11 @@ public sealed class WorldMapWindow : Window
         // V 글쇠가 어느 창에서든 이 창을 찾을 수 있게 해 둔다.
         Current = this;
         Closed += (_, _) => { if (ReferenceEquals(Current, this)) Current = null; };
+        // 하드코어 판은 설정이 바뀔 때마다 켠 모드를 적어 둔다 — 한 번이라도 켰으면 랭킹에 남는다.
+        HardcoreRules.Current = () => _game.Player;
+        Action noteHardcore = () => HardcoreRules.Note(_game.Player);
+        GameSettings.Changed += noteHardcore;
+        Closed += (_, _) => GameSettings.Changed -= noteHardcore;
         // 휠 확대는 모드 「휠 확대」를 켰을 때만이다 — 원본에 없는 조작이라 꺼 두고 시작한다.
         input.MouseWheel += (_, e) =>
         {
@@ -604,6 +611,8 @@ public sealed class WorldMapWindow : Window
             // 게임에는 없는 것이라 모드 창에서 끌 수 있다.
             if (GameSettings.PlaceShipByCtrlClick && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
+                // 켜 둔 것만으로는 안 적는다(기본으로 켜져 있다) — 실제로 배를 옮기면 하드코어 랭킹에 남는다.
+                HardcoreRules.Mark("dev:ctrl-click", _game.Player);
                 _host.PlaceShipAt(e.GetPosition(input));
                 return;
             }
@@ -2462,6 +2471,21 @@ public sealed class WorldMapWindow : Window
     /// <summary>창이 닫혔는지 — 닫힌 뒤에 풀려난 모달 고리가 창을 다시 띄우지 않게 본다.</summary>
     private bool _closed;
 
+    /// <summary>하드코어 랭킹 페이지를 웹 브라우저로 연다. 받는 곳이 없는 판(손으로 빌드한 것)이면 알리고 만다.</summary>
+    private void OpenHardcoreRanking()
+    {
+        if (PlayStats.RankingUrl is not { Length: > 0 } url)
+        {
+            NoticeDialog.Show(this, "랭킹 주소가 없는 판입니다.", "하드코어 랭킹");
+            return;
+        }
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            NoticeDialog.Show(this, $"웹 브라우저를 열지 못했습니다 — {url}", "하드코어 랭킹");
+        }
+    }
+
     private void NewGame()
     {
         // 원본도 여기부터는 메인메뉴를 걷는다 — 고르는 창이 그 자리에 뜬다.
@@ -2530,6 +2554,8 @@ public sealed class WorldMapWindow : Window
         if (GameSettings.HardcoreMode)
             _game.Player.Hardcore = ConfirmDialog.Ask(this,
                 "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 판의 세이브가 모두 지워집니다.", "HARDCORE");
+        // 시작할 때 켜 둔 모드부터 적는다(직업 다시 굴림처럼 시작할 때만 먹는 것도 여기서 잡힌다).
+        HardcoreRules.Note(_game.Player);
 
         // 새 주인공은 배가 없다 — 조선소에서 첫 배를 사야 바다에 나간다.
         _game.Player.ClearShips();
@@ -2887,8 +2913,8 @@ public sealed class WorldMapWindow : Window
     /// </remarks>
     internal static WorldMapWindow? Current { get; private set; }
 
-    /// <summary>지금 판의 주인공 — 게임 오버 창이 하드코어 판인지 본다.</summary>
-    internal Player CurrentPlayer => _game.Player;
+    /// <summary>지금 판 — 게임 오버 창이 하드코어 판인지 보고 랭킹에 올린다.</summary>
+    internal Engine.Game CurrentGame => _game;
 
     /// <summary>
     /// V 글쇠로 저장한다 — 자택 「기능 → 저장」과 같은 차례다.
@@ -3517,6 +3543,16 @@ public sealed class WorldMapWindow : Window
             // 판 표지. 이 칸 앞의 세이브는 새로 뽑는다 — 앞 칸들은 은퇴·삭제 때 이름으로 가린다.
             _game.Player.GameId = !string.IsNullOrEmpty(saved.GameId) ? saved.GameId : Guid.NewGuid().ToString("N");
             _game.Player.Hardcore = saved.Hardcore == true;
+            // 하드코어 판이 켠 모드 — 봉인이 안 맞으면(세이브를 손으로 고쳤으면) 「변조」를 붙인다.
+            _game.Player.HardcoreMarks.Clear();
+            if (_game.Player.Hardcore)
+            {
+                var marks = saved.HardcoreMarks ?? [];
+                _game.Player.HardcoreMarks.UnionWith(marks);
+                if (!HardcoreRules.Verify(_game.Player.GameId, marks, saved.HardcoreSeal))
+                    _game.Player.HardcoreMarks.Add(HardcoreRules.Tampered);
+                HardcoreRules.Note(_game.Player);
+            }
             // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
             _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);

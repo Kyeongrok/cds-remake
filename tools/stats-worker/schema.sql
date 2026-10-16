@@ -37,3 +37,19 @@ CREATE TABLE IF NOT EXISTS options (
   updated_at TEXT NOT NULL,
   body       TEXT NOT NULL        -- {"GameSettings 의 속성 이름": 값} — 참·거짓은 1·0, 단계 옵션은 그 값
 ) WITHOUT ROWID;
+
+-- 하드코어 랭킹 — 하드코어 판이 게임 오버가 될 때 게임이 한 판에 한 줄 보낸다(같은 판은 한 번만 들어간다).
+-- 순위는 발견물 수가 많은 차례, 같으면 더 이른 게임 날짜에 끝난 차례다.
+CREATE TABLE IF NOT EXISTS hardcore (
+  game_id     TEXT PRIMARY KEY,   -- 판 표지(Player.GameId)
+  install     TEXT NOT NULL,
+  version     TEXT NOT NULL,
+  name        TEXT NOT NULL,      -- NEW GAME 에서 지은 주인공 이름
+  nation      TEXT NOT NULL,      -- 나라 이름(포르투갈 · 에스파니아 …)
+  discoveries INTEGER NOT NULL,
+  died        TEXT NOT NULL,      -- 게임 오버가 된 게임 날짜(yyyy-MM-dd)
+  cause       INTEGER NOT NULL,   -- 게임 오버 그림 — 11 반란 · 일기토 · 감옥 따위, 12 함대 · 해전, 13 육상전
+  marks       TEXT NOT NULL,      -- 한 번이라도 켠 · 줄인 모드와 쓴 개발 기능(JSON 배열, HardcoreRules 의 열쇠). [] 이면 순수
+  received_at TEXT NOT NULL
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS hardcore_rank ON hardcore (discoveries DESC, died);

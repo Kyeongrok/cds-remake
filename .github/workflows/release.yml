@@ -10,6 +10,9 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+    # 하드코어 랭킹 서명 열쇠 — MSBuild 가 환경 변수를 속성으로 읽어 CdsHelper.Game 에 박는다(저장소에는 안 둔다).
+    env:
+      HARDCORE_KEY: ${{ secrets.HARDCORE_KEY }}
 
     steps:
       # v5 부터 Node 24 로 돈다. v4 로 두면 러너가 Node 20 폐기 경고를 낸다.

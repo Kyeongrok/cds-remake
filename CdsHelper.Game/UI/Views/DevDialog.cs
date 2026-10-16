@@ -157,7 +157,7 @@ public sealed class DevDialog : GameWindow
                 FontSize = 15,
                 VerticalAlignment = VerticalAlignment.Center,
             });
-            give.Children.Add(GameUi.PushButton("아이템 넣기…", () => { Close(); giveItem(); }, 180));
+            give.Children.Add(GameUi.PushButton("아이템 넣기…", () => { Close(); Engine.HardcoreRules.Mark("dev:item"); giveItem(); }, 180));
             tests.Children.Add(give);
         }
 
@@ -193,7 +193,7 @@ public sealed class DevDialog : GameWindow
                 FontSize = 15,
                 VerticalAlignment = VerticalAlignment.Center,
             });
-            line.Children.Add(GameUi.PushButton("이야기 상태…", () => { Close(); quest(); }, 180));
+            line.Children.Add(GameUi.PushButton("이야기 상태…", () => { Close(); Engine.HardcoreRules.Mark("dev:quest"); quest(); }, 180));
             rows.Children.Add(line);
         }
 
@@ -210,7 +210,7 @@ public sealed class DevDialog : GameWindow
                 FontSize = 15,
                 VerticalAlignment = VerticalAlignment.Center,
             });
-            line.Children.Add(GameUi.PushButton("묘책 확률…", () => { Close(); ruses(); }, 180));
+            line.Children.Add(GameUi.PushButton("묘책 확률…", () => { Close(); Engine.HardcoreRules.Mark("dev:ruse"); ruses(); }, 180));
             rows.Children.Add(line);
         }
 
@@ -227,7 +227,7 @@ public sealed class DevDialog : GameWindow
                 FontSize = 15,
                 VerticalAlignment = VerticalAlignment.Center,
             });
-            line.Children.Add(GameUi.PushButton("시나리오…", () => { Close(); scenarios(); }, 180));
+            line.Children.Add(GameUi.PushButton("시나리오…", () => { Close(); Engine.HardcoreRules.Mark("dev:scenario"); scenarios(); }, 180));
             rows.Children.Add(line);
         }
 

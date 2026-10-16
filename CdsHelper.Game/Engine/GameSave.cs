@@ -404,7 +404,8 @@ public static class GameSave
         int? DayTicks = null, int? Heading = null, List<int>? Wind = null,
         double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null,
         Dictionary<int, int>? AccPlayed = null, string? GameId = null,
-        Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null);
+        Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null,
+        List<string>? HardcoreMarks = null, string? HardcoreSeal = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -427,6 +428,8 @@ public static class GameSave
     /// </param>
     public static string Save(Player player, bool suspended = false, string? path = null)
     {
+        // 하드코어 판이면 지금 켜 둔 모드를 적어 두고 봉인한다(HardcoreRules) — 끈 뒤에 적어도 한 번 켠 것은 남는다.
+        HardcoreRules.Note(player);
         var data = new Data(HullNamesFrom, DateTime.Now, player.Gold, player.Date,
                             player.CityId, player.CityName,
                             new Dictionary<string, int>(player.Skills), [.. player.Hints],
@@ -582,7 +585,10 @@ public static class GameSave
                             // 함대가 병을 옮긴 도시와 그 달. 이 칸 앞의 세이브는 불러온 달에 옮은 것으로 친다.
                             PlagueSpread: player.PlagueSpread.ToDictionary(e => e.Key, e => e.Value),
                             // 하드코어 판 — 게임 오버가 되면 이 판의 세이브를 모두 지운다. 이 칸 앞의 세이브는 여느 판이다.
-                            Hardcore: player.Hardcore ? true : null);
+                            Hardcore: player.Hardcore ? true : null,
+                            // 하드코어 판이 한 번이라도 켠 · 줄인 모드와 그 봉인 — 손으로 고치면 불러올 때 「변조」가 붙는다.
+                            HardcoreMarks: player.Hardcore ? HardcoreRules.Sorted(player.HardcoreMarks) : null,
+                            HardcoreSeal: player.Hardcore ? HardcoreRules.Seal(player) : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

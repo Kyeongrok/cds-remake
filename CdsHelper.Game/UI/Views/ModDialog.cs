@@ -528,7 +528,8 @@ public sealed class ModDialog : GameWindow
         general.Children.Add(Toggle("하드코어 모드", GameSettings.HardcoreMode,
             on => GameSettings.HardcoreMode = on,
             "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다."
-            + " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."));
+            + " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."
+            + " 게임 오버가 되면 주인공 이름 · 발견물 수와 그 판에서 한 번이라도 켠 모드가 하드코어 랭킹(햄버거 메뉴)에 올라갑니다."));
 
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
         character.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,

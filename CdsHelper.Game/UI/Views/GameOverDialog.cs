@@ -141,8 +141,15 @@ public sealed class GameOverDialog : GameWindow
                        owner.ActualHeight > 0 ? owner.ActualHeight : owner.Height);
 
         // 하드코어 판이면 그 판의 세이브를 <b>그림을 띄우기 전에</b> 지운다 — 창이 떠 있는 사이 게임을 꺼도 되살릴 수 없게.
-        if (WorldMapWindow.Current?.CurrentPlayer is { Hardcore: true } hardcore)
+        // 랭킹에는 NEW GAME 에서 지은 주인공 이름과 그때까지 발견한 발견물 수가 올라간다.
+        if (WorldMapWindow.Current?.CurrentGame is { Player.Hardcore: true } run)
+        {
+            var hardcore = run.Player;
+            Engine.HardcoreRules.Note(hardcore);
             Engine.GameSave.DeleteRun(hardcore);
+            PlayStats.HardcoreOver(hardcore.GameId, hardcore.Name, run.Nations?.Find(hardcore.Nation)?.Name ?? "",
+                                   hardcore.Discoveries.Count, hardcore.Date, picture, hardcore.HardcoreMarks);
+        }
 
         // 게임이 끝나면 그 곡으로 갈린다. 되돌리지 않는다 — 여기서 나가면 타이틀이다.
         bgm?.Play(BgmPlayer.GameOverTrack);

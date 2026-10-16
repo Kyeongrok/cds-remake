@@ -53,6 +53,7 @@ public static class PlayStats
 
     private static string InstallPath => Path.Combine(Folder, "install-id.txt");
     private static string QueueFolder => Path.Combine(Folder, "stats-queue");
+    private static string HardcoreFolder => Path.Combine(Folder, "hardcore-queue");
 
     private static readonly object Gate = new();
     private static readonly Dictionary<(string Kind, string Key), (string Name, int Count)> Counts = [];
@@ -174,6 +175,48 @@ public static class PlayStats
         Count("error", key, null);
         Flush();
     }
+
+    /// <summary>
+    /// 하드코어 판이 게임 오버가 되었다 — 랭킹(<c>/v1/ranking</c>)에 올릴 한 줄을 줄에 세우고 뒤에서 보낸다.
+    /// </summary>
+    /// <remarks>
+    /// 셈과 달리 <b>주인공 이름</b>을 싣는다 — 랭킹이 누구인지 보여야 한다. 하드코어는 고르는 것이라 통계 보내기 답
+    /// (<see cref="GameSettings.SendStats"/>)과 상관없이 릴리즈 판이면 보낸다. 판 표지로 한 번만 받으므로 다시 보내도 안 겹친다.
+    /// </remarks>
+    /// <param name="cause">게임 오버 그림 번호(<c>0x0B</c> · <c>0x0C</c> · <c>0x0D</c>).</param>
+    /// <param name="marks">한 번이라도 켠 · 줄인 모드와 쓴 개발 기능(<see cref="Engine.HardcoreRules"/>).</param>
+    public static void HardcoreOver(string gameId, string name, string nation, int discoveries, DateTime died, int cause,
+                                    IEnumerable<string> marks)
+    {
+        // 서명 열쇠가 없는 판(손으로 빌드한 것)은 받는 곳이 못 대 보므로 안 보낸다.
+        if (!CanUploadBuild || Engine.HardcoreRules.Key.Length == 0 || string.IsNullOrWhiteSpace(name)) return;
+        try
+        {
+            string who = name.Trim(), day = died.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            var sorted = Engine.HardcoreRules.Sorted(marks);
+            var body = new
+            {
+                v = 1,
+                gameId,
+                install = InstallId(),
+                version = _version,
+                name = who,
+                nation,
+                discoveries,
+                died = day,
+                cause,
+                marks = sorted,
+                sig = Engine.HardcoreRules.Sign(gameId, who, nation, discoveries, day, cause, sorted),
+            };
+            Directory.CreateDirectory(HardcoreFolder);
+            File.WriteAllText(Path.Combine(HardcoreFolder, gameId + ".json"), JsonSerializer.Serialize(body));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return; }
+        UploadInBackground();
+    }
+
+    /// <summary>하드코어 랭킹 페이지 주소. 받는 곳이 없으면 빈 글.</summary>
+    public static string RankingUrl => _url.Length > 0 ? _url + "/ranking" : "";
 
     private static void Count(string kind, string key, string? name, int by = 1)
     {
@@ -313,25 +356,17 @@ public static class PlayStats
     /// <summary>줄에 선 덩이를 뒤에서 보낸다 — 받은 것은 지우고, 안 되면 조용히 남겨 둔다.</summary>
     private static void UploadInBackground()
     {
-        if (!CanUpload || !Directory.Exists(QueueFolder) || Interlocked.Exchange(ref _uploading, 1) == 1) return;
-        string url = _url + "/v1/play";
+        // 하드코어 기록은 통계 보내기 답과 상관없이 간다(HardcoreOver). 셈 줄은 답이 「보낸다」일 때만이다.
+        bool stats = CanUpload && Directory.Exists(QueueFolder);
+        bool hardcore = CanUploadBuild && Directory.Exists(HardcoreFolder);
+        if ((!stats && !hardcore) || Interlocked.Exchange(ref _uploading, 1) == 1) return;
         _ = Task.Run(async () =>
         {
             try
             {
                 using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-                var files = new DirectoryInfo(QueueFolder).GetFiles("*.json")
-                                .OrderByDescending(f => f.LastWriteTimeUtc).ToList();
-                foreach (var old in files.Skip(MaxQueued)) old.Delete();
-                foreach (var file in files.Take(MaxQueued))
-                {
-                    using var content = new StringContent(await File.ReadAllTextAsync(file.FullName),
-                                                          Encoding.UTF8, "application/json");
-                    using var reply = await http.PostAsync(url, content);
-                    // 받는 쪽이 「못 쓸 글」이라 하면(4xx) 다시 보내도 같다 — 지운다. 그 밖의 실패는 다음에 다시.
-                    if (reply.IsSuccessStatusCode || (int)reply.StatusCode is >= 400 and < 500) file.Delete();
-                    else break;
-                }
+                if (hardcore) await SendQueued(http, HardcoreFolder, _url + "/v1/hardcore");
+                if (stats) await SendQueued(http, QueueFolder, _url + "/v1/play");
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException
                                              or IOException or UnauthorizedAccessException)
@@ -340,5 +375,22 @@ public static class PlayStats
             }
             finally { Interlocked.Exchange(ref _uploading, 0); }
         });
+    }
+
+    /// <summary>한 줄(폴더)에 선 것을 새 것부터 보낸다 — 받은 것은 지우고, 안 되면 남겨 두고 멈춘다.</summary>
+    private static async Task SendQueued(HttpClient http, string folder, string url)
+    {
+        var files = new DirectoryInfo(folder).GetFiles("*.json")
+                        .OrderByDescending(f => f.LastWriteTimeUtc).ToList();
+        foreach (var old in files.Skip(MaxQueued)) old.Delete();
+        foreach (var file in files.Take(MaxQueued))
+        {
+            using var content = new StringContent(await File.ReadAllTextAsync(file.FullName),
+                                                  Encoding.UTF8, "application/json");
+            using var reply = await http.PostAsync(url, content);
+            // 받는 쪽이 「못 쓸 글」이라 하면(4xx) 다시 보내도 같다 — 지운다. 그 밖의 실패는 다음에 다시.
+            if (reply.IsSuccessStatusCode || (int)reply.StatusCode is >= 400 and < 500) file.Delete();
+            else break;
+        }
     }
 }
