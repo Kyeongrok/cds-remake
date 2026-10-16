@@ -2526,6 +2526,11 @@ public sealed class WorldMapWindow : Window
             HideTitleMenu(false);
         }
 
+        // 모드 「하드코어 모드」를 켰으면 하드코어로 할지 묻는다 — 원본에 없는 것이다. 게임 오버가 되면 이 판의 세이브가 모두 지워진다.
+        if (GameSettings.HardcoreMode)
+            _game.Player.Hardcore = ConfirmDialog.Ask(this,
+                "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 판의 세이브가 모두 지워집니다.", "HARDCORE");
+
         // 새 주인공은 배가 없다 — 조선소에서 첫 배를 사야 바다에 나간다.
         _game.Player.ClearShips();
         // 시나리오는 1480년이 아닌 날에 시작할 수 있다(원본에 없는 길) — 루터는 그가 태어난 1483년 11월 10일이다.
@@ -2881,6 +2886,9 @@ public sealed class WorldMapWindow : Window
     /// 이 자리를 찾아 부른다. 헬퍼 앱에서는 게임이 안 도니 늘 <c>null</c> 이다.
     /// </remarks>
     internal static WorldMapWindow? Current { get; private set; }
+
+    /// <summary>지금 판의 주인공 — 게임 오버 창이 하드코어 판인지 본다.</summary>
+    internal Player CurrentPlayer => _game.Player;
 
     /// <summary>
     /// V 글쇠로 저장한다 — 자택 「기능 → 저장」과 같은 차례다.
@@ -3508,6 +3516,7 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate, saved.AccPlayed);
             // 판 표지. 이 칸 앞의 세이브는 새로 뽑는다 — 앞 칸들은 은퇴·삭제 때 이름으로 가린다.
             _game.Player.GameId = !string.IsNullOrEmpty(saved.GameId) ? saved.GameId : Guid.NewGuid().ToString("N");
+            _game.Player.Hardcore = saved.Hardcore == true;
             // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
             _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);

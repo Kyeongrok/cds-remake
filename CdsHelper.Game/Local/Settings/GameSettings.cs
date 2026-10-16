@@ -344,6 +344,9 @@ public sealed class GameSettingsData
     /// <summary>켤 때 로고·오프닝 동영상을 틀지. 원본은 늘 트므로 켜 두고 시작한다.</summary>
     public bool PlayOpeningMovie { get; set; } = true;
 
+    /// <summary>NEW GAME 에서 하드코어로 할지 물을지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool HardcoreMode { get; set; }
+
     /// <summary>발견물 동영상을 새로 만든 것(asset/movie)으로 틀지. 켜 두고 시작한다.</summary>
     public bool NewDiscoveryMovies { get; set; } = true;
 
@@ -1359,6 +1362,16 @@ public static class GameSettings
     {
         get => Get(d => d.PlayOpeningMovie);
         set => Set(d => d.PlayOpeningMovie = value);
+    }
+
+    /// <summary>
+    /// NEW GAME 에서 하드코어로 할지 물을지 — 모드 창에서 켜고 끈다. 하드코어 판은 게임 오버가 되면 그 판의 세이브가
+    /// 모두 지워진다(<see cref="Engine.GameSave.DeleteRun"/>). 원본에 없는 것이다.
+    /// </summary>
+    public static bool HardcoreMode
+    {
+        get => Get(d => d.HardcoreMode);
+        set => Set(d => d.HardcoreMode = value);
     }
 
     /// <summary>

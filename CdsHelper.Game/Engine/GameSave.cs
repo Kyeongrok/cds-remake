@@ -265,6 +265,19 @@ public static class GameSave
         return gone;
     }
 
+    /// <summary>
+    /// 하드코어 판이 끝났을 때 <b>그 판의 세이브를 모두</b> 지운다 — 세이브 파일 · 자동저장 칸 · 손으로 적은 지난 칸.
+    /// 원본에 없는 것이다. 세이브 파일(<see cref="Path"/>)은 그 판 것일 때만 지운다.
+    /// </summary>
+    /// <returns>지운 칸 수.</returns>
+    public static int DeleteRun(Player player)
+    {
+        int gone = DeleteAutoSavesOf(player);
+        if (Load(Path) is { } latest && !string.IsNullOrEmpty(latest.GameId) && latest.GameId == player.GameId && Delete())
+            gone++;
+        return gone;
+    }
+
     /// <summary>적어 두는 것.</summary>
     /// <param name="Version">형식 판. 나중에 늘릴 때 본다.</param>
     /// <param name="SavedAt">적은 때(현실 시각).</param>
@@ -391,7 +404,7 @@ public static class GameSave
         int? DayTicks = null, int? Heading = null, List<int>? Wind = null,
         double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null,
         Dictionary<int, int>? AccPlayed = null, string? GameId = null,
-        Dictionary<int, int>? PlagueSpread = null);
+        Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -567,7 +580,9 @@ public static class GameSave
                             // 이 판의 표지 — 은퇴·삭제할 때 그 판의 자동저장 칸을 가린다. 이 칸 앞의 세이브는 이름으로 가린다.
                             GameId: player.GameId.Length > 0 ? player.GameId : null,
                             // 함대가 병을 옮긴 도시와 그 달. 이 칸 앞의 세이브는 불러온 달에 옮은 것으로 친다.
-                            PlagueSpread: player.PlagueSpread.ToDictionary(e => e.Key, e => e.Value));
+                            PlagueSpread: player.PlagueSpread.ToDictionary(e => e.Key, e => e.Value),
+                            // 하드코어 판 — 게임 오버가 되면 이 판의 세이브를 모두 지운다. 이 칸 앞의 세이브는 여느 판이다.
+                            Hardcore: player.Hardcore ? true : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

@@ -140,6 +140,10 @@ public sealed class GameOverDialog : GameWindow
                        owner.ActualWidth > 0 ? owner.ActualWidth : owner.Width,
                        owner.ActualHeight > 0 ? owner.ActualHeight : owner.Height);
 
+        // 하드코어 판이면 그 판의 세이브를 <b>그림을 띄우기 전에</b> 지운다 — 창이 떠 있는 사이 게임을 꺼도 되살릴 수 없게.
+        if (WorldMapWindow.Current?.CurrentPlayer is { Hardcore: true } hardcore)
+            Engine.GameSave.DeleteRun(hardcore);
+
         // 게임이 끝나면 그 곡으로 갈린다. 되돌리지 않는다 — 여기서 나가면 타이틀이다.
         bgm?.Play(BgmPlayer.GameOverTrack);
 

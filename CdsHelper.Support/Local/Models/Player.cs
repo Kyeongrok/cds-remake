@@ -127,6 +127,12 @@ public sealed class Player
     /// </remarks>
     public string GameId { get; set; } = Guid.NewGuid().ToString("N");
 
+    /// <summary>
+    /// 하드코어 판인지 — 게임 오버가 되면 이 판의 세이브를 모두 지운다(<c>GameSave.DeleteRun</c>). 원본에는 없다.
+    /// NEW GAME 에서 모드 「하드코어 모드」를 켰을 때만 고를 수 있다.
+    /// </summary>
+    public bool Hardcore { get; set; }
+
     // ── 신상 (NEW GAME 첫 걸음) ────────────────────────────────────────────────
 
     /// <summary>성. 게임 화면의 첫 칸이다.</summary>

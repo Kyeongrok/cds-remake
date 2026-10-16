@@ -524,6 +524,12 @@ public sealed class ModDialog : GameWindow
             "체크하면 발견할 때 새로 만든 동영상을 틉니다. 체크를 풀면 원본의 발견물 동영상이 나옵니다."
             + " 원본에 없는 발견물의 동영상은 그대로 나옵니다."));
 
+        // 하드코어 모드 — NEW GAME 에서 하드코어로 할지 묻는다. 하드코어 판은 게임 오버가 되면 세이브가 모두 지워진다.
+        general.Children.Add(Toggle("하드코어 모드", GameSettings.HardcoreMode,
+            on => GameSettings.HardcoreMode = on,
+            "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다."
+            + " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."));
+
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
         character.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
             on => GameSettings.RerollOnJob = on,
