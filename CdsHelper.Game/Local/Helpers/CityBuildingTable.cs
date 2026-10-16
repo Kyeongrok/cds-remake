@@ -176,12 +176,12 @@ public sealed class CityBuildingTable
     /// <remarks>
     /// 한양에는 원본에 시장이 없다. 두정갑(<see cref="ItemTable.Dujeonggap"/>)을 팔려고 시장을 하나 세운다.
     /// 그림은 북경 · 제남 시장(중국 문화권 시장은 둘 다 같은 그림)에서 두 도시의 색이 같은 점만 오려 냈다.
-    /// 자리는 여관과 왕궁 사이 시가지다 — 누르는 자리(가운데 절반)가 술집 · 도서관과 귀퉁이만 겹치고,
+    /// 자리는 여관과 왕궁 사이 시가지다 — 누르는 자리(가운데 절반)가 여관 · 술집 · 도서관과 귀퉁이만 겹치고,
     /// 겹친 데는 원본 규칙대로 코드가 낮은 쪽이 이긴다.
     /// </remarks>
     public static readonly (Building Row, string Sprite)[] Added =
     [
-        (new Building(Hanyang, 7, "시장", "육의전", 156, 134, 0), "china-market.png"),
+        (new Building(Hanyang, 7, "시장", "육의전", 144, 134, 0), "china-market.png"),
     ];
 
     /// <summary>그 도시 그 코드의 덧붙인 건물. 없으면 null.</summary>
