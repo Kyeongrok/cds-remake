@@ -276,7 +276,7 @@ public sealed class ModDialog : GameWindow
         rows.Children.Add(Toggle("배 빌림 묻기", GameSettings.AskLendShips,
             on => GameSettings.AskLendShips = on,
             "계약을 맺을 때 내 배가 한 척이라도 있으면 후원자가 「배를 빌리겠습니까?」를 묻습니다(원본 그대로)."
-            + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖춘 판에서 물음이 성가실 때 씁니다."));
+            + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖추고 있어 물음이 성가실 때 씁니다."));
 
         // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
         font.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
@@ -476,7 +476,7 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.HardcoreMode = on,
             "원본에 없는 것입니다 — 여기서 켜야 NEW GAME 에서 하드코어 캐릭터로 만들 수 있습니다."
             + " 켜 두면 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다."
-            + " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."
+            + " 하드코어로 시작한 게임은 한 번 게임 오버가 되면 그 게임의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."
             + " 하드코어로 하는 동안 제목 줄이 붉어지고 가운데에 「Hard」가 보입니다."));
 
         // 시나리오 모드 — 손으로 지은 주인공과 이야기로 시작한다.

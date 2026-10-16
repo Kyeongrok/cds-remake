@@ -2475,7 +2475,7 @@ public sealed class WorldMapWindow : Window
     {
         if (PlayStats.RankingUrl is not { Length: > 0 } url)
         {
-            NoticeDialog.Show(this, "랭킹 주소가 없는 판입니다.", "하드코어 랭킹");
+            NoticeDialog.Show(this, "랭킹 주소가 없는 버전입니다.", "하드코어 랭킹");
             return;
         }
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); }
@@ -2552,7 +2552,7 @@ public sealed class WorldMapWindow : Window
         // 모드 「하드코어 모드」를 켰으면 하드코어로 할지 묻는다 — 원본에 없는 것이다. 게임 오버가 되면 이 판의 세이브가 모두 지워진다.
         if (GameSettings.HardcoreMode)
             _game.Player.Hardcore = ConfirmDialog.Ask(this,
-                "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 판의 세이브가 모두 지워집니다.", "HARDCORE");
+                "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 게임의 세이브가 모두 지워집니다.", "HARDCORE");
         // 시작할 때 켜 둔 모드부터 적는다(직업 다시 굴림처럼 시작할 때만 먹는 것도 여기서 잡힌다).
         HardcoreRules.Note(_game.Player);
         SyncHardTitle();
