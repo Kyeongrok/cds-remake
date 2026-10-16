@@ -3300,6 +3300,7 @@ public sealed class WorldMapWindow : Window
             var d = s.Save;
             string name = !string.IsNullOrEmpty(d.Name) ? d.Name
                         : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } full ? full : "이름 없는 제독";
+            if (d.Hardcore == true) name += "(H)";   // 하드코어 주인공 — 게임 오버가 되면 이 세이브가 지워진다
             string city = string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName;
             return Row(name, city, $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
         }).ToList();
@@ -3313,6 +3314,7 @@ public sealed class WorldMapWindow : Window
                 var d = s.Save;
                 string who = !string.IsNullOrEmpty(d.Name) ? d.Name
                            : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } whole ? whole : "이름 없는 제독";
+                if (d.Hardcore == true) who += "(H)";
                 return new[]
                 {
                     who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName,
