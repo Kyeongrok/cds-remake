@@ -50,7 +50,8 @@ public partial class PlayerContentViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<SkillDisplayItem> _combinedLanguages = new();
     [ObservableProperty] private ObservableCollection<HintData> _hints = new();
     [ObservableProperty] private string _hintSummary = "";
-    [ObservableProperty] private string _statusText = "세이브 파일을 로드하세요";
+    // 세이브 열기 바를 감췄으므로 로드하라고 이르지 않는다 — 마지막 세이브가 있으면 저절로 읽힌다.
+    [ObservableProperty] private string _statusText = "";
     [ObservableProperty] private string _filePath = "";
 
     public PlayerContentViewModel(

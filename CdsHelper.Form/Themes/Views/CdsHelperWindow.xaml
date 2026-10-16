@@ -467,12 +467,6 @@
                                 <StatusBarItem>
                                     <TextBlock Foreground="White" Text="{Binding DataContext.StatusText, RelativeSource={RelativeSource TemplatedParent}}" />
                                 </StatusBarItem>
-                                <StatusBarItem HorizontalAlignment="Right">
-                                    <TextBlock
-                                        FontSize="11"
-                                        Foreground="#B0C4DE"
-                                        Text="{Binding DataContext.FilePath, RelativeSource={RelativeSource TemplatedParent}}" />
-                                </StatusBarItem>
                             </StatusBar>
                         </Grid>
                     </Border>
