@@ -60,6 +60,27 @@ internal static class ChromeTitleBar
     /// <summary>못 누르는 줄의 글자.</summary>
     private static readonly Brush MenuOff = Freeze(Color.FromRgb(0x8A, 0x7A, 0x6C));
 
+    /// <summary>
+    /// 하드코어 판의 제목 줄 — 바탕(<see cref="Frame"/>)을 닫기 단추 빨강(<see cref="CloseHover"/>) 쪽으로 끌어 붉게 한다.
+    /// 글자가 읽히게 어둡게 둔다.
+    /// </summary>
+    private static readonly Brush HardFrame = Freeze(Color.FromRgb(0x5C, 0x16, 0x14));
+    private static readonly Brush HardFrameIdle = Freeze(Color.FromRgb(0x44, 0x14, 0x12));
+
+    /// <summary>하드코어 판의 가운데 「Hard」 글자.</summary>
+    private static readonly Brush HardText = Freeze(Color.FromRgb(0xFF, 0x8A, 0x80));
+
+    /// <summary>제목 줄마다 하드코어 표시를 켜고 끄는 손(<see cref="SetHard"/>).</summary>
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<FrameworkElement, Action<bool>> HardSetters = new();
+
+    /// <summary>
+    /// 그 제목 줄(<see cref="Attach"/> 가 준 것)을 하드코어 판으로 칠한다 — 붉은 바탕에 가운데 「Hard」.
+    /// </summary>
+    public static void SetHard(FrameworkElement? titleBar, bool on)
+    {
+        if (titleBar != null && HardSetters.TryGetValue(titleBar, out var set)) set(on);
+    }
+
     /// <summary>닫기 단추만 빨갛다. 크롬·윈도 둘 다 이 색이다.</summary>
     private static readonly Brush CloseHover = Freeze(Color.FromRgb(0xE8, 0x11, 0x23));
     private static readonly Brush ClosePress = Freeze(Color.FromRgb(0xF1, 0x70, 0x7A));
@@ -184,7 +205,25 @@ internal static class ChromeTitleBar
         }
         bar.Children.Add(text);
 
-        var root = new Border { Background = Frame, Height = Height, Child = bar };
+        // 가운데 「Hard」 — 하드코어 판일 때만 보인다. 손은 안 받아 끌기 · 두 번 눌러 최대화가 그대로 먹는다.
+        var hard = new TextBlock
+        {
+            Text = "Hard",
+            Foreground = HardText,
+            FontSize = 13,
+            FontWeight = FontWeights.Bold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            IsHitTestVisible = false,
+            Visibility = Visibility.Collapsed,
+        };
+        var root = new Border
+        {
+            Background = Frame,
+            Height = Height,
+            Child = new System.Windows.Controls.Grid { Children = { bar, hard } },
+        };
+        bool isHard = false;
 
         // 최대화하면 무늬가 "되돌리기"(겹친 네모)로 바뀐다 — 크롬도 그렇다.
         void SyncState()
@@ -201,11 +240,17 @@ internal static class ChromeTitleBar
         void SyncActive()
         {
             bool on = win.IsActive;
-            root.Background = on ? Frame : FrameIdle;
+            root.Background = isHard ? (on ? HardFrame : HardFrameIdle) : on ? Frame : FrameIdle;
             text.Foreground = on ? Title : TitleIdle;
         }
         win.Activated += (_, _) => SyncActive();
         win.Deactivated += (_, _) => SyncActive();
+        HardSetters.AddOrUpdate(root, on =>
+        {
+            isHard = on;
+            hard.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            SyncActive();
+        });
 
         return root;
     }

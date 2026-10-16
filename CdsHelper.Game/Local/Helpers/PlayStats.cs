@@ -188,6 +188,8 @@ public static class PlayStats
     public static void HardcoreOver(string gameId, string name, string nation, int discoveries, DateTime died, int cause,
                                     IEnumerable<string> marks)
     {
+        // 랭킹을 아직 안 낸다 — 회원에게 알리기 전에는 이름을 보내지 않는다.
+        if (!RankingOpen) return;
         // 서명 열쇠가 없는 판(손으로 빌드한 것)은 받는 곳이 못 대 보므로 안 보낸다.
         if (!CanUploadBuild || Engine.HardcoreRules.Key.Length == 0 || string.IsNullOrWhiteSpace(name)) return;
         try
@@ -214,6 +216,11 @@ public static class PlayStats
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return; }
         UploadInBackground();
     }
+
+    /// <summary>
+    /// 하드코어 랭킹을 연 판인지 — 거짓이면 게임 오버 기록을 안 보낸다. 열 때 참으로 바꾸고 햄버거에 「하드코어 랭킹」 줄을 넣는다.
+    /// </summary>
+    public const bool RankingOpen = false;
 
     /// <summary>하드코어 랭킹 페이지 주소. 받는 곳이 없으면 빈 글.</summary>
     public static string RankingUrl => _url.Length > 0 ? _url + "/ranking" : "";

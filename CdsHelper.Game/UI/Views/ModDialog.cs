@@ -471,6 +471,14 @@ public sealed class ModDialog : GameWindow
             + " 패시브는 도구 앱 「요소 → 패시브」에서 만들고 고칩니다."
             + " 인물정보에 작위와 공적, 「작위」 단추가 나옵니다."));
 
+        // 하드코어 모드 — 여기서 켜야 NEW GAME 에서 하드코어로 할지 묻는다. 하드코어 판은 게임 오버가 되면 세이브가 모두 지워진다.
+        lab.Children.Add(Toggle("하드코어 모드", GameSettings.HardcoreMode,
+            on => GameSettings.HardcoreMode = on,
+            "원본에 없는 것입니다 — 여기서 켜야 NEW GAME 에서 하드코어 캐릭터로 만들 수 있습니다."
+            + " 켜 두면 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다."
+            + " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."
+            + " 하드코어로 하는 동안 제목 줄이 붉어지고 가운데에 「Hard」가 보입니다."));
+
         // 시나리오 모드 — 손으로 지은 주인공과 이야기로 시작한다.
         lab.Children.Add(Toggle("시나리오 모드(베타)", GameSettings.ScenarioMode, on =>
             {
@@ -530,12 +538,6 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 바다에서 만난 괴물(크라켄 · 시서펜트 · 식인상어 · 맨터)을 놓쳐도 그 자리를 벗어났다가"
             + " 다시 가면 또 만납니다. 원본은 한 번 놓치면 다시 나오지 않습니다."));
 
-        // 하드코어 모드 — NEW GAME 에서 하드코어로 할지 묻는다. 하드코어 판은 게임 오버가 되면 세이브가 모두 지워진다.
-        general.Children.Add(Toggle("하드코어 모드", GameSettings.HardcoreMode,
-            on => GameSettings.HardcoreMode = on,
-            "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다."
-            + " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."
-            + " 게임 오버가 되면 주인공 이름 · 발견물 수와 그 판에서 한 번이라도 켠 모드가 하드코어 랭킹(햄버거 메뉴)에 올라갑니다."));
 
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
         character.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,

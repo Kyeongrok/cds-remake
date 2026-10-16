@@ -515,7 +515,7 @@ public sealed class WorldMapWindow : Window
         // 윈도 제목 줄 대신 크롬처럼 우리가 그린 줄을 얹는다.
         // 왼쪽 위 햄버거에는 앱이 적어 둔 것을 들여다보는 줄을 단다.
         var shell = new DockPanel { LastChildFill = true };
-        var titleBar = ChromeTitleBar.Attach(this, out var hamburger,
+        var titleBar = _titleBar = ChromeTitleBar.Attach(this, out var hamburger,
             // 원본에 없는 줄은 모드 창에서 켜야 뜬다.
             label => label switch
             {
@@ -543,8 +543,7 @@ public sealed class WorldMapWindow : Window
             ("릴리즈 노트", ShowReleaseNotes),
             // 원본에 없던 발견물(돌묵상어 · 여우원숭이)의 글과 그림이 어디서 왔는지.
             ("출처", () => NoticeDialog.Notes(this, ExtraCredits, "출처")),
-            // 하드코어 판이 게임 오버가 될 때까지 발견한 발견물 수의 순위 — 받는 곳의 웹 페이지를 연다.
-            ("하드코어 랭킹", OpenHardcoreRanking),
+            // 「하드코어 랭킹」 줄은 아직 안 낸다(PlayStats.RankingOpen) — 열 때 여기에 ("하드코어 랭킹", OpenHardcoreRanking) 을 넣는다.
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
             // 「발견물 지도」는 커맨드 「정보」로 옮겼다 — 게임 화면 안에서 여는 편이 찾기 쉽다.
@@ -2556,6 +2555,7 @@ public sealed class WorldMapWindow : Window
                 "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 판의 세이브가 모두 지워집니다.", "HARDCORE");
         // 시작할 때 켜 둔 모드부터 적는다(직업 다시 굴림처럼 시작할 때만 먹는 것도 여기서 잡힌다).
         HardcoreRules.Note(_game.Player);
+        SyncHardTitle();
 
         // 새 주인공은 배가 없다 — 조선소에서 첫 배를 사야 바다에 나간다.
         _game.Player.ClearShips();
@@ -2895,6 +2895,7 @@ public sealed class WorldMapWindow : Window
         _screen.Content = _titleRoot;
         _game.Bgm.Play(BgmPlayer.TitleTrack);
         _status.Text = "";
+        SyncHardTitle(false);   // 첫 화면은 어느 판도 아니다
     }
 
     /// <summary>
@@ -2912,6 +2913,12 @@ public sealed class WorldMapWindow : Window
     /// 이 자리를 찾아 부른다. 헬퍼 앱에서는 게임이 안 도니 늘 <c>null</c> 이다.
     /// </remarks>
     internal static WorldMapWindow? Current { get; private set; }
+
+    /// <summary>제목 줄 — 하드코어 판이면 붉게 칠하고 가운데에 「Hard」를 띄운다(<see cref="SyncHardTitle"/>).</summary>
+    private FrameworkElement? _titleBar;
+
+    /// <summary>제목 줄의 하드코어 표시를 지금 판에 맞춘다 — 판을 시작 · 불러올 때와 첫 화면으로 돌아갈 때.</summary>
+    private void SyncHardTitle(bool? on = null) => ChromeTitleBar.SetHard(_titleBar, on ?? _game.Player.Hardcore);
 
     /// <summary>지금 판 — 게임 오버 창이 하드코어 판인지 보고 랭킹에 올린다.</summary>
     internal Engine.Game CurrentGame => _game;
@@ -3553,6 +3560,7 @@ public sealed class WorldMapWindow : Window
                     _game.Player.HardcoreMarks.Add(HardcoreRules.Tampered);
                 HardcoreRules.Note(_game.Player);
             }
+            SyncHardTitle();
             // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
             _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);
