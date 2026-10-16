@@ -252,9 +252,15 @@ public sealed class DiscoveryLog
     /// 대본이 돌았는지. 대본이 없어 여기서 곧장 적은 것은 끝난 것으로 본다 — 안 그러면 거듭 찾는 것이
     /// 그 자리를 지날 때마다 또 뜬다.
     /// </param>
-    public static void Settle(Player player, int id, bool scripted)
+    /// <returns>매듭지었으면 true. 모드 「괴물 다시 만나기」로 남겨 두면 false.</returns>
+    public static bool Settle(Player player, int id, bool scripted)
     {
-        if (!scripted || Disev.DisevRunner.LastResult is 0 or 1) player.Settle(id);
+        // 원본과 다르다(모드) — 바다 괴물을 놓쳤고 그 발견물을 아직 못 찾았으면 매듭짓지 않는다. 그 자리에 다시 가면 또 만난다.
+        // 원본은 괴물이 달아나도 대본이 결과 0·1 로 끝나 깃발 0x0100 이 서서 그 괴물은 영영 다시 안 나온다.
+        if (scripted && Disev.DisevRunner.LastMissedMonster && Local.Settings.GameSettings.MonsterRetry && !player.HasFound(id))
+            return false;
+        if (!scripted || Disev.DisevRunner.LastResult is 0 or 1) { player.Settle(id); return true; }
+        return false;
     }
 
     /// <summary>

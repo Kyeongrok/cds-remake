@@ -524,6 +524,12 @@ public sealed class ModDialog : GameWindow
             "체크하면 발견할 때 새로 만든 동영상을 틉니다. 체크를 풀면 원본의 발견물 동영상이 나옵니다."
             + " 원본에 없는 발견물의 동영상은 그대로 나옵니다."));
 
+        // 괴물 다시 만나기 — 원본은 바다 괴물을 한 번 놓치면 그 발견물 사건이 다시 안 뜬다.
+        general.Children.Add(Toggle("괴물 다시 만나기", GameSettings.MonsterRetry,
+            on => GameSettings.MonsterRetry = on,
+            "원본에 없는 것입니다 — 바다에서 만난 괴물(크라켄 · 시서펜트 · 식인상어 · 맨터)을 놓쳐도 그 자리를 벗어났다가"
+            + " 다시 가면 또 만납니다. 원본은 한 번 놓치면 다시 나오지 않습니다."));
+
         // 하드코어 모드 — NEW GAME 에서 하드코어로 할지 묻는다. 하드코어 판은 게임 오버가 되면 세이브가 모두 지워진다.
         general.Children.Add(Toggle("하드코어 모드", GameSettings.HardcoreMode,
             on => GameSettings.HardcoreMode = on,

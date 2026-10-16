@@ -7371,6 +7371,9 @@ public sealed class WorldMapWindow : Window
             // 대본 결과가 0 이나 1 이면 그 발견물 줄의 +0x17 에 비트 0(깃발 0x0100)을 세운다(0x0048D569) —
             // 발견 판정 0x004AAD20 이 첫 줄에서 그것을 보고 막으므로 그 자리 사건은 다시 안 뜬다.
             if (!over) DiscoveryLog.Settle(_game.Player, id, scripted);
+            // 괴물을 놓쳐 매듭을 안 지었으면(모드 「괴물 다시 만나기」) 그 자리를 벗어날 때까지는 다시 안 띄운다 —
+            // 안 그러면 다음 걸음에 곧바로 또 만난다.
+            if (!over && DisevRunner.LastMissedMonster && !_game.Player.IsSettled(id)) _heldDiscovery = id;
         }
         finally
         {

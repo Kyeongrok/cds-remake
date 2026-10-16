@@ -39,6 +39,7 @@ public static class HardcoreRules
         (nameof(GameSettings.MiniMapYet), () => GameSettings.ShowMiniMap && GameSettings.MiniMapYet),
         (nameof(GameSettings.ShowDiscoveryMapMenu), () => GameSettings.ShowDiscoveryMapMenu),
         (nameof(GameSettings.RerollOnJob), () => GameSettings.RerollOnJob),
+        (nameof(GameSettings.MonsterRetry), () => GameSettings.MonsterRetry),
     ];
 
     /// <summary>원본 값에서 쉬운 쪽으로 옮기면 「이름=값」으로 적는 단계 모드.</summary>

@@ -347,6 +347,9 @@ public sealed class GameSettingsData
     /// <summary>NEW GAME 에서 하드코어로 할지 물을지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool HardcoreMode { get; set; }
 
+    /// <summary>놓친 바다 괴물을 그 자리에서 다시 만날 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool MonsterRetry { get; set; }
+
     /// <summary>발견물 동영상을 새로 만든 것(asset/movie)으로 틀지. 켜 두고 시작한다.</summary>
     public bool NewDiscoveryMovies { get; set; } = true;
 
@@ -1376,6 +1379,16 @@ public static class GameSettings
     {
         get => Get(d => d.HardcoreMode);
         set => Set(d => d.HardcoreMode = value);
+    }
+
+    /// <summary>
+    /// 놓친 바다 괴물(크라켄 · 시서펜트 · 식인상어 · 맨터)을 다시 만날 수 있게 할지 — 모드 창에서 켜고 끈다.
+    /// 원본은 괴물을 놓쳐도 그 발견물 사건을 매듭지어 다시 안 띄운다(<see cref="Engine.Discovery.DiscoveryLog.Settle"/>).
+    /// </summary>
+    public static bool MonsterRetry
+    {
+        get => Get(d => d.MonsterRetry);
+        set => Set(d => d.MonsterRetry = value);
     }
 
     /// <summary>

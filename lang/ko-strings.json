@@ -1064,293 +1064,293 @@
   "args": 1
  },
  "을": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:276",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:283",
   "args": 0
  },
  "를": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:276",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:283",
   "args": 0
  },
  "알림.교역품개시": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:277",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:284",
   "args": 0
  },
  "이제 교역소에서 [{0}]{1} 다룹니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:278",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:285",
   "args": 2
  },
  "을를": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:279",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:286",
   "args": 0
  },
  "또는": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:354",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:361",
   "args": 0
  },
  "〈무당〉 ": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1059",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1066",
   "args": 0
  },
  "〈무당〉 {0}!": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1059",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1066",
   "args": 1,
   "chain": true
  },
  "부관": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1200",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1208",
   "args": 0
  },
  "통역": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1205",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1213",
   "args": 0
  },
  "소심": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "거만": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "우유부단": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "독선": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "변덕": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "집착": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "겁장이": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "무모": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1262",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1270",
   "args": 0
  },
  "냉혹": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "팔방 미인": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "편협": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "욕심장이": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "무신경": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "신경질": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "낭비가": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "깍쟁이": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1263",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1271",
   "args": 0
  },
  "뭔가 우호의 증표를 줍시다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1330",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1338",
   "args": 0
  },
  "교섭": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1334",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1342",
   "args": 0
  },
  "금을 준다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1334",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1342",
   "args": 0
  },
  "아무래도 마음에 들지 않았던 모양입니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1343",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1351",
   "args": 0
  },
  "미니게임을 통과한 것으로 합니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1358",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1366",
   "args": 0
  },
  "제독": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1428",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1436",
   "args": 0
  },
  "상대": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1432",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1440",
   "args": 0
  },
  "명명": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1571",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1579",
   "args": 0
  },
  "[{0}]{1} 명명하겠습니다. 좋습니까?": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1575",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1583",
   "args": 2
  },
  "으로": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1575",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1583",
   "args": 0
  },
  "로": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1575",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1583",
   "args": 0
  },
  "금화 {0}닢을 손에 넣었다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1620",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1628",
   "args": 1
  },
  "{0}{1}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1639",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1647",
   "args": 2
  },
  "{0}{1} {2} {3} {4}으로 삼았습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1642",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1650",
   "args": 5
  },
  "해고하여": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1642",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1650",
   "args": 0
  },
  "해고하고": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1642",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1650",
   "args": 0
  },
  "{0} {1}으로 삼았습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1643",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1651",
   "args": 2
  },
  "아이템 {0}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1678",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1686",
   "args": 1
  },
  "소유 아이템이 너무 많기 때문에 [{0}]{1} 포기했습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1703",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1711",
   "args": 2
  },
  "[{0}]{1} 손에 넣었다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1707",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1715",
   "args": 2
  },
  "[{0}]을 손에 넣었습니다만 소유 아이템이 많아서 더 이상 가질 수 없습니다. ": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1728",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1736",
   "args": 1
  },
  "[{0}]을 손에 넣었습니다만 소유 아이템이 많아서 더 이상 가질 수 없습니다. 필요없는 아이템을 선택해 버려 주십시오.": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1728",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1736",
   "args": 1,
   "chain": true
  },
  "필요없는 아이템을 선택해 버려 주십시오.": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1729",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1737",
   "args": 0
  },
  "버릴 아이템을 선택해 주십시오": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1731",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1739",
   "args": 0
  },
  "[{0}]을 손에 넣었습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1734",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1742",
   "args": 1
  },
  "악명이 {0} 내려갔다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1774",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1782",
   "args": 1
  },
  "악명이 {0} 올라갔다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1775",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1783",
   "args": 1
  },
  "명성이 {0} 내려갔다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1798",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1806",
   "args": 1
  },
  "명성이 {0} 올라갔다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1799",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1807",
   "args": 1
  },
  "<도시>": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1876",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1884",
   "args": 0
  },
  "검사관": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1886",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1894",
   "args": 0
  },
  "[초상화 없음] 인물 {0}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1930",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1938",
   "args": 1
  },
  "[초상화 없음] 후원자 {0}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1937",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1945",
   "args": 1
  },
  "[초상화 없음] {0}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1943",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:1951",
   "args": 1
  },
  "국왕": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2062",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2070",
   "args": 0
  },
  "주인공": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2065",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2073",
   "args": 0
  },
  "집사": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2068",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2076",
   "args": 0
  },
  "감찰관": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2074",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2082",
   "args": 0
  },
  "교역소": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2087",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2095",
   "args": 0
  },
  "왕궁": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2087",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2095",
   "args": 0
  },
  "교회": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2087",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2095",
   "args": 0
  },
  "술집": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2087",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2095",
   "args": 0
  },
  "여관": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2088",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2096",
   "args": 0
  },
  "조선소": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2088",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2096",
   "args": 0
  },
  "조합": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2088",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2096",
   "args": 0
  },
  "성문": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2088",
+  "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:2096",
   "args": 0
  },
  "상태값 비교 분기": {
@@ -2750,7 +2750,7 @@
   "args": 0
  },
  "-고친것": {
-  "at": "CdsHelper.Game/Engine/HardcoreRules.cs:81",
+  "at": "CdsHelper.Game/Engine/HardcoreRules.cs:82",
   "args": 0
  },
  "뭐야, 자네 돈이 없나? 어쩔 수 없군~. 그렇다면 일년간 충분히 일을 부리겠네! 괜찮겠나?": {
@@ -11468,47 +11468,47 @@
   "args": 1
  },
  "북 (위)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:857",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:860",
   "args": 0
  },
  "남 (아래)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:857",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:860",
   "args": 0
  },
  "서 (왼쪽)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:858",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:861",
   "args": 0
  },
  "동 (오른쪽)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:858",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:861",
   "args": 0
  },
  "북서": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:859",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:862",
   "args": 0
  },
  "북동": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:859",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:862",
   "args": 0
  },
  "남서": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:860",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:863",
   "args": 0
  },
  "남동": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:860",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:863",
   "args": 0
  },
  "정지 · 출발": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:861",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:864",
   "args": 0
  },
  "커맨드 창": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:861",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:864",
   "args": 0
  },
  "전체 화면": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:1492",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:1505",
   "args": 0
  },
  "지형표를 읽지 못했습니다 ({0})": {
@@ -16749,563 +16749,580 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:525",
   "args": 0
  },
- "하드코어 모드": {
+ "괴물 다시 만나기": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:528",
   "args": 0
  },
- "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다.": {
+ "원본에 없는 것입니다 — 바다에서 만난 괴물(크라켄 · 시서펜트 · 식인상어 · 맨터)을 놓쳐도 그 자리를 벗어났다가": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:530",
   "args": 0
  },
- "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다. 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다. 게임 오버가 되면 주인공 이름 · 발견물 수와 그 판에서 한 번이라도 켠 모드가 하드코어 랭킹(햄버거 메뉴)에 올라갑니다.": {
+ "원본에 없는 것입니다 — 바다에서 만난 괴물(크라켄 · 시서펜트 · 식인상어 · 맨터)을 놓쳐도 그 자리를 벗어났다가 다시 가면 또 만납니다. 원본은 한 번 놓치면 다시 나오지 않습니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:530",
+  "args": 0,
+  "chain": true
+ },
+ " 다시 가면 또 만납니다. 원본은 한 번 놓치면 다시 나오지 않습니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:531",
+  "args": 0
+ },
+ "하드코어 모드": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:534",
+  "args": 0
+ },
+ "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:536",
+  "args": 0
+ },
+ "원본에 없는 것입니다 — 켜면 NEW GAME 에서 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다. 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다. 게임 오버가 되면 주인공 이름 · 발견물 수와 그 판에서 한 번이라도 켠 모드가 하드코어 랭킹(햄버거 메뉴)에 올라갑니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:536",
   "args": 0,
   "chain": true
  },
  " 하드코어로 시작한 판은 한 번 게임 오버가 되면 그 판의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:531",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:537",
   "args": 0
  },
  " 게임 오버가 되면 주인공 이름 · 발견물 수와 그 판에서 한 번이라도 켠 모드가 하드코어 랭킹(햄버거 메뉴)에 올라갑니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:532",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:538",
   "args": 0
  },
  "직업 누르면 다시 굴림": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:535",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:541",
   "args": 0
  },
  "원본에 없는 것입니다 — 새 주인공(NORMAL) 능력치 창에서 직업 단추를 누를 때마다 능력치와 보너스를 새로 굴립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:537",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:543",
   "args": 0
  },
  "원본에 없는 것입니다 — 새 주인공(NORMAL) 능력치 창에서 직업 단추를 누를 때마다 능력치와 보너스를 새로 굴립니다. 넣어 둔 보너스는 도로 걷힙니다. 끄면 원본처럼 직업은 기본 기술만 정합니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:537",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:543",
   "args": 0,
   "chain": true
  },
  " 넣어 둔 보너스는 도로 걷힙니다. 끄면 원본처럼 직업은 기본 기술만 정합니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:538",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:544",
   "args": 0
  },
  "해적 조우 확률": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:541",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:547",
   "args": 0
  },
  "안 만남": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:543",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:549",
   "args": 0
  },
  "x{0} (원본)": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:543",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:549",
   "args": 1
  },
  "바다에서 해적(유럽 바다)·이슬람 함대(동지중해~아라비아해)가 붙는 확률의 배수입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:546",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:552",
   "args": 0
  },
  "바다에서 해적(유럽 바다)·이슬람 함대(동지중해~아라비아해)가 붙는 확률의 배수입니다. 원본은 걸음마다 유럽 700분의 1, 동쪽 400분의 1입니다. 「안 만남」이면 아예 붙지 않습니다. 지도에 보이는 적 함대와 마주치는 것은 따로라 바뀌지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:546",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:552",
   "args": 0,
   "chain": true
  },
  " 원본은 걸음마다 유럽 700분의 1, 동쪽 400분의 1입니다. 「안 만남」이면 아예 붙지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:547",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:553",
   "args": 0
  },
  " 지도에 보이는 적 함대와 마주치는 것은 따로라 바뀌지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:548",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:554",
   "args": 0
  },
  "출입 일수": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:551",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:557",
   "args": 0
  },
  "{0}일 (원본)": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:554",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:560",
   "args": 1
  },
  "항구·마을에 들어가고 나올 때 각각 지나는 날수. 원본 기본값 {0}일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:557",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:563",
   "args": 1
  },
  "항구·마을에 들어가고 나올 때 각각 지나는 날수. 원본 기본값 {0}일입니다. 바꾼 값은 다음 출입부터 곧바로 듭니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:557",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:563",
   "args": 1,
   "chain": true
  },
  " 바꾼 값은 다음 출입부터 곧바로 듭니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:558",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:564",
   "args": 0
  },
  "이동 주기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:562",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:568",
   "args": 0
  },
  "매월 1일 (원본)": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:563",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:569",
   "args": 0
  },
  "{0}일마다": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:563",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:569",
   "args": 1
  },
  "인물(14~200번)이 떠날지 굴리는 때. 원본은 매월 1일입니다. N일마다는 1480년 1월 1일부터 셉니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:566",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:572",
   "args": 0
  },
  "인물(14~200번)이 떠날지 굴리는 때. 원본은 매월 1일입니다. N일마다는 1480년 1월 1일부터 셉니다. 역사 항해자 대본은 늘 매월 1일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:566",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:572",
   "args": 0,
   "chain": true
  },
  " 역사 항해자 대본은 늘 매월 1일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:567",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:573",
   "args": 0
  },
  "떠날 확률": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:568",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:574",
   "args": 0
  },
  "1분의 1 (반드시)": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:571",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:577",
   "args": 0
  },
  "{0}분의 1": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:571",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:577",
   "args": 1
  },
  "굴릴 때마다 떠날 확률. 원본은 {0}분의 1입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:574",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:580",
   "args": 1
  },
  "쉬는 날": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:576",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:582",
   "args": 0
  },
  "인물이 도시에 닿고 나서 쉬는 날수. 그동안은 떠나지 않습니다. 원본은 {0}일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:580",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:586",
   "args": 1
  },
  "인물이 도시에 닿고 나서 쉬는 날수. 그동안은 떠나지 않습니다. 원본은 {0}일입니다. 「이동 주기」 · 「떠날 확률」을 올려도 바다에서 인물이 잘 안 보이면 이 값을 줄이십시오 — 길 위에 있는 사람이 늘어납니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:580",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:586",
   "args": 1,
   "chain": true
  },
  " 「이동 주기」 · 「떠날 확률」을 올려도 바다에서 인물이 잘 안 보이면 이 값을 줄이십시오 — 길 위에 있는 사람이 늘어납니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:581",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:587",
   "args": 0
  },
  "권장": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:702",
-  "args": 0
- },
- "편의성": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:703",
-  "args": 0
- },
- "미니맵": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:705",
-  "args": 0
- },
- "고해상도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:706",
-  "args": 0
- },
- "폰트": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:708",
   "args": 0
  },
- "캐릭터": {
+ "편의성": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:709",
   "args": 0
  },
+ "미니맵": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:711",
+  "args": 0
+ },
+ "고해상도": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:712",
+  "args": 0
+ },
+ "폰트": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:714",
+  "args": 0
+ },
+ "캐릭터": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:715",
+  "args": 0
+ },
  "실험": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:713",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:719",
   "args": 0
  },
  "커스텀 BGM": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:721",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:727",
   "args": 0
  },
  "원본에 없는 기능입니다 — 곡 번호마다 등록해 둔 파일이 있으면 그걸로 갈아 낍니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:723",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:729",
   "args": 0
  },
  "원본에 없는 기능입니다 — 곡 번호마다 등록해 둔 파일이 있으면 그걸로 갈아 낍니다. 등록은 아래 「곡 등록」 단추로 합니다. 꺼도 등록은 그대로 남고, 다시 켜면 그대로 씁니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:723",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:729",
   "args": 0,
   "chain": true
  },
  " 등록은 아래 「곡 등록」 단추로 합니다. 꺼도 등록은 그대로 남고, 다시 켜면 그대로 씁니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:724",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:730",
   "args": 0
  },
  "곡 등록…": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:732",
   "args": 0
  },
  "곡 등록": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:733",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:739",
   "args": 0
  },
  "곡 번호마다 틀 파일을 고릅니다. 커스텀 BGM 을 켜야 누를 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:733",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:739",
   "args": 0
  },
  "커스텀 효과음": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:748",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:754",
   "args": 0
  },
  "원본에 없는 기능입니다 — 효과음 폴더에 넣어 둔 wav 파일로 효과음을 갈아 낍니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:750",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:756",
   "args": 0
  },
  "원본에 없는 기능입니다 — 효과음 폴더에 넣어 둔 wav 파일로 효과음을 갈아 낍니다. 아래 「효과음 폴더 열기」를 누르면 폴더가 열리고, 그 안 「원본」 폴더에 지금 효과음이 sfx-00.wav ~ sfx-49.wav 로 꺼내집니다. 바꾸고 싶은 소리를 「원본」에서 찾아 들어 보고, 같은 이름의 새 파일을 효과음 폴더(원본 폴더 바깥)에 넣으면 그 소리가 바뀝니다. 지우면 원래 소리로 돌아옵니다. 업데이트해도 폴더는 그대로 남습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:750",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:756",
   "args": 0,
   "chain": true
  },
  " 아래 「효과음 폴더 열기」를 누르면 폴더가 열리고, 그 안 「원본」 폴더에 지금 효과음이 sfx-00.wav ~ sfx-49.wav 로 꺼내집니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:751",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:757",
   "args": 0
  },
  " 바꾸고 싶은 소리를 「원본」에서 찾아 들어 보고, 같은 이름의 새 파일을 효과음 폴더(원본 폴더 바깥)에 넣으면 그 소리가 바뀝니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:752",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:758",
   "args": 0
  },
  " 지우면 원래 소리로 돌아옵니다. 업데이트해도 폴더는 그대로 남습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:753",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:759",
   "args": 0
  },
  "효과음 폴더 열기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:755",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:761",
   "args": 0
  },
  "효과음 폴더를 열고 「원본」 폴더에 지금 효과음을 꺼내 둡니다. 커스텀 효과음을 켜야 누를 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:762",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:768",
   "args": 0
  },
  "원본 효과음을 꺼내지 못했습니다 — 게임 폴더의 WAVES.CDS 를 못 읽었습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:781",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:787",
   "args": 0
  },
  "효과음 폴더를 열지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:785",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:791",
   "args": 1
  },
  "자동 보급": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:806",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:812",
   "args": 0
  },
  "바다 입체 효과": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:823",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:829",
   "args": 0
  },
  "고해상도 바다": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:823",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:829",
   "args": 0
  },
  "오리지널": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:840",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:846",
   "args": 0
  },
  "원본 그대로 즐깁니다. 아래 단계들이 켜는 옵션을 모두 끄고, 정보 등급은 기본, 출입 일수는 10일로 둡니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:840",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:846",
   "args": 0
  },
  "원본 그대로 즐깁니다. 아래 단계들이 켜는 옵션을 모두 끄고, 정보 등급은 기본, 출입 일수는 10일로 둡니다. 처음에는 이 단계입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:840",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:846",
   "args": 0,
   "chain": true
  },
  " 처음에는 이 단계입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:841",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:847",
   "args": 0
  },
  "초보": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:843",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:849",
   "args": 0
  },
  "원본에 가깝게 즐기되 손이 많이 가는 일만 덜어 줍니다. 발견물 지도, 미니맵(도시 · 찾은 발견물), 보기 좋은 목록 창,": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:843",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:849",
   "args": 0
  },
  "원본에 가깝게 즐기되 손이 많이 가는 일만 덜어 줍니다. 발견물 지도, 미니맵(도시 · 찾은 발견물), 보기 좋은 목록 창, 자동 보급 · 선원 자동 모집 · 도시 자동저장을 켭니다. 숨은 정보와 규칙은 원본 그대로입니다(정보 등급 기본, 출입 일수 10일).": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:843",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:849",
   "args": 0,
   "chain": true
  },
  " 자동 보급 · 선원 자동 모집 · 도시 자동저장을 켭니다. 숨은 정보와 규칙은 원본 그대로입니다(정보 등급 기본, 출입 일수 10일).": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:844",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:850",
   "args": 0
  },
  "중수": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:846",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:852",
   "args": 0
  },
  "초보 묶음에 더해 화면에 정보를 더 띄웁니다. 바람 · 해류 화살표,": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:846",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:852",
   "args": 0
  },
  "초보 묶음에 더해 화면에 정보를 더 띄웁니다. 바람 · 해류 화살표, 접근 함대 정보, 적하 시세 순위, 편리한 인벤토리 · 보관함, 뭍 자동이동을 켭니다. 정보 등급은 일반, 출입 일수는 5일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:846",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:852",
   "args": 0,
   "chain": true
  },
  " 접근 함대 정보, 적하 시세 순위, 편리한 인벤토리 · 보관함, 뭍 자동이동을 켭니다. 정보 등급은 일반, 출입 일수는 5일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:847",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:853",
   "args": 0
  },
  "고수": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:849",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:855",
   "args": 0
  },
  "빨리 찾는 데 맞춥니다. 중수 묶음에 더해 미니맵에 못 찾은 발견물과 풍향 · 해류까지 찍고, 자동 도망 · 자금 증가 기본 ·": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:849",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:855",
   "args": 0
  },
  "빨리 찾는 데 맞춥니다. 중수 묶음에 더해 미니맵에 못 찾은 발견물과 풍향 · 해류까지 찍고, 자동 도망 · 자금 증가 기본 · 스핑크스 퀴즈 도우미 · 수에즈 운하를 켭니다. 정보 등급은 상세, 출입 일수는 1일입니다. 스스로 알아내는 재미는 줄어듭니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:849",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:855",
   "args": 0,
   "chain": true
  },
  " 스핑크스 퀴즈 도우미 · 수에즈 운하를 켭니다. 정보 등급은 상세, 출입 일수는 1일입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:850",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:856",
   "args": 0
  },
  " 스스로 알아내는 재미는 줄어듭니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:851",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:857",
   "args": 0
  },
  "권장 옵션": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:860",
-  "args": 0
- },
- "하나를 고르면 다른 탭의 옵션이 그 단계에 맞게 한꺼번에 켜지고 꺼집니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:866",
   "args": 0
  },
+ "하나를 고르면 다른 탭의 옵션이 그 단계에 맞게 한꺼번에 켜지고 꺼집니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:872",
+  "args": 0
+ },
  "직접 바꾼 옵션이 있습니다({0}{1}).\n": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:893",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:899",
   "args": 2
  },
  "직접 바꾼 옵션이 있습니다({0}{1}).\n「{2}」{3} 고르면 그 단계의 설정값으로 바뀝니다. 바꾸시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:893",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:899",
   "args": 4,
   "chain": true
  },
  " 외 {0}개": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:893",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:899",
   "args": 1
  },
  "「{0}」{1} 고르면 그 단계의 설정값으로 바뀝니다. 바꾸시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:894",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:900",
   "args": 2
  },
  "권장 옵션 — ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:905",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:911",
   "args": 0
  },
  "권장 옵션 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:905",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:911",
   "args": 1,
   "chain": true
  },
  "\n\n켜는 것: ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:906",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:912",
   "args": 0
  },
  "\n\n켜는 것: {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:906",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:912",
   "args": 1,
   "chain": true
  },
  "\n\n끄는 것: ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:907",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:913",
   "args": 0
  },
  "\n\n끄는 것: {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:907",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:913",
   "args": 1,
   "chain": true
  },
  "고른 뒤에도 각 탭에서 하나씩 바꿀 수 있습니다. 「바다 입체 효과」 · 「고해상도 바다」 · 「리디바탕 글꼴」은 초보 · 중수 · 고수가 함께 켭니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:913",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:919",
   "args": 0
  },
  "고른 뒤에도 각 탭에서 하나씩 바꿀 수 있습니다. 「바다 입체 효과」 · 「고해상도 바다」 · 「리디바탕 글꼴」은 초보 · 중수 · 고수가 함께 켭니다. 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션과 「중량 없음」 같은 규칙 바꾸기는 어느 단계도 건드리지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:913",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:919",
   "args": 0,
   "chain": true
  },
  " 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션과 「중량 없음」 같은 규칙 바꾸기는 어느 단계도 건드리지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:914",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:920",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로,": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:989",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:995",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로, 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:989",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:995",
   "args": 0,
   "chain": true
  },
  " 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:990",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:996",
   "args": 0
  },
  "밝기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1009",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1015",
   "args": 0
  },
  "바다 밝기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1014",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1020",
   "args": 0
  },
  "바다 입체 효과의 밝기입니다. 85% 에서 시작하고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1014",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1020",
   "args": 0
  },
  "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 물과 식량을 저절로 사 싣습니다. 양은 아래에서 고릅니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1027",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1033",
   "args": 0
  },
  "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 물과 식량을 저절로 사 싣습니다. 양은 아래에서 고릅니다. 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다. 짐이 차서 못 실으면 그냥 넘어가니, 출항 물음에 뜨는 항해 일수를 보고 손으로 보급하면 됩니다. 산 것은 아래 띠로 알립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1027",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1033",
   "args": 0,
   "chain": true
  },
  " 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1028",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1034",
   "args": 0
  },
  " 짐이 차서 못 실으면 그냥 넘어가니, 출항 물음에 뜨는 항해 일수를 보고 손으로 보급하면 됩니다. 산 것은 아래 띠로 알립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1029",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1035",
   "args": 0
  },
  "자동 보급 — ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1045",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1051",
   "args": 0
  },
  "자동 보급 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1045",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1051",
   "args": 1,
   "chain": true
  },
  "물이나 식량이 10일분이 안 될 때 10일분까지 채웁니다. 보급 창의 「10일분」과 같은 셈(선원 수만큼의 통)입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1051",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1057",
   "args": 0
  },
  "보급 창의 「최대」처럼 물과 식량을 같은 통 수로, 용량·중량·소지금이 닿는 데까지 채웁니다. 이미 실린 것을 덜어 내지는 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1053",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1059",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1065",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1071",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다. 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1065",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1071",
   "args": 0,
   "chain": true
  },
  " 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1066",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1072",
   "args": 0
  },
  " 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1067",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1073",
   "args": 0
  },
  "해류 결": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1086",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1092",
   "args": 0
  },
  "고해상도 바다에서 해류를 보이는 결과 띠의 짙기입니다. 해류가 흐르는 쪽으로 결이 늘어지고 셀수록 또렷합니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1091",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1097",
   "args": 0
  },
  "고해상도 바다에서 해류를 보이는 결과 띠의 짙기입니다. 해류가 흐르는 쪽으로 결이 늘어지고 셀수록 또렷합니다. 0% 면 잔물결만 해류를 따라 흐르고 결은 안 섭니다. 고해상도 바다를 켜야 조절할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1091",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1097",
   "args": 0,
   "chain": true
  },
  " 0% 면 잔물결만 해류를 따라 흐르고 결은 안 섭니다. 고해상도 바다를 켜야 조절할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1092",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1098",
   "args": 0
  },
  "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1103",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1109",
   "args": 0
  },
  "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다. 아래에서 표식마다 켜고 끕니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1103",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1109",
   "args": 0,
   "chain": true
  },
  " 아래에서 표식마다 켜고 끕니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1104",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1110",
   "args": 0
  },
  "투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1136",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1142",
   "args": 0
  },
  "미니맵 투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1144",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1150",
   "args": 0
  },
  "미니맵을 켠 상태에서 투명도를 조절합니다. 체크를 끄면 조절할 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1144",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1150",
   "args": 0
  },
  "표식 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1168",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1174",
   "args": 0
  },
  "미니맵 표식 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1176",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1182",
   "args": 0
  },
  "발견물 · 도시 점의 크기를 조절합니다. 기본은 2.5 입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1176",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1182",
   "args": 0
  },
  "올림 투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1181",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1187",
   "args": 0
  },
  "미니맵 올림 투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1183",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1189",
   "args": 0
  },
  "마우스를 올렸거나 배가 미니맵 밑에 들어갔을 때의 투명도입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1183",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1189",
   "args": 0
  },
  "크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1184",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1190",
   "args": 0
  },
  "미니맵 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1186",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1192",
   "args": 0
  },
  "미니맵 창의 크기입니다. 키우면 더 넓은 곳이 보입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1186",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1192",
   "args": 0
  },
  "내 표식 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1188",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1194",
   "args": 0
  },
  "미니맵 내 표식 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1190",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1196",
   "args": 0
  },
  "내 자리를 가리키는 파란 점의 크기입니다. 기본은 5.0 입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1190",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1196",
   "args": 0
  },
  "상단": {
@@ -24530,40 +24547,40 @@
   "args": 2
  },
  "제독, 정신차리십시오! 제독, 제독!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7527",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7530",
   "args": 0
  },
  "배경음악 파일이 없습니다.\n릴리즈에서 BGM을 다운로드할까요?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7789",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7792",
   "args": 0
  },
  "BGM 다운로드": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7790",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7793",
   "args": 0
  },
  "BGM 다운로드 중...": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7795",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7798",
   "args": 0
  },
  "BGM 다운로드 실패: {0}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7800",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7803",
   "args": 1
  },
  "배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7802",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7805",
   "args": 0
  },
  "배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n{0}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7802",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7805",
   "args": 1,
   "chain": true
  },
  "(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7803",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7806",
   "args": 0
  },
  "BGM 다운로드 완료": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7808",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7811",
   "args": 0
  },
  "···돌아왔구나.": {

@@ -157,6 +157,12 @@ public sealed class DisevRunner
     public static int LastResult { get; private set; } = 2;
 
     /// <summary>
+    /// 마지막으로 돌린 대본에서 <b>바다 괴물과 싸워 이기지 못했는지</b>(<c>0D 0D</c>) — 지거나 물러났거나 괴물이 달아났다.
+    /// 모드 「괴물 다시 만나기」가 이것을 보고 그 발견물 사건을 매듭짓지 않는다(<see cref="Discovery.DiscoveryLog.Settle"/>).
+    /// </summary>
+    public static bool LastMissedMonster { get; private set; }
+
+    /// <summary>
     /// 마지막으로 돌린 대본이 <b>이벤트 완전 종료</b>(<c>04 4D</c>)로 끝났는지 — 이야기 장(章)을
     /// 닫아야 하는지는 부른 쪽(<see cref="Discovery.StoryLog"/>)이 이것을 보고 정한다.
     /// </summary>
@@ -244,6 +250,7 @@ public sealed class DisevRunner
         LastStoryArcCompleted = false;
         LastAdvancedStep = false;
         LastStepsAdvanced = 0;
+        LastMissedMonster = false;
         if (Open(game.Directory, cache) is not { } book) return false;
         if (partIndex < 0 || partIndex >= book.Count) return false;
 
@@ -269,7 +276,7 @@ public sealed class DisevRunner
         {
             // 알림이 전역 대본(마을대사)으로 돌면 이 대본의 결과가 그 대본 것으로 덮인다 — 붙들어 두었다 되돌린다.
             // 안 그러면 상아·산호처럼 교역품을 켜는 발견이 결과 2 로 읽혀 매듭이 안 서고, 그 자리에서 한 번 더 떴다.
-            var kept = (LastResult, LastStoryArcCompleted, LastAdvancedStep, LastStepsAdvanced, LastGameOverPicture);
+            var kept = (LastResult, LastStoryArcCompleted, LastAdvancedStep, LastStepsAdvanced, LastGameOverPicture, LastMissedMonster);
             foreach (int kind in runner._opened)
                 if (game.Goods?.Find(kind)?.Name is { Length: > 0 } name)
                 {
@@ -279,7 +286,7 @@ public sealed class DisevRunner
                         ("교역품", name), ("을를", particle));
                 }
             LastEndedInGameOver = false;
-            (LastResult, LastStoryArcCompleted, LastAdvancedStep, LastStepsAdvanced, LastGameOverPicture) = kept;
+            (LastResult, LastStoryArcCompleted, LastAdvancedStep, LastStepsAdvanced, LastGameOverPicture, LastMissedMonster) = kept;
         }
         // 도시에 들어선 사건(갈래 1, 0x004AB4D0)은 단계를 <b>늘 한 칸만</b> 올린다 — +4 가 1 이면 카운터를 inc 할 뿐
         // +0x10 을 안 본다(0x004AB53C). 딴 갈래는 0x004AB460 이 +0x10(58 n 이면 n+1)을 더한다(0x004AB49E).
@@ -1097,6 +1104,7 @@ public sealed class DisevRunner
 
                 var end = sea.SeaFight(I("Person"));
                 _result = end.Won;
+                if (!end.Won) LastMissedMonster = true;
                 if (end.Over)
                 {
                     LastEndedInGameOver = true;

@@ -34,7 +34,7 @@ export const RANKING_HTML = `<!doctype html>
     SuezCanal: '수에즈 운하', NoWeight: '중량 없음', RichCap: '소지금 상한 10배', LongRest: '장기 휴양 120개월',
     SkipMinigames: '미니게임 건너뛰기', SphinxHelper: '스핑크스 도우미', DuelImmortal: '일기토 불사', AutoFundRaise: '자금 증가 자동',
     Nobility: '작위 제도', LandAutoWalk: '육지 자동이동', SpecialOrder: '특별주문', MiniMapYet: '미니맵 미발견 표시',
-    ShowDiscoveryMapMenu: '발견물 지도', RerollOnJob: '직업 누르면 다시 굴림',
+    ShowDiscoveryMapMenu: '발견물 지도', RerollOnJob: '직업 누르면 다시 굴림', MonsterRetry: '괴물 다시 만나기',
     SeaRaidScale: '해적 출현 배수', MutinyRate: '반란 확률', PortDays: '출입 일수', PersonRollDays: '인물 이동 간격',
     PersonMoveOdds: '인물 이동 확률', PersonRestDays: '인물 휴식 일수', InfoLevel: '정보 제공 등급',
     'dev:ctrl-click': 'Ctrl+클릭 배 놓기', 'dev:item': '개발: 아이템 넣기', 'dev:quest': '개발: 이야기 상태',
