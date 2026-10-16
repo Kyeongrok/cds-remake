@@ -20,8 +20,8 @@ public sealed class PersonListDialog : GameWindow
     /// <summary>한 사람 — 이름 · 초상화 · 이름 밑 줄들(줄바꿈으로 가른다) · 오른쪽 자리 · 설명 · 판 열기.</summary>
     public sealed record Entry(string Name, uint[]? Face, string Lines, string Role, string Description, Action Open);
 
-    private static readonly FontFamily Ridi =
-        new(new Uri("pack://application:,,,/CdsHelper.Game;component/"), "./Fonts/#RIDIBatang");
+    /// <summary>리디바탕(한국어) — 일본어면 명조로 물러선다(<see cref="UiFont.ListFont"/>).</summary>
+    private static FontFamily Ridi => UiFont.ListFont;
 
     private static readonly Brush Ink = Frozen(Color.FromRgb(0x10, 0x0A, 0x08));
     private static readonly Brush Dim = Frozen(Color.FromRgb(0x80, 0x78, 0x6C));

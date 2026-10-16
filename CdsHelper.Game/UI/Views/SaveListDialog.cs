@@ -15,8 +15,8 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class SaveListDialog : GameWindow
 {
-    private static readonly FontFamily Ridi =
-        new(new Uri("pack://application:,,,/CdsHelper.Game;component/"), "./Fonts/#RIDIBatang");
+    /// <summary>리디바탕(한국어) — 일본어면 명조로 물러선다(<see cref="UiFont.ListFont"/>).</summary>
+    private static FontFamily Ridi => UiFont.ListFont;
 
     private static readonly Brush Ink = Frozen(Color.FromRgb(0x10, 0x0A, 0x08));
     private static readonly Brush PickInk = Frozen(Color.FromRgb(0xF4, 0xE8, 0xE0));

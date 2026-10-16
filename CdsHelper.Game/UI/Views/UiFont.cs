@@ -22,6 +22,23 @@ internal static class UiFont
     private static readonly FontFamily Ridi =
         new(new Uri("pack://application:,,,/CdsHelper.Game;component/"), "./Fonts/#RIDIBatang");
 
+    /// <summary>
+    /// 리디바탕을 쓸 수 있는 언어인지 — 리디바탕은 한글 글꼴이라 가나 · 일본 한자가 없다. 일본어로 켜면 모드를 켜 두었어도
+    /// 안 걸고, 모드 창의 「폰트」 탭도 안 낸다.
+    /// </summary>
+    public static bool Supported => Local.Helpers.Lang.Current.Code == "ko";
+
+    /// <summary>창 글꼴을 리디바탕으로 거는지 — 모드를 켰고 언어가 받쳐 줄 때만.</summary>
+    private static bool Active => GameSettings.RidiFont && Supported;
+
+    /// <summary>일본어 목록 창이 리디바탕 대신 쓰는 명조.</summary>
+    private static readonly FontFamily JapaneseSerif = new("Yu Mincho, MS PMincho, Meiryo");
+
+    /// <summary>
+    /// 리디바탕 표로 그리는 목록 창(향상된 인물정보 · 게임 로드)의 글꼴 — 한국어면 리디바탕, 아니면 그 언어의 명조.
+    /// </summary>
+    public static FontFamily ListFont => Supported ? Ridi : JapaneseSerif;
+
     /// <summary>우리가 글꼴을 건 창 — 끌 때 이것들만 되돌린다.</summary>
     private static readonly ConditionalWeakTable<Window, object> Applied = new();
 
@@ -46,7 +63,7 @@ internal static class UiFont
 
     private static void Apply(Window window)
     {
-        if (GameSettings.RidiFont)
+        if (Active)
         {
             if (Applied.TryGetValue(window, out _)) return;
             // 제 글꼴을 따로 적어 둔 창은 건드리지 않는다.

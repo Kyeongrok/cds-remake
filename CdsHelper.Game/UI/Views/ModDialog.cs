@@ -692,7 +692,7 @@ public sealed class ModDialog : GameWindow
         Add("미니맵", mini);
         Add("고해상도", hires);
         Add("UI", ui);
-        Add("폰트", font);
+        if (UiFont.Supported) Add("폰트", font);   // 리디바탕은 한글 글꼴이라 일본어에서는 탭을 안 낸다
         Add("캐릭터", character);
         Add("발견물", discovery);
         Add("저장", save);
