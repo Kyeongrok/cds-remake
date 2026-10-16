@@ -206,10 +206,12 @@ public sealed class GameFont
     public const int MaxWidth = 16, MaxHeight = 16;
 
     /// <summary>문자열을 찍는 데 드는 폭(픽셀). 없는 글자는 0폭으로 센다.</summary>
-    public int TextWidth(string? text)
+    public int TextWidth(string? text) => string.IsNullOrEmpty(text) ? 0 : RawWidth(Lang.T(text));
+
+    /// <summary>글을 <b>옮기지 않고</b> 그대로 잰 폭 — 다른 언어에서 한국어 판 폭을 알 때 쓴다.</summary>
+    public int RawWidth(string? text)
     {
         if (string.IsNullOrEmpty(text)) return 0;
-        text = Lang.T(text);
         var mask = new byte[MaxWidth * MaxHeight];
         int total = 0;
         foreach (var ch in text)

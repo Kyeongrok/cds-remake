@@ -636,7 +636,19 @@ internal static class GameUi
     }
 
     public static double BandWidthFor(string text) =>
-        Math.Max(UiSprites.WidthFor(1), GameSettings.BandPad * 2 + (Font?.TextWidth(text) ?? 0));
+        Math.Max(UiSprites.WidthFor(1), GameSettings.BandPad * 2 + LayoutWidth(text));
+
+    /// <summary>
+    /// 띠 폭을 잡을 글 폭. 한국어면 그 글 폭 그대로다. 다른 언어면 <b>한국어 판 폭과 옮긴 글 폭 중 큰 쪽</b>이다 —
+    /// 일본어는 글이 짧아(「거리로 돌아간다」 → 「街に戻る」) 차림표가 한국어 판보다 홀쭉해졌다.
+    /// 한국어 판 폭은 옮기기 전 글을 원본 글꼴로 잰다(<see cref="GameFont.RawWidth"/>).
+    /// </summary>
+    public static int LayoutWidth(string? text)
+    {
+        int shown = Font?.TextWidth(text) ?? 0;
+        if (string.IsNullOrEmpty(text) || Lang.Current.Code == "ko") return shown;
+        return Math.Max(shown, Font?.RawWidth(text) ?? 0);
+    }
 
     public static GameFont? Font
     {
@@ -919,7 +931,7 @@ internal static class GameUi
         else
         {
             double least = Math.Max(UiSprites.WidthFor(1),
-                                    GameSettings.BandPad * 2 + (Font?.TextWidth(title) ?? 0));
+                                    GameSettings.BandPad * 2 + LayoutWidth(title));
             grid.MinWidth = least * scale;
             Redraw(least * scale);
         }
