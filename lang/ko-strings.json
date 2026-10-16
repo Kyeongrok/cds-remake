@@ -20447,23 +20447,23 @@
   "args": 0
  },
  "{0}   {1}": {
-  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:87",
+  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:89",
   "args": 2
  },
  "켬": {
-  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:87",
+  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:89",
   "args": 0
  },
  "끔": {
-  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:87",
+  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:89",
   "args": 0
  },
  "화면 {0}": {
-  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:157",
+  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:159",
   "args": 1
  },
  "지도 {0}": {
-  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:219",
+  "at": "CdsHelper.Game/UI/Views/SettingsDialog.cs:221",
   "args": 1
  },
  "선명": {

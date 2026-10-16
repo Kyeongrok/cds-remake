@@ -83,8 +83,10 @@ public sealed class SettingsDialog : GameWindow
 
     // 저장·지도 글쇠 줄은 햄버거의 「단축키」 창(ShortcutDialog)으로 옮겨 여기서 걷었다.
 
-    /// <summary>줄 글자. 두 줄의 폭이 어긋나지 않게 이름을 같은 길이로 맞춰 둔다.</summary>
-    private static string Label(string name, bool on) => $"{name}   {(on ? "켬" : "끔")}";
+    /// <summary>
+    /// 줄 글자. 이름 · 켬끔을 <b>따로</b> 옮긴다 — 붙인 글(「효과음     켬」)은 번역 표에서 통째로 못 찾는다.
+    /// </summary>
+    private static string Label(string name, bool on) => $"{Lang.T(name.Trim())}   {Lang.T(on ? "켬" : "끔")}";
 
     private UIElement BgmToggle() =>
         new GameButton(Label("배경음악", GameSettings.BgmEnabled), FlipBgm);
@@ -122,7 +124,7 @@ public sealed class SettingsDialog : GameWindow
         var row = new StackPanel { Orientation = Orientation.Horizontal };
         row.Children.Add(new GameButton("◀", () => step(-GameSettings.VolumeStep),
                                         BandStyle.Button, StepWidth));
-        row.Children.Add(Value($"{name} {volume,3}"));
+        row.Children.Add(Value($"{Lang.T(name.Trim())} {volume,3}"));
         row.Children.Add(new GameButton("▶", () => step(GameSettings.VolumeStep),
                                         BandStyle.Button, StepWidth));
         return row;
