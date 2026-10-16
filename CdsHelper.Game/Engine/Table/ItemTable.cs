@@ -42,7 +42,7 @@ public sealed class ItemTable
     public const int MaxPic = 207;
 
     /// <summary>
-    /// 덧붙인 아이템 두정갑 — 원본 표(286개) 바로 뒤 번호다. 한양 시장(운종가 시전)에서만 판다(<see cref="CityExeTable.Of"/>).
+    /// 덧붙인 아이템 두정갑 — 원본 표(286개) 바로 뒤 번호다. 한양 시장(육의전)에서만 판다(<see cref="CityExeTable.Of"/>).
     /// </summary>
     public const int Dujeonggap = Count;
 

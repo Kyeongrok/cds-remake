@@ -358,7 +358,7 @@ public sealed class CityExeTable
         return AddedStock.TryGetValue(cityId, out var more) ? [.. own, .. more] : own;
     }
 
-    /// <summary>덧붙인 물건 — 도시 번호 → 아이템 번호들. 한양(190) 운종가 시전의 두정갑이다.</summary>
+    /// <summary>덧붙인 물건 — 도시 번호 → 아이템 번호들. 한양(190) 육의전의 두정갑이다.</summary>
     private static readonly Dictionary<int, int[]> AddedStock = new()
     {
         [CityBuildingTable.Hanyang] = [ItemTable.Dujeonggap],

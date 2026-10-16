@@ -181,7 +181,7 @@ public sealed class CityBuildingTable
     /// </remarks>
     public static readonly (Building Row, string Sprite)[] Added =
     [
-        (new Building(Hanyang, 7, "시장", "운종가 시전", 156, 134, 0), "china-market.png"),
+        (new Building(Hanyang, 7, "시장", "육의전", 156, 134, 0), "china-market.png"),
     ];
 
     /// <summary>그 도시 그 코드의 덧붙인 건물. 없으면 null.</summary>
