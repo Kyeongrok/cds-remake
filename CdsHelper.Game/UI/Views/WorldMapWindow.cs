@@ -2497,6 +2497,8 @@ public sealed class WorldMapWindow : Window
         // 짓다 말고 물러나면 하던 판을 도로 앉혀야 한다.
         var before = _game.NewPlayer();
         bool made = false;
+        // NEW GAME 차림표에서 「하드코어로 시작한다」를 골랐는지 — 주인공을 다 지은 뒤 판에 박는다.
+        bool hard = false;
         try
         {
             // 주인공 고르기나 신상에서 물리면 <b>NEW GAME 차림표로</b> 되돌아간다 — 원본은 0x0045EC6C · 0x0045EC85 에서
@@ -2508,10 +2510,28 @@ public sealed class WorldMapWindow : Window
                 if (_closed) return;
                 // 모드 「시나리오 모드」를 켰고 지어 둔 시나리오가 있으면 셋째 줄이 붙는다 — 원본에 없는 것이다.
                 var scenarios = Scenarios.Enabled ? Scenarios.All : [];
-                string[] ways = ["초심자용 주인공으로 시작한다(EASY)", "새로운 주인공으로 시작한다(NORMAL)"];
-                if (scenarios.Count > 0) ways = [.. ways, "시나리오로 시작한다"];
-                int at = ChoiceDialog.Ask(this, "NEW GAME", ways);
-                if (at < 0) return;
+                const string easy = "초심자용 주인공으로 시작한다(EASY)", normal = "새로운 주인공으로 시작한다(NORMAL)",
+                             scenario = "시나리오로 시작한다", hardcore = "하드코어로 시작한다(HARD)";
+                List<string> ways = [easy, normal];
+                if (scenarios.Count > 0) ways.Add(scenario);
+                // 모드 「실험 · 하드코어 모드」를 켰으면 하드코어 줄이 붙는다 — 원본에 없는 것이다.
+                if (GameSettings.HardcoreMode) ways.Add(hardcore);
+                int picked = ChoiceDialog.Ask(this, "NEW GAME", [.. ways]);
+                if (picked < 0) return;
+                string way = ways[picked];
+
+                // 하드코어는 경고를 보이고, 초심자용 · 새 주인공 가운데 하나로 짓는다.
+                hard = way == hardcore;
+                if (hard)
+                {
+                    if (!ConfirmDialog.Ask(this,
+                            "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 게임의 세이브가 모두 지워집니다.", "HARDCORE"))
+                        continue;
+                    int kind = ChoiceDialog.Ask(this, "하드코어로 시작할 주인공을 선택해 주십시오", [easy, normal]);
+                    if (kind < 0) continue;
+                    way = kind == 0 ? easy : normal;
+                }
+                int at = way == easy ? 0 : way == normal ? 1 : 2;
 
                 if (at == 2)
                 {
@@ -2549,10 +2569,8 @@ public sealed class WorldMapWindow : Window
             HideTitleMenu(false);
         }
 
-        // 모드 「하드코어 모드」를 켰으면 하드코어로 할지 묻는다 — 원본에 없는 것이다. 게임 오버가 되면 이 판의 세이브가 모두 지워진다.
-        if (GameSettings.HardcoreMode)
-            _game.Player.Hardcore = ConfirmDialog.Ask(this,
-                "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 게임의 세이브가 모두 지워집니다.", "HARDCORE");
+        // NEW GAME 차림표에서 「하드코어로 시작한다」를 골랐으면 하드코어 판이다 — 게임 오버가 되면 이 판의 세이브가 모두 지워진다.
+        _game.Player.Hardcore = hard;
         // 시작할 때 켜 둔 모드부터 적는다(직업 다시 굴림처럼 시작할 때만 먹는 것도 여기서 잡힌다).
         HardcoreRules.Note(_game.Player);
         SyncHardTitle();

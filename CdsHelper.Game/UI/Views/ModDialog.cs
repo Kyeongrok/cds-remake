@@ -475,7 +475,7 @@ public sealed class ModDialog : GameWindow
         lab.Children.Add(Toggle("하드코어 모드", GameSettings.HardcoreMode,
             on => GameSettings.HardcoreMode = on,
             "원본에 없는 것입니다 — 여기서 켜야 NEW GAME 에서 하드코어 캐릭터로 만들 수 있습니다."
-            + " 켜 두면 주인공을 다 만든 뒤 하드코어 모드로 시작할지 묻습니다."
+            + " 켜 두면 NEW GAME 에 「하드코어로 시작한다(HARD)」가 붙습니다."
             + " 하드코어로 시작한 게임은 한 번 게임 오버가 되면 그 게임의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다."
             + " 하드코어로 하는 동안 제목 줄이 붉어지고 가운데에 「Hard」가 보입니다."));
 
