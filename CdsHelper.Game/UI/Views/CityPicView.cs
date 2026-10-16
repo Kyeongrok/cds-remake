@@ -1764,7 +1764,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (k < 0) return;
 
         var people = kind == FacilityKind.Home ? WifeArt() : Guests.GuestArt(kind);
-        _photoWindow = BuildingPhotoWindow.Show(this, photos.TryGetBgra(k), people, _scale,
+        // 도시마다 갈아 끼운 사진이 먼저다(한양 왕궁 — asset/buildingphoto).
+        var art = photos.TryGetCityBgra(_cityId, buildingCode) ?? photos.TryGetBgra(k);
+        _photoWindow = BuildingPhotoWindow.Show(this, art, people, _scale,
                                                 new Point(Left + (PhotoLeft + _frameBorder) * _scale,
                                                           Top + (PhotoTop + _frameBorder) * _scale));
     }

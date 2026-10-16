@@ -125,6 +125,46 @@ public sealed class BuildingPhoto
         return _pick[RowFor(culture) * ColCount + buildingCode];
     }
 
+    /// <summary>도시마다 갈아 끼우는 사진이 든 곳(<c>asset/buildingphoto/README.md</c>).</summary>
+    public const string CityPhotoDirectory = "asset/buildingphoto";
+
+    /// <summary>
+    /// 그 도시 그 건물에만 쓰는 사진(<c>city-190-02.png</c> = 한양 왕궁). 없으면 null — 그때는 원본 사진을 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 문화권으로만 고르므로 한양 왕궁에 북경 왕궁 사진이 떴다. 덧붙인 그림이다.
+    /// 타원은 원본 사진과 같은 마스크로 자르고 테두리도 같은 색(49,24,24)으로 칠한다.
+    /// </remarks>
+    public uint[]? TryGetCityBgra(int cityId, int buildingCode)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, CityPhotoDirectory, $"city-{cityId:D3}-{buildingCode:D2}.png");
+        if (!File.Exists(path)) return null;
+        try
+        {
+            using var fs = File.OpenRead(path);
+            var decoder = new System.Windows.Media.Imaging.PngBitmapDecoder(
+                fs, System.Windows.Media.Imaging.BitmapCreateOptions.PreservePixelFormat,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+            var src = new System.Windows.Media.Imaging.FormatConvertedBitmap(
+                decoder.Frames[0], System.Windows.Media.PixelFormats.Bgra32, null, 0);
+            if (src.PixelWidth != Width || src.PixelHeight != Height) return null;
+
+            var bgra = new uint[Pixels];
+            src.CopyPixels(bgra, Width * 4, 0);
+            for (int i = 0; i < Pixels; i++)
+            {
+                if (_mask[i] == OutsideMask) bgra[i] = 0;
+                else if (_mask[i] == EdgeMask) bgra[i] = 0xFF311818;
+            }
+            return bgra;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                      or NotSupportedException or ArgumentException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// 사진 한 장을 320x240 BGRA 로 푼다. 타원 밖은 알파 0 이다. 못 풀면 null.
     /// </summary>
