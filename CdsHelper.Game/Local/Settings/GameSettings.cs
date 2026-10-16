@@ -344,6 +344,9 @@ public sealed class GameSettingsData
     /// <summary>켤 때 로고·오프닝 동영상을 틀지. 원본은 늘 트므로 켜 두고 시작한다.</summary>
     public bool PlayOpeningMovie { get; set; } = true;
 
+    /// <summary>발견물 동영상을 새로 만든 것(asset/movie)으로 틀지. 켜 두고 시작한다.</summary>
+    public bool NewDiscoveryMovies { get; set; } = true;
+
     /// <summary>새 주인공 능력치 창에서 직업 단추를 누르면 능력치를 다시 굴릴지. 원본에는 없어 꺼 두고 시작한다.</summary>
     public bool RerollOnJob { get; set; }
 
@@ -1356,6 +1359,16 @@ public static class GameSettings
     {
         get => Get(d => d.PlayOpeningMovie);
         set => Set(d => d.PlayOpeningMovie = value);
+    }
+
+    /// <summary>
+    /// 발견물 동영상을 새로 만든 것으로 틀지 — 모드 창에서 켜고 끈다. 끄면 원본 동영상(<c>I00</c>~<c>I69</c>)을
+    /// 갈아 끼운 것을 건너뛰고 원본을 튼다(<see cref="Helpers.MovieFiles.Resolve"/>). 원본에 없는 새 발견물 것은 그대로 튼다.
+    /// </summary>
+    public static bool NewDiscoveryMovies
+    {
+        get => Get(d => d.NewDiscoveryMovies);
+        set => Set(d => d.NewDiscoveryMovies = value);
     }
 
     /// <summary>

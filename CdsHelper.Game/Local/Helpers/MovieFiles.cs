@@ -98,9 +98,23 @@ public static class MovieFiles
     /// <summary>
     /// 틀 파일을 찾는다. 올려 둔 것 → 릴리즈에서 받아 둔 것 → 게임 폴더 차례고, 다 없으면 null.
     /// </summary>
-    /// <remarks>받아 둔 MP4 가 게임 폴더 AVI 보다 앞이다 — 원본 AVI 는 Indeo 5 라 요즘 윈도에서 안 틀린다.</remarks>
-    public static string? Resolve(string? gameDirectory, string stem) =>
-        Uploaded(stem) ?? Downloaded(stem) ?? Original(gameDirectory, stem);
+    /// <remarks>
+    /// 받아 둔 MP4 가 게임 폴더 AVI 보다 앞이다 — 원본 AVI 는 Indeo 5 라 요즘 윈도에서 안 틀린다.
+    /// 모드에서 새 발견물 동영상을 끄면(<see cref="Settings.GameSettings.NewDiscoveryMovies"/>) 원본 발견물 자리를
+    /// 갈아 끼운 것은 건너뛴다. 원본이 없으면 그래도 갈아 끼운 것을 튼다.
+    /// </remarks>
+    public static string? Resolve(string? gameDirectory, string stem)
+    {
+        if (!Settings.GameSettings.NewDiscoveryMovies && IsOriginalDiscovery(stem)
+            && (Downloaded(stem) ?? Original(gameDirectory, stem)) is { } original)
+            return original;
+        return Uploaded(stem) ?? Downloaded(stem) ?? Original(gameDirectory, stem);
+    }
+
+    /// <summary>원본에 있는 발견물 동영상 줄기(<c>I00_0000</c>~<c>I69_0000</c>)인지.</summary>
+    private static bool IsOriginalDiscovery(string stem) =>
+        stem.Length == 8 && stem[0] == 'I' && stem.EndsWith("_0000", StringComparison.Ordinal)
+        && int.TryParse(stem.AsSpan(1, 2), out int n) && n < OriginalDiscoveryMovies;
 
     /// <summary>릴리즈에서 받아 둔 파일(<see cref="MovieAssetDownloader"/>). 없으면 null.</summary>
     public static string? Downloaded(string stem)

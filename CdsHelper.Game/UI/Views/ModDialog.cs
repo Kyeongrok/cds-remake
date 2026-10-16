@@ -518,6 +518,12 @@ public sealed class ModDialog : GameWindow
             "체크하면 켤 때 로고(LOGO.AVI)와 오프닝(OPEN.AVI) 동영상을 건너뛰고 곧장 메인메뉴로 갑니다."
             + " 체크를 풀면 원본처럼 켤 때마다 둘 다 틉니다."));
 
+        // 새 발견물 동영상 — 원본 자리를 갈아 끼운 동영상(asset/movie)을 틀지. 끄면 원본 동영상이 나온다.
+        general.Children.Add(Toggle("새 발견물 동영상", GameSettings.NewDiscoveryMovies,
+            on => GameSettings.NewDiscoveryMovies = on,
+            "체크하면 발견할 때 새로 만든 동영상을 틉니다. 체크를 풀면 원본의 발견물 동영상이 나옵니다."
+            + " 원본에 없는 발견물의 동영상은 그대로 나옵니다."));
+
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
         character.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
             on => GameSettings.RerollOnJob = on,
