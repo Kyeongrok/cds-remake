@@ -55,7 +55,14 @@ public sealed class ItemDescriptions
 
     /// <summary>그 아이템의 설명문. 없으면 빈 문자열 — 부르는 쪽이 자리를 비워 두면 된다.</summary>
     public string Of(int itemId) =>
-        itemId >= 0 && itemId < _texts.Length ? _texts[itemId] : "";
+        itemId >= 0 && itemId < _texts.Length ? _texts[itemId]
+        : Added.TryGetValue(itemId, out var text) ? text : "";
+
+    /// <summary>덧붙인 아이템(<see cref="ItemTable.Dujeonggap"/> 따위)의 설명문. 원본 표에는 없다.</summary>
+    private static readonly Dictionary<int, string> Added = new()
+    {
+        [ItemTable.Dujeonggap] = "조선의 무관과 군사가 입은 갑옷. 두꺼운 천 안쪽에 쇠미늘을 대고 겉에 놋쇠 못을 촘촘히 박았다. 가볍고 튼튼하다.",
+    };
 
     /// <summary>설명문 전부. 색인이 아이템 id 다.</summary>
     public IReadOnlyList<string> All => _texts;

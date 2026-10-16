@@ -33,12 +33,29 @@ public sealed class ItemTable
     /// <summary>아이템 수.</summary>
     public const int Count = 286;
 
-    /// <summary>그림 번호의 최대값. <c>asset/item/item-206.png</c> 까지 있다.</summary>
+    /// <summary>그림 번호의 최대값. <c>asset/item/item-207.png</c> 까지 있다.</summary>
     /// <remarks>
-    /// 원본 ITEM.CDS 는 0~205 다. <b>206 은 덧붙인 그림</b> — 「사자의 서」 전용(지중해의 유혹어와 나눠 쓰던 053 대신).
-    /// asset/item 에만 있고 ITEM.CDS 에는 없다. 모드 「향상된 아이템 이미지」를 켰을 때만 쓴다(<see cref="EnhancedPics"/>).
+    /// 원본 ITEM.CDS 는 0~205 다. <b>206 · 207 은 덧붙인 그림</b>이고 asset/item 에만 있다.
+    /// 206 은 「사자의 서」 전용(지중해의 유혹어와 나눠 쓰던 053 대신)으로 모드 「향상된 아이템 이미지」를 켰을 때만 쓴다
+    /// (<see cref="EnhancedPics"/>). 207 은 덧붙인 아이템 두정갑(<see cref="Dujeonggap"/>)의 그림이다.
     /// </remarks>
-    public const int MaxPic = 206;
+    public const int MaxPic = 207;
+
+    /// <summary>
+    /// 덧붙인 아이템 두정갑 — 원본 표(286개) 바로 뒤 번호다. 한양 시장(운종가 시전)에서만 판다(<see cref="CityExeTable.Of"/>).
+    /// </summary>
+    public const int Dujeonggap = Count;
+
+    /// <summary>
+    /// 원본 표 뒤에 덧붙인 아이템. 번호는 <see cref="Count"/> 부터 잇는다 — 원본 번호와 안 겹치게.
+    /// </summary>
+    /// <remarks>
+    /// 두정갑은 조선의 갑옷이다. 효과는 적사위통환 갑옷(78)과 같은 60, 값도 그 언저리로 잡았다.
+    /// </remarks>
+    private static readonly Record[] Added =
+    [
+        new(Dujeonggap, "두정갑", 207, 75000, 40000, 60, 4),
+    ];
 
     /// <summary>분류 이름. 표의 <c>+0x14</c> 가 이 차례를 가리킨다.</summary>
     public static readonly string[] CategoryNames =
@@ -86,8 +103,9 @@ public sealed class ItemTable
     private readonly Record[] _items;
 
     // 이름은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    // 덧붙인 아이템은 적어 두지 않고 열 때마다 뒤에 붙인다.
     private ItemTable(Snapshot snapshot) =>
-        _items = [.. snapshot.Items.Select(i => i with { Name = StandardText.Apply(i.Name) })];
+        _items = [.. snapshot.Items.Take(Count).Select(i => i with { Name = StandardText.Apply(i.Name) }), .. Added];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";
