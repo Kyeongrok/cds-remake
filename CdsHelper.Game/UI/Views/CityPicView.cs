@@ -421,30 +421,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             Canvas.SetTop(house, home.Y * scale);
             raised.Children.Add(house);
         }
-        // 원본에 없는데 덧붙인 건물(한양 시장) — 그림 파일을 상자 자리에 그대로 얹는다.
-        foreach (var (row, file) in CityBuildingTable.Added)
-        {
-            if (row.City != cityId) continue;
-            string path = System.IO.Path.Combine(AppContext.BaseDirectory, CityBuildingTable.AddedSpriteDirectory, file);
-            if (!System.IO.File.Exists(path)) continue;
-            var added = new BitmapImage();
-            added.BeginInit();
-            added.UriSource = new Uri(path);
-            added.CacheOption = BitmapCacheOption.OnLoad;
-            added.EndInit();
-            added.Freeze();
-            var house = new Image
-            {
-                Source = added,
-                Width = BuildingSprites.BoxW * scale,
-                Height = BuildingSprites.BoxH * scale,
-                Stretch = Stretch.Fill,
-            };
-            RenderOptions.SetBitmapScalingMode(house, GameUi.SpriteScaling);
-            Canvas.SetLeft(house, row.X * scale);
-            Canvas.SetTop(house, row.Y * scale);
-            raised.Children.Add(house);
-        }
 
         var picBox = new Grid
         {

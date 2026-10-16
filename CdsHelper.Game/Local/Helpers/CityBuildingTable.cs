@@ -162,38 +162,8 @@ public sealed class CityBuildingTable
     public IReadOnlyList<Building> InCity(int cityId)
     {
         IReadOnlyList<Building> rows = _byCity.TryGetValue(cityId, out var list) ? list : [];
-        var added = Added.Where(a => a.Row.City == cityId).Select(a => a.Row).ToList();
-        if (added.Count > 0) rows = [.. rows, .. added];
         return ExtraHome(cityId) is { } home ? [.. rows, home] : rows;
     }
-
-    /// <summary>한양의 도시 번호.</summary>
-    public const int Hanyang = 190;
-
-    /// <summary>
-    /// 원본 표에 없는데 <b>덧붙인 건물</b> — 줄과, 도시 그림 위에 얹을 건물 그림(<c>asset/addedbuilding</c>).
-    /// </summary>
-    /// <remarks>
-    /// 한양에는 원본에 시장이 없다. 두정갑(<see cref="ItemTable.Dujeonggap"/>)을 팔려고 시장을 하나 세운다.
-    /// 그림은 북경 · 제남 시장(중국 문화권 시장은 둘 다 같은 그림)에서 두 도시의 색이 같은 점만 오려 냈다.
-    /// 자리는 여관과 왕궁 사이 시가지다 — 누르는 자리(가운데 절반)가 여관 · 술집 · 도서관과 귀퉁이만 겹치고,
-    /// 겹친 데는 원본 규칙대로 코드가 낮은 쪽이 이긴다.
-    /// </remarks>
-    public static readonly (Building Row, string Sprite)[] Added =
-    [
-        (new Building(Hanyang, 7, "시장", "육의전", 144, 134, 0), "china-market.png"),
-    ];
-
-    /// <summary>그 도시 그 코드의 덧붙인 건물. 없으면 null.</summary>
-    public static Building? AddedRow(int cityId, int code)
-    {
-        foreach (var (row, _) in Added)
-            if (row.City == cityId && row.Code == code) return row;
-        return null;
-    }
-
-    /// <summary>덧붙인 건물 그림이 든 곳.</summary>
-    public const string AddedSpriteDirectory = "asset/addedbuilding";
 
     /// <summary>자택의 갈래 · 이름 글(리스본 · 세비야 줄 그대로).</summary>
     public const string HomeKind = "자택";
