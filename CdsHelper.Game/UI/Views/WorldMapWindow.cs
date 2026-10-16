@@ -2511,11 +2511,11 @@ public sealed class WorldMapWindow : Window
                 // 모드 「시나리오 모드」를 켰고 지어 둔 시나리오가 있으면 셋째 줄이 붙는다 — 원본에 없는 것이다.
                 var scenarios = Scenarios.Enabled ? Scenarios.All : [];
                 const string easy = "초심자용 주인공으로 시작한다(EASY)", normal = "새로운 주인공으로 시작한다(NORMAL)",
-                             scenario = "시나리오로 시작한다", hardcore = "하드코어로 시작한다(HARD)";
+                             scenario = "시나리오로 시작한다(BETA)", hardcore = "하드코어로 시작한다(HARD)";
                 List<string> ways = [easy, normal];
-                if (scenarios.Count > 0) ways.Add(scenario);
-                // 모드 「실험 · 하드코어 모드」를 켰으면 하드코어 줄이 붙는다 — 원본에 없는 것이다.
+                // 모드 「실험 · 하드코어 모드」를 켰으면 셋째에 하드코어 줄이, 그 뒤에 시나리오 줄이 붙는다 — 원본에 없는 것이다.
                 if (GameSettings.HardcoreMode) ways.Add(hardcore);
+                if (scenarios.Count > 0) ways.Add(scenario);
                 int picked = ChoiceDialog.Ask(this, "NEW GAME", [.. ways]);
                 if (picked < 0) return;
                 string way = ways[picked];
@@ -2525,7 +2525,7 @@ public sealed class WorldMapWindow : Window
                 if (hard)
                 {
                     if (!ConfirmDialog.Ask(this,
-                            "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 게임의 세이브가 모두 지워집니다.", "HARDCORE"))
+                            "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 하드코어 주인공의 세이브가 모두 지워집니다.", "HARDCORE"))
                         continue;
                     int kind = ChoiceDialog.Ask(this, "하드코어로 시작할 주인공을 선택해 주십시오", [easy, normal]);
                     if (kind < 0) continue;

@@ -16622,7 +16622,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:477",
   "args": 0
  },
- "원본에 없는 것입니다 — 여기서 켜야 NEW GAME 에서 하드코어 캐릭터로 만들 수 있습니다. 켜 두면 NEW GAME 에 「하드코어로 시작한다(HARD)」가 붙습니다. 하드코어로 시작한 게임은 한 번 게임 오버가 되면 그 게임의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다. 하드코어로 하는 동안 제목 줄이 붉어지고 가운데에 「Hard」가 보입니다.": {
+ "원본에 없는 것입니다 — 여기서 켜야 NEW GAME 에서 하드코어 캐릭터로 만들 수 있습니다. 켜 두면 NEW GAME 에 「하드코어로 시작한다(HARD)」가 붙습니다. 하드코어로 시작한 주인공은 한 번 게임 오버가 되면 그 주인공의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다. 하드코어로 하는 동안 제목 줄이 붉어지고 가운데에 「Hard」가 보입니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:477",
   "args": 0,
   "chain": true
@@ -16631,7 +16631,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:478",
   "args": 0
  },
- " 하드코어로 시작한 게임은 한 번 게임 오버가 되면 그 게임의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다.": {
+ " 하드코어로 시작한 주인공은 한 번 게임 오버가 되면 그 주인공의 세이브와 자동저장이 모두 지워져 다시 할 수 없습니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:479",
   "args": 0
  },
@@ -23379,7 +23379,7 @@
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:2513",
   "args": 0
  },
- "시나리오로 시작한다": {
+ "시나리오로 시작한다(BETA)": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:2514",
   "args": 0
  },
@@ -23387,7 +23387,7 @@
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:2514",
   "args": 0
  },
- "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 게임의 세이브가 모두 지워집니다.": {
+ "하드코어 모드로 시작하겠습니까?\n한 번 게임 오버가 되면 이 하드코어 주인공의 세이브가 모두 지워집니다.": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:2528",
   "args": 0
  },
