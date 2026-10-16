@@ -752,7 +752,8 @@ public sealed class Game
 
         int face = speakers.FaceOf(buildingCode, culture);
         // 여관 주인은 여자다 — 표의 성별 칸이 어느 CDS 에서 꺼낼지 일러 준다.
-        return face < 0 ? null : Faces?.TryGetBgra(face, speakers.IsFemale(buildingCode));
+        // 주인 얼굴로 적어 둔다 — 이 얼굴로 나가는 대사는 말 수준만큼 뭉개진다(Town.KeeperTongue).
+        return face < 0 ? null : Town.KeeperTongue.Mark(Faces?.TryGetBgra(face, speakers.IsFemale(buildingCode)));
     }
 
     /// <summary>

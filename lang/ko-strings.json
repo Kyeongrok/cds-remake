@@ -2730,7 +2730,7 @@
   "args": 0
  },
  "힌트 {0}": {
-  "at": "CdsHelper.Game/Engine/Game.cs:822",
+  "at": "CdsHelper.Game/Engine/Game.cs:823",
   "args": 1
  },
  "발견물 {0}": {
@@ -8556,347 +8556,347 @@
   "args": 0
  },
  "무슨 말을 하는 건가?": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:45",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:50",
+  "args": 0
+ },
+ "[{0}]라고 하는 것 같네요.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:53",
   "args": 0
  },
  "[{0}]라고 하는 것 같은데요.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:49",
-  "args": 1
- },
- "[{0}]라고 하는 것 같네요.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:49",
-  "args": 1
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:53",
+  "args": 0
  },
  "어이, 뱃사람. 바다에는 전설의 백경이 있다는 소문이네.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:54",
-  "args": 0
- },
- "전설의 백경이 아는가? 바다를 다스리는 왕이라는 이야기네.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:55",
-  "args": 0
- },
- "항해를 하다 보면, 가끔 돌고래 무리가 와서 배 옆에서 같이 헤엄치곤 한다네.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:56",
-  "args": 0
- },
- "돌고래 귀엽다네. 배 옆에 와서 인사한다네. 아마도 머리가 좋을거야.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:57",
-  "args": 0
- },
- "날개 달린 물고기라니 믿을 수 있나? 거짓말이겠지...": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:58",
-  "args": 0
- },
- "들어보게나, 하늘을 날고 있는 물고기를 보았다네. 놀랍게도.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:59",
-  "args": 0
- },
- "바다 가운데 빠져있는 여자를 구해 주었다네. 그랬는데 글쎄, 하반신이 물고기였어.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:60",
-  "args": 0
- },
- "드디어 미녀를 발견했다네. 그것도 바다에서. 자네도 만나면 좋으련만.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:61",
-  "args": 0
- },
- "난 보았네. 해골들이 탄 범선을... 그건 유령선일거야.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:62",
   "args": 0
  },
- "유령선 이야기를 믿나? 망령들이 타고 있는 배가 가끔 나타나는 것 같네.": {
+ "전설의 백경이 아는가? 바다를 다스리는 왕이라는 이야기네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:63",
   "args": 0
  },
- "세렌의 노래소리에는 조심하게. 그 소리가 들리면 귀를 막게. 알겠나.": {
+ "항해를 하다 보면, 가끔 돌고래 무리가 와서 배 옆에서 같이 헤엄치곤 한다네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:64",
   "args": 0
  },
- "바다에는 선원들을 홀리는 노래를 부르는 세렌이 있다네. 조심하게나.": {
+ "돌고래 귀엽다네. 배 옆에 와서 인사한다네. 아마도 머리가 좋을거야.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:65",
   "args": 0
  },
- "우리 선원들은 술을 정말 좋아한다네. 작년 크리스마스도 갑판 위에서 굉장했지.": {
+ "날개 달린 물고기라니 믿을 수 있나? 거짓말이겠지...": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:66",
   "args": 0
  },
- "선원들은 보기보단 친절하지. 내 생일을 잊지 않고 기억해 선물도 주었지. 너무 기뻐 눈물이 나오더구만.": {
+ "들어보게나, 하늘을 날고 있는 물고기를 보았다네. 놀랍게도.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:67",
   "args": 0
  },
- "크라켄을 알고 있나? 문어나 오징어같이 많은 발을 가지고 있는 괴물인 것 같네.": {
+ "바다 가운데 빠져있는 여자를 구해 주었다네. 그랬는데 글쎄, 하반신이 물고기였어.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:68",
   "args": 0
  },
- "크라켄을 만난 뱃사람을 만났다네. 미쳐서 [발이...] 라고 신음소릴 내더군. 어지간히 무서웠던 모양이야.": {
+ "드디어 미녀를 발견했다네. 그것도 바다에서. 자네도 만나면 좋으련만.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:69",
   "args": 0
  },
- "맨터라는 가오리 괴물을 본 선원을 만났네. 두번 다시 바다에 나가고 싶지 않다고 떨면서 그러더구만.": {
+ "난 보았네. 해골들이 탄 범선을... 그건 유령선일거야.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:70",
   "args": 0
  },
- "바다에는 맨터라는 배보다 큰 가오리가 있다는군. 그놈은 배를 발견하면 덤벼들어 배를 침몰시킨다네.": {
+ "유령선 이야기를 믿나? 망령들이 타고 있는 배가 가끔 나타나는 것 같네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:71",
   "args": 0
  },
- "시서 펜트를 알고 있나? 배를 통째로 삼킬정도로 큰 바다뱀이 바다 어디엔가 있다는군.": {
+ "세렌의 노래소리에는 조심하게. 그 소리가 들리면 귀를 막게. 알겠나.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:72",
   "args": 0
  },
- "옛날, 바다신이 귀중히 여겼던 바다뱀의 상을 삼킨 천계의 바다용이 바다에 살고 있다는군. 그놈을 쓰러뜨리면 바다짐승의 상을 손에 넣을지도 모르네.": {
+ "바다에는 선원들을 홀리는 노래를 부르는 세렌이 있다네. 조심하게나.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:73",
   "args": 0
  },
- "배를 통째로 삼켜버리는 희한한 상어가 있다는군.": {
+ "우리 선원들은 술을 정말 좋아한다네. 작년 크리스마스도 갑판 위에서 굉장했지.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:74",
   "args": 0
  },
- "옛날, 거대한 상어를 잡은 어부가 있었다는군. 그 어부는 상어 뱃속에서 반짝이는 선두상을 발견했다는군.": {
+ "선원들은 보기보단 친절하지. 내 생일을 잊지 않고 기억해 선물도 주었지. 너무 기뻐 눈물이 나오더구만.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:75",
   "args": 0
  },
- "유빙을 조심하는게 좋을 걸세. 부딪히면 산산 조각이 돼 버리니.": {
+ "크라켄을 알고 있나? 문어나 오징어같이 많은 발을 가지고 있는 괴물인 것 같네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:76",
   "args": 0
  },
- "북극해에서는 유빙을 조심하게. 배로 유빙을 피할 수 있는 키잡이는 좀처럼 없으니까.": {
+ "크라켄을 만난 뱃사람을 만났다네. 미쳐서 [발이...] 라고 신음소릴 내더군. 어지간히 무서웠던 모양이야.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:77",
   "args": 0
  },
- "바다에서 제일 조심해야 할 것은 폭풍이네. 언제 폭풍이 올지 예측할 수 있는 능력도 선원에게는 중요하네.": {
+ "맨터라는 가오리 괴물을 본 선원을 만났네. 두번 다시 바다에 나가고 싶지 않다고 떨면서 그러더구만.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:78",
   "args": 0
  },
- "내 친구는 어부였지만 바다에서 폭풍을 만나 돌아오지 못하는 사람이 되었네. 자네도 조심하는 편이 좋을 걸세.": {
+ "바다에는 맨터라는 배보다 큰 가오리가 있다는군. 그놈은 배를 발견하면 덤벼들어 배를 침몰시킨다네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:79",
   "args": 0
  },
- "핑크색의 아름다운 새가 신대륙 가까이의 섬에 살고 있다는군. 이름이 후라...앙? 뭐라든가.": {
+ "시서 펜트를 알고 있나? 배를 통째로 삼킬정도로 큰 바다뱀이 바다 어디엔가 있다는군.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:80",
+  "args": 0
+ },
+ "옛날, 바다신이 귀중히 여겼던 바다뱀의 상을 삼킨 천계의 바다용이 바다에 살고 있다는군. 그놈을 쓰러뜨리면 바다짐승의 상을 손에 넣을지도 모르네.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:81",
+  "args": 0
+ },
+ "배를 통째로 삼켜버리는 희한한 상어가 있다는군.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:82",
+  "args": 0
+ },
+ "옛날, 거대한 상어를 잡은 어부가 있었다는군. 그 어부는 상어 뱃속에서 반짝이는 선두상을 발견했다는군.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:83",
+  "args": 0
+ },
+ "유빙을 조심하는게 좋을 걸세. 부딪히면 산산 조각이 돼 버리니.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:84",
+  "args": 0
+ },
+ "북극해에서는 유빙을 조심하게. 배로 유빙을 피할 수 있는 키잡이는 좀처럼 없으니까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:85",
   "args": 0
  },
- "소문으로는 신대륙 남부 가까이의 섬에 핑크색의 새의 무리가 살고 있다는군. 설마 그런 새가 있을까?": {
+ "바다에서 제일 조심해야 할 것은 폭풍이네. 언제 폭풍이 올지 예측할 수 있는 능력도 선원에게는 중요하네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:86",
   "args": 0
  },
- "파란 나비의 무리가 신대륙 남부에 살고 있다는군. 설마, 그런 나비가 있을라구? 아마도 술취한 사람이 만든 이야기겠지.": {
+ "내 친구는 어부였지만 바다에서 폭풍을 만나 돌아오지 못하는 사람이 되었네. 자네도 조심하는 편이 좋을 걸세.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:87",
   "args": 0
  },
- "옛날, 죽은 친구가 이야기해 주더구만. 신대륙 남부에는 파란 나비가 살고 있다고. 나도 한번 만이라도 좋으니 보고 싶네.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:88",
-  "args": 0
- },
- "회오리라는 걸 알고 있나? 굉장한 돌풍으로, 그것이 지나간 후는 아무 것도 안 남는다는군. 괴물일까.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:89",
-  "args": 0
- },
- "회오리를 만난 탐험가를 만났다네. 그 동료가 말려들어 죽었다는군.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:90",
-  "args": 0
- },
- "사막에는 오아시스가 있다네. 오아시스만 있다면, 사막을 지나는 건 식은 죽 먹기지.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:91",
-  "args": 0
- },
- "사막에서 오아시스를 발견했다네. 오아시스물을 마시자 마자 그때까지의 피로가 거짓말처럼 회복되었다네.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:92",
-  "args": 0
- },
- "북쪽의 얼음 나라에서는 사우나라고 하는 장소가 있는데, 거기 가면 여행의 피로가 풀린다는군.": {
+ "핑크색의 아름다운 새가 신대륙 가까이의 섬에 살고 있다는군. 이름이 후라...앙? 뭐라든가.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:93",
   "args": 0
  },
- "사우나라는 걸 아는가? 얼음나라에 있다는군. 미용, 건강에는 최고라지? 나도 가볼까!": {
+ "소문으로는 신대륙 남부 가까이의 섬에 핑크색의 새의 무리가 살고 있다는군. 설마 그런 새가 있을까?": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:94",
   "args": 0
  },
- "이전에, 탐험가에게 온천이야기를 들은 적이 있네. 모험중, 우연히 발견한 것 같더군. 온천은 최고라고 그러더군.": {
+ "파란 나비의 무리가 신대륙 남부에 살고 있다는군. 설마, 그런 나비가 있을라구? 아마도 술취한 사람이 만든 이야기겠지.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:95",
   "args": 0
  },
- "뜨거운 물이 솟아나는 온천을 알고 있나? 거기서 물을 끼얹으면 다시 살아나는 기분이라는군.": {
+ "옛날, 죽은 친구가 이야기해 주더구만. 신대륙 남부에는 파란 나비가 살고 있다고. 나도 한번 만이라도 좋으니 보고 싶네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:96",
   "args": 0
  },
- "산악지대를 걸어 갈 때에는 산사태를 조심하게나. 바위에 깔리면 인간정도야 즉사니까.": {
+ "회오리라는 걸 알고 있나? 굉장한 돌풍으로, 그것이 지나간 후는 아무 것도 안 남는다는군. 괴물일까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:97",
   "args": 0
  },
- "산에서는 머리 위를 조심하게나. 언제, 산사태가 일어날지 모르는 일이니까.": {
+ "회오리를 만난 탐험가를 만났다네. 그 동료가 말려들어 죽었다는군.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:98",
   "args": 0
  },
- "산악지대에서는 주의를 게을리하지 말게. 언제 무슨 일이 일어날지 모르니까.": {
+ "사막에는 오아시스가 있다네. 오아시스만 있다면, 사막을 지나는 건 식은 죽 먹기지.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:99",
   "args": 0
  },
- "밀림에서는 발 밑을 조심하게나. 늪에 빠져 저세상 행이라면 체면이 말이 아니지.": {
+ "사막에서 오아시스를 발견했다네. 오아시스물을 마시자 마자 그때까지의 피로가 거짓말처럼 회복되었다네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:100",
   "args": 0
  },
- "숲에서 늪에 빠져 들어가는 동물을 본 적이 있네. 늪은 무서우니 조심하게.": {
+ "북쪽의 얼음 나라에서는 사우나라고 하는 장소가 있는데, 거기 가면 여행의 피로가 풀린다는군.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:101",
   "args": 0
  },
- "사막의 유사, 그거 위험하지. 유사에 떨어지면 두번 다시 올라올 수 없네.": {
+ "사우나라는 걸 아는가? 얼음나라에 있다는군. 미용, 건강에는 최고라지? 나도 가볼까!": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:102",
   "args": 0
  },
- "사막에서는 유사를 조심하게. 한번 빠져들면 두번 다시 나올 수 없네.": {
+ "이전에, 탐험가에게 온천이야기를 들은 적이 있네. 모험중, 우연히 발견한 것 같더군. 온천은 최고라고 그러더군.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:103",
   "args": 0
  },
- "밀림의 곤충은 무섭네. 거의 독을 가지고 있으니. 게다가 사람까지도 죽일 수 있는 독이네.": {
+ "뜨거운 물이 솟아나는 온천을 알고 있나? 거기서 물을 끼얹으면 다시 살아나는 기분이라는군.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:104",
   "args": 0
  },
- "밀림에서는 독사를 조심하게나. 독사에 물려 죽은 탐험가도 많다니.": {
+ "산악지대를 걸어 갈 때에는 산사태를 조심하게나. 바위에 깔리면 인간정도야 즉사니까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:105",
   "args": 0
  },
- "맹수를 만나면 싸우든지 도망치든지 빨리 결단을 내리게나. 어물어물하면 죽는 수가 있으니까.": {
+ "산에서는 머리 위를 조심하게나. 언제, 산사태가 일어날지 모르는 일이니까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:106",
   "args": 0
  },
- "맹수를 만났을 때의 마음가짐이네. 팔 힘에 자신이 있다면 싸우고, 자신의 운에 자신이 있다면 도망치게나. 알겠나?": {
+ "산악지대에서는 주의를 게을리하지 말게. 언제 무슨 일이 일어날지 모르니까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:107",
   "args": 0
  },
- "빛의 장막 이야기를 들은 적이 있나? 북쪽과 남쪽의 끝에서는, 이세상을 덮을 빛의 장막을 볼 수 있다는군.": {
+ "밀림에서는 발 밑을 조심하게나. 늪에 빠져 저세상 행이라면 체면이 말이 아니지.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:108",
   "args": 0
  },
- "세상의 북쪽과 남쪽 끝에서는 반짝이는 빛의 장막을 볼 수 있다는군! 어떤 장막일까.": {
+ "숲에서 늪에 빠져 들어가는 동물을 본 적이 있네. 늪은 무서우니 조심하게.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:109",
   "args": 0
  },
- "유성을 본 적이 있는가? 확실히 8월인가 12월의 밤이였던 것 같네. 꽤 아름다웠어.": {
+ "사막의 유사, 그거 위험하지. 유사에 떨어지면 두번 다시 올라올 수 없네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:110",
   "args": 0
  },
- "여름인가 겨울이었지. 유성을 보았네. 무심결에 소원을 빌었지, 그 소원 이뤄질까?": {
+ "사막에서는 유사를 조심하게. 한번 빠져들면 두번 다시 나올 수 없네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:111",
   "args": 0
  },
- "태양이 없어진다는 이야기, 믿어지나? 엉터리겠지. 태양이 없어진다면 이 세상도 끝이네.": {
+ "밀림의 곤충은 무섭네. 거의 독을 가지고 있으니. 게다가 사람까지도 죽일 수 있는 독이네.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:112",
   "args": 0
  },
- "큰일이다! 태양이 없어지는 일이 있다는군. 그런 일 있을 수가 있는 일인가.": {
+ "밀림에서는 독사를 조심하게나. 독사에 물려 죽은 탐험가도 많다니.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:113",
   "args": 0
  },
- "헤헤, 전에 항해에서 해안에서 식량을 찾고 있었는데 동굴을 발견했지 뭔가, 그 속에 말이지, 글쎄 보물이 가득 들어 있었다네. 비밀이야.": {
+ "맹수를 만나면 싸우든지 도망치든지 빨리 결단을 내리게나. 어물어물하면 죽는 수가 있으니까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:114",
   "args": 0
  },
- "해안에는 원주민의 보물이 숨겨진 동굴이 있다는군. 좀처럼 발견되지 않는 것 같지만 말이야.": {
+ "맹수를 만났을 때의 마음가짐이네. 팔 힘에 자신이 있다면 싸우고, 자신의 운에 자신이 있다면 도망치게나. 알겠나?": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:115",
   "args": 0
  },
- "사막에서 신기루를 본 적 있네. 다시 말해 환상이라는 건데, 거기에 홀리면 큰일나네.": {
+ "빛의 장막 이야기를 들은 적이 있나? 북쪽과 남쪽의 끝에서는, 이세상을 덮을 빛의 장막을 볼 수 있다는군.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:116",
   "args": 0
  },
- "사막에서 마을을 발견했다네. 그런데, 마을에 아무리 가까이 가도 닿을 수가 없었지. 결국 없어져 버렸지만. 그건 뭐였을까.": {
+ "세상의 북쪽과 남쪽 끝에서는 반짝이는 빛의 장막을 볼 수 있다는군! 어떤 장막일까.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:117",
   "args": 0
  },
+ "유성을 본 적이 있는가? 확실히 8월인가 12월의 밤이였던 것 같네. 꽤 아름다웠어.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:118",
+  "args": 0
+ },
+ "여름인가 겨울이었지. 유성을 보았네. 무심결에 소원을 빌었지, 그 소원 이뤄질까?": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:119",
+  "args": 0
+ },
+ "태양이 없어진다는 이야기, 믿어지나? 엉터리겠지. 태양이 없어진다면 이 세상도 끝이네.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:120",
+  "args": 0
+ },
+ "큰일이다! 태양이 없어지는 일이 있다는군. 그런 일 있을 수가 있는 일인가.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:121",
+  "args": 0
+ },
+ "헤헤, 전에 항해에서 해안에서 식량을 찾고 있었는데 동굴을 발견했지 뭔가, 그 속에 말이지, 글쎄 보물이 가득 들어 있었다네. 비밀이야.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:122",
+  "args": 0
+ },
+ "해안에는 원주민의 보물이 숨겨진 동굴이 있다는군. 좀처럼 발견되지 않는 것 같지만 말이야.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:123",
+  "args": 0
+ },
+ "사막에서 신기루를 본 적 있네. 다시 말해 환상이라는 건데, 거기에 홀리면 큰일나네.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:124",
+  "args": 0
+ },
+ "사막에서 마을을 발견했다네. 그런데, 마을에 아무리 가까이 가도 닿을 수가 없었지. 결국 없어져 버렸지만. 그건 뭐였을까.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:125",
+  "args": 0
+ },
  "%s%s 당당한 남자가 좋다는군. 나는 안될까.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:129",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:137",
   "args": 0
  },
  "%s%s 당당하고 멋있는 남자를 좋아 한다는군.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:129",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:137",
   "args": 0
  },
  "%s%s 강인한 남자에게 약하다는군. 남자는 역시 강해야 해.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:130",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:138",
   "args": 0
  },
  "%s%s 말하더군. [남자는 역시 강해야 해.]라고. 그거 내 이야긴가?": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:130",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:138",
   "args": 0
  },
  "%s%s 의지가 강한 남자가 좋다는군. 자신의 삶의 방식에 일관한 사람을 특히.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:131",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:139",
   "args": 0
  },
  "알고 있나?  %s말인데, 잘 참는 남자를 좋아한다는군, 소문이지만.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:131",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:139",
   "args": 0
  },
  "%s%s 용감한 남자를 좋아한다는군. 그러니 우리들도 모험가가 되면 어떨까. 그녀 쳐다봐 줄지도.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:132",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:140",
   "args": 0
  },
  "여잔 역시 용감한 남자에게 반하기 마련인가 보군. %s%s [용감한 남자는 역시 멋있어.]라고 말하더군.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:132",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:140",
   "args": 0
  },
  "친절한 남자는 인기가 있는 것 같군. %s도 친절한 남자가 좋다는군.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:133",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:141",
   "args": 0
  },
  "%s%s 친절한 남자를 좋아하는 것 같군. 역시 남자는 친절해야만 할까?": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:133",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:141",
   "args": 0
  },
  "%s%s, 애들같은 녀석이 좋다는군. 아마도 모성본능을 일으킬 게 뻔해.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:134",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:142",
   "args": 0
  },
  "소년같은 마음을 가지고 있는 녀석이 %s의 이상형이라고 들은적이 있네. 그런 녀석 어디가 좋다는 거지?": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:134",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:142",
   "args": 0
  },
  "나 있지, %s%s 좋아하네. 하지만, 빈틈없는 남자가 %s의 이상형이라니. 나라는 녀석, 덜렁대서.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:135",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:143",
   "args": 0
  },
  "자네 %s%s 어떻게 생각하나?  %s%s 말이지, 사려깊고 꼼꼼하다고 해야하나, 그런 사람을 좋아한다네. 알겠나?": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:135",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:143",
   "args": 0
  },
  "%s%s 견실한 남자에게 약하다는군. 돈이 헤픈 사람 싫어한다는군.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:136",
-  "args": 0
- },
- "자네 돈은 충분히 있나? %s%s 견실한 남자를 좋아한다는군. 세상은 역시 돈이 최고야.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:136",
-  "args": 0
- },
- "나는 당당한 사람이 좋아. 당당한 남자야말로 남자 중의 남자지.": {
   "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:144",
   "args": 0
  },
+ "자네 돈은 충분히 있나? %s%s 견실한 남자를 좋아한다는군. 세상은 역시 돈이 최고야.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:144",
+  "args": 0
+ },
+ "나는 당당한 사람이 좋아. 당당한 남자야말로 남자 중의 남자지.": {
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:152",
+  "args": 0
+ },
  "강한 사람이 좋아.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:145",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:153",
   "args": 0
  },
  "난 의지가 강한 사람이 좋아. 하지만 너무 강해서 완고한 사람은 곤란해요.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:146",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:154",
   "args": 0
  },
  "남잔 역시 용기가 있어야 돼. 용감한 남자는 역시 멋있어. 당신도 용감한 사람이 되도록 해요.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:147",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:155",
   "args": 0
  },
  "친절한 사람이 내 이상이야. 역시, 친절한 남자가 제일이야.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:148",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:156",
   "args": 0
  },
  "애들같은 사람에게 끌려. 그만 보호해 주고 싶어진다니깐.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:149",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:157",
   "args": 0
  },
  "역시 남자는 재치가 있어야 돼. 미적지근한 남자는 싫어.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:150",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:158",
   "args": 0
  },
  "돈은 잘 사용하고 있어요? 돈이 헤픈 사람 질색이야.": {
-  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:151",
+  "at": "CdsHelper.Game/Engine/Town/StrangerTalk.cs:159",
   "args": 0
  },
  "{0}갈래": {
@@ -12692,321 +12692,321 @@
   "args": 0
  },
  "안으로 들어간다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:628",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:629",
   "args": 0
  },
  "도시로 돌아간다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:628",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:629",
   "args": 0
  },
  "여": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:685",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:686",
   "args": 0
  },
  "황금도시 멕시코에 잘 오셨습니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:732",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:733",
   "args": 0
  },
  "이곳은 멕시코란 도시에요.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:732",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:733",
   "args": 0
  },
  "이 도시에는 황금이 많이 있어요.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:733",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:734",
   "args": 0
  },
  "이 도시는 멕시코라는 이름이에요.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:733",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:734",
   "args": 0
  },
  "이곳은 {0}입니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:738",
-  "args": 1
- },
- "이곳은 {0}의 도시입니다.": {
   "at": "CdsHelper.Game/UI/Views/CityPicView.cs:739",
   "args": 1
  },
+ "이곳은 {0}의 도시입니다.": {
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:740",
+  "args": 1
+ },
  "[{0}]라고 말하고 있는 것 같습니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:754",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:755",
   "args": 1
  },
  "마을에 들어간다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:903",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:938",
   "args": 0
  },
  "출항할 때에는 말해 주십시오. 곧 준비하겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:967",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1002",
   "args": 0
  },
  "출발할 때는 말해 주십시오. 곧 준비하겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:968",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1003",
   "args": 0
  },
  "제독, 역시 모항이 좋군요.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:983",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1018",
   "args": 0
  },
  "모항에 돌아오면 안심되는군요.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:983",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1018",
   "args": 0
  },
  "제독, 이 마을에서 잠깐 쉽시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:984",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1019",
   "args": 0
  },
  "여보, 미안해요. 내가 없는 동안 도둑이 들었어요!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1128",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1163",
   "args": 0
  },
  "도둑이 들었습니다. 스폰서의 보복이겠지요.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1130",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1165",
   "args": 0
  },
  "어이... 저 자, 벽보의...": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1140",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1175",
   "args": 0
  },
  "확실히...": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1141",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1176",
   "args": 0
  },
  "왠지 분위기가 않좋군요, 도망칩시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1142",
-  "args": 0
- },
- "후우~, 더 이상 쫓아오지 않는군요. 제독, 여긴 너무 위험합니다. 빨리 마을을 떠납시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1149",
-  "args": 0
- },
- "좋아, 상금 걸린 자를 붙잡았다!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1169",
-  "args": 0
- },
- "정신이 드십니까? 용서를 빌면 눈감아 드리려 했건만 안된 일이라고 생각합니다.": {
   "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1177",
   "args": 0
  },
+ "후우~, 더 이상 쫓아오지 않는군요. 제독, 여긴 너무 위험합니다. 빨리 마을을 떠납시다.": {
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1184",
+  "args": 0
+ },
+ "좋아, 상금 걸린 자를 붙잡았다!": {
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1204",
+  "args": 0
+ },
+ "정신이 드십니까? 용서를 빌면 눈감아 드리려 했건만 안된 일이라고 생각합니다.": {
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1212",
+  "args": 0
+ },
  "겨우 정신이 들었나? 어이없군, 한마디 용서를 빌었다면 끝났을 일을..., 정말 성가시게도 했군.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1178",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1213",
   "args": 0
  },
  "정신이 드나? 바보같은 녀석, 얌전히 용서를 빌었더라면 도와 주었을 것을..., 쓸데없는 수고를 하게 하다니!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1179",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1214",
   "args": 0
  },
  "{0}{1} 발견했다!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1351",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1386",
   "args": 2
  },
  "너 같은 녀석이 들어올 장소가 아니다! 꺼지지 못할까!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1497",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1532",
   "args": 0
  },
  "명성치가 모자랍니다!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1502",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1537",
   "args": 0
  },
  "명성치가 모자랍니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1502",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1537",
   "args": 0
  },
  "제독, 조합에 무슨 일이십니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1686",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1721",
   "args": 0
  },
  "훌륭한 선원이 되고 싶다면 여기서 수행하고 가게.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1688",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:1723",
   "args": 0
  },
  "선불이네. 우리 집은 한 달에 금화 {0}닢인데, 머물고 갈텐가?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2069",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2104",
   "args": 1
  },
  "소지금이 모자랍니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2075",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2110",
   "args": 0
  },
  "금화 {0}닢을 손에 넣었다!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2134",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2169",
   "args": 1
  },
  "{0}{1} 조금 습득했다!": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2150",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2185",
   "args": 2
  },
  "나리, 돈벌이 이야기가 있는데, 금화 1닢으로 어떠신가?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2171",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2206",
   "args": 0
  },
  "듣고 싶지 않다면 그만두게나.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2173",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2208",
   "args": 0
  },
  "응? 빈털터리인가?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2178",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2213",
   "args": 0
  },
  "지금, 이 마을에서는 {0}{1} 비싸게 팔리네.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2181",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2216",
   "args": 2
  },
  "지금은 아무 흥미있는 이야기거리가 없네.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2189",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2224",
   "args": 0
  },
  "으-음, 그렇군. 우리집에서 취급하고 있는 것 중에는, {0}{1} ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2195",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2230",
   "args": 2
  },
  "권하고 싶네.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2196",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2231",
   "args": 0
  },
  "권하고 싶네마는.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2196",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2231",
   "args": 0
  },
  "{0}{1} {2}의 ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2205",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2240",
   "args": 3
  },
  "본산지라네. 다른 것에 비할 수 없네.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2205",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2240",
   "args": 0
  },
  "본산지네. 빨리 사 놓고 또 오게나.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2205",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2240",
   "args": 0
  },
  "{0}에 와서 {1}{2} ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2206",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2241",
   "args": 3
  },
  "사지 않으면 손해보네.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2206",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2241",
   "args": 0
  },
  "사야지! 지금은 품절이지만.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2206",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2241",
   "args": 0
  },
  "우리집에서 취급하고 있는 {0}{1} 다른 것에 뒤지지 않네. {2}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2208",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2243",
   "args": 3
  },
  "{0} 최고지.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2209",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2244",
   "args": 1
  },
  "{0} 원한다면 다음에 들여올 때까지 기다리게.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2209",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2244",
   "args": 1
  },
  "계약을 맺지 않았습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2234",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2269",
   "args": 0
  },
  "현재 함대": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2306",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2341",
   "args": 0
  },
  "현재 힌트": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2309",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2344",
   "args": 0
  },
  "발견물 {0} / {1}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2315",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2350",
   "args": 2
  },
  "항구에 편성돼 있지 않은 선박이 있습니다! 탐험대를 모집할 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2632",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2667",
   "args": 0
  },
  "제독, ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2634",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2669",
   "args": 0
  },
  "제독, {0}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2634",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2669",
   "args": 1,
   "chain": true
  },
  "제독, 저희들만으로 탐험을 하는 것은 무모한 짓입니다! ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2645",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2680",
   "args": 0
  },
  "제독, 저희들만으로 탐험을 하는 것은 무모한 짓입니다! 항구에서 사람을 모집한 후로 합시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2645",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2680",
   "args": 0,
   "chain": true
  },
  "항구에서 사람을 모집한 후로 합시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2646",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2681",
   "args": 0
  },
  "성밖은 위험하다. 통행을 금지한다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2650",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2685",
   "args": 0
  },
  "탐험을 떠납니까? 준비하는데 {0}일 걸립니다. 좋습니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2771",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2806",
   "args": 1
  },
  "탐험하러 출발하십니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2772",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2807",
   "args": 0
  },
  "{0}산": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2799",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2834",
   "args": 1
  },
  "제독, 배가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2818",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2853",
   "args": 0
  },
  "배가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2820",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2855",
   "args": 0
  },
  "투자할 돈이 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2840",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2875",
   "args": 0
  },
  "투자한다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2846",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2881",
   "args": 0
  },
  "금  액": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2846",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2881",
   "args": 0
  },
  "닢": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2846",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2881",
   "args": 0
  },
  "투자액": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2849",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2884",
   "args": 0
  },
  "공  적": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2850",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2885",
   "args": 0
  },
  "금화 {0}닢을 {1} 교역소에 투자했습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2857",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2892",
   "args": 2
  },
  "{0}공적이 {1} 올랐습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2858",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2893",
   "args": 2
  },
  "도시그림창 닫힘": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2946",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2981",
   "args": 0
  },
  "도시그림창 초점 잃음": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2947",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2982",
   "args": 0
  },
  "발견 {0}. {1}": {
@@ -21364,744 +21364,744 @@
   "args": 0
  },
  "도전을 받는다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:200",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:201",
   "args": 0
  },
  "무시한다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:200",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:201",
   "args": 0
  },
  "거기 자네! 마음에 안 드는군, 나랑 결투하자.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:244",
-  "args": 0
- },
- "어이, 거기 겁장이! 바다의 사나이라면 검을 뽑아라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:245",
   "args": 0
  },
- "어이, 나보다 강한 놈을 찾고 있다네. 우선 나와 결투해 주겠나?": {
+ "어이, 거기 겁장이! 바다의 사나이라면 검을 뽑아라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:246",
   "args": 0
  },
- "제독, 상대하지 않는 편이 좋습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:251",
+ "어이, 나보다 강한 놈을 찾고 있다네. 우선 나와 결투해 주겠나?": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:247",
   "args": 0
  },
- "그런 말을 듣고 가만히 있을 수 없다. 제독! 해치웁시다.": {
+ "제독, 상대하지 않는 편이 좋습니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:252",
   "args": 0
  },
- "[나보다 강한자] ? 자네 머리 이상한 것 아닌가?": {
+ "그런 말을 듣고 가만히 있을 수 없다. 제독! 해치웁시다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:253",
   "args": 0
  },
- "어쩔 수 없군요. 일단 손 좀 볼까요.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:258",
+ "[나보다 강한자] ? 자네 머리 이상한 것 아닌가?": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:254",
   "args": 0
  },
- "제독! 부탁합니다.": {
+ "어쩔 수 없군요. 일단 손 좀 볼까요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:259",
   "args": 0
  },
- "제독! 가볍게 손 봐 드리지요?": {
+ "제독! 부탁합니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:260",
   "args": 0
  },
- "멍청이, 지옥에서나 후회해라.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:265",
+ "제독! 가볍게 손 봐 드리지요?": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:261",
   "args": 0
  },
- "그럼 그래야지! 그래야 바다의 사나이다.": {
+ "멍청이, 지옥에서나 후회해라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:266",
   "args": 0
  },
- "죽더라도 원망하지 말게.": {
+ "그럼 그래야지! 그래야 바다의 사나이다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:267",
   "args": 0
  },
- "흠, 꼬리를 감추고 도망치긴가!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:272",
+ "죽더라도 원망하지 말게.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:268",
   "args": 0
  },
- "겁장이! 너는 바다의 사나이가 아니다!": {
+ "흠, 꼬리를 감추고 도망치긴가!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:273",
   "args": 0
  },
- "싫다면 어쩔 수 없군.": {
+ "겁장이! 너는 바다의 사나이가 아니다!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:274",
   "args": 0
  },
+ "싫다면 어쩔 수 없군.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:275",
+  "args": 0
+ },
  "{0}{1} 금화 {2}닢이네.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:327",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:328",
   "args": 3
  },
  "돈 먼저 지불하게.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:333",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:334",
   "args": 0
  },
  "기분이 좋아졌다.........": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:355",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:356",
   "args": 0
  },
  "제독! 이봐요, 제독! 괜찮습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:392",
-  "args": 0
- },
- "부관의 목소리에 정신이 들었다": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:393",
   "args": 0
  },
- "여보, 여보, 괜찮아요?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:411",
+ "부관의 목소리에 정신이 들었다": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:394",
   "args": 0
  },
- "부인 목소리에 정신이 들었다": {
+ "여보, 여보, 괜찮아요?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:412",
   "args": 0
  },
- "제독! 이봐요. 제독! 괜찮습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:458",
+ "부인 목소리에 정신이 들었다": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:413",
   "args": 0
  },
- "부관 목소리에 정신이 들었다...": {
+ "제독! 이봐요. 제독! 괜찮습니까?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:459",
   "args": 0
  },
- "손님, 손님! 일어나세요. 벌써 아침이에요.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:463",
+ "부관 목소리에 정신이 들었다...": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:460",
   "args": 0
  },
- "가게 주인이 깨웠다...": {
+ "손님, 손님! 일어나세요. 벌써 아침이에요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:464",
   "args": 0
  },
+ "가게 주인이 깨웠다...": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:465",
+  "args": 0
+ },
  "돈을 도둑 맞았다!!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:466",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:467",
   "args": 0
  },
  "술집의 술주정꾼": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:546",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:547",
   "args": 0
  },
  "얕보는 거냐, 이봐! 검을 빼라.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:554",
-  "args": 0
- },
- "무례한 놈, 지옥에 가서나 후회하거라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:555",
   "args": 0
  },
+ "무례한 놈, 지옥에 가서나 후회하거라.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:556",
+  "args": 0
+ },
  "기분이 나쁘다......눈이 도는군~ ~우웩~": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:561",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:562",
   "args": 0
  },
  "제독, 괜찮습니까! 얼굴이 새파랗습니다. 제독, 제독!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:566",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:567",
   "args": 0
  },
  "손님, 괜찮습니까! 얼굴이 새파랍니다, 손님, 손님!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:572",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:573",
   "args": 0
  },
  "제독! 이봐요 제독! 괜찮습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:582",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:583",
   "args": 0
  },
  "부관 목소리에 정신이 들었다......어쩐지 여관같군.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:585",
-  "args": 0
- },
- "정신이 드는군.....아무래도 여관같군. 어떻게 여기까지 왔는지 전혀 생각이 나지 않는다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:586",
   "args": 0
  },
- "부관 목소리에 정신이 들었다.....": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:597",
+ "정신이 드는군.....아무래도 여관같군. 어떻게 여기까지 왔는지 전혀 생각이 나지 않는다.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:587",
   "args": 0
  },
- "기억에 없는 돈을 쥐고 있었군!": {
+ "부관 목소리에 정신이 들었다.....": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:598",
   "args": 0
  },
- "제독! 어떻게 된 것입니까? 그 돈...": {
+ "기억에 없는 돈을 쥐고 있었군!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:599",
   "args": 0
  },
- "손님, 손님! 일어나세요. 벌써 아침이에요!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:603",
+ "제독! 어떻게 된 것입니까? 그 돈...": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:600",
   "args": 0
  },
- "가게 주인이 깨웠다.": {
+ "손님, 손님! 일어나세요. 벌써 아침이에요!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:604",
   "args": 0
  },
+ "가게 주인이 깨웠다.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:605",
+  "args": 0
+ },
  "여~어, 주인! 여기에 있는 자들에게 한잔씩 돌리게.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:620",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:621",
   "args": 0
  },
  "역시 제독! 그럼 사양하지 않겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:623",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:624",
   "args": 0
  },
  "여어, 자네 마음에 들었어! 주인! 술 더 가지고 오게!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:625",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:626",
   "args": 0
  },
  "어이, 거기 너! 마음에 안드는군. 나와 결투하자.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:643",
-  "args": 0
- },
- "거기 겁장이! 남자라면 검을 뽑아라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:644",
   "args": 0
  },
- "제, 제독, 갑자기 무슨 말씀을 하시는 겁니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:649",
+ "거기 겁장이! 남자라면 검을 뽑아라.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:645",
   "args": 0
  },
- "잠깐, 잠깐만 제독! 농담이 지나치십니다.": {
+ "제, 제독, 갑자기 무슨 말씀을 하시는 겁니까?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:650",
   "args": 0
  },
- "기분 좋군!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:658",
+ "잠깐, 잠깐만 제독! 농담이 지나치십니다.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:651",
   "args": 0
  },
- "꽤 맛있는 술이다!": {
+ "기분 좋군!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:659",
   "args": 0
  },
- "맛있다! 살 것 같다.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:661",
+ "꽤 맛있는 술이다!": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:660",
   "args": 0
  },
- "몸이 따뜻해졌다!": {
+ "맛있다! 살 것 같다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:662",
   "args": 0
  },
- "아름다운 여성이 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:840",
+ "몸이 따뜻해졌다!": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:663",
   "args": 0
  },
- "한잔 산다": {
+ "아름다운 여성이 있다": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:841",
   "args": 0
  },
+ "한잔 산다": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:842",
+  "args": 0
+ },
  "[{0}]{1} 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:848",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:849",
   "args": 2
  },
  "말을 건다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:849",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:850",
   "args": 0
  },
  "이야기한다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:905",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:906",
   "args": 0
  },
  "설득한다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:905",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:906",
   "args": 0
  },
  "선물을 보낸다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:905",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:906",
   "args": 0
  },
  "프로포즈 한다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:905",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:906",
   "args": 0
  },
  "무엇을 보내시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:996",
-  "args": 0
- },
- "선물 선택": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:997",
   "args": 0
  },
- "편안히 있으세요.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1029",
+ "선물 선택": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:998",
   "args": 0
  },
- "취해서 괴롭히는 손님들이 있어요, 정말 싫어!": {
+ "편안히 있으세요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1030",
   "args": 0
  },
- "옛, 애인? 비-밀.": {
+ "취해서 괴롭히는 손님들이 있어요, 정말 싫어!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1031",
   "args": 0
  },
- "전에 취한 사람이 안으려고 해서 한바탕 혼쭐을 내 줬어.": {
+ "옛, 애인? 비-밀.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1032",
   "args": 0
  },
- "어디 멋있는 사람 없나~.": {
+ "전에 취한 사람이 안으려고 해서 한바탕 혼쭐을 내 줬어.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1033",
   "args": 0
  },
- "안주라도 어떠세요.": {
+ "어디 멋있는 사람 없나~.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1034",
   "args": 0
  },
- "모험이 그렇게 재미있어요? 그럼 이야기 들려줘요.": {
+ "안주라도 어떠세요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1035",
   "args": 0
  },
- "배는 가지고 있어요? 배가 없다면 멋이 없죠.": {
+ "모험이 그렇게 재미있어요? 그럼 이야기 들려줘요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1036",
   "args": 0
  },
- "당신 좋아하는 사람있죠? 얼굴에 씌어 있어요.": {
+ "배는 가지고 있어요? 배가 없다면 멋이 없죠.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1037",
   "args": 0
  },
- "응, 쉬는 날이 언제냐구? 으음, 언제냐면.": {
+ "당신 좋아하는 사람있죠? 얼굴에 씌어 있어요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1038",
   "args": 0
  },
- "응, 함께 마시자구요? 좋아요.": {
+ "응, 쉬는 날이 언제냐구? 으음, 언제냐면.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1039",
   "args": 0
  },
- "이 가게 술은 맛있어요. 많이 드세요.": {
+ "응, 함께 마시자구요? 좋아요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1040",
   "args": 0
  },
- "바다의 사나이란, 전부 「여자보다 바다다!」 라고 말해요. 실례되는 말이야.": {
+ "이 가게 술은 맛있어요. 많이 드세요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1041",
   "args": 0
  },
- "내가 예쁘다구요? 그런말 한다해도 아무것도 안나와요.": {
+ "바다의 사나이란, 전부 「여자보다 바다다!」 라고 말해요. 실례되는 말이야.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1042",
   "args": 0
  },
- "내가 예쁘다구요? 그런 뻔한 말해도 소용없어요.": {
+ "내가 예쁘다구요? 그런말 한다해도 아무것도 안나와요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1043",
   "args": 0
  },
- "이 마을의 하늘은 별이 총총한게 매우 아름다워요!": {
+ "내가 예쁘다구요? 그런 뻔한 말해도 소용없어요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1044",
   "args": 0
  },
- "당신 술 잘해요? 잘하지 못하면 바다의 사나이 실격이에요!": {
+ "이 마을의 하늘은 별이 총총한게 매우 아름다워요!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1045",
   "args": 0
  },
- "나도 배 타보고 싶어.": {
+ "당신 술 잘해요? 잘하지 못하면 바다의 사나이 실격이에요!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1046",
   "args": 0
  },
- "역시 좋아하는 사람의 배에 타고 싶어.": {
+ "나도 배 타보고 싶어.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1047",
   "args": 0
  },
- "당신 도서관에 다니고 있다면서요? 학자예요?": {
+ "역시 좋아하는 사람의 배에 타고 싶어.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1048",
   "args": 0
  },
- "모험하는데 돈 들지요? 당신 부자예요?": {
+ "당신 도서관에 다니고 있다면서요? 학자예요?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1049",
   "args": 0
  },
- "취해서 싸우는 사람 제일 싫어!": {
+ "모험하는데 돈 들지요? 당신 부자예요?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1050",
   "args": 0
  },
- "나도 남자라면 모험을 할텐데.": {
+ "취해서 싸우는 사람 제일 싫어!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1051",
   "args": 0
  },
- "매일 같은 일 반복이야···나도 다른 마을에 가고 싶어~.": {
+ "나도 남자라면 모험을 할텐데.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1052",
   "args": 0
  },
- "여기는 선원들이 모이는 장소예요. 당신 어떤 배 타고 있어요?": {
+ "매일 같은 일 반복이야···나도 다른 마을에 가고 싶어~.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1053",
   "args": 0
  },
- "결혼? 그런 것 생각해 본 일도 없어요.": {
+ "여기는 선원들이 모이는 장소예요. 당신 어떤 배 타고 있어요?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1054",
   "args": 0
  },
- "어떤 여자를 좋아해요? 가르쳐 줘요.": {
+ "결혼? 그런 것 생각해 본 일도 없어요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1055",
   "args": 0
  },
- "절 취하게 만들 작정이예요? 저 술 잘해요.": {
+ "어떤 여자를 좋아해요? 가르쳐 줘요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1056",
   "args": 0
  },
+ "절 취하게 만들 작정이예요? 저 술 잘해요.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1057",
+  "args": 0
+ },
  "유혹어 {0}": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1145",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1146",
   "args": 1
  },
  "유혹어": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1146",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1147",
   "args": 0
  },
  "머무는 손님이 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1276",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1277",
   "args": 0
  },
  "술을 마시고 있는 남자가 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1278",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1279",
   "args": 0
  },
  "술을 마시고 있는 {0}{1} 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1405",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1406",
   "args": 2
  },
  "낯선 {0}{1} 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1412",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1413",
   "args": 2
  },
  "무슨 용건인가?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1430",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1431",
   "args": 0
  },
  "무슨 말을 하는 건지, 전혀 모르겠군.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1430",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1431",
   "args": 0
  },
  "일기토를 신청한다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1437",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1438",
   "args": 0
  },
  "부하로 고용한다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1465",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1466",
   "args": 0
  },
  "제독! 진심이십니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1541",
-  "args": 0
- },
- "일기토를 신청합니다. 좋습니까?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1542",
   "args": 0
  },
+ "일기토를 신청합니다. 좋습니까?": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1543",
+  "args": 0
+ },
  "앗, 도망쳤다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1558",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1559",
   "args": 0
  },
  "{0}{1} 도망쳤다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1559",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1560",
   "args": 2
  },
  "도망쳐 버렸군요....": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1575",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1576",
   "args": 0
  },
  "도망쳤다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1577",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1578",
   "args": 0
  },
  "안되겠다. 이길 수가 없군! 틈을 봐서 도망쳐야겠다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1648",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1649",
   "args": 0
  },
  "　부관을 싸우게 하겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1692",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1693",
   "args": 0
  },
  "옛, 저 말입니까? 제독이 더 강하지 않습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1715",
-  "args": 0
- },
- "그다지 자신은 없지만, 해 보겠습니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1716",
   "args": 0
  },
- "제가 일기토를? 제독보다 약한 제가 말입니까?": {
+ "그다지 자신은 없지만, 해 보겠습니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1717",
   "args": 0
  },
- "저보고 싸우라고요? 제독이 나가는 편이 이길 확률이 높을 텐데요.": {
+ "제가 일기토를? 제독보다 약한 제가 말입니까?": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1718",
   "args": 0
  },
- "일기토 말입니까... 제독이 나가는 편이 나을 거라 생각합니다만...": {
+ "저보고 싸우라고요? 제독이 나가는 편이 이길 확률이 높을 텐데요.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1719",
   "args": 0
  },
- "저에게 맡겨 주십시오! 기필코 이기겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1725",
+ "일기토 말입니까... 제독이 나가는 편이 나을 거라 생각합니다만...": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1720",
   "args": 0
  },
- "저를 지명하리라고는, 역시 제독이십니다.": {
+ "저에게 맡겨 주십시오! 기필코 이기겠습니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1726",
   "args": 0
  },
- "봐 주십시오. 저런 녀석은 한번에 쓰러뜨리겠습니다.": {
+ "저를 지명하리라고는, 역시 제독이십니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1727",
   "args": 0
  },
- "제가 활약할 때가 온 것 같군요, 맡겨 주십시오.": {
+ "봐 주십시오. 저런 녀석은 한번에 쓰러뜨리겠습니다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1728",
   "args": 0
  },
- "저런 녀석, 혼 줄을 내버리겠습니다.": {
+ "제가 활약할 때가 온 것 같군요, 맡겨 주십시오.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1729",
   "args": 0
  },
- "제길, 기억해 두어라.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1744",
+ "저런 녀석, 혼 줄을 내버리겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1730",
   "args": 0
  },
- "오늘은 여기까지 해 두지. 그럼.": {
+ "제길, 기억해 두어라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1745",
   "args": 0
  },
- "다음 번엔 어림도 없다, 각오해라.": {
+ "오늘은 여기까지 해 두지. 그럼.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1746",
   "args": 0
  },
- "이 굴욕은 잊지 않겠다.": {
+ "다음 번엔 어림도 없다, 각오해라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1747",
   "args": 0
  },
- "나를 죽이지 않은 것을 언젠가 후회하게 해 주마.": {
+ "이 굴욕은 잊지 않겠다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1748",
   "args": 0
  },
- "적의 제독도 한꺼번에 없애버려라!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1757",
+ "나를 죽이지 않은 것을 언젠가 후회하게 해 주마.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1749",
   "args": 0
  },
- "녀석들! 적의 제독도 쓰러뜨려라!": {
+ "적의 제독도 한꺼번에 없애버려라!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1758",
   "args": 0
  },
- "하는 김에 적의 제독도 쓰러뜨려라!": {
+ "녀석들! 적의 제독도 쓰러뜨려라!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1759",
   "args": 0
  },
- "죽어라!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1765",
+ "하는 김에 적의 제독도 쓰러뜨려라!": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1760",
   "args": 0
  },
- "상대를 잘못 만난 것 같군...": {
+ "죽어라!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1766",
   "args": 0
  },
- "미안하지만, 죽어줘야겠네.": {
+ "상대를 잘못 만난 것 같군...": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1767",
   "args": 0
  },
- "네 여행도 여기까지다.": {
+ "미안하지만, 죽어줘야겠네.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1768",
   "args": 0
  },
- "저 세상에서나 후회하거라.": {
+ "네 여행도 여기까지다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1769",
   "args": 0
  },
- "쳇, 도망치는 건 빠른 것 같군.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1777",
+ "저 세상에서나 후회하거라.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1770",
   "args": 0
  },
- "도망치긴가, 한심한 녀석이군.": {
+ "쳇, 도망치는 건 빠른 것 같군.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1778",
   "args": 0
  },
- "이봐, 기다려라!": {
+ "도망치긴가, 한심한 녀석이군.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1779",
   "args": 0
  },
- "너, 그래도 남자라고 할 수 있느냐.": {
+ "이봐, 기다려라!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1780",
   "args": 0
  },
- "꽁무니를 빼다니.": {
+ "너, 그래도 남자라고 할 수 있느냐.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1781",
   "args": 0
  },
- "칫, 병아린가. 용서해 주지.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1786",
+ "꽁무니를 빼다니.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1782",
   "args": 0
  },
- "너 같은 녀석 죽여도 자랑할게 못된다.": {
+ "칫, 병아린가. 용서해 주지.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1787",
   "args": 0
  },
- "여자와 아이, 약한 자들은 죽이지 않는 주의라서...": {
+ "너 같은 녀석 죽여도 자랑할게 못된다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1788",
   "args": 0
  },
- "너 같은 녀석 죽일 가치도 없다. 빨리 사라져라.": {
+ "여자와 아이, 약한 자들은 죽이지 않는 주의라서...": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1789",
   "args": 0
  },
- "이번만은 용서해 주지. 좀더 힘을 길러라.": {
+ "너 같은 녀석 죽일 가치도 없다. 빨리 사라져라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1790",
   "args": 0
  },
- "윽, 제법이군. 자, 다시 만나세.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1828",
+ "이번만은 용서해 주지. 좀더 힘을 길러라.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1791",
   "args": 0
  },
- "상처가 깊은 것 같군. 이러면 계획이 늦어져 버릴텐데. 앞으로 조금인데.": {
+ "윽, 제법이군. 자, 다시 만나세.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1829",
   "args": 0
  },
- "모처럼 단서를 잡았는데, 이런 일이... 운이 나쁘군.": {
+ "상처가 깊은 것 같군. 이러면 계획이 늦어져 버릴텐데. 앞으로 조금인데.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1830",
   "args": 0
  },
- "너의 이름은... 그래, 그 이름 기억해 두지. 그럼.": {
+ "모처럼 단서를 잡았는데, 이런 일이... 운이 나쁘군.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1831",
   "args": 0
  },
- "생각보단 꽤 하는군. 하지만 이런 곳에서 죽을 수 있나. 내게는 큰 꿈이 있다.": {
+ "너의 이름은... 그래, 그 이름 기억해 두지. 그럼.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1832",
   "args": 0
  },
+ "생각보단 꽤 하는군. 하지만 이런 곳에서 죽을 수 있나. 내게는 큰 꿈이 있다.": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1833",
+  "args": 0
+ },
  "놓아 준다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1851",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1852",
   "args": 0
  },
  "모두 뺏는다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1851",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1852",
   "args": 0
  },
  "{0}, 부관의 무력이 {1} 상승했다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1900",
-  "args": 2
- },
- "{0}의 무력이 {1} 상승했다!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1901",
   "args": 2
  },
- "부관의 무력이 {0} 상승했다!": {
+ "{0}의 무력이 {1} 상승했다!": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1902",
+  "args": 2
+ },
+ "부관의 무력이 {0} 상승했다!": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1903",
   "args": 1
  },
  "성장": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1903",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1904",
   "args": 0
  },
  "죽어야 하나...? 내가...": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1924",
-  "args": 0
- },
- "이자, 너무 강하다...": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1925",
   "args": 0
  },
- "자. 잠깐 기다려라, 아직 각오가... 으윽.": {
+ "이자, 너무 강하다...": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1926",
   "args": 0
  },
- "너에게 진 것이라면 후회는 없다. 자, 죽여라.": {
+ "자. 잠깐 기다려라, 아직 각오가... 으윽.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1927",
   "args": 0
  },
- "내 인생도 끝인가... 분하다!": {
+ "너에게 진 것이라면 후회는 없다. 자, 죽여라.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1928",
   "args": 0
  },
- "이런 야비한 녀석.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1934",
+ "내 인생도 끝인가... 분하다!": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1929",
   "args": 0
  },
- "무일푼이냐...": {
+ "이런 야비한 녀석.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1935",
   "args": 0
  },
- "기다려라, 이것은 중요한 물건이다.": {
+ "무일푼이냐...": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1936",
   "args": 0
  },
- "기억해 두어라, 비겁한 녀석!": {
+ "기다려라, 이것은 중요한 물건이다.": {
   "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1937",
   "args": 0
  },
+ "기억해 두어라, 비겁한 녀석!": {
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1938",
+  "args": 0
+ },
  "상대는 {0}{1} {2}{3} 장비하고 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1960",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1961",
   "args": 4
  },
  "상대는 {0}{1} 장비하고 있다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1961",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:1962",
   "args": 2
  },
  "수수경단": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2041",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2042",
   "args": 0
  },
  "부하는 동시에 4명밖에 고용할 수 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2065",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2066",
   "args": 0
  },
  "지금 고용할 수 있는 것은 완전히 언어가 통하는 사람 뿐입니다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2070",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2071",
   "args": 0
  },
  "선금으로 금화 {0}닢이라면, 그 이야기 들어줄 수도 있지. 어떤가?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2087",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2088",
   "args": 1
  },
  "계약금이 너무 비쌉니다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2090",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2091",
   "args": 0
  },
  "{0}{1} 주시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2097",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2098",
   "args": 2
  },
  "이런것에 마음이 변하리라 생각했나? ~우물우물~! 어디까지나 제독을 따라가겠습니다! 맡겨 주십시오.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2100",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2101",
   "args": 0
  },
  "시시한 배를 탈 정도로 바보는 아니네.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2110",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2111",
   "args": 0
  },
  "{0}의 일을 정해 주십시오": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2140",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2141",
   "args": 1
  },
  "현재의 {0}{1} {2}입니다. {3}에 변경하시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2163",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2164",
   "args": 4
  },
  "{0}? 으~ ~음.....! 그러고 보니 들은 적이 있는 것 같군! ": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2355",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2338",
   "args": 1
  },
  "{0}? 으~ ~음.....! 그러고 보니 들은 적이 있는 것 같군! 자, 우리 가게 술을 마시면 가르쳐 주지.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2355",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2338",
   "args": 1,
   "chain": true
  },
  "자, 우리 가게 술을 마시면 가르쳐 주지.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2356",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2339",
   "args": 0
  },
  "자, 우리 가게 술을 마신다면 가르쳐 주지.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2357",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2340",
   "args": 0
  },
  "정보? 그런 것은 없네": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2363",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2346",
   "args": 0
  },
  "확실히 {0}에서 비슷한 소문을 들은 적이 있네.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2373",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2356",
   "args": 1
  },
  "{0}{1} 간 선원한테서 그런 이야기를 들은 적이 있네.": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2378",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2361",
   "args": 2
  },
  "신대륙": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2454",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2437",
   "args": 0
  },
  "먼 바다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2464",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2447",
   "args": 0
  },
  "공짜로 마시게 할 술은 없다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2490",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2473",
   "args": 0
  },
  "소문 편집 — 술집 · 여관 무명 손님": {

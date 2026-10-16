@@ -137,7 +137,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         // 자리에서 얼굴을 못 구하면 그 마을 술집 화자로 물러선다 — 원본은 늘
         // 얼굴을 걸고 말하므로 얼굴 없는 창이 뜨는 것이 더 어긋난다.
-        var face = DrinkerFace() ?? _game.SpeakerFace(BuildingCode, _cultureNo);
+        // 술꾼 인사는 제 셈(0x004690A0)으로 뭉갠다 — 주인 얼굴로 물러서도 대사 창이 또 뭉개지 않게.
+        var face = DrinkerFace() ?? KeeperTongue.Plain(_game.SpeakerFace(BuildingCode, _cultureNo));
 
         // 포카를 할 수 있는 마을이면 굴림이 여덟이고, 5~7 이면 인사 대신 판을 걸어 온다
         // (0x0042E9AE). 물음 창에서 「예」면 곧바로 포카다(0x0042EA02).
@@ -1281,7 +1282,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         // 무명 손님은 <b>이야기만</b> 건넨다 — 고용도 결투도 없다(0x004A4E60).
         seat ??= SeatStranger(inn);
         var face = _game.Faces?.TryGetBgra(TavernRumors.StrangerFace(seat.Culture), female: false)
-                   ?? _game.SpeakerFace(BuildingCode, _cultureNo);
+                   ?? KeeperTongue.Plain(_game.SpeakerFace(BuildingCode, _cultureNo));   // 제 셈으로 뭉갠다
         var dice = _game.Random;
 
         // 손님 말은 그 도시 나라의 말이다(0x004A1530). 제독·부관(자리 0·3) 누구도 모르면 못 듣는다.
@@ -2323,27 +2324,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     public void HearInfo() => Alone(() =>
     {
         var face = _game.SpeakerFace(BuildingCode, _cultureNo);
-        // 정보도 그 도시 나라의 말로 들린다 — 아랍어 1레벨이면 주인 대사도
-        // 손님 소문과 같은 확률로 뭉개야 한다(0x004780E0 → 0x004252F0).
-        int language = _game.Nations?.Find(_game.CityRows?.NationOf(_cityId) ?? -1)?.Language ?? -1;
-        int level = language >= 0 && language < Skill.Languages.Length
-            ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
-        // 부관 · 통역(자리 0 · 3)이 그 말을 더 잘하면 그 사람이 옮겨 준다 — 무명 손님 소문(MeetStranger)과 같다.
-        int best = level;
-        string relayer = "";
-        if (language is >= 0 and < 14)
-            foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
-                if (RowOf(_player.MateAt(slot)) is { } mate && mate.Languages[language] > best)
-                {
-                    best = mate.Languages[language];
-                    relayer = _player.MateAt(slot);
-                }
-        void Say(string words)
-        {
-            TalkDialog.Say(_view, face, "", StrangerTalk.Garble(words, level, _game.Random));
-            if (relayer.Length > 0 && _game.MateInfo(relayer) is { } who)
-                TalkDialog.Say(_view, MateFace(who), "", StrangerTalk.Relay(StrangerTalk.Garble(words, best, _game.Random), false));
-        }
+        // 정보도 주인의 말이다 — 대사 창이 말 수준만큼 뭉개고, 부관 · 통역이 더 잘하면 원문을 옮겨 준다(KeeperTongue,
+        // 0x004692E0). 예전에는 여기서 따로 뭉갰고 통역도 부관 수준으로 다시 뭉갰는데, 원본 통역문은 원문 그대로다.
+        void Say(string words) => TalkDialog.Say(_view, face, "", words);
 
         if (_rumor < 0 || _game.Rumors?.Rumors is not { } rumors || _rumor >= rumors.Count) return;
         var rumor = rumors[_rumor];

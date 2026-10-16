@@ -30,9 +30,14 @@ public static class StrangerTalk
     /// <summary>
     /// 말 수준으로 글을 뭉갠다(<c>0x004252F0</c>) — 2바이트 글자(한글·전각 문장부호)마다 rand(10) &lt; 표[수준] 이면 ×.
     /// ASCII(띄어쓰기·[ ]·마침표)는 그대로다.
+    /// <para>
+    /// <b>번역한 뒤에</b> 뭉갠다 — 뭉갠 한국어는 번역 표에서 못 찾아, 일본어로 켜도 ×가 박힌 한국어가 나왔다.
+    /// 이미 옮긴 글이면 <paramref name="translated"/> 를 준다.
+    /// </para>
     /// </summary>
-    public static string Garble(string text, int level, Random random)
+    public static string Garble(string text, int level, Random random, bool translated = false)
     {
+        if (!translated) text = Lang.T(text);
         int odds = GarbleOdds[Math.Clamp(level, 0, GarbleOdds.Length - 1)];
         if (odds == 0) return text;
         var made = new StringBuilder(text.Length);
@@ -44,9 +49,12 @@ public static class StrangerTalk
     /// <summary>못 알아들을 때(<c>0x00551848</c>).</summary>
     public const string Lost = "무슨 말을 하는 건가?";
 
-    /// <summary>부관이 옮길 때(<c>0x00568E50</c> 남자 · <c>0x00568E70</c> 여자).</summary>
+    /// <summary>부관이 옮길 때의 틀(<c>0x00568E50</c> 남자 · <c>0x00568E70</c> 여자).</summary>
+    public const string RelayFormat = "[{0}]라고 하는 것 같네요.", RelayFormatFemale = "[{0}]라고 하는 것 같은데요.";
+
+    /// <summary>부관이 옮길 때 — <paramref name="heard"/> 는 이미 옮긴(뭉갠) 글이라 틀만 옮긴다.</summary>
     public static string Relay(string heard, bool female) =>
-        female ? $"[{heard}]라고 하는 것 같은데요." : $"[{heard}]라고 하는 것 같네요.";
+        string.Format(Lang.T(female ? RelayFormatFemale : RelayFormat), heard);
 
     /// <summary>바다 전설 26줄(<c>0x0054FE30</c>~).</summary>
     public static readonly string[] SeaLegends =

@@ -342,6 +342,18 @@ public sealed class ConfirmDialog : GameWindow
     public static bool Ask(Window owner, string text, string? title = null,
                            uint[]? face = null, Action<Window>? place = null)
     {
+        // 시설 주인의 물음도 말 수준만큼 뭉개진다. 통역이 있으면 뭉갠 말을 듣고 통역이 옮긴 말로 묻는다.
+        if (Engine.Town.KeeperTongue.Hear(text, face) is { } got)
+        {
+            var (heard, relayFace, relay) = got;
+            if (relay == null) text = heard;
+            else
+            {
+                Tell(owner, heard, title, Engine.Town.KeeperTongue.Plain(face));
+                text = relay;
+                face = relayFace;
+            }
+        }
         var box = new ConfirmDialog(text, title, yesNo: true, face, 0) { Owner = owner };
         if (place != null)
         {
@@ -387,6 +399,13 @@ public sealed class ConfirmDialog : GameWindow
                             uint[]? face = null, double indent = 0, Window? under = null,
                             Action<Window>? place = null)
     {
+        // 시설 주인의 말은 말 수준만큼 뭉개 들린다 — 원본은 얼굴 대사 창이 뭉갠다(0x00478280 → 0x004780E0).
+        string? relay = null;
+        uint[]? relayFace = null;
+        if (Engine.Town.KeeperTongue.Hear(text, face) is { } got)
+        {
+            (text, relayFace, relay) = got;
+        }
         var box = new ConfirmDialog(text, title, yesNo: false, face, indent) { Owner = owner };
         if (under != null) GameUi.PlaceUnder(box, under, GameUi.RootOf(owner));
         if (place != null)
@@ -397,5 +416,7 @@ public sealed class ConfirmDialog : GameWindow
             box.ContentRendered += (_, _) => place(box);
         }
         box.ShowDialog();
+        // 부관 · 통역이 더 잘 알아들으면 원문을 옮겨 준다(0x004692E0).
+        if (relay != null) Tell(owner, relay, title, relayFace);
     }
 }

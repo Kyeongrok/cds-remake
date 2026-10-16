@@ -565,6 +565,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             ShowCityMenu(cityName, ToScreen(e.GetPosition(this)));
         };
         Closed += (_, _) => CloseCityMenu();   // 그림 창을 닫으면 커맨드 창도 같이 닫는다
+        Closed += (_, _) => Engine.Town.KeeperTongue.Here = null;   // 도시를 나서면 주인 말 셈도 걷는다
     }
 
     /// <summary>
@@ -758,6 +759,37 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         NoticeDialog.Show(this, StrangerTalk.Garble(words, mine, _random));
     }
 
+    /// <summary>
+    /// 시설 주인의 말을 얼마나 알아듣는지(<c>0x00478050</c> · <c>0x00468F70</c>). 주인은 그 도시 소유국의 말과 그 건물이
+    /// 가르치는 말(건물 표 <c>+0x30</c> 비트 13+i)을 한다(<c>0x00477EE0</c>). 제독은 그 가운데 가장 잘하는 말의 수준이고,
+    /// 부관(자리 0) · 통역(자리 3)이 같은 셈으로 제독보다 높으면 그 사람이 옮겨 준다.
+    /// </summary>
+    private Engine.Town.KeeperTongue.Listener KeeperListener(uint teach)
+    {
+        var spoken = new List<int>();
+        int nationLanguage = _game.Nations?.Find(_game.CityRows?.NationOf(_cityId) ?? -1)?.Language ?? -1;
+        if (nationLanguage >= 0 && nationLanguage < Skill.Languages.Length) spoken.Add(nationLanguage);
+        for (int i = 0; i < Skill.Languages.Length; i++)
+            if ((teach >> (CityBuildingTable.SkillCount + i) & 1) != 0 && !spoken.Contains(i)) spoken.Add(i);
+        // 말을 모르는 나라(원주민 마을 따위)면 다 알아듣는 것으로 둔다.
+        if (spoken.Count == 0) return new(Skill.MaxLevel, null, 0);
+
+        int mine = spoken.Max(i => _player.TongueOf(Skill.Languages[i]));
+        uint[]? relayer = null;
+        int best = mine;
+        if (_game.World?.People is { } people)
+            foreach (int slot in (int[])[0, 3])   // 부관 · 통역
+            {
+                string mate = _player.MateAt(slot);
+                if (mate.Length == 0 || people.FirstOrDefault(r => r.Name == mate) is not { } row) continue;
+                int level = spoken.Max(i => i < row.Languages.Length ? row.Languages[i] : 0);
+                if (level <= best || _game.MateInfo(mate) is not { } who) continue;
+                best = level;
+                relayer = _game.MateFace(who);
+            }
+        return new(mine, relayer, best);
+    }
+
     /// <summary>그 말을 가장 잘 아는 부하와 그 수준(<c>0x0047CD20</c>). 아무도 없으면 빈 이름에 0 이다.</summary>
     private (string Name, int Level) BestTongue(int language)
     {
@@ -825,6 +857,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (Ambushed()) return;
 
         var facility = Facility.For(building.Kind, building.Code);
+        // 이 건물 주인의 말을 얼마나 알아듣는지 걸어 둔다 — 대사 창이 주인 말을 그만큼 뭉갠다(KeeperTongue).
+        var teach = building.TeachMask;
+        Engine.Town.KeeperTongue.Here = () => KeeperListener(teach);
         if (_patronMenu != null) _patronMenu.SignedHere = false;   // 건물에 들 때마다 [+0xC0] 은 0 이다(0x0044E6AA)
         if (!PassFameGate(building, facility)) return;   // 문 앞에서 돌아섰다
         Greet(facility, building, arrived);
