@@ -275,6 +275,7 @@ public sealed class CityExeTable
     public bool HasBuilding(int cityId, int code)
     {
         if (code == HomeCode || code is < 0 or > 15) return true;
+        if (CityBuildingTable.AddedRow(cityId, code) != null) return true;   // 덧붙인 건물(한양 시장)은 늘 선다
         int word;
         if (Live?.CityBuildings.TryGetValue(cityId, out int changed) == true) word = changed;
         else if (cityId >= 0 && cityId < _buildings.Length) word = _buildings[cityId];
@@ -350,8 +351,18 @@ public sealed class CityExeTable
     /// <summary>
     /// 그 도시가 내놓는 아이템 번호들. 빈 칸(-1)은 빼고 낸다 — 없으면 빈 목록.
     /// </summary>
-    public IReadOnlyList<int> Of(int cityId) =>
-        cityId >= 0 && cityId < _stock.Length ? _stock[cityId] : [];
+    /// <remarks>덧붙인 시장(<see cref="CityBuildingTable.AddedRow"/>)이 파는 덧붙인 아이템은 원본 칸 뒤에 잇는다.</remarks>
+    public IReadOnlyList<int> Of(int cityId)
+    {
+        IReadOnlyList<int> own = cityId >= 0 && cityId < _stock.Length ? _stock[cityId] : [];
+        return AddedStock.TryGetValue(cityId, out var more) ? [.. own, .. more] : own;
+    }
+
+    /// <summary>덧붙인 물건 — 도시 번호 → 아이템 번호들. 한양(190) 운종가 시전의 두정갑이다.</summary>
+    private static readonly Dictionary<int, int[]> AddedStock = new()
+    {
+        [CityBuildingTable.Hanyang] = [ItemTable.Dujeonggap],
+    };
 
     /// <summary>물건을 하나라도 내놓는 도시 수.</summary>
     public int CitiesWithStock => _stock.Count(s => s.Length > 0);
