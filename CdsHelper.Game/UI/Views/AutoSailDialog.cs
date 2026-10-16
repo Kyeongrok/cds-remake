@@ -142,7 +142,8 @@ public sealed class AutoSailDialog : GameWindow
 
             var page = Paper(GameUi.Scroller(grid, ListMaxHeight));
             _pages.Children.Add(page);
-            tabs.Add(($"{group.Key} {group.Count()}", page));
+            // 문화권 이름은 도시 표에서 온 한국어라 따로 옮긴다 — 수와 붙인 글은 번역 표에서 통째로 못 찾는다.
+            tabs.Add(($"{Lang.T(group.Key)} {group.Count()}", page));
         }
 
         // 자동이동 모드 — 속도 중시(기본)는 선에 바짝 붙어 가느라 뱃머리를 자주 틀고, 최소 조타는 곧게 뻗는 토막으로 간다.
