@@ -1042,14 +1042,32 @@ public sealed class LandBattle
     /// </summary>
     public const int JudgementItem = 184;
 
-    /// <summary>묘책 차림표의 줄들. 쓴 것은 꺼지고, 심판은 사해사본을 지녀야 열린다.</summary>
-    public IReadOnlyList<(string Text, bool On)> RuseRows(bool hasJudgementItem) =>
-    [
-        (Ruses[Ambush], RuseLeft(Ambush)),
-        (Ruses[Trap], RuseLeft(Trap)),
-        (Ruses[Assassin], RuseLeft(Assassin)),
-        (Ruses[Judgement], hasJudgementItem && RuseLeft(Judgement)),
-    ];
+    /// <summary>
+    /// 그 묘책이 먹힐 확률(%) — <see cref="TryRuse"/> 가 「표 값 &gt;= rand(100)」이라 표 값보다 1 크다(40 이면 41%).
+    /// 심판은 굴리지 않아 100 이다.
+    /// </summary>
+    public int RuseChance(int ruse)
+    {
+        if (ruse == Judgement) return 100;
+        int at = RuseOddsAt(Culture, ruse);
+        return at < RuseOdds.Length ? Math.Clamp(RuseOddsOf(at) + 1, 0, 100) : 0;
+    }
+
+    /// <summary>
+    /// 묘책 차림표의 줄들. 쓴 것은 꺼지고, 심판은 사해사본을 지녀야 열린다. <paramref name="showChance"/> 면(정보 등급 「일반」 이상)
+    /// 줄마다 먹힐 확률을 붙인다 — 원본은 안 보인다.
+    /// </summary>
+    public IReadOnlyList<(string Text, bool On)> RuseRows(bool hasJudgementItem, bool showChance = false)
+    {
+        string Row(int ruse) => showChance ? $"{Ruses[ruse]}  성공 {RuseChance(ruse)}%" : Ruses[ruse];
+        return
+        [
+            (Row(Ambush), RuseLeft(Ambush)),
+            (Row(Trap), RuseLeft(Trap)),
+            (Row(Assassin), RuseLeft(Assassin)),
+            (Row(Judgement), hasJudgementItem && RuseLeft(Judgement)),
+        ];
+    }
 
     /// <summary>
     /// 그 묘책을 <b>골랐다</b>고 적어 둔다 — 한 판에 한 번뿐이라 이때 없어진다.

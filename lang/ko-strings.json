@@ -2845,32 +2845,36 @@
   "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1000",
   "args": 0
  },
+ "{0}  성공 {1}%": {
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1062",
+  "args": 2
+ },
  "공격명령": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1078",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1096",
   "args": 0
  },
  "통상공격": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1101",
   "args": 0
  },
  "방어중시공격": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1101",
   "args": 0
  },
  "돌격": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1101",
   "args": 0
  },
  "퇴각": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1101",
   "args": 0
  },
  "묘책": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1101",
   "args": 0
  },
  "남자라면 일대일로 싸워라! 어떠냐?": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1123",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1141",
   "args": 0
  },
  "독거미": {
@@ -15423,7 +15427,7 @@
   "args": 1
  },
  "{0}을 사용했다": {
-  "at": "CdsHelper.Game/UI/Views/HostileCityMenu.cs:314",
+  "at": "CdsHelper.Game/UI/Views/HostileCityMenu.cs:313",
   "args": 1
  },
  "선체명": {
@@ -15623,75 +15627,75 @@
   "args": 0
  },
  "상대해 주마!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:573",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:575",
   "args": 0
  },
  "GAME OVER 입니다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:584",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:586",
   "args": 0
  },
  "적장": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:599",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:601",
   "args": 0
  },
  "처형한다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:650",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:652",
   "args": 0
  },
  "체, 피라미로군. 용서해 주지.": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1258",
-  "args": 0
- },
- "네놈을 죽여 보았자 자랑할 가치도 없다.": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1259",
-  "args": 0
- },
- "여자와 아이, 약자들은 죽이지 않는 주의거든···": {
   "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1260",
   "args": 0
  },
- "네놈 따위는 죽일 가치도 없다. 빨리 꺼져 버려라!": {
+ "네놈을 죽여 보았자 자랑할 가치도 없다.": {
   "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1261",
   "args": 0
  },
- "이번만은 용서해 줄테니, 좀더 실력을 쌓도록 해라.": {
+ "여자와 아이, 약자들은 죽이지 않는 주의거든···": {
   "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1262",
   "args": 0
  },
+ "네놈 따위는 죽일 가치도 없다. 빨리 꺼져 버려라!": {
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1263",
+  "args": 0
+ },
+ "이번만은 용서해 줄테니, 좀더 실력을 쌓도록 해라.": {
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1264",
+  "args": 0
+ },
  "모의전에서 이겼다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1280",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1282",
   "args": 0
  },
  "모의전을 물렸다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1280",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1282",
   "args": 0
  },
  "모의전에서 졌다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1281",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1283",
   "args": 0
  },
  "적이 봐 준 것 같습니다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1296",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1298",
   "args": 0
  },
  "{0}명의 부상병이 복귀했다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1322",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1324",
   "args": 1
  },
  "전리품으로서 금화 {0} 닢을 손에 넣었다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1330",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1332",
   "args": 1
  },
  "{0}, 부관의 무력이 {1} 올라갔다!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1366",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1368",
   "args": 2
  },
  "{0}의 무력이 {1} 올라갔다!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1366",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1368",
   "args": 2
  },
  "부관의 무력이 {0} 올라갔다!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1367",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1369",
   "args": 1
  },
  "{0} — 부대배치": {
@@ -21261,7 +21265,7 @@
   "args": 0
  },
  "해전 그림을 못 읽었다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/SeaCombatDialog.cs:1655",
+  "at": "CdsHelper.Game/UI/Views/SeaCombatDialog.cs:1683",
   "args": 1
  },
  "출항한 지 며칠": {

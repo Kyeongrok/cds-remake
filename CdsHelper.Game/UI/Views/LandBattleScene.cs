@@ -518,7 +518,9 @@ internal sealed class LandBattleScene : GameWindow
         Redraw();
         bool scroll = _game?.Player.Items.Contains(LandBattle.JudgementItem) ?? false;
         _boardLive = true;
-        try { pick = ChoiceDialog.Pick(this, $" {LandBattle.RuseTitle} ", _battle.RuseRows(scroll),
+        // 정보 등급 「일반」 이상이면 묘책마다 먹힐 확률을 붙인다.
+        bool chance = Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoNormal);
+        try { pick = ChoiceDialog.Pick(this, $" {LandBattle.RuseTitle} ", _battle.RuseRows(scroll, chance),
                                        Live, exitRow: false); }
         finally { _boardLive = false; _showMen = false; Redraw(); }
 
