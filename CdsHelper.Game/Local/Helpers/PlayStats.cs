@@ -39,8 +39,11 @@ public static class PlayStats
     /// </summary>
     private static readonly TimeSpan FlushEvery = TimeSpan.FromMinutes(30);
 
-    /// <summary>도시를 나설 때 보내는 덩이 사이의 가장 짧은 틈.</summary>
-    private static readonly TimeSpan LeaveGap = TimeSpan.FromMinutes(10);
+    /// <summary>
+    /// 도시를 나설 때 보내는 덩이 사이의 가장 짧은 틈. 받는 곳(D1)은 덩이 안의 셈 하나마다 한 줄을 쓰므로, 덩이를 드물게 보내
+    /// 같은 열쇠가 한 덩이에 모일수록 쓰기가 준다 — 10분일 때 하루 쓰기 한도의 4분의 3까지 찼다.
+    /// </summary>
+    private static readonly TimeSpan LeaveGap = TimeSpan.FromMinutes(30);
 
     /// <summary>열쇠·이름의 가장 긴 길이. 받는 쪽도 같은 데서 자른다.</summary>
     private const int MaxKey = 96;
@@ -56,7 +59,8 @@ public static class PlayStats
     private static string HardcoreFolder => Path.Combine(Folder, "hardcore-queue");
 
     private static readonly object Gate = new();
-    private static readonly Dictionary<(string Kind, string Key), (string Name, int Count)> Counts = [];
+    /// <summary>모은 셈 — 항해(voyage)만 날수 · 선회의 합(Days · Turns)을 함께 든다.</summary>
+    private static readonly Dictionary<(string Kind, string Key), (string Name, int Count, int Days, int Turns)> Counts = [];
 
     private static string _url = "";
     private static string _version = "";
@@ -118,10 +122,9 @@ public static class PlayStats
     /// <param name="auto">가는 동안 자동항해를 한 번이라도 걸었는지.</param>
     public static void Voyage(int from, string fromName, int to, string toName, int days, int turns, bool auto)
     {
-        string key = $"{from}>{to}", name = $"{fromName} > {toName}";
-        Count("voyage", key, name);
-        Count("voyage_days", key, name, Math.Max(0, days));
-        Count("voyage_turns", key, name, Math.Max(0, turns));
+        // 횟수 · 날수 · 선회를 한 셈에 싣는다 — 받는 곳이 한 줄에 더한다. 예전에는 voyage · voyage_days · voyage_turns
+        // 세 갈래라 항해 하나에 D1 쓰기가 세 번이었다.
+        Count("voyage", $"{from}>{to}", $"{fromName} > {toName}", 1, Math.Max(0, days), Math.Max(0, turns));
         Count("nav", auto ? "trip:auto" : "trip:manual", null);
     }
 
@@ -225,7 +228,7 @@ public static class PlayStats
     /// <summary>하드코어 랭킹 페이지 주소. 받는 곳이 없으면 빈 글.</summary>
     public static string RankingUrl => _url.Length > 0 ? _url + "/ranking" : "";
 
-    private static void Count(string kind, string key, string? name, int by = 1)
+    private static void Count(string kind, string key, string? name, int by = 1, int days = 0, int turns = 0)
     {
         if (!Started) return;
         if (key.Length > MaxKey) key = key[..MaxKey];
@@ -235,7 +238,7 @@ public static class PlayStats
         lock (Gate)
         {
             Counts.TryGetValue((kind, key), out var was);
-            Counts[(kind, key)] = (name ?? was.Name ?? "", was.Count + by);
+            Counts[(kind, key)] = (name ?? was.Name ?? "", was.Count + by, was.Days + days, was.Turns + turns);
             due = DateTime.UtcNow - _flushedAt >= FlushEvery;
         }
         if (due) Flush();
@@ -264,7 +267,9 @@ public static class PlayStats
         {
             _flushedAt = DateTime.UtcNow;
             if (Counts.Count == 0) return;
-            rows = [.. Counts.Select(p => (object)new { kind = p.Key.Kind, key = p.Key.Key, name = p.Value.Name, n = p.Value.Count })];
+            rows = [.. Counts.Select(p => p.Key.Kind == "voyage"
+                ? (object)new { kind = p.Key.Kind, key = p.Key.Key, name = p.Value.Name, n = p.Value.Count, days = p.Value.Days, turns = p.Value.Turns }
+                : new { kind = p.Key.Kind, key = p.Key.Key, name = p.Value.Name, n = p.Value.Count })];
             Counts.Clear();
         }
         if (!CanUpload) return;   // 보내지 않을 판 · 답은 셈을 버린다 — 쌓아 두지 않는다

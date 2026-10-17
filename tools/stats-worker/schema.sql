@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS tally (
   install TEXT NOT NULL,
   name    TEXT NOT NULL,          -- 발견물 · 부하 이름, 항해는 「리스본 > 세비야」(그 밖은 빈 글)
   n       INTEGER NOT NULL,
+  days    INTEGER NOT NULL DEFAULT 0,   -- 항해(voyage)의 날수 합 — 횟수와 한 줄에 더한다(migrate-voyage.sql). 옛 줄은 voyage_days 갈래에 있다
+  turns   INTEGER NOT NULL DEFAULT 0,   -- 항해의 선회 합. 옛 줄은 voyage_turns 갈래에 있다
   PRIMARY KEY (kind, key, version, install)
 ) WITHOUT ROWID;
 

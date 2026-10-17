@@ -37,16 +37,34 @@ async function postPlay(request, env) {
   // (D1 하루 쓰기 한도가 찼을 때 그랬다). 이미 받은 덩이면 셈 · 옵션은 고르는 줄이 없어 안 쓰이고, 덩이 줄은 맨 끝에 넣는다.
   const fresh = 'NOT EXISTS (SELECT 1 FROM batches WHERE batch = ?)';
   // 셈은 덩이마다 줄을 쌓지 않고 (갈래 · 열쇠 · 버전 · 설치)마다 한 줄에 더한다 — 대시보드가 훑을 줄이 날마다 늘지 않게.
-  const counts = b.counts
-    .filter((c) => c && typeof c === 'object' && KINDS.includes(c.kind) && typeof c.key === 'string' && c.key.length > 0)
-    .map((c) => ({ kind: c.kind, key: text(c.key, MAX_KEY), name: text(c.name, MAX_KEY), n: int(c.n, 1_000_000) }));
+  // 항해는 한 줄에 횟수 · 날수 · 선회를 함께 더한다(days · turns 칸) — D1 은 있는 줄을 고쳐도 한 줄 쓰기로 세므로, 예전처럼
+  // voyage · voyage_days · voyage_turns 세 줄로 쓰면 항해 하나에 세 번 쓴다. 옛 판이 세 갈래로 보내도 여기서 한 줄로 모은다.
+  const merged = new Map();
+  for (const c of b.counts) {
+    if (!c || typeof c !== 'object' || !KINDS.includes(c.kind) || typeof c.key !== 'string' || c.key.length === 0) continue;
+    const voyage = c.kind.startsWith('voyage'), kind = voyage ? 'voyage' : c.kind, key = text(c.key, MAX_KEY);
+    const id = kind + '\u0000' + key;
+    const row = merged.get(id) ?? { kind, key, name: '', n: 0, days: 0, turns: 0 };
+    const n = int(c.n, 1_000_000);
+    if (c.kind === 'voyage_days') row.days += n;
+    else if (c.kind === 'voyage_turns') row.turns += n;
+    else {
+      row.n += n;
+      if (voyage) { row.days += int(c.days, 1_000_000); row.turns += int(c.turns, 1_000_000); }
+    }
+    row.name = text(c.name, MAX_KEY) || row.name;
+    merged.set(id, row);
+  }
+  const counts = [...merged.values()];
   const rows = [];
   if (counts.length)
     rows.push(env.DB.prepare(
-      `INSERT INTO tally (kind, key, version, install, name, n)
-       SELECT json_extract(value, '$.kind'), json_extract(value, '$.key'), ?, ?, json_extract(value, '$.name'), json_extract(value, '$.n')
+      `INSERT INTO tally (kind, key, version, install, name, n, days, turns)
+       SELECT json_extract(value, '$.kind'), json_extract(value, '$.key'), ?, ?, json_extract(value, '$.name'), json_extract(value, '$.n'),
+              json_extract(value, '$.days'), json_extract(value, '$.turns')
        FROM json_each(?) WHERE ${fresh}
-       ON CONFLICT (kind, key, version, install) DO UPDATE SET n = n + excluded.n, name = excluded.name`)
+       ON CONFLICT (kind, key, version, install) DO UPDATE SET n = n + excluded.n, days = days + excluded.days,
+                                                              turns = turns + excluded.turns, name = excluded.name`)
       .bind(version, b.install, JSON.stringify(counts), b.batch));
 
   // 모드 옵션은 설치마다 마지막 값 한 벌을 한 줄(JSON)로 남긴다. 그대로면 안 쓴다.
@@ -159,7 +177,7 @@ async function aggregate(env, version, whole) {
 
   const [total, tally, modValues, days, known] = await Promise.all([
     env.DB.prepare(`SELECT COUNT(*) AS batches, COUNT(DISTINCT install) AS installs FROM batches WHERE 1 = 1 ${cond}`).bind(...args).first(),
-    all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, COUNT(DISTINCT install) AS installs
+    all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, SUM(days) AS days, SUM(turns) AS turns, COUNT(DISTINCT install) AS installs
          FROM tally WHERE 1 = 1 ${cond} GROUP BY kind, key`, ...args),
     // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다.
     whole ? whole.modValues : all('SELECT j.key AS name, j.value AS value, COUNT(*) AS installs FROM options, json_each(options.body) AS j GROUP BY j.key, j.value ORDER BY j.key, j.value'),
@@ -171,7 +189,8 @@ async function aggregate(env, version, whole) {
   // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
   const kinds = [], tops = {};
   for (const kind of KINDS) {
-    const rows = tally.filter((r) => r.kind === kind).map(({ key, name, n, installs }) => ({ key, name, n, installs }));
+    const rows = tally.filter((r) => r.kind === kind)
+      .map(({ key, name, n, days, turns, installs }) => (kind === 'voyage' ? { key, name, n, days, turns, installs } : { key, name, n, installs }));
     if (rows.length) kinds.push({ kind, n: rows.reduce((s, r) => s + r.n, 0), keys: rows.length });
     tops[kind] = rows.sort((a, b) => b.n - a.n || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)).slice(0, LIMITS[kind]);
   }
@@ -186,10 +205,10 @@ async function aggregate(env, version, whole) {
   const mods = [...byName.values()].map(({ sum, ...m }) => ({ ...m, average: sum / m.installs }))
     .sort((a, b) => b.enabled - a.enabled || (a.name < b.name ? -1 : 1));
 
-  // 항해 — 구간마다 횟수에 날수 · 선회의 합을 붙인다.
+  // 항해 — 구간마다 횟수에 날수 · 선회의 합을 붙인다. 새 줄은 voyage 줄의 days · turns 칸에, 옛 줄은 voyage_days · voyage_turns 갈래에 있다.
   const sumOf = (kind) => new Map(tops[kind].map((r) => [r.key, r.n]));
   const dayOf = sumOf('voyage_days'), turnOf = sumOf('voyage_turns');
-  const voyages = tops.voyage.map((r) => ({ ...r, days: dayOf.get(r.key) || 0, turns: turnOf.get(r.key) || 0 }));
+  const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (dayOf.get(r.key) || 0), turns: (r.turns || 0) + (turnOf.get(r.key) || 0) }));
 
   return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
            battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known };
