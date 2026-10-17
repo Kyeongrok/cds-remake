@@ -282,7 +282,7 @@ public sealed class DisevRunner
                 {
                     string particle = GameUi.Josa(name, "을", "를");
                     TownLines.Say(owner, game, "알림.교역품개시",
-                        () => NoticeDialog.Show(owner, $"이제 교역소에서 [{name}]{particle} 다룹니다"),
+                        () => NoticeDialog.Show(owner, $"이제 교역소에서 [{name}]{particle} 취급합니다"),
                         ("교역품", name), ("을를", particle));
                 }
             LastEndedInGameOver = false;
