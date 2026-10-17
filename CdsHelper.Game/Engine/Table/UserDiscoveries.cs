@@ -28,8 +28,15 @@ public static class UserDiscoveries
     /// <summary>번호를 받는 구간 — 앱에 실린 추가 발견물(274~)과 원본 번호들보다 한참 위다.</summary>
     public const int NumberBase = 2000, NumberEnd = 9999;
 
-    /// <summary>파일 모양 판.</summary>
-    public const int FormatVersion = 1;
+    /// <summary>파일 모양 판. 2 부터 라이선스 · 잠금이 든다 — 잠금을 모르는 옛 판이 잠긴 발견물을 고치지 못하게 올렸다.</summary>
+    public const int FormatVersion = 2;
+
+    /// <summary>고를 수 있는 라이선스 — 크리에이티브 커먼즈.</summary>
+    public static readonly string[] Licenses =
+        ["CC BY-SA 4.0", "CC BY 4.0", "CC BY-NC 4.0", "CC BY-NC-SA 4.0", "CC0 1.0"];
+
+    /// <summary>처음 고른 라이선스 — 위키백과 글(CC BY-SA)을 바탕으로 쓰는 일이 많아 그것과 맞춘다.</summary>
+    public const string DefaultLicense = "CC BY-SA 4.0";
 
     /// <summary>장면 한 줄.</summary>
     /// <param name="Kind">「say」 대사 · 「picture」 발견물 그림 · 「movie」 발견물 동영상 · 「found」 효과음과 「~을 발견했다！」, 발견 처리.</param>
@@ -48,7 +55,74 @@ public static class UserDiscoveries
         int X1, int Y1, int X2, int Y2,
         string HintName, int HintGrade, int HintCategory, int HintFunds, int HintDeadline, string HintText,
         int[] RumorCities, string RumorText, string Book, string Description,
-        int Chance, List<SceneLine> Lines, string Credit = "", string Author = "", int Version = FormatVersion);
+        int Chance, List<SceneLine> Lines, string Credit = "", string Author = "", int Version = FormatVersion,
+        string License = DefaultLicense, string Lock = "");
+
+    /// <summary>잠겼는지 — 비밀번호를 걸어 두면 그것을 모르는 사람은 불러와도 고치지 못한다.</summary>
+    public static bool IsLocked(Entry entry) => entry.Lock.Length > 0;
+
+    /// <summary>
+    /// 비밀번호로 잠금 값을 짓는다 — <c>sha256:소금:해시</c>. 비밀번호는 적지 않는다.
+    /// </summary>
+    /// <remarks>
+    /// 파일을 손으로 열어 이 칸을 지우면 풀린다 — 막는 것은 창에서 고치는 것뿐이다. 남의 것을 실수로 고쳐 같은 UUID 로
+    /// 퍼뜨리는 일을 막으려는 것이지 암호가 아니다.
+    /// </remarks>
+    public static string LockOf(string password)
+    {
+        string salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+        return $"sha256:{salt}:{Hash(salt, password)}";
+    }
+
+    /// <summary>그 비밀번호가 잠금과 맞는지. 잠기지 않았으면 늘 참이다.</summary>
+    public static bool Unlocks(Entry entry, string password)
+    {
+        if (!IsLocked(entry)) return true;
+        var parts = entry.Lock.Split(':');
+        return parts.Length == 3 && parts[0] == "sha256" && parts[2] == Hash(parts[1], password);
+    }
+
+    private static string Hash(string salt, string password) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(salt + "\n" + password)));
+
+    /// <summary>예제의 UUID — 목록 맨 위에 「(예제) 돌묵상어」로 서고, 적거나 내보낼 수 없다.</summary>
+    public const string ExampleUuid = "example-basking-shark";
+
+    /// <summary>예제 그림 — 앱에 실린 돌묵상어 그림(발견물 그림 84번)이다.</summary>
+    public const int ExamplePicture = 84;
+
+    /// <summary>
+    /// 예제 — 앱에 실린 돌묵상어(발견물 274)를 이 창의 칸 모양으로 옮긴 것. 빈 창에서 무엇을 적을지 보고 따라 하라고 둔다.
+    /// </summary>
+    /// <remarks>
+    /// 값은 <c>발견물-고친것.json</c> · <c>힌트-고친것.json</c> · <c>소문-고친것.json</c> · <c>발견물설명.json</c> ·
+    /// <c>발견이벤트.json</c>(파트 274) 그대로다. 장면의 효과음 두 줄(첨벙 · 발견)은 이 창에서 못 적어 뺐다.
+    /// </remarks>
+    public static Entry Example { get; } = new(
+        ExampleUuid, "돌묵상어", Category: 6, Reward: 30000, OnLand: false, OpenAtStart: true,
+        X1: 1168, Y1: 224, X2: 1194, Y2: 240,
+        HintName: "햇볕을 쬐는 큰 물고기", HintGrade: 2, HintCategory: 5, HintFunds: 30000, HintDeadline: 4,
+        HintText: "북쪽 바다에는 작은 배보다도 큰 물고기가 산다고 한다. 동굴 같은 입을 벌린 채 수면 가까이를 떠다니지만 사람을 해치지는 않는다. 볕이 좋은 날이면 등지느러미를 물 밖으로 내놓고 햇볕을 쬔다고 한다.",
+        RumorCities: [43, 42, 40],
+        RumorText: "스코틀랜드 서쪽 섬들 앞바다에 배만 한 물고기가 입을 벌린 채 떠다닌다더군. 볕 좋은 날이면 등지느러미가 물 위로 보인다고 하네.",
+        Book: "박물지",
+        Description: "북대서양을 비롯한 온대 바다에 사는 거대한 상어. 고래상어 다음으로 큰 물고기로 몸길이가 10미터를 넘기도 한다. 큰 입을 벌린 채 수면 가까이를 헤엄치며 작은 먹이를 걸러 먹는다. 성질이 온순해 사람을 해치지 않는다.",
+        Chance: 3,
+        Lines:
+        [
+            new("say", "감찰관", "사， 상어다！ 어서 배를 돌려라！"),
+            new("say", "부관", "아니， 덤벼들지 않습니다． 입을 벌린 채 천천히 헤엄치고 있을 뿐입니다．"),
+            new("say", null, "첨벙！"),
+            new("picture"),
+            new("say", "부관", "저 입을 보십시오！ 사람 하나쯤은 통째로 들어가겠습니다．"),
+            new("say", "감찰관", "이빨이 보이지 않는군． 바닷물을 들이마시고 있는 것인가？"),
+            new("say", "부관", "작은 먹이를 물과 함께 걸러 먹는 모양입니다． 온순한 상어로군요．"),
+            new("found", null, "돌묵상어를 발견했다！"),
+            new("say", "감찰관", "이렇게 큰 물고기가 햇볕을 쬐며 떠다니다니···． 세상은 넓구나．"),
+        ],
+        Credit: "글: 위키백과 「돌묵상어」 ko.wikipedia.org/wiki/돌묵상어 (CC BY-SA 4.0)\n그림: Greg Skomal / NOAA Fisheries Service, 위키미디어 공용, 퍼블릭 도메인",
+        Author: "대항해시대3 리메이크",
+        License: "CC BY-SA 4.0");
 
     /// <summary>이 PC 에서 받은 번호.</summary>
     public readonly record struct Numbers(int Id, int Serial, int Hint, int Picture, int Movie);
