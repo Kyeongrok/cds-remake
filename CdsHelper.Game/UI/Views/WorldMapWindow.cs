@@ -2213,11 +2213,12 @@ public sealed class WorldMapWindow : Window
                                            BestItem(Engine.Town.Duel.WeaponCategory),
                                            BestItem(Engine.Town.Duel.ArmorCategory))
             : MyFighter();
-        var duel = new Engine.Town.Duel(me, Engine.Town.Duel.Armed(foe, 1, dice, _game.Items),
+        int set = FoeDuelSet(leaderId);
+        var duel = new Engine.Town.Duel(me, Engine.Town.Duel.Armed(foe, set, dice, _game.Items),
                                         player.Items.Contains(Engine.Town.Duel.EdithShieldId),
                                         Environment.TickCount);
 
-        DuelDialog.Show(board, duel, dice, foeFace, _game.Fighters, foeSet: 1,
+        DuelDialog.Show(board, duel, dice, foeFace, _game.Fighters, foeSet: set,
                         myFace: _game.DuelFace(mate),
                         arena: DuelArt.Deck,
                         bgm: _game.Bgm);
@@ -2232,6 +2233,20 @@ public sealed class WorldMapWindow : Window
         TavernMenu.GrowMight(board, player, mate is { }, dice);
         return true;
     };
+
+    /// <summary>
+    /// 일기토 상대의 그림 벌 — 원본(<c>0x004A88EA</c>)은 그림 벌을 안 받으면(−1) 상대 인물의 나라(vt+0x14) →
+    /// 나라 형편 표(<c>0x005859C0</c>)의 수도 → 그 도시의 문화권을 보고 고른다(<see cref="FighterSprites.SetForCulture"/>).
+    /// 그래서 일본 장수는 일본 그림, 중국 장수는 중국 그림이다. 예전에는 1(유럽)로 박아 두어 누구든 유럽 사람으로 나왔다.
+    /// 나라 · 수도를 모르면 1 이다.
+    /// </summary>
+    private int FoeDuelSet(int person)
+    {
+        int nation = _game.PersonTemplates?.Find(person)?.Nation ?? -1;
+        int capital = nation >= 0 && _game.Nations?.Find(nation) is { } n ? n.Capital : -1;
+        int culture = capital >= 0 ? _game.CityRows?.CultureOf(capital) ?? -1 : -1;
+        return culture >= 0 ? FighterSprites.SetForCulture(culture) : 1;
+    }
 
     /// <summary>부관을 대신 내보낼지 묻는다(<c>0x004A8611</c>) — 술집 일기토와 같은 셈·말이다.</summary>
     private Player.MateInfo? SeaSendMate(Window owner, GameRandom dice)
@@ -7332,7 +7347,7 @@ public sealed class WorldMapWindow : Window
 
         DuelDialog.Show(this, duel, dice,
                         _game.PersonFace(who),
-                        _game.Fighters, foeSet: 1,
+                        _game.Fighters, foeSet: FoeDuelSet(who.Id),
                         myFace: _game.Faces?.TryGetBgra(
                             PortraitAges.At(_game.Player.Face, _game.Player.Age,
                                             false, _game.Faces),
