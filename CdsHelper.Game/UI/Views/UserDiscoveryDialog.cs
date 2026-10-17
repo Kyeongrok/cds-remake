@@ -138,16 +138,17 @@ public sealed class UserDiscoveryDialog : GameWindow
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap, Width = 720,
             HorizontalAlignment = HorizontalAlignment.Left,
             Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n"
-                   + "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때,"
+                   + "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(아래 「육상전 넣기…」로 짓습니다) — 그 아래 줄은 이겼을 때,"
                    + " 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다."
                    + " 「[아이템] 이름」은 아이템을 줍니다(아래 「아이템 넣기…」로 고릅니다). 「[그림]」 · 「[동영상]」은 위에서 올린 것을 띄웁니다."
                    + " 「(예제) 파르테논 신전」을 보세요.",
         });
-        // 아이템 넣기 — 장면 칸 옆에 두면 창 밖으로 잘려 아래 줄에 둔다.
-        var insert = Edit("아이템 넣기…", InsertItem);
-        insert.HorizontalAlignment = HorizontalAlignment.Left;
-        insert.Margin = new Thickness(90, 0, 0, 8);
-        _form.Children.Add(insert);
+        // 장면에 줄을 넣는 단추들 — 장면 칸 옆에 두면 창 밖으로 잘려 아래 줄에 둔다.
+        _form.Children.Add(new StackPanel
+        {
+            Orientation = Orientation.Horizontal, Margin = new Thickness(90, 0, 0, 8),
+            Children = { Edit("아이템 넣기…", InsertItem), Edit("육상전 넣기…", InsertLand) },
+        });
         _share.Children.Add(Line("출처", _credit));
         _share.Children.Add(new TextBlock
         {
@@ -687,6 +688,31 @@ public sealed class UserDiscoveryDialog : GameWindow
         if (end < 0) _scene.Text = _scene.Text.TrimEnd('\n') + (_scene.Text.Length > 0 ? "\n" : "") + line;
         else _scene.Text = _scene.Text.Insert(end + 1, line + "\n");
         Tell($"장면에 「{line}」 을 넣었습니다 — 이긴 갈래 등 원하는 자리로 옮기고 「저장」을 눌러 주세요.");
+    }
+
+    /// <summary>
+    /// 육상전 넣기 창을 띄워 「[육상전] …」 줄을 짓는다 — 장면에 싸움 줄이 이미 있으면 그 줄을 고치고, 없으면 커서 줄 뒤에 넣는다.
+    /// 싸움 줄은 하나만 둘 수 있다.
+    /// </summary>
+    private void InsertLand()
+    {
+        if (_game == null) { Tell("인물 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요."); return; }
+        var lines = _scene.Text.Split('\n').ToList();
+        int had = lines.FindIndex(l => l.TrimStart().StartsWith("[육상전]") || l.TrimStart().StartsWith("[해전]"));
+        string now = had >= 0 && lines[had].TrimStart().StartsWith("[육상전]") ? lines[had].Trim()[5..].Trim() : "";
+        if (LandBattlePickerDialog.Pick(this, _game, now) is not { } terms) return;
+        string line = $"[육상전] {terms}";
+        if (had >= 0)
+        {
+            lines[had] = line;
+            _scene.Text = string.Join("\n", lines);
+            Tell($"싸움 줄을 「{line}」 로 바꿨습니다 — 「저장」을 눌러 주세요.");
+            return;
+        }
+        int at = _scene.CaretIndex, end = _scene.Text.IndexOf('\n', Math.Min(at, _scene.Text.Length));
+        if (end < 0) _scene.Text = _scene.Text.TrimEnd('\n') + (_scene.Text.Length > 0 ? "\n" : "") + line;
+        else _scene.Text = _scene.Text.Insert(end + 1, line + "\n");
+        Tell($"장면에 「{line}」 을 넣었습니다 — 그 아래에 이겼을 때의 줄을, 「[놓쳤을 때]」 아래에 졌을 때의 줄을 적고 「저장」을 눌러 주세요.");
     }
 
     /// <summary>문화권 탭으로 도시를 늘어놓는 창을 띄워 소문 도시를 셋까지 고른다.</summary>

@@ -15526,6 +15526,78 @@
   "at": "CdsHelper.Game/UI/Views/LandBattleInfoDialog.cs:67",
   "args": 1
  },
+ "유럽": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:28",
+  "args": 0
+ },
+ "아랍": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:28",
+  "args": 0
+ },
+ "아시아A": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:28",
+  "args": 0
+ },
+ "아시아B": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:28",
+  "args": 0
+ },
+ "아즈텍": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:28",
+  "args": 0
+ },
+ "육상전 넣기": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:35",
+  "args": 0
+ },
+ "정하지 않음": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:41",
+  "args": 0
+ },
+ "상대 대장 찾기": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:46",
+  "args": 0
+ },
+ "상대 병력": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:56",
+  "args": 0
+ },
+ "명 (비우면 그 인물의 무리 그대로, 한 수만 적으면 그 수로)": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:56",
+  "args": 0
+ },
+ "아군 병력": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:57",
+  "args": 0
+ },
+ "명 (비우면 지금 선원 그대로)": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:57",
+  "args": 0
+ },
+ "이 싸움 뒤 대본 일기토의 상대 그림": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:58",
+  "args": 0
+ },
+ "넣기": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:60",
+  "args": 0
+ },
+ "상대 대장을 골라 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:114",
+  "args": 0
+ },
+ " 상대 {0}": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:120",
+  "args": 1
+ },
+ " 아군 {0}": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:123",
+  "args": 1
+ },
+ " 그림 {0}": {
+  "at": "CdsHelper.Game/UI/Views/LandBattlePickerDialog.cs:124",
+  "args": 1
+ },
  "퇴각해도 좋습니까?": {
   "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:206",
   "args": 0
@@ -18041,23 +18113,7 @@
   "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:75",
   "args": 0
  },
- "유럽": {
-  "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:79",
-  "args": 0
- },
- "아랍": {
-  "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:79",
-  "args": 0
- },
- "아시아A": {
-  "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:79",
-  "args": 0
- },
  "아시아Ｂ": {
-  "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:79",
-  "args": 0
- },
- "아즈텍": {
   "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:79",
   "args": 0
  },
@@ -18363,10 +18419,6 @@
  },
  "장 번호를 쉼표나 빈칸으로 나눠 적는다 — 보기: 24 25 26 27": {
   "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:1072",
-  "args": 0
- },
- "넣기": {
-  "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:1074",
   "args": 0
  },
  "비우기": {
@@ -23266,12 +23318,12 @@
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:140",
   "args": 0
  },
- "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다. 「[아이템] 이름」은 아이템을 줍니다(아래 「아이템 넣기…」로 고릅니다). 「[그림]」 · 「[동영상]」은 위에서 올린 것을 띄웁니다. 「(예제) 파르테논 신전」을 보세요.": {
+ "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(아래 「육상전 넣기…」로 짓습니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다. 「[아이템] 이름」은 아이템을 줍니다(아래 「아이템 넣기…」로 고릅니다). 「[그림]」 · 「[동영상]」은 위에서 올린 것을 띄웁니다. 「(예제) 파르테논 신전」을 보세요.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:140",
   "args": 0,
   "chain": true
  },
- "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때,": {
+ "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(아래 「육상전 넣기…」로 짓습니다) — 그 아래 줄은 이겼을 때,": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:141",
   "args": 0
  },
@@ -23288,381 +23340,397 @@
   "args": 0
  },
  "아이템 넣기…": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:147",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:150",
+  "args": 0
+ },
+ "육상전 넣기…": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:150",
   "args": 0
  },
  "출처": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:151",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:152",
   "args": 0
  },
  "그림 · 글을 어디서 가져왔는지와 그 라이선스를 적어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:155",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:156",
   "args": 0
  },
  "만든 이": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:157",
-  "args": 0
- },
- "닉네임이나 이름": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:157",
-  "args": 0
- },
- "라이선스": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:158",
   "args": 0
  },
- "잠금 풀기": {
+ "닉네임이나 이름": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:158",
+  "args": 0
+ },
+ "라이선스": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:159",
   "args": 0
  },
- "비밀번호 빼기": {
+ "잠금 풀기": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:160",
   "args": 0
  },
- "비밀번호": {
+ "비밀번호 빼기": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:161",
   "args": 0
  },
+ "비밀번호": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:162",
+  "args": 0
+ },
  "비밀번호를 적고 「저장」하면 잠깁니다. 잠긴 발견물은 내보내 다른 분이 불러와도 게임에는 나오지만, 비밀번호 없이는 고칠 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:165",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:166",
   "args": 0
  },
  "비밀번호를 적고 「저장」하면 잠깁니다. 잠긴 발견물은 내보내 다른 분이 불러와도 게임에는 나오지만, 비밀번호 없이는 고칠 수 없습니다. 비밀번호는 파일에 남기지 않으니 잊지 마세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:165",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:166",
   "args": 0,
   "chain": true
  },
  " 비밀번호는 파일에 남기지 않으니 잊지 마세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:166",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:167",
   "args": 0
  },
  "복제": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:174",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:175",
   "args": 0
  },
  "출처 · 공유": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:186",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:187",
   "args": 0
  },
  "모드 「추가 발견물」이 꺼져 있어 지은 발견물이 게임에 안 나옵니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:201",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:202",
   "args": 0
  },
  "예제는 고칠 수 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:249",
-  "args": 0
- },
- "잠기지 않음": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:250",
   "args": 0
  },
- "잠금 풀림 — 고칠 수 있습니다": {
+ "잠기지 않음": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:251",
+  "args": 0
+ },
+ "잠금 풀림 — 고칠 수 있습니다": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:252",
   "args": 0
  },
  "잠김 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:251",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:252",
   "args": 0
  },
  "(예제) {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:276",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:277",
   "args": 1
  },
  "{0}  (원본 동영상 {1}번)": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:302",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:303",
   "args": 2
  },
  "(원본 동영상 {0}번 — 이 PC 에서 파일을 못 찾았습니다)": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:303",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:304",
   "args": 1
  },
  "예제입니다 — 게임에 들어 있는 {0}을(를) 이 칸들로 옮긴 것입니다. 「복제」를 누르면 베껴서 고쳐 쓸 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:307",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:308",
   "args": 1
  },
  "발견물 {0}번 · 힌트 {1}번 · 그림 {2}번 — UUID {3}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:319",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:320",
   "args": 4
  },
  "[그림]": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:372",
-  "args": 0
- },
- "[동영상]": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:373",
   "args": 0
  },
- "[발견] {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:374",
-  "args": 1
- },
- "[발견]": {
+ "[동영상]": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:374",
   "args": 0
  },
- "[해전] {0}": {
+ "[발견] {0}": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:375",
   "args": 1
  },
- "[육상전] {0}": {
+ "[발견]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:375",
+  "args": 0
+ },
+ "[해전] {0}": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:376",
   "args": 1
  },
+ "[육상전] {0}": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:377",
+  "args": 1
+ },
  "[아이템] {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:378",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:379",
   "args": 1
  },
  "[게임 오버]": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:379",
-  "args": 0
- },
- "[놓쳤을 때]": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:380",
   "args": 0
  },
+ "[놓쳤을 때]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:381",
+  "args": 0
+ },
  "[해전]": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:394",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:395",
   "args": 0
  },
  "[육상전]": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:396",
-  "args": 0
- },
- "[아이템]": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:397",
   "args": 0
  },
+ "[아이템]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:398",
+  "args": 0
+ },
  "{0}에 수를 적어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:418",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:419",
   "args": 1
  },
  "이름이 비었습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:421",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:422",
   "args": 0
  },
  "힌트 등급": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:424",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:425",
   "args": 0
  },
  "힌트 갈래": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:424",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:425",
   "args": 0
  },
  "힌트 자금": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:425",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:426",
   "args": 0
  },
  "힌트 기한": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:425",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:426",
   "args": 0
  },
  "소문 도시는 셋까지입니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:428",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:429",
   "args": 0
  },
  "잠긴 발견물은 비밀번호로 잠금을 푼 뒤에 복제할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:461",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:462",
   "args": 0
  },
  "{0} 복사본": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:468",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:469",
   "args": 1
  },
  "복제하지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:490",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:491",
   "args": 1
  },
  "「{0}」 을 「{1}」 으로 복제했습니다 — 자리가 원본과 같으니 「지도에서 고르기…」로 옮기고, 이름 · 힌트를 고친 뒤 「저장」을 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:492",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:493",
   "args": 2
  },
  "짓지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:517",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:518",
   "args": 1
  },
  "새 발견물을 지었습니다 — 나머지 칸을 채우고 「저장」을 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:521",
-  "args": 0
- },
- "새 발견물을 지었습니다 — 「지도에서 고르기…」로 자리를 잡고 칸을 채운 뒤 「저장」을 눌러 주세요.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:522",
   "args": 0
  },
+ "새 발견물을 지었습니다 — 「지도에서 고르기…」로 자리를 잡고 칸을 채운 뒤 「저장」을 눌러 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:523",
+  "args": 0
+ },
  "예제는 적을 수 없습니다 — 「새 발견물」을 눌러 새로 만들어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:527",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:528",
   "args": 0
  },
  "잠긴 발견물입니다 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:530",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:531",
   "args": 0
  },
  "힌트가 없으면 「처음부터 열림」을 켜야 게임에서 만날 수 있습니다 — 「발견물」 탭에서 켜 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:536",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:537",
   "args": 0
  },
  "싸움(「[해전]」 · 「[육상전]」) 줄은 하나만 둘 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:539",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:540",
   "args": 0
  },
  "「[해전] {0}」 — 괴물 이름은 {1} 가운데 하나입니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:544",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:545",
   "args": 2
  },
  "「[육상전] {0}」 — 그런 인물이 없습니다. 인물 이름이나 번호를 적어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:549",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:550",
   "args": 1
  },
  "「[아이템] {0}」 — 그런 아이템이 없습니다. 「아이템 넣기…」로 골라 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:554",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:555",
   "args": 1
  },
  "자리가 없습니다 — 「지도에서 고르기…」로 자리를 잡아 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:561",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:562",
   "args": 0
  },
  "적었지만 장면을 굽지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:565",
-  "args": 1
- },
- "「{0}」 을 적었습니다.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:566",
   "args": 1
  },
+ "「{0}」 을 적었습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:567",
+  "args": 1
+ },
  "「{0}」 을 지웁니다. 이 발견물을 찾은 세이브에서는 그 기록이 표에 없는 것으로 남습니다. 좋습니까?": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:572",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:573",
   "args": 1
  },
  "발견물 지우기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:572",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:573",
   "args": 0
  },
  "「{0}」 을 지웠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:576",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:577",
   "args": 1
  },
  "세계 지도를 못 읽었습니다 — 게임 폴더에 WORLD.CDS 가 있는지 확인해 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:586",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:587",
   "args": 0
  },
  "자리를 ({0}, {1}) ~ ({2}, {3}) 로 잡았습니다 — {4}. 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:597",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:598",
   "args": 5
  },
  "발견물 그림 고르기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:604",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:605",
   "args": 0
  },
  "그림을 읽지 못했습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:606",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:607",
   "args": 0
  },
  "그림을 발견물 그림처럼 바꿨습니다 — 「저장」을 눌러야 적힙니다. 출처와 라이선스를 「출처」 칸에 적어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:611",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:612",
   "args": 0
  },
  "발견물 동영상 고르기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:619",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:620",
   "args": 0
  },
  "동영상|": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:620",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:621",
   "args": 0
  },
  "동영상|{0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:620",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:621",
   "args": 1,
   "chain": true
  },
  "|모든 파일|*.*": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:620",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:621",
   "args": 0
  },
  "동영상을 골랐습니다 — 장면에 「[동영상]」 줄을 넣어야 재생되고, 「저장」을 눌러야 적힙니다. 내보내면 파일에 함께 담깁니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:625",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:626",
   "args": 0
  },
  "동영상을 뺍니다 — 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:633",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:634",
   "args": 0
  },
  "발견물 내보내기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:641",
-  "args": 0
- },
- "발견물 (*.cdsdiscovery)|*.cdsdiscovery": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:642",
   "args": 0
  },
+ "발견물 (*.cdsdiscovery)|*.cdsdiscovery": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:643",
+  "args": 0
+ },
  "내보내지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:645",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:646",
   "args": 1
  },
  "「{0}」 을 내보냈습니다 — {1}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:645",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:646",
   "args": 2
  },
  "발견물 (*.cdsdiscovery)|*.cdsdiscovery|모든 파일 (*.*)|*.*": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:652",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:653",
   "args": 0
  },
  "같은 발견물 「{0}」 이 이미 있습니다. 불러온 「{1}」 으로 덮어쓸까요?": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:656",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:657",
   "args": 2
  },
  "비밀번호가 맞지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:665",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:666",
   "args": 0
  },
  "「{0}」 의 잠금을 풀었습니다 — 고친 뒤 「저장」을 눌러 주세요. 잠금은 그대로 남습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:669",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:670",
   "args": 1
  },
  "「저장」을 누르면 비밀번호가 빠집니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:677",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:678",
   "args": 0
  },
  "장면에 「{0}」 을 넣었습니다 — 이긴 갈래 등 원하는 자리로 옮기고 「저장」을 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:689",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:690",
+  "args": 1
+ },
+ "인물 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:699",
+  "args": 0
+ },
+ "싸움 줄을 「{0}」 로 바꿨습니다 — 「저장」을 눌러 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:709",
+  "args": 1
+ },
+ "장면에 「{0}」 을 넣었습니다 — 그 아래에 이겼을 때의 줄을, 「[놓쳤을 때]」 아래에 졌을 때의 줄을 적고 「저장」을 눌러 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:715",
   "args": 1
  },
  "도시 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:695",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:721",
   "args": 0
  },
  "소문 도시: {0} — 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:698",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:724",
   "args": 1
  },
  "게임 위치: (자리를 아직 안 골랐습니다)": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:710",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:736",
   "args": 0
  },
  "{0} {1}도": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:721",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:747",
   "args": 2
  },
  "게임 위치: {0}  ·  {1}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:752",
   "args": 2
  },
  "북위": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:752",
   "args": 0
  },
  "남위": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:752",
   "args": 0
  },
  "동경": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:752",
   "args": 0
  },
  "서경": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:752",
   "args": 0
  },
  "힌트를 『{0}』 에 싣습니다 — 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:743",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:769",
   "args": 1
  },
  "줄 더하기": {
