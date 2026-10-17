@@ -6,7 +6,10 @@ namespace CdsHelper.Support.Local.Models;
 /// <param name="Name">이름.</param>
 /// <param name="Price">한 문 값(닢).</param>
 /// <param name="Weight">한 문 무게. 적재중량을 먹는다.</param>
-/// <param name="Word">조선소 영감이 붙이는 말. 골랐을 때 한 번 낸다.</param>
+/// <param name="Word">
+/// 조선소 영감이 붙이는 말. 골랐을 때 한 번 낸다. <c>{0}</c> 자리에는 <paramref name="Rival"/> 대포의 이름이 든다(<see cref="Spoken"/>).
+/// </param>
+/// <param name="Rival">말에서 견주는 대포의 번호. 없으면 -1.</param>
 /// <remarks>
 /// 게임 표는 <c>0x00549DB0</c> 이고 한 줄이 12바이트다 — 이름 포인터 · 단가 · 중량.
 /// <code>
@@ -15,8 +18,11 @@ namespace CdsHelper.Support.Local.Models;
 /// </code>
 /// 말은 <c>0x00532008</c> 벌이다.
 /// </remarks>
-public sealed record Cannon(string Name, int Price, int Weight, string Word)
+public sealed record Cannon(string Name, int Price, int Weight, string Word, int Rival = -1)
 {
+    /// <summary>영감이 하는 말 — 견주는 대포가 있으면 그 이름을 끼운다. 이름을 바꿔도 말이 따라간다.</summary>
+    public string Spoken => Rival >= 0 && Rival < All.Length ? string.Format(Word, All[Rival].Name) : Word;
+
     /// <summary>
     /// 앞 넷은 게임 표 차례 그대로다. 다섯째 카로네이드포는 원본에 없다 — 런던 규모를 7 로 키우면(모드 「도시 투자 성장」)
     /// 런던 조선소가 판다. 위력은 7(카논 8 다음), 사거리는 세이커와 같은 3 이다(<c>SeaBattle.GunPower</c> · <c>RangeOf</c>).
@@ -26,11 +32,12 @@ public sealed record Cannon(string Name, int Price, int Weight, string Word)
         new("세이커포", 250, 15, "이것은 적당한 값이지만, 위협정도의 위력밖에 없네."),
         new("캘버린포", 1600, 20, "이것은 멀리서 겨냥해 맞추는 데는 최고의 대포라네."),
         new("페리에포", 2100, 25, "이것은 추천하겠네. 뭐라해도 바란스가 좋다네."),
-        new("카논포", 2500, 30, "이것은 사정 거리는 짧지만, 맞추면 일격필살로 대단한 것이네."),
-        new("카로네이드포", 5000, 20, "이것은 런던에서만 만드는 신식이라네. 멀리는 못 쏘지만 가볍고 위력은 카논포 못지않지."),
+        // 원본 이름은 「카논포」(0x0056B878)지만 육상전 병종 「캐논포병」과 맞춰 「캐논포」로 적는다(건의).
+        new("캐논포", 2500, 30, "이것은 사정 거리는 짧지만, 맞추면 일격필살로 대단한 것이네."),
+        new("카로네이드포", 5000, 20, "이것은 런던에서만 만드는 신식이라네. 멀리는 못 쏘지만 가볍고 위력은 {0} 못지않지.", Rival: 3),
     ];
 
-    /// <summary>카로네이드포의 번호 — 원본에 없는 다섯째 대포다. 런던에서만 만드는 신식이라 카논포(2500)의 두 배 값이다.</summary>
+    /// <summary>카로네이드포의 번호 — 원본에 없는 다섯째 대포다. 런던에서만 만드는 신식이라 캐논포(2500)의 두 배 값이다.</summary>
     public const int Carronade = 4;
 
     /// <summary>갈래 수.</summary>

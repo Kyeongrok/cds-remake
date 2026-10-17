@@ -1058,7 +1058,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
             if (!_player.CanAfford(gun.Price)) { Say("돈이 모자라는군."); continue; }
 
             // 같은 갈래를 이미 실었으면 대포 설명은 안 한다(0x00496557 → 0x004965B7).
-            if (!same) Say(gun.Word);
+            if (!same) Say(gun.Spoken);
             room = Math.Min(room, _player.Gold / gun.Price);
 
             int want;

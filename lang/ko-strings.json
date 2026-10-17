@@ -26860,43 +26860,43 @@
   "args": 0
  },
  "세이커포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:26",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:32",
   "args": 0
  },
  "이것은 적당한 값이지만, 위협정도의 위력밖에 없네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:26",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:32",
   "args": 0
  },
  "캘버린포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:27",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:33",
   "args": 0
  },
  "이것은 멀리서 겨냥해 맞추는 데는 최고의 대포라네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:27",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:33",
   "args": 0
  },
  "페리에포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:28",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:34",
   "args": 0
  },
  "이것은 추천하겠네. 뭐라해도 바란스가 좋다네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:28",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:34",
   "args": 0
  },
- "카논포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:29",
+ "캐논포": {
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:36",
   "args": 0
  },
  "이것은 사정 거리는 짧지만, 맞추면 일격필살로 대단한 것이네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:29",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:36",
   "args": 0
  },
  "카로네이드포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:30",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:37",
   "args": 0
  },
- "이것은 런던에서만 만드는 신식이라네. 멀리는 못 쏘지만 가볍고 위력은 카논포 못지않지.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:30",
+ "이것은 런던에서만 만드는 신식이라네. 멀리는 못 쏘지만 가볍고 위력은 {0} 못지않지.": {
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:37",
   "args": 0
  },
  "기타({0})": {
