@@ -213,7 +213,7 @@ public sealed class DisevRunner
     public static ScriptState Probe(Window owner, Game game, int discoveryId)
     {
         if (Open(game.Directory, DisevBook.CacheName) is not { } book) return ScriptState.None;
-        if (discoveryId < 0 || discoveryId >= book.Count) return ScriptState.None;
+        if (!book.Has(discoveryId)) return ScriptState.None;
         var raw = book.Part(discoveryId);
         if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return ScriptState.None;
         var runner = new DisevRunner(owner, game, DisevBook.CacheName, EventOf(game, -1));
@@ -252,7 +252,7 @@ public sealed class DisevRunner
         LastStepsAdvanced = 0;
         LastMissedMonster = false;
         if (Open(game.Directory, cache) is not { } book) return false;
-        if (partIndex < 0 || partIndex >= book.Count) return false;
+        if (!book.Has(partIndex)) return false;
 
         var raw = book.Part(partIndex);
         if (raw.Length == 0) return false;
@@ -310,7 +310,7 @@ public sealed class DisevRunner
     public static bool IsEligible(Game game, string cache, int partIndex, DisevEvent ev)
     {
         if (Open(game.Directory, cache) is not { } book) return false;
-        if (partIndex < 0 || partIndex >= book.Count) return false;
+        if (!book.Has(partIndex)) return false;
 
         var raw = book.Part(partIndex);
         if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return false;
@@ -342,7 +342,7 @@ public sealed class DisevRunner
     public static IReadOnlyList<SlotView>? Inspect(Game game, string cache, int partIndex, int building = -1)
     {
         if (Open(game.Directory, cache) is not { } book) return null;
-        if (partIndex < 0 || partIndex >= book.Count) return null;
+        if (!book.Has(partIndex)) return null;
 
         var raw = book.Part(partIndex);
         if (raw.Length == 0 || DisevPart.Parse(raw, out _) is not { } part) return null;
@@ -427,7 +427,7 @@ public sealed class DisevRunner
     /// <summary>그 책 그 파트의 대본이 켜는 교역품들. 대본이 없으면 빈 목록이다.</summary>
     public static IEnumerable<int> GoodsActivatedBy(Game game, string cache, int discoveryId)
     {
-        if (Open(game.Directory, cache) is not { } book || discoveryId < 0 || discoveryId >= book.Count) yield break;
+        if (Open(game.Directory, cache) is not { } book || !book.Has(discoveryId)) yield break;
         if (DisevPart.Parse(book.Part(discoveryId), out _) is not { } part) yield break;
 
         foreach (int start in part.ChunkStarts)
@@ -446,7 +446,7 @@ public sealed class DisevRunner
     /// </summary>
     public static bool RecordsDiscovery(Game game, int discoveryId)
     {
-        if (Open(game.Directory, DisevBook.CacheName) is not { } book || discoveryId < 0 || discoveryId >= book.Count) return true;
+        if (Open(game.Directory, DisevBook.CacheName) is not { } book || !book.Has(discoveryId)) return true;
         if (DisevPart.Parse(book.Part(discoveryId), out _) is not { } part) return true;
 
         foreach (int start in part.ChunkStarts)

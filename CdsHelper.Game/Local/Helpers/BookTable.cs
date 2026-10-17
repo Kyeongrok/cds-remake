@@ -123,6 +123,9 @@ public sealed class BookTable
                 var book = edits.TryGetValue(b.Index, out var edited) ? edited : b;
                 if (!extras && book.Hints.Any(h => h >= _hintNeeds.Length))
                     book = book with { Hints = [.. book.Hints.Where(h => h < _hintNeeds.Length)] };
+                // 사람이 지어 넣은 발견물의 힌트를 그 제목의 책에 싣는다.
+                if (extras && UserDiscoveries.HintsInBook(book.Title).ToList() is { Count: > 0 } added)
+                    book = book with { Hints = [.. book.Hints, .. added.Where(h => !book.Hints.Contains(h))] };
                 merged.Add(book);
             }
             if (!extras) return merged;

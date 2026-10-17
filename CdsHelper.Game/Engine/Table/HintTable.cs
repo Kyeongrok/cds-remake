@@ -271,6 +271,7 @@ public sealed class HintTable
             var baseIds = _hints.Select(h => h.Id).ToHashSet();
             foreach (var (id, entry) in HintEdits.All)
                 if (!baseIds.Contains(id)) merged.Add(HintEdits.Synthesize(entry));
+            merged.AddRange(UserDiscoveries.Hints);   // 사람이 지어 넣은 발견물의 힌트
             return merged;
         }
     }
@@ -296,7 +297,7 @@ public sealed class HintTable
     {
         if (Original(id) is { } row) return HintEdits.Apply(row);
         if (!Local.Settings.GameSettings.ExtraDiscoveries) return null;
-        return HintEdits.Of(id) is { } entry ? HintEdits.Synthesize(entry) : null;
+        return HintEdits.Of(id) is { } entry ? HintEdits.Synthesize(entry) : UserDiscoveries.Hint(id);
     }
 
     /// <summary>그 힌트의 이름. 표 밖이면 번호로 물러선다.</summary>

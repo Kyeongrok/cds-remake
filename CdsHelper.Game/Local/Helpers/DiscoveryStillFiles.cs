@@ -80,6 +80,8 @@ public static class DiscoveryStillFiles
     /// <summary>그 번호의 그림 파일 자리. 없으면 null.</summary>
     public static string? Uploaded(int n)
     {
+        // 사람이 지어 넣은 발견물의 그림(%APPDATA%\CdsHelper\discoveries\{UUID}\picture.png).
+        if (UserDiscoveries.PicturePath(n) is { } user) return user;
         foreach (var dir in AssetDirectories())
         {
             var path = Path.Combine(dir, Name(n));

@@ -57,7 +57,7 @@ public sealed class RumorTable
     /// <c>소문표.json</c> 은 EXE 를 구운 본이라 손으로 안 고치고 따로 적어 둔다.
     /// </remarks>
     public IReadOnlyList<Rumor> Rumors =>
-        Local.Settings.GameSettings.ExtraDiscoveries && Added.Count > 0 ? [.. _rumors, .. Added] : _rumors;
+        Local.Settings.GameSettings.ExtraDiscoveries ? [.. _rumors, .. Added, .. UserDiscoveries.Rumors] : _rumors;
 
     /// <summary>더해 넣은 소문을 적어 둔 파일 이름(<c>소문-고친것.json</c>).</summary>
     private const string AddedName = "소문-고친것";

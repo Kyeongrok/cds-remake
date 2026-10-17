@@ -43,7 +43,8 @@ public sealed class DiscoveryDescriptions
 
     /// <summary>그 발견물의 설명문. 없으면 빈 문자열.</summary>
     public string Of(int discovery) =>
-        discovery >= 0 && discovery < _texts.Length ? _texts[discovery] : "";
+        discovery >= 0 && discovery < _texts.Length ? _texts[discovery]
+        : UserDiscoveries.Description(discovery) ?? "";   // 사람이 지어 넣은 발견물(2000~)
 
     /// <summary>표를 연다. 적어 둔 JSON 이 있으면 그것을, 없으면 EXE 를 읽는다. 둘 다 없으면 null.</summary>
     public static DiscoveryDescriptions? Open(string gameDirectory)

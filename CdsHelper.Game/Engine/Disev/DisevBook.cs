@@ -154,7 +154,16 @@ public sealed class DisevBook
 
     /// <summary>그 파트의 알맹이. 밖에서 고치지 못하게 베껴 준다.</summary>
     public byte[] Part(int index) =>
-        index >= 0 && index < _parts.Count ? (byte[])_parts[index].Clone() : [];
+        index >= 0 && index < _parts.Count ? (byte[])_parts[index].Clone()
+        // 발견 대본 책이면 사람이 지어 넣은 발견물(UserDiscoveries, 2000~)의 장면도 낸다 — 파일에는 안 적는다.
+        : _cache == CacheName && UserDiscoveries.ScenePart(index) is { } user ? user : [];
+
+    /// <summary>그 파트가 있는지 — 파일에 든 것과, 발견 대본 책이면 사람이 지어 넣은 발견물의 장면.</summary>
+    public bool Has(int index) =>
+        index >= 0 && (index < _parts.Count || _cache == CacheName && UserDiscoveries.ScenePart(index) != null);
+
+    /// <summary>줄 나무로 적은 파트 하나를 바이트로 굽는다 — 사람이 지어 넣은 발견물의 장면(<see cref="UserDiscoveries.Compile"/>)이 쓴다.</summary>
+    public static byte[]? Compile(Entry entry, out string error) => Join(entry, out error);
 
     /// <summary>그 파트를 갈아 끼운다. 적어 두는 것은 <see cref="Save"/> 가 한다.</summary>
     public void Replace(int index, byte[] data)

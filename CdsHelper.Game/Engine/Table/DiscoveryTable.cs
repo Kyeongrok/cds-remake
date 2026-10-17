@@ -186,6 +186,8 @@ public sealed class DiscoveryTable
             if (!Local.Settings.GameSettings.ExtraDiscoveries) return merged;
             foreach (var (id, row) in edits)
                 if (id < 0 || id >= _rows.Length) merged.Add(Rename(row));
+            // 사람이 지어 넣은 발견물(%APPDATA% 의 UserDiscoveries) — 번호가 2000 위라 안 겹친다.
+            foreach (var row in UserDiscoveries.Records) merged.Add(Rename(row));
             return merged;
         }
     }
@@ -224,6 +226,7 @@ public sealed class DiscoveryTable
         bool original = id >= 0 && id < _rows.Length;
         if (!original && !Local.Settings.GameSettings.ExtraDiscoveries) return null;
         if (DiscoveryEdits.Of(id) is { } edited) return Rename(edited);
+        if (!original && UserDiscoveries.Record(id) is { } user) return Rename(user);
         return original ? Rename(_rows[id]) : null;
     }
 
