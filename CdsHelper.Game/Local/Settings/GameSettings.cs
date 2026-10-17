@@ -518,8 +518,11 @@ public static class GameSettings
         }
         catch
         {
-            // 읽다 넘어져도 게임은 기본값으로 굴러가야 한다.
+            // 읽다 넘어져도 게임은 기본값으로 굴러가야 한다. 다만 다음 저장이 켜 둔 모드를 기본값으로 덮어쓰므로
+            // 못 읽은 파일은 옆에 떠 둔다.
             _data = new GameSettingsData();
+            try { File.Copy(FilePath, FilePath + $".broken-{DateTime.Now:yyyyMMddHHmmss}", overwrite: true); }
+            catch { }
         }
     }
 
@@ -589,11 +592,15 @@ public static class GameSettings
             string? dir = Path.GetDirectoryName(FilePath);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
 
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(_data, Json));
+            // 옆 파일에 다 적은 뒤 갈아 끼운다 — 적는 도중 앱이 꺼지면(업데이트 · 강제 종료) 반쯤 적힌 파일이 남아
+            // 다음에 못 읽고 모드가 다 꺼졌다.
+            string temp = FilePath + ".tmp";
+            File.WriteAllText(temp, JsonSerializer.Serialize(_data, Json));
+            File.Move(temp, FilePath, overwrite: true);
         }
         catch
         {
-            // 못 적어도 이번 판은 굴러간다.
+            // 못 적어도 이번 게임은 굴러간다.
         }
     }
 
