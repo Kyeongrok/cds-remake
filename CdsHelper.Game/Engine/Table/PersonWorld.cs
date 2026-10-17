@@ -463,7 +463,9 @@ public sealed class PersonWorld
     /// <remarks>
     /// 원본은 네 쪽만 쓴다(<c>0x00432596</c>) — 어긋남이 큰 축을 골라 그 부호로 정한다.
     /// </remarks>
-    public int HeadingOf(PersonTable.Row row)
+    /// <param name="dayPart">오늘 하루 가운데 지난 몫 — <see cref="CellOf"/> 와 같은 값을 줘야 바닷길의 짧은 토막에서
+    /// 뱃머리가 그날 아침 토막에 머물지 않는다.</param>
+    public int HeadingOf(PersonTable.Row row, double dayPart = 0)
     {
         if (Leg(row) is not { } leg) return 8;
         double dx = leg.Dx, dy = leg.Dy;
@@ -471,7 +473,8 @@ public sealed class PersonWorld
         if (Moving(row) && SeaPathOf(row, leg) is { } path)
         {
             int far = (int)Math.Sqrt((double)leg.Dx * leg.Dx + (double)leg.Dy * leg.Dy);
-            (_, dx, dy) = path.At(far <= 0 ? 1 : Math.Clamp(row.Wait * SpeedPerDay / (double)far, 0, 1));
+            double days = row.Wait + Math.Clamp(dayPart, 0, 1);
+            (_, dx, dy) = path.At(far <= 0 ? 1 : Math.Clamp(days * SpeedPerDay / far, 0, 1));
         }
         return Math.Abs(dy) > Math.Abs(dx)
             ? (dy < 0 ? 0 : 8)
@@ -493,7 +496,7 @@ public sealed class PersonWorld
         {
             if (row.Id < PersonTable.VoyagerCount ? row.Appear == 0 : !Active(row)) continue;
             if (CellOf(row, dayPart) is not { } at) continue;
-            yield return (row, at.X, at.Y, HeadingOf(row));
+            yield return (row, at.X, at.Y, HeadingOf(row, dayPart));
         }
     }
 
