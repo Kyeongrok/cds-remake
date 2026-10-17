@@ -3525,6 +3525,8 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreAnnouncedDates(saved.AnnouncedOn, saved.AnnouncedYears);
             _game.Player.SetNobleRank(saved.NobleRank ?? 0);
             _game.Player.RestoreInvestments(saved.Investments);
+            _game.Player.RestoreGrowthFunds(saved.GrowthFunds);
+            _host.RefreshGrownCities();
             _game.Player.RestoreFoundDates(saved.FoundOn);
             // 찾은 사람·보고한 사람 이름. 이 칸 앞의 세이브는 지금 제독 이름으로 본다.
             _game.Player.RestoreDiscoverers(saved.FoundBy, saved.AnnouncedBy);
@@ -3710,6 +3712,7 @@ public sealed class WorldMapWindow : Window
         try { ShowModDialogCore(); }
         finally { _modOpen = false; }
         _refreshApps();   // 여급 수첩 · 인물 이동을 켜고 껐으면 도시락 단추가 나타나거나 숨는다
+        _host.RefreshGrownCities();   // 「도시 투자 성장」을 켜고 껐으면 자란 도시 그림을 바꾼다
     }
 
     private void ShowModDialogCore() => ModDialog.Show(this, new ModDialog.Options
@@ -7764,7 +7767,11 @@ public sealed class WorldMapWindow : Window
         var dialog = CityPicView.Open(this, _game, city, name, MapAreaOnScreen(), track, culture);
         if (dialog == null) return false;
         _cityView = dialog;
-        dialog.Closed += (_, _) => { if (_cityView == dialog) _cityView = null; };
+        dialog.Closed += (_, _) =>
+        {
+            if (_cityView == dialog) _cityView = null;
+            _host.RefreshGrownCities();   // 교역소 투자로 규모가 올랐으면 도시 그림을 큰 그림으로(모드 「도시 투자 성장」)
+        };
 
         _game.Bgm.Play(track);
         SetInCity(true);          // 지도에 남색 막을 씌운다(그림 창과는 따로 논다)

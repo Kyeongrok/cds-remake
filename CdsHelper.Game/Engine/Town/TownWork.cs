@@ -210,7 +210,8 @@ public static class TownWorks
             items.Remove(NameOf(TownWork.Announce));
 
         // 조선소 「특별주문」은 원본에 없는 줄이라 모드에서 켰을 때만 낸다.
-        if (facility.Kind == FacilityKind.TradingPost && !Town.Nobility.Enabled)
+        // 「투자」는 모드 「작위」(공적)나 「도시 투자 성장」(규모)을 켰을 때만 선다.
+        if (facility.Kind == FacilityKind.TradingPost && !Town.Nobility.Enabled && !Town.CityGrowth.Enabled)
             items.Remove(NameOf(TownWork.Invest));
         if (facility.Kind == FacilityKind.Shipyard && !Local.Settings.GameSettings.SpecialOrder)
             items.Remove(NameOf(TownWork.SpecialOrder));

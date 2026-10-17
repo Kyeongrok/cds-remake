@@ -859,6 +859,33 @@ public sealed class Player
         return true;
     }
 
+    /// <summary>
+    /// 도시마다 규모를 올리려고 쌓아 둔 투자금(모드 「도시 투자 성장」) — 규모가 오르면 그 값만큼 덜어 낸다.
+    /// <see cref="Investments"/> 와 따로 든다 — 그쪽은 작위 공적으로 쌓이기만 한다.
+    /// </summary>
+    private readonly Dictionary<int, long> _growthFunds = [];
+
+    public IReadOnlyDictionary<int, long> GrowthFunds => _growthFunds;
+
+    /// <summary>그 도시에 쌓인 성장 적립금.</summary>
+    public long GrowthFundOf(int city) => _growthFunds.TryGetValue(city, out long v) ? v : 0;
+
+    /// <summary>성장 적립금을 더하거나(음수면) 덜어 낸다.</summary>
+    public void AddGrowthFund(int city, long amount)
+    {
+        long now = Math.Max(0, GrowthFundOf(city) + amount);
+        if (now > 0) _growthFunds[city] = now;
+        else _growthFunds.Remove(city);
+    }
+
+    /// <summary>성장 적립금을 통째로 박는다 — 적어 둔 판을 열 때 쓴다.</summary>
+    public void RestoreGrowthFunds(IReadOnlyDictionary<int, long>? saved)
+    {
+        _growthFunds.Clear();
+        foreach (var (city, amount) in saved ?? new Dictionary<int, long>())
+            if (amount > 0) _growthFunds[city] = amount;
+    }
+
     /// <summary>투자 기록을 통째로 박는다 — 적어 둔 판을 열 때 쓴다.</summary>
     public void RestoreInvestments(IReadOnlyDictionary<int, long>? saved)
     {

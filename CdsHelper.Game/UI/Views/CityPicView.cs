@@ -2862,7 +2862,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     void ITownScreen.TradeTalk() => TradeTalk();
 
     /// <summary>
-    /// 교역소 「투자」 — 소지금을 이 교역소에 맡긴다. 투자한 돈은 1000 닢마다 공적 1 이 된다(모드 「작위」).
+    /// 교역소 「투자」 — 소지금을 이 교역소에 맡긴다. 투자한 돈은 1000 닢마다 공적 1 이 되고(모드 「작위」),
+    /// 쌓이면 이 도시의 규모가 오른다(모드 「도시 투자 성장」, <see cref="Engine.Town.CityGrowth"/>).
     /// </summary>
     void ITownScreen.Invest()
     {
@@ -2877,20 +2878,32 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
 
         long here = _player.InvestedIn(_cityId);
-        int merit = Engine.Town.Nobility.MeritOf(_game);
+        int scale = _game.CityRows?.ScaleOf(_cityId) ?? 0;
+        var gauges = new List<CountDialog.Gauge>
+        {
+            new("소지금", _player.Gold),
+            new("투자액", (int)Math.Min(int.MaxValue, here)),
+        };
+        if (Engine.Town.Nobility.Enabled) gauges.Add(new("공  적", Engine.Town.Nobility.MeritOf(_game), ""));
+        // 도시 투자 성장 — 지금 규모와 다음 규모까지 남은 돈을 함께 보인다.
+        if (Engine.Town.CityGrowth.Enabled)
+        {
+            gauges.Add(new("규  모", scale, ""));
+            if (scale < Engine.Town.CityGrowth.MaxScale)
+                gauges.Add(new("다음까지", (int)Math.Min(int.MaxValue, Engine.Town.CityGrowth.LeftToNext(_player, scale, _cityId))));
+        }
         int want = CountDialog.Ask(owner, "투자한다", "금  액", "닢",
-                                   _player.Gold, InvestStep, full: false,
-                                   new CountDialog.Gauge("소지금", _player.Gold),
-                                   new CountDialog.Gauge("투자액", (int)Math.Min(int.MaxValue, here)),
-                                   new CountDialog.Gauge("공  적", merit, ""));
+                                   _player.Gold, InvestStep, full: false, [.. gauges]);
         if (want <= 0) return;
 
         long before = _player.TotalInvested;
         if (!_player.Invest(_cityId, want)) return;
-        int gained = Engine.Town.Nobility.InvestMeritOf(_player.TotalInvested)
-                     - Engine.Town.Nobility.InvestMeritOf(before);
+        int gained = Engine.Town.Nobility.Enabled
+            ? Engine.Town.Nobility.InvestMeritOf(_player.TotalInvested) - Engine.Town.Nobility.InvestMeritOf(before) : 0;
+        var grown = Engine.Town.CityGrowth.Feed(_player, _game.CityRows, _cityId, want);
         GameDialog.Show(owner, $"금화 {want}닢을 {_player.CityName} 교역소에 투자했습니다"
-                               + (gained > 0 ? $"{Environment.NewLine}공적이 {gained} 올랐습니다" : ""));
+                               + (gained > 0 ? $"{Environment.NewLine}공적이 {gained} 올랐습니다" : "")
+                               + (grown.Count > 0 ? $"{Environment.NewLine}{_player.CityName}의 규모가 {grown[^1]}{(grown[^1] is 3 or 6 ? "으로" : "로")} 커졌습니다" : ""));
     }
 
     /// <summary>투자 수 적기의 한 칸 — 공적 1 이 되는 몫(1000 닢)이다.</summary>

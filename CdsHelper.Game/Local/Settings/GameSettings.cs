@@ -272,6 +272,9 @@ public sealed class GameSettingsData
     /// <summary>조선소 「특별주문」 줄을 낼지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SpecialOrder { get; set; }
 
+    /// <summary>교역소 투자로 도시 규모가 오르게 할지(모드 「도시 투자 성장」). 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool InvestGrowth { get; set; }
+
     /// <summary>덧붙인 아이템 그림(asset/item 206~)을 쓸지. 끄면 원본 그림이다.</summary>
     public bool EnhancedItemArt { get; set; }
 
@@ -1181,6 +1184,15 @@ public static class GameSettings
     {
         get => Get(d => d.RidiFont);
         set => Set(d => d.RidiFont = value);
+    }
+
+    /// <summary>
+    /// 도시 투자 성장 — 교역소 「투자」가 생기고, 쌓인 돈만큼 그 도시 규모가 오른다(<see cref="Engine.Town.CityGrowth"/>).
+    /// </summary>
+    public static bool InvestGrowth
+    {
+        get => Get(d => d.InvestGrowth);
+        set => Set(d => d.InvestGrowth = value);
     }
 
     /// <summary>특별주문 — 조선소에서 가진 배와 옵션까지 똑같은 배를 산다. 모드 창에서 켜고 끈다.</summary>

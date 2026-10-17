@@ -405,7 +405,8 @@ public static class GameSave
         double? AshoreX = null, double? AshoreY = null, int? MooredHeading = null,
         Dictionary<int, int>? AccPlayed = null, string? GameId = null,
         Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null,
-        List<string>? HardcoreMarks = null, string? HardcoreSeal = null);
+        List<string>? HardcoreMarks = null, string? HardcoreSeal = null,
+        Dictionary<int, long>? GrowthFunds = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -588,7 +589,9 @@ public static class GameSave
                             Hardcore: player.Hardcore ? true : null,
                             // 하드코어 판이 한 번이라도 켠 · 줄인 모드와 그 봉인 — 손으로 고치면 불러올 때 「변조」가 붙는다.
                             HardcoreMarks: player.Hardcore ? HardcoreRules.Sorted(player.HardcoreMarks) : null,
-                            HardcoreSeal: player.Hardcore ? HardcoreRules.Seal(player) : null);
+                            HardcoreSeal: player.Hardcore ? HardcoreRules.Seal(player) : null,
+                            // 도시 투자 성장(모드)의 적립금. 이 칸 앞의 세이브는 적립금이 없다.
+                            GrowthFunds: player.GrowthFunds.Count > 0 ? player.GrowthFunds.ToDictionary(e => e.Key, e => e.Value) : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

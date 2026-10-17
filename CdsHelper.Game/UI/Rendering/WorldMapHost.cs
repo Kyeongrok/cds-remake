@@ -324,15 +324,68 @@ public sealed class WorldMapHost : HwndHost
     /// 발견물 표 <c>+0x54</c> 2x2)을 점마다 견주어 색 번호가 다른 점만 남긴다(개발도구 「도시 그림 뽑기」와 같은 셈).
     /// 48x48 칸을 16장씩 줄지어 놓고, 앞 226 이 도시 · 그 뒤가 발견물이다.
     /// </summary>
+    /// <summary>
+    /// 규모가 자라 큰 도시 그림을 빌려 쓰는 도시 → 그림을 빌려 올 도시(모드 「도시 투자 성장」).
+    /// </summary>
+    private Dictionary<int, int> _grownArt = [];
+
+    /// <summary>
+    /// 규모가 <see cref="Engine.Town.CityGrowth.BigArtScale"/> 이상인데 그림이 작은(2x2칸) 도시마다, 같은 문화권에서 큰 그림(3x3칸)을 쓰는
+    /// 가장 큰 도시를 고른다. 늘어날 칸이 하나라도 바다면 바다 위에 마을이 서므로 안 바꾼다.
+    /// </summary>
+    /// <remarks>
+    /// 원본 도시 그림은 지도에 박혀 있고 규모와 상관없다 — 큰 도시(규모 4 이상 대부분)는 3x3칸, 작은 도시는 2x2칸 그림이다.
+    /// 그래서 「커진다」는 것은 그 칸을 3x3 으로 넓혀 큰 도시의 그림을 얹는 것이다.
+    /// </remarks>
+    private Dictionary<int, int> GrownCities()
+    {
+        var grown = new Dictionary<int, int>();
+        if (_cities is not { } cities || !Engine.Town.CityGrowth.Enabled || _world == null || _terrain == null) return grown;
+        const int w = CityExeTable.EraseWidth;
+        static bool Full(ushort[] e) => e.Length == w * w && e.All(v => v != CityExeTable.Keep);
+        for (int id = 0; id < GameMapCoords.CityCount; id++)
+        {
+            if (cities.ScaleOf(id) < Engine.Town.CityGrowth.BigArtScale) continue;
+            var erase = cities.EraseOf(id);
+            if (erase.Length != w * w || Full(erase) || !cities.TryCell(id, out int cx, out int cy, out _)) continue;
+            bool land = true;
+            for (int k = 0; k < w * w && land; k++)
+                if (erase[k] == CityExeTable.Keep && IsSeaClass(CellValue(cx + k % w + 0.5, cy + k / w + 0.5))) land = false;
+            if (!land) continue;
+            int culture = cities.CultureOf(id), best = -1, bestScale = -1;
+            for (int j = 0; j < GameMapCoords.CityCount; j++)
+            {
+                if (j == id || cities.CultureOf(j) != culture || !Full(cities.EraseOf(j))) continue;
+                if (cities.ScaleOf(j) > bestScale) { best = j; bestScale = cities.ScaleOf(j); }
+            }
+            if (best >= 0) grown[id] = best;
+        }
+        return grown;
+    }
+
+    /// <summary>자란 도시가 달라졌으면 도시 그림 판을 다시 짓는다 — 투자로 규모가 오른 뒤 · 세이브를 연 뒤 · 모드를 바꾼 뒤.</summary>
+    public void RefreshGrownCities()
+    {
+        if (!_renderer.CityArtReady) return;
+        var now = GrownCities();
+        if (now.Count == _grownArt.Count && now.All(p => _grownArt.TryGetValue(p.Key, out int v) && v == p.Value)) return;
+        BuildCityArt();
+        _dirty = true;
+    }
+
     private void BuildCityArt()
     {
         if (_cities == null || _world == null || _ocean == null) return;
         const int side = MapD3DRenderer.CitySpriteSide, perRow = MapD3DRenderer.CitySpritesPerRow;
 
+        // 자란 도시는 그림을 큰 도시에서 빌려 온다 — 판 자리는 제 번호 그대로, 그림만 그 도시 칸에서 뜬다.
+        _grownArt = GrownCities();
         var list = new List<(int X, int Y, ushort[] Block, int Width)>();
         for (int id = 0; id < GameMapCoords.CityCount; id++)
-            list.Add(_cities.TryCell(id, out int cx, out int cy, out _)
-                ? (cx, cy, _cities.EraseOf(id), CityExeTable.EraseWidth) : (0, 0, [], 0));
+            list.Add(_grownArt.TryGetValue(id, out int from) && _cities.TryCell(from, out int fx, out int fy, out _)
+                ? (fx, fy, _cities.EraseOf(from), CityExeTable.EraseWidth)
+                : _cities.TryCell(id, out int cx, out int cy, out _)
+                    ? (cx, cy, _cities.EraseOf(id), CityExeTable.EraseWidth) : (0, 0, [], 0));
         _placeSprite.Clear();
         if (DiscoveryTable.Open(_gameDir) is { } finds)
             foreach (var row in finds.Discoveries)
@@ -369,7 +422,19 @@ public sealed class WorldMapHost : HwndHost
                 }
             }
         }
-        _renderer.SetCityArt(atlas, atlasW, atlasH, blocks);
+        // 지도에 까는 블록은 제 자리다 — 자란 도시는 3x3 을 다 쓰되, 원래 도시가 아니던 칸은 그 칸의 지형을 그대로 바탕으로 둔다.
+        var shown = blocks.ToArray();
+        foreach (var (id, _) in _grownArt)
+        {
+            if (!_cities.TryCell(id, out int cx, out int cy, out _)) continue;
+            const int w = CityExeTable.EraseWidth;
+            var own = _cities.EraseOf(id);
+            var merged = new ushort[w * w];
+            for (int k = 0; k < merged.Length; k++)
+                merged[k] = own[k] != CityExeTable.Keep ? own[k] : (ushort)CellValue(cx + k % w + 0.5, cy + k / w + 0.5);
+            shown[id] = (cx, cy, merged, w);
+        }
+        _renderer.SetCityArt(atlas, atlasW, atlasH, shown);
         BuildCityHiRes(count);
         ApplyHiddenSprites();
     }
@@ -404,6 +469,9 @@ public sealed class WorldMapHost : HwndHost
             }
             x0 += w;
         }
+        // 자란 도시는 빌려 온 큰 도시의 고해상도 그림을 쓴다.
+        foreach (var (id, from) in _grownArt)
+            if (id < spriteCount && from < spriteCount) Array.Copy(info, from * 8, info, id * 8, 8);
         _renderer.SetCityHiRes(atlas, Math.Max(1, atlasW), atlasH, info, spriteCount);
     }
 
