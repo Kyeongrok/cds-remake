@@ -25,6 +25,15 @@ public sealed class UserDiscoveryDialog : GameWindow
     private readonly ListBox _list = new() { Width = 220, Margin = new Thickness(10, 10, 6, 10) };
     private readonly StackPanel _form = new() { Margin = new Thickness(6, 10, 10, 4) };
 
+    /// <summary>「힌트」 탭 — 힌트가 있는지와 힌트 · 힌트를 실을 책 · 술집 소문.</summary>
+    private readonly StackPanel _hints = new() { Margin = new Thickness(6, 10, 10, 4) };
+
+    /// <summary>힌트가 있는지 — 없으면 힌트 · 책 · 소문을 안 내고, 처음부터 열린 것을 확률로만 만난다(원본 크라켄처럼).</summary>
+    private readonly CheckBox _hasHint = new() { Content = "힌트 있음", VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.Bold };
+
+    /// <summary>힌트 탭에서 「힌트 있음」을 풀면 꺼지는 줄들.</summary>
+    private readonly List<UIElement> _hintParts = [];
+
     /// <summary>「출처 · 공유」 탭 — 출처 · 만든 이 · 라이선스 · 비밀번호. 발견물 칸과 따로 둔다.</summary>
     private readonly StackPanel _share = new() { Margin = new Thickness(6, 10, 10, 4) };
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
@@ -95,18 +104,36 @@ public sealed class UserDiscoveryDialog : GameWindow
         _form.Children.Add(_where);
         foreach (var box in new[] { _x1, _y1, _x2, _y2 }) box.TextChanged += (_, _) => ShowWhere();
         _form.Children.Add(Line("확률", _chance, Label("분의 1"), _open));
-        _form.Children.Add(Line("힌트 이름", _hintName, Label("등급(1~3)"), _hintGrade, Label("갈래"), _hintCategory,
-                                Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline));
-        _form.Children.Add(Line("힌트 글", _hintText));
-        _form.Children.Add(Line("소문 도시", _rumorCities, Edit("도시 고르기…", PickCities), Label("힌트를 실을 책"), _book,
-                                Edit("책 고르기…", PickBook)));
-        _form.Children.Add(Line("소문 글", _rumorText));
+        _hints.Children.Add(Line("힌트", _hasHint));
+        _hints.Children.Add(new TextBlock
+        {
+            Margin = new Thickness(90, 0, 0, 8), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
+            Text = "힌트가 없는 발견물도 있습니다(원본 크라켄). 체크를 풀면 힌트 · 책 · 소문을 게임에 내지 않고, 적어 둔 값은 그대로 둡니다."
+                   + " 힌트가 없으면 「발견물」 탭의 「처음부터 열림」을 켜야 확률로 만날 수 있습니다.",
+        });
+        foreach (var part in new UIElement[]
+                 {
+                     Line("힌트 이름", _hintName, Label("등급(1~3)"), _hintGrade, Label("갈래"), _hintCategory,
+                          Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline),
+                     Line("힌트 글", _hintText),
+                     Line("힌트를 실을 책", _book, Edit("책 고르기…", PickBook)),
+                     Line("소문 도시", _rumorCities, Edit("도시 고르기…", PickCities)),
+                     Line("소문 글", _rumorText),
+                 })
+        {
+            _hintParts.Add(part);
+            _hints.Children.Add(part);
+        }
+        _hasHint.Checked += (_, _) => ShowHintParts();
+        _hasHint.Unchecked += (_, _) => ShowHintParts();
         _form.Children.Add(Line("설명", _description));
         _form.Children.Add(Line("장면", _scene));
         _form.Children.Add(new TextBlock
         {
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
-            Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)",
+            Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n"
+                   + "바다 괴물과 싸우려면 「[해전] 크라켄」(시서펜트 · 식인상어 · 맨터도 됩니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은"
+                   + " 지거나 도망쳤을 때입니다. 놓치면 다음에 그 바다에 가면 또 만납니다. 「(예제) 크라켄」을 보세요.",
         });
         _share.Children.Add(Line("출처", _credit));
         _share.Children.Add(new TextBlock
@@ -145,6 +172,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         body.Children.Add(_list);
         var tabs = new TabControl { Margin = new Thickness(6, 10, 10, 4) };
         tabs.Items.Add(new TabItem { Header = "발견물", Content = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _form } });
+        tabs.Items.Add(new TabItem { Header = "힌트", Content = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _hints } });
         tabs.Items.Add(new TabItem { Header = "출처 · 공유", Content = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _share } });
         body.Children.Add(tabs);
 
@@ -199,7 +227,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     private void SetEditable(bool on)
     {
         foreach (var box in Boxes) box.IsReadOnly = !on;
-        _category.IsEnabled = _land.IsEnabled = _open.IsEnabled = _license.IsEnabled = on;
+        _category.IsEnabled = _land.IsEnabled = _open.IsEnabled = _license.IsEnabled = _hasHint.IsEnabled = on;
         foreach (var button in _editors) button.IsEnabled = on;
         _save.IsEnabled = on;
         _remove.IsEnabled = _export.IsEnabled = !_example;
@@ -211,6 +239,12 @@ public sealed class UserDiscoveryDialog : GameWindow
         _lockState.Text = _example ? "예제는 고칠 수 없습니다"
             : !locked ? "잠기지 않음"
             : on ? "잠금 풀림 — 고칠 수 있습니다" : "잠김 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요";
+    }
+
+    /// <summary>「힌트 있음」을 풀면 힌트 줄들을 흐리게 — 값은 그대로 둔다.</summary>
+    private void ShowHintParts()
+    {
+        foreach (var part in _hintParts) part.Opacity = _hasHint.IsChecked == true ? 1 : 0.4;
     }
 
     private static StackPanel Line(string head, params UIElement[] parts)
@@ -228,7 +262,8 @@ public sealed class UserDiscoveryDialog : GameWindow
     {
         _list.Items.Clear();
         // 맨 위는 예제 — 무엇을 어떻게 적는지 보라고 둔다.
-        _list.Items.Add(new ListBoxItem { Content = "(예제) 돌묵상어", Tag = UserDiscoveries.ExampleUuid, FontStyle = FontStyles.Italic });
+        foreach (var (example, _) in UserDiscoveries.Examples)
+            _list.Items.Add(new ListBoxItem { Content = $"(예제) {example.Name}", Tag = example.Uuid, FontStyle = FontStyles.Italic });
         foreach (var l in UserDiscoveries.All.OrderBy(l => l.Entry.Name, StringComparer.Ordinal))
             _list.Items.Add(new ListBoxItem
             {
@@ -237,7 +272,8 @@ public sealed class UserDiscoveryDialog : GameWindow
             });
         var items = _list.Items.OfType<ListBoxItem>().ToList();
         // 고를 것이 없으면 지어 둔 첫 것, 그것도 없으면 예제다.
-        _list.SelectedItem = items.FirstOrDefault(i => (string)i.Tag == pick) ?? items.Skip(1).FirstOrDefault() ?? items[0];
+        _list.SelectedItem = items.FirstOrDefault(i => (string)i.Tag == pick)
+                             ?? items.Skip(UserDiscoveries.Examples.Count).FirstOrDefault() ?? items[0];
     }
 
     private void Show(string uuid)
@@ -246,17 +282,17 @@ public sealed class UserDiscoveryDialog : GameWindow
         _newMovie = null;
         _dropLock = false;
         _password.Clear();
-        _form.IsEnabled = _share.IsEnabled = true;
+        _form.IsEnabled = _share.IsEnabled = _hints.IsEnabled = true;
 
-        if (uuid == UserDiscoveries.ExampleUuid)
+        if (UserDiscoveries.ExampleOf(uuid) is { } shown)
         {
             _example = true;
-            Fill(UserDiscoveries.Example);
+            Fill(shown.Entry);
             _movie.Text = "(없음)";
-            _picture.Source = DiscoveryStillFiles.TryGetBgra(UserDiscoveries.ExamplePicture, out int w, out int h) is { } bgra
+            _picture.Source = shown.Picture >= 0 && DiscoveryStillFiles.TryGetBgra(shown.Picture, out int w, out int h) is { } bgra
                 ? BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, bgra, w * 4) : null;
             SetEditable(false);
-            Tell("예제입니다 — 앱에 실린 돌묵상어를 이 칸들로 옮긴 것입니다. 보고 따라 적으려면 「새 발견물」을 눌러 주세요.");
+            Tell($"예제입니다 — 게임에 들어 있는 {shown.Entry.Name}을(를) 이 칸들로 옮긴 것입니다. 「복제」를 누르면 베껴서 고쳐 쓸 수 있습니다.");
             return;
         }
 
@@ -282,6 +318,8 @@ public sealed class UserDiscoveryDialog : GameWindow
         _land.IsChecked = e.OnLand;
         _open.IsChecked = e.OpenAtStart;
         _chance.Text = $"{e.Chance}";
+        _hasHint.IsChecked = e.HasHint;
+        ShowHintParts();
         _hintName.Text = e.HintName;
         _hintGrade.Text = $"{e.HintGrade}";
         _hintCategory.Text = $"{e.HintCategory}";
@@ -318,6 +356,8 @@ public sealed class UserDiscoveryDialog : GameWindow
         "picture" => "[그림]",
         "movie" => "[동영상]",
         "found" => line.Text.Length > 0 ? $"[발견] {line.Text}" : "[발견]",
+        "battle" => $"[해전] {line.Text}",
+        "lose" => "[놓쳤을 때]",
         _ => string.IsNullOrWhiteSpace(line.Speaker) ? line.Text : $"{line.Speaker}: {line.Text}",
     };
 
@@ -331,6 +371,8 @@ public sealed class UserDiscoveryDialog : GameWindow
             if (s == "[그림]") lines.Add(new("picture"));
             else if (s == "[동영상]") lines.Add(new("movie"));
             else if (s.StartsWith("[발견]")) lines.Add(new("found", null, s[4..].Trim()));
+            else if (s.StartsWith("[해전]")) lines.Add(new("battle", null, s[4..].Trim() is { Length: > 0 } monster ? monster : "크라켄"));
+            else if (s == "[놓쳤을 때]") lines.Add(new("lose"));
             else if (s.IndexOf(':') is var at and > 0 and <= 12 && !s[..at].Contains(' '))
                 lines.Add(new("say", s[..at].Trim(), s[(at + 1)..].Trim()));
             else lines.Add(new("say", null, s));
@@ -368,6 +410,7 @@ public sealed class UserDiscoveryDialog : GameWindow
             Description = _description.Text.Trim(), Lines = ParseScene(_scene.Text),
             Credit = _credit.Text.Trim(), Author = _author.Text.Trim(),
             License = _license.Text.Trim() is { Length: > 0 } license ? license : UserDiscoveries.DefaultLicense,
+            HasHint = _hasHint.IsChecked == true,
         };
     }
 
@@ -404,7 +447,8 @@ public sealed class UserDiscoveryDialog : GameWindow
         string? movie = null;
         if (_example)
         {
-            if (DiscoveryStillFiles.TryGetBgra(UserDiscoveries.ExamplePicture, out int w, out int h) is { } bgra) picture = (bgra, w, h);
+            if (UserDiscoveries.ExampleOf(source.Uuid) is { Picture: >= 0 } shown
+                && DiscoveryStillFiles.TryGetBgra(shown.Picture, out int w, out int h) is { } bgra) picture = (bgra, w, h);
         }
         else if (UserDiscoveries.All.FirstOrDefault(l => l.Entry.Uuid == source.Uuid) is { } loaded)
         {
@@ -452,6 +496,12 @@ public sealed class UserDiscoveryDialog : GameWindow
             return;
         }
         if (Collect() is not { } e) return;
+        if (!e.HasHint && !e.OpenAtStart)
+        {
+            Tell("힌트가 없으면 「처음부터 열림」을 켜야 게임에서 만날 수 있습니다 — 「발견물」 탭에서 켜 주세요.");
+            return;
+        }
+        if (e.Lines.Count(x => x.Kind == "battle") > 1) { Tell("「[해전]」 줄은 하나만 둘 수 있습니다."); return; }
         // 비밀번호를 적었으면 그것으로 잠그고, 「비밀번호 빼기」를 눌렀으면 걷는다. 둘 다 아니면 잠금은 그대로다.
         if (_password.Password.Length > 0) { e = e with { Lock = UserDiscoveries.LockOf(_password.Password) }; _unlocked.Add(e.Uuid); }
         else if (_dropLock) e = e with { Lock = "" };

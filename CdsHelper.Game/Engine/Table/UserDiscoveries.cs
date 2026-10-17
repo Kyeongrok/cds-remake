@@ -39,7 +39,11 @@ public static class UserDiscoveries
     public const string DefaultLicense = "CC BY-SA 4.0";
 
     /// <summary>장면 한 줄.</summary>
-    /// <param name="Kind">「say」 대사 · 「picture」 발견물 그림 · 「movie」 발견물 동영상 · 「found」 효과음과 「~을 발견했다！」, 발견 처리.</param>
+    /// <param name="Kind">
+    /// 「say」 대사 · 「picture」 발견물 그림 · 「movie」 발견물 동영상 · 「found」 효과음과 「~을 발견했다！」, 발견 처리 ·
+    /// 「battle」 바다 괴물과 해전(<see cref="SceneLine.Text"/> 가 괴물 이름, <see cref="Monsters"/>) ·
+    /// 「lose」 해전에서 지거나 놓쳤을 때의 갈래가 여기서부터다.
+    /// </param>
     /// <param name="Speaker">대사 화자(부관 · 감찰관 · 항해사 …). 비우면 화자 없는 글.</param>
     public sealed record SceneLine(string Kind, string? Speaker = null, string Text = "");
 
@@ -56,7 +60,17 @@ public static class UserDiscoveries
         string HintName, int HintGrade, int HintCategory, int HintFunds, int HintDeadline, string HintText,
         int[] RumorCities, string RumorText, string Book, string Description,
         int Chance, List<SceneLine> Lines, string Credit = "", string Author = "", int Version = FormatVersion,
-        string License = DefaultLicense, string Lock = "");
+        string License = DefaultLicense, string Lock = "", bool HasHint = true);
+
+    /// <summary>
+    /// 장면의 「[해전] 이름」이 덤빌 수 있는 바다 괴물 — 인물 표 뒤쪽의 괴물 자리다(<see cref="Engine.Sea.EnemyFleet"/>).
+    /// 원본 크라켄 발견(파트 197)이 <c>0D 0D 271</c> 로 덤비는 것과 같다.
+    /// </summary>
+    public static readonly (string Name, int Person)[] Monsters =
+    [
+        ("크라켄", Engine.Sea.EnemyFleet.Kraken), ("시서펜트", Engine.Sea.EnemyFleet.SeaSerpent),
+        ("식인상어", Engine.Sea.EnemyFleet.ManEater), ("맨터", Engine.Sea.EnemyFleet.Manta),
+    ];
 
     /// <summary>잠겼는지 — 비밀번호를 걸어 두면 그것을 모르는 사람은 불러와도 고치지 못한다.</summary>
     public static bool IsLocked(Entry entry) => entry.Lock.Length > 0;
@@ -87,6 +101,42 @@ public static class UserDiscoveries
 
     /// <summary>예제의 UUID — 목록 맨 위에 「(예제) 돌묵상어」로 서고, 적거나 내보낼 수 없다.</summary>
     public const string ExampleUuid = "example-basking-shark";
+
+    /// <summary>둘째 예제 — 힌트 없이 확률로 만나 바다 괴물과 싸우는 크라켄.</summary>
+    public const string KrakenUuid = "example-kraken";
+
+    /// <summary>예제들과 그 그림 번호(없으면 -1). 목록 맨 위에 이 차례로 선다.</summary>
+    public static IReadOnlyList<(Entry Entry, int Picture)> Examples => [(Example, ExamplePicture), (KrakenExample, -1)];
+
+    /// <summary>그 UUID 의 예제. 예제가 아니면 null.</summary>
+    public static (Entry Entry, int Picture)? ExampleOf(string uuid) =>
+        Examples.FirstOrDefault(x => x.Entry.Uuid == uuid) is { Entry: not null } hit ? hit : null;
+
+    /// <summary>
+    /// 크라켄 예제 — 원본 발견물 197 을 이 창의 칸 모양으로 옮긴 것. 원본에도 힌트 · 소문 · 그림이 없고, 처음부터 열려
+    /// 북쪽 바다에서 쉰 번에 한 번 덤빈다. 장면은 <c>발견이벤트.json</c> 파트 197 그대로다(발견 알림 한 줄만 더 든다).
+    /// </summary>
+    public static Entry KrakenExample { get; } = new(
+        KrakenUuid, "크라켄", Category: 5, Reward: 15000, OnLand: false, OpenAtStart: true,
+        X1: 875, Y1: 192, X2: 941, Y2: 219,
+        HintName: "", HintGrade: 2, HintCategory: 5, HintFunds: 0, HintDeadline: 4, HintText: "",
+        RumorCities: [], RumorText: "", Book: "",
+        Description: "북극해에 나타난다는 거대한 두족류 괴물. 돛대만한 두께의 더듬이로 배를 습격하여 배나 선원들을 많이 희생시킨다고 한다.",
+        Chance: 50,
+        Lines:
+        [
+            new("say", "부관", "저 촉수는 뭐야！？"),
+            new("say", "부관", "큰일이다！"),
+            new("battle", null, "크라켄"),
+            new("say", "부관", "엄청난 오징어였군요．"),
+            new("found"),
+            new("lose"),
+            new("say", "부관", "엄청난 오징어였군요．"),
+        ],
+        Credit: "원본 게임 「대항해시대3」의 크라켄(발견물 197)",
+        Author: "대항해시대3 리메이크",
+        License: "원본 게임 자료(예제용)",
+        HasHint: false);
 
     /// <summary>예제 그림 — 앱에 실린 돌묵상어 그림(발견물 그림 84번)이다.</summary>
     public const int ExamplePicture = 84;
@@ -239,13 +289,13 @@ public static class UserDiscoveries
     }
 
     /// <summary>힌트들(모드를 켰을 때).</summary>
-    public static IEnumerable<HintTable.Hint> Hints => On ? All.Select(ToHint) : [];
+    public static IEnumerable<HintTable.Hint> Hints => On ? All.Where(l => l.Entry.HasHint).Select(ToHint) : [];
 
     /// <summary>그 번호의 힌트. 없으면 null.</summary>
     public static HintTable.Hint? Hint(int id)
     {
         _ = All;
-        return On && _byHint!.TryGetValue(id, out var l) ? ToHint(l) : null;
+        return On && _byHint!.TryGetValue(id, out var l) && l.Entry.HasHint ? ToHint(l) : null;
     }
 
     private static HintTable.Hint ToHint(Loaded l)
@@ -257,7 +307,7 @@ public static class UserDiscoveries
 
     /// <summary>술집 소문들(모드를 켰을 때). 소문 글이 빈 것은 안 낸다.</summary>
     public static IEnumerable<RumorTable.Rumor> Rumors =>
-        On ? All.Where(l => l.Entry.RumorText.Length > 0)
+        On ? All.Where(l => l.Entry.HasHint && l.Entry.RumorText.Length > 0)
                 .Select(l => new RumorTable.Rumor(l.Numbers.Serial, Cities(l.Entry.RumorCities), l.Entry.RumorText)) : [];
 
     /// <summary>소문 도시 넷 칸 — 원본 줄처럼 남는 칸은 -1.</summary>
@@ -270,7 +320,7 @@ public static class UserDiscoveries
 
     /// <summary>그 책(제목)에 실을 힌트 번호들(모드를 켰을 때).</summary>
     public static IEnumerable<int> HintsInBook(string title) =>
-        On ? All.Where(l => l.Entry.Book.Length > 0 && l.Entry.Book == title).Select(l => l.Numbers.Hint) : [];
+        On ? All.Where(l => l.Entry.HasHint && l.Entry.Book.Length > 0 && l.Entry.Book == title).Select(l => l.Numbers.Hint) : [];
 
     /// <summary>그 번호의 설명 글. 없으면 null.</summary>
     public static string? Description(int id) => ById(id)?.Entry.Description;
@@ -319,7 +369,15 @@ public static class UserDiscoveries
         JsonObject End() => new() { ["OpCode"] = "FF", ["Call"] = "End" };
 
         var body = new JsonArray();
-        foreach (var line in e.Lines ?? [])
+        void Found()
+        {
+            body.Add(new JsonObject { ["OpCode"] = "0E 03", ["Call"] = "PlaySound", ["Args"] = new JsonObject { ["Id"] = 75 } });
+            body.Add(Say($"{e.Name}{Josa(e.Name)} 발견했다！", null));
+            body.Add(new JsonObject { ["OpCode"] = "01 0B", ["Call"] = "Discover", ["Args"] = new JsonObject { ["Discovery"] = l.Numbers.Id } });
+        }
+        void Emit(IEnumerable<SceneLine> lines)
+        {
+        foreach (var line in lines)
             switch (line.Kind)
             {
                 case "movie" when l.MoviePath != null:
@@ -328,24 +386,51 @@ public static class UserDiscoveries
                 case "picture" when l.PicturePath != null:
                     body.Add(new JsonObject { ["OpCode"] = "00 01", ["Call"] = "ShowDStill", ["Args"] = new JsonObject { ["Id"] = l.Numbers.Picture } });
                     break;
+                case "found" when line.Text.Length == 0:
+                    Found();
+                    break;
                 case "found":
                     body.Add(new JsonObject { ["OpCode"] = "0E 03", ["Call"] = "PlaySound", ["Args"] = new JsonObject { ["Id"] = 75 } });
-                    body.Add(Say(line.Text.Length > 0 ? line.Text : $"{e.Name}{Josa(e.Name)} 발견했다！", null));
+                    body.Add(Say(line.Text, null));
                     body.Add(new JsonObject { ["OpCode"] = "01 0B", ["Call"] = "Discover", ["Args"] = new JsonObject { ["Discovery"] = l.Numbers.Id } });
                     break;
                 case "say" when line.Text.Length > 0:
                     body.Add(Say(line.Text, line.Speaker));
                     break;
             }
-        // 「found」 줄이 없으면 끝에 붙인다 — 발견이 안 적히면 영영 안 찾은 것으로 남는다.
-        if (!(e.Lines ?? []).Any(x => x.Kind == "found"))
-        {
-            body.Add(new JsonObject { ["OpCode"] = "0E 03", ["Call"] = "PlaySound", ["Args"] = new JsonObject { ["Id"] = 75 } });
-            body.Add(Say($"{e.Name}{Josa(e.Name)} 발견했다！", null));
-            body.Add(new JsonObject { ["OpCode"] = "01 0B", ["Call"] = "Discover", ["Args"] = new JsonObject { ["Discovery"] = l.Numbers.Id } });
         }
-        body.Add(new JsonObject { ["OpCode"] = "4C", ["Call"] = "EndDone" });
-        body.Add(End());
+
+        var all = e.Lines ?? [];
+        int battle = all.FindIndex(x => x.Kind == "battle");
+        if (battle < 0)
+        {
+            Emit(all);
+            // 「found」 줄이 없으면 끝에 붙인다 — 발견이 안 적히면 영영 안 찾은 것으로 남는다.
+            if (!all.Any(x => x.Kind == "found")) Found();
+            body.Add(new JsonObject { ["OpCode"] = "4C", ["Call"] = "EndDone" });
+            body.Add(End());
+        }
+        else
+        {
+            // 원본 크라켄(파트 197)과 같은 꼴 — 해전 뒤 지면(결과 거짓) 놓친 갈래로 뛰고, 이기면 발견하고 「성공」을 둔 뒤
+            // 43 47 이 놓친 갈래를 건너뛴다. 놓치면 「실패」라 다음에 그 자리에 가면 또 덤빈다.
+            int lose = all.FindIndex(battle + 1, x => x.Kind == "lose");
+            var win = lose < 0 ? all.Skip(battle + 1).ToList() : all.Skip(battle + 1).Take(lose - battle - 1).ToList();
+            var missed = lose < 0 ? [] : all.Skip(lose + 1).ToList();
+            int monster = Monsters.FirstOrDefault(m => m.Name == all[battle].Text.Trim()) is { Name: not null } hit
+                ? hit.Person : Engine.Sea.EnemyFleet.Kraken;
+
+            Emit(all.Take(battle));
+            body.Add(new JsonObject { ["OpCode"] = "0D 0D", ["Call"] = "SeaBattle", ["Args"] = new JsonObject { ["Person"] = monster } });
+            body.Add(new JsonObject { ["OpCode"] = "43 45", ["GotoIf"] = new JsonObject { ["Call"] = "ResultFalse" }, ["Target"] = "LOSE" });
+            Emit(win);
+            if (!win.Any(x => x.Kind == "found")) Found();
+            body.Add(new JsonObject { ["OpCode"] = "4C", ["Call"] = "EndDone" });
+            body.Add(new JsonObject { ["Label"] = "LOSE", ["OpCode"] = "43 47", ["GotoIf"] = new JsonObject { ["Call"] = "Result" }, ["Target"] = "END" });
+            Emit(missed);
+            body.Add(new JsonObject { ["OpCode"] = "4D", ["Call"] = "EndFailed" });
+            body.Add(new JsonObject { ["Label"] = "END", ["OpCode"] = "FF", ["Call"] = "End" });
+        }
 
         var cond = new JsonArray
         {
