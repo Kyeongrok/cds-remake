@@ -17217,7 +17217,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:610",
   "args": 0
  },
- "쉬는 날": {
+ "NPC 대기 일수": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:613",
   "args": 0
  },

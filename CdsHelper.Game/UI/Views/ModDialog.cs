@@ -609,8 +609,8 @@ public sealed class ModDialog : GameWindow
             i => GameSettings.PirateHuntFame = GameSettings.PirateHuntFameChoices[i],
             "모드 「해적 추격」에서 해적이 쫓기 시작하는 명성입니다."));
 
-        // 쉬는 날 — 닿고 나서 이만큼은 떠날지 굴리지 않는다. 원본은 예순 날(0x00432617).
-        character.Children.Add(Select("쉬는 날",
+        // NPC 대기 일수 — 닿고 나서 이만큼은 떠날지 굴리지 않는다. 원본은 예순 날(0x00432617).
+        character.Children.Add(Select("NPC 대기 일수",
             [.. GameSettings.PersonRestChoices.Select(n => n == GameSettings.DefaultPersonRestDays ? $"{n}일 (원본)" : $"{n}일")],
             Math.Max(0, Array.FindLastIndex(GameSettings.PersonRestChoices, n => n <= GameSettings.PersonRestDays)),
             i => GameSettings.PersonRestDays = GameSettings.PersonRestChoices[i],
