@@ -25,7 +25,7 @@ public sealed record Cannon(string Name, int Price, int Weight, string Word, int
 
     /// <summary>
     /// 앞 넷은 게임 표 차례 그대로다. 다섯째 카로네이드포는 원본에 없다 — 런던 규모를 7 로 키우면(모드 「도시 투자 성장」)
-    /// 런던 조선소가 판다. 위력은 7(카논 8 다음), 사거리는 세이커와 같은 3 이다(<c>SeaBattle.GunPower</c> · <c>RangeOf</c>).
+    /// 런던 조선소가 판다. 위력은 7(카논 8 다음), 사거리는 캘버린과 같은 4 다(<c>SeaBattle.GunPower</c> · <c>RangeOf</c>).
     /// </summary>
     public static readonly Cannon[] All =
     [
@@ -34,7 +34,7 @@ public sealed record Cannon(string Name, int Price, int Weight, string Word, int
         new("페리에포", 2100, 25, "이것은 추천하겠네. 뭐라해도 바란스가 좋다네."),
         // 원본 이름은 「카논포」(0x0056B878)지만 육상전 병종 「캐논포병」과 맞춰 「캐논포」로 적는다(건의).
         new("캐논포", 2500, 30, "이것은 사정 거리는 짧지만, 맞추면 일격필살로 대단한 것이네."),
-        new("카로네이드포", 5000, 20, "이것은 런던에서만 만드는 신식이라네. 멀리는 못 쏘지만 가볍고 위력은 {0} 못지않지.", Rival: 3),
+        new("카로네이드포", 5000, 20, "이것은 런던에서만 만드는 신식이라네. 멀리까지 닿고 가벼운데 위력은 {0} 못지않지.", Rival: 3),
     ];
 
     /// <summary>카로네이드포의 번호 — 원본에 없는 다섯째 대포다. 런던에서만 만드는 신식이라 캐논포(2500)의 두 배 값이다.</summary>

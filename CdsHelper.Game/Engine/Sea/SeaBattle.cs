@@ -1027,8 +1027,8 @@ public sealed class SeaBattle
         return (ax, ay);
     }
 
-    /// <summary>대포 사거리(<c>0x0043699D</c> 벌) — 캘버린 4 · 카논 2 · 그 밖 3. 원본에 없는 카로네이드포(4)도 세이커와 같은 3 이다.</summary>
-    public static int RangeOf(int gun) => gun switch { 1 => 4, 3 => 2, _ => 3 };
+    /// <summary>대포 사거리(<c>0x0043699D</c> 벌) — 캘버린 4 · 카논 2 · 그 밖 3. 원본에 없는 카로네이드포(4)는 캘버린과 같은 4 다.</summary>
+    public static int RangeOf(int gun) => gun switch { 1 => 4, 3 => 2, Cannon.Carronade => 4, _ => 3 };
 
     /// <summary>
     /// 모드 3 — 끝 칸에서 노릴 자리가 <b>뱃전</b> 거리 2~사거리에 들어오는 첫 길을 고른다
