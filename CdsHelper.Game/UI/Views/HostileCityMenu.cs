@@ -74,12 +74,16 @@ internal static class HostileCityMenu
         // 못 들어가고 물러서면 부르는 쪽이 뭍·바다 곡으로 되돌린다(WorldMapWindow.PassGate).
         if (scene != null)
             game.Bgm.Play(BgmPlayer.CityTrackForCulture(game.CityRows?.CultureOf(city) ?? 0));
+        // 문지기 말은 대사 창이 뭉개고 부관 · 통역이 옮긴다(KeeperTongue) — 문 앞에 있는 동안만 건다.
+        var was = KeeperTongue.Here;
+        KeeperTongue.Here = () => GateListener(game, city);
         try
         {
             return AtTheGate(scene as Window ?? owner, fx, game, city, cityName, byLand, byTreaty);
         }
         finally
         {
+            KeeperTongue.Here = was;
             // 닫기 전에 임자 창(지도)을 앞으로 세운다 — 안 그러면 떠 있던 창이 사라지는 순간
             // 윈도가 초점을 딴 앱 창으로 넘긴다(「떠난다」로 물러설 때 그랬다). 도시 그림 창과 같은 다룸이다.
             if (scene != null)
@@ -104,15 +108,16 @@ internal static class HostileCityMenu
 
         // 문지기가 먼저 말한다(0x004A521A). 아는 말이 아니면 ×로 뭉개져 나오고,
         // 그때는 대원이 한 마디 덧붙인다 — 마을과 항구의 문구가 다르다(0x004A526E).
-        // 알아듣는 정도 — 그 말 수준(0~3)만큼 덜 뭉개진다(0x004780E0 → 0x004252F0).
-        int heard = TongueAt(game, city);
+        // 알아듣는 정도 — 그 말 수준(0~3)만큼 덜 뭉개진다(0x004780E0 → 0x004252F0). 뭉개기와 통역은 대사 창이 한다
+        // (KeeperTongue, Run 이 건 GateListener) — 예전에는 여기서 먼저 뭉갠 글을 넘겨, 통역이 그 뭉갠 글을
+        // 「[××]라고 하는 것 같네요」로 옮겼다.
         int culture = game.CityRows?.CultureOf(city) ?? 0;
         var gate = game.SpeakerFace(Standoff.GateSpeaker(byLand), culture);
         // 조약으로 막힌 문에서는 이 인사가 아예 없다 — 부르는 쪽이 이미 조약 문구를 냈다
         // (0x0046ABC9 가 0x0046A6C0 하나만 부른다).
         if (!byTreaty)
         {
-            TalkDialog.Say(owner, gate, "", Standoff.Heard(Standoff.GateWord, heard));
+            TalkDialog.Say(owner, gate, "", Standoff.GateWord);
             // 덧붙이는 것은 <b>부관</b>이다 — 부관이 없으면 아예 아무 말도 없다(0x004A523D).
             // 무슨 말을 하는지는 제독과 부관 가운데 누가 더 그 말을 잘하느냐로 셋이 갈린다.
             if (Standoff.HasAide(player))
@@ -199,7 +204,7 @@ internal static class HostileCityMenu
                 case Standoff.Sneak:
                     // 잠입은 되든 안 되든 차림표가 다시 안 뜬다(0x004A57E7 이 반환값을
                     // 안 보고 고리를 빠져나간다). 달아났어도 그대로 물러선다.
-                    return Sneak(owner, scene, game, dice, city, gate, heard, say);
+                    return Sneak(owner, scene, game, dice, city, gate, say);
 
                 case Standoff.Talk:
                     // 원본도 돈부터 본다(0x00468BF0 → 「소지금이 모자랍니다!」). 한 번
@@ -291,7 +296,7 @@ internal static class HostileCityMenu
     /// 달아났어도 다시 조를 기회를 안 준다는 뜻이다.
     /// </remarks>
     private static Outcome Sneak(Window owner, IGateStage? scene, Engine.Game game,
-                                 GameRandom dice, int city, uint[]? gate, int heard,
+                                 GameRandom dice, int city, uint[]? gate,
                                  Standoff.Script say)
     {
         var player = game.Player;
@@ -319,7 +324,7 @@ internal static class HostileCityMenu
             return new Outcome(Entered: true, GameOver: false);
         }
 
-        TalkDialog.Say(owner, gate, "", Standoff.Heard(say.Spotted, heard));
+        TalkDialog.Say(owner, gate, "", say.Spotted);
 
         // 달아나기도 굴리고 나서 벌을 돌린다(0x004A5419 → 파트 0).
         bool away = Standoff.Escapes(player, dice);
@@ -332,7 +337,7 @@ internal static class HostileCityMenu
             return new Outcome(false, false, MustLeave: true);
         }
 
-        return Trial(owner, scene, game, dice, gate, heard, aide, say);
+        return Trial(owner, scene, game, dice, gate, aide, say);
     }
 
     /// <summary>
@@ -352,11 +357,11 @@ internal static class HostileCityMenu
     /// 부르는 <b>40밀리초 기다리기</b>지 날짜가 아니다.
     /// </remarks>
     private static Outcome Trial(Window owner, IGateStage? scene, Engine.Game game,
-                                 GameRandom dice, uint[]? gate, int heard, bool aide,
+                                 GameRandom dice, uint[]? gate, bool aide,
                                  Standoff.Script say)
     {
         var player = game.Player;
-        TalkDialog.Say(owner, gate, "", Standoff.Heard(say.Caught, heard));
+        TalkDialog.Say(owner, gate, "", say.Caught);
 
         // ① 죄가 가벼운가 — 굴리고 나서 하트를 돌린다(0x004A549F).
         // 조약 쪽 재판은 운이 아니라 <b>매력</b>을 뺀다(0x0046A93A).
@@ -368,8 +373,7 @@ internal static class HostileCityMenu
         if (!light)
         {
             TalkDialog.Say(owner, gate, "",
-                Standoff.Heard(string.Format(say.Villain, player.CallName,
-                                             NameToken.Of(player.CallName, say.IsTreaty ? 0 : 10)), heard));
+                string.Format(say.Villain, player.CallName, NameToken.Of(player.CallName, say.IsTreaty ? 0 : 10)));
             return new Outcome(Entered: false, GameOver: true);
         }
 
@@ -379,11 +383,11 @@ internal static class HostileCityMenu
 
         if (lucky)
         {
-            TalkDialog.Say(owner, gate, "", Standoff.Heard(say.Banished, heard));
+            TalkDialog.Say(owner, gate, "", say.Banished);
         }
         else
         {
-            TalkDialog.Say(owner, gate, "", Standoff.Heard(say.Fined, heard));
+            TalkDialog.Say(owner, gate, "", say.Fined);
             player.Spend(player.Gold);
             NoticeDialog.Show(owner, say.Robbed, "");
         }
@@ -406,6 +410,34 @@ internal static class HostileCityMenu
         var who = Local.Helpers.PersonTable.Open()?.People.FirstOrDefault(r => r.Name == mate);
         return who != null && row.Language < who.Languages.Length
             ? who.Languages[row.Language] : 0;
+    }
+
+    /// <summary>
+    /// 문지기 말을 얼마나 알아듣는지 — 그 도시 나라 말을 제독이 아는 만큼이고, 부관(자리 0) · 통역(자리 3)이 더 잘하면
+    /// 그 사람이 원문을 옮긴다(<c>0x00478280</c> → <c>0x004780E0</c> · <c>0x00468F70</c>). 시설 주인과 같은 셈이다.
+    /// </summary>
+    public static KeeperTongue.Listener GateListener(Engine.Game game, int city)
+    {
+        int nation = game.CityRows?.NationOf(city) ?? -1;
+        int language = nation >= 0 ? game.Nations?.Find(nation)?.Language ?? -1 : -1;
+        // 말을 모르는 나라(원주민 마을 따위)면 다 알아듣는 것으로 둔다.
+        if (language < 0 || language >= Skill.Languages.Length) return new(Skill.MaxLevel, null, 0);
+
+        var player = game.Player;
+        int mine = player.TongueOf(Skill.Languages[language]);
+        uint[]? relayer = null;
+        int best = mine;
+        if (game.World?.People is { } people)
+            foreach (int slot in (int[])[0, 3])   // 부관 · 통역
+            {
+                string mate = player.MateAt(slot);
+                if (mate.Length == 0 || people.FirstOrDefault(r => r.Name == mate) is not { } row) continue;
+                int level = language < row.Languages.Length ? row.Languages[language] : 0;
+                if (level <= best || game.MateInfo(mate) is not { } who) continue;
+                best = level;
+                relayer = game.MateFace(who);
+            }
+        return new(mine, relayer, best);
     }
 
     private static int TongueAt(Engine.Game game, int city)

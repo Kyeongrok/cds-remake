@@ -4597,9 +4597,19 @@ public sealed class WorldMapWindow : Window
             string mine = _game.Player.NationName;
             int culture = _game.CityRows?.CultureOf(city) ?? 0;
             var gate = _game.SpeakerFace(Standoff.GateSpeaker(byLand), culture);
-            TalkDialog.Say(this, gate, "", byLand
-                ? string.Format(Standoff.TreatyWord, Standoff.TreatyName, mine)
-                : string.Format(Standoff.TreatyPortWord, theirs, Standoff.TreatyName, mine));
+            // 문지기 말이다 — 대사 창이 말 수준만큼 뭉개고 부관 · 통역이 옮긴다(HostileCityMenu.GateListener).
+            var was = Engine.Town.KeeperTongue.Here;
+            Engine.Town.KeeperTongue.Here = () => HostileCityMenu.GateListener(_game, city);
+            try
+            {
+                TalkDialog.Say(this, gate, "", byLand
+                    ? string.Format(Standoff.TreatyWord, Standoff.TreatyName, mine)
+                    : string.Format(Standoff.TreatyPortWord, theirs, Standoff.TreatyName, mine));
+            }
+            finally
+            {
+                Engine.Town.KeeperTongue.Here = was;
+            }
         }
 
         // 도시 그림이 펴지는 동안은 이미 도시에 닿은 것이다 — 지도에 남색 막을 씌운다.

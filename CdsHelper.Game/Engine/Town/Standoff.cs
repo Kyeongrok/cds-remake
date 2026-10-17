@@ -429,16 +429,9 @@ public static class Standoff
     /// </remarks>
     public static string GateTitle(string cityName) => cityName + "에 들어간다";
 
-    /// <summary>
-    /// 성문에서 저쪽이 하는 말. <b>못 알아들으면 ×로 뭉개진다.</b>
-    /// </summary>
-    /// <remarks>
-    /// 문지기의 말은 죄다 얼굴 대사 창(<c>0x004692E0</c>)으로 나오고, 그 창이
-    /// <c>0x00469540</c> 으로 글자를 뭉갠다 — 인사만이 아니라 「침입자다! 잡아라!!」 도
-    /// 그렇다. 대사 창에는 <b>제목이 없다</b>.
-    /// </remarks>
-    /// <param name="tongue">그 말을 아는 수준(0~3) — 두 바이트 글자마다 rand(10) &lt; {10,8,4,0}[수준] 이면 ×다.</param>
-    public static string Heard(string words, int tongue) => StrangerTalk.Garble(words, tongue, System.Random.Shared);
+    // 성문에서 저쪽이 하는 말은 죄다 얼굴 대사 창(0x004692E0)으로 나오고, 그 창이 0x00469540 으로 글자를 뭉갠다 —
+    // 인사만이 아니라 「침입자다! 잡아라!!」도 그렇다. 우리는 대사 창의 KeeperTongue 가 뭉개고 통역이 옮긴다
+    // (HostileCityMenu.GateListener). 대사 창에는 제목이 없다.
 
     /// <summary>배로 왔으면 「항구」, 말로 왔으면 「마을」(<c>0x00552120</c>).</summary>
     public static string Where(bool byLand) => byLand ? "마을" : "항구";
