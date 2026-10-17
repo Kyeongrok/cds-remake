@@ -715,11 +715,15 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
         if (!any) return -1;
 
         // 자리(+0x0C)로 찾는다 — 앞으로 나온 후열도 앞열 자리에 서 있다(0x00447470).
-        while (true)
+        // 원본은 여기서 끝없이 돈다 — 심판(0x00448F80)이 앞열을 다 쓸고도 후열을 안 당겨(0x00448510 은 지우기만 한다)
+        // 앞열 자리가 비면 다음 근접 공격에서 멎었다(제보). 우리는 심판 뒤에 열을 당기지만(Done), 자리 셈이 어긋나도
+        // 멎지 않게 굴림에 끝을 두고 남은 부대에서 고른다.
+        for (int round = 0; round < MeleeRounds; round++)
         {
             int at = battle.AtPlace(foe, dice.Next(3));
             if (at >= 0) return at;
         }
+        return Pick(foe, frontOnly: true);
     }
 
     /// <summary>
