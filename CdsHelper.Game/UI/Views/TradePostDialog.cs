@@ -171,7 +171,42 @@ public sealed class TradePostDialog : GameWindow
     private void AddBuy(int i, int n)
     {
         if (i < 0 || i >= _rows.Count) return;
-        _qty[i] = Math.Clamp(_qty[i] + n, 0, _rows[i].Supply);
+        SetBuy(i, _qty[i] + n);
+    }
+
+    /// <summary>
+    /// 살 수량을 박는다 — 늘릴 때는 짐용량 · 짐중량 · 돈(팔 것으로 들어올 돈까지)에 들어가는 만큼만 담고, 막혔으면 왜 막혔는지
+    /// 아래에 알린다. 원본은 [결정]에서야 「짐이 넘친다」를 알려 담은 것을 도로 빼야 했다(건의).
+    /// </summary>
+    private void SetBuy(int i, int want)
+    {
+        var row = _rows[i];
+        want = Math.Clamp(want, 0, row.Supply);
+        if (want > _qty[i])
+        {
+            int others = _qty.Sum() - _qty[i] - _sell.Sum();
+            int roomCount = _player.Capacity - _player.LoadedBarrels - others;
+            int unit = _post.WeightOf(row.Kind);
+            int otherWeight = _rows.Select((r, k) => k == i ? 0 : _qty[k] * _post.WeightOf(r.Kind)).Sum()
+                              - Enumerable.Range(0, _player.CargoHold.Count).Sum(s => _sell[s] * _player.CargoHold[s].UnitWeight);
+            int roomWeight = Player.IgnoresWeight() || unit <= 0 ? int.MaxValue : (_player.Tonnage - _player.LoadedWeight - otherWeight) / unit;
+            int price = TradePost.Discounted(row.Price, _pct);
+            long otherCost = (long)Cost - (long)_qty[i] * price;
+            long budget = (long)_player.Gold + Income - otherCost;
+            int roomGold = price <= 0 ? int.MaxValue : (int)Math.Clamp(budget / price, 0, int.MaxValue);
+
+            roomCount = Math.Max(0, roomCount);
+            roomWeight = Math.Max(0, roomWeight);
+            int limit = Math.Min(roomCount, Math.Min(roomWeight, roomGold));
+            int fit = Math.Max(_qty[i], Math.Min(want, limit));
+            if (fit < want)
+            {
+                string why = limit == roomCount ? "짐칸이 모자라" : limit == roomWeight ? "적재중량이 모자라" : "돈이 모자라";
+                Say(fit > _qty[i] ? $"{why} {fit:N0}개까지만 담았습니다" : $"{why} 더 담을 수 없습니다", warn: true);
+            }
+            want = fit;
+        }
+        _qty[i] = want;
         _wins = 0;
         Paint();
     }
@@ -469,8 +504,8 @@ public sealed class TradePostDialog : GameWindow
         lines.Children.Add(third);
 
         var buttons = StepButtons(n => AddBuy(i, n),
-            () => { _qty[i] = _qty[i] >= row.Supply ? 0 : row.Supply; _wins = 0; Paint(); },
-            () => { _qty[i] = NextShare(_qty[i], row.Supply); _wins = 0; Paint(); });
+            () => SetBuy(i, _qty[i] >= row.Supply ? 0 : row.Supply),
+            () => SetBuy(i, NextShare(_qty[i], row.Supply)));
 
         var border = Row(i, row.Kind, lines, buttons);
         border.MouseLeftButtonDown += (_, e) =>

@@ -23096,160 +23096,180 @@
   "at": "CdsHelper.Game/UI/Views/TowerPuzzleDialog.cs:427",
   "args": 0
  },
+ "짐칸이 모자라": {
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:204",
+  "args": 0
+ },
+ "적재중량이 모자라": {
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:204",
+  "args": 0
+ },
+ "돈이 모자라": {
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:204",
+  "args": 0
+ },
+ "{0} {1}개까지만 담았습니다": {
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:205",
+  "args": 2
+ },
+ "{0} 더 담을 수 없습니다": {
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:205",
+  "args": 1
+ },
  "제독, 금화가 모자랍니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:224",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:259",
   "args": 0
  },
  "금화가 모자랍니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:224",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:259",
   "args": 0
  },
  "제독, 실을 장소가 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:225",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:260",
   "args": 0
  },
  "실을 장소가 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:225",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:260",
   "args": 0
  },
  "제독, 중량을 초과하고 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:227",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:262",
   "args": 0
  },
  "중량을 초과하고 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:228",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:263",
   "args": 0
  },
  "제독, 실을 수 있는 것은 {0} 품목까지입니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:229",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:264",
   "args": 1
  },
  "실을 수 있는 것은 {0} 품목까지입니다": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:230",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:265",
   "args": 1
  },
  "담은 것이 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:235",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:270",
   "args": 0
  },
  "공급량이 모자랍니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:235",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:270",
   "args": 0
  },
  "{0}  (지출 {1}닢 · 수입 {2}닢)": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:263",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:298",
   "args": 3
  },
  "지출 {0}닢 · 수입 {1}닢.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:263",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:298",
   "args": 2
  },
  "{0} 매매 (시세 {1}, {2})": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:375",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:410",
   "args": 3
  },
  "이 도시가 파는 것": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:392",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:427",
   "args": 0
  },
  "이 도시에는 파는 것이 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:396",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:431",
   "args": 0
  },
  "내 짐": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:403",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:438",
   "args": 0
  },
  "실은 것이 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:415",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:450",
   "args": 0
  },
  "단가 {0}닢 · 공급 {1}": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:463",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:498",
   "args": 2
  },
  "무게 {0}   ": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:465",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:500",
   "args": 1
  },
  "   시세 {0}%": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:468",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:503",
   "args": 1
  },
  "아직 없음": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:498",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:533",
   "args": 0
  },
  "매각 {0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:507",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:542",
   "args": 1
  },
  "{0}산 · 팔 것 {1}개 ({2}닢)": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:511",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:546",
   "args": 3
  },
  "{0}산 · 매입 {1}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:512",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:547",
   "args": 2
  },
  " · 썩었다": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:516",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:551",
   "args": 0
  },
  " · 내구도 {0}": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:516",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:551",
   "args": 1
  },
  " · 시세 {0}%": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:518",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:553",
   "args": 1
  },
  "비움": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:532",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:567",
   "args": 0
  },
  "소지금 {0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:636",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:671",
   "args": 1
  },
  "지출({0}%↓)": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:652",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:687",
   "args": 1
  },
  "지출": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:652",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:687",
   "args": 0
  },
  "수입": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:653",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:688",
   "args": 0
  },
  "수익": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:655",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:690",
   "args": 0
  },
  "+{0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:655",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:690",
   "args": 1
  },
  "−{0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:655",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:690",
   "args": 1
  },
  "값을 깎는다": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:726",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:761",
   "args": 0
  },
  "제독, 여기는 교역소입니다. 무언가 거래를 하실 건가요?": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:780",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:815",
   "args": 0
  },
  "이봐요, 좋은 물건있으니 사 가지고 안 가겠나?": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:782",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:817",
   "args": 0
  },
  "이 고장의 {0}{1} 아직 세상에 알려지지 않아서 말이지.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:813",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:848",
   "args": 2
  },
  "더 이상 기능을 습득할 수 없습니다": {
