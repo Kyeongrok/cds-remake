@@ -91,6 +91,12 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// </remarks>
     private static readonly TimeSpan BallFlight = TimeSpan.FromMilliseconds(125);
 
+    /// <summary>
+    /// 발마다 붙는 연출(폭발 · 물기둥 석 장, 피해 숫자 앞 쉼, 숫자 띄움)의 한 장 참. 원본보다 템포가 늦다는 제보로
+    /// <see cref="FxFrame"/>(60ms)보다 짧게 둔다 — 한 발이 맞았을 때 0.78초 남짓이던 것이 0.5초쯤이다.
+    /// </summary>
+    private static readonly TimeSpan ShotFrame = TimeSpan.FromMilliseconds(40);
+
     /// <summary>포탄 자리를 고쳐 그리는 사이 — 타이머 한 눈보다 짧게 둬서 눈마다 한 번씩 그린다.</summary>
     private static readonly TimeSpan BallFrame = TimeSpan.FromMilliseconds(8);
 
@@ -1250,12 +1256,16 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             var ball = Sprite(_art.Path_("dot-00"), sx + 20, sy + 12, 8, 8);
             var clock = System.Diagnostics.Stopwatch.StartNew();
             int puffs = 0;
+            // 포연은 띄워 두고 다음 장이 오면 갈아 끼운다 — 예전에는 장마다 기다려(Flash) 포탄이 그동안 멎어
+            // 한 발이 0.18초 넘게 늘어지고 포탄이 뚝뚝 끊겨 날았다.
+            Image? puff = null;
             while (true)
             {
                 double t = Math.Min(1, clock.Elapsed.TotalMilliseconds / BallFlight.TotalMilliseconds);
                 while (puffs < 3 && t >= puffs / 3.0)
                 {
-                    Flash(_art.Path_($"blast-{15 + puffs:D2}"), sx, sy - 8, 48, 48);
+                    if (puff != null) _fx.Children.Remove(puff);
+                    puff = Sprite(_art.Path_($"blast-{15 + puffs:D2}"), sx, sy - 8, 48, 48);
                     puffs++;
                 }
                 if (ball != null)
@@ -1266,6 +1276,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 if (t >= 1 || _skipFx) break;
                 Wait(BallFrame);
             }
+            if (puff != null) _fx.Children.Remove(puff);
             if (ball != null) _fx.Children.Remove(ball);
             if (_skipFx) break;
 
@@ -1276,7 +1287,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 for (int f = 0; f < 3; f++)
                 {
                     var blast = Sprite(_art.Path_($"blast-{first + f:D2}"), tx, ty - 8, 48, 48);
-                    FxWait(FxFrame);
+                    FxWait(ShotFrame);
                     if (blast != null) _fx.Children.Remove(blast);
                 }
             }
@@ -1288,16 +1299,16 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 for (int f = 0; f < 3; f++)
                 {
                     var splash = Sprite(_art.Path_($"mark-{6 + f:D2}"), wx + 8, wy - 4, 32, 32);
-                    FxWait(FxFrame);
+                    FxWait(ShotFrame);
                     if (splash != null) _fx.Children.Remove(splash);
                 }
             }
 
             // <b>피해 숫자는 발마다 바로 뜬다</b>(0x00437330 이 발 고리 <b>안</b>에 있다).
             // 세 발을 다 쏘고 합을 한 번 찍었더니 마지막에만 숫자가 떴다.
-            FxWait(FxFrame * 2);
+            FxWait(ShotFrame);
             if (_skipFx) break;
-            if (shot.Hit && shot.Damage > 0) ShowNumbers((volley.Target, shot.Damage));
+            if (shot.Hit && shot.Damage > 0) ShowNumbers(ShotFrame, (volley.Target, shot.Damage));
         }
 
     }
@@ -1306,7 +1317,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// 숫자(<c>0x00437330</c>) — 배마다 그 배 위에 파트 20 의 24x24 로 찍는다. 일·십·백 자리 x +0x50·+0x38·+0x20,
     /// 앞 0 은 안 찍는다. 값이 음수인 줄은 건너뛴다(<c>−1</c> 자리).
     /// </summary>
-    private void ShowNumbers(params (SeaBattle.Ship Ship, int Value)[] rows)
+    private void ShowNumbers(params (SeaBattle.Ship Ship, int Value)[] rows) => ShowNumbers(FxFrame, rows);
+
+    /// <summary>숫자를 다섯 박자 띄운다 — 한 박자를 <paramref name="beat"/> 로.</summary>
+    private void ShowNumbers(TimeSpan beat, params (SeaBattle.Ship Ship, int Value)[] rows)
     {
         int[] offsets = [0x50, 0x38, 0x20];
         var digits = new List<Image>();
@@ -1323,7 +1337,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             }
         }
         if (digits.Count == 0) return;
-        FxWait(FxFrame * 5);
+        FxWait(beat * 5);
         foreach (var digit in digits) _fx.Children.Remove(digit);
     }
 
