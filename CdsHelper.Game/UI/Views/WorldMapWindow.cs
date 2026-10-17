@@ -5552,12 +5552,13 @@ public sealed class WorldMapWindow : Window
         var leader = CaptainOf(who.Id) ?? Encounter.CaptainOf(who.Id);
         var foe = Encounter.OfPerson(leader, who.Name);
         int capital = _game.Nations?.Find(nation)?.Capital ?? -1;
+        bool pirate = _game.PersonTemplates?.Find(who.Id)?.Job == PersonTemplate.PirateJob;
 
         EndWeather();   // 해전이 열리면 비가 그친다(0x00443822)
 
         var report = SeaCombatDialog.Engage(this, player, foe, rng, MateFace(),
                                             (_host.LastWind.Dir, _host.LastWind.Speed), _game.Sfx, foeFace,
-                                            (board, end) => SettleRaid(board, end, nation, capital, rng, raid: true),
+                                            (board, end) => SettleRaid(board, end, nation, capital, rng, raid: true, pirate: pirate),
                                             SeaDuel(who.Id, who.Name, foeFace), _game.Bgm, game: _game,
                                             // 누적 캐릭터면 제 옛 함대의 선체로 싸운다(0x0048CC3D).
                                             hulls: world.Replay?.FleetOf(who.Id));
@@ -5596,12 +5597,16 @@ public sealed class WorldMapWindow : Window
     /// (<c>0x00436012</c>) 도망쳐도(<c>0x00435C62</c>) 명성·악명이 안 움직인다. 무력 오름(<c>0x00455CA0</c>)은
     /// 그대로 돈다.
     /// </param>
+    /// <param name="pirate">
+    /// 상대가 해적(직업 <see cref="PersonTemplate.PirateJob"/>)인지. 원본은 보이는 함대면 해적을 이겨도 악명 +180 을 붙이지만,
+    /// 해적을 물리치고 악명이 오르는 것은 이상하다는 건의로 해적을 이기거나 물리치면 악명을 안 올린다 — 명성은 남의 나라 배처럼 받는다.
+    /// </param>
     private void SettleRaid(Window board, SeaCombatDialog.Report end, int nation, int capital, Random rng,
-                            bool raid, int? monster = null)
+                            bool raid, int? monster = null, bool pirate = false)
     {
         const string Title = "해전";
         var player = _game.Player;
-        var (fame, infamy) = FleetRaid.BaseOf(nation == player.Nation);
+        var (fame, infamy) = FleetRaid.BaseOf(!pirate && nation == player.Nation);
 
         if (monster is { } beast)
         {
@@ -5620,6 +5625,7 @@ public sealed class WorldMapWindow : Window
                 string bang = won ? "!" : "";                      // 0x0056A7E8 · 0x0056ADF8
                 if (raid) { fame += FleetRaid.WinFame; infamy += FleetRaid.WinInfamy; }
                 else fame += FleetRaid.MetFame;
+                if (pirate) infamy = 0;   // 해적을 물리쳤다 — 악명은 안 오른다(건의)
 
                 // 알림은 값이 0 보다 클 때만 낸다(0x00435614 · 0x0043563C · 0x00436038 · 0x00436060) —
                 // 예전에는 남의 나라 배와 싸우고 「악명이 0 올라갔다!」가 떴다.
