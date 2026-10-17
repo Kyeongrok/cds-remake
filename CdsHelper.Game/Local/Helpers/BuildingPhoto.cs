@@ -42,6 +42,9 @@ public sealed class BuildingPhoto
     private const string PickTableName = "건물사진표";
     private const int RowCount = 9, ColCount = 16;
 
+    /// <summary>동아시아의 행 — 원본 아홉 행 뒤에 앱이 붙인 행으로, 중국 행(4)을 베껴 둔다(<see cref="CityCultureEdits.CopiedFrom"/>).</summary>
+    private const int EastAsiaRow = RowCount, ChinaRow = 4;
+
     /// <summary>사진 장수. 파트로는 <c>2k+2</c> · <c>2k+3</c> 두 장씩이다.</summary>
     public const int PhotoCount = 84;
 
@@ -92,6 +95,8 @@ public sealed class BuildingPhoto
             return null;
         }
 
+        // 적어 둔 표는 원본 아홉 행 그대로다 — 동아시아 행은 열 때 중국 행을 베껴 붙인다.
+        pick = [.. pick, .. pick[(ChinaRow * ColCount)..((ChinaRow + 1) * ColCount)]];
         return new BuildingPhoto(archive, mask, pick);
     }
 
@@ -115,6 +120,7 @@ public sealed class BuildingPhoto
         "동남아시아" => 6,
         "일본" => 7,
         "아메리카" => 8,
+        "동아시아" => EastAsiaRow,
         _ => 0,     // 이베리아 · 북유럽 · 지중해 · 발칸 · 모르는 것
     };
 

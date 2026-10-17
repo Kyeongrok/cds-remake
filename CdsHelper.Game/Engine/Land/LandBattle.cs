@@ -1011,13 +1011,17 @@ public sealed class LandBattle
         40, 80, 60,   40, 80, 60,   40, 80, 60,   60, 20, 40,
         60, 40, 80,   40, 80, 20,   80, 60, 20,   20, 60, 40,
         60, 20, 40,   80, 20, 60,   40, 20, 60,
+        // 33~36 — 원본에 없다. 동아시아(11)의 칸으로, 중국(6)이 읽는 18~21 을 베껴 두었다(CityCultureEdits.CopiedFrom).
+        // 33 은 아메리카(10)의 심판 칸과 겹치지만 심판은 굴리지 않는다.
+        80, 60, 20, 20,
     ];
 
-    /// <summary>표의 칸 수(<c>0x00549B80</c> 의 서른셋).</summary>
+    /// <summary>표의 칸 수(<c>0x00549B80</c> 의 서른셋 + 동아시아 몫).</summary>
     public static int RuseOddsCount => RuseOdds.Length;
 
     /// <summary>표 칸을 읽는 자리 — <b>문화권 * 3 + 묘책</b> 이다(<c>0x00449092</c>).</summary>
-    public static int RuseOddsAt(int culture, int ruse) => Math.Clamp(culture, 0, 10) * 3 + ruse;
+    public static int RuseOddsAt(int culture, int ruse) =>
+        Math.Clamp(culture, 0, Local.Helpers.CityCultureEdits.Count - 1) * 3 + ruse;
 
     /// <summary>게임 표의 값 — 손으로 고친 것을 안 얹은 것이다.</summary>
     public static int BuiltinRuseOdds(int index) =>

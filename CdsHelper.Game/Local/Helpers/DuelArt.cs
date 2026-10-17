@@ -82,6 +82,7 @@ public sealed class DuelArt
     {
         0 or 1 or 2 => Tavern,
         6 or 7 or 8 or 9 => Temple,
+        11 => Temple,       // 동아시아 — 중국(6)을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
         _ => Mosque,
     };
 

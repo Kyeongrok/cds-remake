@@ -21,8 +21,8 @@ namespace CdsHelper.Game.Engine.Land;
 /// </remarks>
 public static class LandFormations
 {
-    /// <summary>진형 수.</summary>
-    public const int Count = 8;
+    /// <summary>진형 수 — 원본 여덟 벌에 앱이 더한 문화권의 것(동아시아)까지.</summary>
+    public const int Count = 9;
 
     /// <summary>한 진형에 적어 둘 수 있는 자리 수 — 대장까지 여섯이다.</summary>
     public const int MaxUnits = LandBattle.PerSide;
@@ -121,6 +121,13 @@ public static class LandFormations
             new(LandUnits.Chief), new(LandUnits.Leopard), new(LandUnits.Indio),
             new(LandUnits.Bow),
         ]),
+
+        // 8 — 원본에 없다. 동아시아(11)의 진형으로, 중국 화포군(4)을 베껴 두었다(CityCultureEdits.CopiedFrom).
+        new("동아시아 화포군", "동아시아", true,
+        [
+            new(LandUnits.General), new(LandUnits.Bombard), new(LandUnits.Bow),
+            new(LandUnits.HeavyHorse, LandUnits.Horse, Skill.Sword),
+        ]),
     ];
 
     /// <summary>고치기 전, 원본에 박힌 그대로의 진형.</summary>
@@ -143,6 +150,7 @@ public static class LandFormations
         6 => 4,
         7 => 5,
         9 => 6,
+        11 => 8,   // 동아시아 — 앱이 더한 진형
         _ => 7,
     };
 

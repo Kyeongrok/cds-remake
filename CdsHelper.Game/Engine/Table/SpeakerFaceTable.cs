@@ -38,8 +38,11 @@ public sealed class SpeakerFaceTable
     /// <summary>한 줄에 든 칸 수. 앞 열한 칸이 문화권이다.</summary>
     private const int Columns = 13;
 
-    /// <summary>문화권 수.</summary>
-    public const int Cultures = 11;
+    /// <summary>EXE 한 줄의 문화권 칸 수 — 그 뒤 칸(11)은 여자 표시다.</summary>
+    private const int ExeCultures = CityCultureEdits.ExeCount;
+
+    /// <summary>앱의 문화권 수 — 앱이 더한 문화권(동아시아)은 베껴 온 문화권의 얼굴을 제 칸에 한 벌 갖는다.</summary>
+    public static int Cultures => CityCultureEdits.Count;
 
     /// <summary>판이 다른 EXE 를 잘못 읽지 않으려고 대 보는 칸 — 교회는 어디서나 292 다.</summary>
     private const int ProbeKind = 3, ProbeFace = 292;
@@ -54,7 +57,11 @@ public sealed class SpeakerFaceTable
 
     private SpeakerFaceTable(Snapshot snapshot)
     {
-        _faces = snapshot.Faces;
+        // 적어 두는 JSON 은 EXE 그대로(건물마다 열한 칸)다 — 앱 문화권 칸은 열 때 줄마다 늘려 베껴 넣는다.
+        _faces = new int[Kinds * Cultures];
+        for (int kind = 0; kind < Kinds; kind++)
+            Array.Copy(CityCultureEdits.Widen(snapshot.Faces[(kind * ExeCultures)..((kind + 1) * ExeCultures)]), 0,
+                       _faces, kind * Cultures, Cultures);
         _female = snapshot.Female;
     }
 
@@ -74,18 +81,18 @@ public sealed class SpeakerFaceTable
     {
         error = "";
 
-        var faces = new int[Kinds * Cultures];
+        var faces = new int[Kinds * ExeCultures];
         var female = new bool[Kinds];
         for (int kind = 0; kind < Kinds; kind++)
         {
-            for (int culture = 0; culture < Cultures; culture++)
-                faces[kind * Cultures + culture] =
+            for (int culture = 0; culture < ExeCultures; culture++)
+                faces[kind * ExeCultures + culture] =
                     exe.Int(TableVa + (kind * Columns + culture) * 4);
 
-            female[kind] = exe.Int(TableVa + (kind * Columns + Cultures) * 4) != 0;
+            female[kind] = exe.Int(TableVa + (kind * Columns + ExeCultures) * 4) != 0;
         }
 
-        if (faces[ProbeKind * Cultures] != ProbeFace)
+        if (faces[ProbeKind * ExeCultures] != ProbeFace)
         {
             error = "화자표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)";
             return null;

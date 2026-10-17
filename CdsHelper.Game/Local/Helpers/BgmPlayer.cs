@@ -146,6 +146,7 @@ public sealed class BgmPlayer : IDisposable
         27,  //  8 동남아시아
         18,  //  9 일본
          4,  // 10 아메리카
+         6,  // 11 동아시아 — 중국(6)을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
     ];
 
     /// <summary>문화권 번호로 도시 곡을 고른다. 모르는 번호면 기본 도시 곡.</summary>
@@ -181,6 +182,7 @@ public sealed class BgmPlayer : IDisposable
         "동남아시아" => CityTrackByCulture[8],
         "일본" => CityTrackByCulture[9],
         "아메리카" => CityTrackByCulture[10],
+        "동아시아" => CityTrackByCulture[11],
         _ => CityTrackForCulture(exeCulture),
     };
 

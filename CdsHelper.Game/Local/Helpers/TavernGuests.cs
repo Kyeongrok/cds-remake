@@ -84,6 +84,7 @@ public sealed class TavernGuests
         ["동남아시아"] = (108, 11),
         ["중앙아시아"] = (119, 11),
         ["아메리카"] = (130, 16),
+        ["동아시아"] = (55, 13),   // 앱이 더한 문화권 — 중국 구간을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
     };
 
     /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\손님표.json</c>).</summary>

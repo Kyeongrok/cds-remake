@@ -119,6 +119,7 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
             0 or 1 or 2 => dice.Next(10) < 4 ? "오오, 신이여···"
                          : dice.Next(10) < 4 ? "아니, 이럴 수가!!" : null,
             6 => dice.Next(10) < 2 ? "으아~!" : null,
+            11 => dice.Next(10) < 2 ? "으아~!" : null,   // 동아시아 — 중국(6)을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
             9 => dice.Next(9) < 3 ? "분하다!"
                : dice.Next(9) < 3 ? "이놈 남만인!"
                : dice.Next(9) < 3 ? "이것이 무인의 죽음이다." : null,

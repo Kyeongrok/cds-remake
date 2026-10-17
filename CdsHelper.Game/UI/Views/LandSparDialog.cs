@@ -217,12 +217,8 @@ internal sealed class LandSparDialog : GameWindow
         return friend && !CanBeMine(kind) ? 0 : kind + 1;
     }
 
-    /// <summary>문화권 이름 열하나. 적 그림과 진형이 이것으로 갈린다.</summary>
-    private static readonly string[] CultureNames =
-    [
-        "서유럽", "북유럽", "동유럽", "이슬람", "인도", "동남아시아",
-        "동아시아", "일본", "아프리카", "중남미", "오세아니아",
-    ];
+    /// <summary>문화권 이름 — 도시 문화권 번호 그대로다(앱이 더한 동아시아까지). 적 그림과 진형이 이것으로 갈린다.</summary>
+    private static string[] CultureNames => CityCultureEdits.Names;
 
     /// <summary>
     /// 아군으로 세울 수 있는 병종인지 — <b>여덟뿐</b>이다.

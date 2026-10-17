@@ -35,19 +35,19 @@ public static class CityCoordinates
     /// <summary>문화권 목록 끝에 붙는 줄(<c>0x005333D0</c>)과 도시 목록의 제목(<c>0x005333C0</c>).</summary>
     public const string AllCities = "전도시 일람", CityListTitle = "도시일람";
 
-    /// <summary>문화권 이름 열하나(<c>0x00560BE8</c>).</summary>
+    /// <summary>문화권 이름 — 앞 열하나는 원본(<c>0x00560BE8</c>), 그 뒤는 앱이 더한 문화권(<see cref="CityCultureEdits.CopiedFrom"/>).</summary>
     public static readonly string[] Regions =
     [
         "이베리아", "북유럽", "지중해", "아프리카", "중근동", "인도",
         "중국", "중앙아시아", "동남아시아", "일본", "아메리카",
+        "동아시아",
     ];
 
-    /// <summary>문화권 번호의 이름 — 화면에만 쓰는 동아시아(<see cref="CityCultureEdits.EastAsiaNo"/>)도 받는다.</summary>
-    public static string RegionName(int region) =>
-        region == CityCultureEdits.EastAsiaNo ? CityCultureEdits.EastAsia : Regions[region];
+    /// <summary>문화권 번호의 이름.</summary>
+    public static string RegionName(int region) => Regions[region];
 
     /// <summary>문화권 목록의 차례 — 원본 번호 차례이고, 동아시아는 중국(6) 바로 뒤다.</summary>
-    public static double RegionRank(int region) => region == CityCultureEdits.EastAsiaNo ? 6.5 : region;
+    public static double RegionRank(int region) => region == CityCultureEdits.EastAsia ? 6.5 : region;
 
     /// <summary>한 도시의 좌표 — 도(度)와 방위.</summary>
     /// <param name="North">북쪽인지(<c>칸Y x 16 &lt; 10000</c>).</param>

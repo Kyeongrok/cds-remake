@@ -160,7 +160,8 @@ public sealed class CityCultureEditDialog : GameWindow
         foreach (var city in names.Cities)
         {
             int changed = CityCultureEdits.Of(city.Id);
-            string culture = changed == CityCultureEdits.None ? city.Culture : CityCultureEdits.NameOf(changed);
+            // 이름은 번호에서 낸다 — 앱이 더한 문화권(한양 = 동아시아)은 앱 DB 이름에 없다.
+            string culture = CityCultureEdits.NameOf(table.CultureOf(city.Id)) is { Length: > 0 } named ? named : city.Culture;
             if (find.Length > 0
                 && !city.Name.Contains(find, StringComparison.OrdinalIgnoreCase)
                 && !culture.Contains(find, StringComparison.OrdinalIgnoreCase))

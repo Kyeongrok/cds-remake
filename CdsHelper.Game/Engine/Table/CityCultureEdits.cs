@@ -20,7 +20,7 @@ public static class CityCultureEdits
     /// <summary>적어 둘 파일 이름(<c>도시-문화권-고친것.json</c>).</summary>
     private const string CacheName = "도시-문화권-고친것";
 
-    /// <summary>문화권 이름 — 차례가 곧 번호다(게임 도시 표 <c>+0x20</c>).</summary>
+    /// <summary>문화권 이름 — 차례가 곧 번호다(게임 도시 표 <c>+0x20</c>). 11 부터는 원본에 없고 앱이 더한 것이다(<see cref="CopiedFrom"/>).</summary>
     /// <remarks>
     /// 앱 DB 가 도시마다 들고 있는 이름과 같은 말을 쓴다(<see cref="CityTable.Entry.Culture"/>) —
     /// 건물 사진과 술집 손님이 그 <b>이름</b>으로 갈리기 때문에 번호만 갈아서는 반만 바뀐다.
@@ -29,30 +29,50 @@ public static class CityCultureEdits
     [
         "이베리아", "북유럽", "지중해", "아프리카", "이슬람", "인도",
         "중국", "중앙아시아", "동남아시아", "일본", "아메리카",
+        "동아시아",
     ];
 
-    /// <summary>화면에만 쓰는 문화권 이름 — 원본에 없다(<see cref="ShownOf"/>).</summary>
-    public const string EastAsia = "동아시아";
+    /// <summary>원본 EXE 의 문화권 수(0~10) — EXE 표를 읽을 때의 칸 수다. 앱 문화권 수는 <see cref="Count"/>.</summary>
+    public const int ExeCount = 11;
 
-    /// <summary>화면에만 쓰는 동아시아의 번호 — <see cref="Names"/> 바깥이라 규칙 표에는 안 들어간다.</summary>
-    public const int EastAsiaNo = 11;
+    /// <summary>앱의 문화권 수 — 원본 열하나에 앱이 더한 것까지.</summary>
+    public static int Count => Names.Length;
 
-    /// <summary>화면에서 동아시아로 보이는 도시 — 한양(190).</summary>
-    private static readonly int[] EastAsiaCities = [190];
+    /// <summary>동아시아의 번호.</summary>
+    public const int EastAsia = 11;
 
     /// <summary>
-    /// 화면(도시좌표 · 네비게이션)에 보일 문화권 번호. 원본과 다르다 — 원본은 한양을 중국(6)으로 둔다.
+    /// 앱이 더한 문화권 → 처음에 <b>베껴 온</b> 원본 문화권. 문화권으로 값을 찾는 표마다 이 번호의 칸을
+    /// 따로 한 벌 갖고, 그 칸은 베껴 온 문화권과 똑같은 값으로 시작한다 — 한 벌을 통째로 복사해 둔 것이라
+    /// 나중에 표마다 하나씩 고쳐 갈 수 있다(바탕을 따라가는 것이 아니다).
     /// </summary>
-    /// <remarks>
-    /// 이름만 갈라 보인다. 규칙(얼굴 · 음악 · 여관 값 · 소문 · 인물 이동 · 대본 조건)은 <see cref="CityExeTable.CultureOf"/> 의
-    /// 원본 번호를 그대로 써서 한양은 여전히 중국으로 굴러간다. 도구로 문화권을 갈아 둔 도시는 갈아 둔 대로 보인다.
-    /// </remarks>
-    public static int ShownOf(int cityId, int culture) =>
-        Of(cityId) == None && EastAsiaCities.Contains(cityId) ? EastAsiaNo : culture;
+    public static readonly IReadOnlyDictionary<int, int> CopiedFrom = new Dictionary<int, int>
+    {
+        [EastAsia] = 6,   // 동아시아 ← 중국
+    };
 
-    /// <summary>화면에 보일 문화권 이름 — <see cref="ShownOf"/> 와 같은 규칙이다.</summary>
-    public static string ShownName(int cityId, string culture) =>
-        Of(cityId) == None && EastAsiaCities.Contains(cityId) ? EastAsia : culture;
+    /// <summary>
+    /// 원본 문화권마다 하나씩인 표(<paramref name="exe"/>, 길이 <see cref="ExeCount"/> 이상)를 앱 문화권 수로 늘린다 —
+    /// 더한 문화권 칸에는 <see cref="CopiedFrom"/> 의 문화권 값을 베껴 넣는다.
+    /// </summary>
+    public static T[] Widen<T>(T[] exe)
+    {
+        var all = new T[Math.Max(exe.Length, Count)];
+        Array.Copy(exe, all, exe.Length);
+        foreach (var (added, from) in CopiedFrom)
+            if (added >= exe.Length) all[added] = exe[from];
+        return all;
+    }
+
+    /// <summary>
+    /// 앱이 정한 도시의 문화권 — 원본에는 없는 번호라 EXE 표 대신 여기서 준다. 한양(190)은 원본이 중국(6)으로 두지만
+    /// 앱에서는 동아시아다. 손으로 갈아 둔 것(<see cref="Of"/>)이 이것보다 이긴다. 없으면 <see cref="None"/>.
+    /// </summary>
+    public static int NativeOf(int cityId) => cityId switch
+    {
+        190 => EastAsia,
+        _ => None,
+    };
 
     /// <summary>갈아 둔 한 줄.</summary>
     public readonly record struct Entry(int City, int Culture);

@@ -424,7 +424,7 @@ public static class LandUnitArt
         14 => culture is 4 or 5 ? 41 : 42,                        // 장군
         15 => friend ? 10 : 20,                                   // 화승총대
         16 => friend ? 11 : 21,                                   // 머스켓총대
-        17 => culture is 6 or 7 ? 27 : 26,                        // 궁병
+        17 => culture is 6 or 7 or 11 ? 27 : 26,                  // 궁병 — 11 동아시아는 중국(6)을 베껴 둔 칸
         18 => friend ? 12 : 22,                                   // 포병
         19 => friend ? 13 : 23,                                   // 캐논포병
         20 => 35,                                                 // 화포병

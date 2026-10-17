@@ -2435,6 +2435,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     [
         "이베리아", "북유럽", "지중해", "아프리카", "중근동", "인도",
         "중국", "중앙아시아", "동남아시아", "일본", "신대륙",
+        "동아시아",   // 11 — 앱이 더한 문화권(CityCultureEdits.CopiedFrom)
     ];
 
     private static string Bearing(int culture) => BearingName(culture);

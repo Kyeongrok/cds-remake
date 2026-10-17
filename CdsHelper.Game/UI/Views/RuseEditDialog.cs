@@ -26,12 +26,8 @@ namespace CdsHelper.Game.UI.Views;
 /// </remarks>
 public sealed class RuseEditDialog : GameWindow
 {
-    /// <summary>문화권 이름 열하나.</summary>
-    private static readonly string[] CultureNames =
-    [
-        "서유럽", "북유럽", "동유럽", "이슬람", "인도", "동남아시아",
-        "동아시아", "일본", "아프리카", "중남미", "오세아니아",
-    ];
+    /// <summary>문화권 이름 — 도시 문화권 번호 그대로다(앱이 더한 동아시아까지).</summary>
+    private static string[] CultureNames => CityCultureEdits.Names;
 
     private readonly DataGrid _grid = new()
     {

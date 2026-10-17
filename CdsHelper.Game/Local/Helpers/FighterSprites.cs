@@ -89,6 +89,7 @@ public sealed class FighterSprites
         8 => 5,             // 동남아시아 → 아시아Ｂ
         9 => 7,             // 일본
         10 => 8,            // 아메리카 → 아즈텍
+        11 => 6,            // 동아시아 — 중국(6)을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
         _ => 1,             // 이베리아 · 북유럽 · 지중해 → 유럽
     };
 

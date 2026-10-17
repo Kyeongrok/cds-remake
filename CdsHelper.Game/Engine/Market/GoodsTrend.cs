@@ -14,8 +14,11 @@ namespace CdsHelper.Game.Engine.Market;
 /// </remarks>
 public sealed class GoodsTrend
 {
-    /// <summary>문화권 → 향신료 갈래(<c>0x0048076C</c>). 9 넘는 문화권은 안 비튼다.</summary>
-    private static readonly int[] SpiceGroups = [0, 0, 0, 3, 1, 1, 3, 3, 2];
+    /// <summary>
+    /// 문화권 → 향신료 갈래(<c>0x0048076C</c>, 0~8). 원본은 9 넘는 문화권을 안 비튼다 — 일본(9) · 아메리카(10)는 안 비트는 갈래 3 으로 적었고,
+    /// 동아시아(11)는 중국(6)을 베껴 둔 칸이다(<see cref="CityCultureEdits.CopiedFrom"/>).
+    /// </summary>
+    private static readonly int[] SpiceGroups = [0, 0, 0, 3, 1, 1, 3, 3, 2, 3, 3, 3];
 
     /// <summary>신대륙 기호품 — 교역품 이름과 같은 이름의 발견물이 짝이다.</summary>
     private static readonly string[] NewWorldGoods = ["커피", "담배", "카카오", "차"];
@@ -53,7 +56,7 @@ public sealed class GoodsTrend
         if (goods.Category == SpiceCategory)
         {
             int islands = YearsSince(player, "향료제도"), india = YearsSince(player, "인도");
-            if (culture is < 0 or > 8) return basis;
+            if (culture < 0 || culture >= SpiceGroups.Length) return basis;
             return SpiceGroups[culture] switch
             {
                 0 when islands >= 0 => Math.Max(70 - islands, 40) * basis / 100,

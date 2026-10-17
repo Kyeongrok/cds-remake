@@ -250,9 +250,9 @@ public sealed class CityCultureDialog : GameWindow
             int nationNo = table.NationOf(city.Id);
             bool marked = changed != CityCultureEdits.None
                        || CityNationEdits.Of(city.Id) != CityNationEdits.None;
+            // 이름은 번호에서 낸다 — 앱이 더한 문화권(한양 = 동아시아)은 앱 DB 이름에 없다.
             rows.Add(new Row(city.Id, city.Name, no,
-                             changed == CityCultureEdits.None
-                                 ? city.Culture : CityCultureEdits.NameOf(changed),
+                             CityCultureEdits.NameOf(no) is { Length: > 0 } named ? named : city.Culture,
                              _kingdoms?.Find(nationNo)?.Name ?? "", nationNo,
                              marked ? "●" : ""));
         }
@@ -304,7 +304,7 @@ public sealed class CityCultureDialog : GameWindow
     private void PickCity()
     {
         if (_cities.SelectedItem is not Row row) return;
-        _culture.SelectedIndex = row.CultureNo;   // 고르면 ShowFaces 가 따라 돈다
+        _culture.SelectedIndex = row.CultureNo < _culture.Items.Count ? row.CultureNo : -1;   // 고르면 ShowFaces 가 따라 돈다
         if (row.NationNo >= 0 && row.NationNo < _nation.Items.Count)
             _nation.SelectedIndex = row.NationNo;
         ShowFaces();

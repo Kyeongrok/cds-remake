@@ -341,6 +341,8 @@ public sealed class CityExeTable
     {
         int changed = CityCultureEdits.Of(cityId);
         if (changed != CityCultureEdits.None) return changed;
+        int native = CityCultureEdits.NativeOf(cityId);   // 앱이 더한 문화권(한양 = 동아시아)
+        if (native != CityCultureEdits.None) return native;
         return cityId >= 0 && cityId < _cultures.Length ? _cultures[cityId] : -1;
     }
 

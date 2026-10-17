@@ -50,7 +50,8 @@ public sealed class Lodging
     /// 문화권별 한 달 값. 색인이 문화권 번호(<see cref="CityExeTable.CultureOf"/>)다.
     /// </summary>
     private static readonly int[] MonthlyByCulture =
-        [150, 120, 124, 90, 15, 60, 90, 30, 30, 60, 30];
+        [150, 120, 124, 90, 15, 60, 90, 30, 30, 60, 30,
+         90];   // 11 동아시아 — 중국(6)을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
 
     /// <summary>문화권을 모를 때 부르는 값. 표의 가운데쯤이다.</summary>
     private const int Unknown = 90;

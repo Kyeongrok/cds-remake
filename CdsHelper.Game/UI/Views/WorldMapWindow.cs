@@ -916,7 +916,7 @@ public sealed class WorldMapWindow : Window
         int here = _host.SeaBlocked ? _game.Player.CityId : -1;
         var cities = Enumerable.Range(0, GameMapCoords.CityCount)
             .Where(id => id != here && _game.CityVisible(id))
-            .Select(id => (Id: id, Name: _game.CityName(id), Culture: CityCultureEdits.ShownName(id, _game.CultureOf(id)),
+            .Select(id => (Id: id, Name: _game.CityName(id), Culture: _game.CultureOf(id),
                            Harbor: _game.CityRows?.HasBuilding(id, HarborCode) ?? true));
 
         bool inCity = _host.SeaBlocked;
@@ -7645,10 +7645,10 @@ public sealed class WorldMapWindow : Window
                 var list = seen;
                 if (byRegion)
                 {
-                    // 한양은 원본과 달리 「동아시아」로 따로 보인다(CityCultureEdits.ShownOf) — 중국 바로 뒤에 둔다.
-                    int Region(int c) => CityCultureEdits.ShownOf(c, rows?.CultureOf(c) ?? -1);
+                    // 한양은 원본과 달리 「동아시아」 문화권이다(CityCultureEdits.NativeOf) — 중국 바로 뒤에 둔다.
+                    int Region(int c) => rows?.CultureOf(c) ?? -1;
                     var regions = seen.Select(Region)
-                                      .Where(r => r >= 0 && (r < CityCoordinates.Regions.Length || r == CityCultureEdits.EastAsiaNo))
+                                      .Where(r => r >= 0 && r < CityCoordinates.Regions.Length)
                                       .Distinct().OrderBy(CityCoordinates.RegionRank).ToList();
                     var names = regions.Select(CityCoordinates.RegionName).ToList();
                     names.Add(CityCoordinates.AllCities);
