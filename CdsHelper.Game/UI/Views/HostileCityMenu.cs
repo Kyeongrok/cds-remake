@@ -128,19 +128,18 @@ internal static class HostileCityMenu
 
         while (true)
         {
-            // 넉 줄을 먼저 깔고 켜고 끈다 — 꺼진 칸도 자리를 지킨다.
-            var rows = new (string, bool)[]
-            {
-                // 「공격한다」는 성문(건물 10)에서만 켜진다 — 배로 온 항구 문(건물 0)에서는 흐리다
-                // (0x004A574E 가 화면 vt+0x48 을 켜짐 칸에, 조약 문도 0x0046AC12 에서 같다).
-                (say.Rows[Standoff.Attack], byLand),
-                // 조약 문의 「침입한다」는 종파를 안 본다(0x0046AC12) — 종파 3·4 검사는 적대도 쪽 잠입뿐이다.
-                (say.Rows[Standoff.Sneak], byTreaty || Standoff.CanSneak(sect)),
-                (say.Rows[Standoff.Talk], canTalk),
-                (say.Rows[Standoff.Leave], true),
-            };
+            // 넉 줄을 깔고 켜고 끈다. 「공격한다」는 성문(건물 10)에서만 켜진다 — 원본은 배로 온 항구 문(건물 0)에서
+            // 흐리게 두지만(0x004A574E 가 화면 vt+0x48 을 켜짐 칸에, 조약 문도 0x0046AC12 에서 같다) 누를 수 없는 줄이라
+            // 아예 뺀다(건의). 항구에서는 「마을에 들어간다」로 성문까지 가야 공격할 수 있다(CityPicView.PassTownGate).
+            var shown = new List<(int Choice, (string, bool) Row)>();
+            if (byLand) shown.Add((Standoff.Attack, (say.Rows[Standoff.Attack], true)));
+            // 조약 문의 「침입한다」는 종파를 안 본다(0x0046AC12) — 종파 3·4 검사는 적대도 쪽 잠입뿐이다.
+            shown.Add((Standoff.Sneak, (say.Rows[Standoff.Sneak], byTreaty || Standoff.CanSneak(sect))));
+            shown.Add((Standoff.Talk, (say.Rows[Standoff.Talk], canTalk)));
+            shown.Add((Standoff.Leave, (say.Rows[Standoff.Leave], true)));
 
-            int pick = ChoiceDialog.Pick(owner, Standoff.GateTitle(cityName), rows);
+            int at = ChoiceDialog.Pick(owner, Standoff.GateTitle(cityName), [.. shown.Select(r => r.Row)]);
+            int pick = at >= 0 && at < shown.Count ? shown[at].Choice : -1;
             switch (pick)
             {
                 case Standoff.Attack:
