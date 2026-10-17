@@ -331,7 +331,7 @@
                                             ToolTip="힌트 186줄을 보고 고치거나 새로 더한다 — 어느 발견물을 가리키는지, 어느 책에 물려 있는지는 곁다리로 함께 낸다(술집이 이르는 방향은 그중 한 칸일 뿐이다)" />
                                         <MenuItem
                                             x:Name="PART_DiscoveryEditMenu"
-                                            Header="발견물"
+                                            Header="발견물 관리"
                                             ToolTip="발견물 274줄을 보고 고치거나, 원본에 없던 새 발견물을 더한다" />
                                         <MenuItem
                                             x:Name="PART_BookEditMenu"

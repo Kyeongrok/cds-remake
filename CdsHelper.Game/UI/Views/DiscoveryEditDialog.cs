@@ -53,6 +53,14 @@ public sealed class DiscoveryEditDialog : GameWindow
         Margin = new Thickness(12, 0, 0, 0),
     };
 
+    private readonly Button _delete = new()
+    {
+        Content = "삭제",
+        Padding = new Thickness(10, 2, 10, 2),
+        Margin = new Thickness(6, 0, 0, 0),
+        ToolTip = "여기서 더한 발견물 줄을 지운다 — 원본 게임에 있던 줄은 지울 수 없고 「이 줄 되돌리기」로 게임 값에 돌린다",
+    };
+
     private readonly Button _reset = new()
     {
         Content = "이 줄 되돌리기",
@@ -132,6 +140,8 @@ public sealed class DiscoveryEditDialog : GameWindow
         _editedOnly.Unchecked += (_, _) => Rebuild();
 
         _add.Click += (_, _) => AddNew();
+        _delete.Click += (_, _) => DeleteSelected();
+        _grid.SelectionChanged += (_, _) => _delete.IsEnabled = _grid.SelectedItem is Row row && IsAdded(row.Id);
         _reset.Click += (_, _) =>
         {
             if (_grid.SelectedItem is Row row) DiscoveryEdits.Reset(row.Id);
@@ -151,7 +161,7 @@ public sealed class DiscoveryEditDialog : GameWindow
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(10, 10, 10, 0),
-            Children = { label, _search, _editedOnly, _add, _reset, _resetAll, _export, _import },
+            Children = { label, _search, _editedOnly, _add, _delete, _reset, _resetAll, _export, _import },
         };
 
         var page = new DockPanel();
@@ -298,9 +308,45 @@ public sealed class DiscoveryEditDialog : GameWindow
             Indirect: false, OpenAtStart: true, OnLand: true, Once: true,
             X1: -1, Y1: -1, X2: -1, Y2: -1));
 
+        // 찾기 · 「고치거나 더한 줄만」에 걸려 새 줄이 안 보이면 안 되니 걸러 둔 것을 푼다.
+        if (_search.Text.Length > 0) _search.Text = "";
         Rebuild();
-        if (_grid.ItemsSource is List<Row> rows)
-            _grid.SelectedItem = rows.FirstOrDefault(r => r.Id == nextId);
+        FocusRow(nextId);
+    }
+
+    /// <summary>그 번호의 줄로 옮겨 보이게 굴리고, 「이름」 칸을 바로 고칠 수 있게 커서를 둔다.</summary>
+    private void FocusRow(int id)
+    {
+        if (_grid.ItemsSource is not List<Row> rows || rows.FirstOrDefault(r => r.Id == id) is not { } row) return;
+        _grid.SelectedItem = row;
+        _grid.ScrollIntoView(row);
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            _grid.Focus();
+            _grid.CurrentCell = new DataGridCellInfo(row, _grid.Columns[1]);
+            _grid.BeginEdit();
+        }), System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    /// <summary>원본 표에 없고 여기서 더한 번호인가 — 그런 줄만 지울 수 있다.</summary>
+    private bool IsAdded(int id) => _discoveries?.Original(id) == null && DiscoveryEdits.Of(id) != null;
+
+    /// <summary>고른 줄이 여기서 더한 발견물이면 물어보고 지운다.</summary>
+    private void DeleteSelected()
+    {
+        if (_grid.SelectedItem is not Row row) { _status.Text = "지울 줄을 먼저 고르세요."; return; }
+        if (!IsAdded(row.Id))
+        {
+            _status.Text = $"발견물 {row.Id} 번은 원본 게임에 있는 줄이라 지울 수 없습니다 — 고친 것은 「이 줄 되돌리기」로 돌립니다.";
+            return;
+        }
+        if (MessageBox.Show(this, $"「{row.Name}」(발견물 {row.Id})을 지울까요?", "발견물 삭제",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+        _grid.CancelEdit();
+        DiscoveryEdits.Reset(row.Id);
+        Rebuild();
+        _status.Text = $"발견물 {row.Id} 번 「{row.Name}」을 지웠습니다.";
     }
 
     /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
