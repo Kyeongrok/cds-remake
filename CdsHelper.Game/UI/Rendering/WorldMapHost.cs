@@ -1519,7 +1519,7 @@ public sealed class WorldMapHost : HwndHost
         _blockedTicks = 0;
         _dirty = true;
         _routes.Save();   // 떠날 때 한 번 적어 둔다 — 다음에 같은 데로 갈 때 찾지 않는다
-        return (true, $"항로를 잡았습니다. 경유 지점 {route.Count}곳{gain}");
+        return (true, $"항로를 잡았습니다.{gain}");
     }
 
     /// <summary>지금 자리에서 그 칸까지의 바닷길 — 가장 짧은 길, 또는 뚜렷이 빠르면 바람 · 해류를 본 길.</summary>
@@ -1547,7 +1547,7 @@ public sealed class WorldMapHost : HwndHost
                     ticks = timed;
                     route = quick;
                     // 띠 글꼴에 없는 글자(긴 줄표 따위)는 물음표로 찍힌다 — 쉼표와 마침표만 쓴다.
-                    gain = $", 바람과 해류를 타서 가장 짧은 길보다 {(1 - timed / plain) * 100:0}% 빠릅니다";
+                    gain = $" 바람과 해류를 타서 가장 짧은 길보다 {(1 - timed / plain) * 100:0}% 빠릅니다.";
                 }
             }
         }
