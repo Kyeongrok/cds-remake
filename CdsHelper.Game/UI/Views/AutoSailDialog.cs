@@ -231,7 +231,7 @@ public sealed class AutoSailDialog : GameWindow
     /// <summary>문화권 탭의 차례 — 도시 문화권 표의 차례를 따르고, 모르는 이름은 뒤로 보낸다.</summary>
     private static int CultureRank(string culture)
     {
-        string[] order = ["이베리아", "북유럽", "지중해", "아프리카", "이슬람", "중근동", "인도", "중국", "중앙아시아", "동남아시아", "일본", "아메리카"];
+        string[] order = ["이베리아", "북유럽", "지중해", "아프리카", "이슬람", "중근동", "인도", "중국", "동아시아", "중앙아시아", "동남아시아", "일본", "아메리카"];
         int at = Array.IndexOf(order, culture);
         return at < 0 ? order.Length : at;
     }

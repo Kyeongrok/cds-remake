@@ -31,6 +31,29 @@ public static class CityCultureEdits
         "중국", "중앙아시아", "동남아시아", "일본", "아메리카",
     ];
 
+    /// <summary>화면에만 쓰는 문화권 이름 — 원본에 없다(<see cref="ShownOf"/>).</summary>
+    public const string EastAsia = "동아시아";
+
+    /// <summary>화면에만 쓰는 동아시아의 번호 — <see cref="Names"/> 바깥이라 규칙 표에는 안 들어간다.</summary>
+    public const int EastAsiaNo = 11;
+
+    /// <summary>화면에서 동아시아로 보이는 도시 — 한양(190).</summary>
+    private static readonly int[] EastAsiaCities = [190];
+
+    /// <summary>
+    /// 화면(도시좌표 · 네비게이션)에 보일 문화권 번호. 원본과 다르다 — 원본은 한양을 중국(6)으로 둔다.
+    /// </summary>
+    /// <remarks>
+    /// 이름만 갈라 보인다. 규칙(얼굴 · 음악 · 여관 값 · 소문 · 인물 이동 · 대본 조건)은 <see cref="CityExeTable.CultureOf"/> 의
+    /// 원본 번호를 그대로 써서 한양은 여전히 중국으로 굴러간다. 도구로 문화권을 갈아 둔 도시는 갈아 둔 대로 보인다.
+    /// </remarks>
+    public static int ShownOf(int cityId, int culture) =>
+        Of(cityId) == None && EastAsiaCities.Contains(cityId) ? EastAsiaNo : culture;
+
+    /// <summary>화면에 보일 문화권 이름 — <see cref="ShownOf"/> 와 같은 규칙이다.</summary>
+    public static string ShownName(int cityId, string culture) =>
+        Of(cityId) == None && EastAsiaCities.Contains(cityId) ? EastAsia : culture;
+
     /// <summary>갈아 둔 한 줄.</summary>
     public readonly record struct Entry(int City, int Culture);
 

@@ -913,7 +913,7 @@ public sealed class WorldMapWindow : Window
         int here = _host.SeaBlocked ? _game.Player.CityId : -1;
         var cities = Enumerable.Range(0, GameMapCoords.CityCount)
             .Where(id => id != here && _game.CityVisible(id))
-            .Select(id => (Id: id, Name: _game.CityName(id), Culture: _game.CultureOf(id),
+            .Select(id => (Id: id, Name: _game.CityName(id), Culture: CityCultureEdits.ShownName(id, _game.CultureOf(id)),
                            Harbor: _game.CityRows?.HasBuilding(id, HarborCode) ?? true));
 
         bool inCity = _host.SeaBlocked;
@@ -7483,10 +7483,12 @@ public sealed class WorldMapWindow : Window
                 var list = seen;
                 if (byRegion)
                 {
-                    var regions = seen.Select(c => rows?.CultureOf(c) ?? -1)
-                                      .Where(r => r >= 0 && r < CityCoordinates.Regions.Length)
-                                      .Distinct().Order().ToList();
-                    var names = regions.Select(r => CityCoordinates.Regions[r]).ToList();
+                    // 한양은 원본과 달리 「동아시아」로 따로 보인다(CityCultureEdits.ShownOf) — 중국 바로 뒤에 둔다.
+                    int Region(int c) => CityCultureEdits.ShownOf(c, rows?.CultureOf(c) ?? -1);
+                    var regions = seen.Select(Region)
+                                      .Where(r => r >= 0 && (r < CityCoordinates.Regions.Length || r == CityCultureEdits.EastAsiaNo))
+                                      .Distinct().OrderBy(CityCoordinates.RegionRank).ToList();
+                    var names = regions.Select(CityCoordinates.RegionName).ToList();
                     names.Add(CityCoordinates.AllCities);
 
                     int at = ChoiceDialog.Ask(this, "", names);
@@ -7496,7 +7498,7 @@ public sealed class WorldMapWindow : Window
                         byRegion = false;           // 전도시 일람 — 이제부터는 전도시 목록에 머문다
                         continue;
                     }
-                    list = [.. seen.Where(c => rows?.CultureOf(c) == regions[at])];
+                    list = [.. seen.Where(c => Region(c) == regions[at])];
                 }
 
                 int pick = ChoiceDialog.Ask(this, CityCoordinates.CityListTitle,

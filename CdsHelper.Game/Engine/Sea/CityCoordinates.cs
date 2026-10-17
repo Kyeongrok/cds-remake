@@ -42,6 +42,13 @@ public static class CityCoordinates
         "중국", "중앙아시아", "동남아시아", "일본", "아메리카",
     ];
 
+    /// <summary>문화권 번호의 이름 — 화면에만 쓰는 동아시아(<see cref="CityCultureEdits.EastAsiaNo"/>)도 받는다.</summary>
+    public static string RegionName(int region) =>
+        region == CityCultureEdits.EastAsiaNo ? CityCultureEdits.EastAsia : Regions[region];
+
+    /// <summary>문화권 목록의 차례 — 원본 번호 차례이고, 동아시아는 중국(6) 바로 뒤다.</summary>
+    public static double RegionRank(int region) => region == CityCultureEdits.EastAsiaNo ? 6.5 : region;
+
     /// <summary>한 도시의 좌표 — 도(度)와 방위.</summary>
     /// <param name="North">북쪽인지(<c>칸Y x 16 &lt; 10000</c>).</param>
     /// <param name="East">동쪽인지(<c>칸X x 16 ≥ 20000</c>).</param>
