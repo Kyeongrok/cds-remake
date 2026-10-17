@@ -642,6 +642,13 @@ public static class SeaPathfinder
         return null;
     }
 
+    /// <summary>
+    /// 지도 그림에서 바다로 치는 칸인지 — <see cref="Rendering.WorldMapHost"/> 의 항해지도와 같은 셈(부류 0 · 1)이다.
+    /// 지도 창 없이 지도를 그릴 때 쓴다(<see cref="UI.Views.DiscoveryAreaPicker.FromGame"/>).
+    /// </summary>
+    public static bool IsSeaCell(byte[] world, TerrainTable terrain, int x, int y) =>
+        y >= 0 && y < MapH && terrain.ClassOfCell(CellValue(world, x, y)) is 0 or 1;
+
     /// <summary>그 칸을 지나갈 수 있는지 — 바다면 바다 칸, 뭍이면 걸을 수 있는 칸이다.</summary>
     private static bool Passable(byte[] world, TerrainTable terrain, int x, int y, bool land)
     {

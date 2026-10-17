@@ -26,6 +26,50 @@ public sealed class DiscoveryAreaPicker : Window
     /// <summary>고른 범위와 육지인지.</summary>
     public readonly record struct Area(int X1, int Y1, int X2, int Y2, bool Land);
 
+    /// <summary>게임 폴더에서 지어 둔 지도 그림과 칸 — 한 번 지으면 들고 있는다.</summary>
+    private static (string Dir, BitmapSource Chart, Func<int, int, bool?> IsLand)? _fromGame;
+
+    /// <summary>
+    /// 지도 창 없이 게임 폴더의 <c>WORLD.CDS</c> 로 지도를 짓는다 — 항해지도와 같은 셈(점 하나가 칸 4x4, 뭍이 많으면 뭍색)이다.
+    /// 지도 창이 지도를 아직 안 읽었거나(도시 · 첫 화면) 지도 창 밖에서 열었을 때 쓴다. 못 읽으면 null.
+    /// </summary>
+    public static Map? FromGame(Engine.Game? game)
+    {
+        if (game is not { Directory.Length: > 0 }) return null;
+        if (_fromGame is not { } made || made.Dir != game.Directory)
+        {
+            if (Support.Local.Helpers.WorldMapRenderer.LoadWorldData(System.IO.Path.Combine(game.Directory, "WORLD.CDS")) is not { } world
+                || Local.Helpers.TerrainTable.Open(game.Directory) is not { } terrain)
+                return null;
+
+            int w = ExploredMap.Width, h = ExploredMap.Height;
+            var dots = new uint[w * h];
+            uint Color(byte index)
+            {
+                int k = index * 3;
+                return 0xFF000000u | ((uint)Local.Helpers.GamePalette.Rgb[k] << 16)
+                     | ((uint)Local.Helpers.GamePalette.Rgb[k + 1] << 8) | Local.Helpers.GamePalette.Rgb[k + 2];
+            }
+            for (int by = 0; by < h; by++)
+                for (int bx = 0; bx < w; bx++)
+                {
+                    int sea = 0;
+                    for (int y = 0; y < Cells; y++)
+                        for (int x = 0; x < Cells; x++)
+                            if (Engine.Sea.SeaPathfinder.IsSeaCell(world, terrain, bx * Cells + x, by * Cells + y)) sea++;
+                    // 항해지도 색(0x00416AED) — 바다 0x2E · 뭍 0x18, 같으면 바다다.
+                    dots[by * w + bx] = Color(Cells * Cells - sea > sea ? (byte)0x18 : (byte)0x2E);
+                }
+            var chart = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, dots, w * 4);
+            chart.Freeze();
+            made = (game.Directory, chart, (x, y) => !Engine.Sea.SeaPathfinder.IsSeaCell(world, terrain, x, y));
+            _fromGame = made;
+        }
+        var others = (game.Discoveries?.Table?.Discoveries ?? [])
+            .Where(r => r.HasPlace).Select(r => (r.X1, r.Y1, r.X2, r.Y2, r.Name)).ToList();
+        return new Map(made.Chart, made.IsLand, others);
+    }
+
     private const int Cells = ExploredMap.CellsPerBlock;
     private const int MapCellsW = ExploredMap.Width * Cells, MapCellsH = ExploredMap.Height * Cells;
 

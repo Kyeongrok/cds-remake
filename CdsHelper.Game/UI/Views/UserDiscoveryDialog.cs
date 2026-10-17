@@ -81,7 +81,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _form.Children.Add(Line("힌트 이름", _hintName, Label("등급(1~3)"), _hintGrade, Label("갈래"), _hintCategory,
                                 Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline));
         _form.Children.Add(Line("힌트 글", _hintText));
-        _form.Children.Add(Line("소문 도시", _rumorCities, Label("도시 번호를 쉼표로(셋까지)"), Label("힌트를 실을 책"), _book,
+        _form.Children.Add(Line("소문 도시", _rumorCities, Edit("도시 고르기…", PickCities), Label("힌트를 실을 책"), _book,
                                 Edit("책 고르기…", PickBook)));
         _form.Children.Add(Line("소문 글", _rumorText));
         _form.Children.Add(Line("설명", _description));
@@ -456,7 +456,12 @@ public sealed class UserDiscoveryDialog : GameWindow
     private bool PickArea()
     {
         if (_editing is not { } e) return false;
-        if (_map?.Invoke() is not { } map) { Tell("세계 지도를 못 읽었습니다 — 게임에서 개발 창을 열어 주세요."); return false; }
+        // 지도 창이 지도를 들고 있으면 그것을 쓰고, 아니면(도시 · 첫 화면) 게임 폴더의 WORLD.CDS 로 짓는다.
+        if ((_map?.Invoke() ?? DiscoveryAreaPicker.FromGame(_game)) is not { } map)
+        {
+            Tell("세계 지도를 못 읽었습니다 — 게임 폴더에 WORLD.CDS 가 있는지 확인해 주세요.");
+            return false;
+        }
         DiscoveryAreaPicker.Area? start = int.TryParse(_x1.Text, out int x1) && int.TryParse(_y1.Text, out int y1)
                                           && int.TryParse(_x2.Text, out int x2) && int.TryParse(_y2.Text, out int y2) && x1 >= 0 && y1 >= 0
             ? new(x1, y1, x2, y2, _land.IsChecked == true) : null;
@@ -546,6 +551,17 @@ public sealed class UserDiscoveryDialog : GameWindow
         _dropLock = true;
         _password.Clear();
         Tell("「저장」을 누르면 비밀번호가 빠집니다.");
+    }
+
+    /// <summary>문화권 탭으로 도시를 늘어놓는 창을 띄워 소문 도시를 셋까지 고른다.</summary>
+    private void PickCities()
+    {
+        if (_game == null) { Tell("도시 표를 읽지 못했습니다 — 도시 번호를 쉼표로 적어 주세요."); return; }
+        var now = _rumorCities.Text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(c => int.TryParse(c, out int id) ? id : -1).Where(id => id >= 0).ToList();
+        if (CityPickerDialog.Pick(this, _game, now) is not { } picked) return;
+        _rumorCities.Text = string.Join(",", picked);
+        Tell($"소문 도시: {(picked.Count == 0 ? "(없음)" : string.Join(", ", picked.Select(_game.CityName)))} — 「저장」을 눌러야 적힙니다.");
     }
 
     /// <summary>책 고르기 창을 띄워 힌트를 실을 책을 고른다.</summary>
