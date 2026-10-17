@@ -37,7 +37,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     /// <summary>「출처 · 공유」 탭 — 출처 · 만든 이 · 라이선스 · 비밀번호. 발견물 칸과 따로 둔다.</summary>
     private readonly StackPanel _share = new() { Margin = new Thickness(6, 10, 10, 4) };
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
-    private readonly Image _picture = new() { Width = 320, Height = 240, Stretch = Stretch.Uniform };
+    private readonly Image _picture = new() { Width = 160, Height = 120, Stretch = Stretch.Uniform };
 
     private readonly TextBox _name = Box(), _reward = Box(), _x1 = Box(60), _y1 = Box(60), _x2 = Box(60), _y2 = Box(60), _chance = Box(60);
     private readonly ComboBox _category = new() { Width = 160 };
@@ -127,15 +127,27 @@ public sealed class UserDiscoveryDialog : GameWindow
         _hasHint.Checked += (_, _) => ShowHintParts();
         _hasHint.Unchecked += (_, _) => ShowHintParts();
         _form.Children.Add(Line("설명", _description));
-        _form.Children.Add(Line("장면", _scene, Edit("아이템 넣기…", InsertItem)));
+        // 그림 · 동영상은 장면 위에 — 여기서 올린 것을 아래 장면의 「[그림]」 · 「[동영상]」 줄이 띄운다.
+        var pick = Edit("그림 고르기…", PickPicture);
+        pick.VerticalAlignment = VerticalAlignment.Top;
+        _form.Children.Add(Line("그림", new Border { BorderBrush = Brushes.Gray, BorderThickness = new Thickness(1), Child = _picture }, pick));
+        _form.Children.Add(Line("동영상", _movie, Edit("동영상 고르기…", PickMovie), Edit("동영상 빼기", DropMovie)));
+        _form.Children.Add(Line("장면", _scene));
         _form.Children.Add(new TextBlock
         {
-            Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap, Width = 720,
+            HorizontalAlignment = HorizontalAlignment.Left,
             Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n"
                    + "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때,"
                    + " 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다."
-                   + " 「[아이템] 번호」는 아이템을 줍니다. 「(예제) 파르테논 신전」을 보세요.",
+                   + " 「[아이템] 이름」은 아이템을 줍니다(아래 「아이템 넣기…」로 고릅니다). 「[그림]」 · 「[동영상]」은 위에서 올린 것을 띄웁니다."
+                   + " 「(예제) 파르테논 신전」을 보세요.",
         });
+        // 아이템 넣기 — 장면 칸 옆에 두면 창 밖으로 잘려 아래 줄에 둔다.
+        var insert = Edit("아이템 넣기…", InsertItem);
+        insert.HorizontalAlignment = HorizontalAlignment.Left;
+        insert.Margin = new Thickness(90, 0, 0, 8);
+        _form.Children.Add(insert);
         _share.Children.Add(Line("출처", _credit));
         _share.Children.Add(new TextBlock
         {
@@ -153,9 +165,6 @@ public sealed class UserDiscoveryDialog : GameWindow
             Text = "비밀번호를 적고 「저장」하면 잠깁니다. 잠긴 발견물은 내보내 다른 분이 불러와도 게임에는 나오지만, 비밀번호 없이는 고칠 수 없습니다."
                    + " 비밀번호는 파일에 남기지 않으니 잊지 마세요.",
         });
-        _form.Children.Add(Line("그림", new Border { BorderBrush = Brushes.Gray, BorderThickness = new Thickness(1), Child = _picture },
-                                Edit("그림 고르기…", PickPicture)));
-        _form.Children.Add(Line("동영상", _movie, Edit("동영상 고르기…", PickMovie), Edit("동영상 빼기", DropMovie)));
 
         var bar = new WrapPanel { Margin = new Thickness(10, 0, 10, 0) };
         _save = Push("저장", Save);
