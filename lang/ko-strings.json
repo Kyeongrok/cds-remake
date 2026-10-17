@@ -3218,19 +3218,19 @@
   "args": 0
  },
  "{0}의 공격 — {1} {2}명": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:609",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:610",
   "args": 3
  },
  "{0} {1}": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:797",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:798",
   "args": 2
  },
  "아군": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:797",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:798",
   "args": 0
  },
  "적": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:797",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:798",
   "args": 0
  },
  "유럽 정규군": {
@@ -11999,116 +11999,116 @@
   "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1574",
   "args": 0
  },
- "항로를 잡았습니다.{0}": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1590",
-  "args": 1
+ "항로를 잡았습니다.": {
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1592",
+  "args": 0
  },
- " 바람과 해류를 타서 가장 짧은 길보다 {0}% 빠릅니다.": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1618",
+ "항로를 잡았습니다. 약 {0}일 걸립니다.": {
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1593",
   "args": 1
  },
  "도시 안에서는 자동이동을 쓸 수 없습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1689",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1691",
   "args": 0
  },
  "뭍에 있을 때만 자동이동을 쓸 수 있습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1690",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1692",
   "args": 0
  },
  "뭍길을 찾지 못했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1693",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1695",
   "args": 0
  },
  "그 자리로 걸어갑니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1708",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1710",
   "args": 0
  },
  "도착했습니다. 닻을 내렸습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1735",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1737",
   "args": 0
  },
  "도착했습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1791",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1793",
   "args": 0
  },
  "길이 막혀 자동항해를 멈췄습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1838",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:1840",
   "args": 0
  },
  "{0} 중 {1}, {2} 칸 · 방향 {3} · ": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2314",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2316",
   "args": 4
  },
  "자동이동": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2314",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2316",
   "args": 0
  },
  "자동항해": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2314",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2316",
   "args": 0
  },
  "멈춤(창이 떠 있다)": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2315",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2317",
   "args": 0
  },
  "마디 {0}/{1} 쪽으로": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2315",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2317",
   "args": 2
  },
  "{0} {1}, {2} 칸 · 방향 {3} · ": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2316",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2318",
   "args": 4
  },
  "배": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2316",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2318",
   "args": 0
  },
  "멈춰 서 있다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2318",
-  "args": 0
- },
- "닻을 내리고 정박 중": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2318",
-  "args": 0
- },
- "바다에 막혔습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2319",
-  "args": 0
- },
- "육지에 막혔습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2319",
-  "args": 0
- },
- "가던 쪽으로(커서 놓침)": {
   "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2320",
   "args": 0
  },
- "커서 쪽으로 이동 중": {
+ "닻을 내리고 정박 중": {
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2320",
+  "args": 0
+ },
+ "바다에 막혔습니다": {
   "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2321",
   "args": 0
  },
- "커서 쪽으로 항해 중": {
+ "육지에 막혔습니다": {
   "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2321",
   "args": 0
  },
- " · 그림은 구워 둔 것": {
+ "가던 쪽으로(커서 놓침)": {
   "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2322",
   "args": 0
  },
+ "커서 쪽으로 이동 중": {
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2323",
+  "args": 0
+ },
+ "커서 쪽으로 항해 중": {
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2323",
+  "args": 0
+ },
+ " · 그림은 구워 둔 것": {
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2324",
+  "args": 0
+ },
  "게임 함대 {0}, {1} 칸": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2333",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2335",
   "args": 2
  },
  "게임이 아직 항해 중이 아닙니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2337",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2339",
   "args": 0
  },
  "게임(cds_95)이 떠 있지 않습니다": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2337",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:2339",
   "args": 0
  },
  "[{0}] 입항 — {1}, {2} 칸": {
-  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:3682",
+  "at": "CdsHelper.Game/UI/Rendering/WorldMapHost.cs:3684",
   "args": 3
  },
  "[모드] 직업을 누르면 다시 굴린다.": {
@@ -15627,75 +15627,75 @@
   "args": 0
  },
  "상대해 주마!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:575",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:600",
   "args": 0
  },
  "GAME OVER 입니다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:586",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:611",
   "args": 0
  },
  "적장": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:601",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:626",
   "args": 0
  },
  "처형한다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:652",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:677",
   "args": 0
  },
  "체, 피라미로군. 용서해 주지.": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1260",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1289",
   "args": 0
  },
  "네놈을 죽여 보았자 자랑할 가치도 없다.": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1261",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1290",
   "args": 0
  },
  "여자와 아이, 약자들은 죽이지 않는 주의거든···": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1262",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1291",
   "args": 0
  },
  "네놈 따위는 죽일 가치도 없다. 빨리 꺼져 버려라!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1263",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1292",
   "args": 0
  },
  "이번만은 용서해 줄테니, 좀더 실력을 쌓도록 해라.": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1264",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1293",
   "args": 0
  },
  "모의전에서 이겼다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1282",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1311",
   "args": 0
  },
  "모의전을 물렸다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1282",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1311",
   "args": 0
  },
  "모의전에서 졌다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1283",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1312",
   "args": 0
  },
  "적이 봐 준 것 같습니다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1298",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1327",
   "args": 0
  },
  "{0}명의 부상병이 복귀했다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1324",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1353",
   "args": 1
  },
  "전리품으로서 금화 {0} 닢을 손에 넣었다": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1332",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1361",
   "args": 1
  },
  "{0}, 부관의 무력이 {1} 올라갔다!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1368",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1397",
   "args": 2
  },
  "{0}의 무력이 {1} 올라갔다!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1368",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1397",
   "args": 2
  },
  "부관의 무력이 {0} 올라갔다!": {
-  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1369",
+  "at": "CdsHelper.Game/UI/Views/LandBattleScene.cs:1398",
   "args": 1
  },
  "{0} — 부대배치": {

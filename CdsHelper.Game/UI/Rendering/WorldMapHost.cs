@@ -1569,7 +1569,7 @@ public sealed class WorldMapHost : HwndHost
         if (SeaBlocked) return (false, "도시 안에서는 자동항해를 쓸 수 없습니다");
         if (!_shipKnown || _onLand) return (false, "바다에 있을 때만 자동항해를 쓸 수 있습니다");
 
-        var (route, gain, _) = PlanSeaRoute(destX, destY, kind);
+        var (route, _, ticks) = PlanSeaRoute(destX, destY, kind);
         if (route == null) return (false, "바닷길을 찾지 못했습니다");
         if (route.Count < 2) return (false, "이미 그 자리 가까이 있습니다");
 
@@ -1587,7 +1587,10 @@ public sealed class WorldMapHost : HwndHost
         _blockedTicks = 0;
         _dirty = true;
         _routes.Save();   // 떠날 때 한 번 적어 둔다 — 다음에 같은 데로 갈 때 찾지 않는다
-        return (true, $"항로를 잡았습니다.{gain}");
+        // 띠에는 걸리는 날수를 낸다 — 바람 · 해류로 셈한 어림이다(네비게이션 후보의 날수와 같은 셈). 못 셈했으면 날수 없이.
+        return (true, double.IsNaN(ticks)
+            ? "항로를 잡았습니다."
+            : $"항로를 잡았습니다. 약 {Math.Max(1, (int)Math.Ceiling(ticks / TerrainTable.TicksPerDay))}일 걸립니다.");
     }
 
     /// <summary>지금 자리에서 그 칸까지의 바닷길 — 가장 짧은 길, 또는 뚜렷이 빠르면 바람 · 해류를 본 길.</summary>
@@ -1614,8 +1617,7 @@ public sealed class WorldMapHost : HwndHost
                 {
                     ticks = timed;
                     route = quick;
-                    // 띠 글꼴에 없는 글자(긴 줄표 따위)는 물음표로 찍힌다 — 쉼표와 마침표만 쓴다.
-                    gain = $" 바람과 해류를 타서 가장 짧은 길보다 {(1 - timed / plain) * 100:0}% 빠릅니다.";
+                    gain = $"{(1 - timed / plain) * 100:0}";   // 가장 짧은 길보다 빠른 % — 띠에는 안 내고 날수만 낸다
                 }
             }
         }
