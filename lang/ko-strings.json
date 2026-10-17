@@ -21807,15 +21807,15 @@
   "args": 0
  },
  "        선명  추진력      대포명  포문수  돛종류": {
-  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1197",
+  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1202",
   "args": 0
  },
  " 선수상 명    가격": {
-  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1207",
+  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1212",
   "args": 0
  },
  "    대포명   단가   중량": {
-  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1219",
+  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1224",
   "args": 0
  },
  "단축키": {
@@ -26860,35 +26860,43 @@
   "args": 0
  },
  "세이커포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:23",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:26",
   "args": 0
  },
  "이것은 적당한 값이지만, 위협정도의 위력밖에 없네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:23",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:26",
   "args": 0
  },
  "캘버린포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:24",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:27",
   "args": 0
  },
  "이것은 멀리서 겨냥해 맞추는 데는 최고의 대포라네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:24",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:27",
   "args": 0
  },
  "페리에포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:25",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:28",
   "args": 0
  },
  "이것은 추천하겠네. 뭐라해도 바란스가 좋다네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:25",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:28",
   "args": 0
  },
  "카논포": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:26",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:29",
   "args": 0
  },
  "이것은 사정 거리는 짧지만, 맞추면 일격필살로 대단한 것이네.": {
-  "at": "CdsHelper.Support/Local/Models/Cannon.cs:26",
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:29",
+  "args": 0
+ },
+ "캐노네이드": {
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:30",
+  "args": 0
+ },
+ "이것은 런던에서만 만드는 신식이라네. 멀리는 못 쏘지만 가볍고 위력은 카논포 못지않지.": {
+  "at": "CdsHelper.Support/Local/Models/Cannon.cs:30",
   "args": 0
  },
  "기타({0})": {

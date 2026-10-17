@@ -1104,7 +1104,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// <summary>
     /// 이 마을 조선소가 파는 대포(<c>0x00429F30</c>) — 세이커포는 어디서나, 둘째는 규모 3 이상, 셋째는 4 이상,
     /// 넷째는 1490년부터 도시 0·7 · 1500년부터 도시 38 · 1510년부터 도시 15 에서만 판다.
+    /// 원본에 없는 캐노네이드는 런던(38)의 규모가 7 이 되면(모드 「도시 투자 성장」) 런던에서 판다.
     /// </summary>
+    /// <summary>런던 — 규모 7 이 되면 캐노네이드를 판다.</summary>
+    private const int LondonCity = 38;
+
     private List<int> CannonsSold()
     {
         var sold = new List<int> { 0 };
@@ -1114,6 +1118,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         int year = _player.Date.Year;
         if ((year >= 1490 && _cityId is 0 or 7) || (year >= 1500 && _cityId == 38) || (year >= 1510 && _cityId == 15))
             sold.Add(3);
+        if (_cityId == LondonCity && scale >= Engine.Town.CityGrowth.MaxScale) sold.Add(Cannon.Carronade);
         return sold;
     }
 

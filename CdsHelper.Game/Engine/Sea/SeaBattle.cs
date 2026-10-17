@@ -1027,7 +1027,7 @@ public sealed class SeaBattle
         return (ax, ay);
     }
 
-    /// <summary>대포 사거리(<c>0x0043699D</c> 벌) — 캘버린 4 · 카논 2 · 그 밖 3.</summary>
+    /// <summary>대포 사거리(<c>0x0043699D</c> 벌) — 캘버린 4 · 카논 2 · 그 밖 3. 원본에 없는 캐노네이드(4)도 세이커와 같은 3 이다.</summary>
     public static int RangeOf(int gun) => gun switch { 1 => 4, 3 => 2, _ => 3 };
 
     /// <summary>
@@ -1544,8 +1544,8 @@ public sealed class SeaBattle
             }
     }
 
-    /// <summary>대포 위력 — 세이커 3 · 캘버린 4 · 페리에 5 · 카논 8(<c>0x0043699D</c> 벌).</summary>
-    public static int GunPower(int gun) => gun switch { 0 => 3, 1 => 4, 2 => 5, 3 => 8, _ => 0 };
+    /// <summary>대포 위력 — 세이커 3 · 캘버린 4 · 페리에 5 · 카논 8(<c>0x0043699D</c> 벌). 원본에 없는 캐노네이드(4)는 7 이다.</summary>
+    public static int GunPower(int gun) => gun switch { 0 => 3, 1 => 4, 2 => 5, 3 => 8, Cannon.Carronade => 7, _ => 0 };
 
     /// <summary>
     /// 한 번 쏜다. 탄약·대포가 없거나 과녁이 없으면 null.
