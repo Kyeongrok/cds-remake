@@ -563,8 +563,25 @@ public sealed class DevDialog : GameWindow
         var boxes = new List<(CheckBox Box, DiscoveryTable.Record Row)>();
         bool bulk = false;
 
+        // 목록 머리의 전체 체크 칸 — 「모두 체크」 · 「모두 해제」 단추 둘을 대신한다(단추가 자리를 먹어 「발견물 추가…」가 잘렸다).
+        // 보이는 줄이 다 체크면 체크, 하나도 없으면 빈칸, 섞였으면 가운데 칸이다.
+        var header = new CheckBox
+        {
+            Content = "전체",
+            Foreground = GameUi.Text,
+            FontSize = 14,
+            FontWeight = FontWeights.Bold,
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+
         // 체크된 줄을 센다 — 보고한 것에 사건만 마친 인물 · 비보까지 든다.
-        void Count() => count.Text = $"  {boxes.Count(b => b.Box.IsChecked == true)} / {boxes.Count}";
+        void Count()
+        {
+            count.Text = $"  {boxes.Count(b => b.Box.IsChecked == true)} / {boxes.Count}";
+            var shown = boxes.Where(b => b.Box.Visibility == Visibility.Visible).ToList();
+            int on = shown.Count(b => b.Box.IsChecked == true);
+            header.IsChecked = shown.Count > 0 && on == shown.Count ? true : on == 0 ? false : null;
+        }
 
         foreach (var row in table.Discoveries)
         {
@@ -617,6 +634,14 @@ public sealed class DevDialog : GameWindow
                 box.Visibility = want.Length == 0 || row.Name.Contains(want, StringComparison.OrdinalIgnoreCase)
                                  || row.CategoryName.Contains(want) || row.Id.ToString() == want
                     ? Visibility.Visible : Visibility.Collapsed;
+            Count();
+        };
+
+        // 누르면 보이는 줄이 다 체크였으면 다 풀고, 아니면 다 체크한다. 칸의 모양은 Count 가 다시 맞춘다.
+        header.Click += (_, _) =>
+        {
+            var shown = boxes.Where(b => b.Box.Visibility == Visibility.Visible).ToList();
+            All(!(shown.Count > 0 && shown.All(b => b.Box.IsChecked == true)));
         };
 
         var top = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
@@ -626,24 +651,33 @@ public sealed class DevDialog : GameWindow
             VerticalAlignment = VerticalAlignment.Center,
         });
         top.Children.Add(find);
-        top.Children.Add(GameUi.PushButton("모두 체크", () => All(true), 100));
-        top.Children.Add(GameUi.PushButton("모두 해제", () => All(false), 100));
         top.Children.Add(count);
         // 사람이 지어 넣는 발견물 — 짓기 · 고치기 · 내보내기 · 불러오기(UserDiscoveryDialog).
         if (userDiscoveries is { } open)
             top.Children.Add(GameUi.PushButton("발견물 추가…", () => { Close(); open(); }, 140));
         page.Children.Add(top);
+        var sheet = new DockPanel();
+        var head = new Border
+        {
+            BorderBrush = GameUi.Edge,
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Padding = new Thickness(8, 4, 8, 4),
+            Child = header,
+        };
+        DockPanel.SetDock(head, Dock.Top);
+        sheet.Children.Add(head);
+        sheet.Children.Add(new ScrollViewer
+        {
+            Height = 394,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Padding = new Thickness(8, 4, 8, 4),
+            Content = list,
+        });
         page.Children.Add(new Border
         {
             BorderBrush = GameUi.Edge,
             BorderThickness = new Thickness(1),
-            Child = new ScrollViewer
-            {
-                Height = 420,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Padding = new Thickness(8, 4, 8, 4),
-                Content = list,
-            },
+            Child = sheet,
         });
         page.Children.Add(new TextBlock
         {
