@@ -1601,11 +1601,11 @@ public sealed class SeaBattle
         for (int i = 0; i < volley; i++)
         {
             // 명중률 = 6 x 포술 + 17 x isqrt(대포수 x 100) / 10 − 24 (0x00436E29).
-            // 0 이면 1 로 올리고(0x00436E51), 굴림은 <b>부호 없이</b> 재므로(0x004B7C6F 의 CF)
-            // 음수면 늘 맞는다 — 대포가 적고 포술이 낮은 배가 그렇다.
+            // 0 이면 1 로 올린다(0x00436E51). 원본은 굴림을 <b>부호 없이</b> 재서(0x004B7C6F 의 CF) 음수면 늘 맞았다 —
+            // 포술 0 에 대포 2문 이하(포술 1 에 1문)인 배가 백발백중이었다. 원본과 달리 음수도 1 로 올린다(제보).
             int odds = 6 * gunnery + 17 * Isqrt(ship.Guns * 100) / 10 - 24;
-            if (odds == 0) odds = 1;
-            if (odds >= 0 && _rng.Next(100) >= odds)
+            if (odds < 1) odds = 1;
+            if (_rng.Next(100) >= odds)
             {
                 shots.Add(new Shot(false, 0, false));
                 continue;
