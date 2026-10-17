@@ -123,11 +123,15 @@ public static class UserDiscoveries
     /// <summary>둘째 예제 — 아테나의 시련으로 육상전을 치르는 파르테논 신전.</summary>
     public const string ParthenonUuid = "example-parthenon";
 
-    /// <summary>예제들과 그 그림 번호(없으면 -1). 목록 맨 위에 이 차례로 선다.</summary>
-    public static IReadOnlyList<(Entry Entry, int Picture)> Examples => [(Example, ExamplePicture), (ParthenonExample, -1)];
+    /// <summary>
+    /// 예제들과 그 그림 번호 · 원본 동영상 번호(없으면 -1). 목록 맨 위에 이 차례로 선다. 파르테논은 원본 동영상 2 번
+    /// (<c>I02_0000</c>, <see cref="UI.Views.DiscoveryDialog.MovieOf"/>)을 튼다.
+    /// </summary>
+    public static IReadOnlyList<(Entry Entry, int Picture, int Movie)> Examples =>
+        [(Example, ExamplePicture, -1), (ParthenonExample, -1, 2)];
 
     /// <summary>그 UUID 의 예제. 예제가 아니면 null.</summary>
-    public static (Entry Entry, int Picture)? ExampleOf(string uuid) =>
+    public static (Entry Entry, int Picture, int Movie)? ExampleOf(string uuid) =>
         Examples.FirstOrDefault(x => x.Entry.Uuid == uuid) is { Entry: not null } hit ? hit : null;
 
     /// <summary>
@@ -135,7 +139,7 @@ public static class UserDiscoveries
     /// 오르면 아테나가 시련을 걸어 육상전을 치르고, 지면 게임 오버다. 장면은 <c>발견이벤트.json</c> 파트 23 그대로다.
     /// </summary>
     /// <remarks>
-    /// 원본은 도시 아테네(72)에 들어서는 발견이라 자리가 없다 — 예제는 아테네 곁 언덕 칸을 잡았다. 원본의 동영상(슬롯 2)과
+    /// 원본은 도시 아테네(72)에 들어서는 발견이라 자리가 없다 — 예제는 아테네 곁 언덕 칸을 잡았다. 동영상은 원본 슬롯 2 다.
     /// 「힌트가 없으면 길이 막혀 있다」 갈래는 이 창에서 못 적어 뺐다(힌트가 있어야 열리는 것으로 갈음한다).
     /// </remarks>
     public static Entry ParthenonExample { get; } = new(
@@ -148,6 +152,7 @@ public static class UserDiscoveries
         Chance: 1,
         Lines:
         [
+            new("movie"),
             new("found", null, "파르테논 신전을 발견했다！"),
             new("say", null, "〈여자의 목소리〉 누구세요？ 양해를 구하지 않고 신전에 들어온 자는？"),
             new("say", "감찰관", "아니， 우리는 수상한 자가···"),

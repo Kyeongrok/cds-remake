@@ -263,7 +263,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     {
         _list.Items.Clear();
         // 맨 위는 예제 — 무엇을 어떻게 적는지 보라고 둔다.
-        foreach (var (example, _) in UserDiscoveries.Examples)
+        foreach (var (example, _, _) in UserDiscoveries.Examples)
             _list.Items.Add(new ListBoxItem { Content = $"(예제) {example.Name}", Tag = example.Uuid, FontStyle = FontStyles.Italic });
         foreach (var l in UserDiscoveries.All.OrderBy(l => l.Entry.Name, StringComparer.Ordinal))
             _list.Items.Add(new ListBoxItem
@@ -289,7 +289,9 @@ public sealed class UserDiscoveryDialog : GameWindow
         {
             _example = true;
             Fill(shown.Entry);
-            _movie.Text = "(없음)";
+            _movie.Text = ExampleMovie(shown.Movie) is { } original
+                ? $"{System.IO.Path.GetFileName(original)}  (원본 동영상 {shown.Movie}번)"
+                : shown.Movie >= 0 ? $"(원본 동영상 {shown.Movie}번 — 이 PC 에서 파일을 못 찾았습니다)" : "(없음)";
             _picture.Source = shown.Picture >= 0 && DiscoveryStillFiles.TryGetBgra(shown.Picture, out int w, out int h) is { } bgra
                 ? BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, bgra, w * 4) : null;
             SetEditable(false);
@@ -454,8 +456,11 @@ public sealed class UserDiscoveryDialog : GameWindow
         string? movie = null;
         if (_example)
         {
-            if (UserDiscoveries.ExampleOf(source.Uuid) is { Picture: >= 0 } shown
-                && DiscoveryStillFiles.TryGetBgra(shown.Picture, out int w, out int h) is { } bgra) picture = (bgra, w, h);
+            if (UserDiscoveries.ExampleOf(source.Uuid) is { } shown)
+            {
+                if (shown.Picture >= 0 && DiscoveryStillFiles.TryGetBgra(shown.Picture, out int w, out int h) is { } bgra) picture = (bgra, w, h);
+                movie = ExampleMovie(shown.Movie);   // 원본 동영상을 베껴 둔다 — 내보내면 파일에 함께 담긴다
+            }
         }
         else if (UserDiscoveries.All.FirstOrDefault(l => l.Entry.Uuid == source.Uuid) is { } loaded)
         {
@@ -467,6 +472,10 @@ public sealed class UserDiscoveryDialog : GameWindow
         Refresh(copy.Uuid);
         Tell($"「{source.Name}」 을 「{copy.Name}」 으로 복제했습니다 — 자리가 원본과 같으니 「지도에서 고르기…」로 옮기고, 이름 · 힌트를 고친 뒤 「저장」을 눌러 주세요.");
     }
+
+    /// <summary>예제가 트는 원본 동영상 파일 — 게임 폴더나 받아 둔 동영상에서 찾는다. 없으면 null.</summary>
+    private string? ExampleMovie(int movie) =>
+        movie >= 0 && _game is { Directory.Length: > 0 } game ? DiscoveryDialog.MovieOf(game.Directory, movie) : null;
 
     /// <summary>png 한 장을 BGRA 로 푼다. 못 읽으면 null.</summary>
     private static (uint[] Bgra, int Width, int Height)? ReadBgra(string path)
