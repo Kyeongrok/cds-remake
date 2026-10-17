@@ -268,8 +268,11 @@ public sealed class Game
                 var when = new DateTime(year, month, 1);
 
                 if (key > player.RatesMonth && now - key < MaxDriftMonths)
+                {
                     MarketRates.Drift(player, Random, CityExeTable.Count,
                                       Found(MarketRates.Aztec, when), Found(MarketRates.Inca, when));
+                    player.RecoverGoodsRates();   // 교역품별 시세(모드)가 100 쪽으로 돌아온다
+                }
 
                 if (key > player.HistoryMonth)
                 {

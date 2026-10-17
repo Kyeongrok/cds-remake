@@ -464,6 +464,8 @@ public sealed class TradePostDialog : GameWindow
         var third = new StackPanel { Orientation = Orientation.Horizontal };
         third.Children.Add(Dark($"무게 {_post.WeightOf(row.Kind)}   ", 12, Ink));
         third.Children.Add(Dark($"{CityName(row.Origin)}산", 12, q > 0 ? Cart : Dim));
+        // 교역품별 시세(모드) — 이 도시에서 이 물건이 지금 몇 % 인지.
+        if (Local.Settings.GameSettings.GoodsMarkets) third.Children.Add(Dark($"   시세 {_player.GoodsRateOf(_city, row.Kind)}%", 12, Dim));
         lines.Children.Add(third);
 
         var buttons = StepButtons(n => AddBuy(i, n),
@@ -512,6 +514,8 @@ public sealed class TradePostDialog : GameWindow
         // 썩는 짐이면 내구도(남은 달)를 붙인다 — 원본 수량 창의 「내구도」(0x00532F08) 값이다.
         if (r.Slot >= 0 && _player.CargoHold[r.Slot] is { Shelf: not Player.NeverSpoils } kept)
             third += kept.Spoiled ? " · 썩었다" : $" · 내구도 {kept.Months}";
+        // 교역품별 시세(모드) — 이 도시에서 이 물건이 지금 몇 % 인지. 많이 팔면 내려간다.
+        if (Local.Settings.GameSettings.GoodsMarkets) third += $" · 시세 {_player.GoodsRateOf(_city, r.Kind)}%";
         lines.Children.Add(Dark(third, 12, sell > 0 ? Warn : pend > 0 ? Cart : Dim));
 
         FrameworkElement buttons;

@@ -524,6 +524,19 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다(운하는 1869년) — 포트사이드와 수에즈 사이 지협에 두 칸 폭의 바닷길을 뚫어, 지중해에서 홍해로"
             + " 배로 곧장 지나갈 수 있게 합니다."));
 
+        // 교역품별 시세 — 도시마다 물건마다 시세를 따로 둔다. 시세 꼼수를 막으려고 켠 채로 시작한다.
+        general.Children.Add(Toggle("교역품별 시세", GameSettings.GoodsMarkets, on => GameSettings.GoodsMarkets = on,
+            "원본과 다릅니다 — 도시마다 교역품마다 시세를 따로 둡니다. 팔면 그 물건 시세만 내려가고 사면 오르며,"
+            + " 매달 100% 쪽으로 남은 차이의 1/5 씩 돌아옵니다(10%~250%). 금 · 은도 그 물건 시세를 탑니다."
+            + " 아이템 · 조선소 · 술집이 따르는 도시 물가는 거래로 움직이지 않습니다."
+            + " 원본은 거래가 도시 시세 하나를 밀어, 값이 고정인 금 · 은을 팔아 시세를 1 까지 떨어뜨리면 아이템 · 개조가 거의 공짜였습니다. 기본은 켜져 있습니다."));
+        general.Children.Add(Select("교역품 값 배율",
+            [.. GameSettings.GoodsPriceScales.Select(n => n == 1 ? "1배 (원본)" : $"{n}배")],
+            Math.Max(0, Array.IndexOf(GameSettings.GoodsPriceScales, GameSettings.GoodsPriceScale)),
+            i => GameSettings.GoodsPriceScale = GameSettings.GoodsPriceScales[i],
+            "교역소의 사는 값 · 파는 값을 다 이만큼 곱합니다 — 같은 장사로 남는 돈이 그만큼 커집니다."
+            + " 시세가 움직이는 폭은 배율로 나눠 원본과 같습니다. 기본은 3배입니다."));
+
         // 도시 투자 성장 — 교역소에 투자한 돈이 쌓이면 그 도시 규모가 오른다. 원본에 없다.
         general.Children.Add(Toggle("도시 투자 성장", GameSettings.InvestGrowth, on => GameSettings.InvestGrowth = on,
             "원본에 없는 것입니다 — 교역소에 「투자」 줄이 생기고, 투자한 돈이 쌓이면 그 도시의 규모가 오릅니다(최대 7)."

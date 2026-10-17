@@ -406,7 +406,7 @@ public static class GameSave
         Dictionary<int, int>? AccPlayed = null, string? GameId = null,
         Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null,
         List<string>? HardcoreMarks = null, string? HardcoreSeal = null,
-        Dictionary<int, long>? GrowthFunds = null);
+        Dictionary<int, long>? GrowthFunds = null, Dictionary<int, int>? GoodsRates = null);
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -591,7 +591,9 @@ public static class GameSave
                             HardcoreMarks: player.Hardcore ? HardcoreRules.Sorted(player.HardcoreMarks) : null,
                             HardcoreSeal: player.Hardcore ? HardcoreRules.Seal(player) : null,
                             // 도시 투자 성장(모드)의 적립금. 이 칸 앞의 세이브는 적립금이 없다.
-                            GrowthFunds: player.GrowthFunds.Count > 0 ? player.GrowthFunds.ToDictionary(e => e.Key, e => e.Value) : null);
+                            GrowthFunds: player.GrowthFunds.Count > 0 ? player.GrowthFunds.ToDictionary(e => e.Key, e => e.Value) : null,
+                            // 교역품별 시세(모드). 이 칸 앞의 세이브는 모든 교역품이 100 이다.
+                            GoodsRates: player.GoodsRates.Count > 0 ? player.GoodsRates.ToDictionary(e => e.Key, e => e.Value) : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;

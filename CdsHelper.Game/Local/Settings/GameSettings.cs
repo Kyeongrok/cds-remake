@@ -272,6 +272,12 @@ public sealed class GameSettingsData
     /// <summary>조선소 「특별주문」 줄을 낼지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SpecialOrder { get; set; }
 
+    /// <summary>교역품마다 도시 시세를 따로 둘지(모드 「교역품별 시세」). 시세 꼼수를 막으려고 켠 채로 시작한다.</summary>
+    public bool GoodsMarkets { get; set; } = true;
+
+    /// <summary>교역품 값 배율(모드 「교역품 값 배율」). 무역 이익을 키우려고 3배로 시작한다.</summary>
+    public int GoodsPriceScale { get; set; } = GameSettings.DefaultGoodsPriceScale;
+
     /// <summary>교역소 투자로 도시 규모가 오르게 할지(모드 「도시 투자 성장」). 원본에 없어 꺼 두고 시작한다.</summary>
     public bool InvestGrowth { get; set; }
 
@@ -1184,6 +1190,30 @@ public static class GameSettings
     {
         get => Get(d => d.RidiFont);
         set => Set(d => d.RidiFont = value);
+    }
+
+    /// <summary>
+    /// 교역품별 시세 — 도시마다 교역품마다 시세를 따로 둔다(<see cref="Engine.Market.TradePost"/>). 사고팔면 그 물건 시세만 움직이고
+    /// 도시 물가(아이템 · 조선소 · 술집이 따르는 시세)는 거래로 안 움직인다. 원본은 거래가 도시 시세 하나를 밀어, 값이 고정인 금 · 은을
+    /// 팔아 시세를 1 까지 떨어뜨리면 아이템 · 개조가 거의 공짜였다(건의).
+    /// </summary>
+    public static bool GoodsMarkets
+    {
+        get => Get(d => d.GoodsMarkets);
+        set => Set(d => d.GoodsMarkets = value);
+    }
+
+    /// <summary>교역품 값 배율로 고를 수 있는 값.</summary>
+    public static readonly int[] GoodsPriceScales = [1, 2, 3, 5];
+
+    /// <summary>처음 배율 — 원본(1배)은 무역 이익이 작아 재미가 덜하다는 건의로 3배다.</summary>
+    public const int DefaultGoodsPriceScale = 3;
+
+    /// <summary>교역품 값 배율 — 교역소의 사는 값 · 파는 값을 다 이만큼 곱한다. 시세가 움직이는 폭은 배율로 나눠 원본과 같게 둔다.</summary>
+    public static int GoodsPriceScale
+    {
+        get => Get(d => GoodsPriceScales.Contains(d.GoodsPriceScale) ? d.GoodsPriceScale : DefaultGoodsPriceScale);
+        set => Set(d => d.GoodsPriceScale = GoodsPriceScales.Contains(value) ? value : DefaultGoodsPriceScale);
     }
 
     /// <summary>

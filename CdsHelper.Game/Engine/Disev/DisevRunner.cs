@@ -1622,6 +1622,7 @@ public sealed class DisevRunner
         int basis = trade.BasePrice(trade.RegionOf(here), goods);
         int unit = basis * _game.Rates.Of(here) / Market.MarketRates.Par;
         if (basis > 0 && unit < 1) unit = 1;
+        unit *= Local.Settings.GameSettings.GoodsPriceScale;   // 교역품 값 배율(모드)은 대본이 사 가는 값에도 든다
 
         int gold = unit * count;
         player.Earn(gold);

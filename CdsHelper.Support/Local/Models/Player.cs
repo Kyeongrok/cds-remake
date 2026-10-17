@@ -3081,6 +3081,50 @@ public sealed class Player
         else _cityRates[cityId] = rate;
     }
 
+    /// <summary>
+    /// 교역품별 시세(모드 「교역품별 시세」) — 열쇠는 <see cref="GoodsKey"/>(도시 x 1000 + 교역품), 값은 % 다. 없으면 100.
+    /// </summary>
+    private readonly Dictionary<int, int> _goodsRates = [];
+
+    public IReadOnlyDictionary<int, int> GoodsRates => _goodsRates;
+
+    /// <summary>교역품별 시세의 범위(%).</summary>
+    public const int MinGoodsRate = 10, MaxGoodsRate = 250;
+
+    public static int GoodsKey(int city, int kind) => city * 1000 + kind;
+
+    /// <summary>그 도시 그 교역품의 시세(%). 안 움직였으면 100.</summary>
+    public int GoodsRateOf(int city, int kind) => _goodsRates.TryGetValue(GoodsKey(city, kind), out int v) ? v : ParRate;
+
+    /// <summary>그 도시 그 교역품의 시세를 박는다. 100 이면 표에서 지운다.</summary>
+    public void SetGoodsRate(int city, int kind, int rate)
+    {
+        if (city < 0 || kind < 0) return;
+        rate = Math.Clamp(rate, MinGoodsRate, MaxGoodsRate);
+        if (rate == ParRate) _goodsRates.Remove(GoodsKey(city, kind));
+        else _goodsRates[GoodsKey(city, kind)] = rate;
+    }
+
+    /// <summary>한 달 지남 — 교역품별 시세가 100 쪽으로 남은 차이의 1/5 씩(적어도 1) 돌아온다. 반년쯤이면 거의 다 돌아온다.</summary>
+    public void RecoverGoodsRates()
+    {
+        foreach (var (key, v) in _goodsRates.ToList())
+        {
+            int gap = ParRate - v, move = Math.Sign(gap) * Math.Max(1, Math.Abs(gap) / 5);
+            int now = v + move;
+            if (now == ParRate) _goodsRates.Remove(key);
+            else _goodsRates[key] = now;
+        }
+    }
+
+    /// <summary>교역품별 시세를 통째로 박는다 — 적어 둔 판을 열 때 쓴다.</summary>
+    public void RestoreGoodsRates(IReadOnlyDictionary<int, int>? saved)
+    {
+        _goodsRates.Clear();
+        foreach (var (key, v) in saved ?? new Dictionary<int, int>())
+            if (v != ParRate) _goodsRates[key] = Math.Clamp(v, MinGoodsRate, MaxGoodsRate);
+    }
+
     /// <summary>시세를 마지막으로 흔든 달(해 x 12 + 달). 0 이면 아직 안 셌다 — 지금 달부터 센다.</summary>
     public int RatesMonth { get; private set; }
 

@@ -267,6 +267,10 @@ public sealed class TradePost
             price = (int)((long)basis * _rates.Of(city) / MarketRates.Par);
             if (basis > 0 && price < 1) price = 1;
         }
+        // 교역품 값 배율과 교역품별 시세(모드) — 금 · 은도 그 물건 시세는 탄다(도시 물가는 원본처럼 안 탄다).
+        long scaled = (long)price * Local.Settings.GameSettings.GoodsPriceScale;
+        if (Local.Settings.GameSettings.GoodsMarkets) scaled = scaled * player.GoodsRateOf(city, kind) / MarketRates.Par;
+        price = (int)Math.Clamp(scaled, 1, int.MaxValue);
 
         price = CityState.Adjust(_rates.StateOf(city), goods, price);
         return Math.Max(1, price);
@@ -445,6 +449,11 @@ public sealed class TradePost
         if (why != Outcome.Ok) return why;
 
         int gain = GainOf(player, city, deal);
+        // 교역품별 시세가 쓸 물건마다의 판 돈 — 짐 칸이 빠지기 전에 센다.
+        var sold = deal.Sells
+            .Where(s => s.Count > 0 && s.Slot >= 0 && s.Slot < player.CargoHold.Count)
+            .Select(s => (Kind: player.CargoHold[s.Slot].Kind, Money: (long)s.Count * SellPriceOf(player, city, player.CargoHold[s.Slot])))
+            .ToList();
         // 뒤 칸부터 판다 — 다 판 칸이 빠지며 당겨져도 앞 번호가 안 어긋난다.
         foreach (var (slot, n) in deal.Sells.Where(s => s.Count > 0).OrderByDescending(s => s.Slot))
             player.UnloadCargo(slot, n);
@@ -460,7 +469,24 @@ public sealed class TradePost
         player.SetGold(player.Gold - cost);
 
         int scale = _cities?.ScaleOf(city) ?? 0;
-        int step = Math.Clamp((cost - gain) / (200 * (5 * scale + 10)), -MaxRateStep, MaxRateStep);
+        // 값 배율만큼 나눠 시세가 움직이는 폭은 원본과 같게 둔다.
+        long per = 200L * (5 * scale + 10) * Local.Settings.GameSettings.GoodsPriceScale;
+        if (Local.Settings.GameSettings.GoodsMarkets)
+        {
+            // 교역품별 시세 — 물건마다 (산 돈 - 판 돈)으로 그 물건 시세만 민다. 도시 물가는 안 건드린다.
+            var net = new Dictionary<int, long>();
+            foreach (var (row, n) in deal.Buys.Where(b => b.Count > 0))
+                net[row.Kind] = net.GetValueOrDefault(row.Kind) + (long)n * Discounted(row.Price, deal.Pct);
+            foreach (var (kind, money) in sold)
+                net[kind] = net.GetValueOrDefault(kind) - money;
+            foreach (var (kind, money) in net)
+            {
+                int move = (int)Math.Clamp(money / per, -MaxRateStep, MaxRateStep);
+                if (move != 0) player.SetGoodsRate(city, kind, player.GoodsRateOf(city, kind) + move);
+            }
+            return Outcome.Ok;
+        }
+        int step = (int)Math.Clamp((cost - gain) / per, -MaxRateStep, MaxRateStep);
         if (step != 0) _rates.Set(city, Math.Clamp(_rates.Of(city) + step, MinRate, MaxRate));
         return Outcome.Ok;
     }
