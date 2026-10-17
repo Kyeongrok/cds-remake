@@ -24,6 +24,9 @@ public sealed class UserDiscoveryDialog : GameWindow
 
     private readonly ListBox _list = new() { Width = 220, Margin = new Thickness(10, 10, 6, 10) };
     private readonly StackPanel _form = new() { Margin = new Thickness(6, 10, 10, 4) };
+
+    /// <summary>「출처 · 공유」 탭 — 출처 · 만든 이 · 라이선스 · 비밀번호. 발견물 칸과 따로 둔다.</summary>
+    private readonly StackPanel _share = new() { Margin = new Thickness(6, 10, 10, 4) };
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
     private readonly Image _picture = new() { Width = 320, Height = 240, Stretch = Stretch.Uniform };
 
@@ -105,12 +108,18 @@ public sealed class UserDiscoveryDialog : GameWindow
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
             Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)",
         });
-        _form.Children.Add(Line("출처", _credit));
-        _form.Children.Add(Line("만든 이", _author, Label("닉네임이나 이름"), Label("라이선스"), _license));
+        _share.Children.Add(Line("출처", _credit));
+        _share.Children.Add(new TextBlock
+        {
+            Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
+            Text = "그림 · 글을 어디서 가져왔는지와 그 라이선스를 적어 주세요.",
+        });
+        _share.Children.Add(Line("만든 이", _author, Label("닉네임이나 이름")));
+        _share.Children.Add(Line("라이선스", _license));
         _unlock = Push("잠금 풀기", Unlock);
         _unlockDrop = Push("비밀번호 빼기", DropLock);
-        _form.Children.Add(Line("비밀번호", _password, _unlock, _unlockDrop, _lockState));
-        _form.Children.Add(new TextBlock
+        _share.Children.Add(Line("비밀번호", _password, _unlock, _unlockDrop, _lockState));
+        _share.Children.Add(new TextBlock
         {
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
             Text = "비밀번호를 적고 「저장」하면 잠깁니다. 잠긴 발견물은 내보내 다른 분이 불러와도 게임에는 나오지만, 비밀번호 없이는 고칠 수 없습니다."
@@ -134,7 +143,10 @@ public sealed class UserDiscoveryDialog : GameWindow
         var body = new DockPanel();
         DockPanel.SetDock(_list, Dock.Left);
         body.Children.Add(_list);
-        body.Children.Add(new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _form });
+        var tabs = new TabControl { Margin = new Thickness(6, 10, 10, 4) };
+        tabs.Items.Add(new TabItem { Header = "발견물", Content = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _form } });
+        tabs.Items.Add(new TabItem { Header = "출처 · 공유", Content = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _share } });
+        body.Children.Add(tabs);
 
         var page = new DockPanel();
         DockPanel.SetDock(_status, Dock.Bottom);
@@ -234,7 +246,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _newMovie = null;
         _dropLock = false;
         _password.Clear();
-        _form.IsEnabled = true;
+        _form.IsEnabled = _share.IsEnabled = true;
 
         if (uuid == UserDiscoveries.ExampleUuid)
         {
