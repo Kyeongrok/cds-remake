@@ -287,8 +287,11 @@ public sealed class GameSettingsData
     /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MateDismiss { get; set; }
 
-    /// <summary>바다의 인물 함대가 바닷길로 짧게 다니게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
-    public bool NpcSeaRoute { get; set; }
+    /// <summary>
+    /// 바다의 인물 함대가 바닷길로 짧게 다니게 할지(모드 「향상된 NPC 이동」). 켠 채로 시작한다 — 처음에는 꺼 두고
+    /// <c>NpcSeaRoute</c> 로 적었는데, 그 값은 한 번도 안 건드린 사람에게도 거짓으로 적혀 있어 이름을 바꿔 다시 켠다.
+    /// </summary>
+    public bool NpcMoveEnhanced { get; set; } = true;
 
     /// <summary>차림표 · 예/아니오의 초점이 마우스를 따라오게 할지. 키보드로 고를 때 방해가 되어 꺼 두고 시작한다.</summary>
     public bool MenuFollowsMouse { get; set; }
@@ -1352,8 +1355,8 @@ public static class GameSettings
     /// </summary>
     public static bool NpcSeaRoute
     {
-        get => Get(d => d.NpcSeaRoute);
-        set => Set(d => d.NpcSeaRoute = value);
+        get => Get(d => d.NpcMoveEnhanced);
+        set => Set(d => d.NpcMoveEnhanced = value);
     }
 
     /// <summary>

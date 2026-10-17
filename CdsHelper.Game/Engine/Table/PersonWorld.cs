@@ -341,14 +341,14 @@ public sealed class PersonWorld
         if (gone >= 1 && row.Dest != SpotDest) return null;
 
         double x = leg.Fx + leg.Dx * gone, y = leg.Fy + leg.Dy * gone;
-        // 모드 「인물 함대 바닷길」 — 곧은 줄 대신 바닷길을 그만큼 따라간 자리다. 닿는 날은 원본 그대로 곧은 거리로 센다.
+        // 모드 「향상된 NPC 이동」 — 곧은 줄 대신 바닷길을 그만큼 따라간 자리다. 닿는 날은 원본 그대로 곧은 거리로 센다.
         if (SeaPathOf(row, leg) is { } path) (x, y) = path.At(gone).Point;
         if (x < 0) x += WorldWidth;
         else if (x >= WorldWidth) x -= WorldWidth;
         return (x, y);
     }
 
-    // ── 바닷길(모드 「인물 함대 바닷길」) ─────────────────────────────────────────
+    // ── 바닷길(모드 「향상된 NPC 이동」) ─────────────────────────────────────────
 
     /// <summary>
     /// 두 바다 칸 사이의 바닷길을 찾는 손 — 지도 창이 건다(<see cref="Engine.Sea.SeaPathfinder.FindRoute"/>). 없으면 곧은 줄로 다닌다.
@@ -666,7 +666,7 @@ public sealed class PersonWorld
             if (ok) got.Add(city);
         }
 
-        // 모드 「인물 함대 바닷길」 — 가까운 도시가 있으면 그 가운데서만 고른다. 원본은 갈래 안 어디든 고른다.
+        // 모드 「향상된 NPC 이동」 — 가까운 도시가 있으면 그 가운데서만 고른다. 원본은 갈래 안 어디든 고른다.
         if (Settings.GameSettings.NpcSeaRoute && Access(row.City) is { } here)
         {
             var near = got.Where(city => Access(city) is { } to && CellsBetween(here, to) <= HopCells).ToList();

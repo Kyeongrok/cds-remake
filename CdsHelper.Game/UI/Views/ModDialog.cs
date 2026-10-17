@@ -590,12 +590,12 @@ public sealed class ModDialog : GameWindow
             GameSettings.PersonMoveOdds - GameSettings.MinPersonMoveOdds,
             i => GameSettings.PersonMoveOdds = i + GameSettings.MinPersonMoveOdds,
             $"굴릴 때마다 떠날 확률. 원본은 {GameSettings.DefaultPersonMoveOdds}분의 1입니다."));
-        // 인물 함대 바닷길 — 원본은 두 도시를 곧게 이어 육지 위로도 지나간다.
-        general.Children.Add(Toggle("인물 함대 바닷길", GameSettings.NpcSeaRoute,
+        // 향상된 NPC 이동 — 원본은 두 도시를 곧게 이어 육지 위로도 지나간다. 켠 채로 시작한다.
+        general.Children.Add(Toggle("향상된 NPC 이동", GameSettings.NpcSeaRoute,
             on => GameSettings.NpcSeaRoute = on,
             "원본에 없는 것입니다 — 바다의 인물 함대가 육지를 가로지르지 않고 자동항해처럼 바닷길을 따라 다닙니다."
             + " 갈 도시도 가까운 곳(지도 400칸 안)에서 먼저 고릅니다. 도착하는 날은 원본과 같습니다."
-            + " 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다."));
+            + " 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다. 기본은 켜져 있습니다."));
 
         // 해적 추격 — 원본에 없다. 대항해시대2 의 하이레딘처럼 명성이 높으면 해적이 쫓아온다.
         general.Children.Add(Toggle("해적 추격", GameSettings.PirateHunt,

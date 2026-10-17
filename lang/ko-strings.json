@@ -11684,47 +11684,47 @@
   "args": 1
  },
  "북 (위)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:879",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:882",
   "args": 0
  },
  "남 (아래)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:879",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:882",
   "args": 0
  },
  "서 (왼쪽)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:880",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:883",
   "args": 0
  },
  "동 (오른쪽)": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:880",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:883",
   "args": 0
  },
  "북서": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:881",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:884",
   "args": 0
  },
  "북동": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:881",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:884",
   "args": 0
  },
  "남서": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:882",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:885",
   "args": 0
  },
  "남동": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:882",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:885",
   "args": 0
  },
  "정지 · 출발": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:883",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:886",
   "args": 0
  },
  "커맨드 창": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:883",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:886",
   "args": 0
  },
  "전체 화면": {
-  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:1568",
+  "at": "CdsHelper.Game/Local/Settings/GameSettings.cs:1571",
   "args": 0
  },
  "지형표를 읽지 못했습니다 ({0})": {
@@ -17159,7 +17159,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:592",
   "args": 1
  },
- "인물 함대 바닷길": {
+ "향상된 NPC 이동": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:594",
   "args": 0
  },
@@ -17167,7 +17167,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:596",
   "args": 0
  },
- "원본에 없는 것입니다 — 바다의 인물 함대가 육지를 가로지르지 않고 자동항해처럼 바닷길을 따라 다닙니다. 갈 도시도 가까운 곳(지도 400칸 안)에서 먼저 고릅니다. 도착하는 날은 원본과 같습니다. 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다.": {
+ "원본에 없는 것입니다 — 바다의 인물 함대가 육지를 가로지르지 않고 자동항해처럼 바닷길을 따라 다닙니다. 갈 도시도 가까운 곳(지도 400칸 안)에서 먼저 고릅니다. 도착하는 날은 원본과 같습니다. 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다. 기본은 켜져 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:596",
   "args": 0,
   "chain": true
@@ -17176,7 +17176,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:597",
   "args": 0
  },
- " 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다.": {
+ " 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다. 기본은 켜져 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:598",
   "args": 0
  },
