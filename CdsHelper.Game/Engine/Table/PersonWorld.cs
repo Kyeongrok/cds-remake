@@ -68,9 +68,25 @@ public sealed class PersonWorld
     /// 언제 어느 도시가 서는지는 <see cref="CityFounding"/> 에 모아 두었다 —
     /// <c>HIST_EV.CDS</c> 의 신도시 이벤트 스무 벌이다. 날짜가 가면 하나씩 열리므로
     /// 이 목록도 달마다 달라진다.
+    ///
+    /// 날짜마다 한 번만 센다 — <see cref="CityFounding.FoundedBy"/> 는 1480년부터 그날까지 달을 다 훑고, 예전에는
+    /// 숨은 도시 하나마다 · 후보 도시 하나마다 그것을 다시 불러 굴림 한 번이 해가 갈수록 무거워졌다. 세이브를
+    /// 불러와 1480년부터 되짚거나 여관 · 휴양으로 몇 해를 넘길 때 수십 초씩 멎었다(이동 주기를 짧게 하면 더).
     /// </remarks>
-    private HashSet<int> NotFoundedYet =>
-        [.. CityFounding.Hidden.Where(c => !CityFounding.FoundedBy(_asOf).Contains(c))];
+    private HashSet<int> NotFoundedYet
+    {
+        get
+        {
+            if (_notFounded.At != _asOf || _notFounded.Cities == null)
+            {
+                var up = CityFounding.FoundedBy(_asOf);
+                _notFounded = (_asOf, [.. CityFounding.Hidden.Where(c => !up.Contains(c))]);
+            }
+            return _notFounded.Cities!;
+        }
+    }
+
+    private (DateTime At, HashSet<int>? Cities) _notFounded;
 
     private readonly PersonTable _table;
     private readonly List<PersonTable.Row> _rows;
