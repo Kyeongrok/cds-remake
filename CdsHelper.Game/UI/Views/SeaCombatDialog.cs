@@ -163,10 +163,16 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private List<(List<SeaBattle.Move> Plan, int X, int Y, int Way)> _options = [];
 
     /// <summary>
-    /// 제자리 선회 칸 둘 — 뱃머리 오른앞·왼앞이다(<c>0x0043E6B8</c>). 길 후보보다 <b>먼저</b>
-    /// 걸리므로, 그 두 칸을 누르면 한 칸 움직이는 지시가 아니라 뱃머리만 돌리는 지시가 된다.
+    /// 제자리 선회 칸 둘 — 뱃머리 오른앞·왼앞이다(<c>0x0043E6B8</c>). 고른 배를 <b>한 번 더</b> 눌러
+    /// 선회 차례(<see cref="_turning"/>)가 되었을 때만 뜨고 눌린다.
     /// </summary>
     private List<(int X, int Y, SeaBattle.Move Turn)> _pivots = [];
+
+    /// <summary>
+    /// 선회 차례인지. 원본은 배를 누르면 갈 칸을 깔고(차례 2), 그 배를 또 누르면 갈 칸을 걷고 선회 칸 둘만
+    /// 세운다(<c>0x0043E62B</c>, 차례 3 · <c>[+0x8E0]</c> ≥ 0). 거기서 배를 또 누르면 「이동하지 않습니다」다(<c>0x0043E9DC</c>).
+    /// </summary>
+    private bool _turning;
     private bool _running;
 
     public Outcome Result { get; private set; } = Outcome.Surrendered;
@@ -446,10 +452,12 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         // 그 칸을 눌러도 아무 일이 없었다 — 테가 선 칸은 모두 누를 수 있어야 한다.
         if (_picked is { } picked)
         {
-            foreach (var option in _options)
-                Cell(_marks, option.X, option.Y, lit: false);
-            foreach (var (px, py, _) in _pivots)
-                Cell(_marks, px, py, lit: false);
+            if (_turning)
+                foreach (var (px, py, _) in _pivots)
+                    Cell(_marks, px, py, lit: false);
+            else
+                foreach (var option in _options)
+                    Cell(_marks, option.X, option.Y, lit: false);
 
             // 찍어 둔 길은 회색 칸으로 칠한다 — 누른 칸까지의 길이다.
             if (picked.Plan.Count > 0
@@ -711,6 +719,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 return;
             }
 
+            // 고른 배를 또 누르면 선회 차례가 되고(0x0043E62B), 선회 차례에서 또 누르면 제자리에 선다(0x0043E9DC).
+            if (ReferenceEquals(here, _picked) && !_turning)
+            {
+                _turning = true;
+                Redraw();
+                return;
+            }
+
             if (ReferenceEquals(here, _picked))
             {
                 _battle.Order(here, []);
@@ -728,6 +744,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             }
 
             _picked = here;
+            _turning = false;
             _options = _battle.Options(here);
             _pivots = _battle.Pivots(here);
             Redraw();
@@ -736,9 +753,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
 
         if (_picked is not { } ship) return;
 
-        // 뱃머리 앞옆 두 칸은 <b>제자리 선회</b>다 — 길 후보보다 먼저 본다(0x0043E92B).
-        if (_pivots.FirstOrDefault(p => p.X == x && p.Y == y) is { Turn: not SeaBattle.Move.Straight } pivot)
+        // 선회 차례에는 뱃머리 앞옆 두 칸만 받는다 — 그 밖을 눌러도 아무 일이 없다(0x0043E92B · 0x0043EB8B).
+        if (_turning)
         {
+            if (_pivots.FirstOrDefault(p => p.X == x && p.Y == y) is not { Turn: not SeaBattle.Move.Straight } pivot) return;
             _battle.OrderPivot(ship, pivot.Turn);
             Redraw();
             ConfirmDialog.Tell(this, "선회 방향 결정!", BattleTitle);
@@ -853,6 +871,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private void Unpick()
     {
         _picked = null;
+        _turning = false;
         _options = [];
         _pivots = [];
         _path.Children.Clear();
@@ -935,6 +954,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     {
         _running = true;
         _picked = null;
+        _turning = false;
         _options = [];
         _pivots = [];
         _path.Children.Clear();
