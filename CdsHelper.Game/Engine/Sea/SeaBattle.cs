@@ -687,8 +687,14 @@ public sealed class SeaBattle
         if (!ship.CanAct || ship.Stuck) return list;
         foreach (var turn in new[] { Move.TurnRight, Move.TurnLeft })
         {
-            var (x, y) = Step(ship.X, ship.Y, Turn(ship.Way, turn));
-            if (OnBoard(x, y)) list.Add((x, y, turn));
+            // 판 끝에서 뱃머리 앞옆 칸이 판 밖이면 같은 쪽으로 한 칸 더 돈 칸(±120°)을 누를 자리로 쓴다 — 선회는 그대로 ±60° 다.
+            // 원본 그대로면 판 끝에서 밖을 보는 배는 갈 칸도 돌 칸도 없어 영영 못 움직였다(제보). 판 안에서는 달라지는 것이 없다.
+            int way = Turn(ship.Way, turn);
+            for (int k = 0; k < 2; k++, way = Turn(way, turn))
+            {
+                var (x, y) = Step(ship.X, ship.Y, way);
+                if (OnBoard(x, y)) { list.Add((x, y, turn)); break; }
+            }
         }
         return list;
     }
