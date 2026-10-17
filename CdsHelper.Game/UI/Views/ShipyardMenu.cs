@@ -302,8 +302,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         while (true)
         {
             int pick = ListPickDialog.Pick(Owner,
-                [.. sold.Select(i => Cannon.All[i]).Select(c => $"{GameUi.Pad(c.Name, 12)}{c.Price,6}닢{c.Weight,5}")],
-                "대포 선택", "대포가 없네.", GunHead);
+                [.. sold.Select(CannonLine)],
+                "대포 선택", "대포가 없네.", GunHeader, listWidth: GunListWidth);
             if (pick < 0 || pick >= sold.Count) return null;
 
             int kind = sold[pick];
@@ -1036,8 +1036,8 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
         while (true)
         {
             int pick = ListPickDialog.Pick(owner,
-                [.. sold.Select(i => Cannon.All[i]).Select(c => $"{GameUi.Pad(c.Name, 12)}{c.Price,6}닢{c.Weight,5}")],
-                "대포 선택", "대포가 없네.", GunHead);
+                [.. sold.Select(CannonLine)],
+                "대포 선택", "대포가 없네.", GunHeader, listWidth: GunListWidth);
             if (pick < 0 || pick >= sold.Count) return;
             int at = sold[pick];
 
@@ -1222,6 +1222,24 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
     /// <summary>대포 고르는 목록의 머리글(<c>0x005323A8</c>, <c>0x004441FD</c>).</summary>
     private const string GunHead = "    대포명   단가   중량";
+
+    /// <summary>
+    /// 대포 목록 머리 — 정보 등급이 「일반」 이상이면 위력 · 사거리 칸이 붙는다(원본 목록은 이름 · 단가 · 중량뿐이다).
+    /// </summary>
+    private static string GunHeader => Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoNormal)
+        ? GunHead + " 위력 사거리" : GunHead;
+
+    /// <summary>대포 목록 너비 — 위력 · 사거리 칸이 붙으면 넓힌다(목록 창 밑값은 264).</summary>
+    private static double GunListWidth => Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoNormal) ? 372 : 264;
+
+    /// <summary>대포 목록 한 줄 — 「일반」 이상이면 해전 위력(<see cref="Engine.Sea.SeaBattle.GunPower"/>) · 사거리(칸)를 붙인다.</summary>
+    private static string CannonLine(int index)
+    {
+        var c = Cannon.All[index];
+        string line = $"{GameUi.Pad(c.Name, 12)}{c.Price,6}닢{c.Weight,5}";
+        return Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoNormal)
+            ? $"{line}{Engine.Sea.SeaBattle.GunPower(index),5}{Engine.Sea.SeaBattle.RangeOf(index),7}" : line;
+    }
 
     /// <summary>돛 한 자리를 글자로 — 없음 <c>＿</c> · 삼각 <c>△</c> · 사각 <c>□</c>(0x005455F0 벌).</summary>
     internal static string SailMark(int sail) => sail switch

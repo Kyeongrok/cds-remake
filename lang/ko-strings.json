@@ -21509,10 +21509,6 @@
   "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:273",
   "args": 1
  },
- "{0}{1}닢{2}": {
-  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:305",
-  "args": 3
- },
  "대포 선택": {
   "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:306",
   "args": 0
@@ -21817,6 +21813,14 @@
  "    대포명   단가   중량": {
   "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1224",
   "args": 0
+ },
+ " 위력 사거리": {
+  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1230",
+  "args": 0
+ },
+ "{0}{1}닢{2}": {
+  "at": "CdsHelper.Game/UI/Views/ShipyardMenu.cs:1239",
+  "args": 3
  },
  "단축키": {
   "at": "CdsHelper.Game/UI/Views/ShortcutDialog.cs:21",
