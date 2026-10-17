@@ -132,8 +132,9 @@ public sealed class UserDiscoveryDialog : GameWindow
         {
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
             Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n"
-                   + "바다 괴물과 싸우려면 「[해전] 크라켄」(시서펜트 · 식인상어 · 맨터도 됩니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은"
-                   + " 지거나 도망쳤을 때입니다. 놓치면 다음에 그 바다에 가면 또 만납니다. 「(예제) 크라켄」을 보세요.",
+                   + "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때,"
+                   + " 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다."
+                   + " 「[아이템] 번호」는 아이템을 줍니다. 「(예제) 파르테논 신전」을 보세요.",
         });
         _share.Children.Add(Line("출처", _credit));
         _share.Children.Add(new TextBlock
@@ -357,6 +358,9 @@ public sealed class UserDiscoveryDialog : GameWindow
         "movie" => "[동영상]",
         "found" => line.Text.Length > 0 ? $"[발견] {line.Text}" : "[발견]",
         "battle" => $"[해전] {line.Text}",
+        "land" => $"[육상전] {line.Text}",
+        "item" => $"[아이템] {line.Text}",
+        "gameover" => "[게임 오버]",
         "lose" => "[놓쳤을 때]",
         _ => string.IsNullOrWhiteSpace(line.Speaker) ? line.Text : $"{line.Speaker}: {line.Text}",
     };
@@ -373,6 +377,9 @@ public sealed class UserDiscoveryDialog : GameWindow
             else if (s.StartsWith("[발견]")) lines.Add(new("found", null, s[4..].Trim()));
             else if (s.StartsWith("[해전]")) lines.Add(new("battle", null, s[4..].Trim() is { Length: > 0 } monster ? monster : "크라켄"));
             else if (s == "[놓쳤을 때]") lines.Add(new("lose"));
+            else if (s.StartsWith("[육상전]")) lines.Add(new("land", null, s[5..].Trim()));
+            else if (s.StartsWith("[아이템]")) lines.Add(new("item", null, s[5..].Trim()));
+            else if (s == "[게임 오버]") lines.Add(new("gameover"));
             else if (s.IndexOf(':') is var at and > 0 and <= 12 && !s[..at].Contains(' '))
                 lines.Add(new("say", s[..at].Trim(), s[(at + 1)..].Trim()));
             else lines.Add(new("say", null, s));
@@ -501,7 +508,25 @@ public sealed class UserDiscoveryDialog : GameWindow
             Tell("힌트가 없으면 「처음부터 열림」을 켜야 게임에서 만날 수 있습니다 — 「발견물」 탭에서 켜 주세요.");
             return;
         }
-        if (e.Lines.Count(x => x.Kind == "battle") > 1) { Tell("「[해전]」 줄은 하나만 둘 수 있습니다."); return; }
+        if (e.Lines.Count(x => x.Kind is "battle" or "land") > 1) { Tell("싸움(「[해전]」 · 「[육상전]」) 줄은 하나만 둘 수 있습니다."); return; }
+        foreach (var line in e.Lines)
+        {
+            if (line.Kind == "battle" && !UserDiscoveries.Monsters.Any(m => m.Name == line.Text.Trim()))
+            {
+                Tell($"「[해전] {line.Text}」 — 괴물 이름은 {string.Join(" · ", UserDiscoveries.Monsters.Select(m => m.Name))} 가운데 하나입니다.");
+                return;
+            }
+            if (line.Kind == "land" && UserDiscoveries.LandTerms(line.Text).Person < 0)
+            {
+                Tell($"「[육상전] {line.Text}」 — 그런 인물이 없습니다. 인물 이름이나 번호를 적어 주세요.");
+                return;
+            }
+            if (line.Kind == "item" && !int.TryParse(line.Text.Trim(), out _))
+            {
+                Tell($"「[아이템] {line.Text}」 — 아이템 번호를 적어 주세요.");
+                return;
+            }
+        }
         // 비밀번호를 적었으면 그것으로 잠그고, 「비밀번호 빼기」를 눌렀으면 걷는다. 둘 다 아니면 잠금은 그대로다.
         if (_password.Password.Length > 0) { e = e with { Lock = UserDiscoveries.LockOf(_password.Password) }; _unlocked.Add(e.Uuid); }
         else if (_dropLock) e = e with { Lock = "" };

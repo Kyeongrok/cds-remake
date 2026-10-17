@@ -42,7 +42,8 @@ public static class UserDiscoveries
     /// <param name="Kind">
     /// 「say」 대사 · 「picture」 발견물 그림 · 「movie」 발견물 동영상 · 「found」 효과음과 「~을 발견했다！」, 발견 처리 ·
     /// 「battle」 바다 괴물과 해전(<see cref="SceneLine.Text"/> 가 괴물 이름, <see cref="Monsters"/>) ·
-    /// 「lose」 해전에서 지거나 놓쳤을 때의 갈래가 여기서부터다.
+    /// 「land」 인물이 이끄는 무리와 육상전(<see cref="LandTerms"/>) ·
+    /// 「lose」 싸움에서 지거나 놓쳤을 때의 갈래가 여기서부터다 · 「item」 아이템을 준다(글이 아이템 번호) · 「gameover」 게임 오버.
     /// </param>
     /// <param name="Speaker">대사 화자(부관 · 감찰관 · 항해사 …). 비우면 화자 없는 글.</param>
     public sealed record SceneLine(string Kind, string? Speaker = null, string Text = "");
@@ -66,6 +67,23 @@ public static class UserDiscoveries
     /// 장면의 「[해전] 이름」이 덤빌 수 있는 바다 괴물 — 인물 표 뒤쪽의 괴물 자리다(<see cref="Engine.Sea.EnemyFleet"/>).
     /// 원본 크라켄 발견(파트 197)이 <c>0D 0D 271</c> 로 덤비는 것과 같다.
     /// </summary>
+    /// <summary>
+    /// 「[육상전]」 줄의 글을 푼다 — 「아테네의 장군 상대 100~139 아군 70 그림 3」. 앞은 인물 이름(또는 번호)이고, 뒤는 고를 수 있는
+    /// 「상대 병력」(수 하나나 a~b) · 「아군 병력」(그 수로 맞춘다) · 「일기토 그림 벌」(0~6)이다. 인물을 못 찾으면 Person 이 -1.
+    /// </summary>
+    /// <remarks>원본 파르테논(파트 23)이 <c>26 0F 3</c> · <c>26 1C 2=70</c> · <c>26 1C 16=100~139</c> 뒤에 <c>2F 0D 206</c> 로 싸운다.</remarks>
+    public static (int Person, string Name, int FoeFrom, int FoeTo, int Ours, int DuelSet) LandTerms(string text)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(text.Trim(),
+            @"^(?<who>.+?)(?:\s+상대\s+(?<f1>\d+)(?:\s*~\s*(?<f2>\d+))?)?(?:\s+아군\s+(?<our>\d+))?(?:\s+그림\s+(?<set>\d+))?\s*$");
+        string who = m.Success ? m.Groups["who"].Value.Trim() : text.Trim();
+        int person = int.TryParse(who, out int n) ? n
+            : PersonTable.Open()?.People.FirstOrDefault(r => r.Name == who)?.Id ?? -1;
+        int Int(string group, int fallback) => m.Success && m.Groups[group].Success ? int.Parse(m.Groups[group].Value) : fallback;
+        int from = Int("f1", -1), to = Int("f2", from);
+        return (person, who, from, Math.Max(from, to), Int("our", -1), Int("set", -1));
+    }
+
     public static readonly (string Name, int Person)[] Monsters =
     [
         ("크라켄", Engine.Sea.EnemyFleet.Kraken), ("시서펜트", Engine.Sea.EnemyFleet.SeaSerpent),
@@ -102,41 +120,54 @@ public static class UserDiscoveries
     /// <summary>예제의 UUID — 목록 맨 위에 「(예제) 돌묵상어」로 서고, 적거나 내보낼 수 없다.</summary>
     public const string ExampleUuid = "example-basking-shark";
 
-    /// <summary>둘째 예제 — 힌트 없이 확률로 만나 바다 괴물과 싸우는 크라켄.</summary>
-    public const string KrakenUuid = "example-kraken";
+    /// <summary>둘째 예제 — 아테나의 시련으로 육상전을 치르는 파르테논 신전.</summary>
+    public const string ParthenonUuid = "example-parthenon";
 
     /// <summary>예제들과 그 그림 번호(없으면 -1). 목록 맨 위에 이 차례로 선다.</summary>
-    public static IReadOnlyList<(Entry Entry, int Picture)> Examples => [(Example, ExamplePicture), (KrakenExample, -1)];
+    public static IReadOnlyList<(Entry Entry, int Picture)> Examples => [(Example, ExamplePicture), (ParthenonExample, -1)];
 
     /// <summary>그 UUID 의 예제. 예제가 아니면 null.</summary>
     public static (Entry Entry, int Picture)? ExampleOf(string uuid) =>
         Examples.FirstOrDefault(x => x.Entry.Uuid == uuid) is { Entry: not null } hit ? hit : null;
 
     /// <summary>
-    /// 크라켄 예제 — 원본 발견물 197 을 이 창의 칸 모양으로 옮긴 것. 원본에도 힌트 · 소문 · 그림이 없고, 처음부터 열려
-    /// 북쪽 바다에서 쉰 번에 한 번 덤빈다. 장면은 <c>발견이벤트.json</c> 파트 197 그대로다(발견 알림 한 줄만 더 든다).
+    /// 파르테논 신전 예제 — 원본 발견물 23 을 이 창의 칸 모양으로 옮긴 것. 힌트(그리스 이야기)를 받아 아테네의 아크로폴리스에
+    /// 오르면 아테나가 시련을 걸어 육상전을 치르고, 지면 게임 오버다. 장면은 <c>발견이벤트.json</c> 파트 23 그대로다.
     /// </summary>
-    public static Entry KrakenExample { get; } = new(
-        KrakenUuid, "크라켄", Category: 5, Reward: 15000, OnLand: false, OpenAtStart: true,
-        X1: 875, Y1: 192, X2: 941, Y2: 219,
-        HintName: "", HintGrade: 2, HintCategory: 5, HintFunds: 0, HintDeadline: 4, HintText: "",
-        RumorCities: [], RumorText: "", Book: "",
-        Description: "북극해에 나타난다는 거대한 두족류 괴물. 돛대만한 두께의 더듬이로 배를 습격하여 배나 선원들을 많이 희생시킨다고 한다.",
-        Chance: 50,
+    /// <remarks>
+    /// 원본은 도시 아테네(72)에 들어서는 발견이라 자리가 없다 — 예제는 아테네 곁 언덕 칸을 잡았다. 원본의 동영상(슬롯 2)과
+    /// 「힌트가 없으면 길이 막혀 있다」 갈래는 이 창에서 못 적어 뺐다(힌트가 있어야 열리는 것으로 갈음한다).
+    /// </remarks>
+    public static Entry ParthenonExample { get; } = new(
+        ParthenonUuid, "파르테논 신전", Category: 1, Reward: 12000, OnLand: true, OpenAtStart: false,
+        X1: 1409, Y1: 358, X2: 1412, Y2: 360,
+        HintName: "파르테논 신전", HintGrade: 1, HintCategory: 1, HintFunds: 12000, HintDeadline: 3,
+        HintText: "옛날 그리스 아테네의 아크로폴리스 언덕에 솟아 있는 파르테논신전은 수호신 아테나에게 바쳐진 것이다. 그 아름다움은 그리스건축의 대표격이다.",
+        RumorCities: [], RumorText: "", Book: "그리스 이야기",
+        Description: "아테네의 수호신 아테나를 기리는 신전. 당시의 그리스 최고 예술가를 총동원하여 기원전 432년에 완성. 장중한 도리아식 외견과 우아한 이오이아식 세부구조가 훌륭하게 조화를 이룬 그리스 건축의 최고 걸작이다.",
+        Chance: 1,
         Lines:
         [
-            new("say", "부관", "저 촉수는 뭐야！？"),
-            new("say", "부관", "큰일이다！"),
-            new("battle", null, "크라켄"),
-            new("say", "부관", "엄청난 오징어였군요．"),
-            new("found"),
+            new("found", null, "파르테논 신전을 발견했다！"),
+            new("say", null, "〈여자의 목소리〉 누구세요？ 양해를 구하지 않고 신전에 들어온 자는？"),
+            new("say", "감찰관", "아니， 우리는 수상한 자가···"),
+            new("say", "부관", "저···그러는 당신은？"),
+            new("say", null, "〈여자의 목소리〉 나는 올림포스 １２신 중의 하나인 아테나．"),
+            new("say", null, "〈아테나〉 신전을 방문한 자는 시련을 받아야 합니다．"),
+            new("say", null, "〈아테나〉 해내지 못했을 경우는 이곳을 나가지 못합니다．"),
+            new("say", null, "＜아테나＞ 나는 싸움의 신． 당신의 지휘관으로서의 실력을 시험하겠습니다．"),
+            new("land", null, "아테네의 장군 상대 100~139 아군 70 그림 3"),
+            new("say", "부관", "우리가 이겼습니다！"),
+            new("item", null, "4"),
+            new("say", null, "이디스의 방패를 손에 넣었다！"),
+            new("say", null, "〈아테나〉 오랜만에 이 시련을 극복한 자가 나타났군요． 그럼， 가십시오． 또 만날 날이 있겠지요．"),
             new("lose"),
-            new("say", "부관", "엄청난 오징어였군요．"),
+            new("say", null, "〈아테나〉 유감입니다． 앞으로 당신도 병사의 한 사람으로서 여기를 방문하는 자들과 싸워야 됩니다 영원히···"),
+            new("gameover"),
         ],
-        Credit: "원본 게임 「대항해시대3」의 크라켄(발견물 197)",
+        Credit: "원본 게임 「대항해시대3」의 파르테논 신전(발견물 23)",
         Author: "대항해시대3 리메이크",
-        License: "원본 게임 자료(예제용)",
-        HasHint: false);
+        License: "원본 게임 자료(예제용)");
 
     /// <summary>예제 그림 — 앱에 실린 돌묵상어 그림(발견물 그림 84번)이다.</summary>
     public const int ExamplePicture = 84;
@@ -397,11 +428,51 @@ public static class UserDiscoveries
                 case "say" when line.Text.Length > 0:
                     body.Add(Say(line.Text, line.Speaker));
                     break;
+                case "item" when int.TryParse(line.Text.Trim(), out int item):
+                    body.Add(new JsonObject { ["OpCode"] = "00 05", ["Call"] = "GiveItem", ["Args"] = new JsonObject { ["Item"] = item } });
+                    break;
+                case "gameover":
+                    body.Add(new JsonObject { ["OpCode"] = "4A", ["Call"] = "GameOver" });
+                    break;
             }
         }
 
+        /// <summary>싸움 한 줄 — 해전이면 0D 0D 괴물, 육상전이면 그림 벌 · 병력을 맞춘 뒤 2F 0D 인물.</summary>
+        void Fight(SceneLine line)
+        {
+            if (line.Kind == "battle")
+            {
+                int monster = Monsters.FirstOrDefault(m => m.Name == line.Text.Trim()) is { Name: not null } hit
+                    ? hit.Person : Engine.Sea.EnemyFleet.Kraken;
+                body.Add(new JsonObject { ["OpCode"] = "0D 0D", ["Call"] = "SeaBattle", ["Args"] = new JsonObject { ["Person"] = monster } });
+                return;
+            }
+            var t = LandTerms(line.Text);
+            if (t.DuelSet >= 0)
+                body.Add(new JsonObject { ["OpCode"] = "26 0F", ["Call"] = "SetDuelSet", ["Args"] = new JsonObject { ["Set"] = t.DuelSet } });
+            if (t.Ours >= 0)
+                body.Add(new JsonObject
+                {
+                    ["OpCode"] = "26 1C", ["Call"] = "SetStat",
+                    ["Args"] = new JsonObject { ["Stat"] = 2, ["Value"] = new JsonObject { ["Const"] = t.Ours } },
+                });
+            if (t.FoeFrom >= 0)
+                body.Add(new JsonObject
+                {
+                    ["OpCode"] = "26 1C", ["Call"] = "SetStat",
+                    ["Args"] = new JsonObject
+                    {
+                        ["Stat"] = 16,
+                        ["Value"] = t.FoeTo > t.FoeFrom
+                            ? new JsonObject { ["Random"] = new JsonObject { ["From"] = t.FoeFrom, ["Width"] = t.FoeTo - t.FoeFrom + 1 } }
+                            : new JsonObject { ["Const"] = t.FoeFrom },
+                    },
+                });
+            body.Add(new JsonObject { ["OpCode"] = "2F 0D", ["Call"] = "LandBattle", ["Args"] = new JsonObject { ["Person"] = Math.Max(0, t.Person) } });
+        }
+
         var all = e.Lines ?? [];
-        int battle = all.FindIndex(x => x.Kind == "battle");
+        int battle = all.FindIndex(x => x.Kind is "battle" or "land");
         if (battle < 0)
         {
             Emit(all);
@@ -412,19 +483,18 @@ public static class UserDiscoveries
         }
         else
         {
-            // 원본 크라켄(파트 197)과 같은 꼴 — 해전 뒤 지면(결과 거짓) 놓친 갈래로 뛰고, 이기면 발견하고 「성공」을 둔 뒤
-            // 43 47 이 놓친 갈래를 건너뛴다. 놓치면 「실패」라 다음에 그 자리에 가면 또 덤빈다.
+            // 원본 크라켄(파트 197)과 같은 꼴 — 싸움 뒤 지면(결과 거짓) 놓친 갈래로 뛰고, 이기면 발견하고 「성공」을 둔 뒤
+            // 43 47 이 놓친 갈래를 건너뛴다. 놓치면 「실패」라 다음에 그 자리에 가면 또 덤빈다(놓친 갈래에 「게임 오버」를 두면 끝난다).
             int lose = all.FindIndex(battle + 1, x => x.Kind == "lose");
             var win = lose < 0 ? all.Skip(battle + 1).ToList() : all.Skip(battle + 1).Take(lose - battle - 1).ToList();
             var missed = lose < 0 ? [] : all.Skip(lose + 1).ToList();
-            int monster = Monsters.FirstOrDefault(m => m.Name == all[battle].Text.Trim()) is { Name: not null } hit
-                ? hit.Person : Engine.Sea.EnemyFleet.Kraken;
 
             Emit(all.Take(battle));
-            body.Add(new JsonObject { ["OpCode"] = "0D 0D", ["Call"] = "SeaBattle", ["Args"] = new JsonObject { ["Person"] = monster } });
+            Fight(all[battle]);
             body.Add(new JsonObject { ["OpCode"] = "43 45", ["GotoIf"] = new JsonObject { ["Call"] = "ResultFalse" }, ["Target"] = "LOSE" });
             Emit(win);
-            if (!win.Any(x => x.Kind == "found")) Found();
+            // 발견 줄이 싸움 앞에 있으면(원본 파르테논처럼 먼저 알리고 싸운다) 다시 붙이지 않는다.
+            if (!all.Any(x => x.Kind == "found")) Found();
             body.Add(new JsonObject { ["OpCode"] = "4C", ["Call"] = "EndDone" });
             body.Add(new JsonObject { ["Label"] = "LOSE", ["OpCode"] = "43 47", ["GotoIf"] = new JsonObject { ["Call"] = "Result" }, ["Target"] = "END" });
             Emit(missed);

@@ -6538,156 +6538,212 @@
   "at": "CdsHelper.Game/Engine/Table/TradeTable.cs:146",
   "args": 0
  },
+ "^(?<who>.+?)(?:\\s+상대\\s+(?<f1>\\d+)(?:\\s*~\\s*(?<f2>\\d+))?)?(?:\\s+아군\\s+(?<our>\\d+))?(?:\\s+그림\\s+(?<set>\\d+))?\\s*$": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:78",
+  "args": 0
+ },
  "크라켄": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:71",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:89",
   "args": 0
  },
  "시서펜트": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:71",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:89",
   "args": 0
  },
  "식인상어": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:72",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:90",
   "args": 0
  },
  "맨터": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:72",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:90",
   "args": 0
  },
- "북극해에 나타난다는 거대한 두족류 괴물. 돛대만한 두께의 더듬이로 배를 습격하여 배나 선원들을 많이 희생시킨다고 한다.": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:124",
+ "파르테논 신전": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:142",
   "args": 0
  },
- "저 촉수는 뭐야！？": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:128",
+ "옛날 그리스 아테네의 아크로폴리스 언덕에 솟아 있는 파르테논신전은 수호신 아테나에게 바쳐진 것이다. 그 아름다움은 그리스건축의 대표격이다.": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:145",
   "args": 0
  },
- "큰일이다！": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:129",
+ "그리스 이야기": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:146",
   "args": 0
  },
- "엄청난 오징어였군요．": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:131",
+ "아테네의 수호신 아테나를 기리는 신전. 당시의 그리스 최고 예술가를 총동원하여 기원전 432년에 완성. 장중한 도리아식 외견과 우아한 이오이아식 세부구조가 훌륭하게 조화를 이룬 그리스 건축의 최고 걸작이다.": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:147",
   "args": 0
  },
- "원본 게임 「대항해시대3」의 크라켄(발견물 197)": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:136",
+ "파르테논 신전을 발견했다！": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:151",
   "args": 0
  },
- "대항해시대3 리메이크": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:137",
-  "args": 0
- },
- "원본 게임 자료(예제용)": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:138",
-  "args": 0
- },
- "돌묵상어": {
+ "〈여자의 목소리〉 누구세요？ 양해를 구하지 않고 신전에 들어온 자는？": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:152",
   "args": 0
  },
- "햇볕을 쬐는 큰 물고기": {
+ "아니， 우리는 수상한 자가···": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:153",
+  "args": 0
+ },
+ "저···그러는 당신은？": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:154",
   "args": 0
  },
- "북쪽 바다에는 작은 배보다도 큰 물고기가 산다고 한다. 동굴 같은 입을 벌린 채 수면 가까이를 떠다니지만 사람을 해치지는 않는다. 볕이 좋은 날이면 등지느러미를 물 밖으로 내놓고 햇볕을 쬔다고 한다.": {
+ "〈여자의 목소리〉 나는 올림포스 １２신 중의 하나인 아테나．": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:155",
   "args": 0
  },
- "스코틀랜드 서쪽 섬들 앞바다에 배만 한 물고기가 입을 벌린 채 떠다닌다더군. 볕 좋은 날이면 등지느러미가 물 위로 보인다고 하네.": {
+ "〈아테나〉 신전을 방문한 자는 시련을 받아야 합니다．": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:156",
+  "args": 0
+ },
+ "〈아테나〉 해내지 못했을 경우는 이곳을 나가지 못합니다．": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:157",
   "args": 0
  },
- "박물지": {
+ "＜아테나＞ 나는 싸움의 신． 당신의 지휘관으로서의 실력을 시험하겠습니다．": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:158",
   "args": 0
  },
- "북대서양을 비롯한 온대 바다에 사는 거대한 상어. 고래상어 다음으로 큰 물고기로 몸길이가 10미터를 넘기도 한다. 큰 입을 벌린 채 수면 가까이를 헤엄치며 작은 먹이를 걸러 먹는다. 성질이 온순해 사람을 해치지 않는다.": {
+ "아테네의 장군 상대 100~139 아군 70 그림 3": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:159",
   "args": 0
  },
- "사， 상어다！ 어서 배를 돌려라！": {
+ "우리가 이겼습니다！": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:160",
+  "args": 0
+ },
+ "이디스의 방패를 손에 넣었다！": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:162",
+  "args": 0
+ },
+ "〈아테나〉 오랜만에 이 시련을 극복한 자가 나타났군요． 그럼， 가십시오． 또 만날 날이 있겠지요．": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:163",
   "args": 0
  },
- "아니， 덤벼들지 않습니다． 입을 벌린 채 천천히 헤엄치고 있을 뿐입니다．": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:164",
-  "args": 0
- },
- "첨벙！": {
+ "〈아테나〉 유감입니다． 앞으로 당신도 병사의 한 사람으로서 여기를 방문하는 자들과 싸워야 됩니다 영원히···": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:165",
   "args": 0
  },
- "저 입을 보십시오！ 사람 하나쯤은 통째로 들어가겠습니다．": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:167",
-  "args": 0
- },
- "이빨이 보이지 않는군． 바닷물을 들이마시고 있는 것인가？": {
+ "원본 게임 「대항해시대3」의 파르테논 신전(발견물 23)": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:168",
   "args": 0
  },
- "작은 먹이를 물과 함께 걸러 먹는 모양입니다． 온순한 상어로군요．": {
+ "대항해시대3 리메이크": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:169",
   "args": 0
  },
- "돌묵상어를 발견했다！": {
+ "원본 게임 자료(예제용)": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:170",
   "args": 0
  },
+ "돌묵상어": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:183",
+  "args": 0
+ },
+ "햇볕을 쬐는 큰 물고기": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:185",
+  "args": 0
+ },
+ "북쪽 바다에는 작은 배보다도 큰 물고기가 산다고 한다. 동굴 같은 입을 벌린 채 수면 가까이를 떠다니지만 사람을 해치지는 않는다. 볕이 좋은 날이면 등지느러미를 물 밖으로 내놓고 햇볕을 쬔다고 한다.": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:186",
+  "args": 0
+ },
+ "스코틀랜드 서쪽 섬들 앞바다에 배만 한 물고기가 입을 벌린 채 떠다닌다더군. 볕 좋은 날이면 등지느러미가 물 위로 보인다고 하네.": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:188",
+  "args": 0
+ },
+ "박물지": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:189",
+  "args": 0
+ },
+ "북대서양을 비롯한 온대 바다에 사는 거대한 상어. 고래상어 다음으로 큰 물고기로 몸길이가 10미터를 넘기도 한다. 큰 입을 벌린 채 수면 가까이를 헤엄치며 작은 먹이를 걸러 먹는다. 성질이 온순해 사람을 해치지 않는다.": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:190",
+  "args": 0
+ },
+ "사， 상어다！ 어서 배를 돌려라！": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:194",
+  "args": 0
+ },
+ "아니， 덤벼들지 않습니다． 입을 벌린 채 천천히 헤엄치고 있을 뿐입니다．": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:195",
+  "args": 0
+ },
+ "첨벙！": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:196",
+  "args": 0
+ },
+ "저 입을 보십시오！ 사람 하나쯤은 통째로 들어가겠습니다．": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:198",
+  "args": 0
+ },
+ "이빨이 보이지 않는군． 바닷물을 들이마시고 있는 것인가？": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:199",
+  "args": 0
+ },
+ "작은 먹이를 물과 함께 걸러 먹는 모양입니다． 온순한 상어로군요．": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:200",
+  "args": 0
+ },
+ "돌묵상어를 발견했다！": {
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:201",
+  "args": 0
+ },
  "이렇게 큰 물고기가 햇볕을 쬐며 떠다니다니···． 세상은 넓구나．": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:171",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:202",
   "args": 0
  },
  "글: 위키백과 「돌묵상어」 ko.wikipedia.org/wiki/돌묵상어 (CC BY-SA 4.0)\n그림: Greg Skomal / NOAA Fisheries Service, 위키미디어 공용, 퍼블릭 도메인": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:173",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:204",
   "args": 0
  },
  "{0}{1} 발견했다！": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:375",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:406",
   "args": 2
  },
  "장면을 못 읽었습니다": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:453",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:523",
   "args": 0
  },
  "새 발견물": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:467",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:537",
   "args": 0
  },
  "새 힌트": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:469",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:539",
   "args": 0
  },
  "제독！ 저기를 보십시오．": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:474",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:544",
   "args": 0
  },
  "{0} 는 넣을 수 없는 동영상입니다 — {1}": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:493",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:563",
   "args": 2
  },
  "그 발견물이 없습니다": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:535",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:605",
   "args": 0
  },
  "발견물 파일이 아닙니다(discovery.json 이 없습니다).": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:554",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:624",
   "args": 0
  },
  "discovery.json 을 읽지 못했습니다.": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:557",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:627",
   "args": 0
  },
  "더 새 버전의 게임에서 만든 발견물입니다. 게임을 업데이트해 주세요.": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:558",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:628",
   "args": 0
  },
  "불러오지 않았습니다.": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:561",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:631",
   "args": 0
  },
  "「{0}」 을 불러왔습니다 — 발견물 {1}번.": {
-  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:575",
+  "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:645",
   "args": 2
  },
  "바람표": {
@@ -23081,355 +23137,391 @@
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:134",
   "args": 0
  },
- "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n바다 괴물과 싸우려면 「[해전] 크라켄」(시서펜트 · 식인상어 · 맨터도 됩니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은 지거나 도망쳤을 때입니다. 놓치면 다음에 그 바다에 가면 또 만납니다. 「(예제) 크라켄」을 보세요.": {
+ "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)\n싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다. 「[아이템] 번호」는 아이템을 줍니다. 「(예제) 파르테논 신전」을 보세요.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:134",
   "args": 0,
   "chain": true
  },
- "바다 괴물과 싸우려면 「[해전] 크라켄」(시서펜트 · 식인상어 · 맨터도 됩니다) — 그 아래 줄은 이겼을 때, 「[놓쳤을 때]」 아래 줄은": {
+ "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(상대 · 아군 · 그림은 빼도 됩니다) — 그 아래 줄은 이겼을 때,": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:135",
   "args": 0
  },
- " 지거나 도망쳤을 때입니다. 놓치면 다음에 그 바다에 가면 또 만납니다. 「(예제) 크라켄」을 보세요.": {
+ " 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:136",
   "args": 0
  },
+ " 「[아이템] 번호」는 아이템을 줍니다. 「(예제) 파르테논 신전」을 보세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:137",
+  "args": 0
+ },
  "출처": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:138",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:139",
   "args": 0
  },
  "그림 · 글을 어디서 가져왔는지와 그 라이선스를 적어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:142",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:143",
   "args": 0
  },
  "만든 이": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:144",
-  "args": 0
- },
- "닉네임이나 이름": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:144",
-  "args": 0
- },
- "라이선스": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:145",
   "args": 0
  },
- "잠금 풀기": {
+ "닉네임이나 이름": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:145",
+  "args": 0
+ },
+ "라이선스": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:146",
   "args": 0
  },
- "비밀번호 빼기": {
+ "잠금 풀기": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:147",
   "args": 0
  },
- "비밀번호": {
+ "비밀번호 빼기": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:148",
   "args": 0
  },
+ "비밀번호": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:149",
+  "args": 0
+ },
  "비밀번호를 적고 「저장」하면 잠깁니다. 잠긴 발견물은 내보내 다른 분이 불러와도 게임에는 나오지만, 비밀번호 없이는 고칠 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:152",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:153",
   "args": 0
  },
  "비밀번호를 적고 「저장」하면 잠깁니다. 잠긴 발견물은 내보내 다른 분이 불러와도 게임에는 나오지만, 비밀번호 없이는 고칠 수 없습니다. 비밀번호는 파일에 남기지 않으니 잊지 마세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:152",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:153",
   "args": 0,
   "chain": true
  },
  " 비밀번호는 파일에 남기지 않으니 잊지 마세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:153",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:154",
   "args": 0
  },
  "동영상 고르기…": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:157",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:158",
   "args": 0
  },
  "동영상 빼기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:157",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:158",
   "args": 0
  },
  "복제": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:164",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:165",
   "args": 0
  },
  "출처 · 공유": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:176",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:177",
   "args": 0
  },
  "모드 「추가 발견물」이 꺼져 있어 지은 발견물이 게임에 안 나옵니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:191",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:192",
   "args": 0
  },
  "예제는 고칠 수 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:239",
-  "args": 0
- },
- "잠기지 않음": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:240",
   "args": 0
  },
- "잠금 풀림 — 고칠 수 있습니다": {
+ "잠기지 않음": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:241",
+  "args": 0
+ },
+ "잠금 풀림 — 고칠 수 있습니다": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:242",
   "args": 0
  },
  "잠김 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:241",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:242",
   "args": 0
  },
  "(예제) {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:266",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:267",
   "args": 1
  },
  "예제입니다 — 게임에 들어 있는 {0}을(를) 이 칸들로 옮긴 것입니다. 「복제」를 누르면 베껴서 고쳐 쓸 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:295",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:296",
   "args": 1
  },
  "발견물 {0}번 · 힌트 {1}번 · 그림 {2}번 — UUID {3}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:307",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:308",
   "args": 4
  },
  "[그림]": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:356",
-  "args": 0
- },
- "[동영상]": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:357",
   "args": 0
  },
- "[발견] {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:358",
-  "args": 1
- },
- "[발견]": {
+ "[동영상]": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:358",
   "args": 0
  },
- "[해전] {0}": {
+ "[발견] {0}": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:359",
   "args": 1
  },
- "[놓쳤을 때]": {
+ "[발견]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:359",
+  "args": 0
+ },
+ "[해전] {0}": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:360",
+  "args": 1
+ },
+ "[육상전] {0}": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:361",
+  "args": 1
+ },
+ "[아이템] {0}": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:362",
+  "args": 1
+ },
+ "[게임 오버]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:363",
+  "args": 0
+ },
+ "[놓쳤을 때]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:364",
   "args": 0
  },
  "[해전]": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:374",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:378",
+  "args": 0
+ },
+ "[육상전]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:380",
+  "args": 0
+ },
+ "[아이템]": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:381",
   "args": 0
  },
  "{0}에 수를 적어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:390",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:397",
   "args": 1
  },
  "이름이 비었습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:393",
-  "args": 0
- },
- "힌트 등급": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:396",
-  "args": 0
- },
- "힌트 갈래": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:396",
-  "args": 0
- },
- "힌트 자금": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:397",
-  "args": 0
- },
- "힌트 기한": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:397",
-  "args": 0
- },
- "소문 도시는 셋까지입니다.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:400",
   "args": 0
  },
+ "힌트 등급": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:403",
+  "args": 0
+ },
+ "힌트 갈래": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:403",
+  "args": 0
+ },
+ "힌트 자금": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:404",
+  "args": 0
+ },
+ "힌트 기한": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:404",
+  "args": 0
+ },
+ "소문 도시는 셋까지입니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:407",
+  "args": 0
+ },
  "잠긴 발견물은 비밀번호로 잠금을 푼 뒤에 복제할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:433",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:440",
   "args": 0
  },
  "{0} 복사본": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:440",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:447",
   "args": 1
  },
  "복제하지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:459",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:466",
   "args": 1
  },
  "「{0}」 을 「{1}」 으로 복제했습니다 — 자리가 원본과 같으니 「지도에서 고르기…」로 옮기고, 이름 · 힌트를 고친 뒤 「저장」을 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:461",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:468",
   "args": 2
  },
  "짓지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:482",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:489",
   "args": 1
  },
  "새 발견물을 지었습니다 — 나머지 칸을 채우고 「저장」을 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:486",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:493",
   "args": 0
  },
  "새 발견물을 지었습니다 — 「지도에서 고르기…」로 자리를 잡고 칸을 채운 뒤 「저장」을 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:487",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:494",
   "args": 0
  },
  "예제는 적을 수 없습니다 — 「새 발견물」을 눌러 새로 만들어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:492",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:499",
   "args": 0
  },
  "잠긴 발견물입니다 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:495",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:502",
   "args": 0
  },
  "힌트가 없으면 「처음부터 열림」을 켜야 게임에서 만날 수 있습니다 — 「발견물」 탭에서 켜 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:501",
-  "args": 0
- },
- "「[해전]」 줄은 하나만 둘 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:504",
-  "args": 0
- },
- "자리가 없습니다 — 「지도에서 고르기…」로 자리를 잡아 주세요.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:508",
   "args": 0
  },
- "적었지만 장면을 굽지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:512",
-  "args": 1
- },
- "「{0}」 을 적었습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:513",
-  "args": 1
- },
- "「{0}」 을 지웁니다. 이 발견물을 찾은 세이브에서는 그 기록이 표에 없는 것으로 남습니다. 좋습니까?": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:519",
-  "args": 1
- },
- "발견물 지우기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:519",
+ "싸움(「[해전]」 · 「[육상전]」) 줄은 하나만 둘 수 있습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:511",
   "args": 0
  },
- "「{0}」 을 지웠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:523",
+ "「[해전] {0}」 — 괴물 이름은 {1} 가운데 하나입니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:516",
+  "args": 2
+ },
+ "「[육상전] {0}」 — 그런 인물이 없습니다. 인물 이름이나 번호를 적어 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:521",
   "args": 1
  },
- "세계 지도를 못 읽었습니다 — 게임 폴더에 WORLD.CDS 가 있는지 확인해 주세요.": {
+ "「[아이템] {0}」 — 아이템 번호를 적어 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:526",
+  "args": 1
+ },
+ "자리가 없습니다 — 「지도에서 고르기…」로 자리를 잡아 주세요.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:533",
   "args": 0
  },
- "자리를 ({0}, {1}) ~ ({2}, {3}) 로 잡았습니다 — {4}. 「저장」을 눌러야 적힙니다.": {
+ "적었지만 장면을 굽지 못했습니다 — {0}": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:537",
+  "args": 1
+ },
+ "「{0}」 을 적었습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:538",
+  "args": 1
+ },
+ "「{0}」 을 지웁니다. 이 발견물을 찾은 세이브에서는 그 기록이 표에 없는 것으로 남습니다. 좋습니까?": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:544",
-  "args": 5
+  "args": 1
  },
- "발견물 그림 고르기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:551",
+ "발견물 지우기": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:544",
   "args": 0
  },
- "그림을 읽지 못했습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:553",
-  "args": 0
+ "「{0}」 을 지웠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:548",
+  "args": 1
  },
- "그림을 발견물 그림처럼 바꿨습니다 — 「저장」을 눌러야 적힙니다. 출처와 라이선스를 「출처」 칸에 적어 주세요.": {
+ "세계 지도를 못 읽었습니다 — 게임 폴더에 WORLD.CDS 가 있는지 확인해 주세요.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:558",
   "args": 0
  },
+ "자리를 ({0}, {1}) ~ ({2}, {3}) 로 잡았습니다 — {4}. 「저장」을 눌러야 적힙니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:569",
+  "args": 5
+ },
+ "발견물 그림 고르기": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:576",
+  "args": 0
+ },
+ "그림을 읽지 못했습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:578",
+  "args": 0
+ },
+ "그림을 발견물 그림처럼 바꿨습니다 — 「저장」을 눌러야 적힙니다. 출처와 라이선스를 「출처」 칸에 적어 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:583",
+  "args": 0
+ },
  "발견물 동영상 고르기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:566",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:591",
   "args": 0
  },
  "동영상|": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:567",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:592",
   "args": 0
  },
  "동영상|{0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:567",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:592",
   "args": 1,
   "chain": true
  },
  "|모든 파일|*.*": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:567",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:592",
   "args": 0
  },
  "동영상을 골랐습니다 — 장면에 「[동영상]」 줄을 넣어야 재생되고, 「저장」을 눌러야 적힙니다. 내보내면 파일에 함께 담깁니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:572",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:597",
   "args": 0
  },
  "동영상을 뺍니다 — 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:580",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:605",
   "args": 0
  },
  "발견물 내보내기": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:588",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:613",
   "args": 0
  },
  "발견물 (*.cdsdiscovery)|*.cdsdiscovery": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:589",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:614",
   "args": 0
  },
  "내보내지 못했습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:592",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:617",
   "args": 1
  },
  "「{0}」 을 내보냈습니다 — {1}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:592",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:617",
   "args": 2
  },
  "발견물 (*.cdsdiscovery)|*.cdsdiscovery|모든 파일 (*.*)|*.*": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:599",
-  "args": 0
- },
- "같은 발견물 「{0}」 이 이미 있습니다. 불러온 「{1}」 으로 덮어쓸까요?": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:603",
-  "args": 2
- },
- "비밀번호가 맞지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:612",
-  "args": 0
- },
- "「{0}」 의 잠금을 풀었습니다 — 고친 뒤 「저장」을 눌러 주세요. 잠금은 그대로 남습니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:616",
-  "args": 1
- },
- "「저장」을 누르면 비밀번호가 빠집니다.": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:624",
   "args": 0
  },
+ "같은 발견물 「{0}」 이 이미 있습니다. 불러온 「{1}」 으로 덮어쓸까요?": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:628",
+  "args": 2
+ },
+ "비밀번호가 맞지 않습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:637",
+  "args": 0
+ },
+ "「{0}」 의 잠금을 풀었습니다 — 고친 뒤 「저장」을 눌러 주세요. 잠금은 그대로 남습니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:641",
+  "args": 1
+ },
+ "「저장」을 누르면 비밀번호가 빠집니다.": {
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:649",
+  "args": 0
+ },
  "도시 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:630",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:655",
   "args": 0
  },
  "소문 도시: {0} — 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:633",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:658",
   "args": 1
  },
  "게임 위치: (자리를 아직 안 골랐습니다)": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:645",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:670",
   "args": 0
  },
  "{0} {1}도": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:656",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:681",
   "args": 2
  },
  "게임 위치: {0}  ·  {1}": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:661",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:686",
   "args": 2
  },
  "북위": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:661",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:686",
   "args": 0
  },
  "남위": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:661",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:686",
   "args": 0
  },
  "동경": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:661",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:686",
   "args": 0
  },
  "서경": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:661",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:686",
   "args": 0
  },
  "힌트를 『{0}』 에 싣습니다 — 「저장」을 눌러야 적힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:678",
+  "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:703",
   "args": 1
  },
  "줄 더하기": {
