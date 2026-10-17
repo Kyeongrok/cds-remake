@@ -68,7 +68,7 @@ public sealed class ScenarioEditDialog : GameWindow
         Col("직업", nameof(Row.Job), 40);
         Col("능력 여섯", nameof(Row.Abilities), 130);
         Col("기능 열셋", nameof(Row.Skills), 190);
-        Col("언어 여섯", nameof(Row.Tongues), 96);
+        Col("언어", nameof(Row.Tongues), 96);
         Col("돈", nameof(Row.Gold), 64);
         Col("명성", nameof(Row.Fame), 56);
         Col("배", nameof(Row.Ship), 40);
@@ -169,14 +169,22 @@ public sealed class ScenarioEditDialog : GameWindow
     /// <summary>칸의 뜻을 아래에 적어 둔다 — 번호로 적는 칸이 많다.</summary>
     private void Guide(string head)
     {
-        _status.Text = (head.Length > 0 ? head + "\n" : "")
-            + "나라는 나라 표의 번호(0 포르투갈 · 1 에스파니아 · 14 신성 로마 제국 …)   ·   본거지는 도시 번호(-1 이면 그 나라 수도, 함부르크 44) — 자택이 없는 도시면 「자택 자리 고르기」로 그림 위에 올린다\n"
+        // 맨 앞 줄(무엇이 됐는지 · 왜 안 됐는지)은 굵게 · 붉게 — 밑의 안내에 묻혀 「눌러도 아무 일이 없다」로 보였다.
+        _status.Inlines.Clear();
+        if (head.Length > 0)
+            _status.Inlines.Add(new System.Windows.Documents.Run(head + "\n")
+            {
+                FontWeight = FontWeights.Bold,
+                Foreground = System.Windows.Media.Brushes.Firebrick,
+            });
+        _status.Inlines.Add(new System.Windows.Documents.Run(
+            "나라는 나라 표의 번호(0 포르투갈 · 1 에스파니아 · 14 신성 로마 제국 …)   ·   본거지는 도시 번호(-1 이면 그 나라 수도, 함부르크 44) — 자택이 없는 도시면 「자택 자리 고르기」로 그림 위에 올린다\n"
             + "직업 " + string.Join(" · ", Enumerable.Range(0, Job.All.Length).Select(i => $"{i} {Job.Of(i).Name}"))
             + "   ·   혈액형 0~3   ·   얼굴은 운명 자리 번호(라몬 5 · 에밀리오 14)\n"
             + "능력 여섯: " + string.Join(",", Ability.Names) + $" ({Ability.Min}~{Ability.Max})\n"
             + "기능 열셋: " + string.Join(",", Skill.Names) + "\n"
-            + "언어 여섯: " + string.Join(",", Skill.Languages) + "\n"
-            + "게임은 1480년 1월 1일에 시작한다 — 나이는 태어난 해로 셈한다. 고친 뒤 「저장」을 눌러야 적힌다. 모드 「시나리오 모드(베타)」를 켜면 NEW GAME 에 나온다.";
+            + $"언어 {Skill.Languages.Length}개(앞에서부터 적은 만큼, 나머지는 0): " + string.Join(",", Skill.Languages) + "\n"
+            + "게임은 1480년 1월 1일에 시작한다 — 나이는 태어난 해로 셈한다. 고친 뒤 「저장」을 눌러야 적힌다. 모드 「시나리오 모드(베타)」를 켜면 NEW GAME 에 나온다."));
     }
 
     /// <summary>줄들을 시나리오로 거둔다. 어긋난 칸이 있으면 null 이고 까닭을 아래에 적는다.</summary>
@@ -189,8 +197,8 @@ public sealed class ScenarioEditDialog : GameWindow
         {
             string at = $"「{row.Title}」";
             if (Numbers(row.Abilities, 6) is not { } abilities) { Guide($"{at} 능력은 수 여섯을 쉼표로 적습니다."); return null; }
-            if (Numbers(row.Skills, Skill.Names.Length) is not { } skills) { Guide($"{at} 기능은 수 {Skill.Names.Length}개를 쉼표로 적습니다."); return null; }
-            if (Numbers(row.Tongues, Skill.Languages.Length) is not { } tongues) { Guide($"{at} 언어는 수 {Skill.Languages.Length}개를 쉼표로 적습니다."); return null; }
+            if (Numbers(row.Skills, Skill.Names.Length, upTo: true) is not { } skills) { Guide($"{at} 기능은 수 {Skill.Names.Length}개까지 쉼표로 적습니다."); return null; }
+            if (Numbers(row.Tongues, Skill.Languages.Length, upTo: true) is not { } tongues) { Guide($"{at} 언어는 수 {Skill.Languages.Length}개까지 쉼표로 적습니다."); return null; }
             if (row.Nation < 0 || (_game?.Nations is { } nations && nations.Find(row.Nation) == null)) { Guide($"{at} 나라 표에 없는 나라 번호입니다."); return null; }
             if (row.HomeCity >= 0 && _game != null && _game.CityTable.Find(row.HomeCity) == null) { Guide($"{at} 도시 표에 없는 본거지 번호입니다."); return null; }
             if (row.Job < 0 || row.Job >= Job.All.Length) { Guide($"{at} 직업은 0~{Job.All.Length - 1} 입니다."); return null; }
@@ -209,13 +217,16 @@ public sealed class ScenarioEditDialog : GameWindow
         return made;
     }
 
-    /// <summary>쉼표로 이은 수 <paramref name="count"/> 개. 모자라거나 수가 아니면 null.</summary>
-    private static int[]? Numbers(string text, int count)
+    /// <summary>
+    /// 쉼표로 이은 수 <paramref name="count"/> 개. 개수가 어긋나거나 수가 아니면 null.
+    /// <paramref name="upTo"/> 면 모자란 뒤쪽은 0 으로 채운다 — 언어는 열넷인데 새 게임에서 찍는 앞 여섯만 적은 시나리오(루터)가 있다.
+    /// </summary>
+    private static int[]? Numbers(string text, int count, bool upTo = false)
     {
         var cells = text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (cells.Length != count) return null;
+        if (cells.Length > count || (!upTo && cells.Length != count)) return null;
         var values = new int[count];
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < cells.Length; i++)
             if (!int.TryParse(cells[i], out values[i])) return null;
         return values;
     }
