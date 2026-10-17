@@ -334,6 +334,10 @@
                                             Header="발견물 관리"
                                             ToolTip="발견물 274줄을 보고 고치거나, 원본에 없던 새 발견물을 더한다" />
                                         <MenuItem
+                                            x:Name="PART_MonsterMenu"
+                                            Header="괴물 관리"
+                                            ToolTip="해전 괴물 넷(식인 상어 · 크라켄 · 시서펜트 · 맨터)의 몸짓 — 떠 있을 때 · 덮칠 때 어느 장을 몇 초씩 낼지 — 를 일기토 모션처럼 고치고 돌려 본다" />
+                                        <MenuItem
                                             x:Name="PART_BookEditMenu"
                                             Header="책"
                                             ToolTip="책 257권을 보고 고치거나, 원본에 없던 새 책을 더한다 — 힌트는 책에 물려야 도서관에서 읽어 얻어진다" />

@@ -147,6 +147,7 @@ public static class WindowNames
         ["GameDataDialog"] = "게임 데이터",
         ["MenuDesignerDialog"] = "메뉴 디자이너",
         ["MotionMakerDialog"] = "동작 만들기",
+        ["MonsterMotionDialog"] = "괴물 관리",
         ["DisevEditorDialog"] = "발견 대본 편집",
         ["DiscoveryEditDialog"] = "발견물 편집",
         ["BookEditDialog"] = "책 편집",

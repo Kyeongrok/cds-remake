@@ -24003,59 +24003,59 @@
   "args": 0
  },
  "발견 대본 편집": {
-  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:150",
-  "args": 0
- },
- "발견물 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:151",
   "args": 0
  },
- "책 편집": {
+ "발견물 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:152",
   "args": 0
  },
- "나라 편집": {
+ "책 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:153",
   "args": 0
  },
- "인물 편집": {
+ "나라 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:154",
   "args": 0
  },
- "인물 옮기기": {
+ "인물 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:155",
   "args": 0
  },
- "묘책 편집": {
-  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:157",
+ "인물 옮기기": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:156",
   "args": 0
  },
- "시나리오 편집": {
+ "묘책 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:158",
   "args": 0
  },
- "술집 힌트 편집": {
+ "시나리오 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:159",
   "args": 0
  },
- "술집 소문 편집": {
+ "술집 힌트 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:160",
   "args": 0
  },
- "역사 항해자 편집": {
+ "술집 소문 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:161",
   "args": 0
  },
- "선수상 편집": {
+ "역사 항해자 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:162",
   "args": 0
  },
- "도시 문화 편집": {
+ "선수상 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:163",
   "args": 0
  },
- "도시 그림 조각": {
+ "도시 문화 편집": {
   "at": "CdsHelper.Game/UI/Views/WindowNames.cs:164",
+  "args": 0
+ },
+ "도시 그림 조각": {
+  "at": "CdsHelper.Game/UI/Views/WindowNames.cs:165",
   "args": 0
  },
  "창 주인 보기 (개발)": {

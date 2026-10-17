@@ -228,7 +228,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         _flameTimer = new DispatcherTimer(DispatcherPriority.Render) { Interval = Tick };
         _flameTimer.Tick += (_, _) =>
         {
-            if (++_fireTick % FlameTicks == 0) { UpdateFlames(); UpdateMonster(); }
+            if (++_fireTick % FlameTicks == 0) UpdateFlames();
+            // 괴물은 몸짓 표(MonsterMotions)를 시계로 읽으므로 눈마다 고른다 — 같은 장이면 그림은 캐시에서 온다.
+            UpdateMonster();
         };
         Loaded += (_, _) => _flameTimer.Start();
         Closed += (_, _) => _flameTimer.Stop();
@@ -536,16 +538,32 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             image.Visibility = Visibility.Collapsed;
             return;
         }
-        // 덮치는 동안은 앞 석 장(방향*5 + 0·1·2)을 찍는다(0x00438108~0x00438162).
-        int frame = _monsterStrike >= 0 ? ship.Way * 5 + _monsterStrike : 3 + ship.Way * 5 + _fireTick % (FlameTicks * 2) / FlameTicks;
+        // 몸짓은 괴물 몸짓 표에서 — 밑값은 원본 그대로(떠 있으면 3·4 장을 0.8초씩, 덮치면 0·1·2 장, 0x00438108~0x00438162)다.
+        var step = _monsterStrike ?? MonsterMotions.Find(ship.Art, MonsterMotions.Idle).AtLooped(_monsterClock.Elapsed.TotalSeconds);
+        int frame = ship.Way * MonsterMotions.FramesPerWay + Math.Clamp(step.Frame, 0, MonsterMotions.FramesPerWay - 1);
         image.Source = Bitmap(_art.Monster(ship.Art, frame));
         var (sx, sy) = ScreenOf(ship.X, ship.Y);
-        Canvas.SetLeft(image, sx - 24);
-        Canvas.SetTop(image, sy - 32);
+        var (px, py) = PushOf(ship, step.Push);
+        Canvas.SetLeft(image, sx - 24 + px);
+        Canvas.SetTop(image, sy - 32 + py);
     }
 
-    /// <summary>괴물이 덮치는 연출의 걸음(<c>[+0x86C]</c> 0~2). 덮치는 중이 아니면 −1 이다.</summary>
-    private int _monsterStrike = -1;
+    /// <summary>보는 쪽으로 <paramref name="push"/> 점 내민 화면 어긋남 — 그 쪽 이웃 칸을 향한다.</summary>
+    private static (double X, double Y) PushOf(SeaBattle.Ship ship, double push)
+    {
+        if (push == 0) return (0, 0);
+        var (nx, ny) = SeaBattle.Step(ship.X, ship.Y, ship.Way);
+        var (ax, ay) = ScreenOf(ship.X, ship.Y);
+        var (bx, by) = ScreenOf(nx, ny);
+        double dx = bx - ax, dy = by - ay, len = Math.Sqrt(dx * dx + dy * dy);
+        return len <= 0 ? (0, 0) : (dx / len * push, dy / len * push);
+    }
+
+    /// <summary>괴물이 덮치는 연출의 지금 자리(<c>[+0x86C]</c>). 덮치는 중이 아니면 null 이다.</summary>
+    private MonsterMotions.Step? _monsterStrike;
+
+    /// <summary>떠 있는 몸짓을 재는 시계 — 판이 열린 때부터 돈다.</summary>
+    private readonly System.Diagnostics.Stopwatch _monsterClock = System.Diagnostics.Stopwatch.StartNew();
 
     /// <summary>괴물 그림만 다시 고른다 — 두 장을 16 눈마다 번갈아 찍는다.</summary>
     private void UpdateMonster()
@@ -1443,15 +1461,17 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         var at = ((mx + 2) * CombatArt.Cell, (my + 1) * CombatArt.Cell + shift);
         if (strike)
         {
-            for (int step = 0; step < 3; step++)
+            // 덮치는 몸짓은 괴물 몸짓 표에서 — 장마다 포연을 한 장씩 덮는다(셋째 뒤로는 셋째 장).
+            var strikes = MonsterMotions.Find(_battle.MonsterHead?.Art ?? shooter.Art, MonsterMotions.Strike).Steps;
+            for (int step = 0; step < strikes.Length; step++)
             {
-                _monsterStrike = step;
+                _monsterStrike = strikes[step];
                 UpdateMonster();
-                var puff = Sprite(_art.Path_($"blast-{9 + step:D2}"), at.Item1, at.Item2, 48, 48);
-                Wait(FxFrame);
+                var puff = Sprite(_art.Path_($"blast-{9 + Math.Min(step, 2):D2}"), at.Item1, at.Item2, 48, 48);
+                Wait(TimeSpan.FromSeconds(Math.Max(0.01, strikes[step].Seconds)));
                 if (puff is not null) _fx.Children.Remove(puff);
             }
-            _monsterStrike = -1;
+            _monsterStrike = null;
             UpdateMonster();
         }
         else Blast(9, at);

@@ -40,6 +40,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_TavernHintMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_DiscoveryEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_BookEditMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_MonsterMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_MotionMakerMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_ImageShrinkMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_VideoShrinkMenu, Type = typeof(MenuItem))]
@@ -82,6 +83,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_TavernHintMenu = "PART_TavernHintMenu";
     private const string PART_DiscoveryEditMenu = "PART_DiscoveryEditMenu";
     private const string PART_BookEditMenu = "PART_BookEditMenu";
+    private const string PART_MonsterMenu = "PART_MonsterMenu";
     private const string PART_MotionMakerMenu = "PART_MotionMakerMenu";
     private const string PART_ImageShrinkMenu = "PART_ImageShrinkMenu";
     private const string PART_VideoShrinkMenu = "PART_VideoShrinkMenu";
@@ -262,6 +264,11 @@ public class CdsHelperWindow : CdsWindow
         if (GetTemplateChild(PART_DiscoveryEditMenu) is MenuItem discoveryEditMenu)
         {
             discoveryEditMenu.Click += OnDiscoveryEditMenuClick;
+        }
+
+        if (GetTemplateChild(PART_MonsterMenu) is MenuItem monsterMenu)
+        {
+            monsterMenu.Click += (_, _) => CdsHelper.Game.UI.Views.MonsterMotionDialog.Show(this);
         }
 
         if (GetTemplateChild(PART_BookEditMenu) is MenuItem bookEditMenu)
