@@ -42,7 +42,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     public UserDiscoveryDialog(Func<DiscoveryAreaPicker.Map?>? map)
     {
         _map = map;
-        Title = "사용자 발견물";
+        Title = "커스텀 발견물";
         Width = 1120;
         Height = 860;
         Background = Brushes.White;

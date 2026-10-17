@@ -22847,7 +22847,7 @@
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:30",
   "args": 0
  },
- "사용자 발견물": {
+ "커스텀 발견물": {
   "at": "CdsHelper.Game/UI/Views/UserDiscoveryDialog.cs:45",
   "args": 0
  },

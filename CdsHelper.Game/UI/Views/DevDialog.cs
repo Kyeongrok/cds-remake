@@ -76,7 +76,7 @@ public sealed class DevDialog : GameWindow
         /// </summary>
         public Func<int, bool>? EventDone { get; init; }
 
-        /// <summary>사용자 발견물 창 — 「발견물」 탭의 단추가 창을 닫은 뒤 부른다.</summary>
+        /// <summary>커스텀 발견물 창 — 「발견물」 탭의 단추가 창을 닫은 뒤 부른다.</summary>
         public Action? UserDiscoveries { get; init; }
 
         /// <summary>등록된 역사 대본 칸들 — 「역사이벤트」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
