@@ -157,9 +157,28 @@ public sealed class Portraits
 
     private static readonly Dictionary<(bool Female, int Face), (uint[] Bgra, BitmapSource Art)?> ShippedCache = [];
 
-    /// <summary>실어 보낸 얼굴 그림 자리. 실행 파일 옆의 <c>asset/face</c> 다.</summary>
-    public static string ShippedPathOf(bool female, int face) =>
-        Path.Combine(AppContext.BaseDirectory, "asset", "face", $"{(female ? "female" : "male")}-{face}.png");
+    /// <summary>
+    /// 불러온 시나리오가 들고 온 얼굴 그림 자리(<c>%APPDATA%\CdsHelper\face</c>) — 앱을 업데이트해도 남는다.
+    /// 같은 번호가 앱에 실린 것보다 먼저다.
+    /// </summary>
+    public static string UserFaceFolder =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "face");
+
+    /// <summary>얼굴 그림 파일 이름(<c>male-9002.png</c>).</summary>
+    public static string ShippedFileName(bool female, int face) => $"{(female ? "female" : "male")}-{face}.png";
+
+    /// <summary>실어 보낸 얼굴 그림 자리 — 불러온 것(<see cref="UserFaceFolder"/>)이 있으면 그것, 없으면 실행 파일 옆의 <c>asset/face</c> 다.</summary>
+    public static string ShippedPathOf(bool female, int face)
+    {
+        string user = Path.Combine(UserFaceFolder, ShippedFileName(female, face));
+        return File.Exists(user) ? user : Path.Combine(AppContext.BaseDirectory, "asset", "face", ShippedFileName(female, face));
+    }
+
+    /// <summary>읽어 둔 얼굴 그림을 버린다 — 시나리오를 불러와 그림 파일이 바뀌었을 때.</summary>
+    public static void ForgetShipped()
+    {
+        lock (ShippedCache) ShippedCache.Clear();
+    }
 
     /// <summary>실어 보낸 얼굴 한 장 — 80x96 으로 줄인 색 배열에 본디 그림을 짝지어 낸다. 그림이 없으면 null.</summary>
     private static uint[]? Shipped(int face, bool female)

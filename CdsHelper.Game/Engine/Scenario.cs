@@ -93,11 +93,12 @@ public static class Scenarios
     public static bool IsBook(string? book) => Find(book) != null;
 
     /// <summary>표를 통째로 갈아 적는다.</summary>
-    public static void Save(IEnumerable<Scenario> scenarios)
+    /// <param name="nations">시나리오가 들고 오는 나라. null 이면 적어 둔 것을 그대로 다시 싣는다(작성 창은 나라를 안 고친다).</param>
+    public static void Save(IEnumerable<Scenario> scenarios, IEnumerable<NationTable.Nation>? nations = null)
     {
         _all = [.. scenarios.Where(Sound)];
-        // 나라는 이 창에서 안 고친다 — 적어 둔 것을 그대로 다시 싣는다.
-        TableCache.Write(CacheName, new TableCache.Cached<Snapshot>("", new Snapshot(_all, [.. ExtraNations]), "손으로 지음"));
+        _nations = [.. nations ?? ExtraNations];
+        TableCache.Write(CacheName, new TableCache.Cached<Snapshot>("", new Snapshot(_all, _nations), "손으로 지음"));
     }
 
     /// <summary>아직 안 쓴 책 이름.</summary>

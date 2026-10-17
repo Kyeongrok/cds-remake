@@ -4166,20 +4166,52 @@
   "args": 0
  },
  "손으로 지음": {
-  "at": "CdsHelper.Game/Engine/Scenario.cs:100",
+  "at": "CdsHelper.Game/Engine/Scenario.cs:101",
   "args": 0
  },
  "새 시나리오": {
-  "at": "CdsHelper.Game/Engine/Scenario.cs:114",
+  "at": "CdsHelper.Game/Engine/Scenario.cs:115",
   "args": 0
  },
  "이름": {
-  "at": "CdsHelper.Game/Engine/Scenario.cs:114",
+  "at": "CdsHelper.Game/Engine/Scenario.cs:115",
   "args": 0
  },
  "성": {
-  "at": "CdsHelper.Game/Engine/Scenario.cs:114",
+  "at": "CdsHelper.Game/Engine/Scenario.cs:115",
   "args": 0
+ },
+ "시나리오 파일이 아닙니다(scenario.json 이 없습니다).": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:106",
+  "args": 0
+ },
+ "scenario.json 을 읽지 못했습니다.": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:109",
+  "args": 0
+ },
+ "이야기 책을 못 지었습니다 — {0}": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:121",
+  "args": 1
+ },
+ "얼굴 {0} 은 이미 있는 그림을 그대로 둡니다.": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:136",
+  "args": 1
+ },
+ "주인공 얼굴을 {0} 번으로 넣었습니다.": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:151",
+  "args": 1
+ },
+ "나라 {0} 에 이미 「{1}」 이 있어 「{2}」 은 안 들였습니다.": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:162",
+  "args": 3
+ },
+ "「{0}」 을 불러왔습니다 — 이야기 책 {1}.": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:171",
+  "args": 2
+ },
+ "불러오지 못했습니다 — {0}": {
+  "at": "CdsHelper.Game/Engine/ScenarioPackage.cs:176",
+  "args": 1
  },
  "알고 싶은 도시의 문화권 좌표를 선택해 주십시오.\n": {
   "at": "CdsHelper.Game/Engine/Sea/CityCoordinates.cs:32",

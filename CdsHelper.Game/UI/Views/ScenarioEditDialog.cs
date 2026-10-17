@@ -11,7 +11,7 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 시나리오(미리 만든 주인공 + 이야기 책)를 짓고 고치는 창.
+/// 시나리오(미리 만든 주인공 + 이야기 책)를 작성하고 고치는 창 — 파일 하나로 내보내고 불러온다(<see cref="ScenarioPackage"/>).
 /// </summary>
 /// <remarks>
 /// 원본에 없는 것이다 — 초심자용 주인공 둘(<see cref="Beginner"/>)은 EXE 에 박혀 있지만, 여기서 지은 사람은
@@ -37,6 +37,8 @@ public sealed class ScenarioEditDialog : GameWindow
     private readonly Button _spot = Push("자택 자리 고르기");
     private readonly Engine.Game? _game;
     private readonly Button _save = Push("저장");
+    private readonly Button _export = Push("내보내기…");
+    private readonly Button _import = Push("불러오기…");
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
 
     private List<Row> _rows = [];
@@ -44,7 +46,7 @@ public sealed class ScenarioEditDialog : GameWindow
     public ScenarioEditDialog(Engine.Game? game = null)
     {
         _game = game;
-        Title = "시나리오 짓기";
+        Title = "시나리오 작성";
         Width = 1240;
         Height = 560;
         Background = System.Windows.Media.Brushes.White;
@@ -80,12 +82,14 @@ public sealed class ScenarioEditDialog : GameWindow
         _script.Click += (_, _) => OpenScript();
         _spot.Click += (_, _) => PickSpot();
         _save.Click += (_, _) => Save();
+        _export.Click += (_, _) => Export();
+        _import.Click += (_, _) => Import();
 
         var bar = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(10, 0, 10, 0),
-            Children = { _add, _remove, _script, _spot, _save },
+            Children = { _add, _remove, _script, _spot, _save, _export, _import },
         };
 
         var page = new DockPanel();
@@ -257,6 +261,48 @@ public sealed class ScenarioEditDialog : GameWindow
         Scenarios.Save(now);
         Rebuild(now, keep);
         Guide($"적어 두었습니다 — 시나리오 {now.Count}편.");
+    }
+
+    /// <summary>
+    /// 고른 시나리오를 파일 하나로 내보낸다 — 이야기 책과 주인공 · 대본 인물의 초상화를 함께 싣는다.
+    /// 고친 칸은 먼저 적어 둔다.
+    /// </summary>
+    private void Export()
+    {
+        if (_grid.SelectedItem is not Row row || Collect() is not { } now) return;
+        Scenarios.Save(now);
+        if (now.FirstOrDefault(x => x.Book == row.Book) is not { } scenario) return;
+
+        var pick = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "시나리오 내보내기",
+            FileName = $"{scenario.Title}.cdsscenario",
+            Filter = "시나리오 (*.cdsscenario)|*.cdsscenario",
+            DefaultExt = ".cdsscenario",
+        };
+        if (pick.ShowDialog(this) != true) return;
+        Guide(ScenarioPackage.Export(scenario, _game, pick.FileName) is { } why
+            ? $"내보내지 못했습니다 — {why}"
+            : $"「{scenario.Title}」 을 내보냈습니다 — {pick.FileName}");
+    }
+
+    /// <summary>내보낸 시나리오 파일을 불러와 새 줄로 넣는다. 고친 칸은 먼저 적어 둔다.</summary>
+    private void Import()
+    {
+        if (Collect() is not { } now) return;
+        Scenarios.Save(now);
+
+        var pick = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "시나리오 불러오기",
+            Filter = "시나리오 (*.cdsscenario)|*.cdsscenario|모든 파일 (*.*)|*.*",
+        };
+        if (pick.ShowDialog(this) != true) return;
+        var got = ScenarioPackage.Import(pick.FileName, _game, face => ConfirmDialog.Ask(this,
+            $"얼굴 {face} 번에 다른 그림이 이미 있습니다. 불러온 그림으로 덮어쓸까요? 그 번호를 쓰는 다른 시나리오의 얼굴도 바뀝니다.",
+            "시나리오 불러오기"));
+        Rebuild(Scenarios.All, got.Scenario?.Book);
+        Guide(got.Message);
     }
 
     /// <summary>고른 시나리오의 이야기 책을 대본 편집기로 연다. 고친 칸은 먼저 적어 둔다 — 편집기의 책 목록이 제목을 쓴다.</summary>
