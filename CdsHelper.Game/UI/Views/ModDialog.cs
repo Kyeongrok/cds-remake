@@ -591,7 +591,7 @@ public sealed class ModDialog : GameWindow
             i => GameSettings.PersonMoveOdds = i + GameSettings.MinPersonMoveOdds,
             $"굴릴 때마다 떠날 확률. 원본은 {GameSettings.DefaultPersonMoveOdds}분의 1입니다."));
         // 향상된 NPC 이동 — 원본은 두 도시를 곧게 이어 육지 위로도 지나간다. 켠 채로 시작한다.
-        general.Children.Add(Toggle("향상된 NPC 이동", GameSettings.NpcSeaRoute,
+        character.Children.Add(Toggle("향상된 NPC 이동", GameSettings.NpcSeaRoute,
             on => GameSettings.NpcSeaRoute = on,
             "원본에 없는 것입니다 — 바다의 인물 함대가 육지를 가로지르지 않고 자동항해처럼 바닷길을 따라 다닙니다."
             + " 갈 도시도 가까운 곳(지도 400칸 안)에서 먼저 고릅니다. 도착하는 날은 원본과 같습니다."
