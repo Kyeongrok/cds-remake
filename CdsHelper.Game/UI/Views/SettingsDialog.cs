@@ -161,11 +161,41 @@ public sealed class SettingsDialog : GameWindow
         return row;
     }
 
-    /// <summary>크기를 한 칸 옮기고 그 자리에서 창에 먹인다. 끝에서 다시 처음으로 돈다.</summary>
+    /// <summary>
+    /// 그 크기가 화면(작업 표시줄을 뺀 자리)에 들어가는지. 전체 화면은 늘 들어간다.
+    /// </summary>
+    /// <remarks>
+    /// 화면보다 큰 창을 고르면 제목 줄과 햄버거가 화면 밖으로 밀려나 설정 창을 다시 열 수 없었다 — 그런 크기는 아예 못 고르게 한다.
+    /// </remarks>
+    public static bool Fits(int width, int height)
+    {
+        var area = SystemParameters.WorkArea;
+        return width == 0 || (width <= area.Width && height <= area.Height);
+    }
+
+    /// <summary>화면에 들어가는 가장 큰 창 크기의 차례. 하나도 없으면 가장 작은 것.</summary>
+    private static int LargestFitting()
+    {
+        int best = 0;
+        for (int i = 0; i < GameSettings.Resolutions.Length; i++)
+        {
+            var (_, w, h) = GameSettings.Resolutions[i];
+            if (w > 0 && Fits(w, h)) best = i;
+        }
+        return best;
+    }
+
+    /// <summary>크기를 한 칸 옮기고 그 자리에서 창에 먹인다. 끝에서 다시 처음으로 돌고, 화면에 안 들어가는 크기는 건너뛴다.</summary>
     private void StepSize(int by)
     {
-        int count = GameSettings.Resolutions.Length;
-        GameSettings.Resolution = (GameSettings.Resolution + by + count) % count;
+        int count = GameSettings.Resolutions.Length, at = GameSettings.Resolution;
+        for (int tried = 0; tried < count; tried++)
+        {
+            at = (at + by + count) % count;
+            var (_, w, h) = GameSettings.Resolutions[at];
+            if (Fits(w, h)) break;
+        }
+        GameSettings.Resolution = at;
         _sizeRow.Child = SizeRow();
         Apply(Owner);
     }
@@ -180,6 +210,9 @@ public sealed class SettingsDialog : GameWindow
     public static void Apply(Window? window)
     {
         if (window == null) return;
+
+        // 저장된 크기가 화면보다 크면(예전 판에서 골랐거나 모니터를 바꿨으면) 들어가는 가장 큰 크기로 줄여 적는다.
+        if (GameSettings.WindowSize is var (_, w0, h0) && !Fits(w0, h0)) GameSettings.Resolution = LargestFitting();
 
         var (_, width, height) = GameSettings.WindowSize;
         if (width == 0)
