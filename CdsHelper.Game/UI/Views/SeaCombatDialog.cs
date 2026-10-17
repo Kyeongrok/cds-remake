@@ -1383,16 +1383,27 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// 불꽃 48x48 석 장(<c>+0x270</c> 묶음, 오프셋 <c>0x900</c> 씩)을 그 자리들에 한 장씩 올린다 — 장 사이 기다림은
     /// 원본에 없어 한 번 화면 올림을 <see cref="FxFrame"/> 로 어림했다.
     /// </summary>
-    /// <summary>괴물이 쓰러져 잠기는 연출 — 괴물 그림 자리(96x96) 한가운데에 물기둥 석 장을 크게 세운다.</summary>
+    /// <summary>괴물이 쓰러져 잠기는 연출 — 여섯 장 동안 괴물 그림이 4점씩 내려가며 흐려지고, 몸 아래(물낯)에 물기둥이 인다.</summary>
     private void MonsterDive(SeaBattle.Ship head)
     {
         var (sx, sy) = ScreenOf(head.X, head.Y);
-        for (int f = 0; f < 3; f++)
+        _shipArt.TryGetValue(head.Index, out var image);
+        double top = image != null ? Canvas.GetTop(image) : sy - 32;
+        if (double.IsNaN(top)) top = sy - 32;
+        const int Steps = 6;
+        for (int f = 0; f < Steps; f++)
         {
-            var splash = Sprite(_art.Path_($"mark-{6 + f:D2}"), sx - 24 + 16, sy - 32 + 8, 64, 64);
+            if (image != null)
+            {
+                image.Opacity = 1 - (f + 1) / (double)Steps;
+                Canvas.SetTop(image, top + (f + 1) * 4);
+            }
+            // 괴물 그림(96x96)의 아래 가운데가 물낯이다.
+            var splash = Sprite(_art.Path_($"mark-{6 + f % 3:D2}"), sx - 8, sy + 16, 64, 64);
             Wait(FxFrame * 2);
             if (splash != null) _fx.Children.Remove(splash);
         }
+        if (image != null) image.Opacity = 1;   // 판을 다시 그리면 쓰러진 괴물은 숨는다 — 비침만 되돌려 둔다
     }
 
     private void Blast(int first, params (double X, double Y)[] at)
@@ -1511,7 +1522,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// <para>
     /// <b>괴물은 배처럼 타지 않는다.</b> 원본도 괴물 머리 칸(8)이 가라앉으면 배 칸(48x48)이 아니라 괴물 그림 자리(96x96)를 지우는
     /// 다른 길로 간다(<c>0x00437695</c> · <c>0x004376AC</c>). 예전에는 괴물 몸 일곱 칸마다 배 침몰 불꽃(blast-12~14)이 올라 배가
-    /// 가라앉는 것처럼 보였다 — 괴물은 머리 자리에 물기둥(mark-06~08)을 크게 세우고 사라진다.
+    /// 가라앉는 것처럼 보였다(blast-12~14 는 부서져 가라앉는 배 그림이다) — 괴물은 아래로 내려가며 흐려지고 물낯에 물기둥(mark-06~08)이 인다.
     /// </para>
     /// </remarks>
     void SeaBattle.IStage.Sink(IReadOnlyList<SeaBattle.Ship> ships)
