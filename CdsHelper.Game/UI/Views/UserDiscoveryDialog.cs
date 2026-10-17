@@ -32,7 +32,16 @@ public sealed class UserDiscoveryDialog : GameWindow
     private readonly CheckBox _land = new() { Content = "육지", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
     private readonly CheckBox _open = new() { Content = "처음부터 열림(힌트 없이도 발견)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
     private readonly TextBox _hintName = Box(), _hintGrade = Box(60), _hintCategory = Box(60), _hintFunds = Box(), _hintDeadline = Box(60);
-    private readonly TextBox _hintText = Area(60), _rumorCities = Box(), _rumorText = Area(48), _book = Box(), _description = Area(60);
+    private readonly TextBox _hintText = Area(60), _rumorText = Area(48), _book = Box(), _description = Area(60);
+
+    /// <summary>소문 도시 — 도시 이름으로 보이고 「도시 고르기…」로만 바꾼다. 번호는 <see cref="_rumorIds"/> 가 든다.</summary>
+    private readonly TextBox _rumorCities = new()
+    {
+        Width = 320, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center,
+        IsReadOnly = true, Background = Brushes.WhiteSmoke,
+    };
+
+    private List<int> _rumorIds = [];
     private readonly TextBox _scene = Area(120), _credit = Area(40), _author = Box();
     private readonly ComboBox _license = new() { Width = 160, IsEditable = true };
     private readonly PasswordBox _password = new() { Width = 160, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center };
@@ -166,7 +175,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     private IEnumerable<TextBox> Boxes =>
     [
         _name, _reward, _x1, _y1, _x2, _y2, _chance, _hintName, _hintGrade, _hintCategory, _hintFunds, _hintDeadline,
-        _hintText, _rumorCities, _rumorText, _book, _description, _scene, _credit, _author,
+        _hintText, _rumorText, _book, _description, _scene, _credit, _author,
     ];
 
     /// <summary>칸을 고칠 수 있게 하거나 읽기만 하게 둔다 — 읽기만 해도 글은 골라 베낄 수 있다.</summary>
@@ -262,7 +271,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _hintFunds.Text = $"{e.HintFunds}";
         _hintDeadline.Text = $"{e.HintDeadline}";
         _hintText.Text = e.HintText;
-        _rumorCities.Text = string.Join(",", e.RumorCities ?? []);
+        ShowCities([.. e.RumorCities ?? []]);
         _rumorText.Text = e.RumorText;
         _book.Text = e.Book;
         _description.Text = e.Description;
@@ -328,12 +337,7 @@ public sealed class UserDiscoveryDialog : GameWindow
             || N(_hintGrade, "힌트 등급") is not { } grade || N(_hintCategory, "힌트 갈래") is not { } hintCategory
             || N(_hintFunds, "힌트 자금") is not { } funds || N(_hintDeadline, "힌트 기한") is not { } deadline)
             return null;
-        var cities = new List<int>();
-        foreach (string cell in _rumorCities.Text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-        {
-            if (!int.TryParse(cell, out int city)) { Tell("소문 도시는 도시 번호를 쉼표로 적어 주세요."); return null; }
-            cities.Add(city);
-        }
+        var cities = _rumorIds;
         if (cities.Count > 3) { Tell("소문 도시는 셋까지입니다."); return null; }
 
         return e with
@@ -556,12 +560,18 @@ public sealed class UserDiscoveryDialog : GameWindow
     /// <summary>문화권 탭으로 도시를 늘어놓는 창을 띄워 소문 도시를 셋까지 고른다.</summary>
     private void PickCities()
     {
-        if (_game == null) { Tell("도시 표를 읽지 못했습니다 — 도시 번호를 쉼표로 적어 주세요."); return; }
-        var now = _rumorCities.Text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Select(c => int.TryParse(c, out int id) ? id : -1).Where(id => id >= 0).ToList();
-        if (CityPickerDialog.Pick(this, _game, now) is not { } picked) return;
-        _rumorCities.Text = string.Join(",", picked);
-        Tell($"소문 도시: {(picked.Count == 0 ? "(없음)" : string.Join(", ", picked.Select(_game.CityName)))} — 「저장」을 눌러야 적힙니다.");
+        if (_game == null) { Tell("도시 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요."); return; }
+        if (CityPickerDialog.Pick(this, _game, _rumorIds) is not { } picked) return;
+        ShowCities(picked);
+        Tell($"소문 도시: {_rumorCities.Text} — 「저장」을 눌러야 적힙니다.");
+    }
+
+    /// <summary>소문 도시를 들고 이름으로 보인다. 도시 표가 없으면 번호로.</summary>
+    private void ShowCities(List<int> ids)
+    {
+        _rumorIds = ids;
+        _rumorCities.Text = ids.Count == 0 ? "(없음)"
+            : string.Join(", ", ids.Select(id => _game?.CityName(id) is { Length: > 0 } name ? name : $"도시 {id}"));
     }
 
     /// <summary>책 고르기 창을 띄워 힌트를 실을 책을 고른다.</summary>
