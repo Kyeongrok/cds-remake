@@ -5051,7 +5051,105 @@ public sealed class WorldMapWindow : Window
         _folkList.Clear();
         foreach (var (who, x, y, heading) in world.Afloat(dayPart))
             _folkList.Add((x, y, heading, who.Id, FolkSkin(world, who.Id)));
+        ChasePirates(world);
         return _folkList;
+    }
+
+    // ── 해적 추격(모드) ─────────────────────────────────────────────────────
+
+    /// <summary>쫓고 있는 해적 — 지금 자리와 뱃머리. 세상(PersonWorld)과 따로 들고, 쫓기를 그만두면 걷는다.</summary>
+    private readonly Dictionary<int, (double X, double Y, int Heading)> _chasers = [];
+
+    /// <summary>쫓기를 쉬는 해적과 그 끝 날 — 만나고 나서 · 따돌리고 나서 곧바로 또 붙지 않게.</summary>
+    private readonly Dictionary<int, DateTime> _chaseRest = [];
+
+    /// <summary>쫓기 시작하는 거리(칸) · 따돌리는 거리 · 한 번에 쫓는 수 · 하루에 가는 칸.</summary>
+    private const double ChaseFrom = 250, ChaseLost = 400, ChaseSpeedPerDay = 30;
+    private const int MaxChasers = 2, ChaseRestDays = 30;
+
+    private (int Ticks, DateTime Date) _chaseStep;
+
+    /// <summary>쫓는 해적인지.</summary>
+    private bool Chasing(int person) => _chasers.ContainsKey(person);
+
+    /// <summary>
+    /// 모드 「해적 추격」 — 명성이 넘은 주인공이 바다에 있으면 가까운 해적 함대(직업 해적, 같은 나라 · 포르투갈 · 에스파니아 밖)가
+    /// 목적지 대신 주인공 함대 쪽으로 다가온다. 육지 칸은 비켜 가고, 너무 멀어지면 쫓기를 그만두고 제 길로 돌아간다.
+    /// 원본에 없다 — 대항해시대2 의 하이레딘이 따라붙던 것을 흉내낸다.
+    /// </summary>
+    private void ChasePirates(PersonWorld world)
+    {
+        bool on = GameSettings.PirateHunt && _game.Player.Fame >= GameSettings.PirateHuntFame
+                  && !_host.IsOnLand && !_host.SeaBlocked && _host.ShipCell is not null;
+        if (!on)
+        {
+            _chasers.Clear();
+            return;
+        }
+        var ship = _host.ShipCell!.Value;
+        var today = _game.Player.Date;
+
+        // 새로 쫓을 해적 — 지금 바다에 떠 있고 가까운 이들.
+        if (_chasers.Count < MaxChasers)
+            foreach (var f in _folkList)
+            {
+                if (_chasers.Count >= MaxChasers) break;
+                if (Chasing(f.Person) || (_chaseRest.TryGetValue(f.Person, out var rest) && today < rest)) continue;
+                if (_game.PersonTemplates?.Find(f.Person) is not { Job: PersonTemplate.PirateJob } template) continue;
+                if (SideOf(template.Nation, template.Job) != FolkSide.Pirate) continue;
+                if (Distance(f.X, f.Y, ship.X, ship.Y) > ChaseFrom) continue;
+                _chasers[f.Person] = (f.X, f.Y, f.Heading);
+            }
+
+        // 한 눈금에 한 번 다가간다 — 하루 ChaseSpeedPerDay 칸.
+        bool step = _chaseStep != (_ticks, today);
+        _chaseStep = (_ticks, today);
+        foreach (int id in _chasers.Keys.ToList())
+        {
+            var (x, y, heading) = _chasers[id];
+            double far = Distance(x, y, ship.X, ship.Y);
+            if (far > ChaseLost || world.People.FirstOrDefault(r => r.Id == id) is not { Appear: not 0 })
+            {
+                _chasers.Remove(id);
+                _chaseRest[id] = today.AddDays(ChaseRestDays);   // 따돌렸다
+                continue;
+            }
+            if (step && far > 1) (x, y, heading) = ChaseStep(x, y, heading, ship.X, ship.Y);
+            _chasers[id] = (x, y, heading);
+        }
+
+        // 그리는 자리를 쫓는 자리로 갈아 끼운다 — 길 위에 없던 해적(도시에 닿은 이)은 새로 세운다.
+        for (int i = 0; i < _folkList.Count; i++)
+            if (_chasers.TryGetValue(_folkList[i].Person, out var at))
+                _folkList[i] = (at.X, at.Y, at.Heading, _folkList[i].Person, _folkList[i].Skin);
+        foreach (var (id, at) in _chasers)
+            if (!_folkList.Any(f => f.Person == id))
+                _folkList.Add((at.X, at.Y, at.Heading, id, FolkSkin(world, id)));
+    }
+
+    /// <summary>주인공 쪽으로 한 눈금 — 곧장 가는 쪽이 육지면 45도씩 틀어 본다. 다 막혔으면 그 자리다.</summary>
+    private (double X, double Y, int Heading) ChaseStep(double x, double y, int heading, double toX, double toY)
+    {
+        double dx = toX - x, dy = toY - y;
+        if (Math.Abs(dx) > PersonWorld.WorldWidth / 2.0) dx += dx > 0 ? -PersonWorld.WorldWidth : PersonWorld.WorldWidth;
+        double angle = Math.Atan2(dy, dx), stride = ChaseSpeedPerDay / TerrainTable.TicksPerDay;
+        foreach (double turn in (double[])[0, 0.785, -0.785, 1.571, -1.571])
+        {
+            double nx = x + Math.Cos(angle + turn) * stride, ny = y + Math.Sin(angle + turn) * stride;
+            int cx = (((int)nx % PersonWorld.WorldWidth) + PersonWorld.WorldWidth) % PersonWorld.WorldWidth;
+            if (_host.IsLandCell(cx, (int)ny) != false) continue;
+            double mx = Math.Cos(angle + turn), my = Math.Sin(angle + turn);
+            int way = Math.Abs(my) > Math.Abs(mx) ? (my < 0 ? 0 : 8) : (mx < 0 ? 4 : 12);
+            return (nx < 0 ? nx + PersonWorld.WorldWidth : nx >= PersonWorld.WorldWidth ? nx - PersonWorld.WorldWidth : nx, ny, way);
+        }
+        return (x, y, heading);
+    }
+
+    private static double Distance(double ax, double ay, double bx, double by)
+    {
+        double dx = Math.Abs(ax - bx);
+        if (dx > PersonWorld.WorldWidth / 2.0) dx = PersonWorld.WorldWidth - dx;
+        return Math.Sqrt(dx * dx + (ay - by) * (ay - by));
     }
 
     private readonly List<(double X, double Y, int Heading, int Person, int Skin)> _folkList = [];
@@ -5110,7 +5208,9 @@ public sealed class WorldMapWindow : Window
         bool over = false;
         try
         {
-            if (PickFolk(fresh) is { } who) over = Approach(world, who);
+            // 쫓아온 해적은 묻지 않고 덮친다(모드 「해적 추격」).
+            if (fresh.FirstOrDefault(r => Chasing(r.Id)) is { } hunter) over = Hunted(world, hunter);
+            else if (PickFolk(fresh) is { } who) over = Approach(world, who);
         }
         finally
         {
@@ -5121,6 +5221,21 @@ public sealed class WorldMapWindow : Window
         // 창을 되돌리는 것은 try 밖에서 한다 — 안에서 하면 닫히는 창에 잠금을 풀게 된다.
         if (over) ReturnToTitle();
         return true;
+    }
+
+    /// <summary>
+    /// 쫓아온 해적이 덮친다 — 고르기 없이 해적 말(우호로 다가갔을 때와 같은 두 줄) 뒤 곧장 해전이다. 끝나면 쫓기를 쉰다.
+    /// </summary>
+    /// <returns>해전에서 내 기함이 가라앉아 게임이 끝났는지.</returns>
+    private bool Hunted(PersonWorld world, PersonTable.Row who)
+    {
+        _chasers.Remove(who.Id);
+        _chaseRest[who.Id] = _game.Player.Date.AddDays(ChaseRestDays);
+        var template = _game.PersonTemplates?.Find(who.Id);
+        var face = _game.PersonFace(who);
+        ConfirmDialog.Tell(this, "제독, 뭔가 분위기가 이상한데요···해, 해적입니다!", face: _game.AideFace);
+        ConfirmDialog.Tell(this, "하하하! 좋은 봉이 걸려 들었군! 놈들을 남김없이 해치워라!", face: face);
+        return FightFolk(world, who, template?.Nation ?? -1, face);
     }
 
     /// <summary>다가갈 배를 정한다. 안 다가가면 null.</summary>

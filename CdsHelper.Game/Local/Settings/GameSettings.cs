@@ -290,6 +290,12 @@ public sealed class GameSettingsData
     /// <summary>바다의 인물 함대가 바닷길로 짧게 다니게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool NpcSeaRoute { get; set; }
 
+    /// <summary>해적이 명성 높은 주인공을 쫓아오게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PirateHunt { get; set; }
+
+    /// <summary>해적이 쫓기 시작하는 명성. <see cref="GameSettings.PirateHuntFameChoices"/> 가운데 하나다.</summary>
+    public int PirateHuntFame { get; set; } = GameSettings.DefaultPirateHuntFame;
+
     /// <summary>원본 274개에 <b>더해 넣은 발견물</b>(돌묵상어 따위)과 그 힌트를 게임에 낼지. 켜 두고 시작한다.</summary>
     public bool ExtraDiscoveries { get; set; } = true;
 
@@ -1338,6 +1344,29 @@ public static class GameSettings
     {
         get => Get(d => d.NpcSeaRoute);
         set => Set(d => d.NpcSeaRoute = value);
+    }
+
+    /// <summary>
+    /// 해적 추격 — 주인공의 명성이 <see cref="PirateHuntFame"/> 를 넘으면 가까운 바다의 해적이 목적지 대신 주인공 함대로 다가온다.
+    /// 원본에 없는 것이다(대항해시대2 의 하이레딘처럼). 지도 창(<c>WorldMapWindow.ChasePirates</c>)이 본다.
+    /// </summary>
+    public static bool PirateHunt
+    {
+        get => Get(d => d.PirateHunt);
+        set => Set(d => d.PirateHunt = value);
+    }
+
+    /// <summary>해적이 쫓기 시작하는 명성의 고르개.</summary>
+    public static readonly int[] PirateHuntFameChoices = [3000, 5000, 10000, 20000, 40000];
+
+    /// <summary>해적이 쫓기 시작하는 명성의 밑값.</summary>
+    public const int DefaultPirateHuntFame = 10000;
+
+    /// <summary>해적이 쫓기 시작하는 명성.</summary>
+    public static int PirateHuntFame
+    {
+        get => Get(d => d.PirateHuntFame) is int v && v > 0 ? v : DefaultPirateHuntFame;
+        set => Set(d => d.PirateHuntFame = Math.Max(1, value));
     }
 
     /// <summary>접근 함대 정보 — 「우호적으로 접근한다 · 습격한다」 고르기 위에 상대의 초상화 · 국적 · 직업 · 함대 규모.</summary>

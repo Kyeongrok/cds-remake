@@ -48,7 +48,7 @@ public sealed class PersonWorld
     private static int RestDays => Local.Settings.GameSettings.PersonRestDays;
 
     /// <summary>세계가 감기는 너비. <c>0x9C4</c> 다.</summary>
-    private const int WorldWidth = 0x9C4;
+    public const int WorldWidth = 0x9C4;
 
     /// <summary>몇 번 굴림에 한 번꼴로 움직이는가. 원본은 <c>0x0043284A</c> 의 <c>push 5</c> 다.</summary>
     /// <remarks>개발 창 「떠날 확률」로 1~5 사이에서 바꿀 수 있다.</remarks>
