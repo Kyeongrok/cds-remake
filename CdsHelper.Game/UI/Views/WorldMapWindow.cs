@@ -5138,8 +5138,7 @@ public sealed class WorldMapWindow : Window
             double nx = x + Math.Cos(angle + turn) * stride, ny = y + Math.Sin(angle + turn) * stride;
             int cx = (((int)nx % PersonWorld.WorldWidth) + PersonWorld.WorldWidth) % PersonWorld.WorldWidth;
             if (_host.IsLandCell(cx, (int)ny) != false) continue;
-            double mx = Math.Cos(angle + turn), my = Math.Sin(angle + turn);
-            int way = Math.Abs(my) > Math.Abs(mx) ? (my < 0 ? 0 : 8) : (mx < 0 ? 4 : 12);
+            int way = PersonWorld.HeadingToward(Math.Cos(angle + turn), Math.Sin(angle + turn));
             return (nx < 0 ? nx + PersonWorld.WorldWidth : nx >= PersonWorld.WorldWidth ? nx - PersonWorld.WorldWidth : nx, ny, way);
         }
         return (x, y, heading);

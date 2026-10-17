@@ -1076,7 +1076,7 @@ public sealed class WorldMapHost : HwndHost
     private bool _folkArtReady;
 
     /// <summary>
-    /// 남의 그림 여덟 장을 한 번 올린다 — 배 넉 장, 말 넉 장이고 각각 북 · 서 · 남 · 동 차례다.
+    /// 남의 그림을 한 번 올린다 — 배는 벌마다 여덟 장(북 · 북서 · 서 … 북동), 말은 넉 장(북 · 서 · 남 · 동)이다.
     /// </summary>
     /// <remarks>
     /// 내 배·말과 같은 <c>asset/ship</c> 벌을 쓴다. 원본도 남의 배를 따로 그리지 않고 내 것과 같은
@@ -1089,13 +1089,13 @@ public sealed class WorldMapHost : HwndHost
         int one = MapD3DRenderer.FolkSize * MapD3DRenderer.FolkSize;
         var atlas = new uint[one * MapD3DRenderer.FolkFrames];
 
-        // 16방위에서 북(0) · 서(4) · 남(8) · 동(12) 을 뽑는다. 앞 열여섯 장이 배 벌 넷(벌마다 넉 장)이고,
-        // 그 뒤가 말이다 — 방향마다 걸음 여덟 장씩 서른두 장(걷는 그림이 없으면 선 그림 한 장이 여덟 번 든다).
+        // 앞 서른두 장이 배 벌 넷(벌마다 16방위의 짝수 여덟 쪽)이고, 그 뒤가 말이다 — 북(0) · 서(4) · 남(8) · 동(12)
+        // 마다 걸음 여덟 장씩 서른두 장(걷는 그림이 없으면 선 그림 한 장이 여덟 번 든다).
         for (int i = 0; i < MapD3DRenderer.FolkFrames; i++)
         {
             int step = i - MapD3DRenderer.FolkLandFrame;
             bool land = step >= 0;
-            int heading = (land ? step / MapD3DRenderer.FolkLandPhases : i % MapD3DRenderer.FolkWays) * 4;
+            int heading = land ? step / MapD3DRenderer.FolkLandPhases * 4 : i % MapD3DRenderer.FolkWays * 2;
             var frame = land ? ShipSprites.Frame(heading, onLand: true, step % MapD3DRenderer.FolkLandPhases)
                              : ShipSprites.SkinFrame(i / MapD3DRenderer.FolkWays, heading) ?? ShipSprites.Frame(heading);
             if (frame.Length != one) return;                 // 그림 벌이 아직 안 열렸다
@@ -1150,12 +1150,11 @@ public sealed class WorldMapHost : HwndHost
         for (int i = 0; i < _folk.Count; i++)
         {
             var one = _folk[i];
-            // 16방위 → 넉 장. 뭍 칸에 서 있으면 말 쪽 넉 장으로 내린다(0x0048A799).
-            // 바다면 그 사람 기함 벌의 넉 장에서 고른다.
-            int way = (one.Heading & 0xF) >> 2;
+            // 16방위 → 바다면 그 사람 기함 벌의 여덟 장에서 고른다. 뭍 칸에 서 있으면 말 넉 장으로
+            // 내린다(0x0048A799) — 대각은 내 말처럼 가까운 쪽으로 돌린다.
             int frame = FolkOnLand(one.X, one.Y)
-                ? MapD3DRenderer.FolkLandFrame + way * MapD3DRenderer.FolkLandPhases + FolkStep(one)
-                : Math.Clamp(one.Skin, 0, MapD3DRenderer.FolkSkins - 1) * MapD3DRenderer.FolkWays + way;
+                ? MapD3DRenderer.FolkLandFrame + (((one.Heading + 1) & 0xF) >> 2) * MapD3DRenderer.FolkLandPhases + FolkStep(one)
+                : Math.Clamp(one.Skin, 0, MapD3DRenderer.FolkSkins - 1) * MapD3DRenderer.FolkWays + ((one.Heading & 0xF) >> 1);
 
             var draw = new MapD3DRenderer.FolkDraw(
                 (float)((one.X - origin.X) / _cellsPerPixel - size / 2),

@@ -458,10 +458,11 @@ public sealed class PersonWorld
     }
 
     /// <summary>
-    /// 그 사람의 뱃머리 — 16방위(0 북 · 4 서 · 8 남 · 12 동). 서 있으면 남쪽을 본다.
+    /// 그 사람의 뱃머리 — 16방위(0 북 · 4 서 · 8 남 · 12 동)의 짝수 여덟 쪽. 서 있으면 남쪽을 본다.
     /// </summary>
     /// <remarks>
-    /// 원본은 네 쪽만 쓴다(<c>0x00432596</c>) — 어긋남이 큰 축을 골라 그 부호로 정한다.
+    /// 원본은 네 쪽만 쓴다(<c>0x00432596</c>) — 어긋남이 큰 축을 골라 그 부호로 정한다. 배 그림 벌은 여덟 쪽이 다
+    /// 있으므로 우리는 내 배처럼 여덟 쪽으로 그린다.
     /// </remarks>
     /// <param name="dayPart">오늘 하루 가운데 지난 몫 — <see cref="CellOf"/> 와 같은 값을 줘야 바닷길의 짧은 토막에서
     /// 뱃머리가 그날 아침 토막에 머물지 않는다.</param>
@@ -476,9 +477,15 @@ public sealed class PersonWorld
             double days = row.Wait + Math.Clamp(dayPart, 0, 1);
             (_, dx, dy) = path.At(far <= 0 ? 1 : Math.Clamp(days * SpeedPerDay / far, 0, 1));
         }
-        return Math.Abs(dy) > Math.Abs(dx)
-            ? (dy < 0 ? 0 : 8)
-            : (dx < 0 ? 4 : 12);
+        return HeadingToward(dx, dy);
+    }
+
+    /// <summary>어긋남(가로 · 세로) 쪽의 뱃머리 — 16방위의 짝수 여덟 쪽(0 북 · 2 북서 · 4 서 … 14 북동).</summary>
+    public static int HeadingToward(double dx, double dy)
+    {
+        if (dx == 0 && dy == 0) return 8;
+        double turn = Math.Atan2(-dx, -dy) / (2 * Math.PI);   // 북 0 → 서 1/4 → 남 1/2 → 동 3/4
+        return ((int)Math.Round(turn * 8) & 7) * 2;
     }
 
     /// <summary>
