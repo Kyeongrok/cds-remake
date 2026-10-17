@@ -3280,6 +3280,23 @@ public sealed class WorldMapWindow : Window
             ? key
             : fallback;
 
+    /// <summary>
+    /// 커맨드 창 줄에서 띄운 창이 떠 있는 동안 배를 세운다. 커맨드 창의 닫힘 알림은 한 박자 늦게 와(창 안 돌림 사이)
+    /// 멈춤을 풀어 버리므로 <see cref="_asking"/> 으로 막아 두고, 창이 닫히면 풀어 준다.
+    /// </summary>
+    private void HoldAfterCommand(Action show)
+    {
+        bool asking = _asking;
+        _asking = true;
+        _host.Paused = true;
+        try { show(); }
+        finally
+        {
+            _asking = asking;
+            if (!_asking && !_host.SeaBlocked && !CommandMenu.IsOpen) _host.Paused = false;
+        }
+    }
+
     /// <summary>창이 떠 있는 동안 배를 세운다 — 묻는 사이에 흘러가지 않게.</summary>
     private void Hold(Action show)
     {
@@ -3984,13 +4001,15 @@ public sealed class WorldMapWindow : Window
         // 대열은 배가 두 척 이상이어야 켜진다.
         if (!_host.IsOnLand)
         {
-            items.Add(("편성", () => { Close(); CrewShareDialog.Show(this, _game.Player); }));
+            // 편성 · 대열 창이 떠 있는 동안은 배를 세운다 — 예전에는 커맨드 창이 닫히며 시계가 다시 돌아, 급할 때
+            // 선원을 나누는 사이에도 날이 흘렀다(건의).
+            items.Add(("편성", () => { Close(); HoldAfterCommand(() => CrewShareDialog.Show(this, _game.Player)); }));
 
             // 「대열」은 <b>배가 둘 이상일 때만 줄이 선다</b> — 원본은 흐린 줄로 두지도 않고
             // 아예 안 넣는다(0x0048B442: 0x00473E00() 이 1 이하면 줄을 건너뛴다).
             // 호위함을 어떻게 세울지 고르는 창이라 한 척뿐이면 고를 것이 없다.
             if (_game.Player.Ships.Count > 1)
-                items.Add(("대열", () => { Close(); FormationDialog.Show(this, _game.Player); }));
+                items.Add(("대열", () => { Close(); HoldAfterCommand(() => FormationDialog.Show(this, _game.Player)); }));
         }
         // 「도시좌표」는 측량을 아는 사람이 있어야 뜬다(0x0048B469) — 제독이거나 측량사 자리 부하다.
         if (SurveyLevel() >= 1)
