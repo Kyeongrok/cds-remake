@@ -676,7 +676,7 @@ public sealed class DevDialog : GameWindow
                 Foreground = GameUi.Text,
                 FontWeight = FontWeights.Bold,
                 FontSize = 13,
-                Opacity = e.State == "돎" ? 0.55 : 1,
+                Opacity = e.State is "돎" or "지남" ? 0.55 : 1,
                 TextWrapping = TextWrapping.Wrap,
             });
             line.Children.Add(new TextBlock
@@ -684,7 +684,7 @@ public sealed class DevDialog : GameWindow
                 Text = "    " + e.What,
                 Foreground = GameUi.Text,
                 FontSize = 12,
-                Opacity = e.State == "돎" ? 0.5 : 0.85,
+                Opacity = e.State is "돎" or "지남" ? 0.5 : 0.85,
                 TextWrapping = TextWrapping.Wrap,
             });
             lines.Add((line, $"{head} {e.When} {e.What}"));
@@ -701,7 +701,7 @@ public sealed class DevDialog : GameWindow
                 line.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
                 if (on) shown++;
             }
-            count.Text = $"  {shown} / {lines.Count}  (돎 {events.Count(e => e.State == "돎")})";
+            count.Text = $"  {shown} / {lines.Count}  (돎 {events.Count(e => e.State == "돎")} · 지남 {events.Count(e => e.State == "지남")})";
         }
         find.TextChanged += (_, _) => Filter();
 
@@ -728,7 +728,7 @@ public sealed class DevDialog : GameWindow
         });
         page.Children.Add(new TextBlock
         {
-            Text = "[돎] 한 번 도는 칸을 이미 돌았습니다 · [이번 달 참] 다음 달이 바뀔 때 돕니다 · [대기] 조건이 아직 아닙니다 · "
+            Text = "[돎] 한 번 도는 칸을 이미 돌았습니다 · [지남] 그 해 그 달에만 도는 칸이고 그 달이 지났습니다 · [이번 달 참] 다음 달이 바뀔 때 돕니다 · [대기] 조건이 아직 아닙니다 · "
                    + "[모름] 못 읽는 조건이라 그 파트가 안 돕니다. 도시 이름 · 나라 · 해로 찾을 수 있습니다.",
             Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
             TextWrapping = TextWrapping.Wrap,

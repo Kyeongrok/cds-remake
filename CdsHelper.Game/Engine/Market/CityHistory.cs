@@ -434,6 +434,8 @@ public sealed class CityHistory
                     string state;
                     if (ok is null) state = "모름";
                     else if (!person && once && player.HistoryDone.Contains(i * 100 + s)) state = "돎";
+                    // 「그 해 그 달」(1C) 칸은 끝남 깃발이 없어, 그 달이 지나면 조건이 거짓이라 대기처럼 보인다 — 이미 센 달이면 지났다.
+                    else if (ExactMonth(part, cond) is int at && at <= player.HistoryMonth) state = "지남";
                     else if (ok == true && !picked && !(person && once)) { state = "이번 달 참"; picked = true; }
                     else state = "대기";
                     int end = person ? BodyEnd(part, body) : part.Length;
@@ -447,6 +449,14 @@ public sealed class CityHistory
         Add("HIST_EV", _parts, person: false);
         Add("HISTCHR", _persons, person: true);
         return list;
+    }
+
+    /// <summary>조건에 「그 해 그 달」(<c>1C 17</c>)이 있으면 그 달 값(<see cref="MonthKey"/>), 없으면 null.</summary>
+    private static int? ExactMonth(byte[] p, int i)
+    {
+        for (; i + 5 < p.Length && p[i] != 0xFF; i++)
+            if (p[i] == 0x1C && p[i + 1] == 0x17) return MonthKey(U16(p, i + 4), p[i + 2]);
+        return null;
     }
 
     /// <summary>사람 대본 칸에 상태 · 나라 · 술집 말이 없을 때.</summary>

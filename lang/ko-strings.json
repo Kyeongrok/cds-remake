@@ -3541,120 +3541,124 @@
   "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:436",
   "args": 0
  },
- "이번 달 참": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:437",
-  "args": 0
- },
- "대기": {
+ "지남": {
   "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:438",
   "args": 0
  },
+ "이번 달 참": {
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:439",
+  "args": 0
+ },
+ "대기": {
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:440",
+  "args": 0
+ },
  "(상태 · 나라 바꿈 없음)": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:453",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:463",
   "args": 0
  },
  "{0}년 {1}월": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:464",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:474",
   "args": 2
  },
  "{0}년부터": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:468",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:478",
   "args": 1
  },
  "발견물 「{0}」 발견됨": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:473",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:483",
   "args": 1
  },
  "있음": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:477",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:487",
   "args": 0
  },
  "{0}의 나라가 {1}{2}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:481",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:491",
   "args": 3
  },
  " 아님": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:481",
-  "args": 0
- },
- "모르는 조건 {0} {1}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:485",
-  "args": 2
- },
- " 그리고 ": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:486",
-  "args": 0
- },
- " 또는": {
   "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:491",
   "args": 0
  },
+ "모르는 조건 {0} {1}": {
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:495",
+  "args": 2
+ },
+ " 그리고 ": {
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:496",
+  "args": 0
+ },
+ " 또는": {
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:501",
+  "args": 0
+ },
  "또는 그리고": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:494",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:504",
   "args": 0
  },
  "상태 {0}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:502",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:512",
   "args": 1
  },
  "{0} 상태 → {1}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:511",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:521",
   "args": 2
  },
  "{0} → {1} 공략": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:512",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:522",
   "args": 2
  },
  "술집 말 「{0}」": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:518",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:528",
   "args": 1
  },
  "소문({0}) 「{1}」": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:538",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:548",
   "args": 2
  },
  "{0} 규모 {1}{2}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:551",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:561",
   "args": 3
  },
  "멸망": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:555",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:565",
   "args": 0
  },
  "등장": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:555",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:565",
   "args": 0
  },
  "{0} 깃발 {1}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:559",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:569",
   "args": 2
  },
  "힌트 깃발": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:563",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:573",
   "args": 0
  },
  "{0} 건물 비트 {1} {2}": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:567",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:577",
   "args": 3
  },
  "켬": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:567",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:577",
   "args": 0
  },
  "끔": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:567",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:577",
   "args": 0
  },
  "능력 {0} ≥ {1} 일 때만 다음": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:571",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:581",
   "args": 2
  },
  "(모르는 명령 {0} {1} — 여기서 멈춤)": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:575",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:585",
   "args": 2
  },
  "(없음)": {
-  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:579",
+  "at": "CdsHelper.Game/Engine/Market/CityHistory.cs:589",
   "args": 0
  },
  "통상": {
@@ -8668,23 +8672,23 @@
   "args": 0
  },
  "마을": {
-  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:444",
+  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:437",
   "args": 0
  },
  "트루데시야스 조약": {
-  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:457",
+  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:450",
   "args": 0
  },
  "{0}에 의해 {1}의 선원을 마을에 들여보낼 수는 없다.": {
-  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:458",
+  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:451",
   "args": 0
  },
  "여기는 {0}령이다. {1}에 의해 {2}의 함대를 항구에 들여보낼 수 없다!": {
-  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:460",
+  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:453",
   "args": 0
  },
  "조약을 깨뜨려, 곤란하게 되었군요...": {
-  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:469",
+  "at": "CdsHelper.Game/Engine/Town/Standoff.cs:462",
   "args": 0
  },
  "무슨 말을 하는 건가?": {
@@ -15010,7 +15014,7 @@
   "args": 1
  },
  "{0}을 사용했다": {
-  "at": "CdsHelper.Game/UI/Views/HostileCityMenu.cs:309",
+  "at": "CdsHelper.Game/UI/Views/HostileCityMenu.cs:314",
   "args": 1
  },
  "선체명": {
@@ -23874,829 +23878,829 @@
   "args": 2
  },
  "제독, 도시가 보입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:4935",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:4945",
   "args": 0
  },
  "도시를 발견했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:4937",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:4947",
   "args": 0
  },
  "[{0}]{1} {2}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:4984",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:4994",
   "args": 3
  },
  "제독! 배가 보입니다. 가까이 가 보겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5083",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5093",
   "args": 0
  },
  "접근할 함대를 선택해 주십시오": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5090",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5100",
   "args": 0
  },
  "{0}에 접근한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5091",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5101",
   "args": 1
  },
  "우호적으로 접근한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5129",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5139",
   "args": 0
  },
  "습격한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5129",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5139",
   "args": 0
  },
  "{0}척": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5149",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5159",
   "args": 1
  },
  "제독, 뭔가 분위기가 이상한데요···해, 해적입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5170",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5180",
   "args": 0
  },
  "하하하! 좋은 봉이 걸려 들었군! 놈들을 남김없이 해치워라!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5171",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5181",
   "args": 0
  },
  "여어, 자네! 나는 {0}의 {1}{2}네. ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5202",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5212",
   "args": 3
  },
  "여어, 자네! 나는 {0}의 {1}{2}네. 항해는 순조롭나?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5202",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5212",
   "args": 3,
   "chain": true
  },
  "항해는 순조롭나?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5203",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5213",
   "args": 0
  },
  "보급물자를 산다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5204",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5214",
   "args": 0
  },
  "헤어진다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5204",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5214",
   "args": 0
  },
  "미안하지만 나누어 줄 만큼 여유가 없네. 미안하네, 주님의 가호가 있기를!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5210",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5220",
   "args": 0
  },
  "물은 금화 {0}닢, 식량은 금화 {1}닢 지불한다면 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5219",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5229",
   "args": 2
  },
  "물은 금화 {0}닢, 식량은 금화 {1}닢 지불한다면 팔 수도 있네.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5219",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5229",
   "args": 2,
   "chain": true
  },
  "팔 수도 있네.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5220",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5230",
   "args": 0
  },
  "제독. 이놈, 우리가 난처한 입장에 있는걸 알고 바가지 씌울 생각인 것 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5221",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5231",
   "args": 0
  },
  "제독. 이놈, 우리가 난처한 입장에 있는걸 알고 바가지 씌울 생각인 것 같습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5221",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5231",
   "args": 0,
   "chain": true
  },
  "같습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5222",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5232",
   "args": 0
  },
  "물은 금화 {0}닢으로, 식량은 금화 {1}닢 지불한다면 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5226",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5236",
   "args": 2
  },
  "물은 금화 {0}닢으로, 식량은 금화 {1}닢 지불한다면 팔 수도 있지.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5226",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5236",
   "args": 2,
   "chain": true
  },
  "팔 수도 있지.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5227",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5237",
   "args": 0
  },
  "물을 산다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5230",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5240",
   "args": 0
  },
  "식량을 산다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5230",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5240",
   "args": 0
  },
  "교섭을 안한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5230",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5240",
   "args": 0
  },
  "몇 통 사겠습니까?\n(1통=금화 {0}닢/ 최대 {1}통)": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5242",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5252",
   "args": 2
  },
  "교섭하여 전투를 피한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5262",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5272",
   "args": 0
  },
  "전투를 한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5262",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5272",
   "args": 0
  },
  "좋지. 자비를 청하는 자를 죽이진 않겠다. ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5264",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5274",
   "args": 0
  },
  "좋지. 자비를 청하는 자를 죽이진 않겠다. 그러나, 우리 선원들을 다치게 하면 용서치 않겠다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5264",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5274",
   "args": 0,
   "chain": true
  },
  "그러나, 우리 선원들을 다치게 하면 용서치 않겠다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5265",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5275",
   "args": 0
  },
  "이교도들, 우리들이 상대해 주겠다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5271",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5281",
   "args": 0
  },
  "경고한다. 여기는 {0}의 영해다. ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5300",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5310",
   "args": 1
  },
  "경고한다. 여기는 {0}의 영해다. 타국의 배는 기항도 항해도 허용되지 않는다. 신속히 떠나도록.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5300",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5310",
   "args": 1,
   "chain": true
  },
  "타국의 배는 기항도 항해도 허용되지 않는다. 신속히 떠나도록.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5301",
-  "args": 0
- },
- "조약따윈 모른다! 물고기 밥이 되게 해 주마!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5307",
-  "args": 0
- },
- "당치도 않는 소리를! 제독, 할 수 없습니다. 싸웁시다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5308",
-  "args": 0
- },
- "알았다. 우리는 조약을 위반할 뜻은 없다. 이 해역에서 떠나겠다.": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5311",
   "args": 0
  },
+ "조약따윈 모른다! 물고기 밥이 되게 해 주마!": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5317",
+  "args": 0
+ },
+ "당치도 않는 소리를! 제독, 할 수 없습니다. 싸웁시다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5318",
+  "args": 0
+ },
+ "알았다. 우리는 조약을 위반할 뜻은 없다. 이 해역에서 떠나겠다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5321",
+  "args": 0
+ },
  "경고한다. 여기는 {0}의 영해다. 타국의 배는 기항도 항해도 허용하지 않는다. 신속히 떠나도록.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5315",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5325",
   "args": 1,
   "chain": true
  },
  "타국의 배는 기항도 항해도 허용하지 않는다. 신속히 떠나도록.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5316",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5326",
   "args": 0
  },
  "경고를 따라 떠난다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5317",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5327",
   "args": 0
  },
  "경고를 무시하고 공격한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5317",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5327",
   "args": 0
  },
  "알았다. 우리는 조약을 위반할 뜻은 없다. 이 해역을 곧 떠나겠다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5320",
-  "args": 0
- },
- "제독, 전방의 함대는 이교도의 것입니다!": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5330",
   "args": 0
  },
+ "제독, 전방의 함대는 이교도의 것입니다!": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5340",
+  "args": 0
+ },
  "적의 습격이다! 서둘러 응전하라!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5331",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5341",
   "args": 0
  },
  "전원 전투 준비! 반격하라!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5332",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5342",
   "args": 0
  },
  "제독, 전방의 함대는 해적입니다! 해치워 버립시다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5336",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5346",
   "args": 0
  },
  "흐흐, 우리 해적들을 우습게 보지 마라! 모두 물고기 밥이 되게 해 주마!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5339",
-  "args": 0
- },
- "제독, 잠깐! 저것은 {0}의 함대입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5345",
-  "args": 1
- },
- "제독, 저것은 {0}의 함대입니다. 괜찮습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5346",
-  "args": 1
- },
- "습격": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5347",
-  "args": 0
- },
- "무시하고 공격한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5347",
-  "args": 0
- },
- "공격을 중지한다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5347",
-  "args": 0
- },
- "···공격하실 겁니까!?": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5349",
   "args": 0
  },
+ "제독, 잠깐! 저것은 {0}의 함대입니다!": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5355",
+  "args": 1
+ },
+ "제독, 저것은 {0}의 함대입니다. 괜찮습니까?": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5356",
+  "args": 1
+ },
+ "습격": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5357",
+  "args": 0
+ },
+ "무시하고 공격한다": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5357",
+  "args": 0
+ },
+ "공격을 중지한다": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5357",
+  "args": 0
+ },
+ "···공격하실 겁니까!?": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5359",
+  "args": 0
+ },
  "도대체 어쩔 셈인냐!?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5350",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5360",
   "args": 0
  },
  "갑자기 공격하다니, 비겁한 놈들! 응전하라!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5351",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5361",
   "args": 0
  },
  "명성이 {0} 올라갔다{1}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5450",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5460",
   "args": 2
  },
  "악명이 {0} 올라갔다{1}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5455",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5465",
   "args": 2
  },
  "전리품으로서 금화 {0} 닢을 손에 넣었다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5463",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5473",
   "args": 1
  },
  "선원들이 불만을 품기 시작했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5635",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5645",
   "args": 0
  },
  "선원들의 불만이 심해지고 있습니다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5636",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5646",
   "args": 0
  },
  "선원들의 불만이 한계에 달하고 있습니다! 일단 아무 마을로나 철수합시다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5638",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5648",
   "args": 0
  },
  "수리하는데 필요한 자재가 없습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5689",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5699",
   "args": 0
  },
  "조선기술을 가진 사람이 없습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5702",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5712",
   "args": 0
  },
  "어느 배도 다 완전합니다. 수리할 필요는 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5721",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5731",
   "args": 0
  },
  "어느 배를 수리하겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5725",
-  "args": 0
- },
- "선박 일람": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5726",
-  "args": 0
- },
- "{0}호로 좋습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5732",
-  "args": 1
- },
- "제가 수리하겠습니다.": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5735",
   "args": 0
  },
+ "선박 일람": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5736",
+  "args": 0
+ },
+ "{0}호로 좋습니까?": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5742",
+  "args": 1
+ },
+ "제가 수리하겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5745",
+  "args": 0
+ },
  "자재를 몇 통 쓰겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5737",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5747",
   "args": 0
  },
  "제독, 동굴을 발견했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5797",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5807",
   "args": 0
  },
  "제독, 동굴속을 탐색하겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5798",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5808",
   "args": 0
  },
  "제독, 원주민의 보물을 발견했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5803",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5813",
   "args": 0
  },
  "제독, 금화 {0} 닢에 해당하는 보물을 발견했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5807",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5817",
   "args": 1
  },
  "아뿔싸! 짐승의 소굴이다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5811",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5821",
   "args": 0
  },
  "{0}명이 당했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5820",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5830",
   "args": 1
  },
  "{0}명의 선원이 되돌아왔습니다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5821",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5831",
   "args": 1
  },
  "식량을 {0}통 발견했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5866",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5876",
   "args": 1
  },
  "식량을 발견할 수 없었습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5866",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5876",
   "args": 0
  },
  "물을 {0}통 발견했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5868",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5878",
   "args": 1
  },
  "물을 발견할 수 없었습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5868",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5878",
   "args": 0
  },
  "선원들이 불평을 하고 있습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5874",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5884",
   "args": 0
  },
  "다들 조금씩 지친 것 같습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5874",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5884",
   "args": 0
  },
  "{0}{1} 부딪쳤습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5918",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5928",
   "args": 2
  },
  "도망성공": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5941",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5951",
   "args": 0
  },
  "도망실패": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5944",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:5954",
   "args": 0
  },
  "제독, 더, 덥다... 더 이상 못참겠다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6035",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6045",
   "args": 0
  },
  "아이구.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6035",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6045",
   "args": 0
  },
  "제독! 아니!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6035",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6045",
   "args": 0
  },
  "물이다-.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6036",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6046",
   "args": 0
  },
  "맛있다! 최곱니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6036",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6046",
   "args": 0
  },
  "추, 추워..., 몸이 얼 것 같습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6043",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6053",
   "args": 0
  },
  "비, 빛입니다! 가 봅시다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6043",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6053",
   "args": 0
  },
  "제독, 저 집에 들어갑시다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6043",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6053",
   "args": 0
  },
  "으샤-, 기분좋다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6044",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6054",
   "args": 0
  },
  "제독, 웬지 무더워졌군요.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6051",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6061",
   "args": 0
  },
  "앗, 온천이다. 갑시다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6051",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6061",
   "args": 0
  },
  "기분좋군요, 제독.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6052",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6062",
   "args": 0
  },
  "이 후에 술이라도 마실까요?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6052",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6062",
   "args": 0
  },
  "앗! 제독, 위에!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6055",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6065",
   "args": 0
  },
  "제독, 큰일입니다. 늪입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6056",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6066",
   "args": 0
  },
  "제독, 큰일입니다. 유사입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6057",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6067",
   "args": 0
  },
  "피로가 회복됐다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6083",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6093",
   "args": 0
  },
  "제독, 다친데는 없습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6100",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6110",
   "args": 0
  },
  "대원 {0}명이 사망했습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6120",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6130",
   "args": 1
  },
  "{0}명의 대원이 돌아왔습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6121",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6131",
   "args": 1
  },
  "큰일이다! {0}다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6145",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6155",
   "args": 1
  },
  "큰일이다! {0}{1}다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6148",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6158",
   "args": 2
  },
  "제독, 어떻게 하시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6151",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6161",
   "args": 0
  },
  "도망친다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6153",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6163",
   "args": 0
  },
  "제독, 퇴치했습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6162",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6172",
   "args": 0
  },
  "후우..., 간신히 도망쳐 나왔습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6163",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6173",
   "args": 0
  },
  "후우, 간신히 도망쳐 나왔습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6163",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6173",
   "args": 0
  },
  "위험하다! 제독, 도망칠 수 없습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6169",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6179",
   "args": 0
  },
  "큰일입니다! 제독, 도망칠 수 없습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6169",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6179",
   "args": 0
  },
  "우와앗, 안되겠다, 제독": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6170",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6180",
   "args": 0
  },
  "우와앗, 안되겠다, 제독.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6170",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6180",
   "args": 0
  },
  "대원들이 불만을 품기 시작했습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6255",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6265",
   "args": 0
  },
  "대원들의 불만이 심해지고 있습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6256",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6266",
   "args": 0
  },
  "대원들의 불만이 한계에 달했습니다! 일단 아무 마을로나 철수합시다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6258",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6268",
   "args": 0
  },
  "물도 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6286",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6296",
   "args": 0
  },
  "물이 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6286",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6296",
   "args": 0
  },
  "식량도 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6287",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6297",
   "args": 0
  },
  "식량이 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6287",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6297",
   "args": 0
  },
  "제독, {0}{1}얼마 남지 않았습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6288",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6298",
   "args": 2
  },
  "제독, 물도 식량도 바닥을 드러내고 있습니다. 빨리 상륙하지 않으면 전멸입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6295",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6305",
   "args": 0
  },
  "물": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6299",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6309",
   "args": 0
  },
  "식량": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6299",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6309",
   "args": 0
  },
  "제독, {0}{1} 바닥을 드러내고 있습니다, ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6300",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6310",
   "args": 2
  },
  "제독, {0}{1} 바닥을 드러내고 있습니다, 빨리 상륙합시다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6300",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6310",
   "args": 2,
   "chain": true
  },
  "빨리 상륙합시다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6301",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6311",
   "args": 0
  },
  "선원들이 지쳐있습니다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6307",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6317",
   "args": 0
  },
  "선원들이 지쳐있습니다. 이제 상륙합시다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6308",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6318",
   "args": 0
  },
  "선원들의 피로가 한계에 달하고 있습니다. 이대로라면 죽는 사람이 나오고 맙니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6309",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6319",
   "args": 0
  },
  "네가 {0}{1}군. 찾고 있었다! {2}{3} ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6438",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6448",
   "args": 4
  },
  "네가 {0}{1}군. 찾고 있었다! {2}{3} 너를 토벌하라는 명령이다. 각오해라.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6438",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6448",
   "args": 4,
   "chain": true
  },
  "너를 토벌하라는 명령이다. 각오해라.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6439",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6449",
   "args": 0
  },
  "메리크리스마스, 제독.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6662",
-  "args": 0
- },
- "오늘밤은 마음껏 마시자, 건배!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6662",
-  "args": 0
- },
- "제독의 생일에 건배다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6663",
-  "args": 0
- },
- "제독, 오늘밤은 마셔도 괜찮겠지요?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6663",
-  "args": 0
- },
- "큰일입니다! 빙산이 흘러오고 있습니다!": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6672",
   "args": 0
  },
+ "오늘밤은 마음껏 마시자, 건배!": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6672",
+  "args": 0
+ },
+ "제독의 생일에 건배다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6673",
+  "args": 0
+ },
+ "제독, 오늘밤은 마셔도 괜찮겠지요?": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6673",
+  "args": 0
+ },
+ "큰일입니다! 빙산이 흘러오고 있습니다!": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6682",
+  "args": 0
+ },
  "제독, 뭔가 기분 좋은 노래 소리가 들리는군요.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6693",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6703",
   "args": 0
  },
  "갑자기 졸음이...": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6694",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6704",
   "args": 0
  },
  "으, 으...머리가 아프다... 자고 있었나...": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6709",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6719",
   "args": 0
  },
  "하아하아, 기분이 안좋다...": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6711",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6721",
   "args": 0
  },
  "선원들이 불안해 하고 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6712",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6722",
   "args": 0
  },
  "피로도가 상승했다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6720",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6730",
   "args": 0
  },
  "저희들이 드리는 선물입니다. 받아 주십시오.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6743",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6753",
   "args": 0
  },
  "[{0}]{1} 받았다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6748",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6758",
   "args": 2
  },
  "제독, 너무 춥습니다! 더 이상 {0}{1} 가는 것은 위험합니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6777",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6787",
   "args": 2
  },
  "제, 제독, 큰일입니다! {0}{1} 오고 있습니다!!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6821",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6831",
   "args": 2
  },
  "빨리 돛을 접어라! 어떻게 해서든지 버텨라!!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6822",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6832",
   "args": 0
  },
  "제독 {0}{1} 눈에 띄지 않습니다. ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6830",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6840",
   "args": 2
  },
  "제독 {0}{1} 눈에 띄지 않습니다. {2}에서 놓친 것 같습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6830",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6840",
   "args": 3,
   "chain": true
  },
  "{0}에서 놓친 것 같습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6831",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6841",
   "args": 1
  },
  ", {0}호": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6837",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6847",
   "args": 1
  },
  "제독{0}{1} 인원 부족입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6839",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6849",
   "args": 2
  },
  "간신히 빠져 나왔습니다만, 선원들이 지쳐 있습니다. 어디서 휴양하는 것이 좋겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6844",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6854",
   "args": 0
  },
  "간신히 빠져 나왔습니다만, 선원들이 얼어있습니다. 어딘가 상륙해서 몸을 녹이는 것이 좋을 것 같습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6845",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6855",
   "args": 0
  },
  "제독 큰일입니다! 쥐가 대량으로 발생했습니다. 어디 상륙해서 퇴치하는 것이 좋겠습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6896",
-  "args": 0
- },
- "제독 큰일입니다! 선원들이 픽픽 쓰러지기 시작했습니다. 어디 상륙해서 휴양하는 것이 좋겠습니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6898",
-  "args": 0
- },
- "제독, 큰일입니다! 유행병이 퍼지고 있습니다. 어딘가 상륙하지 않으면 전멸입니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6900",
-  "args": 0
- },
- "제독! 모두 약해져 있습니다. 슬슬 상륙하는 것이 좋겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6902",
-  "args": 0
- },
- "제독! 이상한 병이 돌고 있습니다. 상륙하는 것이 좋겠습니다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6904",
-  "args": 0
- },
- "제독, 선원들이 약해져 있습니다. 제독의 지시대로 보리를 먹이겠습니다.": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6906",
   "args": 0
  },
- "제독, 선원들이 약해져 있으니 보리를 먹이겠습니다.": {
+ "제독 큰일입니다! 선원들이 픽픽 쓰러지기 시작했습니다. 어디 상륙해서 휴양하는 것이 좋겠습니다!": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6908",
   "args": 0
  },
- "제독, 쥐들이 늘었으므로 퇴치하겠습니다.": {
+ "제독, 큰일입니다! 유행병이 퍼지고 있습니다. 어딘가 상륙하지 않으면 전멸입니다!": {
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6910",
   "args": 0
  },
+ "제독! 모두 약해져 있습니다. 슬슬 상륙하는 것이 좋겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6912",
+  "args": 0
+ },
+ "제독! 이상한 병이 돌고 있습니다. 상륙하는 것이 좋겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6914",
+  "args": 0
+ },
+ "제독, 선원들이 약해져 있습니다. 제독의 지시대로 보리를 먹이겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6916",
+  "args": 0
+ },
+ "제독, 선원들이 약해져 있으니 보리를 먹이겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6918",
+  "args": 0
+ },
+ "제독, 쥐들이 늘었으므로 퇴치하겠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:6920",
+  "args": 0
+ },
  "대원": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7024",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7034",
   "args": 0
  },
  "탐험": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7025",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7035",
   "args": 0
  },
  "새": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7026",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7036",
   "args": 0
  },
  "물고기": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7026",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7036",
   "args": 0
  },
  "제독, 큰일입니다. {0}{1} 반란을 일으켰습니다!  ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7041",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7051",
   "args": 2
  },
  "제독, 큰일입니다. {0}{1} 반란을 일으켰습니다!  {2}의 대표가 제독께 할 이야기가 있다고 합니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7041",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7051",
   "args": 3,
   "chain": true
  },
  "{0}의 대표가 제독께 할 이야기가 있다고 합니다!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7042",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7052",
   "args": 1
  },
  "제독, 이대로 {0}{1} 계속할 작정이라면 우리들은 ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7044",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7054",
   "args": 2
  },
  "제독, 이대로 {0}{1} 계속할 작정이라면 우리들은 전멸이다. 우리들은 당신과 함께 죽을 마음이 없다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7044",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7054",
   "args": 2,
   "chain": true
  },
  "전멸이다. 우리들은 당신과 함께 죽을 마음이 없다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7045",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7055",
   "args": 0
  },
  "그러니, 모두가 보는 앞에서 나와 승부하자! 당신이 이기면 얌전히 따르겠다. ": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7047",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7057",
   "args": 0
  },
  "그러니, 모두가 보는 앞에서 나와 승부하자! 당신이 이기면 얌전히 따르겠다. 그러나, 내가 이기면 {0}의 먹이가 될 줄 알아라.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7047",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7057",
   "args": 1,
   "chain": true
  },
  "그러나, 내가 이기면 {0}의 먹이가 될 줄 알아라.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7048",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7058",
   "args": 1
  },
  "이것으로 불만 없겠지!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7092",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7102",
   "args": 0
  },
  "반란을 진압했습니다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7094",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7104",
   "args": 0
  },
  "자 제독, 죽어라!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7103",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7113",
   "args": 0
  },
  "자네, 제독감이 아니로군. {0}의 먹이가 더 어울리는군.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7104",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7114",
   "args": 1
  },
  "제독은 {0}의 먹이가 되었다. 항해는 여기서 끝났다.": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7109",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7119",
   "args": 1
  },
  "인물 표를 읽지 못했습니다": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7152",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7162",
   "args": 0
  },
  "대원 대표": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7222",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7232",
   "args": 0
  },
  "풍향: {0}/풍속:{1}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7240",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7250",
   "args": 2
  },
  "해류: {0}/속도:{1}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7248",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7258",
   "args": 2
  },
  "제독, 정신차리십시오! 제독, 제독!": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7562",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7572",
   "args": 0
  },
  "배경음악 파일이 없습니다.\n릴리즈에서 BGM을 다운로드할까요?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7824",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7834",
   "args": 0
  },
  "BGM 다운로드": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7825",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7835",
   "args": 0
  },
  "BGM 다운로드 중...": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7830",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7840",
   "args": 0
  },
  "BGM 다운로드 실패: {0}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7835",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7845",
   "args": 1
  },
  "배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7837",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7847",
   "args": 0
  },
  "배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n{0}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7837",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7847",
   "args": 1,
   "chain": true
  },
  "(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7838",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7848",
   "args": 0
  },
  "BGM 다운로드 완료": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7843",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:7853",
   "args": 0
  },
  "···돌아왔구나.": {
