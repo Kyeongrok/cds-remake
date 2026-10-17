@@ -577,13 +577,13 @@ public sealed class ModDialog : GameWindow
 
         // 인물 이동 — 떠날지 굴리는 때와 확률. 원본은 매월 1일 5분의 1이다.
         // 첫 줄(0)이 원본 「매월 1일」이고, 그 뒤 줄 번호가 곧 날수다.
-        general.Children.Add(Select("이동 주기",
+        character.Children.Add(Select("이동 주기",
             ["매월 1일 (원본)", .. Enumerable.Range(1, GameSettings.MaxPersonRollDays).Select(n => $"{n}일마다")],
             GameSettings.PersonRollDays,
             i => GameSettings.PersonRollDays = i,
             "인물(14~200번)이 떠날지 굴리는 때. 원본은 매월 1일입니다. N일마다는 1480년 1월 1일부터 셉니다."
             + " 역사 항해자 대본은 늘 매월 1일입니다."));
-        general.Children.Add(Select("떠날 확률",
+        character.Children.Add(Select("떠날 확률",
             [.. Enumerable.Range(GameSettings.MinPersonMoveOdds,
                                  GameSettings.MaxPersonMoveOdds - GameSettings.MinPersonMoveOdds + 1)
                           .Select(n => n == 1 ? "1분의 1 (반드시)" : $"{n}분의 1")],
