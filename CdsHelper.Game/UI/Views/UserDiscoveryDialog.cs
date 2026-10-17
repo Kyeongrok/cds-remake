@@ -111,6 +111,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _remove = Push("지우기", Remove);
         _export = Push("내보내기…", Export);
         bar.Children.Add(Push("새 발견물", Add));
+        bar.Children.Add(Push("복제", Duplicate));
         bar.Children.Add(_save);
         bar.Children.Add(_remove);
         bar.Children.Add(_export);
@@ -349,11 +350,70 @@ public sealed class UserDiscoveryDialog : GameWindow
         };
     }
 
+    /// <summary>지난번에 적은 만든 이 — 같은 사람이 여럿 짓는 일이 많다.</summary>
+    private static string LastAuthor() =>
+        UserDiscoveries.All.Select(l => l.Entry.Author).LastOrDefault(a => a.Length > 0) ?? "";
+
+    /// <summary>
+    /// 고른 발견물을 새 UUID 로 베낀다 — 그림 · 동영상도 함께. 예제(돌묵상어)를 베껴 고쳐 쓰라고 둔다.
+    /// </summary>
+    /// <remarks>
+    /// 잠긴 것은 풀어야 베낀다 — 베낀 것은 잠금이 없어, 안 그러면 베껴서 고치는 길로 잠금을 비켜 간다.
+    /// 자리는 그대로라 원본과 겹친다 — 「지도에서 고르기…」로 옮겨 달라고 알린다.
+    /// </remarks>
+    private void Duplicate()
+    {
+        if (_editing is not { } source) return;
+        if (!_example && UserDiscoveries.IsLocked(source) && !_unlocked.Contains(source.Uuid))
+        {
+            Tell("잠긴 발견물은 비밀번호로 잠금을 푼 뒤에 복제할 수 있습니다.");
+            return;
+        }
+
+        var copy = source with
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Name = $"{source.Name} 복사본",
+            Lock = "",
+            Author = _example ? LastAuthor() : source.Author,
+            Version = UserDiscoveries.FormatVersion,
+        };
+
+        (uint[] Bgra, int Width, int Height)? picture = null;
+        string? movie = null;
+        if (_example)
+        {
+            if (DiscoveryStillFiles.TryGetBgra(UserDiscoveries.ExamplePicture, out int w, out int h) is { } bgra) picture = (bgra, w, h);
+        }
+        else if (UserDiscoveries.All.FirstOrDefault(l => l.Entry.Uuid == source.Uuid) is { } loaded)
+        {
+            if (loaded.PicturePath is { } path && ReadBgra(path) is { } art) picture = art;
+            movie = loaded.MoviePath;
+        }
+
+        if (UserDiscoveries.Save(copy, picture, movie) is { } why) { Tell($"복제하지 못했습니다 — {why}"); return; }
+        Refresh(copy.Uuid);
+        Tell($"「{source.Name}」 을 「{copy.Name}」 으로 복제했습니다 — 자리가 원본과 같으니 「지도에서 고르기…」로 옮기고, 이름 · 힌트를 고친 뒤 「저장」을 눌러 주세요.");
+    }
+
+    /// <summary>png 한 장을 BGRA 로 푼다. 못 읽으면 null.</summary>
+    private static (uint[] Bgra, int Width, int Height)? ReadBgra(string path)
+    {
+        try
+        {
+            var decoder = BitmapDecoder.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            BitmapSource frame = decoder.Frames[0];
+            if (frame.Format != PixelFormats.Bgra32) frame = new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0);
+            var bgra = new uint[frame.PixelWidth * frame.PixelHeight];
+            frame.CopyPixels(bgra, frame.PixelWidth * 4, 0);
+            return (bgra, frame.PixelWidth, frame.PixelHeight);
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or NotSupportedException or System.IO.FileFormatException) { return null; }
+    }
+
     private void Add()
     {
-        // 만든 이는 지난번에 적은 이름을 그대로 쓴다 — 같은 사람이 여럿 짓는 일이 많다.
-        string author = UserDiscoveries.All.Select(l => l.Entry.Author).LastOrDefault(a => a.Length > 0) ?? "";
-        var made = UserDiscoveries.Blank(author);
+        var made = UserDiscoveries.Blank(LastAuthor());
         if (UserDiscoveries.Save(made) is { } why) { Tell($"짓지 못했습니다 — {why}"); return; }
         Refresh(made.Uuid);
         // 자리부터 고른다 — 자리 없는 발견물은 어디서도 안 잡힌다.
