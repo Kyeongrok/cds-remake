@@ -598,12 +598,12 @@ public sealed class ModDialog : GameWindow
             + " 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다. 기본은 켜져 있습니다."));
 
         // 해적 추격 — 원본에 없다. 대항해시대2 의 하이레딘처럼 명성이 높으면 해적이 쫓아온다.
-        general.Children.Add(Toggle("해적 추격", GameSettings.PirateHunt,
+        character.Children.Add(Toggle("해적 추격", GameSettings.PirateHunt,
             on => GameSettings.PirateHunt = on,
             "원본에 없는 것입니다 — 명성이 아래 값을 넘으면, 바다에서 가까이(지도 250칸 안) 있는 해적 함대가 목적지 대신"
             + " 주인공 함대를 쫓아옵니다. 두 칸 안으로 붙으면 묻지 않고 덮쳐 해전이 됩니다. 한 번에 둘까지 쫓고,"
             + " 따돌리거나 싸우고 나면 그 해적은 30일 동안 쫓지 않습니다. 육지에 있거나 도시에 들어가면 쫓기를 그만둡니다."));
-        general.Children.Add(Select("추격 명성",
+        character.Children.Add(Select("추격 명성",
             [.. GameSettings.PirateHuntFameChoices.Select(n => $"명성 {n:N0}")],
             Math.Max(0, Array.IndexOf(GameSettings.PirateHuntFameChoices, GameSettings.PirateHuntFame)),
             i => GameSettings.PirateHuntFame = GameSettings.PirateHuntFameChoices[i],
