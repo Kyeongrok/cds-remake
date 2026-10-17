@@ -1383,6 +1383,18 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// 불꽃 48x48 석 장(<c>+0x270</c> 묶음, 오프셋 <c>0x900</c> 씩)을 그 자리들에 한 장씩 올린다 — 장 사이 기다림은
     /// 원본에 없어 한 번 화면 올림을 <see cref="FxFrame"/> 로 어림했다.
     /// </summary>
+    /// <summary>괴물이 쓰러져 잠기는 연출 — 괴물 그림 자리(96x96) 한가운데에 물기둥 석 장을 크게 세운다.</summary>
+    private void MonsterDive(SeaBattle.Ship head)
+    {
+        var (sx, sy) = ScreenOf(head.X, head.Y);
+        for (int f = 0; f < 3; f++)
+        {
+            var splash = Sprite(_art.Path_($"mark-{6 + f:D2}"), sx - 24 + 16, sy - 32 + 8, 64, 64);
+            Wait(FxFrame * 2);
+            if (splash != null) _fx.Children.Remove(splash);
+        }
+    }
+
     private void Blast(int first, params (double X, double Y)[] at)
     {
         for (int f = 0; f < 3; f++)
@@ -1496,12 +1508,20 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     /// 소리 0x2E → 150ms → 배 칸마다 blast-12~14 → 판을 다시 그려 배가 사라진다 → 기함 아닌 배마다 격침 말.
     /// 배가 가라앉거나 뒤집히는 장은 없다(원본도 불꽃 석 장뿐이다). 배는 <b>불꽃이 끝나자마자</b> 지운다 —
     /// 격침 말 뒤에 지우면 「격침시켰습니다」가 떠 있는 동안 그 배가 멀쩡히 서 있어 어색했다.
+    /// <para>
+    /// <b>괴물은 배처럼 타지 않는다.</b> 원본도 괴물 머리 칸(8)이 가라앉으면 배 칸(48x48)이 아니라 괴물 그림 자리(96x96)를 지우는
+    /// 다른 길로 간다(<c>0x00437695</c> · <c>0x004376AC</c>). 예전에는 괴물 몸 일곱 칸마다 배 침몰 불꽃(blast-12~14)이 올라 배가
+    /// 가라앉는 것처럼 보였다 — 괴물은 머리 자리에 물기둥(mark-06~08)을 크게 세우고 사라진다.
+    /// </para>
     /// </remarks>
     void SeaBattle.IStage.Sink(IReadOnlyList<SeaBattle.Ship> ships)
     {
-        _sfx?.PlayOver(_battle.Monster && ships.Any(s => !s.Mine) ? MonsterSinkPart : SinkPart);
+        var monster = _battle.Monster ? ships.Where(s => !s.Mine).ToList() : [];
+        _sfx?.PlayOver(monster.Count > 0 ? MonsterSinkPart : SinkPart);
         Wait(Tick * 3);
-        Blast(12, ships.Select(BlastAt).ToArray());
+        var boats = ships.Where(s => !monster.Contains(s)).ToList();
+        if (boats.Count > 0) Blast(12, boats.Select(BlastAt).ToArray());
+        if (monster.Count > 0) MonsterDive(_battle.MonsterHead is { } head ? head : monster[0]);
         Redraw();
         foreach (var ship in ships.Where(s => !s.Flagship)) Say(_battle.SinkWord(ship));
     }
