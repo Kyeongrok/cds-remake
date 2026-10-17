@@ -35,6 +35,10 @@ public sealed class UserDiscoveryDialog : GameWindow
     private UserDiscoveries.Entry? _editing;
     private (uint[] Bgra, int Width, int Height)? _newPicture;
 
+    /// <summary>갈아 넣을 동영상 — null 이면 그대로, 빈 글이면 뺀다.</summary>
+    private string? _newMovie;
+    private readonly TextBlock _movie = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), Width = 320 };
+
     public UserDiscoveryDialog(Func<(int X, int Y, bool Land)?>? here)
     {
         _here = here;
@@ -60,11 +64,12 @@ public sealed class UserDiscoveryDialog : GameWindow
         _form.Children.Add(new TextBlock
         {
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
-            Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)",
+            Text = "한 줄에 하나 — 「부관: 제독！ 저기를 보십시오．」 · 「[그림]」 · 「[동영상]」 · 「[발견]」(뒤에 글을 붙이면 그 글로 알립니다, 비우면 「~을 발견했다！」)",
         });
         _form.Children.Add(Line("출처", _credit, Label("만든 이"), _author));
         _form.Children.Add(Line("그림", new Border { BorderBrush = Brushes.Gray, BorderThickness = new Thickness(1), Child = _picture },
                                 Push("그림 고르기…", PickPicture)));
+        _form.Children.Add(Line("동영상", _movie, Push("동영상 고르기…", PickMovie), Push("동영상 빼기", DropMovie)));
 
         var bar = new WrapPanel { Margin = new Thickness(10, 0, 10, 0) };
         foreach (var (text, act) in new (string, Action)[]
@@ -136,6 +141,9 @@ public sealed class UserDiscoveryDialog : GameWindow
         var e = l.Entry;
         _editing = e;
         _newPicture = null;
+        _newMovie = null;
+        _movie.Text = l.MoviePath is { } clip
+            ? $"{System.IO.Path.GetFileName(clip)}  ({new System.IO.FileInfo(clip).Length / 1048576.0:0.0}MB)" : "(없음)";
         _form.IsEnabled = true;
         _name.Text = e.Name;
         _category.SelectedIndex = Math.Clamp(e.Category, 0, _category.Items.Count - 1);
@@ -179,6 +187,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     private static string SceneText(UserDiscoveries.SceneLine line) => line.Kind switch
     {
         "picture" => "[그림]",
+        "movie" => "[동영상]",
         "found" => line.Text.Length > 0 ? $"[발견] {line.Text}" : "[발견]",
         _ => string.IsNullOrWhiteSpace(line.Speaker) ? line.Text : $"{line.Speaker}: {line.Text}",
     };
@@ -191,6 +200,7 @@ public sealed class UserDiscoveryDialog : GameWindow
             string s = raw.Trim();
             if (s.Length == 0) continue;
             if (s == "[그림]") lines.Add(new("picture"));
+            else if (s == "[동영상]") lines.Add(new("movie"));
             else if (s.StartsWith("[발견]")) lines.Add(new("found", null, s[4..].Trim()));
             else if (s.IndexOf(':') is var at and > 0 and <= 12 && !s[..at].Contains(' '))
                 lines.Add(new("say", s[..at].Trim(), s[(at + 1)..].Trim()));
@@ -250,7 +260,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     {
         if (Collect() is not { } e) return;
         if (e.X1 < 0 || e.Y1 < 0) { Tell("자리가 없습니다 — 그 자리까지 가서 「지금 배 자리로」를 눌러 주세요."); return; }
-        if (UserDiscoveries.Save(e, _newPicture) is { } why) { Tell($"적지 못했습니다 — {why}"); return; }
+        if (UserDiscoveries.Save(e, _newPicture, _newMovie) is { } why) { Tell($"적지 못했습니다 — {why}"); return; }
         Refresh(e.Uuid);
         if (UserDiscoveries.All.FirstOrDefault(l => l.Entry.Uuid == e.Uuid) is { } l && UserDiscoveries.Compile(l, out string error) == null)
             Tell($"적었지만 장면을 굽지 못했습니다 — {error}");
@@ -286,6 +296,28 @@ public sealed class UserDiscoveryDialog : GameWindow
         art.Freeze();
         _picture.Source = art;
         Tell("그림을 발견물 그림처럼 바꿨습니다 — 「저장」을 눌러야 적힙니다. 출처와 라이선스를 「출처」 칸에 적어 주세요.");
+    }
+
+    private void PickMovie()
+    {
+        if (_editing == null) return;
+        var pick = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "발견물 동영상 고르기",
+            Filter = "동영상|" + string.Join(";", MovieFiles.Extensions.Select(x => "*" + x)) + "|모든 파일|*.*",
+        };
+        if (pick.ShowDialog(this) != true) return;
+        _newMovie = pick.FileName;
+        _movie.Text = System.IO.Path.GetFileName(pick.FileName);
+        Tell("동영상을 골랐습니다 — 장면에 「[동영상]」 줄을 넣어야 재생되고, 「저장」을 눌러야 적힙니다. 내보내면 파일에 함께 담깁니다.");
+    }
+
+    private void DropMovie()
+    {
+        if (_editing == null) return;
+        _newMovie = "";
+        _movie.Text = "(없음)";
+        Tell("동영상을 뺍니다 — 「저장」을 눌러야 적힙니다.");
     }
 
     private void Export()

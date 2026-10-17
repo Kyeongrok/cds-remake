@@ -302,7 +302,7 @@ public sealed class DiscoveryDialog : GameWindow
     /// 원본이다(<see cref="MovieFiles"/>). 둘 다 없으면 null.
     /// </summary>
     public static string? MovieOf(string gameDirectory, int movie) =>
-        movie < 0 ? null : MovieFiles.Resolve(gameDirectory, MovieFiles.DiscoveryStem(movie));
+        movie < 0 ? null : UserDiscoveries.MoviePath(movie) ?? MovieFiles.Resolve(gameDirectory, MovieFiles.DiscoveryStem(movie));
 
     /// <summary>
     /// 그 그림 번호의 BGRA — <b>넘겨받은 곳에서만</b> 찾는다. 발견물 그림(<see cref="DiscoveryStillFiles.Source"/>)과 사건 스틸

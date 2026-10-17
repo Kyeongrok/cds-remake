@@ -32,7 +32,7 @@ public static class UserDiscoveries
     public const int FormatVersion = 1;
 
     /// <summary>장면 한 줄.</summary>
-    /// <param name="Kind">「say」 대사 · 「picture」 발견물 그림 · 「found」 효과음과 「~을 발견했다！」, 발견 처리.</param>
+    /// <param name="Kind">「say」 대사 · 「picture」 발견물 그림 · 「movie」 발견물 동영상 · 「found」 효과음과 「~을 발견했다！」, 발견 처리.</param>
     /// <param name="Speaker">대사 화자(부관 · 감찰관 · 항해사 …). 비우면 화자 없는 글.</param>
     public sealed record SceneLine(string Kind, string? Speaker = null, string Text = "");
 
@@ -51,16 +51,23 @@ public static class UserDiscoveries
         int Chance, List<SceneLine> Lines, string Credit = "", string Author = "", int Version = FormatVersion);
 
     /// <summary>이 PC 에서 받은 번호.</summary>
-    public readonly record struct Numbers(int Id, int Serial, int Hint, int Picture);
+    public readonly record struct Numbers(int Id, int Serial, int Hint, int Picture, int Movie);
 
     /// <summary>읽어 둔 한 벌 — 알맹이와 받은 번호.</summary>
     public sealed record Loaded(Entry Entry, Numbers Numbers, string Folder)
     {
         /// <summary>그림 파일(320x240 png). 없으면 null.</summary>
         public string? PicturePath => File.Exists(Path.Combine(Folder, PictureFile)) ? Path.Combine(Folder, PictureFile) : null;
+
+        /// <summary>동영상 파일(<c>movie.mp4</c> 따위, <see cref="MovieFiles.Extensions"/>). 없으면 null.</summary>
+        public string? MoviePath => MovieIn(Folder);
     }
 
-    private const string EntryFile = "discovery.json", PictureFile = "picture.png";
+    /// <summary>그 폴더의 동영상 파일. 없으면 null.</summary>
+    private static string? MovieIn(string folder) =>
+        MovieFiles.Extensions.Select(ext => Path.Combine(folder, MovieStem + ext)).FirstOrDefault(File.Exists);
+
+    private const string EntryFile = "discovery.json", PictureFile = "picture.png", MovieStem = "movie";
 
     /// <summary>모아 둔 자리.</summary>
     public static string Folder =>
@@ -73,7 +80,7 @@ public static class UserDiscoveries
     };
 
     private static List<Loaded>? _all;
-    private static Dictionary<int, Loaded>? _byId, _bySerial, _byHint, _byPicture;
+    private static Dictionary<int, Loaded>? _byId, _bySerial, _byHint, _byPicture, _byMovie;
     private static readonly Dictionary<int, byte[]> SceneCache = [];
 
     /// <summary>더하거나 고치거나 지웠을 때 — 표를 들고 있던 쪽이 다시 읽는다.</summary>
@@ -106,7 +113,7 @@ public static class UserDiscoveries
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
 
             // 번호는 UUID 차례로 받는다 — 셈이 겹칠 때 누가 다음 칸으로 밀릴지가 PC 마다 같게.
-            var taken = new[] { new HashSet<int>(), new HashSet<int>(), new HashSet<int>(), new HashSet<int>() };
+            var taken = new[] { new HashSet<int>(), new HashSet<int>(), new HashSet<int>(), new HashSet<int>(), new HashSet<int>() };
             var loaded = new List<Loaded>();
             foreach (var (e, dir) in entries.OrderBy(x => x.Item1.Uuid, StringComparer.Ordinal))
             {
@@ -117,13 +124,14 @@ public static class UserDiscoveries
                     while (!taken[kind].Add(n)) n = n >= NumberEnd ? NumberBase : n + 1;
                     return n;
                 }
-                loaded.Add(new Loaded(e, new Numbers(Take(0), Take(1), Take(2), Take(3)), dir));
+                loaded.Add(new Loaded(e, new Numbers(Take(0), Take(1), Take(2), Take(3), Take(4)), dir));
             }
             _all = loaded;
             _byId = loaded.ToDictionary(l => l.Numbers.Id);
             _bySerial = loaded.ToDictionary(l => l.Numbers.Serial);
             _byHint = loaded.ToDictionary(l => l.Numbers.Hint);
             _byPicture = loaded.ToDictionary(l => l.Numbers.Picture);
+            _byMovie = loaded.ToDictionary(l => l.Numbers.Movie);
             return _all;
         }
     }
@@ -131,7 +139,7 @@ public static class UserDiscoveries
     private static void Forget()
     {
         _all = null;
-        _byId = _bySerial = _byHint = _byPicture = null;
+        _byId = _bySerial = _byHint = _byPicture = _byMovie = null;
         lock (SceneCache) SceneCache.Clear();
         Changed?.Invoke();
     }
@@ -152,7 +160,7 @@ public static class UserDiscoveries
         return new DiscoveryTable.Record(l.Numbers.Id, e.Name, e.Category, l.Numbers.Serial, e.Reward, -1,
             Indirect: false, e.OpenAtStart, e.OnLand, Once: false,
             Math.Min(e.X1, e.X2), Math.Min(e.Y1, e.Y2), Math.Max(e.X1, e.X2), Math.Max(e.Y1, e.Y2),
-            Picture: l.PicturePath != null ? l.Numbers.Picture : -1, Movie: -1,
+            Picture: l.PicturePath != null ? l.Numbers.Picture : -1, Movie: l.MoviePath != null ? l.Numbers.Movie : -1,
             Erase: [65535, 65535, 65535, 65535], SoldIn: -1, Clip: -1);
     }
 
@@ -200,6 +208,13 @@ public static class UserDiscoveries
         return On && _byPicture!.TryGetValue(picture, out var l) ? l.PicturePath : null;
     }
 
+    /// <summary>그 동영상 번호의 동영상 파일. 없으면 null.</summary>
+    public static string? MoviePath(int movie)
+    {
+        _ = All;
+        return On && _byMovie!.TryGetValue(movie, out var l) ? l.MoviePath : null;
+    }
+
     /// <summary>그 번호의 발견 대본 파트(구운 바이트). 없으면 null.</summary>
     public static byte[]? ScenePart(int id)
     {
@@ -233,6 +248,9 @@ public static class UserDiscoveries
         foreach (var line in e.Lines ?? [])
             switch (line.Kind)
             {
+                case "movie" when l.MoviePath != null:
+                    body.Add(new JsonObject { ["OpCode"] = "00 02", ["Call"] = "PlayVideo", ["Args"] = new JsonObject { ["Id"] = l.Numbers.Movie } });
+                    break;
                 case "picture" when l.PicturePath != null:
                     body.Add(new JsonObject { ["OpCode"] = "00 01", ["Call"] = "ShowDStill", ["Args"] = new JsonObject { ["Id"] = l.Numbers.Picture } });
                     break;
@@ -301,7 +319,8 @@ public static class UserDiscoveries
         Author: author);
 
     /// <summary>적는다 — 그림을 주면 그림도 갈아 넣는다(320x240 BGRA).</summary>
-    public static string? Save(Entry entry, (uint[] Bgra, int Width, int Height)? picture = null)
+    /// <param name="movie">동영상 파일을 갈아 넣을 때 그 자리. 빈 글이면 동영상을 뺀다. null 이면 그대로 둔다.</param>
+    public static string? Save(Entry entry, (uint[] Bgra, int Width, int Height)? picture = null, string? movie = null)
     {
         try
         {
@@ -309,6 +328,17 @@ public static class UserDiscoveries
             Directory.CreateDirectory(dir);
             File.WriteAllText(Path.Combine(dir, EntryFile), JsonSerializer.Serialize(entry with { Version = FormatVersion }, Pretty));
             if (picture is var (bgra, w, h)) SavePng(bgra, w, h, Path.Combine(dir, PictureFile));
+            if (movie is { Length: > 0 })
+            {
+                string ext = Path.GetExtension(movie).ToLowerInvariant();
+                if (!MovieFiles.Extensions.Contains(ext)) return $"{ext} 는 넣을 수 없는 동영상입니다 — {string.Join(" ", MovieFiles.Extensions)}";
+                string target = Path.Combine(dir, MovieStem + ext);
+                // 붙들어 둔 뒤 옛 것을 지운다 — 다른 확장자의 옛 동영상이 남지 않게.
+                File.Copy(movie, target + ".part", overwrite: true);
+                DeleteMovies(dir);
+                File.Move(target + ".part", target);
+            }
+            else if (movie is { Length: 0 }) DeleteMovies(dir);
             Forget();
             return null;
         }
@@ -321,6 +351,12 @@ public static class UserDiscoveries
         try { Directory.Delete(Path.Combine(Folder, uuid), recursive: true); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         Forget();
+    }
+
+    private static void DeleteMovies(string dir)
+    {
+        foreach (string ext in MovieFiles.Extensions)
+            if (File.Exists(Path.Combine(dir, MovieStem + ext))) File.Delete(Path.Combine(dir, MovieStem + ext));
     }
 
     private static void SavePng(uint[] bgra, int width, int height, string path)
@@ -344,6 +380,7 @@ public static class UserDiscoveries
             using var zip = ZipFile.Open(path, ZipArchiveMode.Create);
             zip.CreateEntryFromFile(Path.Combine(l.Folder, EntryFile), EntryFile);
             if (l.PicturePath is { } picture) zip.CreateEntryFromFile(picture, PictureFile);
+            if (l.MoviePath is { } movie) zip.CreateEntryFromFile(movie, Path.GetFileName(movie), CompressionLevel.NoCompression);
             return null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException) { return ex.Message; }
@@ -370,6 +407,10 @@ public static class UserDiscoveries
             string picture = Path.Combine(dir, PictureFile);
             if (zip.GetEntry(PictureFile) is { } art) art.ExtractToFile(picture, overwrite: true);
             else if (File.Exists(picture)) File.Delete(picture);
+            DeleteMovies(dir);
+            if (zip.Entries.FirstOrDefault(z => Path.GetFileNameWithoutExtension(z.Name) == MovieStem
+                                               && MovieFiles.Extensions.Contains(Path.GetExtension(z.Name).ToLowerInvariant())) is { } clip)
+                clip.ExtractToFile(Path.Combine(dir, MovieStem + Path.GetExtension(clip.Name).ToLowerInvariant()), overwrite: true);
             Forget();
             var numbers = All.First(l => l.Entry.Uuid == entry.Uuid).Numbers;
             return (entry, $"「{entry.Name}」 을 불러왔습니다 — 발견물 {numbers.Id}번.");
