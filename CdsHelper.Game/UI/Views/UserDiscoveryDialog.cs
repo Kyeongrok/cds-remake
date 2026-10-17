@@ -42,6 +42,9 @@ public sealed class UserDiscoveryDialog : GameWindow
     };
 
     private List<int> _rumorIds = [];
+
+    /// <summary>자리 칸을 게임 위도 · 경도로 옮겨 보인다.</summary>
+    private readonly TextBlock _where = new() { Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DarkSlateBlue };
     private readonly TextBox _scene = Area(120), _credit = Area(40), _author = Box();
     private readonly ComboBox _license = new() { Width = 160, IsEditable = true };
     private readonly PasswordBox _password = new() { Width = 160, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center };
@@ -86,6 +89,8 @@ public sealed class UserDiscoveryDialog : GameWindow
         _form.Children.Add(Line("이름", _name, Label("갈래"), _category, Label("보수"), _reward));
         _form.Children.Add(Line("자리 X1", _x1, Label("Y1"), _y1, Label("X2"), _x2, Label("Y2"), _y2, _land,
                                 Edit("지도에서 고르기…", () => PickArea())));
+        _form.Children.Add(_where);
+        foreach (var box in new[] { _x1, _y1, _x2, _y2 }) box.TextChanged += (_, _) => ShowWhere();
         _form.Children.Add(Line("확률", _chance, Label("분의 1"), _open));
         _form.Children.Add(Line("힌트 이름", _hintName, Label("등급(1~3)"), _hintGrade, Label("갈래"), _hintCategory,
                                 Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline));
@@ -564,6 +569,34 @@ public sealed class UserDiscoveryDialog : GameWindow
         if (CityPickerDialog.Pick(this, _game, _rumorIds) is not { } picked) return;
         ShowCities(picked);
         Tell($"소문 도시: {_rumorCities.Text} — 「저장」을 눌러야 적힙니다.");
+    }
+
+    /// <summary>
+    /// 자리 칸(세계 지도 칸)을 게임의 위도 · 경도로 — 함대정보 판의 함대좌표처럼 「북위 38도 서경 9도」 꼴이다.
+    /// 칸 1250 이 위도 180도, 칸 2500 이 경도 360도다(<see cref="Rendering.WorldMapHost.DescribeRoute"/> 와 같은 셈).
+    /// </summary>
+    private void ShowWhere()
+    {
+        if (!int.TryParse(_x1.Text, out int x1) || !int.TryParse(_y1.Text, out int y1)
+            || !int.TryParse(_x2.Text, out int x2) || !int.TryParse(_y2.Text, out int y2) || x1 < 0 || y1 < 0)
+        {
+            _where.Text = "게임 위치: (자리를 아직 안 골랐습니다)";
+            return;
+        }
+        static int Lat(int y) => (int)Math.Round(90.0 - y * 180.0 / Support.Local.Helpers.WorldMapRenderer.CellH);
+        static int Lon(int x)
+        {
+            int w = Support.Local.Helpers.WorldMapRenderer.UnfoldedW;
+            return (int)Math.Round(((x % w) + w) % w * 360.0 / w - 180.0);
+        }
+        static string Span(int a, int b, string plus, string minus)
+        {
+            string One(int v) => $"{(v >= 0 ? plus : minus)} {Math.Abs(v)}도";
+            return a == b ? One(a) : $"{One(a)} ~ {One(b)}";
+        }
+        int top = Lat(Math.Min(y1, y2)), bottom = Lat(Math.Max(y1, y2));
+        int west = Lon(Math.Min(x1, x2)), east = Lon(Math.Max(x1, x2));
+        _where.Text = $"게임 위치: {Span(top, bottom, "북위", "남위")}  ·  {Span(west, east, "동경", "서경")}";
     }
 
     /// <summary>소문 도시를 들고 이름으로 보인다. 도시 표가 없으면 번호로.</summary>
