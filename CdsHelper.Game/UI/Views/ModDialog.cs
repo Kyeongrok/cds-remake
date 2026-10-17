@@ -583,6 +583,13 @@ public sealed class ModDialog : GameWindow
             GameSettings.PersonMoveOdds - GameSettings.MinPersonMoveOdds,
             i => GameSettings.PersonMoveOdds = i + GameSettings.MinPersonMoveOdds,
             $"굴릴 때마다 떠날 확률. 원본은 {GameSettings.DefaultPersonMoveOdds}분의 1입니다."));
+        // 인물 함대 바닷길 — 원본은 두 도시를 곧게 이어 육지 위로도 지나간다.
+        general.Children.Add(Toggle("인물 함대 바닷길", GameSettings.NpcSeaRoute,
+            on => GameSettings.NpcSeaRoute = on,
+            "원본에 없는 것입니다 — 바다의 인물 함대가 육지를 가로지르지 않고 자동항해처럼 바닷길을 따라 다닙니다."
+            + " 갈 도시도 가까운 곳(지도 400칸 안)에서 먼저 고릅니다. 도착하는 날은 원본과 같습니다."
+            + " 원본은 두 도시를 곧게 이어 육지 위로도 지나갑니다."));
+
         // 쉬는 날 — 닿고 나서 이만큼은 떠날지 굴리지 않는다. 원본은 예순 날(0x00432617).
         general.Children.Add(Select("쉬는 날",
             [.. GameSettings.PersonRestChoices.Select(n => n == GameSettings.DefaultPersonRestDays ? $"{n}일 (원본)" : $"{n}일")],

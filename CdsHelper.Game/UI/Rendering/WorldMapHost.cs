@@ -2544,6 +2544,16 @@ public sealed class WorldMapHost : HwndHost
         return argb;
     }
 
+    /// <summary>
+    /// 두 칸 사이 바닷길 — 인물 함대가 쓴다(<see cref="Local.Helpers.PersonWorld.SeaRouter"/>). 지도를 못 읽었거나 못 찾으면 null.
+    /// </summary>
+    /// <remarks>뒤 일꾼에서 부르므로 지금 지도 배열을 붙들어 둔 채 찾는다.</remarks>
+    public List<(double X, double Y)>? SeaRouteBetween((double X, double Y) from, (double X, double Y) to)
+    {
+        var (world, terrain) = (_world, _terrain);
+        return world == null || terrain == null ? null : Engine.Sea.SeaPathfinder.FindRoute(world, terrain, from, to);
+    }
+
     /// <summary>그 칸이 육지인지 — 지도 그림(<see cref="Chart"/>)과 같은 셈이다. 지도를 못 읽었으면 null.</summary>
     public bool? IsLandCell(int cellX, int cellY) =>
         _world == null || _terrain == null ? null : !IsSeaClass(CellValue(cellX, cellY));

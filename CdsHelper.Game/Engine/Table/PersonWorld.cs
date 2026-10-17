@@ -341,9 +341,120 @@ public sealed class PersonWorld
         if (gone >= 1 && row.Dest != SpotDest) return null;
 
         double x = leg.Fx + leg.Dx * gone, y = leg.Fy + leg.Dy * gone;
+        // 모드 「인물 함대 바닷길」 — 곧은 줄 대신 바닷길을 그만큼 따라간 자리다. 닿는 날은 원본 그대로 곧은 거리로 센다.
+        if (SeaPathOf(row, leg) is { } path) (x, y) = path.At(gone).Point;
         if (x < 0) x += WorldWidth;
         else if (x >= WorldWidth) x -= WorldWidth;
         return (x, y);
+    }
+
+    // ── 바닷길(모드 「인물 함대 바닷길」) ─────────────────────────────────────────
+
+    /// <summary>
+    /// 두 바다 칸 사이의 바닷길을 찾는 손 — 지도 창이 건다(<see cref="Engine.Sea.SeaPathfinder.FindRoute"/>). 없으면 곧은 줄로 다닌다.
+    /// </summary>
+    /// <remarks>뒤 일꾼(스레드)에서 부른다 — 먼 길은 반 초쯤 걸려 지도 창 눈금에서 부르면 멎는다.</remarks>
+    public static Func<(double X, double Y), (double X, double Y), List<(double X, double Y)>?>? SeaRouter { get; set; }
+
+    /// <summary>모드에서 갈 도시를 고를 때의 한 다리 끝 — 이보다 먼 도시는 가까운 곳이 하나도 없을 때만 고른다.</summary>
+    public const int HopCells = 400;
+
+    /// <summary>찾아 둔 바닷길 — 끝점 둘(칸)로 가린다. 값이 null 이면 못 찾은 것이라 곧은 줄로 다닌다.</summary>
+    private static readonly Dictionary<(int, int, int, int), SeaPath?> Paths = [];
+    private static readonly Queue<(int, int, int, int)> Waiting = new();
+    private static bool _working;
+
+    /// <summary>꺾은선 하나 — 칸 좌표(가로는 감기지 않게 이어 둔다)와 처음부터 잰 길이.</summary>
+    private sealed class SeaPath((double X, double Y)[] points)
+    {
+        private readonly (double X, double Y)[] _points = points;
+        private readonly double[] _at = Lengths(points);
+
+        private static double[] Lengths((double X, double Y)[] p)
+        {
+            var at = new double[p.Length];
+            for (int i = 1; i < p.Length; i++)
+                at[i] = at[i - 1] + Math.Sqrt((p[i].X - p[i - 1].X) * (p[i].X - p[i - 1].X) + (p[i].Y - p[i - 1].Y) * (p[i].Y - p[i - 1].Y));
+            return at;
+        }
+
+        /// <summary>길의 <paramref name="gone"/> 몫(0~1)에 있는 자리와 그 토막의 어긋남.</summary>
+        public ((double X, double Y) Point, double Dx, double Dy) At(double gone)
+        {
+            double want = Math.Clamp(gone, 0, 1) * _at[^1];
+            for (int i = 1; i < _points.Length; i++)
+            {
+                if (_at[i] < want && i < _points.Length - 1) continue;
+                double span = _at[i] - _at[i - 1];
+                double t = span <= 0 ? 1 : Math.Clamp((want - _at[i - 1]) / span, 0, 1);
+                var (a, b) = (_points[i - 1], _points[i]);
+                return ((a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t), b.X - a.X, b.Y - a.Y);
+            }
+            return (_points[0], 0, 0);
+        }
+    }
+
+    /// <summary>
+    /// 그 다리의 바닷길. 모드를 껐거나, 항구 둘 사이가 아니거나, 아직 찾는 중이거나 못 찾았으면 null(곧은 줄).
+    /// 처음 묻는 다리는 뒤 일꾼에게 맡기고 그동안은 곧은 줄로 둔다.
+    /// </summary>
+    private SeaPath? SeaPathOf(PersonTable.Row row, (int Fx, int Fy, int Dx, int Dy) leg)
+    {
+        if (!Settings.GameSettings.NpcSeaRoute || SeaRouter is not { } router) return null;
+        if (row.Dest == SpotDest || !Harbor(row.From) || !Harbor(row.Dest)) return null;
+        var key = (leg.Fx, leg.Fy, leg.Fx + leg.Dx, leg.Fy + leg.Dy);
+        lock (Paths)
+        {
+            if (Paths.TryGetValue(key, out var path)) return path;
+            if (!Waiting.Contains(key)) Waiting.Enqueue(key);
+            if (_working) return null;
+            _working = true;
+        }
+        Task.Run(() => Work(router));
+        return null;
+    }
+
+    /// <summary>줄 선 다리들의 바닷길을 하나씩 찾는다.</summary>
+    private static void Work(Func<(double X, double Y), (double X, double Y), List<(double X, double Y)>?> router)
+    {
+        while (true)
+        {
+            (int Fx, int Fy, int Tx, int Ty) key;
+            lock (Paths)
+            {
+                if (Waiting.Count == 0) { _working = false; return; }
+                key = Waiting.Dequeue();
+            }
+            SeaPath? path = null;
+            try
+            {
+                int gx = ((key.Tx % WorldWidth) + WorldWidth) % WorldWidth;
+                if (router((key.Fx, key.Fy), (gx, key.Ty)) is { Count: > 0 } found)
+                {
+                    // 떠난 칸에서 닿을 칸까지 잇는다 — 가로는 앞 점에서 반 바퀴 안쪽이 되게 펴 둔다(세계가 감긴다).
+                    var points = new List<(double X, double Y)> { (key.Fx, key.Fy) };
+                    foreach (var (x, y) in found.Append((key.Tx, key.Ty)))
+                    {
+                        double px = x, last = points[^1].X;
+                        while (px - last > WorldWidth / 2.0) px -= WorldWidth;
+                        while (last - px > WorldWidth / 2.0) px += WorldWidth;
+                        points.Add((px, y));
+                    }
+                    path = new SeaPath([.. points]);
+                }
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PersonWorld] 바닷길을 못 찾았습니다: {ex.Message}");
+            }
+            lock (Paths) Paths[key] = path;
+        }
+    }
+
+    /// <summary>찾아 둔 바닷길을 버린다 — 지도가 바뀌었을 때(수에즈 운하 따위).</summary>
+    public static void ForgetSeaPaths()
+    {
+        lock (Paths) { Paths.Clear(); Waiting.Clear(); }
     }
 
     /// <summary>
@@ -355,9 +466,16 @@ public sealed class PersonWorld
     public int HeadingOf(PersonTable.Row row)
     {
         if (Leg(row) is not { } leg) return 8;
-        return Math.Abs(leg.Dy) > Math.Abs(leg.Dx)
-            ? (leg.Dy < 0 ? 0 : 8)
-            : (leg.Dx < 0 ? 4 : 12);
+        double dx = leg.Dx, dy = leg.Dy;
+        // 바닷길을 따라가면 지금 토막의 쪽을 본다.
+        if (Moving(row) && SeaPathOf(row, leg) is { } path)
+        {
+            int far = (int)Math.Sqrt((double)leg.Dx * leg.Dx + (double)leg.Dy * leg.Dy);
+            (_, dx, dy) = path.At(far <= 0 ? 1 : Math.Clamp(row.Wait * SpeedPerDay / (double)far, 0, 1));
+        }
+        return Math.Abs(dy) > Math.Abs(dx)
+            ? (dy < 0 ? 0 : 8)
+            : (dx < 0 ? 4 : 12);
     }
 
     /// <summary>
@@ -537,7 +655,23 @@ public sealed class PersonWorld
             };
             if (ok) got.Add(city);
         }
+
+        // 모드 「인물 함대 바닷길」 — 가까운 도시가 있으면 그 가운데서만 고른다. 원본은 갈래 안 어디든 고른다.
+        if (Settings.GameSettings.NpcSeaRoute && Access(row.City) is { } here)
+        {
+            var near = got.Where(city => Access(city) is { } to && CellsBetween(here, to) <= HopCells).ToList();
+            if (near.Count > 0) return near;
+        }
         return got;
+    }
+
+    /// <summary>두 칸 사이 곧은 거리 — 가로는 세계가 감기는 짧은 쪽으로.</summary>
+    private static double CellsBetween((int X, int Y) a, (int X, int Y) b)
+    {
+        int dx = Math.Abs(a.X - b.X);
+        if (dx > WorldWidth / 2) dx = WorldWidth - dx;
+        int dy = a.Y - b.Y;
+        return Math.Sqrt((double)dx * dx + (double)dy * dy);
     }
 
     /// <summary>

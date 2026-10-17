@@ -576,6 +576,9 @@ public sealed class WorldMapWindow : Window
         Closed += (_, _) => { if (ReferenceEquals(Current, this)) Current = null; };
         // 하드코어 판은 설정이 바뀔 때마다 켠 모드를 적어 둔다 — 한 번이라도 켰으면 랭킹에 남는다.
         HardcoreRules.Current = () => _game.Player;
+        // 바다 인물 함대의 바닷길(모드 「인물 함대 바닷길」) — 지도 배열을 가진 이 창이 길을 찾아 준다.
+        PersonWorld.SeaRouter = _host.SeaRouteBetween;
+        Closed += (_, _) => PersonWorld.SeaRouter = null;
         Action noteHardcore = () => HardcoreRules.Note(_game.Player);
         GameSettings.Changed += noteHardcore;
         Closed += (_, _) => GameSettings.Changed -= noteHardcore;

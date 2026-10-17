@@ -287,6 +287,9 @@ public sealed class GameSettingsData
     /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MateDismiss { get; set; }
 
+    /// <summary>바다의 인물 함대가 바닷길로 짧게 다니게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool NpcSeaRoute { get; set; }
+
     /// <summary>원본 274개에 <b>더해 넣은 발견물</b>(돌묵상어 따위)과 그 힌트를 게임에 낼지. 켜 두고 시작한다.</summary>
     public bool ExtraDiscoveries { get; set; } = true;
 
@@ -1325,6 +1328,16 @@ public static class GameSettings
     {
         get => Get(d => d.PersonInfoList);
         set => Set(d => d.PersonInfoList = value);
+    }
+
+    /// <summary>
+    /// 바다의 인물 함대가 육지를 가로지르지 않고 바닷길(자동항해와 같은 길 찾기)로 다니고, 갈 도시도 가까운 곳에서 고르게 할지.
+    /// 원본은 두 도시를 곧게 이어 뭍 위로도 지나간다(<c>0x00432470</c>). <see cref="PersonWorld"/> 가 본다.
+    /// </summary>
+    public static bool NpcSeaRoute
+    {
+        get => Get(d => d.NpcSeaRoute);
+        set => Set(d => d.NpcSeaRoute = value);
     }
 
     /// <summary>접근 함대 정보 — 「우호적으로 접근한다 · 습격한다」 고르기 위에 상대의 초상화 · 국적 · 직업 · 함대 규모.</summary>
