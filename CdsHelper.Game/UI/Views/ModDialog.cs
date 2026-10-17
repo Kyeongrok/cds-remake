@@ -150,6 +150,8 @@ public sealed class ModDialog : GameWindow
         var hires = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「UI」 — 창 모양 · 차림표 줄처럼 화면 꾸밈을 바꾸는 것.
         var ui = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
+        // 「추가 기능」 — 원본에 없는 창을 도시락 단추에 내는 것(여급 수첩 · 인물 이동).
+        var extra = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「폰트」 — 어느 창을 어떤 글꼴로 찍는지.
         var font = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「캐릭터」 — 주인공을 만들 때와 부하를 거느릴 때의 것.
@@ -222,13 +224,13 @@ public sealed class ModDialog : GameWindow
             image: "discovery-map.png"));
 
         // 여급 수첩 — 낯을 튼 여급과 궁합을 모아 본다. 원본에는 없는 창이다.
-        ui.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
+        extra.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
             on => GameSettings.ShowBarmaidBookMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「여급 수첩」을 냅니다. 낯을 튼 여급의 친밀도와 궁합을 모아 봅니다."
             + " 여급 수첩 · 인물 이동을 다 끄면 도시락 단추도 사라집니다."));
 
         // 인물 이동 — 누가 어느 도시로 가고 있는지 늘어놓는 창.
-        ui.Children.Add(Toggle("인물 이동", GameSettings.ShowPersonMoveMenu,
+        extra.Children.Add(Toggle("인물 이동", GameSettings.ShowPersonMoveMenu,
             on => GameSettings.ShowPersonMoveMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「인물 이동」을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
 
@@ -656,6 +658,7 @@ public sealed class ModDialog : GameWindow
         pages.Children.Add(mini);
         pages.Children.Add(hires);
         pages.Children.Add(ui);
+        pages.Children.Add(extra);
         pages.Children.Add(font);
         pages.Children.Add(character);
         pages.Children.Add(discovery);
@@ -666,6 +669,7 @@ public sealed class ModDialog : GameWindow
         mini.Visibility = Visibility.Hidden;
         hires.Visibility = Visibility.Hidden;
         ui.Visibility = Visibility.Hidden;
+        extra.Visibility = Visibility.Hidden;
         font.Visibility = Visibility.Hidden;
         character.Visibility = Visibility.Hidden;
         discovery.Visibility = Visibility.Hidden;
@@ -680,7 +684,7 @@ public sealed class ModDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, font, character, discovery, save, general, lab));
+        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, extra, font, character, discovery, save, general, lab));
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -698,7 +702,7 @@ public sealed class ModDialog : GameWindow
 
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
     private FrameworkElement Tabs(FrameworkElement preset, FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
-                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement font, FrameworkElement character, FrameworkElement discovery, FrameworkElement save, FrameworkElement general,
+                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement extra, FrameworkElement font, FrameworkElement character, FrameworkElement discovery, FrameworkElement save, FrameworkElement general,
                                   FrameworkElement lab)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
@@ -740,6 +744,7 @@ public sealed class ModDialog : GameWindow
         Add("미니맵", mini);
         Add("고해상도", hires);
         Add("UI", ui);
+        Add("추가 기능", extra);
         if (UiFont.Supported) Add("폰트", font);   // 리디바탕은 한글 글꼴이라 일본어에서는 탭을 안 낸다
         Add("캐릭터", character);
         Add("발견물", discovery);
