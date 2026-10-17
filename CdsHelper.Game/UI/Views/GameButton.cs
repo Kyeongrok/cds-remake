@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -74,9 +75,10 @@ internal sealed class GameButton : Border
             if (_on) _run?.Invoke();
         };
 
-        // 마우스로 활성화한 줄을 키보드로도 바로 고를 수 있게 실제 초점을 맞춘다.
+        // 마우스로 활성화한 줄을 키보드로도 바로 고를 수 있게 실제 초점을 맞춘다. 모드 「마우스 따라 고르기」를
+        // 끄면 맞추지 않는다 — 커서 밑 단추가 엔터 · 스페이스를 가로챘다.
         Focusable = true;
-        MouseEnter += (_, _) => Focus();
+        MouseEnter += (_, _) => { if (GameSettings.MenuFollowsMouse) Focus(); };
         KeyDown += (_, e) =>
         {
             if (e.Key is not (Key.Enter or Key.Space)) return;

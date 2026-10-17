@@ -237,6 +237,11 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.PlaceShipByCtrlClick = on,
             "Ctrl 을 짚고 지도를 찍으면 배를 그 자리에 놓습니다. 끄면 여느 클릭처럼 닻만 오르내립니다."));
 
+        // 마우스 따라 고르기 — 차림표 · 예/아니오의 초점이 커서를 따라온다. 키보드로 고르는 데 방해가 되어 꺼 둔다.
+        rows.Children.Add(Toggle("마우스 따라 고르기", GameSettings.MenuFollowsMouse,
+            on => GameSettings.MenuFollowsMouse = on,
+            "메뉴 · 예/아니오에서 마우스 커서를 올린 항목으로 선택이 옮겨 갑니다. 끄면 방향키로만 옮기고, 마우스는 누를 때만 씁니다."));
+
         // 계약 힌트 — 기능·언어 쪽지 위에 현재 계약의 힌트 이름을 띄운다.
         info.Children.Add(Toggle("현재 계약 힌트", GameSettings.ShowContractHintOverlay,
             on => GameSettings.ShowContractHintOverlay = on,

@@ -290,6 +290,9 @@ public sealed class GameSettingsData
     /// <summary>바다의 인물 함대가 바닷길로 짧게 다니게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool NpcSeaRoute { get; set; }
 
+    /// <summary>차림표 · 예/아니오의 초점이 마우스를 따라오게 할지. 키보드로 고를 때 방해가 되어 꺼 두고 시작한다.</summary>
+    public bool MenuFollowsMouse { get; set; }
+
     /// <summary>해적이 명성 높은 주인공을 쫓아오게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool PirateHunt { get; set; }
 
@@ -1351,6 +1354,17 @@ public static class GameSettings
     {
         get => Get(d => d.NpcSeaRoute);
         set => Set(d => d.NpcSeaRoute = value);
+    }
+
+    /// <summary>
+    /// 차림표 · 예/아니오 단추의 초점(깜빡이는 테)이 마우스 커서를 따라 옮겨 가게 할지. 끄면 방향키로만 옮기고,
+    /// 마우스는 누를 때만 쓴다 — 커서가 「아니오」 위에 있으면 키보드로 「예」를 골라도 커서가 조금만 움직여
+    /// 「아니오」로 넘어갔다. <c>GameUi.FocusOnHover</c> · <c>GameButton</c> 이 본다.
+    /// </summary>
+    public static bool MenuFollowsMouse
+    {
+        get => Get(d => d.MenuFollowsMouse);
+        set => Set(d => d.MenuFollowsMouse = value);
     }
 
     /// <summary>

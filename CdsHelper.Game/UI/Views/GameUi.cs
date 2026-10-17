@@ -1486,6 +1486,7 @@ internal static class GameUi
         button.MouseLeave += (_, _) => seen = null;
         button.MouseMove += (_, e) =>
         {
+            if (!GameSettings.MenuFollowsMouse) return;   // 모드를 끄면 방향키로만 옮긴다
             if (Where(e) is not { } now) return;
             if (seen is not { } was) { seen = now; return; }
             if ((now - was).Length < 1) return;
