@@ -196,6 +196,23 @@ public sealed class Game
     private CityHistory? _history;
     private bool _historyTried;
 
+    /// <summary>
+    /// 개발 창 「역사이벤트」 탭 — 등록된 역사 대본 칸을 풀어 쓰고, 지금 날짜로 조건을 따져 본다. 대본을 못 읽었으면 빈 목록.
+    /// </summary>
+    public List<CityHistory.Entry> HistoryCatalog()
+    {
+        if (History is not { } history) return [];
+        var player = Player;
+        var voyagers = Voyagers;
+        bool Found(int id, DateTime when) => player.HasFound(id) || (voyagers?.TakenBy(id, when) ?? -1) >= 0;
+        var finds = Discoveries?.Table?.Discoveries.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.First().Name) ?? [];
+        var names = new CityHistory.Namer(
+            city => CityName(city) is { Length: > 0 } c ? c : $"도시 {city}",
+            nation => Nations?.Find(nation)?.Name is { Length: > 0 } n ? n : $"나라 {nation}",
+            id => finds.TryGetValue(id, out var d) && d.Length > 0 ? d : $"{id}");
+        return history.Catalog(player, player.Date.Year, player.Date.Month, CityRows, Found, names);
+    }
+
     /// <summary>밀린 달을 세는 중인지 — 세는 동안 시세를 물어도 다시 들어오지 않게.</summary>
     private bool _catchingUp;
 

@@ -394,4 +394,188 @@ public sealed class CityHistory
     }
 
     private static int U16(byte[] data, int at) => data[at] | (data[at + 1] << 8);
+
+    // ── 개발 창 「역사이벤트」 탭 — 대본을 사람이 읽는 글로 풀어 늘어놓는다 ──
+
+    /// <summary>역사 대본 한 칸을 풀어 쓴 것.</summary>
+    /// <param name="Source">「HIST_EV」 또는 「HISTCHR」.</param>
+    /// <param name="Part">파트 번호(HISTCHR 면 사람 번호).</param>
+    /// <param name="Slot">파트 안의 칸 번호.</param>
+    /// <param name="When">조건을 풀어 쓴 글.</param>
+    /// <param name="What">몸통이 하는 일을 풀어 쓴 글.</param>
+    /// <param name="State">「돎」(한 번 도는 칸을 이미 돌았다) · 「이번 달 참」 · 「대기」 · 「모름」(못 읽는 조건).</param>
+    public readonly record struct Entry(string Source, int Part, int Slot, string When, string What, string State);
+
+    /// <summary>개발 창이 쓰는 이름들.</summary>
+    public sealed record Namer(Func<int, string> City, Func<int, string> Nation, Func<int, string> Discovery);
+
+    /// <summary>
+    /// 등록된 역사 대본 칸을 모두 풀어 늘어놓는다 — HIST_EV 79파트와 HISTCHR 열넷.
+    /// 상태는 <paramref name="year"/>·<paramref name="month"/> 로 조건을 따져 본 것이다(칸 고르기와 같은 셈, 바꾸는 것은 없다).
+    /// </summary>
+    public List<Entry> Catalog(Player player, int year, int month, CityExeTable? cities, FoundCheck found, Namer names)
+    {
+        var list = new List<Entry>();
+        var when = new DateTime(year, month, 1);
+        void Add(string source, byte[][] parts, bool person)
+        {
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+                if (part.Length < 4) continue;
+                int slots = U16(part, 2);
+                bool picked = false;
+                for (int s = 0; s < slots && 4 + s * 4 + 4 <= part.Length; s++)
+                {
+                    int cond = U16(part, 4 + s * 4) + 4, body = U16(part, 4 + s * 4 + 2) + 4;
+                    if (cond >= part.Length || body >= part.Length) break;
+                    bool once = false;
+                    bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once);
+                    string state;
+                    if (ok is null) state = "모름";
+                    else if (!person && once && player.HistoryDone.Contains(i * 100 + s)) state = "돎";
+                    else if (ok == true && !picked && !(person && once)) { state = "이번 달 참"; picked = true; }
+                    else state = "대기";
+                    int end = person ? BodyEnd(part, body) : part.Length;
+                    string what = DescribeBody(part, body, end, names, person);
+                    // 사람 대본은 칸 대부분이 항해 · 대사 연출이라 상태 · 나라 · 술집 말이 없는 칸은 뺀다(못 읽는 조건은 남긴다).
+                    if (person && what == NothingByPerson && state != "모름") continue;
+                    list.Add(new Entry(source, i, s, DescribeCondition(part, cond, names), what, state));
+                }
+            }
+        }
+        Add("HIST_EV", _parts, person: false);
+        Add("HISTCHR", _persons, person: true);
+        return list;
+    }
+
+    /// <summary>사람 대본 칸에 상태 · 나라 · 술집 말이 없을 때.</summary>
+    private const string NothingByPerson = "(상태 · 나라 바꿈 없음)";
+
+    /// <summary>조건 한 줄을 글로(<see cref="Test"/> 와 같은 짜임).</summary>
+    private static string DescribeCondition(byte[] p, int i, Namer n)
+    {
+        var words = new List<string>();
+        while (i + 1 < p.Length && p[i] != 0xFF)
+        {
+            switch (p[i], p[i + 1])
+            {
+                case (0x1C, 0x17) when i + 5 < p.Length:
+                    words.Add($"{U16(p, i + 4)}년 {p[i + 2]}월");
+                    i += 6;
+                    break;
+                case (0x1B, 0x17) when i + 5 < p.Length:
+                    words.Add($"{U16(p, i + 4)}년부터");
+                    i += 6;
+                    break;
+                case (0x1B, 0x0B) when i + 6 < p.Length:
+                case (0x02, 0x0B) when i + 3 < p.Length:
+                    words.Add($"발견물 「{n.Discovery(U16(p, i + 2))}」 발견됨");
+                    i += p[i] == 0x1B ? 7 : 4;
+                    break;
+                case (0x27 or 0x28, 0x08) when i + 3 < p.Length:
+                    words.Add($"{n.City(U16(p, i + 2))} {(p[i] == 0x27 ? "있음" : "없음")}");
+                    i += 4;
+                    break;
+                case (0x27 or 0x28, 0x00) when i + 6 < p.Length:
+                    words.Add($"{n.City(U16(p, i + 5))}의 나라가 {n.Nation(U16(p, i + 2))}{(p[i] == 0x27 ? "" : " 아님")}");
+                    i += 7;
+                    break;
+                default:
+                    words.Add($"모르는 조건 {p[i]:X2} {p[i + 1]:X2}");
+                    return string.Join(" 그리고 ", words);
+            }
+            if (i < p.Length && p[i] == 0x50)
+            {
+                i++;
+                words[^1] += " 또는";
+            }
+        }
+        return string.Join(" 그리고 ", words).Replace("또는 그리고", "또는");
+    }
+
+    /// <summary>몸통을 글로(<see cref="Run"/> 과 같은 짜임). 사람 대본은 상태 · 나라 · 술집 말만 훑는다.</summary>
+    private static string DescribeBody(byte[] p, int i, int end, Namer n, bool person)
+    {
+        end = Math.Min(end, p.Length);
+        var words = new List<string>();
+        string State(int v) => v < CityState.Names.Length ? CityState.Names[v] : $"상태 {v}";
+        if (person)
+        {
+            for (; i + 2 < end; i++)
+            {
+                if (p[i] == 0x21 && p[i + 1] == 0x08 && i + 6 < end)
+                {
+                    int city = U16(p, i + 2), value = U16(p, i + 5);
+                    if (city >= CityExeTable.Count) continue;
+                    if (p[i + 4] == 0x18) words.Add($"{n.City(city)} 상태 → {State(value)}");
+                    else if (p[i + 4] == 0x00) words.Add($"{n.City(city)} → {n.Nation(value)} 공략");
+                }
+                else if (p[i] == 0x26 && p[i + 1] == 0x0A)
+                {
+                    int zero = Array.IndexOf(p, (byte)0, i + 2);
+                    if (zero < 0 || zero > end) break;
+                    words.Add($"술집 말 「{DisevScript.DecodeDialogue(p.AsSpan(i + 2, zero - i - 2), normalize: true).Body}」");
+                    i = zero;
+                }
+            }
+            return words.Count == 0 ? NothingByPerson : string.Join(" / ", words);
+        }
+
+        while (i + 1 < end)
+        {
+            byte a = p[i], b = p[i + 1];
+            if (a == 0xFF) break;
+            switch (a, b)
+            {
+                case (0x20, 0x0A):
+                {
+                    int zero = Array.IndexOf(p, (byte)0, i + 2);
+                    if (zero < 0 || zero + 3 >= p.Length) return string.Join(" / ", words);
+                    string text = DisevScript.DecodeDialogue(p.AsSpan(i + 2, zero - i - 2), normalize: true).Body;
+                    int where = U16(p, zero + 2);
+                    string to = p[zero + 1] == 0x19 ? $"문화권 {CityCultureEdits.NameOf(where)}" : n.City(where);
+                    words.Add($"소문({to}) 「{text}」");
+                    i = zero + 4;
+                    break;
+                }
+                case (0x21, 0x08) when i + 6 < end:
+                {
+                    int city = U16(p, i + 2), value = U16(p, i + 5);
+                    if (p[i + 4] == 0x18) words.Add($"{n.City(city)} 상태 → {State(value)}");
+                    else if (p[i + 4] == 0x00) words.Add($"{n.City(city)} → {n.Nation(value)}");
+                    i += 7;
+                    break;
+                }
+                case (0x19 or 0x1A, 0x08) when i + 8 < end && p[i + 4] == 0x1A:
+                    words.Add($"{n.City(U16(p, i + 2))} 규모 {(a == 0x19 ? "+" : "-")}{BitConverter.ToInt32(p, i + 5)}");
+                    i += 9;
+                    break;
+                case (0x22 or 0x26, 0x00) when i + 3 < end:
+                    words.Add($"{n.Nation(U16(p, i + 2))} {(a == 0x22 ? "멸망" : "등장")}");
+                    i += 4;
+                    break;
+                case (0x01 or 0x26 or 0x22 or 0x23 or 0x25, 0x08):
+                    words.Add($"{n.City(U16(p, i + 2))} 깃발 {a:X2}");
+                    i += 4;
+                    break;
+                case (0x26, 0x0E):
+                    words.Add("힌트 깃발");
+                    i += 4;
+                    break;
+                case (0x22 or 0x26, 0x10) when i + 6 < end:
+                    words.Add($"{n.City(U16(p, i + 5))} 건물 비트 {U16(p, i + 2)} {(a == 0x26 ? "켬" : "끔")}");
+                    i += 7;
+                    break;
+                case (0x43, 0x2B) when i + 11 < end && p[i + 2] == 0x1C:
+                    words.Add($"능력 {U16(p, i + 3)} ≥ {BitConverter.ToUInt32(p, i + 6)} 일 때만 다음");
+                    i += 12;
+                    break;
+                default:
+                    words.Add($"(모르는 명령 {a:X2} {b:X2} — 여기서 멈춤)");
+                    return string.Join(" / ", words);
+            }
+        }
+        return words.Count == 0 ? "(없음)" : string.Join(" / ", words);
+    }
 }

@@ -75,6 +75,9 @@ public sealed class DevDialog : GameWindow
         /// 발견물 지도(<see cref="DiscoveryMapDialog"/>)가 찾은 것으로 찍는 것과 같은 셈이다. 없으면 아무것도 그렇게 안 친다.
         /// </summary>
         public Func<int, bool>? EventDone { get; init; }
+
+        /// <summary>등록된 역사 대본 칸들 — 「역사이벤트」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
+        public Func<List<Engine.Market.CityHistory.Entry>>? HistoryEvents { get; init; }
     }
 
     /// <summary>발견물 탭에서 체크를 하나라도 바꿨는지.</summary>
@@ -342,6 +345,8 @@ public sealed class DevDialog : GameWindow
             pages.Add(("발견물", FindsPage(table, options.EventDone)));
             Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
         }
+        if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
+            pages.Add(("역사이벤트", HistoryPage(events)));
         pages.Add(("색", colors));
         pages.Add(("편집기 색", toolColors));
         stack.Children.Add(Tabs([.. pages]));
@@ -641,6 +646,94 @@ public sealed class DevDialog : GameWindow
             TextWrapping = TextWrapping.Wrap,
         });
         Count();
+        return page;
+    }
+
+    /// <summary>
+    /// 「역사이벤트」 탭 — 역사 대본(HIST_EV 79파트 · HISTCHR 역사 항해자 열넷)의 칸을 모두 풀어 늘어놓는다. 보기만 한다.
+    /// </summary>
+    /// <remarks>
+    /// 상태는 지금 날짜로 칸 고르기(<c>0x00407390</c>)를 따져 본 것이다 — 「돎」은 한 번 도는 칸을 이미 돌았고,
+    /// 「이번 달 참」은 다음 달이 바뀔 때 돌 칸, 「모름」은 우리가 못 읽는 조건이라 파트째 안 도는 칸이다.
+    /// </remarks>
+    private static FrameworkElement HistoryPage(List<Engine.Market.CityHistory.Entry> events)
+    {
+        var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
+        var find = Field();
+        find.Width = 220;
+        find.TextAlignment = TextAlignment.Left;
+        var count = new TextBlock { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
+        var list = new StackPanel();
+        var lines = new List<(FrameworkElement Line, string Text)>();
+
+        foreach (var e in events)
+        {
+            string head = $"{e.Source} {e.Part,2}-{e.Slot}  [{e.State}]";
+            var line = new StackPanel { Margin = new Thickness(0, 3, 0, 3) };
+            line.Children.Add(new TextBlock
+            {
+                Text = $"{head}  {e.When}",
+                Foreground = GameUi.Text,
+                FontWeight = FontWeights.Bold,
+                FontSize = 13,
+                Opacity = e.State == "돎" ? 0.55 : 1,
+                TextWrapping = TextWrapping.Wrap,
+            });
+            line.Children.Add(new TextBlock
+            {
+                Text = "    " + e.What,
+                Foreground = GameUi.Text,
+                FontSize = 12,
+                Opacity = e.State == "돎" ? 0.5 : 0.85,
+                TextWrapping = TextWrapping.Wrap,
+            });
+            lines.Add((line, $"{head} {e.When} {e.What}"));
+            list.Children.Add(line);
+        }
+
+        void Filter()
+        {
+            string want = find.Text.Trim();
+            int shown = 0;
+            foreach (var (line, text) in lines)
+            {
+                bool on = want.Length == 0 || text.Contains(want, StringComparison.OrdinalIgnoreCase);
+                line.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+                if (on) shown++;
+            }
+            count.Text = $"  {shown} / {lines.Count}  (돎 {events.Count(e => e.State == "돎")})";
+        }
+        find.TextChanged += (_, _) => Filter();
+
+        var top = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+        top.Children.Add(new TextBlock
+        {
+            Text = "찾기", Width = 40, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        top.Children.Add(find);
+        top.Children.Add(count);
+        page.Children.Add(top);
+        page.Children.Add(new Border
+        {
+            BorderBrush = GameUi.Edge,
+            BorderThickness = new Thickness(1),
+            Child = new ScrollViewer
+            {
+                Height = 420,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Padding = new Thickness(8, 4, 8, 4),
+                Content = list,
+            },
+        });
+        page.Children.Add(new TextBlock
+        {
+            Text = "[돎] 한 번 도는 칸을 이미 돌았습니다 · [이번 달 참] 다음 달이 바뀔 때 돕니다 · [대기] 조건이 아직 아닙니다 · "
+                   + "[모름] 못 읽는 조건이라 그 파트가 안 돕니다. 도시 이름 · 나라 · 해로 찾을 수 있습니다.",
+            Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        Filter();
         return page;
     }
 

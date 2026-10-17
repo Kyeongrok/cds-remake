@@ -3849,6 +3849,8 @@ public sealed class WorldMapWindow : Window
         DiscoveriesChanged = () => HideCities(),
         // 인물 · 비보는 대본이 발견을 안 적는다 — 발견물 지도처럼 사건을 마쳤으면 찾은 것으로 본다.
         EventDone = id => _game.Player.IsSettled(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id),
+        // 「역사이벤트」 탭 — 등록된 역사 대본 칸과 지금 날짜로 본 상태.
+        HistoryEvents = () => _game.HistoryCatalog(),
     });
 
     /// <summary>
