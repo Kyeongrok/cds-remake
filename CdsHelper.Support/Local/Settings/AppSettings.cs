@@ -201,8 +201,6 @@ public static class AppSettings
     public static readonly List<ViewOption> AvailableViews = new()
     {
         new() { Name = "DisevEditorContent", DisplayName = "대본 편집" },
-        new() { Name = "PlayerContent", DisplayName = "플레이어" },
-        new() { Name = "CharacterContent", DisplayName = "항해사" },
         new() { Name = "ItemContent", DisplayName = "아이템" },
         new() { Name = "WorldMapContent", DisplayName = "세계지도" }
     };
@@ -218,7 +216,7 @@ public static class AppSettings
                 if (data != null)
                 {
                     _markerSize = data.MarkerSize;
-                    // 뺀 화면(도서·도시·발견물·지도·후원자)을 시작 화면으로 적어 둔 설정은 기본 화면으로 돌린다 —
+                    // 뺀 화면(도서·도시·발견물·지도·후원자·플레이어·항해사)을 시작 화면으로 적어 둔 설정은 기본 화면으로 돌린다 —
                     // 없는 화면으로 가면 본문이 텅 빈 채로 뜬다.
                     _defaultView = AvailableViews.Exists(v => v.Name == data.DefaultView)
                         ? data.DefaultView
