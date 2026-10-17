@@ -10,14 +10,14 @@ namespace CdsHelper.Game.UI.Views;
 /// 사람이 지어 넣는 발견물(<see cref="UserDiscoveries"/>)을 짓고 고치고, 파일 하나로 내보내고 불러오는 창 — 원본에 없는 것이다.
 /// </summary>
 /// <remarks>
-/// 왼쪽은 지어 둔 것 목록, 오른쪽은 고를 때 채우는 칸이다. 자리는 「지금 배 자리로」가 배가 선 칸 둘레를 잡는다 —
-/// 게임에서 그 자리까지 가서 개발 창을 열면 된다. 그림은 사진을 골라 발견물 그림처럼 바꿔(<see cref="DiscoveryStillFilter"/>) 넣는다.
+/// 왼쪽은 지어 둔 것 목록, 오른쪽은 고를 때 채우는 칸이다. 자리는 「지도에서 고르기…」가 세계 지도를 띄워
+/// 드래그로 잡는다(<see cref="DiscoveryAreaPicker"/>). 그림은 사진을 골라 발견물 그림처럼 바꿔(<see cref="DiscoveryStillFilter"/>) 넣는다.
 /// 장면은 한 줄에 하나 — 「화자: 대사」, 「[그림]」, 「[발견]」(뒤에 글을 붙이면 그 글로 알린다).
 /// </remarks>
 public sealed class UserDiscoveryDialog : GameWindow
 {
-    /// <summary>배가 선 칸과 육지인지. 게임이 없으면 null.</summary>
-    private readonly Func<(int X, int Y, bool Land)?>? _here;
+    /// <summary>자리를 고를 세계 지도. 지도를 못 읽었으면 null.</summary>
+    private readonly Func<DiscoveryAreaPicker.Map?>? _map;
 
     private readonly ListBox _list = new() { Width = 220, Margin = new Thickness(10, 10, 6, 10) };
     private readonly StackPanel _form = new() { Margin = new Thickness(6, 10, 10, 4) };
@@ -39,9 +39,9 @@ public sealed class UserDiscoveryDialog : GameWindow
     private string? _newMovie;
     private readonly TextBlock _movie = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), Width = 320 };
 
-    public UserDiscoveryDialog(Func<(int X, int Y, bool Land)?>? here)
+    public UserDiscoveryDialog(Func<DiscoveryAreaPicker.Map?>? map)
     {
-        _here = here;
+        _map = map;
         Title = "사용자 발견물";
         Width = 1120;
         Height = 860;
@@ -52,7 +52,7 @@ public sealed class UserDiscoveryDialog : GameWindow
 
         _form.Children.Add(Line("이름", _name, Label("갈래"), _category, Label("보수"), _reward));
         _form.Children.Add(Line("자리 X1", _x1, Label("Y1"), _y1, Label("X2"), _x2, Label("Y2"), _y2, _land,
-                                Push("지금 배 자리로", Here)));
+                                Push("지도에서 고르기…", () => PickArea())));
         _form.Children.Add(Line("확률", _chance, Label("분의 1"), _open));
         _form.Children.Add(Line("힌트 이름", _hintName, Label("등급(1~3)"), _hintGrade, Label("갈래"), _hintCategory,
                                 Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline));
@@ -249,17 +249,18 @@ public sealed class UserDiscoveryDialog : GameWindow
     private void Add()
     {
         var made = UserDiscoveries.Blank();
-        if (_here?.Invoke() is var (x, y, land))
-            made = made with { X1 = x - 8, Y1 = y - 8, X2 = x + 8, Y2 = y + 8, OnLand = land };
         if (UserDiscoveries.Save(made) is { } why) { Tell($"짓지 못했습니다 — {why}"); return; }
         Refresh(made.Uuid);
-        Tell("새 발견물을 지었습니다 — 칸을 채우고 「저장」을 눌러 주세요. 자리는 지금 배 자리 둘레로 잡았습니다.");
+        // 자리부터 고른다 — 자리 없는 발견물은 어디서도 안 잡힌다.
+        Tell(PickArea()
+            ? "새 발견물을 지었습니다 — 나머지 칸을 채우고 「저장」을 눌러 주세요."
+            : "새 발견물을 지었습니다 — 「지도에서 고르기…」로 자리를 잡고 칸을 채운 뒤 「저장」을 눌러 주세요.");
     }
 
     private void Save()
     {
         if (Collect() is not { } e) return;
-        if (e.X1 < 0 || e.Y1 < 0) { Tell("자리가 없습니다 — 그 자리까지 가서 「지금 배 자리로」를 눌러 주세요."); return; }
+        if (e.X1 < 0 || e.Y1 < 0) { Tell("자리가 없습니다 — 「지도에서 고르기…」로 자리를 잡아 주세요."); return; }
         if (UserDiscoveries.Save(e, _newPicture, _newMovie) is { } why) { Tell($"적지 못했습니다 — {why}"); return; }
         Refresh(e.Uuid);
         if (UserDiscoveries.All.FirstOrDefault(l => l.Entry.Uuid == e.Uuid) is { } l && UserDiscoveries.Compile(l, out string error) == null)
@@ -277,12 +278,21 @@ public sealed class UserDiscoveryDialog : GameWindow
         Tell($"「{e.Name}」 을 지웠습니다.");
     }
 
-    private void Here()
+    /// <summary>세계 지도를 띄워 자리를 고른다. 골랐으면 true.</summary>
+    private bool PickArea()
     {
-        if (_here?.Invoke() is not var (x, y, land)) { Tell("배 자리를 모릅니다 — 게임에서 개발 창을 열어 주세요."); return; }
-        (_x1.Text, _y1.Text, _x2.Text, _y2.Text) = ($"{x - 8}", $"{y - 8}", $"{x + 8}", $"{y + 8}");
-        _land.IsChecked = land;
-        Tell($"자리를 ({x}, {y}) 둘레 17칸으로 잡았습니다 — {(land ? "육지" : "바다")}. 「저장」을 눌러야 적힙니다.");
+        if (_editing is not { } e) return false;
+        if (_map?.Invoke() is not { } map) { Tell("세계 지도를 못 읽었습니다 — 게임에서 개발 창을 열어 주세요."); return false; }
+        DiscoveryAreaPicker.Area? start = int.TryParse(_x1.Text, out int x1) && int.TryParse(_y1.Text, out int y1)
+                                          && int.TryParse(_x2.Text, out int x2) && int.TryParse(_y2.Text, out int y2) && x1 >= 0 && y1 >= 0
+            ? new(x1, y1, x2, y2, _land.IsChecked == true) : null;
+        // 고치는 발견물 자신은 다른 발견물 자리에서 뺀다.
+        var others = map.Others.Where(o => !(start is { } s && o.X1 == s.X1 && o.Y1 == s.Y1 && o.X2 == s.X2 && o.Y2 == s.Y2 && o.Name == e.Name)).ToList();
+        if (DiscoveryAreaPicker.Pick(this, map with { Others = others }, start) is not { } a) return false;
+        (_x1.Text, _y1.Text, _x2.Text, _y2.Text) = ($"{a.X1}", $"{a.Y1}", $"{a.X2}", $"{a.Y2}");
+        _land.IsChecked = a.Land;
+        Tell($"자리를 ({a.X1}, {a.Y1}) ~ ({a.X2}, {a.Y2}) 로 잡았습니다 — {(a.Land ? "육지" : "바다")}. 「저장」을 눌러야 적힙니다.");
+        return true;
     }
 
     private void PickPicture()
@@ -346,9 +356,9 @@ public sealed class UserDiscoveryDialog : GameWindow
     }
 
     /// <summary>창을 띄운다.</summary>
-    public static void Show(Window? owner, Func<(int X, int Y, bool Land)?>? here)
+    public static void Show(Window? owner, Func<DiscoveryAreaPicker.Map?>? map)
     {
-        var window = new UserDiscoveryDialog(here);
+        var window = new UserDiscoveryDialog(map);
         if (owner != null) window.Owner = owner;
         window.ShowDialog();
     }

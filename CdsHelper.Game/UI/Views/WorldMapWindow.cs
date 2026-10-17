@@ -3849,15 +3849,31 @@ public sealed class WorldMapWindow : Window
         DiscoveriesChanged = () => HideCities(),
         // 인물 · 비보는 대본이 발견을 안 적는다 — 발견물 지도처럼 사건을 마쳤으면 찾은 것으로 본다.
         EventDone = id => _game.Player.IsSettled(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id),
-        // 사람이 지어 넣는 발견물 — 자리는 배가 선 칸 둘레로 잡는다. 닫은 뒤 지도의 발견물 그림을 다시 맞춘다.
+        // 사람이 지어 넣는 발견물 — 자리는 세계 지도를 띄워 드래그로 잡는다. 닫은 뒤 지도의 발견물 그림을 다시 맞춘다.
         UserDiscoveries = () =>
         {
-            UserDiscoveryDialog.Show(this, () => _host.ShipCell is { } cell ? (cell.CellX, cell.CellY, _host.IsOnLand) : null);
+            UserDiscoveryDialog.Show(this, DiscoveryAreaMap);
             HideCities();
         },
         // 「역사이벤트」 탭 — 등록된 역사 대본 칸과 지금 날짜로 본 상태.
         HistoryEvents = () => _game.HistoryCatalog(),
     });
+
+    /// <summary>
+    /// 발견물 자리를 고를 세계 지도 — 네비게이션과 같은 항해지도 그림(다 밝힌 것)에 다른 발견물 자리를 얹는다.
+    /// </summary>
+    private DiscoveryAreaPicker.Map? DiscoveryAreaMap()
+    {
+        var all = new ExploredMap();
+        all.RevealAll();
+        if (_host.Chart(all, out int w, out int h) is not { } dots) return null;
+        var chart = System.Windows.Media.Imaging.BitmapSource.Create(
+            w, h, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, dots, w * 4);
+        chart.Freeze();
+        var others = (_game.Discoveries?.Table?.Discoveries ?? [])
+            .Where(r => r.HasPlace).Select(r => (r.X1, r.Y1, r.X2, r.Y2, r.Name)).ToList();
+        return new DiscoveryAreaPicker.Map(chart, (x, y) => _host.IsLandCell(x, y), others);
+    }
 
     /// <summary>
     /// 게임 커맨드 창을 흉내낸 우클릭 메뉴. 떠 있는 동안 <b>원본이 멈춘다</b> —

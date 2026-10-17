@@ -2544,6 +2544,10 @@ public sealed class WorldMapHost : HwndHost
         return argb;
     }
 
+    /// <summary>그 칸이 육지인지 — 지도 그림(<see cref="Chart"/>)과 같은 셈이다. 지도를 못 읽었으면 null.</summary>
+    public bool? IsLandCell(int cellX, int cellY) =>
+        _world == null || _terrain == null ? null : !IsSeaClass(CellValue(cellX, cellY));
+
     /// <summary>
     /// 지도 그림에서 바다로 치는 칸인지 — 부류(<c>0x00426710</c> = <c>0x004CD048[타일]</c>)가
     /// <b>0·1</b> 일 때만이다. 음수를 포함한 그 밖은 뭍이다.
