@@ -656,7 +656,7 @@ public sealed class DevDialog : GameWindow
     /// 상태는 지금 날짜로 칸 고르기(<c>0x00407390</c>)를 따져 본 것이다 — 「돎」은 한 번 도는 칸을 이미 돌았고,
     /// 「이번 달 참」은 다음 달이 바뀔 때 돌 칸, 「모름」은 우리가 못 읽는 조건이라 파트째 안 도는 칸이다.
     /// </remarks>
-    private static FrameworkElement HistoryPage(List<Engine.Market.CityHistory.Entry> events)
+    private FrameworkElement HistoryPage(List<Engine.Market.CityHistory.Entry> events)
     {
         var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
         var find = Field();
@@ -669,7 +669,10 @@ public sealed class DevDialog : GameWindow
         foreach (var e in events)
         {
             string head = $"{e.Source} {e.Part,2}-{e.Slot}  [{e.State}]";
-            var line = new StackPanel { Margin = new Thickness(0, 3, 0, 3) };
+            // 줄을 누르면 큰 글씨로 따로 띄운다 — 목록 글은 작고 한 덩이라 읽기 힘들다.
+            var line = new StackPanel { Margin = new Thickness(0, 3, 0, 3), Background = Brushes.Transparent, Cursor = Cursors.Hand };
+            var entry = e;
+            line.MouseLeftButtonUp += (_, _) => ShowHistoryEntry(this, entry);
             line.Children.Add(new TextBlock
             {
                 Text = $"{head}  {e.When}",
@@ -729,12 +732,69 @@ public sealed class DevDialog : GameWindow
         page.Children.Add(new TextBlock
         {
             Text = "[돎] 한 번 도는 칸을 이미 돌았습니다 · [지남] 그 해 그 달에만 도는 칸이고 그 달이 지났습니다 · [이번 달 참] 다음 달이 바뀔 때 돕니다 · [대기] 조건이 아직 아닙니다 · "
-                   + "[모름] 못 읽는 조건이라 그 파트가 안 돕니다. 도시 이름 · 나라 · 해로 찾을 수 있습니다.",
+                   + "[모름] 못 읽는 조건이라 그 파트가 안 돕니다. 도시 이름 · 나라 · 해로 찾을 수 있고, 줄을 누르면 크게 봅니다.",
             Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
             TextWrapping = TextWrapping.Wrap,
         });
         Filter();
         return page;
+    }
+
+    /// <summary>역사이벤트 한 칸을 큰 글씨로 띄운다 — 조건 한 덩이, 하는 일은 한 줄에 하나씩.</summary>
+    private static void ShowHistoryEntry(Window owner, Engine.Market.CityHistory.Entry e)
+    {
+        var box = new Window
+        {
+            Owner = owner,
+            Title = "역사이벤트",
+            WindowStyle = WindowStyle.None,
+            ResizeMode = ResizeMode.NoResize,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ShowInTaskbar = false,
+            Background = GameUi.Back,
+        };
+        TextBlock Text(string text, double size, bool bold = false, double opacity = 1) => new()
+        {
+            Text = text, Foreground = GameUi.Text, FontSize = size, Opacity = opacity,
+            FontWeight = bold ? FontWeights.Bold : FontWeights.Normal,
+            TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 2),
+        };
+
+        var body = new StackPanel { Margin = new Thickness(16, 12, 16, 8), Width = 720 };
+        body.Children.Add(Text($"{e.Source} {e.Part}-{e.Slot}  [{e.State}]", 20, bold: true));
+        body.Children.Add(Text("조건", 15, bold: true, opacity: 0.7));
+        body.Children.Add(Text(e.When, 18));
+        body.Children.Add(Text("하는 일", 15, bold: true, opacity: 0.7));
+        var acts = new StackPanel();
+        foreach (string act in e.What.Split(" / "))
+            acts.Children.Add(Text("· " + act, 18));
+        body.Children.Add(new ScrollViewer
+        {
+            MaxHeight = 560,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Content = acts,
+        });
+
+        var title = GameUi.TitleBar("역사이벤트", box.Close);
+        GameUi.EnableDrag(box, title);
+        var stack = new StackPanel();
+        stack.Children.Add(title);
+        stack.Children.Add(body);
+        stack.Children.Add(new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 6, 0, 12),
+            Children = { GameUi.PushButton("닫기", box.Close, 96) },
+        });
+        box.Content = new Border
+        {
+            Background = GameUi.Back, BorderBrush = GameUi.Edge, BorderThickness = new Thickness(2),
+            Margin = new Thickness(4), Child = stack,
+        };
+        box.KeyDown += (_, k) => { if (k.Key is Key.Escape) box.Close(); };
+        box.ShowDialog();
     }
 
     /// <summary>다운로드한 CDSX 에셋이 있는 실행 폴더를 탐색기로 연다.</summary>
