@@ -1104,9 +1104,9 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// <summary>
     /// 이 마을 조선소가 파는 대포(<c>0x00429F30</c>) — 세이커포는 어디서나, 둘째는 규모 3 이상, 셋째는 4 이상,
     /// 넷째는 1490년부터 도시 0·7 · 1500년부터 도시 38 · 1510년부터 도시 15 에서만 판다.
-    /// 원본에 없는 캐노네이드는 런던(38)의 규모가 7 이 되면(모드 「도시 투자 성장」) 런던에서 판다.
+    /// 원본에 없는 카로네이드포는 런던(38)의 규모가 7 이 되면(모드 「도시 투자 성장」) 런던에서 판다.
     /// </summary>
-    /// <summary>런던 — 규모 7 이 되면 캐노네이드를 판다.</summary>
+    /// <summary>런던 — 규모 7 이 되면 카로네이드포를 판다.</summary>
     private const int LondonCity = 38;
 
     private List<int> CannonsSold()
