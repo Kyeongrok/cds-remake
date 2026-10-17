@@ -2758,23 +2758,23 @@
   "args": 0
  },
  "뭐야, 자네 돈이 없나? 어쩔 수 없군~. 그렇다면 일년간 충분히 일을 부리겠네! 괜찮겠나?": {
-  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:76",
+  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:77",
   "args": 0
  },
  "수고했네. 이것이 약속한 돈이네. 자네도 바다의 사나이라면 이런 창피한 일을 하는 것이 아니네, 알았나?": {
-  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:80",
+  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:81",
   "args": 0
  },
  "피로가 풀렸다!": {
-  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:125",
+  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:126",
   "args": 0
  },
  "체력이 회복됐다!": {
-  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:125",
+  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:126",
   "args": 0
  },
  "기분이 매우 좋다!": {
-  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:125",
+  "at": "CdsHelper.Game/Engine/Inn/Lodging.cs:126",
   "args": 0
  },
  "제독, 원군입니다!\n아니! 보십시오! 후방에도 증원부대가 대기하고\n있습니다! 이래서는 승산이 없습니다! 퇴각합시다···": {
@@ -2846,31 +2846,31 @@
   "args": 0
  },
  "공격명령": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1074",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1078",
   "args": 0
  },
  "통상공격": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1079",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
   "args": 0
  },
  "방어중시공격": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1079",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
   "args": 0
  },
  "돌격": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1079",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
   "args": 0
  },
  "퇴각": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1079",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
   "args": 0
  },
  "묘책": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1079",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1083",
   "args": 0
  },
  "남자라면 일대일로 싸워라! 어떠냐?": {
-  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1119",
+  "at": "CdsHelper.Game/Engine/Land/LandBattle.cs:1123",
   "args": 0
  },
  "독거미": {
@@ -3038,195 +3038,195 @@
   "args": 0
  },
  "분하다!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:122",
-  "args": 0
- },
- "이놈 남만인!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:123",
   "args": 0
  },
- "이것이 무인의 죽음이다.": {
+ "이놈 남만인!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:124",
   "args": 0
  },
- "침략자놈···": {
+ "이것이 무인의 죽음이다.": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:125",
   "args": 0
  },
+ "침략자놈···": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:126",
+  "args": 0
+ },
  "엄마아!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:129",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:130",
   "args": 0
  },
  "남만 검술 따위 무섭지도 않다.": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:143",
-  "args": 0
- },
- "네 약점을 알았다! 받아라!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:144",
   "args": 0
  },
- "바보같으니. 빈틈투성이로군.": {
+ "네 약점을 알았다! 받아라!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:145",
   "args": 0
  },
- "둔갑술의 하나, 변신술!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:150",
+ "바보같으니. 빈틈투성이로군.": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:146",
   "args": 0
  },
- "둔갑술이 어떤 건지 잘 봐라!": {
+ "둔갑술의 하나, 변신술!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:151",
   "args": 0
  },
- "싸워봤자다.": {
+ "둔갑술이 어떤 건지 잘 봐라!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:152",
   "args": 0
  },
- "정령님, 비를 내려 주소서.": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:157",
+ "싸워봤자다.": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:153",
   "args": 0
  },
- "비여, 우리를 지켜다오.": {
+ "정령님, 비를 내려 주소서.": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:158",
   "args": 0
  },
- "비여, 우리가 이기게 해다오.": {
+ "비여, 우리를 지켜다오.": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:159",
   "args": 0
  },
- "신이여, 상처입은 자에게 힘을!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:164",
+ "비여, 우리가 이기게 해다오.": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:160",
   "args": 0
  },
- "지금 구해 주겠다..": {
+ "신이여, 상처입은 자에게 힘을!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:165",
   "args": 0
  },
- "포기하지 마라. 상처는 가볍다.": {
+ "지금 구해 주겠다..": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:166",
   "args": 0
  },
- "다들 힘을 내라!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:171",
+ "포기하지 마라. 상처는 가볍다.": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:167",
   "args": 0
  },
- "격려의 춤을 봐라.": {
+ "다들 힘을 내라!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:172",
   "args": 0
  },
- "태양신이여, 우리들에게 힘을!": {
+ "격려의 춤을 봐라.": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:173",
   "args": 0
  },
- "제기랄! 화약이 눅눅해졌어!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:179",
+ "태양신이여, 우리들에게 힘을!": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:174",
   "args": 0
  },
- "비 때문에 화약이···": {
+ "제기랄! 화약이 눅눅해졌어!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:180",
   "args": 0
  },
- "비 속에서는 총도 대포도 소용없군.": {
+ "비 때문에 화약이···": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:181",
   "args": 0
  },
- "체! 불발인가!": {
+ "비 속에서는 총도 대포도 소용없군.": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:182",
   "args": 0
  },
- "어, 총알이 안 나온다.": {
+ "체! 불발인가!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:183",
   "args": 0
  },
+ "어, 총알이 안 나온다.": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:184",
+  "args": 0
+ },
  "윽!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "우악!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "꺅!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "아···": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "죽고 싶지 않아···": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "으윽!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "끄윽!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:189",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
   "args": 0
  },
  "이럴 수가···": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:191",
   "args": 0
  },
  "끝장인가···": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:191",
   "args": 0
  },
  "오늘은 이 정도로 용서해 주마.": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:191",
   "args": 0
  },
  "두고 보자.": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:190",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:191",
   "args": 0
  },
  "기습성공! 선제 공격을 가하겠습니까?": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:284",
-  "args": 0
- },
- "기습실패! 복병을 만났다!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:285",
   "args": 0
  },
+ "기습실패! 복병을 만났다!": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:286",
+  "args": 0
+ },
  "적부대는 함정에 빠졌다!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:295",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:296",
   "args": 0
  },
  "아군부대가 함정에 빠졌다!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:295",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:296",
   "args": 0
  },
  "암살자는 실패했다!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:304",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:305",
   "args": 0
  },
  "암살자는 적의 한 부대를 전멸시켰다!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:313",
-  "args": 0
- },
- "암살자는 배반하여 아군의 한 부대를 전멸시켰다!": {
   "at": "CdsHelper.Game/Engine/Land/LandFight.cs:314",
   "args": 0
  },
+ "암살자는 배반하여 아군의 한 부대를 전멸시켰다!": {
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:315",
+  "args": 0
+ },
  "하늘에서 벼락이···!": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:323",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:324",
   "args": 0
  },
  "{0}의 공격 — {1} {2}명": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:608",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:609",
   "args": 3
  },
  "{0} {1}": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:796",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:797",
   "args": 2
  },
  "아군": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:796",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:797",
   "args": 0
  },
  "적": {
-  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:796",
+  "at": "CdsHelper.Game/Engine/Land/LandFight.cs:797",
   "args": 0
  },
  "유럽 정규군": {
@@ -3281,24 +3281,32 @@
   "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:119",
   "args": 0
  },
+ "동아시아 화포군": {
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:126",
+  "args": 0
+ },
+ "동아시아": {
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:126",
+  "args": 0
+ },
  "검술·포술·사격술": {
-  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:203",
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:211",
   "args": 0
  },
  "포술": {
-  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:204",
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:212",
   "args": 0
  },
  "사격술": {
-  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:205",
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:213",
   "args": 0
  },
  "검술": {
-  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:206",
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:214",
   "args": 0
  },
  "{0} 넉넉하면 {1}, 아니면 {2}": {
-  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:208",
+  "at": "CdsHelper.Game/Engine/Land/LandFormations.cs:216",
   "args": 3
  },
  " 선택 ": {
@@ -3742,23 +3750,23 @@
   "args": 0
  },
  "커피": {
-  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:21",
+  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:24",
   "args": 0
  },
  "담배": {
-  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:21",
+  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:24",
   "args": 0
  },
  "카카오": {
-  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:21",
+  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:24",
   "args": 0
  },
  "차": {
-  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:21",
+  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:24",
   "args": 0
  },
  "향료제도": {
-  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:55",
+  "at": "CdsHelper.Game/Engine/Market/GoodsTrend.cs:58",
   "args": 0
  },
  "으음, 그래 좋소. 금화 {0}닢에 타협해 봅시다.": {
@@ -5382,12 +5390,8 @@
   "at": "CdsHelper.Game/Engine/Table/CityCultureEdits.cs:21",
   "args": 0
  },
- "동아시아": {
-  "at": "CdsHelper.Game/Engine/Table/CityCultureEdits.cs:35",
-  "args": 0
- },
  "{0}곳": {
-  "at": "CdsHelper.Game/Engine/Table/CityCultureEdits.cs:120",
+  "at": "CdsHelper.Game/Engine/Table/CityCultureEdits.cs:140",
   "args": 1
  },
  "도시표-게임": {
@@ -5395,7 +5399,7 @@
   "args": 0
  },
  "시장 물건 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
-  "at": "CdsHelper.Game/Engine/Table/CityExeTable.cs:448",
+  "at": "CdsHelper.Game/Engine/Table/CityExeTable.cs:450",
   "args": 0
  },
  "도시-왕국-고친것": {
@@ -6431,7 +6435,7 @@
   "args": 0
  },
  "화자표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
-  "at": "CdsHelper.Game/Engine/Table/SpeakerFaceTable.cs:90",
+  "at": "CdsHelper.Game/Engine/Table/SpeakerFaceTable.cs:97",
   "args": 0
  },
  "화자이름표": {
@@ -10012,95 +10016,95 @@
   "args": 0
  },
  "타이틀": {
-  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:199",
-  "args": 0
- },
- "해상 — 유럽 근해(북위 55~30, 서경 65~동경 45)": {
-  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:200",
-  "args": 0
- },
- "해상 — 그 밖 중위도": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:201",
   "args": 0
  },
- "해상 — 남·북위 55 밖": {
+ "해상 — 유럽 근해(북위 55~30, 서경 65~동경 45)": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:202",
   "args": 0
  },
- "해상 — 동경 21~130 밖": {
+ "해상 — 그 밖 중위도": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:203",
   "args": 0
  },
- "해상 — 북위 30 아래(서경 65~동경 30)": {
+ "해상 — 남·북위 55 밖": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:204",
   "args": 0
  },
- "도시 — 이베리아": {
+ "해상 — 동경 21~130 밖": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:205",
   "args": 0
  },
- "도시 — 북유럽": {
+ "해상 — 북위 30 아래(서경 65~동경 30)": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:206",
   "args": 0
  },
- "도시 — 지중해": {
+ "도시 — 이베리아": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:207",
   "args": 0
  },
- "도시 — 아프리카": {
+ "도시 — 북유럽": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:208",
   "args": 0
  },
- "도시 — 중근동(이슬람)": {
+ "도시 — 지중해": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:209",
   "args": 0
  },
- "도시 — 인도": {
+ "도시 — 아프리카": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:210",
   "args": 0
  },
- "도시 — 중국": {
+ "도시 — 중근동(이슬람)": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:211",
   "args": 0
  },
- "도시 — 중앙아시아 · 동남아시아": {
+ "도시 — 인도": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:212",
   "args": 0
  },
- "도시 — 일본": {
+ "도시 — 중국": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:213",
   "args": 0
  },
- "도시 — 아메리카": {
+ "도시 — 중앙아시아 · 동남아시아": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:214",
   "args": 0
  },
- "뭍 이동": {
+ "도시 — 일본": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:215",
   "args": 0
  },
- "전투(해전·육상전)": {
+ "도시 — 아메리카": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:216",
   "args": 0
  },
+ "뭍 이동": {
+  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:217",
+  "args": 0
+ },
+ "전투(해전·육상전)": {
+  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:218",
+  "args": 0
+ },
  "여급 청혼 · 혼인": {
-  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:219",
+  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:221",
   "args": 0
  },
  "일기토 · 반란": {
-  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:220",
-  "args": 0
- },
- "왕궁(유럽 문화권)": {
   "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:222",
   "args": 0
  },
+ "왕궁(유럽 문화권)": {
+  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:224",
+  "args": 0
+ },
  "후원자 알현(보고 · 설득 · 계약중단)": {
-  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:223",
+  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:225",
   "args": 0
  },
  "{0} 를 틀지 못했습니다 — {1}": {
-  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:344",
+  "at": "CdsHelper.Game/Local/Helpers/BgmPlayer.cs:346",
   "args": 2
  },
  "BOOKSHEL.CDS 에 파트가 모자랍니다": {
@@ -10290,7 +10294,7 @@
   "args": 1
  },
  "{0} 에 일기토 그림이 없습니다 (tools/extract_duel_art.py 로 뜹니다)": {
-  "at": "CdsHelper.Game/Local/Helpers/DuelArt.cs:117",
+  "at": "CdsHelper.Game/Local/Helpers/DuelArt.cs:118",
   "args": 1
  },
  "다가오기": {
@@ -10378,7 +10382,7 @@
   "args": 1
  },
  "FIGHTER.CDS 에 스프라이트셋이 모자랍니다": {
-  "at": "CdsHelper.Game/Local/Helpers/FighterSprites.cs:112",
+  "at": "CdsHelper.Game/Local/Helpers/FighterSprites.cs:113",
   "args": 0
  },
  "[초점] {0} → {1}   ·   {2}": {
@@ -12776,7 +12780,7 @@
   "chain": true
  },
  "도시 {0}곳 · 문화권 {1}가지": {
-  "at": "CdsHelper.Game/UI/Views/CityCultureEditDialog.cs:177",
+  "at": "CdsHelper.Game/UI/Views/CityCultureEditDialog.cs:178",
   "args": 2
  },
  "규모": {
@@ -13658,121 +13662,149 @@
   "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:51",
   "args": 0
  },
+ "삭제": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:58",
+  "args": 0
+ },
+ "여기서 더한 발견물 줄을 지운다 — 원본 게임에 있던 줄은 지울 수 없고 「이 줄 되돌리기」로 게임 값에 돌린다": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:61",
+  "args": 0
+ },
  "내보내기…": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:73",
-  "args": 0
- },
- "고른 발견물을 표 줄·대본·힌트·그림/동영상까지 통째로 zip 한 장에 담는다": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:76",
-  "args": 0
- },
- "불러오기…": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:81",
   "args": 0
  },
- "내보내 둔 zip 을 읽어 그 번호의 발견물을 통째로 되돌려 놓는다": {
+ "고른 발견물을 표 줄·대본·힌트·그림/동영상까지 통째로 zip 한 장에 담는다": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:84",
   "args": 0
  },
- "발견물 고치기 · 더하기": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:99",
+ "불러오기…": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:89",
   "args": 0
  },
- "갈래 이름": {
+ "내보내 둔 zip 을 읽어 그 번호의 발견물을 통째로 되돌려 놓는다": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:92",
+  "args": 0
+ },
+ "발견물 고치기 · 더하기": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:107",
   "args": 0
  },
- "일련번호": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:108",
-  "args": 0
- },
- "가리키는 힌트": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:109",
-  "args": 0
- },
- "보수": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:110",
-  "args": 0
- },
- "주는 물건": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:111",
-  "args": 0
- },
- "간접": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:112",
-  "args": 0
- },
- "처음부터": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:113",
-  "args": 0
- },
- "뭍": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:114",
-  "args": 0
- },
- "한 번만": {
+ "갈래 이름": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:115",
   "args": 0
  },
- "동영상": {
+ "일련번호": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:116",
+  "args": 0
+ },
+ "가리키는 힌트": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:117",
+  "args": 0
+ },
+ "보수": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:118",
+  "args": 0
+ },
+ "주는 물건": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:119",
+  "args": 0
+ },
+ "간접": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:120",
+  "args": 0
+ },
+ "처음부터": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:121",
   "args": 0
  },
+ "뭍": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:122",
+  "args": 0
+ },
+ "한 번만": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:123",
+  "args": 0
+ },
+ "동영상": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:129",
+  "args": 0
+ },
  "발견물 표를 못 읽었습니다 — 세이브를 한 번 열어 게임 폴더를 알려 주세요": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:220",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:230",
   "args": 0
  },
  "발견물 표를 못 읽었습니다 — 세이브를 한 번 열어 게임 폴더를 알려 주세요 ({0})": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:220",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:230",
   "args": 1,
   "chain": true
  },
  "발견물 {0}줄 가운데 {1}줄 — 게임 표 0x0051C540": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:248",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:258",
   "args": 2
  },
  " · 손으로 고치거나 더한 줄 {0}": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:249",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:259",
   "args": 1
  },
  "   ·   자리(X1~Y2)가 -1 이면 그 발견물은 아무 데서도 안 잡힌다": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:250",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:260",
   "args": 0
  },
  "   ·   고치거나 더한 것은 게임 안에서도 그대로 쓰인다": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:251",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:261",
   "args": 0
  },
+ "지울 줄을 먼저 고르세요.": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:337",
+  "args": 0
+ },
+ "발견물 {0} 번은 원본 게임에 있는 줄이라 지울 수 없습니다 — 고친 것은 「이 줄 되돌리기」로 돌립니다.": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:340",
+  "args": 1
+ },
+ "「{0}」(발견물 {1})을 지울까요?": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:343",
+  "args": 2
+ },
+ "발견물 삭제": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:343",
+  "args": 0
+ },
+ "발견물 {0} 번 「{1}」을 지웠습니다.": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:349",
+  "args": 2
+ },
  "내보낼 줄을 먼저 고르세요.": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:342",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:388",
   "args": 0
  },
  "「{0}」(발견물 {1}) 내보내기": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:346",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:392",
   "args": 2
  },
  "발견물 꾸러미 (*.discovery.zip)|*.discovery.zip|모든 파일|*.*": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:347",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:393",
   "args": 0
  },
  "{0} 로 내보냈습니다.": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:354",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:400",
   "args": 1
  },
  "못 내보냈습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:355",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:401",
   "args": 1
  },
  "발견물 불러오기": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:365",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:411",
   "args": 0
  },
  "못 불러왔습니다 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:371",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:417",
   "args": 1
  },
  "발견물 {0} 번을 불러왔습니다.": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:376",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryEditDialog.cs:422",
   "args": 1
  },
  "도": {
@@ -15430,36 +15462,20 @@
   "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:170",
   "args": 0
  },
- "서유럽": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:223",
-  "args": 0
- },
- "동유럽": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:223",
-  "args": 0
- },
- "중남미": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:224",
-  "args": 0
- },
- "오세아니아": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:224",
-  "args": 0
- },
  "— 빈 자리 —": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:299",
+  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:295",
   "args": 0
  },
  "병력": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:319",
+  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:315",
   "args": 0
  },
  " 명": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:321",
+  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:317",
   "args": 0
  },
  "양쪽 다 적어도 한 자리는 세워야 합니다.": {
-  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:351",
+  "at": "CdsHelper.Game/UI/Views/LandSparDialog.cs:347",
   "args": 0
  },
  "기능 {0}": {
@@ -20684,43 +20700,43 @@
   "args": 1
  },
  "묘책 확률 고치기": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:63",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:59",
   "args": 0
  },
  "확률": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:69",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:65",
   "args": 0
  },
  "게임 값": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:70",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:66",
   "args": 0
  },
  "이 칸을 보는 짝": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:71",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:67",
   "args": 0
  },
  "(안 굴림)": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:136",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:132",
   "args": 0
  },
  "— 아무도 안 봄": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:138",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:134",
   "args": 0
  },
  "묘책 확률 {0}칸 — 게임 표 0x00549B80 (4바이트 x {1})": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:160",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:156",
   "args": 2
  },
  "   ·   0~100, 고친 것은 게임 안에서도 그대로 쓰인다": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:162",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:158",
   "args": 0
  },
  "\n칸 간격이 셋인데 묘책은 넷이라 이웃 문화권끼리 칸을 나눠 쓴다 — ": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:163",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:159",
   "args": 0
  },
  "원본 그대로다. 심판은 굴리지 않아 늘 떨어진다.": {
-  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:164",
+  "at": "CdsHelper.Game/UI/Views/RuseEditDialog.cs:160",
   "args": 0
  },
  "총함대수": {
@@ -22454,11 +22470,11 @@
   "args": 0
  },
  "먼 바다": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2447",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2448",
   "args": 0
  },
  "공짜로 마시게 할 술은 없다!": {
-  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2473",
+  "at": "CdsHelper.Game/UI/Views/TavernMenu.cs:2474",
   "args": 0
  },
  "소문 편집 — 술집 · 여관 무명 손님": {
@@ -22539,10 +22555,6 @@
   "args": 0
  },
  "영문": {
-  "at": "CdsHelper.Game/UI/Views/TextInputDialog.cs:164",
-  "args": 0
- },
- "삭제": {
   "at": "CdsHelper.Game/UI/Views/TextInputDialog.cs:164",
   "args": 0
  },
@@ -25692,6 +25704,10 @@
  },
  "대항해시대3-지도(발견물-이름-기준).jpg": {
   "at": "CdsHelper.Support/Local/Helpers/MapImageAsset.cs:12",
+  "args": 0
+ },
+ "오세아니아": {
+  "at": "CdsHelper.Support/Local/Helpers/MapMarkerHelper.cs:125",
   "args": 0
  },
  "북해": {
