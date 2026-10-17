@@ -127,7 +127,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _hasHint.Checked += (_, _) => ShowHintParts();
         _hasHint.Unchecked += (_, _) => ShowHintParts();
         _form.Children.Add(Line("설명", _description));
-        _form.Children.Add(Line("장면", _scene));
+        _form.Children.Add(Line("장면", _scene, Edit("아이템 넣기…", InsertItem)));
         _form.Children.Add(new TextBlock
         {
             Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap,
@@ -354,20 +354,25 @@ public sealed class UserDiscoveryDialog : GameWindow
         catch (Exception ex) when (ex is System.IO.IOException or NotSupportedException) { return null; }
     }
 
-    private static string SceneText(UserDiscoveries.SceneLine line) => line.Kind switch
+    /// <summary>아이템 번호의 이름. 표가 없거나 모르면 null.</summary>
+    private string? ItemName(string id) =>
+        int.TryParse(id.Trim(), out int n) && _game?.Items?.Find(n) is { Name.Length: > 0 } item ? item.Name : null;
+
+    private string SceneText(UserDiscoveries.SceneLine line) => line.Kind switch
     {
         "picture" => "[그림]",
         "movie" => "[동영상]",
         "found" => line.Text.Length > 0 ? $"[발견] {line.Text}" : "[발견]",
         "battle" => $"[해전] {line.Text}",
         "land" => $"[육상전] {line.Text}",
-        "item" => $"[아이템] {line.Text}",
+        // 아이템은 번호로 들고 이름으로 보인다 — 「[아이템] 4」로는 무엇인지 모른다.
+        "item" => $"[아이템] {ItemName(line.Text) ?? line.Text}",
         "gameover" => "[게임 오버]",
         "lose" => "[놓쳤을 때]",
         _ => string.IsNullOrWhiteSpace(line.Speaker) ? line.Text : $"{line.Speaker}: {line.Text}",
     };
 
-    private static List<UserDiscoveries.SceneLine> ParseScene(string text)
+    private List<UserDiscoveries.SceneLine> ParseScene(string text)
     {
         var lines = new List<UserDiscoveries.SceneLine>();
         foreach (string raw in text.Split('\n'))
@@ -380,7 +385,12 @@ public sealed class UserDiscoveryDialog : GameWindow
             else if (s.StartsWith("[해전]")) lines.Add(new("battle", null, s[4..].Trim() is { Length: > 0 } monster ? monster : "크라켄"));
             else if (s == "[놓쳤을 때]") lines.Add(new("lose"));
             else if (s.StartsWith("[육상전]")) lines.Add(new("land", null, s[5..].Trim()));
-            else if (s.StartsWith("[아이템]")) lines.Add(new("item", null, s[5..].Trim()));
+            else if (s.StartsWith("[아이템]"))
+            {
+                // 이름으로 적었으면 번호로 바꿔 든다. 못 찾으면 적은 그대로 두고 「저장」에서 알린다.
+                string what = s[5..].Trim();
+                lines.Add(new("item", null, !int.TryParse(what, out _) && _game?.Items?.Find(what) is { } found ? $"{found.Id}" : what));
+            }
             else if (s == "[게임 오버]") lines.Add(new("gameover"));
             else if (s.IndexOf(':') is var at and > 0 and <= 12 && !s[..at].Contains(' '))
                 lines.Add(new("say", s[..at].Trim(), s[(at + 1)..].Trim()));
@@ -532,7 +542,7 @@ public sealed class UserDiscoveryDialog : GameWindow
             }
             if (line.Kind == "item" && !int.TryParse(line.Text.Trim(), out _))
             {
-                Tell($"「[아이템] {line.Text}」 — 아이템 번호를 적어 주세요.");
+                Tell($"「[아이템] {line.Text}」 — 그런 아이템이 없습니다. 「아이템 넣기…」로 골라 주세요.");
                 return;
             }
         }
@@ -656,6 +666,18 @@ public sealed class UserDiscoveryDialog : GameWindow
         _dropLock = true;
         _password.Clear();
         Tell("「저장」을 누르면 비밀번호가 빠집니다.");
+    }
+
+    /// <summary>아이템 고르기 창을 띄워, 고른 아이템을 「[아이템] 이름」 줄로 장면의 커서 자리 줄 뒤에 넣는다.</summary>
+    private void InsertItem()
+    {
+        if (_game == null) { Tell("아이템 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요."); return; }
+        if (ItemPickerDialog.Pick(this, _game) is not { } item) return;
+        string line = $"[아이템] {item.Name}";
+        int at = _scene.CaretIndex, end = _scene.Text.IndexOf('\n', Math.Min(at, _scene.Text.Length));
+        if (end < 0) _scene.Text = _scene.Text.TrimEnd('\n') + (_scene.Text.Length > 0 ? "\n" : "") + line;
+        else _scene.Text = _scene.Text.Insert(end + 1, line + "\n");
+        Tell($"장면에 「{line}」 을 넣었습니다 — 이긴 갈래 등 원하는 자리로 옮기고 「저장」을 눌러 주세요.");
     }
 
     /// <summary>문화권 탭으로 도시를 늘어놓는 창을 띄워 소문 도시를 셋까지 고른다.</summary>
