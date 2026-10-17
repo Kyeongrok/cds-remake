@@ -2948,9 +2948,18 @@ public sealed class WorldMapWindow : Window
     /// <remarks>
     /// 타이틀 화면에서는 적을 판이 없으므로 아무것도 안 한다.
     /// </remarks>
+    /// <summary>하드코어 주인공이 저장 단축키를 눌렀을 때.</summary>
+    public const string HardcoreNoQuickSave = "하드코어 모드에서는 단축키로 저장할 수 없습니다. 여관에서 저장해 주세요.";
+
     internal void SaveByKey(Window owner)
     {
         if (!_started || !ReferenceEquals(_screen.Content, _mapRoot)) return;
+        // 하드코어는 원본처럼 시설에서만 적는다 — 단축키 저장은 죽기 직전에 적어 두고 되돌리는 길이 된다.
+        if (_game.Player.Hardcore)
+        {
+            NoticeDialog.Show(owner, HardcoreNoQuickSave);
+            return;
+        }
         _game.Player.SetSeaCell(_host.SeaSpot);
         GameSystemMenu.Save(owner, _game);
     }
@@ -4512,6 +4521,8 @@ public sealed class WorldMapWindow : Window
     private void AutoSaveHere()
     {
         if (!GameSettings.AutoSaveOnPort) return;
+        // 하드코어는 자동저장도 안 한다 — 원본처럼 시설에서 손으로 적은 것만 남는다.
+        if (_game.Player.Hardcore) return;
 
         string error = _game.AutoSave();
         Say(error.Length == 0 ? "자동저장했습니다" : $"자동저장하지 못했습니다 — {error}");

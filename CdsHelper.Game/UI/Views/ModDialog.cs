@@ -410,12 +410,15 @@ public sealed class ModDialog : GameWindow
             + " 끄면 더해 넣은 발견물과 힌트가 나오지 않습니다. 이미 찾은 것은 기록에 남습니다."));
 
         // 자동저장 — 원본에 없다. 손으로 적는 자리(SAVEDATA.CDS)는 안 건드리고 따로 적는다.
-        save.Children.Add(Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
+        var autoSave = Toggle("도시 자동저장", GameSettings.AutoSaveOnPort,
             on => GameSettings.AutoSaveOnPort = on,
             "원본에 없는 것입니다 — 도시에 들어설 때마다 자동저장 파일(AUTOSAVE.CDS)에 적습니다."
             + " 배로 입항하든 뭍으로 성문을 지나든 마찬가지라, 항구가 없는 내륙 마을에서도 적힙니다."
             + " 손으로 적어 둔 세이브(SAVEDATA.CDS)는 건드리지 않습니다."
-            + " 첫 화면의 「CONTINUE」가 이 파일을 엽니다."));
+            + " 첫 화면의 「CONTINUE」가 이 파일을 엽니다. 하드코어 주인공은 자동저장하지 않습니다.");
+        // 하드코어 주인공으로 하는 동안은 자동저장을 안 하므로 줄을 흐리게 둔다(켜 둔 값은 그대로).
+        if (Engine.HardcoreRules.Current?.Invoke() is { Hardcore: true }) autoSave.IsEnabled = false;
+        save.Children.Add(autoSave);
 
         // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 곡 등록 창은 햄버거에 있던 것을 이 줄 밑 단추로 옮겼다.
         general.Children.Add(CustomBgmControls());
