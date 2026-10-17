@@ -550,7 +550,32 @@ internal sealed class LandBattleScene : GameWindow
         int ruse = _ruse;
         _ruse = -1;
 
+        var opening = Enumerable.Range(0, _battle.Units.Count).Select(i => _battle.Units[i].Men).ToList();
         var said = fight.Ruse(ruse, dice, out _);
+
+        // 심판 — 원본(0x00448F80)은 「하늘에서 벼락이···!」를 알린 뒤 열두 부대를 섞은 차례로 하나씩, 깎인 병사수를
+        // 띄우고(0x00446400 — 숫자만이다, 여느 공격의 흔들림 0x00449250 은 안 거친다) 쓰러진 부대를 지운다(0x00448510).
+        // 예전에는 알림만 띄우고 그 줄들을 건너뛰어, 병사수만 몰래 깎여 아무 일도 없어 보였다.
+        if (ruse == LandBattle.Judgement)
+        {
+            if (said.Count > 0 && said[0].Sound >= 0) _game?.Sfx?.Play(said[0].Sound);
+            _menNow = opening;
+            foreach (var line in said)
+            {
+                if (line.Damage <= 0)
+                {
+                    if (line.Text.Length > 0) { Redraw(); NoticeDialog.Show(this, line.Text, ""); }
+                    continue;
+                }
+                if (!_quick) Flash([line], shake: false);
+                _menNow = line.Men ?? _menNow;
+                Redraw();
+            }
+            _menNow = null;
+            Redraw();
+            return;
+        }
+
         foreach (var line in said)
         {
             if (line.Sound >= 0) _game?.Sfx?.Play(line.Sound);
@@ -752,7 +777,8 @@ internal sealed class LandBattleScene : GameWindow
     /// 갈무리에서도 숫자가 오르는 넉 장 동안 부대 그림은 <b>한 점도 안 움직인다</b> —
     /// 그 넉 장을 겹쳐 재면 어긋남이 0 이다. 둘을 한 고리에서 같이 돌리면 안 된다.
     /// </remarks>
-    private void Flash(IReadOnlyList<LandFight.Line> bout)
+    /// <param name="shake">맞은 부대를 먼저 흔들지 — 심판은 원본도 안 흔들고 숫자만 띄운다(0x00446400).</param>
+    private void Flash(IReadOnlyList<LandFight.Line> bout, bool shake = true)
     {
         var hurt = new List<int>();
         var hits = new List<(int Slot, string Men)>();
@@ -768,19 +794,22 @@ internal sealed class LandBattleScene : GameWindow
 
         // ① 치는 몸짓이 끝나면 <b>한 장 멎었다가</b> 맞은 부대가 좌우로 흔들린다.
         //    이 동안 숫자는 아직 안 뜬다.
-        Rest(SwingMs);
-
-        int drift = 0;
-        foreach (int step in Shakes)
+        if (shake)
         {
-            // 표는 <b>자리가 아니라 걸음</b>이다 — 더해 가야 0·−8·0·+8·0 이 된다.
-            drift += step;
-            foreach (int slot in hurt) _shake[slot] = drift;
-            Redraw();
             Rest(SwingMs);
+
+            int drift = 0;
+            foreach (int step in Shakes)
+            {
+                // 표는 <b>자리가 아니라 걸음</b>이다 — 더해 가야 0·−8·0·+8·0 이 된다.
+                drift += step;
+                foreach (int slot in hurt) _shake[slot] = drift;
+                Redraw();
+                Rest(SwingMs);
+            }
+            foreach (int slot in hurt) _shake[slot] = 0;
+            Redraw();
         }
-        foreach (int slot in hurt) _shake[slot] = 0;
-        Redraw();
 
         // ② 흔들림이 멎고 나서 숫자가 뜬다.
         var shown = new List<(FrameworkElement Glyph, int Left, int Top)>();

@@ -329,7 +329,8 @@ public sealed class LandFight(LandBattle battle, GameRandom dice)
                     int men = battle.Units[slot].Men;
                     hurt = Math.Min(hurt, men);
                     battle.SetMen(slot, men - hurt);
-                    said.Add(new Line("", Actor: slot, Target: slot, Damage: hurt, Men: Snapshot(),
+                    // 친 부대가 없다 — 하늘이 친다. Actor 를 비워 두어야 화면이 그 부대를 앞으로 내미는 몸짓을 안 한다.
+                    said.Add(new Line("", Actor: -1, Target: slot, Damage: hurt, Men: Snapshot(),
                                        Places: PlaceSnapshot()));
                     Done();
                     if (Over != null) { Struck = true; break; }
