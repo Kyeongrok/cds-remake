@@ -524,7 +524,7 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다(운하는 1869년) — 포트사이드와 수에즈 사이 지협에 두 칸 폭의 바닷길을 뚫어, 지중해에서 홍해로"
             + " 배로 곧장 지나갈 수 있게 합니다."));
 
-        general.Children.Add(Toggle("특별주문", GameSettings.SpecialOrder, on => GameSettings.SpecialOrder = on,
+        general.Children.Add(Toggle("조선소 특별주문", GameSettings.SpecialOrder, on => GameSettings.SpecialOrder = on,
             "원본에 없는 것입니다 — 조선소 「구입」 아래에 「특별주문」 줄이 생깁니다. 가진 배 가운데 그 조선소가 파는 선체를 고르면"
             + " 포탑 · 대포 · 돛 · 개조까지 똑같은 새 배를 짓습니다. 값은 새 배값에 개조비 장부 · 포탑 · 대포 · 선수상 값을 더한 것입니다."
             + " 그 마을에서 안 파는 선수상은 빼고, 안 파는 대포는 바꿔 달지 묻습니다."));

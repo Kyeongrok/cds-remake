@@ -16983,6 +16983,10 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:525",
   "args": 0
  },
+ "조선소 특별주문": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:527",
+  "args": 0
+ },
  "원본에 없는 것입니다 — 조선소 「구입」 아래에 「특별주문」 줄이 생깁니다. 가진 배 가운데 그 조선소가 파는 선체를 고르면": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:528",
   "args": 0
