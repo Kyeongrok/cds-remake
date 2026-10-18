@@ -337,20 +337,37 @@ public sealed class ConfirmDialog : GameWindow
             FontFamily = new FontFamily("Times New Roman, Batang"),
             FontWeight = FontWeights.Bold,
             FontSize = 15,
-            Margin = new Thickness(10, 0, 10, 0),
             HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
         };
-        var face = new Border { BorderBrush = Dh2Brown, BorderThickness = new Thickness(1), Child = label, MinWidth = 52 };
-        var plaque = new Border
+
+        // 판의 바깥 테 — 위아래 가장자리가 왕관처럼 들쭉날쭉하고 네 귀가 뾰족한 다각형(Polygon)이다.
+        // 안쪽 얼굴(글씨 판)은 그 위에 반듯한 네모로 얹는다.
+        var rim = new System.Windows.Shapes.Polygon
+        {
+            Points = CrownPoints(PlaqueWidth, PlaqueHeight),
+            Fill = Dh2Rim,
+            Stroke = Dh2Brown,
+            StrokeThickness = 1,
+            StrokeLineJoin = PenLineJoin.Miter,
+            SnapsToDevicePixels = true,
+        };
+        var face = new Border
         {
             BorderBrush = Dh2Brown,
             BorderThickness = new Thickness(1),
-            Background = Dh2Rim,
-            Padding = new Thickness(2),
+            Margin = new Thickness(PlaqueInset),
+            SnapsToDevicePixels = true,
+            Child = label,
+        };
+        var plaque = new Grid
+        {
+            Width = PlaqueWidth,
+            Height = PlaqueHeight,
             Margin = new Thickness(0, 0, 3, 0),
             Cursor = Cursors.Hand,
-            SnapsToDevicePixels = true,
-            Child = face,
+            Background = Brushes.Transparent,   // 이빨 사이 빈 데를 눌러도 먹게
+            Children = { rim, face },
         };
         plaque.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
         _focus.Add(plaque, on =>
@@ -359,6 +376,54 @@ public sealed class ConfirmDialog : GameWindow
             label.Foreground = on ? Dh2OnText : Dh2OffText;
         }, run);
         return plaque;
+    }
+
+    /// <summary>대항해시대2 단추 판의 크기와, 바깥 테에서 안쪽 글씨 판까지의 거리.</summary>
+    private const double PlaqueWidth = 72, PlaqueHeight = 30, PlaqueInset = 5;
+
+    /// <summary>
+    /// 왕관 테의 꼭짓점들 — 위 · 아래 가장자리에 이빨(봉우리)을 <paramref name="tooth"/> 간격으로 세우고, 네 귀는 바깥으로
+    /// 뾰족하게 내민다. 옆 가장자리 가운데도 한 번 오목하게 판다. 시계 방향으로 한 바퀴 돈다.
+    /// </summary>
+    private static PointCollection CrownPoints(double w, double h, double tooth = 6, double depth = 3)
+    {
+        var pts = new PointCollection();
+        // 왼쪽 위 귀 — 바깥으로 내민 뿔
+        pts.Add(new Point(0, 0));
+        // 위 가장자리: 골(depth) · 봉우리(0) 를 번갈아
+        int n = Math.Max(2, (int)Math.Round((w - 2 * tooth) / tooth));
+        double step = (w - 2 * tooth) / n;
+        pts.Add(new Point(tooth, depth));
+        for (int k = 0; k < n; k++)
+        {
+            double x = tooth + k * step;
+            pts.Add(new Point(x + step / 2, k % 2 == 0 ? 0.5 : depth + 0.5));
+            pts.Add(new Point(x + step, depth));
+        }
+        // 오른쪽 위 귀
+        pts.Add(new Point(w, 0));
+        // 오른쪽 가장자리 — 가운데를 한 번 판다
+        pts.Add(new Point(w - depth, h / 2 - depth));
+        pts.Add(new Point(w - depth - 1.5, h / 2));
+        pts.Add(new Point(w - depth, h / 2 + depth));
+        // 오른쪽 아래 귀
+        pts.Add(new Point(w, h));
+        // 아래 가장자리: 위와 거울로
+        pts.Add(new Point(w - tooth, h - depth));
+        for (int k = 0; k < n; k++)
+        {
+            double x = w - tooth - k * step;
+            pts.Add(new Point(x - step / 2, k % 2 == 0 ? h - 0.5 : h - depth - 0.5));
+            pts.Add(new Point(x - step, h - depth));
+        }
+        // 왼쪽 아래 귀
+        pts.Add(new Point(0, h));
+        // 왼쪽 가장자리 — 가운데를 한 번 판다
+        pts.Add(new Point(depth, h / 2 + depth));
+        pts.Add(new Point(depth + 1.5, h / 2));
+        pts.Add(new Point(depth, h / 2 - depth));
+        pts.Freeze();
+        return pts;
     }
 
     /// <summary>알맹이를 대항해시대2 줄무늬 테로 감싼다 — 줄 하나가 테 한 겹(한 점)이다.</summary>
