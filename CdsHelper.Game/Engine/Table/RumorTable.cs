@@ -14,9 +14,11 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 술집 「정보를 듣는다」가 이 표로 줄을 고르고(<c>0x0042E780</c>) 말할 도시를 고른다(<c>0x0042F790</c>).
 /// 계약 힌트 표(<see cref="HintTable"/>, <c>0x004D8E80</c>)와는 딴 표다.
 ///
-/// <b>번역은 줄 번호로 한다.</b> 일본어판 EXE 의 같은 표(190줄, 차례가 같다)에서 줄마다 일본어 본문을 구워
-/// <see cref="Rumor.Ja"/> 칸에 둔다(<c>tools/bake_rumor_ja.py</c>). 표를 열 때 지금 언어의 칸을 고르므로
-/// 한국어 글을 고쳐도 번역이 안 끊긴다 — 예전에는 lang/ja.json 의 「한국어 글 → 일본어 글」로 화면에서 바꿨다.
+/// <b>소문은 <see cref="Rumor.Id"/>(UUID)로 가린다</b> — 고친 글 · 번역 · 도구 앱 편집이 다 이것으로 찾는다. 원본 표 ·
+/// 더해 넣은 소문(<c>소문-고친것.json</c>) · 사용자 발견물 소문이 한 열쇠 공간이다. 원본 줄 번호는 <see cref="Rumor.Line"/> 에
+/// 보조로 둔다 — 일본어판 EXE 의 같은 표(190줄, 차례가 같다)에서 줄마다 일본어 본문을 구울 때만 쓴다
+/// (<c>tools/bake_rumor_ja.py</c>). 표를 열 때 지금 언어의 칸(<see cref="Rumor.Ja"/>)을 고르므로 한국어 글을 고쳐도
+/// 번역이 안 끊긴다 — 예전에는 lang/ja.json 의 「한국어 글 → 일본어 글」로 화면에서 바꿨다.
 /// </remarks>
 public sealed class RumorTable
 {
@@ -38,10 +40,12 @@ public sealed class RumorTable
     /// <param name="Discovery">발견물 번호(계약 힌트의 목표와 같은 값).</param>
     /// <param name="Cities">들을 수 있는 도시 넷. −1 은 빈 칸이다.</param>
     /// <param name="Text">그 도시에서 들려주는 본문(한국어). 표를 열면 지금 언어의 글로 바뀌어 있다.</param>
-    /// <param name="Id">원본 표의 줄 번호(0~190). 더해 넣은 소문은 −1 이다.</param>
-    /// <param name="Ja">같은 줄의 일본어판 본문. 한국어판에만 있는 줄이나 더해 넣은 소문은 null 이다.</param>
+    /// <param name="Id">소문의 열쇠(UUID). 한 번 붙이면 안 바꾼다. 사용자 발견물 소문은 그 발견물의 UUID 다.</param>
+    /// <param name="Line">원본 표의 줄 번호(0~190) — 일본어판에서 같은 줄을 찾는 보조 열쇠. 원본 밖 소문은 −1 이다.</param>
+    /// <param name="Ja">일본어 본문. 없으면 한국어로 낸다.</param>
     [method: JsonConstructor]
-    public readonly record struct Rumor(int Discovery, int[] Cities, string Text, int Id = -1, string? Ja = null);
+    public readonly record struct Rumor(int Discovery, int[] Cities, string Text, string Id = "", int Line = -1,
+                                        string? Ja = null);
 
     internal sealed record Snapshot(List<Rumor> Rumors);
 
@@ -62,28 +66,32 @@ public sealed class RumorTable
     }
 
     /// <summary>
-    /// 실제 자리와 어긋난 소문을 고친 글 — 열쇠는 <b>줄 번호</b>(<see cref="Rumor.Id"/>), 값은 한국어 · 일본어 고친 글이다(제보).
+    /// 실제 자리와 어긋난 소문을 고친 글 — 열쇠는 소문 <see cref="Rumor.Id"/>(UUID), 값은 한국어 · 일본어 고친 글이다(제보).
     /// 한쪽만 고쳤으면 다른 쪽은 null 이라 표의 글을 쓴다.
     /// </summary>
     /// <remarks>
-    /// 앙코르 와트(30)와 용연향(156)은 일본어 원본이 「北西」 · 「西岸」인데 한국어판이 「북동」 · 「남안」으로 옮겼다.
-    /// 노아의 방주(50)는 일본어 원본부터 「北東」이다 — 아라랏산은 타브리즈의 북서쪽이다. 카카오(152)는 메리다에서 듣는데
-    /// 밭은 메리다가 아니라 미틀라 동쪽이다. 원본 글은 <c>exe-tables/소문표.json</c> 에 그대로 있다.
+    /// 앙코르 와트(줄 30)와 용연향(줄 156)은 일본어 원본이 「北西」 · 「西岸」인데 한국어판이 「북동」 · 「남안」으로 옮겼다.
+    /// 노아의 방주(줄 50)는 일본어 원본부터 「北東」이다 — 아라랏산은 타브리즈의 북서쪽이다. 카카오(줄 152)는 메리다에서
+    /// 듣는데 밭은 메리다가 아니라 미틀라 동쪽이다. 원본 글은 <c>exe-tables/소문표.json</c> 에 그대로 있다.
     /// </remarks>
-    private static readonly Dictionary<int, (string? Ko, string? Ja)> Corrected = new()
+    private static readonly Dictionary<string, (string? Ko, string? Ja)> Corrected = new()
     {
-        [30] = ("여기서 쭉 북서쪽으로 간 산속에 돌로 된 도시를 봤다는 사람이 옛날에 있었는데.", null),   // 앙코르 와트(123)
-        [50] = ("아라랏산은 흑해와 카스피해 사이에서 조금 남쪽으로 가면 있다. 타브리즈에서 보면 북서쪽이지.",
-                "アララト山は黒海とカスピ海の間のちょっと南側だ。タブリーズの街から見ると北西だな"),   // 노아의 방주(150)
-        [152] = ("카카오? 아하, 미틀라 동쪽에 카카오 밭이 있네.", "カカオ？　おう、ミトゥラの東にカカオ畑があるよ"),   // 카카오(509)
-        [156] = ("아프리카 서안에 고래로 향료를 만드는 마을이 있다하네.", null),   // 용연향(517)
+        // 앙코르 와트(발견물 123, 줄 30)
+        ["d6941119-6bda-4b81-81fe-50e33cad25af"] = ("여기서 쭉 북서쪽으로 간 산속에 돌로 된 도시를 봤다는 사람이 옛날에 있었는데.", null),
+        // 노아의 방주(발견물 150, 줄 50)
+        ["eba293ef-7e45-4d88-b1a3-402e8405dd2f"] = ("아라랏산은 흑해와 카스피해 사이에서 조금 남쪽으로 가면 있다. 타브리즈에서 보면 북서쪽이지.",
+                                                    "アララト山は黒海とカスピ海の間のちょっと南側だ。タブリーズの街から見ると北西だな"),
+        // 카카오(발견물 509, 줄 152)
+        ["b6b3120e-8c2d-4cdf-b74f-e007cf101cc4"] = ("카카오? 아하, 미틀라 동쪽에 카카오 밭이 있네.", "カカオ？　おう、ミトゥラの東にカカオ畑があるよ"),
+        // 용연향(발견물 517, 줄 156)
+        ["d94f35a1-1e58-49f8-b3ea-80190cd150bb"] = ("아프리카 서안에 고래로 향료를 만드는 마을이 있다하네.", null),
     };
 
     public static string LastError { get; private set; } = "";
 
     /// <summary>
-    /// 소문 전부 — 원본 191줄 뒤에 <b>더해 넣은 소문</b>(<c>소문-고친것.json</c>)을 잇는다. 줄 번호가 원본과 어긋나지 않게
-    /// 늘 뒤에 붙인다. 더한 것은 모드 「추가 발견물」을 켰을 때만 낸다.
+    /// 소문 전부 — 원본 191줄 뒤에 <b>더해 넣은 소문</b>(<c>소문-고친것.json</c>)과 사용자 발견물 소문을 잇는다.
+    /// 더한 것은 모드 「추가 발견물」을 켰을 때만 낸다. 셋 다 <see cref="Rumor.Id"/>(UUID)로 가린다.
     /// </summary>
     /// <remarks>
     /// 더해 넣은 발견물(돌묵상어 따위)의 힌트로 계약하면 술집 「정보를 듣는다」가 들려줄 줄이 있어야 한다 —
@@ -100,7 +108,14 @@ public sealed class RumorTable
 
     private static List<Rumor> Added => _added ??=
         [.. (TableCache.Read<Snapshot>(AddedName)?.Data.Rumors ?? [])
-            .Select(r => r with { Text = StandardText.Apply(r.Text) })];
+            .Select(r => r with { Text = TextOf(r) })];
+
+    /// <summary>
+    /// 사용자 발견물 소문 한 줄 — 열쇠는 그 발견물의 UUID 다(발견물마다 소문이 하나라 겹치지 않는다).
+    /// 글은 지은이가 적은 그대로라 일본어 칸이 없고, 표준 표기도 안 거친다.
+    /// </summary>
+    internal static Rumor UserRumor(string uuid, int discovery, int[] cities, string text) =>
+        new(discovery, cities, text, Id: uuid);
 
     public static RumorTable? Open(string gameDirectory)
     {
@@ -120,7 +135,7 @@ public sealed class RumorTable
             for (int j = 0; j < CitySlots; j++) cities[j] = exe.Int(row + 4 + j * 4);
             string? text = exe.Text(exe.Word(row + 0x14), TextLimit);
             if (text == null) break;
-            rumors.Add(new Rumor(exe.Int(row), cities, text));
+            rumors.Add(new Rumor(exe.Int(row), cities, text, Id: Guid.NewGuid().ToString(), Line: k));
         }
 
         // 판이 다른 EXE 를 잘못 읽지 않도록 첫 줄을 대 본다 — 아프리카 남단(발견물 0, 도시 97·99·90)이다.

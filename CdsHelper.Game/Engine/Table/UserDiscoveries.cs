@@ -344,7 +344,7 @@ public static class UserDiscoveries
     /// <summary>술집 소문들(모드를 켰을 때). 소문 글이 빈 것은 안 낸다.</summary>
     public static IEnumerable<RumorTable.Rumor> Rumors =>
         On ? All.Where(l => l.Entry.HasHint && l.Entry.RumorText.Length > 0)
-                .Select(l => new RumorTable.Rumor(l.Numbers.Serial, Cities(l.Entry.RumorCities), l.Entry.RumorText)) : [];
+                .Select(l => RumorTable.UserRumor(l.Entry.Uuid, l.Numbers.Serial, Cities(l.Entry.RumorCities), l.Entry.RumorText)) : [];
 
     /// <summary>소문 도시 넷 칸 — 원본 줄처럼 남는 칸은 -1.</summary>
     private static int[] Cities(int[]? cities)

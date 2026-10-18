@@ -6423,31 +6423,31 @@
   "args": 0
  },
  "소문표": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:23",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:25",
   "args": 0
  },
  "여기서 쭉 북서쪽으로 간 산속에 돌로 된 도시를 봤다는 사람이 옛날에 있었는데.": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:75",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:80",
   "args": 0
  },
  "아라랏산은 흑해와 카스피해 사이에서 조금 남쪽으로 가면 있다. 타브리즈에서 보면 북서쪽이지.": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:76",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:82",
   "args": 0
  },
  "카카오? 아하, 미틀라 동쪽에 카카오 밭이 있네.": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:78",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:85",
   "args": 0
  },
  "아프리카 서안에 고래로 향료를 만드는 마을이 있다하네.": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:79",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:87",
   "args": 0
  },
  "소문-고친것": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:97",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:105",
   "args": 0
  },
  "소문 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
-  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:130",
+  "at": "CdsHelper.Game/Engine/Table/RumorTable.cs:145",
   "args": 0
  },
  "묘책확률-고친것": {
