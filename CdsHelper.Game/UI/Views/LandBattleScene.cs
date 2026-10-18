@@ -721,6 +721,16 @@ internal sealed class LandBattleScene : GameWindow
                 continue;
             }
 
+            // 앞 부대가 앞열을 쓸어 후열이 앞으로 나왔으면, <b>치기 전에</b> 그 자리로 옮겨 보인다. 그 줄이 담아 온
+            // 자리가 곧 이 부대가 치는 때의 자리다(앞으로 당기기는 앞 대가 끝난 뒤 0x004484F0 이 한다). 예전에는 이 묶음을
+            // 다 치고 나서야 자리를 바꿔, 둘째 열이 뒷자리에서 치는 몸짓을 하고 나서 앞으로 튀어 나왔다(제보).
+            if (bout[0].Places is { } before)
+            {
+                bool moved = _placesNow is { } shown && !before.SequenceEqual(shown);
+                _placesNow = before;
+                if (moved) { Redraw(); Rest(RestMs); }
+            }
+
             Swing(bout);
             Flash(bout);
 
