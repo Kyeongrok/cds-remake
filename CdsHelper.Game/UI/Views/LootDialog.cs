@@ -212,7 +212,7 @@ public sealed class LootDialog : GameWindow
                 $"식량{PoolLeft(0),4}통　물{PoolLeft(1),4}통　자재{PoolLeft(2),4}통　탄약{PoolLeft(3),4}통")));
             if (_aside is { } aside)
                 _body.Children.Add(Row(Arrow(UiSprites.IconUp, LoadAside),
-                    Label($"{GoodsName(aside.Kind),-12}[{Months(aside.Shelf)}] {aside.Count}통 ({_cityName(aside.Origin)}산)")));
+                    Label($"{GameUi.Pad(GoodsName(aside.Kind), 12)}[{Months(aside.Shelf)}] {aside.Count}통 ({_cityName(aside.Origin)}산)")));
         }
     }
 
