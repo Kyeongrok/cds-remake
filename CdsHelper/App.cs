@@ -18,8 +18,36 @@ internal class App : PrismApplication
 {
     protected override Window CreateShell()
     {
-        return Container.Resolve<CdsHelperWindow>();
+        var shell = Container.Resolve<CdsHelperWindow>();
+        shell.Closed += (_, _) => ShutdownWhenNoneShown();
+        return shell;
     }
+
+    /// <summary>
+    /// 보이는 창이 하나도 없으면 앱을 끝낸다. 아직 떠 있는 창(개발도구에서 띄운 게임 창 따위)이 있으면 그 창들이
+    /// 닫힐 때 다시 본다.
+    /// </summary>
+    /// <remarks>
+    /// 끝내는 꼴은 기본값(마지막 창이 닫힐 때)인데, <b>만들어 두고 안 띄운 창</b>이 하나 남아 있어 메인 창을 닫아도
+    /// 프로세스가 끝나지 않았다(창 목록에 제목 없는 HwndWrapper 하나가 숨어 남았다). 그런 창은 닫히는 일이 없으니
+    /// 보이는 창만 센다.
+    /// </remarks>
+    private void ShutdownWhenNoneShown()
+    {
+        var shown = Windows.Cast<Window>().Where(w => w.IsVisible).ToList();
+        if (shown.Count == 0)
+        {
+            Shutdown();
+            return;
+        }
+        foreach (var window in shown)
+        {
+            window.Closed -= OnShownClosed;
+            window.Closed += OnShownClosed;
+        }
+    }
+
+    private void OnShownClosed(object? sender, EventArgs e) => ShutdownWhenNoneShown();
 
     protected override void OnStartup(StartupEventArgs e)
     {
