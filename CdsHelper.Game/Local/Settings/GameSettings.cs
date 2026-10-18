@@ -242,6 +242,9 @@ public sealed class GameSettingsData
     /// <summary>바다에서 해적·이슬람 함대가 붙는 확률 배수의 차례(<see cref="GameSettings.SeaRaidScales"/>). 원본은 x1.</summary>
     public int SeaRaidScale { get; set; } = GameSettings.DefaultSeaRaidScale;
 
+    /// <summary>발견물 지도의 내 자리 점 크기 배수의 차례(<see cref="GameSettings.DiscoveryMapShipScales"/>). 기본은 x1.</summary>
+    public int DiscoveryMapShipScale { get; set; } = GameSettings.DefaultDiscoveryMapShipScale;
+
     /// <summary>소지품일람 줄마다 아이템 그림과 효과를 낼지(스폰서 일람처럼). 원본은 이름만이라 꺼 두고 시작한다.</summary>
     public bool ItemListPictures { get; set; }
 
@@ -1130,6 +1133,19 @@ public static class GameSettings
     {
         get => Get(d => d.AskLendShips);
         set => Set(d => d.AskLendShips = value);
+    }
+
+    /// <summary>발견물 지도 내 자리 점 크기 배수 — 모드 창의 고르기 칸 차례다.</summary>
+    public static readonly double[] DiscoveryMapShipScales = [0.5, 0.75, 1, 1.5, 2, 3, 4];
+
+    /// <summary>예전 크기(x1)의 차례.</summary>
+    public const int DefaultDiscoveryMapShipScale = 2;
+
+    /// <summary>발견물 지도 내 자리 점 크기 배수의 차례 — 모드 「UI」 탭에서 고른다.</summary>
+    public static int DiscoveryMapShipScale
+    {
+        get => Math.Clamp(Get(d => d.DiscoveryMapShipScale), 0, DiscoveryMapShipScales.Length - 1);
+        set => Set(d => d.DiscoveryMapShipScale = Math.Clamp(value, 0, DiscoveryMapShipScales.Length - 1));
     }
 
     /// <summary>해적 조우 확률 배수 — 모드 창의 고르기 칸 차례다. 0 이면 아예 안 붙는다.</summary>

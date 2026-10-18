@@ -815,6 +815,8 @@ public sealed class DiscoveryMapDialog : GameWindow
     private void Place(Pin pin)
     {
         double size = pin.Size * ZoomBase / Z;
+        // 내 자리 점은 모드 「발견물 지도 내 자리 크기」만큼 키우고 줄인다.
+        if (pin == _shipPin) size *= GameSettings.DiscoveryMapShipScales[GameSettings.DiscoveryMapShipScale];
         // 내 자리 점은 키울수록 화면에서도 조금씩 준다 — 붙박아 두면 크게 키웠을 때 둘레를 덮었다.
         if (pin == _shipPin && Z > ZoomBase) size *= Math.Max(ShipShrinkFloor, Math.Sqrt(ZoomBase / Z));
         pin.Dot.Width = pin.Dot.Height = size;

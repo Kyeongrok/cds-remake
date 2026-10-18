@@ -223,6 +223,14 @@ public sealed class ModDialog : GameWindow
             + "끄면 햄버거 줄도 단축키도 안 먹습니다.",
             image: "discovery-map.png"));
 
+        // 발견물 지도의 내 자리(파란 점) 크기 — 잘 안 보인다는 말이 있어 키울 수 있게 한다.
+        ui.Children.Add(Select("발견물 지도 내 자리 크기",
+            [.. GameSettings.DiscoveryMapShipScales.Select((s, i) =>
+                i == GameSettings.DefaultDiscoveryMapShipScale ? $"x{s} (기본)" : $"x{s}")],
+            GameSettings.DiscoveryMapShipScale,
+            i => GameSettings.DiscoveryMapShipScale = i,
+            "발견물 지도에 찍히는 내 함대 자리(파란 점)의 크기입니다. 다음에 발견물 지도를 열 때부터 듭니다."));
+
         // 여급 수첩 — 낯을 튼 여급과 궁합을 모아 본다. 원본에는 없는 창이다.
         extra.Children.Add(Toggle("여급 수첩", GameSettings.ShowBarmaidBookMenu,
             on => GameSettings.ShowBarmaidBookMenu = on,
