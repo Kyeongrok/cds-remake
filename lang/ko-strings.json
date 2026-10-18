@@ -20395,91 +20395,99 @@
   "args": 0
  },
  "{0} ({1})": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:160",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:161",
   "args": 2
  },
  "● {0} : {1}": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:175",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:176",
   "args": 2
  },
  "그 말을 쓰는 도시 사람과 말이 통한다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:176",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:177",
   "args": 0
  },
  "제독보다 잘 알아들으면 통역해 준다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:176",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:177",
   "args": 0
  },
  "지닌 기능이 없다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:179",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:180",
   "args": 0
  },
  "이 자리에서 쓰이는 기능이 없다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:179",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:180",
   "args": 0
  },
  "※ 제독과 맡은 부하 가운데 높은 값을 쓴다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:184",
-  "args": 0
- },
- "※ 제독과 견주어 높은 값을 쓴다. 흐린 기능은 이 자리에서 안 쓰인다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:185",
   "args": 0
  },
+ "※ 제독과 견주어 높은 값을 쓴다. 흐린 기능은 이 자리에서 안 쓰인다.": {
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:186",
+  "args": 0
+ },
  "바다에서 폭풍 · 괴혈병 같은 재해를 덜 만난다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:192",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:193",
   "args": 0
  },
  "배에 쥐가 생기기 전에 미리 퇴치할 확률이 오른다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:195",
-  "args": 0
- },
- "육지를 걸을 때 여행비가 준다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:196",
   "args": 0
  },
- "육지를 걸을 때 여행비가 줄고(항해사 몫), 쥐를 미리 퇴치한다(부관 몫).": {
+ "육지를 걸을 때 여행비가 준다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:197",
   "args": 0
  },
- "해전 백병전 · 육상전 근접 공격 · 일기토.": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:199",
+ "육지를 걸을 때 여행비가 줄고(항해사 몫), 쥐를 미리 퇴치한다(부관 몫).": {
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:198",
   "args": 0
  },
- "해전 포격 · 육상전 포병.": {
+ "해전 백병전 · 육상전 근접 공격 · 일기토.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:200",
   "args": 0
  },
- "해전 · 육상전 사격과 일기토.": {
+ "해전 포격 · 육상전 포병.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:201",
   "args": 0
  },
- "괴혈병 · 전염병을 다스려 선원이 덜 죽는다.": {
+ "해전 · 육상전 사격과 일기토.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:202",
   "args": 0
  },
- "3 이면 괴혈병을 보리로 눌러 앉힌다.": {
+ "괴혈병 · 전염병을 다스려 선원이 덜 죽는다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:203",
   "args": 0
  },
- "육지에서 배를 고칠 수 있다.": {
+ "3 이면 괴혈병을 보리로 눌러 앉힌다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:204",
   "args": 0
  },
- "지도에서 도시를 알아보는 거리가 는다(측량 + 2칸), 도시 좌표도 보인다.": {
+ "육지에서 배를 고칠 수 있다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:205",
   "args": 0
  },
- "부하를 고용 · 재계약할 때 계약금이 준다.": {
+ "지도에서 도시를 알아보는 거리가 는다(측량 + 2칸), 도시 좌표도 보인다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:206",
   "args": 0
  },
- "도서관에서 이 기능이 필요한 힌트를 알아듣는다.": {
+ "부하를 고용 · 재계약할 때 계약금이 준다.": {
   "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:207",
   "args": 0
  },
+ "교역소 흥정이 잘 먹힌다(0 · 1 · 2 · 3 에 40 · 70 · 85 · 95%). 도서관에서 이 기능이 필요한 힌트를 알아듣는다.": {
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:209",
+  "args": 0
+ },
+ "교역소 흥정이 잘 먹힌다(0 · 1 · 2 · 3 에 40 · 70 · 85 · 95%).": {
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:210",
+  "args": 0
+ },
+ "도서관에서 이 기능이 필요한 힌트를 알아듣는다.": {
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:211",
+  "args": 0
+ },
  "기능 없음": {
-  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:230",
+  "at": "CdsHelper.Game/UI/Views/PersonInfoMenu.cs:234",
   "args": 0
  },
  "해역": {

@@ -132,6 +132,7 @@ internal static class PersonInfoMenu
     /// <remarks>
     /// <code>
     ///   부관   검술 · 포술 · 사격술(해전 · 육상전) · 의학 · 과학(괴혈병 · 전염병) · 운용술(쥐) · 조선기술(뭍 수리)
+    ///          · 회계(교역소 흥정 — 0x00481330 이 0x0047CC60(0, 0) 의 기능 9 와 견준다)
     ///   항해사 항해술(바다의 하루) · 운용술(뭍의 하루)
     ///   측량사 측량(지도 · 도시 알아보기)
     ///   통역   기능은 없다 — 언어만 쓴다
@@ -141,7 +142,7 @@ internal static class PersonInfoMenu
     private static bool ActiveSkill(int slot, int skill) => slot switch
     {
         FirstMateSlot => skill is Skill.Sword or Skill.Gunnery or Skill.Shooting or Skill.Medicine or Skill.Science
-                                 or Skill.Handling or Skill.Shipwright,
+                                 or Skill.Handling or Skill.Shipwright or Skill.Accounting,
         NavigatorSlot => skill is Skill.Sailing or Skill.Handling,
         SurveyorSlot => skill == Skill.Survey,
         _ => false,
@@ -204,6 +205,9 @@ internal static class PersonInfoMenu
         Skill.Shipwright => "육지에서 배를 고칠 수 있다.",
         Skill.Survey => "지도에서 도시를 알아보는 거리가 는다(측량 + 2칸), 도시 좌표도 보인다.",
         Skill.Rhetoric => slot < 0 ? "부하를 고용 · 재계약할 때 계약금이 준다." : "",
+        Skill.Accounting => slot < 0
+            ? "교역소 흥정이 잘 먹힌다(0 · 1 · 2 · 3 에 40 · 70 · 85 · 95%). 도서관에서 이 기능이 필요한 힌트를 알아듣는다."
+            : "교역소 흥정이 잘 먹힌다(0 · 1 · 2 · 3 에 40 · 70 · 85 · 95%).",
         _ => slot < 0 ? "도서관에서 이 기능이 필요한 힌트를 알아듣는다." : "",
     };
 
