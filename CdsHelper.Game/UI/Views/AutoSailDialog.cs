@@ -203,6 +203,7 @@ public sealed class AutoSailDialog : GameWindow
                     Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center,
                 },
                 _query,
+                GameUi.ImeBadge(_query),
                 _hitNote,
             },
         };
@@ -459,7 +460,9 @@ public sealed class AutoSailDialog : GameWindow
         var bar = new WrapPanel
         {
             Orientation = Orientation.Horizontal,
-            Width = CellWidth * Columns + 6,
+            // 폭을 붙박지 않고 창 폭만큼 편다 — 도시 판 폭(세 칸)에 맞춰 두면 창이 아래 줄(항로 굵기 · 짙기) 때문에 넓어져도
+            // 탭이 그 폭에서 접혀 두 줄로 몰렸다(건의).
+            HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(Side, 8, Side, 0),
         };
         var heads = new List<(Border Head, FrameworkElement Page)>();
