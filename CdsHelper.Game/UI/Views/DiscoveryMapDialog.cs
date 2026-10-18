@@ -440,6 +440,7 @@ public sealed class DiscoveryMapDialog : GameWindow
             Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center,
         });
         finder.Children.Add(_query);
+        finder.Children.Add(GameUi.ImeBadge(_query));
         finder.Children.Add(GameUi.PushButton(Lang.T("이전"), () => Step(-1), 70));
         finder.Children.Add(GameUi.PushButton(Lang.T("다음"), () => Step(1), 70));
         finder.Children.Add(_hitNote);

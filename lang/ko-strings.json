@@ -12193,59 +12193,59 @@
   "args": 0
  },
  "자동이동 모드": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:238",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:239",
   "args": 0
  },
  "속도 중시": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:241",
-  "args": 0
- },
- "최소 조타": {
   "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:242",
   "args": 0
  },
+ "최소 조타": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:243",
+  "args": 0
+ },
  "항로 표시": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:249",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:250",
   "args": 0
  },
  "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:255",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:256",
   "args": 0
  },
  "항로 굵기": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:297",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:298",
   "args": 0
  },
  "항로 짙기": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:299",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:300",
   "args": 0
  },
  "항해 시작": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:305",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:306",
   "args": 0
  },
  "중단": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:311",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:312",
   "args": 0
  },
  "항구가 있는 도시": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:418",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:419",
   "args": 0
  },
  "찾는 도시가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:536",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:539",
   "args": 0
  },
  "목적지 도시를 고르세요.": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:545",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:548",
   "args": 0
  },
  "항로를 계산합니다...": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:558",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:561",
   "args": 0
  },
  "아는 도시가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:753",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:756",
   "args": 0
  },
  "여급 수첩": {
@@ -14133,71 +14133,71 @@
   "args": 0
  },
  "이전": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:443",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:444",
   "args": 0
  },
  "찾는 것이 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:510",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:511",
   "args": 0
  },
  "발견물 {0}곳 · 찾은 것 {1}곳 · 배율 x{2}": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:575",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:576",
   "args": 3
  },
  "(휠 키우기·줄이기 · 끌어서 옮기기": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:576",
-  "args": 0
- },
- " · 오른쪽 단추 그 자리로 옮기기": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:577",
   "args": 0
  },
- " · Shift+오른쪽 단추 그 자리로 자동항해": {
+ " · 오른쪽 단추 그 자리로 옮기기": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:578",
   "args": 0
  },
- " · 빨강 찾음 · 회색 아직 · 파랑 내 자리": {
+ " · Shift+오른쪽 단추 그 자리로 자동항해": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:579",
   "args": 0
  },
- " · 주황 도시(「도」 도서관)": {
+ " · 빨강 찾음 · 회색 아직 · 파랑 내 자리": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:580",
   "args": 0
  },
+ " · 주황 도시(「도」 도서관)": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:581",
+  "args": 0
+ },
  " · 보라 풍향 {0} · 청록 해류)": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:582",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:583",
   "args": 1
  },
  "1~6월": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:582",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:583",
   "args": 0
  },
  "7~12월": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:582",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:583",
   "args": 0
  },
  "끄기": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:598",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:599",
   "args": 0
  },
  "켜기": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:598",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:599",
   "args": 0
  },
  "경도 →": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:678",
-  "args": 0
- },
- "위도 ↓": {
   "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:679",
   "args": 0
  },
+ "위도 ↓": {
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:680",
+  "args": 0
+ },
  "   ·   지금은 함대를 옮길 수 없습니다(도시 안이거나 뭍 위)": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:846",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:847",
   "args": 0
  },
  "   ·   그 자리로 옮겼습니다(닻을 내린 채)": {
-  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:855",
+  "at": "CdsHelper.Game/UI/Views/DiscoveryMapDialog.cs:856",
   "args": 0
  },
  "찔렀다!": {
@@ -14848,6 +14848,14 @@
  },
  "이대로 종료해도 괜찮습니까?": {
   "at": "CdsHelper.Game/UI/Views/GameSystemMenu.cs:146",
+  "args": 0
+ },
+ "한": {
+  "at": "CdsHelper.Game/UI/Views/GameUi.cs:1793",
+  "args": 0
+ },
+ "영": {
+  "at": "CdsHelper.Game/UI/Views/GameUi.cs:1793",
   "args": 0
  },
  "분류": {

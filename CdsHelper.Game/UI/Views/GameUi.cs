@@ -1763,4 +1763,42 @@ internal static class GameUi
         if (last is < '가' or > '힣') return open;
         return (last - '가') % 28 == 0 ? open : closed;
     }
+
+    /// <summary>
+    /// 글 칸 옆에 붙이는 한/영 표시 — 칸에 커서가 들어가 있는 동안만 보이고, 지금 입력기가 한글이면 「한」, 아니면 「영」이다
+    /// (대항해시대 온라인의 입력 칸처럼, 건의).
+    /// </summary>
+    /// <remarks>
+    /// 한/영 글쇠를 누를 때 오는 사건은 입력기마다 달라 믿기 어렵다 — 커서가 있는 동안 0.2초마다 입력기 상태
+    /// (<see cref="InputMethod.ImeConversionMode"/> 의 Native 비트)를 다시 읽는다.
+    /// </remarks>
+    public static FrameworkElement ImeBadge(TextBox box)
+    {
+        var text = new TextBlock { FontSize = 12, FontWeight = FontWeights.Bold, Foreground = Brushes.Black };
+        var badge = new Border
+        {
+            Background = ItemFill,
+            BorderBrush = ItemEdge,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(4, 0, 4, 0),
+            Margin = new Thickness(4, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            Visibility = Visibility.Hidden,
+            Child = text,
+        };
+
+        void Refresh()
+        {
+            bool hangul = (InputMethod.Current.ImeConversionMode & ImeConversionModeValues.Native) != 0;
+            text.Text = hangul ? "한" : "영";
+        }
+
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        timer.Tick += (_, _) => Refresh();
+        box.GotKeyboardFocus += (_, _) => { Refresh(); badge.Visibility = Visibility.Visible; timer.Start(); };
+        box.LostKeyboardFocus += (_, _) => { timer.Stop(); badge.Visibility = Visibility.Hidden; };
+        box.PreviewKeyUp += (_, _) => Refresh();
+        box.Unloaded += (_, _) => timer.Stop();
+        return badge;
+    }
 }
