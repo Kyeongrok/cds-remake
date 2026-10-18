@@ -89,7 +89,7 @@ public sealed class BarmaidBookDialog : GameWindow
         var text = new StackPanel { Margin = new Thickness(10, 0, 0, 0), Width = 560 };
         text.Children.Add(new TextBlock
         {
-            Text = $"{her.Name}   {cities.NameOf(her.City)}   {her.Year}년~"
+            Text = $"{her.Name}   {cities.NameOf(her.City)}   {her.Year}~{her.LastYear}년"
                  + (wife ? "   ♥ 아내" : destined ? "   ★ 운명의 반려자" : ""),
             FontWeight = FontWeights.Bold,
             FontSize = 15,

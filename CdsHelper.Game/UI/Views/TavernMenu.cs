@@ -732,19 +732,19 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         var art = new List<BuildingPhotoWindow.GuestArt>(TavernGuests.MaxOnScreen);
         var owners = new List<string?>(TavernGuests.MaxOnScreen);
-        var maid = kind == FacilityKind.Tavern ? Standing() : null;
-        bool maidSeated = false;
+        // 술집에는 그 마을에서 15~40살인 여급이 <b>모두</b> 선다 — 원본은 자리 차례를 섞는다(0x004A1BB0).
+        var maids = kind == FacilityKind.Tavern ? Standing() : [];
+        Shuffle(maids, _game.Random);
 
-        foreach (var seat in book.Seat(_culture, _cityId, keys, withMaid: maid != null,
+        foreach (var seat in book.Seat(_culture, keys, [.. maids.Select(m => TavernGuests.MaidSeed(_cityId, m.Id))],
                                        scale: _game.CityRows?.ScaleOf(_cityId) ?? -1))
         {
             var bgra = book.TryGetBgra(seat.Art);
             if (bgra == null) continue;
 
-            // 자리 짓는 쪽이 맨 앞에 여자를 세운다 — 술집이면 그 자리가 이 마을 여급이다.
-            if (seat.Person < 0 && seat.Art.Female && !maidSeated && maid is { } her)
+            if (seat.Maid >= 0 && seat.Maid < maids.Count)
             {
-                maidSeated = true;
+                var her = maids[seat.Maid];
                 art.Add(new(bgra, seat.Art.Width, seat.Art.Height,
                             _player.HasMetBarmaid(her.Id) ? her.Name : "여",
                             () => WithGuest(() => MeetBarmaid(her))));
@@ -805,10 +805,20 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
     // ── 여급 ────────────────────────────────────────────────────────────────
 
-    /// <summary>이 마을 술집에 지금 서 있는 여급. 표를 못 읽었거나 없으면 null.</summary>
-    private BarmaidTable.Barmaid? Standing() =>
-        _game.Barmaids?.Standing(_cityId, _player.Date.Year,
-                                 id => id == _player.SpouseId || _player.HasLeftTown(id));
+    /// <summary>이 마을 술집에 지금 서 있는 여급들. 표를 못 읽었거나 없으면 빈 목록.</summary>
+    private List<BarmaidTable.Barmaid> Standing() =>
+        _game.Barmaids?.Working(_cityId, _player.Date.Year,
+                                id => id == _player.SpouseId || _player.HasLeftTown(id)) ?? [];
+
+    /// <summary>제자리에서 섞는다.</summary>
+    private static void Shuffle<T>(List<T> list, Random dice)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = dice.Next(i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
+    }
 
     /// <summary>여급 얼굴. FEMALE.CDS 에서 낸다.</summary>
     private uint[]? FaceOfMaid(in BarmaidTable.Barmaid her) =>
@@ -1331,7 +1341,9 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (dice.Next(2) != 0 && _game.Nations?.Find(nationId) is { Capital: >= 0 } nation)
             culture = _game.CityRows?.CultureOf(nation.Capital) ?? culture;
 
-        (string, int)? woman = Standing() is { } her
+        // 여급이 여럿이면 그 가운데 하나를 굴린다(0x004A44F5 → 0x004A44FE).
+        var maids = Standing();
+        (string, int)? woman = maids.Count > 0 && maids[dice.Next(maids.Count)] is var her
             ? (her.Name, her.Personality) : null;
         string? line = StrangerTalk.Pick(culture, _cultureNo, _player.RumorsOf(_cityId), woman,
                                          () => TavernRumors.Of(culture, dice, inn), dice);

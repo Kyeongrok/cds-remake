@@ -182,7 +182,14 @@ public sealed class TavernGuests
     /// 갈래가 이름 없는 손님이고, 세는 자리에 <c>inc</c> 가 붙어 있어 <b>적어도 하나</b>는
     /// 늘 든다. 이 손님은 고용도 결투도 안 되고 그 고장 소문만 건넨다.
     /// </param>
-    public readonly record struct Slot(Guest Art, int Person, bool Stranger = false);
+    /// <param name="Maid">여급 자리면 <c>maids</c> 의 몇째인지, 아니면 -1.</param>
+    public readonly record struct Slot(Guest Art, int Person, bool Stranger = false, int Maid = -1);
+
+    /// <summary>
+    /// 여급이 서는 그림의 씨앗 — 마을과 여급 번호로 정한다. 한 마을에 여급이 여럿 서도 저마다 늘 같은 모습이고,
+    /// 아내가 되어 자택에 서도 그 모습이다(<see cref="MaidArt"/>).
+    /// </summary>
+    public static int MaidSeed(int city, int barmaid) => city * 1000 + barmaid;
 
     /// <summary>
     /// 술집에 세울 사람들을 자리 차례대로 고른다. <b>맨 앞(가장 왼쪽)은 여급</b>, 그 뒤는
@@ -202,9 +209,9 @@ public sealed class TavernGuests
     /// (<c>0x0049D6C0</c> → <c>0x0049D630</c>) — 그래서 술집을 여닫으면 서 있는 사람이
     /// 달라진다. 예전에는 <paramref name="seed"/> 로 둘 다 묶어 두어 늘 같았다.
     /// </remarks>
-    /// <param name="withMaid">
-    /// 맨 앞에 여자를 세울지. <b>술집에만</b> 여급이 선다 — 여관에는 여급이 없어서
-    /// 세워 봐야 한잔 사도 아무 일이 없다.
+    /// <param name="maids">
+    /// 맨 앞에 세울 여급들의 그림 씨앗(<see cref="MaidSeed"/>). <b>술집에만</b> 여급이 선다 — 여관에는 여급이 없어서
+    /// 세워 봐야 한잔 사도 아무 일이 없다. 여급 자리는 <see cref="Slot.Maid"/> 에 몇째 여급인지가 든다.
     /// </param>
     /// <summary>
     /// 그 문화권이 쓰는 손님 전부 — 술집에 설 수 있는 얼굴들이다.
@@ -259,8 +266,8 @@ public sealed class TavernGuests
     /// 앞서 앉은 수를 뺀 자리에서 <c>min(규모, rand(5 - 앉은 수)) + 1</c> 명만 세운다(<c>0x004A1B07</c>~<c>0x004A1B29</c>).
     /// 음수면 남는 자리를 다 채운다.
     /// </param>
-    public IReadOnlyList<Slot> Seat(string? culture, int seed, IReadOnlyList<Sitter> persons,
-                                    bool withMaid = true, int scale = -1)
+    public IReadOnlyList<Slot> Seat(string? culture, IReadOnlyList<Sitter> persons,
+                                    IReadOnlyList<int> maids, int scale = -1)
     {
         if (!Ranges.TryGetValue(culture ?? "", out var range)) range = Ranges["이베리아"];
 
@@ -273,10 +280,14 @@ public sealed class TavernGuests
         var seats = new List<Slot>(MaxOnScreen);
 
         // 여급 — 그 문화권에 여자가 없으면 그냥 건너뛴다(구간이 열한 명뿐인 문화권도 있다).
-        // 여급은 그 마을 사람이라 늘 같은 모습이어야 하므로 도시 번호로 고정한다.
-        var fixedRng = new Random(seed);
-        if (withMaid && women.Count > 0)
-            seats.Add(new Slot(_guests[women[fixedRng.Next(women.Count)]], -1));
+        // 여급은 그 마을 사람이라 늘 같은 모습이어야 하므로 씨앗으로 고정한다. 여럿이면 겹치지 않게 다음 그림으로 민다.
+        var maidArt = new HashSet<int>();
+        for (int m = 0; m < maids.Count && women.Count > 0 && seats.Count < MaxOnScreen - 1; m++)
+        {
+            int at = new Random(maids[m]).Next(women.Count);
+            for (int step = 0; step < women.Count && !maidArt.Add(women[at]); step++) at = (at + 1) % women.Count;
+            seats.Add(new Slot(_guests[women[at]], -1, Maid: m));
+        }
 
         // 인물 — 각자 제 그림으로 앉는다. <b>한 자리는 비워 둔다</b> — 무명 손님 몫이다.
         for (int i = 0; i < persons.Count && seats.Count < MaxOnScreen - 1; i++)

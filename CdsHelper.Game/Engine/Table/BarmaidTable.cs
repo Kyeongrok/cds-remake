@@ -62,6 +62,12 @@ public sealed class BarmaidTable
     /// </remarks>
     public const int YearBase = 1495, FirstYear = 1480;
 
+    /// <summary>술집에 서는 나이(<c>0x004797D2</c> · <c>0x004797DB</c>) — 열다섯에 나와 마흔을 넘기면 물러난다.</summary>
+    public const int WorkFrom = 15, WorkTo = 40;
+
+    /// <summary><see cref="Barmaid.Age"/> 칸이 없던 JSON 의 값.</summary>
+    public const int NoAge = int.MinValue;
+
     /// <summary>궁합이 맞을 때와 아닐 때 첫 대화가 올리는 친밀도(<c>0x00466768</c> · <c>0x0046679A</c>).</summary>
     public const int DestinedLike = 50, PlainLike = 3;
 
@@ -88,10 +94,24 @@ public sealed class BarmaidTable
     /// <param name="Tongues">가르쳐 주는 언어 비트.</param>
     [method: JsonConstructor]
     /// <param name="Year">이 해부터 그 술집에 선다.</param>
+    /// <param name="Age">
+    /// 1480 년의 나이(표 <c>+0x08</c>, 음수면 아직 안 태어났다). 술집에 서는지가 이것으로 갈린다(<see cref="Works"/>).
+    /// 이 칸이 없던 JSON 이면 <see cref="NoAge"/> 이고 <see cref="Year"/> 에서 어림한다.
+    /// </param>
     public readonly record struct Barmaid(
         int Id, string Name, int City, int Face, int Zodiac, int Blood,
-        int Fortune, int Personality, int Tongues, int Year)
+        int Fortune, int Personality, int Tongues, int Year, int Age = NoAge)
     {
+        /// <summary>그해의 나이(<c>0x00479770</c> = 표 <c>+0x08</c> + 지금 해 - 1480).</summary>
+        public int AgeIn(int year) => (Age == NoAge ? WorkFrom - (Year - FirstYear) : Age) + year - FirstYear;
+
+        /// <summary>그해에 술집에 서는 나이인지(<c>0x004797B0</c> — 15~40살).</summary>
+        public bool Works(int year) => AgeIn(year) is >= WorkFrom and <= WorkTo;
+
+        /// <summary>마지막으로 술집에 서는 해 — 마흔 살이 되는 해다.</summary>
+        [JsonIgnore]
+        public int LastYear => Year + (WorkTo - AgeIn(Year));
+
         /// <summary>성격 이름. 표 밖이면 빈 문자열.</summary>
         [JsonIgnore]
         public string PersonalityName =>
@@ -140,27 +160,20 @@ public sealed class BarmaidTable
     public List<Barmaid> InCity(int cityId) => [.. Barmaids.Where(b => b.City == cityId)];
 
     /// <summary>
-    /// 그 마을 술집에 <b>지금</b> 서 있는 여급. 없으면 null.
+    /// 그 마을 술집에 <b>지금</b> 서 있는 여급들(표 차례). 없으면 빈 목록.
     /// </summary>
     /// <remarks>
-    /// 한 마을에 여럿이 적혀 있는데 등장년도가 다르다 — 리스본은 알다(1480) · 카를로타
-    /// (1498) · 루치아(1522) 셋이다. 해가 갈수록 뒷사람으로 갈리므로 <b>나온 사람 가운데
-    /// 가장 늦게 나온 이</b>를 세운다.
+    /// 원본 술집(<c>0x004A1A90</c> → <c>0x004A1880</c>)은 그 마을 여급 가운데 <b>15~40살인 사람을 모두</b> 자리에 세운다 —
+    /// 한 사람만 고르지 않는다. 그래서 제노바는 1495~1500 년에 비안치넷타(1480 년 20살)와 베아트리스(1495 년 15살)가
+    /// 함께 서고, 마흔을 넘긴 비안치넷타는 1501 년부터 안 보인다. 예전에는 가장 늦게 나온 한 사람만 세우고 물러나는 일이
+    /// 없어, 뒷사람이 나오는 해에 앞사람이 사라졌다(제보).
     /// </remarks>
     /// <param name="away">
     /// 그 자리에 안 서는 여급 — 아내와 마을을 떠난 옛 아내다. 원본 술집은 아내를 건너뛰고(<c>0x004A18CA</c>)
     /// 도시 칸(<c>+0x24</c>)이 맞는 여급만 세운다(<c>0x004A18D4</c>).
     /// </param>
-    public Barmaid? Standing(int cityId, int year, Func<int, bool>? away = null)
-    {
-        Barmaid? found = null;
-        foreach (var b in Barmaids)
-        {
-            if (b.City != cityId || b.Year > year || away?.Invoke(b.Id) == true) continue;
-            if (found is not { } had || b.Year >= had.Year) found = b;
-        }
-        return found;
-    }
+    public List<Barmaid> Working(int cityId, int year, Func<int, bool>? away = null) =>
+        [.. Barmaids.Where(b => b.City == cityId && b.Works(year) && away?.Invoke(b.Id) != true)];
 
     /// <summary>
     /// 그 나이의 주인공이 내는 <b>표시 얼굴 코드</b>. 서른여섯부터 열여섯이 더 붙는다.
@@ -213,7 +226,8 @@ public sealed class BarmaidTable
                                  Fortune: exe.Int(at + 0x14),
                                  Personality: exe.Int(at + 0x18),
                                  Tongues: exe.Int(at + 0x20),
-                                 Year: Math.Max(FirstYear, YearBase - exe.Int(at + 0x08))));
+                                 Year: Math.Max(FirstYear, YearBase - exe.Int(at + 0x08)),
+                                 Age: exe.Int(at + 0x08)));
         }
 
         if (rows[0].Name != Probe)
