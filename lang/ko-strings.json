@@ -12779,6 +12779,10 @@
   "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:65",
   "args": 0
  },
+ "문화권": {
+  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:65",
+  "args": 0
+ },
  "매입가": {
   "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:65",
   "args": 0
@@ -12792,15 +12796,15 @@
   "args": 0
  },
  "아는 도시의 지금 시세입니다.": {
-  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:72",
+  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:73",
   "args": 0
  },
  "매입 정보": {
-  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:76",
+  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:77",
   "args": 0
  },
  "교역품 정보": {
-  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:77",
+  "at": "CdsHelper.Game/UI/Views/CargoRankDialog.cs:78",
   "args": 0
  },
  "입력 에러": {
@@ -12954,10 +12958,6 @@
  },
  "도시 · 문화권 · 왕국": {
   "at": "CdsHelper.Game/UI/Views/CityCultureDialog.cs:104",
-  "args": 0
- },
- "문화권": {
-  "at": "CdsHelper.Game/UI/Views/CityCultureDialog.cs:111",
   "args": 0
  },
  "왕국": {

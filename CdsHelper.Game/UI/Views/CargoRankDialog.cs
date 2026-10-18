@@ -22,7 +22,7 @@ internal sealed class CargoRankDialog : InfoDialog
     /// <summary>늘어놓는 도시 수.</summary>
     private const int Top = 15;
 
-    private const double RankWidth = 40, CityWidth = 190, BoughtWidth = 110, PriceWidth = 110, TotalWidth = 150;
+    private const double RankWidth = 40, CultureWidth = 110, CityWidth = 170, BoughtWidth = 110, PriceWidth = 110, TotalWidth = 150;
 
     /// <summary>창 위 교역품 단추로 고른 다음 짐 칸 — 닫은 뒤 <see cref="Show"/> 가 그 짐으로 다시 연다. 없으면 −1.</summary>
     private int _next = -1;
@@ -62,26 +62,28 @@ internal sealed class CargoRankDialog : InfoDialog
         if (cargo.Spoiled) rows.Children.Add(Label("썩어서 어디서도 값을 받지 못합니다."));
         else
         {
-            rows.Children.Add(Line("순위", "도시", "매입가", "단가", "전부 팔면"));
+            rows.Children.Add(Line("순위", "문화권", "도시", "매입가", "단가", "전부 팔면"));
             for (int i = 0; i < ranked.Count; i++)
             {
                 var (city, price) = ranked[i];
-                rows.Children.Add(Line($"{i + 1}", game.CityName(city), $"{bought}닢", $"{price}닢", $"{(long)price * cargo.Count}닢"));
+                string culture = game.CultureOf(city);
+                rows.Children.Add(Line($"{i + 1}", culture.Length > 0 ? Lang.T(culture) : "", game.CityName(city), $"{bought}닢", $"{price}닢", $"{(long)price * cargo.Count}닢"));
             }
             rows.Children.Add(Gap(6));
             rows.Children.Add(Label("아는 도시의 지금 시세입니다."));
         }
         rows.Children.Add(Gap(8));
 
-        Build("매입 정보", rows, RankWidth + CityWidth + BoughtWidth + PriceWidth + TotalWidth, double.NaN,
+        Build("매입 정보", rows, RankWidth + CultureWidth + CityWidth + BoughtWidth + PriceWidth + TotalWidth, double.NaN,
               new GameButton("교역품 정보", () => showInfo?.Invoke(cargo)), new GameButton("취소", Close));
     }
 
-    /// <summary>순위 · 도시 · 매입가 · 단가 · 합계 다섯 칸 한 줄. 값 셋은 오른쪽으로 붙인다.</summary>
-    private static UIElement Line(string rank, string city, string bought, string price, string total)
+    /// <summary>순위 · 문화권 · 도시 · 매입가 · 단가 · 합계 여섯 칸 한 줄. 값 셋은 오른쪽으로 붙인다.</summary>
+    private static UIElement Line(string rank, string culture, string city, string bought, string price, string total)
     {
         var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
         line.Children.Add(Cell(rank, RankWidth, HorizontalAlignment.Left));
+        line.Children.Add(Cell(culture, CultureWidth, HorizontalAlignment.Left));
         line.Children.Add(Cell(city, CityWidth, HorizontalAlignment.Left));
         line.Children.Add(Cell(bought, BoughtWidth, HorizontalAlignment.Right));
         line.Children.Add(Cell(price, PriceWidth, HorizontalAlignment.Right));
