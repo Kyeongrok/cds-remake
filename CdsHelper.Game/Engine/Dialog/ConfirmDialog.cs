@@ -95,19 +95,11 @@ public sealed class ConfirmDialog : GameWindow
         else if (dh2)
         {
             // 대항해시대2 단추 — 크림 띠 안에 판을 늘어놓는다(그림 없이 WPF 로 그린다).
-            var plaques = new StackPanel { Orientation = Orientation.Horizontal };
-            if (yesNo)
-            {
-                plaques.Children.Add(Dh2Plaque("YES", () => { DialogResult = true; }));
-                plaques.Children.Add(Dh2Plaque("NO", () => { DialogResult = false; }));
-            }
-            else plaques.Children.Add(Dh2Plaque("확인", () => { DialogResult = true; }));
+            var plaques = yesNo
+                ? new[] { Dh2Plaque("YES", () => { DialogResult = true; }), Dh2Plaque("NO", () => { DialogResult = false; }) }
+                : new[] { Dh2Plaque("확인", () => { DialogResult = true; }) };
             buttons.Height = double.NaN;
-            buttons.Children.Add(new Border
-            {
-                Background = Dh2Bar, BorderBrush = Dh2Brown, BorderThickness = new Thickness(1),
-                Padding = new Thickness(3, 3, 0, 3), SnapsToDevicePixels = true, Child = plaques,
-            });
+            buttons.Children.Add(Dh2Style.PlaqueBar(plaques));
         }
         else if (yesNo)
         {
@@ -215,11 +207,11 @@ public sealed class ConfirmDialog : GameWindow
         };
         if (dh2)
         {
-            frame.Background = Dh2Paper;
+            frame.Background = Dh2Style.Paper;
             frame.BorderThickness = new Thickness(0);
-            Background = Dh2Paper;
+            Background = Dh2Style.Paper;
         }
-        Content = dh2 ? Dh2Frame(frame) : frame;
+        Content = dh2 ? Dh2Style.Frame(frame) : frame;
 
         KeyDown += (_, e) =>
         {
@@ -302,137 +294,12 @@ public sealed class ConfirmDialog : GameWindow
     /// </remarks>
     private static readonly Brush FrameEdge = Frozen(Color.FromRgb(0x9B, 0x8D, 0x7D));
 
-    /// <summary>대항해시대2 대화창 바탕 — 갈무리에서 집은 <c>F2E3D3</c> 다.</summary>
-    private static readonly Brush Dh2Paper = Frozen(Color.FromRgb(0xF2, 0xE3, 0xD3));
-
-    /// <summary>
-    /// 대항해시대2 대화창 테 — 바깥에서 안쪽으로 한 점씩 일곱 줄이다(갈무리에서 집었다):
-    /// 검정 · 빨강(<c>D34001</c>) · 주황(<c>F3A261</c>) · 검정 · 빨강 · 초록(<c>00A261</c>) · 빨강.
-    /// </summary>
-    private static readonly Brush[] Dh2Stripes =
-    [
-        Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0xF3, 0xA2, 0x61)),
-        Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0x00, 0xA2, 0x61)),
-        Frozen(Color.FromRgb(0xD3, 0x40, 0x01)),
-    ];
-
-    /// <summary>대항해시대2 단추 색 — 크림 띠 · 갈색 테 · 황갈 테두리 띠 · 고른 판(분홍 · 연보라 바둑판, 파란 글씨) · 안 고른 판(짙은 초록, 옅은 글씨).</summary>
-    private static readonly Brush Dh2Bar = Frozen(Color.FromRgb(0xF2, 0xD9, 0xB5));
-    private static readonly Brush Dh2Brown = Frozen(Color.FromRgb(0x7A, 0x30, 0x10));
-    private static readonly Brush Dh2Rim = GameUi.Dither(Color.FromRgb(0xF3, 0xA2, 0x61), Color.FromRgb(0xD3, 0x40, 0x01), 1);
-    private static readonly Brush Dh2On = GameUi.Dither(Color.FromRgb(0xF0, 0xC0, 0xD8), Color.FromRgb(0xC8, 0xB0, 0xE0), 1);
-    private static readonly Brush Dh2Off = GameUi.Dither(Color.FromRgb(0x1E, 0x5A, 0x34), Color.FromRgb(0x10, 0x40, 0x24), 1);
-    private static readonly Brush Dh2OnText = Frozen(Color.FromRgb(0x28, 0x40, 0xA8));
-    private static readonly Brush Dh2OffText = Frozen(Color.FromRgb(0xC0, 0xD4, 0xB8));
-
-    /// <summary>
-    /// 대항해시대2 단추 판 하나 — 갈색 선 · 황갈 바둑판 띠 · 갈색 선 안에 바둑판 바탕과 세리프 글씨. 초점이 오면 분홍 바탕에
-    /// 파란 글씨, 아니면 짙은 초록에 옅은 글씨다. 초점 · 엔터는 묶음(<see cref="_focus"/>)이 맡는다.
-    /// </summary>
+    /// <summary>대항해시대2 단추 판 하나를 짓고 초점 묶음에 넣는다(<see cref="Dh2Style.Plaque"/>).</summary>
     private FrameworkElement Dh2Plaque(string text, Action run)
     {
-        var label = new TextBlock
-        {
-            Text = text,
-            FontFamily = new FontFamily("Times New Roman, Batang"),
-            FontWeight = FontWeights.Bold,
-            FontSize = 15,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-
-        // 판의 바깥 테 — 위아래 가장자리가 왕관처럼 들쭉날쭉하고 네 귀가 뾰족한 다각형(Polygon)이다.
-        // 안쪽 얼굴(글씨 판)은 그 위에 반듯한 네모로 얹는다.
-        var rim = new System.Windows.Shapes.Polygon
-        {
-            Points = CrownPoints(PlaqueWidth, PlaqueHeight),
-            Fill = Dh2Rim,
-            Stroke = Dh2Brown,
-            StrokeThickness = 1,
-            StrokeLineJoin = PenLineJoin.Miter,
-            SnapsToDevicePixels = true,
-        };
-        var face = new Border
-        {
-            BorderBrush = Dh2Brown,
-            BorderThickness = new Thickness(1),
-            Margin = new Thickness(PlaqueInset),
-            SnapsToDevicePixels = true,
-            Child = label,
-        };
-        var plaque = new Grid
-        {
-            Width = PlaqueWidth,
-            Height = PlaqueHeight,
-            Margin = new Thickness(0, 0, 3, 0),
-            Cursor = Cursors.Hand,
-            Background = Brushes.Transparent,   // 이빨 사이 빈 데를 눌러도 먹게
-            Children = { rim, face },
-        };
-        plaque.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
-        _focus.Add(plaque, on =>
-        {
-            face.Background = on ? Dh2On : Dh2Off;
-            label.Foreground = on ? Dh2OnText : Dh2OffText;
-        }, run);
+        var plaque = Dh2Style.Plaque(text, run, out var focused);
+        _focus.Add(plaque, focused, run);
         return plaque;
-    }
-
-    /// <summary>대항해시대2 단추 판의 크기와, 바깥 테에서 안쪽 글씨 판까지의 거리.</summary>
-    private const double PlaqueWidth = 72, PlaqueHeight = 30, PlaqueInset = 5;
-
-    /// <summary>
-    /// 왕관 테의 꼭짓점들 — 위 · 아래 가장자리에 이빨(봉우리)을 <paramref name="tooth"/> 간격으로 세우고, 네 귀는 바깥으로
-    /// 뾰족하게 내민다. 옆 가장자리 가운데도 한 번 오목하게 판다. 시계 방향으로 한 바퀴 돈다.
-    /// </summary>
-    private static PointCollection CrownPoints(double w, double h, double tooth = 6, double depth = 3)
-    {
-        var pts = new PointCollection();
-        // 왼쪽 위 귀 — 바깥으로 내민 뿔
-        pts.Add(new Point(0, 0));
-        // 위 가장자리: 골(depth) · 봉우리(0) 를 번갈아
-        int n = Math.Max(2, (int)Math.Round((w - 2 * tooth) / tooth));
-        double step = (w - 2 * tooth) / n;
-        pts.Add(new Point(tooth, depth));
-        for (int k = 0; k < n; k++)
-        {
-            double x = tooth + k * step;
-            pts.Add(new Point(x + step / 2, k % 2 == 0 ? 0.5 : depth + 0.5));
-            pts.Add(new Point(x + step, depth));
-        }
-        // 오른쪽 위 귀
-        pts.Add(new Point(w, 0));
-        // 오른쪽 가장자리 — 가운데를 한 번 판다
-        pts.Add(new Point(w - depth, h / 2 - depth));
-        pts.Add(new Point(w - depth - 1.5, h / 2));
-        pts.Add(new Point(w - depth, h / 2 + depth));
-        // 오른쪽 아래 귀
-        pts.Add(new Point(w, h));
-        // 아래 가장자리: 위와 거울로
-        pts.Add(new Point(w - tooth, h - depth));
-        for (int k = 0; k < n; k++)
-        {
-            double x = w - tooth - k * step;
-            pts.Add(new Point(x - step / 2, k % 2 == 0 ? h - 0.5 : h - depth - 0.5));
-            pts.Add(new Point(x - step, h - depth));
-        }
-        // 왼쪽 아래 귀
-        pts.Add(new Point(0, h));
-        // 왼쪽 가장자리 — 가운데를 한 번 판다
-        pts.Add(new Point(depth, h / 2 + depth));
-        pts.Add(new Point(depth + 1.5, h / 2));
-        pts.Add(new Point(depth, h / 2 - depth));
-        pts.Freeze();
-        return pts;
-    }
-
-    /// <summary>알맹이를 대항해시대2 줄무늬 테로 감싼다 — 줄 하나가 테 한 겹(한 점)이다.</summary>
-    private static UIElement Dh2Frame(UIElement inner)
-    {
-        UIElement wrapped = inner;
-        for (int i = Dh2Stripes.Length - 1; i >= 0; i--)
-            wrapped = new Border { BorderBrush = Dh2Stripes[i], BorderThickness = new Thickness(1), SnapsToDevicePixels = true, Child = wrapped };
-        return wrapped;
     }
 
     private static Brush Frozen(Color c)
