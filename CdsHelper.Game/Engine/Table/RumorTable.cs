@@ -43,7 +43,26 @@ public sealed class RumorTable
 
     // 소문 글은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
     private RumorTable(Snapshot snapshot) =>
-        _rumors = [.. snapshot.Rumors.Select(r => r with { Text = StandardText.Apply(r.Text) })];
+        _rumors = [.. snapshot.Rumors.Select(r => r with { Text = StandardText.Apply(Correct(r.Discovery, r.Text)) })];
+
+    /// <summary>
+    /// 실제 자리와 어긋난 소문을 고친다 — 열쇠는 발견물 번호, 값은 (원본 낱말, 고친 낱말)이다(제보).
+    /// </summary>
+    /// <remarks>
+    /// 앙코르 와트(123)와 용연향(517)은 일본어 원본이 「북서」 · 「서안」인데 한국어판이 「북동」 · 「남안」으로 옮겼다.
+    /// 노아의 방주(150)는 일본어 원본부터 「북동」이다 — 아라랏산은 타브리즈의 북서쪽이다. 카카오(509)는 메리다에서 듣는데
+    /// 밭은 메리다가 아니라 미틀라 동쪽이다. 원본 글은 <c>exe-tables/소문표.json</c> 에 그대로 있다.
+    /// </remarks>
+    private static readonly Dictionary<int, (string From, string To)> Corrected = new()
+    {
+        [123] = ("북동쪽으로 간 산속에", "북서쪽으로 간 산속에"),   // 앙코르 와트
+        [150] = ("타브리즈에서 보면 북동쪽이지", "타브리즈에서 보면 북서쪽이지"),   // 노아의 방주
+        [509] = ("동쪽에 카카오 밭이 있네", "미틀라 동쪽에 카카오 밭이 있네"),   // 카카오
+        [517] = ("아프리카 남안에", "아프리카 서안에"),   // 용연향
+    };
+
+    private static string Correct(int discovery, string text) =>
+        Corrected.TryGetValue(discovery, out var fix) ? text.Replace(fix.From, fix.To) : text;
 
     public static string LastError { get; private set; } = "";
 
