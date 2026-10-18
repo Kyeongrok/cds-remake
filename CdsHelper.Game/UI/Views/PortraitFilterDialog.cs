@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Support.Local.Settings;
+using CdsHelper.Support.UI.Units;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -35,8 +36,26 @@ public sealed class PortraitFilterDialog : GameWindow
     private readonly ComboBox _colors = Pick("공용 색표 64색 (원본)", "공용 색표 + 검정 · 흰색", "색 제한 없음");
     private readonly ComboBox _dither = Pick("플로이드-스타인버그", "바둑판 2x2", "바둑판 4x4", "디더링 없음");
     private readonly ComboBox _scaling = Pick("곱게 줄이기", "가장 가까운 점");
-    private readonly TextBox _reference = new() { Text = "248", Width = 60 };
-    private readonly TextBox _faceNumber = new() { Text = "9003", Width = 60 };
+
+    // 배경 그라데이션 — 원본 얼굴들은 뒤를 두 색 그라데이션으로 칠해 두었다(대개 짙은 밤색, 회녹색 · 회색 · 크림도 있다).
+    private readonly CheckBox _bgOn = new() { Content = "배경을 그라데이션으로 바꾸기", Margin = new Thickness(0, 2, 0, 2) };
+    // 허용치 기본 15 — 45 쯤이면 배경에 닿은 짙은 수염까지 번졌다(메흐메트 2세).
+    private readonly Slider _bgTol = Bar(3, 100, 15);
+    private readonly ComboBox _bgPreset = Pick("밤색(원본에 가장 흔함)", "회녹색", "회색", "크림", "직접 적기");
+    private readonly ComboBox _bgDir = Pick("위 → 아래", "왼쪽 위 → 오른쪽 아래", "왼쪽 → 오른쪽", "가운데 → 가장자리");
+    private readonly TextBox _bgFrom = new() { Text = "4A3528", Width = 70 };
+    private readonly TextBox _bgTo = new() { Text = "1C150E", Width = 70 };
+    private readonly CheckBox _bgSoft = new() { Content = "가장자리 부드럽게", IsChecked = true, Margin = new Thickness(0, 2, 0, 2) };
+
+    /// <summary>배경 기준점(80x96 자리) — 이 점의 색에 가까운 것이 배경이다. 바뀐 얼굴을 누르면 옮긴다.</summary>
+    private (int X, int Y) _bgPoint = (1, 1);
+
+    /// <summary>배경 미리 정한 색(위쪽 · 아래쪽) — 원본 후원자 얼굴 귀퉁이에서 뽑은 값이다.</summary>
+    private static readonly (string From, string To)[] BgPresets =
+        [("4A3528", "1C150E"), ("646C58", "3C4030"), ("8B9091", "45403A"), ("EADFCC", "B8A48C")];
+    // 번호는 숫자 돌리개로 — 위아래로 하나씩 넘겨 가며 원본 얼굴을 견줘 본다(건의).
+    private readonly NumericSpinner _reference = new() { Minimum = 0, Maximum = 999, Step = 1, DecimalPlaces = 0, Value = 248, Width = 90 };
+    private readonly NumericSpinner _faceNumber = new() { Minimum = Portraits.ShippedBase + 1, Maximum = 9999, Step = 1, DecimalPlaces = 0, Value = 9003, Width = 90 };
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
 
     private Portraits? _faces;
@@ -50,8 +69,27 @@ public sealed class PortraitFilterDialog : GameWindow
 
         _cropFrame.Children.Add(_cropBox);
         foreach (var s in new[] { _cx, _cy, _size, _bright, _contrast, _saturation }) s.ValueChanged += (_, _) => Redraw();
-        foreach (var c in new[] { _colors, _dither, _scaling }) c.SelectionChanged += (_, _) => Redraw();
-        _reference.TextChanged += (_, _) => ShowReference();
+        foreach (var c in new[] { _colors, _dither, _scaling, _bgDir }) c.SelectionChanged += (_, _) => Redraw();
+        _bgTol.ValueChanged += (_, _) => Redraw();
+        _resultView.MouseLeftButtonDown += (_, e) =>
+        {
+            var at = e.GetPosition(_resultView);
+            _bgPoint = (Math.Clamp((int)(at.X / Zoom), 0, W - 1), Math.Clamp((int)(at.Y / Zoom), 0, H - 1));
+            _bgOn.IsChecked = true;
+            Redraw();
+        };
+        _bgOn.Checked += (_, _) => Redraw(); _bgOn.Unchecked += (_, _) => Redraw();
+        _bgSoft.Checked += (_, _) => Redraw(); _bgSoft.Unchecked += (_, _) => Redraw();
+        _bgFrom.TextChanged += (_, _) => Redraw(); _bgTo.TextChanged += (_, _) => Redraw();
+        _bgPreset.SelectionChanged += (_, _) =>
+        {
+            if (_bgPreset.SelectedIndex is >= 0 and var i && i < BgPresets.Length)
+            {
+                _bgFrom.Text = BgPresets[i].From;
+                _bgTo.Text = BgPresets[i].To;
+            }
+        };
+        _reference.ValueChanged += (_, _) => ShowReference();
 
         var open = Button("그림 열기…", OpenImage);
         var export = Button("PNG 로 내보내기…", Export);
@@ -67,6 +105,14 @@ public sealed class PortraitFilterDialog : GameWindow
         controls.Children.Add(Row("밝기", _bright));
         controls.Children.Add(Row("대비 %", _contrast));
         controls.Children.Add(Row("채도 %", _saturation));
+        controls.Children.Add(Label("배경 — 기준점 색에 가깝고 테두리에 이어진 곳을 배경으로 친다. 바뀐 얼굴의 배경을 누르면 그 점이 기준이 된다(처음은 왼쪽 위)"));
+        controls.Children.Add(_bgOn);
+        controls.Children.Add(Row("허용치", _bgTol));
+        controls.Children.Add(Row("색", _bgPreset));
+        controls.Children.Add(Row("방향", _bgDir));
+        controls.Children.Add(Row("시작색", _bgFrom));
+        controls.Children.Add(Row("끝색", _bgTo));
+        controls.Children.Add(_bgSoft);
         controls.Children.Add(Label("줄이기 · 색 · 디더링"));
         controls.Children.Add(Row("줄이기", _scaling));
         controls.Children.Add(Row("색", _colors));
@@ -196,6 +242,8 @@ public sealed class PortraitFilterDialog : GameWindow
         var px = new byte[W * H * 4];
         small.CopyPixels(px, W * 4, 0);
         Adjust(px, _bright.Value, _contrast.Value / 100, _saturation.Value / 100);
+        if (_bgOn.IsChecked == true && Hex(_bgFrom.Text) is { } from && Hex(_bgTo.Text) is { } to)
+            Background(px, _bgPoint, _bgTol.Value, from, to, _bgDir.SelectedIndex, _bgSoft.IsChecked == true);
         if (_colors.SelectedIndex < 2) Quantize(px, Palette(_colors.SelectedIndex == 1), _dither.SelectedIndex);
 
         _result = px;
@@ -229,6 +277,102 @@ public sealed class PortraitFilterDialog : GameWindow
     }
 
     private static byte Clamp(double v) => (byte)Math.Clamp((int)Math.Round(v), 0, 255);
+
+    /// <summary>「4A3528」 꼴의 16진 색. 못 읽으면 null.</summary>
+    private static (int R, int G, int B)? Hex(string text)
+    {
+        text = text.Trim().TrimStart('#');
+        return text.Length == 6 && int.TryParse(text, System.Globalization.NumberStyles.HexNumber, null, out int v)
+            ? ((v >> 16) & 255, (v >> 8) & 255, v & 255) : null;
+    }
+
+    /// <summary>
+    /// 배경을 그라데이션으로 바꾼다 — 기준점(<paramref name="seed"/>) 둘레 3x3 의 평균색에서 <paramref name="tolerance"/> 안쪽인 점을,
+    /// 테두리나 기준점에서부터 이어진 것만 배경으로 친다(얼굴 속 같은 색은 안 건드린다). 테두리 전체 평균을 쓰면 위쪽 흰 터번 ·
+    /// 아래쪽 옷이 섞여 배경을 못 잡았다. 부드럽게면 배경 몫을 3x3 으로 한 번 펴서 경계를 섞는다.
+    /// 디더링 앞에 칠하므로 그라데이션도 원본처럼 점으로 섞인다.
+    /// </summary>
+    private static void Background(byte[] px, (int X, int Y) seed, double tolerance, (int R, int G, int B) from,
+                                   (int R, int G, int B) to, int direction, bool soft)
+    {
+        double sr = 0, sg = 0, sb = 0;
+        int n = 0;
+        for (int y = Math.Max(0, seed.Y - 1); y <= Math.Min(H - 1, seed.Y + 1); y++)
+            for (int x = Math.Max(0, seed.X - 1); x <= Math.Min(W - 1, seed.X + 1); x++)
+            {
+                int i = (y * W + x) * 4;
+                sb += px[i]; sg += px[i + 1]; sr += px[i + 2]; n++;
+            }
+        double mr = sr / n, mg = sg / n, mb = sb / n, tol2 = tolerance * tolerance;
+        bool Near(int k)
+        {
+            int i = k * 4;
+            double dr = px[i + 2] - mr, dg = px[i + 1] - mg, db = px[i] - mb;
+            return dr * dr + dg * dg + db * db <= tol2;
+        }
+
+        // 테두리에서 번지기
+        var mask = new double[W * H];
+        var queue = new Queue<int>();
+        for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++)
+            {
+                if (x != 0 && y != 0 && x != W - 1 && y != H - 1) continue;
+                int k = y * W + x;
+                if (mask[k] == 0 && Near(k)) { mask[k] = 1; queue.Enqueue(k); }
+            }
+        int s0 = seed.Y * W + seed.X;
+        if (mask[s0] == 0 && Near(s0)) { mask[s0] = 1; queue.Enqueue(s0); }
+        while (queue.Count > 0)
+        {
+            int k = queue.Dequeue(), x = k % W, y = k / W;
+            foreach (var (dx, dy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            {
+                int nx = x + dx, ny = y + dy;
+                if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+                int nk = ny * W + nx;
+                if (mask[nk] == 0 && Near(nk)) { mask[nk] = 1; queue.Enqueue(nk); }
+            }
+        }
+
+        if (soft)
+        {
+            var spread = new double[W * H];
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    double sum = 0; int c = 0;
+                    for (int dy = -1; dy <= 1; dy++)
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+                            sum += mask[ny * W + nx]; c++;
+                        }
+                    spread[y * W + x] = sum / c;
+                }
+            mask = spread;
+        }
+
+        for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++)
+            {
+                double a = mask[y * W + x];
+                if (a <= 0) continue;
+                double t = direction switch
+                {
+                    1 => (x / (double)(W - 1) + y / (double)(H - 1)) / 2,
+                    2 => x / (double)(W - 1),
+                    3 => Math.Min(1, Math.Sqrt(Math.Pow((x - W / 2.0) / (W / 2.0), 2) + Math.Pow((y - H / 2.0) / (H / 2.0), 2)) / Math.Sqrt(2)),
+                    _ => y / (double)(H - 1),
+                };
+                double gr = from.R + (to.R - from.R) * t, gg = from.G + (to.G - from.G) * t, gb = from.B + (to.B - from.B) * t;
+                int i = (y * W + x) * 4;
+                px[i + 2] = Clamp(px[i + 2] * (1 - a) + gr * a);
+                px[i + 1] = Clamp(px[i + 1] * (1 - a) + gg * a);
+                px[i] = Clamp(px[i] * (1 - a) + gb * a);
+            }
+    }
 
     /// <summary>쓸 색들 — 공용 색표 10~73(원본 얼굴이 쓰는 64색). 바라면 검정 · 흰색을 더한다.</summary>
     private static List<(int R, int G, int B)> Palette(bool withBlackWhite)
@@ -294,7 +438,8 @@ public sealed class PortraitFilterDialog : GameWindow
 
     private void ShowReference()
     {
-        if (_faces == null || !int.TryParse(_reference.Text, out int face)) return;
+        if (_faces == null) return;
+        int face = (int)_reference.Value;
         _referenceView.Source = _faces.TryGetBgra(face, female: false) is { } px
             ? BitmapSource.Create(W, H, 96, 96, PixelFormats.Bgra32, null, px, W * 4)
             : null;
@@ -315,7 +460,7 @@ public sealed class PortraitFilterDialog : GameWindow
     private void Export()
     {
         if (_result == null) { _status.Text = "먼저 그림을 여세요."; return; }
-        var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "PNG|*.png", FileName = $"male-{_faceNumber.Text}.png" };
+        var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "PNG|*.png", FileName = $"male-{(int)_faceNumber.Value}.png" };
         if (dlg.ShowDialog(this) != true) return;
         Save(dlg.FileName);
         _status.Text = $"{dlg.FileName} 에 적었습니다.";
@@ -328,7 +473,8 @@ public sealed class PortraitFilterDialog : GameWindow
     private void Install()
     {
         if (_result == null) { _status.Text = "먼저 그림을 여세요."; return; }
-        if (!int.TryParse(_faceNumber.Text, out int face) || face <= Portraits.ShippedBase)
+        int face = (int)_faceNumber.Value;
+        if (face <= Portraits.ShippedBase)
         {
             _status.Text = $"얼굴 번호는 {Portraits.ShippedBase + 1} 부터입니다.";
             return;
