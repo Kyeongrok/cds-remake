@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using CdsHelper.Game.Engine;
 using CdsHelper.Game.Local.Settings;
@@ -157,6 +158,45 @@ static class Program
         Check(TryEditor(world), "Map editor is available again after the busy state ends");
     }
 
+    static void CheckUpstreamCompatibility(WorldMapWindow world)
+    {
+        var game = Field<Game>(world, "_game");
+        var player = game.Player;
+        bool hardcore = player.Hardcore;
+        int[] abilities = player.Abilities.ToArray();
+        string[] marks = player.HardcoreMarks.ToArray();
+        player.Hardcore = true; // v1.1.19's power-up preset enables hardcore for new games.
+        player.HardcoreMarks.Remove("dev:abilities");
+        try
+        {
+            Check(TryEditor(world, editor =>
+            {
+                Field<TabControl>(editor, "_tabs").SelectedIndex = 1;
+                editor.UpdateLayout();
+                var skill = Field<ComboBox[]>(editor, "_skillFields")[0];
+                Keyboard.Focus(skill);
+                Check(Keyboard.FocusedElement == skill, "Skill control receives focus for shortcut integration check");
+                var key = new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(editor)!, 0, Key.T)
+                {
+                    RoutedEvent = Keyboard.PreviewKeyDownEvent,
+                };
+                editor.RaiseEvent(key);
+                Check(key.Handled, "New cargo shortcut T is consumed while editing a skill");
+            }), "Hardcore game can open and cancel the development editor");
+            Check(!player.HardcoreMarks.Contains("dev:abilities"), "Cancelling does not record a hardcore development edit");
+            Check(TryEditor(world, editor => { Fill(editor, "2"); Apply(editor); }), "Hardcore game can apply an editor change");
+            Check(player.Abilities[0] == 1 && player.HardcoreMarks.Contains("dev:abilities"),
+                "Applying records the development edit under existing hardcore rules");
+        }
+        finally
+        {
+            player.Hardcore = hardcore;
+            player.SetAbilities(abilities);
+            player.HardcoreMarks.Clear();
+            player.HardcoreMarks.UnionWith(marks);
+        }
+    }
+
     [STAThread]
     static int Main(string[] args)
     {
@@ -277,6 +317,7 @@ static class Program
 
             CheckEditorAvailability(world, args.Contains("--reproduce-guard"));
             if (args.Contains("--reproduce-guard")) { CloseWorld(world); return 0; }
+            CheckUpstreamCompatibility(world);
 
             // Exercise the actual development-menu callback and its modal pause / unsaved handling.
             game.Unsaved = false;
