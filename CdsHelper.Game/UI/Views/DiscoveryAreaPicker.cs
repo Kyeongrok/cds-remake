@@ -38,7 +38,7 @@ public sealed class DiscoveryAreaPicker : Window
         if (game is not { Directory.Length: > 0 }) return null;
         if (_fromGame is not { } made || made.Dir != game.Directory)
         {
-            if (Support.Local.Helpers.WorldMapRenderer.LoadWorldData(System.IO.Path.Combine(game.Directory, "WORLD.CDS")) is not { } world
+            if (Support.Local.Helpers.WorldMapRenderer.LoadWorldData(Support.Local.Helpers.CdsAssetPath.Resolve(game.Directory, "WORLD.CDS")) is not { } world
                 || Local.Helpers.TerrainTable.Open(game.Directory) is not { } terrain)
                 return null;
 
