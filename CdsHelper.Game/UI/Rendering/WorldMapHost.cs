@@ -1369,6 +1369,24 @@ public sealed class WorldMapHost : HwndHost
 
     private bool _autoRecover;
 
+    /// <summary>
+    /// 지금 빠르기로 뱃머리를 끝까지 꺾을 때 그리는 원의 반지름(칸) — 한 틱 걸음 / 한 틱에 도는 각.
+    /// </summary>
+    /// <remarks>
+    /// 대형카락·중카락은 한 틱에 22.5도만 돌아(<see cref="Engine.Sea.Sailing.TurnRates"/>) 30노트를 넘기면
+    /// 반지름이 네 칸을 넘는다. 바라보는 자리가 이 원 안에 들면 영영 못 닿고 그 둘레를 맴돈다 —
+    /// 모퉁이에서 서너 바퀴 빙빙 돌던 것이 그것이다(제보). 자동항해의 거리들은 이 값 밑으로 내려가지 않는다.
+    /// </remarks>
+    private double TurnRadiusCells
+    {
+        get
+        {
+            int rate = Math.Max(1, TurnRateOf?.Invoke() ?? Engine.Sea.Sailing.DefaultTurnRate);
+            double step = LastStep * Engine.Sea.Sailing.LonScale(ShipLatLon.Lat);
+            return step / (rate * Math.PI / 8);
+        }
+    }
+
     /// <summary>이 틱 수만큼 내리 막혀 있으면 길을 다시 짠다(0.1초 x 30 = 3초).</summary>
     private const int ReplanTicks = 30;
 
@@ -1740,6 +1758,13 @@ public sealed class WorldMapHost : HwndHost
             CompleteAutoSail("도착했습니다. 닻을 내렸습니다");
             return;
         }
+        // 빠르고 굼뜬 배는 도는 원이 커서, 바라보는 거리들을 그 원에 맞춰 늘린다 — 여느 배는 그대로다.
+        double radius = _onLand ? 0 : TurnRadiusCells;
+        double lookahead = Math.Max(AutoLookahead, radius * 1.2);
+        double strayLimit = Math.Max(AutoStrayLimit, radius);
+        double recoverReach = Math.Max(AutoRecoverReach, radius * 1.5);
+        double turnEarly = Math.Max(AutoTurnEarly, radius * 0.7);
+        double arrive = Math.Max(AutoWaypointRadius, radius);
         while (_autoIndex < route.Count)
         {
             // 첫 마디는 떠난 자리다.
@@ -1757,7 +1782,7 @@ public sealed class WorldMapHost : HwndHost
             double left = dx * ux + dy * uy;
             bool last = _autoIndex == route.Count - 1;
             // 도시로 가는 길은 마지막 마디도 끝까지 간다 — 두 칸 앞에서 멎으면 어귀에 못 들어선다.
-            if (last && !_autoExact ? dx * dx + dy * dy <= AutoWaypointRadius * AutoWaypointRadius : left <= AutoTurnEarly)
+            if (last && !_autoExact ? dx * dx + dy * dy <= arrive * arrive : left <= turnEarly)
             {
                 _autoIndex++;
                 continue;
@@ -1768,26 +1793,28 @@ public sealed class WorldMapHost : HwndHost
             double ox = dx - back * ux, oy = dy - back * uy, off = Math.Sqrt(ox * ox + oy * oy);
             // 걸음이 크면 선을 사이에 두고 왔다 갔다 한다 — 한 걸음에 넘어설 만큼 가까우면 돌아온 것으로 친다.
             if (off <= Math.Max(AutoBackOnLine, LastStep * 0.6)) _autoRecover = false;
-            if (_blocked || off > AutoStrayLimit) _autoRecover = true;
+            if (_blocked || off > strayLimit) _autoRecover = true;
 
             if (_autoRecover && off > 0.05)
             {
                 // 뭍에 닿았거나 많이 벗어났다 — 앞을 보지 않고 선으로 곧장 돌아간다. 좁은 물길에서
                 // 한 줄 어긋난 채 앞만 보면 뭍에 대고 서 버린다.
-                dx = ox / off * AutoRecoverReach;
-                dy = oy / off * AutoRecoverReach;
+                // 도는 원이 크면 선을 비스듬히 잡는다 — 곧추 다가가면 선에 닿아 꺾는 사이에 다시 반지름만큼 넘어선다.
+                double along = lookahead - AutoLookahead;
+                dx = ox / off * recoverReach + ux * along;
+                dy = oy / off * recoverReach + uy * along;
             }
             else if (Local.Settings.GameSettings.SteadyHelm && !_onLand)
             {
                 // 최소 조타 — 선에서 조금 벗어난 것은 두고 토막의 쪽만 본다. 많이 벗어나면 위에서 돌아온다.
                 // 선 쪽으로 조금씩 고치려 들면 방위가 갈리는 금에서 뱃머리가 이쪽저쪽으로 떤다.
-                if (!last || back > AutoLookahead) { dx = ux * AutoLookahead; dy = uy * AutoLookahead; }
+                if (!last || back > lookahead) { dx = ux * lookahead; dy = uy * lookahead; }
             }
-            else if (!last || back > AutoLookahead)
+            else if (!last || back > lookahead)
             {
                 // 선 위 가장 가까운 자리에서 조금 앞 — 마디를 지나서도 선의 쪽을 그대로 본다.
-                dx = ox + ux * AutoLookahead;
-                dy = oy + uy * AutoLookahead;
+                dx = ox + ux * lookahead;
+                dy = oy + uy * lookahead;
             }
             _targetX = _shipX + dx;
             _targetY = _shipY + dy;
@@ -3247,7 +3274,19 @@ public sealed class WorldMapHost : HwndHost
         _assistStep = null;
 
         var route = Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), (toX, toY));
-        if (route is { Count: > 1 }) _assistStep = (route[1].X + 0.5, route[1].Y + 0.5);
+        // 도는 원이 큰 배(빠른 카락)는 원 안에 든 길목을 못 밟고 그 둘레를 맴돈다 — 그런 길목은 지난 것으로 친다.
+        if (route is { Count: > 1 })
+        {
+            double radius = TurnRadiusCells;
+            int at = 1;
+            while (at < route.Count - 1)
+            {
+                double gx = WrapDx(route[at].X + 0.5 - _shipX), gy = route[at].Y + 0.5 - _shipY;
+                if (gx * gx + gy * gy > radius * radius) break;
+                at++;
+            }
+            _assistStep = (route[at].X + 0.5, route[at].Y + 0.5);
+        }
         return _assistStep;
     }
 
