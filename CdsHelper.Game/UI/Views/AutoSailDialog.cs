@@ -100,6 +100,21 @@ public sealed class AutoSailDialog : GameWindow
     private readonly StackPanel _legs = new() { Width = CellWidth * Columns };
     private double _mapScale = 1;
 
+    /// <summary>찾기 — 도시 이름에 든 말로 문화권을 가로질러 찾는다. 찾는 동안은 탭 판 대신 찾은 판이 선다.</summary>
+    private readonly TextBox _query;
+    private readonly StackPanel _finder;
+    private readonly UniformGrid _hitGrid = new() { Columns = Columns, Width = CellWidth * Columns, VerticalAlignment = VerticalAlignment.Top };
+    private readonly FrameworkElement _hitPage;
+    private readonly TextBlock _hitNote = new() { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+
+    /// <summary>찾은 판의 칸과 그 도시 번호 — 다시 찾을 때마다 새로 짓는다.</summary>
+    private readonly List<(Border Cell, int Id)> _hits = [];
+
+    /// <summary>찾기 전에 보던 탭 판 — 찾기 칸을 비우면 되돌린다.</summary>
+    private FrameworkElement? _tabPage;
+
+    private readonly IReadOnlyList<(int Id, string Name, string Culture, bool Harbor)> _cities;
+
     /// <summary>도시 판들과 그 위에 겹쳐 두는 항로 판 · 탭 머리와 그 위에 겹쳐 두는 항로 제목.</summary>
     private readonly Grid _pages = new();
     private readonly Grid _heads = new();
@@ -109,6 +124,7 @@ public sealed class AutoSailDialog : GameWindow
     {
         _start = start;
         _chart = chart;
+        _cities = cities;
 
         Title = "네비게이션";
         WindowStyle = WindowStyle.None;
@@ -145,6 +161,51 @@ public sealed class AutoSailDialog : GameWindow
             // 문화권 이름은 도시 표에서 온 한국어라 따로 옮긴다 — 수와 붙인 글은 번역 표에서 통째로 못 찾는다.
             tabs.Add(($"{Lang.T(group.Key)} {group.Count()}", page));
         }
+
+        // 찾기 판 — 탭 판들과 한 칸에 겹쳐 두고, 찾기 칸에 말이 있을 때만 선다.
+        _hitPage = Paper(GameUi.Scroller(_hitGrid, ListMaxHeight));
+        _hitPage.Visibility = Visibility.Hidden;
+        _pages.Children.Add(_hitPage);
+
+        _query = new TextBox
+        {
+            Width = 200,
+            FontSize = 14,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Padding = new Thickness(2, 0, 2, 0),
+            BorderThickness = new Thickness(2),
+            BorderBrush = GameUi.ItemEdge,
+        };
+        _query.TextChanged += (_, _) => Search();
+        _query.PreviewKeyDown += (_, e) =>
+        {
+            // Enter — 찾은 것 가운데 아직 안 골랐으면 첫 것을 고르고, 골랐으면 창의 Enter(항해 시작)로 넘긴다.
+            if (e.Key == Key.Enter && _hits.Count > 0 && !_hits.Exists(h => h.Id == _picked))
+            {
+                Pick(_hits[0].Id);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && _query.Text.Length > 0)
+            {
+                _query.Text = "";
+                e.Handled = true;
+            }
+        };
+        _finder = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(Side, 8, Side, 0),
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "찾기", Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center,
+                },
+                _query,
+                _hitNote,
+            },
+        };
 
         // 자동이동 모드 — 속도 중시(기본)는 선에 바짝 붙어 가느라 뱃머리를 자주 틀고, 최소 조타는 곧게 뻗는 토막으로 간다.
         // 고르개는 모드 창 「자동 보급」 밑의 것과 같은 꼴이다.
@@ -262,7 +323,13 @@ public sealed class AutoSailDialog : GameWindow
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        _heads.Children.Add(Tabs(tabs));
+        stack.Children.Add(_finder);
+        _heads.Children.Add(Tabs(tabs, page =>
+        {
+            _tabPage = page;
+            // 찾는 동안 탭을 누르면 찾기를 걷고 그 탭으로 간다.
+            if (_query.Text.Length > 0) _query.Text = "";
+        }));
         stack.Children.Add(_heads);
         stack.Children.Add(_pages);
         stack.Children.Add(helm);
@@ -381,12 +448,13 @@ public sealed class AutoSailDialog : GameWindow
     {
         _picked = id;
         foreach (var (cell, at) in _cells) Paint(cell, at == id);
+        foreach (var (cell, at) in _hits) Paint(cell, at == id);
         _go.On = true;
         _note.Text = "";
     }
 
     /// <summary>탭 머리 — 누른 쪽 판만 보이고 머리는 밝게 선다(모드 창과 같은 꼴). 많으면 다음 줄로 넘긴다.</summary>
-    private static FrameworkElement Tabs(List<(string Text, FrameworkElement Page)> tabs)
+    private static FrameworkElement Tabs(List<(string Text, FrameworkElement Page)> tabs, Action<FrameworkElement> selected)
     {
         var bar = new WrapPanel
         {
@@ -405,6 +473,7 @@ public sealed class AutoSailDialog : GameWindow
                 head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
                 ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
             }
+            selected(page);
         }
 
         foreach (var (text, page) in tabs)
@@ -424,6 +493,47 @@ public sealed class AutoSailDialog : GameWindow
         }
         if (tabs.Count > 0) Select(tabs[0].Page);
         return bar;
+    }
+
+    /// <summary>
+    /// 찾기 칸의 말로 도시를 다시 찾는다 — 띄어쓰기 · 대소문자는 안 가리고, 그 말로 시작하는 이름이 먼저다.
+    /// 칸이 비면 찾기 판을 걷고 보던 탭 판으로 돌아간다.
+    /// </summary>
+    private void Search()
+    {
+        static string Bare(string s) => s.Replace(" ", "").ToLowerInvariant();
+        string want = Bare(_query.Text);
+        _hits.Clear();
+        _hitGrid.Children.Clear();
+
+        if (want.Length == 0)
+        {
+            _hitPage.Visibility = Visibility.Hidden;
+            if (_tabPage != null) _tabPage.Visibility = Visibility.Visible;
+            _hitNote.Text = "";
+            return;
+        }
+
+        var found = _cities.Where(c => Bare(c.Name).Contains(want) || Bare(Lang.T(c.Name)).Contains(want))
+                           .OrderBy(c => Bare(c.Name).StartsWith(want) ? 0 : 1)
+                           .ThenBy(c => c.Name, StringComparer.Ordinal);
+        foreach (var (id, name, _, harbor) in found)
+        {
+            var cell = Cell(name, harbor ? Mark.Harbor : Mark.Inland);
+            cell.MouseLeftButtonDown += (_, e) =>
+            {
+                e.Handled = true;
+                Pick(id);
+                if (e.ClickCount == 2) Start();
+            };
+            Paint(cell, id == _picked);
+            _hits.Add((cell, id));
+            _hitGrid.Children.Add(cell);
+        }
+
+        foreach (UIElement page in _pages.Children) page.Visibility = Visibility.Hidden;
+        _hitPage.Visibility = Visibility.Visible;
+        _hitNote.Text = _hits.Count > 0 ? Lang.T($"{_hits.Count}곳") : Lang.T("찾는 도시가 없습니다");
     }
 
     /// <summary>
@@ -482,6 +592,7 @@ public sealed class AutoSailDialog : GameWindow
         foreach (UIElement page in _pages.Children) page.Visibility = Visibility.Hidden;
         _pages.Children.Add(body);
         foreach (UIElement head in _heads.Children) head.Visibility = Visibility.Collapsed;
+        _finder.Visibility = Visibility.Collapsed;
         _heads.Children.Add(new TextBlock
         {
             Text = message,

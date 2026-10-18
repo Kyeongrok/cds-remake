@@ -12165,63 +12165,71 @@
   "args": 0
  },
  "네비게이션": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:113",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:129",
   "args": 0
  },
  "그 밖": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:126",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:142",
+  "args": 0
+ },
+ "찾기": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:202",
   "args": 0
  },
  "자동이동 모드": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:177",
-  "args": 0
- },
- "속도 중시": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:180",
-  "args": 0
- },
- "최소 조타": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:181",
-  "args": 0
- },
- "항로 표시": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:188",
-  "args": 0
- },
- "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:194",
-  "args": 0
- },
- "항로 굵기": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:236",
-  "args": 0
- },
- "항로 짙기": {
   "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:238",
   "args": 0
  },
+ "속도 중시": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:241",
+  "args": 0
+ },
+ "최소 조타": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:242",
+  "args": 0
+ },
+ "항로 표시": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:249",
+  "args": 0
+ },
+ "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:255",
+  "args": 0
+ },
+ "항로 굵기": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:297",
+  "args": 0
+ },
+ "항로 짙기": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:299",
+  "args": 0
+ },
  "항해 시작": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:244",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:305",
   "args": 0
  },
  "중단": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:250",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:311",
   "args": 0
  },
  "항구가 있는 도시": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:351",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:418",
+  "args": 0
+ },
+ "찾는 도시가 없습니다": {
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:536",
   "args": 0
  },
  "목적지 도시를 고르세요.": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:435",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:545",
   "args": 0
  },
  "항로를 계산합니다...": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:448",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:558",
   "args": 0
  },
  "아는 도시가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:642",
+  "at": "CdsHelper.Game/UI/Views/AutoSailDialog.cs:753",
   "args": 0
  },
  "여급 수첩": {
@@ -12388,10 +12396,6 @@
  },
  "고침": {
   "at": "CdsHelper.Game/UI/Views/BookEditDialog.cs:97",
-  "args": 0
- },
- "찾기": {
-  "at": "CdsHelper.Game/UI/Views/BookEditDialog.cs:119",
   "args": 0
  },
  "책 표를 못 읽었습니다 — 세이브를 한 번 열어 게임 폴더를 알려 주세요": {
