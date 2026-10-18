@@ -83,6 +83,12 @@ async function postPlay(request, env) {
         .bind(b.install, version, now, JSON.stringify(Object.fromEntries(mods)), b.batch));
   }
 
+  // 날마다 설치 하나에 한 줄 — 대시보드의 설치 수 · 덩이 수 · 날짜별 표 · 버전 목록은 batches 대신 이 작은 표를 센다.
+  rows.push(env.DB.prepare(
+    `INSERT INTO daily (day, version, install, batches) SELECT ?, ?, ?, 1 WHERE ${fresh}
+     ON CONFLICT (day, version, install) DO UPDATE SET batches = batches + 1`)
+    .bind(now.slice(0, 10), version, b.install, b.batch));
+
   rows.push(env.DB.prepare(`INSERT OR IGNORE INTO batches (batch, received_at, install, version) VALUES (?, ?, ?, ?)`)
     .bind(b.batch, now, b.install, version));
   const done = await env.DB.batch(rows);
@@ -140,7 +146,10 @@ async function getRanking(env) {
 
 // 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
 const SNAPSHOT_TTL = 60 * 60 * 1000;
-const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, voyage_days: 100000, voyage_turns: 100000, nav: 100, battle: 50, event: 100, error: 200 };
+const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, nav: 100, battle: 50, event: 100, error: 200 };
+// 집계가 읽는 갈래 — tally 의 주키가 갈래로 시작하므로 이렇게 거르면 옛 voyage_days · voyage_turns · city 줄은 아예 안 읽는다.
+// 옛 항해 날수 · 선회는 voyage_legacy 에 버전마다 한 줄로 묶어 두었다(migrate-reads.sql).
+const READ_KINDS = Object.keys(LIMITS);
 
 // 대시보드 집계 — 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
 async function getDashboard(url, env) {
@@ -169,26 +178,28 @@ async function snapshot(env, version, whole) {
   return body;
 }
 
-// 표를 훑는 것은 여기뿐이다 — 셈 표 한 번, 덩이 표 두 번, 전체일 때는 모드 표와 버전 목록까지.
+// 표를 훑는 것은 여기뿐이다 — 셈 표 한 번(읽는 갈래만), 날마다 표 세 번, 전체일 때는 모드 표까지.
+// D1 은 훑은 줄을 모두 읽기로 센다. 예전에는 덩이 표(batches)를 세 번, 모드 표를 json_each 로 펼쳐(설치 × 옵션 수) 세어
+// 한 번 셀 때 오십만 줄 가까이 읽었다 — 그래서 덩이 표 대신 daily, 모드는 몸통만 읽어 여기서 센다.
 // 모드 옵션 · 버전 목록은 버전으로 안 거르므로, 버전 집계는 전체 집계(whole)의 것을 그대로 쓴다 — 모드 표를 버전마다 또 훑지 않게.
 async function aggregate(env, version, whole) {
   const cond = version ? 'AND version = ?' : '', args = version ? [version] : [];
   const all = (sql, ...bound) => env.DB.prepare(sql).bind(...bound).all().then((r) => r.results);
 
-  const [total, tally, modValues, days, known] = await Promise.all([
-    env.DB.prepare(`SELECT COUNT(*) AS batches, COUNT(DISTINCT install) AS installs FROM batches WHERE 1 = 1 ${cond}`).bind(...args).first(),
+  const [total, tally, legacy, modValues, days, known] = await Promise.all([
+    env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${cond}`).bind(...args).first(),
     all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, SUM(days) AS days, SUM(turns) AS turns, COUNT(DISTINCT install) AS installs
-         FROM tally WHERE 1 = 1 ${cond} GROUP BY kind, key`, ...args),
-    // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다.
-    whole ? whole.modValues : all('SELECT j.key AS name, j.value AS value, COUNT(*) AS installs FROM options, json_each(options.body) AS j GROUP BY j.key, j.value ORDER BY j.key, j.value'),
-    all(`SELECT substr(received_at, 1, 10) AS day, version, COUNT(DISTINCT install) AS installs, COUNT(*) AS batches
-         FROM batches WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
-    whole ? whole.versions : all('SELECT DISTINCT version FROM batches ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
+         FROM tally WHERE kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, ...READ_KINDS, ...args),
+    all(`SELECT body FROM voyage_legacy WHERE 1 = 1 ${cond}`, ...args),
+    whole ? whole.modValues : all('SELECT body FROM options').then(countModValues),
+    all(`SELECT day, version, COUNT(*) AS installs, SUM(batches) AS batches
+         FROM daily WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
+    whole ? whole.versions : all('SELECT DISTINCT version FROM daily ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
   ]);
 
   // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
   const kinds = [], tops = {};
-  for (const kind of KINDS) {
+  for (const kind of READ_KINDS) {
     const rows = tally.filter((r) => r.kind === kind)
       .map(({ key, name, n, days, turns, installs }) => (kind === 'voyage' ? { key, name, n, days, turns, installs } : { key, name, n, installs }));
     if (rows.length) kinds.push({ kind, n: rows.reduce((s, r) => s + r.n, 0), keys: rows.length });
@@ -205,13 +216,35 @@ async function aggregate(env, version, whole) {
   const mods = [...byName.values()].map(({ sum, ...m }) => ({ ...m, average: sum / m.installs }))
     .sort((a, b) => b.enabled - a.enabled || (a.name < b.name ? -1 : 1));
 
-  // 항해 — 구간마다 횟수에 날수 · 선회의 합을 붙인다. 새 줄은 voyage 줄의 days · turns 칸에, 옛 줄은 voyage_days · voyage_turns 갈래에 있다.
-  const sumOf = (kind) => new Map(tops[kind].map((r) => [r.key, r.n]));
-  const dayOf = sumOf('voyage_days'), turnOf = sumOf('voyage_turns');
-  const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (dayOf.get(r.key) || 0), turns: (r.turns || 0) + (turnOf.get(r.key) || 0) }));
+  // 항해 — 구간마다 횟수에 날수 · 선회의 합을 붙인다. 새 줄은 voyage 줄의 days · turns 칸에, 옛 줄은 voyage_legacy 에 {구간: [날수, 선회]} 로 있다.
+  const old = new Map();
+  for (const { body } of legacy)
+    for (const [key, [d, t]] of Object.entries(JSON.parse(body))) {
+      const s = old.get(key) ?? [0, 0];
+      s[0] += d; s[1] += t;
+      old.set(key, s);
+    }
+  const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (old.get(r.key)?.[0] || 0), turns: (r.turns || 0) + (old.get(r.key)?.[1] || 0) }));
 
   return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
            battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known };
+}
+
+// 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다 — 설치마다 한 줄인 몸통(JSON)을 읽어 여기서 센다.
+// SQL 의 json_each 로 펼치면 펼친 줄(설치 × 옵션 수)이 모두 읽기로 세어진다.
+function countModValues(rows) {
+  const tally = new Map();
+  for (const { body } of rows) {
+    let mods;
+    try { mods = JSON.parse(body); } catch { continue; }
+    for (const [name, value] of Object.entries(mods)) {
+      const id = name + '\u0000' + value;
+      const v = tally.get(id) ?? { name, value, installs: 0 };
+      v.installs++;
+      tally.set(id, v);
+    }
+  }
+  return [...tally.values()].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : a.value - b.value));
 }
 
 export default {

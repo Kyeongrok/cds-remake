@@ -55,3 +55,20 @@ CREATE TABLE IF NOT EXISTS hardcore (
   received_at TEXT NOT NULL
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS hardcore_rank ON hardcore (discoveries DESC, died);
+
+-- 날마다 · 버전마다 설치 하나에 한 줄(그날 받은 덩이 수) — 대시보드의 설치 수 · 덩이 수 · 날짜별 표 · 버전 목록을 batches 대신 여기서 센다.
+-- batches 는 덩이마다 한 줄이라 날마다 늘고, 집계가 그것을 세 번 훑어 D1 하루 읽기 한도(오백만 줄)의 큰 몫을 먹었다.
+CREATE TABLE IF NOT EXISTS daily (
+  day     TEXT NOT NULL,          -- 받은 날(UTC, yyyy-MM-dd)
+  version TEXT NOT NULL,
+  install TEXT NOT NULL,
+  batches INTEGER NOT NULL,
+  PRIMARY KEY (day, version, install)
+) WITHOUT ROWID;
+
+-- 옛 판이 voyage_days · voyage_turns 갈래로 따로 적은 항해 날수 · 선회 — 버전마다 한 줄로 묶어 둔다(migrate-reads.sql).
+-- 집계는 tally 의 그 줄들을 안 읽고 이것을 읽는다. 새 항해는 voyage 줄의 days · turns 칸에 더해지므로 이 표는 더 늘지 않는다.
+CREATE TABLE IF NOT EXISTS voyage_legacy (
+  version TEXT PRIMARY KEY,
+  body    TEXT NOT NULL           -- {"떠난 도시>닿은 도시": [날수 합, 선회 합]}
+) WITHOUT ROWID;

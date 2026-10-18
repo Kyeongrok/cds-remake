@@ -31,6 +31,8 @@ D1 무료 판은 하루에 읽기 오백만 줄 · 쓰기 십만 줄까지다(�
 
 - 대시보드 집계는 `snapshots` 에 묵혀 두고 **한 시간에 한 번만** 새로 센다 — 열 때마다 세면 몇 번 만에 한도가 찬다.
 - 셈은 덩이마다 줄을 쌓지 않고 `tally` 의 (갈래 · 열쇠 · 버전 · 설치) 한 줄에 더한다. 훑을 줄이 날마다 늘지 않는다.
+- 집계는 덩이 표(`batches`)를 훑지 않고 날마다 설치 하나에 한 줄인 `daily` 를 센다. 모드 표는 `json_each` 로 펼치지 않고 몸통만 읽어 Worker 가 센다(펼친 줄이 다 읽기로 세어진다). `tally` 는 읽는 갈래로만 걸러 옛 `voyage_days` · `voyage_turns` · `city` 줄을 안 읽는다 — 옛 항해 날수 · 선회는 `voyage_legacy` 에 버전마다 한 줄로 묶어 두었다(`migrate-reads.sql`).
+- 쿼리마다 몇 줄 읽었는지: `npx wrangler d1 insights cds-remake-stats --sort-by reads --timePeriod 7d --json`.
 - 게임은 도시를 나설 때와 끌 때 보낸다(오래 머물면 30분마다).
 - 지금 얼마나 썼는지: `npx wrangler d1 info cds-remake-stats` 의 `rows_read_24h` · `rows_written_24h`.
 
