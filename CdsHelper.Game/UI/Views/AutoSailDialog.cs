@@ -182,6 +182,21 @@ public sealed class AutoSailDialog : GameWindow
             },
         };
 
+        // 항로 표시 — 모드 창 「정보」 탭의 「자동항해 경로 표시」와 같은 설정이다. 지도가 매 프레임 읽어 곧바로 든다.
+        var route = new CheckBox
+        {
+            Content = "항로 표시",
+            IsChecked = GameSettings.ShowAutoRoute,
+            Foreground = GameUi.Text, FontSize = 14,
+            Margin = new Thickness(16, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            ToolTip = "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다",
+        };
+        route.Checked += (_, _) => GameSettings.ShowAutoRoute = true;
+        route.Unchecked += (_, _) => GameSettings.ShowAutoRoute = false;
+        helm.Children.Add(route);
+
         // 아직 아무것도 안 골랐으면 「항해 시작」은 흐리다 — 게임 목록 창의 「결정」과 같다.
         _go = new GameButton("항해 시작", Start, BandStyle.Button, ButtonWidth)
         {
