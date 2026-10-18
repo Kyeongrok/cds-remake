@@ -3910,6 +3910,7 @@ public sealed class WorldMapWindow : Window
 
     private void ShowDevDialog() => DevDialog.Show(this, _game.Player, new DevDialog.Options
     {
+        PlayerAbilities = _started && ReferenceEquals(_screen.Content, _mapRoot) ? EditPlayerAbilities : null,
         GiveItem = GiveItemToSave,
         CoordsOn = () => _overlayWanted,
         SetCoords = on =>
@@ -3947,6 +3948,36 @@ public sealed class WorldMapWindow : Window
         Barmaids = _game.Barmaids,
         CityName = _game.CityName,
     });
+
+    private bool _abilityEditorOpen;
+
+    private void EditPlayerAbilities()
+    {
+        if (_abilityEditorOpen || !_started || !ReferenceEquals(_screen.Content, _mapRoot)) return;
+        // 도시 자체는 열어 둬도 된다. 전투·대사·건물 메뉴의 계산 중에는 값을 바꾸지 않는다.
+        static bool HasDialog(Window owner) => owner.OwnedWindows.OfType<Window>()
+            .Any(w => w.IsVisible && ((w is GameWindow && w is not CityPicView) || HasDialog(w)));
+        if (_asking || HasDialog(this))
+        {
+            NoticeDialog.Show(this, "대화나 전투를 마친 뒤 주인공 능력치를 편집해 주세요.");
+            return;
+        }
+
+        _abilityEditorOpen = true;
+        _asking = true;
+        try
+        {
+            Hold(() =>
+            {
+                Window owner = OwnedWindows.OfType<CityPicView>().FirstOrDefault(w => w.IsVisible) ?? (Window)this;
+                if (!PlayerAbilityEditDialog.Show(owner, _game.Player)) return;
+                _game.Unsaved = true;
+                HardcoreRules.Mark("dev:abilities", _game.Player);
+                Say("주인공 능력치·기술·언어를 적용했습니다. 게임을 저장하면 다음에도 유지됩니다.");
+            });
+        }
+        finally { _asking = false; _abilityEditorOpen = false; }
+    }
 
     /// <summary>
     /// 발견물 자리를 고를 세계 지도 — 네비게이션과 같은 항해지도 그림(다 밝힌 것)에 다른 발견물 자리를 얹는다.
@@ -8036,6 +8067,11 @@ public sealed class WorldMapWindow : Window
     /// </summary>
     private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
+        // 창 테두리를 만드는 Show() 도중 Loaded가 먼저 불리기도 한다. 주인 창이 실제로
+        // 표시되기 전에 동영상의 대화 루프를 돌리면 보이지 않는 창에서 시작이 멈춘다.
+        await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
+        if (ShuttingDown || !IsVisible) return;
+
         // <b>작업표시줄 단추를 하나로 둔다.</b> 개발도구에서 띄운 것이면 이 창까지
         // 단추를 갖는데, 대화 창을 여닫을 때마다 활성 창이 두 단추 사이를 오가는 것이
         // 눈에 보인다 — WPF 의 ShowDialog 가 앱의 창을 다 잠갔다 푸는 통에 활성 창이
