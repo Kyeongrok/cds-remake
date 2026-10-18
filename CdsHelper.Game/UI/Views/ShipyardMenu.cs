@@ -658,7 +658,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
 
         Say("어느 상을 달겠나?");                                   // 0x00531C10
         int at = ListPickDialog.Pick(owner,
-            [.. offer.Select((i, k) => $"{NameOf(i),-12}{CostOf(i, k < stock.Count),7}닢")],
+            [.. offer.Select((i, k) => $"{GameUi.Pad(NameOf(i), 12)}{CostOf(i, k < stock.Count),7}닢")],
             "선수상 선택", "달 수 있는 선수상이 없습니다", CarveHead, preview: k => FigureheadPicture(offer[k]));
         if (at < 0) return;
 
