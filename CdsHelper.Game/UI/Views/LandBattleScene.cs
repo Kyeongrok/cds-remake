@@ -243,7 +243,6 @@ internal sealed class LandBattleScene : GameWindow
 
             _ruseThisTurn = false;                  // 턴이 넘어가면 묘책을 다시 걸 수 있다(0x00449DDA)
             _newTurn = true;                        // 턴이 굴렀으니 다음 차림표는 새 턴이다(0x00449DC4)
-            _battle.ShellSpent();                   // 작렬탄은 한 턴만 간다(0x00449DE3)
 
             // 벼락이 판을 끝냈으면 <b>그 턴은 아무도 안 친다</b> — 행동 차례 짜기도 적 명령도
             // 건너뛰고 뒷셈으로 간다(0x00449369 → 0x00449410).
@@ -265,6 +264,10 @@ internal sealed class LandBattleScene : GameWindow
                 var lines = fight.Turn(order, _battle.FoeOrder(dice));
                 Play(lines, fight.Opening, fight.OpeningPlaces);
             }
+
+            // 작렬탄은 한 턴만 간다 — <b>그 턴을 다 친 뒤에</b> 내린다(0x00449DE3 은 차림표 · 턴을 도는 0x00449D7A 뒤다).
+            // 예전에는 턴을 치기 앞서 내려, 받아도 포가 두 번 쏘지 않고 비도 그대로 탔다(제보).
+            _battle.ShellSpent();
 
             if (fight.Over is { } won)
             {
