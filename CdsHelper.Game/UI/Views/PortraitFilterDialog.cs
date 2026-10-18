@@ -50,6 +50,16 @@ public sealed class PortraitFilterDialog : GameWindow
     /// <summary>배경 기준점(80x96 자리) — 이 점의 색에 가까운 것이 배경이다. 바뀐 얼굴을 누르면 옮긴다.</summary>
     private (int X, int Y) _bgPoint = (1, 1);
 
+    // 배경 칠하기 — 저절로 가려내기가 잘 안 되는 그림(배경과 머리 · 수염이 같은 색)은 손으로 칠한다(건의).
+    // 칠하는 동안은 칠한 점을 형광분홍으로 보이고, 끄면 칠한 곳을 그라데이션으로 바꾼다. 칠한 점이 있으면 저절로 가려내기 대신 쓴다.
+    private readonly bool[] _painted = new bool[W * H];
+    private readonly System.Windows.Controls.Primitives.ToggleButton _paint = new()
+    {
+        Content = "배경 칠하기", Margin = new Thickness(0, 4, 0, 0), Padding = new Thickness(8, 3, 8, 3),
+    };
+    private readonly ComboBox _brush = Pick("붓 1점", "붓 3x3", "붓 5x5");
+    private static readonly Color Pink = Color.FromRgb(0xFF, 0x14, 0x93);
+
     /// <summary>배경 미리 정한 색(위쪽 · 아래쪽) — 원본 후원자 얼굴 귀퉁이에서 뽑은 값이다.</summary>
     private static readonly (string From, string To)[] BgPresets =
         [("4A3528", "1C150E"), ("646C58", "3C4030"), ("8B9091", "45403A"), ("EADFCC", "B8A48C")];
@@ -74,10 +84,27 @@ public sealed class PortraitFilterDialog : GameWindow
         _resultView.MouseLeftButtonDown += (_, e) =>
         {
             var at = e.GetPosition(_resultView);
+            if (_paint.IsChecked == true) { _resultView.CaptureMouse(); Dab(at, true); return; }
             _bgPoint = (Math.Clamp((int)(at.X / Zoom), 0, W - 1), Math.Clamp((int)(at.Y / Zoom), 0, H - 1));
             _bgOn.IsChecked = true;
             Redraw();
         };
+        _resultView.MouseRightButtonDown += (_, e) =>
+        {
+            if (_paint.IsChecked != true) return;
+            _resultView.CaptureMouse();
+            Dab(e.GetPosition(_resultView), false);
+        };
+        _resultView.MouseMove += (_, e) =>
+        {
+            if (_paint.IsChecked != true) return;
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed) Dab(e.GetPosition(_resultView), true);
+            else if (e.RightButton == System.Windows.Input.MouseButtonState.Pressed) Dab(e.GetPosition(_resultView), false);
+        };
+        _resultView.MouseLeftButtonUp += (_, _) => _resultView.ReleaseMouseCapture();
+        _resultView.MouseRightButtonUp += (_, _) => _resultView.ReleaseMouseCapture();
+        _paint.Checked += (_, _) => { _bgOn.IsChecked = true; Redraw(); };
+        _paint.Unchecked += (_, _) => Redraw();
         _bgOn.Checked += (_, _) => Redraw(); _bgOn.Unchecked += (_, _) => Redraw();
         _bgSoft.Checked += (_, _) => Redraw(); _bgSoft.Unchecked += (_, _) => Redraw();
         _bgFrom.TextChanged += (_, _) => Redraw(); _bgTo.TextChanged += (_, _) => Redraw();
@@ -113,6 +140,10 @@ public sealed class PortraitFilterDialog : GameWindow
         controls.Children.Add(Row("시작색", _bgFrom));
         controls.Children.Add(Row("끝색", _bgTo));
         controls.Children.Add(_bgSoft);
+        controls.Children.Add(Label("손으로 칠하기 — 켜고 바뀐 얼굴을 누르거나 끌면 형광분홍 점이 찍힌다(오른쪽 단추는 지우기). 끄면 칠한 곳이 그라데이션이 된다"));
+        controls.Children.Add(_paint);
+        controls.Children.Add(Row("붓", _brush));
+        controls.Children.Add(Button("칠한 것 지우기", () => { Array.Clear(_painted); Redraw(); }));
         controls.Children.Add(Label("줄이기 · 색 · 디더링"));
         controls.Children.Add(Row("줄이기", _scaling));
         controls.Children.Add(Row("색", _colors));
@@ -243,11 +274,20 @@ public sealed class PortraitFilterDialog : GameWindow
         small.CopyPixels(px, W * 4, 0);
         Adjust(px, _bright.Value, _contrast.Value / 100, _saturation.Value / 100);
         if (_bgOn.IsChecked == true && Hex(_bgFrom.Text) is { } from && Hex(_bgTo.Text) is { } to)
-            Background(px, _bgPoint, _bgTol.Value, from, to, _bgDir.SelectedIndex, _bgSoft.IsChecked == true);
+            Background(px, _bgPoint, _bgTol.Value, from, to, _bgDir.SelectedIndex, _bgSoft.IsChecked == true,
+                       _painted.Any(p => p) ? _painted : null, _paint.IsChecked == true);
         if (_colors.SelectedIndex < 2) Quantize(px, Palette(_colors.SelectedIndex == 1), _dither.SelectedIndex);
 
         _result = px;
-        var bmp = BitmapSource.Create(W, H, 96, 96, PixelFormats.Bgra32, null, px, W * 4);
+        var shown = px;
+        if (_paint.IsChecked == true)
+        {
+            // 칠한 점은 형광분홍으로 얹어 보인다 — 내보낼 그림(_result)에는 안 든다.
+            shown = (byte[])px.Clone();
+            for (int k = 0; k < _painted.Length; k++)
+                if (_painted[k]) { shown[k * 4] = Pink.B; shown[k * 4 + 1] = Pink.G; shown[k * 4 + 2] = Pink.R; }
+        }
+        var bmp = BitmapSource.Create(W, H, 96, 96, PixelFormats.Bgra32, null, shown, W * 4);
         bmp.Freeze();
         _resultView.Source = bmp;
     }
@@ -278,6 +318,21 @@ public sealed class PortraitFilterDialog : GameWindow
 
     private static byte Clamp(double v) => (byte)Math.Clamp((int)Math.Round(v), 0, 255);
 
+    /// <summary>바뀐 얼굴 위 그 자리에 붓으로 칠하거나(참) 지운다(거짓).</summary>
+    private void Dab(Point at, bool on)
+    {
+        int cx = (int)(at.X / Zoom), cy = (int)(at.Y / Zoom), r = _brush.SelectedIndex;   // 0 · 1 · 2 → 반지름
+        bool changed = false;
+        for (int y = cy - r; y <= cy + r; y++)
+            for (int x = cx - r; x <= cx + r; x++)
+            {
+                if (x < 0 || y < 0 || x >= W || y >= H || _painted[y * W + x] == on) continue;
+                _painted[y * W + x] = on;
+                changed = true;
+            }
+        if (changed) Redraw();
+    }
+
     /// <summary>「4A3528」 꼴의 16진 색. 못 읽으면 null.</summary>
     private static (int R, int G, int B)? Hex(string text)
     {
@@ -292,9 +347,12 @@ public sealed class PortraitFilterDialog : GameWindow
     /// 아래쪽 옷이 섞여 배경을 못 잡았다. 부드럽게면 배경 몫을 3x3 으로 한 번 펴서 경계를 섞는다.
     /// 디더링 앞에 칠하므로 그라데이션도 원본처럼 점으로 섞인다.
     /// </summary>
+    /// <param name="painted">손으로 칠한 곳. 있으면 저절로 가려내기 대신 이것을 배경으로 친다.</param>
+    /// <param name="marking">칠하는 중 — 칠한 곳을 그라데이션 대신 형광분홍으로 찍어 보인다(디더링 뒤에 다시 찍는다).</param>
     private static void Background(byte[] px, (int X, int Y) seed, double tolerance, (int R, int G, int B) from,
-                                   (int R, int G, int B) to, int direction, bool soft)
+                                   (int R, int G, int B) to, int direction, bool soft, bool[]? painted = null, bool marking = false)
     {
+        if (painted != null && marking) return;   // 칠하는 동안은 그림을 그대로 두고 분홍 점만 얹는다(Redraw)
         double sr = 0, sg = 0, sb = 0;
         int n = 0;
         for (int y = Math.Max(0, seed.Y - 1); y <= Math.Min(H - 1, seed.Y + 1); y++)
@@ -334,6 +392,9 @@ public sealed class PortraitFilterDialog : GameWindow
                 if (mask[nk] == 0 && Near(nk)) { mask[nk] = 1; queue.Enqueue(nk); }
             }
         }
+
+        if (painted != null)
+            for (int k = 0; k < mask.Length; k++) mask[k] = painted[k] ? 1 : 0;
 
         if (soft)
         {
