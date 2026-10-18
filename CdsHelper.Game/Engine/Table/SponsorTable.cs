@@ -130,9 +130,20 @@ public sealed class SponsorTable
     private readonly List<Sponsor> _sponsors;
     private readonly Dictionary<string, Sponsor> _byName;
 
+    /// <summary>
+    /// 원본 81명 뒤에 <b>더해 넣은 후원자</b>(<c>exe-tables/sponsors-added.json</c>, 표 이름 「후원자-더한것」) — 원본에 없는
+    /// 오스만 쪽 같은 사람이다(메흐메트 2세 · 이스탄불 세라그리오 궁전, 건의). 번호(<see cref="Sponsor.Index"/>)는 81 부터다.
+    /// 짝이 되는 <c>patrons.json</c> 줄(취향 · 명성 · 등장 해)도 함께 더해 둔다.
+    /// </summary>
+    private const string AddedName = "후원자-더한것";
+
     private SponsorTable(Snapshot snapshot)
     {
-        var sponsors = snapshot.Sponsors;
+        var sponsors = new List<Sponsor>(snapshot.Sponsors);
+        int next = sponsors.Count == 0 ? 0 : sponsors.Max(s => s.Index) + 1;
+        foreach (var added in TableCache.Read<Snapshot>(AddedName)?.Data.Sponsors ?? [])
+            if (!sponsors.Any(s => Key(s.Name) == Key(added.Name)))
+                sponsors.Add(added with { Index = Math.Max(added.Index, next++) });
         _sponsors = sponsors;
         _byName = [];
         foreach (var s in sponsors) _byName[Key(s.Name)] = s;

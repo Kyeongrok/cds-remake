@@ -59,7 +59,7 @@ internal static class TableCache
         ["역사항해자"] = "history-voyagers", ["이름표"] = "player-names", ["이야기0"] = "story0", ["이야기1"] = "story1",
         ["인물밑표"] = "person-templates", ["인물표"] = "persons", ["인물표-고친것"] = "persons-edits", ["작위"] = "nobility",
         ["지형표"] = "terrain", ["책-고친것"] = "books-edits", ["책표"] = "books", ["화자이름표"] = "speaker-names",
-        ["화자표"] = "speakers", ["후원자표"] = "sponsors", ["힌트-고친것"] = "hints-edits", ["힌트표"] = "hints",
+        ["화자표"] = "speakers", ["후원자표"] = "sponsors", ["후원자-더한것"] = "sponsors-added", ["힌트-고친것"] = "hints-edits", ["힌트표"] = "hints",
         ["선수상-고친것"] = "figureheads-edits", ["묘책확률-고친것"] = "ruses-edits", ["패시브"] = "passives",
         ["부대편성-고친것"] = "land-formations-edits", ["초상화-중년짝"] = "portrait-ages",
     };

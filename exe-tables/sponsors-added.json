@@ -1,0 +1,27 @@
+{
+  "Stamp": "손으로 더함",
+  "Data": {
+    "Sponsors": [
+      {
+        "Index": 81,
+        "Name": "메흐메트 2세",
+        "Face": 9003,
+        "IsFemale": false,
+        "JobCode": 14,
+        "Eye": 90,
+        "Closeness": 55,
+        "Tastes": 7,
+        "Nation": 37,
+        "Blood": 0,
+        "Languages": 112,
+        "City": 112,
+        "Building": 2,
+        "Appear": 0,
+        "Zodiac": 0,
+        "Wealth": 1000000
+      }
+    ]
+  },
+  "Source": "더한 후원자",
+  "Version": 7
+}

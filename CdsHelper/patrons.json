@@ -2023,5 +2023,30 @@
     "wealth": 680000,
     "power": "A",
     "note": ""
+  },
+  {
+    "id": 81,
+    "name": "메흐메트 2세",
+    "nationality": "오스만·투르크 제국",
+    "city": "이스탄불",
+    "supportRate": "80%",
+    "discernment": 55,
+    "occupation": "국왕",
+    "appearYear": 1480,
+    "retireYear": null,
+    "preferences": {
+      "geography": true,
+      "treasure": true,
+      "tradeGoods": false,
+      "creature": false,
+      "history": true,
+      "religion": false,
+      "superstition": false,
+      "ethnicity": false
+    },
+    "fame": 9000,
+    "wealth": 1000000,
+    "power": "A",
+    "note": "원본에 없는 후원자 — 콘스탄티노플을 정복한 오스만 술탄. 프톨레마이오스 지리서를 옮기게 하고 세계지도를 그리게 했다."
   }
 ]
