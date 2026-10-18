@@ -34,7 +34,7 @@
       </Content>
       <!-- 업데이트한 뒤 처음 켤 때 띄우는 릴리즈 노트(ReleaseNotes). -->
       <Content Include="..\릴리즈노트.md">
-        <Link>릴리즈노트.md</Link>
+        <Link>release-notes.md</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <!-- 게임 통계를 받는 곳의 주소(PlayStats). 비어 있으면 아무것도 안 보낸다. -->
@@ -66,20 +66,20 @@
         <Link>hint.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="..\CdsHelper\발견물.json">
-        <Link>발견물.json</Link>
+      <Content Include="..\CdsHelper\discovery-master.json">
+        <Link>discovery-master.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="..\CdsHelper\발견이벤트.json">
-        <Link>발견이벤트.json</Link>
+      <Content Include="..\CdsHelper\disev.json">
+        <Link>disev.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="..\CdsHelper\이야기0.json">
-        <Link>이야기0.json</Link>
+      <Content Include="..\CdsHelper\story0.json">
+        <Link>story0.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="..\CdsHelper\이야기1.json">
-        <Link>이야기1.json</Link>
+      <Content Include="..\CdsHelper\story1.json">
+        <Link>story1.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <Content Include="..\CdsHelper\PEX.json">
@@ -114,8 +114,8 @@
         <Link>ECQ.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="..\CdsHelper\인물표.json">
-        <Link>인물표.json</Link>
+      <Content Include="..\CdsHelper\persons.json">
+        <Link>persons.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

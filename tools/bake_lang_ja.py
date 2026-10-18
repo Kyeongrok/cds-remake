@@ -74,16 +74,16 @@ def pair(ko, ja):
 
 
 # ── 이름 표 ──────────────────────────────────────────────────────────────
-for i, n in enumerate(load('exe-tables/나라표.json')['Nations'][:78]):
+for i, n in enumerate(load('exe-tables/nations.json')['Nations'][:78]):
     pair(n['Name'], row_text(0x004F8268, 24, i, 0))
 
-goods = load('exe-tables/교역품표.json')
+goods = load('exe-tables/goods.json')
 for i, g in enumerate(goods['Items'][:70]):
     pair(g['Name'], row_text(0x0050B560, 0x88, i, 0))
 for i, c in enumerate(goods['CategoryNames'][:13]):
     pair(c, ptr_text(0x0055A99C, i))
 
-hints = load('exe-tables/힌트표.json')
+hints = load('exe-tables/hints.json')
 for i, h in enumerate(hints['Hints'][:185]):
     pair(h['Name'], row_text(0x004D3F38, 80, i, 0))
     k = u32(0x004D3F38 + i * 80 + 0x1C)
@@ -91,37 +91,37 @@ for i, h in enumerate(hints['Hints'][:185]):
 for i, c in enumerate(hints['CategoryNames'][:8]):
     pair(c, ptr_text(0x0051A230, i))
 
-for i, it in enumerate(load('exe-tables/아이템표.json')['Items'][:285]):
+for i, it in enumerate(load('exe-tables/items.json')['Items'][:285]):
     pair(it['Name'], row_text(0x004D9118, 28, i, 0))
-for i, d in enumerate(load('exe-tables/아이템설명.json')['Descriptions'][:285]):
+for i, d in enumerate(load('exe-tables/item-descriptions.json')['Descriptions'][:285]):
     pair(d, ptr_text(0x005309A8, i))
 
-for i, d in enumerate(load('exe-tables/발견물표.json')['Discoveries'][:273]):
+for i, d in enumerate(load('exe-tables/discoveries.json')['Discoveries'][:273]):
     pair(d['Name'], row_text(0x004CC0E8, 92, i, 0))
-for i, d in enumerate(load('exe-tables/발견물설명.json')['Descriptions'][:273]):
+for i, d in enumerate(load('exe-tables/discovery-descriptions.json')['Descriptions'][:273]):
     pair(d, ptr_text(0x0051AB68, i))
 
-for i, d in enumerate(load('exe-tables/술표.json')['Drinks'][:55]):
+for i, d in enumerate(load('exe-tables/drinks.json')['Drinks'][:55]):
     pair(d['Name'], row_text(0x004CBBC8, 0x14, i, 0))
     pair(d.get('Alias'), row_text(0x004CBBC8, 0x14, i, 0x10))
 
-for i, b in enumerate(load('exe-tables/여급표.json')['Barmaids'][:127]):
+for i, b in enumerate(load('exe-tables/barmaids.json')['Barmaids'][:127]):
     pair(b['Name'], row_text(0x004DC228, 40, i, 0))
 
 # 소문은 여기서 짝짓지 않는다 — 줄 번호로 번역한다(tools/bake_rumor_ja.py 가 소문표.json 의 줄마다 Ja 칸을 굽는다).
 
-for i, s in enumerate(load('exe-tables/후원자표.json')['Sponsors'][:81]):
+for i, s in enumerate(load('exe-tables/sponsors.json')['Sponsors'][:81]):
     pair(s['Name'], row_text(0x0050EE88, 60, i, 0))
 
-for i, f in enumerate(load('exe-tables/마을사람표.json')['Folk'][:275]):
+for i, f in enumerate(load('exe-tables/town-folk.json')['Folk'][:275]):
     pair(f.get('Words'), row_text(0x004F2740, 0x20, i, 0x18))
     pair(f.get('Later'), row_text(0x004F2740, 0x20, i, 0x1C))
 
-for i, b in enumerate(load('exe-tables/책표.json')['Books'][:257]):
+for i, b in enumerate(load('exe-tables/books.json')['Books'][:257]):
     pair(b['Title'], row_text(0x004BC548, 0x58, i, 0))
     pair(b.get('Author'), row_text(0x004BC548, 0x58, i, 4))
 
-blds = load('exe-tables/건물표.json')
+blds = load('exe-tables/buildings.json')
 for i, b in enumerate(blds['Buildings'][:1508]):
     pair(b['Name'], row_text(0x004DDD60, 0x38, i, 0))
     pair(b['Kind'], row_text(0x004DDD60, 0x38, i, 4))
@@ -130,7 +130,7 @@ for i, s in enumerate(blds['SkillNames'][:13]):
 for i, s in enumerate(blds['LanguageNames'][:14]):
     pair(s, ptr_text(0x0051A030, i))
 
-names = load('exe-tables/이름표.json')
+names = load('exe-tables/player-names.json')
 for i, s in enumerate(names['Family'][:48]):
     pair(s, ptr_text(0x0054A0DC, i))
 for i, s in enumerate(names['Given'][:74]):
@@ -141,7 +141,7 @@ for i, j in enumerate(['탐험가', '발굴자', '사냥꾼', '정복자', '해�
     pair(j, ptr_text(0x0051A088, i))
 
 # 인물 이름(인물표 First/Last) — 일본어판 인물 줄 +0 이름 · +4 성.
-for p in load('CdsHelper/인물표.json')['People'][:281]:
+for p in load('CdsHelper/persons.json')['People'][:281]:
     i = p['Id']
     pair(p['First'], row_text(0x004F89B8, 0xCC, i, 0))
     pair(p['Last'], row_text(0x004F89B8, 0xCC, i, 4))

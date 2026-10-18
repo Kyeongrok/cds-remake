@@ -237,7 +237,7 @@ public partial class CdsHelperViewModel : ObservableObject
 
         var citiesPath = System.IO.Path.Combine(basePath, "cities.json");
         var hintPath = System.IO.Path.Combine(basePath, "hint.json");
-        var bundledDiscoveryJsonPath = System.IO.Path.Combine(basePath, "발견물.json");
+        var bundledDiscoveryJsonPath = System.IO.Path.Combine(basePath, "discovery-master.json");
         var userDiscoveryJsonPath = AppSettings.DiscoveryFilePath;
         var booksPath = System.IO.Path.Combine(basePath, "books.json");
         var patronsPath = System.IO.Path.Combine(basePath, "patrons.json");

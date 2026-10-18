@@ -13,7 +13,7 @@ import os
 import struct
 import sys
 
-BOOKS = [("STORY0.CDS", "이야기0"), ("STORY1.CDS", "이야기1")]
+BOOKS = [("STORY0.CDS", "story0"), ("STORY1.CDS", "story1")]   # 파일 이름은 ASCII(표 이름 이야기0 · 이야기1, TableCache)
 OUT_DIR = "CdsHelper"
 
 

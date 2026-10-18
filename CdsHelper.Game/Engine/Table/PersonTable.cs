@@ -37,7 +37,7 @@ public sealed class PersonTable
     /// 실행 파일 옆에 같이 깔리는 본의 파일 이름. 고친 표(<see cref="CacheName"/>)와 이름이 다르다 —
     /// 둘을 한 이름으로 읽으면 본을 못 찾아 새로 받은 사람의 술집이 빈다.
     /// </summary>
-    private const string ShippedName = "인물표";
+    private const string ShippedName = "persons";   // 실행 파일 옆 persons.json — 파일 이름은 ASCII 로 둔다(TableCache 이름 표)
 
     /// <summary>알맹이 모양 판. 칸을 더하면 올린다 — 옛 파일은 버리고 다시 굽는다.</summary>
     private const int Shape = 2;

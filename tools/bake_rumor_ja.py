@@ -1,4 +1,4 @@
-"""소문표(exe-tables/소문표.json)의 줄마다 열쇠(Id · UUID) · 원본 줄 번호(Line) · 일본어 본문(Ja)을 굽는다.
+"""소문표(exe-tables/rumors.json)의 줄마다 열쇠(Id · UUID) · 원본 줄 번호(Line) · 일본어 본문(Ja)을 굽는다.
 
 소문은 <b>Id(UUID)</b> 로 가린다 — 고친 글(RumorTable.Corrected) · 번역 · 도구 앱 편집이 다 이것으로 찾는다.
 한 번 붙인 Id 는 다시 구워도 그대로 둔다. Line 은 원본 표의 줄 번호(0~190)로, 일본어판 EXE 에서 같은 줄을 찾는
@@ -7,7 +7,7 @@
 예전에는 lang/ja.json 에 「한국어 글 → 일본어 글」로 넣어 화면에서 바꿨는데, 한국어 글을 고치면 열쇠가 바뀌어
 번역이 끊겼다. 이제 게임(RumorTable)이 언어에 맞는 칸을 고른다.
 
-더해 넣은 소문(exe-tables/소문-고친것.json)은 원본 줄이 없어 Line 이 없다 — Id 만 없으면 붙인다(Ja 는 손으로 적는다).
+더해 넣은 소문(exe-tables/rumors-added.json)은 원본 줄이 없어 Line 이 없다 — Id 만 없으면 붙인다(Ja 는 손으로 적는다).
 
 쓰는 법:  python tools/bake_rumor_ja.py <일본어판 CDS95.EXE>
 """
@@ -16,8 +16,8 @@ import json, os, struct, sys, uuid
 import pefile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PATH = os.path.join(ROOT, 'exe-tables', '소문표.json')
-ADDED = os.path.join(ROOT, 'exe-tables', '소문-고친것.json')
+PATH = os.path.join(ROOT, 'exe-tables', 'rumors.json')
+ADDED = os.path.join(ROOT, 'exe-tables', 'rumors-added.json')
 
 # 일본어판 소문표 — 한국어판 0x00525078 자리의 같은 표다(bake_lang_ja.py 와 같은 주소).
 JP_TABLE, ROW, TEXT = 0x004D7F48, 0x18, 0x14

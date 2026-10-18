@@ -79,15 +79,9 @@ public static class HardcoreRules
     /// <summary>도구 앱이 고쳐 둔 표 이름들(<c>exe-tables\이름-고친것.json</c>).</summary>
     private static IEnumerable<string> EditedTables()
     {
+        // 파일 이름은 ASCII 라(「rumors-added.json」 따위) 표 이름으로 되짚어 본다(TableCache.NamesEndingWith).
         const string suffix = "-고친것";
-        string[] files;
-        try
-        {
-            string folder = Local.Helpers.ExeTable.Folder;
-            files = System.IO.Directory.Exists(folder) ? System.IO.Directory.GetFiles(folder, "*" + suffix + ".json") : [];
-        }
-        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException) { files = []; }
-        return files.Select(f => System.IO.Path.GetFileNameWithoutExtension(f)[..^suffix.Length]);
+        return Local.Helpers.TableCache.NamesEndingWith(suffix).Select(name => name[..^suffix.Length]);
     }
 
     /// <summary>하드코어 판이면 지금 켜 둔 것을 더한다. 끈 것은 안 지운다.</summary>

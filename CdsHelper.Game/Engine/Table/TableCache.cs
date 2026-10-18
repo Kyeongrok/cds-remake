@@ -35,7 +35,80 @@ internal static class TableCache
         }
     }
 
-    public static string PathFor(string name) => Path.Combine(Folder, name + ".json");
+    /// <summary>
+    /// 표 이름(코드가 쓰는 한국어 열쇠) → 파일 이름(확장자 뺀 ASCII). 파일 이름은 ASCII 로만 짓는다.
+    /// </summary>
+    /// <remarks>
+    /// 한글 파일 이름이 바뀌면 Velopack 차등 업데이트가 깨졌다 — 릴리즈를 굽는 GitHub 윈도 러너는 ANSI 코드 페이지가
+    /// 1252 라 vpk 가 부르는 zstd.exe 가 한글 경로를 못 열어(「Stat failed on dictionary file ?????.json」) 옛 bsdiff 꼴로
+    /// 물러서는데, 깔린 쪽 Update.exe 는 그 꼴을 못 읽어 「Unsupported patch format」으로 차등을 버리고 160MB 통짜를
+    /// 받았다. 게임을 그 사이에 끄면 받다 만 채로 끝나 업데이트가 안 되는 것처럼 보였다(제보, v1.1.19 → v1.1.21).
+    /// 여기 없는 이름이 한글이면 UTF-8 16진으로 바꾼다(<see cref="FileNameOf"/>) — 도구 앱이 짓는 시나리오 책 따위.
+    /// </remarks>
+    private static readonly Dictionary<string, string> FileNames = new()
+    {
+        ["건물사진표"] = "building-photos", ["건물표"] = "buildings", ["경쟁자-고친것"] = "voyagers-edits",
+        ["교역소표"] = "trade-posts", ["교역품표"] = "goods", ["나라표"] = "nations", ["나라-고친것"] = "nations-edits",
+        ["도시-문화권-고친것"] = "city-cultures-edits", ["도시-왕국-고친것"] = "city-nations-edits",
+        ["도시표-게임"] = "cities-exe", ["도시표"] = "cities", ["돛효율표"] = "sails", ["마을대사"] = "town-lines",
+        ["마을사람표"] = "town-folk", ["바람표"] = "winds", ["발견물-고친것"] = "discoveries-edits",
+        ["발견물설명"] = "discovery-descriptions", ["발견물표"] = "discoveries", ["발견이벤트"] = "disev",
+        ["소문-고친것"] = "rumors-added", ["소문표"] = "rumors", ["손님표"] = "tavern-guests", ["술표"] = "drinks",
+        ["시나리오목록"] = "scenarios", ["시장물건"] = "market-goods", ["아이템설명"] = "item-descriptions",
+        ["아이템표"] = "items", ["여급표"] = "barmaids", ["여급-고친것"] = "barmaids-edits", ["역사대본"] = "history-events",
+        ["역사항해자"] = "history-voyagers", ["이름표"] = "player-names", ["이야기0"] = "story0", ["이야기1"] = "story1",
+        ["인물밑표"] = "person-templates", ["인물표"] = "persons", ["인물표-고친것"] = "persons-edits", ["작위"] = "nobility",
+        ["지형표"] = "terrain", ["책-고친것"] = "books-edits", ["책표"] = "books", ["화자이름표"] = "speaker-names",
+        ["화자표"] = "speakers", ["후원자표"] = "sponsors", ["힌트-고친것"] = "hints-edits", ["힌트표"] = "hints",
+        ["선수상-고친것"] = "figureheads-edits", ["묘책확률-고친것"] = "ruses-edits", ["패시브"] = "passives",
+        ["부대편성-고친것"] = "land-formations-edits", ["초상화-중년짝"] = "portrait-ages",
+    };
+
+    /// <summary>시나리오 책(<c>시나리오책{번호}</c>)의 파일 이름 앞머리.</summary>
+    private const string ScenarioBook = "시나리오책";
+
+    /// <summary>그 표가 적히는 파일 이름(확장자 뺀 것) — 늘 ASCII 다.</summary>
+    public static string FileNameOf(string name)
+    {
+        if (FileNames.TryGetValue(name, out var file)) return file;
+        if (name.StartsWith(ScenarioBook, StringComparison.Ordinal) && int.TryParse(name.AsSpan(ScenarioBook.Length), out int n))
+            return $"scenario-book{n}";
+        return name.All(char.IsAscii) ? name : "u-" + Convert.ToHexString(System.Text.Encoding.UTF8.GetBytes(name)).ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// 그 표의 파일 자리 — ASCII 이름이다. 그 파일이 없고 예전 한글 이름 파일만 있으면(이름을 바꾸기 전에 도구 앱이
+    /// 적어 둔 것) 그쪽을 낸다 — 다음에 적을 때 ASCII 이름으로 옮겨 간다(<see cref="Write{T}"/>).
+    /// </summary>
+    public static string PathFor(string name)
+    {
+        string path = Path.Combine(Folder, FileNameOf(name) + ".json");
+        if (File.Exists(path)) return path;
+        string legacy = Path.Combine(Folder, name + ".json");
+        return legacy != path && File.Exists(legacy) ? legacy : path;
+    }
+
+    /// <summary>
+    /// 적혀 있는 표 가운데 이름이 그 꼬리로 끝나는 것들(표 이름, 한국어 열쇠) — 도구 앱이 고쳐 둔 「-고친것」 따위.
+    /// 파일 이름이 ASCII 라 파일 목록에서 바로 못 읽으므로 이름 표와 예전 한글 파일을 함께 본다.
+    /// </summary>
+    public static IEnumerable<string> NamesEndingWith(string suffix)
+    {
+        var names = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (string name in FileNames.Keys)
+            if (name.EndsWith(suffix, StringComparison.Ordinal) && File.Exists(PathFor(name))) names.Add(name);
+        try
+        {
+            if (Directory.Exists(Folder))
+                foreach (string file in Directory.GetFiles(Folder, "*" + suffix + ".json"))
+                    names.Add(Path.GetFileNameWithoutExtension(file));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        return names;
+    }
+
+    /// <summary>적을 자리 — 늘 ASCII 이름이다.</summary>
+    private static string WritePathFor(string name) => Path.Combine(Folder, FileNameOf(name) + ".json");
 
     /// <summary>지금까지 적어 둔 파일 전부. 하나도 없으면 빈 목록.</summary>
     public static IReadOnlyList<string> Saved()
@@ -97,7 +170,10 @@ internal static class TableCache
         try
         {
             Directory.CreateDirectory(Folder);
-            File.WriteAllText(PathFor(name), JsonSerializer.Serialize(cached, Pretty));
+            string path = WritePathFor(name), legacy = Path.Combine(Folder, name + ".json");
+            File.WriteAllText(path, JsonSerializer.Serialize(cached, Pretty));
+            // 예전 한글 이름 파일은 걷는다 — 남겨 두면 ASCII 파일이 지워졌을 때 옛 값으로 되읽힌다.
+            if (legacy != path && File.Exists(legacy)) File.Delete(legacy);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

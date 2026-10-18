@@ -1,4 +1,4 @@
-"""Convert CdsHelper/발견물힌트.csv → CdsHelper/발견물.json (one-shot)."""
+"""Convert CdsHelper/발견물힌트.csv → CdsHelper/discovery-master.json (one-shot)."""
 import csv
 import json
 import sys
@@ -23,7 +23,7 @@ def empty_to_none(value):
 def main():
     repo_root = Path(__file__).resolve().parent.parent
     csv_path = repo_root / "CdsHelper" / "발견물힌트.csv"
-    json_path = repo_root / "CdsHelper" / "발견물.json"
+    json_path = repo_root / "CdsHelper" / "discovery-master.json"
 
     if not csv_path.exists():
         print(f"CSV not found: {csv_path}", file=sys.stderr)

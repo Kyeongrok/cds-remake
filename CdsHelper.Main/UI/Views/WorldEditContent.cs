@@ -578,7 +578,7 @@ public class WorldEditContent : ContentControl
         {
             for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir != null; dir = dir.Parent)
             {
-                string path = Path.Combine(dir.FullName, "exe-tables", "도시표.json");
+                string path = Path.Combine(dir.FullName, "exe-tables", "cities.json");   // 표 「도시표」(TableCache 이름 표)
                 if (!File.Exists(path)) continue;
                 using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
                 foreach (var c in doc.RootElement.GetProperty("Data").GetProperty("Cities").EnumerateArray())

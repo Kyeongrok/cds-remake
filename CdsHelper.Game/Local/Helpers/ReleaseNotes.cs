@@ -14,7 +14,8 @@ namespace CdsHelper.Game.Local.Helpers;
 public static class ReleaseNotes
 {
     /// <summary>exe 옆에 놓이는 파일 이름.</summary>
-    public const string FileName = "릴리즈노트.md";
+    // 저장소에는 릴리즈노트.md 로 두고 실행 파일 옆에는 ASCII 이름으로 깐다 — 한글 파일 이름은 차등 업데이트를 깬다(TableCache).
+    public const string FileName = "release-notes.md";
 
     /// <summary>한 번에 보여 주는 판 수 — 여러 판을 건너뛰어도 창이 화면을 넘지 않게 새 것부터 이만큼만 낸다.</summary>
     private const int MaxSections = 3;

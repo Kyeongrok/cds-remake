@@ -140,8 +140,9 @@ public sealed class DisevBook
     public static string BundledPath => BundledPathOf(CacheName);
 
     /// <summary>그 책의 실어 둔 원본 자리.</summary>
+    /// <remarks>파일 이름은 ASCII 다(<c>disev.json</c> · <c>story0.json</c> — <see cref="TableCache.FileNameOf"/>).</remarks>
     public static string BundledPathOf(string cache) =>
-        System.IO.Path.Combine(AppContext.BaseDirectory, cache + ".json");
+        System.IO.Path.Combine(AppContext.BaseDirectory, TableCache.FileNameOf(cache) + ".json");
 
     /// <summary>파트 수. 274 다.</summary>
     public int Count => _parts.Count;
