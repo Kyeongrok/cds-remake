@@ -38,6 +38,8 @@ public sealed class BuildingPhotoWindow : GameWindow, Engine.Menu.IMenuRing
         WindowStartupLocation = WindowStartupLocation.Manual;
         ShowInTaskbar = false;
         ShowActivated = false;
+        // 사람을 눌러 이 창이 초점을 쥐면 글쇠는 주인(도시 그림)에게 넘긴다 — 그쪽이 차림표로 다시 넘긴다.
+        KeyDown += (_, e) => { if (!e.Handled && Owner is { } owner) e.Handled = ForwardKey(owner, e); };
         AllowsTransparency = true;
         Background = Brushes.Transparent;   // 타원 밖은 비쳐야 한다
 

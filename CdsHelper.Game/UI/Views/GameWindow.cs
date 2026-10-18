@@ -97,21 +97,31 @@ public class GameWindow : Window
         if (sender is not Window window || BoxBlocking(window) is not { } box) return;
         if (e.Key == Key.System) return;   // Alt+F4 따위는 그 창 몫이다 — 상자가 떠 있어도 원본은 닫힌다
         e.Handled = true;
+        ForwardKey(box, e);
+    }
 
-        if (!box.IsActive) box.Activate();
-        if (PresentationSource.FromVisual(box) is not { } source) return;
+    /// <summary>
+    /// 받은 글쇠를 다른 창에 그대로 넘긴다 — 그 창을 앞으로 내고 PreviewKeyDown · KeyDown 을 차례로 올린다.
+    /// 넘긴 쪽이 받았으면 참.
+    /// </summary>
+    internal static bool ForwardKey(Window target, KeyEventArgs e)
+    {
+        if (!target.IsActive) target.Activate();
+        if (PresentationSource.FromVisual(target) is not { } source) return false;
 
         var key = e.Key == Key.ImeProcessed ? e.ImeProcessedKey : e.Key;
         var preview = new KeyEventArgs(e.KeyboardDevice, source, e.Timestamp, key)
         {
             RoutedEvent = Keyboard.PreviewKeyDownEvent,
         };
-        box.RaiseEvent(preview);
-        if (preview.Handled) return;
-        box.RaiseEvent(new KeyEventArgs(e.KeyboardDevice, source, e.Timestamp, key)
+        target.RaiseEvent(preview);
+        if (preview.Handled) return true;
+        var down = new KeyEventArgs(e.KeyboardDevice, source, e.Timestamp, key)
         {
             RoutedEvent = Keyboard.KeyDownEvent,
-        });
+        };
+        target.RaiseEvent(down);
+        return down.Handled;
     }
 
     /// <summary>

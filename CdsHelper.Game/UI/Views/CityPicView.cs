@@ -553,7 +553,19 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 도시를 나가는 길은 항구의 "출항" 하나뿐이다(HarborMenu.ConfirmSail).
         KeyDown += (_, e) =>
         {
-            if (e.Key is not Key.Escape) { e.Handled = PickByKey(e.Key); return; }
+            if (e.Key is not Key.Escape)
+            {
+                // 차림표는 따로 뜬 창이라, 대사 창을 닫거나 사진 속 사람을 누른 뒤처럼 초점이 이 그림 창에 와 있으면
+                // 방향키 · Enter 가 차림표에 안 갔다 — 왕궁에서 「설득」에서 「왕궁을 나온다」로 못 내려갔다(제보).
+                // 차림표가 떠 있으면 글쇠를 그 창에 넘긴다.
+                if ((Menus.FacilityWindow ?? _cityMenu.Window) is { IsVisible: true } menu && menu != this)
+                {
+                    e.Handled = ForwardKey(menu, e);
+                    return;
+                }
+                e.Handled = PickByKey(e.Key);
+                return;
+            }
             e.Handled = true;
             // 창이 초점을 쥐고 있으면 그쪽이 제 ESC 로 닫힌다(MenuWindow). 여기까지 온 것은
             // 그림이 초점을 쥔 자리라, 열려 있는 것이 있으면 대신 닫아 준다.
