@@ -1009,7 +1009,7 @@ public sealed class ModDialog : GameWindow
                 if (index == PowerUpPreset)
                     NoticeDialog.Show(this, "파워업키트를 골랐습니다.\n\n"
                         + "다음 모드가 켜지고, 파워업키트인 동안은 끌 수 없습니다.\n"
-                        + string.Join(", ", PresetPowerUp.Select(Lang.T)) + "\n\n"
+                        + string.Join(", ", PresetPowerUp.Select(Local.Helpers.Lang.T)) + "\n\n"
                         + "출입 일수는 5일로 맞춥니다. 권장 탭에서 다른 단계를 고르면 다시 끌 수 있습니다.", "파워업키트");
             };
             radios[i] = radio;
