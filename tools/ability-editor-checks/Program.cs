@@ -75,6 +75,88 @@ static class Program
         Application.Current.Shutdown();
     }
 
+    // Exercise the real callback with the same persistent windows as a normal town visit.
+    // Close only windows created by this invocation, so a rejected editor cannot hang the harness.
+    static bool TryEditor(WorldMapWindow world, Action<PlayerAbilityEditDialog>? edit = null)
+    {
+        var before = Application.Current.Windows.Cast<Window>().ToHashSet();
+        bool opened = false;
+        Exception? error = null;
+        var pending = world.Dispatcher.BeginInvoke(() =>
+        {
+            try
+            {
+                var editor = Application.Current.Windows.OfType<PlayerAbilityEditDialog>().SingleOrDefault();
+                opened = editor != null;
+                if (editor != null) edit?.Invoke(editor);
+            }
+            catch (Exception ex) { error = ex; }
+            finally
+            {
+                foreach (var window in Application.Current.Windows.Cast<Window>().Where(w => !before.Contains(w)).ToArray())
+                    window.Close();
+            }
+        }, DispatcherPriority.ApplicationIdle);
+        try { typeof(WorldMapWindow).GetMethod("EditPlayerAbilities", Private)!.Invoke(world, null); }
+        finally { pending.Abort(); }
+        if (error != null) throw error;
+        return opened;
+    }
+
+    static void CheckEditorAvailability(WorldMapWindow world, bool reproduce = false)
+    {
+        var game = Field<Game>(world, "_game");
+        var host = Field<WorldMapHost>(world, "_host");
+        var asking = typeof(WorldMapWindow).GetField("_asking", Private)!;
+        host.Paused = true;
+        var city = CityPicView.Open(world, game, 0, game.CityName(0))
+            ?? throw new InvalidOperationException("Town fixture needs the game's city assets");
+        try
+        {
+            asking.SetValue(world, false);
+            Check(TryEditor(world), "Editor opens in the starting/resumed town state");
+            asking.SetValue(world, true); // EnterCity/CheckPort retain this until the city closes.
+            bool townOpens = TryEditor(world);
+            asking.SetValue(world, false);
+            var menu = MenuWindow.ShowCentered(city, new TextBlock { Text = "시설 메뉴" });
+            var photo = BuildingPhotoWindow.Show(city, new uint[320 * 240], [], 1, new Point(100, 100))!;
+            bool menuOpens = TryEditor(world);
+            if (reproduce)
+            {
+                Console.WriteLine($"REPRODUCTION ordinary-arrival editor opened={townOpens}; building-menu editor opened={menuOpens}");
+                return;
+            }
+            Check(townOpens, "Editor opens after arrival while the town's pause flag remains set");
+            Check(menuOpens, "Building menu and photo do not block the editor");
+            asking.SetValue(world, true);
+            Check(TryEditor(world, editor => Check(editor.Owner == city, "Town editor is owned by the active city")),
+                "Editor opens with town pause, building menu and photo together");
+            Check(Field<bool>(world, "_asking") && host.Paused, "Cancel preserves town pause and encounter suppression");
+            int[] before = game.Player.Abilities.ToArray();
+            Check(TryEditor(world, editor => { Fill(editor, "2"); Apply(editor); }), "Apply works during a normal town visit");
+            Check(game.Player.Abilities[0] == 1 && game.Unsaved, "Town edit changes the current player and marks it unsaved");
+            Check(Field<bool>(world, "_asking") && host.Paused, "Apply preserves town pause and encounter suppression");
+            game.Player.SetAbilities(before);
+
+            var talk = ConfirmDialog.Hold(menu, "검증용 대화");
+            Check(!TryEditor(world), "A real dialogue nested under a building menu still blocks editing");
+            talk.Close();
+            Check(TryEditor(world), "Editor becomes available immediately after the dialogue closes");
+            var battle = new GameWindow { Owner = city, Width = 200, Height = 100, Content = new TextBlock { Text = "Busy game window" } };
+            battle.Show();
+            Check(!TryEditor(world), "Other active game windows remain blocked, including nonmodal scenes");
+            battle.Close();
+            Check(TryEditor(world), "Closing a blocking game window restores editor access");
+            photo.Close();
+            menu.Close();
+        }
+        finally { city.Close(); asking.SetValue(world, false); }
+        asking.SetValue(world, true);
+        Check(!TryEditor(world), "Busy map without a city still blocks editing");
+        asking.SetValue(world, false);
+        Check(TryEditor(world), "Map editor is available again after the busy state ends");
+    }
+
     [STAThread]
     static int Main(string[] args)
     {
@@ -193,25 +275,20 @@ static class Program
             var game = Field<Game>(world, "_game");
             CheckLoaded(world, expected, expectedSkills, finalTongues);
 
+            CheckEditorAvailability(world, args.Contains("--reproduce-guard"));
+            if (args.Contains("--reproduce-guard")) { CloseWorld(world); return 0; }
+
             // Exercise the actual development-menu callback and its modal pause / unsaved handling.
             game.Unsaved = false;
             var host = Field<WorldMapHost>(world, "_host");
             host.Paused = false;
-            Exception? callbackError = null;
-            world.Dispatcher.BeginInvoke(() =>
+            Check(TryEditor(world, dialog =>
             {
-                var dialog = world.OwnedWindows.OfType<PlayerAbilityEditDialog>().Single();
-                try
-                {
-                    Check(host.Paused, "Game time is paused while editing");
-                    Fill(dialog, "85");
-                    Levels(dialog, "_skillFields", finalSkills);
-                    Apply(dialog);
-                }
-                catch (Exception ex) { callbackError = ex; dialog.Close(); }
-            }, DispatcherPriority.ApplicationIdle);
-            typeof(WorldMapWindow).GetMethod("EditPlayerAbilities", Private)!.Invoke(world, null);
-            if (callbackError != null) throw callbackError;
+                Check(host.Paused, "Game time is paused while editing");
+                Fill(dialog, "85");
+                Levels(dialog, "_skillFields", finalSkills);
+                Apply(dialog);
+            }), "Development-menu callback opens the editor on the map");
             Check(!host.Paused, "Game pause state is restored after applying");
             host.Paused = true;
             Check(game.Unsaved, "Development-menu callback marks edited game unsaved");

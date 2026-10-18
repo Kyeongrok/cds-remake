@@ -3954,29 +3954,35 @@ public sealed class WorldMapWindow : Window
     private void EditPlayerAbilities()
     {
         if (_abilityEditorOpen || !_started || !ReferenceEquals(_screen.Content, _mapRoot)) return;
-        // 도시 자체는 열어 둬도 된다. 전투·대사·건물 메뉴의 계산 중에는 값을 바꾸지 않는다.
+        var city = OwnedWindows.OfType<CityPicView>().FirstOrDefault(w => w.IsVisible);
+        // 입항 뒤에는 도시를 나갈 때까지 _asking 이 참이다. 이것만으로 대화 중이라 판단하면
+        // 새 판의 자택과 달리 일반 입항 뒤에는 편집기를 열 수 없다.
+        // 도시·시설 메뉴·사진은 상시 화면이다. 그 아래의 실제 대화·전투 창은 계속 검사한다.
         static bool HasDialog(Window owner) => owner.OwnedWindows.OfType<Window>()
-            .Any(w => w.IsVisible && ((w is GameWindow && w is not CityPicView) || HasDialog(w)));
-        if (_asking || HasDialog(this))
+            .Any(w => w.IsVisible &&
+                ((w is GameWindow && w is not (CityPicView or MenuWindow or BuildingPhotoWindow))
+                 || w is EventAnimationPopup or EventStillPopup || HasDialog(w)));
+        if ((_asking && city == null) || HasDialog(this))
         {
             NoticeDialog.Show(this, "대화나 전투를 마친 뒤 주인공 능력치를 편집해 주세요.");
             return;
         }
 
+        bool asking = _asking;
         _abilityEditorOpen = true;
         _asking = true;
         try
         {
             Hold(() =>
             {
-                Window owner = OwnedWindows.OfType<CityPicView>().FirstOrDefault(w => w.IsVisible) ?? (Window)this;
+                Window owner = city ?? (Window)this;
                 if (!PlayerAbilityEditDialog.Show(owner, _game.Player)) return;
                 _game.Unsaved = true;
                 HardcoreRules.Mark("dev:abilities", _game.Player);
                 Say("주인공 능력치·기술·언어를 적용했습니다. 게임을 저장하면 다음에도 유지됩니다.");
             });
         }
-        finally { _asking = false; _abilityEditorOpen = false; }
+        finally { _asking = asking; _abilityEditorOpen = false; }
     }
 
     /// <summary>

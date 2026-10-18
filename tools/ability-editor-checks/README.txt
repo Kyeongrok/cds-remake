@@ -20,3 +20,13 @@ dotnet run --project tools/ability-editor-checks/AbilityEditor.Checks.csproj -c 
 오프닝·음악 다운로드는 검사에서 건너뛰며, GameSave.Save 및 WorldMapWindow.LoadGame을 사용한다.
 일반 저장의 BeforeSave / Aging.OnSave 처리도 실행한 뒤 저장 파일 경로만 테스트 폴더로 지정한다.
 25세 캐릭터를 사용하므로 노화에 의한 능력치 변화는 없다.
+
+도시 접근 회귀 검사:
+- 실제 CityPicView, MenuWindow, BuildingPhotoWindow를 열고 개발 메뉴 콜백을 호출한다.
+- 시작/재개 도시와 일반 입항 뒤의 _asking=true 상태를 각각 검사한다.
+- 적용·취소 후 도시의 일시정지 및 조우 억제 상태가 유지되는지 확인한다.
+- 시설 메뉴 아래의 실제 ConfirmDialog와 일반 GameWindow가 편집을 막고,
+  닫힌 뒤에는 다시 열리는지 확인한다. 일반 GameWindow 검사는 전투 차단 조건을
+  검사하는 것으로 실제 전투 한 판을 진행하는 검사는 아니다.
+- 기존 오류의 결과만 보고하려면 실행 인자에 --reproduce-guard를 추가한다.
+  이 모드는 열린 여부를 출력하고 접근성 단언과 이후 저장 검사를 생략한다.
