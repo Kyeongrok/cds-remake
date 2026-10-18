@@ -2342,6 +2342,16 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   0044eac0  기한이 아직 남았다
     /// </code>
     /// </remarks>
+    /// <summary>
+    /// 그 이름의 후원자가 <b>이 도시에 지금 앉아 있으면</b> 그 사람 — 항구에서 「배를 빌린다」를 받을 때 쓴다(건의).
+    /// </summary>
+    public Patron? LenderHere(string sponsor)
+    {
+        if (_game.Sponsors is not { } table || table.FindByName(sponsor) is not { } s) return null;
+        if (s.City != _cityId || !table.IsSeated(s, _player.Date.Year)) return null;
+        return LoadPatrons().FirstOrDefault(p => table.FindByName(p.Name)?.Index == s.Index);
+    }
+
     public bool CanBorrow(Patron patron, bool hasHarbor) =>
         hasHarbor
         && _player.Contract is { } c && c.Sponsor == patron.Name && c.City == _cityName
