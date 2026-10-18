@@ -34,7 +34,7 @@ internal sealed class CargoRankDialog : InfoDialog
             .Take(Top).ToList();
 
         var rows = new StackPanel();
-        rows.Children.Add(Label($"{Engine.GameInfo.CargoLabel(game, cargo)}  {cargo.Count}개"));
+        rows.Children.Add(Label($"비싸게 팔리는 도시 — {Engine.GameInfo.CargoLabel(game, cargo)}  {cargo.Count}개"));
         rows.Children.Add(Gap(6));
 
         if (cargo.Spoiled) rows.Children.Add(Label("썩어서 어디서도 값을 받지 못합니다."));
@@ -51,7 +51,7 @@ internal sealed class CargoRankDialog : InfoDialog
         }
         rows.Children.Add(Gap(8));
 
-        Build("비싸게 팔리는 도시", rows, RankWidth + CityWidth + PriceWidth + TotalWidth, double.NaN,
+        Build("매입 정보", rows, RankWidth + CityWidth + PriceWidth + TotalWidth, double.NaN,
               new GameButton("교역품 정보", () => showInfo?.Invoke()), new GameButton("취소", Close));
     }
 

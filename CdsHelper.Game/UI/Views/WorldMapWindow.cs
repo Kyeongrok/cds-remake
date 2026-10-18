@@ -3082,6 +3082,40 @@ public sealed class WorldMapWindow : Window
     /// <summary>후원자 정보가 떠 있는지 — 그 창 안에서 P 를 또 눌러 겹쳐 뜨지 않게.</summary>
     private bool _patronsOpen;
 
+    /// <summary>
+    /// 단축키로 <b>매입 정보</b>를 연다 — 함대정보 「짐」 판에서 교역품을 누를 때의 그 창(모드 「적하 시세 순위」)이다.
+    /// 실은 교역품이 하나면 곧바로, 여럿이면 무엇을 볼지 먼저 묻는다.
+    /// </summary>
+    internal void CargoByKey(Window owner)
+    {
+        if (!_started || _cargoOpen) return;
+        if (!GameSettings.CargoPriceRank)
+        {
+            NoticeDialog.Show(owner, "모드 「적하 시세 순위」를 켜면 쓸 수 있습니다.");
+            return;
+        }
+        _cargoOpen = true;
+        try
+        {
+            var hold = _game.Player.CargoHold;
+            if (hold.Count == 0)
+            {
+                NoticeDialog.Show(owner, "실은 교역품이 없습니다.");
+                return;
+            }
+            int pick = hold.Count == 1 ? 0
+                : ListPickDialog.Pick(owner, [.. hold.Select(c => $"{GameInfo.CargoLabel(_game, c)}  {c.Count}개")],
+                                      "매입 정보", "실은 교역품이 없습니다.");
+            if (pick < 0) return;
+            var cargo = hold[pick];
+            CargoRankDialog.Show(owner, _game, cargo, () => GoodsInfoDialog.Show(owner, _game, cargo.Kind, cargo.Shelf));
+        }
+        finally { _cargoOpen = false; }
+    }
+
+    /// <summary>매입 정보가 떠 있는지 — 그 창 안에서 T 를 또 눌러 겹쳐 뜨지 않게.</summary>
+    private bool _cargoOpen;
+
     /// <summary>스폰서 일람 — 아는 후원자와 권력 · 친밀도. 도시 창이 없는 바다 · 뭍에서도 같은 창을 낸다.</summary>
     private void ShowPatrons(Window owner) =>
         new PatronMenu(owner, _game, "", CommandMenu, CommandMenu, 0, 0, -1).ShowPatrons(owner);
@@ -3195,6 +3229,13 @@ public sealed class WorldMapWindow : Window
         {
             e.Handled = true;
             if (_started && !_patronsOpen) Hold(() => PatronsByKey(this));
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.CargoKey, Key.T))
+        {
+            e.Handled = true;
+            if (_started && !_cargoOpen) Hold(() => CargoByKey(this));
             return;
         }
 

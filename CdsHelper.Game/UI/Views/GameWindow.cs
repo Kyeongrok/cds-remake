@@ -191,6 +191,13 @@ public class GameWindow : Window
         {
             WorldMapWindow.Current?.PatronsByKey(window);
             e.Handled = true;
+            return;
+        }
+
+        if (e.Key == KeyOf(Local.Settings.GameSettings.CargoKey, Key.T))
+        {
+            WorldMapWindow.Current?.CargoByKey(window);
+            e.Handled = true;
         }
     }
 

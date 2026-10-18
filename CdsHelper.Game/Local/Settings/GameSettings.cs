@@ -193,6 +193,7 @@ public sealed class GameSettingsData
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
+    public string CargoKey { get; set; } = "T";
 
     /// <summary>항해 글쇠(<see cref="GameSettings.SailActions"/> 의 Id → 글쇠 이름). 안 적힌 것은 기본값이고, 빈 글이면 안 쓴다.</summary>
     public Dictionary<string, string>? SailKeys { get; set; }
@@ -872,6 +873,13 @@ public static class GameSettings
     {
         get => Get(d => d.HintsKey);
         set => Set(d => d.HintsKey = value);
+    }
+
+    /// <summary><b>매입 정보</b>(실은 교역품을 비싸게 사 주는 도시 순위) 단축키. 기본은 <c>T</c> 다.</summary>
+    public static string CargoKey
+    {
+        get => Get(d => d.CargoKey);
+        set => Set(d => d.CargoKey = value);
     }
 
     /// <summary><b>후원자 정보</b> 단축키. 기본은 <c>P</c> 다.</summary>

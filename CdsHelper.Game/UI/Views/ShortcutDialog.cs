@@ -35,6 +35,7 @@ public sealed class ShortcutDialog : GameWindow
         general.Children.Add(Row("힌트 정보", GameSettings.HintsKey, key => GameSettings.HintsKey = key));
         general.Children.Add(Row("인물정보", GameSettings.PersonKey, key => GameSettings.PersonKey = key));
         general.Children.Add(Row("후원자 정보", GameSettings.PatronKey, key => GameSettings.PatronKey = key));
+        general.Children.Add(Row("매입 정보", GameSettings.CargoKey, key => GameSettings.CargoKey = key));
         general.Children.Add(Note("각 칸을 누른 뒤 지정할 글쇠를 누르십시오."));
 
         var sail = new StackPanel();
