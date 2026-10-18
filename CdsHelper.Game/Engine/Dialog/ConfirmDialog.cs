@@ -83,11 +83,31 @@ public sealed class ConfirmDialog : GameWindow
             Height = ButtonHeight,
             Margin = new Thickness(0, TextGap, 0, 0),
         };
+        // 모드 「대항해시대2 스타일 대화창」 — 얼굴이 붙는 대사 창만 베이지 바탕에 검은 글씨, 줄무늬 테로 낸다.
+        bool dh2 = face != null && Local.Settings.GameSettings.Dh2TalkStyle;
+
         // 초점이 간 단추의 안쪽 테가 깜빡인다 — 원본이 지금 고른 것을 그렇게 알린다.
         if (bare)
         {
             // 단추 없는 창(종류 3) — 단추 줄도 그 앞 사이도 없다.
             buttons.Visibility = Visibility.Collapsed;
+        }
+        else if (dh2)
+        {
+            // 대항해시대2 단추 — 크림 띠 안에 판을 늘어놓는다(그림 없이 WPF 로 그린다).
+            var plaques = new StackPanel { Orientation = Orientation.Horizontal };
+            if (yesNo)
+            {
+                plaques.Children.Add(Dh2Plaque("YES", () => { DialogResult = true; }));
+                plaques.Children.Add(Dh2Plaque("NO", () => { DialogResult = false; }));
+            }
+            else plaques.Children.Add(Dh2Plaque("확인", () => { DialogResult = true; }));
+            buttons.Height = double.NaN;
+            buttons.Children.Add(new Border
+            {
+                Background = Dh2Bar, BorderBrush = Dh2Brown, BorderThickness = new Thickness(1),
+                Padding = new Thickness(3, 3, 0, 3), SnapsToDevicePixels = true, Child = plaques,
+            });
         }
         else if (yesNo)
         {
@@ -132,9 +152,6 @@ public sealed class ConfirmDialog : GameWindow
         // <b>가운데로 미는 것은 한 줄짜리뿐이다.</b> 얼굴이 서면 글은 그 오른쪽에
         // 왼쪽맞춤으로 붙고, 두 줄 넘게 넘어가는 말도 왼쪽에 붙는다("모험 중단" 창이
         // 그렇다). 한 줄이면 남는 칸의 반만큼 밀어 가운데로 맞춘다.
-        // 모드 「대항해시대2 스타일 대화창」 — 얼굴이 붙는 대사 창만 베이지 바탕에 검은 글씨, 줄무늬 테로 낸다.
-        bool dh2 = face != null && Local.Settings.GameSettings.Dh2TalkStyle;
-
         var words = new StackPanel();
         foreach (string line in lines)
         {
@@ -298,6 +315,51 @@ public sealed class ConfirmDialog : GameWindow
         Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0x00, 0xA2, 0x61)),
         Frozen(Color.FromRgb(0xD3, 0x40, 0x01)),
     ];
+
+    /// <summary>대항해시대2 단추 색 — 크림 띠 · 갈색 테 · 황갈 테두리 띠 · 고른 판(분홍 · 연보라 바둑판, 파란 글씨) · 안 고른 판(짙은 초록, 옅은 글씨).</summary>
+    private static readonly Brush Dh2Bar = Frozen(Color.FromRgb(0xF2, 0xD9, 0xB5));
+    private static readonly Brush Dh2Brown = Frozen(Color.FromRgb(0x7A, 0x30, 0x10));
+    private static readonly Brush Dh2Rim = GameUi.Dither(Color.FromRgb(0xF3, 0xA2, 0x61), Color.FromRgb(0xD3, 0x40, 0x01), 1);
+    private static readonly Brush Dh2On = GameUi.Dither(Color.FromRgb(0xF0, 0xC0, 0xD8), Color.FromRgb(0xC8, 0xB0, 0xE0), 1);
+    private static readonly Brush Dh2Off = GameUi.Dither(Color.FromRgb(0x1E, 0x5A, 0x34), Color.FromRgb(0x10, 0x40, 0x24), 1);
+    private static readonly Brush Dh2OnText = Frozen(Color.FromRgb(0x28, 0x40, 0xA8));
+    private static readonly Brush Dh2OffText = Frozen(Color.FromRgb(0xC0, 0xD4, 0xB8));
+
+    /// <summary>
+    /// 대항해시대2 단추 판 하나 — 갈색 선 · 황갈 바둑판 띠 · 갈색 선 안에 바둑판 바탕과 세리프 글씨. 초점이 오면 분홍 바탕에
+    /// 파란 글씨, 아니면 짙은 초록에 옅은 글씨다. 초점 · 엔터는 묶음(<see cref="_focus"/>)이 맡는다.
+    /// </summary>
+    private FrameworkElement Dh2Plaque(string text, Action run)
+    {
+        var label = new TextBlock
+        {
+            Text = text,
+            FontFamily = new FontFamily("Times New Roman, Batang"),
+            FontWeight = FontWeights.Bold,
+            FontSize = 15,
+            Margin = new Thickness(10, 0, 10, 0),
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        var face = new Border { BorderBrush = Dh2Brown, BorderThickness = new Thickness(1), Child = label, MinWidth = 52 };
+        var plaque = new Border
+        {
+            BorderBrush = Dh2Brown,
+            BorderThickness = new Thickness(1),
+            Background = Dh2Rim,
+            Padding = new Thickness(2),
+            Margin = new Thickness(0, 0, 3, 0),
+            Cursor = Cursors.Hand,
+            SnapsToDevicePixels = true,
+            Child = face,
+        };
+        plaque.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
+        _focus.Add(plaque, on =>
+        {
+            face.Background = on ? Dh2On : Dh2Off;
+            label.Foreground = on ? Dh2OnText : Dh2OffText;
+        }, run);
+        return plaque;
+    }
 
     /// <summary>알맹이를 대항해시대2 줄무늬 테로 감싼다 — 줄 하나가 테 한 겹(한 점)이다.</summary>
     private static UIElement Dh2Frame(UIElement inner)

@@ -1512,28 +1512,38 @@ internal static class GameUi
 
     public sealed class FocusGroup
     {
-        private readonly List<GameButton> _items = [];
+        /// <summary>묶음의 칸 — 초점을 켜고 끄는 손과 누를 때의 손. 게임 단추가 아닌 것(대항해시대2 단추)도 든다.</summary>
+        private readonly List<(Action<bool> Focused, Action? Run)> _items = [];
         private int _index = -1;
 
         /// <summary>단추 하나를 만들어 묶음에 넣는다.</summary>
         public GameButton Add(string text, Action run, double width = 110)
         {
             var button = new GameButton(text, run, BandStyle.Button, width);
-            int index = _items.Count;
-            _items.Add(button);
-
-            FocusOnHover(button, () => Focus(index));
-            if (_items.Count == 1) Focus(0);   // 첫 단추에 초점을 두고 시작한다
+            Add(button, on => button.Focused = on, () => button.Run?.Invoke());
             return button;
+        }
+
+        /// <summary>
+        /// 게임 단추가 아닌 것을 묶음에 넣는다 — 초점이 오가면 <paramref name="focused"/> 로 모양을 바꾸고,
+        /// 엔터 · 스페이스면 <paramref name="run"/> 이다. 누르기(마우스)는 부르는 쪽이 건다.
+        /// </summary>
+        public void Add(FrameworkElement element, Action<bool> focused, Action run)
+        {
+            int index = _items.Count;
+            _items.Add((focused, run));
+            focused(false);
+            FocusOnHover(element, () => Focus(index));
+            if (_items.Count == 1) Focus(0);   // 첫 단추에 초점을 두고 시작한다
         }
 
         /// <summary>그 단추로 초점을 옮긴다.</summary>
         public void Focus(int index)
         {
             if (index < 0 || index >= _items.Count || index == _index) return;
-            if (_index >= 0 && _index < _items.Count) _items[_index].Focused = false;
+            if (_index >= 0 && _index < _items.Count) _items[_index].Focused(false);
             _index = index;
-            _items[index].Focused = true;
+            _items[index].Focused(true);
         }
 
         /// <summary>방향키·엔터를 받는다. 처리했으면 true.</summary>
