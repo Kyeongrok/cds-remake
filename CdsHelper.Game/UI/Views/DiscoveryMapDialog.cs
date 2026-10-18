@@ -155,6 +155,33 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <summary>풍향 · 해류 켜고 끄기(단추와 글쇠가 같이 쓴다).</summary>
     private Action? _toggleWind, _toggleCurrent;
 
+    /// <summary>발견물 · 도시 켜고 끄기 — 찾은 것이 꺼진 켜에 있으면 켠다.</summary>
+    private Action? _toggleSpots, _toggleCities;
+
+    /// <summary>찾기 칸이 훑는 표식 — 이름과 그 표식, 앉은 켜.</summary>
+    private readonly List<(string Name, Pin Pin, Canvas Layer)> _searchable = [];
+
+    /// <summary>지금 찾은 것들과 그 가운데 보고 있는 차례.</summary>
+    private List<(string Name, Pin Pin, Canvas Layer)> _hits = [];
+    private int _hit;
+
+    private readonly TextBox _query;
+    private readonly TextBlock _hitNote;
+
+    /// <summary>찾은 표식을 두르는 고리 — 모든 켜 위에 얹는다.</summary>
+    private readonly System.Windows.Shapes.Ellipse _ring = new()
+    {
+        Stroke = Frozen(Color.FromRgb(0xFF, 0xE0, 0x40)),
+        IsHitTestVisible = false,
+        Visibility = Visibility.Collapsed,
+    };
+
+    /// <summary>고리 지름 · 선 굵기(화면 점).</summary>
+    private const double RingSize = 16, RingLine = 2.5;
+
+    /// <summary>찾은 것으로 옮겨 갈 때 적어도 이만큼 키운다 — 이름표가 서는 배율이다.</summary>
+    private const double SearchZoom = 6;
+
     /// <summary>
     /// 오른쪽 단추로 짚은 자리로 함대를 옮기는 손. 칸 자리를 받아 <b>실제로 선 칸</b>을
     /// 돌려준다(뭍이면 가까운 물칸으로 밀리므로 짚은 자리와 다를 수 있다). 옮길 수 없는
@@ -243,9 +270,12 @@ public sealed class DiscoveryMapDialog : GameWindow
         _world.Children.Add(_cityLayer);
         _cityLayer.Visibility = GameSettings.DiscoveryMapCities ? Visibility.Visible : Visibility.Collapsed;
         foreach (var city in cities ?? [])
+        {
             Mark(city.X / ExploredMap.CellsPerBlock, city.Y / ExploredMap.CellsPerBlock,
                  city.Library ? LibrarySize : CitySize, CityInk, city.Name, label: true, layer: _cityLayer,
                  glyph: city.Library ? "도" : null);
+            _searchable.Add((city.Name, _pins[^1], _cityLayer));
+        }
 
         _world.Children.Add(_spotLayer);
         _spotLayer.Visibility = GameSettings.DiscoveryMapSpots ? Visibility.Visible : Visibility.Collapsed;
@@ -269,6 +299,7 @@ public sealed class DiscoveryMapDialog : GameWindow
             bool found = player.HasFound(row.Id) || eventsDone?.Contains(row.Id) == true;
             var spotDot = Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
                             MarkSize, found ? Found : Yet, row.Name, label: true, layer: _spotLayer);
+            _searchable.Add((row.Name, _pins[^1], _spotLayer));
             if (walk != null && spotDot is System.Windows.Shapes.Ellipse dot) WalkTarget(dot, x, y);
             shown++;
             if (found) done++;
@@ -281,6 +312,9 @@ public sealed class DiscoveryMapDialog : GameWindow
             _shipDot = Mark(at.X / ExploredMap.CellsPerBlock, at.Y / ExploredMap.CellsPerBlock,
                             ShipSize, Mine, "지금 자리", label: false);
 
+        // 찾은 것을 두르는 고리는 모든 켜 위다.
+        _world.Children.Add(_ring);
+
         var viewport = new Border
         {
             Width = ViewW,
@@ -291,11 +325,15 @@ public sealed class DiscoveryMapDialog : GameWindow
             ClipToBounds = true,
             Child = new Canvas { Children = { _world, _gridTags } },
             Cursor = Cursors.SizeAll,
+            Focusable = true,
+            FocusVisualStyle = null,
         };
 
         viewport.MouseWheel += (_, e) => ZoomAt(e.Delta > 0 ? 1 : -1, e.GetPosition(viewport));
         viewport.MouseLeftButtonDown += (_, e) =>
         {
+            // 지도를 누르면 글쇠가 다시 지도로 온다 — 찾기 칸에 남아 있으면 화살표 · W · C 가 칸에 먹힌다.
+            Keyboard.Focus(viewport);
             _dragging = true;
             _grab = e.GetPosition(viewport);
             _grabVx = _vx;
@@ -360,11 +398,52 @@ public sealed class DiscoveryMapDialog : GameWindow
         toggles.Children.Add(Toggle("격자", () => GameSettings.DiscoveryMapGrid,
                                     v => GameSettings.DiscoveryMapGrid = v, _gridLayer, out _));
         toggles.Children.Add(Toggle("발견물", () => GameSettings.DiscoveryMapSpots,
-                                    v => GameSettings.DiscoveryMapSpots = v, _spotLayer, out _));
+                                    v => GameSettings.DiscoveryMapSpots = v, _spotLayer, out _toggleSpots));
         if (cities is { Count: > 0 })
             toggles.Children.Add(Toggle("도시", () => GameSettings.DiscoveryMapCities,
-                                        v => GameSettings.DiscoveryMapCities = v, _cityLayer, out _));
+                                        v => GameSettings.DiscoveryMapCities = v, _cityLayer, out _toggleCities));
         stack.Children.Add(toggles);
+
+        // 찾기 — 발견물 · 도시 이름에 든 말로 찾는다. 치는 대로 첫 것으로 옮겨 가고, Enter · 「다음」으로 다음 것.
+        _query = new TextBox
+        {
+            Width = 220,
+            FontSize = 14,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Padding = new Thickness(2, 0, 2, 0),
+            BorderThickness = new Thickness(2),
+            BorderBrush = GameUi.ItemEdge,
+        };
+        _query.TextChanged += (_, _) => Search();
+        _query.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter) { Step(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1); e.Handled = true; }
+            else if (e.Key == Key.Escape && _query.Text.Length > 0) { _query.Text = ""; e.Handled = true; }
+        };
+        _hitNote = new TextBlock
+        {
+            Foreground = GameUi.Text,
+            FontSize = 14,
+            MinWidth = 200,
+            Margin = new Thickness(8, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        var finder = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 4, 0, 0),
+        };
+        finder.Children.Add(new TextBlock
+        {
+            Text = Lang.T("찾기"), Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center,
+        });
+        finder.Children.Add(_query);
+        finder.Children.Add(GameUi.PushButton(Lang.T("이전"), () => Step(-1), 70));
+        finder.Children.Add(GameUi.PushButton(Lang.T("다음"), () => Step(1), 70));
+        finder.Children.Add(_hitNote);
+        stack.Children.Add(finder);
         stack.Children.Add(_note);
         stack.Children.Add(ok);
         Content = stack;
@@ -381,6 +460,8 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <summary>글쇠 — 화살표로 밀고 <c>+ -</c> 로 키우고 줄인다.</summary>
     private void OnKey(object sender, KeyEventArgs e)
     {
+        // 찾기 칸에 치는 글자는 글쇠로 안 먹는다(W · C · 화살표 · + - 따위). Esc 는 칸이 비었을 때만 여기로 온다.
+        if (e.OriginalSource is TextBox && e.Key != Key.Escape) return;
         const double Step = 40;
         switch (e.Key)
         {
@@ -397,6 +478,46 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
         e.Handled = true;
         Apply();
+    }
+
+    /// <summary>찾기 칸의 말로 다시 찾고, 첫 것으로 옮겨 간다. 띄어쓰기와 대소문자는 안 가린다.</summary>
+    private void Search()
+    {
+        static string Bare(string s) => s.Replace(" ", "").Replace("·", "").ToLowerInvariant();
+        string want = Bare(_query.Text);
+        _hits = want.Length == 0
+            ? []
+            : [.. _searchable.Where(s => Bare(s.Name).Contains(want) || Bare(Lang.T(s.Name)).Contains(want))
+                             .OrderBy(s => Bare(s.Name).StartsWith(want) ? 0 : 1)];
+        _hit = 0;
+        ShowHit();
+    }
+
+    /// <summary>찾은 것 가운데 앞 · 뒤 것으로 옮겨 간다(끝에서는 처음으로 돈다).</summary>
+    private void Step(int by)
+    {
+        if (_hits.Count == 0) return;
+        _hit = ((_hit + by) % _hits.Count + _hits.Count) % _hits.Count;
+        ShowHit();
+    }
+
+    /// <summary>지금 고른 찾은 것을 가운데 두고 고리를 두른다. 그 켜가 꺼져 있으면 켠다.</summary>
+    private void ShowHit()
+    {
+        if (_hits.Count == 0)
+        {
+            _ring.Visibility = Visibility.Collapsed;
+            _hitNote.Text = _query.Text.Trim().Length == 0 ? "" : Lang.T("찾는 것이 없습니다");
+            return;
+        }
+
+        var (name, pin, layer) = _hits[_hit];
+        if (layer.Visibility != Visibility.Visible)
+            (layer == _cityLayer ? _toggleCities : _toggleSpots)?.Invoke();
+        _hitNote.Text = $"{_hit + 1}/{_hits.Count}  {Lang.T(name)}";
+        _ring.Visibility = Visibility.Visible;
+        while (Z < SearchZoom && _zoom < Zooms.Length - 1) _zoom++;
+        CenterOn(pin.X, pin.Y);
     }
 
     /// <summary>그 자리가 화면 한가운데 오게 민다(지도 점).</summary>
@@ -437,6 +558,14 @@ public sealed class DiscoveryMapDialog : GameWindow
 
         // 표식은 화면에서 같은 크기로 보이게 지도 점 크기를 배율만큼 줄인다.
         foreach (var pin in _pins) Place(pin);
+        if (_hits.Count > 0)
+        {
+            var at = _hits[_hit].Pin;
+            _ring.Width = _ring.Height = RingSize / Z;
+            _ring.StrokeThickness = RingLine / Z;
+            Canvas.SetLeft(_ring, at.X - RingSize / Z / 2);
+            Canvas.SetTop(_ring, at.Y - RingSize / Z / 2);
+        }
 
         // 이름표는 어느 배율부터 단다 — 온 지도에 가까우면 이름끼리 겹친다.
         var show = Z >= LabelFrom ? Visibility.Visible : Visibility.Collapsed;
