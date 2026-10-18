@@ -20669,95 +20669,99 @@
   "args": 0
  },
  "발견물 자리": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:414",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:416",
   "args": 0
  },
  "고용 가능 명성 {0} (지금 {1} · {2})": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:427",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:429",
   "args": 3
  },
  "충분": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:427",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:429",
   "args": 0
  },
  "모자람": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:427",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:429",
+  "args": 0
+ },
+ "{0}: {1}": {
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:438",
+  "args": 2
+ },
+ "직업": {
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:438",
   "args": 0
  },
  "{0} · 길 위 {1}명 · 쉬는 중 {2}명 · 목록 {3}명": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:438",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:444",
   "args": 4
  },
- "{0}: {1}": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:450",
-  "args": 2
- },
  "발견물 자리로 항해 중": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:472",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:478",
   "args": 0
  },
  "대본 {0}.{1} → {2}": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:478",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:484",
   "args": 3
  },
  "남은 대본 없음": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:479",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:485",
   "args": 0
  },
  "이벤트 인물 — 안 움직임": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:482",
-  "args": 0
- },
- "나오지 않음(등장·나이)": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:483",
-  "args": 0
- },
- "갈래 2 — 안 움직임": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:484",
-  "args": 0
- },
- "쉬는 중 {0}일 남음": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:485",
-  "args": 1
- },
- "매월 1일": {
   "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:488",
   "args": 0
  },
- "{0} 반드시 떠남": {
+ "나오지 않음(등장·나이)": {
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:489",
+  "args": 0
+ },
+ "갈래 2 — 안 움직임": {
   "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:490",
+  "args": 0
+ },
+ "쉬는 중 {0}일 남음": {
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:491",
+  "args": 1
+ },
+ "매월 1일": {
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:494",
+  "args": 0
+ },
+ "{0} 반드시 떠남": {
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:496",
   "args": 1
  },
  "{0} {1}분의 1로 떠남": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:490",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:496",
   "args": 2
  },
  "{0} → {1}  ·  남은 날 {2}": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:507",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:513",
   "args": 3
  },
  "앞으로 {0}년의 대본": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:511",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:517",
   "args": 1
  },
  "  {0}.{1}  {2}": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:515",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:521",
   "args": 3
  },
  "발견물 {0} 자리": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:515",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:521",
   "args": 1
  },
  "다음에 갈 수 있는 도시 {0}곳 (갈래: {1})": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:520",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:526",
   "args": 2
  },
  "  (없음 — 굴려도 안 떠난다)": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:521",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:527",
   "args": 0
  },
  "어느 도시에도 앉아 있지 않아 후보를 모을 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:526",
+  "at": "CdsHelper.Game/UI/Views/PersonMoveDialog.cs:532",
   "args": 0
  },
  "제독 정보": {
@@ -20778,10 +20782,6 @@
  },
  "형": {
   "at": "CdsHelper.Game/UI/Views/PlayerInfoDialog.cs:92",
-  "args": 0
- },
- "직업": {
-  "at": "CdsHelper.Game/UI/Views/PlayerInfoDialog.cs:94",
   "args": 0
  },
  "행운": {

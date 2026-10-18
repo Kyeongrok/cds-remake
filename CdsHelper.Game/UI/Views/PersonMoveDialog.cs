@@ -121,7 +121,7 @@ public sealed class PersonMoveDialog : GameWindow
     /// <summary>표 한 줄.</summary>
     private sealed record Row(int Id, string Name, int Age, string Now, string To, string Left,
                               string State, string Kind, string Skills, string Languages,
-                              PersonTable.Row Source, string HireFame = "");
+                              PersonTable.Row Source, string HireFame = "", string Might = "", string Job = "");
 
     private PersonMoveDialog(Engine.Game game, PersonWorld world)
     {
@@ -337,6 +337,8 @@ public sealed class PersonMoveDialog : GameWindow
         var abilities = new FrameworkElementFactory(typeof(StackPanel));
         abilities.SetValue(FrameworkElement.MarginProperty, new Thickness(24, 0, 0, 0));
         abilities.SetValue(Grid.ColumnProperty, 2);
+        AddCardText(abilities, nameof(Row.Job), fontSize: 12);
+        AddCardText(abilities, nameof(Row.Might), fontSize: 12);
         AddCardText(abilities, nameof(Row.Skills), fontSize: 12);
         AddCardText(abilities, nameof(Row.Languages), fontSize: 12);
         body.AppendChild(abilities);
@@ -429,7 +431,11 @@ public sealed class PersonMoveDialog : GameWindow
 
             rows.Add(new Row(person.Id, person.Name, _world.Table.AgeOn(person, date.Year),
                              CityOf(person.City), onRoad ? to : "", left,
-                             StateOf(person, active, onRoad), kind, skills, languages, person, hireFame));
+                             StateOf(person, active, onRoad), kind, skills, languages, person, hireFame,
+                             // 무력 — 인물표 능력 셋째 칸(일기토 · 해전이 그대로 쓰는 값, DisevRunner · CityPicView)(건의).
+                             $"{Lang.T("무력")} {(person.Stats.Length > 2 ? person.Stats[2] : 0)}",
+                             // 직업 — 인물 밑표의 직업 이름(0x00560AA8[직업]). 밑표가 없는 사람(이벤트 · 괴물)은 빈칸이다(건의).
+                             _game.PersonTemplates?.Find(person.Id) is { JobName.Length: > 0 } t ? $"{Lang.T("직업")}: {Lang.T(t.JobName)}" : ""));
         }
 
         _grid.ItemsSource = rows;
