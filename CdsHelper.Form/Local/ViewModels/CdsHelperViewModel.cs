@@ -247,18 +247,20 @@ public partial class CdsHelperViewModel : ObservableObject
         try
         {
             StatusText = "도시 데이터 로드 중...";
-            await _cityService.InitializeAsync(dbPath, citiesPath);
+            // DB 준비는 뒤 일꾼에서 한다 — EF Core 를 처음 띄우는 데 1초쯤 걸리는데(모델 짓기 · SQLite 올리기) 그 앞부분이
+            // 첫 await 전까지 UI 스레드에서 돌아, 창이 그만큼 늦게 떴다. 목록에 넣는 일(Load…FromDbAsync)은 돌아와서 UI 에서 한다.
+            await Task.Run(() => _cityService.InitializeAsync(dbPath, citiesPath));
             await LoadCitiesFromDbAsync();
 
             // HintService는 BookService보다 먼저 (BookHints가 Hints를 참조)
             StatusText = "힌트 데이터 로드 중...";
-            await _hintService.InitializeAsync(dbPath, hintPath);
+            await Task.Run(() => _hintService.InitializeAsync(dbPath, hintPath));
 
             StatusText = "발견물 데이터 로드 중...";
-            await _discoveryService.InitializeAsync(dbPath, bundledDiscoveryJsonPath, userDiscoveryJsonPath);
+            await Task.Run(() => _discoveryService.InitializeAsync(dbPath, bundledDiscoveryJsonPath, userDiscoveryJsonPath));
 
             StatusText = "도서 데이터 로드 중...";
-            await _bookService.InitializeAsync(dbPath, booksPath);
+            await Task.Run(() => _bookService.InitializeAsync(dbPath, booksPath));
             await LoadBooksFromDbAsync();
 
             if (System.IO.File.Exists(patronsPath))
