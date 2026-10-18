@@ -36,11 +36,15 @@ public sealed class AutoSailDialog : GameWindow
     public sealed record Plan(string Label, string Detail, IReadOnlyList<(double X, double Y)> Route,
                               (double X, double Y)? Walk, IReadOnlyList<string> Legs);
 
-    /// <summary>도시 한 칸의 폭과 한 줄에 놓는 칸 수.</summary>
+    /// <summary>
+    /// 도시 한 칸의 폭과 한 줄에 놓는 칸 수. 다섯 칸이면 창이 1280 폭 게임 화면에 들어오고, 탭 머리도 이 폭에서 두 줄로 접힌다
+    /// — 세 칸일 때는 탭 머리가 한 줄로 늘어서며 창을 넓혀 낮은 해상도에서 화면 밖으로 삐져나갔고, 넓어진 판에 도시는
+    /// 가운데 세 칸뿐이라 양옆이 비었다(건의).
+    /// </summary>
     private const double CellWidth = 124;
-    private const int Columns = 3;
+    private const int Columns = 5;
 
-    /// <summary>도시 판이 이보다 길어지면 굴린다.</summary>
+    /// <summary>도시 판이 이보다 길어지면 굴린다. 판은 고른 문화권의 도시 수만큼만 선다 — 가장 긴 판에 맞춰 자리를 잡아 두면 도시가 적은 탭에서 밑이 텅 비었다(건의).</summary>
     private const double ListMaxHeight = 264;
 
     /// <summary>항로 미리보기 지도의 높이와, 그 밑 조타 목록이 굴러가기 시작하는 높이.</summary>
@@ -137,7 +141,7 @@ public sealed class AutoSailDialog : GameWindow
         var title = GameUi.TitleBar("네비게이션", Close);
         GameUi.EnableDrag(this, title);
 
-        // 문화권마다 판 하나 — 한 칸에 겹쳐 두고 안 보이는 쪽은 Hidden 으로, 탭을 넘겨도 창 크기가 안 바뀐다.
+        // 문화권마다 판 하나 — 한 칸에 겹쳐 두고 안 보이는 쪽은 접는다. 창 높이가 고른 판을 따라간다.
         var tabs = new List<(string Text, FrameworkElement Page)>();
         foreach (var group in cities.GroupBy(c => c.Culture.Length > 0 ? c.Culture : "그 밖")
                                     .OrderBy(g => CultureRank(g.Key)).ThenBy(g => g.Key, StringComparer.Ordinal))
@@ -164,7 +168,7 @@ public sealed class AutoSailDialog : GameWindow
 
         // 찾기 판 — 탭 판들과 한 칸에 겹쳐 두고, 찾기 칸에 말이 있을 때만 선다.
         _hitPage = Paper(GameUi.Scroller(_hitGrid, ListMaxHeight));
-        _hitPage.Visibility = Visibility.Hidden;
+        _hitPage.Visibility = Visibility.Collapsed;
         _pages.Children.Add(_hitPage);
 
         _query = new TextBox
@@ -460,9 +464,10 @@ public sealed class AutoSailDialog : GameWindow
         var bar = new WrapPanel
         {
             Orientation = Orientation.Horizontal,
-            // 폭을 붙박지 않고 창 폭만큼 편다 — 도시 판 폭(세 칸)에 맞춰 두면 창이 아래 줄(항로 굵기 · 짙기) 때문에 넓어져도
-            // 탭이 그 폭에서 접혀 두 줄로 몰렸다(건의).
+            // 도시 판 폭(칸 수 × 칸 폭, 판 테 · 안쪽 여백 4)에서 접는다 — 폭을 안 묶으면 탭이 한 줄로 늘어서며 창을 넓혀
+            // 낮은 해상도에서 게임 화면 밖으로 삐져나갔다(건의).
             HorizontalAlignment = HorizontalAlignment.Stretch,
+            MaxWidth = CellWidth * Columns + 6,
             Margin = new Thickness(Side, 8, Side, 0),
         };
         var heads = new List<(Border Head, FrameworkElement Page)>();
@@ -472,7 +477,7 @@ public sealed class AutoSailDialog : GameWindow
             foreach (var (head, p) in heads)
             {
                 bool on = ReferenceEquals(p, page);
-                p.Visibility = on ? Visibility.Visible : Visibility.Hidden;
+                p.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
                 head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
                 ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
             }
@@ -511,7 +516,7 @@ public sealed class AutoSailDialog : GameWindow
 
         if (want.Length == 0)
         {
-            _hitPage.Visibility = Visibility.Hidden;
+            _hitPage.Visibility = Visibility.Collapsed;
             if (_tabPage != null) _tabPage.Visibility = Visibility.Visible;
             _hitNote.Text = "";
             return;
@@ -534,7 +539,7 @@ public sealed class AutoSailDialog : GameWindow
             _hitGrid.Children.Add(cell);
         }
 
-        foreach (UIElement page in _pages.Children) page.Visibility = Visibility.Hidden;
+        foreach (UIElement page in _pages.Children) page.Visibility = Visibility.Collapsed;
         _hitPage.Visibility = Visibility.Visible;
         _hitNote.Text = _hits.Count > 0 ? Lang.T($"{_hits.Count}곳") : Lang.T("찾는 도시가 없습니다");
     }
