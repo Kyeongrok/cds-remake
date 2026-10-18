@@ -694,6 +694,8 @@ public sealed class ModDialog : GameWindow
         // 두 판을 한 칸에 겹쳐 두고 안 보이는 쪽은 Hidden 으로 — 자리를 지켜 탭을 넘겨도 창 크기가 안 바뀐다.
         // 권장 판은 다른 줄들이 다 선 뒤에 짓는다 — 묶음이 그 줄들의 체크 칸을 찾아 켜고 끈다.
         PresetControls(preset);
+        // 파워업키트를 골라 둔 채 열었으면 그 묶음을 켜 두고 잠근다.
+        LockPowerUp(GameSettings.ModPreset == PowerUpPreset);
         var pages = new Grid();
         pages.Children.Add(preset);
         pages.Children.Add(rows);
@@ -1003,6 +1005,12 @@ public sealed class ModDialog : GameWindow
                 }
                 GameSettings.ModPreset = index;
                 Apply(pick);
+                LockPowerUp(index == PowerUpPreset);
+                if (index == PowerUpPreset)
+                    NoticeDialog.Show(this, "파워업키트를 골랐습니다.\n\n"
+                        + "다음 모드가 켜지고, 파워업키트인 동안은 끌 수 없습니다.\n"
+                        + string.Join(", ", PresetPowerUp.Select(Lang.T)) + "\n\n"
+                        + "출입 일수는 5일로 맞춥니다. 권장 탭에서 다른 단계를 고르면 다시 끌 수 있습니다.", "파워업키트");
             };
             radios[i] = radio;
             Watch(radio, "권장 옵션 — " + pick.Name, pick.Summary
@@ -1020,6 +1028,34 @@ public sealed class ModDialog : GameWindow
             Margin = new Thickness(0, 12, 0, 0),
         });
     }
+
+    /// <summary>「파워업키트」의 차례 — <see cref="Presets"/> 의 맨 뒤다.</summary>
+    private const int PowerUpPreset = 4;
+
+    /// <summary>파워업키트 묶음을 잠갔는지 — 잠긴 동안 그 줄들은 끌 수 없다.</summary>
+    private bool _powerUpLocked;
+
+    /// <summary>
+    /// 파워업키트 묶음을 잠그거나 푼다 — 잠그면 그 줄들을 켜고 조금 흐리게 둔다. 줄을 막아 두지(IsEnabled) 않는 것은
+    /// 막힌 줄은 커서를 받지 않아 오른쪽 설명이 안 뜨기 때문이다 — 대신 누름을 삼키고 알린다(<see cref="Toggle"/>).
+    /// </summary>
+    private void LockPowerUp(bool on)
+    {
+        _powerUpLocked = on;
+        foreach (string label in PresetPowerUp)
+        {
+            if (!_boxes.TryGetValue(label, out var box)) continue;
+            if (on && box.IsChecked != true) box.IsChecked = true;
+            box.Opacity = on ? 0.75 : 1;
+        }
+    }
+
+    /// <summary>그 줄이 지금 파워업키트로 잠겨 있는지.</summary>
+    private bool LockedByPowerUp(string label) => _powerUpLocked && PresetPowerUp.Contains(label);
+
+    /// <summary>잠긴 줄을 끄려 할 때 알린다.</summary>
+    private void TellLocked() =>
+        NoticeDialog.Show(this, "파워업키트에서는 이 모드를 끌 수 없습니다.\n권장 탭에서 다른 단계를 고르면 끌 수 있습니다.", "파워업키트");
 
     /// <summary>그 묶음을 고른 뒤 손으로 바꿔 묶음과 달라진 줄들의 이름.</summary>
     private List<string> Strayed(Preset pick)
@@ -1083,6 +1119,9 @@ public sealed class ModDialog : GameWindow
         box.Unchecked += (_, _) => set(false);
         _boxes[label] = box;
         Watch(box, label, tip, image);
+        // 파워업키트로 잠긴 줄은 누름 · 스페이스를 삼킨다 — 설명은 위 Watch 가 먼저 띄운다.
+        box.PreviewMouseLeftButtonDown += (_, e) => { if (LockedByPowerUp(label)) { e.Handled = true; TellLocked(); } };
+        box.PreviewKeyDown += (_, e) => { if (e.Key == Key.Space && LockedByPowerUp(label)) { e.Handled = true; TellLocked(); } };
         return box;
     }
 
