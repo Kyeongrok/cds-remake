@@ -6475,71 +6475,75 @@
   "args": 0
  },
  "교황": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:100",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:107",
   "args": 0
  },
  "총독": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:100",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:107",
   "args": 0
  },
  "귀족": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:100",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:107",
   "args": 0
  },
  "신부": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:101",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:108",
   "args": 0
  },
  "상인": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:101",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:108",
   "args": 0
  },
  "관리": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:101",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:108",
   "args": 0
  },
  "학자": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:101",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:108",
   "args": 0
  },
  "폐하": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:114",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:121",
   "args": 0
  },
  "예하": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:115",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:122",
   "args": 0
  },
  "각하": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:116",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:123",
   "args": 0
  },
  "신부님": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:117",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:124",
   "args": 0
  },
  "회장님": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:118",
-  "args": 0
- },
- "박사님": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:119",
-  "args": 0
- },
- "변호사": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:120",
-  "args": 0
- },
- "후원자표": {
   "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:125",
   "args": 0
  },
+ "박사님": {
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:126",
+  "args": 0
+ },
+ "변호사": {
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:127",
+  "args": 0
+ },
+ "후원자표": {
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:132",
+  "args": 0
+ },
+ "후원자-더한것": {
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:145",
+  "args": 0
+ },
  "에라스무스": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:201",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:219",
   "args": 0
  },
  "후원자 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
-  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:256",
+  "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:274",
   "args": 0
  },
  "건물사진표": {
@@ -22160,6 +22164,59 @@
  "〈스핑크스〉 성스러운 땅에 합당치 않는 자여! 물러가라!": {
   "at": "CdsHelper.Game/UI/Views/SphinxQuizDialog.cs:98",
   "args": 0
+ },
+ "물러남": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:56",
+  "args": 0
+ },
+ "안목": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:57",
+  "args": 0
+ },
+ "명성 관문": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:58",
+  "args": 0
+ },
+ "친밀도": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:59",
+  "args": 0
+ },
+ "재력": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:60",
+  "args": 0
+ },
+ "취향": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:61",
+  "args": 0
+ },
+ "더함": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:63",
+  "args": 0
+ },
+ "후원자 표를 못 읽었습니다 ({0})": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:108",
+  "args": 1
+ },
+ "후원자 {0}명 — 원본 {1}명 · 더한 사람 {2}명. ": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:144",
+  "args": 3
+ },
+ "후원자 {0}명 — 원본 {1}명 · 더한 사람 {2}명. 명성 관문은 처음 만날 때 집사가 보는 명성(안목 x 왕궁 100 · 그 밖 70)이다.": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:144",
+  "args": 3,
+  "chain": true
+ },
+ "명성 관문은 처음 만날 때 집사가 보는 명성(안목 x 왕궁 100 · 그 밖 70)이다.": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:145",
+  "args": 0
+ },
+ "{0}년 등장{1}\n얼굴 {2}": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:170",
+  "args": 3
+ },
+ " · {0}년 물러남": {
+  "at": "CdsHelper.Game/UI/Views/SponsorListDialog.cs:170",
+  "args": 1
  },
  "아이템 교환": {
   "at": "CdsHelper.Game/UI/Views/StorageDialog.cs:66",

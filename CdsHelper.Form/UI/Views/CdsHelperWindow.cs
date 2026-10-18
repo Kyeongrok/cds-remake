@@ -32,6 +32,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_DisevEditorMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_QuestEditorMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_VoyagerEditMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_SponsorListMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_BuildingListMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_PersonEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_FormationMenu, Type = typeof(MenuItem))]
@@ -75,6 +76,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_DisevEditorMenu = "PART_DisevEditorMenu";
     private const string PART_QuestEditorMenu = "PART_QuestEditorMenu";
     private const string PART_VoyagerEditMenu = "PART_VoyagerEditMenu";
+    private const string PART_SponsorListMenu = "PART_SponsorListMenu";
     private const string PART_BuildingListMenu = "PART_BuildingListMenu";
     private const string PART_PersonEditMenu = "PART_PersonEditMenu";
     private const string PART_FormationMenu = "PART_FormationMenu";
@@ -225,6 +227,9 @@ public class CdsHelperWindow : CdsWindow
         {
             questEditorMenu.Click += OnQuestEditorMenuClick;
         }
+
+        if (GetTemplateChild(PART_SponsorListMenu) is MenuItem sponsorListMenu)
+            sponsorListMenu.Click += (_, _) => CdsHelper.Game.UI.Views.SponsorListDialog.Show(this);
 
         if (GetTemplateChild(PART_VoyagerEditMenu) is MenuItem voyagerEditMenu)
         {
