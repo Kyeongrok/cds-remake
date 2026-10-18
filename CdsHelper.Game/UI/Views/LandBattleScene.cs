@@ -1262,13 +1262,35 @@ internal sealed class LandBattleScene : GameWindow
     /// </remarks>
     private void Rest(int ms)
     {
+        // 쉬는 끝을 <b>시계로 잡는다</b> — 「지금부터 ms」로 타이머를 걸면 윈도 타이머가 15.6밀리초 단위로 올려 잡고
+        // 그리는 시간도 장마다 쌓여, 50밀리초 눈금이 60~70밀리초로 늘어 원본보다 처졌다(건의). 원본은 GetTickCount 로
+        // 눈금을 세 평균이 정확하다. 앞 쉼이 늦게 끝났으면 그만큼 덜 쉬고, 물음창 따위로 한참 밀렸으면 새로 센다.
+        double now = _clock.Elapsed.TotalMilliseconds;
+        if (_due < now - CatchUpLimit) _due = now;
+        _due += ms;
+        double wait = _due - now;
+
         var frame = new DispatcherFrame();
-        var clock = new DispatcherTimer(TimeSpan.FromMilliseconds(ms), DispatcherPriority.Render,
+        if (wait < 1)
+        {
+            // 쉴 틈이 없어도 한 번은 그리게 둔다.
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, () => frame.Continue = false);
+            Dispatcher.PushFrame(frame);
+            return;
+        }
+        var clock = new DispatcherTimer(TimeSpan.FromMilliseconds(wait), DispatcherPriority.Render,
                                         (_, _) => frame.Continue = false, Dispatcher);
         clock.Start();
         Dispatcher.PushFrame(frame);
         clock.Stop();
     }
+
+    /// <summary>쉼의 끝을 재는 시계와, 다음 쉼이 끝나야 할 때(밀리초).</summary>
+    private readonly System.Diagnostics.Stopwatch _clock = System.Diagnostics.Stopwatch.StartNew();
+    private double _due;
+
+    /// <summary>이보다 더 밀렸으면 따라잡지 않고 새로 센다 — 물음창 · 말풍선을 읽는 동안은 그림이 멈춰 있다.</summary>
+    private const double CatchUpLimit = 250;
 
     /// <summary>부대와 병사수를 다시 그린다.</summary>
     private void Redraw()

@@ -81,14 +81,8 @@ public sealed class DuelStage : Canvas
     /// <summary>고른 명령 이름이 뜨는 눈금과 부위 체력이 깎이는 눈금.</summary>
     private const int SayTick = 8, HurtTick = 11;
 
-    /// <summary>
-    /// 눈금 하나의 길이 — <b>67밀리초</b>(1/15초)다.
-    /// </summary>
-    /// <remarks>
-    /// 갈무리(「주인공 중단공격」)의 <c>fcTL</c> 을 읽으면 열일곱 장이 죄다 0.067초다.
-    /// 55밀리초로 두었던 것은 어림값이라 그만큼 빨랐다.
-    /// </remarks>
-    private static readonly TimeSpan TickTime = TimeSpan.FromSeconds(DuelMotions.Tick);
+    // 눈금 하나는 67밀리초(1/15초, DuelMotions.Tick)다 — 갈무리(「주인공 중단공격」)의 fcTL 을 읽으면 열일곱 장이
+    // 죄다 0.067초다. 그 눈금은 타이머가 아니라 시계(_clock)로 센다.
 
     private readonly FighterSprites _art;
     private readonly int _foeSet;
@@ -103,6 +97,21 @@ public sealed class DuelStage : Canvas
     /// 눈금이라 눈금마다 몇 밀리초씩만 밀려도 한 판이 눈에 띄게 처진다.
     /// </remarks>
     private readonly DispatcherTimer _timer = new(DispatcherPriority.Render);
+
+    /// <summary>
+    /// 판이 시작한 뒤 흐른 시간 — 눈금은 <b>이 시계로 센다</b>. 시계(타이머)는 잘게 돌며 밀린 눈금을 따라잡을 뿐이다.
+    /// </summary>
+    /// <remarks>
+    /// 타이머를 67밀리초로 걸어 두면 윈도 타이머가 15.6밀리초 단위로 올려 잡아 한 눈금이 78밀리초쯤 되고, 그리는 시간도
+    /// 눈금마다 밀려 원본보다 눈에 띄게 느렸다(건의). 원본은 GetTickCount 로 눈금을 세 평균이 정확하다.
+    /// </remarks>
+    private readonly System.Diagnostics.Stopwatch _clock = new();
+
+    /// <summary>따라잡기 시계가 깨는 사이.</summary>
+    private static readonly TimeSpan Poll = TimeSpan.FromMilliseconds(8);
+
+    /// <summary>판이 시작한 뒤 지났어야 할 눈금 수.</summary>
+    private int DueTicks => (int)(_clock.Elapsed.TotalSeconds / DuelMotions.Tick);
 
     /// <summary>이 판에 두 사람이 짓는 몸짓.</summary>
     private DuelMotions.Motion? _myMotion, _foeMotion;
@@ -143,8 +152,12 @@ public sealed class DuelStage : Canvas
             Children.Add(image);
         }
 
-        _timer.Interval = TickTime;
-        _timer.Tick += (_, _) => Advance();
+        _timer.Interval = Poll;
+        _timer.Tick += (_, _) =>
+        {
+            // 밀린 눈금을 따라잡는다 — 판이 끝나 다음 판이 바로 서면(시계가 다시 0) 거기서 멈춘다.
+            while (_timer.IsEnabled && _tick < DueTicks) Advance();
+        };
 
         // 들어올 때는 아직 벽 쪽이다 — WalkIn 이 가운데로 데려온다.
         _myMotion = _foeMotion = DuelMotions.Find(DuelMotions.Idle);
@@ -203,6 +216,7 @@ public sealed class DuelStage : Canvas
         _tick = 0;
         _walkTick = -1;
         Draw();
+        _clock.Restart();
         _timer.Start();
     }
 
@@ -221,10 +235,14 @@ public sealed class DuelStage : Canvas
         _walkTick = 0;
         Draw();
 
-        var clock = new DispatcherTimer(DispatcherPriority.Render) { Interval = TickTime };
+        // 다가오기도 시계로 센다 — 타이머 눈금을 그대로 세면 원본보다 느렸다(_clock 참고).
+        var since = System.Diagnostics.Stopwatch.StartNew();
+        var clock = new DispatcherTimer(DispatcherPriority.Render) { Interval = Poll };
         clock.Tick += (_, _) =>
         {
-            _walkTick++;
+            int due = Math.Min(ticks, (int)(since.Elapsed.TotalSeconds / DuelMotions.Tick));
+            if (due <= _walkTick) return;
+            _walkTick = due;
             Draw();
             if (_walkTick < ticks) return;
 
@@ -267,10 +285,14 @@ public sealed class DuelStage : Canvas
         _tick = 0;
         Draw();
 
-        var clock = new DispatcherTimer(DispatcherPriority.Render) { Interval = TickTime };
+        var since = System.Diagnostics.Stopwatch.StartNew();
+        var clock = new DispatcherTimer(DispatcherPriority.Render) { Interval = Poll };
         clock.Tick += (_, _) =>
         {
-            if (++_tick >= EndTicks) { _tick = EndTicks; clock.Stop(); }
+            int due = Math.Min(EndTicks, (int)(since.Elapsed.TotalSeconds / DuelMotions.Tick));
+            if (due <= _tick) return;
+            _tick = due;
+            if (_tick >= EndTicks) clock.Stop();
             Draw();
         };
         clock.Start();
