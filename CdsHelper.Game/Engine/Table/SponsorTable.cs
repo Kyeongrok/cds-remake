@@ -88,8 +88,15 @@ public sealed class SponsorTable
                                           int JobCode, int Eye = 0, int Closeness = 0,
                                           int Tastes = 0, int Nation = -1, int Blood = 0,
                                           int Languages = 0, int City = -1, int Building = -1,
-                                          int Appear = 0, int Zodiac = -1, int Wealth = 0)
+                                          int Appear = 0, int Zodiac = -1, int Wealth = 0, int Retire = 0)
     {
+        /// <summary>
+        /// 그 해에 자리를 지키는지 — 나와 있고, 물러나는 해(<see cref="Retire"/>)가 아직 안 왔다. 원본 81명은 물러나는 해가
+        /// 없고(0) 같은 자리에 다음 사람이 나와야 비킨다. 더해 넣은 후원자만 해를 적는다(메흐메트 2세 1510, 건의) —
+        /// <c>patrons.json</c> 의 <c>retireYear</c> 와 같이 그 해부터 안 나온다.
+        /// </summary>
+        public bool Serves(int year) => YearsIn(year) >= 0 && (Retire <= 0 || year < Retire);
+
         /// <summary>
         /// 그 해에 이 사람이 나와 있은 햇수(<c>vtbl[0x0C]</c> = <c>0x004ADA80</c>: 해 − 1480 − <c>+0x14</c>). 음수면 아직 안 나왔다.
         /// </summary>
@@ -185,7 +192,7 @@ public sealed class SponsorTable
         Sponsor? holder = null;
         foreach (var s in _sponsors)
         {
-            if (s.City != city || SeatOf(s) != building || s.YearsIn(year) < 0) continue;
+            if (s.City != city || SeatOf(s) != building || !s.Serves(year)) continue;
             if (holder is not { } best || s.YearsIn(year) < best.YearsIn(year)) holder = s;
         }
         return holder;
