@@ -44,6 +44,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_MonsterMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_MotionMakerMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_ImageShrinkMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_PortraitFilterMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_VideoShrinkMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_ShipRegistryMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_FigureheadEditMenu, Type = typeof(MenuItem))]
@@ -88,6 +89,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_MonsterMenu = "PART_MonsterMenu";
     private const string PART_MotionMakerMenu = "PART_MotionMakerMenu";
     private const string PART_ImageShrinkMenu = "PART_ImageShrinkMenu";
+    private const string PART_PortraitFilterMenu = "PART_PortraitFilterMenu";
     private const string PART_VideoShrinkMenu = "PART_VideoShrinkMenu";
     private const string PART_ShipRegistryMenu = "PART_ShipRegistryMenu";
     private const string PART_FigureheadEditMenu = "PART_FigureheadEditMenu";
@@ -285,6 +287,9 @@ public class CdsHelperWindow : CdsWindow
         {
             motionMakerMenu.Click += OnMotionMakerMenuClick;
         }
+
+        if (GetTemplateChild(PART_PortraitFilterMenu) is MenuItem portraitFilterMenu)
+            portraitFilterMenu.Click += (_, _) => CdsHelper.Game.UI.Views.PortraitFilterDialog.Show(this);
 
         if (GetTemplateChild(PART_ImageShrinkMenu) is MenuItem imageShrinkMenu)
         {

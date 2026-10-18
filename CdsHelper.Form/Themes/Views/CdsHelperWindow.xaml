@@ -234,6 +234,10 @@
                                             ToolTip="MISC.CDS 의 화면 조각을 PNG 로 뽑아 asset/ui 에 넣는다 — 손으로 다듬으려면 그림 파일이 있어야 한다" />
                                         <Separator />
                                         <MenuItem
+                                            x:Name="PART_PortraitFilterMenu"
+                                            Header="초상화 필터"
+                                            ToolTip="그린 초상화를 원본 얼굴 화풍(80x96 · 공용 색표 · 디더링)으로 바꿔 본다 — 자르기 · 밝기 · 대비 · 채도 · 색 · 디더링을 바꿔 원본 얼굴과 견주고, PNG 로 내보내거나 앱 얼굴로 넣는다" />
+                                        <MenuItem
                                             x:Name="PART_ImageShrinkMenu"
                                             Header="이미지 크기 줄이기"
                                             ToolTip="그림 파일을 골라 크기·용량을 줄인다" />
