@@ -308,6 +308,8 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         }
 
         _board.Background = Brushes.Transparent;
+        // 판 위에서 누른 것만 받는다 — 말 창을 누른 손을 판 위에서 떼면 그 손떼기가 판으로 온다.
+        _board.MouseLeftButtonDown += (_, _) => _pressed = true;
         _board.MouseLeftButtonUp += Touch;
         // 포격 연출 중에 누르면 그 포격의 남은 연출(포탄 · 폭발 · 물보라 · 숫자)을 건너뛴다 — 원본처럼.
         // 판 고르기(Touch)로 흘러가지 않게 여기서 먹는다.
@@ -333,7 +335,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         //   빈 바다 칸은 원본처럼 아무 일도 없다 — 예전에는 원본에 없는 「항복한다 / 게임 복귀」 차림표를 냈다.
         MouseRightButtonUp += (_, e) =>
         {
-            if (_running) return;
+            if (_running || _battle.Over) return;
             if (_battle.Delegated) { TookBack(); return; }
             var spot = e.GetPosition(_board);
             var (x, y) = CellAt(new Point(spot.X + _scrollX, spot.Y + _scrollY));
@@ -698,9 +700,16 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         return best > 40 * 40 ? (-1, -1) : (bestX, bestY);
     }
 
+    /// <summary>판 위에서 왼쪽 단추를 눌렀는지 — 뗄 때 <see cref="Touch"/> 가 본다.</summary>
+    private bool _pressed;
+
     private void Touch(object sender, MouseButtonEventArgs e)
     {
-        if (_running) return;
+        // 판이 끝났으면 받지 않는다 — 승리 대사 창을 누른 손을 떼는 것이 판으로 넘어와, 위임 중이면
+        // 이긴 뒤에도 「제독이 명령하시겠습니까?」를 자꾸 물었다(제보).
+        if (!_pressed) return;
+        _pressed = false;
+        if (_running || _battle.Over) return;
 
         // 위임 중이면 판에 손대는 순간 지휘를 되찾겠냐고 먼저 묻는다(0x0043EE32).
         if (!TookBack()) return;
@@ -853,6 +862,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
     private bool TookBack()
     {
         if (!_battle.Delegated) return true;
+        if (_battle.Over) return false;                  // 끝난 판은 되찾을 것도 없다
 
         // 묻는 동안은 다음 턴을 굴리지 않는다 — 물음 창(ShowDialog)의 중첩 루프에서도 타이머 틱이 와서,
         // 예전에는 대답을 기다리는 사이 턴이 계속 돌고 판이 끝나 창이 닫히기도 했다.
