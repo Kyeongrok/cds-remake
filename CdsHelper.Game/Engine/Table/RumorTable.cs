@@ -13,6 +13,10 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </code>
 /// 술집 「정보를 듣는다」가 이 표로 줄을 고르고(<c>0x0042E780</c>) 말할 도시를 고른다(<c>0x0042F790</c>).
 /// 계약 힌트 표(<see cref="HintTable"/>, <c>0x004D8E80</c>)와는 딴 표다.
+///
+/// <b>번역은 줄 번호로 한다.</b> 일본어판 EXE 의 같은 표(190줄, 차례가 같다)에서 줄마다 일본어 본문을 구워
+/// <see cref="Rumor.Ja"/> 칸에 둔다(<c>tools/bake_rumor_ja.py</c>). 표를 열 때 지금 언어의 칸을 고르므로
+/// 한국어 글을 고쳐도 번역이 안 끊긴다 — 예전에는 lang/ja.json 의 「한국어 글 → 일본어 글」로 화면에서 바꿨다.
 /// </remarks>
 public sealed class RumorTable
 {
@@ -33,36 +37,47 @@ public sealed class RumorTable
 
     /// <param name="Discovery">발견물 번호(계약 힌트의 목표와 같은 값).</param>
     /// <param name="Cities">들을 수 있는 도시 넷. −1 은 빈 칸이다.</param>
-    /// <param name="Text">그 도시에서 들려주는 본문.</param>
+    /// <param name="Text">그 도시에서 들려주는 본문(한국어). 표를 열면 지금 언어의 글로 바뀌어 있다.</param>
+    /// <param name="Id">원본 표의 줄 번호(0~190). 더해 넣은 소문은 −1 이다.</param>
+    /// <param name="Ja">같은 줄의 일본어판 본문. 한국어판에만 있는 줄이나 더해 넣은 소문은 null 이다.</param>
     [method: JsonConstructor]
-    public readonly record struct Rumor(int Discovery, int[] Cities, string Text);
+    public readonly record struct Rumor(int Discovery, int[] Cities, string Text, int Id = -1, string? Ja = null);
 
     internal sealed record Snapshot(List<Rumor> Rumors);
 
     private readonly List<Rumor> _rumors;
 
-    // 소문 글은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
     private RumorTable(Snapshot snapshot) =>
-        _rumors = [.. snapshot.Rumors.Select(r => r with { Text = StandardText.Apply(Correct(r.Discovery, r.Text)) })];
+        _rumors = [.. snapshot.Rumors.Select(r => r with { Text = TextOf(r) })];
 
     /// <summary>
-    /// 실제 자리와 어긋난 소문을 고친다 — 열쇠는 발견물 번호, 값은 (원본 낱말, 고친 낱말)이다(제보).
+    /// 그 줄을 지금 언어로 — 고친 글이 있으면 그것, 없으면 표의 글이다. 한국어는 표준 표기(<see cref="StandardText"/>)를
+    /// 거친다. 일본어 글이 없는 줄은 한국어로 남는다. 적어 둔 JSON 은 원본 그대로다.
+    /// </summary>
+    private static string TextOf(Rumor r)
+    {
+        var fix = Corrected.TryGetValue(r.Id, out var mine) ? mine : default;
+        if (Lang.Current.Code == "ja" && (fix.Ja ?? r.Ja) is { Length: > 0 } ja) return ja;
+        return StandardText.Apply(fix.Ko ?? r.Text);
+    }
+
+    /// <summary>
+    /// 실제 자리와 어긋난 소문을 고친 글 — 열쇠는 <b>줄 번호</b>(<see cref="Rumor.Id"/>), 값은 한국어 · 일본어 고친 글이다(제보).
+    /// 한쪽만 고쳤으면 다른 쪽은 null 이라 표의 글을 쓴다.
     /// </summary>
     /// <remarks>
-    /// 앙코르 와트(123)와 용연향(517)은 일본어 원본이 「북서」 · 「서안」인데 한국어판이 「북동」 · 「남안」으로 옮겼다.
-    /// 노아의 방주(150)는 일본어 원본부터 「북동」이다 — 아라랏산은 타브리즈의 북서쪽이다. 카카오(509)는 메리다에서 듣는데
+    /// 앙코르 와트(30)와 용연향(156)은 일본어 원본이 「北西」 · 「西岸」인데 한국어판이 「북동」 · 「남안」으로 옮겼다.
+    /// 노아의 방주(50)는 일본어 원본부터 「北東」이다 — 아라랏산은 타브리즈의 북서쪽이다. 카카오(152)는 메리다에서 듣는데
     /// 밭은 메리다가 아니라 미틀라 동쪽이다. 원본 글은 <c>exe-tables/소문표.json</c> 에 그대로 있다.
     /// </remarks>
-    private static readonly Dictionary<int, (string From, string To)> Corrected = new()
+    private static readonly Dictionary<int, (string? Ko, string? Ja)> Corrected = new()
     {
-        [123] = ("북동쪽으로 간 산속에", "북서쪽으로 간 산속에"),   // 앙코르 와트
-        [150] = ("타브리즈에서 보면 북동쪽이지", "타브리즈에서 보면 북서쪽이지"),   // 노아의 방주
-        [509] = ("동쪽에 카카오 밭이 있네", "미틀라 동쪽에 카카오 밭이 있네"),   // 카카오
-        [517] = ("아프리카 남안에", "아프리카 서안에"),   // 용연향
+        [30] = ("여기서 쭉 북서쪽으로 간 산속에 돌로 된 도시를 봤다는 사람이 옛날에 있었는데.", null),   // 앙코르 와트(123)
+        [50] = ("아라랏산은 흑해와 카스피해 사이에서 조금 남쪽으로 가면 있다. 타브리즈에서 보면 북서쪽이지.",
+                "アララト山は黒海とカスピ海の間のちょっと南側だ。タブリーズの街から見ると北西だな"),   // 노아의 방주(150)
+        [152] = ("카카오? 아하, 미틀라 동쪽에 카카오 밭이 있네.", "カカオ？　おう、ミトゥラの東にカカオ畑があるよ"),   // 카카오(509)
+        [156] = ("아프리카 서안에 고래로 향료를 만드는 마을이 있다하네.", null),   // 용연향(517)
     };
-
-    private static string Correct(int discovery, string text) =>
-        Corrected.TryGetValue(discovery, out var fix) ? text.Replace(fix.From, fix.To) : text;
 
     public static string LastError { get; private set; } = "";
 

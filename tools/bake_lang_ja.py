@@ -108,8 +108,7 @@ for i, d in enumerate(load('exe-tables/술표.json')['Drinks'][:55]):
 for i, b in enumerate(load('exe-tables/여급표.json')['Barmaids'][:127]):
     pair(b['Name'], row_text(0x004DC228, 40, i, 0))
 
-for i, r in enumerate(load('exe-tables/소문표.json')['Rumors'][:190]):
-    pair(r['Text'], row_text(0x004D7F48, 0x18, i, 0x14))
+# 소문은 여기서 짝짓지 않는다 — 줄 번호로 번역한다(tools/bake_rumor_ja.py 가 소문표.json 의 줄마다 Ja 칸을 굽는다).
 
 for i, s in enumerate(load('exe-tables/후원자표.json')['Sponsors'][:81]):
     pair(s['Name'], row_text(0x0050EE88, 60, i, 0))
