@@ -21242,232 +21242,256 @@
   "at": "CdsHelper.Game/UI/Views/PortraitBookDialog.cs:257",
   "args": 1
  },
+ "4배": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:34",
+  "args": 0
+ },
+ "6배": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:34",
+  "args": 0
+ },
+ "8배": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:34",
+  "args": 0
+ },
+ "12배": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:34",
+  "args": 0
+ },
+ "16배": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:34",
+  "args": 0
+ },
+ "격자 보기": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:35",
+  "args": 0
+ },
  "공용 색표 64색 (원본)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:36",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:43",
   "args": 0
  },
  "공용 색표 + 검정 · 흰색": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:36",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:43",
   "args": 0
  },
  "색 제한 없음": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:36",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:43",
   "args": 0
  },
  "플로이드-스타인버그": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:37",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
   "args": 0
  },
  "바둑판 2x2": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:37",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
   "args": 0
  },
  "바둑판 4x4": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:37",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
   "args": 0
  },
  "디더링 없음": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:37",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
   "args": 0
  },
  "곱게 줄이기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:38",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:45",
   "args": 0
  },
  "가장 가까운 점": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:38",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:45",
   "args": 0
  },
  "배경을 그라데이션으로 바꾸기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:41",
-  "args": 0
- },
- "밤색(원본에 가장 흔함)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
-  "args": 0
- },
- "회녹색": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
-  "args": 0
- },
- "회색": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
-  "args": 0
- },
- "크림": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
-  "args": 0
- },
- "직접 적기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:44",
-  "args": 0
- },
- "위 → 아래": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:45",
-  "args": 0
- },
- "왼쪽 위 → 오른쪽 아래": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:45",
-  "args": 0
- },
- "왼쪽 → 오른쪽": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:45",
-  "args": 0
- },
- "가운데 → 가장자리": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:45",
-  "args": 0
- },
- "가장자리 부드럽게": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:48",
   "args": 0
  },
+ "밤색(원본에 가장 흔함)": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:51",
+  "args": 0
+ },
+ "회녹색": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:51",
+  "args": 0
+ },
+ "회색": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:51",
+  "args": 0
+ },
+ "크림": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:51",
+  "args": 0
+ },
+ "직접 적기": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:51",
+  "args": 0
+ },
+ "위 → 아래": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:52",
+  "args": 0
+ },
+ "왼쪽 위 → 오른쪽 아래": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:52",
+  "args": 0
+ },
+ "왼쪽 → 오른쪽": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:52",
+  "args": 0
+ },
+ "가운데 → 가장자리": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:52",
+  "args": 0
+ },
+ "가장자리 부드럽게": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:55",
+  "args": 0
+ },
  "배경 칠하기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:58",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:65",
   "args": 0
  },
  "붓 1점": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:60",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:67",
   "args": 0
  },
  "붓 3x3": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:60",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:67",
   "args": 0
  },
  "붓 5x5": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:60",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:67",
   "args": 0
  },
  "초상화 필터": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:75",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:82",
   "args": 0
  },
  "그림 열기…": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:121",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:128",
   "args": 0
  },
  "PNG 로 내보내기…": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:122",
-  "args": 0
- },
- "앱 얼굴로 넣기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:123",
-  "args": 0
- },
- "자르기 — 가운데 가로 · 세로, 크기(폭 5 : 높이 6)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:127",
-  "args": 0
- },
- "세로": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:129",
   "args": 0
  },
- "색 다듬기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:131",
+ "앱 얼굴로 넣기": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:130",
   "args": 0
  },
- "대비 %": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:133",
-  "args": 0
- },
- "채도 %": {
+ "자르기 — 가운데 가로 · 세로, 크기(폭 5 : 높이 6)": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:134",
   "args": 0
  },
- "배경 — 기준점 색에 가깝고 테두리에 이어진 곳을 배경으로 친다. 바뀐 얼굴의 배경을 누르면 그 점이 기준이 된다(처음은 왼쪽 위)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:135",
+ "세로": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:136",
   "args": 0
  },
- "허용치": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:137",
-  "args": 0
- },
- "색": {
+ "색 다듬기": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:138",
   "args": 0
  },
- "방향": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:139",
-  "args": 0
- },
- "시작색": {
+ "대비 %": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:140",
   "args": 0
  },
- "끝색": {
+ "채도 %": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:141",
   "args": 0
  },
- "손으로 칠하기 — 켜고 바뀐 얼굴을 누르거나 끌면 형광분홍 점이 찍힌다(오른쪽 단추는 지우기). 끄면 칠한 곳이 그라데이션이 된다": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:143",
+ "배경 — 기준점 색에 가깝고 테두리에 이어진 곳을 배경으로 친다. 바뀐 얼굴의 배경을 누르면 그 점이 기준이 된다(처음은 왼쪽 위)": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:142",
   "args": 0
  },
- "붓": {
+ "허용치": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:144",
+  "args": 0
+ },
+ "색": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:145",
   "args": 0
  },
- "칠한 것 지우기": {
+ "방향": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:146",
   "args": 0
  },
- "줄이기 · 색 · 디더링": {
+ "시작색": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:147",
   "args": 0
  },
- "줄이기": {
+ "끝색": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:148",
   "args": 0
  },
- "디더링": {
+ "손으로 칠하기 — 켜고 바뀐 얼굴을 누르거나 끌면 형광분홍 점이 찍힌다(오른쪽 단추는 지우기). 끄면 칠한 곳이 그라데이션이 된다": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:150",
   "args": 0
  },
- "견줄 원본 얼굴(MALE.CDS 번호)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:151",
+ "붓": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:152",
   "args": 0
  },
- "넣을 얼굴 번호(9000 부터 — asset/face/male-번호.png)": {
+ "칠한 것 지우기": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:153",
   "args": 0
  },
- "원본 그림": {
+ "줄이기 · 색 · 디더링": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:154",
+  "args": 0
+ },
+ "줄이기": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:155",
+  "args": 0
+ },
+ "디더링": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:157",
+  "args": 0
+ },
+ "견줄 원본 얼굴(MALE.CDS 번호)": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:158",
+  "args": 0
+ },
+ "넣을 얼굴 번호(9000 부터 — asset/face/male-번호.png)": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:160",
   "args": 0
  },
+ "원본 그림": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:167",
+  "args": 0
+ },
  "바꾼 얼굴(게임에서 보이는 결)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:161",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:173",
   "args": 0
  },
  "견줄 원본 얼굴": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:162",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:193",
   "args": 0
  },
  "그림을 열면 바로 바뀐 얼굴이 보입니다. 원본은 공용 색표 64색 · 플로이드-스타인버그에 가깝습니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:178",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:209",
   "args": 0
  },
  "그림을 못 열었습니다: {0}": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:243",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:274",
   "args": 1
  },
  "먼저 그림을 여세요.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:523",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:571",
   "args": 0
  },
  "{0} 에 적었습니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:527",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:575",
   "args": 1
  },
  "얼굴 번호는 {0} 부터입니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:540",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:588",
   "args": 1
  },
  "{0} 이 이미 있습니다. 덮어쓸까요?": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:545",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:593",
   "args": 1
  },
  "{0} 에 넣었습니다. 후원자 · 인물의 얼굴 번호를 {1} 로 두면 이 그림이 나옵니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:548",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:596",
   "args": 2
  },
  "기함변경": {

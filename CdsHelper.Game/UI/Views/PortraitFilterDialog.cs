@@ -27,6 +27,13 @@ public sealed class PortraitFilterDialog : GameWindow
 
     private readonly Image _sourceView = new() { Width = 300, Height = 360, Stretch = Stretch.Uniform };
     private readonly Image _resultView = new() { Width = W * Zoom, Height = H * Zoom };
+
+    // 바꾼 얼굴 확대 · 격자 — 점을 하나하나 찍으려면 크게 보고 칸 경계가 보여야 한다(건의).
+    private static readonly int[] Zooms = [4, 6, 8, 12, 16];
+    private int _zoom = Zoom;
+    private readonly ComboBox _zoomPick = Pick("4배", "6배", "8배", "12배", "16배");
+    private readonly CheckBox _gridOn = new() { Content = "격자 보기", Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+    private readonly System.Windows.Shapes.Rectangle _grid = new() { IsHitTestVisible = false, Visibility = Visibility.Collapsed };
     private readonly Image _referenceView = new() { Width = W * Zoom, Height = H * Zoom };
     private readonly Canvas _cropFrame = new() { Width = 300, Height = 360, IsHitTestVisible = false };
     private readonly System.Windows.Shapes.Rectangle _cropBox = new() { Stroke = Brushes.Yellow, StrokeThickness = 2 };
@@ -85,7 +92,7 @@ public sealed class PortraitFilterDialog : GameWindow
         {
             var at = e.GetPosition(_resultView);
             if (_paint.IsChecked == true) { _resultView.CaptureMouse(); Dab(at, true); return; }
-            _bgPoint = (Math.Clamp((int)(at.X / Zoom), 0, W - 1), Math.Clamp((int)(at.Y / Zoom), 0, H - 1));
+            _bgPoint = (Math.Clamp((int)(at.X / _zoom), 0, W - 1), Math.Clamp((int)(at.Y / _zoom), 0, H - 1));
             _bgOn.IsChecked = true;
             Redraw();
         };
@@ -158,7 +165,31 @@ public sealed class PortraitFilterDialog : GameWindow
         var source = new Grid { Children = { _sourceView, _cropFrame } };
         var views = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 10, 0) };
         views.Children.Add(Captioned("원본 그림", source));
-        views.Children.Add(Captioned("바꾼 얼굴(게임에서 보이는 결)", _resultView));
+        // 바꾼 얼굴 — 배율 · 격자 줄을 머리에 달고, 크게 키우면 굴려 본다. Ctrl+휠로도 키우고 줄인다.
+        var resultHead = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(0, 0, 0, 4),
+            Children = { new TextBlock { Text = "바꾼 얼굴(게임에서 보이는 결)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, _zoomPick, _gridOn },
+        };
+        _zoomPick.Width = 70;
+        var resultBox = new Grid { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Children = { _resultView, _grid } };
+        var resultScroll = new ScrollViewer
+        {
+            Content = resultBox, MaxWidth = W * 8 + 20, MaxHeight = H * 7,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+        };
+        _zoomPick.SelectionChanged += (_, _) => SetZoom(Zooms[Math.Max(0, _zoomPick.SelectedIndex)]);
+        _gridOn.Checked += (_, _) => _grid.Visibility = Visibility.Visible;
+        _gridOn.Unchecked += (_, _) => _grid.Visibility = Visibility.Collapsed;
+        resultScroll.PreviewMouseWheel += (_, e) =>
+        {
+            if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == 0) return;
+            e.Handled = true;
+            _zoomPick.SelectedIndex = Math.Clamp(_zoomPick.SelectedIndex + (e.Delta > 0 ? 1 : -1), 0, Zooms.Length - 1);
+        };
+        SetZoom(Zoom);
+        views.Children.Add(new StackPanel { Margin = new Thickness(0, 0, 14, 0), Children = { resultHead, resultScroll } });
         views.Children.Add(Captioned("견줄 원본 얼굴", _referenceView));
         RenderOptions.SetBitmapScalingMode(_resultView, BitmapScalingMode.NearestNeighbor);
         RenderOptions.SetBitmapScalingMode(_referenceView, BitmapScalingMode.NearestNeighbor);
@@ -318,10 +349,27 @@ public sealed class PortraitFilterDialog : GameWindow
 
     private static byte Clamp(double v) => (byte)Math.Clamp((int)Math.Round(v), 0, 255);
 
+    /// <summary>바꾼 얼굴의 배율을 바꾼다 — 그림 크기와 격자 칸(한 점 = 한 칸)을 같이 맞춘다.</summary>
+    private void SetZoom(int zoom)
+    {
+        _zoom = zoom;
+        _resultView.Width = _grid.Width = W * zoom;
+        _resultView.Height = _grid.Height = H * zoom;
+        var line = new Pen(new SolidColorBrush(Color.FromArgb(0x70, 0x80, 0x80, 0x80)), 1);
+        line.Freeze();
+        var tile = new DrawingBrush(new GeometryDrawing(null, line, new RectangleGeometry(new Rect(0, 0, zoom, zoom))))
+        {
+            TileMode = TileMode.Tile, Viewport = new Rect(0, 0, zoom, zoom), ViewportUnits = BrushMappingMode.Absolute,
+            Viewbox = new Rect(0, 0, zoom, zoom), ViewboxUnits = BrushMappingMode.Absolute,
+        };
+        tile.Freeze();
+        _grid.Fill = tile;
+    }
+
     /// <summary>바뀐 얼굴 위 그 자리에 붓으로 칠하거나(참) 지운다(거짓).</summary>
     private void Dab(Point at, bool on)
     {
-        int cx = (int)(at.X / Zoom), cy = (int)(at.Y / Zoom), r = _brush.SelectedIndex;   // 0 · 1 · 2 → 반지름
+        int cx = (int)(at.X / _zoom), cy = (int)(at.Y / _zoom), r = _brush.SelectedIndex;   // 0 · 1 · 2 → 반지름
         bool changed = false;
         for (int y = cy - r; y <= cy + r; y++)
             for (int x = cx - r; x <= cx + r; x++)
