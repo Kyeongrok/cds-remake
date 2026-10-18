@@ -291,6 +291,9 @@ public sealed class GameSettingsData
     /// <summary>얼굴이 붙는 대사 창을 대항해시대2 모양(줄무늬 테 · 베이지 바탕 · 검은 글씨)으로 낼지. 원본과 달라 꺼 두고 시작한다.</summary>
     public bool Dh2TalkStyle { get; set; }
 
+    /// <summary>인물정보 판을 대항해시대2 모양으로 낼지. 원본과 달라 꺼 두고 시작한다.</summary>
+    public bool Dh2PersonInfo { get; set; }
+
     /// <summary>정보 제공 등급(0 기본 · 1 일반 · 2 상세). 기본은 원본만큼만 보인다.</summary>
     public int InfoLevel { get; set; }
 
@@ -1277,6 +1280,13 @@ public static class GameSettings
     {
         get => Get(d => d.Dh2TalkStyle);
         set => Set(d => d.Dh2TalkStyle = value);
+    }
+
+    /// <summary>대항해시대2 스타일 인물정보 — 인물정보 판을 베이지 바탕 · 줄무늬 테 · 빨간 항목 이름으로 낸다.</summary>
+    public static bool Dh2PersonInfo
+    {
+        get => Get(d => d.Dh2PersonInfo);
+        set => Set(d => d.Dh2PersonInfo = value);
     }
 
     /// <summary>정보 제공 등급 — 창이 원본보다 얼마나 더 알려 주는지.</summary>

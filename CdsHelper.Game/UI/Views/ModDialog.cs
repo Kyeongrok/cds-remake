@@ -349,11 +349,7 @@ public sealed class ModDialog : GameWindow
                 + " 가급적 「기본」으로 두고 즐기시길 권합니다. 그래도 올리시겠습니까?", "정보 등급")));
 
         // 향상된 아이템 이미지 — 덧붙인 그림으로 보인다.
-        // 대항해시대2 스타일 대화창 — 얼굴이 붙는 대사 창만 바꾼다. 알림 · 물음창은 그대로다.
-        ui.Children.Add(Toggle("대항해시대2 스타일 대화창", GameSettings.Dh2TalkStyle,
-            on => GameSettings.Dh2TalkStyle = on,
-            "원본과 다릅니다 — 인물이 말하는 창(얼굴이 붙는 대사 창)을 대항해시대2 모양으로 냅니다."
-            + " 빨강 · 주황 · 초록 줄무늬 테에 베이지 바탕, 검은 글씨입니다. 얼굴 없는 알림 · 물음창은 그대로입니다."));
+        // 대항해시대2 스타일 대화창 · 인물정보는 아직 만드는 중이라 개발 창 「대항2」 탭에서만 켠다.
 
         ui.Children.Add(Toggle("향상된 아이템 이미지", GameSettings.EnhancedItemArt,
             on => GameSettings.EnhancedItemArt = on,

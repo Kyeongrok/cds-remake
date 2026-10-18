@@ -122,6 +122,13 @@ public sealed class DevDialog : GameWindow
         tests.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on => GameSettings.DuelImmortal = on,
             "일기토에서 죽지 않습니다. 명령을 고를 차례에 오른쪽 단추를 누르면 「승리 · 항복」으로 판을 끝냅니다"));
 
+        // 「대항2」 탭 — 대항해시대2 모양으로 바꾸는 것들. 아직 만드는 중이라 모드 창에는 안 내놓고 여기서만 켠다.
+        var dh2 = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
+        dh2.Children.Add(Toggle("대항해시대2 스타일 대화창", GameSettings.Dh2TalkStyle, on => GameSettings.Dh2TalkStyle = on,
+            "얼굴이 붙는 대사 창을 줄무늬 테 · 베이지 바탕 · 검은 글씨로 냅니다. 얼굴 없는 알림 · 물음창은 그대로입니다"));
+        dh2.Children.Add(Toggle("대항해시대2 스타일 인물정보", GameSettings.Dh2PersonInfo, on => GameSettings.Dh2PersonInfo = on,
+            "인물정보 판(제독 · 부하 · 술집에서 고용할 사람)을 줄무늬 테 · 베이지 바탕, 빨간 항목 이름 · 검은 값, 왕관 꼴 단추로 냅니다"));
+
         // 반란 빈도 — 바다 반란이 일어날 몫. 100% 가 원본 그대로다.
         {
             var value = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
@@ -358,6 +365,7 @@ public sealed class DevDialog : GameWindow
             pages.Add(("역사이벤트", HistoryPage(events)));
         if (options.Barmaids is { } maids)
             pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"))));
+        pages.Add(("대항2", dh2));
         pages.Add(("색", colors));
         pages.Add(("편집기 색", toolColors));
         stack.Children.Add(Tabs([.. pages]));
