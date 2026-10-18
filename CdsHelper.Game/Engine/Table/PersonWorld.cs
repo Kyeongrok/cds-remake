@@ -295,10 +295,16 @@ public sealed class PersonWorld
     }
 
     /// <summary>출발 도시에서 목적지까지. 자리를 모르면 -1.</summary>
-    private int Distance(PersonTable.Row row)
+    private int Distance(PersonTable.Row row) => Leg(row) is { } leg ? Far(row, leg) : -1;
+
+    /// <summary>
+    /// 그 다리를 가는 거리 — 원본은 두 끝의 곧은 거리다(<c>0x00432587</c>). 모드 「향상된 NPC 이동」으로 바닷길을 따라가면
+    /// <b>그 길의 길이</b>다 — 곧은 거리로 세면 곶을 도는 만큼 하루에 더 가서, 아라비아를 도는 다우가 몇 배로 빨랐다(제보).
+    /// </summary>
+    private int Far(PersonTable.Row row, (int Fx, int Fy, int Dx, int Dy) leg)
     {
-        if (Leg(row) is not { } leg) return -1;
-        return (int)Math.Sqrt((double)leg.Dx * leg.Dx + (double)leg.Dy * leg.Dy);
+        int straight = (int)Math.Sqrt((double)leg.Dx * leg.Dx + (double)leg.Dy * leg.Dy);
+        return SeaPathOf(row, leg) is { } path ? Math.Max(straight, (int)Math.Ceiling(path.Length)) : straight;
     }
 
     /// <summary>
@@ -348,7 +354,7 @@ public sealed class PersonWorld
 
         if (Leg(row) is not { } leg) return null;
 
-        int far = (int)Math.Sqrt((double)leg.Dx * leg.Dx + (double)leg.Dy * leg.Dy);
+        int far = Far(row, leg);
         double days = row.Wait + Math.Clamp(dayPart, 0, 1);
         double gone = far <= 0 ? 1 : Math.Clamp(days * SpeedPerDay / far, 0, 1);
 
@@ -357,7 +363,7 @@ public sealed class PersonWorld
         if (gone >= 1 && row.Dest != SpotDest) return null;
 
         double x = leg.Fx + leg.Dx * gone, y = leg.Fy + leg.Dy * gone;
-        // 모드 「향상된 NPC 이동」 — 곧은 줄 대신 바닷길을 그만큼 따라간 자리다. 닿는 날은 원본 그대로 곧은 거리로 센다.
+        // 모드 「향상된 NPC 이동」 — 곧은 줄 대신 바닷길을 그만큼 따라간 자리다. 닿는 날도 그 길의 길이로 센다(Far).
         if (SeaPathOf(row, leg) is { } path) (x, y) = path.At(gone).Point;
         if (x < 0) x += WorldWidth;
         else if (x >= WorldWidth) x -= WorldWidth;
@@ -385,6 +391,9 @@ public sealed class PersonWorld
     {
         private readonly (double X, double Y)[] _points = points;
         private readonly double[] _at = Lengths(points);
+
+        /// <summary>길 전체의 길이(칸).</summary>
+        public double Length => _at[^1];
 
         private static double[] Lengths((double X, double Y)[] p)
         {
@@ -489,7 +498,7 @@ public sealed class PersonWorld
         // 바닷길을 따라가면 지금 토막의 쪽을 본다.
         if (Moving(row) && SeaPathOf(row, leg) is { } path)
         {
-            int far = (int)Math.Sqrt((double)leg.Dx * leg.Dx + (double)leg.Dy * leg.Dy);
+            int far = Far(row, leg);
             double days = row.Wait + Math.Clamp(dayPart, 0, 1);
             (_, dx, dy) = path.At(far <= 0 ? 1 : Math.Clamp(days * SpeedPerDay / far, 0, 1));
         }
