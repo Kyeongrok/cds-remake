@@ -208,8 +208,10 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 float d = distance(px, SegClosest(px, Route[r].xy, Route[r + 1].xy));
                 best = min(best, d);
             }
-            const float core = 0.3, soft = 1.6;
-            float a = 1.0 - saturate((best - core) / (soft - core));
+            // Route[0].z = width scale, Route[1].z = opacity (set by SetRoute).
+            float w = max(Route[0].z, 0.1);
+            float core = 0.3 * w, soft = 1.6 * w;
+            float a = (1.0 - saturate((best - core) / (soft - core))) * saturate(Route[1].z);
             // color token DuelDialog.Left_ (#4C8CC4). ASCII only in here: the compiler mangles other text.
             return lerp(col, float3(0.298, 0.549, 0.769), a);
         }
@@ -697,7 +699,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public float ArrowOn, ArrowGrid, ArrowCols, ArrowRows;
         public fixed float Clouds[MaxClouds * 4];   // x, y, 그림번호, 보일지
         public fixed float Folk[MaxFolk * 4];       // x, y, 뱃머리(0~3), 배수
-        public fixed float Route[MaxRoutePoints * 4]; // x, y, (안 씀), 켜졌는지
+        public fixed float Route[MaxRoutePoints * 4]; // x, y, (0 · 1 번만 굵기 배수 · 짙기), 켜졌는지
         public float SeaTime, CloudSmooth, SeaBright, HiSea;
         public float PixelOn, LandOn, CityOn, ExtraPad3;
         public float FlowX, FlowY, FlowStrength, FlowTick;
@@ -823,9 +825,14 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     /// 이번 프레임에 그릴 항로. 이웃한 두 마디가 <b>둘 다 켜져 있을 때만</b> 그 사이를 잇는다 —
     /// 자동항해 중이 아니면 <see cref="ReadOnlySpan{T}.Empty"/> 를 준다.
     /// </summary>
-    public void SetRoute(ReadOnlySpan<RouteDraw> points)
+    /// <param name="width">선 굵기 배수(1 이 예전 굵기).</param>
+    /// <param name="opacity">선 짙기(0~1, 1 이 불투명).</param>
+    public void SetRoute(ReadOnlySpan<RouteDraw> points, float width = 1, float opacity = 1)
     {
         Array.Clear(_route);
+        // 셰이더가 안 쓰던 z 칸에 싣는다 — 0 번에 굵기, 1 번에 짙기.
+        _route[0 * 4 + 2] = width;
+        _route[1 * 4 + 2] = opacity;
         for (int i = 0; i < points.Length && i < MaxRoutePoints; i++)
         {
             _route[i * 4 + 0] = points[i].X;

@@ -332,6 +332,12 @@ public sealed class GameSettingsData
     /// <summary>자동항해 · 육지 자동이동으로 갈 길을 지도 위에 선으로 그릴지. 켜 두고 시작한다.</summary>
     public bool ShowAutoRoute { get; set; } = true;
 
+    /// <summary>자동항해 항로 선 굵기(%, 100 이 예전 굵기).</summary>
+    public int AutoRouteWidth { get; set; } = GameSettings.DefaultAutoRouteWidth;
+
+    /// <summary>자동항해 항로 선의 짙기(%, 100 이 불투명 — 예전 그대로).</summary>
+    public int AutoRouteOpacity { get; set; } = GameSettings.DefaultAutoRouteOpacity;
+
     /// <summary>녹화용 — 도시 화면을 지도 창 안에 비춰 그릴지(CaptureMirror). 실험이라 꺼 두고 시작한다.</summary>
     public bool CaptureMirror { get; set; }
 
@@ -1363,6 +1369,26 @@ public static class GameSettings
     {
         get => Get(d => d.CaptureMirror);
         set => Set(d => d.CaptureMirror = value);
+    }
+
+    /// <summary>항로 선 굵기(%)의 범위 · 걸음 · 기본.</summary>
+    public const int MinAutoRouteWidth = 50, MaxAutoRouteWidth = 400, AutoRouteWidthStep = 25, DefaultAutoRouteWidth = 100;
+
+    /// <summary>항로 선 짙기(%)의 범위 · 걸음 · 기본.</summary>
+    public const int MinAutoRouteOpacity = 10, MaxAutoRouteOpacity = 100, AutoRouteOpacityStep = 10, DefaultAutoRouteOpacity = 100;
+
+    /// <summary>자동항해 항로 선 굵기(%) — 네비게이션 창 · 모드 「정보」 탭에서 고른다.</summary>
+    public static int AutoRouteWidth
+    {
+        get => Math.Clamp(Get(d => d.AutoRouteWidth), MinAutoRouteWidth, MaxAutoRouteWidth);
+        set => Set(d => d.AutoRouteWidth = Math.Clamp(value, MinAutoRouteWidth, MaxAutoRouteWidth));
+    }
+
+    /// <summary>자동항해 항로 선 짙기(%) — 100 이 불투명, 낮을수록 바다가 비친다.</summary>
+    public static int AutoRouteOpacity
+    {
+        get => Math.Clamp(Get(d => d.AutoRouteOpacity), MinAutoRouteOpacity, MaxAutoRouteOpacity);
+        set => Set(d => d.AutoRouteOpacity = Math.Clamp(value, MinAutoRouteOpacity, MaxAutoRouteOpacity));
     }
 
     /// <summary>자동항해 경로 표시 — 갈 길을 지도 위에 선으로 그린다. 끄면 선 없이 배만 간다.</summary>

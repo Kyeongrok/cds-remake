@@ -197,6 +197,49 @@ public sealed class AutoSailDialog : GameWindow
         route.Unchecked += (_, _) => GameSettings.ShowAutoRoute = false;
         helm.Children.Add(route);
 
+        // 항로 굵기 · 짙기 — 모드 창 「정보」 탭의 것과 같은 설정이다. 지도가 매 프레임 읽어 끌면서 곧바로 바뀐다.
+        UIElement Slide(string label, int min, int max, int step, Func<int> get, Action<int> set)
+        {
+            var value = new TextBlock
+            {
+                Width = 44, Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center,
+                Text = $"{get()}%",
+            };
+            var slider = new Slider
+            {
+                Minimum = min, Maximum = max, TickFrequency = step, IsSnapToTickEnabled = true,
+                Width = 110, Value = get(), VerticalAlignment = VerticalAlignment.Center,
+            };
+            slider.ValueChanged += (_, _) => { set((int)slider.Value); value.Text = $"{get()}%"; };
+            return new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 0, 12, 0),
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = label, Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center,
+                    },
+                    slider,
+                    value,
+                },
+            };
+        }
+        var look = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(Side, 4, Side, 2),
+            Children =
+            {
+                Slide("항로 굵기", GameSettings.MinAutoRouteWidth, GameSettings.MaxAutoRouteWidth, GameSettings.AutoRouteWidthStep,
+                      () => GameSettings.AutoRouteWidth, v => GameSettings.AutoRouteWidth = v),
+                Slide("항로 짙기", GameSettings.MinAutoRouteOpacity, GameSettings.MaxAutoRouteOpacity, GameSettings.AutoRouteOpacityStep,
+                      () => GameSettings.AutoRouteOpacity, v => GameSettings.AutoRouteOpacity = v),
+            },
+        };
+
         // 아직 아무것도 안 골랐으면 「항해 시작」은 흐리다 — 게임 목록 창의 「결정」과 같다.
         _go = new GameButton("항해 시작", Start, BandStyle.Button, ButtonWidth)
         {
@@ -223,6 +266,7 @@ public sealed class AutoSailDialog : GameWindow
         stack.Children.Add(_heads);
         stack.Children.Add(_pages);
         stack.Children.Add(helm);
+        stack.Children.Add(look);
         stack.Children.Add(buttons);
         stack.Children.Add(_note);
 

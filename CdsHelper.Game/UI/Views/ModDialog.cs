@@ -202,6 +202,24 @@ public sealed class ModDialog : GameWindow
         info.Children.Add(Toggle("자동항해 경로 표시", GameSettings.ShowAutoRoute, on => GameSettings.ShowAutoRoute = on,
             "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다. 끄면 선 없이 배만 움직입니다. 기본은 켜져 있습니다."));
 
+        // 항로 선 굵기 · 짙기 — 네비게이션 창의 막대와 같은 설정이다.
+        {
+            var widths = Enumerable.Range(0, (GameSettings.MaxAutoRouteWidth - GameSettings.MinAutoRouteWidth) / GameSettings.AutoRouteWidthStep + 1)
+                                   .Select(i => GameSettings.MinAutoRouteWidth + i * GameSettings.AutoRouteWidthStep).ToList();
+            info.Children.Add(Select("항로 굵기",
+                [.. widths.Select(w => w == GameSettings.DefaultAutoRouteWidth ? $"{w}% (기본)" : $"{w}%")],
+                Math.Max(0, widths.IndexOf(GameSettings.AutoRouteWidth)),
+                i => GameSettings.AutoRouteWidth = widths[i],
+                "자동항해 항로 선의 굵기입니다. 100% 가 기본 굵기입니다. 네비게이션 창에서도 바꿀 수 있습니다."));
+            var opacities = Enumerable.Range(0, (GameSettings.MaxAutoRouteOpacity - GameSettings.MinAutoRouteOpacity) / GameSettings.AutoRouteOpacityStep + 1)
+                                      .Select(i => GameSettings.MinAutoRouteOpacity + i * GameSettings.AutoRouteOpacityStep).ToList();
+            info.Children.Add(Select("항로 짙기",
+                [.. opacities.Select(o => o == GameSettings.DefaultAutoRouteOpacity ? $"{o}% (기본)" : $"{o}%")],
+                Math.Max(0, opacities.IndexOf(GameSettings.AutoRouteOpacity)),
+                i => GameSettings.AutoRouteOpacity = opacities[i],
+                "자동항해 항로 선이 얼마나 짙은지입니다. 100% 가 불투명이고, 낮출수록 선 밑의 바다가 비칩니다. 네비게이션 창에서도 바꿀 수 있습니다."));
+        }
+
         // 발견물 지도 — 커맨드 「정보」 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
         ui.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,

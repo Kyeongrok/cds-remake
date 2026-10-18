@@ -1873,7 +1873,9 @@ public sealed class WorldMapHost : HwndHost
                 (float)((x - origin.X) / _cellsPerPixel),
                 (float)((wy - origin.Y) / _cellsPerPixel), true);
         }
-        _renderer.SetRoute(_routeDraw.AsSpan(0, shown));
+        _renderer.SetRoute(_routeDraw.AsSpan(0, shown),
+                           Local.Settings.GameSettings.AutoRouteWidth / 100f,
+                           Local.Settings.GameSettings.AutoRouteOpacity / 100f);
         _routeShown = shown;
     }
 
