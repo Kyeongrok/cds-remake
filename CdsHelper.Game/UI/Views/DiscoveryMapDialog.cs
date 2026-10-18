@@ -46,8 +46,11 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// <summary>열 때의 배율 자리.</summary>
     private const int ZoomStart = 2;
 
-    /// <summary>이름표를 다는 배율 구간 — 너무 키우면 이름이 그림을 덮는다.</summary>
-    private const double LabelFrom = 3, LabelTo = 12;
+    /// <summary>
+    /// 이름표를 다는 가장 작은 배율 — 온 지도에 가까우면 이름끼리 겹친다. 이름표도 화면에서 늘 같은 크기라
+    /// 키우는 쪽으로는 끝을 두지 않는다(예전에는 x12 까지만 달아 x16 에서 이름이 사라졌다).
+    /// </summary>
+    private const double LabelFrom = 3;
 
     /// <summary>
     /// 표식 크기(지도 점) — <see cref="ZoomBase"/> 배율에서 잰 값이다.
@@ -435,8 +438,8 @@ public sealed class DiscoveryMapDialog : GameWindow
         // 표식은 화면에서 같은 크기로 보이게 지도 점 크기를 배율만큼 줄인다.
         foreach (var pin in _pins) Place(pin);
 
-        // 이름표는 어느 구간에서만 단다 — 아주 키우면 이름이 그림을 덮는다.
-        var show = Z >= LabelFrom && Z <= LabelTo ? Visibility.Visible : Visibility.Collapsed;
+        // 이름표는 어느 배율부터 단다 — 온 지도에 가까우면 이름끼리 겹친다.
+        var show = Z >= LabelFrom ? Visibility.Visible : Visibility.Collapsed;
         foreach (var tag in _labels) tag.Visibility = show;
 
         // 조각마다 따로 번역한다 — 붙는 조각이 그때그때 달라 이은 글 통째로는 번역표에 없다.
