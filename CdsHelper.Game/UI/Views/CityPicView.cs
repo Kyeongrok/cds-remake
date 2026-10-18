@@ -2355,7 +2355,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         _hintNote?.Set(GameSettings.ShowHintOverlay
             ? string.Join(Environment.NewLine, ["현재 힌트", .. GameInfo.HintNames(_game)])
             : "");
-        // 발견물 수 — 찾은 것 / 발견물 표 전체(모조품까지 든 274).
+        // 발견물 수 — 찾은 것 / 발견물 표 전체(모조품까지 든 274 에서 들어낸 노예를 뺀 273).
         int total = _game.Discoveries?.Table.Discoveries.Count ?? 0;
         int found = _player.Discoveries.Distinct().Count();
         _foundNote?.Set(GameSettings.ShowDiscoveryCount

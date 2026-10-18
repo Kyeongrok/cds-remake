@@ -181,7 +181,8 @@ public sealed class DiscoveryTable
             var edits = DiscoveryEdits.All;
             var merged = new List<Record>(_rows.Length + edits.Count);
             foreach (var row in _rows)
-                merged.Add(Rename(edits.TryGetValue(row.Id, out var edited) ? edited : row));
+                if (!CdsHelper.Support.Local.Models.Player.RemovedDiscoveries.Contains(row.Id))   // 들어낸 발견물(노예)은 표에서 뺀다
+                    merged.Add(Rename(edits.TryGetValue(row.Id, out var edited) ? edited : row));
             // 원본에 없던 줄은 모드 「추가 발견물」을 켰을 때만 낸다.
             if (!Local.Settings.GameSettings.ExtraDiscoveries) return merged;
             foreach (var (id, row) in edits)
@@ -223,6 +224,7 @@ public sealed class DiscoveryTable
     /// <summary>그 번호의 발견물. 표 밖이면 null 이었지만, 더해 둔 것이 있으면 그것이 나온다.</summary>
     public Record? Find(int id)
     {
+        if (CdsHelper.Support.Local.Models.Player.RemovedDiscoveries.Contains(id)) return null;   // 들어낸 발견물 — 어느 길로도 못 찾는다
         bool original = id >= 0 && id < _rows.Length;
         if (!original && !Local.Settings.GameSettings.ExtraDiscoveries) return null;
         if (DiscoveryEdits.Of(id) is { } edited) return Rename(edited);

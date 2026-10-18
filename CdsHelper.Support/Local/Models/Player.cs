@@ -1834,6 +1834,12 @@ public sealed class Player
     /// </remarks>
     public IReadOnlyCollection<int> Discoveries => _found;
 
+    /// <summary>
+    /// 게임에서 들어낸 발견물 — <b>노예(229)</b>다. 원본 표에는 있지만 찾을 수 없고, 발견물 수 · 지도 · 백과사전에도
+    /// 안 잡힌다(요청으로 원본과 달리한다). 옛 세이브에 적혀 있던 것도 열 때 걷는다.
+    /// </summary>
+    public static readonly IReadOnlySet<int> RemovedDiscoveries = new HashSet<int> { 229 };
+
     /// <summary>그것을 이미 발견했는지.</summary>
     public bool HasFound(int discovery) => _found.Contains(discovery);
 
@@ -2014,7 +2020,7 @@ public sealed class Player
     /// </remarks>
     public bool Discover(int discovery)
     {
-        if (discovery < 0 || !_found.Add(discovery)) return false;
+        if (discovery < 0 || RemovedDiscoveries.Contains(discovery) || !_found.Add(discovery)) return false;
         _foundOn[discovery] = Date;
         // 칸 0 에는 날과 함께 찾은 사람 이름이 적힌다 — 세대교체 뒤에도 아버지 이름으로 남는다.
         _foundBy[discovery] = Name;
@@ -2572,7 +2578,7 @@ public sealed class Player
         _items.Clear();
         if (items != null) foreach (int id in items) Take(id);
         _found.Clear();
-        if (discoveries != null) foreach (int id in discoveries) _found.Add(id);
+        if (discoveries != null) foreach (int id in discoveries) if (!RemovedDiscoveries.Contains(id)) _found.Add(id);
         _announced.Clear();
         if (announced != null) foreach (int id in announced) _announced.Add(id);
         _stored.Clear();
