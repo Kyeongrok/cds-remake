@@ -185,16 +185,17 @@ internal sealed class FleetInfoDialog : InfoDialog
             rows.Children.Add(Gap(8));
             rows.Children.Add(Label("교역품일람"));
             // 칸마다 판 너비 띠 단추다 — 누르면 그 교역품 창(그림·분류·개체중량)이 뜬다.
-            foreach (var cargo in player.CargoHold)
+            for (int slot = 0; slot < player.CargoHold.Count; slot++)
             {
-                var item = cargo;
+                var item = player.CargoHold[slot];
+                int at = slot;
                 rows.Children.Add(new GameButton(cargoName?.Invoke(item) ?? $"교역품 {item.Kind}",
                                                  () =>
                                                  {
                                                      // 모드 「적하 시세 순위」 — 교역품 창 대신 비싸게 팔리는 도시 순위를 낸다.
                                                      // 교역품 창은 그 안의 「교역품 정보」 단추로 간다.
                                                      if (game != null && Local.Settings.GameSettings.CargoPriceRank
-                                                         && CargoRankDialog.Show(this, game, item, () => cargoInfo?.Invoke(this, item)))
+                                                         && CargoRankDialog.Show(this, game, at, c => cargoInfo?.Invoke(this, c)))
                                                          return;
                                                      cargoInfo?.Invoke(this, item);
                                                  })

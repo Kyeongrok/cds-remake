@@ -3084,7 +3084,7 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>
     /// 단축키로 <b>매입 정보</b>를 연다 — 함대정보 「짐」 판에서 교역품을 누를 때의 그 창(모드 「적하 시세 순위」)이다.
-    /// 실은 교역품이 하나면 곧바로, 여럿이면 무엇을 볼지 먼저 묻는다.
+    /// 첫 짐으로 열고, 여럿이면 창 위 교역품 단추로 바꿔 본다.
     /// </summary>
     internal void CargoByKey(Window owner)
     {
@@ -3097,18 +3097,12 @@ public sealed class WorldMapWindow : Window
         _cargoOpen = true;
         try
         {
-            var hold = _game.Player.CargoHold;
-            if (hold.Count == 0)
+            if (_game.Player.CargoHold.Count == 0)
             {
                 NoticeDialog.Show(owner, "실은 교역품이 없습니다.");
                 return;
             }
-            int pick = hold.Count == 1 ? 0
-                : ListPickDialog.Pick(owner, [.. hold.Select(c => $"{GameInfo.CargoLabel(_game, c)}  {c.Count}개")],
-                                      "매입 정보", "실은 교역품이 없습니다.");
-            if (pick < 0) return;
-            var cargo = hold[pick];
-            CargoRankDialog.Show(owner, _game, cargo, () => GoodsInfoDialog.Show(owner, _game, cargo.Kind, cargo.Shelf));
+            CargoRankDialog.Show(owner, _game, 0, c => GoodsInfoDialog.Show(owner, _game, c.Kind, c.Shelf));
         }
         finally { _cargoOpen = false; }
     }
