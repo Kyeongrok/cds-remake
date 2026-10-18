@@ -39,8 +39,8 @@ public sealed class PortraitFilterDialog : GameWindow
 
     // 배경 그라데이션 — 원본 얼굴들은 뒤를 두 색 그라데이션으로 칠해 두었다(대개 짙은 밤색, 회녹색 · 회색 · 크림도 있다).
     private readonly CheckBox _bgOn = new() { Content = "배경을 그라데이션으로 바꾸기", Margin = new Thickness(0, 2, 0, 2) };
-    // 허용치 기본 15 — 45 쯤이면 배경에 닿은 짙은 수염까지 번졌다(메흐메트 2세).
-    private readonly Slider _bgTol = Bar(3, 100, 15);
+    // 허용치 기본 12 — 45 쯤이면 배경에 닿은 짙은 수염까지 번졌고, 12 가 가장 자연스러웠다(메흐메트 2세, 건의).
+    private readonly Slider _bgTol = Bar(3, 100, 12);
     private readonly ComboBox _bgPreset = Pick("밤색(원본에 가장 흔함)", "회녹색", "회색", "크림", "직접 적기");
     private readonly ComboBox _bgDir = Pick("위 → 아래", "왼쪽 위 → 오른쪽 아래", "왼쪽 → 오른쪽", "가운데 → 가장자리");
     private readonly TextBox _bgFrom = new() { Text = "4A3528", Width = 70 };
