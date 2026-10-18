@@ -81,6 +81,12 @@ public sealed class DevDialog : GameWindow
 
         /// <summary>등록된 역사 대본 칸들 — 「역사이벤트」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
         public Func<List<Engine.Market.CityHistory.Entry>>? HistoryEvents { get; init; }
+
+        /// <summary>여급 표 — 「여급」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
+        public BarmaidTable? Barmaids { get; init; }
+
+        /// <summary>도시 번호 → 이름(「여급」 탭).</summary>
+        public Func<int, string>? CityName { get; init; }
     }
 
     /// <summary>발견물 탭에서 체크를 하나라도 바꿨는지.</summary>
@@ -350,6 +356,8 @@ public sealed class DevDialog : GameWindow
         }
         if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
             pages.Add(("역사이벤트", HistoryPage(events)));
+        if (options.Barmaids is { } maids)
+            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"))));
         pages.Add(("색", colors));
         pages.Add(("편집기 색", toolColors));
         stack.Children.Add(Tabs([.. pages]));
@@ -686,6 +694,111 @@ public sealed class DevDialog : GameWindow
             TextWrapping = TextWrapping.Wrap,
         });
         Count();
+        return page;
+    }
+
+    /// <summary>
+    /// 「여급」 탭 — 여급 127명을 표 차례로 늘어놓는다. 보기만 한다.
+    /// </summary>
+    /// <remarks>
+    /// 서는 해는 1480 년 나이(표 <c>+0x08</c>)로 15~40살인 해다(<c>0x004797B0</c>, <see cref="BarmaidTable.Barmaid.Works"/>).
+    /// 취향은 성격(<c>+0x18</c>)이다 — 「이야기한다」에서 그녀가 말하는 이상형이고, 제독의 성미 칸이 맞으면 말이 통한다
+    /// (<see cref="Engine.Town.Barmaids.Suits"/>). 언어(<c>+0x20</c> 비트)는 그녀가 하는 말이다 — 제독 혼자 그 말이 3 이상이어야 설득 · 선물 · 프로포즈 줄이 서고(<c>0x00466850</c>), 아내가 되면 자식에게 가르친다.
+    /// </remarks>
+    private FrameworkElement BarmaidPage(BarmaidTable table, Func<int, string> cityName)
+    {
+        var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
+        var find = Field();
+        find.Width = 220;
+        find.TextAlignment = TextAlignment.Left;
+        var count = new TextBlock { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
+        var list = new StackPanel();
+        var lines = new List<(FrameworkElement Line, string Text)>();
+
+        int year = _player.Date.Year, mine = Engine.Town.Barmaids.FortuneOf(_player);
+        foreach (var her in table.Barmaids)
+        {
+            int age = her.AgeIn(year);
+            string state = her.Works(year) ? "서 있음" : age < BarmaidTable.WorkFrom ? "아직" : "물러남";
+            string tongues = string.Join(" · ", Skill.Languages.Where((_, i) => (her.Tongues & (1 << i)) != 0));
+            string zodiac = her.Zodiac >= 0 && her.Zodiac < Player.Zodiacs.Length ? Player.Zodiacs[her.Zodiac] : $"{her.Zodiac}";
+            bool wife = _player.SpouseId == her.Id, destined = BarmaidTable.Destined(mine, her.Fortune);
+            bool suits = Engine.Town.Barmaids.Suits(_player, her);
+            int liking = _player.LikingOf(her.Id);
+
+            string head = $"#{her.Id,3}  {her.Name}  ·  {cityName(her.City)}  ·  {her.Year}~{her.LastYear}년"
+                        + $"  ·  지금 {age}살 [{state}]"
+                        + (wife ? "  ♥ 아내" : destined ? "  ★ 운명의 반려자" : "");
+            string body = $"언어 {(tongues.Length > 0 ? tongues : "없음")}  ·  취향 {her.PersonalityName}{(suits ? "(내 성미와 맞음)" : "")}"
+                        + $"  ·  {her.BloodName}  ·  {zodiac}  ·  궁합 코드 {her.Fortune}  ·  얼굴 {her.Face}"
+                        + (liking > 0 ? $"  ·  친밀도 {liking}" : "");
+            string taste = Engine.Town.StrangerTalk.OwnTasteOf(her.Personality) is { } t ? $"「{t}」" : "";
+
+            bool dim = state != "서 있음";
+            var line = new StackPanel { Margin = new Thickness(0, 3, 0, 3) };
+            line.Children.Add(new TextBlock
+            {
+                Text = head, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 13,
+                Opacity = dim ? 0.6 : 1, TextWrapping = TextWrapping.Wrap,
+            });
+            line.Children.Add(new TextBlock
+            {
+                Text = "    " + body, Foreground = GameUi.Text, FontSize = 12,
+                Opacity = dim ? 0.55 : 0.9, TextWrapping = TextWrapping.Wrap,
+            });
+            if (taste.Length > 0)
+                line.Children.Add(new TextBlock
+                {
+                    Text = "    " + taste, Foreground = GameUi.Text, FontSize = 12,
+                    Opacity = dim ? 0.45 : 0.7, TextWrapping = TextWrapping.Wrap,
+                });
+            lines.Add((line, $"{head} {body} {taste}"));
+            list.Children.Add(line);
+        }
+
+        void Filter()
+        {
+            string want = find.Text.Trim();
+            int shown = 0;
+            foreach (var (line, text) in lines)
+            {
+                bool on = want.Length == 0 || text.Contains(want, StringComparison.OrdinalIgnoreCase);
+                line.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+                if (on) shown++;
+            }
+            count.Text = $"  {shown} / {lines.Count}  ({year}년에 서 있는 여급 {table.Barmaids.Count(b => b.Works(year))}명)";
+        }
+        find.TextChanged += (_, _) => Filter();
+
+        var top = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+        top.Children.Add(new TextBlock
+        {
+            Text = "찾기", Width = 40, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        top.Children.Add(find);
+        top.Children.Add(count);
+        page.Children.Add(top);
+        page.Children.Add(new Border
+        {
+            BorderBrush = GameUi.Edge,
+            BorderThickness = new Thickness(1),
+            Child = new ScrollViewer
+            {
+                Height = 420,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Padding = new Thickness(8, 4, 8, 4),
+                Content = list,
+            },
+        });
+        page.Children.Add(new TextBlock
+        {
+            Text = "서는 해는 15~40살인 해입니다(마흔이 되는 해까지). 언어는 그녀가 하는 말입니다(제독이 그 말을 3 이상 해야 설득 · 선물 · 프로포즈가 서고, 아내가 되면 자식에게 가르칩니다). 취향은 「이야기한다」에서 말하는 이상형(성격)입니다. "
+                   + "이름 · 도시 · 언어 · 취향 · 해로 찾을 수 있습니다(「서 있음」으로 지금 서 있는 여급만).",
+            Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        Filter();
         return page;
     }
 

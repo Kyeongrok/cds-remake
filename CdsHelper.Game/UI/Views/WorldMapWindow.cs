@@ -3908,6 +3908,9 @@ public sealed class WorldMapWindow : Window
         },
         // 「역사이벤트」 탭 — 등록된 역사 대본 칸과 지금 날짜로 본 상태.
         HistoryEvents = () => _game.HistoryCatalog(),
+        // 「여급」 탭 — 여급 127명의 서는 해 · 도시 · 언어 · 취향.
+        Barmaids = _game.Barmaids,
+        CityName = _game.CityName,
     });
 
     /// <summary>
