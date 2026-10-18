@@ -126,11 +126,13 @@ public sealed class PortraitFilterDialog : GameWindow
         _reference.ValueChanged += (_, _) => ShowReference();
 
         var open = Button("그림 열기…", OpenImage);
+        var openInstalled = Button("넣은 얼굴 열기(넣을 얼굴 번호)", OpenInstalled);
         var export = Button("PNG 로 내보내기…", Export);
         var install = Button("앱 얼굴로 넣기", Install);
 
         var controls = new StackPanel { Width = 300, Margin = new Thickness(10) };
         controls.Children.Add(open);
+        controls.Children.Add(openInstalled);
         controls.Children.Add(Label("자르기 — 가운데 가로 · 세로, 크기(폭 5 : 높이 6)"));
         controls.Children.Add(Row("가로", _cx));
         controls.Children.Add(Row("세로", _cy));
@@ -252,10 +254,31 @@ public sealed class PortraitFilterDialog : GameWindow
     {
         var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "그림 파일|*.png;*.jpg;*.jpeg;*.bmp|모든 파일|*.*" };
         if (dlg.ShowDialog(this) != true) return;
+        OpenPath(dlg.FileName);
+    }
+
+    /// <summary>
+    /// 이미 넣은 앱 얼굴(<c>asset/face/male-번호.png</c>, 「넣을 얼굴 번호」 칸)을 연다 — 80x96 그대로라 자르기는 온 그림이 되고,
+    /// 이미 공용 색표라 디더링을 다시 걸어도 거의 안 바뀐다. 배경만 칠해 다시 넣을 때 쓴다(건의).
+    /// </summary>
+    private void OpenInstalled()
+    {
+        string path = Path.Combine(FaceFolder(), Portraits.ShippedFileName(false, (int)_faceNumber.Value));
+        if (!File.Exists(path)) { _status.Text = $"{path} 이 없습니다."; return; }
+        OpenPath(path);
+        _size.Value = _size.Maximum;
+        _cx.Value = 0.5;
+        _cy.Value = 0.5;
+        Array.Clear(_painted);
+        Redraw();
+    }
+
+    private void OpenPath(string fileName)
+    {
         try
         {
             var art = new BitmapImage();
-            using (var file = File.OpenRead(dlg.FileName))
+            using (var file = File.OpenRead(fileName))
             {
                 art.BeginInit();
                 art.CacheOption = BitmapCacheOption.OnLoad;
@@ -267,7 +290,7 @@ public sealed class PortraitFilterDialog : GameWindow
             _source.Freeze();
             _sourceView.Source = _source;
             Redraw();
-            _status.Text = $"{Path.GetFileName(dlg.FileName)} — {_source.PixelWidth}x{_source.PixelHeight}";
+            _status.Text = $"{Path.GetFileName(fileName)} — {_source.PixelWidth}x{_source.PixelHeight}";
         }
         catch (Exception ex) when (ex is IOException or NotSupportedException or FileFormatException)
         {
