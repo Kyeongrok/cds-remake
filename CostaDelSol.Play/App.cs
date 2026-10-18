@@ -152,8 +152,26 @@ internal sealed class App : Application
             var update = await manager.CheckForUpdatesAsync();
             if (update == null) return;
 
-            await manager.DownloadUpdatesAsync(update);
+            // 받는 동안 몇 % 받았는지 띄운다 — 통짜(약 160MB)를 받을 때는 몇 분 걸리는데, 「확인합니다」만 떠 있으면
+            // 멈춘 줄 알고 게임을 꺼 받다 만 채로 끝났다(건의). 5% 마다 한 번만 고쳐 쓴다.
             var target = update.TargetFullRelease;
+            string Line(int percent) => $"새 버전({target.Version})을 받는 중입니다... {percent}%  (끄지 말고 기다려 주세요)";
+            window.Say(Line(0));
+            int shown = 0;
+            void Progress(int percent)
+            {
+                int step = Math.Clamp(percent, 0, 100) / 5 * 5;
+                if (step <= shown) return;
+                shown = step;
+                window.Dispatcher.BeginInvoke(() => window.Say(Line(step)));
+            }
+            try { await manager.DownloadUpdatesAsync(update, Progress); }
+            catch
+            {
+                window.Say("새 버전을 받지 못했습니다. 다음에 켤 때 다시 받습니다.");
+                throw;
+            }
+            window.Say($"새 버전({target.Version})을 다 받았습니다.");
 
             bool now = window.IsLoaded && CdsHelper.Game.UI.Views.ConfirmDialog.Ask(window,
                 $"새 버전({target.Version})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?"

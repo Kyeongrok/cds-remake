@@ -252,59 +252,59 @@
   "args": 0
  },
  "{0} 에 파트가 없습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:231",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:232",
   "args": 1
  },
  "（대사를　적는다）": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:269",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:270",
   "args": 0
  },
  "빈 파트를 못 지었습니다 — {0}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:275",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:276",
   "args": 1
  },
  "앱 폴더에 {0}.json 이 없습니다 ({1})": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:329",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:330",
   "args": 2
  },
  "앱에 실린 {0}.json 이 비었습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:335",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:336",
   "args": 1
  },
  "앱에 실린 {0}.json 을 못 읽었습니다 — {1}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:339",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:340",
   "args": 2
  },
  "실린 원본에 파트 {0} 가 없습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:362",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:363",
   "args": 1
  },
  "실린 원본의 파트 {0} 가 깨졌습니다 — {1}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:367",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:368",
   "args": 2
  },
  "{0}.json 의 파트 {1} 가 깨졌습니다 — {2}": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:383",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:384",
   "args": 3
  },
  "Hex 를 못 읽었습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:451",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:452",
   "args": 0
  },
  "Step · Slots · Chunks 가 다 있어야 합니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:457",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:458",
   "args": 0
  },
  "덩이 {0} 가 비었습니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:477",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:478",
   "args": 1
  },
  "파트가 너무 큽니다({0}바이트)": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:486",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:487",
   "args": 1
  },
  "슬롯 {0} 가 없는 덩이를 가리킵니다": {
-  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:498",
+  "at": "CdsHelper.Game/Engine/Disev/DisevBook.cs:499",
   "args": 1
  },
  "0 {0} · 1 보통 · 2 {1}": {
@@ -2754,7 +2754,7 @@
   "args": 0
  },
  "-고친것": {
-  "at": "CdsHelper.Game/Engine/HardcoreRules.cs:82",
+  "at": "CdsHelper.Game/Engine/HardcoreRules.cs:83",
   "args": 0
  },
  "뭐야, 자네 돈이 없나? 어쩔 수 없군~. 그렇다면 일년간 충분히 일을 부리겠네! 괜찮겠나?": {
@@ -6542,24 +6542,80 @@
   "at": "CdsHelper.Game/Engine/Table/SponsorTable.cs:256",
   "args": 0
  },
+ "건물사진표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:50",
+  "args": 0
+ },
+ "건물표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:50",
+  "args": 0
+ },
+ "교역소표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:51",
+  "args": 0
+ },
+ "도시표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:53",
+  "args": 0
+ },
+ "마을사람표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:54",
+  "args": 0
+ },
+ "바람표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:54",
+  "args": 0
+ },
+ "발견물설명": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:55",
+  "args": 0
+ },
+ "손님표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:56",
+  "args": 0
+ },
+ "시장물건": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:57",
+  "args": 0
+ },
+ "아이템설명": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:57",
+  "args": 0
+ },
+ "여급-고친것": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:58",
+  "args": 0
+ },
+ "인물밑표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:60",
+  "args": 0
+ },
  "지형표": {
-  "at": "CdsHelper.Game/Engine/Table/TerrainTable.cs:32",
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:61",
+  "args": 0
+ },
+ "책표": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:61",
+  "args": 0
+ },
+ "패시브": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:63",
+  "args": 0
+ },
+ "부대편성-고친것": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:64",
+  "args": 0
+ },
+ "초상화-중년짝": {
+  "at": "CdsHelper.Game/Engine/Table/TableCache.cs:64",
   "args": 0
  },
  "지형표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
   "at": "CdsHelper.Game/Engine/Table/TerrainTable.cs:133",
   "args": 0
  },
- "마을사람표": {
-  "at": "CdsHelper.Game/Engine/Table/TownFolkTable.cs:28",
-  "args": 0
- },
  "마을 사람 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
   "at": "CdsHelper.Game/Engine/Table/TownFolkTable.cs:115",
-  "args": 0
- },
- "교역소표": {
-  "at": "CdsHelper.Game/Engine/Table/TradeTable.cs:21",
   "args": 0
  },
  "교역소 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
@@ -6773,10 +6829,6 @@
  "「{0}」 을 불러왔습니다 — 발견물 {1}번.": {
   "at": "CdsHelper.Game/Engine/Table/UserDiscoveries.cs:650",
   "args": 2
- },
- "바람표": {
-  "at": "CdsHelper.Game/Engine/Table/WindTable.cs:41",
-  "args": 0
  },
  "바람표의 위 니블이 비어 있지 않습니다(다른 판의 EXE 일 수 있습니다)": {
   "at": "CdsHelper.Game/Engine/Table/WindTable.cs:252",
@@ -8049,10 +8101,6 @@
  },
  "짐을 스폰서가 몰수해 버렸습니다!": {
   "at": "CdsHelper.Game/Engine/Town/Palace.cs:275",
-  "args": 0
- },
- "패시브": {
-  "at": "CdsHelper.Game/Engine/Town/Passives.cs:54",
   "args": 0
  },
  "해적 조우 -20%": {
@@ -10187,10 +10235,6 @@
   "at": "CdsHelper.Game/Local/Helpers/AnchorSprite.cs:60",
   "args": 2
  },
- "여급-고친것": {
-  "at": "CdsHelper.Game/Local/Helpers/BarmaidEdits.cs:19",
-  "args": 0
- },
  "Track{0}.mp3를 다운로드하지 못했습니다.": {
   "at": "CdsHelper.Game/Local/Helpers/BgmAssetDownloader.cs:73",
   "args": 1
@@ -10303,20 +10347,12 @@
   "at": "CdsHelper.Game/Local/Helpers/BookShelf.cs:69",
   "args": 1
  },
- "책표": {
-  "at": "CdsHelper.Game/Local/Helpers/BookTable.cs:86",
-  "args": 0
- },
  "형이상학": {
   "at": "CdsHelper.Game/Local/Helpers/BookTable.cs:199",
   "args": 0
  },
  "책 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
   "at": "CdsHelper.Game/Local/Helpers/BookTable.cs:201",
-  "args": 0
- },
- "건물사진표": {
-  "at": "CdsHelper.Game/Local/Helpers/BuildingPhoto.cs:42",
   "args": 0
  },
  "MPCG.CDS 에 사진이 모자랍니다": {
@@ -10351,10 +10387,6 @@
   "at": "CdsHelper.Game/Local/Helpers/BuildingSprites.cs:211",
   "args": 4,
   "chain": true
- },
- "건물표": {
-  "at": "CdsHelper.Game/Local/Helpers/CityBuildingTable.cs:118",
-  "args": 0
  },
  "건물 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
   "at": "CdsHelper.Game/Local/Helpers/CityBuildingTable.cs:237",
@@ -10391,10 +10423,6 @@
  },
  "CITYCG.CDS 에 그림이 없습니다": {
   "at": "CdsHelper.Game/Local/Helpers/CityPictures.cs:53",
-  "args": 0
- },
- "도시표": {
-  "at": "CdsHelper.Game/Local/Helpers/CityTable.cs:36",
   "args": 0
  },
  "도시 표를 읽지 못했고 적어 둔 것도 없습니다": {
@@ -10451,10 +10479,6 @@
  },
  "DISCOVER.CDS 에 파트가 없습니다": {
   "at": "CdsHelper.Game/Local/Helpers/DiscoveryClips.cs:56",
-  "args": 0
- },
- "발견물설명": {
-  "at": "CdsHelper.Game/Local/Helpers/DiscoveryDescriptions.cs:17",
   "args": 0
  },
  "아프리카의 최남단": {
@@ -10617,10 +10641,6 @@
   "at": "CdsHelper.Game/Local/Helpers/ItemArt.cs:85",
   "args": 1
  },
- "아이템설명": {
-  "at": "CdsHelper.Game/Local/Helpers/ItemDescriptions.cs:25",
-  "args": 0
- },
  "독일, 스위스 등지에서 발달한 단검": {
   "at": "CdsHelper.Game/Local/Helpers/ItemDescriptions.cs:42",
   "args": 0
@@ -10631,10 +10651,6 @@
  },
  "LANDDATA.CDS 에 부대 그림이 모자랍니다": {
   "at": "CdsHelper.Game/Local/Helpers/LandArt.cs:101",
-  "args": 0
- },
- "부대편성-고친것": {
-  "at": "CdsHelper.Game/Local/Helpers/LandFormationEdits.cs:16",
   "args": 0
  },
  "{0}벌": {
@@ -10737,16 +10753,8 @@
   "at": "CdsHelper.Game/Local/Helpers/PersonFile.cs:84",
   "args": 0
  },
- "인물밑표": {
-  "at": "CdsHelper.Game/Local/Helpers/PersonTemplate.cs:26",
-  "args": 0
- },
  "인물 밑표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
   "at": "CdsHelper.Game/Local/Helpers/PersonTemplate.cs:113",
-  "args": 0
- },
- "초상화-중년짝": {
-  "at": "CdsHelper.Game/Local/Helpers/PortraitAges.cs:26",
   "args": 0
  },
  "{0}짝": {
@@ -10781,12 +10789,8 @@
   "at": "CdsHelper.Game/Local/Helpers/Portraits.cs:102",
   "args": 1
  },
- "릴리즈노트.md": {
-  "at": "CdsHelper.Game/Local/Helpers/ReleaseNotes.cs:17",
-  "args": 0
- },
  "도움 주신 분들": {
-  "at": "CdsHelper.Game/Local/Helpers/ReleaseNotes.cs:58",
+  "at": "CdsHelper.Game/Local/Helpers/ReleaseNotes.cs:59",
   "args": 0
  },
  "{0} 크기가 {1}x{2} — 정사각이고 한 변이 {3} 의 배수": {
@@ -11853,10 +11857,6 @@
  },
  "발칸": {
   "at": "CdsHelper.Game/Local/Helpers/TavernGuests.cs:77",
-  "args": 0
- },
- "손님표": {
-  "at": "CdsHelper.Game/Local/Helpers/TavernGuests.cs:91",
   "args": 0
  },
  "손님 표가 기대한 모양이 아닙니다(다른 판의 EXE 일 수 있습니다)": {
@@ -27514,17 +27514,29 @@
   "at": "CostaDelSol.Play/App.cs:150",
   "args": 0
  },
+ "새 버전({0})을 받는 중입니다... {1}%  (끄지 말고 기다려 주세요)": {
+  "at": "CostaDelSol.Play/App.cs:158",
+  "args": 2
+ },
+ "새 버전을 받지 못했습니다. 다음에 켤 때 다시 받습니다.": {
+  "at": "CostaDelSol.Play/App.cs:171",
+  "args": 0
+ },
+ "새 버전({0})을 다 받았습니다.": {
+  "at": "CostaDelSol.Play/App.cs:174",
+  "args": 1
+ },
  "새 버전({0})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?": {
-  "at": "CostaDelSol.Play/App.cs:159",
+  "at": "CostaDelSol.Play/App.cs:177",
   "args": 1
  },
  "새 버전({0})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?\n(진행 중인 사항은 저장되지 않습니다. 아니오를 고르면 게임을 끌 때 적용됩니다.)": {
-  "at": "CostaDelSol.Play/App.cs:159",
+  "at": "CostaDelSol.Play/App.cs:177",
   "args": 1,
   "chain": true
  },
  "\n(진행 중인 사항은 저장되지 않습니다. 아니오를 고르면 게임을 끌 때 적용됩니다.)": {
-  "at": "CostaDelSol.Play/App.cs:160",
+  "at": "CostaDelSol.Play/App.cs:178",
   "args": 0
  }
 }
