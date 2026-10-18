@@ -110,7 +110,13 @@ public sealed class DiscoveryMapDialog : GameWindow
         public double X { get; set; } = x;
         public double Y { get; set; } = y;
         public double Size { get; } = size;
+
+        /// <summary>이름표를 아래로 민 거리(지도 점) — 겹치는 이름표를 비킬 때 <see cref="Declutter"/> 가 정한다.</summary>
+        public double Nudge { get; set; }
     }
+
+    /// <summary>이름표 비키기를 마지막으로 한 배율과 켜 모양 — 바뀔 때만 다시 센다(끌어 옮길 때는 그대로다).</summary>
+    private string _declutteredFor = "";
 
     private readonly Canvas _world;
     private readonly List<Pin> _pins = [];
@@ -278,6 +284,9 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
 
         _world.Children.Add(_spotLayer);
+        // 켜를 끄고 켜면 이름표 비키기를 다시 센다 — 꺼진 켜의 이름표가 자리를 차지하지 않게.
+        _cityLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
+        _spotLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
         _spotLayer.Visibility = GameSettings.DiscoveryMapSpots ? Visibility.Visible : Visibility.Collapsed;
 
         int shown = 0, done = 0;
@@ -572,6 +581,10 @@ public sealed class DiscoveryMapDialog : GameWindow
         var show = Z >= LabelFrom ? Visibility.Visible : Visibility.Collapsed;
         foreach (var tag in _labels) tag.Visibility = show;
 
+        // 이름표가 선 뒤에 잰다 — 숨긴(Collapsed) 글은 크기가 0 으로 재진다.
+        string state = $"{_zoom}|{_cityLayer.Visibility}|{_spotLayer.Visibility}";
+        if (Z >= LabelFrom && state != _declutteredFor) { _declutteredFor = state; Declutter(); }
+
         // 조각마다 따로 번역한다 — 붙는 조각이 그때그때 달라 이은 글 통째로는 번역표에 없다.
         _note.Text = Lang.T($"발견물 {_found}곳 · 찾은 것 {_done}곳 · 배율 x{Z:0.#}")
                    + Environment.NewLine + Lang.T("(휠 키우기·줄이기 · 끌어서 옮기기")
@@ -827,7 +840,32 @@ public sealed class DiscoveryMapDialog : GameWindow
         if (pin.Tag is not { } tag) return;
         tag.FontSize = LabelSize * ZoomBase / Z;
         Canvas.SetLeft(tag, pin.X + size / 2 + 1 / Z);
-        Canvas.SetTop(tag, pin.Y - tag.FontSize * 0.7);
+        Canvas.SetTop(tag, pin.Y - tag.FontSize * 0.7 + pin.Nudge);
+    }
+
+    /// <summary>
+    /// 겹치는 이름표를 아래로 한 줄씩 밀어 비킨다 — 같은 자리 · 바로 옆에 발견물이 몰리면(건물 속 발견물 · 도시와 그 곁의
+    /// 유적) 이름이 포개져 하나도 못 읽었다(건의). 위에서부터 차례로 놓고, 앞서 놓은 것과 부딪히면 줄 높이만큼 내린다.
+    /// 보이는 켜(발견물 · 도시)의 이름표만 센다. 배율이나 켜가 바뀔 때만 다시 센다.
+    /// </summary>
+    private void Declutter()
+    {
+        var placed = new List<Rect>();
+        var pins = _pins.Where(p => p.Tag is { Parent: Canvas { Visibility: Visibility.Visible } })
+                        .OrderBy(p => p.Y).ThenBy(p => p.X);
+        foreach (var pin in pins)
+        {
+            var tag = pin.Tag!;
+            pin.Nudge = 0;
+            Place(pin);
+            tag.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double w = tag.DesiredSize.Width, h = tag.DesiredSize.Height;
+            var box = new Rect(Canvas.GetLeft(tag), Canvas.GetTop(tag), w, h * 0.85);
+            for (int tries = 0; tries < 12 && placed.Any(r => r.IntersectsWith(box)); tries++) box.Y += h * 0.9;
+            pin.Nudge = box.Y - Canvas.GetTop(tag);
+            Canvas.SetTop(tag, box.Y);
+            placed.Add(box);
+        }
     }
 
     /// <summary>
