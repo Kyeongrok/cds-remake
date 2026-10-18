@@ -78,7 +78,7 @@ const EMPTY = (cols) => '<tr><td colspan="' + cols + '" class="dim name">아직 
 // 단계 옵션 — 게임(PlayStats.LevelMods)이 켬·끔이 아니라 값으로 보내는 것.
 const LEVELS = ['InfoLevel', 'SeaRaidScale', 'MutinyRate', 'Resolution', 'PortDays', 'PersonRollDays', 'PersonMoveOdds', 'PersonRestDays', 'ModPreset', 'ScreenWidth', 'ScreenHeight', 'ScreenScale'];
 // 값에 이름이 있는 단계 옵션 — 수 대신 이름으로 적는다. ModPreset 은 모드 창 「권장」에서 고른 단계다.
-const LEVEL_NAMES = { ModPreset: ['오리지널', '초보', '중수', '고수'], InfoLevel: ['기본', '일반', '상세'] };
+const LEVEL_NAMES = { ModPreset: ['오리지널', '초보', '중수', '고수', '파워업키트'], InfoLevel: ['기본', '일반', '상세'] };
 // 옵션 이름 — 게임은 GameSettings 의 속성 이름으로 보낸다. 모드 창(ModDialog)에 적힌 글로 바꿔 보이고, 여기 없는 것은 속성 이름 그대로 나온다.
 const MOD_NAMES = {
   ShowShipSpeed: '배 속도', FleetCard: '접근 함대 정보', ShowSeaDays: '항해 일수', ShowDiscoveryCount: '발견물 수', ShowFlowArrows: '바람·해류 화살표',

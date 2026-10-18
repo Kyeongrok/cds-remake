@@ -916,6 +916,18 @@ public sealed class ModDialog : GameWindow
     ];
 
     /// <summary>
+    /// 「파워업키트」가 켜는 것 — 규칙을 넓히고 원본에 없던 갈래(작위 · 투자 · 특별주문 · 하드코어 따위)를 더하는 줄들(사용자, 2026-10-18).
+    /// 출입 일수는 5일로 둔다. 초보 · 중수 · 고수는 이 가운데 규칙 바꾸기를 안 건드리고, 「오리지널」은 다 끈다.
+    /// </summary>
+    private static readonly string[] PresetPowerUp =
+    [
+        "중량 없음", "소지금 상한 10배", "장기 휴양 120개월", "적하 시세 순위", "배 속도", "발견물 수",
+        "향상된 힌트 보기", "향상된 후원자 정보", "향상된 인물정보 목록", "부하 해고", "직업 누르면 다시 굴림",
+        "향상된 NPC 이동", "추가 발견물", "도시 자동저장", "교역품별 시세", "도시 투자 성장", "조선소 특별주문",
+        "새 발견물 동영상", "작위", "하드코어 모드",
+    ];
+
+    /// <summary>
     /// 초보일수록 원본에 가깝게(규칙 · 숨은 정보는 그대로) 두되 손은 덜어 주고, 고수일수록 빨리 찾게 한다.
     /// 화면 꾸밈 셋(<see cref="PresetLook"/>) 말고의 고해상도 · 폰트 · 소리 · 실험 줄과 「중량 없음」 같은 규칙 바꾸기는 어느 묶음도 안 건드린다.
     /// </summary>
@@ -923,7 +935,8 @@ public sealed class ModDialog : GameWindow
     [
         new("오리지널", "원본 그대로 즐깁니다. 아래 단계들이 켜는 옵션을 모두 끄고, 정보 등급은 기본, 출입 일수는 10일로 둡니다."
             + " 처음에는 이 단계입니다.",
-            [], [.. PresetBase, .. PresetMore, .. PresetFast, .. PresetNever], [("정보 등급", 0), ("출입 일수", 9)]),
+            [], [.. PresetBase, .. PresetMore, .. PresetFast, .. PresetNever, .. PresetPowerUp.Except(PresetBase).Except(PresetMore)],
+            [("정보 등급", 0), ("출입 일수", 9)]),
         new("초보", "원본에 가깝게 즐기되 손이 많이 가는 일만 덜어 줍니다. 발견물 지도, 미니맵(도시 · 찾은 발견물), 보기 좋은 목록 창,"
             + " 자동 보급 · 선원 자동 모집 · 도시 자동저장을 켭니다. 숨은 정보와 규칙은 원본 그대로입니다(정보 등급 기본, 출입 일수 10일).",
             [.. PresetBase, .. PresetLook], [.. PresetMore, .. PresetFast, .. PresetNever], [("정보 등급", 0), ("출입 일수", 9)]),
@@ -934,6 +947,12 @@ public sealed class ModDialog : GameWindow
             + " 스핑크스 퀴즈 도우미 · 수에즈 운하를 켭니다. 정보 등급은 상세, 출입 일수는 1일입니다."
             + " 스스로 알아내는 재미는 줄어듭니다.",
             [.. PresetBase, .. PresetLook, .. PresetMore, .. PresetFast], PresetNever, [("정보 등급", 2), ("출입 일수", 0)]),
+        new("파워업키트", "원본 게임에 규칙과 갈래를 더해 즐깁니다. 중량 없음 · 소지금 상한 10배 · 장기 휴양 120개월,"
+            + " 적하 시세 순위 · 교역품별 시세 · 도시 투자 성장 · 조선소 특별주문, 작위 · 부하 해고 · 직업 누르면 다시 굴림,"
+            + " 추가 발견물 · 새 발견물 동영상 · 향상된 NPC 이동, 보기 좋은 목록 창(힌트 · 후원자 · 인물정보), 배 속도 · 발견물 수,"
+            + " 도시 자동저장, 하드코어 모드를 켭니다. 출입 일수는 5일입니다. 다른 단계가 켜는 옵션 가운데 이것에 없는 것은 끕니다.",
+            PresetPowerUp, [.. PresetBase.Concat(PresetMore).Concat(PresetFast).Concat(PresetNever).Except(PresetPowerUp)],
+            [("출입 일수", 4)]),
     ];
 
     /// <summary>권장 판 — 안내 글과 묶음 고르기(라디오 넷 — 오리지널 · 초보 · 중수 · 고수). 고르면 다른 탭의 줄들이 그 묶음대로 바뀐다.</summary>
@@ -995,7 +1014,8 @@ public sealed class ModDialog : GameWindow
         page.Children.Add(new TextBlock
         {
             Text = "고른 뒤에도 각 탭에서 하나씩 바꿀 수 있습니다. 「바다 입체 효과」 · 「고해상도 바다」 · 「리디바탕 글꼴」은 초보 · 중수 · 고수가 함께 켭니다."
-                 + " 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션과 「중량 없음」 같은 규칙 바꾸기는 어느 단계도 건드리지 않습니다.",
+                 + " 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션은 어느 단계도 건드리지 않습니다."
+                 + " 「중량 없음」 같은 규칙 바꾸기는 「파워업키트」가 켜고 「오리지널」이 끕니다.",
             Foreground = GameUi.Text, Opacity = 0.8, FontSize = 12, LineHeight = 18, TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 12, 0, 0),
         });
