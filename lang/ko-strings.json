@@ -15952,168 +15952,180 @@
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:24",
   "args": 0
  },
- "X 키로 인물정보를, D 키로 발견물 지도를 엽니다.": {
-  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:25",
-  "args": 0
- },
- "모드 「미니맵」 탭에서 표식을 종류별로 켜고 끌 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:26",
-  "args": 0
- },
- "모드 「수에즈 운하」를 켜면 지중해에서 홍해로 곧장 지나갑니다.": {
+ "육지에서는 지형마다 날이 가는 빠르기가 다릅니다. 평지는 하루에 약 9칸을 가고, 사막은 2배 · 숲은 2.5배 · 산은 3.5배의 날이 걸립니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:27",
   "args": 0
  },
- "모드 「작위」를 켜면 발견물 보고와 교역소 투자로 공적이 쌓입니다.": {
+ "강을 따라 걸으면 평지보다 날이 절반만 갑니다. 산을 넘기보다 강과 평지로 돌아가는 편이 빠를 때가 많습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:28",
   "args": 0
  },
- "작위 혜택은 누적됩니다. 높은 작위는 아래 작위의 혜택도 함께 받습니다.": {
+ "바다는 어디든 칸마다 같은 시간이 듭니다. 배가 빠를수록 하루에 더 멀리 갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:29",
   "args": 0
  },
- "모드 「정보 등급」을 상세로 두면 도서관 책의 읽기 조건이 보입니다.": {
+ "X 키로 인물정보를, D 키로 발견물 지도를 엽니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:30",
   "args": 0
  },
- "발견물 지도에서 「도」가 적힌 도시에는 도서관이 있습니다.": {
+ "모드 「미니맵」 탭에서 표식을 종류별로 켜고 끌 수 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:31",
   "args": 0
  },
- "해전에서 이기면 적 배에 실려 있던 짐을 옮겨 실을 수 있습니다.": {
+ "모드 「수에즈 운하」를 켜면 지중해에서 홍해로 곧장 지나갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:32",
   "args": 0
  },
- "모드 「접근 함대 정보」를 켜면 다가간 함대의 국적과 규모가 보입니다.": {
+ "모드 「작위」를 켜면 발견물 보고와 교역소 투자로 공적이 쌓입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:33",
   "args": 0
  },
- "모드 「부하 해고」를 켜면 부하편성 창에 「해고」 단추가 생깁니다.": {
+ "작위 혜택은 누적됩니다. 높은 작위는 아래 작위의 혜택도 함께 받습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:34",
   "args": 0
  },
- "모드 「뭍 자동이동」: 발견물 지도의 점을 오른쪽 단추로 누르면 걸어갑니다.": {
+ "모드 「정보 등급」을 상세로 두면 도서관 책의 읽기 조건이 보입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:35",
   "args": 0
  },
- "R 키나 제목 줄의 「네비게이션」으로 목적지 도시를 골라 자동항해합니다.": {
+ "발견물 지도에서 「도」가 적힌 도시에는 도서관이 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:36",
   "args": 0
  },
- "도시 안에서 네비게이션으로 목적지를 고르면 출항해서 그 항구 앞까지 저절로 갑니다.": {
+ "해전에서 이기면 적 배에 실려 있던 짐을 옮겨 실을 수 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:37",
   "args": 0
  },
- "네비게이션은 바람과 해류를 보고, 돌아가는 편이 빠르면 그 길로 갑니다.": {
+ "모드 「접근 함대 정보」를 켜면 다가간 함대의 국적과 규모가 보입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:38",
   "args": 0
  },
- "네비게이션의 「최소 조타」를 고르면 뱃머리를 덜 틀며 곧게 갑니다.": {
+ "모드 「부하 해고」를 켜면 부하편성 창에 「해고」 단추가 생깁니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:39",
   "args": 0
  },
- "자동항해는 지도를 누르거나 스페이스 · 방향키를 누르면 꺼집니다.": {
+ "모드 「뭍 자동이동」: 발견물 지도의 점을 오른쪽 단추로 누르면 걸어갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:40",
   "args": 0
  },
- "네비게이션에서 「항해 시작」을 누르면 항로 후보가 지도와 함께 뜹니다. 하나를 골라 「확인」을 누르십시오.": {
+ "R 키나 제목 줄의 「네비게이션」으로 목적지 도시를 골라 자동항해합니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:41",
   "args": 0
  },
- "네비게이션의 도시 목록은 문화권 탭으로 나뉩니다. 닻 표시가 붙은 도시가 항구 도시입니다.": {
+ "도시 안에서 네비게이션으로 목적지를 고르면 출항해서 그 항구 앞까지 저절로 갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:42",
   "args": 0
  },
- "네비게이션에서 도시를 두 번 누르면 곧바로 항로 후보로 넘어갑니다.": {
+ "네비게이션은 바람과 해류를 보고, 돌아가는 편이 빠르면 그 길로 갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:43",
   "args": 0
  },
- "「가장 빠른 길」은 바람과 해류를 탄 길, 「가장 짧은 길」은 거리가 가장 짧은 길입니다.": {
+ "네비게이션의 「최소 조타」를 고르면 뱃머리를 덜 틀며 곧게 갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:44",
   "args": 0
  },
- "항로 후보 옆의 날수는 지금 함대와 이번 달 바람으로 어림한 값입니다.": {
+ "자동항해는 지도를 누르거나 스페이스 · 방향키를 누르면 꺼집니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:45",
   "args": 0
  },
- "내륙 도시를 고르면 네비게이션이 배를 댈 해안을 골라 줍니다. 거기서 내려 걸어가면 됩니다.": {
+ "네비게이션에서 「항해 시작」을 누르면 항로 후보가 지도와 함께 뜹니다. 하나를 골라 「확인」을 누르십시오.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:46",
   "args": 0
  },
- "내륙 도시는 항해 날수와 걷는 날수를 더해 가장 빠른 해안이 먼저 나옵니다.": {
+ "네비게이션의 도시 목록은 문화권 탭으로 나뉩니다. 닻 표시가 붙은 도시가 항구 도시입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:47",
   "args": 0
  },
- "걷는 길이 싫다면 내륙 도시의 항로 후보에서 「덜 걷는 길」을 고르십시오.": {
+ "네비게이션에서 도시를 두 번 누르면 곧바로 항로 후보로 넘어갑니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:48",
   "args": 0
  },
- "항로 후보 아래의 목록은 어디서 어느 쪽으로 뱃머리를 트는지 적은 것입니다.": {
+ "「가장 빠른 길」은 바람과 해류를 탄 길, 「가장 짧은 길」은 거리가 가장 짧은 길입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:49",
   "args": 0
  },
- "자동항해는 목적지 항구 앞에서 닻을 내리고 들어갈지 묻습니다. 지나가는 항구에서는 묻지 않습니다.": {
+ "항로 후보 옆의 날수는 지금 함대와 이번 달 바람으로 어림한 값입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:50",
   "args": 0
  },
- "자동항해 중 배가 육지에 걸리면 그 자리에서 길을 다시 찾습니다.": {
+ "내륙 도시를 고르면 네비게이션이 배를 댈 해안을 골라 줍니다. 거기서 내려 걸어가면 됩니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:51",
   "args": 0
  },
- "한 번 찾은 항로는 저장해 둡니다. 같은 도시로 다시 갈 때는 금방 뜹니다.": {
+ "내륙 도시는 항해 날수와 걷는 날수를 더해 가장 빠른 해안이 먼저 나옵니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:52",
   "args": 0
  },
- "지도에서 Shift 를 누른 채 오른쪽 단추를 누르면 그 자리로 자동항해합니다.": {
+ "걷는 길이 싫다면 내륙 도시의 항로 후보에서 「덜 걷는 길」을 고르십시오.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:53",
   "args": 0
  },
- "네비게이션 단축키는 햄버거 메뉴의 「단축키」에서 바꿀 수 있습니다.": {
+ "항로 후보 아래의 목록은 어디서 어느 쪽으로 뱃머리를 트는지 적은 것입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:54",
   "args": 0
  },
- "출항할 때 보급이 20일에 못 미치면 네비게이션으로 떠나도 한 번 물어봅니다.": {
+ "자동항해는 목적지 항구 앞에서 닻을 내리고 들어갈지 묻습니다. 지나가는 항구에서는 묻지 않습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:55",
   "args": 0
  },
- "향상된 그래픽은 M 키로 모드 창을 열고 「고해상도」 탭에서 켜고 끕니다. 체크를 풀면 원본 화면 그대로입니다.": {
+ "자동항해 중 배가 육지에 걸리면 그 자리에서 길을 다시 찾습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:56",
   "args": 0
  },
- "「고해상도」 탭의 「바다 입체 효과」는 바다에 물결 굴곡과 햇빛 반짝임, 해안 물보라를 얹습니다. 밝기는 아래 막대로 고릅니다.": {
+ "한 번 찾은 항로는 저장해 둡니다. 같은 도시로 다시 갈 때는 금방 뜹니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:57",
   "args": 0
  },
- "「고해상도」 탭의 「고해상도 바다」는 지도를 키웠을 때 바다를 화면 해상도로 새로 그리고 해안선을 곡선으로 다듬습니다.": {
+ "지도에서 Shift 를 누른 채 오른쪽 단추를 누르면 그 자리로 자동항해합니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:58",
   "args": 0
  },
- "「고해상도 바다」 밑의 「해류 결」 막대로 해류가 흐르는 쪽의 물결을 짙게 또는 옅게 고릅니다.": {
+ "네비게이션 단축키는 햄버거 메뉴의 「단축키」에서 바꿀 수 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:59",
   "args": 0
  },
- "「고해상도」 탭의 「뭍 세부 질감」은 사막 · 산 · 숲 · 평지에 잔무늬를 얹습니다. 원본 도트는 그대로 둡니다.": {
+ "출항할 때 보급이 20일에 못 미치면 네비게이션으로 떠나도 한 번 물어봅니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:60",
   "args": 0
  },
- "「고해상도」 탭에는 「도트 확대 필터」 · 「배 항적」 · 「부드러운 구름」도 있습니다. 하나씩 켜 보고 마음에 드는 것만 남기십시오.": {
+ "향상된 그래픽은 M 키로 모드 창을 열고 「고해상도」 탭에서 켜고 끕니다. 체크를 풀면 원본 화면 그대로입니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:61",
   "args": 0
  },
- "그래픽 옵션은 켜는 즉시 지도에 반영됩니다. 화면이 느려지면 「바다 입체 효과」부터 꺼 보십시오.": {
+ "「고해상도」 탭의 「바다 입체 효과」는 바다에 물결 굴곡과 햇빛 반짝임, 해안 물보라를 얹습니다. 밝기는 아래 막대로 고릅니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:62",
   "args": 0
  },
- "원본 그대로의 화면이 좋다면 모드 창 「고해상도」 탭의 체크를 모두 풀면 됩니다.": {
+ "「고해상도」 탭의 「고해상도 바다」는 지도를 키웠을 때 바다를 화면 해상도로 새로 그리고 해안선을 곡선으로 다듬습니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:63",
   "args": 0
  },
- "도시에 들어가고 나올 때 날짜가 너무 많이 지나간다면, M 키로 모드 창을 열고 「편의성」 탭의 「출입 일수」를 줄여 보십시오.": {
+ "「고해상도 바다」 밑의 「해류 결」 막대로 해류가 흐르는 쪽의 물결을 짙게 또는 옅게 고릅니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:64",
   "args": 0
  },
- "「출입 일수」는 항구 · 마을에 들고 날 때 각각 지나는 날수입니다. 원본은 열흘씩이고, 바꾼 값은 다음 출입부터 듭니다.": {
+ "「고해상도」 탭의 「뭍 세부 질감」은 사막 · 산 · 숲 · 평지에 잔무늬를 얹습니다. 원본 도트는 그대로 둡니다.": {
   "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:65",
+  "args": 0
+ },
+ "「고해상도」 탭에는 「도트 확대 필터」 · 「배 항적」 · 「부드러운 구름」도 있습니다. 하나씩 켜 보고 마음에 드는 것만 남기십시오.": {
+  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:66",
+  "args": 0
+ },
+ "그래픽 옵션은 켜는 즉시 지도에 반영됩니다. 화면이 느려지면 「바다 입체 효과」부터 꺼 보십시오.": {
+  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:67",
+  "args": 0
+ },
+ "원본 그대로의 화면이 좋다면 모드 창 「고해상도」 탭의 체크를 모두 풀면 됩니다.": {
+  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:68",
+  "args": 0
+ },
+ "도시에 들어가고 나올 때 날짜가 너무 많이 지나간다면, M 키로 모드 창을 열고 「편의성」 탭의 「출입 일수」를 줄여 보십시오.": {
+  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:69",
+  "args": 0
+ },
+ "「출입 일수」는 항구 · 마을에 들고 날 때 각각 지나는 날수입니다. 원본은 열흘씩이고, 바꾼 값은 다음 출입부터 듭니다.": {
+  "at": "CdsHelper.Game/UI/Views/LoadingDialog.cs:70",
   "args": 0
  },
  "10일분": {
@@ -21370,128 +21382,136 @@
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:128",
   "args": 0
  },
- "PNG 로 내보내기…": {
+ "넣은 얼굴 열기(넣을 얼굴 번호)": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:129",
   "args": 0
  },
- "앱 얼굴로 넣기": {
+ "PNG 로 내보내기…": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:130",
   "args": 0
  },
- "자르기 — 가운데 가로 · 세로, 크기(폭 5 : 높이 6)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:134",
+ "앱 얼굴로 넣기": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:131",
   "args": 0
  },
- "세로": {
+ "자르기 — 가운데 가로 · 세로, 크기(폭 5 : 높이 6)": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:136",
   "args": 0
  },
- "색 다듬기": {
+ "세로": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:138",
   "args": 0
  },
- "대비 %": {
+ "색 다듬기": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:140",
   "args": 0
  },
- "채도 %": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:141",
-  "args": 0
- },
- "배경 — 기준점 색에 가깝고 테두리에 이어진 곳을 배경으로 친다. 바뀐 얼굴의 배경을 누르면 그 점이 기준이 된다(처음은 왼쪽 위)": {
+ "대비 %": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:142",
   "args": 0
  },
- "허용치": {
+ "채도 %": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:143",
+  "args": 0
+ },
+ "배경 — 기준점 색에 가깝고 테두리에 이어진 곳을 배경으로 친다. 바뀐 얼굴의 배경을 누르면 그 점이 기준이 된다(처음은 왼쪽 위)": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:144",
   "args": 0
  },
- "색": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:145",
-  "args": 0
- },
- "방향": {
+ "허용치": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:146",
   "args": 0
  },
- "시작색": {
+ "색": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:147",
   "args": 0
  },
- "끝색": {
+ "방향": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:148",
   "args": 0
  },
- "손으로 칠하기 — 켜고 바뀐 얼굴을 누르거나 끌면 형광분홍 점이 찍힌다(오른쪽 단추는 지우기). 끄면 칠한 곳이 그라데이션이 된다": {
+ "시작색": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:149",
+  "args": 0
+ },
+ "끝색": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:150",
   "args": 0
  },
- "붓": {
+ "손으로 칠하기 — 켜고 바뀐 얼굴을 누르거나 끌면 형광분홍 점이 찍힌다(오른쪽 단추는 지우기). 끄면 칠한 곳이 그라데이션이 된다": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:152",
   "args": 0
  },
- "칠한 것 지우기": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:153",
-  "args": 0
- },
- "줄이기 · 색 · 디더링": {
+ "붓": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:154",
   "args": 0
  },
- "줄이기": {
+ "칠한 것 지우기": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:155",
   "args": 0
  },
- "디더링": {
+ "줄이기 · 색 · 디더링": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:156",
+  "args": 0
+ },
+ "줄이기": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:157",
   "args": 0
  },
- "견줄 원본 얼굴(MALE.CDS 번호)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:158",
+ "디더링": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:159",
   "args": 0
  },
- "넣을 얼굴 번호(9000 부터 — asset/face/male-번호.png)": {
+ "견줄 원본 얼굴(MALE.CDS 번호)": {
   "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:160",
   "args": 0
  },
+ "넣을 얼굴 번호(9000 부터 — asset/face/male-번호.png)": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:162",
+  "args": 0
+ },
  "원본 그림": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:167",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:169",
   "args": 0
  },
  "바꾼 얼굴(게임에서 보이는 결)": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:173",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:175",
   "args": 0
  },
  "견줄 원본 얼굴": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:193",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:195",
   "args": 0
  },
  "그림을 열면 바로 바뀐 얼굴이 보입니다. 원본은 공용 색표 64색 · 플로이드-스타인버그에 가깝습니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:209",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:211",
   "args": 0
  },
+ "{0} 이 없습니다.": {
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:267",
+  "args": 1
+ },
  "그림을 못 열었습니다: {0}": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:274",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:297",
   "args": 1
  },
  "먼저 그림을 여세요.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:571",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:594",
   "args": 0
  },
  "{0} 에 적었습니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:575",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:598",
   "args": 1
  },
  "얼굴 번호는 {0} 부터입니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:588",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:611",
   "args": 1
  },
  "{0} 이 이미 있습니다. 덮어쓸까요?": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:593",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:616",
   "args": 1
  },
  "{0} 에 넣었습니다. 후원자 · 인물의 얼굴 번호를 {1} 로 두면 이 그림이 나옵니다.": {
-  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:596",
+  "at": "CdsHelper.Game/UI/Views/PortraitFilterDialog.cs:619",
   "args": 2
  },
  "기함변경": {
