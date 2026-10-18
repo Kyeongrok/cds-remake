@@ -820,7 +820,10 @@ public sealed class WorldMapWindow : Window
         Func<double, double, (bool, string)>? walk = GameSettings.LandAutoWalk && _host.IsOnLand
             ? (x, y) => _host.StartAutoWalk(x, y)
             : null;
-        DiscoveryMapDialog.Show(this, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
+        // 도시 화면이 떠 있으면 그 창을 주인으로 삼는다 — 세계지도가 주인이면 도시 화면과 형제가 되어, 다른 창에
+        // 갔다 오면 Windows 가 형제 차례를 되살리며 도시 화면 · 그 쪽지들이 발견물 지도 위로 올라왔다.
+        Window owner = _cityView is { IsVisible: true } town ? town : this;
+        DiscoveryMapDialog.Show(owner, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
                                 WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk,
                                 EventsDoneDiscoveries());
     }
