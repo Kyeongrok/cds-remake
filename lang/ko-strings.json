@@ -17965,7 +17965,7 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:998",
   "args": 2
  },
- "직접 바꾼 옵션이 있습니다({0}{1}).\n「{2}」{3} 고르면 그 단계의 설정값으로 바뀝니다. 바꾸시겠습니까?": {
+ "직접 바꾼 옵션이 있습니다({0}{1}).\n「{2}」{3} 고르면 그 단계의 설정값으로 바뀝니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:998",
   "args": 4,
   "chain": true
@@ -17974,239 +17974,247 @@
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:998",
   "args": 1
  },
- "「{0}」{1} 고르면 그 단계의 설정값으로 바뀝니다. 바꾸시겠습니까?": {
+ "「{0}」{1} 고르면 그 단계의 설정값으로 바뀝니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:999",
   "args": 2
  },
+ " 또한 파워업키트의 옵션들은 파워업키트에서는 끌 수 없습니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1000",
+  "args": 0
+ },
+ " 바꾸시겠습니까?": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1001",
+  "args": 0
+ },
  "파워업키트를 골랐습니다.\n\n": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1010",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1012",
   "args": 0
  },
  "파워업키트를 골랐습니다.\n\n다음 모드가 켜지고, 파워업키트인 동안은 끌 수 없습니다.\n{0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1010",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1012",
   "args": 1,
   "chain": true
  },
  "다음 모드가 켜지고, 파워업키트인 동안은 끌 수 없습니다.\n": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1011",
-  "args": 0
- },
- "출입 일수는 5일로 맞춥니다. 권장 탭에서 다른 단계를 고르면 다시 끌 수 있습니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1013",
   "args": 0
  },
+ "출입 일수는 5일로 맞춥니다. 권장 탭에서 다른 단계를 고르면 다시 끌 수 있습니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1015",
+  "args": 0
+ },
  "권장 옵션 — ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1016",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1018",
   "args": 0
  },
  "권장 옵션 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1016",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1018",
   "args": 1,
   "chain": true
  },
  "\n\n켜는 것: ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1017",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1019",
   "args": 0
  },
  "\n\n켜는 것: {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1017",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1019",
   "args": 1,
   "chain": true
  },
  "\n\n끄는 것: ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1018",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1020",
   "args": 0
  },
  "\n\n끄는 것: {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1018",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1020",
   "args": 1,
   "chain": true
  },
  "고른 뒤에도 각 탭에서 하나씩 바꿀 수 있습니다. 「바다 입체 효과」 · 「고해상도 바다」 · 「리디바탕 글꼴」은 초보 · 중수 · 고수가 함께 켭니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1024",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1026",
   "args": 0
  },
  "고른 뒤에도 각 탭에서 하나씩 바꿀 수 있습니다. 「바다 입체 효과」 · 「고해상도 바다」 · 「리디바탕 글꼴」은 초보 · 중수 · 고수가 함께 켭니다. 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션은 어느 단계도 건드리지 않습니다. 「중량 없음」 같은 규칙 바꾸기는 「파워업키트」가 켜고 「오리지널」이 끕니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1024",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1026",
   "args": 0,
   "chain": true
  },
  " 그 밖의 고해상도 · 폰트 · 소리 · 실험 옵션은 어느 단계도 건드리지 않습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1025",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1027",
   "args": 0
  },
  " 「중량 없음」 같은 규칙 바꾸기는 「파워업키트」가 켜고 「오리지널」이 끕니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1026",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1028",
   "args": 0
  },
  "파워업키트에서는 이 모드를 끌 수 없습니다.\n권장 탭에서 다른 단계를 고르면 끌 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1058",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1060",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로,": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1132",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1134",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 바다에 움직이는 물결 굴곡과 햇빛 반짝임을 얹고, 해안에서 멀수록 깊은 색으로, 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1132",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1134",
   "args": 0,
   "chain": true
  },
  " 해안선에는 흰 물보라를 칩니다. 지도를 키울수록 물결이 또렷합니다. 켜 둔 동안은 화면을 계속 다시 그립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1133",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1135",
   "args": 0
  },
  "밝기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1152",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1154",
   "args": 0
  },
  "바다 밝기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1157",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1159",
   "args": 0
  },
  "바다 입체 효과의 밝기입니다. 85% 에서 시작하고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1157",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1159",
   "args": 0
  },
  "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 물과 식량을 저절로 사 싣습니다. 양은 아래에서 고릅니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1170",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1172",
   "args": 0
  },
  "원본에 없는 것입니다 — 항구에서 「출항」을 누를 때 물과 식량을 저절로 사 싣습니다. 양은 아래에서 고릅니다. 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다. 짐이 차서 못 실으면 그냥 넘어가니, 출항 물음에 뜨는 항해 일수를 보고 손으로 보급하면 됩니다. 산 것은 아래 띠로 알립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1170",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1172",
   "args": 0,
   "chain": true
  },
  " 값은 보급 창과 같은 그 항구 시세이고, 용량·중량·소지금이 모자라면 들어가는 데까지만 싣습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1171",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1173",
   "args": 0
  },
  " 짐이 차서 못 실으면 그냥 넘어가니, 출항 물음에 뜨는 항해 일수를 보고 손으로 보급하면 됩니다. 산 것은 아래 띠로 알립니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1172",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1174",
   "args": 0
  },
  "자동 보급 — ": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1188",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1190",
   "args": 0
  },
  "자동 보급 — {0}": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1188",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1190",
   "args": 1,
   "chain": true
  },
  "물이나 식량이 10일분이 안 될 때 10일분까지 채웁니다. 보급 창의 「10일분」과 같은 셈(선원 수만큼의 통)입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1194",
-  "args": 0
- },
- "보급 창의 「최대」처럼 물과 식량을 같은 통 수로, 용량·중량·소지금이 닿는 데까지 채웁니다. 이미 실린 것을 덜어 내지는 않습니다.": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1196",
   "args": 0
  },
+ "보급 창의 「최대」처럼 물과 식량을 같은 통 수로, 용량·중량·소지금이 닿는 데까지 채웁니다. 이미 실린 것을 덜어 내지는 않습니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1198",
+  "args": 0
+ },
  "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1208",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1210",
   "args": 0
  },
  "원본에 없는 덧그림입니다 — 지도를 키웠을 때(칸이 화면 네 점보다 클 때) 바다를 원본 16x16 타일 대신 화면 해상도로 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다. 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1208",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1210",
   "args": 0,
   "chain": true
  },
  " 새로 그리고, 해안선을 계단 대신 곡선으로 다듬습니다. 바다 색은 원본 타일의 물 색을 따르고, 뭍은 원본 그대로입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1209",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1211",
   "args": 0
  },
  " 「바다 입체 효과」와 함께 켜면 그 위에 물결 빛이 얹힙니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1210",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1212",
   "args": 0
  },
  "해류 결": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1229",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1231",
   "args": 0
  },
  "고해상도 바다에서 해류를 보이는 결과 띠의 짙기입니다. 해류가 흐르는 쪽으로 결이 늘어지고 셀수록 또렷합니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1234",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1236",
   "args": 0
  },
  "고해상도 바다에서 해류를 보이는 결과 띠의 짙기입니다. 해류가 흐르는 쪽으로 결이 늘어지고 셀수록 또렷합니다. 0% 면 잔물결만 해류를 따라 흐르고 결은 안 섭니다. 고해상도 바다를 켜야 조절할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1234",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1236",
   "args": 0,
   "chain": true
  },
  " 0% 면 잔물결만 해류를 따라 흐르고 결은 안 섭니다. 고해상도 바다를 켜야 조절할 수 있습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1235",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1237",
   "args": 0
  },
  "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1246",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1248",
   "args": 0
  },
  "항해·뭍 이동 중에 발견물 지도를 지도 오른쪽 아래에 작게 띄웁니다. 배를 가운데 두고 따라갑니다. 아래에서 표식마다 켜고 끕니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1246",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1248",
   "args": 0,
   "chain": true
  },
  " 아래에서 표식마다 켜고 끕니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1247",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1249",
   "args": 0
  },
  "투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1279",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1281",
   "args": 0
  },
  "미니맵 투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1287",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1289",
   "args": 0
  },
  "미니맵을 켠 상태에서 투명도를 조절합니다. 체크를 끄면 조절할 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1287",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1289",
   "args": 0
  },
  "표식 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1311",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1313",
   "args": 0
  },
  "미니맵 표식 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1319",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1321",
   "args": 0
  },
  "발견물 · 도시 점의 크기를 조절합니다. 기본은 2.5 입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1319",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1321",
   "args": 0
  },
  "올림 투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1324",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1326",
   "args": 0
  },
  "미니맵 올림 투명도": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1326",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1328",
   "args": 0
  },
  "마우스를 올렸거나 배가 미니맵 밑에 들어갔을 때의 투명도입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1326",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1328",
   "args": 0
  },
  "크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1327",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1329",
   "args": 0
  },
  "미니맵 크기": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1329",
-  "args": 0
- },
- "미니맵 창의 크기입니다. 키우면 더 넓은 곳이 보입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1329",
-  "args": 0
- },
- "내 표식 크기": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1331",
   "args": 0
  },
- "미니맵 내 표식 크기": {
+ "미니맵 창의 크기입니다. 키우면 더 넓은 곳이 보입니다.": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1331",
+  "args": 0
+ },
+ "내 표식 크기": {
   "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1333",
   "args": 0
  },
+ "미니맵 내 표식 크기": {
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1335",
+  "args": 0
+ },
  "내 자리를 가리키는 파란 점의 크기입니다. 기본은 5.0 입니다.": {
-  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1333",
+  "at": "CdsHelper.Game/UI/Views/ModDialog.cs:1335",
   "args": 0
  },
  "괴물 관리": {

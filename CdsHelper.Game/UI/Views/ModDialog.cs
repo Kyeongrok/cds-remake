@@ -996,7 +996,9 @@ public sealed class ModDialog : GameWindow
                 var changed = Strayed(Presets[before]);
                 if (changed.Count > 0 && !ConfirmDialog.Ask(this,
                         $"직접 바꾼 옵션이 있습니다({string.Join(", ", changed.Take(4))}{(changed.Count > 4 ? $" 외 {changed.Count - 4}개" : "")}).\n"
-                        + $"「{pick.Name}」{GameUi.Josa(pick.Name, "을", "를")} 고르면 그 단계의 설정값으로 바뀝니다. 바꾸시겠습니까?", "권장 옵션"))
+                        + $"「{pick.Name}」{GameUi.Josa(pick.Name, "을", "를")} 고르면 그 단계의 설정값으로 바뀝니다."
+                        + (index == PowerUpPreset ? " 또한 파워업키트의 옵션들은 파워업키트에서는 끌 수 없습니다." : "")
+                        + " 바꾸시겠습니까?", "권장 옵션"))
                 {
                     undoing = true;
                     try { radios[before].IsChecked = true; }
