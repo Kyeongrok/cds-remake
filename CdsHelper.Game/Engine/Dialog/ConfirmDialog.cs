@@ -132,16 +132,19 @@ public sealed class ConfirmDialog : GameWindow
         // <b>가운데로 미는 것은 한 줄짜리뿐이다.</b> 얼굴이 서면 글은 그 오른쪽에
         // 왼쪽맞춤으로 붙고, 두 줄 넘게 넘어가는 말도 왼쪽에 붙는다("모험 중단" 창이
         // 그렇다). 한 줄이면 남는 칸의 반만큼 밀어 가운데로 맞춘다.
+        // 모드 「대항해시대2 스타일 대화창」 — 얼굴이 붙는 대사 창만 베이지 바탕에 검은 글씨, 줄무늬 테로 낸다.
+        bool dh2 = face != null && Local.Settings.GameSettings.Dh2TalkStyle;
+
         var words = new StackPanel();
         foreach (string line in lines)
         {
-            var label = new GameUi.GameLabel(GameFont.WhiteColor, TextHeight)
+            var label = new GameUi.GameLabel(dh2 ? GameFont.BlackColor : GameFont.WhiteColor, TextHeight)
             {
                 Text = line,
                 // 본문은 <b>겹쳐 찍지 않는다</b> — 오른쪽 아래로 한 점 겹친 자국이
                 // 그림자처럼 보인다. 게임 물음창 본문은 민 글씨다.
                 Bold = false,
-                FallbackBrush = GameUi.Text,
+                FallbackBrush = dh2 ? Brushes.Black : GameUi.Text,
                 HorizontalAlignment = face == null && lines.Count == 1
                     ? HorizontalAlignment.Center : HorizontalAlignment.Left,
             };
@@ -193,7 +196,13 @@ public sealed class ConfirmDialog : GameWindow
             Padding = new Thickness(SidePad, TopPad, SidePad, BottomPad),
             Child = stack,
         };
-        Content = frame;
+        if (dh2)
+        {
+            frame.Background = Dh2Paper;
+            frame.BorderThickness = new Thickness(0);
+            Background = Dh2Paper;
+        }
+        Content = dh2 ? Dh2Frame(frame) : frame;
 
         KeyDown += (_, e) =>
         {
@@ -275,6 +284,29 @@ public sealed class ConfirmDialog : GameWindow
     /// 공용을 쓰다가 함께 검어져서 여기에 따로 둔다.
     /// </remarks>
     private static readonly Brush FrameEdge = Frozen(Color.FromRgb(0x9B, 0x8D, 0x7D));
+
+    /// <summary>대항해시대2 대화창 바탕 — 갈무리에서 집은 <c>F2E3D3</c> 다.</summary>
+    private static readonly Brush Dh2Paper = Frozen(Color.FromRgb(0xF2, 0xE3, 0xD3));
+
+    /// <summary>
+    /// 대항해시대2 대화창 테 — 바깥에서 안쪽으로 한 점씩 일곱 줄이다(갈무리에서 집었다):
+    /// 검정 · 빨강(<c>D34001</c>) · 주황(<c>F3A261</c>) · 검정 · 빨강 · 초록(<c>00A261</c>) · 빨강.
+    /// </summary>
+    private static readonly Brush[] Dh2Stripes =
+    [
+        Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0xF3, 0xA2, 0x61)),
+        Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0x00, 0xA2, 0x61)),
+        Frozen(Color.FromRgb(0xD3, 0x40, 0x01)),
+    ];
+
+    /// <summary>알맹이를 대항해시대2 줄무늬 테로 감싼다 — 줄 하나가 테 한 겹(한 점)이다.</summary>
+    private static UIElement Dh2Frame(UIElement inner)
+    {
+        UIElement wrapped = inner;
+        for (int i = Dh2Stripes.Length - 1; i >= 0; i--)
+            wrapped = new Border { BorderBrush = Dh2Stripes[i], BorderThickness = new Thickness(1), SnapsToDevicePixels = true, Child = wrapped };
+        return wrapped;
+    }
 
     private static Brush Frozen(Color c)
     {

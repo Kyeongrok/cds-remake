@@ -288,6 +288,9 @@ public sealed class GameSettingsData
     /// <summary>덧붙인 아이템 그림(asset/item 206~)을 쓸지. 끄면 원본 그림이다.</summary>
     public bool EnhancedItemArt { get; set; }
 
+    /// <summary>얼굴이 붙는 대사 창을 대항해시대2 모양(줄무늬 테 · 베이지 바탕 · 검은 글씨)으로 낼지. 원본과 달라 꺼 두고 시작한다.</summary>
+    public bool Dh2TalkStyle { get; set; }
+
     /// <summary>정보 제공 등급(0 기본 · 1 일반 · 2 상세). 기본은 원본만큼만 보인다.</summary>
     public int InfoLevel { get; set; }
 
@@ -1267,6 +1270,13 @@ public static class GameSettings
     {
         get => Get(d => d.EnhancedItemArt);
         set => Set(d => d.EnhancedItemArt = value);
+    }
+
+    /// <summary>대항해시대2 스타일 대화창 — 얼굴이 붙는 대사 창을 줄무늬 테 · 베이지 바탕 · 검은 글씨로 낸다.</summary>
+    public static bool Dh2TalkStyle
+    {
+        get => Get(d => d.Dh2TalkStyle);
+        set => Set(d => d.Dh2TalkStyle = value);
     }
 
     /// <summary>정보 제공 등급 — 창이 원본보다 얼마나 더 알려 주는지.</summary>
