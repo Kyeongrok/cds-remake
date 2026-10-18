@@ -47,15 +47,37 @@ public sealed class CityHistory
         _persons = persons;
     }
 
-    /// <summary>게임 폴더에서 연다. HIST_EV 를 못 읽으면 null.</summary>
+    /// <summary>
+    /// 게임 폴더에서 연다. HIST_EV 를 못 읽으면 앱에 실린 <c>역사대본.json</c> 으로 물러서고, 그것도 없으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 읽어 낸 것은 원본 바이트 그대로 16진 글로 구워 둔다(<see cref="HistoryVoyages"/> 와 같은 결) — 게임 폴더에
+    /// HIST_EV.CDS 가 없어도 역사 대본이 돌고 개발 창 「역사이벤트」 탭이 선다(건의).
+    /// </remarks>
     public static CityHistory? Open(string gameDirectory)
     {
-        if (gameDirectory.Length == 0) return null;
-        var parts = ReadParts(Path.Combine(gameDirectory, FileName), int.MaxValue);
-        if (parts == null) return null;
-        var persons = ReadParts(Path.Combine(gameDirectory, HistoryVoyagesFile), 14) ?? [];
-        return new CityHistory(parts, persons);
+        var parts = gameDirectory.Length == 0 ? null : ReadParts(Path.Combine(gameDirectory, FileName), int.MaxValue);
+        if (parts != null)
+        {
+            var persons = ReadParts(Path.Combine(gameDirectory, HistoryVoyagesFile), 14) ?? [];
+            var baked = new Snapshot([.. parts.Select(Convert.ToHexString)], [.. persons.Select(Convert.ToHexString)]);
+            if (TableCache.Read<Snapshot>(CacheName) is not { Data: var kept }
+                || !kept.Parts.SequenceEqual(baked.Parts) || !kept.Persons.SequenceEqual(baked.Persons))
+                TableCache.Write(CacheName, new TableCache.Cached<Snapshot>(
+                    $"{parts.Length}파트 · 사람 {persons.Length}", baked, FileName));
+            return new CityHistory(parts, persons);
+        }
+
+        if (TableCache.Read<Snapshot>(CacheName)?.Data is not { Parts.Count: > 0 } saved) return null;
+        return new CityHistory([.. saved.Parts.Select(Convert.FromHexString)],
+                               [.. (saved.Persons ?? []).Select(Convert.FromHexString)]);
     }
+
+    /// <summary>구워 둔 파일 이름(<c>exe-tables/역사대본.json</c>).</summary>
+    private const string CacheName = "역사대본";
+
+    /// <summary>구워 두는 알맹이 — HIST_EV 파트와 HISTCHR 사람 대본의 원본 바이트(16진 글).</summary>
+    internal sealed record Snapshot(List<string> Parts, List<string> Persons);
 
     private const string HistoryVoyagesFile = "HISTCHR.CDS";
 
