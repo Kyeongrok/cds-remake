@@ -37,6 +37,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>건물 이름표와 명령 창을 얹는 자리. 그림과 같은 격자 칸에 둔다.</summary>
     private readonly Canvas _layer = new();
 
+    /// <summary>금테 · 그림 · 파란 막을 겹쳐 담는 틀. 동그란 애니메이션은 막보다 위인 여기에 얹는다.</summary>
+    private Grid _frameBox = null!;
+
     /// <summary>
     /// 도시 창 <b>옆</b>에 따로 띄우는 내 함대 쪽지 — 배마다 한 줄 「배 이름(선체)」.
     /// 게임 화면에는 없는 덧그림이라 그림을 가리지 않게 창 밖에 두고, 끌어 옮길 수 있다.
@@ -431,7 +434,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         };
 
         // 틀 위에 그림을 여덟 점 안쪽으로 얹는다. 건물 자리 셈은 그림(picBox) 기준이라 그대로다.
-        var frameBox = new Grid { Width = fullW, Height = fullH };
+        var frameBox = _frameBox = new Grid { Width = fullW, Height = fullH };
         if (frame != null)
         {
             var frameImage = new Image
@@ -1630,11 +1633,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
         // 그림 한가운데에 놓는다. 예전에는 누른 건물 위에 놓았는데, 건물이 구석에 있으면
-        // 애니메이션도 구석으로 밀려 났다 — 원본은 늘 화면 가운데에서 돈다.
-        Canvas.SetLeft(image, (CityPictures.Width * _scale - side) / 2);
-        Canvas.SetTop(image, (CityPictures.Height * _scale - side) / 2);
+        // 애니메이션도 구석으로 밀려 났다 — 원본은 늘 화면 가운데에서 돈다. 금테는 네 쪽이 같아
+        // 틀 한가운데가 곧 그림 한가운데다.
+        // <b>파란 막(_shade)보다 위</b>인 틀에 얹는다 — 그림 칸(_layer)에 얹었더니 발견 대본이 막을 덮은 채
+        // 굴리는 동전 · 서기 · 대포가 막 밑에 깔려 흐리게 나왔다(베네치아 「지중해의 유혹」, 제보).
+        image.HorizontalAlignment = HorizontalAlignment.Center;
+        image.VerticalAlignment = VerticalAlignment.Center;
         Panel.SetZIndex(image, 30);
-        _layer.Children.Add(image);
+        _frameBox.Children.Add(image);
 
         // 같은 장이 두 번 나오므로 한 번만 풀어 둔다.
         var art = new BitmapSource?[EffectAnim.FrameCount];
@@ -1662,7 +1668,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
         finally
         {
-            _layer.Children.Remove(image);
+            _frameBox.Children.Remove(image);
             _playing = false;
             if (wasShown) HideMenu(false);
         }
