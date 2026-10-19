@@ -16,6 +16,11 @@ const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
 // 차림표 줄(menu) · 들른 도시(city)는 이제 안 받는다 — 옛 판이 보내도 여기서 걸러진다. 표에 남은 옛 줄은 집계에도 안 든다.
 // 항해는 같은 열쇠(「떠난 도시>닿은 도시」)로 갈래 셋에 나눠 온다 — 횟수 · 날수의 합 · 선회의 합. 평균은 집계가 나눠서 낸다.
 const KINDS = ['discovery', 'hire', 'dismiss', 'voyage', 'voyage_days', 'voyage_turns', 'nav', 'battle', 'event', 'error'];
+// 이제 안 받는 셈 — 메시지마다 끼어 D1 쓰기 몫만 먹었다(하루 십만 줄 한도의 8할). 답은 이미 나왔고, 옛 판이 보내도 여기서 걸러진다.
+//   event 의 날 밑수(sea:day · sea:eligible · land:day) · nav 의 수동/자동(trip:* — 항해 횟수와 겹친다) · 조타(helm:*) · 건 자리(from:*)
+const DROPPED = (kind, key) =>
+  (kind === 'event' && (key === 'sea:day' || key === 'sea:eligible' || key === 'land:day'))
+  || (kind === 'nav' && /^(trip|helm|from):/.test(key));
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
@@ -42,6 +47,7 @@ async function postPlay(request, env) {
   const merged = new Map();
   for (const c of b.counts) {
     if (!c || typeof c !== 'object' || !KINDS.includes(c.kind) || typeof c.key !== 'string' || c.key.length === 0) continue;
+    if (DROPPED(c.kind, c.key)) continue;
     const voyage = c.kind.startsWith('voyage'), kind = voyage ? 'voyage' : c.kind, key = text(c.key, MAX_KEY);
     const id = kind + '\u0000' + key;
     const row = merged.get(id) ?? { kind, key, name: '', n: 0, days: 0, turns: 0 };

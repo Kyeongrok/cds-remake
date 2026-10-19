@@ -201,7 +201,8 @@ function renderBattles() {
         + row('육상전', landAll, landWin, landLose, '-', '-', landAll - landWin - landLose) : EMPTY(8));
 }
 
-const EVENT_NAMES = { 'sea:day': '바다에서 넘긴 날', 'sea:eligible': '재해 주사위를 굴릴 수 있던 날(항해 열흘째부터)', 'land:day': '육지에서 넘긴 날',
+// 날 밑수(sea:day · land:day · sea:eligible)는 v1.1.27 까지만 받았다 — 그 뒤 재해는 늘어도 밑수는 그대로라 「넘긴 날 가운데」가 조금씩 부푼다.
+const EVENT_NAMES = { 'sea:day': '바다에서 넘긴 날(v1.1.27 까지)', 'sea:eligible': '재해 주사위를 굴릴 수 있던 날(항해 열흘째부터 · v1.1.27 까지)', 'land:day': '육지에서 넘긴 날(v1.1.27 까지)',
   'sea:Storm': '폭풍', 'sea:Blizzard': '눈보라', 'sea:Rats': '쥐', 'sea:Scurvy': '괴혈병', 'sea:Plague': '전염병', 'sea:Weakening': '괴혈병 귀띔',
   'sea:StrangeIllness': '전염병 귀띔', 'sea:BarleyByMe': '보리로 막음(제독)', 'sea:BarleyByMate': '보리로 막음(부관)', 'sea:RatsKilled': '쥐 퇴치(부관)',
   'sea:Mutiny': '반란', 'sea:Siren': '세이렌', 'sea:Iceberg': '빙산', 'land:Heat': '더위', 'land:Cold': '추위', 'land:HotSpring': '온천',

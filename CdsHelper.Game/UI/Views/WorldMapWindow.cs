@@ -857,7 +857,7 @@ public sealed class WorldMapWindow : Window
     private string AutoSail(double cellX, double cellY)
     {
         var (ok, message) = _host.StartAutoSail(cellX, cellY);
-        if (ok) NavStarted("map", fromCity: false);
+        if (ok) NavStarted("map");
         return message;
     }
 
@@ -866,16 +866,14 @@ public sealed class WorldMapWindow : Window
     /// <summary>배로 떠난 도시. 떠난 적이 없거나(판을 불러온 직후) 이미 닿았으면 −1.</summary>
     private int _tripFrom = -1;
 
-    /// <summary>떠날 때의 지도 틱 수와, 가는 동안 자동항해를 걸었는지.</summary>
+    /// <summary>떠날 때의 지도 틱 수.</summary>
     private long _tripTicks;
-    private bool _tripAuto;
 
     /// <summary>배로 도시를 떠났다 — 닿을 때까지 날수와 선회를 센다.</summary>
     private void TripStarted(int city)
     {
         _tripFrom = city;
         _tripTicks = _host.Ticks;
-        _tripAuto = false;
         _host.TurnCount = 0;
     }
 
@@ -886,18 +884,15 @@ public sealed class WorldMapWindow : Window
         _tripFrom = -1;
         if (from < 0) return;
         int days = (int)Math.Ceiling((_host.Ticks - _tripTicks) / (double)TerrainTable.TicksPerDay);
-        PlayStats.Voyage(from, _game.CityName(from), city, _game.CityName(city), days, _host.TurnCount, _tripAuto);
+        PlayStats.Voyage(from, _game.CityName(from), city, _game.CityName(city), days, _host.TurnCount);
     }
 
     /// <summary>자동항해를 걸었다 — 무엇을 골랐는지 적는다(<see cref="PlayStats.Nav"/>).</summary>
     /// <param name="pick">고른 길 — quick · short · land-fast · land-lesswalk · land-near · map(지도를 찍었다).</param>
-    private void NavStarted(string pick, bool fromCity)
-    {
-        _tripAuto = true;
-        PlayStats.Nav("pick:" + pick);
-        PlayStats.Nav(GameSettings.SteadyHelm ? "helm:steady" : "helm:fast");
-        PlayStats.Nav(fromCity ? "from:city" : "from:sea");
-    }
+    /// <remarks>
+    /// 조타(helm:*) · 건 자리(from:*)는 이제 안 센다 — 답이 이미 나왔고(속도 중시 97%), 메시지마다 끼어 D1 쓰기 몫만 먹었다.
+    /// </remarks>
+    private void NavStarted(string pick) => PlayStats.Nav("pick:" + pick);
 
     /// <summary>
     /// 이름으로 고른 자동항해의 목적지 도시. 없으면 −1.
@@ -981,7 +976,7 @@ public sealed class WorldMapWindow : Window
         }
 
         var (ok, message) = _host.StartAutoSail(_sailGoal.X, _sailGoal.Y, _sailGoal.City, _sailGoal.Exact, _sailGoal.Kind);
-        if (ok) { NavStarted(_sailGoal.Tag, fromCity: false); Say($"[{_game.CityName(chosen)}]까지 {message}"); }
+        if (ok) { NavStarted(_sailGoal.Tag); Say($"[{_game.CityName(chosen)}]까지 {message}"); }
         else { _sailTo = -1; Say(message); }
     }
 
@@ -6270,8 +6265,6 @@ public sealed class WorldMapWindow : Window
 
         var (lat, lon) = _host.ShipLatLon;
 
-        PlayStats.Event("land:day");
-
         // 차례가 있다(0x00427311~) — 하루에 하나만 터진다.
         if (LandEvents.Heat(dice, ground))
         {
@@ -7043,8 +7036,6 @@ public sealed class WorldMapWindow : Window
     private void CheckSeaEvent()
     {
         var (lat, _) = _host.ShipLatLon;
-        PlayStats.Event("sea:day");
-        if (_game.Player.DaysAtSea > SeaEvents.MinDaysAtSea) PlayStats.Event("sea:eligible");
         if (SeaEvents.Roll(_game.Player, lat, _game.Random, MateSheetAt) is not { } kind) return;
         PlayStats.Event($"sea:{kind}");
 
@@ -7982,7 +7973,7 @@ public sealed class WorldMapWindow : Window
             if (sailTo < 0 || _host.SeaBlocked || _host.IsOnLand) return;
             var goal = _sailGoal;
             var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
-            if (ok) NavStarted(goal.Tag, fromCity: true);
+            if (ok) NavStarted(goal.Tag);
             if (ok) _sailTo = sailTo;
             Say(ok ? $"[{_game.CityName(sailTo)}]까지 {message}" : message);
         };
