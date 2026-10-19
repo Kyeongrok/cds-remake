@@ -128,15 +128,18 @@ public sealed class CityHistory
             var part = _parts[i];
             if (Pick(part, year, month, when, player, cities, found, i) is not { } slot) continue;
             if (slot.Once) player.MarkHistoryDone(i * 100 + slot.Index);
-            // v1.0.100 ~ v1.1.28 세이브는 나라 조건 칸을 돌고도 적지 않았다. 그 도시의 나라가 이미 바뀌어 있으면
-            // (이 칸이 바꾼 뒤 주인공이 공략했다) 돈 것으로 치고 넘긴다 — 안 그러면 한 번 더 빼앗아 간다.
-            if (slot.Once && slot.GateCity >= 0 && player.HistoryNations.ContainsKey(slot.GateCity)) continue;
+            // v1.0.100 ~ v1.1.28 세이브는 나라 조건 칸을 돌고도 적지 않았다. 그 칸이 처음 설 수 있는 달(그 해 1월)이
+            // 이미 지났고 그 도시의 나라가 바뀌어 있으면(이 칸이 바꾼 뒤 주인공이 공략했다) 돈 것으로 치고 넘긴다 —
+            // 안 그러면 한 번 더 빼앗아 간다. 그 해 1월이면 처음 도는 것이라 그대로 돌린다(1506년 전에 공략했어도).
+            if (slot.Once && slot.GateCity >= 0 && player.HistoryNations.ContainsKey(slot.GateCity)
+                && (year > slot.FromYear || month > 1)) continue;
             Run(part, slot.Body, part.Length, player, cities, nations, when, statesOnly: false);
         }
     }
 
     /// <param name="GateCity">「~나라가 아니어야」(28 00) 조건이 보는 도시. 없으면 -1.</param>
-    private readonly record struct Slot(int Index, int Body, bool Once, int GateCity);
+    /// <param name="FromYear">「그 해부터」(1B 17) 조건의 해. 없으면 0.</param>
+    private readonly record struct Slot(int Index, int Body, bool Once, int GateCity, int FromYear);
 
     /// <summary>
     /// 칸 고르기(<c>0x00407390</c>) — 칸을 차례로 보아 조건이 참인 첫 칸. 모르는 조건이 나오면 그 파트는 안 돈다.
@@ -155,19 +158,20 @@ public sealed class CityHistory
             if (cond >= part.Length || body >= part.Length) return null;
 
             bool once = false;
-            int gateCity = -1;
-            bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once, ref gateCity);
+            int gateCity = -1, fromYear = 0;
+            bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once, ref gateCity, ref fromYear);
             if (ok is null) return null;                         // 모르는 조건 — 파트째 건너뛴다(0x00407F09)
             if (partIndex < 0 && once) continue;                 // 사람 대본은 날짜(1C) 칸만 본다
             if (once && player.HistoryDone.Contains(partIndex * 100 + s)) continue;
-            if (ok == true) return new Slot(s, body, once, gateCity);
+            if (ok == true) return new Slot(s, body, once, gateCity, fromYear);
         }
         return null;
     }
 
     /// <summary>조건 한 줄을 따진다. 모르는 조건이면 null.</summary>
     private static bool? Test(byte[] p, int i, int year, int month, DateTime when, Player player,
-                              CityExeTable? cities, FoundCheck found, ref bool once, ref int gateCity)
+                              CityExeTable? cities, FoundCheck found, ref bool once, ref int gateCity,
+                              ref int fromYear)
     {
         bool all = true, orMode = false, orAcc = false;
         // 「그 해부터」(1B 17) 칸은 나라 조건(27/28 00)이 붙어도 <b>한 번 돌면 끝</b>이다 — 원본과 다르다(요청).
@@ -190,6 +194,7 @@ public sealed class CityHistory
                     // 원본(0x004077B5)은 cmp 해 ; jge 참 ; jne 거짓 이라 같은 해의 달 비교(0x004077C3)에
                     // 닿지 않는다(0x004077BB 가 7D = jge). 예전에는 그 달부터로 셈해 아카풀코(1522/7) 따위가 늦었다.
                     term = year >= U16(p, i + 4);
+                    fromYear = U16(p, i + 4);
                     once = true;
                     i += 6;
                     break;
@@ -453,8 +458,8 @@ public sealed class CityHistory
                     int cond = U16(part, 4 + s * 4) + 4, body = U16(part, 4 + s * 4 + 2) + 4;
                     if (cond >= part.Length || body >= part.Length) break;
                     bool once = false;
-                    int gateCity = -1;
-                    bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once, ref gateCity);
+                    int gateCity = -1, fromYear = 0;
+                    bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once, ref gateCity, ref fromYear);
                     string state;
                     if (ok is null) state = "모름";
                     else if (!person && once && player.HistoryDone.Contains(i * 100 + s)) state = "돎";
