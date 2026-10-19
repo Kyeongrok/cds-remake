@@ -33,6 +33,9 @@ public sealed class SaveListDialog : GameWindow
     /// <summary>칸 폭 — 캐릭터 · 도시 · 저장한 시각 · 발견물.</summary>
     private static readonly double[] Widths = [230, 120, 170, 70];
 
+    /// <summary>칸이 다섯이면 — 캐릭터 · 도시 · 게임 날짜 · 저장한 시각 · 발견물.</summary>
+    private static readonly double[] WidthsWithDate = [230, 110, 150, 170, 70];
+
     private readonly List<Border> _rows = [];
     private readonly List<List<TextBlock>> _cells = [];
     private readonly GameButton _decide;
@@ -141,9 +144,10 @@ public sealed class SaveListDialog : GameWindow
     {
         var grid = new Grid { Margin = new Thickness(4, 2, 4, 2) };
         cells = [];
-        for (int c = 0; c < Widths.Length; c++)
+        var widths = texts.Count == WidthsWithDate.Length ? WidthsWithDate : Widths;
+        for (int c = 0; c < widths.Length; c++)
         {
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Widths[c]) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(widths[c]) });
             var block = new TextBlock
             {
                 Text = c < texts.Count ? texts[c] : "",
@@ -152,7 +156,7 @@ public sealed class SaveListDialog : GameWindow
                 FontWeight = bold ? FontWeights.Bold : FontWeights.Normal,
                 Foreground = Ink,
                 TextTrimming = TextTrimming.CharacterEllipsis,
-                HorizontalAlignment = c == Widths.Length - 1 ? HorizontalAlignment.Right : HorizontalAlignment.Left,
+                HorizontalAlignment = c == widths.Length - 1 ? HorizontalAlignment.Right : HorizontalAlignment.Left,
                 Margin = new Thickness(4, 0, 4, 0),
             };
             Grid.SetColumn(block, c);

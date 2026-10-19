@@ -3391,11 +3391,14 @@ public sealed class WorldMapWindow : Window
     private string? PickAutoSave() =>
         PickSave(this, GameSave.AutoSaves(), "자동저장 불러오기", "자동저장한 데이터가 없습니다");
 
-    /// <summary>세이브 칸 목록 — 줄마다 캐릭터 이름 · 도시 · 저장한 시각 · 찾은 발견물 수.</summary>
+    /// <summary>세이브 칸 목록 — 줄마다 캐릭터 이름 · 도시 · 게임 날짜 · 저장한 시각 · 찾은 발견물 수.</summary>
+    /// <remarks>게임 날짜는 그 세이브의 게임 안 연월일이다 — 어느 칸이 몇 년 몇 월인지 알아야 고를 수 있다(요청).</remarks>
     private static string? PickSave(Window owner, List<GameSave.AutoSlot> slots, string caption, string whenEmpty)
     {
-        static string Row(string name, string city, string at, string found) =>
-            GameUi.Pad(name, 28) + GameUi.Pad(city, 14) + GameUi.Pad(at, 18) + Lang.T(found);
+        static string Row(string name, string city, string day, string at, string found) =>
+            GameUi.Pad(name, 28) + GameUi.Pad(city, 12) + GameUi.Pad(day, 18) + GameUi.Pad(at, 18) + Lang.T(found);
+        // 달 · 날이 한 자리면 앞을 한 칸 띄워 줄끼리 「월 · 일」 자리를 맞춘다(요청) — 「1506년  1월  9일」.
+        static string Day(GameSave.Data d) => d.Date == default ? "-" : Lang.T($"{d.Date.Year}년 {d.Date.Month,2}월 {d.Date.Day,2}일");
 
         var rows = slots.Select(s =>
         {
@@ -3404,7 +3407,7 @@ public sealed class WorldMapWindow : Window
                         : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } full ? full : "이름 없는 제독";
             if (d.Hardcore == true) name += "(H)";   // 하드코어 주인공 — 게임 오버가 되면 이 세이브가 지워진다
             string city = string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName;
-            return Row(name, city, $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
+            return Row(name, city, Day(d), $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
         }).ToList();
 
         // 모드 폰트 「게임 로드 창」 — 리디바탕 표로 칸을 나눠 그린다(고정폭 빈칸 맞추기가 아니라).
@@ -3419,18 +3422,18 @@ public sealed class WorldMapWindow : Window
                 if (d.Hardcore == true) who += "(H)";
                 return new[]
                 {
-                    who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName,
+                    who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName, Day(d),
                     $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0}개",
                 };
             }).ToList();
-            int pick = SaveListDialog.Pick(owner, caption, ["캐릭터", "도시", "저장한 시각", "발견물"], table);
+            int pick = SaveListDialog.Pick(owner, caption, ["캐릭터", "도시", "날짜", "저장한 시각", "발견물"], table);
             return pick >= 0 && pick < slots.Count ? slots[pick].File : null;
         }
 
         int at = ListPickDialog.Pick(owner, rows, caption, whenEmpty,
-                                     header: Row("캐릭터", "도시", "저장한 시각", "발견물"),
-                                     // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·시각·발견물까지 한 줄에 들게 넓힌다.
-                                     listWidth: 580,
+                                     header: Row("캐릭터", "도시", "날짜", "저장한 시각", "발견물"),
+                                     // 「바르톨로메우 · 벨라스케스」처럼 긴 이름에 도시·게임 날짜·시각·발견물까지 한 줄에 들게 넓힌다.
+                                     listWidth: 740,
                                      // 맨 위(가장 새것)를 골라 둔다 — 결정만 누르면 곧바로 불러온다.
                                      preselect: 0);
         return at >= 0 && at < slots.Count ? slots[at].File : null;
