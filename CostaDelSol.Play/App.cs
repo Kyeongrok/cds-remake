@@ -173,9 +173,32 @@ internal sealed class App : Application
             }
             window.Say($"새 버전({target.Version})을 다 받았습니다.");
 
+            // 지난번에 적용하려 한 판이 또 「새 버전」으로 잡히면 적용이 실패한 것이다 — 그대로 물으면 「예」 → 다시 시작 →
+            // 같은 물음이 끝없이 되풀이된다(제보: 「새 버전(1.1.28)을 받았습니다」 무한 반복). 그 판으로는 더 묻지 않고
+            // 설치 파일로 다시 깔라고 한 번만 알린다. 끌 때 적용은 계속 걸어 둔다 — 잠깐 막혔던 것이면 그때 된다.
+            string version = target.Version.ToString();
+            if (GameSettings.UpdateTriedVersion == version)
+            {
+                if (GameSettings.UpdateFailNotedVersion != version && window.IsLoaded)
+                {
+                    GameSettings.UpdateFailNotedVersion = version;
+                    NoticeDialog.Show(window,
+                        $"새 버전({version})을 받았지만 자동으로 적용하지 못했습니다.\n"
+                        + "게임을 모두 끈 뒤 최신 설치 파일(CdsHelper-win-Setup.exe)로 다시 설치해 주세요. 세이브와 설정은 그대로 남습니다.\n"
+                        + "그래도 안 되면 아래 파일을 보내 주세요.\n"
+                        + Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                       "CdsHelper", "velopack.log"),
+                        "업데이트");
+                }
+                window.Say("");
+                manager.WaitExitThenApplyUpdates(target, silent: true, restart: false);
+                return;
+            }
+
             bool now = window.IsLoaded && CdsHelper.Game.UI.Views.ConfirmDialog.Ask(window,
                 $"새 버전({target.Version})을 받았습니다.\n지금 다시 시작해 적용하겠습니까?"
                 + "\n(진행 중인 사항은 저장되지 않습니다. 아니오를 고르면 게임을 끌 때 적용됩니다.)");
+            GameSettings.UpdateTriedVersion = version;
             if (now) manager.ApplyUpdatesAndRestart(target);
             else manager.WaitExitThenApplyUpdates(target, silent: true, restart: false);
         }

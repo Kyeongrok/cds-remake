@@ -118,6 +118,12 @@ public sealed class GameSettingsData
     /// <summary>릴리즈 노트를 마지막으로 보여 준 판(「1.0.51」 꼴). 아직 없으면 빈 글이다.</summary>
     public string NotesSeenVersion { get; set; } = "";
 
+    /// <summary>자동 업데이트를 적용하려 한 판(「1.1.28」 꼴). 아직 없으면 빈 글이다.</summary>
+    public string UpdateTriedVersion { get; set; } = "";
+
+    /// <summary>자동 업데이트를 적용하지 못했다고 알린 판. 아직 없으면 빈 글이다.</summary>
+    public string UpdateFailNotedVersion { get; set; } = "";
+
     /// <summary>게임 통계를 보내도 되는지. 아직 안 물었으면 null 이다.</summary>
     public bool? SendStats { get; set; }
 
@@ -1806,6 +1812,23 @@ public static class GameSettings
     {
         get => Get(d => d.NotesSeenVersion);
         set => Set(d => d.NotesSeenVersion = value);
+    }
+
+    /// <summary>
+    /// 자동 업데이트를 적용하려 한 판 — 「예」로 다시 시작했거나 「아니오」로 끌 때 적용하게 걸어 둔 판이다. 다음에 켰을 때
+    /// 그 판이 여전히 「새 버전」으로 잡히면 적용이 실패한 것이다(CostaDelSol.Play/App.cs).
+    /// </summary>
+    public static string UpdateTriedVersion
+    {
+        get => Get(d => d.UpdateTriedVersion);
+        set => Set(d => d.UpdateTriedVersion = value);
+    }
+
+    /// <summary>자동 업데이트를 적용하지 못했다고 알린 판 — 같은 판으로는 한 번만 알린다.</summary>
+    public static string UpdateFailNotedVersion
+    {
+        get => Get(d => d.UpdateFailNotedVersion);
+        set => Set(d => d.UpdateFailNotedVersion = value);
     }
 
     /// <summary>
