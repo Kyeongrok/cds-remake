@@ -176,7 +176,7 @@ public static class TownWorks
                                             bool Contracted = false, bool HasHeir = false,
                                             bool Wed = false, bool PatronBribe = false,
                                             bool PatronBorrow = false, bool HasSon = false,
-                                            bool HasBooks = true, bool HarborBorrow = false);
+                                            bool HasBooks = true);
 
     /// <summary>
     /// 그 시설의 명령 창에 늘어놓을 줄들. 차례와 문구는 <see cref="Facility.Menu"/> 것이고,
@@ -248,11 +248,6 @@ public static class TownWorks
         int patronAt = state.PatronRow is { Length: > 0 } ? 1 : 0;
         if (state.PatronBribe) items.Insert(patronAt++, NameOf(TownWork.BribeInspector));
         if (state.PatronBorrow) items.Insert(patronAt, NameOf(TownWork.BorrowShips));
-
-        // 원본에 없는 줄 — 항구에서도 「배를 빌린다」를 받는다(건의). 걸어 들어와 계약해 배를 못 받았으면 원본은 후원자
-        // 건물에 다시 가야만 빌렸다. 나가기 줄 바로 앞에 둔다 — 대본이 보는 항구 칸(0 출항)이 밀리지 않게.
-        if (state.HarborBorrow && facility.Kind == FacilityKind.Harbor)
-            items.Insert(Math.Max(0, items.Count - 1), NameOf(TownWork.BorrowShips));
 
         return items;
     }

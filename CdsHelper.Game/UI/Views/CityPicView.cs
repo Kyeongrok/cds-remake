@@ -2378,14 +2378,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         var patron = PatronAt(code, kind);
 
-        // 항구에서 빌릴 후원자 — 지금 계약의 후원자가 이 도시에 앉아 있고 빌릴 조건(0x0044EA80)이 맞으면이다.
-        // 항구에는 후원자가 안 앉으므로 줄의 손(BorrowShips)에 넘길 사람을 따로 잡는다.
-        Patron? lender = facility.Kind == FacilityKind.Harbor && _player.Contract is { } deal
-            ? Patrons.LenderHere(deal.Sponsor) : null;
-        bool harborBorrow = lender != null && Patrons.CanBorrow(lender, hasHarbor: true);
-
-        // 항구에는 후원자 줄(설득 · 보고)이 안 서므로 PatronRow 는 patron 으로만 짓고, 줄의 손에는 빌려줄 사람을 넘긴다.
-        var menu = TownMenu.Build(facility, title, code, teachMask, patron ?? (harborBorrow ? lender : null),
+        var menu = TownMenu.Build(facility, title, code, teachMask, patron,
             new TownWorks.TownState(
                 Teaches: TownWorks.Teaches(teachMask),
                 Poor: _player.Gold <= Lodging.OddJobMaxGold,   // 0x0047FE70 의 jle — 100닢이면 뜬다
@@ -2400,8 +2393,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasHeir: Home.HasBornChild(_player),
                 HasSon: Home.EldestSon(_player) != null,
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
-                Wed: Home.CanLeaveHeir(_player),
-                HarborBorrow: harborBorrow),
+                Wed: Home.CanLeaveHeir(_player)),
             this);
         // 줄 끝을 넘으면 사진 속 사람들로 이어진다 — 줄과 사람이 한 고리다(0x004A2320).
         menu.Ring = () => _photoWindow;

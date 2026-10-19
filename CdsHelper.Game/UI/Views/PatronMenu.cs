@@ -605,7 +605,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   41073A  아니라면 "그런가. 그렇다면, 좋을 대로 하게."(0x55C6C0 세 벌) 로 물린다
     ///   4106ED  "…배 %d척을 항구에 준비시켜 놓겠네" (문화권 3벌: 0x55C3F8·0x55C438·0x55C480)
     ///   410798  0x0040FA00 이 배 레코드(0x005A4E18) 의 <b>+0x64 에 1</b> 을 박는다 = 대출 표시
-    ///   410763  줄 배가 없으면 "…배가 전부 나가고 없네" (0x55C718 세 벌)
+    ///   410763  줄 배가 없으면 "…배가 전부 나가고 없네" (0x55C718 세 벌) — 첫 인자가 0 일 때만. 계약 자리는 말없이 넘긴다
     /// </code>
     /// 화면에서 본 것은 셋째 벌이라 그것을 쓴다.
     /// <paramref name="funds"/> 는 <b>힌트 자금 밑값</b>이다 — 설득 자리(<c>0x004AF29C</c>)는 계약금이 아니라
@@ -659,14 +659,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 함대가 이 도시에 없으면(걸어 들어온 마을) 한 척도 못 빌린다(0x004105D7 → 0x0040E1C0(도시, 0)).
         string lender = _player.Contract?.Sponsor ?? "";
         int ships = !_player.FleetHere(_cityId) ? 0 : LendableCount(lender, funds);
-        if (ships <= 0)
-        {
-            // 0x0055C718 · 0x0055C760 · 0x0055C7A8
-            Say(Pick3("흐음, 빌려주고 싶은 마음은 굴뚝같지만 배가 전부 나가고 없네. 다시 오게.",
-                      "안됐지만, 준비할 수 있는 배가 없습니다. 자신의 힘으로 해결해 주십시오.",
-                      "흐~음, 때가 나쁘군. 지금은 가지고 있는 배가 없네. 다시 오게."));
-            return;
-        }
+        // 줄 배가 없으면 아무 말 없이 넘어간다 — 「배가 전부 나가고 없네」(0x0055C718 세 벌)는 그냥 찾아가
+        // 빌릴 때(첫 인자 0)만 하고, 계약 자리(첫 인자 1)는 0x00410763 이 곧장 0x00410789 로 건너뛴다.
+        if (ships <= 0) return;
 
         // <b>후원자가 먼저 내주겠다고 말한 뒤에</b> 빌릴지 묻는다 — 물음창이 먼저 뜨면
         // 무엇을 빌리는지 모른 채 고르게 된다. 게임 차례가 그렇다.
@@ -2366,16 +2361,6 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     ///   0044eac0  기한이 아직 남았다
     /// </code>
     /// </remarks>
-    /// <summary>
-    /// 그 이름의 후원자가 <b>이 도시에 지금 앉아 있으면</b> 그 사람 — 항구에서 「배를 빌린다」를 받을 때 쓴다(건의).
-    /// </summary>
-    public Patron? LenderHere(string sponsor)
-    {
-        if (_game.Sponsors is not { } table || table.FindByName(sponsor) is not { } s) return null;
-        if (s.City != _cityId || !table.IsSeated(s, _player.Date.Year)) return null;
-        return LoadPatrons().FirstOrDefault(p => table.FindByName(p.Name)?.Index == s.Index);
-    }
-
     public bool CanBorrow(Patron patron, bool hasHarbor) =>
         hasHarbor
         && _player.Contract is { } c && c.Sponsor == patron.Name && c.City == _cityName
