@@ -1115,7 +1115,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                     ? polite ? $"{it} 갖고 싶으십니까? 가져가십시오. 사례도 그대로 드리겠습니다." : $"{it} 갖고 싶은가? 가져가게. 사례도 그대로 주겠네."
                     : cut == 100
                         ? polite ? $"{it} 갖고 싶으십니까? 가져가신다면 사례는 드릴 수 없습니다." : $"{it} 갖고 싶은가? 가져간다면 사례는 줄 수 없네."
-                        : polite ? $"{it} 갖고 싶으십니까? 가져가신다면 사례에서 {cut}%를 빼겠습니다." : $"{it} 갖고 싶은가? 가져간다면 사례에서 {cut}%를 빼겠네.";
+                        // 깎는 몫(%)은 말하지 않는다 — 사례를 받을 때 줄어든 값을 보면 안다.
+                        : polite ? $"{it} 갖고 싶으십니까? 가져가신다면 보수에서 일부만 드려도 괜찮겠습니까?" : $"{it} 갖고 싶은가? 가져간다면 보수에서 일부만 지급해도 괜찮겠나?";
                 if (ConfirmDialog.Ask(_view, ask, face: FaceOf(patron)))
                 {
                     GameDialog.Show(_view, $"{it} 손에 넣었다!");
