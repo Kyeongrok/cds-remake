@@ -128,11 +128,15 @@ public sealed class CityHistory
             var part = _parts[i];
             if (Pick(part, year, month, when, player, cities, found, i) is not { } slot) continue;
             if (slot.Once) player.MarkHistoryDone(i * 100 + slot.Index);
+            // v1.0.100 ~ v1.1.28 세이브는 나라 조건 칸을 돌고도 적지 않았다. 그 도시의 나라가 이미 바뀌어 있으면
+            // (이 칸이 바꾼 뒤 주인공이 공략했다) 돈 것으로 치고 넘긴다 — 안 그러면 한 번 더 빼앗아 간다.
+            if (slot.Once && slot.GateCity >= 0 && player.HistoryNations.ContainsKey(slot.GateCity)) continue;
             Run(part, slot.Body, part.Length, player, cities, nations, when, statesOnly: false);
         }
     }
 
-    private readonly record struct Slot(int Index, int Body, bool Once);
+    /// <param name="GateCity">「~나라가 아니어야」(28 00) 조건이 보는 도시. 없으면 -1.</param>
+    private readonly record struct Slot(int Index, int Body, bool Once, int GateCity);
 
     /// <summary>
     /// 칸 고르기(<c>0x00407390</c>) — 칸을 차례로 보아 조건이 참인 첫 칸. 모르는 조건이 나오면 그 파트는 안 돈다.
@@ -151,31 +155,28 @@ public sealed class CityHistory
             if (cond >= part.Length || body >= part.Length) return null;
 
             bool once = false;
-            bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once);
+            int gateCity = -1;
+            bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once, ref gateCity);
             if (ok is null) return null;                         // 모르는 조건 — 파트째 건너뛴다(0x00407F09)
             if (partIndex < 0 && once) continue;                 // 사람 대본은 날짜(1C) 칸만 본다
             if (once && player.HistoryDone.Contains(partIndex * 100 + s)) continue;
-            if (ok == true) return new Slot(s, body, once);
+            if (ok == true) return new Slot(s, body, once, gateCity);
         }
         return null;
     }
 
     /// <summary>조건 한 줄을 따진다. 모르는 조건이면 null.</summary>
     private static bool? Test(byte[] p, int i, int year, int month, DateTime when, Player player,
-                              CityExeTable? cities, FoundCheck found, ref bool once)
+                              CityExeTable? cities, FoundCheck found, ref bool once, ref int gateCity)
     {
         bool all = true, orMode = false, orAcc = false;
-        // 나라 조건(27/28 00)이 붙은 칸은 <b>한 번 돈 것으로 적지 않는다</b>. 원본은 끝남 깃발이 아예 없어
-        // (칸 고르기 0x00407390, 매달 모든 파트를 도는 0x0044B383 어디에도 없다) 조건이 다시 참이 되면 또 돈다 —
-        // 파트 30(도시 106)·54(도시 171)는 주인공이 빼앗아도 다음 달에 포르투갈로 도로 넘긴다.
-        bool nationGate = false;
+        // 「그 해부터」(1B 17) 칸은 나라 조건(27/28 00)이 붙어도 <b>한 번 돌면 끝</b>이다 — 원본과 다르다(요청).
+        // 원본은 끝남 깃발이 아예 없어(칸 고르기 0x00407390, 매달 모든 파트를 도는 0x0044B383 어디에도 없다)
+        // 조건이 다시 참이 되면 또 돈다. 그래서 파트 30(잔지바르, 도시 106)·54(도시 171)는 주인공이 공략해도 다음 달에
+        // 포르투갈이 도로 가져갔다(제보: 항구에 들 때마다 포르투갈 영토로 돌아갔다).
         while (i < p.Length)
         {
-            if (p[i] == 0xFF)
-            {
-                if (nationGate) once = false;
-                return all;
-            }
+            if (p[i] == 0xFF) return all;
             if (i + 1 >= p.Length) return null;
 
             bool term;
@@ -213,7 +214,7 @@ public sealed class CityHistory
                     int now = player.HistoryNations.TryGetValue(city, out int changed)
                         ? changed : cities?.StartNationOf(city) ?? -1;
                     term = p[i] == 0x27 ? now == nation : now != nation;
-                    nationGate = true;
+                    if (p[i] == 0x28) gateCity = city;
                     i += 7;
                     break;
                 }
@@ -452,7 +453,8 @@ public sealed class CityHistory
                     int cond = U16(part, 4 + s * 4) + 4, body = U16(part, 4 + s * 4 + 2) + 4;
                     if (cond >= part.Length || body >= part.Length) break;
                     bool once = false;
-                    bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once);
+                    int gateCity = -1;
+                    bool? ok = Test(part, cond, year, month, when, player, cities, found, ref once, ref gateCity);
                     string state;
                     if (ok is null) state = "모름";
                     else if (!person && once && player.HistoryDone.Contains(i * 100 + s)) state = "돎";
