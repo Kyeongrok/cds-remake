@@ -1097,6 +1097,12 @@ public sealed class Player
     }
 
     /// <summary>
+    /// 날짜를 통째로 박는다(개발 창 「연도 · 월 · 일」). <see cref="SetYear"/> 처럼 흐른 것이 아니라 달 넘김 · 회복 ·
+    /// 짐 썩음은 셈하지 않는다 — 시세 · 역사는 다음에 물을 때 따라잡는다.
+    /// </summary>
+    public void SetDate(DateTime date) => Date = date;
+
+    /// <summary>
     /// 게임 안에서 날짜를 앞으로 옮긴다 — 달이 넘어갈 때마다 달 넘김을 먹인다.
     /// </summary>
     /// <remarks>

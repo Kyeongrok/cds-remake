@@ -110,6 +110,7 @@ public sealed class DevDialog : GameWindow
         rows.Children.Add(Row("소지금", _gold, GoldStep, v => _player.SetGold(v)));
         rows.Children.Add(Row("명성", _fame, FameStep, v => _player.Fame = v));
         rows.Children.Add(YearRow(options.YearChanged));
+        rows.Children.Add(ShipRow());
         rows.Children.Add(EffectRow());
         rows.Children.Add(SpouseRow());
 
@@ -1046,7 +1047,8 @@ public sealed class DevDialog : GameWindow
     private const int FirstYear = 1480, LastYear = 1600;
 
     /// <summary>
-    /// 해를 바꾸는 줄 — 새 주인공의 나이처럼 <b>계산기</b>로 넣는다(<see cref="NumberPadDialog"/>).
+    /// 날짜를 바꾸는 줄 — 새 주인공의 나이처럼 <b>계산기</b>로 넣는다(<see cref="NumberPadDialog"/>).
+    /// 해 · 달 · 날 단추가 따로다(요청 — 예전에는 해만 바꿨다). 그 달에 없는 날이면 그 달 끝날로 당긴다.
     /// </summary>
     private UIElement YearRow(Action<bool>? changed)
     {
@@ -1061,17 +1063,67 @@ public sealed class DevDialog : GameWindow
             VerticalAlignment = VerticalAlignment.Center,
         });
 
-        Border? pick = null;
-        string Label() => $"{_player.Date.Year}년 {_player.Date.Month}월 {_player.Date.Day}일…";
-        pick = GameUi.PushButton(Label(), () =>
+        var buttons = new List<Border>();
+        void Repaint()
         {
-            int was = _player.Date.Year;
-            if (NumberPadDialog.Ask(this, was, FirstYear, LastYear) is not { } year || year == was) return;
-            _player.SetYear(year);
-            changed?.Invoke(year < was);
-            if (pick!.Child is TextBlock text) text.Text = Label();
-        }, 180);
-        line.Children.Add(pick);
+            var d = _player.Date;
+            string[] labels = [$"{d.Year}년…", $"{d.Month}월…", $"{d.Day}일…"];
+            for (int i = 0; i < buttons.Count; i++)
+                if (buttons[i].Child is TextBlock text) text.Text = labels[i];
+        }
+        void Move(Func<DateTime, int> get, int min, Func<DateTime, int> max, Func<DateTime, int, DateTime> with)
+        {
+            var was = _player.Date;
+            if (NumberPadDialog.Ask(this, get(was), min, max(was)) is not { } value || value == get(was)) return;
+            var to = with(was, value);
+            _player.SetDate(to);
+            changed?.Invoke(to < was);
+            Repaint();
+        }
+        static DateTime Make(int y, int m, int d) => new(y, m, Math.Min(d, DateTime.DaysInMonth(y, m)));
+
+        buttons.Add(GameUi.PushButton("", () => Move(d => d.Year, FirstYear, _ => LastYear,
+                                                     (d, v) => Make(v, d.Month, d.Day)), 100));
+        buttons.Add(GameUi.PushButton("", () => Move(d => d.Month, 1, _ => 12,
+                                                     (d, v) => Make(d.Year, v, d.Day)), 80));
+        buttons.Add(GameUi.PushButton("", () => Move(d => d.Day, 1, d => DateTime.DaysInMonth(d.Year, d.Month),
+                                                     (d, v) => Make(d.Year, d.Month, v)), 80));
+        foreach (var b in buttons) { b.Margin = new Thickness(0, 0, 4, 0); line.Children.Add(b); }
+        Repaint();
+        return line;
+    }
+
+    /// <summary>
+    /// 배를 넣는 줄 — 선체 표에서 하나를 골라 값 없이 <b>함대에 곧장</b> 넣는다(요청). 함대가 찼으면(8척) 안 넣는다.
+    /// 하드코어 판에는 「dev:ship」으로 적힌다.
+    /// </summary>
+    private UIElement ShipRow()
+    {
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+        line.Children.Add(new TextBlock
+        {
+            Text = "배",
+            Width = 64,
+            Foreground = GameUi.Text,
+            FontWeight = FontWeights.Bold,
+            FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        var shown = new TextBlock { Foreground = GameUi.Text, FontSize = 14, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+        void Paint() => shown.Text = $"함대 {_player.Ships.Count} / {Player.MaxShips}척";
+        line.Children.Add(GameUi.PushButton("배 넣기…", () =>
+        {
+            if (_player.Ships.Count >= Player.MaxShips) { NoticeDialog.Show(this, "함대가 다 찼습니다."); return; }
+            var hulls = Hull.All.OrderBy(h => h.Price).ToList();
+            var names = hulls.Select(h => $"{h.Name}   내구 {h.Hp} · 속도 {h.Speed} · 용량 {h.Capacity} · 승원 {h.Crew} · {h.Price:N0}닢").ToList();
+            int at = ListPickDialog.Pick(this, names, "배 넣기", "선체 표를 못 읽었습니다", listWidth: 640, preselect: 0);
+            if (at < 0 || at >= hulls.Count) return;
+            if (!_player.Enlist(new Ship(hulls[at], name: _player.SuggestShipName()))) return;
+            Engine.HardcoreRules.Mark("dev:ship");
+            Paint();
+        }, 120));
+        line.Children.Add(shown);
+        Paint();
         return line;
     }
 
