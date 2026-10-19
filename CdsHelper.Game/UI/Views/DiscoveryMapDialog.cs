@@ -111,8 +111,14 @@ public sealed class DiscoveryMapDialog : GameWindow
         public double Y { get; set; } = y;
         public double Size { get; } = size;
 
-        /// <summary>이름표를 아래로 민 거리(지도 점) — 겹치는 이름표를 비킬 때 <see cref="Declutter"/> 가 정한다.</summary>
-        public double Nudge { get; set; }
+        /// <summary>
+        /// 이름표 왼쪽 위가 점 한가운데서 떨어진 거리 — <b>화면 점</b>이라 배율로 나눠 쓴다(표식처럼 화면에서 늘 같은 크기다).
+        /// 겹치는 이름표를 비킬 때 <see cref="Declutter"/> 가 정한다. 없으면 점 오른쪽이다.
+        /// </summary>
+        public Point? Offset { get; set; }
+
+        /// <summary>둘레가 붐벼 이 배율에서는 이름표를 안 단다 — 키우면 다시 센다.</summary>
+        public bool Crowded { get; set; }
     }
 
     /// <summary>이름표 비키기를 마지막으로 한 배율과 켜 모양 — 바뀔 때만 다시 센다(끌어 옮길 때는 그대로다).</summary>
@@ -120,7 +126,6 @@ public sealed class DiscoveryMapDialog : GameWindow
 
     private readonly Canvas _world;
     private readonly List<Pin> _pins = [];
-    private readonly List<FrameworkElement> _labels = [];
     private readonly ScaleTransform _scale = new(1, 1);
     private readonly TranslateTransform _shift = new(0, 0);
     private readonly TextBlock _note;
@@ -134,6 +139,9 @@ public sealed class DiscoveryMapDialog : GameWindow
 
     /// <summary>발견물 표식 켜 — 「발견물」 단추로 켜고 끈다. 도시 켜 위, 내 자리 점 아래다.</summary>
     private readonly Canvas _spotLayer = new();
+
+    /// <summary>아직 못 찾은 발견물(회색) 켜 — 「못 찾은 것」 단추로 켜고 끈다. 발견물 켜 <b>안</b>에 있어 「발견물」을 끄면 같이 꺼진다.</summary>
+    private readonly Canvas _yetLayer = new();
 
     /// <summary>위도·경도 격자 켜 — 25도마다 어두운 흰 선. 도수 글씨는 <see cref="_gridTags"/> 에 따로 띄운다.</summary>
     private readonly Canvas _gridLayer = new() { IsHitTestVisible = false };
@@ -284,10 +292,16 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
 
         _world.Children.Add(_spotLayer);
+        _spotLayer.Children.Add(_yetLayer);
         // 켜를 끄고 켜면 이름표 비키기를 다시 센다 — 꺼진 켜의 이름표가 자리를 차지하지 않게.
         _cityLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
         _spotLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
+        _yetLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
+        // 이름표 비키기는 창이 뜬 뒤에 센다 — 그 앞에 재면 글꼴을 물려받기 전이라 크기가 틀려, 처음 열 때
+        // 이름표가 엉뚱한 데 몰려 겹쳐 보였다(키우면 다시 세어 제자리로 왔다, 제보).
+        Loaded += (_, _) => { _declutteredFor = ""; Apply(); };
         _spotLayer.Visibility = GameSettings.DiscoveryMapSpots ? Visibility.Visible : Visibility.Collapsed;
+        _yetLayer.Visibility = GameSettings.DiscoveryMapYet ? Visibility.Visible : Visibility.Collapsed;
 
         int shown = 0, done = 0;
         // 0~Count-1 로만 돌면 DiscoveryEdits 로 더한 줄(274 이상)이 안 뜬다 — table.Discoveries 를 돈다.
@@ -307,8 +321,8 @@ public sealed class DiscoveryMapDialog : GameWindow
 
             bool found = player.HasFound(row.Id) || eventsDone?.Contains(row.Id) == true;
             var spotDot = Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
-                            MarkSize, found ? Found : Yet, row.Name, label: true, layer: _spotLayer);
-            _searchable.Add((row.Name, _pins[^1], _spotLayer));
+                            MarkSize, found ? Found : Yet, row.Name, label: true, layer: found ? _spotLayer : _yetLayer);
+            _searchable.Add((row.Name, _pins[^1], found ? _spotLayer : _yetLayer));
             if (walk != null && spotDot is System.Windows.Shapes.Ellipse dot) WalkTarget(dot, x, y);
             shown++;
             if (found) done++;
@@ -408,6 +422,9 @@ public sealed class DiscoveryMapDialog : GameWindow
                                     v => GameSettings.DiscoveryMapGrid = v, _gridLayer, out _));
         toggles.Children.Add(Toggle("발견물", () => GameSettings.DiscoveryMapSpots,
                                     v => GameSettings.DiscoveryMapSpots = v, _spotLayer, out _toggleSpots));
+        // 못 찾은 것(회색)은 따로 끈다 — 미니맵처럼 감춰 두고 싶은데 여기서만 늘 보여 스포일러가 됐다(제보).
+        toggles.Children.Add(Toggle("못 찾은 것", () => GameSettings.DiscoveryMapYet,
+                                    v => GameSettings.DiscoveryMapYet = v, _yetLayer, out _, 136));
         if (cities is { Count: > 0 })
             toggles.Children.Add(Toggle("도시", () => GameSettings.DiscoveryMapCities,
                                         v => GameSettings.DiscoveryMapCities = v, _cityLayer, out _toggleCities));
@@ -497,7 +514,8 @@ public sealed class DiscoveryMapDialog : GameWindow
         string want = Bare(_query.Text);
         _hits = want.Length == 0
             ? []
-            : [.. _searchable.Where(s => Bare(s.Name).Contains(want) || Bare(Lang.T(s.Name)).Contains(want))
+            : [.. _searchable.Where(s => s.Layer != _yetLayer || _yetLayer.Visibility == Visibility.Visible)
+                             .Where(s => Bare(s.Name).Contains(want) || Bare(Lang.T(s.Name)).Contains(want))
                              .OrderBy(s => Bare(s.Name).StartsWith(want) ? 0 : 1)];
         _hit = 0;
         ShowHit();
@@ -522,7 +540,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
 
         var (name, pin, layer) = _hits[_hit];
-        if (layer.Visibility != Visibility.Visible)
+        if (layer == _cityLayer ? _cityLayer.Visibility != Visibility.Visible : _spotLayer.Visibility != Visibility.Visible)
             (layer == _cityLayer ? _toggleCities : _toggleSpots)?.Invoke();
         _hitNote.Text = $"{_hit + 1}/{_hits.Count}  {Lang.T(name)}";
         _ring.Visibility = Visibility.Visible;
@@ -578,12 +596,11 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
 
         // 이름표는 어느 배율부터 단다 — 온 지도에 가까우면 이름끼리 겹친다.
-        var show = Z >= LabelFrom ? Visibility.Visible : Visibility.Collapsed;
-        foreach (var tag in _labels) tag.Visibility = show;
-
-        // 이름표가 선 뒤에 잰다 — 숨긴(Collapsed) 글은 크기가 0 으로 재진다.
-        string state = $"{_zoom}|{_cityLayer.Visibility}|{_spotLayer.Visibility}";
-        if (Z >= LabelFrom && state != _declutteredFor) { _declutteredFor = state; Declutter(); }
+        bool labels = Z >= LabelFrom;
+        string state = $"{_zoom}|{_cityLayer.Visibility}|{_spotLayer.Visibility}|{_yetLayer.Visibility}";
+        if (labels && state != _declutteredFor && IsLoaded) { _declutteredFor = state; Declutter(); }
+        foreach (var pin in _pins)
+            if (pin.Tag is { } tag) tag.Visibility = labels && !pin.Crowded ? Visibility.Visible : Visibility.Collapsed;
 
         // 조각마다 따로 번역한다 — 붙는 조각이 그때그때 달라 이은 글 통째로는 번역표에 없다.
         _note.Text = Lang.T($"발견물 {_found}곳 · 찾은 것 {_done}곳 · 배율 x{Z:0.#}")
@@ -602,7 +619,7 @@ public sealed class DiscoveryMapDialog : GameWindow
     /// 켜고 끄는 단추 하나 — 누르면 설정을 뒤집고 그 켜를 보이거나 감춘다.
     /// </summary>
     /// <param name="flip">글쇠가 같은 일을 하도록 내주는 손.</param>
-    private static Border Toggle(string name, Func<bool> get, Action<bool> set, Canvas layer, out Action flip)
+    private static Border Toggle(string name, Func<bool> get, Action<bool> set, Canvas layer, out Action flip, double width = 110)
     {
         Border? button = null;
         void Refresh()
@@ -613,7 +630,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
 
         flip = () => { set(!get()); Refresh(); };
-        button = GameUi.PushButton(name, flip, 110);
+        button = GameUi.PushButton(name, flip, width);
         Refresh();
         return button;
     }
@@ -810,7 +827,6 @@ public sealed class DiscoveryMapDialog : GameWindow
                 IsHitTestVisible = false,
             };
             layer.Children.Add(tag);
-            _labels.Add(tag);
         }
 
         var pin = new Pin(dot, tag, x, y, size);
@@ -839,33 +855,87 @@ public sealed class DiscoveryMapDialog : GameWindow
 
         if (pin.Tag is not { } tag) return;
         tag.FontSize = LabelSize * ZoomBase / Z;
-        Canvas.SetLeft(tag, pin.X + size / 2 + 1 / Z);
-        Canvas.SetTop(tag, pin.Y - tag.FontSize * 0.7 + pin.Nudge);
+        var off = pin.Offset ?? new Point(size * Z / 2 + 1, -tag.FontSize * Z * 0.7);
+        Canvas.SetLeft(tag, pin.X + off.X / Z);
+        Canvas.SetTop(tag, pin.Y + off.Y / Z);
     }
 
     /// <summary>
-    /// 겹치는 이름표를 아래로 한 줄씩 밀어 비킨다 — 같은 자리 · 바로 옆에 발견물이 몰리면(건물 속 발견물 · 도시와 그 곁의
-    /// 유적) 이름이 포개져 하나도 못 읽었다(건의). 위에서부터 차례로 놓고, 앞서 놓은 것과 부딪히면 줄 높이만큼 내린다.
-    /// 보이는 켜(발견물 · 도시)의 이름표만 센다. 배율이나 켜가 바뀔 때만 다시 센다.
+    /// 겹치는 이름표를 비킨다. 보이는 켜(발견물 · 못 찾은 것 · 도시)의 이름표만 센다. 배율이나 켜가 바뀔 때만 다시 센다.
     /// </summary>
+    /// <remarks>
+    /// <b>같은 자리</b>에 찍힌 것(도시와 그 건물 속 발견물 — 모스크바와 우스펜스키 대성당 따위)은 이름표 한 덩이로 묶어
+    /// 도시 이름 밑에 발견물 이름을 줄줄이 붙인다. 덩이마다 점 오른쪽 · 왼쪽 · 위 · 아래 차례로 앞서 놓은 이름표와
+    /// 다른 점을 안 덮는 자리를 찾고, 자리가 없으면 이 배율에서는 이름을 안 단다 — 키우면 자리가 나서 붙는다.
+    /// 예전에는 부딪히면 줄 높이만큼 열두 번까지 아래로 밀어, 도시와 발견물을 같이 켜면 이름이 엉뚱한 데 쌓였다(제보).
+    /// 발견물 덩이를 도시만 있는 덩이보다 먼저 놓는다 — 발견물 지도라 발견물 이름이 앞선다.
+    /// </remarks>
     private void Declutter()
     {
+        var live = _pins.Where(p => p.Tag != null && LayerOn(p.Dot)).ToList();
+        var dots = live.Select(p => (Pin: p, Box: new Rect(p.X - p.Dot.Width / 2, p.Y - p.Dot.Height / 2,
+                                                         p.Dot.Width, p.Dot.Height))).ToList();
+        var groups = live.GroupBy(p => (Math.Round(p.X, 1), Math.Round(p.Y, 1)))
+                         .Select(g => g.OrderBy(p => p.Tag!.Parent == _cityLayer ? 0 : 1).ToList())
+                         .OrderBy(g => g.All(p => p.Tag!.Parent == _cityLayer) ? 1 : 0)
+                         .ThenBy(g => g[0].Y).ThenBy(g => g[0].X);
+
         var placed = new List<Rect>();
-        var pins = _pins.Where(p => p.Tag is { Parent: Canvas { Visibility: Visibility.Visible } })
-                        .OrderBy(p => p.Y).ThenBy(p => p.X);
-        foreach (var pin in pins)
+        foreach (var group in groups)
         {
-            var tag = pin.Tag!;
-            pin.Nudge = 0;
-            Place(pin);
-            tag.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            double w = tag.DesiredSize.Width, h = tag.DesiredSize.Height;
-            var box = new Rect(Canvas.GetLeft(tag), Canvas.GetTop(tag), w, h * 0.85);
-            for (int tries = 0; tries < 12 && placed.Any(r => r.IntersectsWith(box)); tries++) box.Y += h * 0.9;
-            pin.Nudge = box.Y - Canvas.GetTop(tag);
-            Canvas.SetTop(tag, box.Y);
-            placed.Add(box);
+            foreach (var pin in group)
+            {
+                pin.Offset = null;
+                pin.Crowded = false;
+                Place(pin);
+                pin.Tag!.Visibility = Visibility.Visible;   // 숨긴(Collapsed) 글은 크기가 0 으로 재진다
+                pin.Tag.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            }
+
+            double line = group.Max(p => p.Tag!.DesiredSize.Height) * 0.9;
+            double w = group.Max(p => p.Tag!.DesiredSize.Width);
+            double h = line * (group.Count - 1) + group[^1].Tag!.DesiredSize.Height * 0.85;
+            double r = group.Max(p => p.Dot.Width) / 2, gap = 1 / Z, x = group[0].X, y = group[0].Y;
+            double lift = group[0].Tag!.FontSize * 0.7;
+            Point[] tries =
+            [
+                new(x + r + gap, y - lift),         // 오른쪽
+                new(x - r - gap - w, y - lift),     // 왼쪽
+                new(x - w / 2, y - r - gap - h),    // 위
+                new(x - w / 2, y + r + gap),        // 아래
+            ];
+
+            Rect? spot = null;
+            foreach (var at in tries)
+            {
+                var box = new Rect(at.X, at.Y, w, h);
+                if (placed.Any(b => b.IntersectsWith(box))) continue;
+                if (dots.Any(d => !group.Contains(d.Pin) && d.Box.IntersectsWith(box))) continue;
+                spot = box;
+                break;
+            }
+
+            if (spot is not { } found)
+            {
+                foreach (var pin in group) pin.Crowded = true;
+                continue;
+            }
+            placed.Add(found);
+            for (int i = 0; i < group.Count; i++)
+            {
+                var pin = group[i];
+                pin.Offset = new Point((found.X - pin.X) * Z, (found.Y + line * i - pin.Y) * Z);
+                Place(pin);
+            }
         }
+    }
+
+    /// <summary>표식이 앉은 켜가 (그 위 켜까지) 다 보이는지.</summary>
+    private bool LayerOn(FrameworkElement element)
+    {
+        for (var up = element.Parent as FrameworkElement; up != null && up != _world; up = up.Parent as FrameworkElement)
+            if (up.Visibility != Visibility.Visible) return false;
+        return true;
     }
 
     /// <summary>

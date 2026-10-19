@@ -106,6 +106,9 @@ public sealed class GameSettingsData
     /// <summary>발견물 지도에서 발견물 표식을 감출지. 기본은 보인다.</summary>
     public bool DiscoveryMapHideSpots { get; set; }
 
+    /// <summary>발견물 지도에서 아직 못 찾은 발견물(회색)을 감출지. 기본은 보인다.</summary>
+    public bool DiscoveryMapHideYet { get; set; }
+
     /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 켜 두고 시작한다.</summary>
     public bool SeaEffect { get; set; } = true;
 
@@ -1723,6 +1726,16 @@ public static class GameSettings
     {
         get => !Get(d => d.DiscoveryMapHideSpots);
         set => Set(d => d.DiscoveryMapHideSpots = !value);
+    }
+
+    /// <summary>
+    /// 발견물 지도에 아직 못 찾은 발견물(회색)을 찍을지 — 지도 아래 「못 찾은 것」 단추로 켜고 끈다. 기본은 켬.
+    /// 끄면 찾기 칸에도 안 걸린다(이름이 곧 스포일러다).
+    /// </summary>
+    public static bool DiscoveryMapYet
+    {
+        get => !Get(d => d.DiscoveryMapHideYet);
+        set => Set(d => d.DiscoveryMapHideYet = !value);
     }
 
     /// <summary>
