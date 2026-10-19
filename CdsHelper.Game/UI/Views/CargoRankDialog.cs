@@ -59,10 +59,15 @@ internal sealed class CargoRankDialog : InfoDialog
             .Take(Top).ToList())];
 
         var body = new StackPanel();
-        // 창고 — 함대정보 「짐용량」과 같은 값(보급품까지 든 통 수 / 포탑을 뺀 용량)과, 교역품이 차지한 칸 수.
+        // 창고 — 교역소 매매 창 왼쪽 아래와 같은 막대로 짐용량 · 짐중량을 그린다(요청). 짐용량은 함대정보와 같은 값
+        // (보급품까지 든 통 수 / 포탑을 뺀 용량)이고, 그 밑에 교역품 · 보급품 몫과 교역품이 차지한 칸 수를 적는다.
         int goods = hold.Sum(c => c.Count);
         int loaded = player.LoadedBarrels;
-        body.Children.Add(Label($"짐용량 {loaded} / {player.Capacity}  (교역품 {goods} · 보급품 {loaded - goods})   교역품 칸 {hold.Count} / {Player.CargoSlots}"));
+        body.Children.Add(TradePostDialog.BarLine("짐용량", loaded, 0, player.Capacity));
+        // 모드 「중량 없음」이면 무게로 안 막으니 막대도 안 세운다 — 매매 창과 같다.
+        if (!Player.IgnoresWeight())
+            body.Children.Add(TradePostDialog.BarLine("짐중량", player.LoadedWeight, 0, player.Tonnage));
+        body.Children.Add(Label($"교역품 {goods} · 보급품 {loaded - goods}   교역품 칸 {hold.Count} / {Player.CargoSlots}"));
         body.Children.Add(Gap(6));
 
         body.Children.Add(Row(null, ("교역품", GoodsWidth, false), ("개수", CountWidth, true), ("기한", ShelfWidth, true),

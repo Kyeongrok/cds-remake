@@ -718,7 +718,10 @@ public sealed class TradePostDialog : GameWindow
     }
 
     /// <summary>짐칸 막대 — 실은 것(짙은 빨강) · 담은 것(파랑) · 파느라 빌 자리(회색).</summary>
-    private static FrameworkElement BarLine(string name, int used, int add, int max)
+    /// <summary>
+    /// 「짐용량 ▓▓░░ 120 → 170 / 300」 막대 한 줄. T 매입 정보 창(<see cref="CargoRankDialog"/>)도 같은 막대를 쓴다.
+    /// </summary>
+    internal static FrameworkElement BarLine(string name, int used, int add, int max)
     {
         int after = used + add;
         double width = 220;
