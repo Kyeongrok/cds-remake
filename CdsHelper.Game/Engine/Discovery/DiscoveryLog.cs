@@ -288,6 +288,7 @@ public sealed class DiscoveryLog
         if (_table.Find(id) is not { } row) return false;
         if (!player.Discover(id)) return false;
         Local.Helpers.PlayStats.Found(id, row.Name);
+        UI.AddOns.AddOnHost.Fire("DISCOVERY_FOUND", id, row.Name);
         return true;
     }
 }

@@ -129,6 +129,10 @@ public sealed class DevDialog : GameWindow
         dh2.Children.Add(Toggle("대항해시대2 스타일 인물정보", GameSettings.Dh2PersonInfo, on => GameSettings.Dh2PersonInfo = on,
             "인물정보 판(제독 · 부하 · 술집에서 고용할 사람)을 줄무늬 테 · 베이지 바탕, 빨간 항목 이름 · 검은 값, 왕관 꼴 단추로 냅니다"));
 
+        // 「애드온」 탭 — Lua 애드온(AddOnHost). 아직 만드는 중이라 모드 창에는 안 내놓고 여기서만 켠다.
+        var addOns = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
+        addOns.Children.Add(AddOnControls());
+
         // 반란 빈도 — 바다 반란이 일어날 몫. 100% 가 원본 그대로다.
         {
             var value = new TextBlock { Width = 48, Foreground = GameUi.Text, VerticalAlignment = VerticalAlignment.Center };
@@ -366,6 +370,7 @@ public sealed class DevDialog : GameWindow
         if (options.Barmaids is { } maids)
             pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"))));
         pages.Add(("대항2", dh2));
+        pages.Add(("애드온", addOns));
         pages.Add(("색", colors));
         pages.Add(("편집기 색", toolColors));
         stack.Children.Add(Tabs([.. pages]));
@@ -1146,6 +1151,49 @@ public sealed class DevDialog : GameWindow
 
         line.Children.Add(box);
         return line;
+    }
+
+    /// <summary>애드온 켜고 끄기와 그 밑의 「애드온 폴더 열기」 · 「다시 읽기」 단추.</summary>
+    private UIElement AddOnControls()
+    {
+        var box = Toggle("애드온", GameSettings.AddOns, on => GameSettings.AddOns = on,
+            "Lua 애드온을 읽어 지도 위에 패널을 띄웁니다. 예시(SupplyHud · HintButton)와 설명서(README.md)가 애드온 폴더에 들어갑니다."
+            + " 켜면 제목 줄 도시락에 「애드온」 목록이 서고, 하드코어 랭킹 기록에 모드처럼 적힙니다");
+
+        var open = GameUi.PushButton("애드온 폴더 열기", OpenAddOnDirectory, 150);
+        var reload = GameUi.PushButton("다시 읽기", UI.AddOns.AddOnHost.Reload, 90);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(18, 2, 0, 2) };
+        buttons.Children.Add(open);
+        buttons.Children.Add(reload);
+        reload.Margin = new Thickness(6, 0, 0, 0);
+        void Sync(bool on) { buttons.IsEnabled = on; buttons.Opacity = on ? 1 : 0.4; }
+        Sync(box.IsChecked == true);
+        box.Checked += (_, _) => Sync(true);
+        box.Unchecked += (_, _) => Sync(false);
+        open.ToolTip = @"애드온 폴더(%APPDATA%\CdsHelper\AddOns)를 엽니다. 애드온마다 폴더 하나에 이름.toc 와 .lua 파일을 넣습니다.";
+        reload.ToolTip = "애드온 파일을 고친 뒤 게임을 끄지 않고 다시 읽습니다. 오류는 폴더의 addons.log 에 적힙니다.";
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(buttons);
+        return group;
+    }
+
+    /// <summary>애드온 폴더를 연다 — 없으면 만든다.</summary>
+    private void OpenAddOnDirectory()
+    {
+        try
+        {
+            System.IO.Directory.CreateDirectory(UI.AddOns.AddOnHost.Root);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(UI.AddOns.AddOnHost.Root)
+            {
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex)
+        {
+            NoticeDialog.Show(this, $"애드온 폴더를 열지 못했습니다 — {ex.Message}");
+        }
     }
 
     /// <summary>켜고 끄는 줄 하나.</summary>

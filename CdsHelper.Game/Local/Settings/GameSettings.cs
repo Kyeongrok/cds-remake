@@ -333,6 +333,9 @@ public sealed class GameSettingsData
     /// <summary>보고 때 무기 · 방어구 증거품을 가질지 후원자가 물을지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool PatronGivesArms { get; set; }
 
+    /// <summary>Lua 애드온을 읽을지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool AddOns { get; set; }
+
     /// <summary>인물정보 고르기를 초상화 · 기능 목록으로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool PersonInfoList { get; set; }
 
@@ -1335,6 +1338,16 @@ public static class GameSettings
     {
         get => Get(d => d.PatronGivesArms);
         set => Set(d => d.PatronGivesArms = value);
+    }
+
+    /// <summary>
+    /// 애드온 — <c>%APPDATA%\CdsHelper\AddOns</c> 의 Lua 애드온을 읽어 지도 위에 제 패널을 띄운다(<see cref="UI.AddOns.AddOnHost"/>).
+    /// 원본에 없다. 기본은 끔.
+    /// </summary>
+    public static bool AddOns
+    {
+        get => Get(d => d.AddOns);
+        set => Set(d => d.AddOns = value);
     }
 
     /// <summary>부하 해고 — 부하편성 결정 오른쪽의 「해고」 단추. 재계약을 안 맺은 것처럼 떠난다.</summary>

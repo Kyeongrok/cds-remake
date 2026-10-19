@@ -118,7 +118,10 @@ internal static class WorldRouteScene
 
         // 여기서 발견물 7번이 <b>발견</b>으로 적힌다(0x004AAC10) — 발표는 아직이다.
         if (player.Discover(Discovery))
+        {
             PlayStats.Found(Discovery, game.Discoveries?.Table.Find(Discovery)?.Name);
+            AddOns.AddOnHost.Fire("DISCOVERY_FOUND", Discovery, game.Discoveries?.Table.Find(Discovery)?.Name);
+        }
 
         Mate("제, 제독···이상한데요.");
         Lord("응? 무슨 일인가?");

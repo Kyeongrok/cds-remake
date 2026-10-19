@@ -260,6 +260,8 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.ShowPersonMoveMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「인물 이동」을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
 
+        // 애드온은 아직 만드는 중이라 개발 창 「애드온」 탭에서만 켠다(DevDialog).
+
         // Ctrl+클릭 배 놓기 — 지도를 찍은 자리로 배가 뛴다. 켠 채로 시작한다.
         rows.Children.Add(Toggle("Ctrl+클릭 배 놓기", GameSettings.PlaceShipByCtrlClick,
             on => GameSettings.PlaceShipByCtrlClick = on,

@@ -521,14 +521,17 @@ public sealed class WorldMapWindow : Window
             {
                 BarmaidBookRow => GameSettings.ShowBarmaidBookMenu,
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
+                AddOnsRow => GameSettings.AddOns,
                 _ => true,
             },
-            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
+            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동 · 애드온)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
             [
                 // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는 볼 길이 없다.
                 (BarmaidBookRow, () => BarmaidBookDialog.Show(this, _game)),
                 // 누가 어느 도시로 가고 있는지는 지도에 배만 떠 있어 알 길이 없다.
                 (PersonMoveRow, () => PersonMoveDialog.Show(this, _game)),
+                // 애드온을 하나씩 켜고 끈다 — 모드 「애드온」을 켜야 줄이 선다.
+                (AddOnsRow, () => AddOnListDialog.Show(this)),
             ],
             out _refreshApps,
             // 햄버거 오른쪽 「네비게이션(R)」 — 목적지 도시를 골라 자동항해(도시 안이면 출항부터)를 건다.
@@ -677,6 +680,24 @@ public sealed class WorldMapWindow : Window
         Closed += (_, _) => _weatherTimer.Stop();
         Loaded += OnLoaded;
 
+        // 애드온(모드) — 지도 위에 Lua 패널을 띄운다. 지도가 보일 때만 뜨는 것은 SyncOverlay 가 알린다.
+        UI.AddOns.AddOnHost.Attach(new UI.AddOns.AddOnStage(
+            _input, () => _game, () => _started, Say,
+            () => _host.ShipCell is null ? null : _host.ShipLatLon,
+            () => _host.IsOnLand,
+            name => name switch
+            {
+                "hints" => () => HintsByKey(this),
+                "items" => () => ItemsByKey(this),
+                "person" => () => PersonByKey(this),
+                "patrons" => () => PatronsByKey(this),
+                "cargo" => () => CargoByKey(this),
+                _ => null,
+            }));
+        Closed += (_, _) => UI.AddOns.AddOnHost.Detach();
+        LocationChanged += (_, _) => UI.AddOns.AddOnHost.Relayout();
+        SizeChanged += (_, _) => UI.AddOns.AddOnHost.Relayout();
+
         // 창을 옮기면 그 위에 얹힌 도시 그림·커맨드 창도 같이 옮긴다 — 원본에서는 지도 안에
         // 그려진 것이라 따로 남을 수가 없다.
         // 안 선 도시도, 아직 모르는 도시도 다가가도 안 물어보고 지도에서도 지운다.
@@ -789,6 +810,9 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>도시락의 인물 이동 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string PersonMoveRow = "인물 이동";
+
+    /// <summary>도시락의 애드온 줄 이름. 모드 「애드온」이 이 줄을 켜고 끈다.</summary>
+    internal const string AddOnsRow = "애드온";
 
     private void ShowDiscoveryMap()
     {
@@ -1343,6 +1367,7 @@ public sealed class WorldMapWindow : Window
         bool people = _peopleWanted && room;
         if (people) FillPeople();
         _people.IsOpen = people;
+        UI.AddOns.AddOnHost.SetVisible(room);
 
         SyncMiniMap();
         SyncSpeedNote();
@@ -3777,7 +3802,7 @@ public sealed class WorldMapWindow : Window
         _modOpen = true;
         try { ShowModDialogCore(); }
         finally { _modOpen = false; }
-        _refreshApps();   // 여급 수첩 · 인물 이동을 켜고 껐으면 도시락 단추가 나타나거나 숨는다
+        _refreshApps();   // 여급 수첩 · 인물 이동 · 애드온을 켜고 껐으면 도시락 단추가 나타나거나 숨는다
         _host.RefreshGrownCities();   // 「도시 투자 성장」을 켜고 껐으면 자란 도시 그림을 바꾼다
     }
 

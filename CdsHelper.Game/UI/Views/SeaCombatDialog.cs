@@ -1798,6 +1798,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         finally { if (was >= 0) bgm?.Play(was); }
 
         PlayStats.SeaBattle(dialog.Result.ToString());
+        AddOns.AddOnHost.Fire("SEA_BATTLE_ENDED", dialog.Result.ToString());
         return new Report(dialog.Result, battle.EnemyDowned, battle.EnemyCaptured);
     }
 

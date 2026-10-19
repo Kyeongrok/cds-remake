@@ -167,6 +167,7 @@ internal sealed class LandBattleScene : GameWindow
         {
             bool won = scene.Fight();
             PlayStats.LandBattle(won);
+            AddOns.AddOnHost.Fire("LAND_BATTLE_ENDED", won);
             return won;
         }
         finally { scene.Close(); game.Bgm.Play(was); }

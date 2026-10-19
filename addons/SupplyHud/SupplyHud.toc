@@ -1,0 +1,4 @@
+## Title: 보급 HUD
+## Notes: 날짜 · 금화 · 식량과 물이 며칠 갈지 · 함대 내구를 지도 위에 띄우는 예시 애드온
+## SavedVariables: SupplyHudDB
+SupplyHud.lua
