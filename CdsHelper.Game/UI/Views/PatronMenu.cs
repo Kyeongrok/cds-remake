@@ -1055,6 +1055,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     {
         string me = _player.CallName;
         int fame = 0, closer = 0;
+        // 모드 「후원자에게 무기 · 방어구 받기」로 가져간 것이 있으면 사례에서 깎는 몫(%) — 여럿이면 가장 큰 것 하나다.
+        int armsCut = 0;
 
         // 남이 앞질렀는지는 <b>보고를 시작하기 전에</b> 다 적어 둔다 — 원본도 사례 갈림길
         // (0x00412171)과 낱낱의 셈(0x004111F9)을 발표 깃발이 서기 전에 본다.
@@ -1100,6 +1102,26 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                   : "이것은 자네가 가지고 가게.");
                 GameDialog.Show(_view, $"{gift.Name}{GameUi.Josa(gift.Name, "을", "를")} 손에 넣었다!");
                 ItemGain.AddForced(_view, _game, [row.ItemId]);
+            }
+            // 모드 「후원자에게 무기 · 방어구 받기」 — 원본은 서적 말고는 후원자가 가져가, 엑스칼리버 같은 무기 · 방어구를
+            // 가지려면 계약 없이 찾아 항구에서 발표해야 했다. 가지겠다면 남은 사례를 친밀도만큼 깎는다(Palace.ArmsCut).
+            else if (row.GivesItem && Local.Settings.GameSettings.PatronGivesArms
+                     && _game.Items?.Find(row.ItemId) is { Category: ItemTable.WeaponCategory or ItemTable.ArmorCategory } arms)
+            {
+                int cut = Palace.ArmsCut(_player.ClosenessOf(patron.Name));
+                string it = $"{arms.Name}{GameUi.Josa(arms.Name, "을", "를")}";
+                bool polite = StyleOf(patron) == 1;
+                string ask = cut == 0
+                    ? polite ? $"{it} 갖고 싶으십니까? 가져가십시오. 사례도 그대로 드리겠습니다." : $"{it} 갖고 싶은가? 가져가게. 사례도 그대로 주겠네."
+                    : cut == 100
+                        ? polite ? $"{it} 갖고 싶으십니까? 가져가신다면 사례는 드릴 수 없습니다." : $"{it} 갖고 싶은가? 가져간다면 사례는 줄 수 없네."
+                        : polite ? $"{it} 갖고 싶으십니까? 가져가신다면 사례에서 {cut}%를 빼겠습니다." : $"{it} 갖고 싶은가? 가져간다면 사례에서 {cut}%를 빼겠네.";
+                if (ConfirmDialog.Ask(_view, ask, face: FaceOf(patron)))
+                {
+                    GameDialog.Show(_view, $"{it} 손에 넣었다!");
+                    ItemGain.AddForced(_view, _game, [row.ItemId]);
+                    armsCut = Math.Max(armsCut, cut);
+                }
             }
 
             // 알린 것마다 명성이 오른다. 항구 발표(보수/70)와 셈이 다르다 — 보고는
@@ -1147,6 +1169,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             ? scoopedHead ? inTime ? Palace.To100(contract.Amount / 4) : 0
                           : Palace.WorldRouteRewardFor(contract.Unpaid, inTime, _random)
             : RewardFor(contract, grade, inTime, scoopedHead);
+        if (armsCut > 0) paid = Palace.To100((int)((long)paid * (100 - armsCut) / 100));
         if (world && scoopedHead && Headline(rows) is { } beatenWorld)
             WorldScoopedRemark(patron, beatenWorld, inTime, paid);
         else if (world) WorldRemark(patron, inTime);

@@ -353,6 +353,15 @@ public static class Palace
     public static int To100(int coins) => coins > 100 ? coins / 100 * 100 : coins;
 
     /// <summary>
+    /// 모드 「후원자에게 무기 · 방어구 받기」 — 증거품을 가져가면 <b>남은 사례</b>에서 깎는 몫(%). 원본에 없는 것이다.
+    /// </summary>
+    /// <remarks>
+    /// 친밀도 20 마다 20% 씩 준다 — 0 이면 100%(사례 없음, 계약금은 이미 받았다), 1~20 은 80%, … 81 넘으면 안 깎는다.
+    /// </remarks>
+    public static int ArmsCut(int closeness) =>
+        100 - 20 * Math.Clamp((closeness + 19) / 20, 0, 5);
+
+    /// <summary>
     /// <b>남이 먼저 발표해 버렸을 때</b>의 사례(<c>0x004117F0</c>).
     /// </summary>
     /// <remarks>

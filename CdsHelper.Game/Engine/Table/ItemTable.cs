@@ -47,6 +47,9 @@ public sealed class ItemTable
         "교역품·미술품", "조각상", "서적·유물", "동물",
     ];
 
+    /// <summary>무기 · 방어구 분류(<see cref="CategoryNames"/> 의 차례).</summary>
+    public const int WeaponCategory = 3, ArmorCategory = 4;
+
     /// <summary>판이 다른 EXE 를 잘못 읽지 않으려고 대 보는 줄.</summary>
     private const int ProbeId = 42;
     private const string ProbeName = "바스타드소드";

@@ -330,6 +330,9 @@ public sealed class GameSettingsData
     /// <summary>보고를 마치고 나설 때 부하 재계약을 안 물을지(부하 해고를 켰을 때만). 켜 두고 시작한다.</summary>
     public bool SkipRecontract { get; set; } = true;
 
+    /// <summary>보고 때 무기 · 방어구 증거품을 가질지 후원자가 물을지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PatronGivesArms { get; set; }
+
     /// <summary>인물정보 고르기를 초상화 · 기능 목록으로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool PersonInfoList { get; set; }
 
@@ -1322,6 +1325,16 @@ public static class GameSettings
     {
         get => Get(d => d.SkipRecontract);
         set => Set(d => d.SkipRecontract = value);
+    }
+
+    /// <summary>
+    /// 후원자에게 무기 · 방어구 받기 — 보고한 발견물의 증거품이 무기 · 방어구면 후원자가 가지겠냐고 묻는다. 가지면 남은 사례를
+    /// 친밀도만큼 깎는다(<see cref="Engine.Town.Palace.ArmsCut"/>). 원본은 서적만 돌려준다. 기본은 끔.
+    /// </summary>
+    public static bool PatronGivesArms
+    {
+        get => Get(d => d.PatronGivesArms);
+        set => Set(d => d.PatronGivesArms = value);
     }
 
     /// <summary>부하 해고 — 부하편성 결정 오른쪽의 「해고」 단추. 재계약을 안 맺은 것처럼 떠난다.</summary>

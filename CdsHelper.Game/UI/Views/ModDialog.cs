@@ -546,6 +546,13 @@ public sealed class ModDialog : GameWindow
         dismiss.Unchecked += (_, _) => skip.IsEnabled = false;
         character.Children.Add(skip);
 
+        // 후원자에게 무기 · 방어구 받기 — 보고 때 증거품이 무기 · 방어구면 가지겠냐고 묻는다.
+        general.Children.Add(Toggle("후원자에게 무기·방어구 받기", GameSettings.PatronGivesArms, on => GameSettings.PatronGivesArms = on,
+            "원본에 없는 것입니다 — 원본은 후원자에게 보고하면 서적만 돌려주고 나머지 증거품은 후원자가 가져가, 엑스칼리버 같은 무기 · 방어구를"
+            + " 가지려면 계약 없이 찾아 항구에서 발표해야 했습니다. 켜면 보고할 때 증거품이 무기 · 방어구면 후원자가 가지겠냐고 묻습니다."
+            + " 가지면 남은 사례(계약금은 이미 받았습니다)를 그 후원자와의 친밀도만큼 깎습니다 — 친밀도 0 이면 사례가 없고,"
+            + " 20 마다 20% 씩 덜 깎아 81 이 넘으면 다 받습니다. 여럿을 가져도 한 번만 깎습니다."));
+
         // 수에즈 운하 — 지중해와 수에즈만 사이에 바닷길.
         general.Children.Add(Toggle("수에즈 운하", GameSettings.SuezCanal,
             on => { GameSettings.SuezCanal = on; WorldMapWindow.Current?.RefreshSuezCanal(); },
