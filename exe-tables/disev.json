@@ -10371,13 +10371,6 @@
               }
             },
             {
-              "OpCode": "00 0A",
-              "Call": "Say",
-              "Args": {
-                "Text": "카바 신전을 발견했다！"
-              }
-            },
-            {
               "OpCode": "01 0B",
               "Call": "Discover",
               "Args": {
@@ -10386,17 +10379,53 @@
               "Note": "발견물 등록/발견 처리: ID 63"
             },
             {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 75
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "카바 신전을 발견했다！"
+              }
+            },
+            {
               "OpCode": "00 0A",
               "Call": "Say",
               "Args": {
                 "Speaker": "부관",
-                "Text": "이슬람 교도들이 날마다 이쪽을 향해 기도한다는 바로 그 카바로군요． 순례자가 쿠란 한 권을 건네주었습니다． 들키기 전에 어서 물러납시다．"
+                "Text": "이슬람 교도들이 날마다 이쪽을 향해 기도한다는 바로 그 카바로군요． 저기 순례자가 쿠란 한 권을 건네주는군요．"
               }
             },
             {
-              "OpCode": "4E",
-              "Call": "EndUnhandled",
-              "Note": "이벤트 결과 코드 2"
+              "OpCode": "00 05",
+              "Call": "GiveItem",
+              "Args": {
+                "Item": 286
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "쿠란을 손에 넣었다！"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "들키지 않게 조용히 둘러보고 나갑시다．"
+              }
+            },
+            {
+              "OpCode": "4C",
+              "Call": "EndDone",
+              "Note": "이벤트 결과 코드 0"
             },
             {
               "OpCode": "FF",
