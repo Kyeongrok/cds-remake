@@ -24,7 +24,15 @@ namespace CdsHelper.Game.UI.Views;
 public sealed class CustomBgmDialog : GameWindow
 {
     /// <summary>줄 목록(굴림대 빼고)의 폭. 이름 칸이 남는 폭을 다 먹는다.</summary>
-    private const double ListWidth = 600;
+    private const double ListWidth = 780;
+
+    /// <summary>미리 듣기 — 게임 곡과 따로 돈다. 듣는 동안 게임 곡은 멈춘다.</summary>
+    private readonly MediaPlayer _preview = new();
+
+    /// <summary>지금 미리 듣는 단추와 그 단추의 원래 글. 안 듣고 있으면 null.</summary>
+    private (Border Button, string Label)? _playing;
+
+    private bool _gamePaused;
 
     /// <summary>이 높이를 넘으면 게임풍 굴림대로 굴린다.</summary>
     private const double ListHeight = 420;
@@ -58,6 +66,8 @@ public sealed class CustomBgmDialog : GameWindow
         rows.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // 지금 파일
         rows.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // 선택…
         rows.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // 기본으로
+        rows.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // ▶ 원곡
+        rows.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });   // ▶ 넣은 곡
         // 곡 번호 오름차순으로 — 목록 자체는 화면 갈래(타이틀·해상·도시…)로 묶여 있어
         // 그대로 그리면 번호가 뒤섞여 보인다.
         foreach (var (track, label) in BgmPlayer.KnownTracks.OrderBy(t => t.Track))
@@ -95,6 +105,56 @@ public sealed class CustomBgmDialog : GameWindow
         };
 
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+
+        // 미리 듣던 곡은 끝나면 멈춘다(되감지 않는다). 창을 닫으면 멈추고 게임 곡을 잇는다.
+        _preview.MediaEnded += (_, _) => StopPreview();
+        Closed += (_, _) =>
+        {
+            StopPreview();
+            _preview.Close();
+        };
+    }
+
+    /// <summary>
+    /// 그 파일을 미리 듣는다 — 같은 단추를 다시 누르면 멈춘다. 게임 곡은 멈춰 두었다가 다 듣거나 창을 닫으면 잇는다.
+    /// </summary>
+    private void Preview(Border button, string label, string? path)
+    {
+        bool same = _playing is { } now && now.Button == button;
+        StopPreview();
+        if (same) return;
+        if (path == null || !File.Exists(path))
+        {
+            NoticeDialog.Show(this, path == null ? "들을 파일이 없습니다." : $"파일이 없습니다 — {path}");
+            return;
+        }
+        try
+        {
+            _preview.Open(new Uri(path));
+            _preview.Volume = BgmPlayer.Current?.Volume ?? 1;
+            _preview.Play();
+        }
+        catch (Exception ex)
+        {
+            NoticeDialog.Show(this, $"틀지 못했습니다 — {ex.Message}");
+            return;
+        }
+        if (!_gamePaused) { BgmPlayer.Current?.Pause(); _gamePaused = true; }
+        _playing = (button, label);
+        SetLabel(button, "■ 멈춤");
+    }
+
+    private void StopPreview()
+    {
+        if (_playing is { } now) SetLabel(now.Button, now.Label);
+        _playing = null;
+        _preview.Stop();
+        if (_gamePaused) { BgmPlayer.Current?.Resume(); _gamePaused = false; }
+    }
+
+    private static void SetLabel(Border button, string text)
+    {
+        if (button.Child is TextBlock block) block.Text = text;
     }
 
     /// <summary>줄 하나 — 곡 번호·이름, 지금 갈아 끼운 파일, 「선택…」·「기본으로」.</summary>
@@ -115,7 +175,12 @@ public sealed class CustomBgmDialog : GameWindow
             Margin = new Thickness(8, 0, 0, 0),
         };
 
-        void Refresh() => current.Text = FileLabel(GameSettings.CustomBgmTrackPath(track));
+        Border? mine = null;
+        void Refresh()
+        {
+            current.Text = FileLabel(GameSettings.CustomBgmTrackPath(track));
+            if (mine != null) mine.Opacity = GameSettings.CustomBgmTrackPath(track) == null ? 0.4 : 1;
+        }
 
         var pick = GameUi.PushButton("선택…", () =>
         {
@@ -132,10 +197,19 @@ public sealed class CustomBgmDialog : GameWindow
 
         var clear = GameUi.PushButton("기본으로", () =>
         {
+            if (_playing is { } now && now.Button == mine) StopPreview();
             GameSettings.SetCustomBgmTrack(track, null);
             Refresh();
         }, 80);
         clear.Margin = new Thickness(6, 0, 0, 0);
+
+        // 미리 듣기 — 원곡(게임 폴더 · 받아 둔 곡)과 넣은 곡을 견주어 들을 수 있게(요청).
+        Border original = null!;
+        original = GameUi.PushButton("▶ 원곡", () => Preview(original, "▶ 원곡", BgmPlayer.OriginalPath(track)), 80);
+        original.Margin = new Thickness(10, 0, 0, 0);
+        mine = GameUi.PushButton("▶ 넣은 곡", () => Preview(mine!, "▶ 넣은 곡", GameSettings.CustomBgmTrackPath(track)), 92);
+        mine.Margin = new Thickness(6, 0, 0, 0);
+        Refresh();
 
         var number = new TextBlock
         {
@@ -161,6 +235,8 @@ public sealed class CustomBgmDialog : GameWindow
         Put(rows, row, 2, current);
         Put(rows, row, 3, pick);
         Put(rows, row, 4, clear);
+        Put(rows, row, 5, original);
+        Put(rows, row, 6, mine);
     }
 
     private static void Put(Grid grid, int row, int column, FrameworkElement cell)

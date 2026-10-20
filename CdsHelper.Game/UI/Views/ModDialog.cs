@@ -817,7 +817,7 @@ public sealed class ModDialog : GameWindow
         return bar;
     }
 
-    /// <summary>커스텀 BGM 켜고 끄기와 그 밑의 「곡 등록」 단추. 끄면 단추도 흐려진다.</summary>
+    /// <summary>커스텀 BGM 켜고 끄기와 그 밑의 「곡 등록」 단추. 단추는 꺼 둔 채로도 눌린다.</summary>
     private UIElement CustomBgmControls()
     {
         var box = Toggle("커스텀 BGM", GameSettings.CustomBgmEnabled,
@@ -828,11 +828,8 @@ public sealed class ModDialog : GameWindow
         var open = GameUi.PushButton("곡 등록…", () => CustomBgmDialog.Show(this), 120);
         open.HorizontalAlignment = HorizontalAlignment.Left;
         open.Margin = new Thickness(18, 2, 0, 2);
-        open.IsEnabled = box.IsChecked == true;
-        open.Opacity = open.IsEnabled ? 1 : 0.4;
-        box.Checked += (_, _) => { open.IsEnabled = true; open.Opacity = 1; };
-        box.Unchecked += (_, _) => { open.IsEnabled = false; open.Opacity = 0.4; };
-        Watch(open, "곡 등록", "곡 번호마다 틀 파일을 고릅니다. 커스텀 BGM 을 켜야 누를 수 있습니다.");
+        // 꺼 둔 채로도 연다 — 원곡과 넣은 곡을 미리 들어 보고 켤지 정할 수 있게(요청).
+        Watch(open, "곡 등록", "곡 번호마다 틀 파일을 고르고, 원곡과 넣은 곡을 들어 봅니다. 커스텀 BGM 을 꺼 둔 채로도 열 수 있습니다.");
 
         var group = new StackPanel();
         group.Children.Add(box);

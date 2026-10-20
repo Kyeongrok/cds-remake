@@ -229,8 +229,26 @@ public sealed class BgmPlayer : IDisposable
     private string _dir = "";
     private int _track = -1;
 
+    /// <summary>마지막으로 만든 곡 틀개 — BGM 등록 창이 미리 듣는 동안 게임 곡을 멈추고 잇는 데 쓴다.</summary>
+    public static BgmPlayer? Current { get; private set; }
+
+    /// <summary>마지막으로 알려 준 게임 폴더 — 원곡 자리를 찾는 데 쓴다(<see cref="OriginalPath"/>).</summary>
+    private static string _lastDir = "";
+
+    /// <summary>
+    /// 그 번호의 <b>원곡</b> 파일 — 게임 폴더 <c>bgm\TrackNN.mp3</c>, 없으면 받아 둔 것. 둘 다 없으면 null.
+    /// 갈아 끼운 곡은 안 본다.
+    /// </summary>
+    public static string? OriginalPath(int track)
+    {
+        string path = Path.Combine(_lastDir, "bgm", $"Track{track:D2}.mp3");
+        if (_lastDir.Length > 0 && File.Exists(path)) return path;
+        return BgmAssetDownloader.Existing(track);
+    }
+
     public BgmPlayer()
     {
+        Current = this;
         // 지난번에 맞춰 둔 소리 크기로 시작한다.
         Volume = Settings.GameSettings.BgmVolume / (double)Settings.GameSettings.MaxVolume;
 
@@ -264,7 +282,7 @@ public sealed class BgmPlayer : IDisposable
     public int Track => _track;
 
     /// <summary>게임 폴더를 알려 준다. 그 밑의 <c>bgm</c> 을 본다.</summary>
-    public void SetGameDirectory(string gameDir) => _dir = gameDir;
+    public void SetGameDirectory(string gameDir) => _dir = _lastDir = gameDir;
 
     /// <summary>게임 폴더에 BGM이 준비되어 있는지 확인한다.</summary>
     public static bool IsAvailable(string gameDir) =>
