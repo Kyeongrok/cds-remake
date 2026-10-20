@@ -8,25 +8,24 @@ using CdsHelper.Game.Local.Settings;
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
-/// 게임 통계 — 무엇을 발견하고 어디서 어디로 며칠 걸려 가고 얼마나 싸우는지 세어 받는 곳으로 보낸다.
+/// 게임 통계 — 무엇을 발견하고 누구를 고용하고 얼마나 싸우는지 세고, 주인공 이름 · 능력치를 받는 곳으로 보낸다.
 /// </summary>
 /// <remarks>
 /// 받는 곳은 <c>tools/stats-worker</c>(Cloudflare Worker + D1)다. 모드 옵션은 켤 때 한 번 찍는다.
 /// <code>
 ///   discovery     발견물 번호                  battle  sea:Won · sea:Escaped · land:win · land:lose …
-///   voyage        「떠난 도시>닿은 도시」 횟수    error   「오류 갈래@클래스.메서드」
-///   voyage_days   같은 열쇠, 걸린 날수의 합      hire    고용한 부하의 인물 번호
-///   voyage_turns  같은 열쇠, 뱃머리를 돌린 횟수의 합  dismiss 해고한 부하의 인물 번호
+///   hire          고용한 부하의 인물 번호        error   「오류 갈래@클래스.메서드」
+///   dismiss       해고한 부하의 인물 번호
 ///   nav           네비게이션 — pick:quick · end:arrived …
 ///   event         바다 · 육지에서 하루를 넘길 때의 일 — sea:Storm · land:Beast …
 /// </code>
-/// 받는 쪽은 열쇠마다 수를 <b>더하기만</b> 한다 — 그래서 항해는 횟수 · 날수 · 선회를 갈래 셋으로 갈라 보내고,
-/// 평균은 보는 쪽이 나눠서 낸다. 차림표 줄(menu)은 예전에 셌는데 이제 안 센다.
+/// 받는 쪽은 열쇠마다 수를 <b>더하기만</b> 한다. 차림표 줄(menu)과 항해(voyage — 「떠난 도시>닿은 도시」 횟수 · 날수 · 선회)는
+/// 예전에 셌는데 이제 안 센다. 주인공(<see cref="Hero"/>)은 셈이 아니라 판마다 마지막 값 한 벌이다 — 바뀌었을 때만 덩이에 싣는다.
 /// 셈은 메모리에 모았다가 <b>도시를 나설 때</b>(출항 · 성문)와 끌 때 한 덩이로 줄(파일)에 세워 뒤에서 보낸다
 /// (나서지 않고 오래 있으면 <see cref="FlushEvery"/> 마다) —
 /// 인터넷이 없으면 다음에 켤 때 다시 보낸다. <b>게임 exe 가 <see cref="Start"/> 를 불러야만</b> 세기 시작하고,
 /// 모은다고 한 번 알린 뒤(<see cref="GameSettings.SendStats"/>)에만, 태그로 낸 릴리즈 판에서만 보낸다.
-/// 누가 보냈는지는 설치마다 만든 무작위 번호뿐이다 — 이름 · 세이브 · IP 는 안 적는다.
+/// 누가 보냈는지는 설치마다 만든 무작위 번호뿐이다 — 세이브 · IP 는 안 적는다. 이름은 주인공 이름만 싣는다.
 /// </remarks>
 public static class PlayStats
 {
@@ -59,8 +58,20 @@ public static class PlayStats
     private static string HardcoreFolder => Path.Combine(Folder, "hardcore-queue");
 
     private static readonly object Gate = new();
-    /// <summary>모은 셈 — 항해(voyage)만 날수 · 선회의 합(Days · Turns)을 함께 든다.</summary>
-    private static readonly Dictionary<(string Kind, string Key), (string Name, int Count, int Days, int Turns)> Counts = [];
+    /// <summary>모은 셈.</summary>
+    private static readonly Dictionary<(string Kind, string Key), (string Name, int Count)> Counts = [];
+
+    /// <summary>주인공 한 벌 — 판 표지 · 이름 · 나라 · 게임 날짜 · 보이는 능력치 여섯.</summary>
+    private sealed record HeroInfo(string Game, string Name, string Nation, string Date, int[] Abilities)
+    {
+        /// <summary>날짜만 바뀐 것은 새로 안 보낸다 — 이름 · 나라 · 능력치가 그대로면 같은 것으로 친다.</summary>
+        public bool SameAs(HeroInfo? other) =>
+            other != null && other.Game == Game && other.Name == Name && other.Nation == Nation
+            && other.Abilities.SequenceEqual(Abilities);
+    }
+
+    /// <summary>마지막으로 본 주인공과 마지막으로 줄에 세운 주인공.</summary>
+    private static HeroInfo? _hero, _heroSent;
 
     private static string _url = "";
     private static string _version = "";
@@ -117,14 +128,18 @@ public static class PlayStats
     public static void Dismissed(int person, string? name) => Count("dismiss", person.ToString(), name);
 
     /// <summary>
-    /// 배로 한 도시를 떠나 다른 도시에 닿았다 — 어디서 어디로, 며칠 걸려, 뱃머리를 몇 번 돌려 갔는지.
+    /// 지금 주인공을 적어 둔다 — 도시를 나설 때와 끌 때 부른다. 다음 덩이에 실리고, 받는 곳은 판(<paramref name="gameId"/>)마다
+    /// 한 줄에 처음 값과 마지막 값을 남긴다.
     /// </summary>
-    public static void Voyage(int from, string fromName, int to, string toName, int days, int turns)
+    /// <param name="abilities">보이는 능력치 여섯(체력 · 지력 · 무력 · 매력 · 운 · 신앙심) — 작위 패시브는 안 얹은 값.</param>
+    public static void Hero(string gameId, string name, string nation, DateTime date, IReadOnlyList<int> abilities)
     {
-        // 횟수 · 날수 · 선회를 한 셈에 싣는다 — 받는 곳이 한 줄에 더한다. 예전에는 voyage · voyage_days · voyage_turns
-        // 세 갈래라 항해 하나에 D1 쓰기가 세 번이었다.
-        // 수동 · 자동(trip:*)은 이제 안 센다 — 둘을 더하면 항해 횟수와 같고, 자동은 pick:* 이 센다.
-        Count("voyage", $"{from}>{to}", $"{fromName} > {toName}", 1, Math.Max(0, days), Math.Max(0, turns));
+        if (!Started || string.IsNullOrWhiteSpace(name)) return;
+        string who = name.Trim();
+        if (who.Length > MaxKey) who = who[..MaxKey];
+        var hero = new HeroInfo(gameId, who, nation,
+                                date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), [.. abilities]);
+        lock (Gate) _hero = hero;
     }
 
     /// <summary>
@@ -226,7 +241,7 @@ public static class PlayStats
     /// <summary>하드코어 랭킹 페이지 주소. 받는 곳이 없으면 빈 글.</summary>
     public static string RankingUrl => _url.Length > 0 ? _url + "/ranking" : "";
 
-    private static void Count(string kind, string key, string? name, int by = 1, int days = 0, int turns = 0)
+    private static void Count(string kind, string key, string? name, int by = 1)
     {
         if (!Started) return;
         if (key.Length > MaxKey) key = key[..MaxKey];
@@ -236,7 +251,7 @@ public static class PlayStats
         lock (Gate)
         {
             Counts.TryGetValue((kind, key), out var was);
-            Counts[(kind, key)] = (name ?? was.Name ?? "", was.Count + by, was.Days + days, was.Turns + turns);
+            Counts[(kind, key)] = (name ?? was.Name ?? "", was.Count + by);
             due = DateTime.UtcNow - _flushedAt >= FlushEvery;
         }
         if (due) Flush();
@@ -261,14 +276,16 @@ public static class PlayStats
         if (!Started) return;
 
         List<object> rows;
+        HeroInfo? hero;
         lock (Gate)
         {
             _flushedAt = DateTime.UtcNow;
-            if (Counts.Count == 0) return;
-            rows = [.. Counts.Select(p => p.Key.Kind == "voyage"
-                ? (object)new { kind = p.Key.Kind, key = p.Key.Key, name = p.Value.Name, n = p.Value.Count, days = p.Value.Days, turns = p.Value.Turns }
-                : new { kind = p.Key.Kind, key = p.Key.Key, name = p.Value.Name, n = p.Value.Count })];
+            // 주인공은 이름 · 나라 · 능력치가 바뀌었을 때만 싣는다 — 날짜는 실을 때 따라간다.
+            hero = _hero != null && !_hero.SameAs(_heroSent) ? _hero : null;
+            if (Counts.Count == 0 && hero == null) return;
+            rows = [.. Counts.Select(p => new { kind = p.Key.Kind, key = p.Key.Key, name = p.Value.Name, n = p.Value.Count })];
             Counts.Clear();
+            if (hero != null) _heroSent = hero;
         }
         if (!CanUpload) return;   // 보내지 않을 판 · 답은 셈을 버린다 — 쌓아 두지 않는다
 
@@ -282,6 +299,7 @@ public static class PlayStats
                 install = InstallId(),
                 version = _version,
                 counts = rows,
+                hero = hero is null ? null : new { game = hero.Game, name = hero.Name, nation = hero.Nation, date = hero.Date, abilities = hero.Abilities },
                 // 모드 옵션은 켠 뒤 첫 덩이에만 싣는다 — 받는 쪽이 설치마다 마지막 값으로 덮는다.
                 mods = _modsSent ? null : Mods(),
             };

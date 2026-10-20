@@ -888,30 +888,14 @@ public sealed class WorldMapWindow : Window
         return message;
     }
 
-    // ── 게임 통계: 항해 한 번 ────────────────────────────────────────────
-
-    /// <summary>배로 떠난 도시. 떠난 적이 없거나(판을 불러온 직후) 이미 닿았으면 −1.</summary>
-    private int _tripFrom = -1;
-
-    /// <summary>떠날 때의 지도 틱 수.</summary>
-    private long _tripTicks;
-
-    /// <summary>배로 도시를 떠났다 — 닿을 때까지 날수와 선회를 센다.</summary>
-    private void TripStarted(int city)
+    /// <summary>
+    /// 지금 주인공의 이름 · 나라 · 능력치를 게임 통계에 적어 둔다(<see cref="PlayStats.Hero"/>) — 도시를 나설 때와 끌 때.
+    /// </summary>
+    public void NoteHero()
     {
-        _tripFrom = city;
-        _tripTicks = _host.Ticks;
-        _host.TurnCount = 0;
-    }
-
-    /// <summary>배로 도시에 닿았다 — 어디서 어디로 며칠 걸려 몇 번 돌려 왔는지 적는다(<see cref="PlayStats.Voyage"/>).</summary>
-    private void TripEnded(int city)
-    {
-        int from = _tripFrom;
-        _tripFrom = -1;
-        if (from < 0) return;
-        int days = (int)Math.Ceiling((_host.Ticks - _tripTicks) / (double)TerrainTable.TicksPerDay);
-        PlayStats.Voyage(from, _game.CityName(from), city, _game.CityName(city), days, _host.TurnCount);
+        var player = _game.Player;
+        PlayStats.Hero(player.GameId, player.Name, _game.Nations?.Find(player.Nation)?.Name ?? "", player.Date,
+                       [.. player.Abilities.Select(Ability.Display)]);
     }
 
     /// <summary>자동항해를 걸었다 — 무엇을 골랐는지 적는다(<see cref="PlayStats.Nav"/>).</summary>
@@ -3548,7 +3532,6 @@ public sealed class WorldMapWindow : Window
         // 하루 안의 눈금도 판마다 제 것으로 — 새 판은 0, 불러온 판은 적어 둔 값(머리 +0x14, 0x0044AE60).
         // 예전에는 적지도 되돌리지도 않아 앞 판 눈금이 새어 첫 날이 최대 하루 어긋났다.
         _ticks = saved?.DayTicks is { } dayTicks ? Math.Clamp(dayTicks, 0, TerrainTable.TicksPerDay - 1) : 0;
-        _tripFrom = -1;   // 불러온 판은 어디서 떠났는지 모른다 — 다음 출항부터 센다
         // 부하의 신상(얼굴 · 능력)을 채워 둔다 — 대본으로 들어온 통역처럼 예전 판에서 신상 없이 앉은 사람이 있다.
         // 얼굴을 그리는 자리들은 이미 채워진 신상만 본다.
         foreach (string mate in _game.Player.Mates)
@@ -7862,7 +7845,6 @@ public sealed class WorldMapWindow : Window
 
         // 바다로 들어서면 함대가 이 도시에 닻을 내린다(0x0048B54E). 말로 걸어 들어오면 안 바뀐다.
         bool bySea = !_host.IsOnLand;
-        if (bySea && !enterHome && !resumed) TripEnded(city);
         if (enterHome || bySea) _game.Player.MoorAt(city);
         // 함대가 기다리는 도시로 <b>걸어 돌아왔으면 배에 다시 오른다</b> — 성문 건물이 들어설 때
         // 뭍 표시를 끄고 대 둔 바다 자리를 되돌린다(0x0046871F → 0x004745B0).
@@ -7941,7 +7923,6 @@ public sealed class WorldMapWindow : Window
             if (dialog.Sailed && _host.IsOnLand) _host.PlaceAtCity(city);
             // 출항하면 닻을 걷는다(0x0048EB84). 성문으로 나섰으면 함대는 이 도시에 그대로 있다.
             if (dialog.Sailed) _game.Player.MoorAt(-1);
-            if (dialog.Sailed) TripStarted(city);
             // 「자동 보급」 · 「자동 모집」 띠는 출항 물음 동안만 보인다 — 바다로 나오면 걷는다. 그냥 두면 띠가 제 참(14초)을
             // 다 채울 때까지 항해 화면 아래에 남는다. 딴 알림은 건드리지 않는다.
             if (dialog.Sailed && HarborMenu.IsAutoNote(_lastNote)) Say("");
@@ -7970,6 +7951,7 @@ public sealed class WorldMapWindow : Window
             if (!dialog.Sailed && !dialog.Explored) return;
 
             // 도시에서 한 일의 셈은 나설 때 한 덩이로 보낸다 — 몇 분마다 보내면 받는 곳(D1)의 하루 한도가 찬다.
+            NoteHero();
             PlayStats.FlushOnLeave();
 
             // 나선 자리에서 하루를 새로 센다 — 들어오기 전에 쌓인 눈금이 남아 있으면 나서자마자 날이 넘어가

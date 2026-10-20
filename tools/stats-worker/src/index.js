@@ -7,15 +7,15 @@
 //   GET  /v1/ranking     하드코어 랭킹(발견물 수 차례) 상위 100.
 //   GET  /ranking        하드코어 랭킹 페이지.
 //
-// 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다.
+// 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다. 이름은 주인공 이름(heroes · hardcore)만 받는다.
 
 import { DASHBOARD_HTML } from './dashboard.js';
 import { RANKING_HTML } from './ranking.js';
 
 const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
 // 차림표 줄(menu) · 들른 도시(city)는 이제 안 받는다 — 옛 판이 보내도 여기서 걸러진다. 표에 남은 옛 줄은 집계에도 안 든다.
-// 항해는 같은 열쇠(「떠난 도시>닿은 도시」)로 갈래 셋에 나눠 온다 — 횟수 · 날수의 합 · 선회의 합. 평균은 집계가 나눠서 낸다.
-const KINDS = ['discovery', 'hire', 'dismiss', 'voyage', 'voyage_days', 'voyage_turns', 'nav', 'battle', 'event', 'error'];
+// 항해(voyage · voyage_days · voyage_turns — 「떠난 도시>닿은 도시」 횟수 · 날수 · 선회)도 v1.1.31 부터 안 받는다. 옛 줄은 집계에 그대로 든다.
+const KINDS = ['discovery', 'hire', 'dismiss', 'nav', 'battle', 'event', 'error'];
 // 이제 안 받는 셈 — 메시지마다 끼어 D1 쓰기 몫만 먹었다(하루 십만 줄 한도의 8할). 답은 이미 나왔고, 옛 판이 보내도 여기서 걸러진다.
 //   event 의 날 밑수(sea:day · sea:eligible · land:day) · nav 의 수동/자동(trip:* — 항해 횟수와 겹친다) · 조타(helm:*) · 건 자리(from:*)
 const DROPPED = (kind, key) =>
@@ -42,22 +42,15 @@ async function postPlay(request, env) {
   // (D1 하루 쓰기 한도가 찼을 때 그랬다). 이미 받은 덩이면 셈 · 옵션은 고르는 줄이 없어 안 쓰이고, 덩이 줄은 맨 끝에 넣는다.
   const fresh = 'NOT EXISTS (SELECT 1 FROM batches WHERE batch = ?)';
   // 셈은 덩이마다 줄을 쌓지 않고 (갈래 · 열쇠 · 버전 · 설치)마다 한 줄에 더한다 — 대시보드가 훑을 줄이 날마다 늘지 않게.
-  // 항해는 한 줄에 횟수 · 날수 · 선회를 함께 더한다(days · turns 칸) — D1 은 있는 줄을 고쳐도 한 줄 쓰기로 세므로, 예전처럼
-  // voyage · voyage_days · voyage_turns 세 줄로 쓰면 항해 하나에 세 번 쓴다. 옛 판이 세 갈래로 보내도 여기서 한 줄로 모은다.
+  // days · turns 칸은 옛 항해 줄의 것이다 — 이제 받는 갈래는 0 으로 둔다.
   const merged = new Map();
   for (const c of b.counts) {
     if (!c || typeof c !== 'object' || !KINDS.includes(c.kind) || typeof c.key !== 'string' || c.key.length === 0) continue;
     if (DROPPED(c.kind, c.key)) continue;
-    const voyage = c.kind.startsWith('voyage'), kind = voyage ? 'voyage' : c.kind, key = text(c.key, MAX_KEY);
+    const kind = c.kind, key = text(c.key, MAX_KEY);
     const id = kind + '\u0000' + key;
     const row = merged.get(id) ?? { kind, key, name: '', n: 0, days: 0, turns: 0 };
-    const n = int(c.n, 1_000_000);
-    if (c.kind === 'voyage_days') row.days += n;
-    else if (c.kind === 'voyage_turns') row.turns += n;
-    else {
-      row.n += n;
-      if (voyage) { row.days += int(c.days, 1_000_000); row.turns += int(c.turns, 1_000_000); }
-    }
+    row.n += int(c.n, 1_000_000);
     row.name = text(c.name, MAX_KEY) || row.name;
     merged.set(id, row);
   }
@@ -89,6 +82,18 @@ async function postPlay(request, env) {
         .bind(b.install, version, now, JSON.stringify(Object.fromEntries(mods)), b.batch));
   }
 
+  // 주인공은 판(game)마다 한 줄 — 처음 받은 값(first_*)은 두고 마지막 값만 덮는다. 게임은 이름 · 나라 · 능력치가 바뀌었을 때만 싣는다.
+  // 남의 판 표지로 덮지 못하게 같은 설치일 때만 고친다.
+  const hero = heroOf(b.hero);
+  if (hero)
+    rows.push(env.DB.prepare(
+      `INSERT INTO heroes (game_id, install, version, first_at, updated_at, name, nation, first_date, date, first_abilities, abilities)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${fresh}
+       ON CONFLICT (game_id) DO UPDATE SET version = excluded.version, updated_at = excluded.updated_at, name = excluded.name,
+                                          nation = excluded.nation, date = excluded.date, abilities = excluded.abilities
+       WHERE heroes.install = excluded.install`)
+      .bind(hero.game, b.install, version, now, now, hero.name, hero.nation, hero.date, hero.date, hero.abilities, hero.abilities, b.batch));
+
   // 날마다 설치 하나에 한 줄 — 대시보드의 설치 수 · 덩이 수 · 날짜별 표 · 버전 목록은 batches 대신 이 작은 표를 센다.
   rows.push(env.DB.prepare(
     `INSERT INTO daily (day, version, install, batches) SELECT ?, ?, ?, 1 WHERE ${fresh}
@@ -99,6 +104,15 @@ async function postPlay(request, env) {
     .bind(b.batch, now, b.install, version));
   const done = await env.DB.batch(rows);
   return json(done[done.length - 1].meta.changes ? { ok: true } : { ok: true, duplicate: true });   // 안 들어갔으면 다시 보낸 것이다
+}
+
+// 주인공 한 벌 — 판 표지 · 이름 · 나라 · 게임 날짜 · 보이는 능력치 여섯(체력 · 지력 · 무력 · 매력 · 운 · 신앙심, 1~100). 말이 안 되면 버린다.
+function heroOf(h) {
+  if (!h || typeof h !== 'object' || !isId(h.game)) return null;
+  const name = text(h.name, 32).trim(), date = text(h.date, 10);
+  if (!name || !/^1[4-9]\d\d-\d\d-\d\d$/.test(date) || !Array.isArray(h.abilities) || h.abilities.length !== 6
+      || !h.abilities.every((v) => Number.isInteger(v) && v >= 1 && v <= 100)) return null;
+  return { game: h.game, name, nation: text(h.nation, 32), date, abilities: JSON.stringify(h.abilities) };
 }
 
 // 하드코어 판 하나가 끝났다 — 이름은 NEW GAME 에서 지은 주인공 이름이다. 판마다 한 줄만 받고, 말이 안 되는 값(발견물 수 · 날짜)은 거른다.
@@ -156,6 +170,7 @@ const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, nav: 100,
 // 집계가 읽는 갈래 — tally 의 주키가 갈래로 시작하므로 이렇게 거르면 옛 voyage_days · voyage_turns · city 줄은 아예 안 읽는다.
 // 옛 항해 날수 · 선회는 voyage_legacy 에 버전마다 한 줄로 묶어 두었다(migrate-reads.sql).
 const READ_KINDS = Object.keys(LIMITS);
+const HERO_LIMIT = 300;
 
 // 대시보드 집계 — 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
 async function getDashboard(url, env) {
@@ -164,7 +179,7 @@ async function getDashboard(url, env) {
   if (!version) return json(all);
   // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
   if (!all.versions.includes(version))
-    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [] });
+    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], heroes: [] });
   return json(await snapshot(env, version, all));
 }
 
@@ -192,7 +207,7 @@ async function aggregate(env, version, whole) {
   const cond = version ? 'AND version = ?' : '', args = version ? [version] : [];
   const all = (sql, ...bound) => env.DB.prepare(sql).bind(...bound).all().then((r) => r.results);
 
-  const [total, tally, legacy, modValues, days, known] = await Promise.all([
+  const [total, tally, legacy, modValues, days, known, heroes] = await Promise.all([
     env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${cond}`).bind(...args).first(),
     all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, SUM(days) AS days, SUM(turns) AS turns, COUNT(DISTINCT install) AS installs
          FROM tally WHERE kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, ...READ_KINDS, ...args),
@@ -201,6 +216,10 @@ async function aggregate(env, version, whole) {
     all(`SELECT day, version, COUNT(*) AS installs, SUM(batches) AS batches
          FROM daily WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
     whole ? whole.versions : all('SELECT DISTINCT version FROM daily ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
+    // 주인공 — 마지막으로 받은 차례로 앞 HERO_LIMIT 판만(색인 heroes_recent 를 따라 그만큼만 읽는다). 버전은 마지막으로 보낸 판의 것이다.
+    all(`SELECT name, nation, first_date, date, first_abilities, abilities, version, updated_at
+         FROM heroes WHERE 1 = 1 ${cond} ORDER BY updated_at DESC LIMIT ${HERO_LIMIT}`, ...args)
+      .then((r) => r.map(({ first_abilities, abilities, ...h }) => ({ ...h, first: JSON.parse(first_abilities), now: JSON.parse(abilities) }))),
   ]);
 
   // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
@@ -233,7 +252,7 @@ async function aggregate(env, version, whole) {
   const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (old.get(r.key)?.[0] || 0), turns: (r.turns || 0) + (old.get(r.key)?.[1] || 0) }));
 
   return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
-           battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known };
+           battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known, heroes };
 }
 
 // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다 — 설치마다 한 줄인 몸통(JSON)을 읽어 여기서 센다.

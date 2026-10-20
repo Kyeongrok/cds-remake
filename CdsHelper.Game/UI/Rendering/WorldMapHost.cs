@@ -759,7 +759,6 @@ public sealed class WorldMapHost : HwndHost
     /// </summary>
     public void SteerTo(int heading)
     {
-        if (_desired != (heading & 0xF)) TurnCount++;
         _desired = heading & 0xF;
         _making = true;
         _anchored = false;
@@ -1397,11 +1396,6 @@ public sealed class WorldMapHost : HwndHost
 
     /// <summary>자동항해가 가는 도시. 도시가 아닌 자리로 가면 −1.</summary>
     private int _autoCity = -1;
-
-    /// <summary>
-    /// 바라는 뱃머리가 바뀐 횟수 — 손으로 몰든 자동항해든 센다. 게임 통계가 항해마다 0 으로 돌려 놓고 읽는다.
-    /// </summary>
-    public int TurnCount { get; set; }
 
     /// <summary>마지막 마디까지 끝까지 가는지 — 도시 어귀나 배 댈 자리로 갈 때다.</summary>
     private bool _autoExact;
@@ -2462,7 +2456,6 @@ public sealed class WorldMapHost : HwndHost
         if (_hasHeadingTarget && dx * dx + dy * dy > TurnDeadZoneCells * TurnDeadZoneCells)
         {
             int want = (Sector8(dx, dy) + HeadingZeroOffset) & 0xF;
-            if (want != _desired) TurnCount++;
             _desired = want;
             _making = true;
         }

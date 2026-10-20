@@ -61,7 +61,8 @@ export const DASHBOARD_HTML = `<!doctype html>
     <section><h2>고용한 부하 <small>술집에서 고용</small></h2><div class="scroll"><table id="hires"></table></div></section>
     <section><h2>해고한 부하 <small>부하편성 해고 · 재계약 거절</small></h2><div class="scroll"><table id="dismisses"></table></div></section>
   </div>
-  <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회</small></h2><div class="scroll"><table id="voyages"></table></div></section>
+  <section><h2>주인공 <small>판마다 처음 → 마지막 능력치 · 최근 받은 300판</small></h2><div class="scroll"><table id="heroes"></table></div></section>
+  <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회 · v1.1.30 까지</small></h2><div class="scroll"><table id="voyages"></table></div></section>
   <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
   <section><h2>전투</h2><table id="battles"></table></section>
   <section><h2>사건 <small>바다 · 육지에서 하루를 넘길 때 — 밑수(넘긴 날)와 견줘 본다</small></h2><table id="events"></table></section>
@@ -174,6 +175,18 @@ function renderVoyages() {
   bindSort('voyages');
 }
 
+// 주인공 — 판마다 처음 받은 능력치와 마지막 능력치. 맨 위 줄은 처음 능력치의 평균이다.
+const ABILITIES = ['체력', '지력', '무력', '매력', '운', '신앙심'];
+function renderHeroes() {
+  const rows = data.heroes || [];
+  const avg = (i) => (rows.length ? Math.round(rows.reduce((s, h) => s + h.first[i], 0) / rows.length) : '-');
+  const cell = (a, b) => (a === b ? n(b) : '<span class="dim">' + n(a) + ' →</span> ' + n(b));
+  $('heroes').innerHTML = '<tr><th class="name">이름</th><th class="name">나라</th><th class="name">게임 날짜</th>' + ABILITIES.map((a) => '<th>' + a + '</th>').join('') + '<th class="name">버전</th></tr>'
+    + (rows.length ? '<tr><td class="name dim" colspan="3">처음 능력치 평균 (' + n(rows.length) + '판)</td>' + ABILITIES.map((_, i) => '<td class="dim">' + avg(i) + '</td>').join('') + '<td></td></tr>'
+        + rows.map((h) => '<tr><td class="name">' + esc(h.name) + '</td><td class="name">' + esc(h.nation) + '</td><td class="name">' + esc(h.first_date === h.date ? h.date : h.first_date + ' → ' + h.date)
+          + '</td>' + ABILITIES.map((_, i) => '<td>' + cell(h.first[i], h.now[i]) + '</td>').join('') + '<td class="name dim">' + esc(h.version) + '</td></tr>').join('') : EMPTY(10));
+}
+
 // 네비게이션 — 열쇠는 「묶음:값」이다. 묶음마다 그 안에서의 몫을 낸다.
 const NAV_GROUPS = [['trip', '항해 한 번'], ['pick', '고른 길'], ['helm', '자동이동 모드'], ['from', '건 곳'], ['end', '끝난 꼴']];
 const NAV_NAMES = { 'trip:auto': '자동 항해', 'trip:manual': '수동 항해', 'pick:quick': '가장 빠른 길', 'pick:short': '가장 짧은 길',
@@ -219,13 +232,14 @@ function renderEvents() {
 function render() {
   const kind = (k) => (data.kinds || []).find((r) => r.kind === k) || { n: 0, keys: 0 };
   $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('discovery').n, '발견'], [kind('hire').n, '부하 고용'], [kind('dismiss').n, '부하 해고'],
-      [kind('voyage').n, '항해'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
+      [(data.heroes || []).length, '주인공'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
     .map(([v, label]) => '<div class="tile"><b>' + n(v) + '</b><span>' + label + '</span></div>').join('');
 
   renderMods();
   rankTable('discoveries', '발견물', data.discoveries, (r) => esc(r.name || '#' + r.key));
   rankTable('hires', '부하', data.hires || [], (r) => esc(r.name || '#' + r.key));
   rankTable('dismisses', '부하', data.dismisses || [], (r) => esc(r.name || '#' + r.key));
+  renderHeroes();
   renderVoyages();
   renderNavs();
   renderBattles();

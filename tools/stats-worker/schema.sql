@@ -72,3 +72,19 @@ CREATE TABLE IF NOT EXISTS voyage_legacy (
   version TEXT PRIMARY KEY,
   body    TEXT NOT NULL           -- {"떠난 도시>닿은 도시": [날수 합, 선회 합]}
 ) WITHOUT ROWID;
+
+-- 주인공 — 판마다 한 줄, 처음 받은 값과 마지막 값(migrate-heroes.sql).
+CREATE TABLE IF NOT EXISTS heroes (
+  game_id         TEXT PRIMARY KEY,   -- 판 표지(Player.GameId)
+  install         TEXT NOT NULL,
+  version         TEXT NOT NULL,      -- 마지막으로 보낸 판의 버전
+  first_at        TEXT NOT NULL,      -- 처음 받은 때
+  updated_at      TEXT NOT NULL,      -- 마지막으로 받은 때
+  name            TEXT NOT NULL,      -- 주인공 이름
+  nation          TEXT NOT NULL,      -- 나라 이름
+  first_date      TEXT NOT NULL,      -- 처음 받았을 때의 게임 날짜(yyyy-MM-dd)
+  date            TEXT NOT NULL,      -- 마지막으로 받았을 때의 게임 날짜
+  first_abilities TEXT NOT NULL,      -- 처음 받은 능력치 여섯(JSON — 체력 · 지력 · 무력 · 매력 · 운 · 신앙심, 보이는 값)
+  abilities       TEXT NOT NULL       -- 마지막으로 받은 능력치 여섯
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS heroes_recent ON heroes (updated_at DESC);

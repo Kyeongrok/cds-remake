@@ -92,7 +92,11 @@ internal sealed class App : Application
         // 게임 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
         PlayStats.Start(typeof(App).Assembly);
         CrashReport.Start(typeof(App).Assembly);
-        Exit += (_, _) => PlayStats.Flush();
+        Exit += (_, _) =>
+        {
+            window.NoteHero();
+            PlayStats.Flush();
+        };
 
         _ = CheckForUpdateAsync(window);
     }
