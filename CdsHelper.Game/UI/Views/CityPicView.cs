@@ -1373,7 +1373,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (_game.Discoveries is not { } log) return true;
         if (log.Table.Find(building.Discovery) is not { } row) return true;
         if (!log.CanFire(_player, row)) return true;   // 0x00492A79 → 0x004AAD20
-        if (row.Id == KaabaId) return DiscoverKaaba(building, row, log);
         // 대본 조건이 안 맞으면(힌트가 없으면) 아무 일도 없다 — 그냥 발견으로 넘기지 않는다(바다 발견과 같다).
         if (Engine.Disev.DisevRunner.Probe(this, _game, row.Id) == Engine.Disev.DisevRunner.ScriptState.Held) return true;
 
@@ -1403,37 +1402,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         // 대본이 없으면 결과가 밑값 2 그대로라 안 든다.
         return scripted && Engine.Disev.DisevRunner.LastResult != 2;
-    }
-
-    /// <summary>카바 신전(메카 모스크)의 발견물 번호.</summary>
-    private const int KaabaId = 63;
-
-    /// <summary>
-    /// 카바 신전 — 원본에는 찾을 길이 없다. 대본(DISEV 63)은 조건 없이 부관이 「이교도의 총본산입니다. 다가가지 맙시다」 하고
-    /// 발견을 안 적은 채 끝나고, 다른 대본도 이것을 적지 않는다. 그래서 <b>터번</b>(적대 도시 잠입 때 이슬람 교도로 꾸미는
-    /// 아이템, <see cref="Engine.Town.Standoff.TurbanName"/>)을 들고 들어가면 순례자 행세로 발견되게 한다(요청).
-    /// 터번은 쓰고 나서도 남는다. 없으면 원본 대본을 그대로 틀고, 부관이 터번 얘기를 덧붙여 길을 귀띔한다.
-    /// </summary>
-    private bool DiscoverKaaba(CityBuildingTable.Building building, DiscoveryTable.Record row,
-                               Engine.Discovery.DiscoveryLog log)
-    {
-        bool turban = _game.Items?.Find(Engine.Town.Standoff.TurbanName) is { } t && _player.Items.Contains(t.Id);
-        if (!turban)
-        {
-            RunShaded(row.Id);
-            if (_game.MateSpeaks is { } aide)
-                TalkDialog.Say(this, aide, "", "…터번이라도 두르고 순례자처럼 꾸민다면 모를까요.");
-            return false;
-        }
-
-        if (_game.MateSpeaks is { } face)
-            TalkDialog.Say(this, face, "", "제독, 터번을 두르고 순례자 행세를 하면 들어가 볼 수 있겠습니다. 정체가 드러나지 않게 조심하십시오.");
-        log.Discover(_player, row.Id);
-        Engine.Discovery.DiscoveryLog.Settle(_player, row.Id, scripted: false);
-        RefreshShipLabel();   // 발견물 수를 곧바로 올린다
-        DiscoveryDialog.Show(this, _game.Stills, building.Picture,
-                             $"{row.Name}{GameUi.Josa(row.Name, "을", "를")} 발견했다!");
-        return false;
     }
 
     /// <summary>

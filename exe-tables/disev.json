@@ -10324,9 +10324,63 @@
           {
             "Condition": 0,
             "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
           }
         ],
         "Chunks": [
+          [
+            {
+              "OpCode": "0F 05",
+              "Call": "HasItem",
+              "Args": {
+                "Item": 36
+              },
+              "Note": "터번을 가졌으면"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 터번을 두르고 순례자 행세를 하면 들어가 볼 수 있겠습니다． 정체가 드러나지 않게 조심하십시오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "카바 신전을 발견했다！"
+              }
+            },
+            {
+              "OpCode": "01 0B",
+              "Call": "Discover",
+              "Args": {
+                "Discovery": 63
+              },
+              "Note": "발견물 등록/발견 처리: ID 63"
+            },
+            {
+              "OpCode": "4C",
+              "Call": "EndDone",
+              "Note": "이벤트 결과 코드 0"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
           [
             {
               "OpCode": "FF",
@@ -10344,6 +10398,14 @@
               }
             },
             {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "…터번이라도 두르고 순례자처럼 꾸민다면 모를까요．"
+              }
+            },
+            {
               "OpCode": "4E",
               "Call": "EndUnhandled",
               "Note": "이벤트 결과 코드 2"
@@ -10354,6 +10416,9 @@
               "Note": "덩이/갈래 끝"
             }
           ]
+        ],
+        "Replaces": [
+          "3F 00 01 00 04 00 05 00 FF 00 0A 95 9B 8A AF 81 46 C1 A6 B5 B6 A3 AC A1 A1 C0 CC B0 F7 C0 BA A1 A1 C0 CC B1 B3 B5 B5 C0 C7 A1 A1 C3 D1 BA BB BB EA C0 D4 B4 CF B4 D9 A3 AE A1 A1 BE C6 B9 AB B7 A1 B5 B5 A1 A1 C0 A7 C7 E8 C7 CF B4 CF A1 A1 B4 D9 B0 A1 B0 A1 C1 F6 A1 A1 B8 BF BD C3 B4 D9 A3 AE 00 4E FF"
         ]
       },
       {
