@@ -10364,14 +10364,6 @@
               "Note": "DSTILL 이미지 표시: 슬롯 86"
             },
             {
-              "OpCode": "00 0A",
-              "Call": "Say",
-              "Args": {
-                "Speaker": "부관",
-                "Text": "제독， 저 흰 옷을 입은 무리를 보십시오． 성지 순례를 온 무슬림들인가 봅니다．"
-              }
-            },
-            {
               "OpCode": "01 0B",
               "Call": "Discover",
               "Args": {
@@ -10384,6 +10376,14 @@
               "Call": "PlaySound",
               "Args": {
                 "Id": 75
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "부관",
+                "Text": "제독， 저 흰 옷을 입은 무리를 보십시오． 성지 순례를 온 무슬림들인가 봅니다．"
               }
             },
             {
