@@ -37,6 +37,9 @@ public sealed class DevDialog : GameWindow
     /// <summary>개발 창이 만지는 것들. 늘어나서 묶어 두었다.</summary>
     public sealed class Options
     {
+        /// <summary>현재 주인공의 능력치·기술·언어 편집. 새 판을 연 뒤에만 제공한다.</summary>
+        public Action? PlayerAbilities { get; init; }
+
         /// <summary>좌표 겹쳐 보기.</summary>
         public Func<bool> CoordsOn { get; init; } = () => false;
         public Action<bool> SetCoords { get; init; } = _ => { };
@@ -109,6 +112,8 @@ public sealed class DevDialog : GameWindow
         var tests = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
         rows.Children.Add(Row("소지금", _gold, GoldStep, v => _player.SetGold(v)));
         rows.Children.Add(Row("명성", _fame, FameStep, v => _player.Fame = v));
+        if (options.PlayerAbilities is { } abilities)
+            rows.Children.Add(GameUi.PushButton("주인공 능력치…", () => { Close(); abilities(); }, 180));
         rows.Children.Add(YearRow(options.YearChanged));
         rows.Children.Add(ShipRow());
         rows.Children.Add(EffectRow());
