@@ -824,11 +824,14 @@ public sealed class WorldMapWindow : Window
 
         var at = _host.ShipCell is { } cell ? ((double, double)?)(cell.CellX, cell.CellY) : null;
         // 도시 — 지금 아는 도시만(자동항해 고르기와 같다). 도서관이 있으면 동그라미에 「도」.
+        // 도서관은 원본 건물표로 가린다(cities.json 은 손으로 적어 항주 · 베니스가 빠져 있었다).
         var cities = Enumerable.Range(0, GameMapCoords.CityCount)
             .Where(id => _game.CityVisible(id))
             .Select(id => GameMapCoords.TryCityCell(id, out double cx, out double cy)
                 ? ((string, double, double, bool)?)(_game.CityName(id), cx, cy,
-                                                    _game.CityTable.Find(id)?.HasLibrary == true)
+                                                    _game.Buildings is { } bt
+                                                        ? bt.Find(id, "도서관") != null
+                                                        : _game.CityTable.Find(id)?.HasLibrary == true)
                 : null)
             .OfType<(string Name, double X, double Y, bool Library)>()
             .ToList();
