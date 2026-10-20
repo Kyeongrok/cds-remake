@@ -83,8 +83,8 @@ public sealed class ConfirmDialog : GameWindow
             Height = ButtonHeight,
             Margin = new Thickness(0, TextGap, 0, 0),
         };
-        // 모드 「대항해시대2 스타일 대화창」 — 얼굴이 붙는 대사 창만 베이지 바탕에 검은 글씨, 줄무늬 테로 낸다.
-        bool dh2 = face != null && Local.Settings.GameSettings.Dh2TalkStyle;
+        // 모드 「대항해시대2 스타일 대화창」 — 대사 창 · 물음창 · 알림창 모두 베이지 바탕에 검은 글씨, 줄무늬 테로 낸다(요청).
+        bool dh2 = Local.Settings.GameSettings.Dh2TalkStyle;
 
         // 초점이 간 단추의 안쪽 테가 깜빡인다 — 원본이 지금 고른 것을 그렇게 알린다.
         if (bare)
@@ -132,7 +132,9 @@ public sealed class ConfirmDialog : GameWindow
 
         // 원본은 물음창에도 진홍 장식 띠로 제목을 얹는다("게임 로드" 따위).
         bool titled = !string.IsNullOrEmpty(title);
-        if (titled && GameUi.TitleFrame(GameUi.Sprites, title!) is { } bar)
+        if (titled && dh2)
+            stack.Children.Add(Dh2Style.TitleBand(title!, barWidth));
+        else if (titled && GameUi.TitleFrame(GameUi.Sprites, title!) is { } bar)
         {
             bar.Width = barWidth;
             bar.Height = BarHeight;

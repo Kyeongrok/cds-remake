@@ -126,7 +126,7 @@ public sealed class DevDialog : GameWindow
         // 「대항2」 탭 — 대항해시대2 모양으로 바꾸는 것들. 아직 만드는 중이라 모드 창에는 안 내놓고 여기서만 켠다.
         var dh2 = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
         dh2.Children.Add(Toggle("대항해시대2 스타일 대화창", GameSettings.Dh2TalkStyle, on => GameSettings.Dh2TalkStyle = on,
-            "얼굴이 붙는 대사 창을 줄무늬 테 · 베이지 바탕 · 검은 글씨로 냅니다. 얼굴 없는 알림 · 물음창은 그대로입니다"));
+            "대사 창 · 알림 · 물음창을 줄무늬 테 · 베이지 바탕 · 검은 글씨, 왕관 꼴 단추로 냅니다. 제목은 짙은 밤색 띠에 얹습니다"));
         dh2.Children.Add(Toggle("대항해시대2 스타일 인물정보", GameSettings.Dh2PersonInfo, on => GameSettings.Dh2PersonInfo = on,
             "인물정보 판(제독 · 부하 · 술집에서 고용할 사람)을 줄무늬 테 · 베이지 바탕, 빨간 항목 이름 · 검은 값, 왕관 꼴 단추로 냅니다"));
 

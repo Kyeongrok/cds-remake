@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using CdsHelper.Game.Local.Helpers;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -54,6 +55,28 @@ internal static class Dh2Style
             wrapped = new Border { BorderBrush = Stripes[i], BorderThickness = new Thickness(1), SnapsToDevicePixels = true, Child = wrapped };
         return wrapped;
     }
+
+    /// <summary>제목 띠 바탕 — 대항해시대2 메뉴의 고른 줄 색(<c>221008</c>)이다.</summary>
+    private static readonly Brush TitleFill = Frozen(Color.FromRgb(0x22, 0x10, 0x08));
+
+    /// <summary>
+    /// 물음창 제목 띠 — 3편의 진홍 장식 띠 대신, 대항해시대2 메뉴에서 고른 줄처럼 짙은 밤색 띠에 밝은 글씨를 가운데 놓는다.
+    /// </summary>
+    public static FrameworkElement TitleBand(string title, double width) => new Border
+    {
+        Width = width,
+        Background = TitleFill,
+        Padding = new Thickness(0, 3, 0, 3),
+        Margin = new Thickness(0, 0, 0, 2),
+        SnapsToDevicePixels = true,
+        Child = new GameUi.GameLabel(GameFont.WhiteColor, GameUi.ItemTextHeight)
+        {
+            Text = title,
+            Bold = false,
+            FallbackBrush = Paper,
+            HorizontalAlignment = HorizontalAlignment.Center,
+        },
+    };
 
     /// <summary>
     /// 왕관 꼴 단추 판 하나 — 바깥 테는 위아래에 이빨이 서고 네 귀가 뾰족한 다각형, 안쪽은 바둑판 바탕에 세리프 글씨다.
