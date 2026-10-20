@@ -131,10 +131,9 @@ public sealed class ConfirmDialog : GameWindow
         var stack = new StackPanel { Width = barWidth };
 
         // 원본은 물음창에도 진홍 장식 띠로 제목을 얹는다("게임 로드" 따위).
-        bool titled = !string.IsNullOrEmpty(title);
-        if (titled && dh2)
-            stack.Children.Add(Dh2Style.TitleBand(title!, barWidth));
-        else if (titled && GameUi.TitleFrame(GameUi.Sprites, title!) is { } bar)
+        // 대항해시대2 스타일이면 제목을 안 얹는다 — 대항해시대2 대화창에는 제목 띠가 없다(요청).
+        bool titled = !dh2 && !string.IsNullOrEmpty(title);
+        if (titled && GameUi.TitleFrame(GameUi.Sprites, title!) is { } bar)
         {
             bar.Width = barWidth;
             bar.Height = BarHeight;
