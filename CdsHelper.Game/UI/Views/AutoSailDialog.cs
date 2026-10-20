@@ -223,99 +223,7 @@ public sealed class AutoSailDialog : GameWindow
             },
         };
 
-        // 자동이동 모드 — 속도 중시(기본)는 선에 바짝 붙어 가느라 뱃머리를 자주 틀고, 최소 조타는 곧게 뻗는 토막으로 간다.
-        // 고르개는 모드 창 「자동 보급」 밑의 것과 같은 꼴이다.
-        RadioButton Mode(string text, bool steady)
-        {
-            var radio = new RadioButton
-            {
-                Content = text, GroupName = "AutoSailMode",
-                IsChecked = GameSettings.SteadyHelm == steady,
-                Foreground = GameUi.Text, FontSize = 14,
-                Margin = new Thickness(0, 0, 16, 0),
-                VerticalContentAlignment = VerticalAlignment.Center,
-            };
-            radio.Checked += (_, _) =>
-            {
-                GameSettings.SteadyHelm = steady;
-                // 후보가 떠 있으면 그 모드로 다시 잡는다 — 길의 꼴이 달라진다.
-                if (_bound >= 0) ShowPlans(_bound);
-            };
-            return radio;
-        }
-        var helm = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Margin = new Thickness(Side, 8, Side, 2),
-            Children =
-            {
-                new TextBlock
-                {
-                    Text = "자동이동 모드", Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
-                    Margin = new Thickness(0, 0, 16, 0), VerticalAlignment = VerticalAlignment.Center,
-                },
-                Mode("속도 중시", false),
-                Mode("최소 조타", true),
-            },
-        };
-
-        // 항로 표시 — 모드 창 「정보」 탭의 「자동항해 경로 표시」와 같은 설정이다. 지도가 매 프레임 읽어 곧바로 든다.
-        var route = new CheckBox
-        {
-            Content = "항로 표시",
-            IsChecked = GameSettings.ShowAutoRoute,
-            Foreground = GameUi.Text, FontSize = 14,
-            Margin = new Thickness(16, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-            VerticalContentAlignment = VerticalAlignment.Center,
-            ToolTip = "자동항해 · 육지 자동이동을 할 때 갈 길을 지도 위에 선으로 그립니다",
-        };
-        route.Checked += (_, _) => GameSettings.ShowAutoRoute = true;
-        route.Unchecked += (_, _) => GameSettings.ShowAutoRoute = false;
-        helm.Children.Add(route);
-
-        // 항로 굵기 · 짙기 — 모드 창 「정보」 탭의 것과 같은 설정이다. 지도가 매 프레임 읽어 끌면서 곧바로 바뀐다.
-        UIElement Slide(string label, int min, int max, int step, Func<int> get, Action<int> set)
-        {
-            var value = new TextBlock
-            {
-                Width = 44, Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center,
-                Text = $"{get()}%",
-            };
-            var slider = new Slider
-            {
-                Minimum = min, Maximum = max, TickFrequency = step, IsSnapToTickEnabled = true,
-                Width = 110, Value = get(), VerticalAlignment = VerticalAlignment.Center,
-            };
-            slider.ValueChanged += (_, _) => { set((int)slider.Value); value.Text = $"{get()}%"; };
-            return new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 12, 0),
-                Children =
-                {
-                    new TextBlock
-                    {
-                        Text = label, Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
-                        Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center,
-                    },
-                    slider,
-                    value,
-                },
-            };
-        }
-        var look = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Margin = new Thickness(Side, 4, Side, 2),
-            Children =
-            {
-                Slide("항로 굵기", GameSettings.MinAutoRouteWidth, GameSettings.MaxAutoRouteWidth, GameSettings.AutoRouteWidthStep,
-                      () => GameSettings.AutoRouteWidth, v => GameSettings.AutoRouteWidth = v),
-                Slide("항로 짙기", GameSettings.MinAutoRouteOpacity, GameSettings.MaxAutoRouteOpacity, GameSettings.AutoRouteOpacityStep,
-                      () => GameSettings.AutoRouteOpacity, v => GameSettings.AutoRouteOpacity = v),
-            },
-        };
+        // 자동이동 모드 · 항로 표시 · 항로 굵기 · 짙기는 설정 창 「네비게이션」 탭으로 옮겼다(요청, SettingsDialog.NavigationPage).
 
         // 아직 아무것도 안 골랐으면 「항해 시작」은 흐리다 — 게임 목록 창의 「결정」과 같다.
         _go = new GameButton("항해 시작", Start, BandStyle.Button, ButtonWidth)
@@ -348,8 +256,6 @@ public sealed class AutoSailDialog : GameWindow
         }, Math.Max(0, firstTab)));
         stack.Children.Add(_heads);
         stack.Children.Add(_pages);
-        stack.Children.Add(helm);
-        stack.Children.Add(look);
         stack.Children.Add(buttons);
         stack.Children.Add(_note);
 

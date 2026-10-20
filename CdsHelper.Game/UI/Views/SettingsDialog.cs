@@ -51,14 +51,24 @@ public sealed class SettingsDialog : GameWindow
         var title = GameUi.TitleBar("설정", Close);
         GameUi.EnableDrag(this, title);
 
+        // 「일반」 — 소리 · 화면 · 지도. 「네비게이션」 — 자동이동 모드 · 항로 표시 · 굵기 · 짙기(네비게이션 창에서 옮겨 왔다, 요청).
+        var general = new StackPanel();
+        general.Children.Add(_bgmRow);
+        general.Children.Add(_bgmVolRow);
+        general.Children.Add(_sfxRow);
+        general.Children.Add(_sfxVolRow);
+        general.Children.Add(_sizeRow);
+        general.Children.Add(_mapRow);
+        var navigation = NavigationPage();
+
+        var pages = new Grid();
+        pages.Children.Add(general);
+        pages.Children.Add(navigation);
+
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(_bgmRow);
-        stack.Children.Add(_bgmVolRow);
-        stack.Children.Add(_sfxRow);
-        stack.Children.Add(_sfxVolRow);
-        stack.Children.Add(_sizeRow);
-        stack.Children.Add(_mapRow);
+        stack.Children.Add(Tabs([("일반", general), ("네비게이션", navigation)]));
+        stack.Children.Add(pages);
         stack.Children.Add(new StackPanel
         {
             Orientation = Orientation.Horizontal,
@@ -82,6 +92,117 @@ public sealed class SettingsDialog : GameWindow
     }
 
     // 저장·지도 글쇠 줄은 햄버거의 「단축키」 창(ShortcutDialog)으로 옮겨 여기서 걷었다.
+
+    /// <summary>탭 머리 — 누른 쪽 판만 보이고 머리는 밝게 선다(모드 창 · 네비게이션 창과 같은 꼴). 판들은 한 칸에 겹쳐 둔다.</summary>
+    private static FrameworkElement Tabs((string Text, FrameworkElement Page)[] tabs)
+    {
+        var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(8, 8, 8, 0) };
+        var heads = new List<(Border Head, FrameworkElement Page)>();
+        void Select(FrameworkElement page)
+        {
+            foreach (var (head, p) in heads)
+            {
+                bool on = ReferenceEquals(p, page);
+                p.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+                head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
+                ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
+            }
+        }
+        foreach (var (text, page) in tabs)
+        {
+            var head = new Border
+            {
+                BorderBrush = GameUi.Edge,
+                BorderThickness = new Thickness(1, 1, 1, 0),
+                Padding = new Thickness(10, 4, 10, 4),
+                Margin = new Thickness(0, 0, 3, 0),
+                Cursor = Cursors.Hand,
+                Child = new TextBlock { Text = text, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 14 },
+            };
+            head.MouseLeftButtonDown += (_, e) => { e.Handled = true; Select(page); };
+            heads.Add((head, page));
+            bar.Children.Add(head);
+        }
+        Select(tabs[0].Page);
+        return bar;
+    }
+
+    /// <summary>
+    /// 「네비게이션」 탭 — 자동이동 모드(속도 중시 · 최소 조타) · 항로 표시 · 항로 굵기 · 짙기. 예전에는 네비게이션 창 밑에 붙어 있었다.
+    /// 지도가 매 프레임 이 설정을 읽어 곧바로 든다. 모드는 다음에 잡는 길부터 든다.
+    /// </summary>
+    private static FrameworkElement NavigationPage()
+    {
+        var page = new StackPanel { Margin = new Thickness(14, 10, 14, 6), MinWidth = 380 };
+        TextBlock Head(string text) => new()
+        {
+            Text = text, Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
+            Width = 100, VerticalAlignment = VerticalAlignment.Center,
+        };
+
+        // 자동이동 모드 — 속도 중시(기본)는 선에 바짝 붙어 가느라 뱃머리를 자주 틀고, 최소 조타는 곧게 뻗는 토막으로 간다.
+        RadioButton Mode(string text, bool steady)
+        {
+            var radio = new RadioButton
+            {
+                Content = text, GroupName = "AutoSailMode",
+                IsChecked = GameSettings.SteadyHelm == steady,
+                Foreground = GameUi.Text, FontSize = 14,
+                Margin = new Thickness(0, 0, 16, 0),
+                VerticalContentAlignment = VerticalAlignment.Center,
+            };
+            radio.Checked += (_, _) => GameSettings.SteadyHelm = steady;
+            return radio;
+        }
+        page.Children.Add(new StackPanel
+        {
+            Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4),
+            Children = { Head("자동이동 모드"), Mode("속도 중시", false), Mode("최소 조타", true) },
+        });
+
+        // 항로 표시 — 모드 창 「정보」 탭의 「자동항해 경로 표시」와 같은 설정이다.
+        var route = new CheckBox
+        {
+            Content = "자동항해 · 육지 자동이동을 할 때 갈 길을 지도에 그린다",
+            IsChecked = GameSettings.ShowAutoRoute,
+            Foreground = GameUi.Text, FontSize = 14,
+            VerticalAlignment = VerticalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+        route.Checked += (_, _) => GameSettings.ShowAutoRoute = true;
+        route.Unchecked += (_, _) => GameSettings.ShowAutoRoute = false;
+        page.Children.Add(new StackPanel
+        {
+            Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4),
+            Children = { Head("항로 표시"), route },
+        });
+
+        // 항로 굵기 · 짙기 — 모드 창 「정보」 탭의 것과 같은 설정이다. 끌면서 곧바로 바뀐다.
+        UIElement Slide(string label, int min, int max, int step, Func<int> get, Action<int> set)
+        {
+            var value = new TextBlock
+            {
+                Width = 52, Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center,
+                Text = $"{get()}%", Margin = new Thickness(8, 0, 0, 0),
+            };
+            var slider = new Slider
+            {
+                Minimum = min, Maximum = max, TickFrequency = step, IsSnapToTickEnabled = true,
+                Width = 180, Value = get(), VerticalAlignment = VerticalAlignment.Center,
+            };
+            slider.ValueChanged += (_, _) => { set((int)slider.Value); value.Text = $"{get()}%"; };
+            return new StackPanel
+            {
+                Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4),
+                Children = { Head(label), slider, value },
+            };
+        }
+        page.Children.Add(Slide("항로 굵기", GameSettings.MinAutoRouteWidth, GameSettings.MaxAutoRouteWidth, GameSettings.AutoRouteWidthStep,
+                                () => GameSettings.AutoRouteWidth, v => GameSettings.AutoRouteWidth = v));
+        page.Children.Add(Slide("항로 짙기", GameSettings.MinAutoRouteOpacity, GameSettings.MaxAutoRouteOpacity, GameSettings.AutoRouteOpacityStep,
+                                () => GameSettings.AutoRouteOpacity, v => GameSettings.AutoRouteOpacity = v));
+        return page;
+    }
 
     /// <summary>
     /// 줄 글자. 이름 · 켬끔을 <b>따로</b> 옮긴다 — 붙인 글(「효과음     켬」)은 번역 표에서 통째로 못 찾는다.
