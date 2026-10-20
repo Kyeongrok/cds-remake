@@ -65,7 +65,7 @@ public static class AppSettings
 {
     public const double DefaultMarkerSize = 11.0;
 
-    /// <summary>첫 화면 — 「개발 → 대본 편집」이다.</summary>
+    /// <summary>첫 화면 — 「개발 → 이벤트 편집」이다.</summary>
     public const string DefaultDefaultView = "DisevEditorContent";
 
     private static readonly string SettingsFilePath = Path.Combine(
@@ -200,7 +200,7 @@ public static class AppSettings
 
     public static readonly List<ViewOption> AvailableViews = new()
     {
-        new() { Name = "DisevEditorContent", DisplayName = "대본 편집" },
+        new() { Name = "DisevEditorContent", DisplayName = "이벤트 편집" },
         new() { Name = "ItemContent", DisplayName = "아이템" },
         new() { Name = "WorldMapContent", DisplayName = "세계지도" }
     };

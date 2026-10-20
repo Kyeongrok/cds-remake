@@ -156,7 +156,7 @@ public sealed class DisevEditorDialog : GameWindow
 
     public DisevEditorDialog()
     {
-        Title = "대본 편집기 — 발견 이벤트 · 이야기";
+        Title = "이벤트 편집기 — 발견 이벤트 · 이야기";
         Width = 1280;
         Height = 860;
         MinWidth = 900;
