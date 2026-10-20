@@ -173,7 +173,8 @@ public sealed class ModDialog : GameWindow
         // 접근 함대 정보 — 다가간 함대의 초상화 · 국적 · 직업 · 함대 규모.
         info.Children.Add(Toggle("접근 함대 정보", GameSettings.FleetCard, on => GameSettings.FleetCard = on,
             "원본에 없는 것입니다 — 바다에서 다른 함대에 다가가 「우호적으로 접근한다 · 습격한다 · 떠난다」를 고를 때,"
-            + " 그 위에 상대의 초상화와 국적 · 직업 · 함대 규모(척수) · 무력을 띄웁니다."));
+            + " 그 위에 상대의 초상화와 국적 · 직업 · 함대 규모(척수) · 무력을 띄웁니다.",
+            images: ["fleet-card.png"]));
 
         // 항해 일수 — 출항한 지 며칠인지 지도 왼쪽 위 동그라미에.
         info.Children.Add(Toggle("항해 일수", GameSettings.ShowSeaDays, on => GameSettings.ShowSeaDays = on,
