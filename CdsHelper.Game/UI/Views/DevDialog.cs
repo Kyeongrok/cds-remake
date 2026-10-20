@@ -115,7 +115,7 @@ public sealed class DevDialog : GameWindow
         rows.Children.Add(YearRow(options.YearChanged));
         rows.Children.Add(ShipRow());
         rows.Children.Add(EffectRow());
-        rows.Children.Add(SpouseRow());
+        rows.Children.Add(SpouseRow(options.Barmaids, options.Faces, options.CityName));
 
         // 좌표 겹쳐 보기 — 배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄운다.
         // 게임에는 없는 것이라 이 창으로 옮겨 두었다.
@@ -1085,8 +1085,10 @@ public sealed class DevDialog : GameWindow
     /// <remarks>
     /// 게임에는 없는 줄이다. 게임에서 아내를 맞으려면 술집 여급과 친밀도를 90 까지
     /// 올려야 해서(<see cref="Engine.Town.Barmaids"/>) 시험할 때는 여기서 붙여 준다.
+    /// 「맞는다」는 여급 127명 가운데 고르게 한다(요청) — 술집 혼인처럼 이름과 여급 번호를 함께 적는다.
+    /// 여급 표를 못 읽었으면 예전처럼 「카타리나」를 붙인다.
     /// </remarks>
-    private UIElement SpouseRow()
+    private UIElement SpouseRow(BarmaidTable? maids, Portraits? faces, Func<int, string>? cityName)
     {
         var line = new StackPanel
         {
@@ -1115,7 +1117,16 @@ public sealed class DevDialog : GameWindow
         });
         line.Children.Add(GameUi.PushButton("맞는다", () =>
         {
-            _player.Marry("카타리나");
+            if (maids is null) { _player.Marry("카타리나"); Paint(); return; }
+            var list = maids.Barmaids;
+            int pick = ListPickDialog.Pick(this, [.. list.Select(b => b.Name)],
+                caption: "아내로 맞을 여급", whenEmpty: "여급이 없습니다",
+                faces: faces == null ? null : [.. list.Select(b => faces.TryGetBgra(b.Face, female: true))],
+                subtitles: [.. list.Select(b => $"{cityName?.Invoke(b.City) ?? $"도시 {b.City}"} · {b.Year}~{b.LastYear}년 · 지금 {b.AgeIn(_player.Date.Year)}살")],
+                marks: [.. list.Select(b => b.Id == _player.SpouseId)],
+                preselect: list.ToList().FindIndex(b => b.Id == _player.SpouseId));
+            if (pick < 0) return;
+            _player.Marry(list[pick].Name, list[pick].Id);
             Paint();
         }, 96));
         line.Children.Add(GameUi.PushButton("없앤다", () => { _player.Marry(""); Paint(); }, 96));
