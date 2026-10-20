@@ -148,7 +148,9 @@ public sealed class GameOverDialog : GameWindow
             Engine.HardcoreRules.Note(hardcore);
             Engine.GameSave.DeleteRun(hardcore);
             PlayStats.HardcoreOver(hardcore.GameId, hardcore.Name, run.Nations?.Find(hardcore.Nation)?.Name ?? "",
-                                   hardcore.Discoveries.Count, hardcore.Date, picture, hardcore.HardcoreMarks);
+                                   // 발견물 수는 화면과 같은 거름이다 — 모조품 · 인물 · 사건 · 비보는 안 센다.
+                                   run.Discoveries?.Table.CountedFound(hardcore.Discoveries) ?? hardcore.Discoveries.Count,
+                                   hardcore.Date, picture, hardcore.HardcoreMarks);
         }
 
         // 게임이 끝나면 그 곡으로 갈린다. 되돌리지 않는다 — 여기서 나가면 타이틀이다.

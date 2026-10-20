@@ -251,6 +251,15 @@ public sealed class DiscoveryTable
     /// <summary><see cref="DiscoveryEdits"/> 로 덧씌우기 전의 원본 값. 표 밖이면 null.</summary>
     public Record? Original(int id) => id >= 0 && id < _rows.Length ? _rows[id] : null;
 
+    /// <summary>
+    /// 발견물 수에 드는 줄 — 「다른 길로 얻는 것」(<see cref="Record.Indirect"/>)은 뺀다. 모조품 스물여덟 · 인물 · 사건(돌고래 따위) ·
+    /// 비보 여덟이 그렇다 — 원본이 장소 이벤트를 걸 칸이 발견물 표뿐이라 빌려 쓴 줄이다. 백과사전도 같은 줄을 뺀다(요청).
+    /// </summary>
+    public int CountedTotal => Discoveries.Count(r => !r.Indirect);
+
+    /// <summary>그 주인공이 찾은 것 가운데 발견물 수에 드는 것(<see cref="CountedTotal"/> 과 같은 거름).</summary>
+    public int CountedFound(IEnumerable<int> found) => found.Distinct().Count(id => Find(id) is { Indirect: false });
+
     /// <summary>그 번호의 이름. 표 밖이면 번호로 물러선다.</summary>
     public string NameOf(int id) => Find(id)?.Name ?? $"발견물 {id}";
 

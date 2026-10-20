@@ -2380,9 +2380,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         _hintNote?.Set(GameSettings.ShowHintOverlay
             ? string.Join(Environment.NewLine, ["현재 힌트", .. GameInfo.HintNames(_game)])
             : "");
-        // 발견물 수 — 찾은 것 / 발견물 표 전체(모조품까지 든 274 에서 들어낸 노예를 뺀 273).
-        int total = _game.Discoveries?.Table.Discoveries.Count ?? 0;
-        int found = _player.Discoveries.Distinct().Count();
+        // 발견물 수 — 찾은 것 / 발견물 표 전체. 들어낸 노예와, 모조품 · 인물 · 사건 · 비보처럼 발견물 표를 빌린 줄은
+        // 안 센다(DiscoveryTable.CountedTotal) — 예전에는 그것까지 넣어 273 이었다.
+        var table = _game.Discoveries?.Table;
+        int total = table?.CountedTotal ?? 0;
+        int found = table?.CountedFound(_player.Discoveries) ?? _player.Discoveries.Distinct().Count();
         _foundNote?.Set(GameSettings.ShowDiscoveryCount
             ? total > 0 ? $"발견물 {found} / {total}" : $"발견물 {found}"
             : "");
