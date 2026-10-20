@@ -27,8 +27,8 @@ internal static class Dh2Style
     /// <summary>항목 이름 글씨 — 공용 색표에서 대항해시대2 빨강(<c>D34001</c>)에 가장 가까운 60번(<c>944034</c>)이다.</summary>
     public const byte LabelColor = 60;
 
-    /// <summary>단추 색 — 크림 띠 · 갈색 선 · 황갈 바둑판 테 · 고른 판(분홍 · 연보라, 파란 글씨) · 안 고른 판(짙은 초록, 옅은 글씨).</summary>
-    public static readonly Brush Bar = Frozen(Color.FromRgb(0xF2, 0xD9, 0xB5));
+    /// <summary>단추 색 — 띠(바탕색) · 갈색 선 · 황갈 바둑판 테 · 고른 판(분홍 · 연보라, 파란 글씨) · 안 고른 판(짙은 초록, 옅은 글씨).</summary>
+    public static readonly Brush Bar = Paper;   // 띠는 바탕과 같은 F2E3D3 — 다른 크림색이면 단추 둘레만 떠 보였다(요청)
     public static readonly Brush Brown = Frozen(Color.FromRgb(0x7A, 0x30, 0x10));
     private static readonly Brush Rim = GameUi.Dither(Color.FromRgb(0xF3, 0xA2, 0x61), Color.FromRgb(0xD3, 0x40, 0x01), 1);
     private static readonly Brush On = GameUi.Dither(Color.FromRgb(0xF0, 0xC0, 0xD8), Color.FromRgb(0xC8, 0xB0, 0xE0), 1);
