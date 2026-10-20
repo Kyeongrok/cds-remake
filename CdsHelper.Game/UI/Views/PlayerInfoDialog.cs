@@ -205,8 +205,12 @@ public sealed class PlayerInfoDialog : GameWindow
     private static string Nation(Engine.Game game, int id) =>
         game.Nations?.Find(id)?.Name ?? $"나라 {id}";
 
+    /// <summary>개발 기록 한 줄 — 고친 것이 없으면 null. 인물정보(<see cref="PersonInfoDialog"/>)도 쓴다.</summary>
+    internal static string? DevRecord(Player p) => p.DevMarks.Count == 0 ? null
+        : string.Join(" · ", p.DevMarks.OrderBy(m => m, StringComparer.Ordinal).Select(DevMarkName));
+
     /// <summary>개발 기록 열쇠를 읽을 이름으로. 모르는 열쇠는 그대로 낸다.</summary>
-    private static string DevMarkName(string key) => key switch
+    internal static string DevMarkName(string key) => key switch
     {
         "dev:gold" => "소지금", "dev:fame" => "명성", "dev:date" => "날짜", "dev:spouse" => "아내",
         "dev:ship" => "배 넣기", "dev:item" => "아이템 넣기", "dev:quest" => "이야기 상태", "dev:ruse" => "묘책 확률",
