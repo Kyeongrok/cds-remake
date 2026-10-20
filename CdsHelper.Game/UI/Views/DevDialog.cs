@@ -354,6 +354,35 @@ public sealed class DevDialog : GameWindow
         bgmLine.Children.Add(GameUi.PushButton("폴더 열기", OpenBgmDirectory, 120));
         rows.Children.Add(bgmLine);
 
+        // 세이브 · 설정이 든 폴더(%APPDATA%\CdsHelper) — 세이브 파일 · game-settings.json · 누적캐릭터.json 이 여기 있다(요청).
+        string saveDir = Path.GetDirectoryName(Engine.GameSave.Path) ?? "";
+        var saveLine = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(0, 4, 0, 4),
+        };
+        saveLine.Children.Add(new TextBlock
+        {
+            Text = "세이브",
+            Width = 64,
+            Foreground = GameUi.Text,
+            FontWeight = FontWeights.Bold,
+            FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        saveLine.Children.Add(new TextBlock
+        {
+            Text = saveDir,
+            Width = 420,
+            Foreground = GameUi.Text,
+            FontSize = 13,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            ToolTip = saveDir,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        saveLine.Children.Add(GameUi.PushButton("폴더 열기", () => OpenFolder(saveDir, "세이브"), 120));
+        rows.Children.Add(saveLine);
+
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
@@ -1067,6 +1096,20 @@ public sealed class DevDialog : GameWindow
         catch (Exception ex)
         {
             NoticeDialog.Show(this, $"CDSX 폴더를 열지 못했습니다 — {ex.Message}");
+        }
+    }
+
+    /// <summary>그 폴더를 탐색기로 연다. 없으면 만들어서 연다.</summary>
+    private void OpenFolder(string dir, string what)
+    {
+        try
+        {
+            Directory.CreateDirectory(dir);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(dir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            NoticeDialog.Show(this, $"{what} 폴더를 열지 못했습니다 — {ex.Message}");
         }
     }
 
