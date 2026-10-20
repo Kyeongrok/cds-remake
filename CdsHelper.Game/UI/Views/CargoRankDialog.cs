@@ -26,8 +26,11 @@ internal sealed class CargoRankDialog : InfoDialog
 
     private const double RankWidth = 40, CultureWidth = 110, CityWidth = 170, BoughtWidth = 110, PriceWidth = 110, TotalWidth = 150;
 
-    /// <summary>짐 목록 칸 너비 — 교역품 · 개수 · 기한 · 매입가 · 가장 비싼 도시 · 그 단가. 합이 순위 표 너비와 같다.</summary>
-    private const double GoodsWidth = 200, CountWidth = 60, ShelfWidth = 60, BestCityWidth = 150, BestPriceWidth = 110;
+    /// <summary>
+    /// 짐 목록 칸 너비 — 교역품 · 개수 · 기한 · 매입가 · (틈) · 가장 비싼 도시 · 그 단가. 합이 순위 표 너비와 같다.
+    /// 매입가는 오른쪽, 도시는 왼쪽에 붙어 「75닢이페」처럼 붙어 보였다 — 사이에 틈 칸을 둔다(요청).
+    /// </summary>
+    private const double GoodsWidth = 200, CountWidth = 60, ShelfWidth = 60, GapWidth = 24, BestCityWidth = 126, BestPriceWidth = 110;
 
     /// <summary>고른 짐 줄 바탕.</summary>
     private static readonly Brush Picked = Frozen(Color.FromRgb(0x5C, 0x40, 0x38));
@@ -71,7 +74,7 @@ internal sealed class CargoRankDialog : InfoDialog
         body.Children.Add(Gap(6));
 
         body.Children.Add(Row(null, ("교역품", GoodsWidth, false), ("개수", CountWidth, true), ("기한", ShelfWidth, true),
-                              ("매입가", BoughtWidth, true), ("가장 비싼 도시", BestCityWidth, false), ("단가", BestPriceWidth, true)));
+                              ("매입가", BoughtWidth, true), ("", GapWidth, false), ("가장 비싼 도시", BestCityWidth, false), ("단가", BestPriceWidth, true)));
         for (int i = 0; i < hold.Count; i++)
         {
             var cargo = hold[i];
@@ -81,7 +84,7 @@ internal sealed class CargoRankDialog : InfoDialog
             var row = Row(() => Pick(at),
                           (Engine.GameInfo.CargoLabel(game, cargo), GoodsWidth, false), ($"{cargo.Count}", CountWidth, true),
                           (cargo.Shelf == Player.NeverSpoils ? "-" : cargo.Spoiled ? "썩음" : $"{cargo.Months}개월", ShelfWidth, true),
-                          ($"{post.BuyPrice(player, cargo.Origin, cargo.Kind)}닢", BoughtWidth, true),
+                          ($"{post.BuyPrice(player, cargo.Origin, cargo.Kind)}닢", BoughtWidth, true), ("", GapWidth, false),
                           (any ? game.CityName(best.City) : "-", BestCityWidth, false), (any ? $"{best.Price}닢" : "-", BestPriceWidth, true));
             _rows.Add(row);
             body.Children.Add(row);
@@ -119,12 +122,13 @@ internal sealed class CargoRankDialog : InfoDialog
         if (cargo.Spoiled) _rank.Children.Add(Label("썩어서 어디서도 값을 받지 못합니다."));
         else
         {
-            _rank.Children.Add(Line("순위", "문화권", "도시", "매입가", "단가", "전부 팔면"));
+            // 끝 칸은 매출(단가 x 개수)이 아니라 순이익((단가 - 매입가) x 개수)이다(요청). 밑지면 앞에 - 가 붙는다.
+            _rank.Children.Add(Line("순위", "문화권", "도시", "매입가", "단가", "순이익"));
             for (int i = 0; i < ranked.Count; i++)
             {
                 var (city, price) = ranked[i];
                 string culture = _game.CultureOf(city);
-                _rank.Children.Add(Line($"{i + 1}", culture.Length > 0 ? Lang.T(culture) : "", _game.CityName(city), $"{bought}닢", $"{price}닢", $"{(long)price * cargo.Count}닢"));
+                _rank.Children.Add(Line($"{i + 1}", culture.Length > 0 ? Lang.T(culture) : "", _game.CityName(city), $"{bought}닢", $"{price}닢", $"{(long)(price - bought) * cargo.Count}닢"));
             }
             _rank.Children.Add(Gap(6));
             _rank.Children.Add(Label("아는 도시의 지금 시세입니다."));
