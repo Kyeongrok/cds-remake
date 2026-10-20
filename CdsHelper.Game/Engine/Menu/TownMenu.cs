@@ -40,10 +40,14 @@ internal static class TownMenu
 
         // 줄을 고르면 명령을 하기 전에 이야기 대본의 「건물 명령 고름」 사건을 먼저 올린다(0x004A248C →
         // 0x004AB5F0(건물, 줄)). 대본이 결과 1 로 끝나면 그 명령은 안 한다(0x004A2493).
-        return new GameMenu(title, null,
-            [.. items.Select((item, row) => (item, Guarded(ActionFor(facility, item, code, teachMask, patron, screen), code,
-                TableRow(facility, TownWorks.WorkOf(facility, item, TownWorks.Teaches(teachMask), patron != null), row),
-                screen)))]);
+        // 흐린 후원자 줄(PatronDim)은 맨 앞 줄이다 — 손을 안 받는다.
+        bool dimFirst = state.PatronDim;
+        return new GameMenu(title,
+            [.. items.Select((item, row) => new GameMenuRow(item,
+                Guarded(ActionFor(facility, item, code, teachMask, patron, screen), code,
+                    TableRow(facility, TownWorks.WorkOf(facility, item, TownWorks.Teaches(teachMask), patron != null), row),
+                    screen),
+                Dim: dimFirst && row == 0))]);
     }
 
     /// <summary>교역소 「투자」 줄이 대본에 올라가는 번호 — 원본 칸(0~2)과 안 겹치게 붙박는다.</summary>

@@ -161,6 +161,10 @@ public static class TownWorks
     /// <param name="Commented">
     /// 이 건물이 발견물이고 <b>이미 발견했는지</b> — 그때만 "해설" 줄이 붙는다.
     /// </param>
+    /// <param name="PatronDim">
+    /// 후원자 줄(<paramref name="PatronRow"/>)을 <b>흐린 죽은 줄</b>로 낼지 — 내밀 힌트가 없어 원본이면 줄이 빠질 자리를,
+    /// 교회 · 학자 저택처럼 딴 일도 하는 건물에서는 「설득」을 흐리게 남겨 둔다(원본에 없는 것, 요청).
+    /// </param>
     /// <param name="Contracted">계약을 맺고 있는지 — 술집의 「정보를 듣는다」가 그때 붙는다.</param>
     /// <param name="HasHeir">
     /// 아이가 있는지. 없으면 자택의 <b>교육 · 세대교체</b> 줄이 아예 안 붙는다 —
@@ -176,7 +180,7 @@ public static class TownWorks
                                             bool Contracted = false, bool HasHeir = false,
                                             bool Wed = false, bool PatronBribe = false,
                                             bool PatronBorrow = false, bool HasSon = false,
-                                            bool HasBooks = true);
+                                            bool HasBooks = true, bool PatronDim = false);
 
     /// <summary>
     /// 그 시설의 명령 창에 늘어놓을 줄들. 차례와 문구는 <see cref="Facility.Menu"/> 것이고,

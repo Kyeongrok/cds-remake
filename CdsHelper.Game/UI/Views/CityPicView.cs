@@ -878,7 +878,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (_patronMenu != null) _patronMenu.SignedHere = false;   // 건물에 들 때마다 [+0xC0] 은 0 이다(0x0044E6AA)
         if (!PassFameGate(building, facility)) return;   // 문 앞에서 돌아섰다
         Greet(facility, building, arrived);
-        TellNoHint(building);
+        TellNoHint(building, facility);
         ShowPhoto(facility.Kind, building.Code);
         if (arrived) facility = ArrivalHarbor(facility);
         _openKind = facility.Kind;
@@ -895,11 +895,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>
     /// 후원자가 앉은 건물인데 내밀 힌트가 없어 「설득」 줄이 빠지면 부관이 알려 준다(요청) — 원본은 말 없이 줄만 빠진다.
+    /// 후원자 일뿐인 건물(상회 · 왕궁 따위)만이다 — 딴 일도 하는 건물은 흐린 「설득」 줄로 알린다(BuildMenu).
     /// 부관이 없으면 알림 상자로 낸다. 이 도시에 머무는 동안 건물마다 한 번이다.
     /// </summary>
-    private void TellNoHint(CityBuildingTable.Building building)
+    private void TellNoHint(CityBuildingTable.Building building, Facility facility)
     {
         if (PatronAt(building.Code, building.Kind) is not { } patron || Patrons.NoHintTip(patron) is not { } tip) return;
+        // 딴 일도 하는 건물은 「설득」을 흐리게 남기는 것으로 알린다 — 그 일로 들를 때마다 부관이 말하면 성가시다.
+        if (HasOtherWork(facility, TownStateOf(facility, building.Code, building.TeachMask, patron))) return;
         if (!_noHintTold.Add(building.Code)) return;
         if (_game.AideFace is { } aide) TalkDialog.Say(this, aide, "", tip);
         else NoticeDialog.Show(this, tip);
@@ -2393,8 +2396,23 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                string kind)
     {
         var patron = PatronAt(code, kind);
+        var state = TownStateOf(facility, code, teachMask, patron);
+        // 내밀 힌트가 없어 후원자 줄이 빠질 자리 — 딴 일도 하는 건물이면 「설득」을 흐리게 남긴다(요청).
+        if (patron != null && Patrons.NoHintTip(patron) != null && HasOtherWork(facility, state))
+            state = state with { PatronRow = Facility.Persuade, PatronDim = true };
 
-        var menu = TownMenu.Build(facility, title, code, teachMask, patron,
+        var menu = TownMenu.Build(facility, title, code, teachMask, patron, state, this);
+        // 줄 끝을 넘으면 사진 속 사람들로 이어진다 — 줄과 사람이 한 고리다(0x004A2320).
+        menu.Ring = () => _photoWindow;
+        return menu;
+    }
+
+    /// <summary>후원자 줄과 나가기 말고도 고를 일이 있는 건물인지 — 교회 · 학자 저택 따위.</summary>
+    private static bool HasOtherWork(Facility facility, in TownWorks.TownState state) =>
+        TownWorks.LinesOf(facility, state with { PatronRow = null, PatronBribe = false, PatronBorrow = false }).Count > 1;
+
+    /// <summary>그 건물의 명령 창을 짓는 데 쓰는 이 도시의 형편.</summary>
+    private TownWorks.TownState TownStateOf(Facility facility, int code, uint teachMask, Patron? patron) =>
             new TownWorks.TownState(
                 Teaches: TownWorks.Teaches(teachMask),
                 Poor: _player.Gold <= Lodging.OddJobMaxGold,   // 0x0047FE70 의 jle — 100닢이면 뜬다
@@ -2409,12 +2427,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasHeir: Home.HasBornChild(_player),
                 HasSon: Home.EldestSon(_player) != null,
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
-                Wed: Home.CanLeaveHeir(_player)),
-            this);
-        // 줄 끝을 넘으면 사진 속 사람들로 이어진다 — 줄과 사람이 한 고리다(0x004A2320).
-        menu.Ring = () => _photoWindow;
-        return menu;
-    }
+                Wed: Home.CanLeaveHeir(_player));
 
     /// <summary>
     /// 그 건물에 <b>해설</b> 줄이 붙는지 — 발견물인 건물을 이미 발견했고 해설 글이 있을 때다.
