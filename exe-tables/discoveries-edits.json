@@ -9,7 +9,7 @@
         "Hint": 672,
         "Reward": 30000,
         "ItemId": 286,
-        "Indirect": true,
+        "Indirect": false,
         "OpenAtStart": true,
         "OnLand": true,
         "Once": true,
