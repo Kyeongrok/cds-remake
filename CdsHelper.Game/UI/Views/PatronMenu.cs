@@ -928,6 +928,19 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private bool CanPersuade => LiveHints.Count > 0;
 
     /// <summary>
+    /// 내밀 힌트가 없어 「설득」 줄이 빠지는 후원자면 부관이 할 말 — 원본은 아무 말 없이 줄만 빠져, 처음 하는 사람이
+    /// 버그로 여겼다(제보). 원본에 없는 귀띔이다. 보고 · 계약중단 줄이 서거나 설득할 수 있으면 null.
+    /// </summary>
+    public string? NoHintTip(Patron patron)
+    {
+        if (PatronRow(patron).Length > 0) return null;
+        bool anyLive = _game.Discoveries?.LiveHints(_player).Count > 0;
+        return anyLive
+            ? "제독， 가진 힌트는 이미 찾은 발견물의 것뿐이라 이 후원자를 설득할 수 없습니다． 새 힌트를 얻어 옵시다．"
+            : "제독， 후원자를 설득하려면 내밀 힌트가 있어야 합니다． 도서관에서 책을 읽거나 술집에서 소문을 들어 힌트를 얻어 옵시다．";
+    }
+
+    /// <summary>
     /// 설득에 내밀 힌트 — 얻었고 아직 보고 안 한 것(원본 힌트 상태 13) 가운데 <b>아직 못 찾은 것</b>이다.
     /// </summary>
     /// <remarks>

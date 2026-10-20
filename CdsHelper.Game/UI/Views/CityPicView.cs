@@ -878,6 +878,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (_patronMenu != null) _patronMenu.SignedHere = false;   // 건물에 들 때마다 [+0xC0] 은 0 이다(0x0044E6AA)
         if (!PassFameGate(building, facility)) return;   // 문 앞에서 돌아섰다
         Greet(facility, building, arrived);
+        TellNoHint(building);
         ShowPhoto(facility.Kind, building.Code);
         if (arrived) facility = ArrivalHarbor(facility);
         _openKind = facility.Kind;
@@ -887,6 +888,21 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                                  building.Kind),
                  BuildingTrack(building.Code));
         MarkGateway(facility.Kind, arrived);
+    }
+
+    /// <summary>이 도시에서 「힌트가 없다」고 이미 귀띔한 건물 — 같은 건물에 다시 들 때마다 되풀이하지 않는다.</summary>
+    private readonly HashSet<int> _noHintTold = [];
+
+    /// <summary>
+    /// 후원자가 앉은 건물인데 내밀 힌트가 없어 「설득」 줄이 빠지면 부관이 알려 준다(요청) — 원본은 말 없이 줄만 빠진다.
+    /// 부관이 없으면 알림 상자로 낸다. 이 도시에 머무는 동안 건물마다 한 번이다.
+    /// </summary>
+    private void TellNoHint(CityBuildingTable.Building building)
+    {
+        if (PatronAt(building.Code, building.Kind) is not { } patron || Patrons.NoHintTip(patron) is not { } tip) return;
+        if (!_noHintTold.Add(building.Code)) return;
+        if (_game.AideFace is { } aide) TalkDialog.Say(this, aide, "", tip);
+        else NoticeDialog.Show(this, tip);
     }
 
     /// <summary>그 왕궁에 앉은 국왕의 얼굴. 모르면 null.</summary>
