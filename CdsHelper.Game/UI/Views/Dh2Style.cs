@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -11,30 +12,71 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 internal static class Dh2Style
 {
-    /// <summary>바탕 — <c>F2E3D3</c>.</summary>
-    public static readonly Brush Paper = Frozen(Color.FromRgb(0xF2, 0xE3, 0xD3));
+    /// <summary>
+    /// 고칠 수 있는 색 — 열쇠 · 이름 · 처음 색. 개발 창 「대항2」 탭에서 고르면 <see cref="GameSettings.Dh2Colors"/> 에 남고,
+    /// 다음에 여는 창부터 든다. 처음 색은 대항해시대2 갈무리에서 집었다.
+    /// </summary>
+    public static readonly (string Key, string Label, Color Default)[] Slots =
+    [
+        ("paper", "바탕", Color.FromRgb(0xF2, 0xE3, 0xD3)),
+        ("stripe0", "테 1 (바깥)", Colors.Black),
+        ("stripe1", "테 2", Color.FromRgb(0xD3, 0x40, 0x01)),
+        ("stripe2", "테 3", Color.FromRgb(0xF3, 0xA2, 0x61)),
+        ("stripe3", "테 4", Colors.Black),
+        ("stripe4", "테 5", Color.FromRgb(0xD3, 0x40, 0x01)),
+        ("stripe5", "테 6", Color.FromRgb(0x00, 0xA2, 0x61)),
+        ("stripe6", "테 7 (안쪽)", Color.FromRgb(0xD3, 0x40, 0x01)),
+        ("brown", "단추 선", Color.FromRgb(0x7A, 0x30, 0x10)),
+        ("rim1", "단추 테 1", Color.FromRgb(0xF3, 0xA2, 0x61)),
+        ("rim2", "단추 테 2", Color.FromRgb(0xD3, 0x40, 0x01)),
+        ("on1", "고른 단추 1", Color.FromRgb(0xF0, 0xC0, 0xD8)),
+        ("on2", "고른 단추 2", Color.FromRgb(0xC8, 0xB0, 0xE0)),
+        ("onText", "고른 단추 글씨", Color.FromRgb(0x28, 0x40, 0xA8)),
+        ("off1", "안 고른 단추 1", Color.FromRgb(0x1E, 0x5A, 0x34)),
+        ("off2", "안 고른 단추 2", Color.FromRgb(0x10, 0x40, 0x24)),
+        ("offText", "안 고른 단추 글씨", Color.FromRgb(0xC0, 0xD4, 0xB8)),
+    ];
+
+    /// <summary>그 열쇠의 지금 색 — 고쳐 둔 것이 있으면 그것, 아니면 처음 색.</summary>
+    public static Color ColorOf(string key)
+    {
+        if (GameSettings.Dh2Colors.TryGetValue(key, out string? hex) && TryParse(hex, out var mine)) return mine;
+        foreach (var slot in Slots) if (slot.Key == key) return slot.Default;
+        return Colors.Magenta;
+    }
+
+    /// <summary>「#RRGGBB」 또는 「RRGGBB」 를 읽는다.</summary>
+    public static bool TryParse(string? hex, out Color color)
+    {
+        color = default;
+        hex = hex?.Trim().TrimStart('#');
+        if (hex is not { Length: 6 } || !uint.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out uint v)) return false;
+        color = Color.FromRgb((byte)(v >> 16), (byte)(v >> 8), (byte)v);
+        return true;
+    }
+
+    /// <summary>색을 「RRGGBB」 로.</summary>
+    public static string Hex(Color c) => $"{c.R:X2}{c.G:X2}{c.B:X2}";
+
+    /// <summary>바탕 — 처음은 <c>F2E3D3</c>.</summary>
+    public static Brush Paper => Frozen(ColorOf("paper"));
 
     /// <summary>
     /// 테 — 바깥에서 안쪽으로 한 점씩 일곱 줄: 검정 · 빨강(<c>D34001</c>) · 주황(<c>F3A261</c>) · 검정 · 빨강 · 초록(<c>00A261</c>) · 빨강.
     /// </summary>
-    private static readonly Brush[] Stripes =
-    [
-        Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0xF3, 0xA2, 0x61)),
-        Frozen(Colors.Black), Frozen(Color.FromRgb(0xD3, 0x40, 0x01)), Frozen(Color.FromRgb(0x00, 0xA2, 0x61)),
-        Frozen(Color.FromRgb(0xD3, 0x40, 0x01)),
-    ];
+    private static Brush[] Stripes => [.. Enumerable.Range(0, 7).Select(i => Frozen(ColorOf($"stripe{i}")))];
 
     /// <summary>항목 이름 글씨 — 공용 색표에서 대항해시대2 빨강(<c>D34001</c>)에 가장 가까운 60번(<c>944034</c>)이다.</summary>
     public const byte LabelColor = 60;
 
     /// <summary>단추 색 — 띠(바탕색) · 갈색 선 · 황갈 바둑판 테 · 고른 판(분홍 · 연보라, 파란 글씨) · 안 고른 판(짙은 초록, 옅은 글씨).</summary>
-    public static readonly Brush Bar = Paper;   // 띠는 바탕과 같은 F2E3D3 — 다른 크림색이면 단추 둘레만 떠 보였다(요청)
-    public static readonly Brush Brown = Frozen(Color.FromRgb(0x7A, 0x30, 0x10));
-    private static readonly Brush Rim = GameUi.Dither(Color.FromRgb(0xF3, 0xA2, 0x61), Color.FromRgb(0xD3, 0x40, 0x01), 1);
-    private static readonly Brush On = GameUi.Dither(Color.FromRgb(0xF0, 0xC0, 0xD8), Color.FromRgb(0xC8, 0xB0, 0xE0), 1);
-    private static readonly Brush Off = GameUi.Dither(Color.FromRgb(0x1E, 0x5A, 0x34), Color.FromRgb(0x10, 0x40, 0x24), 1);
-    private static readonly Brush OnText = Frozen(Color.FromRgb(0x28, 0x40, 0xA8));
-    private static readonly Brush OffText = Frozen(Color.FromRgb(0xC0, 0xD4, 0xB8));
+    public static Brush Bar => Paper;   // 띠는 바탕과 같다 — 다른 크림색이면 단추 둘레만 떠 보였다(요청)
+    public static Brush Brown => Frozen(ColorOf("brown"));
+    private static Brush Rim => GameUi.Dither(ColorOf("rim1"), ColorOf("rim2"), 1);
+    private static Brush On => GameUi.Dither(ColorOf("on1"), ColorOf("on2"), 1);
+    private static Brush Off => GameUi.Dither(ColorOf("off1"), ColorOf("off2"), 1);
+    private static Brush OnText => Frozen(ColorOf("onText"));
+    private static Brush OffText => Frozen(ColorOf("offText"));
 
     /// <summary>단추 판의 높이와, 바깥 테에서 안쪽 글씨 판까지의 거리. 폭은 글에 따라 정한다.</summary>
     private const double PlaqueHeight = 30, PlaqueInset = 5, MinPlaqueWidth = 72;
@@ -50,8 +92,9 @@ internal static class Dh2Style
     public static UIElement Frame(UIElement inner)
     {
         UIElement wrapped = inner;
-        for (int i = Stripes.Length - 1; i >= 0; i--)
-            wrapped = new Border { BorderBrush = Stripes[i], BorderThickness = new Thickness(1), SnapsToDevicePixels = true, Child = wrapped };
+        var stripes = Stripes;
+        for (int i = stripes.Length - 1; i >= 0; i--)
+            wrapped = new Border { BorderBrush = stripes[i], BorderThickness = new Thickness(1), SnapsToDevicePixels = true, Child = wrapped };
         return wrapped;
     }
 
@@ -109,10 +152,11 @@ internal static class Dh2Style
             plaque.ReleaseMouseCapture();
             if (inside) run();
         };
-        focused = on =>
+        Brush on = On, off = Off, onText = OnText, offText = OffText;
+        focused = lit =>
         {
-            face.Background = on ? On : Off;
-            label.Foreground = on ? OnText : OffText;
+            face.Background = lit ? on : off;
+            label.Foreground = lit ? onText : offText;
         };
         focused(false);
         return plaque;

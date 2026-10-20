@@ -4018,6 +4018,7 @@ public sealed class WorldMapWindow : Window
         // 「여급」 탭 — 여급 127명의 서는 해 · 도시 · 언어 · 취향.
         Barmaids = _game.Barmaids,
         CityName = _game.CityName,
+        Faces = _game.Faces,
     });
 
     /// <summary>

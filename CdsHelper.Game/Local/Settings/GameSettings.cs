@@ -303,6 +303,9 @@ public sealed class GameSettingsData
     /// <summary>인물정보 판을 대항해시대2 모양으로 낼지. 원본과 달라 꺼 두고 시작한다.</summary>
     public bool Dh2PersonInfo { get; set; }
 
+    /// <summary>대항해시대2 스타일 색을 고쳐 둔 것 — 열쇠(Dh2Style.Slots)마다 「RRGGBB」. 없는 열쇠는 처음 색이다.</summary>
+    public Dictionary<string, string> Dh2Colors { get; set; } = new();
+
     /// <summary>정보 제공 등급(0 기본 · 1 일반 · 2 상세). 기본은 원본만큼만 보인다.</summary>
     public int InfoLevel { get; set; }
 
@@ -1296,6 +1299,20 @@ public static class GameSettings
         get => Get(d => d.Dh2TalkStyle);
         set => Set(d => d.Dh2TalkStyle = value);
     }
+
+    /// <summary>대항해시대2 스타일 색을 고쳐 둔 것(열쇠 → 「RRGGBB」). 개발 창 「대항2」 탭이 고친다.</summary>
+    public static IReadOnlyDictionary<string, string> Dh2Colors => Get(d => d.Dh2Colors ?? []);
+
+    /// <summary>대항해시대2 스타일 색 하나를 고친다. 빈 글이나 null 이면 처음 색으로 되돌린다.</summary>
+    public static void SetDh2Color(string key, string? hex) => Set(d =>
+    {
+        d.Dh2Colors ??= new();
+        if (string.IsNullOrEmpty(hex)) d.Dh2Colors.Remove(key);
+        else d.Dh2Colors[key] = hex;
+    });
+
+    /// <summary>대항해시대2 스타일 색을 모두 처음 색으로 되돌린다.</summary>
+    public static void ResetDh2Colors() => Set(d => d.Dh2Colors = new());
 
     /// <summary>대항해시대2 스타일 인물정보 — 인물정보 판을 베이지 바탕 · 줄무늬 테 · 빨간 항목 이름으로 낸다.</summary>
     public static bool Dh2PersonInfo

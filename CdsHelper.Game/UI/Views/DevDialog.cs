@@ -87,6 +87,9 @@ public sealed class DevDialog : GameWindow
 
         /// <summary>도시 번호 → 이름(「여급」 탭).</summary>
         public Func<int, string>? CityName { get; init; }
+
+        /// <summary>초상화 — 「여급」 탭이 줄 왼쪽에 얼굴을 낸다. 없으면 얼굴 없이 늘어놓는다.</summary>
+        public Portraits? Faces { get; init; }
     }
 
     /// <summary>발견물 탭에서 체크를 하나라도 바꿨는지.</summary>
@@ -129,6 +132,7 @@ public sealed class DevDialog : GameWindow
             "대사 창 · 알림 · 물음창을 줄무늬 테 · 베이지 바탕 · 검은 글씨, 왕관 꼴 단추로 냅니다. 제목 띠는 안 얹습니다"));
         dh2.Children.Add(Toggle("대항해시대2 스타일 인물정보", GameSettings.Dh2PersonInfo, on => GameSettings.Dh2PersonInfo = on,
             "인물정보 판(제독 · 부하 · 술집에서 고용할 사람)을 줄무늬 테 · 베이지 바탕, 빨간 항목 이름 · 검은 값, 왕관 꼴 단추로 냅니다"));
+        dh2.Children.Add(Dh2ColorRows());
 
         // 「애드온」 탭 — Lua 애드온(AddOnHost). 아직 만드는 중이라 모드 창에는 안 내놓고 여기서만 켠다.
         var addOns = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
@@ -369,7 +373,7 @@ public sealed class DevDialog : GameWindow
         if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
             pages.Add(("역사이벤트", HistoryPage(events)));
         if (options.Barmaids is { } maids)
-            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"))));
+            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"), options.Faces)));
         pages.Add(("대항2", dh2));
         pages.Add(("애드온", addOns));
         pages.Add(("색", colors));
@@ -712,6 +716,66 @@ public sealed class DevDialog : GameWindow
     }
 
     /// <summary>
+    /// 「대항2」 탭의 색 고르기 — 대항해시대2 스타일 색(<see cref="Dh2Style.Slots"/>)마다 견본 · 「RRGGBB」 · 고르기 단추,
+    /// 맨 밑에 「모두 처음 색」. 고친 색은 다음에 여는 대사 창 · 인물정보부터 든다.
+    /// </summary>
+    private FrameworkElement Dh2ColorRows()
+    {
+        var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+        panel.Children.Add(new TextBlock
+        {
+            Text = "색", Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15, Margin = new Thickness(0, 0, 0, 4),
+        });
+        var refreshers = new List<Action>();
+        var grid = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2 };
+        foreach (var (key, label, _) in Dh2Style.Slots)
+        {
+            var swatch = new Border
+            {
+                Width = 40, Height = 20, BorderBrush = Brushes.Black, BorderThickness = new Thickness(1),
+                Margin = new Thickness(0, 0, 6, 0), Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center,
+            };
+            var hex = new TextBlock { Width = 64, Foreground = GameUi.Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+            void Refresh()
+            {
+                var c = Dh2Style.ColorOf(key);
+                swatch.Background = new SolidColorBrush(c);
+                bool mine = GameSettings.Dh2Colors.ContainsKey(key);
+                hex.Text = Dh2Style.Hex(c) + (mine ? " *" : "");
+            }
+            refreshers.Add(Refresh);
+            Refresh();
+            void Choose()
+            {
+                if (ColorPickDialog.Pick(this, label, Dh2Style.ColorOf(key)) is not { } picked) return;
+                var first = Array.Find(Dh2Style.Slots, s => s.Key == key).Default;
+                GameSettings.SetDh2Color(key, picked == first ? null : Dh2Style.Hex(picked));
+                Refresh();
+            }
+            swatch.MouseLeftButtonDown += (_, e) => { e.Handled = true; Choose(); };
+            var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 12, 2) };
+            line.Children.Add(new TextBlock
+            {
+                Text = label, Width = 120, Foreground = GameUi.Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center,
+            });
+            line.Children.Add(swatch);
+            line.Children.Add(hex);
+            grid.Children.Add(line);
+        }
+        panel.Children.Add(grid);
+        var reset = GameUi.PushButton("모두 처음 색", () => { GameSettings.ResetDh2Colors(); foreach (var r in refreshers) r(); }, 140);
+        reset.HorizontalAlignment = HorizontalAlignment.Left;
+        reset.Margin = new Thickness(0, 8, 0, 0);
+        panel.Children.Add(reset);
+        panel.Children.Add(new TextBlock
+        {
+            Text = "견본을 누르면 색을 고릅니다. * 는 고친 색입니다. 다음에 여는 대사 창 · 인물정보부터 듭니다.",
+            Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0), TextWrapping = TextWrapping.Wrap,
+        });
+        return panel;
+    }
+
+    /// <summary>
     /// 「여급」 탭 — 여급 127명을 표 차례로 늘어놓는다. 보기만 한다.
     /// </summary>
     /// <remarks>
@@ -719,7 +783,7 @@ public sealed class DevDialog : GameWindow
     /// 취향은 성격(<c>+0x18</c>)이다 — 「이야기한다」에서 그녀가 말하는 이상형이고, 제독의 성미 칸이 맞으면 말이 통한다
     /// (<see cref="Engine.Town.Barmaids.Suits"/>). 언어(<c>+0x20</c> 비트)는 그녀가 하는 말이다 — 제독 혼자 그 말이 3 이상이어야 설득 · 선물 · 프로포즈 줄이 서고(<c>0x00466850</c>), 아내가 되면 자식에게 가르친다.
     /// </remarks>
-    private FrameworkElement BarmaidPage(BarmaidTable table, Func<int, string> cityName)
+    private FrameworkElement BarmaidPage(BarmaidTable table, Func<int, string> cityName, Portraits? faces)
     {
         var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
         var find = Field();
@@ -749,7 +813,7 @@ public sealed class DevDialog : GameWindow
             string taste = Engine.Town.StrangerTalk.OwnTasteOf(her.Personality) is { } t ? $"「{t}」" : "";
 
             bool dim = state != "서 있음";
-            var line = new StackPanel { Margin = new Thickness(0, 3, 0, 3) };
+            var line = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             line.Children.Add(new TextBlock
             {
                 Text = head, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 13,
@@ -766,8 +830,24 @@ public sealed class DevDialog : GameWindow
                     Text = "    " + taste, Foreground = GameUi.Text, FontSize = 12,
                     Opacity = dim ? 0.45 : 0.7, TextWrapping = TextWrapping.Wrap,
                 });
-            lines.Add((line, $"{head} {body} {taste}"));
-            list.Children.Add(line);
+            // 줄 왼쪽에 얼굴 — 수첩에서 바꾼 얼굴이면 그것이다(표가 BarmaidEdits 를 얹어 낸다).
+            var row = new DockPanel { Margin = new Thickness(0, 3, 0, 3) };
+            if (faces?.TryGetBgra(her.Face, female: true) is { } px)
+            {
+                var bmp = Portraits.Bitmap(px);
+                bmp.Freeze();
+                var image = new Image
+                {
+                    Source = bmp, Width = Portraits.Width, Height = Portraits.Height,
+                    Margin = new Thickness(0, 0, 8, 0), Opacity = dim ? 0.6 : 1, VerticalAlignment = VerticalAlignment.Top,
+                };
+                RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
+                DockPanel.SetDock(image, Dock.Left);
+                row.Children.Add(image);
+            }
+            row.Children.Add(line);
+            lines.Add((row, $"{head} {body} {taste}"));
+            list.Children.Add(row);
         }
 
         void Filter()
