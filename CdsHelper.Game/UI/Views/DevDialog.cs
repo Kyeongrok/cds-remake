@@ -110,8 +110,10 @@ public sealed class DevDialog : GameWindow
         var rows = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
         // 「테스트」 탭 — 베타 테스트를 돕는 것(안 죽기 · 재해 줄이기).
         var tests = new StackPanel { Margin = new Thickness(12, 10, 12, 4) };
-        rows.Children.Add(Row("소지금", _gold, GoldStep, v => _player.SetGold(v)));
-        rows.Children.Add(Row("명성", _fame, FameStep, v => _player.Fame = v));
+        // 게임 값을 고치는 줄은 개발 기록(HardcoreRules.Mark → Player.DevMarks)에 남는다 — 세이브 봉인에 함께 묶인다.
+        // 보기만 하는 것(색 · 좌표 겹쳐 보기 · 창 열기)은 안 남긴다(요청).
+        rows.Children.Add(Row("소지금", _gold, GoldStep, v => { _player.SetGold(v); Engine.HardcoreRules.Mark("dev:gold", _player); }));
+        rows.Children.Add(Row("명성", _fame, FameStep, v => { _player.Fame = v; Engine.HardcoreRules.Mark("dev:fame", _player); }));
         rows.Children.Add(YearRow(options.YearChanged));
         rows.Children.Add(ShipRow());
         rows.Children.Add(EffectRow());
@@ -123,7 +125,11 @@ public sealed class DevDialog : GameWindow
             "배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄웁니다"));
 
         // 일기토 불사 — 베타 테스트용. 내 체력이 안 떨어지고, 판은 오른쪽 단추 「승리 · 항복」으로 끝낸다.
-        tests.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on => GameSettings.DuelImmortal = on,
+        tests.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on =>
+            {
+                GameSettings.DuelImmortal = on;
+                if (on) Engine.HardcoreRules.Mark("dev:duel-immortal", _player);
+            },
             "일기토에서 죽지 않습니다. 명령을 고를 차례에 오른쪽 단추를 누르면 「승리 · 항복」으로 판을 끝냅니다"));
 
         // 「대항2」 탭 — 대항해시대2 모양으로 바꾸는 것들. 아직 만드는 중이라 모드 창에는 안 내놓고 여기서만 켠다.
@@ -151,6 +157,7 @@ public sealed class DevDialog : GameWindow
             {
                 value.Text = $"{slider.Value:0}%";
                 GameSettings.MutinyRate = (int)slider.Value;
+                if (slider.Value < 100) Engine.HardcoreRules.Mark("dev:mutiny", _player);
             };
             var line = new StackPanel
             {
@@ -627,6 +634,7 @@ public sealed class DevDialog : GameWindow
             };
             box.Checked += (_, _) =>
             {
+                Engine.HardcoreRules.Mark("dev:discovery", _player);
                 if (_player.Discover(id)) { _player.Settle(id); _findsChanged = true; }
                 // 보고까지 한 것으로 — 행적에는 안 남긴다(게임에서 한 보고가 아니다).
                 if (_player.Announce(id, trace: false)) _findsChanged = true;
@@ -634,6 +642,7 @@ public sealed class DevDialog : GameWindow
             };
             box.Unchecked += (_, _) =>
             {
+                Engine.HardcoreRules.Mark("dev:discovery", _player);
                 if (_player.Undiscover(id)) _findsChanged = true;
                 // 사건만 마친 것(인물 · 비보)은 찾은 기록이 없어 매듭만 푼다 — 그 자리 사건이 다시 뜬다.
                 else if (_player.Unsettle(id)) _findsChanged = true;
@@ -1117,7 +1126,7 @@ public sealed class DevDialog : GameWindow
         });
         line.Children.Add(GameUi.PushButton("맞는다", () =>
         {
-            if (maids is null) { _player.Marry("카타리나"); Paint(); return; }
+            if (maids is null) { _player.Marry("카타리나"); Engine.HardcoreRules.Mark("dev:spouse", _player); Paint(); return; }
             var list = maids.Barmaids;
             int pick = ListPickDialog.Pick(this, [.. list.Select(b => b.Name)],
                 caption: "아내로 맞을 여급", whenEmpty: "여급이 없습니다",
@@ -1127,9 +1136,10 @@ public sealed class DevDialog : GameWindow
                 preselect: list.ToList().FindIndex(b => b.Id == _player.SpouseId));
             if (pick < 0) return;
             _player.Marry(list[pick].Name, list[pick].Id);
+            Engine.HardcoreRules.Mark("dev:spouse", _player);
             Paint();
         }, 96));
-        line.Children.Add(GameUi.PushButton("없앤다", () => { _player.Marry(""); Paint(); }, 96));
+        line.Children.Add(GameUi.PushButton("없앤다", () => { _player.Marry(""); Engine.HardcoreRules.Mark("dev:spouse", _player); Paint(); }, 96));
         line.Children.Add(shown);
         return line;
     }
@@ -1168,6 +1178,7 @@ public sealed class DevDialog : GameWindow
             if (NumberPadDialog.Ask(this, get(was), min, max(was)) is not { } value || value == get(was)) return;
             var to = with(was, value);
             _player.SetDate(to);
+            Engine.HardcoreRules.Mark("dev:date", _player);
             changed?.Invoke(to < was);
             Repaint();
         }

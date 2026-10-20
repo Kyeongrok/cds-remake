@@ -139,6 +139,12 @@ public sealed class Player
     /// </summary>
     public HashSet<string> HardcoreMarks { get; } = [];
 
+    /// <summary>
+    /// 이 판에서 개발 기능으로 <b>값을 고친</b> 기록(<c>dev:gold</c> · <c>dev:item</c> 따위) — 하드코어든 아니든 적는다. 끄거나 되돌려도
+    /// 안 지운다. 세이브 전체가 봉인(HMAC)되어 파일을 손으로 고치면 불러올 때 「tampered」가 붙는다. 원본에 없다.
+    /// </summary>
+    public HashSet<string> DevMarks { get; } = [];
+
     // ── 신상 (NEW GAME 첫 걸음) ────────────────────────────────────────────────
 
     /// <summary>성. 게임 화면의 첫 칸이다.</summary>

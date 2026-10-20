@@ -3738,6 +3738,10 @@ public sealed class WorldMapWindow : Window
                 HardcoreRules.Note(_game.Player);
             }
             SyncHardTitle();
+            // 개발 기능으로 고친 기록 — 세이브 봉인이 안 맞으면(파일을 손으로 고쳤으면) 「변조」를 붙인다. 봉인 앞 판은 안 따진다.
+            _game.Player.DevMarks.Clear();
+            _game.Player.DevMarks.UnionWith(saved.DevMarks ?? []);
+            if (saved.SealOk == false) _game.Player.DevMarks.Add(HardcoreRules.Tampered);
             // 해전 뒤 수도로 돌려보낸 사람들. 이 칸 앞의 세이브는 아무도 안 돌려보낸 것으로 연다.
             _game.Player.RestoreRecalls(saved.Recalls);
             _game.Player.RestorePatronDocks(saved.PatronDocks);

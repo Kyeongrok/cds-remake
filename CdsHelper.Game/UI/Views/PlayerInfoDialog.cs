@@ -153,6 +153,10 @@ public sealed class PlayerInfoDialog : GameWindow
                        + $"{deal.SignedOn:yyyy-MM-dd} 부터 {deal.Years}년"
                      : "(없다)");
 
+        // 개발 기능으로 고친 기록 — 세이브 봉인에 묶여 지울 수 없다. 「변조」는 세이브 파일을 손으로 고친 것이다.
+        Head("개발 기록");
+        Row("고친 것", p.DevMarks.Count == 0 ? "(없다)" : string.Join(" · ", p.DevMarks.OrderBy(m => m, StringComparer.Ordinal).Select(DevMarkName)));
+
         Head("가족");
         Row("배우자", p.Spouse.Length > 0 ? p.Spouse : "(없다)");
         Row("후손", p.Heirs.Count > 0 ? string.Join(" · ", p.Heirs) : "(없다)");
@@ -200,4 +204,15 @@ public sealed class PlayerInfoDialog : GameWindow
 
     private static string Nation(Engine.Game game, int id) =>
         game.Nations?.Find(id)?.Name ?? $"나라 {id}";
+
+    /// <summary>개발 기록 열쇠를 읽을 이름으로. 모르는 열쇠는 그대로 낸다.</summary>
+    private static string DevMarkName(string key) => key switch
+    {
+        "dev:gold" => "소지금", "dev:fame" => "명성", "dev:date" => "날짜", "dev:spouse" => "아내",
+        "dev:ship" => "배 넣기", "dev:item" => "아이템 넣기", "dev:quest" => "이야기 상태", "dev:ruse" => "묘책 확률",
+        "dev:scenario" => "시나리오", "dev:discovery" => "발견물", "dev:duel-immortal" => "일기토 불사",
+        "dev:mutiny" => "반란 빈도", "dev:ctrl-click" => "Ctrl+클릭 배 놓기", Engine.HardcoreRules.Tampered => "변조",
+        _ when key.StartsWith("edited:") => $"{key["edited:".Length..]} 표 고침",
+        _ => key,
+    };
 }

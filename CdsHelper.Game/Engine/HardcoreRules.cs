@@ -83,7 +83,17 @@ public static class HardcoreRules
     {
         // 파일 이름은 ASCII 라(「rumors-added.json」 따위) 표 이름으로 되짚어 본다(TableCache.NamesEndingWith).
         const string suffix = "-고친것";
-        return Local.Helpers.TableCache.NamesEndingWith(suffix).Select(name => name[..^suffix.Length]);
+        return Local.Helpers.TableCache.NamesEndingWith(suffix).Select(name => name[..^suffix.Length])
+            // 여급 표는 여급 수첩에서 얼굴만 바꿔도 이 파일이 생긴다 — 얼굴은 게임에 영향이 없어, 궁합 코드를 고쳤을 때만 친다.
+            .Where(name => name != "여급" || Local.Helpers.BarmaidEdits.All.Values.Any(e => e.Fortune >= 0));
+    }
+
+    /// <summary>
+    /// 개발 기록에 도구 앱으로 고친 표를 더한다 — 적을 때 부른다. 어느 판이든 그 표를 고친 채로 돈 것이니 남긴다.
+    /// </summary>
+    public static void NoteDev(Player player)
+    {
+        foreach (var name in EditedTables()) player.DevMarks.Add($"edited:{name}");
     }
 
     /// <summary>하드코어 판이면 지금 켜 둔 것을 더한다. 끈 것은 안 지운다.</summary>
@@ -93,12 +103,26 @@ public static class HardcoreRules
         player.HardcoreMarks.UnionWith(Active());
     }
 
-    /// <summary>하드코어 판이면 그 열쇠를 더한다 — 개발 기능 · Ctrl+클릭 배 놓기처럼 <b>쓴 것</b>을 적는다.</summary>
+    /// <summary>
+    /// 개발 기능 · Ctrl+클릭 배 놓기처럼 <b>값을 고친 것</b>을 적는다 — 어느 판이든 개발 기록(<see cref="Player.DevMarks"/>)에 남고,
+    /// 하드코어 판이면 랭킹 표에도 더한다. 보기만 하는 것(색 · 창 열기)은 부르지 않는다.
+    /// </summary>
     public static void Mark(string key, Player? player = null)
     {
         player ??= Current?.Invoke();
-        if (player is { Hardcore: true }) player.HardcoreMarks.Add(key);
+        if (player == null) return;
+        player.DevMarks.Add(key);
+        if (player.Hardcore) player.HardcoreMarks.Add(key);
     }
+
+    /// <summary>세이브 봉인 자리를 잡아 두는 글 — 봉인을 셀 때는 이 글이 든 채로 센다.</summary>
+    public const string SealPlaceholder = "0000000000000000000000000000000000000000000000000000000000000000";
+
+    /// <summary>
+    /// 세이브 글 전체의 봉인 — 봉인 칸이 <see cref="SealPlaceholder"/> 인 채로 적은 글을 센다. 이름 · 소지금 · 개발 기록까지
+    /// 글 한 자라도 바뀌면 안 맞는다.
+    /// </summary>
+    public static string FileSeal(string jsonWithPlaceholder) => Hmac(jsonWithPlaceholder);
 
     /// <summary>릴리즈 빌드가 박은 열쇠. 없으면 빈 글.</summary>
     public static string Key { get; } =

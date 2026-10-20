@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.Engine;
@@ -71,6 +72,12 @@ public static class GameSave
     /// (<see cref="Support.Local.Models.Player.RestoreFleet"/> 의 <c>hullNames</c>).
     /// </remarks>
     public const int HullNamesFrom = 31;
+
+    /// <summary>
+    /// 이 판부터 세이브 <b>글 전체</b>에 봉인(<c>DevSeal</c>)이 붙고, 개발 기능으로 고친 기록(<c>DevMarks</c>)이 적힌다 — 지금 적는 판이다.
+    /// 이 판 이상인데 봉인이 없거나 안 맞으면 손으로 고친 것으로 보고 「tampered」를 붙인다. 앞 판은 따지지 않는다.
+    /// </summary>
+    public const int DevSealFrom = 32;
 
     /// <summary>
     /// 적어 둔 것을 지운다 — 은퇴시킬 때다(원본은 새 게임의 「삭제한다」에서도 지운다 — 우리는 그 줄을 「남겨 둔다」로 바꿨다).
@@ -407,7 +414,12 @@ public static class GameSave
         Dictionary<int, int>? AccPlayed = null, string? GameId = null,
         Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null,
         List<string>? HardcoreMarks = null, string? HardcoreSeal = null,
-        Dictionary<int, long>? GrowthFunds = null, Dictionary<int, int>? GoodsRates = null);
+        Dictionary<int, long>? GrowthFunds = null, Dictionary<int, int>? GoodsRates = null,
+        List<string>? DevMarks = null, string? DevSeal = null)
+    {
+        /// <summary>읽을 때 봉인을 대 본 결과 — 맞으면 참, 안 맞거나 없으면 거짓, 따지지 않는 앞 판이면 null. 파일에는 안 적는다.</summary>
+        [JsonIgnore] public bool? SealOk { get; init; }
+    }
 
     /// <summary>
     /// 세이브에 적는 계약. <see cref="Support.Local.Models.Contract"/> 를 그대로 적을 수도
@@ -432,7 +444,8 @@ public static class GameSave
     {
         // 하드코어 판이면 지금 켜 둔 모드를 적어 두고 봉인한다(HardcoreRules) — 끈 뒤에 적어도 한 번 켠 것은 남는다.
         HardcoreRules.Note(player);
-        var data = new Data(HullNamesFrom, DateTime.Now, player.Gold, player.Date,
+        HardcoreRules.NoteDev(player);
+        var data = new Data(DevSealFrom, DateTime.Now, player.Gold, player.Date,
                             player.CityId, player.CityName,
                             new Dictionary<string, int>(player.Skills), [.. player.Hints],
                             [.. player.Mates], [.. player.Met], [.. player.Items],
@@ -597,13 +610,15 @@ public static class GameSave
                             // 도시 투자 성장(모드)의 적립금. 이 칸 앞의 세이브는 적립금이 없다.
                             GrowthFunds: player.GrowthFunds.Count > 0 ? player.GrowthFunds.ToDictionary(e => e.Key, e => e.Value) : null,
                             // 교역품별 시세(모드). 이 칸 앞의 세이브는 모든 교역품이 100 이다.
-                            GoodsRates: player.GoodsRates.Count > 0 ? player.GoodsRates.ToDictionary(e => e.Key, e => e.Value) : null);
+                            GoodsRates: player.GoodsRates.Count > 0 ? player.GoodsRates.ToDictionary(e => e.Key, e => e.Value) : null,
+                            // 개발 기능으로 고친 기록. 봉인은 글을 다 짓고 붙인다(Sealed).
+                            DevMarks: player.DevMarks.Count > 0 ? HardcoreRules.Sorted(player.DevMarks) : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
             var dir = System.IO.Path.GetDirectoryName(file);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-            string json = JsonSerializer.Serialize(data, Pretty);
+            string json = Sealed(data);
 
             // 「가장 새 것」 자리를 덮기 전에, 그 자리에 있던 것이 지난 칸에 없으면 한 칸으로 옮겨 둔다 —
             // 칸이 생기기 전에 적은 세이브나, 딴 캐릭터를 남겨 둔 채 새 캐릭터가 처음 적을 때 앞의 것이 사라지지 않게.
@@ -672,8 +687,13 @@ public static class GameSave
         if (Load(file) is not { } data) return "세이브를 읽지 못했습니다.";
         try
         {
-            var next = data with { Items = [.. data.Items ?? [], itemId] };
-            File.WriteAllText(file, JsonSerializer.Serialize(next, Pretty));
+            // 개발 기능으로 고친 것이니 그 파일의 개발 기록에 남기고 다시 봉인한다.
+            var next = data with
+            {
+                Items = [.. data.Items ?? [], itemId],
+                DevMarks = HardcoreRules.Sorted([.. data.DevMarks ?? [], "dev:item"]),
+            };
+            File.WriteAllText(file, Sealed(next));
             return "";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -682,13 +702,34 @@ public static class GameSave
         }
     }
 
+    /// <summary>세이브를 글로 짓고 봉인을 붙인다 — 봉인 자리를 잡아 둔 채로 센 값을 그 자리에 넣는다.</summary>
+    private static string Sealed(Data data)
+    {
+        string json = JsonSerializer.Serialize(data with { DevSeal = HardcoreRules.SealPlaceholder }, Pretty);
+        string seal = HardcoreRules.FileSeal(json);
+        int at = json.IndexOf($"\"{HardcoreRules.SealPlaceholder}\"", StringComparison.Ordinal);
+        return json[..at] + $"\"{seal}\"" + json[(at + HardcoreRules.SealPlaceholder.Length + 2)..];
+    }
+
+    /// <summary>읽은 글의 봉인이 맞는지 — 봉인 자리를 도로 잡아 둔 글로 다시 센다.</summary>
+    private static bool SealMatches(string text, string? seal)
+    {
+        if (seal is not { Length: 64 }) return false;
+        int at = text.IndexOf($"\"{seal}\"", StringComparison.Ordinal);
+        if (at < 0) return false;
+        string bare = text[..at] + $"\"{HardcoreRules.SealPlaceholder}\"" + text[(at + seal.Length + 2)..];
+        return string.Equals(HardcoreRules.FileSeal(bare), seal, StringComparison.Ordinal);
+    }
+
     public static Data? Load(string? path = null)
     {
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
             if (!File.Exists(file)) return null;
-            return JsonSerializer.Deserialize<Data>(File.ReadAllText(file));
+            string text = File.ReadAllText(file);
+            if (JsonSerializer.Deserialize<Data>(text) is not { } data) return null;
+            return data with { SealOk = data.Version < DevSealFrom ? null : SealMatches(text, data.DevSeal) };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
