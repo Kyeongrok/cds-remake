@@ -23,6 +23,14 @@
                             Grid.ColumnSpan="2"
                             Margin="0,0,0,8">
                             <!--  아무 그림이나 발견물 그림처럼 바꿔 다음 빈 번호로 넣는다  -->
+                            <!--  세기 · 자르기를 고르며 미리 보고 넣는다(번호를 고르면 있는 그림도 바꾼다)  -->
+                            <Button
+                                Margin="8,0,0,0"
+                                Padding="10,3"
+                                Command="{Binding TuneCommand}"
+                                Content="그림 다듬어 넣기…"
+                                DockPanel.Dock="Right"
+                                ToolTip="붓결 · 번짐 · 밝기 · 빛깔 · 테두리 · 자르기를 막대로 고르며 미리 보고 넣습니다" />
                             <Button
                                 Padding="10,3"
                                 Command="{Binding AddFilteredCommand}"

@@ -83,6 +83,21 @@ public partial class DiscoveryStillContentViewModel : ObservableObject
         else if (last >= 0) Note = $"D{last}.png 로 넣었습니다 — {DiscoveryStillFiles.UploadDirectory()}";
     }
 
+    /// <summary>
+    /// 세기와 자르기를 고르며 한 장을 다듬어 넣는다(<see cref="CdsHelper.Game.UI.Views.DiscoveryStillTuneDialog"/>).
+    /// 번호는 고른 그림이 있으면 그 번호(바꾸기), 없으면 다음 빈 번호로 적어 둔다.
+    /// </summary>
+    [RelayCommand]
+    private void Tune()
+    {
+        int suggested = Selected?.Number ?? DiscoveryStillFiles.NextFreeNumber(_taken);
+        int saved = CdsHelper.Game.UI.Views.DiscoveryStillTuneDialog.Show(System.Windows.Application.Current?.MainWindow, suggested);
+        if (saved < 0) return;
+        Reload();
+        Selected = Stills.FirstOrDefault(s => s.Number == saved) ?? Selected;
+        Note = $"D{saved}.png 로 넣었습니다 — {DiscoveryStillFiles.UploadDirectory()}";
+    }
+
     /// <summary>그림 폴더에서 그림을 다시 읽는다.</summary>
     public void Reload()
     {
