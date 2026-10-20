@@ -94,37 +94,37 @@ public sealed class ModDialog : GameWindow
     };
 
     /// <summary>
-    /// 오른쪽 설명 칸의 그림 — 글 밑에 붙는다. <c>asset/ui/tip/</c> 에 그 이름의 그림이 있을 때만 보인다.
+    /// 오른쪽 설명 칸의 그림들 — 글 밑에 차례로 붙는다. <c>asset/ui/tip/</c> 에 그 이름의 그림이 있을 때만 보인다.
     /// </summary>
-    private readonly Image _tipImage = new()
-    {
-        Stretch = Stretch.Uniform,
-        StretchDirection = StretchDirection.DownOnly,
-        HorizontalAlignment = HorizontalAlignment.Left,
-        Margin = new Thickness(0, 8, 0, 0),
-        Visibility = Visibility.Collapsed,
-    };
+    private readonly StackPanel _tipImages = new();
 
-    /// <summary>설명 칸에 그 그림을 건다. 이름이 없거나 파일이 없으면 그림 자리를 접는다.</summary>
-    private void ShowTipImage(string? file)
+    /// <summary>설명 칸에 그 그림들을 건다. 이름이 없거나 파일이 없는 것은 건너뛴다.</summary>
+    private void ShowTipImage(IReadOnlyList<string>? files)
     {
-        _tipImage.Visibility = Visibility.Collapsed;
-        _tipImage.Source = null;
-        if (file is null) return;
-        string path = System.IO.Path.Combine(AppContext.BaseDirectory, "asset", "ui", "tip", file);
-        if (!System.IO.File.Exists(path)) return;
-        try
+        _tipImages.Children.Clear();
+        foreach (string file in files ?? [])
         {
-            var picture = new System.Windows.Media.Imaging.BitmapImage();
-            picture.BeginInit();
-            picture.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-            picture.UriSource = new Uri(path);
-            picture.EndInit();
-            picture.Freeze();
-            _tipImage.Source = picture;
-            _tipImage.Visibility = Visibility.Visible;
+            string path = System.IO.Path.Combine(AppContext.BaseDirectory, "asset", "ui", "tip", file);
+            if (!System.IO.File.Exists(path)) continue;
+            try
+            {
+                var picture = new System.Windows.Media.Imaging.BitmapImage();
+                picture.BeginInit();
+                picture.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                picture.UriSource = new Uri(path);
+                picture.EndInit();
+                picture.Freeze();
+                _tipImages.Children.Add(new Image
+                {
+                    Source = picture,
+                    Stretch = Stretch.Uniform,
+                    StretchDirection = StretchDirection.DownOnly,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Margin = new Thickness(0, 8, 0, 0),
+                });
+            }
+            catch (Exception ex) when (ex is System.IO.IOException or NotSupportedException or UnauthorizedAccessException) { }
         }
-        catch (Exception ex) when (ex is System.IO.IOException or NotSupportedException or UnauthorizedAccessException) { }
     }
 
     private ModDialog(Options options)
@@ -167,7 +167,8 @@ public sealed class ModDialog : GameWindow
         // 미니맵 — D 로 여는 발견물 지도를 항해·뭍 이동 중에 오른쪽 아래에 작게 띄운다.
         // 배 속도 — 바다에서 걸음마다 잰 함대 속도를 쪽지로 띄운다.
         info.Children.Add(Toggle("배 속도", GameSettings.ShowShipSpeed, on => GameSettings.ShowShipSpeed = on,
-            "원본에 없는 것입니다 — 바다에 있을 때 함대 속도(바람·돛·선원으로 걸음마다 잰 값)를 지도 위 쪽지로 띄웁니다. 뭍·도시에서는 안 뜹니다. 끌어 옮길 수 있습니다."));
+            "원본에 없는 것입니다 — 바다에 있을 때 함대 속도(바람·돛·선원으로 걸음마다 잰 값)를 지도 위 쪽지로 띄웁니다. 뭍·도시에서는 안 뜹니다. 끌어 옮길 수 있습니다.",
+            images: ["ship-speed.png"]));
 
         // 접근 함대 정보 — 다가간 함대의 초상화 · 국적 · 직업 · 함대 규모.
         info.Children.Add(Toggle("접근 함대 정보", GameSettings.FleetCard, on => GameSettings.FleetCard = on,
@@ -239,7 +240,7 @@ public sealed class ModDialog : GameWindow
             + "이렇게 써 보세요 — 회색 점이 몰린 곳을 다음 목적지로 잡고, 격자를 켜서 힌트의 경도 · 위도와 맞춰 봅니다."
             + " 스스로 찾는 재미를 아끼고 싶으면 아래 단추에서 「발견물」만 꺼 두고 도시 · 풍향 · 해류 지도로만 쓰셔도 됩니다.\n\n"
             + "끄면 햄버거 줄도 단축키도 안 먹습니다.",
-            image: "discovery-map.png"));
+            images: ["discovery-map.png"]));
 
         // 발견물 지도의 내 자리(파란 점) 크기 — 잘 안 보인다는 말이 있어 키울 수 있게 한다.
         ui.Children.Add(Select("발견물 지도 내 자리 크기",
@@ -311,7 +312,8 @@ public sealed class ModDialog : GameWindow
         rows.Children.Add(Toggle("배 빌림 묻기", GameSettings.AskLendShips,
             on => GameSettings.AskLendShips = on,
             "계약을 맺을 때 내 배가 한 척이라도 있으면 후원자가 「배를 빌리겠습니까?」를 묻습니다(원본 그대로)."
-            + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖추고 있어 물음이 성가실 때 씁니다."));
+            + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖추고 있어 물음이 성가실 때 씁니다.",
+            images: ["lend-ships-1.png", "lend-ships-2.png"]));
 
         // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
         font.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
@@ -326,7 +328,7 @@ public sealed class ModDialog : GameWindow
             "원본과 다릅니다 — 취득 힌트 일람을 왼쪽에 목록, 오른쪽에 설명으로 나란히 띄웁니다."
             + " 줄을 누르면(↑↓ 글쇠도) 곧바로 그 힌트의 이야기가 오른쪽에 나옵니다(정보 등급 「일반」이면 등급 · 자금 · 기한도)."
             + " 끄면 원본처럼 고르고 결정을 눌러야 파란 판이 뜹니다.",
-            image: "hint-browser.png"));
+            images: ["hint-browser.png"]));
 
         // 향상된 후원자 정보 — 스폰서 일람 줄에 얼굴 · 취향 · 권력 · 친밀도.
         ui.Children.Add(Toggle("향상된 후원자 정보", GameSettings.PatronListEnhanced,
@@ -335,7 +337,7 @@ public sealed class ModDialog : GameWindow
             + " 권력과 친밀도를 함께 보입니다. 원본은 이름만 늘어놓아 한 사람씩 열어 봐야 알 수 있습니다."
             + " 어느 후원자에게 어떤 발견물을 가져가면 좋을지, 누구와 친한지 한눈에 고를 수 있습니다."
             + " 끄면 원본처럼 이름만 나옵니다.",
-            image: "patron-list.png"));
+            images: ["patron-list.png"]));
 
         // 정보 제공 등급 — 기본(원본) · 일반 · 상세.
         info.Children.Add(Select("정보 등급", ["기본 (원본)", "일반", "상세"],
@@ -376,7 +378,8 @@ public sealed class ModDialog : GameWindow
         ui.Children.Add(Toggle("아이템 창 개선", GameSettings.ItemListPictures,
             on => GameSettings.ItemListPictures = on,
             "원본과 다릅니다 — 소지품일람의 줄마다 스폰서 일람처럼 왼쪽에 아이템 그림을 내고, 이름 밑에"
-            + " 갈래와 효과(무기 · 방어구), 「장비중」을 적습니다. 끄면 원본처럼 이름만 늘어놓습니다."));
+            + " 갈래와 효과(무기 · 방어구), 「장비중」을 적습니다. 끄면 원본처럼 이름만 늘어놓습니다.",
+            images: ["item-list.png"]));
 
         // 자금 증가 기본 — 스폰서 제안에서 고르기 없이 자금 증가.
         rows.Children.Add(Toggle("자금 증가 기본", GameSettings.AutoFundRaise, on => GameSettings.AutoFundRaise = on,
@@ -559,7 +562,8 @@ public sealed class ModDialog : GameWindow
         general.Children.Add(Toggle("수에즈 운하", GameSettings.SuezCanal,
             on => { GameSettings.SuezCanal = on; WorldMapWindow.Current?.RefreshSuezCanal(); },
             "원본에 없는 것입니다(운하는 1869년) — 포트사이드와 수에즈 사이 지협에 두 칸 폭의 바닷길을 뚫어, 지중해에서 홍해로"
-            + " 배로 곧장 지나갈 수 있게 합니다."));
+            + " 배로 곧장 지나갈 수 있게 합니다.",
+            images: ["suez-canal.png"]));
 
         // 교역품별 시세 — 도시마다 물건마다 시세를 따로 둔다. 시세 꼼수를 막으려고 켠 채로 시작한다.
         general.Children.Add(Toggle("교역품별 시세", GameSettings.GoodsMarkets, on => GameSettings.GoodsMarkets = on,
@@ -688,7 +692,7 @@ public sealed class ModDialog : GameWindow
         var tip = new StackPanel();
         tip.Children.Add(_tipName);
         tip.Children.Add(_tipText);
-        tip.Children.Add(_tipImage);
+        tip.Children.Add(_tipImages);
 
         var side = new Border
         {
@@ -1101,14 +1105,14 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>그 줄의 설명을 오른쪽 칸에 건다. 커서가 떠나도 마지막 것을 남긴다.</summary>
-    /// <param name="image">글 밑에 붙일 그림 파일 이름(<c>asset/ui/tip/</c>). 없어도 된다.</param>
-    private void Watch(FrameworkElement row, string label, string tip, string? image = null)
+    /// <param name="images">글 밑에 차례로 붙일 그림 파일 이름들(<c>asset/ui/tip/</c>). 없어도 된다.</param>
+    private void Watch(FrameworkElement row, string label, string tip, IReadOnlyList<string>? images = null)
     {
         void Show()
         {
             _tipName.Text = label;
             _tipText.Text = tip;
-            ShowTipImage(image);
+            ShowTipImage(images);
         }
 
         row.MouseEnter += (_, _) => Show();
@@ -1117,7 +1121,7 @@ public sealed class ModDialog : GameWindow
     }
 
     /// <summary>켜고 끄는 줄 하나.</summary>
-    private CheckBox Toggle(string label, bool on, Action<bool> set, string tip, string? image = null)
+    private CheckBox Toggle(string label, bool on, Action<bool> set, string tip, IReadOnlyList<string>? images = null)
     {
         var box = new CheckBox
         {
@@ -1132,7 +1136,7 @@ public sealed class ModDialog : GameWindow
         box.Checked += (_, _) => set(true);
         box.Unchecked += (_, _) => set(false);
         _boxes[label] = box;
-        Watch(box, label, tip, image);
+        Watch(box, label, tip, images);
         // 파워업키트로 잠긴 줄은 누름 · 스페이스를 삼킨다 — 설명은 위 Watch 가 먼저 띄운다.
         box.PreviewMouseLeftButtonDown += (_, e) => { if (LockedByPowerUp(label)) { e.Handled = true; TellLocked(); } };
         box.PreviewKeyDown += (_, e) => { if (e.Key == Key.Space && LockedByPowerUp(label)) { e.Handled = true; TellLocked(); } };
