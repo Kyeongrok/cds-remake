@@ -86,7 +86,7 @@ internal sealed class App : Application
         window.Show();
 
         // 창이 다 뜬 뒤에 띄운다 — 지금 띄우면 주인 창이 아직 자리를 못 잡아 알림이 엉뚱한 데 선다.
-        window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskStats(window); },
+        window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskKeptBooks(window); AskStats(window); },
                                       System.Windows.Threading.DispatcherPriority.ApplicationIdle);
 
         // 게임 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
@@ -119,6 +119,24 @@ internal sealed class App : Application
 
         GameSettings.NotesSeenVersion = current;
         if (window.IsLoaded) NoticeDialog.Notes(window, notes, "릴리즈 노트");
+    }
+
+    /// <summary>
+    /// 업데이트 뒤 처음 켤 때 — 이벤트 편집기로 고쳐 둔 대본이 새로 실린 대본과 다르면 바꿀지 묻는다(<see cref="Engine.Disev.DisevBook.CheckKept"/>).
+    /// 같으면 묻지 않는다. 「아니오」면 고친 대본을 그대로 쓰고 한 달 동안 묻지 않는다(요청).
+    /// </summary>
+    private static void AskKeptBooks(WorldMapWindow window)
+    {
+        if (!window.IsLoaded) return;
+        CdsHelper.Game.Engine.Disev.DisevBook.CheckKept(
+            (title, backup) => ConfirmDialog.Ask(window,
+                $"업데이트로 「{title}」 대본이 바뀌었는데, 이벤트 편집기로 고쳐 둔 대본과 다릅니다.\n"
+                + "고친 대본을 백업해 두고 새 대본으로 바꿀까요?\n"
+                + $"백업 자리: {backup}\n"
+                + "아니오를 고르면 고친 대본을 그대로 쓰고, 한 달 동안 묻지 않습니다.",
+                "이벤트 대본"),
+            GameSettings.DisevKeptSnoozeUntil,
+            () => GameSettings.DisevKeptSnoozeUntil = DateTime.Now.AddDays(30));
     }
 
     /// <summary>

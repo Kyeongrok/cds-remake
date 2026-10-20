@@ -306,6 +306,9 @@ public sealed class GameSettingsData
     /// <summary>대항해시대2 스타일 색을 고쳐 둔 것 — 열쇠(Dh2Style.Slots)마다 「RRGGBB」. 없는 열쇠는 처음 색이다.</summary>
     public Dictionary<string, string> Dh2Colors { get; set; } = new();
 
+    /// <summary>업데이트로 바뀐 대본과 고친 대본이 다를 때 「안 바꾼다」를 고른 뒤 다시 안 묻는 끝날. 없으면 묻는다.</summary>
+    public DateTime? DisevKeptSnoozeUntil { get; set; }
+
     /// <summary>정보 제공 등급(0 기본 · 1 일반 · 2 상세). 기본은 원본만큼만 보인다.</summary>
     public int InfoLevel { get; set; }
 
@@ -1310,6 +1313,13 @@ public static class GameSettings
         if (string.IsNullOrEmpty(hex)) d.Dh2Colors.Remove(key);
         else d.Dh2Colors[key] = hex;
     });
+
+    /// <summary>업데이트로 바뀐 대본과 고친 대본이 다를 때 다시 안 묻는 끝날(DisevBook.CheckKept).</summary>
+    public static DateTime? DisevKeptSnoozeUntil
+    {
+        get => Get(d => d.DisevKeptSnoozeUntil);
+        set => Set(d => d.DisevKeptSnoozeUntil = value);
+    }
 
     /// <summary>대항해시대2 스타일 색을 모두 처음 색으로 되돌린다.</summary>
     public static void ResetDh2Colors() => Set(d => d.Dh2Colors = new());

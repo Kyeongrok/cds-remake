@@ -206,6 +206,7 @@ public sealed class DisevBook
 
         var book = FromEntries(bundle.Data.Parts, bundle.Stamp, cache);
         book?.Write();
+        book?.Keep();
         return book;
     }
 
@@ -235,6 +236,7 @@ public sealed class DisevBook
 
         var book = new DisevBook(parts, "", cache);
         book.Write();
+        book.Keep();
         return book;
     }
 
@@ -346,7 +348,117 @@ public sealed class DisevBook
     public void Save()
     {
         Write();
+        Keep();
         for (int i = 0; i < _edited.Count; i++) _edited[i] = false;
+    }
+
+    // ── 깐 게임에서 고친 대본 지키기 ────────────────────────────────────────
+    //
+    // 깐 게임은 설치 폴더(…\current\exe-tables)의 책을 읽고 쓰는데, Velopack 업데이트가 그 폴더째 바꾼다 — 이벤트 편집기로
+    // 고쳐 둔 대본이 업데이트 때 말없이 사라졌다. 그래서 사람이 적은 때(저장 · 원본에서 다시 뜨기)만 사용자 폴더에 한 벌과
+    // 그때의 앱 판을 남겨 두고, 판이 바뀐 뒤 처음 켤 때 새로 실린 책과 견준다(CheckKept). 같으면 말없이 새 책을 쓰고,
+    // 다르면 물어본다(요청). 판이 같은 동안은 설치 폴더의 책이 곧 고친 책이라 할 일이 없다. 개발 중(저장소 exe-tables)은 안 한다.
+
+    /// <summary>깐 게임인지 — 표 자리가 Velopack 설치 폴더(<c>…\current\exe-tables</c>, 곁에 Update.exe) 안이면.</summary>
+    private static bool Installed =>
+        new DirectoryInfo(TableCache.Folder).Parent is { Name: "current", Parent: { } root }
+        && File.Exists(Path.Combine(root.FullName, "Update.exe"));
+
+    /// <summary>고친 책을 지켜 두는 자리.</summary>
+    private static string KeptFolder =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "disev-kept");
+
+    private static string KeptPathOf(string cache) => Path.Combine(KeptFolder, TableCache.FileNameOf(cache) + ".json");
+    private static string KeptVersionPathOf(string cache) => KeptPathOf(cache) + ".version";
+
+    /// <summary>지금 앱의 판 — 릴리즈 빌드가 태그 번호로 박는다.</summary>
+    private static string AppVersion =>
+        typeof(DisevBook).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+            is [System.Reflection.AssemblyInformationalVersionAttribute v, ..] ? v.InformationalVersion : "";
+
+    /// <summary>사람이 적은 책을 사용자 폴더에 한 벌 남긴다 — 깐 게임만.</summary>
+    private void Keep()
+    {
+        if (!Installed) return;
+        try
+        {
+            Directory.CreateDirectory(KeptFolder);
+            File.Copy(PathOf(_cache), KeptPathOf(_cache), overwrite: true);
+            File.WriteAllText(KeptVersionPathOf(_cache), AppVersion);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>
+    /// 업데이트 뒤 처음 켤 때 — 지켜 둔 책(고친 대본)이 새로 실린 책과 다르면 <paramref name="askReplace"/> 로 묻는다.
+    /// 같으면 지켜 둔 것을 지우고 새 책을 쓴다. 바꾼다고 하면 지켜 둔 것을 백업 파일로 옮기고 새 책을 쓴다. 안 바꾼다고 하면
+    /// 고친 책을 설치 폴더에 도로 놓고 <paramref name="snoozeDays"/> 동안 안 묻는다(그동안도 고친 책을 도로 놓는다).
+    /// </summary>
+    /// <param name="askReplace">책 이름과 백업 자리를 받아 「새 대본으로 바꾼다」면 true.</param>
+    /// <param name="snoozedUntil">안 묻는 끝날. 지났거나 없으면 묻는다.</param>
+    /// <param name="snooze">「안 바꾼다」를 고른 때 부른다 — 끝날을 적어 둔다.</param>
+    public static void CheckKept(Func<string, string, bool> askReplace, DateTime? snoozedUntil, Action snooze)
+    {
+        if (!Installed) return;
+        foreach (var (cache, title, _) in Books)
+        {
+            string kept = KeptPathOf(cache);
+            try
+            {
+                if (!File.Exists(kept)) continue;
+                string version = File.Exists(KeptVersionPathOf(cache)) ? File.ReadAllText(KeptVersionPathOf(cache)).Trim() : "";
+                if (version == AppVersion) continue;   // 업데이트가 없었다 — 설치 폴더의 책이 곧 고친 책이다
+
+                string shipped = PathOf(cache);
+                if (SameParts(kept, shipped))
+                {
+                    File.Delete(kept);
+                    File.Delete(KeptVersionPathOf(cache));
+                    continue;
+                }
+
+                if (snoozedUntil is { } until && DateTime.Now < until)
+                {
+                    File.Copy(kept, shipped, overwrite: true);
+                    continue;
+                }
+
+                string backup = Path.Combine(KeptFolder, $"{TableCache.FileNameOf(cache)}-backup-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+                if (askReplace(title, backup))
+                {
+                    File.Move(kept, backup);
+                    File.Delete(KeptVersionPathOf(cache));
+                }
+                else
+                {
+                    File.Copy(kept, shipped, overwrite: true);
+                    snooze();
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+    }
+
+    /// <summary>두 책 파일의 파트가 바이트까지 다 같은지. 하나라도 못 읽으면 다른 것으로 친다.</summary>
+    private static bool SameParts(string a, string b)
+    {
+        static List<byte[]>? Parts(string path)
+        {
+            try
+            {
+                var bundle = JsonSerializer.Deserialize<TableCache.Cached<Snapshot>>(File.ReadAllText(path));
+                if (bundle?.Data is not { Parts.Count: > 0 } data) return null;
+                var parts = new List<byte[]>();
+                foreach (var row in data.Parts.OrderBy(r => r.Index))
+                    if (Join(row, out _) is { Length: > 0 } bytes) parts.Add(bytes); else return null;
+                return parts;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return null; }
+        }
+        if (Parts(a) is not { } left || Parts(b) is not { } right || left.Count != right.Count) return false;
+        for (int i = 0; i < left.Count; i++)
+            if (!left[i].AsSpan().SequenceEqual(right[i])) return false;
+        return true;
     }
 
     /// <summary>
