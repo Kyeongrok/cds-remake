@@ -100,7 +100,15 @@ internal static class Dh2Style
             Background = Brushes.Transparent,   // 이빨 사이 빈 데를 눌러도 먹게
             Children = { rim, face },
         };
-        plaque.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
+        // 누름은 여기서 삼킨다 — 창 테가 누름에 끌기(DragMove)를 걸어 두어, 누름이 올라가면 뗌이 안 와 단추가 안 먹었다(제보).
+        plaque.MouseLeftButtonDown += (_, e) => { e.Handled = true; plaque.CaptureMouse(); };
+        plaque.MouseLeftButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            bool inside = plaque.IsMouseCaptured && plaque.IsMouseOver;
+            plaque.ReleaseMouseCapture();
+            if (inside) run();
+        };
         focused = on =>
         {
             face.Background = on ? On : Off;
