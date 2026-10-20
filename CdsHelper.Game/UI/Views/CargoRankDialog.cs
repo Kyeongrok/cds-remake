@@ -146,7 +146,9 @@ internal sealed class CargoRankDialog : InfoDialog
         if (pick != null)
         {
             row.Cursor = Cursors.Hand;
-            row.MouseLeftButtonUp += (_, _) => pick();
+            // 누를 때 고른다 — 창 바탕의 끌기(DragMove)가 누름을 받아 마우스를 잡으면 뗌이 줄까지 안 와서, 고르지 않은
+            // 줄은 마우스로 안 골라졌다(글쇠로는 됐다, 제보).
+            row.MouseLeftButtonDown += (_, e) => { e.Handled = true; pick(); };
         }
         return row;
     }
