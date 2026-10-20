@@ -557,6 +557,13 @@ public sealed class Game
         }
     }
 
+    /// <summary>초상화를 다음에 다시 읽게 한다 — 게임 안에서 초상화를 더했을 때(여급 수첩 「얼굴 바꾸기」).</summary>
+    public void ReloadFaces()
+    {
+        _faces = null;
+        _facesTried = false;
+    }
+
     /// <summary>
     /// 인물표 — 술집에 앉은 사람과 부하의 신상이 여기서 온다.
     /// </summary>

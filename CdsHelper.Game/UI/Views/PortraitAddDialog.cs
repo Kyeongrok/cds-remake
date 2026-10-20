@@ -216,9 +216,11 @@ public sealed class PortraitAddDialog : GameWindow
     }
 
     /// <summary>창을 띄운다. 넣었으면 그 얼굴 번호, 아니면 −1.</summary>
-    public static int Show(Window? owner)
+    /// <param name="female">참이면 여자 벌을 골라 둔 채로 연다 — 여급 얼굴을 바꿀 때다.</param>
+    public static int Show(Window? owner, bool female = false)
     {
         var window = new PortraitAddDialog();
+        if (female) window._female.IsChecked = true;
         if (owner != null) window.Owner = owner;
         window.ShowDialog();
         return window.Added;

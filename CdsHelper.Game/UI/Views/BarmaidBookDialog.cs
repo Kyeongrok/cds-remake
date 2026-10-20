@@ -17,17 +17,31 @@ namespace CdsHelper.Game.UI.Views;
 /// 그것을 볼 길이 없어서 둔다.
 ///
 /// <b>한잔 산 사람만 나온다</b> — 친밀도가 0 이면 아직 이름도 모르는 사이다.
+///
+/// 얼굴은 바꿀 수 있다 — 「얼굴 바꾸기」가 초상화 더하기 창(<see cref="PortraitAddDialog"/>)을 여자 벌로 열고, 넣은 얼굴을
+/// <see cref="BarmaidEdits"/> 에 씌운다. 술집에서도 그 얼굴로 나온다. 궁합 코드는 그대로다.
 /// </remarks>
 public sealed class BarmaidBookDialog : GameWindow
 {
-    private BarmaidBookDialog(Player player, BarmaidTable table, Portraits? faces,
-                              CityTable cities)
+    private readonly Engine.Game _game;
+
+    private BarmaidBookDialog(Engine.Game game)
     {
+        _game = game;
         Title = "여급 수첩";
         Width = 720;
         Height = 560;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        Fill();
+    }
 
+    /// <summary>수첩을 새로 짓는다 — 얼굴을 바꾸면 다시 부른다.</summary>
+    private void Fill()
+    {
+        var player = _game.Player;
+        var cities = _game.CityTable;
+        var faces = _game.Faces;
+        if (_game.Barmaids is not { } table) return;
         int mine = Barmaids.FortuneOf(player);
 
         var rows = new StackPanel { Margin = new Thickness(10) };
@@ -63,8 +77,8 @@ public sealed class BarmaidBookDialog : GameWindow
     }
 
     /// <summary>한 사람 — 얼굴과 신상, 그리고 친밀도 막대.</summary>
-    private static UIElement Card(in BarmaidTable.Barmaid her, Player player, Portraits? faces,
-                                  CityTable cities, int mine)
+    private UIElement Card(BarmaidTable.Barmaid her, Player player, Portraits? faces,
+                           CityTable cities, int mine)
     {
         int liking = player.LikingOf(her.Id);
         bool destined = BarmaidTable.Destined(mine, her.Fortune);
@@ -116,6 +130,26 @@ public sealed class BarmaidBookDialog : GameWindow
             },
         });
 
+        // 얼굴 바꾸기 — 그림을 골라 여자 초상화로 넣고 이 여급에 씌운다. 원래대로는 씌운 것만 걷는다(넣은 초상화는 남는다).
+        int id = her.Id;
+        var change = GameUi.PushButton("얼굴 바꾸기", () =>
+        {
+            int put = PortraitAddDialog.Show(this, female: true);
+            if (put < 0) return;
+            BarmaidEdits.SetFace(id, put);
+            _game.ReloadFaces();   // 들고 있던 초상화 벌에는 새로 넣은 얼굴이 없다
+            Fill();
+        }, 100);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+        buttons.Children.Add(change);
+        if (BarmaidEdits.FaceOf(id) >= 0)
+        {
+            var back = GameUi.PushButton("원래 얼굴", () => { BarmaidEdits.SetFace(id, -1); Fill(); }, 100);
+            back.Margin = new Thickness(6, 0, 0, 0);
+            buttons.Children.Add(back);
+        }
+        text.Children.Add(buttons);
+
         line.Children.Add(text);
         return line;
     }
@@ -129,7 +163,7 @@ public sealed class BarmaidBookDialog : GameWindow
             return;
         }
 
-        new BarmaidBookDialog(game.Player, table, game.Faces, game.CityTable)
+        new BarmaidBookDialog(game)
         {
             Owner = owner,
         }.ShowDialog();

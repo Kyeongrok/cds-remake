@@ -130,7 +130,7 @@ public sealed class BarmaidTable
     private BarmaidTable(Snapshot snapshot) => _rows = snapshot.Barmaids;
 
     /// <summary>
-    /// 여급 전부. 운명 코드는 <b>지금 걸음</b>으로 옮겨 낸다.
+    /// 여급 전부. 운명 코드는 <b>지금 걸음</b>으로 옮겨 낸다. 수첩에서 바꾼 얼굴도 여기서 얹는다.
     /// </summary>
     /// <remarks>
     /// 적어 둔 표에는 EXE 값이 그대로 있고, 사람이 고쳐 둔 코드만
@@ -140,7 +140,7 @@ public sealed class BarmaidTable
     public IReadOnlyList<Barmaid> Barmaids =>
         BarmaidEdits.All.Count == 0
             ? _rows
-            : [.. _rows.Select(r => r with { Fortune = CodeOf(r) })];
+            : [.. _rows.Select(r => r with { Fortune = CodeOf(r), Face = BarmaidEdits.FaceOf(r.Id) is >= 0 and var face ? face : r.Face })];
 
     /// <summary>그 여급의 궁합 코드. 사람이 고쳐 둔 것이 있으면 그것이 이긴다.</summary>
     private static int CodeOf(Barmaid her)
