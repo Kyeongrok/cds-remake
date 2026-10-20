@@ -88,13 +88,6 @@ public static class HardcoreRules
             .Where(name => name != "여급" || Local.Helpers.BarmaidEdits.All.Values.Any(e => e.Fortune >= 0));
     }
 
-    /// <summary>
-    /// 개발 기록에 도구 앱으로 고친 표를 더한다 — 적을 때 부른다. 어느 판이든 그 표를 고친 채로 돈 것이니 남긴다.
-    /// </summary>
-    public static void NoteDev(Player player)
-    {
-        foreach (var name in EditedTables()) player.DevMarks.Add($"edited:{name}");
-    }
 
     /// <summary>하드코어 판이면 지금 켜 둔 것을 더한다. 끈 것은 안 지운다.</summary>
     public static void Note(Player? player)

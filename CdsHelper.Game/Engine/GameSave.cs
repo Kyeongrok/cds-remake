@@ -444,7 +444,6 @@ public static class GameSave
     {
         // 하드코어 판이면 지금 켜 둔 모드를 적어 두고 봉인한다(HardcoreRules) — 끈 뒤에 적어도 한 번 켠 것은 남는다.
         HardcoreRules.Note(player);
-        HardcoreRules.NoteDev(player);
         var data = new Data(DevSealFrom, DateTime.Now, player.Gold, player.Date,
                             player.CityId, player.CityName,
                             new Dictionary<string, int>(player.Skills), [.. player.Hints],
