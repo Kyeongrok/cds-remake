@@ -47,8 +47,12 @@ public sealed class ItemDescriptions
     private readonly string[] _texts;
 
     // 글은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
+    // 원본 뒤에 더한 아이템(ItemTable.AddedItems)의 설명을 잇는다.
     private ItemDescriptions(Snapshot snapshot) =>
-        _texts = [.. snapshot.Descriptions.Select(StandardText.Apply)];
+        _texts = [.. snapshot.Descriptions.Select(StandardText.Apply),
+                  .. snapshot.Descriptions.Length == Count
+                      ? ItemTable.AddedItems().Select(a => StandardText.Apply(a.Description))
+                      : []];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";

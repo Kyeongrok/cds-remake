@@ -88,9 +88,38 @@ public sealed class ItemTable
 
     private readonly Record[] _items;
 
+    /// <summary>
+    /// 원본 286개 뒤에 <b>더해 넣은 아이템</b>(<c>exe-tables/items-added.json</c>, 표 이름 「아이템-더한것」) — 원본에 없는
+    /// 증거품 같은 것이다(카바 신전의 쿠란). 번호는 286 부터 빈틈없이 잇는다. 설명도 같은 파일에 있다(<see cref="ItemDescriptions"/>).
+    /// </summary>
+    internal const string AddedName = "아이템-더한것";
+
+    /// <summary>더한 아이템 한 줄 — 표의 칸에 설명을 붙였다.</summary>
+    internal sealed record Added(int Id, string Name, int Pic, int BuyList, int SellList, int Effect, int Category,
+                                 int Hint = -1, string Description = "");
+
+    /// <summary>더한 아이템 파일의 알맹이.</summary>
+    internal sealed record AddedSnapshot(List<Added> Items);
+
+    /// <summary>더한 아이템들 — 번호 차례로, 원본 뒤에 빈틈없이 이어지는 것만.</summary>
+    internal static IEnumerable<Added> AddedItems()
+    {
+        int next = Count;
+        foreach (var added in (TableCache.Read<AddedSnapshot>(AddedName)?.Data.Items ?? []).OrderBy(a => a.Id))
+        {
+            if (added.Id != next) break;
+            next++;
+            yield return added;
+        }
+    }
+
     // 이름은 표준 표기(<see cref="StandardText"/>)를 거친다 — 적어 둔 JSON 은 원본 그대로다.
     private ItemTable(Snapshot snapshot) =>
-        _items = [.. snapshot.Items.Select(i => i with { Name = StandardText.Apply(i.Name) })];
+        _items = [.. snapshot.Items.Select(i => i with { Name = StandardText.Apply(i.Name) }),
+                  .. snapshot.Items.Length == Count
+                      ? AddedItems().Select(a => new Record(a.Id, StandardText.Apply(a.Name), a.Pic, a.BuyList, a.SellList,
+                                                            a.Effect, a.Category, a.Hint))
+                      : []];
 
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";

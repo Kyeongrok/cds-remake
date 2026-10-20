@@ -1,0 +1,20 @@
+{
+  "Stamp": "손으로 더함",
+  "Data": {
+    "Items": [
+      {
+        "Id": 286,
+        "Name": "쿠란",
+        "Pic": 54,
+        "BuyList": 30000,
+        "SellList": 12000,
+        "Effect": 25,
+        "Category": 7,
+        "Hint": -1,
+        "Description": "이슬람의 경전. 예언자 무함마드가 받은 계시를 아랍어로 적은 책으로, 아름다운 서체와 금빛 문양으로 꾸며져 있다."
+      }
+    ]
+  },
+  "Source": "사람이 더한 것",
+  "Version": 1
+}

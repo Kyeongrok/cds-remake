@@ -13,5 +13,6 @@
 |---|---|---|---|---|
 | `D84.png` | 돌묵상어(274) | [Cetorhinus maximus by greg skomal.JPG](https://commons.wikimedia.org/wiki/File:Cetorhinus_maximus_by_greg_skomal.JPG) (위키미디어 공용) | Greg Skomal / NOAA Fisheries Service | Public domain |
 | `D85.png` | 여우원숭이(275) | [FMIB 46849 Primates Maki Moccoe Lemur catta.jpeg](https://commons.wikimedia.org/wiki/File:FMIB_46849_Primates_Maki_Moccoe_Lemur_catta.jpeg) (위키미디어 공용) — 꼬리가 안 잘리게 양옆을 종이 빛으로 메워 4:3 으로 맞춘 뒤 바꿨다 | Charles d'Orbigny, *Dictionnaire universel d'histoire naturelle* (1849) | Public domain |
+| `D86.png` | 카바 신전(63) | [Khalili Collection Hajj and Arts of Pilgrimage arc.pp 0211.04.jpg](https://commons.wikimedia.org/wiki/File:Khalili_Collection_Hajj_and_Arts_of_Pilgrimage_arc.pp_0211.04.jpg) (위키미디어 공용) — 대지 안 사진에서 카바를 가운데로 잘라 명암을 편 뒤 바꿨다 | 무함마드 사디크 베이(Muhammad Sadiq Bey) 찍음 · 1880년경, 할릴리 컬렉션 | Public domain |
 
 새 그림을 더하면 이 표에 한 줄을 더한다 — 저작자 표시가 필요한 라이선스(CC BY 따위)면 꼭 적는다.

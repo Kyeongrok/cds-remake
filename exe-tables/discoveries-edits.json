@@ -1,7 +1,33 @@
 {
-  "Stamp": "2줄",
+  "Stamp": "3줄",
   "Data": {
     "Discoveries": [
+      {
+        "Id": 63,
+        "Name": "카바신전",
+        "Category": 7,
+        "Hint": 672,
+        "Reward": 30000,
+        "ItemId": 286,
+        "Indirect": true,
+        "OpenAtStart": true,
+        "OnLand": true,
+        "Once": true,
+        "X1": -1,
+        "Y1": -1,
+        "X2": -1,
+        "Y2": -1,
+        "Picture": 86,
+        "Movie": -1,
+        "Erase": [
+          65535,
+          65535,
+          65535,
+          65535
+        ],
+        "SoldIn": -1,
+        "Clip": -1
+      },
       {
         "Id": 274,
         "Name": "돌묵상어",
