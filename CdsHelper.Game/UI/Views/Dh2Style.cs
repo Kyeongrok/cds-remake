@@ -110,14 +110,14 @@ internal static class Dh2Style
         return plaque;
     }
 
-    /// <summary>단추 판들을 크림 띠로 감싼다.</summary>
+    /// <summary>단추 판들을 크림 띠로 감싼다. 띠에 테는 안 두른다 — 왕관 꼴 테가 단추의 테다(요청).</summary>
     public static Border PlaqueBar(IEnumerable<FrameworkElement> plaques)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal };
         foreach (var p in plaques) row.Children.Add(p);
         return new Border
         {
-            Background = Bar, BorderBrush = Brown, BorderThickness = new Thickness(1),
+            Background = Bar,
             Padding = new Thickness(3, 3, 0, 3), SnapsToDevicePixels = true, Child = row,
         };
     }

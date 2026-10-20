@@ -275,8 +275,9 @@ internal sealed class PersonInfoDialog : InfoDialog
         };
 
         var grid = new Grid { Margin = new Thickness(0, 6, 0, 0) };
+        // 칸 폭은 밑값만 두고 글을 따라 넓힌다 — 96 으로 묶었더니 국적 「에스파니아 왕국」이 잘렸다(제보).
         for (int c = 0; c < 6; c++)
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = c % 2 == 0 ? new GridLength(64) : new GridLength(c == 5 ? 64 : 96) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, MinWidth = c % 2 == 0 || c == 5 ? 64 : 96 });
         int rowsNeeded = (cells.Length + 2) / 3;
         for (int r = 0; r < rowsNeeded; r++) grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         for (int i = 0; i < cells.Length; i++)
@@ -285,6 +286,7 @@ internal sealed class PersonInfoDialog : InfoDialog
             int row = i / 3, col = i % 3 * 2;
             var label = Text(cells[i].Label, Dh2Style.LabelColor);
             var value = Text(cells[i].Value, BlackInk);
+            value.Margin = new Thickness(0, 1, 10, 1);   // 긴 값이 옆 칸 이름에 붙지 않게
             Grid.SetRow(label, row); Grid.SetColumn(label, col);
             Grid.SetRow(value, row); Grid.SetColumn(value, col + 1);
             grid.Children.Add(label);
