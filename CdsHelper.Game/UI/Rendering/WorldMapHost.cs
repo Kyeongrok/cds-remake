@@ -1776,7 +1776,12 @@ public sealed class WorldMapHost : HwndHost
             double left = dx * ux + dy * uy;
             bool last = _autoIndex == route.Count - 1;
             // 도시로 가는 길은 마지막 마디도 끝까지 간다 — 두 칸 앞에서 멎으면 어귀에 못 들어선다.
-            if (last && !_autoExact ? dx * dx + dy * dy <= arrive * arrive : left <= turnEarly)
+            // 도는 원만큼 미리 넘기는 것은 다음 마디가 곧게 보일 때만이다 — 도버 해협은 한두 칸 폭으로 비스듬히
+            // 꺾인 물길이라, 짧은 토막들을 미리 넘기면 뭍 너머를 바라보고 해협 서쪽의 막다른 데에 처박혔다(제보).
+            bool passed = last && !_autoExact
+                ? dx * dx + dy * dy <= arrive * arrive
+                : left <= AutoTurnEarly || (left <= turnEarly && (last || SeaClear(route[_autoIndex + 1])));
+            if (passed)
             {
                 _autoIndex++;
                 continue;
@@ -1810,11 +1815,28 @@ public sealed class WorldMapHost : HwndHost
                 dx = ox + ux * lookahead;
                 dy = oy + uy * lookahead;
             }
+            // 도는 원으로 넓힌 거리로 본 자리가 뭍 너머면 여느 배의 거리로 되돌린다 — 좁은 물길에서 그 자리를
+            // 바라보면 뭍에 대고 서서, 선으로 돌아가려 해도 뱃머리가 뭍 쪽 그대로라 15초 뒤 「길이 막혀」로 멈췄다(제보).
+            if (radius > 0 && !SeaClear((_shipX + dx, _shipY + dy)))
+            {
+                if (_autoRecover && off > 0.05) { dx = ox / off * AutoRecoverReach; dy = oy / off * AutoRecoverReach; }
+                else if (!last || back > AutoLookahead) { dx = ox + ux * AutoLookahead; dy = oy + uy * AutoLookahead; }
+            }
             _targetX = _shipX + dx;
             _targetY = _shipY + dy;
             return;
         }
         CompleteAutoSail(_onLand ? "도착했습니다" : "도착했습니다. 닻을 내렸습니다");
+    }
+
+    /// <summary>배에서 그 자리까지 곧게 물이 이어지는지 — 반 칸마다 짚어 본다.</summary>
+    private bool SeaClear((double X, double Y) to)
+    {
+        double dx = WrapDx(to.X - _shipX), dy = to.Y - _shipY;
+        int n = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(dx * dx + dy * dy) / 0.5));
+        for (int i = 1; i <= n; i++)
+            if (!CanGo(_shipX + dx * i / n, _shipY + dy * i / n)) return false;
+        return true;
     }
 
     private void CompleteAutoSail(string message)
