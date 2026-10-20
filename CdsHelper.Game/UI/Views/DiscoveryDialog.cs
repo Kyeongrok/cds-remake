@@ -25,6 +25,9 @@ public sealed class DiscoveryDialog : GameWindow
 {
     /// <summary>글 칸의 여백과 단추 자리. 게임 알림창에서 그대로 가져왔다.</summary>
     private const double SidePad = 7, TopPad = 7, BottomPad = 15;
+
+    /// <summary>넓힌 알림 창(긴 글)의 좌우 · 위 여백 — 글이 테에 바짝 붙지 않게.</summary>
+    private const double WideSidePad = 18, WideTopPad = 12;
     private const double EdgeThickness = 1, TextGap = 10;
 
     /// <summary>
@@ -103,15 +106,21 @@ public sealed class DiscoveryDialog : GameWindow
         Background = GameUi.Back;
 
         // 해설(제목 띠가 붙는 것)은 원본도 넓게 편다 — 한 줄이 예순두 칸쯤이다.
+        // 끊기 전에 번역한다 — 끊은 한국어 토막은 번역표의 글과 안 맞아 그대로 남는다(더해 넣은 대본의 대사 따위).
+        text = Local.Helpers.Lang.T(text);
         bool comment = !string.IsNullOrEmpty(title);
+        // 발견 알림이라도 글이 좁은 창 한 줄에 안 들면 해설만큼 넓히고 좌우를 더 띄운다 — 272 폭에 가두면 한 줄이
+        // 열여섯 자쯤에서 꺾여 그림 밑에 좁고 긴 상자가 섰다(더해 넣은 대본의 긴 해설, 요청).
+        double narrowText = MinWidth_ - SidePad * 2 - EdgeThickness * 2;
+        bool wide = comment || (GameUi.Font?.TextWidth(text) ?? 0) > narrowText;
+        double side = wide && !comment ? WideSidePad : SidePad;
         var stack = new StackPanel
         {
-            Width = comment ? CommentCells * CellWidth + SidePad * 2 + EdgeThickness * 2 : MinWidth_,
+            Width = wide ? CommentCells * CellWidth + side * 2 + EdgeThickness * 2 : MinWidth_,
         };
 
         // 해설은 여러 줄이라 왼쪽에 붙이고, 발견 알림은 한 줄이라 가운데다.
-        // 끊기 전에 번역한다 — 끊은 한국어 토막은 번역표의 글과 안 맞아 그대로 남는다(더해 넣은 대본의 대사 따위).
-        var lines = Wrap(Local.Helpers.Lang.T(text), stack.Width - SidePad * 2);
+        var lines = Wrap(text, stack.Width - side * 2 - EdgeThickness * 2);
         var words = new StackPanel();
         foreach (string line in lines)
             words.Children.Add(new GameUi.GameLabel(GameFont.WhiteColor, GameUi.ItemTextHeight)
@@ -149,7 +158,7 @@ public sealed class DiscoveryDialog : GameWindow
             Background = GameUi.Back,
             BorderBrush = PanelEdge,
             BorderThickness = new Thickness(EdgeThickness),
-            Padding = new Thickness(SidePad, TopPad, SidePad, BottomPad),
+            Padding = new Thickness(side, wide && !comment ? WideTopPad : TopPad, side, BottomPad),
             Child = below,
         });
 
