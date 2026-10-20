@@ -95,19 +95,13 @@ public sealed class DisevBook
     /// 덩이로 못 나눈 파트의 통째 날바이트. 판 1 파일도 이 칸으로 읽힌다.
     /// 이것이 있으면 나머지 칸은 안 본다.
     /// </param>
-    /// <param name="Replaces">
-    /// <b>앱에 실린 대본만</b> 쓰는 칸 — 이 파트가 갈아 낸 옛 파트들의 날바이트(<c>Hex</c>). 사용자가 적어 둔 책의 그 파트가
-    /// 이 가운데 하나와 같으면(손대지 않은 옛 원본이면) 열 때 실린 파트로 갈아 끼운다(<see cref="ApplyBundledFixes"/>).
-    /// 손댄 파트는 그대로 둔다. 실린 대본을 고쳐도 이미 깐 판은 적어 둔 책만 읽어서 고침이 안 들던 것을 푼다.
-    /// </param>
     public sealed record Entry(
         int Index,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Step = null,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] List<SlotEntry>? Slots = null,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), JsonConverter(typeof(DisevChunksConverter))]
         List<List<DisevLine>>? Chunks = null,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Hex = null,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] List<string>? Replaces = null);
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Hex = null);
 
     /// <summary>슬롯 한 줄 — 조건 덩이와 본문 덩이의 번호.</summary>
     public readonly record struct SlotEntry(int Condition, int Body);
@@ -194,10 +188,7 @@ public sealed class DisevBook
         if (cached is { Version: >= 1 and <= SnapshotVersion } && cached.Data.Parts.Count > 0)
         {
             var book = FromEntries(cached.Data.Parts, cached.Stamp, cache);
-            if (book == null) return null;
-            // 실린 대본의 고침(손대지 않은 옛 파트만)을 얹는다 — 둘 중 하나라도 바뀌었으면 다시 적는다.
-            bool fixedParts = book.ApplyBundledFixes();
-            if (fixedParts || cached.Version != SnapshotVersion) book.Write();
+            if (book != null && cached.Version != SnapshotVersion) book.Write();
             return book;
         }
 
@@ -349,26 +340,6 @@ public sealed class DisevBook
             LastError = $"앱에 실린 {cache}.json 을 못 읽었습니다 — {ex.Message}";
         }
         return null;
-    }
-
-    /// <summary>
-    /// 실린 대본에서 <c>Replaces</c> 가 붙은 파트를 보고, 적어 둔 책의 그 파트가 옛 원본 그대로면 실린 파트로 갈아 끼운다.
-    /// 하나라도 갈았으면 true.
-    /// </summary>
-    private bool ApplyBundledFixes()
-    {
-        if (ReadBundle(_cache) is not { } bundle) return false;
-        bool changed = false;
-        foreach (var entry in bundle.Data.Parts)
-        {
-            if (entry.Replaces is not { Count: > 0 } olds || entry.Index < 0 || entry.Index >= _parts.Count) continue;
-            var now = _parts[entry.Index];
-            if (!olds.Any(old => DisevScript.ParseHex(old) is { } bytes && bytes.AsSpan().SequenceEqual(now))) continue;
-            if (Join(entry, out _) is not { Length: > 0 } data || data.AsSpan().SequenceEqual(now)) continue;
-            _parts[entry.Index] = data;
-            changed = true;
-        }
-        return changed;
     }
 
     /// <summary>고친 것을 적어 둔다.</summary>
