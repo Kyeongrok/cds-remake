@@ -393,6 +393,7 @@ public static class GameSave
         Dictionary<int, string>? Scooped = null, int? Drinking = null,
         Dictionary<int, DateTime>? ScoopedOn = null,
         List<int>? VisitedCities = null,
+        Dictionary<int, int>? CityVisits = null, int? LastCity = null,
         List<int>? Executed = null,
         Dictionary<string, Player.PatronDock>? PatronDocks = null,
         Dictionary<int, string>? FoundBy = null, Dictionary<int, string>? AnnouncedBy = null,
@@ -538,6 +539,9 @@ public static class GameSave
                             LastSupply: [.. player.LastSupply],
                             // 들어가 본 도시(「도시좌표」가 고르는 것). 이 칸 앞의 세이브는 지금 도시만 든다.
                             VisitedCities: [.. player.VisitedCities],
+                            // 도시마다 들어간 횟수와 마지막 도시(네비게이션). 이 칸 앞의 세이브는 빈 채로 연다.
+                            CityVisits: player.CityVisits.ToDictionary(e => e.Key, e => e.Value),
+                            LastCity: player.LastCity >= 0 ? player.LastCity : null,
                             // 함대가 닻을 내린 도시. 이 칸 앞의 세이브는 모름으로 연다.
                             FleetCity: player.FleetCity == Player.FleetUnknown ? null : player.FleetCity,
                             // 「누적캐릭터를 등장시키지 않는다」 깃발. 이 칸 앞의 세이브는 서지 않은 것으로 연다.

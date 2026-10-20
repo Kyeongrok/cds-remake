@@ -942,6 +942,24 @@ public sealed class WorldMapWindow : Window
             chart.Freeze();
         }
 
+        // 맨 앞 탭 — 자주 간 도시 20곳(간 횟수 차례, 같으면 도시 번호 차례). 지금 있는 도시는 빠진다.
+        var frequent = _game.Player.CityVisits.Where(v => v.Key != here)
+            .OrderByDescending(v => v.Value).ThenBy(v => v.Key).Take(FrequentCities).Select(v => v.Key).ToList();
+
+        // 먼저 골라 둘 도시 — 계약 뒤 처음 열면 그 발견물에서 가장 가까운 도시, 아니면 바다에서 열었을 때 마지막으로 간 도시.
+        int preselect = -1;
+        string? suggestion = null;
+        if (_game.Player.Contract is { } deal && !ReferenceEquals(deal, _navSuggested))
+        {
+            _navSuggested = deal;
+            if (ContractSpot() is { } spot && NearestCity(spot, cities.Select(c => c.Id)) is { } near and >= 0)
+            {
+                preselect = near;
+                suggestion = $"{Lang.T("계약 발견물에서 가장 가까운 도시")}: {Lang.T(_game.CityName(near))}";
+            }
+        }
+        if (preselect < 0 && !inCity) preselect = _game.Player.LastCity;
+
         // 창이 띄운 후보들 — 고른 차례로 여기서 되찾는다.
         var goals = new List<SailGoal>();
         var (chosen, pick) = AutoSailDialog.Show(this, cities, chart, id =>
@@ -967,7 +985,7 @@ public sealed class WorldMapWindow : Window
 
             string name = _game.CityName(id);
             return (true, goals[0].Afoot ? $"[{name}] 가는 길 (내륙 도시라 배를 대고 걸어갑니다)" : $"[{name}] 가는 길", plans);
-        });
+        }, frequent, preselect, suggestion);
 
         if (chosen < 0 || pick < 0 || pick >= goals.Count) return;
         _sailTo = chosen;
@@ -989,6 +1007,50 @@ public sealed class WorldMapWindow : Window
         var (ok, message) = _host.StartAutoSail(_sailGoal.X, _sailGoal.Y, _sailGoal.City, _sailGoal.Exact, _sailGoal.Kind);
         if (ok) { NavStarted(_sailGoal.Tag); Say($"[{_game.CityName(chosen)}]까지 {message}"); }
         else { _sailTo = -1; Say(message); }
+    }
+
+    /// <summary>네비게이션 맨 앞 「자주 간 도시」 탭에 놓는 도시 수.</summary>
+    private const int FrequentCities = 20;
+
+    /// <summary>
+    /// 네비게이션이 가장 가까운 도시를 골라 준 계약 — 계약을 맺은 뒤 처음 열 때만 골라 준다. 세이브를 불러오면 다시 한 번 골라 준다.
+    /// </summary>
+    private Contract? _navSuggested;
+
+    /// <summary>
+    /// 지금 계약한 발견물의 자리(펼친 칸) — 아직 못 찾은 것 가운데 지도에 자리가 있으면 그 네모 한가운데,
+    /// 도시 건물 속에서 찾는 것이면 그 도시 자리다. 계약이 없거나 자리를 모르면 null.
+    /// </summary>
+    private (double X, double Y)? ContractSpot()
+    {
+        var player = _game.Player;
+        if (player.Contract is not { } deal || _game.Hints?.Find(deal.Hint) is not { } hint
+            || _game.Discoveries?.Table is not { } table) return null;
+        foreach (var row in table.Discoveries)
+        {
+            if (row.Hint != hint.Discovery || player.HasFound(row.Id)) continue;
+            if (row.HasPlace) return ((row.X1 + row.X2) / 2.0, (row.Y1 + row.Y2) / 2.0);
+            foreach (var b in _game.Buildings?.Buildings ?? [])
+                if (b.IsDiscovery && b.Discovery == row.Id && GameMapCoords.TryCityCell(b.City, out double bx, out double by))
+                    return (bx, by);
+        }
+        return null;
+    }
+
+    /// <summary>그 자리에서 가장 가까운 도시(곧은 거리, 날짜변경선 너머도 잰다). 없으면 null.</summary>
+    private static int? NearestCity((double X, double Y) spot, IEnumerable<int> cities)
+    {
+        int? best = null;
+        double bestDistance = double.MaxValue;
+        foreach (int id in cities)
+        {
+            if (!GameMapCoords.TryCityCell(id, out double cx, out double cy)) continue;
+            double dx = Math.Abs(cx - spot.X);
+            dx = Math.Min(dx, WorldMapRenderer.UnfoldedW - dx);
+            double distance = dx * dx + (cy - spot.Y) * (cy - spot.Y);
+            if (distance < bestDistance) { bestDistance = distance; best = id; }
+        }
+        return best;
     }
 
     /// <summary>그 도시로 가는 자동항해 한 가지 — 향할 칸과 길을 고르는 법.</summary>
@@ -3657,6 +3719,7 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreKnownCities(saved.KnownCities);
             // 들어가 본 도시 — 「도시좌표」가 고르는 것이다(도시 레코드 +0x04 의 0x80).
             _game.Player.RestoreVisitedCities(saved.VisitedCities);
+            _game.Player.RestoreCityVisits(saved.CityVisits, saved.LastCity);
             _game.Player.RestoreExecuted(saved.Executed);
             // 누적 캐릭터를 앉힌 날과 늦어짐 — 세상을 새로 지을 때 AttachCumulative 가 다시 앉힌다.
             // 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
@@ -7862,6 +7925,8 @@ public sealed class WorldMapWindow : Window
         _game.Bgm.Play(track);
         SetInCity(true);          // 지도에 남색 막을 씌운다(그림 창과는 따로 논다)
         _game.Player.EnterCity(city, name);
+        // 네비게이션의 「자주 간 도시」 · 마지막 도시 — 세이브를 불러와 여는 것과 새 판 자택은 안 센다.
+        if (!resumed && !enterHome) _game.Player.CountVisit(city);
         // 건물 조건 없이 도시·연도·명성만으로 여는 이야기 장면(장의 첫머리)은 여기서 잡는다 —
         // 건물 안에서 여는 것은 CityPicView.CheckStory 가 따로 본다.
         CheckStory(-1);

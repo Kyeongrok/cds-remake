@@ -124,7 +124,8 @@ public sealed class AutoSailDialog : GameWindow
     private readonly Grid _heads = new();
 
     private AutoSailDialog(IReadOnlyList<(int Id, string Name, string Culture, bool Harbor)> cities, BitmapSource? chart,
-                           Func<int, (bool Ok, string Message, IReadOnlyList<Plan> Plans)> start)
+                           Func<int, (bool Ok, string Message, IReadOnlyList<Plan> Plans)> start,
+                           IReadOnlyList<int> frequent, int preselect, string? suggestion)
     {
         _start = start;
         _chart = chart;
@@ -142,12 +143,22 @@ public sealed class AutoSailDialog : GameWindow
         GameUi.EnableDrag(this, title);
 
         // 문화권마다 판 하나 — 한 칸에 겹쳐 두고 안 보이는 쪽은 접는다. 창 높이가 고른 판을 따라간다.
+        // 맨 앞은 자주 간 도시 판이다(간 횟수 차례). 같은 도시가 두 판에 다 서고, 고르면 둘 다 칠해진다.
         var tabs = new List<(string Text, FrameworkElement Page)>();
-        foreach (var group in cities.GroupBy(c => c.Culture.Length > 0 ? c.Culture : "그 밖")
-                                    .OrderBy(g => CultureRank(g.Key)).ThenBy(g => g.Key, StringComparer.Ordinal))
+        int firstTab = -1;
+        var known = cities.ToDictionary(c => c.Id);
+        var often = frequent.Where(known.ContainsKey).Select(id => known[id]).ToList();
+        var groups = cities.GroupBy(c => c.Culture.Length > 0 ? c.Culture : "그 밖")
+                           .OrderBy(g => CultureRank(g.Key)).ThenBy(g => g.Key, StringComparer.Ordinal)
+                           .Select(g => (Text: $"{Lang.T(g.Key)} {g.Count()}", Cities: g.OrderBy(c => c.Name, StringComparer.Ordinal).ToList()))
+                           .ToList();
+        if (often.Count > 0) groups.Insert(0, ($"{Lang.T("자주 간 도시")} {often.Count}", often));
+        foreach (var group in groups)
         {
+            // 먼저 골라 둘 도시가 든 첫 판을 연다 — 자주 간 도시 판에 있으면 그 판이다.
+            if (firstTab < 0 && group.Cities.Exists(c => c.Id == preselect)) firstTab = tabs.Count;
             var grid = new UniformGrid { Columns = Columns, Width = CellWidth * Columns, VerticalAlignment = VerticalAlignment.Top };
-            foreach (var (id, name, _, harbor) in group.OrderBy(c => c.Name, StringComparer.Ordinal))
+            foreach (var (id, name, _, harbor) in group.Cities)
             {
                 var cell = Cell(name, harbor ? Mark.Harbor : Mark.Inland);
                 cell.MouseLeftButtonDown += (_, e) =>
@@ -163,7 +174,7 @@ public sealed class AutoSailDialog : GameWindow
             var page = Paper(GameUi.Scroller(grid, ListMaxHeight));
             _pages.Children.Add(page);
             // 문화권 이름은 도시 표에서 온 한국어라 따로 옮긴다 — 수와 붙인 글은 번역 표에서 통째로 못 찾는다.
-            tabs.Add(($"{Lang.T(group.Key)} {group.Count()}", page));
+            tabs.Add((group.Text, page));
         }
 
         // 찾기 판 — 탭 판들과 한 칸에 겹쳐 두고, 찾기 칸에 말이 있을 때만 선다.
@@ -334,7 +345,7 @@ public sealed class AutoSailDialog : GameWindow
             _tabPage = page;
             // 찾는 동안 탭을 누르면 찾기를 걷고 그 탭으로 간다.
             if (_query.Text.Length > 0) _query.Text = "";
-        }));
+        }, Math.Max(0, firstTab)));
         stack.Children.Add(_heads);
         stack.Children.Add(_pages);
         stack.Children.Add(helm);
@@ -357,6 +368,13 @@ public sealed class AutoSailDialog : GameWindow
             else if (e.Key is Key.Enter && (_picked >= 0 || _bound >= 0)) Start();
         };
         MouseRightButtonUp += (_, _) => Close();
+
+        // 먼저 골라 둘 도시 — 계약한 발견물에서 가장 가까운 도시나, 바다에서 열었으면 마지막으로 간 도시.
+        if (preselect >= 0 && known.ContainsKey(preselect))
+        {
+            Pick(preselect);
+            if (suggestion != null) _hitNote.Text = suggestion;
+        }
     }
 
     /// <summary>문화권 탭의 차례 — 도시 문화권 표의 차례를 따르고, 모르는 이름은 뒤로 보낸다.</summary>
@@ -459,7 +477,7 @@ public sealed class AutoSailDialog : GameWindow
     }
 
     /// <summary>탭 머리 — 누른 쪽 판만 보이고 머리는 밝게 선다(모드 창과 같은 꼴). 많으면 다음 줄로 넘긴다.</summary>
-    private static FrameworkElement Tabs(List<(string Text, FrameworkElement Page)> tabs, Action<FrameworkElement> selected)
+    private static FrameworkElement Tabs(List<(string Text, FrameworkElement Page)> tabs, Action<FrameworkElement> selected, int first = 0)
     {
         var bar = new WrapPanel
         {
@@ -499,7 +517,7 @@ public sealed class AutoSailDialog : GameWindow
             heads.Add((head, page));
             bar.Children.Add(head);
         }
-        if (tabs.Count > 0) Select(tabs[0].Page);
+        if (tabs.Count > 0) Select(tabs[Math.Clamp(first, 0, tabs.Count - 1)].Page);
         return bar;
     }
 
@@ -752,14 +770,18 @@ public sealed class AutoSailDialog : GameWindow
     /// 도시 번호를 받아 그리로 가는 항로 후보들을 잡는다 — 제목 한 줄과 후보들을 돌려준다. 앞의 것이 기본이다.
     /// 실패하면 그 까닭을 돌려준다 — 창은 안 닫힌다. 아직 떠나지는 않는다.
     /// </param>
+    /// <param name="frequent">맨 앞 「자주 간 도시」 탭에 놓을 도시들(앞이 자주 간 것). 비면 탭을 안 낸다.</param>
+    /// <param name="preselect">먼저 골라 둘 도시. 없으면 −1.</param>
+    /// <param name="suggestion">먼저 골라 둔 까닭 — 찾기 칸 옆에 띄운다.</param>
     /// <returns>후보를 골라 「확인」으로 닫았으면 그 도시 번호와 후보 차례, 아니면 (−1, −1).</returns>
     public static (int City, int Plan) Show(Window owner, IEnumerable<(int Id, string Name, string Culture, bool Harbor)> cities,
                                             BitmapSource? chart,
-                                            Func<int, (bool Ok, string Message, IReadOnlyList<Plan> Plans)> start)
+                                            Func<int, (bool Ok, string Message, IReadOnlyList<Plan> Plans)> start,
+                                            IReadOnlyList<int>? frequent = null, int preselect = -1, string? suggestion = null)
     {
         var list = cities.ToList();
         if (list.Count == 0) { NoticeDialog.Show(owner, "아는 도시가 없습니다"); return (-1, -1); }
-        var dialog = new AutoSailDialog(list, chart, start) { Owner = owner };
+        var dialog = new AutoSailDialog(list, chart, start, frequent ?? [], preselect, suggestion) { Owner = owner };
         dialog.ShowDialog();
         return dialog._confirmed && dialog._bound >= 0 ? (dialog._bound, dialog._plan) : (-1, -1);
     }

@@ -1638,6 +1638,31 @@ public sealed class Player
         if (CityId >= 0) _visitedCities.Add(CityId);
     }
 
+    private readonly Dictionary<int, int> _cityVisits = [];
+
+    /// <summary>도시마다 들어간 횟수 — 네비게이션의 「자주 간 도시」 탭이 쓴다. 원본에 없는 값이다.</summary>
+    public IReadOnlyDictionary<int, int> CityVisits => _cityVisits;
+
+    /// <summary>마지막으로 들어간 도시. 모르면 -1 — 네비게이션이 바다에서 열릴 때 먼저 골라 둔다.</summary>
+    public int LastCity { get; private set; } = -1;
+
+    /// <summary>도시에 한 번 들었다 — 세이브를 불러와 도시 안에서 여는 것은 세지 않는다.</summary>
+    public void CountVisit(int city)
+    {
+        if (city < 0) return;
+        _cityVisits[city] = _cityVisits.GetValueOrDefault(city) + 1;
+        LastCity = city;
+    }
+
+    /// <summary>세이브에서 들어간 횟수와 마지막 도시를 되돌린다. 이 칸 앞의 세이브는 비어 있고, 도시 안이면 그 도시가 마지막이다.</summary>
+    public void RestoreCityVisits(IReadOnlyDictionary<int, int>? visits, int? last)
+    {
+        _cityVisits.Clear();
+        foreach (var (city, count) in visits ?? new Dictionary<int, int>())
+            if (city >= 0 && count > 0) _cityVisits[city] = count;
+        LastCity = last ?? CityId;
+    }
+
     private readonly HashSet<int> _executed = [];
 
     /// <summary>
