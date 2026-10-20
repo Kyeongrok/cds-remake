@@ -937,7 +937,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         bool anyLive = _game.Discoveries?.LiveHints(_player).Count > 0;
         return anyLive
             ? "제독， 가진 힌트는 이미 찾은 발견물의 것뿐이라 이 후원자를 설득할 수 없습니다． 새 힌트를 얻어 옵시다．"
-            : "제독， 후원자를 설득하려면 설득할 힌트가 있어야 합니다． 도서관에서 책을 읽거나 술집에서 소문을 들어 힌트를 얻어 옵시다．";
+            : "제독， 후원자를 설득하려면 설득할 힌트가 있어야 합니다． 도서관에서 책을 읽어 힌트를 얻어 옵시다．";
     }
 
     /// <summary>
