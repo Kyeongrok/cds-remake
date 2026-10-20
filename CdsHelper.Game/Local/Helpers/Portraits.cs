@@ -155,6 +155,12 @@ public sealed class Portraits
     /// </summary>
     public const int TetzelFace = ShippedBase + 2;
 
+    /// <summary>
+    /// 메카의 순례자 — 카바 신전 발견 대본(DISEV 63)이 화자 「#9004」로 세운다. 원본 남자 초상화 316(베이지 터번)을
+    /// 다섯 배로 키워 <c>asset/face/male-9004.png</c> 로 싣는다.
+    /// </summary>
+    public const int PilgrimFace = ShippedBase + 4;
+
     private static readonly Dictionary<(bool Female, int Face), (uint[] Bgra, BitmapSource Art)?> ShippedCache = [];
 
     /// <summary>
