@@ -336,13 +336,17 @@ public sealed class TradePost
             ? [.. cells]
             : FullStock(player, city);
 
-    /// <summary>한도까지 찬 재고 — 공통품은 규모로, 특산품은 등급으로 표를 탄다(<c>0x004299A0</c>).</summary>
+    /// <summary>
+    /// 한도까지 찬 재고 — 공통품은 규모로, 특산품은 등급으로 표를 탄다(<c>0x004299A0</c>).
+    /// 원본은 특산품이 등급만 타서 투자로 도시가 자라도 그대로다. 우리는 등급과 규모 가운데 큰 쪽을 탄다(요청).
+    /// </summary>
     private int[] FullStock(Player player, int city)
     {
         var cells = new int[Player.TradeStockCells];
-        int common = Cap(_cities?.ScaleOf(city) ?? 0);
+        int scale = _cities?.ScaleOf(city) ?? 0;
+        int common = Cap(scale);
         for (int i = 0; i < TradeTable.CommonSlots; i++) cells[i] = common;
-        cells[SpecialCell] = _table.SpecialOf(city) >= 0 ? Cap(_table.SpecialGradeOf(city)) : 0;
+        cells[SpecialCell] = _table.SpecialOf(city) >= 0 ? Cap(Math.Max(_table.SpecialGradeOf(city), scale)) : 0;
         cells[MonthCell] = MonthKey(player.Date);
         return cells;
     }
