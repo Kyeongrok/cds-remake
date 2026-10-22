@@ -195,18 +195,24 @@ public sealed class CargoDropDialog : GameWindow
     }
 
     /// <summary>↑↓ — 원래 수를 넘어 더할 수는 없다.</summary>
-    private void Bump(ref int value, int max, int by)
+    /// <summary>한 걸음 올리거나 내린다. 더 못 움직였으면 거짓 — 누르고 있던 되풀이가 거기서 멈춘다.</summary>
+    private bool Bump(ref int value, int max, int by)
     {
         int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step;
+        int was = value;
         value = Math.Clamp(value + by * step, 0, max);
+        if (value == was) return false;
         Paint();
+        return true;
     }
 
-    private void BumpRow(GoodsRow r, int by)
+    private bool BumpRow(GoodsRow r, int by)
     {
         int now = r.Now;
-        Bump(ref now, r.Cargo.Count, by);
+        bool moved = Bump(ref now, r.Cargo.Count, by);
         r.Now = now;
+        if (moved) Paint();   // Paint 가 r.Now 를 읽으므로 넣은 뒤에 다시 그린다
+        return moved;
     }
 
     private void Restore()
@@ -272,7 +278,7 @@ public sealed class CargoDropDialog : GameWindow
     };
 
     /// <summary>「＋%4d」 / 「－%4d」 와 ↑↓.</summary>
-    private static UIElement Spin(int delta, Action up, Action down)
+    private static UIElement Spin(int delta, Func<bool> up, Func<bool> down)
     {
         var spin = new StackPanel { Orientation = Orientation.Horizontal };
         spin.Children.Add(Label(delta < 0 ? $"－{-delta,4}" : $"＋{delta,4}"));
@@ -281,7 +287,8 @@ public sealed class CargoDropDialog : GameWindow
         return spin;
     }
 
-    private static UIElement Arrow(int icon, Action run)
+    /// <remarks>누르고 있으면 되풀이한다(<see cref="HoldRepeat"/>) — 보급 창 화살표와 같다(요청).</remarks>
+    private static UIElement Arrow(int icon, Func<bool> run)
     {
         FrameworkElement box = GameUi.GameIcon(icon)
             ?? (FrameworkElement)new Border
@@ -295,8 +302,7 @@ public sealed class CargoDropDialog : GameWindow
         box.Margin = new Thickness(1, 0, 0, 0);
         box.Cursor = Cursors.Hand;
         box.VerticalAlignment = VerticalAlignment.Center;
-        box.MouseLeftButtonDown += (_, e) => e.Handled = true;
-        box.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
+        HoldRepeat.Attach(box, _ => run());
         return box;
     }
 
