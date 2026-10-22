@@ -3210,11 +3210,15 @@ public sealed class WorldMapHost : HwndHost
     /// <summary>
     /// 배를 그 칸에 갖다 놓는다(바다에서 적은 판을 불러올 때). 뭍이면 가까운 물칸으로 민다.
     /// </summary>
-    public bool PlaceAtSea(double x, double y)
+    /// <param name="waterOnly">참이면 둘레에 물이 없을 때 안 옮긴다(발견물 지도 순간이동). 거짓이면 예전처럼 그 칸에 둔다(세이브 열기).</param>
+    public bool PlaceAtSea(double x, double y, bool waterOnly = false)
     {
         if (!_ready) return false;
-        StopAutoSail();   // 다른 자리로 옮기면 짜 둔 항로가 더는 안 맞는다
+        // 내륙 깊이 짚어 둘레 64 칸에 물이 없으면 NearestWater 가 그 뭍 칸을 그대로 돌려준다 — 순간이동으로 배가 뭍
+        // 한가운데 서 버렸다. 그때는 안 옮긴다.
         (x, y) = NearestWater(x, Math.Clamp(y, 0, WorldMapRenderer.CellH - 1));
+        if (waterOnly && IsLand(x, y)) return false;
+        StopAutoSail();   // 다른 자리로 옮기면 짜 둔 항로가 더는 안 맞는다
         _shipX = _targetX = x;
         _shipY = _targetY = y;
         _shipKnown = true;

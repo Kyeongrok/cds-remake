@@ -393,6 +393,9 @@ public sealed class GameSettingsData
     /// <summary>발견물 사건의 미니게임을 건너뛰고 이긴 것으로 칠지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SkipMinigames { get; set; }
 
+    /// <summary>발견물 지도에서 오른쪽 단추로 짚은 자리로 함대를 옮길지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool DiscoveryMapWarp { get; set; }
+
     /// <summary>뭍에서 발견물 지도로 자동이동할지. 실험이라 꺼 두고 시작한다.</summary>
     public bool LandAutoWalk { get; set; }
 
@@ -1416,6 +1419,13 @@ public static class GameSettings
     /// 미니게임 통과 — 발견물 사건이 띄우는 미니게임(성배 · 스핑크스 · 미궁 · 낚시 · 큐브 · 천칭 · 발라몬의 탑)을
     /// 하지 않고 이긴 것으로 친다. 메뉴 「MINI GAME」에서 따로 하는 판은 그대로 한다.
     /// </summary>
+    public static bool DiscoveryMapWarp
+    {
+        get => Get(d => d.DiscoveryMapWarp);
+        set => Set(d => d.DiscoveryMapWarp = value);
+    }
+
+    /// <summary>발견물 사건의 미니게임을 건너뛰고 이긴 것으로 칠지 — 모드 창.</summary>
     public static bool SkipMinigames
     {
         get => Get(d => d.SkipMinigames);

@@ -394,6 +394,12 @@ public sealed class ModDialog : GameWindow
             + " 천칭 퍼즐 · 발라몬의 탑)을 하지 않고 이긴 것으로 칩니다. 실패해서 게임오버가 나는 일도 없습니다."
             + " 메뉴의 「MINI GAME」에서 따로 하는 판은 그대로 할 수 있습니다."));
 
+        // 발견물 지도 순간이동 — 오른쪽 단추로 짚은 바다로 함대를 옮긴다.
+        rows.Children.Add(Toggle("발견물 지도 순간이동", GameSettings.DiscoveryMapWarp, on => GameSettings.DiscoveryMapWarp = on,
+            "원본에 없는 것입니다 — 발견물 지도에서 오른쪽 단추로 짚은 자리로 함대를 바로 옮깁니다(닻을 내린 채)."
+            + " 육지를 짚으면 가까운 바다로 옮기고, 가까이에 바다가 없으면 옮기지 않습니다."
+            + " 배를 타고 있을 때만 되고 도시 안이나 육지에 올라 있을 때는 안 됩니다. Shift+오른쪽 단추 자동항해는 이 줄과 상관없습니다."));
+
         // 휠 확대 — 지도를 마우스 휠로 키우고 줄인다. 원본에 없어 꺼 둔다.
         rows.Children.Add(Toggle("캐릭터 작성 기억", GameSettings.KeepCharacterDraft,
             on => GameSettings.KeepCharacterDraft = on,

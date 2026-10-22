@@ -851,7 +851,8 @@ public sealed class WorldMapWindow : Window
         // 갔다 오면 Windows 가 형제 차례를 되살리며 도시 화면 · 그 쪽지들이 발견물 지도 위로 올라왔다.
         Window owner = _cityView is { IsVisible: true } town ? town : this;
         DiscoveryMapDialog.Show(owner, chart, w, h, _game.Discoveries?.Table, _game.Player, at,
-                                WindTable.Open(_game.Directory), WarpTo, AutoSail, cities, inTown, walk,
+                                WindTable.Open(_game.Directory), GameSettings.DiscoveryMapWarp ? WarpTo : null,
+                                AutoSail, cities, inTown, walk,
                                 EventsDoneDiscoveries());
     }
 
@@ -873,7 +874,7 @@ public sealed class WorldMapWindow : Window
     private (double X, double Y)? WarpTo(double cellX, double cellY)
     {
         if (_host.SeaBlocked || _host.IsOnLand) return null;
-        if (!_host.PlaceAtSea(cellX, cellY)) return null;
+        if (!_host.PlaceAtSea(cellX, cellY, waterOnly: true)) return null;
         return _host.ShipCell is { } cell ? (cell.X, cell.Y) : null;
     }
 

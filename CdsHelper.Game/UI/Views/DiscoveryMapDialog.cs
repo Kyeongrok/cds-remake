@@ -952,7 +952,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         var landed = _warp(px * ExploredMap.CellsPerBlock, py * ExploredMap.CellsPerBlock);
         if (landed is not { } spot)
         {
-            _said = "   ·   지금은 함대를 옮길 수 없습니다(도시 안이거나 뭍 위)";
+            _said = "   ·   함대를 옮길 수 없습니다(도시 안 · 육지 위이거나 가까이에 바다가 없음)";
             Apply();
             return;
         }
