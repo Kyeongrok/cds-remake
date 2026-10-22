@@ -22,6 +22,7 @@ public sealed class SettingsDialog : GameWindow
     private readonly Border _bgmRow = new() { Padding = new Thickness(8, 8, 8, 2) };
     private readonly Border _sfxRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _bgmVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
+    private readonly Border _awayRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sfxVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sizeRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _mapRow = new() { Padding = new Thickness(8, 2, 8, 2) };
@@ -44,6 +45,7 @@ public sealed class SettingsDialog : GameWindow
         _bgmRow.Child = BgmToggle();
         _sfxRow.Child = SfxToggle();
         _bgmVolRow.Child = VolumeRow("배경음악", GameSettings.BgmVolume, StepBgm);
+        _awayRow.Child = AwayToggle();
         _sfxVolRow.Child = VolumeRow("효과음  ", GameSettings.SfxVolume, StepSfx);
         _sizeRow.Child = SizeRow();
         _mapRow.Child = MapRow();
@@ -55,6 +57,7 @@ public sealed class SettingsDialog : GameWindow
         var general = new StackPanel();
         general.Children.Add(_bgmRow);
         general.Children.Add(_bgmVolRow);
+        general.Children.Add(_awayRow);
         general.Children.Add(_sfxRow);
         general.Children.Add(_sfxVolRow);
         general.Children.Add(_sizeRow);
@@ -211,6 +214,15 @@ public sealed class SettingsDialog : GameWindow
 
     private UIElement BgmToggle() =>
         new GameButton(Label("배경음악", GameSettings.BgmEnabled), FlipBgm);
+
+    /// <summary>「백그라운드 음소거」 — 원본에 없는 것이다. 다른 창을 보거나 게임 창을 접으면 배경음악이 안 들린다(요청).</summary>
+    private UIElement AwayToggle() =>
+        new GameButton(Label("백그라운드 음소거", GameSettings.MuteBgmInBackground), () =>
+        {
+            GameSettings.MuteBgmInBackground = !GameSettings.MuteBgmInBackground;
+            BgmPlayer.Refresh();
+            _awayRow.Child = AwayToggle();
+        });
 
     private UIElement SfxToggle() =>
         new GameButton(Label("효과음  ", GameSettings.SfxEnabled), FlipSfx);

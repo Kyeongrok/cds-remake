@@ -354,7 +354,7 @@ public sealed class BgmPlayer : IDisposable
         try
         {
             _player.Open(new Uri(path));
-            _player.Volume = Volume;
+            _player.Volume = Heard;
             _player.Play();
             _track = track;
             LastError = "";
@@ -374,11 +374,48 @@ public sealed class BgmPlayer : IDisposable
         set
         {
             _volume = Math.Clamp(value, 0, 1);
-            _player.Volume = _volume;
+            _player.Volume = Heard;
         }
     }
 
     private double _volume = 1;
+
+    /// <summary>실제로 내는 크기 — 게임 창이 뒤에 있고 「백그라운드 음소거」가 켜져 있으면 0 이다.</summary>
+    private double Heard => _away && Settings.GameSettings.MuteBgmInBackground ? 0 : _volume;
+
+    /// <summary>게임이 뒤에 있는지 — 다른 프로그램이 앞에 있거나 게임 창이 접혔다.</summary>
+    private static bool _away;
+
+    /// <summary>
+    /// 게임 창이 앞에 있는지를 따른다 — 다른 프로그램으로 넘어가거나 창을 접으면 「백그라운드 음소거」대로 곡 소리를 죽인다.
+    /// 곡은 멈추지 않고 소리만 죽인다 — 해전 승패 소리 동안의 <see cref="Pause"/> 와 엉키지 않게.
+    /// </summary>
+    /// <remarks>
+    /// 접기는 따로 본다 — 작업표시줄이나 _ 단추로 접으면 접힌 창이 활성으로 남아 앱의 <c>Deactivated</c> 가 안 온다
+    /// (도시 화면 쪽지들의 OverlayNotes 와 같다).
+    /// </remarks>
+    public static void Follow(System.Windows.Window main)
+    {
+        bool front = true;
+        void Sync()
+        {
+            _away = !front || main.WindowState == System.Windows.WindowState.Minimized;
+            Refresh();
+        }
+        if (System.Windows.Application.Current is { } app)
+        {
+            app.Activated += (_, _) => { front = true; Sync(); };
+            app.Deactivated += (_, _) => { front = false; Sync(); };
+        }
+        main.StateChanged += (_, _) => Sync();
+        Sync();
+    }
+
+    /// <summary>「백그라운드 음소거」를 바꿨거나 앞뒤가 바뀌었다 — 지금 크기를 다시 먹인다.</summary>
+    public static void Refresh()
+    {
+        if (Current is { } bgm) bgm._player.Volume = bgm.Heard;
+    }
 
     /// <summary>
     /// 곡을 그 자리에서 멈춘다 — <see cref="Resume"/> 이 멈춘 자리부터 잇는다. 원본의 CDAudioPause

@@ -57,6 +57,9 @@ public sealed class GameSettingsData
     /// <summary>배경음악·효과음의 크기(0~100). 기본은 다 크게.</summary>
     public int BgmVolume { get; set; } = GameSettings.MaxVolume;
 
+    /// <summary>게임 창이 뒤로 가거나 접히면 배경음악을 죽일지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool MuteBgmInBackground { get; set; }
+
     /// <summary>해상 지도 배율(0.5~1.5, 0.25 칸). 기본 0.75 — 원본 크기에 맞춘 값이다.</summary>
     public double MapScale { get; set; } = GameSettings.DefaultMapScale;
     public int SfxVolume { get; set; } = GameSettings.MaxVolume;
@@ -733,6 +736,13 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.BgmVolume), 0, MaxVolume);
         set => Set(d => d.BgmVolume = Math.Clamp(value, 0, MaxVolume));
+    }
+
+    /// <summary>게임 창이 뒤로 가거나 접히면 배경음악을 죽일지 — 설정 창 「일반」.</summary>
+    public static bool MuteBgmInBackground
+    {
+        get => Get(d => d.MuteBgmInBackground);
+        set => Set(d => d.MuteBgmInBackground = value);
     }
 
     /// <summary>효과음 크기(0~100).</summary>
