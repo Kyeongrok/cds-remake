@@ -86,7 +86,6 @@ internal sealed class FishingGameDialog : InfoDialog
 
     /// <summary>헤엄쳐 다니는 것 열 마리.</summary>
     private readonly Image[] _swim = new Image[FishingGame.Swimmers];
-    private readonly GameUi.GameLabel _line = new(GameFont.WhiteColor) { Bold = false };
     private readonly DispatcherTimer _clock = new();
 
     private FishingGameDialog(Random rng)
@@ -148,13 +147,6 @@ internal sealed class FishingGameDialog : InfoDialog
             _arrow[i] = image;
         }
 
-        // 알림줄은 하늘 자리에 얹는다 — 화살표(x 224)와 안 겹친다.
-        _line.FallbackBrush = Brushes.White;
-        _line.IsHitTestVisible = false;
-        Canvas.SetLeft(_line, 10);
-        Canvas.SetTop(_line, 12);
-        Panel.SetZIndex(_line, 60);
-        _scene.Children.Add(_line);
 
         _scene.Background = Brushes.Transparent;
         _scene.MouseLeftButtonDown += (_, e) => e.Handled = true;
@@ -332,12 +324,7 @@ internal sealed class FishingGameDialog : InfoDialog
 
     private void Sync()
     {
-        // 다음에 어느 쪽으로 꺾는지만 알린다 — 깊이는 화면에 그대로 보이고, 조작 안내는
-        // 오른쪽 차림표가 맡는다. 게임 화면에 없는 것을 덧대지 않는다.
-        // 지금 건너는 중이면 그쪽, 아니면 <b>다음 꼭짓점에서</b> 꺾겠다고 적어 둔 쪽이다.
-        int turn = _game.Lean != 0 ? _game.Lean : _game.Wish;
-        string way = turn > 0 ? "오른쪽으로" : turn < 0 ? "왼쪽으로" : "곧장 아래로";
-        _line.Text = _game.Started ? $"  다음 교차점에서 {way}" : "";
+        // 하늘에 띄우던 「다음 교차점에서 …」 흰 글은 뺐다(요청) — 원본에 없고, 꺾는 쪽은 화살표가 보여 준다.
 
         // 바늘은 <b>사다리 위에서만</b> 간다 — 가로줄을 건널 때는 높이가 멎고,
         // 다 건넌 뒤에 세로줄을 내려간다(FishingGame.DrawX · DrawY).
