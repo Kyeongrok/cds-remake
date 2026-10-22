@@ -408,7 +408,7 @@ public sealed class PersonMoveDialog : GameWindow
             if (_states[(int)StateKind(person, active, onRoad)].IsChecked != true) continue;
             // 201번 이후는 이벤트·괴물·누적 인물이라 표의 Hire 값과 관계없이 고용할 수 없다.
             if (_hireableOnly.IsChecked == true &&
-                (person.Id >= PersonTable.MovingEnd || person.Hire != PersonTable.Hireable))
+                (person.Id >= PersonTable.MovingEnd || !PersonTable.CanHire(person.Hire)))
                 continue;
             if (_search.Text.Length > 0 && !person.Name.Contains(_search.Text, StringComparison.OrdinalIgnoreCase))
                 continue;
@@ -423,7 +423,7 @@ public sealed class PersonMoveDialog : GameWindow
 
             // 고용할 수 있는 사람이면 고용에 드는 명성을 붙인다 — 지금 제독 매력으로 센 값이다(TavernMenu.HireFame).
             string hireFame = "";
-            if (person.Id < PersonTable.MovingEnd && person.Hire == PersonTable.Hireable)
+            if (person.Id < PersonTable.MovingEnd && PersonTable.CanHire(person.Hire))
             {
                 int need = TavernMenu.HireFame(_game.Player, person.Fame);
                 hireFame = $"고용 가능 명성 {need} (지금 {_game.Player.Fame} · {Lang.T(_game.Player.Fame >= need ? "충분" : "모자람")})";

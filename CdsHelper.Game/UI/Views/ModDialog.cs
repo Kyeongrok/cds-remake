@@ -541,6 +541,11 @@ public sealed class ModDialog : GameWindow
             + " 시나리오는 개발 창의 「시나리오…」에서 짓고, 장면은 대본 편집기로 적습니다."
             + " 시나리오의 주인공은 초심자용 주인공처럼 누적 캐릭터로 등록할 수 없습니다."));
 
+        // 대화만 되던 인물 고용 — 고용 상태 1(대화만) 인물도 술집에서 고용한다.
+        character.Children.Add(Toggle("대화만 되던 인물 고용", GameSettings.HireTalkOnly, on => GameSettings.HireTalkOnly = on,
+            "원본에 없는 것입니다 — 원본에서는 술집에서 말만 걸 수 있고 고용할 수 없던 인물 57명을 고용할 수 있게 합니다."
+            + " 알 베자스 · 옷토 스피놀라 · 조안 · 카타리나 · 하이레딘 형제 등입니다. 고용에 드는 명성은 다른 인물과 같습니다."));
+
         // 특별주문 — 조선소에서 가진 배와 옵션까지 똑같은 배를 산다.
         // 부하 해고 — 부하편성 오른쪽 단추에 「해고한다」.
         var dismiss = Toggle("부하 해고", GameSettings.MateDismiss, on => GameSettings.MateDismiss = on,

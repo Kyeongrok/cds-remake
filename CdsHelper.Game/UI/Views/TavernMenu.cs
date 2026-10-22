@@ -1432,7 +1432,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         // 일기토 차림표는 인물 갈래(+0xE8, 우리 Hire)가 <b>0(역사 항해자) · 4(누적 캐릭터)</b>인 사람에게 뜬다 —
         // 0x004A4DE0 이 뜀표 0x004A4E40 으로 0 → 0x004A4880, 4 → 0x004A4860 을 거쳐 둘 다 0x004A4AA0 으로 보낸다.
         // 1·2 는 고용 쪽(0x004A4BB0)이다. 대본이 항해자를 2 로 바꾸면 고용 쪽으로 간다.
-        bool hireable = who.Hire == TavernRoster.Hireable;
+        // 모드 「대화만 되던 인물 고용」이면 1 도 고용 쪽이다 — 1 은 원래부터 고용 쪽 창(0x004A4BB0)으로 가고 줄만 막혀 있었다.
+        bool hireable = PersonTable.CanHire(who.Hire);
         bool duelable = who.Hire is TavernRoster.Voyager or TavernRoster.Retired;
 
         bool fluent = TongueWith(who.Index) > 0;

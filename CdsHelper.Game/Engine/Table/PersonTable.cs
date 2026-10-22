@@ -69,6 +69,12 @@ public sealed class PersonTable
     public const int Voyager = 0, TalkOnly = 1, Hireable = 2, Hired = 3, Retired = 4;
 
     /// <summary>
+    /// 그 고용 상태면 술집에서 부하로 삼을 수 있는지 — 2 라야 한다. 모드 「대화만 되던 인물 고용」을 켜면 1(대화만)도 된다.
+    /// </summary>
+    public static bool CanHire(int hire) =>
+        hire == Hireable || (hire == TalkOnly && Settings.GameSettings.HireTalkOnly);
+
+    /// <summary>
     /// 인물 한 명. 고치는 창이 이것을 그대로 묶으므로 <b>갈아 끼울 수 있는 칸</b>이다.
     /// </summary>
     public sealed class Row
