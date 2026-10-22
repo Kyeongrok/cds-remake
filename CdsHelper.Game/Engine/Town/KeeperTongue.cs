@@ -62,8 +62,9 @@ public static class KeeperTongue
         // 번역한 뒤에 뭉갠다 — 뭉갠 한국어는 번역 표에서 못 찾는다.
         string shown = Lang.T(text);
         string heard = StrangerTalk.Garble(shown, who.Level, Random.Shared, translated: true);
+        // 통역도 제 수준만큼 뭉개 옮긴다 — 손님 이야기 · 마을 사람과 같다. 3 이라야 온전하다.
         string? relay = who.Relayer != null && who.RelayerLevel > who.Level
-            ? StrangerTalk.Relay(shown, female: false)
+            ? StrangerTalk.Relay(StrangerTalk.Garble(shown, who.RelayerLevel, Random.Shared, translated: true), female: false)
             : null;
         return (heard, relay == null ? null : who.Relayer, relay);
     }
