@@ -155,8 +155,11 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
 
         // 술꾼의 인사도 그 도시 나라의 말이다 — 아랍어 1레벨이면 손님 소문처럼
         // 글자가 뭉개져야 한다(0x004780E0 → 0x004252F0).
-        ConfirmDialog.Tell(_view, StrangerTalk.Garble(Greetings[at], TongueLevelOfCity(), _game.Random),
-                           face: face);
+        int best = CityListeners(out int mine, out string relayer);
+        ConfirmDialog.Tell(_view, StrangerTalk.Garble(Greetings[at], mine, _game.Random), face: face);
+        // 원본은 인사를 옮겨 주지 않는다 — 부관 · 통역이 더 잘하면 손님 이야기처럼 옮기게 했다(요청).
+        if (relayer.Length > 0 && _game.MateInfo(relayer) is { } who)
+            TalkDialog.Say(_view, MateFace(who), "", StrangerTalk.Relay(StrangerTalk.Garble(Greetings[at], best, _game.Random), false));
     }
 
     /// <summary>
@@ -1255,13 +1258,25 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         return language >= 0 && language < Skill.Languages.Length ? Skill.Languages[language] : "";
     }
 
-    /// <summary>그 도시 나라 말을 제독이 알아듣는 수준.</summary>
-    private int TongueLevelOfCity()
+    /// <summary>
+    /// 그 도시 나라 말을 알아듣는 수준 — <paramref name="mine"/> 은 제독, 돌려주는 값은 부관(자리 0·3) 가운데 더 잘하는 쪽까지 친 수준이다.
+    /// 제독보다 잘하는 부관이 있으면 <paramref name="relayer"/> 에 그 이름을 둔다(없으면 빈 글).
+    /// </summary>
+    private int CityListeners(out int mine, out string relayer)
     {
-        int nation = _game.CityRows?.NationOf(_cityId) ?? -1;
-        int language = _game.Nations?.Find(nation)?.Language ?? -1;
-        return language >= 0 && language < Skill.Languages.Length
-            ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
+        int nationId = _game.CityRows?.NationOf(_cityId) ?? -1;
+        int language = _game.Nations?.Find(nationId)?.Language ?? -1;
+        mine = language is >= 0 and < 14 ? _player.TongueOf(Skill.Languages[language]) : FluentTongue;
+        int best = mine;
+        relayer = "";
+        if (language is >= 0 and < 14)
+            foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+                if (RowOf(_player.MateAt(slot)) is { } mate && mate.Languages[language] > best)
+                {
+                    best = mate.Languages[language];
+                    relayer = _player.MateAt(slot);
+                }
+        return best;
     }
 
     /// <summary>
@@ -1296,19 +1311,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var dice = _game.Random;
 
         // 손님 말은 그 도시 나라의 말이다(0x004A1530). 제독·부관(자리 0·3) 누구도 모르면 못 듣는다.
-        var rows = _game.CityRows;
-        int nationId = rows?.NationOf(_cityId) ?? -1;
-        int language = _game.Nations?.Find(nationId)?.Language ?? -1;
-        int mine = language is >= 0 and < 14 ? _player.TongueOf(Skill.Languages[language]) : FluentTongue;
-        int best = mine;
-        string relayer = "";
-        if (language is >= 0 and < 14)
-            foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
-                if (RowOf(_player.MateAt(slot)) is { } mate && mate.Languages[language] > best)
-                {
-                    best = mate.Languages[language];
-                    relayer = _player.MateAt(slot);
-                }
+        int best = CityListeners(out int mine, out string relayer);
         if (best <= 0)
         {
             ConfirmDialog.Tell(_view, StrangerTalk.Lost, face: face);
