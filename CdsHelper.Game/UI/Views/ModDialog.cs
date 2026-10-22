@@ -1343,6 +1343,9 @@ public sealed class ModDialog : GameWindow
         group.Children.Add(SliderLine("크기", 0.5, 2.5, 0.1, GameSettings.MiniMapScale, v => $"{v:P0}",
             v => GameSettings.MiniMapScale = v,
             "미니맵 크기", "미니맵 창의 크기입니다. 키우면 더 넓은 곳이 보입니다."));
+        group.Children.Add(SliderLine("배율", 1.0, 4.0, 0.25, GameSettings.MiniMapZoom, v => $"{v:0.##}x",
+            v => GameSettings.MiniMapZoom = v,
+            "미니맵 배율", "미니맵에 보이는 지도의 확대 배율입니다. 낮추면 더 넓은 곳이 작게 보입니다. 기본은 2 입니다."));
         group.Children.Add(sizeLine);
         group.Children.Add(SliderLine("내 표식 크기", 2.0, 12.0, 0.5, GameSettings.MiniMapShipSize, v => $"{v:0.0}",
             v => GameSettings.MiniMapShipSize = v,

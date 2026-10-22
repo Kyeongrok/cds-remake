@@ -22,8 +22,8 @@ internal sealed class MiniMapView : Border
     public static double ViewW => 260 * GameSettings.MiniMapScale;
     public static double ViewH => 160 * GameSettings.MiniMapScale;
 
-    /// <summary>지도 점 하나를 몇 배로 키워 보일지.</summary>
-    private const double Zoom = 2;
+    /// <summary>지도 점 하나를 몇 배로 키워 보일지 — 모드 창 「미니맵」 탭의 배율이다.</summary>
+    private static double Zoom => GameSettings.MiniMapZoom;
 
     private static readonly Brush Found = Frozen(Color.FromRgb(0xC0, 0x30, 0x20));
     private static readonly Brush Yet = Frozen(Color.FromRgb(0x50, 0x50, 0x50));
@@ -55,6 +55,10 @@ internal sealed class MiniMapView : Border
     public event Action? HoverChanged;
     private readonly Ellipse _ship = new() { Width = GameSettings.MiniMapShipSize, Height = GameSettings.MiniMapShipSize, Fill = Mine, Stroke = Brushes.White, StrokeThickness = 0.8 };
     private readonly TranslateTransform _shift = new();
+    private readonly ScaleTransform _zoom = new(Zoom, Zoom);
+
+    /// <summary>내 자리를 마지막으로 놓은 지도 점 — 배율이 바뀌면 이 자리를 가운데로 다시 민다.</summary>
+    private double _px = double.NaN, _py;
 
     /// <summary>점을 마지막으로 찍었을 때의 찾은 발견물 수 · 마친 사건 수 — 달라지면 다시 찍는다.</summary>
     private int _markedFound = -1;
@@ -74,7 +78,7 @@ internal sealed class MiniMapView : Border
         MouseLeave += (_, _) => HoverChanged?.Invoke();
 
         var moves = new TransformGroup();
-        moves.Children.Add(new ScaleTransform(Zoom, Zoom));
+        moves.Children.Add(_zoom);
         moves.Children.Add(_shift);
         _world.RenderTransform = moves;
         _world.Children.Add(_windLayer);
@@ -136,6 +140,11 @@ internal sealed class MiniMapView : Border
         _cityLayer.Visibility = GameSettings.MiniMapCities ? Visibility.Visible : Visibility.Collapsed;
         SyncFlows();
         if (Math.Abs(Width - ViewW) > 0.01) { Width = ViewW; Height = ViewH; }
+        if (Math.Abs(_zoom.ScaleX - Zoom) > 0.001)
+        {
+            _zoom.ScaleX = _zoom.ScaleY = Zoom;
+            if (!double.IsNaN(_px)) Center();
+        }
 
         // 내 자리 점 — 가운데를 지킨 채 크기만 바꾼다.
         double mine = GameSettings.MiniMapShipSize;
@@ -272,7 +281,14 @@ internal sealed class MiniMapView : Border
         double px = cellX / ExploredMap.CellsPerBlock, py = cellY / ExploredMap.CellsPerBlock;
         Canvas.SetLeft(_ship, px - _ship.Width / 2);
         Canvas.SetTop(_ship, py - _ship.Height / 2);
-        _shift.X = ViewW / 2 - px * Zoom;
-        _shift.Y = ViewH / 2 - py * Zoom;
+        (_px, _py) = (px, py);
+        Center();
+    }
+
+    /// <summary>내 자리를 창 가운데에 둔다.</summary>
+    private void Center()
+    {
+        _shift.X = ViewW / 2 - _px * Zoom;
+        _shift.Y = ViewH / 2 - _py * Zoom;
     }
 }

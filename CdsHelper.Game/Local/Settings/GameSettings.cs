@@ -178,6 +178,9 @@ public sealed class GameSettingsData
     /// <summary>미니맵 창 크기 배율(0.5~2.5). 1 이 260x160 이다.</summary>
     public double MiniMapScale { get; set; } = 1.0;
 
+    /// <summary>미니맵 지도 배율(1~4) — 지도 점 하나를 몇 배로 키워 보일지. 2 가 처음 값이다.</summary>
+    public double MiniMapZoom { get; set; } = 2.0;
+
     /// <summary>마우스를 올렸거나 배가 밑에 들어갔을 때의 미니맵 불투명도(0.05~1.0).</summary>
     public double MiniMapHoverOpacity { get; set; } = 0.35;
 
@@ -1963,6 +1966,13 @@ public static class GameSettings
     {
         get => Math.Clamp(Get(d => d.MiniMapScale), 0.5, 2.5);
         set => Set(d => d.MiniMapScale = Math.Clamp(value, 0.5, 2.5));
+    }
+
+    /// <summary>미니맵 지도 배율 — 모드 창 「미니맵」 탭의 굴림대. 창 크기는 그대로 두고 지도만 당기거나 민다.</summary>
+    public static double MiniMapZoom
+    {
+        get => Math.Clamp(Get(d => d.MiniMapZoom), 1.0, 4.0);
+        set => Set(d => d.MiniMapZoom = Math.Clamp(value, 1.0, 4.0));
     }
 
     /// <summary>마우스를 올렸거나 배가 밑에 들어갔을 때의 미니맵 불투명도 — 모드 창 「미니맵」 탭의 굴림대.</summary>
