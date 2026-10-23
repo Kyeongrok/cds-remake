@@ -1,3 +1,4 @@
+using CdsHelper.Support.Local.Models;
 using System.IO;
 using System.Net.Http;
 
@@ -36,6 +37,8 @@ public static class MovieAssetDownloader
         yield return MovieFiles.OpeningStem;
         for (int n = 0; n < MovieFiles.OriginalDiscoveryMovies; n++) yield return MovieFiles.DiscoveryStem(n);
         for (int h = 0; h < MovieFiles.Hulls.Count; h++) yield return MovieFiles.HullStem(h);
+        // 앱에 실은 배의 동영상(바사 S08_0001 따위) — 릴리즈에 아직 안 올렸으면 받기가 실패하고 다음에 다시 본다.
+        foreach (var stem in Hull.All.Select(h => h.Movie).OfType<string>().Distinct()) yield return stem;
         yield return MovieFiles.EndingStem;
     }
 

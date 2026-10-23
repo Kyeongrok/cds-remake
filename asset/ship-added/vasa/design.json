@@ -1,0 +1,15 @@
+{
+  "Id": "vasa",
+  "Name": "바사",
+  "Hp": 18,
+  "Speed": 75,
+  "Capacity": 100,
+  "Tonnage": 1000,
+  "Crew": 10,
+  "Guns": 2,
+  "Price": 8000,
+  "MaxMasts": 1,
+  "CanChangeSail": false,
+  "Movie": "S08_0001",
+  "Cities": []
+}

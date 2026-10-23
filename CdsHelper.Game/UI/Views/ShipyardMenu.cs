@@ -329,10 +329,11 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private List<Hull> SoldHulls()
     {
-        if (_game.CityRows is not { } cities) return [.. Hull.All];
+        if (_game.CityRows is not { } cities) return [.. Hull.All.Where(h => !h.SoldNowhere)];
 
         var sold = ShipyardStock.HullsAt(cities, _cityId, _player.Date);
-        var list = Hull.All.Where(h => h.Id is < 0 or >= 8 || sold.Contains(h.Id)).ToList();
+        // 붙인 배(번호 −1)는 제가 적은 조선소에서만 판다 — 적은 곳이 없으면(앱에 실어만 둔 바사 따위) 어디서도 안 판다.
+        var list = Hull.All.Where(h => h.Id is < 0 or >= 8 ? h.SoldIn(_cityId) : sold.Contains(h.Id)).ToList();
 
         // 붙박이에 없는 선체(코구·대형카락·다우)도 켜져 있으면 낸다.
         foreach (int id in sold)
@@ -351,8 +352,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </summary>
     private string? MovieOf(Hull hull)
     {
-        int n = MovieFiles.Hulls.IndexOf(hull.Name);
-        return n < 0 ? null : MovieFiles.Resolve(_game.Directory, MovieFiles.HullStem(n));
+        return MovieFiles.HullMovie(_game.Directory, hull);
     }
 
     /// <summary>고칠 배가 있는지. 없으면 원본처럼 "수리" 줄이 흐리다.</summary>

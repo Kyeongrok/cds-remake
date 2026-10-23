@@ -54,6 +54,12 @@ public static class ShipRegistry
         /// </remarks>
         public string? Builtin { get; set; }
 
+        /// <summary>선체 동영상 줄기(<see cref="Hull.Movie"/>). 없으면 동영상 없이 나온다.</summary>
+        public string? Movie { get; set; }
+
+        /// <summary>파는 조선소의 도시 번호(<see cref="Hull.Cities"/>). null 이면 모든 조선소, 비어 있으면 어디서도 안 판다.</summary>
+        public int[]? Cities { get; set; }
+
         /// <summary>붙박이를 덧씌우는 줄인지.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public bool IsBuiltin => !string.IsNullOrEmpty(Builtin);
@@ -153,6 +159,11 @@ public static class ShipRegistry
 
         var taken = hulls.Select(h => h.Name).ToHashSet();
 
+        // 앱에 같이 싣는 배(asset/ship-added) — 손으로 등록한 배보다 먼저 이름을 잡는다.
+        foreach (var (design, folder) in LoadBundled())
+            if (!string.IsNullOrWhiteSpace(design.Name) && taken.Add(design.Name))
+                hulls.Add(ToHull(design, folder));
+
         foreach (var design in saved)
         {
             if (design.IsBuiltin) continue;
@@ -198,7 +209,39 @@ public static class ShipRegistry
         CanChangeSail = built.CanChangeSail,
     };
 
-    public static Hull ToHull(Design design) => new(
+    /// <summary>
+    /// 앱에 같이 싣는 배가 사는 폴더 — <c>asset/ship-added/{Id}/</c> 에 <c>design.json</c>(이 <see cref="Design"/>)과 8방향 그림
+    /// (<c>ship_0.png</c> ~, 고해상도 <c>ship_0_hd.png</c> ~)이 든다. 손으로 등록한 배(<see cref="Root"/>)와 달리 업데이트로 모두에게 간다.
+    /// 폴더 이름은 ASCII 로 둔다(Velopack 차등 업데이트).
+    /// </summary>
+    public static string BundledRoot => Path.Combine(AppContext.BaseDirectory, "asset", "ship-added");
+
+    /// <summary>앱에 같이 싣는 배를 다 읽는다. 그림 여덟 장이 다 든 것만.</summary>
+    public static List<(Design Design, string Folder)> LoadBundled()
+    {
+        var list = new List<(Design, string)>();
+        if (!Directory.Exists(BundledRoot)) return list;
+        foreach (var folder in Directory.GetDirectories(BundledRoot).Order(StringComparer.Ordinal))
+        {
+            try
+            {
+                string spec = Path.Combine(folder, "design.json");
+                if (!File.Exists(spec)) continue;
+                if (!Enumerable.Range(0, Directions).All(i => File.Exists(Path.Combine(folder, $"ship_{i}.png")))) continue;
+                if (JsonSerializer.Deserialize<Design>(File.ReadAllText(spec), Json) is { } design) list.Add((design, folder));
+            }
+            catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+            {
+                // 한 척이 깨져도 나머지는 나온다.
+            }
+        }
+        return list;
+    }
+
+    public static Hull ToHull(Design design) => ToHull(design, FolderOf(design.Id));
+
+    /// <summary>등록 줄을 선체로 — 그림은 <paramref name="folder"/> 에서 읽는다.</summary>
+    public static Hull ToHull(Design design, string folder) => new(
         design.Name,
         design.Hp,
         design.Speed,
@@ -210,7 +253,9 @@ public static class ShipRegistry
         Skin: -1,
         MaxMasts: Math.Clamp(design.MaxMasts, 1, Hull.MastLimit),
         CanChangeSail: design.CanChangeSail,
-        SpriteFolder: FolderOf(design.Id));
+        SpriteFolder: folder,
+        Movie: design.Movie,
+        Cities: design.Cities);
 
     /// <summary>
     /// 그림 한 장을 배의 그림 폴더에 <see cref="SpriteWidth"/> 크기로 맞춰 넣는다.

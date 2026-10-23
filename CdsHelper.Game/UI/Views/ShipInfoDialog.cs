@@ -215,7 +215,6 @@ internal sealed class ShipInfoDialog : InfoDialog
     /// <summary>그 선체의 동영상 자리 — 조선소와 같은 셈(올려 둔 것 먼저, 없으면 게임 폴더 원본). 없으면 null.</summary>
     private static string? MovieOf(Engine.Game game, Hull hull)
     {
-        int n = MovieFiles.Hulls.IndexOf(hull.Name);
-        return n < 0 ? null : MovieFiles.Resolve(game.Directory, MovieFiles.HullStem(n));
+        return MovieFiles.HullMovie(game.Directory, hull);
     }
 }

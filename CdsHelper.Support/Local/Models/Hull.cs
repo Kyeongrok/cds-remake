@@ -33,11 +33,26 @@ namespace CdsHelper.Support.Local.Models;
 /// <paramref name="CapacityTop"/>(<c>+0x28</c>) · <paramref name="TonnageTop"/>(<c>+0x20</c>) ·
 /// <paramref name="GunsTop"/>(<c>+0x30</c>) 도 같다.
 /// </param>
+/// <param name="Movie">
+/// 선체 동영상 줄기 — 원본 여덟 척(<c>S00</c>~<c>S07</c>)은 이름으로 찾으므로 안 적는다. 앱에 같이 싣는 배가
+/// 제 동영상을 쓸 때 적는다(바사는 <c>S08_0001</c>). 동영상 은행 · 릴리즈 <c>movie-assets</c> 에서 찾는다.
+/// </param>
+/// <param name="Cities">
+/// 이 배를 파는 조선소의 도시 번호. null 이면 <b>모든 조선소</b>(손으로 등록한 배의 예전 그대로), 비어 있으면 <b>어디서도 안 판다</b> —
+/// 앱에 실어만 두고 팔 곳은 나중에 잇는다(<see cref="SoldIn"/>).
+/// </param>
 public sealed record Hull(
     string Name, int Hp, int Speed, int Capacity, int Tonnage, int Crew, int Guns, int Price,
     int Skin, int MaxMasts = 3, bool CanChangeSail = true, string? SpriteFolder = null, int Id = -1,
-    int HpTop = 0, int SpeedTop = 0, int CapacityTop = 0, int TonnageTop = 0, int GunsTop = 0)
+    int HpTop = 0, int SpeedTop = 0, int CapacityTop = 0, int TonnageTop = 0, int GunsTop = 0,
+    string? Movie = null, int[]? Cities = null)
 {
+    /// <summary>그 도시 조선소가 이 배를 파는지 — 원본 선체(번호 0 ~ 7)는 도시 표가 정하므로 여기서는 붙인 배만 본다.</summary>
+    public bool SoldIn(int city) => Cities is null || Cities.Contains(city);
+
+    /// <summary>어디서도 안 파는 배인지 — 앱에 실어만 두었다.</summary>
+    public bool SoldNowhere => Cities is { Length: 0 };
+
     /// <summary>내구를 개조로 올릴 수 있는 데까지(선체 표 <c>+0x18</c>).</summary>
     public int HpCeiling => HpTop > 0 ? HpTop : Hp * Ship.RefitCeiling;
 

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using CdsHelper.Support.Local.Models;
+using System.IO;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -74,6 +75,17 @@ public static class MovieFiles
 
     /// <summary>선체 동영상 줄기. <c>AVI\S{선체:02}_0001.AVI</c> 다.</summary>
     public static string HullStem(int hull) => $"S{hull:00}_0001";
+
+    /// <summary>
+    /// 그 선체의 동영상 자리 — 원본 여덟 척은 이름으로 <see cref="HullStem"/> 을, 붙인 배는 제 줄기(<see cref="Hull.Movie"/>)를 찾는다.
+    /// 없으면 null(안 튼다).
+    /// </summary>
+    public static string? HullMovie(string? gameDirectory, Hull hull)
+    {
+        int n = Hulls.IndexOf(hull.Name);
+        string? stem = n >= 0 ? HullStem(n) : hull.Movie;
+        return stem == null ? null : Resolve(gameDirectory, stem);
+    }
 
     /// <summary>
     /// <b>엔딩</b> 동영상 줄기 — <c>AVI\END.AVI</c>(<c>0x0054A1C8</c>).
