@@ -106,14 +106,14 @@ public static class Skill
     /// (탐험가만 받는다 — <see cref="Job.Tongues"/>).
     /// </remarks>
     /// <para>
-    /// 파워업키트의 제노바(6)는 로망스어 3 · 에스파냐어 2, 잉글랜드(11)는 게르만어 3 · 로망스어 2 다 — 원본에 없는
-    /// 국적이라 같은 「모국어 3 에 이웃 2」 꼴로 지었다.
+    /// 파워업키트의 제노바(6)는 로망스어 3, 잉글랜드(11)는 게르만어 3 이고, 둘 다 포르투갈어 · 에스파냐어 2 를 더 받는다(요청) —
+    /// 원본에 없는 국적이라 이베리아 두 나라 말을 조금씩 알고 떠나게 했다.
     /// </para>
     public static (int Language, int Level)[] TongueOf(int nation) => nation switch
     {
         Spain => [(Spanish, 3), (Portuguese, 2)],
-        Genoa => [(Romance, 3), (Spanish, 2)],
-        England => [(German, 3), (Romance, 2)],
+        Genoa => [(Romance, 3), (Portuguese, 2), (Spanish, 2)],
+        England => [(German, 3), (Portuguese, 2), (Spanish, 2)],
         _ => [(Portuguese, 3), (Spanish, 2)],
     };
 
