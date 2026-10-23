@@ -410,6 +410,7 @@ public sealed class DevDialog : GameWindow
             pages.Add(("역사이벤트", HistoryPage(events)));
         if (options.Barmaids is { } maids)
             pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"), options.Faces)));
+        pages.Add(("선박", ShipsPage()));
         pages.Add(("대항2", dh2));
         pages.Add(("애드온", addOns));
         pages.Add(("색", colors));
@@ -429,6 +430,173 @@ public sealed class DevDialog : GameWindow
 
         Sync();
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+    }
+
+    /// <summary>
+    /// 「선박」 탭 — 붙인 배(앱에 실은 배 asset/ship-added · 이 PC 에 등록한 배)를 보고, 어느 조선소에서 팔지 정한다(<see cref="Hull.Cities"/>).
+    /// </summary>
+    /// <remarks>
+    /// 앱에 실은 배는 그 폴더의 design.json 에 적는다 — 저장소에서 빌드해 띄웠으면 저장소 파일이라 커밋하면 업데이트로 간다
+    /// (<see cref="ShipRegistry.BundledRoot"/>). 편집기 「요소 → 선박」과 같은 칸이다.
+    /// </remarks>
+    private FrameworkElement ShipsPage()
+    {
+        var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
+        var designs = ShipRegistry.LoadBundled().Select(b => (b.Design, Bundled: true))
+            .Concat(ShipRegistry.Load().Where(d => !d.IsBuiltin && !d.IsBundled).Select(d => (Design: d, Bundled: false)))
+            .ToList();
+        TextBlock Text(string text, double size = 13, bool bold = false) => new()
+        {
+            Text = text, Foreground = GameUi.Text, FontSize = size, TextWrapping = TextWrapping.Wrap,
+            FontWeight = bold ? FontWeights.Bold : FontWeights.Normal, Margin = new Thickness(0, 2, 0, 2),
+        };
+        if (designs.Count == 0)
+        {
+            page.Children.Add(Text("붙인 배가 없습니다 — 앱에 실은 배(asset/ship-added)도, 이 PC 에 등록한 배도 없습니다."));
+            return page;
+        }
+
+        var pick = new ComboBox { Width = 260, FontSize = 14, Margin = new Thickness(0, 0, 0, 6), HorizontalAlignment = HorizontalAlignment.Left };
+        foreach (var (design, bundled) in designs) pick.Items.Add($"{design.Name}  ({(bundled ? "앱에 실음" : "이 PC")})");
+        var stats = Text("");
+        var sprites = new WrapPanel { Margin = new Thickness(0, 4, 0, 6) };
+
+        RadioButton Radio(string text) => new()
+        {
+            Content = text, GroupName = "ship-sale", Foreground = GameUi.Text, FontSize = 14,
+            Margin = new Thickness(0, 0, 16, 0), VerticalAlignment = VerticalAlignment.Center,
+        };
+        var all = Radio("모든 조선소");
+        var none = Radio("안 판다");
+        var some = Radio("고른 도시만");
+        var find = Field();
+        find.Width = 160;
+        find.TextAlignment = TextAlignment.Left;
+        var checks = new WrapPanel();
+        var summary = Text("", 12);
+        var said = Text("", 12);
+
+        // 조선소가 있는 도시만 체크 칸으로 — 정적 표라 게임 폴더 없이 읽힌다.
+        var names = CityTable.Open();
+        var buildings = CityBuildingTable.Open("");
+        foreach (var city in names.Cities.OrderBy(c => c.Name, StringComparer.CurrentCulture))
+        {
+            if (buildings != null && !buildings.InCity(city.Id).Any(b => b.Kind == "조선소")) continue;
+            var check = new CheckBox
+            {
+                Content = $"{city.Name} ({city.Id})", Tag = city.Id, Width = 170, Foreground = GameUi.Text, FontSize = 13,
+                Margin = new Thickness(0, 0, 4, 2),
+            };
+            checks.Children.Add(check);
+        }
+
+        bool filling = false;
+        void Summarize()
+        {
+            checks.IsEnabled = some.IsChecked == true;
+            var picked = checks.Children.OfType<CheckBox>().Where(c => c.IsChecked == true).Select(c => (string)c.Content).ToList();
+            summary.Text = all.IsChecked == true ? "모든 조선소에서 판다."
+                : none.IsChecked == true ? "어디서도 안 판다."
+                : picked.Count == 0 ? "고른 도시가 없어 어디서도 안 판다." : $"{picked.Count}곳: {string.Join(", ", picked)}";
+            if (!filling) said.Text = "고친 내용이 있습니다 — 저장을 눌러 주세요.";
+        }
+        foreach (var radio in new[] { all, none, some }) radio.Checked += (_, _) => Summarize();
+        foreach (var check in checks.Children.OfType<CheckBox>()) { check.Checked += (_, _) => Summarize(); check.Unchecked += (_, _) => Summarize(); }
+        find.TextChanged += (_, _) =>
+        {
+            string want = find.Text.Trim();
+            foreach (var check in checks.Children.OfType<CheckBox>())
+                check.Visibility = want.Length == 0 || ((string)check.Content).Contains(want, StringComparison.OrdinalIgnoreCase)
+                    ? Visibility.Visible : Visibility.Collapsed;
+        };
+
+        void Fill()
+        {
+            if (pick.SelectedIndex < 0) return;
+            var (design, bundled) = designs[pick.SelectedIndex];
+            filling = true;
+            stats.Text = $"내구 {design.Hp} · 추진 {design.Speed} · 적재 {design.Capacity} / {design.Tonnage} · 필요승원 {design.Crew} · 대포 {design.Guns}"
+                       + $" · 값 {design.Price:N0}닢 · 마스트 {design.MaxMasts}{(design.CanChangeSail ? "" : " · 돛 바꾸기 없음")}"
+                       + (design.Movie is { Length: > 0 } movie ? $" · 동영상 {movie}" : "");
+            sprites.Children.Clear();
+            string folder = ShipRegistry.FolderOf(design.Id);
+            for (int i = 0; i < ShipRegistry.Directions; i++)
+            {
+                string path = Path.Combine(folder, $"ship_{i}.png");
+                var cell = new StackPanel { Margin = new Thickness(0, 0, 6, 0) };
+                if (File.Exists(path))
+                {
+                    var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    bitmap.UriSource = new Uri(path);
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+                    var image = new Image { Source = bitmap, Width = 72, Height = 72 };
+                    RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
+                    cell.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = image });
+                }
+                cell.Children.Add(new TextBlock { Text = ShipRegistry.DirectionNames[i], Foreground = GameUi.Text, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center });
+                sprites.Children.Add(cell);
+            }
+            (design.Cities switch { null => all, { Length: 0 } => none, _ => some }).IsChecked = true;
+            var picked = design.Cities?.ToHashSet() ?? [];
+            foreach (var check in checks.Children.OfType<CheckBox>()) check.IsChecked = picked.Contains((int)check.Tag);
+            Summarize();
+            said.Text = bundled ? $"앱에 실은 배 — {Path.Combine(folder, "design.json")} 에 적는다." : "이 PC 에 등록한 배 — 편집기 「요소 → 선박」과 같은 목록이다.";
+            filling = false;
+        }
+        pick.SelectionChanged += (_, _) => Fill();
+
+        void Save()
+        {
+            if (pick.SelectedIndex < 0) return;
+            var (design, bundled) = designs[pick.SelectedIndex];
+            design.Cities = all.IsChecked == true ? null
+                : none.IsChecked == true ? []
+                : [.. checks.Children.OfType<CheckBox>().Where(c => c.IsChecked == true).Select(c => (int)c.Tag).Order()];
+            try
+            {
+                if (bundled) ShipRegistry.SaveBundled(design);
+                else
+                {
+                    var saved = ShipRegistry.Load();
+                    int at = saved.FindIndex(d => d.Id == design.Id);
+                    if (at >= 0) saved[at] = design; else saved.Add(design);
+                    ShipRegistry.Save(saved);
+                }
+                Hull.Reload();
+                said.Text = $"저장했습니다 — '{design.Name}' {summary.Text} 조선소에 다시 들어가면 바뀐다.";
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                said.Text = $"저장하지 못했습니다 — {ex.Message}";
+            }
+        }
+
+        page.Children.Add(Text("붙인 배", 15, bold: true));
+        page.Children.Add(pick);
+        page.Children.Add(stats);
+        page.Children.Add(sprites);
+        page.Children.Add(Text("파는 조선소", 15, bold: true));
+        var radios = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 4) };
+        radios.Children.Add(all);
+        radios.Children.Add(none);
+        radios.Children.Add(some);
+        radios.Children.Add(new TextBlock { Text = "찾기", Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
+        radios.Children.Add(find);
+        page.Children.Add(radios);
+        page.Children.Add(new ScrollViewer { Content = checks, MaxHeight = 220, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+        page.Children.Add(summary);
+        var saveLine = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+        saveLine.Children.Add(GameUi.PushButton("저장", Save, 96));
+        page.Children.Add(saveLine);
+        page.Children.Add(said);
+        page.Children.Add(Text("조선소가 있는 도시만 나온다. 「안 판다」면 실어만 두고 어디서도 안 판다(후원자가 내주는 배에서도 빠진다). "
+                             + "성능 수치 · 그림은 편집기 「요소 → 선박」에서 고친다.", 12));
+
+        pick.SelectedIndex = 0;
+        return page;
     }
 
     /// <summary>탭 머리 — 누른 쪽 판만 보이고 머리는 밝게 선다(<see cref="ModDialog"/> 와 같은 모양).</summary>
