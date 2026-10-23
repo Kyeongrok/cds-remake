@@ -105,9 +105,17 @@ public static class Skill
     /// 예전에는 여기에 로망스어 3 도 얹었는데 그것은 <b>국적이 아니라 직업</b> 몫이었다
     /// (탐험가만 받는다 — <see cref="Job.Tongues"/>).
     /// </remarks>
-    public static (int Language, int Level)[] TongueOf(int nation) => nation == Spain
-        ? [(Spanish, 3), (Portuguese, 2)]
-        : [(Portuguese, 3), (Spanish, 2)];
+    /// <para>
+    /// 파워업키트의 제노바(6)는 로망스어 3 · 에스파냐어 2, 잉글랜드(11)는 게르만어 3 · 로망스어 2 다 — 원본에 없는
+    /// 국적이라 같은 「모국어 3 에 이웃 2」 꼴로 지었다.
+    /// </para>
+    public static (int Language, int Level)[] TongueOf(int nation) => nation switch
+    {
+        Spain => [(Spanish, 3), (Portuguese, 2)],
+        Genoa => [(Romance, 3), (Spanish, 2)],
+        England => [(German, 3), (Romance, 2)],
+        _ => [(Portuguese, 3), (Spanish, 2)],
+    };
 
     /// <summary>언어 번호. 표 차례와 같다.</summary>
     public const int Spanish = 0, Portuguese = 1, Romance = 2, German = 3,
@@ -115,6 +123,9 @@ public static class Skill
 
     /// <summary>국적 번호 — 새 게임에서 고르는 둘.</summary>
     public const int Portugal = 0, Spain = 1;
+
+    /// <summary>파워업키트에서 더 고를 수 있는 국적 — 나라 표의 제노바 공화국 · 잉글랜드 왕국.</summary>
+    public const int Genoa = 6, England = 11;
 
     /// <summary>한 자리 올리는 데 드는 값(닢). 자리와 상관없이 같다.</summary>
     public const int Price = 120;

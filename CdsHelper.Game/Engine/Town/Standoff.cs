@@ -473,5 +473,5 @@ public static class Standoff
     /// <param name="mine">내 나라 번호(0 포르투갈 · 1 에스파니아).</param>
     /// <param name="theirs">그 도시가 딸린 나라 번호.</param>
     public static bool TreatyBars(int year, int mine, int theirs) =>
-        year >= TreatyYear && theirs is 0 or 1 && theirs != mine;
+        year >= TreatyYear && mine is 0 or 1 && theirs is 0 or 1 && theirs != mine;   // 조약 밖 나라(파워업키트)는 안 막힌다
 }

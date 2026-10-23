@@ -80,8 +80,17 @@ public static class Scenarios
         if (cityId < 0) return null;
         foreach (var s in All)
             if (s.HomeCity == cityId) return (s.HomeX, s.HomeY);
-        return null;
+        // 파워업키트의 제노바 · 잉글랜드 국적은 수도에 자택이 선다 — 도시 그림의 빈 풀밭 · 빈터를 골랐다.
+        return cityId switch
+        {
+            GenoaCity => (272, 113),
+            LondonCity => (262, 173),
+            _ => null,
+        };
     }
+
+    /// <summary>제노바 · 런던의 도시 번호 — 파워업키트 국적의 수도다.</summary>
+    private const int GenoaCity = 28, LondonCity = 38;
 
     /// <summary>모드 「시나리오 모드」를 켰는지.</summary>
     public static bool Enabled => GameSettings.ScenarioMode;

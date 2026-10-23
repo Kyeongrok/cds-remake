@@ -189,6 +189,12 @@ public sealed class Player
     /// <summary>고를 수 있는 국적. 게임 화면에 둘만 뜬다.</summary>
     public static readonly string[] Nations = ["포르투갈 왕국", "에스파니아 왕국"];
 
+    /// <summary>
+    /// 파워업키트에서 새 주인공이 고를 수 있는 국적 — 포르투갈 · 에스파니아에 제노바 공화국 · 잉글랜드 왕국을 더한다.
+    /// 번호는 나라 표 번호이고, 이름은 <see cref="NationNameOf"/> 로 찾는다.
+    /// </summary>
+    public static readonly int[] PowerUpNations = [Skill.Portugal, Skill.Spain, Skill.Genoa, Skill.England];
+
     /// <summary>얼굴 번호(MALE.CDS 의 파트). 화면 왼쪽 초상화다.</summary>
     public int Face { get; set; }
 

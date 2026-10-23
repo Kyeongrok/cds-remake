@@ -1535,12 +1535,15 @@ public static class GameSettings
         set => Set(d => d.PersonInfoEnhanced = value);
     }
 
-    /// <summary>모드 창 「권장」에서 마지막으로 고른 단계(0 오리지널 · 1 초보 · 2 중수 · 3 고수).</summary>
+    /// <summary>모드 창 「권장」에서 마지막으로 고른 단계(0 오리지널 · 1 초보 · 2 중수 · 3 고수 · 4 파워업키트).</summary>
     public static int ModPreset
     {
         get => Get(d => d.ModPreset);
         set => Set(d => d.ModPreset = value);
     }
+
+    /// <summary>「권장」에서 파워업키트를 골랐는지 — 새 주인공의 국적에 제노바 · 잉글랜드가 더 붙는다.</summary>
+    public static bool PowerUpKit => ModPreset == 4;
 
     /// <summary>향상된 후원자 정보 — 스폰서 일람 줄에 얼굴 · 발견물 취향 · 권력 · 친밀도.</summary>
     public static bool PatronListEnhanced

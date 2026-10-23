@@ -2752,6 +2752,9 @@ public sealed class WorldMapWindow : Window
     {
         // 시나리오의 주인공은 표에 적은 본거지에서, 본거지를 안 적었으면 제 나라 수도에서 연다(원본에 없는 길이다).
         int want = _game.Player.Nation == 1 ? CityNames.SevilleId : CityNames.LisbonId;
+        // 파워업키트의 제노바 · 잉글랜드 국적은 제 나라 수도(제노바 · 런던)에서 연다 — 자택은 Scenarios.HomeSpot 이 올린다.
+        if (_game.Player.Nation is not (0 or 1) && _game.Nations?.Find(_game.Player.Nation)?.Capital is int capital and >= 0)
+            want = capital;
         if (Scenarios.Find(_game.Player.ActiveStoryBook) is { } scenario)
         {
             int home = scenario.HomeCity >= 0 ? scenario.HomeCity : _game.Nations?.Find(scenario.Nation)?.Capital ?? -1;
@@ -5416,7 +5419,8 @@ public sealed class WorldMapWindow : Window
     private FolkSide SideOf(int nation, int job)
     {
         if (nation == _game.Player.Nation) return FolkSide.Own;
-        if (nation is 0 or 1) return FolkSide.Crown;
+        // 조약 배(포르투갈 · 에스파니아)는 내가 그 둘 가운데 하나일 때만 따로 논다 — 제노바 · 잉글랜드 제독(파워업키트)에게는 여느 배다.
+        if (nation is 0 or 1 && _game.Player.Nation is 0 or 1) return FolkSide.Crown;
         if (_game.Nations?.Find(nation) is { Sect: 3 }) return FolkSide.Heathen;
         if (job == PersonTemplate.PirateJob) return FolkSide.Pirate;
         return FolkSide.Other;

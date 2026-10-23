@@ -83,6 +83,9 @@ internal sealed class CharacterMakeDialog : GameWindow
     private const double RowFamily = 14, RowGiven = 39, RowAge = 64, RowBirth = 90,
                          RowBlood = 115, RowNation = 153, RowFooter = 195;
 
+    /// <summary>국적이 넷(두 줄)일 때의 세로 자리 — 혈액형 줄 밑에서 시작해 바닥 단추가 속 안에 들게 한다.</summary>
+    private const double RowNationFour = 146, RowFooterFour = 203;
+
     /// <summary>칸 크기. 글 한 줄(16)에 위아래 한 점씩이다.</summary>
     private const double FieldWidth = 158, FieldHeight = 18, NumWidth = 26, SpinSize = 16;
 
@@ -194,6 +197,8 @@ internal sealed class CharacterMakeDialog : GameWindow
             _nation = draft.Nation;
             _face = draft.Face;
         }
+        // 파워업키트에서 고른 국적을 들고 있는데 지금은 고를 수 없으면(키트를 껐다) 포르투갈로 물러선다.
+        if (_nation != Unpicked && !_nationIds.Contains(_nation)) _nation = Skill.Portugal;
 
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -460,21 +465,30 @@ internal sealed class CharacterMakeDialog : GameWindow
 
     private void NationRow()
     {
-        // 두 단추 묶음을 속 한가운데에 놓는다.
+        // 두 단추 묶음을 속 한가운데에 놓는다. 넷(파워업키트)이면 두 줄로 쌓고, 바닥 단추를 그만큼 내린다.
         double x = (ContentWidth - (NationWidth * 2 + Gap)) / 2;
-        for (int i = 0; i < Player.Nations.Length; i++)
+        bool four = _nationIds.Length > 2;
+        double top = four ? RowNationFour : RowNation;
+        for (int i = 0; i < _nationIds.Length; i++)
         {
-            int pick = i;
-            _nations.Add(Band(Player.Nations[i], x + i * (NationWidth + Gap), RowNation,
+            int pick = _nationIds[i];
+            string name = i < Player.Nations.Length ? Player.Nations[i] : Player.NationNameOf?.Invoke(pick) ?? $"{pick}";
+            _nations.Add(Band(name, x + i % 2 * (NationWidth + Gap), top + i / 2 * (SmallHeight + Gap),
                               NationWidth, () => { _nation = pick; Mark(); }));
         }
     }
 
     private void Footer()
     {
-        Band("다음", RightEdge - SmallWidth, RowFooter, SmallWidth, Next);
-        Band("취소", RightEdge - SmallWidth * 2 - Gap, RowFooter, SmallWidth, Close);
+        double row = _nationIds.Length > 2 ? RowFooterFour : RowFooter;
+        Band("다음", RightEdge - SmallWidth, row, SmallWidth, Next);
+        Band("취소", RightEdge - SmallWidth * 2 - Gap, row, SmallWidth, Close);
     }
+
+    /// <summary>
+    /// 고를 수 있는 국적(나라 표 번호) — 원본은 포르투갈 · 에스파니아 둘이고, 파워업키트면 제노바 · 잉글랜드가 더 붙는다(요청).
+    /// </summary>
+    private readonly int[] _nationIds = GameSettings.PowerUpKit ? Player.PowerUpNations : [Skill.Portugal, Skill.Spain];
 
     // ── 손 ────────────────────────────────────────────────────────────────────
 
@@ -486,7 +500,7 @@ internal sealed class CharacterMakeDialog : GameWindow
         for (int i = 0; i < _bloods.Count; i++)
             _bloods[i].Band = i == _blood ? BandStyle.Button : BandStyle.Alt;
         for (int i = 0; i < _nations.Count; i++)
-            _nations[i].Band = i == _nation ? BandStyle.Button : BandStyle.Alt;
+            _nations[i].Band = _nationIds[i] == _nation ? BandStyle.Button : BandStyle.Alt;
         _zodiac.Text = Player.ZodiacOf(Number(_month, 1), Number(_day, 1));
     }
 
