@@ -402,6 +402,9 @@ public sealed class GameSettingsData
     /// <summary>대화만 되던 인물(고용 상태 1)도 술집에서 고용할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool HireTalkOnly { get; set; }
 
+    /// <summary>새 주인공 국적에 제노바 공화국 · 잉글랜드 왕국을 더할지. 원본에 없어 꺼 두고 시작한다(파워업키트가 켠다).</summary>
+    public bool MoreNations { get; set; }
+
     /// <summary>뭍에서 발견물 지도로 자동이동할지. 실험이라 꺼 두고 시작한다.</summary>
     public bool LandAutoWalk { get; set; }
 
@@ -1542,8 +1545,16 @@ public static class GameSettings
         set => Set(d => d.ModPreset = value);
     }
 
-    /// <summary>「권장」에서 파워업키트를 골랐는지 — 새 주인공의 국적에 제노바 · 잉글랜드가 더 붙는다.</summary>
-    public static bool PowerUpKit => ModPreset == 4;
+    /// <summary>새 주인공 국적에 제노바 · 잉글랜드를 더할지 — 모드 창 「캐릭터」. 파워업키트가 켠다.</summary>
+    /// <remarks>
+    /// 파워업키트면 적힌 값과 상관없이 켜진 것으로 친다 — 묶음 줄은 모드 창을 열 때에야 켜지므로(ModDialog.LockPowerUp),
+    /// 이 옵션이 생기기 전에 파워업키트를 골라 둔 사람은 창을 열기 전까지 꺼져 있었다.
+    /// </remarks>
+    public static bool MoreNations
+    {
+        get => Get(d => d.MoreNations) || ModPreset == 4;
+        set => Set(d => d.MoreNations = value);
+    }
 
     /// <summary>향상된 후원자 정보 — 스폰서 일람 줄에 얼굴 · 발견물 취향 · 권력 · 친밀도.</summary>
     public static bool PatronListEnhanced

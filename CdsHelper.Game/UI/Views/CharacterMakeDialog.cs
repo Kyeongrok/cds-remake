@@ -486,9 +486,9 @@ internal sealed class CharacterMakeDialog : GameWindow
     }
 
     /// <summary>
-    /// 고를 수 있는 국적(나라 표 번호) — 원본은 포르투갈 · 에스파니아 둘이고, 파워업키트면 제노바 · 잉글랜드가 더 붙는다(요청).
+    /// 고를 수 있는 국적(나라 표 번호) — 원본은 포르투갈 · 에스파니아 둘이고, 모드 「제노바 · 잉글랜드 국적」이면 둘이 더 붙는다(요청).
     /// </summary>
-    private readonly int[] _nationIds = GameSettings.PowerUpKit ? Player.PowerUpNations : [Skill.Portugal, Skill.Spain];
+    private readonly int[] _nationIds = GameSettings.MoreNations ? Player.PowerUpNations : [Skill.Portugal, Skill.Spain];
 
     // ── 손 ────────────────────────────────────────────────────────────────────
 
