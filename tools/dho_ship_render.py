@@ -19,7 +19,7 @@ GV Online 클라이언트(환경 변수 GVO_DIR, 없으면 기본 설치 자리)
              줄마다 'ok …' 또는 'error …' 한 줄로 답한다. 배율은 --sprites 와 같다(여덟 표준 각도로 잰 네모).
   --skip-slots  뺄 돛 자리(0 ~ 4). 한 돛대에 가로돛 · 삼각돛이 겹쳐 서는 모형이 있어 고르게 한다.
   --info     그 모형의 돛 자리 번호만 알린다.
-  --sail-turn · --billow  돛을 돛대 둘레로 틀고(기본 35°, 그림은 각도마다 왼쪽 · 오른쪽 가운데 돛이 넓게 보이는 쪽) 돛천을 부풀린다(기본 0.15) — 앞뒤에서 봐도 돛이 납작하지 않게.
+  --sail-turn · --billow  돛을 돛대 둘레로 틀고(기본 35° × |cos 돌리기| — 앞뒤에서만 다 틀고 옆에서는 안 튼다, 왼쪽 · 오른쪽 가운데 돛이 넓게 보이는 쪽) 돛천을 부풀린다(기본 0.15) — 앞뒤에서 봐도 돛이 납작하지 않게.
 
 음영은 정점 법선을 보간해 칠하고 빛은 화면 기준 왼쪽 위 앞에서 온다 — 배가 어느 쪽을 보든 같은 쪽이 밝다.
 작은 그림은 원본 배 그림처럼 가장자리 한 줄을 어둡게 둘러 바다 위에서 떠 보이게 한다.
@@ -103,7 +103,34 @@ def load_parts(gvo_dir, model_no, skip=(), sail_turn=0.0, billow=0.0):
         raise SystemExit(f"모형 {model_no} 의 조각을 못 읽었습니다")
     if sail_turn or billow:
         parts = shape_sails(parts, groups, sail_turn, billow)
+    load_parts.groups = groups   # Rig 가 돛 모양을 각도마다 다시 지을 때 쓴다
     return parts
+
+
+class Rig:
+    """
+    돛 모양을 각도마다 달리 짓는다 — 앞뒤(북 · 남)에서 볼 때만 돛을 다 틀고, 옆(서 · 동)에서는 안 튼다.
+    옆에서도 틀면 돛이 좁아 보여 선체만 길어 보였다(제보). 트는 각도 = 돛 틀기 × |cos 돌리기|.
+    양쪽으로 튼 두 벌 가운데 돛천이 화면에 더 넓게 비치는 쪽을 쓴다.
+    """
+
+    def __init__(self, gvo_dir, model_no, skip, turn, billow):
+        self.base = load_parts(gvo_dir, model_no, skip)
+        self.groups = load_parts.groups
+        self.turn, self.billow = turn, billow
+        self.cache = {}
+
+    def shaped(self, turn):
+        key = round(turn, 1)
+        if key not in self.cache:
+            self.cache[key] = shape_sails(self.base, self.groups, key, self.billow) if key or self.billow else self.base
+        return self.cache[key]
+
+    def parts_for(self, yaw, elev, both_sides=True):
+        t = self.turn * abs(np.cos(np.radians(yaw)))
+        if not both_sides or t < 0.5:
+            return self.shaped(t)
+        return max((self.shaped(t), self.shaped(-t)), key=lambda v: sail_area(v, yaw, elev))
 
 
 def vertex_normals(pos, tris):
@@ -279,14 +306,13 @@ def sail_area(parts, yaw, elev):
 class Shooter:
     """모형 하나를 같은 배율로 찍는다 — 표준 여덟 각도로 잰 네모로 잘라 어느 각도로 찍어도 크기가 같다.
 
-    돛을 양쪽으로 튼 두 벌(variants)을 받으면 각도마다 돛천이 화면에 더 넓게 비치는 쪽을 쓴다 — 한쪽으로만 틀면
-    앞뒤는 나아져도 대각선 둘에서 돛이 옆선이 되어 납작했다. 삼각돛은 바람에 따라 양쪽으로 넘기므로 어색하지 않다.
+    돛 모양은 각도마다 Rig 가 짓는다 — 앞뒤에서만 돛을 틀고, 양쪽 가운데 돛천이 넓게 비치는 쪽을 쓴다.
+    삼각돛은 바람에 따라 양쪽으로 넘기므로 방향마다 쪽이 달라도 어색하지 않다.
     """
 
-    def __init__(self, variants, elev, work=384):
-        self.variants, self.elev, self.work = variants, elev, work
-        parts = variants[0]
-        radius, self.ymin, self.ymax = bounds(parts)
+    def __init__(self, rig, elev, work=384):
+        self.rig, self.elev, self.work = rig, elev, work
+        radius, self.ymin, self.ymax = bounds(rig.base)
         self.scale = (work / 2 - 4) / max(radius, self.ymax - self.ymin)
         self.raw = [self.render(-45 * i, elev) for i in range(8)]
         box = None
@@ -302,8 +328,7 @@ class Shooter:
         self.crop = (int(cx - side / 2), int(cy - side / 2 + side * 0.04), int(cx + side / 2), int(cy + side / 2 + side * 0.04))
 
     def render(self, yaw, elev):
-        parts = max(self.variants, key=lambda v: sail_area(v, yaw, elev))
-        return render(parts, yaw, elev, self.work, self.work, self.scale, (self.ymin + self.ymax) / 2)
+        return render(self.rig.parts_for(yaw, elev), yaw, elev, self.work, self.work, self.scale, (self.ymin + self.ymax) / 2)
 
     def save(self, im, out, direction, hd):
         cut = im.crop(self.crop)
@@ -312,16 +337,16 @@ class Shooter:
             finish(cut, 192).save(os.path.join(out, f"ship_{direction}_hd.png"))
 
 
-def sprites(variants, out, elev, hd):
+def sprites(rig, out, elev, hd):
     # 게임 방향 i(0 북부터 반시계)는 렌더 각도 −45°·i 다 — yaw 90 이면 뱃머리가 오른쪽(동)이다.
-    shooter = Shooter(variants, elev)
+    shooter = Shooter(rig, elev)
     for i, im in enumerate(shooter.raw):
         shooter.save(im, out, i, hd)
         print(f"sprite {i + 1}/8", flush=True)
 
 
-def serve(variants, out, elev):
-    shooter = Shooter(variants, elev)
+def serve(rig, out, elev):
+    shooter = Shooter(rig, elev)
     print("ready", flush=True)
     for line in sys.stdin:
         words = line.split()
@@ -344,15 +369,16 @@ def serve(variants, out, elev):
             print(f"error {ex}", flush=True)
 
 
-def frames(parts, out, count, width, height, elev, bg, turns, start, super_sample=2):
-    radius, ymin, ymax = bounds(parts)
+def frames(rig, out, count, width, height, elev, bg, turns, start, super_sample=2):
+    radius, ymin, ymax = bounds(rig.base)
     w, h = width * super_sample, height * super_sample
     # 어느 쪽을 봐도 들어오게 — 가로는 지름, 세로는 높이(내려다보면 지름의 sin 만큼 더 차지한다)
     span_y = (ymax - ymin) * np.cos(np.radians(elev)) + 2 * radius * np.sin(np.radians(elev))
     scale = min(w * 0.9 / (2 * radius), h * 0.9 / span_y)
     for k in range(count):
         yaw = start + 360.0 * turns * k / count
-        ship = render(parts, yaw, elev, w, h, scale, (ymin + ymax) / 2)
+        # 동영상은 돌아가는 동안 돛이 뒤집히지 않게 한쪽으로만 튼다(트는 크기는 그림과 같이 각도마다).
+        ship = render(rig.parts_for(yaw, elev, both_sides=False), yaw, elev, w, h, scale, (ymin + ymax) / 2)
         canvas = Image.new("RGBA", (w, h), bg + (255,))
         canvas.alpha_composite(ship)
         canvas.convert("RGB").resize((width, height), Image.LANCZOS).save(os.path.join(out, f"frame_{k:03d}.png"))
@@ -386,20 +412,16 @@ def main():
         return
     os.makedirs(args.out, exist_ok=True)
     skip = {int(k) for k in args.skip_slots.split(",") if k.strip()}
-    parts = load_parts(args.gvo, args.model, skip, args.sail_turn, args.billow)
-    print(f"parts {len(parts)}", flush=True)
-    # 그림은 돛을 양쪽으로 튼 두 벌에서 각도마다 고른다. 동영상은 돌아가는 동안 돛이 뒤집히지 않게 한 벌만 쓴다.
-    variants = [parts]
-    if args.sail_turn and (args.sprites or args.serve):
-        variants.append(load_parts(args.gvo, args.model, skip, -args.sail_turn, args.billow))
+    rig = Rig(args.gvo, args.model, skip, args.sail_turn, args.billow)
+    print(f"parts {len(rig.base)}", flush=True)
     if args.serve:
-        serve(variants, args.out, args.sprite_elev)
+        serve(rig, args.out, args.sprite_elev)
         return
     if args.sprites:
-        sprites(variants, args.out, args.sprite_elev, args.hd)
+        sprites(rig, args.out, args.sprite_elev, args.hd)
     if args.frames > 0:
         bg = tuple(int(c) for c in args.bg.split(","))
-        frames(parts, args.out, args.frames, args.width, args.height, args.elev, bg, args.turns, args.start)
+        frames(rig, args.out, args.frames, args.width, args.height, args.elev, bg, args.turns, args.start)
     print("done", flush=True)
 
 
