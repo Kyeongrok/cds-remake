@@ -144,6 +144,9 @@ internal sealed class AbilityMakeDialog : InfoDialog
         {
             _condition = Ability.ConditionFor(_stats[Ability.Body]);
             _gold = Ability.GoldRoll(_age, rng);
+            // 제노바 · 잉글랜드(모드 「제노바 · 잉글랜드 국적」)는 개인 이야기가 없어 배도 후원자도 없이 시작한다 —
+            // 배를 사서 항구를 나설 수 있게 소지금을 정해 둔다(요청).
+            if (player.Nation is Skill.Genoa or Skill.England) _gold = Skill.NoStoryGold;
             _fame = Ability.FameRoll(_age, rng);
             _infamy = Ability.InfamyRoll(_age, rng);
         }

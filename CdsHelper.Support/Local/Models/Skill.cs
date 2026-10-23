@@ -127,6 +127,9 @@ public static class Skill
     /// <summary>파워업키트에서 더 고를 수 있는 국적 — 나라 표의 제노바 공화국 · 잉글랜드 왕국.</summary>
     public const int Genoa = 6, England = 11;
 
+    /// <summary>제노바 · 잉글랜드 주인공의 처음 소지금 — 개인 이야기가 주는 배가 없어 조선소에서 배를 사고 떠나라는 몫이다.</summary>
+    public const int NoStoryGold = 12000;
+
     /// <summary>한 자리 올리는 데 드는 값(닢). 자리와 상관없이 같다.</summary>
     public const int Price = 120;
 
