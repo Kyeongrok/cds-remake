@@ -54,6 +54,10 @@ public static class ShipRegistry
         /// </remarks>
         public string? Builtin { get; set; }
 
+        /// <summary>앱에 실은 배인지(<see cref="ShipRegistry.IsBundled"/>). 적지 않는다.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool IsBundled => ShipRegistry.IsBundled(Id);
+
         /// <summary>선체 동영상 줄기(<see cref="Hull.Movie"/>). 없으면 동영상 없이 나온다.</summary>
         public string? Movie { get; set; }
 
@@ -81,7 +85,21 @@ public static class ShipRegistry
     public static string ListPath => Path.Combine(Root, "ships.json");
 
     /// <summary>배 하나의 그림이 든 폴더.</summary>
-    public static string FolderOf(string id) => Path.Combine(Root, id);
+    /// <remarks>앱에 실은 배(<see cref="IsBundled"/>)면 그 폴더(<see cref="BundledRoot"/>)다 — 편집기에서 그림을 갈아도 그 자리에 든다.</remarks>
+    public static string FolderOf(string id) => IsBundled(id) ? Path.Combine(BundledRoot, id) : Path.Combine(Root, id);
+
+    /// <summary>앱에 실은 배인지 — <see cref="BundledRoot"/> 밑에 그 이름의 폴더와 <c>design.json</c> 이 있다.</summary>
+    public static bool IsBundled(string id) =>
+        !string.IsNullOrEmpty(id) && File.Exists(Path.Combine(BundledRoot, id, "design.json"));
+
+    /// <summary>앱에 실은 배의 값을 적는다(<c>design.json</c>). 그림은 그 폴더에 그대로 둔다.</summary>
+    public static void SaveBundled(Design design)
+    {
+        string folder = Path.Combine(BundledRoot, design.Id);
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "design.json"), JsonSerializer.Serialize(design, Json));
+        Hull.Reload();
+    }
 
     /// <summary>그림 한 장의 자리.</summary>
     public static string SpritePath(string id, int direction) =>
@@ -214,7 +232,23 @@ public static class ShipRegistry
     /// (<c>ship_0.png</c> ~, 고해상도 <c>ship_0_hd.png</c> ~)이 든다. 손으로 등록한 배(<see cref="Root"/>)와 달리 업데이트로 모두에게 간다.
     /// 폴더 이름은 ASCII 로 둔다(Velopack 차등 업데이트).
     /// </summary>
-    public static string BundledRoot => Path.Combine(AppContext.BaseDirectory, "asset", "ship-added");
+    /// <remarks>
+    /// 저장소에서 빌드해 띄웠으면(위로 올라가 <c>.git</c> 이 있는 폴더) <b>저장소의 <c>asset/ship-added</c></b> 를 쓴다 — 편집기 「요소 → 선박」에서
+    /// 고친 값이 빌드 출력이 아니라 커밋할 파일에 바로 남게. 깔린 앱이면 실행 폴더 옆의 것이다.
+    /// </remarks>
+    public static string BundledRoot => _bundledRoot ??= FindBundledRoot();
+
+    private static string? _bundledRoot;
+
+    private static string FindBundledRoot()
+    {
+        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir != null; dir = dir.Parent)
+        {
+            string source = Path.Combine(dir.FullName, "asset", "ship-added");
+            if (Directory.Exists(Path.Combine(dir.FullName, ".git")) && Directory.Exists(source)) return source;
+        }
+        return Path.Combine(AppContext.BaseDirectory, "asset", "ship-added");
+    }
 
     /// <summary>앱에 같이 싣는 배를 다 읽는다. 그림 여덟 장이 다 든 것만.</summary>
     public static List<(Design Design, string Folder)> LoadBundled()

@@ -46,6 +46,15 @@ public sealed class ShipRegistryDialog : Window
     private readonly Button _hiClearButton;
     private readonly CheckBox _descreen;
 
+    // 파는 조선소 — 모든 조선소 · 안 판다 · 고른 도시만(Hull.Cities). 붙박이는 도시 표가 정하므로 안 뜬다.
+    private readonly StackPanel _sellPanel = new();
+    private readonly RadioButton _sellAll = new() { Content = "모든 조선소", GroupName = "sell", Margin = new Thickness(0, 0, 14, 0) };
+    private readonly RadioButton _sellNone = new() { Content = "안 판다", GroupName = "sell", Margin = new Thickness(0, 0, 14, 0) };
+    private readonly RadioButton _sellSome = new() { Content = "고른 도시만", GroupName = "sell", Margin = new Thickness(0, 0, 14, 0) };
+    private readonly TextBox _cityFilter = new() { Width = 140, VerticalContentAlignment = VerticalAlignment.Center };
+    private readonly WrapPanel _cityChecks = new();
+    private readonly TextBlock _sellSummary = new() { Foreground = Brushes.DimGray, Margin = new Thickness(0, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
+
     private List<ShipRegistry.Design> _designs = [];
     private ShipRegistry.Design? _current;
     private bool _filling;
@@ -101,6 +110,10 @@ public sealed class ShipRegistryDialog : Window
             spinner.ValueChanged += (_, _) => Touch();
         _canChangeSail.Checked += (_, _) => Touch();
         _canChangeSail.Unchecked += (_, _) => Touch();
+        foreach (var radio in new[] { _sellAll, _sellNone, _sellSome })
+            radio.Checked += (_, _) => { _cityChecks.IsEnabled = _sellSome.IsChecked == true; SummarizeSale(); Touch(); };
+        _cityFilter.TextChanged += (_, _) => FilterCities();
+        BuildCityChecks();
 
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) Close(); };
         Loaded += (_, _) => Reload(null);
@@ -178,6 +191,18 @@ public sealed class ShipRegistryDialog : Window
         form.Children.Add(specs);
         form.Children.Add(Row(_canChangeSail));
         form.Children.Add(Note("값은 조선소 표에 그대로 뜬다. 되사 주는 값은 그 6할이다."));
+
+        _sellPanel.Children.Add(Section("파는 조선소"));
+        _sellPanel.Children.Add(Row(_sellAll, _sellNone, _sellSome,
+            new TextBlock { Text = "찾기", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 6, 0) }, _cityFilter));
+        _sellPanel.Children.Add(new ScrollViewer
+        {
+            Content = _cityChecks, MaxHeight = 150, Margin = new Thickness(0, 4, 0, 0),
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+        });
+        _sellPanel.Children.Add(_sellSummary);
+        _sellPanel.Children.Add(Note("조선소가 있는 도시만 나온다. 「안 판다」면 앱에 실어만 두고 어디서도 안 판다(후원자가 내주는 배에서도 빠진다)."));
+        form.Children.Add(_sellPanel);
 
         form.Children.Add(Section("8방향 그림"));
         var pick = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
@@ -275,7 +300,9 @@ public sealed class ShipRegistryDialog : Window
             _designs.Add(saved.FirstOrDefault(d => d.Builtin == built.Name)
                          ?? ShipRegistry.FromBuiltin(built));
 
-        _designs.AddRange(saved.Where(d => !d.IsBuiltin));
+        // 앱에 실은 배(asset/ship-added) — 손으로 등록한 배 앞에 둔다.
+        _designs.AddRange(ShipRegistry.LoadBundled().Select(b => b.Design));
+        _designs.AddRange(saved.Where(d => !d.IsBuiltin && !d.IsBundled));
         _list.Items.Clear();
 
         foreach (var design in _designs)
@@ -295,11 +322,12 @@ public sealed class ShipRegistryDialog : Window
             int have = Enumerable.Range(0, ShipRegistry.Directions)
                 .Count(i => File.Exists(ShipRegistry.SpritePath(design.Id, i)));
 
+            string tag = design.IsBundled ? "  (앱에 실음)" : "";
             _list.Items.Add(new ListBoxItem
             {
                 Content = have == ShipRegistry.Directions
-                    ? design.Name
-                    : $"{design.Name}  (그림 {have}/{ShipRegistry.Directions})",
+                    ? design.Name + tag
+                    : $"{design.Name}{tag}  (그림 {have}/{ShipRegistry.Directions})",
                 Tag = design.Id,
                 Foreground = have == ShipRegistry.Directions ? Brushes.Black : Brushes.Firebrick,
             });
@@ -350,6 +378,14 @@ public sealed class ShipRegistryDialog : Window
             _price.Value = design.Price;
             _maxMasts.Value = Math.Clamp(design.MaxMasts, 1, Hull.MastLimit);
             _canChangeSail.IsChecked = design.CanChangeSail;
+
+            _sellPanel.Visibility = builtin ? Visibility.Collapsed : Visibility.Visible;
+            (design.Cities switch { null => _sellAll, { Length: 0 } => _sellNone, _ => _sellSome }).IsChecked = true;
+            var picked = design.Cities?.ToHashSet() ?? [];
+            foreach (var check in _cityChecks.Children.OfType<CheckBox>()) check.IsChecked = picked.Contains((int)check.Tag);
+            _cityChecks.IsEnabled = _sellSome.IsChecked == true;
+            _deleteButton.IsEnabled = !design.IsBundled;
+            SummarizeSale();
         }
         finally
         {
@@ -361,6 +397,52 @@ public sealed class ShipRegistryDialog : Window
         _status.Text = ShipRegistry.HasAllSprites(design!.Id)
             ? "그림이 다 찼습니다 — 조선소 구입 표에 나옵니다."
             : "그림이 여덟 장 다 차야 조선소에 나옵니다.";
+    }
+
+    // ── 파는 조선소 ────────────────────────────────────────────────────────
+
+    /// <summary>조선소가 있는 도시마다 체크 칸 하나 — 처음 한 번 짓는다.</summary>
+    private void BuildCityChecks()
+    {
+        try
+        {
+            var cities = CdsHelper.Game.Local.Helpers.CityTable.Open();
+            var buildings = CdsHelper.Game.Local.Helpers.CityBuildingTable.Open("");
+            foreach (var city in cities.Cities.OrderBy(c => c.Name, StringComparer.CurrentCulture))
+            {
+                if (buildings != null && !buildings.InCity(city.Id).Any(b => b.Kind == "조선소")) continue;
+                var check = new CheckBox { Content = $"{city.Name} ({city.Id})", Tag = city.Id, Width = 150, Margin = new Thickness(0, 0, 4, 2) };
+                check.Checked += (_, _) => { SummarizeSale(); Touch(); };
+                check.Unchecked += (_, _) => { SummarizeSale(); Touch(); };
+                _cityChecks.Children.Add(check);
+            }
+        }
+        catch (Exception ex)
+        {
+            _sellSummary.Text = $"도시 표를 못 읽었습니다 — {ex.Message}";
+        }
+    }
+
+    private void FilterCities()
+    {
+        string want = _cityFilter.Text.Trim();
+        foreach (var check in _cityChecks.Children.OfType<CheckBox>())
+            check.Visibility = want.Length == 0 || ((string)check.Content).Contains(want, StringComparison.OrdinalIgnoreCase)
+                ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>폼에서 고른 판매 도시 — 모든 조선소면 null, 안 팔면 빈 배열.</summary>
+    private int[]? PickedCities() =>
+        _sellAll.IsChecked == true ? null
+        : _sellNone.IsChecked == true ? []
+        : [.. _cityChecks.Children.OfType<CheckBox>().Where(c => c.IsChecked == true).Select(c => (int)c.Tag).Order()];
+
+    private void SummarizeSale()
+    {
+        var picked = _cityChecks.Children.OfType<CheckBox>().Where(c => c.IsChecked == true).Select(c => (string)c.Content).ToList();
+        _sellSummary.Text = _sellAll.IsChecked == true ? "모든 조선소에서 판다."
+            : _sellNone.IsChecked == true ? "어디서도 안 판다."
+            : picked.Count == 0 ? "고른 도시가 없어 어디서도 안 판다." : $"{picked.Count}곳: {string.Join(", ", picked)}";
     }
 
     private void Touch()
@@ -762,7 +844,7 @@ public sealed class ShipRegistryDialog : Window
         };
 
         _designs.Add(design);
-        ShipRegistry.Save(_designs);
+        ShipRegistry.Save(_designs.Where(d => !d.IsBundled));
         Reload(design.Id);
         _status.Text = "새 배를 만들었습니다 — 이름과 스펙을 적고 그림 여덟 장을 넣어 주세요.";
     }
@@ -814,6 +896,16 @@ public sealed class ShipRegistryDialog : Window
         design.Price = (int)_price.Value;
         design.MaxMasts = (int)_maxMasts.Value;
         design.CanChangeSail = _canChangeSail.IsChecked == true;
+        if (!design.IsBuiltin) design.Cities = PickedCities();
+
+        // 앱에 실은 배는 제 폴더의 design.json 에 적는다 — 저장소에서 띄웠으면 저장소 파일이라 커밋하면 업데이트로 간다.
+        if (design.IsBundled)
+        {
+            ShipRegistry.SaveBundled(design);
+            Reload(design.Id);
+            _status.Text = $"저장했습니다 — 앱에 실은 '{design.Name}' 의 값을 {Path.Combine(ShipRegistry.BundledRoot, design.Id, "design.json")} 에 적었습니다.";
+            return;
+        }
 
         // 적어 두는 것은 <b>고친 줄만</b>이다 — 안 건드린 붙박이는 적지 않는다.
         var keep = ShipRegistry.Load().Where(d => d.Id != design.Id).ToList();
@@ -841,6 +933,12 @@ public sealed class ShipRegistryDialog : Window
             Hull.Reload();
             Reload(design.Id);
             _status.Text = $"'{design.Builtin}' 을 게임 값으로 되돌렸습니다.";
+            return;
+        }
+
+        if (design.IsBundled)
+        {
+            _status.Text = "앱에 실은 배는 여기서 못 지웁니다 — 팔지 않으려면 「안 판다」로 두십시오.";
             return;
         }
 
