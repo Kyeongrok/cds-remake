@@ -2433,7 +2433,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasSon: Home.EldestSon(_player) != null,
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
                 Wed: Home.CanLeaveHeir(_player),
-                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_cityId),
+                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_player, _cityId),
                 ExileReady: facility.Kind == FacilityKind.Palace
                             && Engine.Town.Exile.Ready(_player, _cityId, patron == null ? -1 : _player.ClosenessOf(patron.Name)));
 
@@ -2926,16 +2926,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// </remarks>
     void ITownScreen.Exile(int code)
     {
-        if (Engine.Town.Exile.NationAt(_cityId) is not { } nation) return;
+        if (Engine.Town.Exile.NationAt(_cityId) is not { } nation || nation == _player.Nation) return;
         var owner = Menu.Window ?? this;
         string nationName = _game.Nations?.Find(nation)?.Name ?? "";
 
-        if (_player.Nation == nation)
-        {
-            (Owner as WorldMapWindow)?.Say($"이미 {nationName} 국적입니다.");
-            _game.Sfx?.Play(SoundBank.BandNoticePart);
-            return;
-        }
         if (Engine.Town.Exile.Busy(_player) is { } why)
         {
             (Owner as WorldMapWindow)?.Say(why);

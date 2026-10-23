@@ -5,7 +5,7 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.Engine.Town;
 
 /// <summary>
-/// 왕궁 「망명」 — 리스본 · 세비야 · 런던 왕궁에서 그 나라로 국적을 옮기고 자택도 그 도시로 옮긴다. 원본에 없는 줄이다(모드 「망명」).
+/// 왕궁 「망명」 — 리스본 · 세비야 · 런던 왕궁과 제노바 총독부(코드 2 라 왕궁 갈래다)에서 그 나라로 국적을 옮기고 자택도 그 도시로 옮긴다. 원본에 없는 줄이다(모드 「망명」).
 /// </summary>
 /// <remarks>
 /// 명성 <see cref="Fame"/> 이상과 그 왕궁 국왕과의 친밀도 100(<see cref="Player.MaxCloseness"/>)이 있어야 하고,
@@ -23,8 +23,8 @@ public static class Exile
     /// <summary>망명에 바치는 금화.</summary>
     public const int Fee = 1_000_000;
 
-    /// <summary>런던의 도시 번호.</summary>
-    private const int LondonCity = 38;
+    /// <summary>제노바 · 런던의 도시 번호.</summary>
+    private const int GenoaCity = 28, LondonCity = 38;
 
     /// <summary>모드 「망명」을 켰는지.</summary>
     public static bool Enabled => GameSettings.Exile;
@@ -34,12 +34,16 @@ public static class Exile
     {
         CityNames.LisbonId => Skill.Portugal,
         CityNames.SevilleId => Skill.Spain,
+        GenoaCity => Skill.Genoa,
         LondonCity => Skill.England,
         _ => null,
     };
 
-    /// <summary>그 도시 왕궁에 「망명」 줄이 서는지 — 모드를 켰고 망명을 받는 왕궁이면 조건이 안 돼도 선다(흐리게, <see cref="Ready"/>).</summary>
-    public static bool Offered(int cityId) => Enabled && NationAt(cityId) != null;
+    /// <summary>
+    /// 그 도시 왕궁에 「망명」 줄이 서는지 — 모드를 켰고 망명을 받는 왕궁이며 모국이 아니면, 조건이 안 돼도 선다(흐리게, <see cref="Ready"/>).
+    /// </summary>
+    public static bool Offered(Player player, int cityId) =>
+        Enabled && NationAt(cityId) is { } nation && nation != player.Nation;
 
     /// <summary>지금 망명할 수 있는지 — 아니면 줄을 흐리게 낸다.</summary>
     /// <param name="closeness">그 왕궁 국왕과의 친밀도. 국왕이 없으면 -1.</param>
