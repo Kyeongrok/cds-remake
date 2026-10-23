@@ -57,7 +57,9 @@ public static class Exile
     public static string? Busy(Player player)
     {
         if (player.Contract != null) return "후원자와 계약 중에는 망명할 수 없습니다.";
-        if (player.StoryQuestDeadline != null) return "의뢰를 수행하는 중에는 망명할 수 없습니다.";
+        // 기한 칸은 의뢰를 마쳐도 안 지워진다 — 기한이 아직 남았고 이야기 책이 안 닫혔을 때만 수행 중으로 본다(제보: 의뢰가 없는데 막혔다).
+        if (player.StoryQuestDaysLeft > 0 && !(player.ActiveStoryBook is { } book && player.IsStoryArcClosed(book)))
+            return "의뢰를 수행하는 중에는 망명할 수 없습니다.";
         return null;
     }
 
