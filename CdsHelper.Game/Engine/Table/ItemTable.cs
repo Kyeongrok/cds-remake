@@ -75,9 +75,17 @@ public sealed class ItemTable
         [JsonIgnore] public bool HasPic => Pic >= 0 && Pic <= MaxPic;
 
         /// <summary>분류 이름. 모르는 번호면 빈 문자열.</summary>
+        /// <remarks>
+        /// 분류 0 은 다 빈치 발명품 셋(0~2) 말고도 수수 경단(3) · 이디스의 방패(4)가 같이 들어 있다 — 효과 칸이 제 번호인 특수품 묶음이다.
+        /// 그 둘은 이름만 식품 · 방어구로 보인다(제보). 분류 번호는 그대로라 장비 · 결투 셈은 바뀌지 않는다.
+        /// </remarks>
         [JsonIgnore]
-        public string CategoryName =>
-            Category >= 0 && Category < CategoryNames.Length ? CategoryNames[Category] : "";
+        public string CategoryName => (Category, Id) switch
+        {
+            (0, 3) => "식품",
+            (0, 4) => "방어구",
+            _ => Category >= 0 && Category < CategoryNames.Length ? CategoryNames[Category] : "",
+        };
     }
 
     /// <summary>알맹이 모양 판. 힌트 칸(<see cref="Record.Hint"/>)을 더하면서 2 로 올렸다.</summary>
