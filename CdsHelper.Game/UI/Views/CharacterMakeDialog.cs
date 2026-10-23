@@ -488,12 +488,11 @@ internal sealed class CharacterMakeDialog : GameWindow
         _nation = pick;
         Mark();
         if (changed && pick is Skill.Genoa or Skill.England)
-            NoticeDialog.Show(this, HardNationNotice, "국적");
+            NoticeDialog.Show(this, string.Format(Lang.T(HardNationNotice), Lang.T(Player.NationNameOf?.Invoke(pick) ?? "")), "국적");
     }
 
-    /// <summary>제노바 · 잉글랜드를 골랐을 때의 알림.</summary>
-    private const string HardNationNotice =
-        "제노바 · 잉글랜드 국적은 개인 이야기가 없어 배도, 소개받은 후원자도 없이 시작합니다. 난이도가 높아 숙련된 플레이어께 권장합니다.";
+    /// <summary>제노바 · 잉글랜드를 골랐을 때의 알림 — 고른 나라 이름만 넣는다.</summary>
+    private const string HardNationNotice = "{0} 국적은 난이도가 높아 숙련된 플레이어께 권장합니다.";
 
     private void Footer()
     {
