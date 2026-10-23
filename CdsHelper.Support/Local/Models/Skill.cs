@@ -130,6 +130,9 @@ public static class Skill
     /// <summary>제노바 · 잉글랜드 주인공의 처음 소지금 — 개인 이야기가 주는 배가 없어 조선소에서 배를 사고 떠나라는 몫이다.</summary>
     public const int NoStoryGold = 12000;
 
+    /// <summary>제노바 · 잉글랜드 주인공의 처음 명성 밑값 — 제노바 상관 후원자(안목 34)를 만나 설득할 수 있는 만큼이다.</summary>
+    public const int NoStoryFame = 2400;
+
     /// <summary>한 자리 올리는 데 드는 값(닢). 자리와 상관없이 같다.</summary>
     public const int Price = 120;
 

@@ -148,6 +148,9 @@ internal sealed class AbilityMakeDialog : InfoDialog
             // 배를 사서 항구를 나설 수 있게 소지금을 정해 둔다(요청).
             if (player.Nation is Skill.Genoa or Skill.England) _gold = Skill.NoStoryGold;
             _fame = Ability.FameRoll(_age, rng);
+            // 명성도 밑을 깐다(요청) — 개인 이야기의 후원자 소개가 없어, 굴린 명성으로는 제노바 상관(안목 34)의 문간(x70)도
+            // 못 넘었다. 2400 이면 문간과 설득 관문(안목 x100 ≤ 명성 + 1500)을 둘 다 넘는다.
+            if (player.Nation is Skill.Genoa or Skill.England) _fame = Math.Max(_fame, Skill.NoStoryFame);
             _infamy = Ability.InfamyRoll(_age, rng);
         }
 
