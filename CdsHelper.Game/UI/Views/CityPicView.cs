@@ -1552,8 +1552,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         // 안목에 거는 배수가 건물마다 다르다 — 왕궁(코드 2)은 0x00470AC1 의 x100, 저택(12~15)은
         // 0x0040D371 의 x70 이다(0x0044E740: 안목 x 배수 ≤ 명성이면 통과). patrons.json 의 fame 은 x70 값이다.
-        int eye = _game.Sponsors?.FindByName(patron.Name)?.Eye ?? patron.Fame / 70;
-        bool passed = _player.Fame >= eye * (building.Code == PalaceCode ? 100 : 70);
+        var row = _game.Sponsors?.FindByName(patron.Name);
+        int eye = row?.Eye ?? patron.Fame / 70;
+        bool passed = row is { HasMeetFame: true } own
+            ? _player.Fame >= own.MeetFame                       // 표에 따로 적은 만나는 명성(원본에 없다)
+            : _player.Fame >= eye * (building.Code == PalaceCode ? 100 : 70);
 
         PlayFameCheck(passed);
 

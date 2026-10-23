@@ -307,7 +307,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         // 견준다 — 문간은 안목 x 70 을 명성 그대로와 견준다(patrons.json 의 fame 이 그 값이다). 예전에는 문간 식을
         // 여기에도 써서, 명성 1500 인 초심자 라몬이 안목 24 인 파브리스(2400 ≤ 3000)에게 막혔다.
         int eye = _game.Sponsors?.FindByName(patron.Name)?.Eye ?? patron.Fame / 70;
-        if (!Palace.Admitted(eye, _player.Fame))
+        // 표에 만나는 명성을 따로 적은 후원자는 그 값 하나로 본다(원본에 없다 — 제노바의 첸토리오네 500).
+        bool admitted = sponsor is { HasMeetFame: true } own ? _player.Fame >= own.MeetFame : Palace.Admitted(eye, _player.Fame);
+        if (!admitted)
         {
             // 문 앞에서 돌려보낼 때 소리가 한 번 난다(닻 소리와 같은 파트다).
             _game.Sfx?.Play(SoundBank.TurnedAwayPart);

@@ -80,6 +80,7 @@ public sealed class SponsorTable
     /// 별자리 표 <c>0x00568578</c> 의 줄로 쓴다 — 인물처럼 (얼굴 + 혈액형 + 나라) % 12(<c>0x004780B0</c>)로 짓지 않는다.
     /// 판 5 로 적어 둔 옛 JSON 이면 −1 이다.
     /// </param>
+    /// <param name="MeetFame">만나는 데 드는 명성(원본에 없는 칸). 0 이면 원본 식대로 안목에서 셈한다(<see cref="HasMeetFame"/>).</param>
     /// <param name="Wealth">
     /// 재력(닢) — 표 <c>+0x2C</c> 의 <b>10000배</b>다(<c>0x004AF11E</c> 가 <c>[후원자+0x2C]</c> 를 읽어 x10000 한다).
     /// 설득의 재력 판정(<c>0x004AF113</c>)과 후원자 지갑이 이 값이다.
@@ -88,8 +89,16 @@ public sealed class SponsorTable
                                           int JobCode, int Eye = 0, int Closeness = 0,
                                           int Tastes = 0, int Nation = -1, int Blood = 0,
                                           int Languages = 0, int City = -1, int Building = -1,
-                                          int Appear = 0, int Zodiac = -1, int Wealth = 0, int Retire = 0)
+                                          int Appear = 0, int Zodiac = -1, int Wealth = 0, int Retire = 0,
+                                          int MeetFame = 0)
     {
+        /// <summary>
+        /// 만나는 데 드는 명성을 따로 정했는지 — <see cref="MeetFame"/> 가 0 보다 크면 문간(안목 x 70 · 왕궁 x 100)과
+        /// 설득 관문(안목 x 100 ≤ 명성 + 1500)을 둘 다 이 값 하나로 갈음한다. 원본에 없는 칸이라 표에 적은 사람만 쓴다
+        /// (제노바의 카를로·첸토리오네 500 — 개인 이야기 없는 제노바 주인공이 처음부터 만나게, 요청).
+        /// </summary>
+        public bool HasMeetFame => MeetFame > 0;
+
         /// <summary>
         /// 그 해에 자리를 지키는지 — 나와 있고, 물러나는 해(<see cref="Retire"/>)가 아직 안 왔다. 원본 81명은 물러나는 해가
         /// 없고(0) 같은 자리에 다음 사람이 나와야 비킨다. 더해 넣은 후원자만 해를 적는다(메흐메트 2세 1510, 건의) —

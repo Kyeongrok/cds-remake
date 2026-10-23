@@ -62,7 +62,7 @@ public sealed class SponsorListDialog : GameWindow
         Col("물러남", nameof(Row.Retire), 52);
         Col("안목", nameof(Row.Eye), 44);
         Col("명성 관문", nameof(Row.FameGate), 66);
-        Col("친밀도", nameof(Row.Closeness), 52);
+        Col("친밀도 밑값", nameof(Row.Closeness), 76);
         Col("재력", nameof(Row.Wealth), 80);
         Col("취향", nameof(Row.Tastes), 160);
         Col("언어", nameof(Row.Languages), 160);
@@ -147,7 +147,7 @@ public sealed class SponsorListDialog : GameWindow
                 s.Index, s.Name, s.Job, nations?.Find(s.Nation)?.Name ?? $"{s.Nation}",
                 s.City >= 0 ? cities.NameOf(s.City) : "", building,
                 SponsorTable.FirstYear + s.Appear, retire > 0 ? $"{retire}" : "",
-                s.Eye, s.Eye * (s.Building == PalaceCode ? 100 : 70), s.Closeness, s.Wealth,
+                s.Eye, s.HasMeetFame ? s.MeetFame : s.Eye * (s.Building == PalaceCode ? 100 : 70), s.Closeness, s.Wealth,
                 string.Join(" · ", Enumerable.Range(0, Persuasion.Categories).Where(c => Persuasion.Likes(s.Tastes, c)).Select(CategoryName)),
                 string.Join(" · ", Skill.Languages.Where((_, i) => (s.Languages & (1 << i)) != 0)),
                 s.Index >= Original ? "●" : "", s.Face, s.IsFemale, patron?.Note ?? "");
@@ -156,7 +156,8 @@ public sealed class SponsorListDialog : GameWindow
         _nation.ItemsSource = new[] { All }.Concat(_rows.Select(r => r.Nation).Distinct().Order()).ToList();
         _nation.SelectedIndex = 0;   // FillCities · Filter 를 부른다
         _status.Text = $"후원자 {_rows.Count}명 — 원본 {Math.Min(Original, _rows.Count)}명 · 더한 사람 {_rows.Count(r => r.Added.Length > 0)}명. "
-                     + "명성 관문은 처음 만날 때 집사가 보는 명성(안목 x 왕궁 100 · 그 밖 70)이다.";
+                     + "명성 관문은 처음 만날 때 집사가 보는 명성(안목 x 왕궁 100 · 그 밖 70, 표에 따로 적은 사람은 그 값)이다. "
+                     + "친밀도 밑값은 낼 자금을 가르는 고정값이고, 플레이어와의 친밀도는 따로 0 에서 시작한다.";
     }
 
     /// <summary>왕궁 건물 코드.</summary>
