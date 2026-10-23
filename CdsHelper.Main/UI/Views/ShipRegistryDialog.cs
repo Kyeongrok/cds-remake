@@ -182,6 +182,7 @@ public sealed class ShipRegistryDialog : Window
         form.Children.Add(Section("8방향 그림"));
         var pick = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
         pick.Children.Add(MakeButton("여덟 장 한꺼번에…", ImportAll, "이름순으로 북 → 북서 → 서 … 차례로 넣는다"));
+        pick.Children.Add(MakeButton("DHO에서 찍기…", ImportFromDho, "DHO 배 모형을 3D 로 그려 여덟 장(과 고해상도)을 넣는다. 선체 동영상도 그 창에서 만든다"));
         pick.Children.Add(MakeButton("모두 지우기", ClearSprites));
         form.Children.Add(pick);
         form.Children.Add(_slots);
@@ -504,6 +505,35 @@ public sealed class ShipRegistryDialog : Window
         }
 
         FillSlots();
+    }
+
+    /// <summary>
+    /// 「DHO 배 찍기」 창을 열고, 거기서 「이 그림 넣기」를 누르면 찍은 여덟 장을 넣는다. 고해상도도 찍었으면 같이 둔다.
+    /// </summary>
+    private void ImportFromDho()
+    {
+        if (_current is not { } design) return;
+        var dialog = new DhoShipShotDialog(canApply: true) { Owner = this };
+        if (dialog.ShowDialog() != true || dialog.SpriteFolder is not { } folder) return;
+
+        int done = 0;
+        try
+        {
+            for (; done < ShipRegistry.Directions; done++)
+            {
+                ShipRegistry.ImportSprite(design.Id, done, Path.Combine(folder, $"ship_{done}.png"));
+                string hd = Path.Combine(folder, $"ship_{done}_hd.png");
+                if (File.Exists(hd)) File.Copy(hd, Path.Combine(ShipRegistry.FolderOf(design.Id), ShipHiArt.FileName(done)), overwrite: true);
+            }
+            _status.Text = "DHO 에서 찍은 여덟 장을 넣었습니다.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            _status.Text = $"{done}장까지 넣고 멈췄습니다 — {ex.Message}";
+        }
+
+        FillSlots();
+        FillHiSlots();
     }
 
     private void ClearSprites()
