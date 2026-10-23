@@ -106,7 +106,8 @@ public sealed class HullSelectDialog : GameWindow
 
     private StackPanel BuildTable()
     {
-        var table = new StackPanel();
+        // 줄 띠를 픽셀에 맞춘다 — 글꼴 높이가 소수점이라 띠 경계가 픽셀 중간에 걸리면 사이로 창 바탕이 한 줄 비쳤다.
+        var table = new StackPanel { UseLayoutRounding = true, SnapsToDevicePixels = true };
         table.Children.Add(Row(Headers, header: true));
 
         foreach (var hull in _hulls)
