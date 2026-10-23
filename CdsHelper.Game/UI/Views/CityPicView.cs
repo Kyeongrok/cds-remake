@@ -2433,7 +2433,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasSon: Home.EldestSon(_player) != null,
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
                 Wed: Home.CanLeaveHeir(_player),
-                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_player, _cityId));
+                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_cityId),
+                ExileReady: facility.Kind == FacilityKind.Palace
+                            && Engine.Town.Exile.Ready(_player, _cityId, patron == null ? -1 : _player.ClosenessOf(patron.Name)));
 
     /// <summary>
     /// 그 건물에 <b>해설</b> 줄이 붙는지 — 발견물인 건물을 이미 발견했고 해설 글이 있을 때다.
@@ -2926,7 +2928,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     {
         if (Engine.Town.Exile.NationAt(_cityId) is not { } nation) return;
         var owner = Menu.Window ?? this;
+        string nationName = _game.Nations?.Find(nation)?.Name ?? "";
 
+        if (_player.Nation == nation)
+        {
+            (Owner as WorldMapWindow)?.Say($"이미 {nationName} 국적입니다.");
+            _game.Sfx?.Play(SoundBank.BandNoticePart);
+            return;
+        }
         if (Engine.Town.Exile.Busy(_player) is { } why)
         {
             (Owner as WorldMapWindow)?.Say(why);
@@ -2946,7 +2955,6 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             return;
         }
 
-        string nationName = _game.Nations?.Find(nation)?.Name ?? "";
         string nl = Environment.NewLine;
         string needs = $"{nationName}에 망명하려면 다음이 필요합니다{nl}"
                        + $"· 명성 {Engine.Town.Exile.Fame} 이상 (지금 {_player.Fame}){nl}"

@@ -38,9 +38,14 @@ public static class Exile
         _ => null,
     };
 
-    /// <summary>그 도시 왕궁에 「망명」 줄이 서는지 — 모드를 켰고, 받아 주는 왕궁이며, 이미 그 나라 사람이 아닐 때.</summary>
-    public static bool Offered(Player player, int cityId) =>
-        Enabled && NationAt(cityId) is { } nation && nation != player.Nation;
+    /// <summary>그 도시 왕궁에 「망명」 줄이 서는지 — 모드를 켰고 망명을 받는 왕궁이면 조건이 안 돼도 선다(흐리게, <see cref="Ready"/>).</summary>
+    public static bool Offered(int cityId) => Enabled && NationAt(cityId) != null;
+
+    /// <summary>지금 망명할 수 있는지 — 아니면 줄을 흐리게 낸다.</summary>
+    /// <param name="closeness">그 왕궁 국왕과의 친밀도. 국왕이 없으면 -1.</param>
+    public static bool Ready(Player player, int cityId, int closeness) =>
+        NationAt(cityId) is { } nation && nation != player.Nation
+        && Busy(player) == null && Trusted(closeness) && Affords(player);
 
     /// <summary>
     /// 설명 창을 띄우기도 전에 막는 까닭(아래 띠에 적는 글) — 후원자와 계약 중이거나 의뢰를 수행하는 중이다. 없으면 null.

@@ -187,7 +187,7 @@ public static class TownWorks
                                             bool Wed = false, bool PatronBribe = false,
                                             bool PatronBorrow = false, bool HasSon = false,
                                             bool HasBooks = true, bool PatronDim = false,
-                                            bool CanExile = false);
+                                            bool CanExile = false, bool ExileReady = false);
 
     /// <summary>
     /// 그 시설의 명령 창에 늘어놓을 줄들. 차례와 문구는 <see cref="Facility.Menu"/> 것이고,

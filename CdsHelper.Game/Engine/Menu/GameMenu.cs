@@ -16,8 +16,9 @@ namespace CdsHelper.Game.Engine.Menu;
 /// 참이면 <b>죽은 줄</b>로 낸다 — 띠는 그대로고 글씨만 회색으로 찍히며 손을 안 받는다.
 /// 아직 안 옮긴 자리를 목록에서 빼지 않고 그대로 두되 못 고르게 할 때 쓴다.
 /// </param>
+/// <param name="Grey">참이면 글씨만 회색이고 <b>눌리기는 한다</b> — 조건이 안 된 줄을 흐리게 보이되 누르면 까닭을 듣게 할 때 쓴다.</param>
 internal sealed record GameMenuRow(string Text, Action? Run = null, BandStyle? Style = null,
-                                   bool Dim = false);
+                                   bool Dim = false, bool Grey = false);
 
 /// <summary>
 /// 차림표 줄 뒤로 글쇠 초점이 이어지는 것들 — 시설 화면의 <b>사진 속 사람들</b>이 이것이다.
@@ -92,7 +93,7 @@ internal sealed class GameMenu : Border
             // 죽은 줄은 <b>손만 떼면</b> 된다 — 손이 없는 띠는 GameButton 이 글씨를
             // 회색(색인 21)으로 찍는다. 원본도 띠는 그대로 두고 글씨만 흐리게 낸다.
             Action? run = row.Dim ? null : row.Run;
-            var button = new GameButton(row.Text, run, style) { Margin = default };
+            var button = new GameButton(row.Text, run, style) { Margin = default, Greyed = row.Grey };
 
             // 창이 뜨면 <b>첫 줄에 초점</b>이 가 있다 — 원본도 그 줄의 안쪽 테가 깜빡인다.
             if (row.Run != null && !row.Dim)

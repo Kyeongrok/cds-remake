@@ -51,6 +51,7 @@ internal sealed class GameButton : Border
     private Action? _run;
     private bool _on = true;
     private bool _lit;
+    private bool _greyed;
     private bool _focused;
 
     /// <param name="text">줄에 적히는 글.</param>
@@ -140,6 +141,15 @@ internal sealed class GameButton : Border
         set { if (_lit != value) { _lit = value; Build(); } }
     }
 
+    /// <summary>
+    /// 눌리기는 하되 글씨를 흐린 회색으로 낼지 — 조건이 아직 안 된 줄을 흐리게 보이고, 누르면 까닭을 듣게 할 때 쓴다.
+    /// </summary>
+    public bool Greyed
+    {
+        get => _greyed;
+        set { if (_greyed != value) { _greyed = value; Build(); } }
+    }
+
     /// <summary>제목 무늬인지. 제목 줄은 초점도 안 받고 눌리지도 않는다.</summary>
     public bool IsTitle => _style == BandStyle.Title;
 
@@ -154,7 +164,7 @@ internal sealed class GameButton : Border
 
     private void Build()
     {
-        bool live = _on && (_run != null || _lit);
+        bool live = _on && (_run != null || _lit) && !_greyed;
 
         // 제목은 밝은 글씨에 그림자를 지고, 나머지는 검은 글씨에 그림자가 없다.
         // 흐린 줄은 회색(색인 21)이다.
