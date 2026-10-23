@@ -30,6 +30,7 @@ public sealed class ShipRegistryDialog : Window
     private readonly TextBox _name;
     private readonly NumericSpinner _hp;
     private readonly NumericSpinner _speed;
+    private readonly NumericSpinner _speedTop;
     private readonly NumericSpinner _capacity;
     private readonly NumericSpinner _tonnage;
     private readonly NumericSpinner _crew;
@@ -75,6 +76,7 @@ public sealed class ShipRegistryDialog : Window
         _name = new TextBox { Width = 200, VerticalContentAlignment = VerticalAlignment.Center };
         _hp = Spinner(1, 999);
         _speed = Spinner(1, 999);
+        _speedTop = Spinner(0, 999);
         _capacity = Spinner(1, 9999);
         _tonnage = Spinner(1, 99999, step: 50);
         _crew = Spinner(1, 999);
@@ -106,7 +108,7 @@ public sealed class ShipRegistryDialog : Window
         Content = BuildContent();
 
         _name.TextChanged += (_, _) => Touch();
-        foreach (var spinner in new[] { _hp, _speed, _capacity, _tonnage, _crew, _guns, _price, _maxMasts })
+        foreach (var spinner in new[] { _hp, _speed, _speedTop, _capacity, _tonnage, _crew, _guns, _price, _maxMasts })
             spinner.ValueChanged += (_, _) => Touch();
         _canChangeSail.Checked += (_, _) => Touch();
         _canChangeSail.Unchecked += (_, _) => Touch();
@@ -182,6 +184,8 @@ public sealed class ShipRegistryDialog : Window
         var specs = new WrapPanel();
         specs.Children.Add(Field("내구력", _hp));
         specs.Children.Add(Field("추진력", _speed));
+        // 0 이면 추진력의 2배까지 돛으로 올라간다 — 붙박이 다섯은 원본 표의 한계를 쓰므로 막아 둔다.
+        specs.Children.Add(Field("추진력 한계(0=2배)", _speedTop));
         specs.Children.Add(Field("적재용량", _capacity));
         specs.Children.Add(Field("적재중량", _tonnage));
         specs.Children.Add(Field("필요승원", _crew));
@@ -371,6 +375,8 @@ public sealed class ShipRegistryDialog : Window
             _name.Text = design.Name;
             _hp.Value = design.Hp;
             _speed.Value = design.Speed;
+            _speedTop.Value = design.SpeedTop;
+            _speedTop.IsEnabled = !builtin;
             _capacity.Value = design.Capacity;
             _tonnage.Value = design.Tonnage;
             _crew.Value = design.Crew;
@@ -889,6 +895,7 @@ public sealed class ShipRegistryDialog : Window
         design.Name = name;
         design.Hp = (int)_hp.Value;
         design.Speed = (int)_speed.Value;
+        if (!design.IsBuiltin) design.SpeedTop = (int)_speedTop.Value;
         design.Capacity = (int)_capacity.Value;
         design.Tonnage = (int)_tonnage.Value;
         design.Crew = (int)_crew.Value;

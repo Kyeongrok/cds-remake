@@ -3,6 +3,7 @@
   "Name": "바사",
   "Hp": 18,
   "Speed": 75,
+  "SpeedTop": 95,
   "Capacity": 100,
   "Tonnage": 1000,
   "Crew": 10,

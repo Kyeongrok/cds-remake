@@ -36,6 +36,12 @@ public static class ShipRegistry
         public string Name { get; set; } = "";
         public int Hp { get; set; } = 30;
         public int Speed { get; set; } = 50;
+
+        /// <summary>
+        /// 추진력 한계 — 돛을 더 달아 올릴 수 있는 끝(<see cref="Hull.SpeedCeiling"/>). 0 이면 추진력의 <see cref="Ship.RefitCeiling"/> 배다.
+        /// 붙박이 다섯은 원본 표 값이 따로 있어 이 칸을 안 쓴다.
+        /// </summary>
+        public int SpeedTop { get; set; }
         public int Capacity { get; set; } = 200;
         public int Tonnage { get; set; } = 1750;
         public int Crew { get; set; } = 20;
@@ -287,6 +293,7 @@ public static class ShipRegistry
         Skin: -1,
         MaxMasts: Math.Clamp(design.MaxMasts, 1, Hull.MastLimit),
         CanChangeSail: design.CanChangeSail,
+        SpeedTop: design.SpeedTop > 0 ? Math.Max(design.SpeedTop, design.Speed) : 0,
         SpriteFolder: folder,
         Movie: design.Movie,
         Cities: design.Cities);
