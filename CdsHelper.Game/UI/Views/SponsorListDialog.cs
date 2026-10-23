@@ -32,6 +32,12 @@ public sealed class SponsorListDialog : GameWindow
     };
 
     private readonly TextBox _search = new() { Width = 200, Margin = new Thickness(0, 0, 8, 0) };
+
+    /// <summary>나라 · 도시 고르기 — 맨 앞 「전체」면 안 거른다. 나라를 고르면 도시 목록도 그 나라 것으로 좁힌다(요청).</summary>
+    private readonly ComboBox _nation = new() { Width = 160, Margin = new Thickness(0, 0, 8, 0) };
+    private readonly ComboBox _city = new() { Width = 120, Margin = new Thickness(0, 0, 8, 0) };
+
+    private const string All = "전체";
     private readonly Image _face = new() { Width = 160, Height = 192, Stretch = Stretch.Uniform };
     private readonly TextBlock _detail = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0), Width = 220 };
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 4, 10, 8), TextWrapping = TextWrapping.Wrap };
@@ -64,12 +70,19 @@ public sealed class SponsorListDialog : GameWindow
 
         _grid.SelectionChanged += (_, _) => ShowPicked();
         _search.TextChanged += (_, _) => Filter();
+        _nation.SelectionChanged += (_, _) => { FillCities(); Filter(); };
+        _city.SelectionChanged += (_, _) => Filter();
 
         var bar = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(10, 10, 10, 0),
-            Children = { new TextBlock { Text = "찾기", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, _search },
+            Children =
+            {
+                new TextBlock { Text = "찾기", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, _search,
+                new TextBlock { Text = "나라", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 6, 0) }, _nation,
+                new TextBlock { Text = "도시", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, _city,
+            },
         };
         var side = new StackPanel { Margin = new Thickness(4, 10, 10, 4), Width = 230, Children = { _face, _detail } };
 
@@ -140,7 +153,8 @@ public sealed class SponsorListDialog : GameWindow
                 s.Index >= Original ? "●" : "", s.Face, s.IsFemale, patron?.Note ?? "");
         })];
 
-        Filter();
+        _nation.ItemsSource = new[] { All }.Concat(_rows.Select(r => r.Nation).Distinct().Order()).ToList();
+        _nation.SelectedIndex = 0;   // FillCities · Filter 를 부른다
         _status.Text = $"후원자 {_rows.Count}명 — 원본 {Math.Min(Original, _rows.Count)}명 · 더한 사람 {_rows.Count(r => r.Added.Length > 0)}명. "
                      + "명성 관문은 처음 만날 때 집사가 보는 명성(안목 x 왕궁 100 · 그 밖 70)이다.";
     }
@@ -152,13 +166,27 @@ public sealed class SponsorListDialog : GameWindow
     private static string CategoryName(int category) =>
         category switch { 0 => "지리", 1 => "역사", 2 => "보물", 3 => "종교", 4 => "교역품", 5 => "미신", 6 => "생물", 7 => "민족", _ => $"{category}" };
 
+    /// <summary>도시 목록을 고른 나라 것으로 다시 채운다. 고르던 도시가 그대로 있으면 둔다.</summary>
+    private void FillCities()
+    {
+        string? was = _city.SelectedItem as string;
+        var cities = _rows.Where(r => Picked(_nation) is not { } n || r.Nation == n)
+                          .Select(r => r.City).Where(c => c.Length > 0).Distinct().Order().ToList();
+        _city.ItemsSource = new[] { All }.Concat(cities).ToList();
+        _city.SelectedItem = was != null && cities.Contains(was) ? was : All;
+    }
+
+    /// <summary>고른 값. 「전체」거나 안 골랐으면 null.</summary>
+    private static string? Picked(ComboBox box) => box.SelectedItem is string s && s != All ? s : null;
+
     private void Filter()
     {
         string want = _search.Text.Trim();
-        _grid.ItemsSource = want.Length == 0
-            ? _rows
-            : [.. _rows.Where(r => $"{r.Name} {r.Job} {r.Nation} {r.City} {r.Building} {r.Tastes} {r.Languages}"
-                                       .Contains(want, StringComparison.OrdinalIgnoreCase))];
+        string? nation = Picked(_nation), city = Picked(_city);
+        _grid.ItemsSource = _rows.Where(r =>
+            (nation == null || r.Nation == nation) && (city == null || r.City == city)
+            && (want.Length == 0 || $"{r.Name} {r.Job} {r.Nation} {r.City} {r.Building} {r.Tastes} {r.Languages}"
+                                        .Contains(want, StringComparison.OrdinalIgnoreCase))).ToList();
     }
 
     private void ShowPicked()
