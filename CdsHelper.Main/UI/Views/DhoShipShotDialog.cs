@@ -58,6 +58,19 @@ public sealed class DhoShipShotDialog : Window
 
     private List<(string Name, int Model)> _shipList = [];
 
+    // ── 돌려 보며 찍기 — 파이썬을 --serve 로 띄워 두고 한 줄씩 묻는다 ──
+    private readonly Slider _yaw = new() { Minimum = -180, Maximum = 180, Width = 260, SmallChange = 1, LargeChange = 15, VerticalAlignment = VerticalAlignment.Center };
+    private readonly Slider _pitch = new() { Minimum = 0, Maximum = 70, Width = 160, SmallChange = 1, LargeChange = 5, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _angle = new() { Width = 120, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+    private readonly ComboBox _direction = new() { Width = 110, Margin = new Thickness(0, 0, 8, 0) };
+    private readonly Image _view = new() { Width = 256, Height = 256 };
+    private System.Diagnostics.Process? _server;
+    private string _serverKey = "";
+    private TaskCompletionSource<string>? _reply;
+    private TaskCompletionSource<bool>? _ready;
+    private readonly SemaphoreSlim _ask = new(1, 1);
+    private bool _viewQueued;
+
     /// <summary>마지막으로 찍은 8방향 그림이 든 폴더(<c>ship_0.png</c> ~ · <c>ship_0_hd.png</c> ~). 아직 안 찍었으면 null.</summary>
     public string? SpriteFolder { get; private set; }
 
@@ -82,6 +95,7 @@ public sealed class DhoShipShotDialog : Window
         _elev.Text = $"{_options.Elevation}";
         _turns.Text = $"{_options.Turns}";
         _bg.Text = _options.Background;
+        _pitch.Value = _options.SpriteElevation;
 
         var form = new StackPanel { Margin = new Thickness(14) };
 
@@ -108,6 +122,18 @@ public sealed class DhoShipShotDialog : Window
         form.Children.Add(Note("48x48 여덟 장 — 0 북에서 반시계(0 북 · 2 서 · 4 남 · 6 동). 여덟 장은 같은 배율이고, 붙박이 배 그림과 크기를 맞췄다."));
         form.Children.Add(_previews);
 
+        form.Children.Add(Section("돌려 보며 찍기"));
+        foreach (var name in ShipRegistry.DirectionNames.Select((n, i) => $"{i} {n}")) _direction.Items.Add(name);
+        _direction.SelectedIndex = 0;
+        _direction.SelectionChanged += (_, _) => { if (_direction.SelectedIndex >= 0) _yaw.Value = Wrap(-45 * _direction.SelectedIndex); };
+        _yaw.ValueChanged += (_, _) => QueueView();
+        _pitch.ValueChanged += (_, _) => QueueView();
+        form.Children.Add(Row(Label("돌리기"), _yaw, Label("내려다보기"), _pitch, _angle));
+        form.Children.Add(Row(Label("방향 칸"), _direction, MakeButton("이 각도로 찍기", () => _ = ShootOne()), MakeButton("미리보기", () => QueueView())));
+        form.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = _view, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 6, 0, 0) });
+        form.Children.Add(Note("슬라이더로 배를 돌려 보다가 「이 각도로 찍기」를 누르면 고른 방향 칸만 그 각도로 바꾼다. 방향 칸을 고르면 그 방향의 표준 각도로 돌아간다. "
+                             + "배율은 「그림 찍기」와 같아서 여덟 장의 크기가 맞는다. 처음에는 모형을 읽느라 몇 초 걸린다."));
+
         form.Children.Add(Section("선체 동영상 (한 바퀴)"));
         form.Children.Add(Row(Label("장수"), _frames, Label("초당"), _fps, Label("가로"), _width, Label("세로"), _height));
         form.Children.Add(Row(Label("내려다보는 각도"), _elev, Label("바퀴"), _turns, Label("배경 R,G,B"), _bg,
@@ -132,7 +158,7 @@ public sealed class DhoShipShotDialog : Window
         Content = page;
 
         Loaded += (_, _) => { LoadShips(); _ = ReadSlots(); };
-        Closed += (_, _) => SaveOptions();
+        Closed += (_, _) => { SaveOptions(); StopServer(); };
     }
 
     // ── 배 목록 · 돛 자리 ────────────────────────────────────────────────
@@ -189,16 +215,172 @@ public sealed class DhoShipShotDialog : Window
         if (!ok) return;
 
         SpriteFolder = out_;
-        _apply.IsEnabled = true;
+        StopServer();   // 새 폴더로 찍었으니 띄워 둔 것은 옛 폴더를 본다
+        RefreshPreviews();
+        _status.Text = $"여덟 장을 찍었습니다 — {out_}";
+    }
+
+    /// <summary>찍어 둔 여덟 장을 다시 띄운다. 여덟 장이 다 차야 「이 그림 넣기」가 산다.</summary>
+    private void RefreshPreviews()
+    {
         _previews.Children.Clear();
+        if (SpriteFolder is not { } folder) return;
+        int have = 0;
         for (int i = 0; i < ShipRegistry.Directions; i++)
         {
-            var image = new Image { Width = 96, Height = 96, Margin = new Thickness(0, 0, 4, 4), Source = Read(Path.Combine(out_, $"ship_{i}.png")),
-                                    ToolTip = ShipRegistry.DirectionNames[i] };
+            string path = Path.Combine(folder, $"ship_{i}.png");
+            if (File.Exists(path)) have++;
+            var image = new Image { Width = 96, Height = 96, Source = Read(path), ToolTip = ShipRegistry.DirectionNames[i] };
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
-            _previews.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = image, Margin = new Thickness(0, 0, 4, 4) });
+            var cell = new StackPanel();
+            cell.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = image });
+            cell.Children.Add(new TextBlock { Text = $"{i} {ShipRegistry.DirectionNames[i]}", HorizontalAlignment = HorizontalAlignment.Center });
+            cell.Margin = new Thickness(0, 0, 4, 4);
+            int direction = i;
+            cell.MouseLeftButtonUp += (_, _) => _direction.SelectedIndex = direction;   // 누르면 그 방향 칸을 고른다
+            cell.Cursor = System.Windows.Input.Cursors.Hand;
+            _previews.Children.Add(cell);
         }
-        _status.Text = $"여덟 장을 찍었습니다 — {out_}";
+        _apply.IsEnabled = have == ShipRegistry.Directions;
+    }
+
+    // ── 돌려 보며 찍기 ──────────────────────────────────────────────────
+
+    private static double Wrap(double yaw) => ((yaw + 180) % 360 + 360) % 360 - 180;
+
+    /// <summary>슬라이더가 움직였다 — 묻는 중이면 끝난 뒤 한 번만 다시 묻는다(따라잡기).</summary>
+    private void QueueView()
+    {
+        _angle.Text = $"{_yaw.Value:0}° · {_pitch.Value:0}°";
+        if (_viewQueued) return;
+        _viewQueued = true;
+        _ = Dispatcher.InvokeAsync(async () =>
+        {
+            await Task.Delay(120);
+            _viewQueued = false;
+            string path = Path.Combine(Path.GetTempPath(), "cds-dho-shot", "view.png");
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            if (await Ask($"view {_yaw.Value:0.#} {_pitch.Value:0.#} {path}") is { } reply && reply.StartsWith("ok", StringComparison.Ordinal))
+                _view.Source = Read(path);
+        });
+    }
+
+    private async Task ShootOne()
+    {
+        if (_direction.SelectedIndex < 0) return;
+        int direction = _direction.SelectedIndex;
+        if (SpriteFolder == null)
+        {
+            _status.Text = "먼저 「그림 찍기」로 여덟 장을 찍어 주십시오 — 그 가운데 한 칸을 바꾼다.";
+            return;
+        }
+        if (await Ask($"shot {_yaw.Value:0.#} {_pitch.Value:0.#} {direction} {(_hd.IsChecked == true ? 1 : 0)}") is { } reply && reply.StartsWith("ok", StringComparison.Ordinal))
+        {
+            RefreshPreviews();
+            _status.Text = $"{direction} {ShipRegistry.DirectionNames[direction]} 칸을 {_yaw.Value:0}° · {_pitch.Value:0}° 로 찍었습니다.";
+        }
+    }
+
+    /// <summary>띄워 둔 파이썬에 한 줄 묻고 답 한 줄을 받는다. 모형 · 돛 · 각도 · 폴더가 바뀌었으면 새로 띄운다.</summary>
+    private async Task<string?> Ask(string command)
+    {
+        if (!int.TryParse(_model.Text.Trim(), out int model)) { _status.Text = "모형 번호를 적어 주십시오."; return null; }
+        await _ask.WaitAsync();
+        try
+        {
+            string folder = SpriteFolder ?? NewWorkFolder();
+            string key = $"{model}|{SkipSlots()}|{_spriteElev.Text.Trim()}|{folder}|{_dho.Text.Trim()}";
+            if (_server is not { HasExited: false } || key != _serverKey)
+            {
+                StopServer();
+                if (!StartServer(model, folder)) return null;
+                _serverKey = key;
+                _status.Text = "모형을 읽는 중…";
+                if (await Task.WhenAny(_ready!.Task, Task.Delay(60000)) != _ready.Task || !_ready.Task.Result)
+                {
+                    _status.Text = "모형을 못 읽었습니다.";
+                    StopServer();
+                    return null;
+                }
+                _status.Text = "돌려 볼 수 있습니다.";
+            }
+            _reply = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await _server!.StandardInput.WriteLineAsync(command);
+            await _server.StandardInput.FlushAsync();
+            if (await Task.WhenAny(_reply.Task, Task.Delay(30000)) != _reply.Task) { _status.Text = "답이 없습니다."; return null; }
+            string reply = _reply.Task.Result;
+            if (reply.StartsWith("error", StringComparison.Ordinal)) _status.Text = reply;
+            return reply;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            _status.Text = $"파이썬과 주고받지 못했습니다 — {ex.Message}";
+            StopServer();
+            return null;
+        }
+        finally
+        {
+            _ask.Release();
+        }
+    }
+
+    private bool StartServer(int model, string folder)
+    {
+        string? script = FindScript();
+        string gvo = Path.Combine(_dho.Text.Trim(), "tools", "gvo");
+        if (script == null || !Directory.Exists(gvo))
+        {
+            _status.Text = script == null ? "tools/dho_ship_render.py 를 못 찾았습니다." : $"DHO 도구 폴더가 없습니다 — {gvo}";
+            return false;
+        }
+        var start = new System.Diagnostics.ProcessStartInfo(_python.Text.Trim())
+        {
+            RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
+            UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetTempPath(),
+        };
+        start.Environment["PYTHONIOENCODING"] = "utf-8";
+        foreach (var a in new[] { script, "--gvo", gvo, "--model", $"{model}", "--out", folder, "--serve",
+                                  "--sprite-elev", _spriteElev.Text.Trim(), "--skip-slots", SkipSlots() })
+            start.ArgumentList.Add(a);
+        try
+        {
+            _ready = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var server = System.Diagnostics.Process.Start(start)!;
+            server.OutputDataReceived += (_, e) =>
+            {
+                if (e.Data == null) { _ready?.TrySetResult(false); _reply?.TrySetResult("error 파이썬이 끝났습니다"); return; }
+                if (e.Data.StartsWith("ready", StringComparison.Ordinal)) _ready?.TrySetResult(true);
+                else if (e.Data.StartsWith("ok", StringComparison.Ordinal) || e.Data.StartsWith("error", StringComparison.Ordinal)) _reply?.TrySetResult(e.Data);
+            };
+            server.ErrorDataReceived += (_, e) => { if (!string.IsNullOrWhiteSpace(e.Data)) Dispatcher.BeginInvoke(() => _status.Text = e.Data); };
+            server.BeginOutputReadLine();
+            server.BeginErrorReadLine();
+            _server = server;
+            return true;
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            _status.Text = $"파이썬을 못 띄웠습니다 — {ex.Message}";
+            return false;
+        }
+    }
+
+    private void StopServer()
+    {
+        var server = _server;
+        _server = null;
+        _serverKey = "";
+        if (server == null) return;
+        try
+        {
+            if (!server.HasExited)
+            {
+                server.StandardInput.WriteLine("quit");
+                if (!server.WaitForExit(1000)) server.Kill();
+            }
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { }
+        server.Dispose();
     }
 
     private async Task ShootMovie()
