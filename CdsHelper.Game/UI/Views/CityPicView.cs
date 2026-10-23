@@ -2432,7 +2432,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasHeir: Home.HasBornChild(_player),
                 HasSon: Home.EldestSon(_player) != null,
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
-                Wed: Home.CanLeaveHeir(_player));
+                Wed: Home.CanLeaveHeir(_player),
+                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_player, _cityId));
 
     /// <summary>
     /// 그 건물에 <b>해설</b> 줄이 붙는지 — 발견물인 건물을 이미 발견했고 해설 글이 있을 때다.
@@ -2912,6 +2913,42 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     void ITownScreen.TradeTalk() => TradeTalk();
+
+    /// <summary>
+    /// 왕궁 「망명」 — 금화를 바치고 그 왕궁의 나라로 국적을 옮긴다. 모항(자택)도 이 도시로 옮긴다(모드 「망명」, <see cref="Engine.Town.Exile"/>).
+    /// </summary>
+    /// <remarks>
+    /// 못 하는 까닭은 아래 띠에 적고 띠 소리를 낸다 — 왕궁 문간의 「명성치가 모자랍니다!」와 같은 자리다(<see cref="PassFameGate"/>).
+    /// </remarks>
+    void ITownScreen.Exile(int code)
+    {
+        if (Engine.Town.Exile.NationAt(_cityId) is not { } nation) return;
+        var owner = Menu.Window ?? this;
+        var king = BuildingAt(code) is { } palace ? PatronAt(code, palace.Kind) : null;
+        int closeness = king == null ? -1 : _player.ClosenessOf(king.Name);
+
+        if (Engine.Town.Exile.Blocked(_player, closeness) is { } why)
+        {
+            (Owner as WorldMapWindow)?.Say(why);
+            _game.Sfx?.Play(SoundBank.BandNoticePart);
+            return;
+        }
+
+        string nationName = _game.Nations?.Find(nation)?.Name ?? "";
+        if (!ConfirmDialog.Ask(owner, $"금화 {Engine.Town.Exile.Fee}닢을 바치고 {nationName}에 망명하겠습니까?{Environment.NewLine}"
+                                      + $"자택도 {_player.CityName}(으)로 옮겨집니다.", title: Facility.Exile))
+            return;
+        if (!_player.Pay(Engine.Town.Exile.Fee)) return;
+
+        _player.Nation = nation;
+        _player.SetHomePort(_cityId);
+        // 자택이 이 도시에 선다 — 도시 그림을 다시 열지 않아도 곧바로 들어가지게 판을 얹는다.
+        if (Standing(_cityId).FirstOrDefault(b => b.Code == CityExeTable.HomeCode) is { } home
+            && !_spots.Any(s => s.Building.Code == home.Code))
+            AddSpot(home, _scale);
+        GameDialog.Show(owner, $"{nationName}에 망명했습니다{Environment.NewLine}자택이 {_player.CityName}(으)로 옮겨졌습니다");
+        Menu.Refresh();
+    }
 
     /// <summary>
     /// 교역소 「투자」 — 소지금을 이 교역소에 맡긴다. 투자한 돈은 1000 닢마다 공적 1 이 되고(모드 「작위」),

@@ -53,6 +53,9 @@ internal static class TownMenu
     /// <summary>교역소 「투자」 줄이 대본에 올라가는 번호 — 원본 칸(0~2)과 안 겹치게 붙박는다.</summary>
     public const int InvestRow = 10;
 
+    /// <summary>왕궁 「망명」 줄이 대본에 올라가는 번호 — 원본 왕궁 칸(0~4)과 안 겹치게 붙박는다.</summary>
+    public const int ExileRow = 11;
+
     /// <summary>
     /// 이야기 대본에 올리는 줄 번호 — 원본은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
     /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
@@ -79,6 +82,7 @@ internal static class TownMenu
             TownWork.BorrowShips => 2,
             TownWork.Train => 3,
             TownWork.Comment => palace ? 3 : 4,
+            TownWork.Exile => ExileRow,
             TownWork.Exit => palace ? 4 : 5,
             _ => row,
         };
@@ -157,6 +161,7 @@ internal static class TownMenu
             TownWork.Trade when screen.CanTrade => screen.Trade,
             TownWork.Talk when screen.CanTrade => screen.TradeTalk,
             TownWork.Invest => screen.Invest,
+            TownWork.Exile => () => screen.Exile(code),
 
             TownWork.Stay => screen.Stay,
             TownWork.OddJob => screen.OddJob,

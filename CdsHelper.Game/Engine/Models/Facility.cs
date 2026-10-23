@@ -87,8 +87,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
         //                   (코드도 개수를 세어 cmp eax,1 / jle 로 둘 미만이면 끈다)
         //   배를 빌린다   — 계약할 때 스폰서가 배를 빌리겠냐 물었는데 아니라고 답했을 때
         //                   (그 답이 플래그 한 비트로 남아 test byte [eax+0x1C],1 로 본다)
+        // 「망명」은 원본에 없는 줄이다 — 모드 「망명」을 켰을 때 리스본 · 세비야 · 런던 왕궁에만 선다.
         new(FacilityKind.Palace, "왕궁",
-            ["왕궁을 나온다"]),
+            [Exile, "왕궁을 나온다"]),
 
         // 게임 도서관 줄은 셋이지만(검색 0x00544B48 · 열람 · 나온다) <b>「검색」은 걷었다</b> —
         // 차림표를 짓는 0x004B3630 이 검색 줄의 보임 칸([0x005800B4])을 늘 0 으로 두어 원본 화면에도
@@ -150,6 +151,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
 
     /// <summary>교역소 「투자」 — 원본에 없는 줄(모드 「작위」).</summary>
     public const string Invest = "투자";
+
+    /// <summary>왕궁 「망명」 — 원본에 없는 줄(모드 「망명」).</summary>
+    public const string Exile = "망명";
 
     public const string RefitMast = "마스트 추가",
                         RefitSailKind = "돛종류 변경",

@@ -153,6 +153,10 @@ internal interface ITownScreen
     /// <summary>교역소 「투자」 — 돈을 맡겨 공적을 쌓는다. 원본에 없는 줄이다(모드 「작위」).</summary>
     void Invest();
 
+    /// <summary>왕궁 「망명」 — 그 왕궁의 나라로 국적과 자택을 옮긴다. 원본에 없는 줄이다(모드 「망명」).</summary>
+    /// <param name="code">왕궁의 건물 코드 — 국왕(앉은 후원자)을 찾는다.</param>
+    void Exile(int code);
+
     /// <summary>자택 「연표를 본다」 — 발견·보고를 날짜 차례로 늘어놓는다.</summary>
     void ShowChronicle();
 

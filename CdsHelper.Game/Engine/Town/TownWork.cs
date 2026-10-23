@@ -33,6 +33,11 @@ public enum TownWork
     // ── 자택 ──────────────────────────────────────────────────────────────
     Rest, Store, Savings, Heir, Educate, Succeed, Encyclopedia, Chronicle, Retire, BribeInspector, BorrowShips,
 
+    // ── 왕궁 ──────────────────────────────────────────────────────────────
+
+    /// <summary>왕궁 「망명」 — 원본에 없는 줄(모드 「망명」, <see cref="Exile"/>).</summary>
+    Exile,
+
     // ── 자리를 가리지 않는 것들 ───────────────────────────────────────────
 
     /// <summary>기술을 배운다. 건물 표의 가르침 비트가 선 자리면 어디든 나온다.</summary>
@@ -118,6 +123,7 @@ public static class TownWorks
 
         // ── 그 밖 ─────────────────────────────────────────────────────────
         new(TownWork.Read, "열람", FacilityKind.Library),
+        new(TownWork.Exile, Facility.Exile, FacilityKind.Palace),
         new(TownWork.Explore, "탐험을 떠난다", FacilityKind.Gate),
         // 자리를 안 적는다 — 발견물이 된 건물이면 어느 시설에나 붙는다(0x004733B1).
         new(TownWork.Comment, "해설"),
@@ -180,7 +186,8 @@ public static class TownWorks
                                             bool Contracted = false, bool HasHeir = false,
                                             bool Wed = false, bool PatronBribe = false,
                                             bool PatronBorrow = false, bool HasSon = false,
-                                            bool HasBooks = true, bool PatronDim = false);
+                                            bool HasBooks = true, bool PatronDim = false,
+                                            bool CanExile = false);
 
     /// <summary>
     /// 그 시설의 명령 창에 늘어놓을 줄들. 차례와 문구는 <see cref="Facility.Menu"/> 것이고,
@@ -219,6 +226,9 @@ public static class TownWorks
             items.Remove(NameOf(TownWork.Invest));
         if (facility.Kind == FacilityKind.Shipyard && !Local.Settings.GameSettings.SpecialOrder)
             items.Remove(NameOf(TownWork.SpecialOrder));
+        // 왕궁 「망명」도 원본에 없는 줄이다 — 모드 「망명」을 켰고 망명을 받는 왕궁(리스본 · 세비야 · 런던)일 때만 선다.
+        if (facility.Kind == FacilityKind.Palace && !state.CanExile)
+            items.Remove(NameOf(TownWork.Exile));
 
         // 아이가 없으면 교육·세대교체는 <b>줄에서 뺀다</b>. 가르칠 아이도 물려줄 아이도
         // 없는데 줄만 서 있으면 눌러 보고서야 알게 된다.

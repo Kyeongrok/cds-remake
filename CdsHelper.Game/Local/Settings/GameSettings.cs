@@ -405,6 +405,9 @@ public sealed class GameSettingsData
     /// <summary>새 주인공 국적에 제노바 공화국 · 잉글랜드 왕국을 더할지. 원본에 없어 꺼 두고 시작한다(파워업키트가 켠다).</summary>
     public bool MoreNations { get; set; }
 
+    /// <summary>리스본 · 세비야 · 런던 왕궁에 「망명」 줄을 낼지. 원본에 없어 꺼 두고 시작한다(파워업키트가 켠다).</summary>
+    public bool Exile { get; set; }
+
     /// <summary>뭍에서 발견물 지도로 자동이동할지. 실험이라 꺼 두고 시작한다.</summary>
     public bool LandAutoWalk { get; set; }
 
@@ -1554,6 +1557,14 @@ public static class GameSettings
     {
         get => Get(d => d.MoreNations) || ModPreset == 4;
         set => Set(d => d.MoreNations = value);
+    }
+
+    /// <summary>왕궁 「망명」 — 모드 창 「캐릭터」. 파워업키트가 켠다(<see cref="Engine.Town.Exile"/>).</summary>
+    /// <remarks>파워업키트면 적힌 값과 상관없이 켜진 것으로 친다 — <see cref="MoreNations"/> 와 같은 까닭이다.</remarks>
+    public static bool Exile
+    {
+        get => Get(d => d.Exile) || ModPreset == 4;
+        set => Set(d => d.Exile = value);
     }
 
     /// <summary>향상된 후원자 정보 — 스폰서 일람 줄에 얼굴 · 발견물 취향 · 권력 · 친밀도.</summary>
