@@ -37,6 +37,8 @@ public sealed class DhoShipShotDialog : Window
         public double Elevation { get; set; } = 15;
         public double Turns { get; set; } = 1;
         public string Background { get; set; } = "40,60,90";
+        public double SailTurn { get; set; } = 35;
+        public double Billow { get; set; } = 0.15;
     }
 
     private static string OptionsPath => Path.Combine(
@@ -48,7 +50,7 @@ public sealed class DhoShipShotDialog : Window
     private readonly ComboBox _ships = new() { Width = 220, Margin = new Thickness(0, 0, 8, 0) };
     private readonly WrapPanel _slots = new();
     private readonly TextBox _spriteElev = Box(50), _frames = Box(50), _fps = Box(40), _width = Box(50), _height = Box(50),
-                             _elev = Box(50), _turns = Box(50), _bg = Box(90);
+                             _elev = Box(50), _turns = Box(50), _bg = Box(90), _sailTurn = Box(50), _billow = Box(50);
     private readonly CheckBox _hd = new() { Content = "고해상도(192x192)도", VerticalAlignment = VerticalAlignment.Center };
     private readonly WrapPanel _previews = new() { Margin = new Thickness(0, 6, 0, 0) };
     private readonly Image _movieFrame = new() { Width = 240, Height = 176, Stretch = Stretch.Uniform, Margin = new Thickness(0, 6, 0, 0) };
@@ -95,6 +97,8 @@ public sealed class DhoShipShotDialog : Window
         _elev.Text = $"{_options.Elevation}";
         _turns.Text = $"{_options.Turns}";
         _bg.Text = _options.Background;
+        _sailTurn.Text = $"{_options.SailTurn}";
+        _billow.Text = $"{_options.Billow}";
         _pitch.Value = _options.SpriteElevation;
 
         var form = new StackPanel { Margin = new Thickness(14) };
@@ -115,6 +119,9 @@ public sealed class DhoShipShotDialog : Window
         _model.LostFocus += (_, _) => _ = ReadSlots();
         form.Children.Add(Row(_ships, Label("모형 번호"), _model, MakeButton("돛 자리 읽기", () => _ = ReadSlots())));
         form.Children.Add(Row(Label("돛 자리"), _slots));
+        form.Children.Add(Row(Label("돛 틀기(도)"), _sailTurn, Label("돛 부풀림"), _billow));
+        form.Children.Add(Note("돛을 돛대 둘레로 틀고 돛천 가운데를 부풀린다 — 삼각돛은 그대로면 앞뒤에서 선 하나로 납작하다. "
+                             + "그림은 방향마다 왼쪽 · 오른쪽 가운데 돛이 넓게 보이는 쪽으로 틀고, 동영상은 한쪽으로 둔다. 0 이면 원래 모형 그대로다."));
         form.Children.Add(Note("모형 하나에 돛 자리가 여럿이다. 한 돛대에 가로돛과 삼각돛이 겹쳐 서는 모형(바사 따위)은 하나만 남긴다."));
 
         form.Children.Add(Section("항해 지도 그림 (8방향)"));
@@ -201,6 +208,13 @@ public sealed class DhoShipShotDialog : Window
             _slots.Children.Add(new CheckBox { Content = $"자리 {part}", Tag = part, IsChecked = true, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center });
     }
 
+    /// <summary>돛 틀기 · 부풀림 인자 — 숫자가 아니면 스크립트 기본값을 쓴다.</summary>
+    private string[] SailArgs() =>
+    [
+        .. double.TryParse(_sailTurn.Text.Trim(), out double turn) ? new[] { "--sail-turn", $"{turn}" } : [],
+        .. double.TryParse(_billow.Text.Trim(), out double billow) ? new[] { "--billow", $"{billow}" } : [],
+    ];
+
     private string SkipSlots() => string.Join(",", _slots.Children.OfType<CheckBox>().Where(c => c.IsChecked != true).Select(c => (string)c.Tag));
 
     // ── 찍기 ──────────────────────────────────────────────────────────
@@ -210,6 +224,7 @@ public sealed class DhoShipShotDialog : Window
         if (!int.TryParse(_model.Text.Trim(), out int model)) { _status.Text = "모형 번호를 적어 주십시오."; return; }
         string out_ = NewWorkFolder();
         var args = new List<string> { "--model", $"{model}", "--out", out_, "--sprites", "--sprite-elev", _spriteElev.Text.Trim(), "--skip-slots", SkipSlots() };
+        args.AddRange(SailArgs());
         if (_hd.IsChecked == true) args.Add("--hd");
         var (ok, _) = await RunScript(args);
         if (!ok) return;
@@ -289,7 +304,7 @@ public sealed class DhoShipShotDialog : Window
         try
         {
             string folder = SpriteFolder ?? NewWorkFolder();
-            string key = $"{model}|{SkipSlots()}|{_spriteElev.Text.Trim()}|{folder}|{_dho.Text.Trim()}";
+            string key = $"{model}|{SkipSlots()}|{_spriteElev.Text.Trim()}|{folder}|{_dho.Text.Trim()}|{string.Join(' ', SailArgs())}";
             if (_server is not { HasExited: false } || key != _serverKey)
             {
                 StopServer();
@@ -339,8 +354,9 @@ public sealed class DhoShipShotDialog : Window
             UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetTempPath(),
         };
         start.Environment["PYTHONIOENCODING"] = "utf-8";
-        foreach (var a in new[] { script, "--gvo", gvo, "--model", $"{model}", "--out", folder, "--serve",
-                                  "--sprite-elev", _spriteElev.Text.Trim(), "--skip-slots", SkipSlots() })
+        string[] arguments = [script, "--gvo", gvo, "--model", $"{model}", "--out", folder, "--serve",
+                              "--sprite-elev", _spriteElev.Text.Trim(), "--skip-slots", SkipSlots(), .. SailArgs()];
+        foreach (var a in arguments)
             start.ArgumentList.Add(a);
         try
         {
@@ -399,7 +415,7 @@ public sealed class DhoShipShotDialog : Window
         string out_ = NewWorkFolder();
         var (ok, _) = await RunScript(["--model", $"{model}", "--out", out_, "--frames", _frames.Text.Trim(),
                                        "--width", $"{width}", "--height", $"{height}", "--elev", _elev.Text.Trim(),
-                                       "--turns", _turns.Text.Trim(), "--bg", _bg.Text.Trim(), "--skip-slots", SkipSlots()]);
+                                       "--turns", _turns.Text.Trim(), "--bg", _bg.Text.Trim(), "--skip-slots", SkipSlots(), .. SailArgs()]);
         if (!ok) return;
 
         var frames = Directory.GetFiles(out_, "frame_*.png").OrderBy(f => f, StringComparer.Ordinal).ToList();
@@ -540,6 +556,8 @@ public sealed class DhoShipShotDialog : Window
         if (double.TryParse(_elev.Text.Trim(), out double elev)) _options.Elevation = elev;
         if (double.TryParse(_turns.Text.Trim(), out double turns)) _options.Turns = turns;
         _options.Background = _bg.Text.Trim();
+        if (double.TryParse(_sailTurn.Text.Trim(), out double sailTurn)) _options.SailTurn = sailTurn;
+        if (double.TryParse(_billow.Text.Trim(), out double billow)) _options.Billow = billow;
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(OptionsPath)!);

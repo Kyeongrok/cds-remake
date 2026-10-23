@@ -19,6 +19,7 @@ GV Online 클라이언트(환경 변수 GVO_DIR, 없으면 기본 설치 자리)
              줄마다 'ok …' 또는 'error …' 한 줄로 답한다. 배율은 --sprites 와 같다(여덟 표준 각도로 잰 네모).
   --skip-slots  뺄 돛 자리(0 ~ 4). 한 돛대에 가로돛 · 삼각돛이 겹쳐 서는 모형이 있어 고르게 한다.
   --info     그 모형의 돛 자리 번호만 알린다.
+  --sail-turn · --billow  돛을 돛대 둘레로 틀고(기본 35°, 그림은 각도마다 왼쪽 · 오른쪽 가운데 돛이 넓게 보이는 쪽) 돛천을 부풀린다(기본 0.15) — 앞뒤에서 봐도 돛이 납작하지 않게.
 
 음영은 정점 법선을 보간해 칠하고 빛은 화면 기준 왼쪽 위 앞에서 온다 — 배가 어느 쪽을 보든 같은 쪽이 밝다.
 작은 그림은 원본 배 그림처럼 가장자리 한 줄을 어둡게 둘러 바다 위에서 떠 보이게 한다.
@@ -45,8 +46,12 @@ def sail_slots(row):
     return [k for k in range(5) if row["bone_res"][k] != 0xFFFF or row["sail_res"][k] != 0xFFFF]
 
 
-def load_parts(gvo_dir, model_no, skip=()):
-    """[(정점, 법선|None, UV|None, 삼각형, 텍스처|None, 빛깔)] — 선체 · 돛대 · 돛 조각."""
+def load_parts(gvo_dir, model_no, skip=(), sail_turn=0.0, billow=0.0):
+    """[(정점, 법선|None, UV|None, 삼각형, 텍스처|None, 빛깔)] — 선체 · 돛대 · 돛 조각.
+
+    sail_turn 이면 돛 자원(활대 + 돛천)을 가장 가까운 돛대 축 둘레로 그 각도만큼 튼다 — 삼각돛은 배의 중심선과 나란해서
+    앞뒤에서 보면 선 하나로 납작했다. billow 면 돛천 가운데를 돛 크기의 그 몫만큼 불룩하게 해 곡면 음영이 서게 한다.
+    """
     sys.path.insert(0, gvo_dir)
     import texture as T
     import ships
@@ -60,6 +65,7 @@ def load_parts(gvo_dir, model_no, skip=()):
     sail = T.decode(T.load(bytes(Pack("0001/sa0000.bin").entry(0)))[0])
 
     parts = []
+    groups = []      # 조각마다 (돛 자원 번호 | None, 돛천인지)
 
     def part(resource, hull):
         if resource == 0xFFFF or (0x300, resource) not in index:
@@ -75,12 +81,16 @@ def load_parts(gvo_dir, model_no, skip=()):
                 continue
             tris = m.triangles(s)
             nrm = vb.get("normal")
+            pos = np.array(vb["pos"], float)
             if hull:
-                parts.append((vb["pos"], nrm, vb.get("uv0"), tris, base, (150, 120, 80)))
+                parts.append((pos, nrm, vb.get("uv0"), tris, base, (150, 120, 80)))
+                groups.append((None, False))
             elif vb["fvf"] == 0x316:
-                parts.append((vb["pos"], nrm, vb.get("uv0"), tris, sail, (230, 225, 210)))
+                parts.append((pos, nrm, vb.get("uv0"), tris, sail, SAIL_COLOR))
+                groups.append((resource, True))
             else:
-                parts.append((vb["pos"], nrm, None, tris, None, (120, 95, 60)))
+                parts.append((pos, nrm, None, tris, None, (120, 95, 60)))
+                groups.append((resource, False))
 
     part(row["hull_res"], True)
     for mast in range(5):
@@ -91,7 +101,66 @@ def load_parts(gvo_dir, model_no, skip=()):
         part(row["sail_res"][mast], False)
     if not parts:
         raise SystemExit(f"모형 {model_no} 의 조각을 못 읽었습니다")
+    if sail_turn or billow:
+        parts = shape_sails(parts, groups, sail_turn, billow)
     return parts
+
+
+def vertex_normals(pos, tris):
+    """삼각형 넓이로 가중한 정점 법선."""
+    n = np.zeros_like(pos)
+    t = np.asarray(tris)
+    face = np.cross(pos[t[:, 1]] - pos[t[:, 0]], pos[t[:, 2]] - pos[t[:, 0]])
+    for k in range(3):
+        np.add.at(n, t[:, k], face)
+    return n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-9)
+
+
+def mast_axes(hull):
+    """선체에서 높이 솟은 정점(돛대)을 z 로 무리 지어 돛대마다 (x, z) 하나."""
+    ymax = hull[:, 1].max()
+    tall = hull[hull[:, 1] > 0.55 * ymax]
+    if len(tall) == 0:
+        return [(0.0, 0.0)]
+    order = tall[np.argsort(tall[:, 2])]
+    axes, start = [], 0
+    for i in range(1, len(order) + 1):
+        if i == len(order) or order[i, 2] - order[i - 1, 2] > 250:
+            chunk = order[start:i]
+            axes.append((float(np.median(chunk[:, 0])), float(np.median(chunk[:, 2]))))
+            start = i
+    return axes
+
+
+def shape_sails(parts, groups, turn, billow):
+    hull = parts[0][0]
+    axes = mast_axes(hull)
+    out = list(parts)
+    resources = {g for g, _ in groups if g is not None}
+    for res in resources:
+        idx = [i for i, (g, _) in enumerate(groups) if g == res]
+        pts = np.concatenate([out[i][0] for i in idx])
+        cz = float(pts[:, 2].mean())
+        ax, az = min(axes, key=lambda m: abs(m[1] - cz))
+        a = np.radians(turn)
+        rot = np.array([[np.cos(a), 0, np.sin(a)], [0, 1, 0], [-np.sin(a), 0, np.cos(a)]])
+        for i in idx:
+            pos, nrm, uv, tris, tex, col = out[i]
+            p = pos - [ax, 0, az]
+            p = p @ rot.T + [ax, 0, az]
+            n = None if nrm is None else np.asarray(nrm) @ rot.T
+            if groups[i][1] and billow and uv is not None and len(p) >= 3:
+                # 돛천 평면의 법선(가장 작은 특이 벡터) 쪽으로, UV 가운데가 가장 불룩하게 민다.
+                centered = p - p.mean(0)
+                normal = np.linalg.svd(centered, full_matrices=False)[2][2]
+                lo, hi = uv.min(0), uv.max(0)
+                un = (uv - lo) / np.maximum(hi - lo, 1e-9)
+                size = float(np.ptp(centered @ np.linalg.svd(centered, full_matrices=False)[2][:2].T, axis=0).max())
+                bulge = billow * size * np.sin(np.pi * un[:, 0]) * np.sin(np.pi * un[:, 1])
+                p = p + bulge[:, None] * normal
+                n = vertex_normals(p, tris)
+            out[i] = (p, n, uv, tris, tex, col)
+    return out
 
 
 # 빛 — 화면 기준(오른쪽 · 위 · 카메라 쪽). 왼쪽 위 앞에서 비춘다.
@@ -188,11 +257,35 @@ def finish(cut, size):
     return Image.fromarray(px, "RGBA")
 
 
-class Shooter:
-    """모형 하나를 같은 배율로 찍는다 — 표준 여덟 각도로 잰 네모로 잘라 어느 각도로 찍어도 크기가 같다."""
+SAIL_COLOR = (230, 225, 210)   # 돛천 조각의 빛깔 — 돛천을 가려낼 때 쓴다
 
-    def __init__(self, parts, elev, work=384):
-        self.parts, self.elev, self.work = parts, elev, work
+
+def sail_area(parts, yaw, elev):
+    """그 각도에서 화면에 비친 돛천 넓이 — 돛을 어느 쪽으로 틀지 고를 때 쓴다."""
+    a, e = np.radians(yaw), np.radians(elev)
+    r = np.array([np.cos(a), 0.0, np.sin(a)])
+    u = np.array([-np.sin(a) * np.sin(e), np.cos(e), np.cos(a) * np.sin(e)])
+    total = 0.0
+    for pos, _, _, tris, _, col in parts:
+        if col != SAIL_COLOR:
+            continue
+        t = np.asarray(tris)
+        x, y = pos @ r, pos @ u
+        total += float(np.abs((x[t[:, 1]] - x[t[:, 0]]) * (y[t[:, 2]] - y[t[:, 0]])
+                              - (x[t[:, 2]] - x[t[:, 0]]) * (y[t[:, 1]] - y[t[:, 0]])).sum() / 2)
+    return total
+
+
+class Shooter:
+    """모형 하나를 같은 배율로 찍는다 — 표준 여덟 각도로 잰 네모로 잘라 어느 각도로 찍어도 크기가 같다.
+
+    돛을 양쪽으로 튼 두 벌(variants)을 받으면 각도마다 돛천이 화면에 더 넓게 비치는 쪽을 쓴다 — 한쪽으로만 틀면
+    앞뒤는 나아져도 대각선 둘에서 돛이 옆선이 되어 납작했다. 삼각돛은 바람에 따라 양쪽으로 넘기므로 어색하지 않다.
+    """
+
+    def __init__(self, variants, elev, work=384):
+        self.variants, self.elev, self.work = variants, elev, work
+        parts = variants[0]
         radius, self.ymin, self.ymax = bounds(parts)
         self.scale = (work / 2 - 4) / max(radius, self.ymax - self.ymin)
         self.raw = [self.render(-45 * i, elev) for i in range(8)]
@@ -209,7 +302,8 @@ class Shooter:
         self.crop = (int(cx - side / 2), int(cy - side / 2 + side * 0.04), int(cx + side / 2), int(cy + side / 2 + side * 0.04))
 
     def render(self, yaw, elev):
-        return render(self.parts, yaw, elev, self.work, self.work, self.scale, (self.ymin + self.ymax) / 2)
+        parts = max(self.variants, key=lambda v: sail_area(v, yaw, elev))
+        return render(parts, yaw, elev, self.work, self.work, self.scale, (self.ymin + self.ymax) / 2)
 
     def save(self, im, out, direction, hd):
         cut = im.crop(self.crop)
@@ -218,16 +312,16 @@ class Shooter:
             finish(cut, 192).save(os.path.join(out, f"ship_{direction}_hd.png"))
 
 
-def sprites(parts, out, elev, hd):
+def sprites(variants, out, elev, hd):
     # 게임 방향 i(0 북부터 반시계)는 렌더 각도 −45°·i 다 — yaw 90 이면 뱃머리가 오른쪽(동)이다.
-    shooter = Shooter(parts, elev)
+    shooter = Shooter(variants, elev)
     for i, im in enumerate(shooter.raw):
         shooter.save(im, out, i, hd)
         print(f"sprite {i + 1}/8", flush=True)
 
 
-def serve(parts, out, elev):
-    shooter = Shooter(parts, elev)
+def serve(variants, out, elev):
+    shooter = Shooter(variants, elev)
     print("ready", flush=True)
     for line in sys.stdin:
         words = line.split()
@@ -283,6 +377,8 @@ def main():
     ap.add_argument("--skip-slots", default="", help="뺄 돛 자리 번호(0 ~ 4, 쉼표로)")
     ap.add_argument("--info", action="store_true", help="돛 자리 번호만 'slots 0,1' 로 알린다")
     ap.add_argument("--serve", action="store_true", help="표준 입력으로 view · shot 을 받는다")
+    ap.add_argument("--sail-turn", type=float, default=35, help="돛을 돛대 둘레로 트는 각도(도)")
+    ap.add_argument("--billow", type=float, default=0.15, help="돛천을 부풀리는 몫(돛 크기의 몫)")
     args = ap.parse_args()
 
     if args.info:
@@ -290,13 +386,17 @@ def main():
         return
     os.makedirs(args.out, exist_ok=True)
     skip = {int(k) for k in args.skip_slots.split(",") if k.strip()}
-    parts = load_parts(args.gvo, args.model, skip)
+    parts = load_parts(args.gvo, args.model, skip, args.sail_turn, args.billow)
     print(f"parts {len(parts)}", flush=True)
+    # 그림은 돛을 양쪽으로 튼 두 벌에서 각도마다 고른다. 동영상은 돌아가는 동안 돛이 뒤집히지 않게 한 벌만 쓴다.
+    variants = [parts]
+    if args.sail_turn and (args.sprites or args.serve):
+        variants.append(load_parts(args.gvo, args.model, skip, -args.sail_turn, args.billow))
     if args.serve:
-        serve(parts, args.out, args.sprite_elev)
+        serve(variants, args.out, args.sprite_elev)
         return
     if args.sprites:
-        sprites(parts, args.out, args.sprite_elev, args.hd)
+        sprites(variants, args.out, args.sprite_elev, args.hd)
     if args.frames > 0:
         bg = tuple(int(c) for c in args.bg.split(","))
         frames(parts, args.out, args.frames, args.width, args.height, args.elev, bg, args.turns, args.start)
