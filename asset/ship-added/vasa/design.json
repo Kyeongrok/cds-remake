@@ -10,6 +10,9 @@
   "Price": 8000,
   "MaxMasts": 1,
   "CanChangeSail": false,
+  "Builtin": null,
   "Movie": "S08_0001",
-  "Cities": []
+  "Cities": [
+    28
+  ]
 }
