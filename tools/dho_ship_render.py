@@ -94,8 +94,10 @@ def render(parts, yaw_deg, elev_deg, width, height, scale, center_y):
     def proj(p):
         x = p[:, 0] * np.cos(a) + p[:, 2] * np.sin(a)
         z = -p[:, 0] * np.sin(a) + p[:, 2] * np.cos(a)
-        y = p[:, 1] * np.cos(e) - z * np.sin(e)
-        d = -(p[:, 1] * np.sin(e) + z * np.cos(e))
+        # 내려다본다 — 먼 쪽(z 가 큰 쪽)이 화면 위로 가고, 높은 데 · 가까운 데가 앞이다.
+        # 예전에는 sin 항 부호가 거꾸로라 밑에서 올려다본 그림이 나왔고, 대각선 방향이 위아래로 뒤집혔다.
+        y = p[:, 1] * np.cos(e) + z * np.sin(e)
+        d = p[:, 1] * np.sin(e) - z * np.cos(e)
         return np.stack([x, y, d], 1)
 
     img = np.zeros((height, width, 4), np.uint8)
