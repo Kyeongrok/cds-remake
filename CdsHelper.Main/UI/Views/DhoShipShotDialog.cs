@@ -140,7 +140,10 @@ public sealed class DhoShipShotDialog : Window
         _yaw.Width = _pitch.Width = 230;
         var left = new StackPanel { Width = 340, Margin = new Thickness(14, 14, 0, 14) };
         left.Children.Add(Section("미리보기"));
-        left.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = _view, HorizontalAlignment = HorizontalAlignment.Left });
+        var stage = new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = _view, HorizontalAlignment = HorizontalAlignment.Left,
+                                 Cursor = System.Windows.Input.Cursors.SizeAll, ToolTip = "끌어서 돌린다 — 좌우는 돌리기, 위아래는 내려다보기" };
+        AttachDrag(stage);
+        left.Children.Add(stage);
         left.Children.Add(Row(Label("돌리기"), _yaw));
         left.Children.Add(Row(Label("내려다보기"), _pitch));
         left.Children.Add(_angle);
@@ -279,6 +282,35 @@ public sealed class DhoShipShotDialog : Window
 
     private static double Wrap(double yaw) => ((yaw + 180) % 360 + 360) % 360 - 180;
 
+    private bool _dragging;
+
+    /// <summary>미리보기를 끌어 돌린다 — 좌우로 끌면 돌리기(점 하나에 0.6°), 위아래로 끌면 내려다보기(0.3°).</summary>
+    private void AttachDrag(FrameworkElement stage)
+    {
+        Point last = default;
+        stage.MouseLeftButtonDown += (_, e) =>
+        {
+            _dragging = true;
+            last = e.GetPosition(stage);
+            stage.CaptureMouse();
+            e.Handled = true;
+        };
+        stage.MouseMove += (_, e) =>
+        {
+            if (!_dragging) return;
+            var now = e.GetPosition(stage);
+            _yaw.Value = Wrap(_yaw.Value - (now.X - last.X) * 0.6);
+            _pitch.Value = Math.Clamp(_pitch.Value + (now.Y - last.Y) * 0.3, _pitch.Minimum, _pitch.Maximum);
+            last = now;
+        };
+        stage.MouseLeftButtonUp += (_, _) =>
+        {
+            _dragging = false;
+            stage.ReleaseMouseCapture();
+            QueueView();   // 놓은 자리로 한 번 더 — 끄는 동안 건너뛴 마지막 각도를 맞춘다
+        };
+    }
+
     /// <summary>슬라이더가 움직였다 — 묻는 중이면 끝난 뒤 한 번만 다시 묻는다(따라잡기).</summary>
     private void QueueView()
     {
@@ -287,7 +319,7 @@ public sealed class DhoShipShotDialog : Window
         _viewQueued = true;
         _ = Dispatcher.InvokeAsync(async () =>
         {
-            await Task.Delay(120);
+            await Task.Delay(_dragging ? 15 : 120);
             _viewQueued = false;
             string path = Path.Combine(Path.GetTempPath(), "cds-dho-shot", "view.png");
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
