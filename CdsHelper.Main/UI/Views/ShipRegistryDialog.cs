@@ -184,7 +184,7 @@ public sealed class ShipRegistryDialog : Window
         var specs = new WrapPanel();
         specs.Children.Add(Field("내구력", _hp));
         specs.Children.Add(Field("추진력", _speed));
-        // 0 이면 추진력의 2배까지 돛으로 올라간다 — 붙박이 다섯은 원본 표의 한계를 쓰므로 막아 둔다.
+        // 0 이면 추진력의 2배까지 돛으로 올라간다. 붙박이 다섯은 선체표(exe-tables/hulls.json)의 한계다.
         specs.Children.Add(Field("추진력 한계(0=2배)", _speedTop));
         specs.Children.Add(Field("적재용량", _capacity));
         specs.Children.Add(Field("적재중량", _tonnage));
@@ -376,7 +376,6 @@ public sealed class ShipRegistryDialog : Window
             _hp.Value = design.Hp;
             _speed.Value = design.Speed;
             _speedTop.Value = design.SpeedTop;
-            _speedTop.IsEnabled = !builtin;
             _capacity.Value = design.Capacity;
             _tonnage.Value = design.Tonnage;
             _crew.Value = design.Crew;
@@ -895,7 +894,7 @@ public sealed class ShipRegistryDialog : Window
         design.Name = name;
         design.Hp = (int)_hp.Value;
         design.Speed = (int)_speed.Value;
-        if (!design.IsBuiltin) design.SpeedTop = (int)_speedTop.Value;
+        design.SpeedTop = (int)_speedTop.Value;
         design.Capacity = (int)_capacity.Value;
         design.Tonnage = (int)_tonnage.Value;
         design.Crew = (int)_crew.Value;
@@ -911,6 +910,15 @@ public sealed class ShipRegistryDialog : Window
             ShipRegistry.SaveBundled(design);
             Reload(design.Id);
             _status.Text = $"저장했습니다 — 앱에 실은 '{design.Name}' 의 값을 {Path.Combine(ShipRegistry.BundledRoot, design.Id, "design.json")} 에 적었습니다.";
+            return;
+        }
+
+        // 붙박이는 선체표(exe-tables/hulls.json)에 적는다 — 저장소에서 띄웠으면 저장소 파일이라 커밋하면 업데이트로 간다.
+        if (design.IsBuiltin)
+        {
+            ShipRegistry.SaveBuiltin(design);
+            Reload(design.Id);
+            _status.Text = $"저장했습니다 — 붙박이 '{design.Builtin}' 의 값을 {HullTable.PathOf} 에 적었습니다.";
             return;
         }
 

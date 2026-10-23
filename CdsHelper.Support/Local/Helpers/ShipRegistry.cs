@@ -39,7 +39,7 @@ public static class ShipRegistry
 
         /// <summary>
         /// 추진력 한계 — 돛을 더 달아 올릴 수 있는 끝(<see cref="Hull.SpeedCeiling"/>). 0 이면 추진력의 <see cref="Ship.RefitCeiling"/> 배다.
-        /// 붙박이 다섯은 원본 표 값이 따로 있어 이 칸을 안 쓴다.
+        /// 붙박이 다섯은 선체표(<c>exe-tables/hulls.json</c>)의 한계를 쓴다 — 편집기에서 고치면 그 표에 적는다.
         /// </summary>
         public int SpeedTop { get; set; }
         public int Capacity { get; set; } = 200;
@@ -201,6 +201,28 @@ public static class ShipRegistry
         return [.. hulls.OrderByDescending(h => h.Price)];
     }
 
+    /// <summary>
+    /// 붙박이 선체를 고친 값을 선체표(<c>exe-tables/hulls.json</c>, <see cref="HullTable"/>)에 적는다 — 커밋하면 업데이트로 모두에게 간다.
+    /// 이름은 안 바꾼다(세이브가 선체를 이름으로 적는다). 이 PC 에 따로 적어 둔 덧씌움은 걷어 표 값이 그대로 보이게 한다.
+    /// </summary>
+    public static void SaveBuiltin(Design edit)
+    {
+        var rows = Hull.Rows.ToArray();
+        int at = Array.FindIndex(rows, r => r.Name == edit.Builtin);
+        if (at < 0) return;
+        rows[at] = rows[at] with
+        {
+            Hp = edit.Hp, Speed = edit.Speed, Capacity = edit.Capacity, Tonnage = edit.Tonnage, Crew = edit.Crew,
+            GunsMin = edit.Guns, Price = edit.Price, MaxMasts = Math.Clamp(edit.MaxMasts, 1, Hull.MastLimit),
+            CanChangeSail = edit.CanChangeSail,
+            SpeedTop = edit.SpeedTop > 0 ? Math.Max(edit.SpeedTop, edit.Speed) : rows[at].SpeedTop,
+        };
+        HullTable.Save(rows);
+        var saved = Load();
+        if (saved.RemoveAll(d => d.Builtin == edit.Builtin) > 0) Save(saved);
+        Hull.Reload();
+    }
+
     /// <summary>붙박이 선체에 고친 값을 얹는다. 그림벌(<see cref="Hull.Skin"/>)은 그대로다.</summary>
     public static Hull Overlay(Hull built, Design edit) => built with
     {
@@ -224,6 +246,7 @@ public static class ShipRegistry
         Name = built.Name,
         Hp = built.Hp,
         Speed = built.Speed,
+        SpeedTop = built.SpeedTop,
         Capacity = built.Capacity,
         Tonnage = built.Tonnage,
         Crew = built.Crew,

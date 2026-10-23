@@ -61,7 +61,7 @@ internal static class TableCache
         ["지형표"] = "terrain", ["책-고친것"] = "books-edits", ["책표"] = "books", ["화자이름표"] = "speaker-names",
         ["화자표"] = "speakers", ["후원자표"] = "sponsors", ["후원자-더한것"] = "sponsors-added", ["힌트-고친것"] = "hints-edits", ["힌트표"] = "hints",
         ["선수상-고친것"] = "figureheads-edits", ["묘책확률-고친것"] = "ruses-edits", ["패시브"] = "passives",
-        ["부대편성-고친것"] = "land-formations-edits", ["초상화-중년짝"] = "portrait-ages",
+        ["부대편성-고친것"] = "land-formations-edits", ["초상화-중년짝"] = "portrait-ages", ["선체표"] = "hulls",
     };
 
     /// <summary>시나리오 책(<c>시나리오책{번호}</c>)의 파일 이름 앞머리.</summary>

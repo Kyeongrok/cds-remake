@@ -94,18 +94,45 @@ public sealed record Hull(
     /// <remarks>
     /// 조선소에 내는 것은 여전히 <see cref="Builtin"/> 다섯이다 — 이 표는 적 함대를 짓고
     /// 해전 그림(SCOMBAT 파트 5+번호)을 고르는 데 쓴다. 번호가 곧 차례라 바꾸면 안 된다.
+    /// 값은 <c>exe-tables/hulls.json</c>(<see cref="HullTable"/>)에서 읽는다 — 없으면 <see cref="Defaults"/> 다.
     /// </remarks>
-    public static readonly Spec[] Table =
+    public static Spec[] Table => _table ??=
+        [.. Rows.Select(r => new Spec(r.Id, r.Name, r.Speed, r.Hp, r.Tonnage, r.Capacity,
+                                      r.GunsMin, r.GunsMax, r.Crew, r.Price / 1000, r.SailBits))];
+
+    private static Spec[]? _table;
+    private static HullTable.Row[]? _rows;
+    private static Hull[]? _builtin;
+
+    /// <summary>선체 여덟 줄 — <c>exe-tables/hulls.json</c> 이 있으면 그것, 없으면 <see cref="Defaults"/>.</summary>
+    public static HullTable.Row[] Rows => _rows ??= HullTable.Load() ?? Defaults;
+
+    /// <summary>
+    /// 코드에 적어 둔 선체 여덟 줄 — 원본 선체표(<c>0x004FC1E0</c>)의 아래값 · 위값(개조 한계)과 조선소 다섯의 마스트 · 돛종류 · 그림 벌.
+    /// <c>exe-tables/hulls.json</c> 이 없거나 깨졌을 때만 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// 마스트는 코구 · 다우가 표의 돛 수(못 늘린다, <c>0x00494A50</c>), 카라벨 둘, 그 밖 셋이다.
+    /// 돛종류는 카락 이상만 바꾼다 — 코구 · 카라벨 · 대형카라벨 · 다우는 안 된다(<c>0x00494E00</c>: 선체 0~2·7).
+    /// </remarks>
+    public static readonly HullTable.Row[] Defaults =
     [
-        new(Cog,          "코구",       70, 30, 1250, 125,  0,  5, 10,   7,  2),
-        new(Caravel,      "카라벨",     80, 20, 1250, 125,  2,  8, 15,  10,  1),
-        new(LargeCaravel, "대형카라벨", 50, 35, 2000, 250,  8, 14, 30,  40,  5),
-        new(Carrack,      "카락",       60, 30, 1750, 200,  6, 12, 20,  50,  6),
-        new(LargeCarrack, "대형카락",   50, 40, 2500, 300, 10, 20, 35, 100, 10),
-        new(HeavyCarrack, "중카락",     35, 60, 4000, 400, 24, 32, 45, 180, 26),
-        new(Galleon,      "갤리온",     55, 70, 3500, 375, 24, 40, 40, 250, 26),
-        new(Dhow,         "다우",       70, 30, 1750, 200,  8, 12, 25,  60,  5),
+        //  번호          이름          내구 추진 용량  중량 승원 대포↓ 대포↑ 값      돛   한계: 내구 추진 용량 중량 대포  마스트 돛바꿈 그림 조선소
+        new(Cog,          "코구",         30, 70, 125, 1250, 10,  0,  5,   7000,  2,  35,  90, 150, 1750,  5,  1, false, 0, false),
+        new(Caravel,      "카라벨",       20, 80, 125, 1250, 15,  2,  8,  10000,  1,  30, 100, 225, 2000,  8,  2, false, 1, true),
+        new(LargeCaravel, "대형카라벨",   35, 50, 250, 2000, 30,  8, 14,  40000,  5,  50,  70, 300, 2750, 14,  3, false, 1, true),
+        new(Carrack,      "카락",         30, 60, 200, 1750, 20,  6, 12,  50000,  6,  50,  80, 275, 2500, 12,  3, true,  2, true),
+        new(LargeCarrack, "대형카락",     40, 50, 300, 2500, 35, 10, 20, 100000, 10,  60,  70, 375, 3250, 20,  3, true,  2, false),
+        new(HeavyCarrack, "중카락",       60, 35, 400, 4000, 45, 24, 32, 180000, 26,  80,  55, 500, 5000, 32,  3, true,  2, true),
+        new(Galleon,      "갤리온",       70, 55, 375, 3500, 40, 24, 40, 250000, 26, 100,  75, 500, 5000, 40,  3, true,  3, true),
+        new(Dhow,         "다우",         30, 70, 200, 1750, 25,  8, 12,  60000,  5,  50,  90, 300, 2500, 12,  2, false, 0, false),
     ];
+
+    /// <summary>선체 줄을 선체로 — 대포는 아래값으로 낸다.</summary>
+    private static Hull FromRow(HullTable.Row r) =>
+        new(r.Name, r.Hp, r.Speed, r.Capacity, r.Tonnage, r.Crew, r.GunsMin, r.Price, r.Skin,
+            MaxMasts: Math.Clamp(r.MaxMasts, 1, MastLimit), CanChangeSail: r.CanChangeSail, Id: r.Id,
+            HpTop: r.HpTop, SpeedTop: r.SpeedTop, CapacityTop: r.CapacityTop, TonnageTop: r.TonnageTop, GunsTop: r.GunsTop);
 
     /// <summary>
     /// 선체표의 <b>위값</b>(개조 한계) — 내구 <c>+0x18</c> · 추진 <c>+0x10</c> · 용량 <c>+0x28</c> · 중량 <c>+0x20</c> · 대포 <c>+0x30</c>.
@@ -114,17 +141,7 @@ public sealed record Hull(
     /// 조선소에 안 나오는 선체(코구 · 대형카락 · 다우)를 <see cref="FromTable"/> 로 지을 때 쓴다. 예전에는 이 값을
     /// 안 넣어 한계가 「아래값 x <see cref="Ship.RefitCeiling"/>」로 물러나, 코구 추진 한계가 원본 90 이 아니라 140 이었다.
     /// </remarks>
-    private static readonly (int Hp, int Speed, int Capacity, int Tonnage, int Guns)[] Tops =
-    [
-        (35,  90, 150, 1750,  5),   // 코구
-        (30, 100, 225, 2000,  8),   // 카라벨
-        (50,  70, 300, 2750, 14),   // 대형카라벨
-        (50,  80, 275, 2500, 12),   // 카락
-        (60,  70, 375, 3250, 20),   // 대형카락
-        (80,  55, 500, 5000, 32),   // 중카락
-        (100, 75, 500, 5000, 40),   // 갤리온
-        (50,  90, 300, 2500, 12),   // 다우
-    ];
+    // 위값은 이제 선체 줄(<see cref="Rows"/>)의 …Top 칸이다.
 
     /// <summary>
     /// 이 배의 게임 선체 번호 — 해전 그림 벌(SCOMBAT 파트 5+번호)이 이것이다(<c>0x00442D93</c>).
@@ -158,23 +175,9 @@ public sealed record Hull(
     /// </remarks>
     public static Hull FromTable(int id)
     {
-        var spec = Table[Math.Clamp(id, 0, Table.Length - 1)];
-        if (All.FirstOrDefault(h => h.Name == spec.Name) is { } known) return known;
-
-        int masts = spec.Id switch
-        {
-            Cog or Dhow => Math.Max(1, spec.Sails.Count(v => v != 0)),
-            Caravel => 2,
-            _ => 3,
-        };
-        var top = Tops[spec.Id];
-        return new Hull(spec.Name, spec.Hp, spec.Speed, spec.Capacity, spec.Tonnage, spec.Crew,
-                        spec.GunsMin, spec.PriceFactor * 1000, TableSkins[spec.Id],
-                        // 돛종류는 카락 이상만 바꾼다 — 코구·카라벨·대형카라벨·다우는 안 된다(0x00494E00: 선체 0~2·7).
-                        MaxMasts: masts, CanChangeSail: spec.Id is not (Cog or Caravel or LargeCaravel or Dhow),
-                        Id: spec.Id,
-                        HpTop: top.Hp, SpeedTop: top.Speed, CapacityTop: top.Capacity,
-                        TonnageTop: top.Tonnage, GunsTop: top.Guns);
+        var row = Rows[Math.Clamp(id, 0, Rows.Length - 1)];
+        if (All.FirstOrDefault(h => h.Name == row.Name) is { } known) return known;
+        return FromRow(row);
     }
 
     /// <summary>선체표 이름으로 찾는다. 없으면 null — 세이브를 되돌릴 때 조선소에 없는 선체를 살린다.</summary>
@@ -226,19 +229,8 @@ public sealed record Hull(
     /// 원본에서는 해가 가고 기술이 오르면 살 수 있는 선체가 늘지만, 여기서는 이 다섯을
     /// 고정으로 낸다.
     /// </remarks>
-    public static readonly Hull[] Builtin =
-    [
-        new("갤리온",     70, 55, 375, 3500, 40, 24, 250000, 3, Id: Galleon,
-            HpTop: 100, SpeedTop: 75, CapacityTop: 500, TonnageTop: 5000, GunsTop: 40),
-        new("중카락",     60, 35, 400, 4000, 45, 24, 180000, 2, Id: HeavyCarrack,
-            HpTop:  80, SpeedTop: 55, CapacityTop: 500, TonnageTop: 5000, GunsTop: 32),
-        new("카락",       30, 60, 200, 1750, 20,  6,  50000, 2, Id: Carrack,
-            HpTop:  50, SpeedTop: 80, CapacityTop: 275, TonnageTop: 2500, GunsTop: 12),
-        new("대형카라벨", 35, 50, 250, 2000, 30,  8,  40000, 1, CanChangeSail: false, Id: LargeCaravel,
-            HpTop:  50, SpeedTop: 70, CapacityTop: 300, TonnageTop: 2750, GunsTop: 14),
-        new("카라벨",     20, 80, 125, 1250, 15,  2,  10000, 1, MaxMasts: 2, CanChangeSail: false, Id: Caravel,
-            HpTop:  30, SpeedTop: 100, CapacityTop: 225, TonnageTop: 2000, GunsTop: 8),
-    ];
+    public static Hull[] Builtin => _builtin ??=
+        [.. Rows.Where(r => r.Shipyard).OrderByDescending(r => r.Price).Select(FromRow)];
 
     private static Hull[]? _all;
 
@@ -251,7 +243,7 @@ public sealed record Hull(
     public static Hull[] All => _all ??= ShipRegistry.BuildHulls();
 
     /// <summary>들고 있던 선체 목록을 버린다 — 다음에 볼 때 다시 읽는다.</summary>
-    public static void Reload() => _all = null;
+    public static void Reload() => (_all, _rows, _table, _builtin) = (null, null, null, null);
 
     /// <summary>
     /// 처음에 타고 시작하는 배(카라벨).
