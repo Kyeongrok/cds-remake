@@ -2958,9 +2958,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                               Facility.Exile);
             return;
         }
-        if (!ConfirmDialog.Ask(owner, needs + nl + $"금화 {Engine.Town.Exile.Fee}닢이 깎이는데 괜찮겠습니까?", title: Facility.Exile))
+        if (!ConfirmDialog.Ask(owner, needs + nl + $"금화 {Engine.Town.Exile.Fee}닢과 명성 {Engine.Town.Exile.FameCost}이 깎이는데 괜찮겠습니까?",
+                               title: Facility.Exile))
             return;
         if (!_player.Pay(Engine.Town.Exile.Fee)) return;
+        _player.Fame -= Engine.Town.Exile.FameCost;
 
         _player.Nation = nation;
         _player.SetHomePort(_cityId);
