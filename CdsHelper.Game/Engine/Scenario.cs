@@ -81,9 +81,11 @@ public static class Scenarios
         foreach (var s in All)
             if (s.HomeCity == cityId) return (s.HomeX, s.HomeY);
         // 파워업키트의 제노바 · 잉글랜드 국적은 수도에 자택이 선다 — 도시 그림의 빈 풀밭 · 빈터를 골랐다.
+        // 제노바는 총독부 · 교역소 · 조선소 사이 빈터다(요청) — 처음 둔 오른쪽 풀밭(272,113)은 시가지에서 너무 멀었다.
+        // 누르는 판(상자 가운데 절반)이 조선소 판과 귀퉁이만 조금 겹친다.
         return cityId switch
         {
-            GenoaCity => (272, 113),
+            GenoaCity => (34, 177),
             LondonCity => (262, 173),
             _ => null,
         };
