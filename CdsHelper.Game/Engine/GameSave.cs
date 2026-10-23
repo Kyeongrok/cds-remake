@@ -451,10 +451,11 @@ public static class GameSave
                             [.. player.Supplies], [.. player.Discoveries], DealOf(player),
                             player.Crew, [.. player.Announced], player.Fame,
                             [.. player.Stored], player.Savings,
-                            // 선체 칸에는 <b>선체 이름</b>을 적는다 — 배 이름은 아래 ShipNames 에 따로 든다.
-                            [.. player.Ships.Select(s => s.Hull.Name)], player.Flagship,
+                            // 선체 칸에는 <b>선체 id</b>(Hull.Ident — 「caravel」 · 「vasa」)를 적는다 — 이름을 바꿔도 세이브가 안 깨진다.
+                            // 배 이름은 아래 ShipNames 에 따로 든다. 예전 세이브의 선체 이름도 Hull.Find 가 받는다.
+                            [.. player.Ships.Select(s => s.Hull.Ident)], player.Flagship,
                             player.Docked.ToDictionary(
-                                e => e.Key, e => e.Value.Select(s => s.Hull.Name).ToList()),
+                                e => e.Key, e => e.Value.Select(s => s.Hull.Ident).ToList()),
                             [.. player.Ships.Select(s => s.Hp)],
                             player.Docked.ToDictionary(
                                 e => e.Key, e => e.Value.Select(s => s.Hp).ToList()),

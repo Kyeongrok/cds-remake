@@ -179,7 +179,8 @@ public static class ShipRegistry
 
         var hulls = new List<Hull>();
         foreach (var built in Hull.Builtin)
-            hulls.Add(over.TryGetValue(built.Name, out var edit) ? Overlay(built, edit) : built);
+            // 덧씌움은 선체 id 로 찾는다 — id 를 적기 전 줄은 이름이 들어 있다.
+            hulls.Add(over.TryGetValue(built.Ident, out var edit) || over.TryGetValue(built.Name, out edit) ? Overlay(built, edit) : built);
 
         var taken = hulls.Select(h => h.Name).ToHashSet();
 
@@ -203,15 +204,16 @@ public static class ShipRegistry
 
     /// <summary>
     /// 붙박이 선체를 고친 값을 선체표(<c>exe-tables/hulls.json</c>, <see cref="HullTable"/>)에 적는다 — 커밋하면 업데이트로 모두에게 간다.
-    /// 이름은 안 바꾼다(세이브가 선체를 이름으로 적는다). 이 PC 에 따로 적어 둔 덧씌움은 걷어 표 값이 그대로 보이게 한다.
+    /// 이름도 바꾼다 — 세이브는 선체를 id 로 적는다. 이 PC 에 따로 적어 둔 덧씌움은 걷어 표 값이 그대로 보이게 한다.
     /// </summary>
     public static void SaveBuiltin(Design edit)
     {
         var rows = Hull.Rows.ToArray();
-        int at = Array.FindIndex(rows, r => r.Name == edit.Builtin);
+        int at = Array.FindIndex(rows, r => r.Key == edit.Builtin || r.Name == edit.Builtin);
         if (at < 0) return;
         rows[at] = rows[at] with
         {
+            Name = string.IsNullOrWhiteSpace(edit.Name) ? rows[at].Name : edit.Name.Trim(),
             Hp = edit.Hp, Speed = edit.Speed, Capacity = edit.Capacity, Tonnage = edit.Tonnage, Crew = edit.Crew,
             GunsMin = edit.Guns, Price = edit.Price, MaxMasts = Math.Clamp(edit.MaxMasts, 1, Hull.MastLimit),
             CanChangeSail = edit.CanChangeSail,
@@ -219,9 +221,14 @@ public static class ShipRegistry
         };
         HullTable.Save(rows);
         var saved = Load();
-        if (saved.RemoveAll(d => d.Builtin == edit.Builtin) > 0) Save(saved);
+        string key = rows[at].Key;
+        if (saved.RemoveAll(d => d.Builtin == key || d.Builtin == edit.Builtin) > 0) Save(saved);
         Hull.Reload();
     }
+
+    /// <summary>덧씌우는 줄이 가리키는 붙박이 선체 — id 로, 없으면 이름으로(id 를 적기 전 줄).</summary>
+    public static Hull? BuiltinOf(Design design) =>
+        Hull.Builtin.FirstOrDefault(h => h.Ident == design.Builtin) ?? Hull.Builtin.FirstOrDefault(h => h.Name == design.Builtin);
 
     /// <summary>붙박이 선체에 고친 값을 얹는다. 그림벌(<see cref="Hull.Skin"/>)은 그대로다.</summary>
     public static Hull Overlay(Hull built, Design edit) => built with
@@ -241,8 +248,8 @@ public static class ShipRegistry
     /// <summary>붙박이 선체를 고칠 줄을 짓는다 — 지금 값을 그대로 담는다.</summary>
     public static Design FromBuiltin(Hull built) => new()
     {
-        Id = $"builtin-{built.Name}",
-        Builtin = built.Name,
+        Id = $"builtin-{built.Ident}",
+        Builtin = built.Ident,
         Name = built.Name,
         Hp = built.Hp,
         Speed = built.Speed,
@@ -319,7 +326,8 @@ public static class ShipRegistry
         SpeedTop: design.SpeedTop > 0 ? Math.Max(design.SpeedTop, design.Speed) : 0,
         SpriteFolder: folder,
         Movie: design.Movie,
-        Cities: design.Cities);
+        Cities: design.Cities,
+        Key: design.Id);
 
     /// <summary>
     /// 그림 한 장을 배의 그림 폴더에 <see cref="SpriteWidth"/> 크기로 맞춰 넣는다.

@@ -2774,9 +2774,9 @@ public sealed class Player
                              bool sailsInStats = true,
                              bool hullNames = true)
     {
+        // 선체 칸에는 선체 id(「caravel」)가 적힌다 — id 를 적기 전 세이브는 선체 이름이다. 둘 다 Hull.Find 가 받는다.
         // 해전에서 빼앗은 코구·다우 따위는 조선소 선체에 없어 선체표에서 살린다.
-        static Hull? ByName(string name) => Hull.All.FirstOrDefault(h => h.Name == name) ?? Hull.FromTableName(name);
-        Hull? Find(string name, Ship.Stats? st) => ByName(name) ?? (hullNames ? null : GuessHull(st));
+        Hull? Find(string name, Ship.Stats? st) => Hull.Find(name) ?? (hullNames ? null : GuessHull(st));
 
         List<Ship> Build(IEnumerable<string> hulls, IReadOnlyList<int>? hps,
                          IReadOnlyList<Ship.Stats>? stats, IReadOnlyList<string>? names)

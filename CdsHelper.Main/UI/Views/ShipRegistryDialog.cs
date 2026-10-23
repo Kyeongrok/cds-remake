@@ -466,7 +466,7 @@ public sealed class ShipRegistryDialog : Window
 
         // 붙박이는 제 그림벌(asset/ship-g*)을 그대로 쓴다 — 갈아 끼울 것이 없어 보여만 준다.
         int skin = design.IsBuiltin
-            ? Hull.Builtin.FirstOrDefault(h => h.Name == design.Builtin)?.Skin ?? 0
+            ? ShipRegistry.BuiltinOf(design)?.Skin ?? 0
             : -1;
 
         for (int i = 0; i < ShipRegistry.Directions; i++)
@@ -649,11 +649,11 @@ public sealed class ShipRegistryDialog : Window
 
     /// <summary>붙박이면 그 그림벌 폴더 이름(<c>ship-g2</c>), 등록해 넣은 배면 null.</summary>
     private static string? SkinFolder(ShipRegistry.Design design) => design.IsBuiltin
-        ? $"ship-g{Math.Max(0, Hull.Builtin.FirstOrDefault(h => h.Name == design.Builtin)?.Skin ?? 0)}"
+        ? $"ship-g{Math.Max(0, ShipRegistry.BuiltinOf(design)?.Skin ?? 0)}"
         : null;
 
     private static string SourcePath(ShipRegistry.Design design, int direction) => design.IsBuiltin
-        ? ShipRegistry.BuiltinSpritePath(Hull.Builtin.FirstOrDefault(h => h.Name == design.Builtin)?.Skin ?? 0, direction)
+        ? ShipRegistry.BuiltinSpritePath(ShipRegistry.BuiltinOf(design)?.Skin ?? 0, direction)
         : ShipRegistry.SpritePath(design.Id, direction);
 
     /// <summary>지금 있는 고해상도 그림. 없으면 null.</summary>

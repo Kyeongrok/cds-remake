@@ -37,6 +37,10 @@ namespace CdsHelper.Support.Local.Models;
 /// 선체 동영상 줄기 — 원본 여덟 척(<c>S00</c>~<c>S07</c>)은 이름으로 찾으므로 안 적는다. 앱에 같이 싣는 배가
 /// 제 동영상을 쓸 때 적는다(바사는 <c>S08_0001</c>). 동영상 은행 · 릴리즈 <c>movie-assets</c> 에서 찾는다.
 /// </param>
+/// <param name="Key">
+/// 선체 id(ASCII) — <b>세이브는 선체를 이 id 로 적는다</b>. 원본 여덟은 선체표의 id(「caravel」), 붙인 배는 등록 id(「vasa」)다.
+/// 비어 있으면 이름으로 갈음한다(<see cref="Ident"/>).
+/// </param>
 /// <param name="Cities">
 /// 이 배를 파는 조선소의 도시 번호. null 이면 <b>모든 조선소</b>(손으로 등록한 배의 예전 그대로), 비어 있으면 <b>어디서도 안 판다</b> —
 /// 앱에 실어만 두고 팔 곳은 나중에 잇는다(<see cref="SoldIn"/>).
@@ -45,8 +49,23 @@ public sealed record Hull(
     string Name, int Hp, int Speed, int Capacity, int Tonnage, int Crew, int Guns, int Price,
     int Skin, int MaxMasts = 3, bool CanChangeSail = true, string? SpriteFolder = null, int Id = -1,
     int HpTop = 0, int SpeedTop = 0, int CapacityTop = 0, int TonnageTop = 0, int GunsTop = 0,
-    string? Movie = null, int[]? Cities = null)
+    string? Movie = null, int[]? Cities = null, string Key = "")
 {
+    /// <summary>선체를 가리는 값 — <see cref="Key"/>, 없으면 이름.</summary>
+    public string Ident => string.IsNullOrEmpty(Key) ? Name : Key;
+
+    /// <summary>
+    /// 세이브에 적힌 선체 칸으로 선체를 찾는다 — id 로 먼저, 없으면 이름으로(id 를 적기 전 세이브). 조선소에 없는 선체는 선체표에서 살린다.
+    /// </summary>
+    public static Hull? Find(string ident)
+    {
+        if (string.IsNullOrEmpty(ident)) return null;
+        if (All.FirstOrDefault(h => h.Ident == ident) is { } byKey) return byKey;
+        int row = Array.FindIndex(Rows, r => r.Key == ident);
+        if (row >= 0) return FromTable(row);
+        return All.FirstOrDefault(h => h.Name == ident) ?? FromTableName(ident);
+    }
+
     /// <summary>그 도시 조선소가 이 배를 파는지 — 원본 선체(번호 0 ~ 7)는 도시 표가 정하므로 여기서는 붙인 배만 본다.</summary>
     public bool SoldIn(int city) => Cities is null || Cities.Contains(city);
 
@@ -117,22 +136,23 @@ public sealed record Hull(
     /// </remarks>
     public static readonly HullTable.Row[] Defaults =
     [
-        //  번호          이름          내구 추진 용량  중량 승원 대포↓ 대포↑ 값      돛   한계: 내구 추진 용량 중량 대포  마스트 돛바꿈 그림 조선소
-        new(Cog,          "코구",         30, 70, 125, 1250, 10,  0,  5,   7000,  2,  35,  90, 150, 1750,  5,  1, false, 0, false),
-        new(Caravel,      "카라벨",       20, 80, 125, 1250, 15,  2,  8,  10000,  1,  30, 100, 225, 2000,  8,  2, false, 1, true),
-        new(LargeCaravel, "대형카라벨",   35, 50, 250, 2000, 30,  8, 14,  40000,  5,  50,  70, 300, 2750, 14,  3, false, 1, true),
-        new(Carrack,      "카락",         30, 60, 200, 1750, 20,  6, 12,  50000,  6,  50,  80, 275, 2500, 12,  3, true,  2, true),
-        new(LargeCarrack, "대형카락",     40, 50, 300, 2500, 35, 10, 20, 100000, 10,  60,  70, 375, 3250, 20,  3, true,  2, false),
-        new(HeavyCarrack, "중카락",       60, 35, 400, 4000, 45, 24, 32, 180000, 26,  80,  55, 500, 5000, 32,  3, true,  2, true),
-        new(Galleon,      "갤리온",       70, 55, 375, 3500, 40, 24, 40, 250000, 26, 100,  75, 500, 5000, 40,  3, true,  3, true),
-        new(Dhow,         "다우",         30, 70, 200, 1750, 25,  8, 12,  60000,  5,  50,  90, 300, 2500, 12,  2, false, 0, false),
+        //  번호          id                이름          내구 추진 용량  중량 승원 대포↓ 대포↑ 값      돛   한계: 내구 추진 용량 중량 대포  마스트 돛바꿈 그림 조선소
+        new(Cog,          "cog",            "코구",         30, 70, 125, 1250, 10,  0,  5,   7000,  2,  35,  90, 150, 1750,  5,  1, false, 0, false),
+        new(Caravel,      "caravel",        "카라벨",       20, 80, 125, 1250, 15,  2,  8,  10000,  1,  30, 100, 225, 2000,  8,  2, false, 1, true),
+        new(LargeCaravel, "large-caravel",  "대형카라벨",   35, 50, 250, 2000, 30,  8, 14,  40000,  5,  50,  70, 300, 2750, 14,  3, false, 1, true),
+        new(Carrack,      "carrack",        "카락",         30, 60, 200, 1750, 20,  6, 12,  50000,  6,  50,  80, 275, 2500, 12,  3, true,  2, true),
+        new(LargeCarrack, "large-carrack",  "대형카락",     40, 50, 300, 2500, 35, 10, 20, 100000, 10,  60,  70, 375, 3250, 20,  3, true,  2, false),
+        new(HeavyCarrack, "heavy-carrack",  "중카락",       60, 35, 400, 4000, 45, 24, 32, 180000, 26,  80,  55, 500, 5000, 32,  3, true,  2, true),
+        new(Galleon,      "galleon",        "갤리온",       70, 55, 375, 3500, 40, 24, 40, 250000, 26, 100,  75, 500, 5000, 40,  3, true,  3, true),
+        new(Dhow,         "dhow",           "다우",         30, 70, 200, 1750, 25,  8, 12,  60000,  5,  50,  90, 300, 2500, 12,  2, false, 0, false),
     ];
 
     /// <summary>선체 줄을 선체로 — 대포는 아래값으로 낸다.</summary>
     private static Hull FromRow(HullTable.Row r) =>
         new(r.Name, r.Hp, r.Speed, r.Capacity, r.Tonnage, r.Crew, r.GunsMin, r.Price, r.Skin,
             MaxMasts: Math.Clamp(r.MaxMasts, 1, MastLimit), CanChangeSail: r.CanChangeSail, Id: r.Id,
-            HpTop: r.HpTop, SpeedTop: r.SpeedTop, CapacityTop: r.CapacityTop, TonnageTop: r.TonnageTop, GunsTop: r.GunsTop);
+            HpTop: r.HpTop, SpeedTop: r.SpeedTop, CapacityTop: r.CapacityTop, TonnageTop: r.TonnageTop, GunsTop: r.GunsTop,
+            Key: r.Key);
 
     /// <summary>
     /// 선체표의 <b>위값</b>(개조 한계) — 내구 <c>+0x18</c> · 추진 <c>+0x10</c> · 용량 <c>+0x28</c> · 중량 <c>+0x20</c> · 대포 <c>+0x30</c>.
@@ -176,7 +196,7 @@ public sealed record Hull(
     public static Hull FromTable(int id)
     {
         var row = Rows[Math.Clamp(id, 0, Rows.Length - 1)];
-        if (All.FirstOrDefault(h => h.Name == row.Name) is { } known) return known;
+        if (All.FirstOrDefault(h => h.Key == row.Key) is { } known) return known;
         return FromRow(row);
     }
 

@@ -4,6 +4,7 @@
     "Hulls": [
       {
         "Id": 0,
+        "Key": "cog",
         "Name": "코구",
         "Hp": 30,
         "Speed": 70,
@@ -26,6 +27,7 @@
       },
       {
         "Id": 1,
+        "Key": "caravel",
         "Name": "카라벨",
         "Hp": 20,
         "Speed": 80,
@@ -48,6 +50,7 @@
       },
       {
         "Id": 2,
+        "Key": "large-caravel",
         "Name": "대형카라벨",
         "Hp": 35,
         "Speed": 50,
@@ -70,6 +73,7 @@
       },
       {
         "Id": 3,
+        "Key": "carrack",
         "Name": "카락",
         "Hp": 30,
         "Speed": 60,
@@ -92,6 +96,7 @@
       },
       {
         "Id": 4,
+        "Key": "large-carrack",
         "Name": "대형카락",
         "Hp": 40,
         "Speed": 50,
@@ -114,6 +119,7 @@
       },
       {
         "Id": 5,
+        "Key": "heavy-carrack",
         "Name": "중카락",
         "Hp": 60,
         "Speed": 35,
@@ -136,6 +142,7 @@
       },
       {
         "Id": 6,
+        "Key": "galleon",
         "Name": "갤리온",
         "Hp": 70,
         "Speed": 55,
@@ -158,6 +165,7 @@
       },
       {
         "Id": 7,
+        "Key": "dhow",
         "Name": "다우",
         "Hp": 30,
         "Speed": 70,
@@ -181,5 +189,5 @@
     ]
   },
   "Source": "CDS_95.EXE 선체표(0x004FC1E0) · 손으로 고침",
-  "Version": 1
+  "Version": 2
 }

@@ -12,7 +12,7 @@ namespace CdsHelper.Support.Local.Helpers;
 /// 다른 표와 같은 꼴(<c>Stamp · Data · Source · Version</c>)로 적는다 — 게임의 TableCache 와 같다. 이 표는 게임 앱 말고
 /// 편집기(Main)도 읽어야 해서 Support 에 따로 둔다. 파일이 없거나 깨졌으면 코드에 적어 둔 값(<see cref="Hull.Defaults"/>)으로 돈다.
 ///
-/// <b>이름은 바꾸지 않는다</b> — 세이브가 선체를 이름으로 적는다.
+/// 선체는 <see cref="Row.Key"/>(ASCII id)로 가린다 — 세이브도 이 id 를 적으므로 이름은 바꿔도 된다. <b>id 는 바꾸지 않는다.</b>
 /// </remarks>
 public static class HullTable
 {
@@ -20,16 +20,17 @@ public static class HullTable
     public const string FileName = "hulls";
 
     /// <summary>알맹이 모양 판. 칸을 더하면 올린다.</summary>
-    public const int Version = 1;
+    public const int Version = 2;
 
     /// <summary>
     /// 선체 한 줄. <see cref="Price"/> 는 닢이다(원본 표 <c>+0x38</c> 계수의 1000배). 한계(…Top)는 개조로 갈 수 있는 끝이다.
     /// </summary>
+    /// <param name="Key">선체 id(ASCII, 「caravel」) — 세이브 · 덧씌움이 이것으로 선체를 찾는다. 한 번 정하면 안 바꾼다.</param>
     /// <param name="Shipyard">조선소에서 파는지 — 원본은 갤리온 · 중카락 · 카락 · 대형카라벨 · 카라벨 다섯이다.</param>
     /// <param name="Skin">지도 그림 벌(0~3, <c>0x005695D8</c>).</param>
     /// <param name="SailBits">처음 돛 비트(2비트 x 3 — 메인 · 세브 · 선미, 0 없음 · 1 삼각 · 2 사각).</param>
     public sealed record Row(
-        int Id, string Name, int Hp, int Speed, int Capacity, int Tonnage, int Crew,
+        int Id, string Key, string Name, int Hp, int Speed, int Capacity, int Tonnage, int Crew,
         int GunsMin, int GunsMax, int Price, int SailBits,
         int HpTop, int SpeedTop, int CapacityTop, int TonnageTop, int GunsTop,
         int MaxMasts, bool CanChangeSail, int Skin, bool Shipyard);
@@ -69,7 +70,8 @@ public static class HullTable
             if (!File.Exists(path)) return null;
             var cached = JsonSerializer.Deserialize<Cached>(File.ReadAllText(path));
             if (cached?.Data?.Hulls is not { } rows || cached.Version != Version) return null;
-            var sorted = rows.Where(r => r != null && !string.IsNullOrWhiteSpace(r.Name)).OrderBy(r => r.Id).ToArray();
+            var sorted = rows.Where(r => r != null && !string.IsNullOrWhiteSpace(r.Name) && !string.IsNullOrWhiteSpace(r.Key))
+                             .OrderBy(r => r.Id).ToArray();
             if (sorted.Length != Hull.Defaults.Length || sorted.Where((r, i) => r.Id != i).Any()) return null;
             return sorted;
         }

@@ -157,7 +157,7 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     private List<Ship> OrderableShips()
     {
         var sold = SoldHulls();
-        bool Sold(Ship s) => sold.Any(h => h.Id >= 0 && h.Id < 8 ? h.Id == s.Hull.Id : h.Name == s.Hull.Name);
+        bool Sold(Ship s) => sold.Any(h => h.Id >= 0 && h.Id < 8 ? h.Id == s.Hull.Id : h.Ident == s.Hull.Ident);
         var ships = new List<Ship>();
         if (_player.FleetHere(_cityId)) ships.AddRange(_player.Ships);
         ships.AddRange(_player.DockedAt(_cityId));
