@@ -38,15 +38,19 @@ public static class Exile
     public static bool Offered(Player player, int cityId) =>
         Enabled && NationAt(cityId) is { } nation && nation != player.Nation;
 
-    /// <summary>망명을 못 하는 까닭(아래 띠에 적는 글). 할 수 있으면 null.</summary>
-    /// <param name="closeness">그 왕궁 국왕과의 친밀도. 국왕이 없으면 -1.</param>
-    public static string? Blocked(Player player, int closeness)
+    /// <summary>
+    /// 설명 창을 띄우기도 전에 막는 까닭(아래 띠에 적는 글) — 후원자와 계약 중이거나 의뢰를 수행하는 중이다. 없으면 null.
+    /// </summary>
+    public static string? Busy(Player player)
     {
         if (player.Contract != null) return "후원자와 계약 중에는 망명할 수 없습니다.";
         if (player.StoryQuestDeadline != null) return "의뢰를 수행하는 중에는 망명할 수 없습니다.";
-        if (player.Fame < Fame) return "명성치가 모자랍니다! 망명하려면 명성 50000 이 필요합니다.";
-        if (closeness < Player.MaxCloseness) return "국왕과의 친밀도가 모자랍니다. 친밀도를 더 쌓아 주십시오.";
-        if (player.Gold < Fee) return "돈이 모자랍니다. 망명하려면 금화 1000000닢이 필요합니다.";
         return null;
     }
+
+    /// <summary>그 왕궁 국왕과의 친밀도가 다 찼는지. 국왕이 없으면 -1 을 넘긴다.</summary>
+    public static bool Trusted(int closeness) => closeness >= Player.MaxCloseness;
+
+    /// <summary>명성 · 금화가 다 갖춰졌는지.</summary>
+    public static bool Affords(Player player) => player.Fame >= Fame && player.Gold >= Fee;
 }

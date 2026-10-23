@@ -2918,25 +2918,47 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 왕궁 「망명」 — 금화를 바치고 그 왕궁의 나라로 국적을 옮긴다. 모항(자택)도 이 도시로 옮긴다(모드 「망명」, <see cref="Engine.Town.Exile"/>).
     /// </summary>
     /// <remarks>
-    /// 못 하는 까닭은 아래 띠에 적고 띠 소리를 낸다 — 왕궁 문간의 「명성치가 모자랍니다!」와 같은 자리다(<see cref="PassFameGate"/>).
+    /// 차례는 이렇다 — 계약 중 · 의뢰 중이면 아래 띠에 적고 띠 소리를 낸다(왕궁 문간의 「명성치가 모자랍니다!」와 같은 자리,
+    /// <see cref="PassFameGate"/>). 국왕과의 친밀도가 안 찼으면 부관이 막는다. 그다음에 드는 것(명성 · 금화)을 설명하는 창을 띄우고,
+    /// 다 갖췄으면 금화가 깎이는데 괜찮은지 묻는다.
     /// </remarks>
     void ITownScreen.Exile(int code)
     {
         if (Engine.Town.Exile.NationAt(_cityId) is not { } nation) return;
         var owner = Menu.Window ?? this;
-        var king = BuildingAt(code) is { } palace ? PatronAt(code, palace.Kind) : null;
-        int closeness = king == null ? -1 : _player.ClosenessOf(king.Name);
 
-        if (Engine.Town.Exile.Blocked(_player, closeness) is { } why)
+        if (Engine.Town.Exile.Busy(_player) is { } why)
         {
             (Owner as WorldMapWindow)?.Say(why);
             _game.Sfx?.Play(SoundBank.BandNoticePart);
             return;
         }
 
+        var king = BuildingAt(code) is { } palace ? PatronAt(code, palace.Kind) : null;
+        if (!Engine.Town.Exile.Trusted(king == null ? -1 : _player.ClosenessOf(king.Name)))
+        {
+            _game.Sfx?.Play(SoundBank.BandNoticePart);
+            const string NotTrusted = "제독, 아직 국왕 폐하의 신임이 두텁지 않습니다. 망명을 청하려면 친밀도를 더 쌓으셔야 합니다";
+            if (_player.MateAt(0).Length > 0 && _game.AideFace is { } aide)
+                TalkDialog.Say(owner, aide, "", NotTrusted);
+            else
+                NoticeDialog.Show(owner, NotTrusted);
+            return;
+        }
+
         string nationName = _game.Nations?.Find(nation)?.Name ?? "";
-        if (!ConfirmDialog.Ask(owner, $"금화 {Engine.Town.Exile.Fee}닢을 바치고 {nationName}에 망명하겠습니까?{Environment.NewLine}"
-                                      + $"자택도 {_player.CityName}(으)로 옮겨집니다.", title: Facility.Exile))
+        string nl = Environment.NewLine;
+        string needs = $"{nationName}에 망명하려면 다음이 필요합니다{nl}"
+                       + $"· 명성 {Engine.Town.Exile.Fame} 이상 (지금 {_player.Fame}){nl}"
+                       + $"· 금화 {Engine.Town.Exile.Fee}닢 (지금 {_player.Gold}닢){nl}"
+                       + $"망명하면 국적이 {nationName}(으)로 바뀌고 자택도 {_player.CityName}(으)로 옮겨집니다";
+        if (!Engine.Town.Exile.Affords(_player))
+        {
+            NoticeDialog.Show(owner, needs + nl + (_player.Fame < Engine.Town.Exile.Fame ? "명성이 모자랍니다" : "금화가 모자랍니다"),
+                              Facility.Exile);
+            return;
+        }
+        if (!ConfirmDialog.Ask(owner, needs + nl + $"금화 {Engine.Town.Exile.Fee}닢이 깎이는데 괜찮겠습니까?", title: Facility.Exile))
             return;
         if (!_player.Pay(Engine.Town.Exile.Fee)) return;
 
