@@ -28,12 +28,16 @@ public static class ShipNames
     /// <summary>
     /// 아직 안 쓴 이름 하나. 스물하나를 다 썼으면 번호를 붙여 낸다.
     /// </summary>
+    /// <remarks>
+    /// 이미 쓰는 이름이 있으면 <b>안 쓴 것 가운데 아무거나</b> 고른다(요청) — 목록 차례대로 내면 배를 살 때마다 같은 차례의
+    /// 이름이 나왔다. 처음 한 척은 목록 맨 앞 그대로다. 창에서 사람이 같은 이름을 골라 적는 것은 막지 않는다.
+    /// </remarks>
     /// <param name="taken">이미 쓰고 있는 이름.</param>
-    public static string Suggest(IEnumerable<string> taken)
+    public static string Suggest(IEnumerable<string> taken, Random? random = null)
     {
         var used = new HashSet<string>(taken);
-        foreach (string name in All)
-            if (used.Add(name)) return name;
+        var free = All.Where(name => !used.Contains(name)).ToList();
+        if (free.Count > 0) return used.Count == 0 ? free[0] : free[(random ?? Random.Shared).Next(free.Count)];
 
         for (int n = 2; ; n++)
             foreach (string name in All)
