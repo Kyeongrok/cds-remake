@@ -65,7 +65,8 @@ public sealed class DhoShipShotDialog : Window
     private readonly Slider _pitch = new() { Minimum = 0, Maximum = 70, Width = 160, SmallChange = 1, LargeChange = 5, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _angle = new() { Width = 120, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
     private readonly ComboBox _direction = new() { Width = 110, Margin = new Thickness(0, 0, 8, 0) };
-    private readonly Image _view = new() { Width = 256, Height = 256 };
+    private readonly Image _view = new() { Width = 320, Height = 320 };
+    private string? _scratch;   // 아직 「그림 찍기」를 안 했을 때 미리보기 서버가 쓰는 폴더 — 바뀌면 서버가 다시 뜨므로 하나로 둔다
     private System.Diagnostics.Process? _server;
     private string _serverKey = "";
     private TaskCompletionSource<string>? _reply;
@@ -80,7 +81,7 @@ public sealed class DhoShipShotDialog : Window
     public DhoShipShotDialog(bool canApply = false)
     {
         Title = "DHO 배 찍기";
-        Width = 820;
+        Width = 1180;
         Height = 760;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
@@ -129,17 +130,24 @@ public sealed class DhoShipShotDialog : Window
         form.Children.Add(Note("48x48 여덟 장 — 0 북에서 반시계(0 북 · 2 서 · 4 남 · 6 동). 여덟 장은 같은 배율이고, 붙박이 배 그림과 크기를 맞췄다."));
         form.Children.Add(_previews);
 
-        form.Children.Add(Section("돌려 보며 찍기"));
+        // 왼쪽 — 고른 배를 3D 로 띄워 두고 돌려 보며 찍는다. 배 · 돛 자리 · 돛 값이 바뀌면 저절로 다시 그린다.
         foreach (var name in ShipRegistry.DirectionNames.Select((n, i) => $"{i} {n}")) _direction.Items.Add(name);
         _direction.SelectedIndex = 0;
         _direction.SelectionChanged += (_, _) => { if (_direction.SelectedIndex >= 0) _yaw.Value = Wrap(-45 * _direction.SelectedIndex); };
         _yaw.ValueChanged += (_, _) => QueueView();
         _pitch.ValueChanged += (_, _) => QueueView();
-        form.Children.Add(Row(Label("돌리기"), _yaw, Label("내려다보기"), _pitch, _angle));
-        form.Children.Add(Row(Label("방향 칸"), _direction, MakeButton("이 각도로 찍기", () => _ = ShootOne()), MakeButton("미리보기", () => QueueView())));
-        form.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = _view, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 6, 0, 0) });
-        form.Children.Add(Note("슬라이더로 배를 돌려 보다가 「이 각도로 찍기」를 누르면 고른 방향 칸만 그 각도로 바꾼다. 방향 칸을 고르면 그 방향의 표준 각도로 돌아간다. "
-                             + "배율은 「그림 찍기」와 같아서 여덟 장의 크기가 맞는다. 처음에는 모형을 읽느라 몇 초 걸린다."));
+        foreach (var box in new[] { _sailTurn, _billow, _spriteElev }) box.LostFocus += (_, _) => QueueView();
+        _yaw.Width = _pitch.Width = 230;
+        var left = new StackPanel { Width = 340, Margin = new Thickness(14, 14, 0, 14) };
+        left.Children.Add(Section("미리보기"));
+        left.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = _view, HorizontalAlignment = HorizontalAlignment.Left });
+        left.Children.Add(Row(Label("돌리기"), _yaw));
+        left.Children.Add(Row(Label("내려다보기"), _pitch));
+        left.Children.Add(_angle);
+        left.Children.Add(Row(Label("방향 칸"), _direction));
+        left.Children.Add(Row(MakeButton("이 각도로 찍기", () => _ = ShootOne()), MakeButton("다시 그리기", () => QueueView())));
+        left.Children.Add(Note("배를 고르면 여기 뜬다. 슬라이더로 돌려 보다가 「이 각도로 찍기」를 누르면 고른 방향 칸만 그 각도로 바꾼다(먼저 「그림 찍기」로 여덟 장을 찍어 둔다). "
+                             + "방향 칸을 고르면 그 방향의 표준 각도로 돌아간다. 배율은 「그림 찍기」와 같다. 처음에는 모형을 읽느라 몇 초 걸린다."));
 
         form.Children.Add(Section("선체 동영상 (한 바퀴)"));
         form.Children.Add(Row(Label("장수"), _frames, Label("초당"), _fps, Label("가로"), _width, Label("세로"), _height));
@@ -161,6 +169,8 @@ public sealed class DhoShipShotDialog : Window
         var page = new DockPanel();
         DockPanel.SetDock(bottom, Dock.Bottom);
         page.Children.Add(bottom);
+        DockPanel.SetDock(left, Dock.Left);
+        page.Children.Add(left);
         page.Children.Add(new ScrollViewer { Content = form, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         Content = page;
 
@@ -205,7 +215,13 @@ public sealed class DhoShipShotDialog : Window
         var line = output.LastOrDefault(l => l.StartsWith("slots", StringComparison.Ordinal));
         if (!ok || line == null) { _slotsFor = -1; return; }
         foreach (var part in line[5..].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            _slots.Children.Add(new CheckBox { Content = $"자리 {part}", Tag = part, IsChecked = true, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center });
+        {
+            var check = new CheckBox { Content = $"자리 {part}", Tag = part, IsChecked = true, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center };
+            check.Checked += (_, _) => QueueView();
+            check.Unchecked += (_, _) => QueueView();
+            _slots.Children.Add(check);
+        }
+        QueueView();   // 배를 고르면 왼쪽에 바로 띄운다
     }
 
     /// <summary>돛 틀기 · 부풀림 인자 — 숫자가 아니면 스크립트 기본값을 쓴다.</summary>
@@ -303,7 +319,7 @@ public sealed class DhoShipShotDialog : Window
         await _ask.WaitAsync();
         try
         {
-            string folder = SpriteFolder ?? NewWorkFolder();
+            string folder = SpriteFolder ?? (_scratch ??= NewWorkFolder());
             string key = $"{model}|{SkipSlots()}|{_spriteElev.Text.Trim()}|{folder}|{_dho.Text.Trim()}|{string.Join(' ', SailArgs())}";
             if (_server is not { HasExited: false } || key != _serverKey)
             {
