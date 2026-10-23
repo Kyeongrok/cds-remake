@@ -6,11 +6,17 @@
         <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Dho/ 의 D3D11 배 렌더러(DHO 저장소에서 옮겨 온 것)가 상수 버퍼를 sizeof 로 잰다 -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
       <PackageReference Include="Prism.Core" Version="9.0.537" />
+      <!-- 「DHO 배 찍기」의 3D 미리보기 — DHO 저장소(src/Dho/Render)와 같은 판 -->
+      <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+      <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+      <PackageReference Include="Vortice.Direct2D1" Version="3.8.3" />
     </ItemGroup>
 
     <!-- UseWindowsForms가 System.Windows.Forms를 글로벌 using으로 추가하면 WPF 타입과 충돌하므로 제거 -->

@@ -65,14 +65,15 @@ public sealed class DhoShipShotDialog : Window
     private readonly Slider _pitch = new() { Minimum = 0, Maximum = 70, Width = 160, SmallChange = 1, LargeChange = 5, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _angle = new() { Width = 120, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
     private readonly ComboBox _direction = new() { Width = 110, Margin = new Thickness(0, 0, 8, 0) };
-    private readonly Image _view = new() { Width = 320, Height = 320 };
+    // 미리보기는 D3D11 로 바로 그린다(DhoShipView — DHO 렌더러). 파이썬은 「이 각도로 찍기」에만 쓴다.
+    private readonly DhoShipView _shipView = new() { Width = 320, Height = 320 };
     private string? _scratch;   // 아직 「그림 찍기」를 안 했을 때 미리보기 서버가 쓰는 폴더 — 바뀌면 서버가 다시 뜨므로 하나로 둔다
     private System.Diagnostics.Process? _server;
     private string _serverKey = "";
     private TaskCompletionSource<string>? _reply;
     private TaskCompletionSource<bool>? _ready;
     private readonly SemaphoreSlim _ask = new(1, 1);
-    private bool _viewQueued;
+    private bool _syncing;
 
     /// <summary>마지막으로 찍은 8방향 그림이 든 폴더(<c>ship_0.png</c> ~ · <c>ship_0_hd.png</c> ~). 아직 안 찍었으면 null.</summary>
     public string? SpriteFolder { get; private set; }
@@ -140,17 +141,26 @@ public sealed class DhoShipShotDialog : Window
         _yaw.Width = _pitch.Width = 230;
         var left = new StackPanel { Width = 340, Margin = new Thickness(14, 14, 0, 14) };
         left.Children.Add(Section("미리보기"));
-        var stage = new Border { Background = new SolidColorBrush(Color.FromRgb(40, 60, 90)), Child = _view, HorizontalAlignment = HorizontalAlignment.Left,
-                                 Cursor = System.Windows.Input.Cursors.SizeAll, ToolTip = "끌어서 돌린다 — 좌우는 돌리기, 위아래는 내려다보기" };
-        AttachDrag(stage);
-        left.Children.Add(stage);
+        _shipView.ToolTip = "끌어서 돌린다 — 좌우는 돌리기, 위아래는 내려다보기, 휠은 가까이 · 멀리";
+        _shipView.HorizontalAlignment = HorizontalAlignment.Left;
+        // 끌어서 돈 각도를 슬라이더에 맞춘다 — 슬라이더가 다시 미리보기를 건드리지 않게 막아 둔다.
+        _shipView.Turned += () =>
+        {
+            _syncing = true;
+            _yaw.Value = _shipView.Yaw;
+            _pitch.Value = Math.Clamp(_shipView.Pitch, _pitch.Minimum, _pitch.Maximum);
+            _syncing = false;
+            _angle.Text = $"{_yaw.Value:0}° · {_pitch.Value:0}°";
+        };
+        left.Children.Add(_shipView);
         left.Children.Add(Row(Label("돌리기"), _yaw));
         left.Children.Add(Row(Label("내려다보기"), _pitch));
         left.Children.Add(_angle);
         left.Children.Add(Row(Label("방향 칸"), _direction));
-        left.Children.Add(Row(MakeButton("이 각도로 찍기", () => _ = ShootOne()), MakeButton("다시 그리기", () => QueueView())));
-        left.Children.Add(Note("배를 고르면 여기 뜬다. 슬라이더로 돌려 보다가 「이 각도로 찍기」를 누르면 고른 방향 칸만 그 각도로 바꾼다(먼저 「그림 찍기」로 여덟 장을 찍어 둔다). "
-                             + "방향 칸을 고르면 그 방향의 표준 각도로 돌아간다. 배율은 「그림 찍기」와 같다. 처음에는 모형을 읽느라 몇 초 걸린다."));
+        left.Children.Add(Row(MakeButton("이 각도로 찍기", () => _ = ShootOne())));
+        left.Children.Add(Note("배를 고르면 여기 뜬다(DHO 화면 그대로 D3D 로 그린다). 끌거나 슬라이더로 돌려 보다가 「이 각도로 찍기」를 누르면 고른 방향 칸만 그 각도로 바꾼다"
+                             + "(먼저 「그림 찍기」로 여덟 장을 찍어 둔다). 방향 칸을 고르면 그 방향의 표준 각도로 돌아간다. "
+                             + "찍는 그림은 돛 틀기 · 부풀림을 먹이므로 미리보기와 돛 모양이 조금 다르다."));
 
         form.Children.Add(Section("선체 동영상 (한 바퀴)"));
         form.Children.Add(Row(Label("장수"), _frames, Label("초당"), _fps, Label("가로"), _width, Label("세로"), _height));
@@ -209,15 +219,21 @@ public sealed class DhoShipShotDialog : Window
     private int _slotsFor = -1;
 
     /// <summary>지금 모형의 돛 자리를 스크립트에 묻고 체크 칸을 다시 세운다. 모형이 그대로면 둔다.</summary>
-    private async Task ReadSlots()
+    private Task ReadSlots()
     {
-        if (!int.TryParse(_model.Text.Trim(), out int model) || model == _slotsFor) return;
+        if (!int.TryParse(_model.Text.Trim(), out int model) || model == _slotsFor) return Task.CompletedTask;
         _slotsFor = model;
         _slots.Children.Clear();
-        var (ok, output) = await RunScript(["--model", $"{model}", "--out", Path.GetTempPath(), "--info"], quiet: true);
-        var line = output.LastOrDefault(l => l.StartsWith("slots", StringComparison.Ordinal));
-        if (!ok || line == null) { _slotsFor = -1; return; }
-        foreach (var part in line[5..].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        // 모형 표를 C# 으로 바로 읽는다(Dho.Render.ShipModel) — 미리보기가 파이썬에 기대지 않게.
+        int[] slots;
+        try { slots = Dho.Render.ShipModel.SailSlots(model); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _status.Text = $"모형 표를 못 읽었습니다 — {ex.Message}";
+            _slotsFor = -1;
+            return Task.CompletedTask;
+        }
+        foreach (var part in slots.Select(k => $"{k}"))
         {
             var check = new CheckBox { Content = $"자리 {part}", Tag = part, IsChecked = true, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center };
             check.Checked += (_, _) => QueueView();
@@ -225,6 +241,7 @@ public sealed class DhoShipShotDialog : Window
             _slots.Children.Add(check);
         }
         QueueView();   // 배를 고르면 왼쪽에 바로 띄운다
+        return Task.CompletedTask;
     }
 
     /// <summary>돛 틀기 · 부풀림 인자 — 숫자가 아니면 스크립트 기본값을 쓴다.</summary>
@@ -282,50 +299,23 @@ public sealed class DhoShipShotDialog : Window
 
     private static double Wrap(double yaw) => ((yaw + 180) % 360 + 360) % 360 - 180;
 
-    private bool _dragging;
-
-    /// <summary>미리보기를 끌어 돌린다 — 좌우로 끌면 돌리기(점 하나에 0.6°), 위아래로 끌면 내려다보기(0.3°).</summary>
-    private void AttachDrag(FrameworkElement stage)
-    {
-        Point last = default;
-        stage.MouseLeftButtonDown += (_, e) =>
-        {
-            _dragging = true;
-            last = e.GetPosition(stage);
-            stage.CaptureMouse();
-            e.Handled = true;
-        };
-        stage.MouseMove += (_, e) =>
-        {
-            if (!_dragging) return;
-            var now = e.GetPosition(stage);
-            _yaw.Value = Wrap(_yaw.Value - (now.X - last.X) * 0.6);
-            _pitch.Value = Math.Clamp(_pitch.Value + (now.Y - last.Y) * 0.3, _pitch.Minimum, _pitch.Maximum);
-            last = now;
-        };
-        stage.MouseLeftButtonUp += (_, _) =>
-        {
-            _dragging = false;
-            stage.ReleaseMouseCapture();
-            QueueView();   // 놓은 자리로 한 번 더 — 끄는 동안 건너뛴 마지막 각도를 맞춘다
-        };
-    }
-
-    /// <summary>슬라이더가 움직였다 — 묻는 중이면 끝난 뒤 한 번만 다시 묻는다(따라잡기).</summary>
+    /// <summary>
+    /// 미리보기를 지금 값에 맞춘다 — 각도 · 모형 · 돛 자리. D3D 로 바로 그리므로 기다릴 것이 없다.
+    /// </summary>
     private void QueueView()
     {
         _angle.Text = $"{_yaw.Value:0}° · {_pitch.Value:0}°";
-        if (_viewQueued) return;
-        _viewQueued = true;
-        _ = Dispatcher.InvokeAsync(async () =>
+        if (!_syncing)
         {
-            await Task.Delay(_dragging ? 15 : 120);
-            _viewQueued = false;
-            string path = Path.Combine(Path.GetTempPath(), "cds-dho-shot", "view.png");
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            if (await Ask($"view {_yaw.Value:0.#} {_pitch.Value:0.#} {path}") is { } reply && reply.StartsWith("ok", StringComparison.Ordinal))
-                _view.Source = Read(path);
-        });
+            _shipView.Yaw = _yaw.Value;
+            _shipView.Pitch = _pitch.Value;
+        }
+        if (int.TryParse(_model.Text.Trim(), out int model))
+        {
+            var skip = SkipSlots().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToHashSet();
+            _shipView.SetShip(model, skip);
+        }
+        if (_shipView.Error.Length > 0) _status.Text = _shipView.Error;
     }
 
     private async Task ShootOne()
