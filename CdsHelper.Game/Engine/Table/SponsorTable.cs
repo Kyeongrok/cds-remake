@@ -58,7 +58,11 @@ public sealed class SponsorTable
     /// </remarks>
     [method: JsonConstructor]
     /// <param name="Eye">안목(<c>+0x20</c>). 이야기를 가늠하는 눈이다.</param>
-    /// <param name="Closeness">친밀도 밑값(<c>+0x30</c>). 낼 자금이 여기서 갈린다.</param>
+    /// <param name="Closeness">
+    /// 인심(<c>+0x30</c>) — 원본 화면에는 안 나오는 값이라 우리가 붙인 이름이다. 낼 자금(<see cref="Engine.Town.Persuasion.Funds"/>),
+    /// 보고 평가(<see cref="Engine.Town.Palace.GradeOf"/>), 모조품 들통(<see cref="Engine.Town.Palace.CounterfeitCaught"/>)이 여기서 갈린다.
+    /// 게임 내내 안 바뀐다. 플레이어와의 친밀도(Player.Closeness, 0 에서 시작)와는 딴 값이다 — 칸 이름은 JSON 때문에 그대로 둔다.
+    /// </param>
     /// <param name="Tastes">
     /// 좋아하는 갈래(<c>+0x38</c> 의 낮은 여덟 비트). 맞으면 두말없이 원조한다
     /// (<see cref="Engine.Town.Persuasion.Likes"/>).

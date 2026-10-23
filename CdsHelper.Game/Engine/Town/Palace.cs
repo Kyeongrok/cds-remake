@@ -177,7 +177,7 @@ public static class Palace
     /// </summary>
     /// <remarks>
     /// <code>
-    ///   411ab9  hit = 후원자표.+0x30(친밀도 밑값) >= rand(100)
+    ///   411ab9  hit = 후원자표.+0x30(인심) >= rand(100)
     ///   411ad4  hit  이면  surpass ? 굉장 : 보통
     ///   411b1e  아니면  T = 40*성미[7] + (surpass ? 20 : 0)      ; 0x00411CC0
     ///   411b2e          T <= rand(100) ? 굉장 : 시시
@@ -392,12 +392,12 @@ public static class Palace
     /// <remarks>
     /// <code>
     ///   412464  0x004AD830(후원자)                  ; 후원자 표 그 줄
-    ///   412469  eax = 줄.+0x30                       ; 정적 친밀도 밑값(SponsorTable.Closeness)
+    ///   412469  eax = 줄.+0x30                       ; 인심(SponsorTable.Closeness, 정적)
     ///   412472  eax = eax*2 - [0x5B60D0]              ; [0x5B60D0] = 능력치[4] = 운
     ///   412479  eax = max(10, eax - 1)
     ///   412483  들킴 = (eax &gt; roll(100))
     /// </code>
-    /// 정적 친밀도 밑값(게임 내내 안 바뀌는 표 값)이 높을수록, 내 운이 낮을수록 잘 들킨다.
+    /// 인심(게임 내내 안 바뀌는 표 값)이 높을수록, 내 운이 낮을수록 잘 들킨다.
     /// <b>안 들키면 진짜를 가져온 것처럼 그대로 통과된다</b> — 사례·명성·친밀도가 다 오른다.
     /// </remarks>
     public static bool CounterfeitCaught(int sponsorTableCloseness, int luck, Random random) =>

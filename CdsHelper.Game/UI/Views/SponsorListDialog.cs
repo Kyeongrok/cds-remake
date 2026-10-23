@@ -62,7 +62,7 @@ public sealed class SponsorListDialog : GameWindow
         Col("물러남", nameof(Row.Retire), 52);
         Col("안목", nameof(Row.Eye), 44);
         Col("명성 관문", nameof(Row.FameGate), 66);
-        Col("친밀도 밑값", nameof(Row.Closeness), 76);
+        Col("인심", nameof(Row.Closeness), 44);
         Col("재력", nameof(Row.Wealth), 80);
         Col("취향", nameof(Row.Tastes), 160);
         Col("언어", nameof(Row.Languages), 160);
@@ -157,7 +157,7 @@ public sealed class SponsorListDialog : GameWindow
         _nation.SelectedIndex = 0;   // FillCities · Filter 를 부른다
         _status.Text = $"후원자 {_rows.Count}명 — 원본 {Math.Min(Original, _rows.Count)}명 · 더한 사람 {_rows.Count(r => r.Added.Length > 0)}명. "
                      + "명성 관문은 처음 만날 때 집사가 보는 명성(안목 x 왕궁 100 · 그 밖 70, 표에 따로 적은 사람은 그 값)이다. "
-                     + "친밀도 밑값은 낼 자금을 가르는 고정값이고, 플레이어와의 친밀도는 따로 0 에서 시작한다.";
+                     + "인심은 낼 자금 · 보고 평가 · 모조품 판별을 가르는 고정값이고, 플레이어와의 친밀도는 따로 0 에서 시작한다.";
     }
 
     /// <summary>왕궁 건물 코드.</summary>
