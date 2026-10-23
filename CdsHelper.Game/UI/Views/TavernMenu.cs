@@ -724,7 +724,10 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         if (book == null) return [];
 
         byte building = kind == FacilityKind.Tavern ? TavernRoster.Tavern : TavernRoster.Inn;
-        var people = Sitting(building);
+        // 앉은 인물도 들어설 때마다 차례를 섞는다(요청) — 보이는 자리는 다섯이고 여급이 먼저 서므로, 표 차례 그대로면
+        // 한 도시에 항해사가 여럿 모였을 때 앞의 둘 · 셋만 늘 서고 뒷사람은 앞사람을 고용하기 전에는 영영 안 보였다.
+        var people = Sitting(building).ToList();
+        Shuffle(people, _game.Random);
         var keys = new List<TavernGuests.Sitter>(people.Count);
         foreach (var p in people)
         {
