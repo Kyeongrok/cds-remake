@@ -128,7 +128,7 @@ public static class Skill
     public const int Genoa = 6, England = 11;
 
     /// <summary>제노바 · 잉글랜드 주인공의 처음 소지금 — 개인 이야기가 주는 배가 없어 조선소에서 배를 사고 떠나라는 몫이다.</summary>
-    public const int NoStoryGold = 12000;
+    public const int NoStoryGold = 15000;   // 배를 사고 보급까지 하면 12000 으로는 얼마 안 남았다(요청)
 
     /// <summary>한 자리 올리는 데 드는 값(닢). 자리와 상관없이 같다.</summary>
     public const int Price = 120;
