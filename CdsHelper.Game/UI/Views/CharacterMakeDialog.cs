@@ -474,9 +474,26 @@ internal sealed class CharacterMakeDialog : GameWindow
             int pick = _nationIds[i];
             string name = i < Player.Nations.Length ? Player.Nations[i] : Player.NationNameOf?.Invoke(pick) ?? $"{pick}";
             _nations.Add(Band(name, x + i % 2 * (NationWidth + Gap), top + i / 2 * (SmallHeight + Gap),
-                              NationWidth, () => { _nation = pick; Mark(); }));
+                              NationWidth, () => PickNation(pick)));
         }
     }
+
+    /// <summary>
+    /// 국적을 고른다. 제노바 · 잉글랜드로 <b>바꿀 때</b> 한 번 알린다(요청) — 개인 이야기도 후원자 소개도 없이 시작해
+    /// 어려우니 숙련된 분께 권한다. 같은 국적을 다시 눌렀을 때는 안 띄운다.
+    /// </summary>
+    private void PickNation(int pick)
+    {
+        bool changed = _nation != pick;
+        _nation = pick;
+        Mark();
+        if (changed && pick is Skill.Genoa or Skill.England)
+            NoticeDialog.Show(this, HardNationNotice, "국적");
+    }
+
+    /// <summary>제노바 · 잉글랜드를 골랐을 때의 알림.</summary>
+    private const string HardNationNotice =
+        "제노바 · 잉글랜드 국적은 개인 이야기가 없어 배도, 소개받은 후원자도 없이 시작합니다. 난이도가 높아 숙련된 플레이어께 권장합니다.";
 
     private void Footer()
     {
