@@ -2433,7 +2433,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 HasSon: Home.EldestSon(_player) != null,
                 HasBooks: _game.Books?.InLibrary(_cityId, _player.Date.Year).Count > 0,
                 Wed: Home.CanLeaveHeir(_player),
-                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_player, _cityId),
+                CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_player, _cityId, _game.CityRows, _game.Nations),
                 ExileReady: facility.Kind == FacilityKind.Palace
                             && Engine.Town.Exile.Ready(_player, _cityId, patron == null ? -1 : _player.ClosenessOf(patron.Name)));
 

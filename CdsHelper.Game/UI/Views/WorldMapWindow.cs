@@ -4977,8 +4977,32 @@ public sealed class WorldMapWindow : Window
         if (_game.Player.Has(SeaAilment.Plague)) SpreadPlague(city);
         // 그 다음, 후원자의 나라가 멸망했으면 이 항구에서 소문을 듣고 계약이 깨진다(0x00476F50).
         CheckSponsorFallen(city);
+        // 잃은 모국의 수도에 들면 부관이 망명할 곳을 일러 준다 — 망명할 때까지 들 때마다.
+        TellHomelandLost(city);
         // 마을에 닿으면 항해가 끝난다 — 쥐·병이 풀린다. 입항에서는 부관이 말하지 않는다.
         EndVoyage(speak: false);
+    }
+
+    /// <summary>
+    /// 역사 대본이 모국의 수도를 넘겼으면(1507년 5월 제노바 → 프랑스) 그 도시에 들 때마다 부관이 형편을 알리고
+    /// 새 주인 나라의 수도로 가 망명하라고 일러 준다(<see cref="Engine.Town.Exile.Refuge"/>). 원본에 없는 말이다(요청).
+    /// </summary>
+    private void TellHomelandLost(int city)
+    {
+        var player = _game.Player;
+        _game.CatchUpMonths();
+        if (Engine.Town.Exile.Refuge(player, _game.CityRows, _game.Nations) is not { } refuge
+            || refuge.LostCapital != city) return;
+
+        string home = _game.Nations?.Find(player.Nation)?.Name ?? "";
+        string taker = _game.Nations?.Find(refuge.Nation)?.Name ?? "";
+        string here = CityNames.Of(city), capital = CityNames.Of(refuge.Capital);
+        var face = MateFace();
+        _host.Paused = true;
+        TalkDialog.Say(this, face, "", $"제독, {here}{GameUi.Josa(here, "은", "는")} 이제 {taker}의 땅입니다. "
+                                        + $"{home}{GameUi.Josa(home, "은", "는")} 사라졌고 왕궁도 헐려, 이곳에서는 더 이상 작위를 받을 수 없습니다.");
+        TalkDialog.Say(this, face, "", $"{capital} 왕궁으로 가서 {taker}에 망명하시는 것이 어떻겠습니까?");
+        _host.Paused = false;
     }
 
     private bool EndVoyage(bool speak = true)

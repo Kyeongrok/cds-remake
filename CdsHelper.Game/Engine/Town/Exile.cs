@@ -1,3 +1,4 @@
+using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Helpers;
 using CdsHelper.Support.Local.Models;
@@ -5,12 +6,15 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.Engine.Town;
 
 /// <summary>
-/// 왕궁 「망명」 — 리스본 · 세비야 · 런던 왕궁과 제노바 총독부(코드 2 라 왕궁 갈래다)에서 그 나라로 국적을 옮기고 자택도 그 도시로 옮긴다. 원본에 없는 줄이다(모드 「망명」).
+/// 왕궁 「망명」 — 리스본 · 세비야 · 파리 · 런던 왕궁과 제노바 총독부(코드 2 라 왕궁 갈래다)에서 그 나라로 국적을 옮기고 자택도 그 도시로 옮긴다. 원본에 없는 줄이다(모드 「망명」).
 /// </summary>
 /// <remarks>
 /// 명성 <see cref="Fame"/> 이상과 그 왕궁 국왕과의 친밀도 100(<see cref="Player.MaxCloseness"/>)이 있어야 하고,
 /// 망명하면 금화 <see cref="Fee"/> 닢과 명성 <see cref="FameCost"/> 이 깎인다.
 /// 후원자와 계약 중이거나 개인 이야기 의뢰(<see cref="Player.StoryQuestDeadline"/>)를 하는 중에는 안 된다.
+///
+/// 역사 대본이 모국의 수도를 넘겨 나라를 잃었으면(1507년 5월 제노바 → 프랑스, HIST_EV 파트 31) 모드를 안 켜도
+/// 수도를 가져간 나라의 왕궁에서 망명 줄이 선다(<see cref="Refuge"/>, 제보: 제노바 공화국 플레이가 작위를 못 받고 막혔다).
 /// </remarks>
 public static class Exile
 {
@@ -23,8 +27,11 @@ public static class Exile
     /// <summary>망명에 바치는 금화.</summary>
     public const int Fee = 1_000_000;
 
-    /// <summary>제노바 · 런던의 도시 번호.</summary>
-    private const int GenoaCity = 28, LondonCity = 38;
+    /// <summary>파리 · 제노바 · 런던의 도시 번호.</summary>
+    private const int ParisCity = 14, GenoaCity = 28, LondonCity = 38;
+
+    /// <summary>프랑스 왕국의 나라 번호.</summary>
+    private const int France = 3;
 
     /// <summary>모드 「망명」을 켰는지.</summary>
     public static bool Enabled => GameSettings.Exile;
@@ -34,6 +41,7 @@ public static class Exile
     {
         CityNames.LisbonId => Skill.Portugal,
         CityNames.SevilleId => Skill.Spain,
+        ParisCity => France,
         GenoaCity => Skill.Genoa,
         LondonCity => Skill.England,
         _ => null,
@@ -42,8 +50,20 @@ public static class Exile
     /// <summary>
     /// 그 도시 왕궁에 「망명」 줄이 서는지 — 모드를 켰고 망명을 받는 왕궁이며 모국이 아니면, 조건이 안 돼도 선다(흐리게, <see cref="Ready"/>).
     /// </summary>
-    public static bool Offered(Player player, int cityId) =>
-        Enabled && NationAt(cityId) is { } nation && nation != player.Nation;
+    public static bool Offered(Player player, int cityId, CityExeTable? cities, NationTable? nations) =>
+        NationAt(cityId) is { } nation && nation != player.Nation
+        && (Enabled || Refuge(player, cities, nations) is { } refuge && refuge.Nation == nation);
+
+    /// <summary>
+    /// 모국을 잃었으면 갈 곳 — 모국 수도를 가져간 나라와 그 나라의 수도. 모국 수도가 그대로면 null.
+    /// </summary>
+    public static (int Nation, int Capital, int LostCapital)? Refuge(Player player, CityExeTable? cities, NationTable? nations)
+    {
+        if (cities == null || nations?.Find(player.Nation) is not { } home) return null;
+        int holder = cities.NationOf(home.Capital);
+        if (holder < 0 || holder == player.Nation || nations.Find(holder) is not { } taker) return null;
+        return (holder, taker.Capital, home.Capital);
+    }
 
     /// <summary>지금 망명할 수 있는지 — 아니면 줄을 흐리게 낸다.</summary>
     /// <param name="closeness">그 왕궁 국왕과의 친밀도. 국왕이 없으면 -1.</param>

@@ -23,11 +23,14 @@ internal static class GameSystemMenu
     /// <remarks>
     /// 첫 줄은 <b>제 나라 도시면 「저장」, 남의 나라 도시면 「중단」</b>이다(<c>0x004A28F4</c> 가 제독 나라와
     /// 도시 나라를 견준다 — <c>0x00568DA8</c> · <c>0x00568DB0</c>). 중단은 적고 나서 첫 화면으로 간다.
+    /// 우리는 <b>모항(자택이 있는 도시)</b>이면 나라가 달라도 「저장」이다 — 역사 대본이 모항을 남의 나라로 넘기면
+    /// (1507년 제노바 → 프랑스) 자택에서 저장을 못 했다(제보).
     /// </remarks>
     public static GameMenu Build(Window view, Engine.Game game, GameMenuHost menu)
     {
         int here = game.Player.CityId;
-        bool mine = here < 0 || (game.CityRows?.NationOf(here) ?? game.Player.Nation) == game.Player.Nation;
+        bool mine = here < 0 || here == game.Player.HomePort
+                    || (game.CityRows?.NationOf(here) ?? game.Player.Nation) == game.Player.Nation;
         var rows = Facility.SystemMenu
             .Select(item => item == "저장" && !mine ? "중단" : item)
             .Select(item => (item, ActionOf(item, view, game, menu)));
