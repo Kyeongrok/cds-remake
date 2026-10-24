@@ -2212,6 +2212,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var back = _player.Ships.Concat(_player.Docked.Values.SelectMany(list => list))
                           .Where(s => s.Lent).Select(s => s.Hull.GameId).ToList();
         if (_player.TakeBackLentShips() == 0) return;
+        // 육지에 대 두고 걸어 들어와 보고했으면 함대 자리가 그 해안에 남는다 — 배가 한 척도 안 남았으면 함대를
+        // 이 도시에 둔다. 안 그러면 조선소가 「함대가 정박해 있지 않는 마을」이라며 배를 안 팔아 갇혔다.
+        if (_player.Ships.Count == 0) _player.MoorAt(_cityId);
         if ((lender ?? _player.Contract?.Sponsor) is { } from && LenderOf(from) is { } owner
             && _game.CityRows is { } rows)
             PatronShips.Return(_player, owner, rows, back);
