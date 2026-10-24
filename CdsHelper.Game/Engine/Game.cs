@@ -281,6 +281,7 @@ public sealed class Game
                     if (tell) TellVoyagerFinds(player, when);
                     History?.RunMonth(player, year, month, CityRows, Nations, Found,
                                       tell ? TellVoyagerCapture : null);
+                    HistoryRumors.RunMonth(player, when);   // 더해 넣은 역사 소문(1507년 제노바 따위)
                     RunVoyagerReports(player, when, when, tell);
                 }
 

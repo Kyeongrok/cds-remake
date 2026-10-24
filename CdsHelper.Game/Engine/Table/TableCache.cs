@@ -55,7 +55,7 @@ internal static class TableCache
         ["발견물설명"] = "discovery-descriptions", ["발견물표"] = "discoveries", ["발견이벤트"] = "disev",
         ["소문-고친것"] = "rumors-added", ["소문표"] = "rumors", ["손님표"] = "tavern-guests", ["술표"] = "drinks",
         ["시나리오목록"] = "scenarios", ["시장물건"] = "market-goods", ["아이템설명"] = "item-descriptions", ["아이템-더한것"] = "items-added",
-        ["아이템표"] = "items", ["여급표"] = "barmaids", ["여급-고친것"] = "barmaids-edits", ["역사대본"] = "history-events",
+        ["아이템표"] = "items", ["여급표"] = "barmaids", ["여급-고친것"] = "barmaids-edits", ["역사대본"] = "history-events", ["역사소문"] = "history-rumors",
         ["역사항해자"] = "history-voyagers", ["이름표"] = "player-names", ["이야기0"] = "story0", ["이야기1"] = "story1",
         ["인물밑표"] = "person-templates", ["인물표"] = "persons", ["인물표-고친것"] = "persons-edits", ["작위"] = "nobility",
         ["지형표"] = "terrain", ["책-고친것"] = "books-edits", ["책표"] = "books", ["화자이름표"] = "speaker-names",
