@@ -2977,6 +2977,62 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
+    /// 조합 「의뢰」 — 맡을 수 있는 의뢰 목록을 띄운다. 줄은 늘 서고, 의뢰가 없으면 없다고 알린다. 원본에 없는 줄이다(요청).
+    /// </summary>
+    /// <remarks>
+    /// 지금 의뢰는 하나다 — 모드 「작위」에서 작위를 받아 다음 보관함 넓히기에 닿으면 「창고 목재 배송」이 오른다
+    /// (<see cref="Engine.Town.Nobility.StoreQuestOffered"/>).
+    /// </remarks>
+    void ITownScreen.GuildQuest()
+    {
+        var quests = new List<(string Text, Action? Run)>();
+        if (Engine.Town.Nobility.StoreQuestOffered(_player))
+            quests.Add((_player.StoreQuestTaken ? $"{StoreQuestName} (수행 중)" : StoreQuestName, StoreQuest));
+        if (quests.Count == 0)
+        {
+            NoticeDialog.Show(Menu.Window ?? this, "지금 맡을 수 있는 의뢰가 없습니다", Facility.GuildQuest);
+            return;
+        }
+        quests.Add(("그만둔다", Menu.Pop));
+        Menu.Push(() => new GameMenu("의뢰 목록", null, [.. quests]));
+    }
+
+    /// <summary>창고 의뢰가 목록에 오르는 이름.</summary>
+    private const string StoreQuestName = "창고 목재 배송";
+
+    /// <summary>
+    /// 「창고 목재 배송」 — 자택 창고를 늘릴 목재 <see cref="Engine.Town.Nobility.TimberNeeded"/> 통을 실어 온다(모드 「작위」).
+    /// 마치면 보관함 넓히기가 하나 풀린다. 맡는 곳도 넘기는 곳도 어느 조합이든 된다.
+    /// </summary>
+    private void StoreQuest()
+    {
+        var owner = Menu.Window ?? this;
+        int need = Engine.Town.Nobility.TimberNeeded, aboard = Engine.Town.Nobility.TimberAboard(_player);
+        string nl = Environment.NewLine;
+
+        if (!_player.StoreQuestTaken)
+        {
+            if (!ConfirmDialog.Ask(owner, $"작위를 받으셨다니 축하드립니다. 자택 창고를 늘리려면 목재가 필요합니다.{nl}"
+                                          + $"목재 {need}통을 실어 와 주시겠습니까?", title: Facility.GuildQuest))
+                return;
+            _player.SetStoreQuestTaken(true);
+            GameDialog.Show(owner, $"목재 {need}통을 실어 조합에 가져오십시오{nl}어느 도시의 조합이든 받아 드립니다");
+            Menu.Pop();
+            return;
+        }
+
+        if (aboard < need)
+        {
+            NoticeDialog.Show(owner, $"목재 {need}통을 실어 오십시오 (지금 {aboard}통)", Facility.GuildQuest);
+            return;
+        }
+        if (!ConfirmDialog.Ask(owner, $"목재 {need}통을 넘기겠습니까?", title: Facility.GuildQuest)) return;
+        if (!Engine.Town.Nobility.DeliverTimber(_player)) return;
+        GameDialog.Show(owner, $"목재 {need}통을 넘겼습니다{nl}이제 자택 「보관」에서 보관함을 넓힐 수 있습니다");
+        Menu.Pop();
+    }
+
+    /// <summary>
     /// 교역소 「투자」 — 소지금을 이 교역소에 맡긴다. 투자한 돈은 1000 닢마다 공적 1 이 되고(모드 「작위」),
     /// 쌓이면 이 도시의 규모가 오른다(모드 「도시 투자 성장」, <see cref="Engine.Town.CityGrowth"/>).
     /// </summary>

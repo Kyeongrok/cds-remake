@@ -202,6 +202,12 @@ public sealed class StorageDialog : GameWindow
             NoticeDialog.Show(this, $"작위 {Engine.Town.Nobility.NameOf(rank)} 이상이어야 넓힐 수 있습니다");
             return;
         }
+        // 작위가 닿아도 조합 「의뢰」(목재 배송)를 마쳐야 넓힌다(요청).
+        if (!Engine.Town.Nobility.StoreQuestDone(_player))
+        {
+            NoticeDialog.Show(this, $"조합의 의뢰로 목재 {Engine.Town.Nobility.TimberNeeded}통을 실어 와야 넓힐 수 있습니다");
+            return;
+        }
         if (!_player.CanAfford(price))
         {
             NoticeDialog.Show(this, $"금화가 모자랍니다 (금화 {price:N0}닢)");

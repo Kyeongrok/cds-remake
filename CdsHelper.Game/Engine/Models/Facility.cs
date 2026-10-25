@@ -98,7 +98,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
             ["열람", "도서관을 나온다"]),
 
         new(FacilityKind.Guild, "조합",
-            ["수련", "조합을 나온다"]),
+            ["수련", GuildQuest, "조합을 나온다"]),
 
         // 자택은 내 집이다. "저택"(귀족 저택)은 딴 건물이라 이 줄이 아니다 — 건물 표에서도
         // 자택이 코드 11, 저택이 12 로 갈려 있다.
@@ -154,6 +154,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
 
     /// <summary>왕궁 「망명」 — 원본에 없는 줄(모드 「망명」).</summary>
     public const string Exile = "망명";
+
+    /// <summary>조합 「의뢰」 — 창고를 늘릴 목재 배송. 원본에 없는 줄이다(모드 「작위」).</summary>
+    public const string GuildQuest = "의뢰";
 
     public const string RefitMast = "마스트 추가",
                         RefitSailKind = "돛종류 변경",

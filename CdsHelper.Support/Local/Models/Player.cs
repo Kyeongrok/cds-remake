@@ -954,6 +954,20 @@ public sealed class Player
     /// <summary>넓힌 횟수를 적는다.</summary>
     public void SetStoreExpansions(int count) => StoreExpansions = Math.Clamp(count, 0, 7);
 
+    /// <summary>
+    /// 조합 「의뢰」(목재 배송)로 풀어 둔 보관함 넓히기 번호 — k 면 k 번째 넓히기까지 풀렸다. 원본에 없는 칸이다.
+    /// </summary>
+    public int StoreQuestCleared { get; private set; }
+
+    /// <summary>풀어 둔 넓히기 번호를 적는다.</summary>
+    public void SetStoreQuestCleared(int count) => StoreQuestCleared = Math.Clamp(count, 0, 7);
+
+    /// <summary>조합 「의뢰」(목재 배송)를 맡아 수행하는 중인지.</summary>
+    public bool StoreQuestTaken { get; private set; }
+
+    /// <summary>목재 배송 의뢰를 맡거나 마친다.</summary>
+    public void SetStoreQuestTaken(bool taken) => StoreQuestTaken = taken;
+
     /// <summary>지금 보관할 수 있는 칸 수 — 원본 <see cref="MaxStored"/> 에 넓힌 칸을 더한 것.</summary>
     public int StoreLimit => MaxStored + StoreExpansionSlots * StoreExpansions;
 

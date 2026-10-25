@@ -119,11 +119,53 @@ public static class Nobility
     public static bool StoreRankReached(Player player) =>
         Enabled && StoreCanGrow(player) && player.NobleRank >= NextStoreRank(player);
 
-    /// <summary>값을 치르고 보관함을 <see cref="Player.StoreExpansionSlots"/> 칸 넓힌다. 작위가 모자라거나 돈이 모자라면 false.</summary>
+    /// <summary>다음 넓히기를 조합 「의뢰」(목재 배송)로 풀어 두었는지.</summary>
+    public static bool StoreQuestDone(Player player) => player.StoreQuestCleared >= NextStoreRank(player);
+
+    /// <summary>값을 치르고 보관함을 <see cref="Player.StoreExpansionSlots"/> 칸 넓힌다. 작위 · 의뢰 · 돈 가운데 하나라도 모자라면 false.</summary>
     public static bool ExpandStore(Player player)
     {
-        if (!StoreRankReached(player) || !player.Pay(StoreExpansionPrice(player))) return false;
+        if (!StoreRankReached(player) || !StoreQuestDone(player) || !player.Pay(StoreExpansionPrice(player))) return false;
         player.SetStoreExpansions(player.StoreExpansions + 1);
+        return true;
+    }
+
+    // ── 조합 「의뢰」 — 창고를 늘릴 목재 배송 ─────────────────────────────────
+
+    /// <summary>창고 의뢰가 바라는 교역품(목재)의 번호.</summary>
+    public const int TimberGoods = 64;
+
+    /// <summary>창고 의뢰가 바라는 목재 통 수.</summary>
+    public const int TimberNeeded = 100;
+
+    /// <summary>
+    /// 조합에 「의뢰」 줄이 서는지 — 작위를 받아 다음 넓히기에 닿았는데 아직 의뢰로 풀지 않았을 때다.
+    /// 의뢰를 맡았으면 마칠 때까지 선다(사용자, 2026-10-25). 원본에 없는 줄이다.
+    /// </summary>
+    public static bool StoreQuestOffered(Player player) =>
+        Enabled && (player.StoreQuestTaken || StoreRankReached(player) && !StoreQuestDone(player));
+
+    /// <summary>실은 목재 통 수(원산지 · 기한 가리지 않고).</summary>
+    public static int TimberAboard(Player player) =>
+        player.CargoHold.Where(c => c.Kind == TimberGoods).Sum(c => c.Count);
+
+    /// <summary>
+    /// 목재 <see cref="TimberNeeded"/> 통을 내리고 의뢰를 마친다 — 다음 넓히기가 풀린다. 모자라면 false.
+    /// </summary>
+    public static bool DeliverTimber(Player player)
+    {
+        if (!player.StoreQuestTaken || TimberAboard(player) < TimberNeeded) return false;
+        int left = TimberNeeded;
+        for (int slot = player.CargoHold.Count - 1; slot >= 0 && left > 0; slot--)
+        {
+            var cargo = player.CargoHold[slot];
+            if (cargo.Kind != TimberGoods) continue;
+            int take = Math.Min(left, cargo.Count);
+            player.UnloadCargo(slot, take);
+            left -= take;
+        }
+        player.SetStoreQuestTaken(false);
+        player.SetStoreQuestCleared(NextStoreRank(player));
         return true;
     }
 

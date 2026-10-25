@@ -3672,6 +3672,9 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreAnnouncedDates(saved.AnnouncedOn, saved.AnnouncedYears);
             _game.Player.SetNobleRank(saved.NobleRank ?? 0);
             _game.Player.SetStoreExpansions(saved.StoreExpansions ?? 0);
+            // 의뢰가 생기기 전 세이브는 이미 넓힌 만큼 풀린 것으로 본다.
+            _game.Player.SetStoreQuestCleared(saved.StoreQuestCleared ?? saved.StoreExpansions ?? 0);
+            _game.Player.SetStoreQuestTaken(saved.StoreQuestTaken ?? false);
             _game.Player.RestoreInvestments(saved.Investments);
             _game.Player.RestoreGrowthFunds(saved.GrowthFunds);
             _game.Player.RestoreGoodsRates(saved.GoodsRates);

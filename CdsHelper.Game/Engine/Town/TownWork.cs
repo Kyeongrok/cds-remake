@@ -38,6 +38,11 @@ public enum TownWork
     /// <summary>왕궁 「망명」 — 원본에 없는 줄(모드 「망명」, <see cref="Exile"/>).</summary>
     Exile,
 
+    // ── 조합 ──────────────────────────────────────────────────────────────
+
+    /// <summary>조합 「의뢰」 — 맡을 수 있는 의뢰 목록. 원본에 없는 줄이다 — 늘 서고, 의뢰가 없으면 없다고 알린다.</summary>
+    GuildQuest,
+
     // ── 자리를 가리지 않는 것들 ───────────────────────────────────────────
 
     /// <summary>기술을 배운다. 건물 표의 가르침 비트가 선 자리면 어디든 나온다.</summary>
@@ -124,6 +129,7 @@ public static class TownWorks
         // ── 그 밖 ─────────────────────────────────────────────────────────
         new(TownWork.Read, "열람", FacilityKind.Library),
         new(TownWork.Exile, Facility.Exile, FacilityKind.Palace),
+        new(TownWork.GuildQuest, Facility.GuildQuest, FacilityKind.Guild),
         new(TownWork.Explore, "탐험을 떠난다", FacilityKind.Gate),
         // 자리를 안 적는다 — 발견물이 된 건물이면 어느 시설에나 붙는다(0x004733B1).
         new(TownWork.Comment, "해설"),

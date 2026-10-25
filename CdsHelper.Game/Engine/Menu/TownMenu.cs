@@ -58,6 +58,9 @@ internal static class TownMenu
     /// <summary>왕궁 「망명」 줄이 대본에 올라가는 번호 — 원본 왕궁 칸(0~4)과 안 겹치게 붙박는다.</summary>
     public const int ExileRow = 11;
 
+    /// <summary>조합 「의뢰」 줄이 대본에 올라가는 번호 — 원본 조합 칸과 안 겹치게 붙박는다.</summary>
+    public const int GuildQuestRow = 12;
+
     /// <summary>
     /// 이야기 대본에 올리는 줄 번호 — 원본은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
     /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
@@ -75,6 +78,9 @@ internal static class TownMenu
         // 그래야 원본 대본이 보는 칸 번호가 투자 줄 때문에 밀리지 않고, 대본 「마을대사」는 투자를 10 으로 알아본다.
         if (facility.Kind == FacilityKind.TradingPost)
             return work switch { TownWork.Invest => InvestRow, TownWork.Exit => 2, _ => row };
+        // 조합 「의뢰」도 원본에 없는 줄이다(늘 「나온다」 바로 위) — 붙박이 번호를 주고, 「나온다」는 의뢰 줄이 없던 차례로 올린다.
+        if (facility.Kind == FacilityKind.Guild)
+            return work switch { TownWork.GuildQuest => GuildQuestRow, TownWork.Exit when row > 0 => row - 1, _ => row };
         if (facility.Kind is not (FacilityKind.Church or FacilityKind.Palace or FacilityKind.Other)) return row;
         bool palace = facility.Kind == FacilityKind.Palace;
         return work switch
@@ -164,6 +170,7 @@ internal static class TownMenu
             TownWork.Talk when screen.CanTrade => screen.TradeTalk,
             TownWork.Invest => screen.Invest,
             TownWork.Exile => () => screen.Exile(code),
+            TownWork.GuildQuest => screen.GuildQuest,
 
             TownWork.Stay => screen.Stay,
             TownWork.OddJob => screen.OddJob,
