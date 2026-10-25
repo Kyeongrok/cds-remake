@@ -35,7 +35,7 @@ public enum DisevCall
 
     // ── 상태 변경 ─────────────────────────────────────────────
     AddStat, SubStat, SetStat, SetStat22, HalveTroops, AddGold, SubGold, AddAffinity, SubAffinity,
-    MeetPerson, MeetSponsor, HireInterpreter, SetAide, ChangeCityNation, OccupyCity, ReleaseCity, RemoveCity, RemoveFacility,
+    MeetPerson, MeetSponsor, HireInterpreter, SetAide, ChangeCityNation, SetCityNation, OccupyCity, ReleaseCity, RemoveCity, RemoveFacility,
     MoveEventTarget, DestroyNation, SetPlayerNation, SetNationEntry, SetCultureEntry, SetJob,
 
     // ── 판정·전투·미니게임·시간 ───────────────────────────────
@@ -131,6 +131,9 @@ public static class DisevCalls
         S(DisevCall.RemoveFacility, "22 10 u16 08 u16", "Facility", "City"),
         S(DisevCall.MoveEventTarget, "3C 08 u16", "City"),
         S(DisevCall.ChangeCityNation, "26 1C 1A 00 08 u16", "City"),
+        // 7B 08 [도시] [나라] — 원본에 없는 꼴. 그 도시를 그 나라 땅으로 돌리고 상태를 통상으로 둔다(역사 대본의 21 08 [도시] 00 [나라] 와 같은 셈).
+        // 제노바 저항 대본이 해방 전쟁에 이기면 제노바를 제노바 공화국으로 돌린다.
+        S(DisevCall.SetCityNation, "7B 08 u16 u16", "City", "Nation"),
         // 76 1C · 77 1C · 78 1C — 원본에 없는 꼴. 주인공의 나라를 바꾸고, 나라 · 문화권의 출입여부(0 자유 · 1 마을 막힘 · 2 항구까지 막힘)를 박는다.
         S(DisevCall.SetPlayerNation, "76 1C u16", "Nation"),
         // 7A [직업] — 주인공의 직업을 바꾼다(원본에 없는 명령). 루터가 서품을 받아 학생에서 사제가 된다.

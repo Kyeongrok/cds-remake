@@ -184,6 +184,14 @@
           {
             "Condition": 0,
             "Body": 1
+          },
+          {
+            "Condition": 2,
+            "Body": 3
+          },
+          {
+            "Condition": 4,
+            "Body": 5
           }
         ],
         "Chunks": [
@@ -205,13 +213,20 @@
               "Note": "건물 조건: 5(여관)"
             },
             {
-              "OpCode": "2E 1A",
-              "Call": "RandomChance",
+              "OpCode": "17 00",
+              "Call": "InNation",
               "Args": {
-                "Denominator": 2,
-                "Success": 1
+                "Nation": 3
               },
-              "Note": "무작위 확률 조건: 1 / 2 — 돈을 댄 바로 그 걸음에 곧장 보고하지 않게"
+              "Note": "국가 조건: 3(프랑스 왕국) — 1507년 5월 역사 대본 뒤"
+            },
+            {
+              "OpCode": "1B 16",
+              "Call": "YearAtLeast",
+              "Args": {
+                "Year": 1522
+              },
+              "Note": "연도 >= 1522"
             },
             {
               "OpCode": "FF",
@@ -226,7 +241,7 @@
               "Args": {
                 "Speaker": "자노·프레고소",
                 "Sponsor": 51,
-                "Text": "<제독>， 기다리고 있었소！ 그대가 대 준 돈으로 무기를 사들이고 동지들을 숨겨 줄 집을 마련했소．"
+                "Text": "<제독>， 마침 잘 와 주었소！ 신성로마제국 군대가 이탈리아로 내려와 프랑스군과 맞붙었소． 프랑스 수비대가 흔들리는 지금이 바로 그때요．"
               }
             },
             {
@@ -235,8 +250,94 @@
               "Args": {
                 "Speaker": "자노·프레고소",
                 "Sponsor": 51,
-                "Text": "프랑스 수비대가 아직 성을 쥐고 있지만， 시민들의 마음은 벌써 우리 편이오． 머지않아 제노바는 반드시 다시 일어설 것이오．"
+                "Text": "그대가 대 준 돈으로 무기를 갖춘 시민군이 800명이오． 오늘 밤 총독부를 되찾으려 하오．"
               }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "<제독>， 그대도 함께 싸워 주겠소？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L_WAIT",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 2,
+                "StatName": "총 선원 수",
+                "Value": {
+                  "Const": 800
+                }
+              },
+              "Note": "총 선원 수 = 800 — 시민군을 빌려 싸운다(함대 선원은 그대로)"
+            },
+            {
+              "OpCode": "26 0F",
+              "Call": "SetDuelSet",
+              "Args": {
+                "Set": 1
+              },
+              "Note": "일기토 연출 세트: 1"
+            },
+            {
+              "OpCode": "2F 08",
+              "Call": "LandBattleCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "육상전(도시) — 제노바의 프랑스 수비대"
+            },
+            {
+              "OpCode": "43 47",
+              "GotoIf": {
+                "Call": "Result"
+              },
+              "Target": "L_WIN",
+              "Note": "결과 참 시 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "……물러설 수밖에 없구려． 살아남은 동지들을 다시 모으겠소． 힘을 되찾거든 다시 이 여관으로 와 주시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            },
+            {
+              "Label": "L_WIN",
+              "OpCode": "7B 08",
+              "Call": "SetCityNation",
+              "Args": {
+                "City": 28,
+                "Nation": 6
+              },
+              "Note": "제노바를 제노바 공화국으로 돌린다(원본에 없는 명령)"
+            },
+            {
+              "OpCode": "26 10",
+              "Call": "BuildSpecialBuilding",
+              "Args": {
+                "Building": 2,
+                "City": 28
+              },
+              "Note": "특수 건물 생성: 건물 2(총독부), 도시 28 — 역사 대본 파트 52 와 같은 몫"
             },
             {
               "OpCode": "0E 03",
@@ -252,8 +353,116 @@
               "Args": {
                 "Speaker": "자노·프레고소",
                 "Sponsor": 51,
-                "Text": "그대의 이름은 제노바의 은인으로 길이 전해질 것이오． 바다에서 늘 무사하시길．"
+                "Text": "이겼소！ 프랑스 수비대가 제노바에서 물러갔소！ 제노바는 다시 자유요！"
               }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "모두 그대 덕분이오． 총독부로 돌아가거든 이 은혜를 잊지 않으리다． 얼마 안 되지만 시민들이 모은 감사의 뜻이오．"
+              }
+            },
+            {
+              "OpCode": "19 14",
+              "Call": "AddGold",
+              "Args": {
+                "Amount": 200000
+              },
+              "Note": "금화 +200000"
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 1000
+                }
+              },
+              "Note": "명성 + 1000"
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            },
+            {
+              "Label": "L_WAIT",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "그렇소…… 허나 이런 기회는 오래가지 않소． 마음이 서거든 서둘러 이 여관으로 오시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "도시 조건: 28(제노바)"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(총독부)"
+            },
+            {
+              "OpCode": "17 00",
+              "Call": "InNation",
+              "Args": {
+                "Nation": 6
+              },
+              "Note": "국가 조건: 6(제노바 공화국) — 1523년 11월 역사 대본 뒤"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "<제독>， 어서 오시오． 보시다시피 총독부를 되찾았소． 프랑스가 전쟁에 져서 이탈리아에서 물러갔다오．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "그대가 대 준 돈으로 버틴 동지들이 있었기에 이날을 볼 수 있었소． 제노바는 그대를 은인으로 기억할 것이오．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
             },
             {
               "OpCode": "19 1C",
@@ -272,11 +481,67 @@
               "Call": "EndEventCompletely",
               "Note": "이벤트 완전 종료"
             }
+          ],
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "도시 조건: 28(제노바)"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 5
+              },
+              "Note": "건물 조건: 5(여관)"
+            },
+            {
+              "OpCode": "17 00",
+              "Call": "InNation",
+              "Args": {
+                "Nation": 3
+              },
+              "Note": "국가 조건: 3(프랑스 왕국) — 1507년 5월 역사 대본 뒤"
+            },
+            {
+              "OpCode": "2E 1A",
+              "Call": "RandomChance",
+              "Args": {
+                "Denominator": 2,
+                "Success": 1
+              },
+              "Note": "무작위 확률 조건: 1 / 2"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "동지들이 조금씩 힘을 모으고 있소． 허나 아직 때가 아니오． 프랑스가 흔들릴 날을 기다리고 있으니 그때 꼭 힘을 빌려 주시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
           ]
         ]
       }
     ]
   },
-  "Source": "제노바 저항 — 원본에 없는 전역 대본(1507년 제노바가 프랑스에 넘어간 뒤 여관의 옛 총독이 저항 자금을 청한다)",
+  "Source": "제노바 저항 — 원본에 없는 전역 대본(1507년 제노바가 프랑스에 넘어간 뒤 여관의 옛 총독이 저항 자금을 청하고, 1522년부터 해방 전쟁을 벌인다)",
   "Version": 15
 }

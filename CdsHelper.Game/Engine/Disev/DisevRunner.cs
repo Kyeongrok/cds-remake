@@ -862,6 +862,12 @@ public sealed class DisevRunner
                 _game.Player.SetHistoryNation(I("City"), _game.Player.Nation);
                 return null;
 
+            // 7B 08 — 원본에 없는 명령. 역사 대본이 나라를 바꾸는 것과 같은 셈(수도면 나라째)으로 그 나라 땅으로 돌리고 상태를 통상으로 둔다.
+            case DisevCall.SetCityNation:
+                Market.CityHistory.ChangeNation(_game.Player, _game.CityRows, _game.Nations, I("City"), I("Nation"));
+                _game.Player.SetCityState(I("City"), 0);
+                return null;
+
             // 76 1C [나라] — 주인공의 나라를 바꾼다(원본에 없는 명령). 시나리오가 들고 온 나라(Scenarios.ExtraNations)도 된다.
             // 그 나라 도시는 이 뒤로 제 나라 도시로 친다 — 대본은 본거지를 26 1C 1A 로 함께 넘긴다.
             case DisevCall.SetPlayerNation:
