@@ -891,13 +891,14 @@ public sealed class WorldMapWindow : Window
     }
 
     /// <summary>
-    /// 지금 주인공의 이름 · 나라 · 능력치를 게임 통계에 적어 둔다(<see cref="PlayStats.Hero"/>) — 도시를 나설 때와 끌 때.
+    /// 지금 주인공의 이름 · 나라 · 능력치 · 기함 선체 · 투자를 게임 통계에 적어 둔다(<see cref="PlayStats.Hero"/>) — 도시를 나설 때와 끌 때.
     /// </summary>
     public void NoteHero()
     {
         var player = _game.Player;
         PlayStats.Hero(player.GameId, player.Name, _game.Nations?.Find(player.Nation)?.Name ?? "", player.Date,
-                       [.. player.Abilities.Select(Ability.Display)]);
+                       [.. player.Abilities.Select(Ability.Display)], player.FlagshipHull?.Hull.Name ?? "",
+                       player.Investments.Select(p => KeyValuePair.Create(_game.CityName(p.Key), p.Value)));
     }
 
     /// <summary>자동항해를 걸었다 — 무엇을 골랐는지 적는다(<see cref="PlayStats.Nav"/>).</summary>

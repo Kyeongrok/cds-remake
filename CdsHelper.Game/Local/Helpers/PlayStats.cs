@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -61,14 +61,20 @@ public static class PlayStats
     /// <summary>모은 셈.</summary>
     private static readonly Dictionary<(string Kind, string Key), (string Name, int Count)> Counts = [];
 
-    /// <summary>주인공 한 벌 — 판 표지 · 이름 · 나라 · 게임 날짜 · 보이는 능력치 여섯.</summary>
-    private sealed record HeroInfo(string Game, string Name, string Nation, string Date, int[] Abilities)
+    /// <summary>
+    /// 주인공 한 벌 — 판 표지 · 이름 · 나라 · 게임 날짜 · 보이는 능력치 여섯 · 기함 선체 이름 · 교역소 투자(합과 도시 이름마다).
+    /// </summary>
+    private sealed record HeroInfo(string Game, string Name, string Nation, string Date, int[] Abilities,
+                                   string Flagship, long Invested, Dictionary<string, long> Investments)
     {
-        /// <summary>날짜만 바뀐 것은 새로 안 보낸다 — 이름 · 나라 · 능력치가 그대로면 같은 것으로 친다.</summary>
+        /// <summary>날짜만 바뀐 것은 새로 안 보낸다 — 이름 · 나라 · 능력치 · 기함 · 투자가 그대로면 같은 것으로 친다.</summary>
         public bool SameAs(HeroInfo? other) =>
             other != null && other.Game == Game && other.Name == Name && other.Nation == Nation
-            && other.Abilities.SequenceEqual(Abilities);
+            && other.Abilities.SequenceEqual(Abilities) && other.Flagship == Flagship && other.Invested == Invested;
     }
+
+    /// <summary>투자한 도시를 이만큼만 싣는다(많이 넣은 차례). 받는 쪽도 같은 데서 자른다.</summary>
+    private const int MaxInvestCities = 30;
 
     /// <summary>마지막으로 본 주인공과 마지막으로 줄에 세운 주인공.</summary>
     private static HeroInfo? _hero, _heroSent;
@@ -132,13 +138,20 @@ public static class PlayStats
     /// 한 줄에 처음 값과 마지막 값을 남긴다.
     /// </summary>
     /// <param name="abilities">보이는 능력치 여섯(체력 · 지력 · 무력 · 매력 · 운 · 신앙심) — 작위 패시브는 안 얹은 값.</param>
-    public static void Hero(string gameId, string name, string nation, DateTime date, IReadOnlyList<int> abilities)
+    /// <param name="flagship">기함의 선체 이름(캐러벨 따위) — 회원이 지은 배 이름이 아니다. 배가 없으면 빈 글.</param>
+    /// <param name="investments">교역소에 투자한 돈 — 도시 이름 → 누적 금액(모드 「작위」 · 「도시 투자 성장」).</param>
+    public static void Hero(string gameId, string name, string nation, DateTime date, IReadOnlyList<int> abilities,
+                            string flagship, IEnumerable<KeyValuePair<string, long>> investments)
     {
         if (!Started || string.IsNullOrWhiteSpace(name)) return;
         string who = name.Trim();
         if (who.Length > MaxKey) who = who[..MaxKey];
+        var invested = investments.Where(p => p.Value > 0).GroupBy(p => p.Key)
+            .Select(g => (City: g.Key, Amount: g.Sum(p => p.Value))).ToList();
         var hero = new HeroInfo(gameId, who, nation,
-                                date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), [.. abilities]);
+                                date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), [.. abilities],
+                                flagship, invested.Sum(p => p.Amount),
+                                invested.OrderByDescending(p => p.Amount).Take(MaxInvestCities).ToDictionary(p => p.City, p => p.Amount));
         lock (Gate) _hero = hero;
     }
 
@@ -299,7 +312,11 @@ public static class PlayStats
                 install = InstallId(),
                 version = _version,
                 counts = rows,
-                hero = hero is null ? null : new { game = hero.Game, name = hero.Name, nation = hero.Nation, date = hero.Date, abilities = hero.Abilities },
+                hero = hero is null ? null : new
+                {
+                    game = hero.Game, name = hero.Name, nation = hero.Nation, date = hero.Date, abilities = hero.Abilities,
+                    flagship = hero.Flagship, invested = hero.Invested, investments = hero.Investments,
+                },
                 // 모드 옵션은 켠 뒤 첫 덩이에만 싣는다 — 받는 쪽이 설치마다 마지막 값으로 덮는다.
                 mods = _modsSent ? null : Mods(),
             };

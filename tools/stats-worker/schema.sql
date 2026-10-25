@@ -85,6 +85,10 @@ CREATE TABLE IF NOT EXISTS heroes (
   first_date      TEXT NOT NULL,      -- 처음 받았을 때의 게임 날짜(yyyy-MM-dd)
   date            TEXT NOT NULL,      -- 마지막으로 받았을 때의 게임 날짜
   first_abilities TEXT NOT NULL,      -- 처음 받은 능력치 여섯(JSON — 체력 · 지력 · 무력 · 매력 · 운 · 신앙심, 보이는 값)
-  abilities       TEXT NOT NULL       -- 마지막으로 받은 능력치 여섯
+  abilities       TEXT NOT NULL,      -- 마지막으로 받은 능력치 여섯
+  first_flagship  TEXT NOT NULL DEFAULT '',   -- 처음 받은 기함 선체 이름(v1.1.57 부터, migrate-invest.sql)
+  flagship        TEXT NOT NULL DEFAULT '',   -- 마지막으로 받은 기함 선체 이름
+  invested        INTEGER NOT NULL DEFAULT 0, -- 교역소 투자 합(닢)
+  investments     TEXT NOT NULL DEFAULT '{}'  -- {도시 이름: 누적 금액}(JSON, 많이 넣은 30곳)
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS heroes_recent ON heroes (updated_at DESC);

@@ -82,17 +82,22 @@ async function postPlay(request, env) {
         .bind(b.install, version, now, JSON.stringify(Object.fromEntries(mods)), b.batch));
   }
 
-  // 주인공은 판(game)마다 한 줄 — 처음 받은 값(first_*)은 두고 마지막 값만 덮는다. 게임은 이름 · 나라 · 능력치가 바뀌었을 때만 싣는다.
+  // 주인공은 판(game)마다 한 줄 — 처음 받은 값(first_*)은 두고 마지막 값만 덮는다. 게임은 이름 · 나라 · 능력치 · 기함 · 투자가 바뀌었을 때만 싣는다.
+  // 기함 선체 · 투자는 v1.1.57 부터 온다(migrate-invest.sql) — 처음 기함(first_flagship)도 남긴다.
   // 남의 판 표지로 덮지 못하게 같은 설치일 때만 고친다.
   const hero = heroOf(b.hero);
   if (hero)
     rows.push(env.DB.prepare(
-      `INSERT INTO heroes (game_id, install, version, first_at, updated_at, name, nation, first_date, date, first_abilities, abilities)
-       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${fresh}
+      `INSERT INTO heroes (game_id, install, version, first_at, updated_at, name, nation, first_date, date, first_abilities, abilities,
+                          first_flagship, flagship, invested, investments)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${fresh}
        ON CONFLICT (game_id) DO UPDATE SET version = excluded.version, updated_at = excluded.updated_at, name = excluded.name,
-                                          nation = excluded.nation, date = excluded.date, abilities = excluded.abilities
+                                          nation = excluded.nation, date = excluded.date, abilities = excluded.abilities,
+                                          first_flagship = CASE WHEN heroes.first_flagship = '' THEN excluded.flagship ELSE heroes.first_flagship END,
+                                          flagship = excluded.flagship, invested = excluded.invested, investments = excluded.investments
        WHERE heroes.install = excluded.install`)
-      .bind(hero.game, b.install, version, now, now, hero.name, hero.nation, hero.date, hero.date, hero.abilities, hero.abilities, b.batch));
+      .bind(hero.game, b.install, version, now, now, hero.name, hero.nation, hero.date, hero.date, hero.abilities, hero.abilities,
+            hero.flagship, hero.flagship, hero.invested, hero.investments, b.batch));
 
   // 날마다 설치 하나에 한 줄 — 대시보드의 설치 수 · 덩이 수 · 날짜별 표 · 버전 목록은 batches 대신 이 작은 표를 센다.
   rows.push(env.DB.prepare(
@@ -112,7 +117,20 @@ function heroOf(h) {
   const name = text(h.name, 32).trim(), date = text(h.date, 10);
   if (!name || !/^1[4-9]\d\d-\d\d-\d\d$/.test(date) || !Array.isArray(h.abilities) || h.abilities.length !== 6
       || !h.abilities.every((v) => Number.isInteger(v) && v >= 1 && v <= 100)) return null;
-  return { game: h.game, name, nation: text(h.nation, 32), date, abilities: JSON.stringify(h.abilities) };
+  return { game: h.game, name, nation: text(h.nation, 32), date, abilities: JSON.stringify(h.abilities),
+           flagship: text(h.flagship, 32).trim(), ...investOf(h.investments) };
+}
+
+// 교역소 투자 — {도시 이름: 누적 금액}. 옛 판은 안 싣는다(합 0 · 빈 표). 도시는 MAX_INVEST_CITIES 곳, 금액은 1 ~ MAX_INVEST 만 받는다.
+const MAX_INVEST_CITIES = 30, MAX_INVEST = 1e10;
+function investOf(v) {
+  const kept = {};
+  if (v && typeof v === 'object' && !Array.isArray(v))
+    for (const [city, amount] of Object.entries(v).slice(0, MAX_INVEST_CITIES)) {
+      const name = text(city, 24).trim();
+      if (name && Number.isSafeInteger(amount) && amount > 0 && amount <= MAX_INVEST) kept[name] = (kept[name] || 0) + amount;
+    }
+  return { invested: Object.values(kept).reduce((s, a) => s + a, 0), investments: JSON.stringify(kept) };
 }
 
 // 하드코어 판 하나가 끝났다 — 이름은 NEW GAME 에서 지은 주인공 이름이다. 판마다 한 줄만 받고, 말이 안 되는 값(발견물 수 · 날짜)은 거른다.
@@ -179,7 +197,8 @@ async function getDashboard(url, env) {
   if (!version) return json(all);
   // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
   if (!all.versions.includes(version))
-    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], heroes: [] });
+    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], heroes: [],
+                  nations: [], flagships: [], investCities: [] });
   return json(await snapshot(env, version, all));
 }
 
@@ -217,10 +236,11 @@ async function aggregate(env, version, whole) {
          FROM daily WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
     whole ? whole.versions : all('SELECT DISTINCT version FROM daily ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
     // 주인공 — 마지막으로 받은 차례로 앞 HERO_LIMIT 판만(색인 heroes_recent 를 따라 그만큼만 읽는다). 버전은 마지막으로 보낸 판의 것이다.
-    all(`SELECT name, nation, first_date, date, first_abilities, abilities, version, updated_at
+    all(`SELECT name, nation, first_date, date, first_abilities, abilities, first_flagship, flagship, invested, version, updated_at
          FROM heroes WHERE 1 = 1 ${cond} ORDER BY updated_at DESC LIMIT ${HERO_LIMIT}`, ...args)
       .then((r) => r.map(({ first_abilities, abilities, ...h }) => ({ ...h, first: JSON.parse(first_abilities), now: JSON.parse(abilities) }))),
   ]);
+  const { nations, flagships, investCities } = await nationsOf(all, cond, args);
 
   // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
   const kinds = [], tops = {};
@@ -252,7 +272,39 @@ async function aggregate(env, version, whole) {
   const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (old.get(r.key)?.[0] || 0), turns: (r.turns || 0) + (old.get(r.key)?.[1] || 0) }));
 
   return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
-           battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known, heroes };
+           battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known, heroes,
+           nations, flagships, investCities };
+}
+
+// 나라 · 기함 · 투자 — 판마다 한 줄인 heroes 를 통째로 센다(한 시간에 한 번). 기함 · 투자는 v1.1.57 부터 온 판에만 있다.
+//   nations      나라마다 판 수 · 투자한 판 수 · 투자 합 · 가장 많이 넣은 판
+//   flagships    지금 기함 선체마다 판 수(나라별로 쪼개어)
+//   investCities 투자한 도시마다 판 수 · 합(investments 몸통을 여기서 펼친다 — json_each 로 펼치면 펼친 줄이 다 읽기로 센다)
+async function nationsOf(all, cond, args) {
+  const [byNation, byHull, bodies] = await Promise.all([
+    all(`SELECT nation, COUNT(*) AS games, SUM(invested > 0) AS investing, SUM(invested) AS invested, MAX(invested) AS top
+         FROM heroes WHERE 1 = 1 ${cond} GROUP BY nation ORDER BY games DESC`, ...args),
+    all(`SELECT flagship, nation, COUNT(*) AS games FROM heroes WHERE flagship <> '' ${cond} GROUP BY flagship, nation`, ...args),
+    all(`SELECT investments FROM heroes WHERE invested > 0 ${cond}`, ...args),
+  ]);
+  const hulls = new Map();
+  for (const { flagship, nation, games } of byHull) {
+    const h = hulls.get(flagship) ?? { flagship, games: 0, nations: {} };
+    h.games += games; h.nations[nation || '-'] = games;
+    hulls.set(flagship, h);
+  }
+  const cities = new Map();
+  for (const { investments } of bodies)
+    for (const [city, amount] of Object.entries(JSON.parse(investments || '{}'))) {
+      const c = cities.get(city) ?? { city, games: 0, invested: 0 };
+      c.games++; c.invested += amount;
+      cities.set(city, c);
+    }
+  return {
+    nations: byNation,
+    flagships: [...hulls.values()].sort((a, b) => b.games - a.games),
+    investCities: [...cities.values()].sort((a, b) => b.invested - a.invested).slice(0, 100),
+  };
 }
 
 // 단계 옵션은 평균만으로는 안 보여 값마다 설치 수를 낸다 — 설치마다 한 줄인 몸통(JSON)을 읽어 여기서 센다.

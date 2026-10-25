@@ -61,7 +61,12 @@ export const DASHBOARD_HTML = `<!doctype html>
     <section><h2>고용한 부하 <small>술집에서 고용</small></h2><div class="scroll"><table id="hires"></table></div></section>
     <section><h2>해고한 부하 <small>부하편성 해고 · 재계약 거절</small></h2><div class="scroll"><table id="dismisses"></table></div></section>
   </div>
-  <section><h2>주인공 <small>판마다 처음 → 마지막 능력치 · 최근 받은 300판</small></h2><div class="scroll"><table id="heroes"></table></div></section>
+  <section><h2>나라 <small>어느 나라로 하는지 · 교역소 투자 — 판마다 마지막 값 · 투자는 v1.1.57 부터</small></h2><table id="nations"></table></section>
+  <div class="two">
+    <section><h2>기함 선체 <small>판마다 지금 기함 · v1.1.57 부터</small></h2><div class="scroll"><table id="flagships"></table></div></section>
+    <section><h2>투자한 도시 <small>도시마다 투자한 판 · 금액 합</small></h2><div class="scroll"><table id="investcities"></table></div></section>
+  </div>
+  <section><h2>주인공 <small>판마다 처음 → 마지막 능력치 · 기함 · 투자 · 최근 받은 300판</small></h2><div class="scroll"><table id="heroes"></table></div></section>
   <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회 · v1.1.30 까지</small></h2><div class="scroll"><table id="voyages"></table></div></section>
   <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
   <section><h2>전투</h2><table id="battles"></table></section>
@@ -181,10 +186,39 @@ function renderHeroes() {
   const rows = data.heroes || [];
   const avg = (i) => (rows.length ? Math.round(rows.reduce((s, h) => s + h.first[i], 0) / rows.length) : '-');
   const cell = (a, b) => (a === b ? n(b) : '<span class="dim">' + n(a) + ' →</span> ' + n(b));
-  $('heroes').innerHTML = '<tr><th class="name">이름</th><th class="name">나라</th><th class="name">게임 날짜</th>' + ABILITIES.map((a) => '<th>' + a + '</th>').join('') + '<th class="name">버전</th></tr>'
-    + (rows.length ? '<tr><td class="name dim" colspan="3">처음 능력치 평균 (' + n(rows.length) + '판)</td>' + ABILITIES.map((_, i) => '<td class="dim">' + avg(i) + '</td>').join('') + '<td></td></tr>'
+  const hull = (h) => (!h.flagship ? '<span class="dim">-</span>' : !h.first_flagship || h.first_flagship === h.flagship ? esc(h.flagship)
+    : '<span class="dim">' + esc(h.first_flagship) + ' →</span> ' + esc(h.flagship));
+  $('heroes').innerHTML = '<tr><th class="name">이름</th><th class="name">나라</th><th class="name">게임 날짜</th>' + ABILITIES.map((a) => '<th>' + a + '</th>').join('')
+      + '<th class="name">기함</th><th>투자</th><th class="name">버전</th></tr>'
+    + (rows.length ? '<tr><td class="name dim" colspan="3">처음 능력치 평균 (' + n(rows.length) + '판)</td>' + ABILITIES.map((_, i) => '<td class="dim">' + avg(i) + '</td>').join('') + '<td></td><td></td><td></td></tr>'
         + rows.map((h) => '<tr><td class="name">' + esc(h.name) + '</td><td class="name">' + esc(h.nation) + '</td><td class="name">' + esc(h.first_date === h.date ? h.date : h.first_date + ' → ' + h.date)
-          + '</td>' + ABILITIES.map((_, i) => '<td>' + cell(h.first[i], h.now[i]) + '</td>').join('') + '<td class="name dim">' + esc(h.version) + '</td></tr>').join('') : EMPTY(10));
+          + '</td>' + ABILITIES.map((_, i) => '<td>' + cell(h.first[i], h.now[i]) + '</td>').join('') + '<td class="name">' + hull(h) + '</td><td>' + (h.invested ? n(h.invested) : '<span class="dim">-</span>')
+          + '</td><td class="name dim">' + esc(h.version) + '</td></tr>').join('') : EMPTY(12));
+}
+
+// 나라 — 판 수와 몫, 그 가운데 교역소에 투자한 판 · 투자 합 · 투자한 판의 평균 · 가장 많이 넣은 판.
+function renderNations() {
+  const rows = data.nations || [], games = sum(rows, 'games');
+  $('nations').innerHTML = '<tr><th class="name">나라</th><th>판</th><th>몫</th><th>투자한 판</th><th>투자 합</th><th>투자한 판 평균</th><th>가장 많이</th><th></th></tr>'
+    + (rows.length ? rows.map((r) => '<tr><td class="name">' + esc(r.nation || '(없음)') + '</td><td>' + n(r.games) + '</td><td>' + pct(r.games, games) + '</td><td>' + n(r.investing)
+        + '</td><td>' + n(r.invested) + '</td><td>' + (r.investing ? n(Math.round(r.invested / r.investing)) : '-') + '</td><td>' + (r.top ? n(r.top) : '-') + '</td>' + bar(r.games, games) + '</tr>').join('')
+        + '<tr><td class="name dim">합</td><td class="dim">' + n(games) + '</td><td></td><td class="dim">' + n(sum(rows, 'investing')) + '</td><td class="dim">' + n(sum(rows, 'invested')) + '</td><td></td><td></td><td></td></tr>'
+      : EMPTY(8));
+}
+
+// 기함 선체 — 판 수와 나라마다 몇 판인지.
+function renderFlagships() {
+  const rows = data.flagships || [], games = sum(rows, 'games');
+  $('flagships').innerHTML = '<tr><th>#</th><th class="name">선체</th><th>판</th><th>몫</th><th class="name">나라</th></tr>'
+    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(r.flagship) + '</td><td>' + n(r.games) + '</td><td>' + pct(r.games, games) + '</td><td class="name wrap dim">'
+        + Object.entries(r.nations).sort((a, b) => b[1] - a[1]).map(([k, v]) => esc(k) + ' ' + n(v)).join(' · ') + '</td></tr>').join('') : EMPTY(5));
+}
+
+// 투자한 도시 — 금액 합이 큰 차례로 앞 100곳.
+function renderInvestCities() {
+  const rows = data.investCities || [], top = Math.max(1, ...rows.map((r) => r.invested));
+  $('investcities').innerHTML = '<tr><th>#</th><th class="name">도시</th><th>판</th><th>금액 합</th><th></th></tr>'
+    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(r.city) + '</td><td>' + n(r.games) + '</td><td>' + n(r.invested) + '</td>' + bar(r.invested, top) + '</tr>').join('') : EMPTY(5));
 }
 
 // 네비게이션 — 열쇠는 「묶음:값」이다. 묶음마다 그 안에서의 몫을 낸다.
@@ -239,6 +273,9 @@ function render() {
   rankTable('discoveries', '발견물', data.discoveries, (r) => esc(r.name || '#' + r.key));
   rankTable('hires', '부하', data.hires || [], (r) => esc(r.name || '#' + r.key));
   rankTable('dismisses', '부하', data.dismisses || [], (r) => esc(r.name || '#' + r.key));
+  renderNations();
+  renderFlagships();
+  renderInvestCities();
   renderHeroes();
   renderVoyages();
   renderNavs();
