@@ -942,8 +942,23 @@ public sealed class Player
     /// <summary>보관 칸 수. 원본도 아흔아홉이다.</summary>
     public const int MaxStored = 99;
 
+    /// <summary>보관함 넓히기 한 번에 느는 칸.</summary>
+    public const int StoreExpansionSlots = 20;
+
+    /// <summary>
+    /// 보관함을 넓힌 횟수 — 모드 「작위」 혜택(Engine.Town.Nobility.ExpandStore)이 값을 받고 늘린다. 원본에 없는 칸이다.
+    /// 모드를 꺼도 넓힌 칸은 그대로 둔다 — 든 것이 사라지지 않게.
+    /// </summary>
+    public int StoreExpansions { get; private set; }
+
+    /// <summary>넓힌 횟수를 적는다.</summary>
+    public void SetStoreExpansions(int count) => StoreExpansions = Math.Clamp(count, 0, 7);
+
+    /// <summary>지금 보관할 수 있는 칸 수 — 원본 <see cref="MaxStored"/> 에 넓힌 칸을 더한 것.</summary>
+    public int StoreLimit => MaxStored + StoreExpansionSlots * StoreExpansions;
+
     /// <summary>보관 칸이 꽉 찼는지.</summary>
-    public bool IsStoreFull => _stored.Count >= MaxStored;
+    public bool IsStoreFull => _stored.Count >= StoreLimit;
 
     /// <summary>소지품 한 칸을 자택에 맡긴다. 자리가 없거나 칸이 없으면 false.</summary>
     public bool Store(int index)
@@ -981,9 +996,10 @@ public sealed class Player
         foreach (int id in items)
             if (id >= 0 && _items.Count < limit) _items.Add(id);
 
+        int storeLimit = Math.Max(StoreLimit, _stored.Count);
         _stored.Clear();
         foreach (int id in stored)
-            if (id >= 0 && _stored.Count < MaxStored) _stored.Add(id);
+            if (id >= 0 && _stored.Count < storeLimit) _stored.Add(id);
     }
 
     /// <summary>그 값을 치를 수 있는지.</summary>

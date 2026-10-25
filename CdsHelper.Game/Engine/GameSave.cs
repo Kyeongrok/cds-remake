@@ -415,6 +415,7 @@ public static class GameSave
         Dictionary<int, int>? PlagueSpread = null, bool? Hardcore = null,
         List<string>? HardcoreMarks = null, string? HardcoreSeal = null,
         Dictionary<int, long>? GrowthFunds = null, Dictionary<int, int>? GoodsRates = null,
+        int? StoreExpansions = null,
         List<string>? DevMarks = null, string? DevSeal = null)
     {
         /// <summary>읽을 때 봉인을 대 본 결과 — 맞으면 참, 안 맞거나 없으면 거짓, 따지지 않는 앞 판이면 null. 파일에는 안 적는다.</summary>
@@ -517,6 +518,8 @@ public static class GameSave
                             AnnouncedYears: player.AnnouncedOn.ToDictionary(e => e.Key, e => e.Value.Year),
                             // 작위(모드 「작위」). 이 칸 앞의 세이브는 작위가 없다.
                             NobleRank: player.NobleRank,
+                            // 보관함을 넓힌 횟수(모드 「작위」). 이 칸 앞의 세이브는 99칸이다.
+                            StoreExpansions: player.StoreExpansions,
                             // 교역소 투자(모드 「작위」). 이 칸 앞의 세이브는 투자가 없다.
                             Investments: player.Investments.ToDictionary(e => e.Key, e => e.Value),
                             // 연표가 쓰는 날짜. 이 칸 앞의 세이브는 해만 있어 1월로 연다.

@@ -3670,6 +3670,7 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreHistory(saved.HistoryMonth, saved.HistoryNations, saved.HistoryDone);
             _game.Player.RestoreAnnouncedDates(saved.AnnouncedOn, saved.AnnouncedYears);
             _game.Player.SetNobleRank(saved.NobleRank ?? 0);
+            _game.Player.SetStoreExpansions(saved.StoreExpansions ?? 0);
             _game.Player.RestoreInvestments(saved.Investments);
             _game.Player.RestoreGrowthFunds(saved.GrowthFunds);
             _game.Player.RestoreGoodsRates(saved.GoodsRates);

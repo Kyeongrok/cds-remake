@@ -49,7 +49,7 @@ public sealed class StorageDialog : GameWindow
 
     /// <summary>칸 배열 — 빈 자리는 <see cref="Empty"/> 다.</summary>
     private readonly int[] _bag;
-    private readonly int[] _box = new int[Player.MaxStored];
+    private int[] _box;
 
     private readonly GameList _bagList, _boxList;
 
@@ -62,6 +62,8 @@ public sealed class StorageDialog : GameWindow
         _items = items;
         // 소지품 칸 수는 작위 혜택(자작)으로 늘 수 있다 — 이미 더 지녔으면 그만큼.
         _bag = new int[Math.Max(player.ItemLimit, player.Items.Count)];
+        // 보관 칸 수는 작위 혜택(보관함 넓히기)으로 늘 수 있다.
+        _box = new int[Math.Max(player.StoreLimit, player.Stored.Count)];
 
         Title = "아이템 교환";
         WindowStyle = WindowStyle.None;
@@ -74,8 +76,8 @@ public sealed class StorageDialog : GameWindow
         Load(_bag, player.Items);
         Load(_box, player.Stored);
 
-        _bagList = NewList(_bag);
-        _boxList = NewList(_box);
+        _bagList = NewList(() => _bag);
+        _boxList = NewList(() => _box);
         _bagList.Select(0);
         _boxList.Select(0);
         _bagList.SelectionChanged += () => Hand(onBag: true);
@@ -108,6 +110,8 @@ public sealed class StorageDialog : GameWindow
             Margin = new Thickness(0, 6, 0, 2),
         };
         buttons.Children.Add(new GameButton("교환", Swap, width: 110));
+        // 모드 「작위」 — 작위 하나마다 한 번, 값을 받고 보관함을 20칸 넓힌다. 원본에 없는 단추다.
+        if (Engine.Town.Nobility.Enabled) buttons.Children.Add(new GameButton("넓히기", Expand, width: 110));
         buttons.Children.Add(new GameButton("종료", Close, width: 110));
 
         var title = GameUi.TitleBar("아이템 교환", Close);
@@ -132,8 +136,8 @@ public sealed class StorageDialog : GameWindow
             slots[i] = i < from.Count ? from[i] : Empty;
     }
 
-    private GameList NewList(int[] slots) =>
-        new(Columns, i => [ItemName(slots[i])], slots.Length, maxHeight: ListHeight)
+    private GameList NewList(Func<int[]> slots) =>
+        new(Columns, i => [ItemName(slots()[i])], slots().Length, maxHeight: ListHeight)
         {
             Width = ListWidth,
             Margin = new Thickness(0),
@@ -179,6 +183,41 @@ public sealed class StorageDialog : GameWindow
         (to[free], from[at]) = (from[at], Empty);
         _bagList.Refresh();
         _boxList.Refresh();
+    }
+
+    /// <summary>
+    /// 모드 「작위」 보관함 넓히기 — k 번째는 작위 k 와 k x 10만 닢(<see cref="Engine.Town.Nobility.ExpandStore"/>).
+    /// 늘어난 칸은 보관 목록 끝에 빈 칸으로 붙는다.
+    /// </summary>
+    private void Expand()
+    {
+        if (!Engine.Town.Nobility.StoreCanGrow(_player))
+        {
+            NoticeDialog.Show(this, "보관함을 더 넓힐 수 없습니다");
+            return;
+        }
+        int rank = Engine.Town.Nobility.NextStoreRank(_player), price = Engine.Town.Nobility.StoreExpansionPrice(_player);
+        if (!Engine.Town.Nobility.StoreRankReached(_player))
+        {
+            NoticeDialog.Show(this, $"작위 {Engine.Town.Nobility.NameOf(rank)} 이상이어야 넓힐 수 있습니다");
+            return;
+        }
+        if (!_player.CanAfford(price))
+        {
+            NoticeDialog.Show(this, $"금화가 모자랍니다 (금화 {price:N0}닢)");
+            return;
+        }
+        if (!ConfirmDialog.Ask(this, $"금화 {price:N0}닢으로 보관함을 {Player.StoreExpansionSlots}칸 넓히겠습니까?")) return;
+        if (!Engine.Town.Nobility.ExpandStore(_player)) return;
+
+        int old = _box.Length;
+        Array.Resize(ref _box, Math.Max(_player.StoreLimit, old));
+        for (int i = old; i < _box.Length; i++) _box[i] = Empty;
+        int keep = _boxList.Selected;
+        _boxList.Rebuild(_box.Length);
+        _boxList.Select(Math.Max(0, keep));
+        Hand(_onBag);
+        NoticeDialog.Show(this, $"보관함이 {_box.Length}칸이 되었습니다");
     }
 
     private void OnKey(object sender, KeyEventArgs e)

@@ -98,6 +98,35 @@ public static class Nobility
     public static bool InHomeCapital(Game game) =>
         game.Nations?.Find(game.Player.Nation)?.Capital is { } capital && capital >= 0 && capital == game.Player.CityId;
 
+    // ── 자택 보관함 넓히기 ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 보관함 넓히기 한 번의 값 단위 — k 번째 넓히기는 작위 k 가 있어야 하고 k x 10만 닢이다
+    /// (기사 10만 · 남작 20만 … 대공 70만, 모두 280만 — 사용자, 2026-10-25). 원본에 없는 혜택이다.
+    /// </summary>
+    public const int StorePricePerRank = 100_000;
+
+    /// <summary>다음 넓히기에 필요한 작위.</summary>
+    public static int NextStoreRank(Player player) => player.StoreExpansions + 1;
+
+    /// <summary>다음 넓히기의 값.</summary>
+    public static int StoreExpansionPrice(Player player) => NextStoreRank(player) * StorePricePerRank;
+
+    /// <summary>더 넓힐 칸이 남았는지(대공까지 일곱 번).</summary>
+    public static bool StoreCanGrow(Player player) => player.StoreExpansions < MaxRank;
+
+    /// <summary>지금 작위로 다음 넓히기를 할 수 있는지 — 모드를 켰고, 작위가 닿았을 때.</summary>
+    public static bool StoreRankReached(Player player) =>
+        Enabled && StoreCanGrow(player) && player.NobleRank >= NextStoreRank(player);
+
+    /// <summary>값을 치르고 보관함을 <see cref="Player.StoreExpansionSlots"/> 칸 넓힌다. 작위가 모자라거나 돈이 모자라면 false.</summary>
+    public static bool ExpandStore(Player player)
+    {
+        if (!StoreRankReached(player) || !player.Pay(StoreExpansionPrice(player))) return false;
+        player.SetStoreExpansions(player.StoreExpansions + 1);
+        return true;
+    }
+
     /// <summary>모드를 켰을 때 돌리는 전역 대본 — 직업과 상관없이 늘 돈다.</summary>
     public const string BookName = "작위";
 }

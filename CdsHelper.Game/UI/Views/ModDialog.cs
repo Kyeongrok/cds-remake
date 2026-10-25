@@ -519,6 +519,7 @@ public sealed class ModDialog : GameWindow
             + " 작위마다 패시브 혜택이 붙고 쌓입니다 — "
             + string.Join(", ", Engine.Town.Passives.All.Where(p => p.Rank > 0).Select(p => $"{Engine.Town.Nobility.Names[p.Rank]}: {p.Name}")) + "."
             + " 패시브는 도구 앱 「요소 → 패시브」에서 만들고 고칩니다."
+            + " 자택 「보관」 창의 「넓히기」로 작위 하나마다 한 번, 보관함을 20칸 넓힙니다(k 번째 넓히기는 작위 k 와 금화 k x 10만닢 — 대공이면 239칸)."
             + " 인물정보에 작위와 공적, 「작위」 단추가 나옵니다."));
 
         // 하드코어 모드 — 여기서 켜야 NEW GAME 에서 하드코어로 할지 묻는다. 하드코어 판은 게임 오버가 되면 세이브가 모두 지워진다.
