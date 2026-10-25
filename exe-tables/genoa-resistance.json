@@ -1,0 +1,282 @@
+﻿{
+  "Stamp": "",
+  "Data": {
+    "Parts": [
+      {
+        "Index": 0,
+        "Step": 0,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "도시 조건: 28(제노바)"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 5
+              },
+              "Note": "건물 조건: 5(여관)"
+            },
+            {
+              "OpCode": "17 00",
+              "Call": "InNation",
+              "Args": {
+                "Nation": 3
+              },
+              "Note": "국가 조건: 3(프랑스 왕국) — 1507년 5월 역사 대본 뒤"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "<제독>， 나를 기억하시오？ 제노바 총독이던 자노·프레고소요． 프랑스 놈들에게 총독부를 빼앗기고 이렇게 여관 구석에 숨어 지내는 신세가 되었소．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "허나 제노바의 자유를 아주 버린 것은 아니오． 뜻있는 시민들을 모아 몰래 프랑스 수비대에 맞서고 있는데， 무기를 사고 사람을 숨겨 줄 돈이 늘 모자라오．"
+              }
+            },
+            {
+              "OpCode": "0B 0A",
+              "Call": "AskYesNo",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "부탁이오． 제노바를 위해 금화 100,000닢을 대 주시겠소？"
+              }
+            },
+            {
+              "OpCode": "43 45",
+              "GotoIf": {
+                "Call": "ResultFalse"
+              },
+              "Target": "L_NO",
+              "Note": "결과 거짓 시 이동"
+            },
+            {
+              "OpCode": "43 2C",
+              "GotoIf": {
+                "Call": "GreaterOrEqual",
+                "Args": {
+                  "A": {
+                    "Stat": 3,
+                    "Name": "소지금"
+                  },
+                  "B": {
+                    "Const": 100000
+                  }
+                }
+              },
+              "Target": "L_PAY",
+              "Note": "소지금 >= 100000 이면 이동"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "……고맙소만， 지금 가진 돈으로는 모자라 보이는구려． 마련되거든 다시 이 여관으로 와 주시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            },
+            {
+              "Label": "L_PAY",
+              "OpCode": "1A 14",
+              "Call": "SubGold",
+              "Args": {
+                "Amount": 100000
+              },
+              "Note": "금화 -100000"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "오오， 이 은혜는 제노바 시민 모두가 잊지 않을 것이오． 이 돈이면 동지들이 한동안은 버틸 수 있소．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "일이 되어 가는 대로 알리리다． 다음에 제노바에 들르거든 이 여관을 찾아 주시오．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 300
+                }
+              },
+              "Note": "명성 + 300"
+            },
+            {
+              "OpCode": "06 4D",
+              "Call": "NextStep",
+              "Note": "다음 단계 — 파트 1(보고)"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            },
+            {
+              "Label": "L_NO",
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "그렇소…… 억지로 청할 일은 아니지． 마음이 바뀌거든 이 여관으로 오시오．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 1,
+        "Step": 1,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 1
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 08",
+              "Call": "InCity",
+              "Args": {
+                "City": 28
+              },
+              "Note": "도시 조건: 28(제노바)"
+            },
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 5
+              },
+              "Note": "건물 조건: 5(여관)"
+            },
+            {
+              "OpCode": "2E 1A",
+              "Call": "RandomChance",
+              "Args": {
+                "Denominator": 2,
+                "Success": 1
+              },
+              "Note": "무작위 확률 조건: 1 / 2 — 돈을 댄 바로 그 걸음에 곧장 보고하지 않게"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "<제독>， 기다리고 있었소！ 그대가 대 준 돈으로 무기를 사들이고 동지들을 숨겨 줄 집을 마련했소．"
+              }
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "프랑스 수비대가 아직 성을 쥐고 있지만， 시민들의 마음은 벌써 우리 편이오． 머지않아 제노바는 반드시 다시 일어설 것이오．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "자노·프레고소",
+                "Sponsor": 51,
+                "Text": "그대의 이름은 제노바의 은인으로 길이 전해질 것이오． 바다에서 늘 무사하시길．"
+              }
+            },
+            {
+              "OpCode": "19 1C",
+              "Call": "AddStat",
+              "Args": {
+                "Stat": 17,
+                "StatName": "명성",
+                "Value": {
+                  "Const": 500
+                }
+              },
+              "Note": "명성 + 500"
+            },
+            {
+              "OpCode": "04 4D",
+              "Call": "EndEventCompletely",
+              "Note": "이벤트 완전 종료"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  "Source": "제노바 저항 — 원본에 없는 전역 대본(1507년 제노바가 프랑스에 넘어간 뒤 여관의 옛 총독이 저항 자금을 청한다)",
+  "Version": 15
+}

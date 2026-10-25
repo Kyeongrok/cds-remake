@@ -1,4 +1,4 @@
-using CdsHelper.Game.Engine.Disev;
+﻿using CdsHelper.Game.Engine.Disev;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.Engine.Discovery;
@@ -39,11 +39,19 @@ public static class StoryLog
     /// <summary>마을 사람 대사 대본(exe-tables/마을대사.json).</summary>
     public const string TownTalkBook = "마을대사";
 
+    /// <summary>
+    /// 제노바 저항 대본(exe-tables/genoa-resistance.json, 「제노바저항」) — 원본에 없는 퀘스트다(요청, 2026-10-25).
+    /// 역사 대본이 제노바를 프랑스에 넘긴 뒤(1507년 5월) 제노바 여관에 들면 옛 총독 자노·프레고소(후원자 51)가
+    /// 저항 자금 금화 10만닢을 청하고(파트 0 — 대 주면 명성 +300), 다음에 들르면 일이 되어 가는 것을 알린다(파트 1 — 명성 +500, 끝).
+    /// </summary>
+    public const string GenoaBook = "제노바저항";
+
     public static IEnumerable<string> GlobalBooks()
     {
         if (Town.Nobility.Enabled) yield return Town.Nobility.BookName;
         // 마을 사람 대사 — 단계를 안 올리는 책이라 파트 0 이 늘 걸린다. 슬롯마다 건물 · 명령 조건으로 가른다.
         yield return TownTalkBook;
+        yield return GenoaBook;
     }
 
     /// <summary>그 책(<paramref name="cache"/>)에서 그 사건으로 열리는 파트. 없으면 null.</summary>
