@@ -83,16 +83,19 @@ public static class Scenarios
         // 파워업키트의 제노바 · 잉글랜드 국적은 수도에 자택이 선다 — 도시 그림의 빈 풀밭 · 빈터를 골랐다.
         // 제노바는 총독부 · 교역소 · 조선소 사이 빈터다(요청) — 처음 둔 오른쪽 풀밭(272,113)은 시가지에서 너무 멀었다.
         // 누르는 판(상자 가운데 절반)이 조선소 판과 귀퉁이만 조금 겹친다.
+        // 파리는 왕궁 「망명」(Engine.Town.Exile)으로 프랑스에 가면 자택이 선다 — 그림 오른쪽 위, 돔 지붕 건물 오른쪽의 빈 풀밭이다(누르는 판이 다른 건물과 안 겹친다).
+        // 전에는 자리가 없어 프랑스로 망명해도 자택이 안 섰다(제보).
         return cityId switch
         {
             GenoaCity => (34, 177),
             LondonCity => (262, 173),
+            ParisCity => (282, 95),
             _ => null,
         };
     }
 
-    /// <summary>제노바 · 런던의 도시 번호 — 파워업키트 국적의 수도다.</summary>
-    private const int GenoaCity = 28, LondonCity = 38;
+    /// <summary>제노바 · 런던 · 파리의 도시 번호 — 파워업키트 국적의 수도와 망명을 받는 왕궁 도시다.</summary>
+    private const int GenoaCity = 28, LondonCity = 38, ParisCity = 14;
 
     /// <summary>모드 「시나리오 모드」를 켰는지.</summary>
     public static bool Enabled => GameSettings.ScenarioMode;
