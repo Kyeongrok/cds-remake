@@ -2422,7 +2422,11 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 Teaches: TownWorks.Teaches(teachMask),
                 Poor: _player.Gold <= Lodging.OddJobMaxGold,   // 0x0047FE70 의 jle — 100닢이면 뜬다
                 // 원본도 알릴 것이 있고 <b>모항</b>일 때만 줄을 켠다(0x00476DE0).
-                CanAnnounce: _cityId == _player.HomePort && Port.Announceable().Count > 0,
+                // 항구가 없는 모항(프랑스로 망명한 파리 따위)은 발표할 곳이 없어 성문이 대신 받는다 — 원본에 없는 길이다.
+                // 항구가 있는 도시의 성문에는 안 선다.
+                CanAnnounce: _cityId == _player.HomePort
+                             && (facility.Kind != FacilityKind.Gate || !_harborPlaced)
+                             && Port.Announceable().Count > 0,
                 PatronRow: patron == null ? null : Patrons.PatronRow(patron),
                 PatronBribe: patron != null && Patrons.CanBribe(patron),
                 PatronBorrow: patron != null && Patrons.CanBorrow(patron, KindsHere.Contains("항구")),

@@ -91,7 +91,8 @@ public static class TownWorks
         new(TownWork.FleetForm, "함대편성", FacilityKind.Harbor),
         new(TownWork.CrewForm, "선원편성", FacilityKind.Harbor),
         new(TownWork.CityInfo, "마을정보", FacilityKind.Harbor),
-        new(TownWork.Announce, Facility.Announce, FacilityKind.Harbor),
+        // 성문 발표는 항구가 없는 모항(파리 같은 내륙 수도)에서만 선다 — 원본에 없는 길이다.
+        new(TownWork.Announce, Facility.Announce, FacilityKind.Harbor, FacilityKind.Gate),
 
         // ── 조선소 ────────────────────────────────────────────────────────
         // "구입" · "매각" 은 시장에도 있는 이름이다. 그래서 자리로 가린다.
@@ -160,7 +161,9 @@ public static class TownWorks
     /// </summary>
     /// <param name="Teaches">건물 표에 가르침 비트가 섰는지 — 수련이 붙는다.</param>
     /// <param name="Poor">주머니가 가벼운지 — 여관 허드렛일이 그때만 나온다.</param>
-    /// <param name="CanAnnounce">알릴 발견물이 있는지 — 항구 발표가 그때만 나온다.</param>
+    /// <param name="CanAnnounce">
+    /// 알릴 발견물이 있는지 — 항구 발표가 그때만 나온다. 성문에서는 항구가 없는 모항일 때만 참이다.
+    /// </param>
     /// <param name="PatronRow">
     /// 후원자가 앉았으면 그 줄(설득 · 보고 · 계약중단). 없으면 null.
     /// </param>
@@ -223,7 +226,8 @@ public static class TownWorks
 
         // 항구의 발표는 모항이고 알릴 발견물이 있을 때만 뜬다
         // (원본도 0x00477974 가 0x00476DE0 의 값을 그 줄의 보임 칸에 넣는다).
-        if (facility.Kind == FacilityKind.Harbor && !state.CanAnnounce)
+        // 성문의 발표는 원본에 없는 줄이라, 거기에 더해 <b>항구가 없는 도시</b>일 때만 CanAnnounce 가 선다.
+        if (facility.Kind is FacilityKind.Harbor or FacilityKind.Gate && !state.CanAnnounce)
             items.Remove(NameOf(TownWork.Announce));
 
         // 조선소 「특별주문」은 원본에 없는 줄이라 모드에서 켰을 때만 낸다.

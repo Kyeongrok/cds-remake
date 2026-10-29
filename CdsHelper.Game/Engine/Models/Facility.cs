@@ -106,8 +106,10 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
             ["휴양", "보관", "저금", "후손을 남긴다", "교육", "세대교체",
              "백과사전을 본다", "연표를 본다", "은퇴한다", "기능", "밖으로 나간다"]),
 
+        // 성문 「발표」는 원본에 없는 줄이다 — 항구가 없는 도시(파리 같은 내륙 수도)가 모항이면
+        // 발표할 곳이 없어, 그런 도시에서만 성문이 항구 대신 발표를 받는다(TownWorks.LinesOf 가 그 밖에는 뺀다).
         new(FacilityKind.Gate, "성문",
-            ["탐험을 떠난다", "마을로 돌아간다"]),
+            ["탐험을 떠난다", Announce, "마을로 돌아간다"]),
     ];
 
     /// <summary>
@@ -180,7 +182,7 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     /// <summary>선원편성 창을 접고 항구 창으로 돌아가는 줄.</summary>
     public const string CrewExit = "돌아간다";
 
-    /// <summary>항구에서 발견물을 알리는 줄. 알릴 것이 없으면 아예 안 뜬다.</summary>
+    /// <summary>항구(항구 없는 도시면 성문)에서 발견물을 알리는 줄. 알릴 것이 없으면 아예 안 뜬다.</summary>
     public const string Announce = "발표";
 
     /// <summary>

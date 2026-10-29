@@ -61,6 +61,9 @@ internal static class TownMenu
     /// <summary>조합 「의뢰」 줄이 대본에 올라가는 번호 — 원본 조합 칸과 안 겹치게 붙박는다.</summary>
     public const int GuildQuestRow = 12;
 
+    /// <summary>성문 「발표」 줄이 대본에 올라가는 번호 — 원본 성문 칸(0 탐험 · 1 돌아간다)과 안 겹치게 붙박는다.</summary>
+    public const int GateAnnounceRow = 13;
+
     /// <summary>
     /// 이야기 대본에 올리는 줄 번호 — 원본은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
     /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
@@ -81,6 +84,9 @@ internal static class TownMenu
         // 조합 「의뢰」도 원본에 없는 줄이다(늘 「나온다」 바로 위) — 붙박이 번호를 주고, 「나온다」는 의뢰 줄이 없던 차례로 올린다.
         if (facility.Kind == FacilityKind.Guild)
             return work switch { TownWork.GuildQuest => GuildQuestRow, TownWork.Exit when row > 0 => row - 1, _ => row };
+        // 성문 「발표」도 원본에 없는 줄이다(탐험 바로 밑) — 붙박이 번호를 주고, 「돌아간다」는 원본 칸(1)을 지킨다.
+        if (facility.Kind == FacilityKind.Gate)
+            return work switch { TownWork.Announce => GateAnnounceRow, TownWork.Exit => 1, _ => row };
         if (facility.Kind is not (FacilityKind.Church or FacilityKind.Palace or FacilityKind.Other)) return row;
         bool palace = facility.Kind == FacilityKind.Palace;
         return work switch
