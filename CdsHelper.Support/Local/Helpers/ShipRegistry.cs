@@ -187,7 +187,7 @@ public static class ShipRegistry
         // 앱에 같이 싣는 배(asset/ship-added) — 손으로 등록한 배보다 먼저 이름을 잡는다.
         foreach (var (design, folder) in LoadBundled())
             if (!string.IsNullOrWhiteSpace(design.Name) && taken.Add(design.Name))
-                hulls.Add(ToHull(design, folder));
+                hulls.Add(ToHull(design, folder) with { Bundled = true });
 
         foreach (var design in saved)
         {

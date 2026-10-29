@@ -345,6 +345,9 @@ public sealed class GameSettingsData
     /// <summary>원본 274개에 <b>더해 넣은 발견물</b>(돌묵상어 따위)과 그 힌트를 게임에 낼지. 켜 두고 시작한다.</summary>
     public bool ExtraDiscoveries { get; set; } = true;
 
+    /// <summary>앱에 실은 <b>추가 선박</b>(asset/ship-added — 바사 · 케치)을 조선소에 낼지. 켜 두고 시작한다(파워업키트가 켠다).</summary>
+    public bool ExtraShips { get; set; } = true;
+
     /// <summary>보고를 마치고 나설 때 부하 재계약을 안 물을지(부하 해고를 켰을 때만). 켜 두고 시작한다.</summary>
     public bool SkipRecontract { get; set; } = true;
 
@@ -1726,6 +1729,18 @@ public static class GameSettings
     {
         get => Get(d => d.ExtraDiscoveries);
         set => Set(d => d.ExtraDiscoveries = value);
+    }
+
+    /// <summary>
+    /// 앱에 실은 <b>추가 선박</b>(<c>asset/ship-added</c> — 바사 · 케치)을 조선소에서 팔지 — 모드 창 「일반」. 끄면 조선소 「구입」 ·
+    /// 특별주문 · 후원자가 대 주는 배에서 빠져 원본 그대로다. 이미 산 배는 그대로 쓴다 — 선체 목록(<c>Hull.All</c>)에서
+    /// 빼지 않으므로 세이브를 되돌릴 때(<c>Hull.Find</c>) 그대로 찾는다. 손으로 등록한 배(<c>ships.json</c>)는 이 줄과 상관없다.
+    /// </summary>
+    /// <remarks>파워업키트면 적힌 값과 상관없이 켜진 것으로 친다 — <see cref="MoreNations"/> 와 같은 까닭이다.</remarks>
+    public static bool ExtraShips
+    {
+        get => Get(d => d.ExtraShips) || ModPreset == 4;
+        set => Set(d => d.ExtraShips = value);
     }
 
     public static bool AutoSaveOnPort

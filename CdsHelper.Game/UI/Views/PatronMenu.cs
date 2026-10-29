@@ -644,7 +644,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             int room = Math.Max(0, Player.MaxDocked - _player.DockedAt(_cityId).Count);
             hulls = [.. PatronShips.Take(_player, lender, rows, Math.Min(ships, room)).Select(Hull.FromTable)];
         }
-        else if (Hull.All.Where(h => !h.SoldNowhere).MinBy(h => h.Price) is { } cheapest)   // 실어만 둔 배는 안 준다
+        // 실어만 둔 배는 안 주고, 모드 「추가 선박」을 끄면 앱에 실은 배(바사 · 케치)도 안 준다.
+        else if (Hull.All.Where(h => !h.SoldNowhere && (Local.Settings.GameSettings.ExtraShips || !h.Bundled)).MinBy(h => h.Price) is { } cheapest)
             hulls = [.. Enumerable.Repeat(cheapest, ships)];
         else return 0;
 

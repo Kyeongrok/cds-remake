@@ -329,11 +329,13 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// </remarks>
     private List<Hull> SoldHulls()
     {
-        if (_game.CityRows is not { } cities) return [.. Hull.All.Where(h => !h.SoldNowhere)];
+        // 모드 「추가 선박」을 끄면 앱에 실은 배(바사 · 케치)는 안 판다 — 이미 산 배는 함대에 그대로 있다.
+        bool extra = Local.Settings.GameSettings.ExtraShips;
+        if (_game.CityRows is not { } cities) return [.. Hull.All.Where(h => !h.SoldNowhere && (extra || !h.Bundled))];
 
         var sold = ShipyardStock.HullsAt(cities, _cityId, _player.Date);
         // 붙인 배(번호 −1)는 제가 적은 조선소에서만 판다 — 적은 곳이 없으면(앱에 실어만 둔 바사 따위) 어디서도 안 판다.
-        var list = Hull.All.Where(h => h.Id is < 0 or >= 8 ? h.SoldIn(_cityId) : sold.Contains(h.Id)).ToList();
+        var list = Hull.All.Where(h => h.Id is < 0 or >= 8 ? h.SoldIn(_cityId) && (extra || !h.Bundled) : sold.Contains(h.Id)).ToList();
 
         // 붙박이에 없는 선체(코구·대형카락·다우)도 켜져 있으면 낸다.
         foreach (int id in sold)

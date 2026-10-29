@@ -1,0 +1,19 @@
+{
+  "Id": "ketch",
+  "Name": "케치",
+  "Hp": 25,
+  "Speed": 85,
+  "SpeedTop": 105,
+  "Capacity": 150,
+  "Tonnage": 1500,
+  "Crew": 12,
+  "Guns": 4,
+  "Price": 15000,
+  "MaxMasts": 2,
+  "CanChangeSail": false,
+  "Builtin": null,
+  "Movie": null,
+  "Cities": [
+    24
+  ]
+}

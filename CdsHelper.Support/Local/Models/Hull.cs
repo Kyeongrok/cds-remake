@@ -72,6 +72,12 @@ public sealed record Hull(
     /// <summary>어디서도 안 파는 배인지 — 앱에 실어만 두었다.</summary>
     public bool SoldNowhere => Cities is { Length: 0 };
 
+    /// <summary>
+    /// 앱에 실은 배(<c>asset/ship-added</c>, <see cref="ShipRegistry.LoadBundled"/>)인지 — 모드 「추가 선박」이 조선소에 낼지 정한다.
+    /// 손으로 등록한 배(<see cref="ShipRegistry.Root"/>)와 붙박이는 거짓이다. 세이브에는 안 적는다.
+    /// </summary>
+    public bool Bundled { get; init; }
+
     /// <summary>내구를 개조로 올릴 수 있는 데까지(선체 표 <c>+0x18</c>).</summary>
     public int HpCeiling => HpTop > 0 ? HpTop : Hp * Ship.RefitCeiling;
 
