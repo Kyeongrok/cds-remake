@@ -24,9 +24,7 @@ public static class PortraitStore
 {
     /// <summary>고칠 수 있는 초상화 벌이 사는 자리.</summary>
     public static string Directory =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "CdsHelper", "asset");
+        UserDataFolder.Combine("asset");
 
     /// <summary>남자·여자 벌의 파일 이름.</summary>
     public static string NameOf(bool female) => female ? "FEMALE.CDS" : "MALE.CDS";

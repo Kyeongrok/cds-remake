@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -221,6 +222,6 @@ public static class BuildingSprites
         for (int up = 0; up < 8 && dir != null; up++, dir = dir.Parent)
             if (Directory.Exists(Path.Combine(dir.FullName, "asset")) && dir.EnumerateFiles("*.sln").Any())
                 return Path.Combine(dir.FullName, "asset", "buildingsprite");
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", "buildingsprite");
+        return UserDataFolder.Combine("asset", "buildingsprite");
     }
 }

@@ -84,9 +84,7 @@ public static class ShipRegistry
     };
 
     /// <summary>등록해 넣은 배들이 사는 폴더.</summary>
-    public static string Root { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "ships");
+    public static string Root { get; } = UserDataFolder.Combine("ships");
 
     public static string ListPath => Path.Combine(Root, "ships.json");
 

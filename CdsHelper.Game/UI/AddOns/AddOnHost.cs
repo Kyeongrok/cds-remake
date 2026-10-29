@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 using MoonSharp.Interpreter;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.UI.AddOns;
 
@@ -42,8 +43,7 @@ public sealed record AddOnStage(
 public static class AddOnHost
 {
     /// <summary>애드온 폴더.</summary>
-    public static string Root { get; private set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "AddOns");
+    public static string Root { get; private set; } = UserDataFolder.Combine("AddOns");
 
     /// <summary>저장 변수 · 패널 자리를 두는 폴더 — 애드온 폴더를 지우고 새로 깔아도 남게 따로 둔다.</summary>
     internal static string SavedDir => Path.Combine(Root, "SavedVariables");

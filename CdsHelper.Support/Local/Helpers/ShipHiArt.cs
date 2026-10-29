@@ -41,8 +41,7 @@ public static class ShipHiArt
         yield return Path.Combine(AppContext.BaseDirectory, "asset", assetFolder);
     }
 
-    private static string UserDirectory(string assetFolder) => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", assetFolder);
+    private static string UserDirectory(string assetFolder) => UserDataFolder.Combine("asset", assetFolder);
 
     private static string? _source;
     private static bool _sourceLooked;

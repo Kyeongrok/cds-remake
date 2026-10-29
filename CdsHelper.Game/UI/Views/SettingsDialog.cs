@@ -5,6 +5,8 @@ using System.Windows;
 using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Support.Local.Settings;
 using CdsHelper.Game.Local.Settings;
+using CdsHelper.Game.UI.Testing;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.UI.Views;
 
@@ -348,6 +350,19 @@ public sealed class SettingsDialog : GameWindow
         if (GameSettings.WindowSize is var (_, w0, h0) && !Fits(w0, h0)) GameSettings.Resolution = LargestFitting();
 
         var (_, width, height) = GameSettings.WindowSize;
+
+        // 화면 밖 시험(CDS_OFFSCREEN)은 화면 밖(-8000)에 그대로 둔다 — 가운데로 앉히거나 최대화하면 사람 화면에 뜬다.
+        // 최대화로 적힌 크기면 예전 기본(1200x800)으로 선다.
+        if (OffscreenTest.Enabled)
+        {
+            window.WindowState = WindowState.Normal;
+            window.Width = width == 0 ? 1200 : width;
+            window.Height = width == 0 ? 800 : height;
+            window.Left = OffscreenHarness.OffscreenLeft;
+            window.Top = OffscreenHarness.OffscreenTop;
+            return;
+        }
+
         if (width == 0)
         {
             window.WindowState = WindowState.Maximized;

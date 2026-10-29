@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Engine.Disev;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -231,7 +232,7 @@ public static class UserDiscoveries
 
     /// <summary>모아 둔 자리.</summary>
     public static string Folder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "discoveries");
+        UserDataFolder.Combine("discoveries");
 
     private static readonly JsonSerializerOptions Pretty = new()
     {

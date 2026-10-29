@@ -827,6 +827,20 @@ public sealed class WorldMapHost : HwndHost
 
     public string Status { get; private set; } = "";
 
+    /// <summary>다음 프레임을 그린 뒤 넘겨받을 곳(<see cref="GrabNextFrame"/>). 없으면 null.</summary>
+    private Action<byte[], int, int>? _grab;
+
+    /// <summary>
+    /// 다음 프레임을 <b>반드시</b> 그리고, Present 앞에서 백버퍼를 내려받아 넘긴다(BGRA, 스왑체인 실픽셀 · 줄 틈 없음).
+    /// 화면 밖 시험의 스냅샷(<c>OffscreenHarness</c>)이 쓴다. 못 읽으면 빈 배열과 0 · 0 이다.
+    /// 지도가 안 돌고 있으면(타이틀 화면) 끝내 안 불린다 — 부르는 쪽이 기다림을 끊는다.
+    /// </summary>
+    public void GrabNextFrame(Action<byte[], int, int> done)
+    {
+        _grab = done;
+        _dirty = true;
+    }
+
     /// <summary>Present 까지 마친 프레임 수. 진짜 그려지고 있는지 밖에서 볼 때 쓴다.</summary>
     public long FrameCount { get; private set; }
 
@@ -1112,6 +1126,19 @@ public sealed class WorldMapHost : HwndHost
             && flowKey == _drawnFlow) return;
 
         _renderer.RenderTo(_backBufferView, w, h, origin, (_cellsPerPixel, _cellsPerPixel), rect, overlay);
+        // 화면 밖 시험의 스냅샷 — Present 앞에서 백버퍼를 내려받는다(Flip 방식은 Present 뒤 백버퍼 값이 정해져 있지 않다).
+        if (_grab is { } grab)
+        {
+            _grab = null;
+            byte[] pixels = [];
+            try
+            {
+                using var back = _swapChain!.GetBuffer<ID3D11Texture2D>(0);
+                pixels = _renderer.ReadBack(back, w, h);
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[WorldMap] 스냅샷 실패: {ex.Message}"); }
+            grab(pixels, pixels.Length > 0 ? w : 0, pixels.Length > 0 ? h : 0);
+        }
         _swapChain!.Present(1, PresentFlags.None);
         _drawnOrigin = origin;
         _drawnShip = rect;

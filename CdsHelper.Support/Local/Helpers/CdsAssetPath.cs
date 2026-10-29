@@ -30,6 +30,13 @@ public static class CdsAssetPath
         string local = Path.Combine(DownloadDirectory, assetName);
         if (File.Exists(local)) return local;
 
+        // 시험 판(CDS_SAVEDIR · CDS_OFFSCREEN)은 받지 않는다 — 사용자 폴더에 받아 둔 것이 있으면 읽기만 한다.
+        if (OffscreenTest.Isolated)
+        {
+            string real = Path.Combine(UserDataFolder.RealRoaming, "asset", "cds", assetName);
+            return File.Exists(real) ? real : original;
+        }
+
         string temp = local + ".part";
         try
         {
@@ -81,8 +88,7 @@ public static class CdsAssetPath
         yield return Path.Combine(AppContext.BaseDirectory, EditedFolder);
     }
 
-    private static string UserEditedDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", "cds");
+    private static string UserEditedDirectory => UserDataFolder.Combine("asset", "cds");
 
     private static string? _source;
     private static bool _sourceLooked;

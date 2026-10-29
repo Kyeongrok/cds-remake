@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using CdsHelper.Game.Local.Settings;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -50,8 +51,7 @@ public static class PlayStats
     /// <summary>오래 못 보낸 것이 한없이 쌓이지 않게 새 것부터 이만큼만 보낸다.</summary>
     private const int MaxQueued = 50;
 
-    private static readonly string Folder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper");
+    private static readonly string Folder = UserDataFolder.Roaming;
 
     private static string InstallPath => Path.Combine(Folder, "install-id.txt");
     private static string QueueFolder => Path.Combine(Folder, "stats-queue");

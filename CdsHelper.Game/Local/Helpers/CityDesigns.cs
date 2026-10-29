@@ -224,8 +224,7 @@ public static class CityDesigns
         yield return Path.Combine(AppContext.BaseDirectory, Folder);
     }
 
-    private static string UserDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", "citysprite");
+    private static string UserDirectory => UserDataFolder.Combine("asset", "citysprite");
 
     private static string? SourceDirectory()
     {

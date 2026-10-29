@@ -1718,13 +1718,18 @@ public sealed unsafe class MapD3DRenderer : IDisposable
     }
 
     /// <summary>대상 텍스처를 CPU 로 내려받는다(BGRA). 시험용.</summary>
-    public byte[]? ReadBack()
+    public byte[]? ReadBack() => _target == null ? null : ReadBack(_target, _targetW, _targetH);
+
+    /// <summary>
+    /// 그 텍스처(B8G8R8A8, 이 장치의 것)를 CPU 로 내려받는다 — 줄 사이 틈 없이 BGRA 로.
+    /// 화면 밖 시험의 스냅샷(<see cref="WorldMapHost.GrabNextFrame"/>)이 스왑체인 백버퍼를 읽을 때도 쓴다.
+    /// </summary>
+    public byte[] ReadBack(ID3D11Texture2D texture, int width, int height)
     {
-        if (_target == null) return null;
         using var staging = _device.CreateTexture2D(new Texture2DDescription
         {
-            Width = (uint)_targetW,
-            Height = (uint)_targetH,
+            Width = (uint)width,
+            Height = (uint)height,
             MipLevels = 1,
             ArraySize = 1,
             Format = Format.B8G8R8A8_UNorm,
@@ -1732,15 +1737,15 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             Usage = ResourceUsage.Staging,
             CPUAccessFlags = CpuAccessFlags.Read,
         });
-        _ctx.CopyResource(staging, _target);
+        _ctx.CopyResource(staging, texture);
         var map = _ctx.Map(staging, 0, Vortice.Direct3D11.MapMode.Read);
         try
         {
-            var outBuf = new byte[_targetW * _targetH * 4];
-            for (int y = 0; y < _targetH; y++)
+            var outBuf = new byte[width * height * 4];
+            for (int y = 0; y < height; y++)
             {
-                var src = new ReadOnlySpan<byte>((void*)(map.DataPointer + y * map.RowPitch), _targetW * 4);
-                src.CopyTo(outBuf.AsSpan(y * _targetW * 4));
+                var src = new ReadOnlySpan<byte>((void*)(map.DataPointer + y * map.RowPitch), width * 4);
+                src.CopyTo(outBuf.AsSpan(y * width * 4));
             }
             return outBuf;
         }

@@ -5,7 +5,9 @@ using Velopack;
 using Velopack.Sources;
 using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Local.Settings;
+using CdsHelper.Game.UI.Testing;
 using CdsHelper.Game.UI.Views;
+using CdsHelper.Support.Local.Helpers;
 using CdsHelper.Support.Local.Settings;
 
 namespace CostaDelSol.Play;
@@ -83,7 +85,14 @@ internal sealed class App : Application
         // 자리가 어정쩡하게 잡힌다 — 여기서는 화면 한가운데로 못 박는다.
         var window = new WorldMapWindow { WindowStartupLocation = WindowStartupLocation.CenterScreen };
         MainWindow = window;
+        // 화면 밖 시험(CDS_OFFSCREEN · CDS_SAVEDIR · CDS_START · CDS_SHOT …) — 환경 변수가 없으면 둘 다 아무 일도 안 한다.
+        OffscreenHarness.Prepare(window);
+        OffscreenHarness.Attach(window);
         window.Show();
+
+        // 시험 판은 여기서 끝이다 — 처음 묻는 창(릴리즈 노트 · 대본 · 통계)은 사람을 기다리고, 통계 · 업데이트는 바깥으로 나간다.
+        CrashReport.Start(typeof(App).Assembly);
+        if (OffscreenTest.Isolated) return;
 
         // 창이 다 뜬 뒤에 띄운다 — 지금 띄우면 주인 창이 아직 자리를 못 잡아 알림이 엉뚱한 데 선다.
         window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskKeptBooks(window); AskStats(window); },
@@ -91,7 +100,6 @@ internal sealed class App : Application
 
         // 게임 통계는 이 exe 에서만 센다 — 끌 때 모은 것을 줄에 세운다.
         PlayStats.Start(typeof(App).Assembly);
-        CrashReport.Start(typeof(App).Assembly);
         Exit += (_, _) =>
         {
             window.NoteHero();

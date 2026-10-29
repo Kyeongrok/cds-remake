@@ -168,7 +168,7 @@ public sealed class Portraits
     /// 같은 번호가 앱에 실린 것보다 먼저다.
     /// </summary>
     public static string UserFaceFolder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "face");
+        UserDataFolder.Combine("face");
 
     /// <summary>얼굴 그림 파일 이름(<c>male-9002.png</c>).</summary>
     public static string ShippedFileName(bool female, int face) => $"{(female ? "female" : "male")}-{face}.png";

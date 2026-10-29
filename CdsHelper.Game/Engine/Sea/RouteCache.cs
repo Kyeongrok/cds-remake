@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Engine.Sea;
 
@@ -24,8 +25,7 @@ public sealed class RouteCache
     /// <summary>적어 두는 길의 수. 넘치면 오래된 것부터 버린다.</summary>
     private const int Capacity = 400;
 
-    private static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "route-cache.json");
+    private static readonly string FilePath = UserDataFolder.Combine("route-cache.json");
 
     /// <summary>적어 둔 길 하나.</summary>
     /// <param name="Pace">걸음 값의 지문. 가장 짧은 길(걸음 값 없음)은 0.</param>

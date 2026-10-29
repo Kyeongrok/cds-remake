@@ -37,6 +37,7 @@ public static class MoviePlayer
             Source = new Uri(path),
             LoadedBehavior = MediaState.Manual,
             UnloadedBehavior = MediaState.Close,
+            IsMuted = CdsHelper.Support.Local.Helpers.OffscreenTest.Muted,   // 화면 밖 시험이면 소리 없이
             // 가로세로 비를 지키며 늘린다 — 320x240 이 위아래 검은 띠를 남기고 채운다.
             Stretch = Stretch.Uniform,
         };

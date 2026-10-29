@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -182,8 +183,7 @@ public static class DiscoveryStillFiles
     }
 
     /// <summary>내놓은 판에서 올린 그림이 드는 곳 — <c>%APPDATA%\CdsHelper\asset\dstill</c>.</summary>
-    private static string UserDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", "dstill");
+    private static string UserDirectory => UserDataFolder.Combine("asset", "dstill");
 
     private static string? _source;
     private static bool _sourceLooked;

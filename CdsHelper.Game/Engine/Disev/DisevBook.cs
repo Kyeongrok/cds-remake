@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Engine.Disev;
 
@@ -368,7 +369,7 @@ public sealed class DisevBook
 
     /// <summary>고친 책을 지켜 두는 자리.</summary>
     private static string KeptFolder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "disev-kept");
+        UserDataFolder.Combine("disev-kept");
 
     private static string KeptPathOf(string cache) => Path.Combine(KeptFolder, TableCache.FileNameOf(cache) + ".json");
     private static string KeptVersionPathOf(string cache) => KeptPathOf(cache) + ".version";

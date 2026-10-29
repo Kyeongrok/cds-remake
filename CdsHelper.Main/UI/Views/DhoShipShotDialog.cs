@@ -41,8 +41,7 @@ public sealed class DhoShipShotDialog : Window
         public double Billow { get; set; } = 0.15;
     }
 
-    private static string OptionsPath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "dho-ship-shot.json");
+    private static string OptionsPath => UserDataFolder.Combine("dho-ship-shot.json");
 
     private readonly Options _options;
 

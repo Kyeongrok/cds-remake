@@ -1,5 +1,6 @@
 ﻿using CdsHelper.Support.Local.Models;
 using System.IO;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -210,8 +211,7 @@ public static class MovieFiles
     }
 
     /// <summary>내놓은 판에서 올린 동영상이 드는 곳 — <c>%APPDATA%\CdsHelpersset\movie</c>.</summary>
-    private static string UserDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", "movie");
+    private static string UserDirectory => UserDataFolder.Combine("asset", "movie");
 
     private static string? _source;
     private static bool _sourceLooked;

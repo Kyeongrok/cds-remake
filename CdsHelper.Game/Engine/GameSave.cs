@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CdsHelper.Support.Local.Models;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Engine;
 
@@ -99,9 +100,7 @@ public static class GameSave
     }
 
     /// <summary>세이브 파일 자리.</summary>
-    public static string Path => System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "SAVEDATA.CDS");
+    public static string Path => UserDataFolder.Combine("SAVEDATA.CDS");
 
     /// <summary>
     /// 예전 <b>자동저장</b> 파일 자리 — 한 칸을 덮어쓰던 때의 것이다.
@@ -110,9 +109,7 @@ public static class GameSave
     /// 지금은 <see cref="AutoDirectory"/> 에 열 칸을 돌려 적는다. 이 파일이 남아 있으면 목록에
     /// 한 칸으로 끼워 보여 주고, 칸 수를 넘으면 가장 오래된 것처럼 지운다.
     /// </remarks>
-    public static string AutoPath => System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "AUTOSAVE.CDS");
+    public static string AutoPath => UserDataFolder.Combine("AUTOSAVE.CDS");
 
     /// <summary>
     /// <b>자동저장</b> 칸들을 두는 폴더 — 손으로 적은 <see cref="Path"/> 와 따로 둔다.
@@ -121,9 +118,7 @@ public static class GameSave
     /// 원본에 없는 것이다. 입항할 때마다 새 칸에 적고, <see cref="AutoSlots"/> 개를 넘으면
     /// 가장 오래된 칸부터 지운다. 첫 화면의 <b>CONTINUE</b> 가 이 칸들을 목록으로 보여 준다.
     /// </remarks>
-    public static string AutoDirectory => System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "autosave");
+    public static string AutoDirectory => UserDataFolder.Combine("autosave");
 
     /// <summary>자동저장을 들고 있는 칸 수.</summary>
     public const int AutoSlots = 10;
@@ -136,9 +131,7 @@ public static class GameSave
     /// 같은 것을 여기에도 한 칸 남기고, <see cref="ManualSlots"/> 개를 넘으면 가장 오래된 칸부터 지운다.
     /// 첫 화면의 <b>LOAD GAME</b> 과 게임 안의 「로드」가 이 칸들을 목록으로 보여 준다.
     /// </remarks>
-    public static string ManualDirectory => System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "save");
+    public static string ManualDirectory => UserDataFolder.Combine("save");
 
     /// <summary>손으로 적은 세이브를 들고 있는 칸 수 — 다섯이던 것을 열로 늘렸다.</summary>
     public const int ManualSlots = 10;

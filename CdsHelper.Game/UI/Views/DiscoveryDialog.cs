@@ -277,6 +277,7 @@ public sealed class DiscoveryDialog : GameWindow
                 Source = new Uri(movie),
                 LoadedBehavior = MediaState.Manual,
                 UnloadedBehavior = MediaState.Close,
+                IsMuted = CdsHelper.Support.Local.Helpers.OffscreenTest.Muted,   // 화면 밖 시험이면 소리 없이
                 Stretch = Stretch.Uniform,
                 Width = MovieWidth,
                 Height = MovieHeight,

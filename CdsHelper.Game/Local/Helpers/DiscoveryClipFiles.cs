@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -130,8 +131,7 @@ public static class DiscoveryClipFiles
         yield return Path.Combine(AppContext.BaseDirectory, AssetDirectory);
     }
 
-    private static string UserDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "asset", "dclip");
+    private static string UserDirectory => UserDataFolder.Combine("asset", "dclip");
 
     private static string? _source;
     private static bool _sourceLooked;

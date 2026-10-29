@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Support.Local.Settings;
 
@@ -68,28 +69,19 @@ public static class AppSettings
     /// <summary>첫 화면 — 「개발 → 이벤트 편집」이다.</summary>
     public const string DefaultDefaultView = "DisevEditorContent";
 
-    private static readonly string SettingsFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper",
-        "settings.json");
+    private static readonly string SettingsFilePath = UserDataFolder.Combine("settings.json");
 
     /// <summary>
     /// 세계지도 색상 팔레트 JSON 파일 경로 (%APPDATA%\CdsHelper\map_palette.json).
     /// 사용자가 직접 수정 후 세계지도에서 "팔레트 다시 불러오기" 버튼으로 반영.
     /// </summary>
-    public static string MapPaletteFilePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper",
-        "map_palette.json");
+    public static string MapPaletteFilePath => UserDataFolder.Combine("map_palette.json");
 
     /// <summary>
     /// 발견물 마스터 JSON 파일 경로 (%APPDATA%\CdsHelper\발견물.json).
     /// CSV를 대체하는 source of truth. 좌표/이름 편집이 즉시 저장되며 앱 업데이트로 install 폴더가 갈려도 보존된다.
     /// </summary>
-    public static string DiscoveryFilePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper",
-        "발견물.json");
+    public static string DiscoveryFilePath => UserDataFolder.Combine("발견물.json");
 
     public static event Action? SettingsChanged;
 

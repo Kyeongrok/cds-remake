@@ -13,10 +13,7 @@ namespace CdsHelper.Support.Local.Helpers;
 /// </remarks>
 public static class WaveNotes
 {
-    private static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper",
-        "효과음-비고.json");
+    private static readonly string FilePath = UserDataFolder.Combine("효과음-비고.json");
 
     private static Dictionary<string, string>? _notes;
 

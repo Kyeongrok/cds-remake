@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Settings;
 
@@ -551,14 +552,10 @@ public static class GameSettings
     /// <summary>단추 여백을 이 사이로만 잡는다.</summary>
     public const int MinBandPad = 0, MaxBandPad = 32;
 
-    private static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "game-settings.json");
+    private static readonly string FilePath = UserDataFolder.Combine("game-settings.json");
 
     /// <summary>옛 자리 — 갈라 놓기 전에는 여기 같이 들어 있었다.</summary>
-    private static readonly string LegacyPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CdsHelper", "settings.json");
+    private static readonly string LegacyPath = UserDataFolder.Combine("settings.json");
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
@@ -743,10 +740,10 @@ public static class GameSettings
     /// <summary>소리 크기의 위와 한 번에 오르내리는 폭.</summary>
     public const int MaxVolume = 100, VolumeStep = 10;
 
-    /// <summary>배경음악 크기(0~100).</summary>
+    /// <summary>배경음악 크기(0~100). 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 0 이다 — 적어 둔 값은 그대로 둔다.</summary>
     public static int BgmVolume
     {
-        get => Math.Clamp(Get(d => d.BgmVolume), 0, MaxVolume);
+        get => OffscreenTest.Muted ? 0 : Math.Clamp(Get(d => d.BgmVolume), 0, MaxVolume);
         set => Set(d => d.BgmVolume = Math.Clamp(value, 0, MaxVolume));
     }
 
@@ -757,23 +754,24 @@ public static class GameSettings
         set => Set(d => d.MuteBgmInBackground = value);
     }
 
-    /// <summary>효과음 크기(0~100).</summary>
+    /// <summary>효과음 크기(0~100). 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 0 이다.</summary>
     public static int SfxVolume
     {
-        get => Math.Clamp(Get(d => d.SfxVolume), 0, MaxVolume);
+        get => OffscreenTest.Muted ? 0 : Math.Clamp(Get(d => d.SfxVolume), 0, MaxVolume);
         set => Set(d => d.SfxVolume = Math.Clamp(value, 0, MaxVolume));
     }
 
+    /// <summary>배경음악을 낼지. 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 늘 거짓이다.</summary>
     public static bool BgmEnabled
     {
-        get => Get(d => d.BgmEnabled);
+        get => !OffscreenTest.Muted && Get(d => d.BgmEnabled);
         set => Set(d => d.BgmEnabled = value);
     }
 
-    /// <summary>효과음을 낼지. 배경음악과 따로 켜고 끈다.</summary>
+    /// <summary>효과음을 낼지. 배경음악과 따로 켜고 끈다. 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 늘 거짓이다.</summary>
     public static bool SfxEnabled
     {
-        get => Get(d => d.SfxEnabled);
+        get => !OffscreenTest.Muted && Get(d => d.SfxEnabled);
         set => Set(d => d.SfxEnabled = value);
     }
 

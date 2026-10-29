@@ -740,7 +740,8 @@ public sealed class WorldMapWindow : Window
         ShuttingDown = false;   // 개발도구에서 다시 띄운 창이면 지난 판의 표시를 지운다
         Closing += (_, e) =>
         {
-            if (farewell || e.Cancel) return;
+            // 화면 밖 시험은 마지막 그림 없이 곧바로 닫는다 — CDS_SHOT 이 찍고 끌 때 6초씩 기다리지 않게.
+            if (farewell || e.Cancel || OffscreenTest.Enabled) return;
             farewell = true;
             e.Cancel = true;
             // 닫기 시작했다 — 떠 있던 창을 <b>가장 깊이 딸린 것부터</b> 차례로 닫는다. 한꺼번에 사라지면
@@ -8143,6 +8144,45 @@ public sealed class WorldMapWindow : Window
     /// 게임 폴더를 잡고 타이틀 곡을 튼다. 지도는 아직 띄우지 않는다 —
     /// 메뉴에서 NEW/LOAD 를 골라야 <see cref="StartMap"/> 로 넘어간다.
     /// </summary>
+    // ── 화면 밖 시험(UI/Testing/OffscreenHarness) ─────────────────────────────
+
+    /// <summary>지도 칸 — 화면 밖 시험의 스냅샷이 백버퍼를 읽는다.</summary>
+    internal WorldMapHost MapHost => _host;
+
+    /// <summary>
+    /// 화면 밖 시험의 바로 시작(<c>CDS_START=sea:&lt;도시&gt;:&lt;선체&gt;</c>) — 타이틀 · NEW GAME 차림을 건너뛰고, 초심자 주인공(라몬)이
+    /// 그 선체 한 척을 탄 채 그 도시 앞바다에서 항해 지도로 든다. 이야기 대본은 묶지 않는다(시험 중에 장면이 끼지 않게).
+    /// </summary>
+    /// <param name="heading">뱃머리(16방위, 0 북 · 반시계).</param>
+    /// <param name="sail">참이면 닻을 올리고 그 쪽으로 나아간다.</param>
+    /// <returns>잘 들었으면 빈 글, 아니면 까닭.</returns>
+    internal string StartAtSeaForTest(int city, string hullKey, int heading, bool sail)
+    {
+        if (Hull.Find(hullKey) is not { } hull) return $"선체 [{hullKey}] 를 찾지 못했다";
+
+        _game.NewPlayer();
+        Beginner.Apply(_game.Player, Beginner.All[0]);
+        _game.Player.SetActiveStoryBook("");
+        _game.Player.ClearShips();
+        _game.Player.Buy(hull, price: 0);
+        _game.Player.SetCrew(_game.Player.MaxCrew);
+        _game.Player.SetSupply(SupplyKind.Water, 20);
+        _game.Player.SetSupply(SupplyKind.Food, 20);
+        _game.Player.SetHomePort(city);
+
+        StartMap(fresh: true);
+        if (!_started) return $"지도를 열지 못했다 — {_status.Text}";
+        if (!_host.PlaceAtCity(city)) return $"도시 {city} 앞바다에 배를 놓지 못했다";
+        _askedCity = city;                 // 곧바로 입항을 묻지 않게
+        _gullsShown = true;                // 첫 출항 갈매기도 건너뛴다
+        _game.Player.EnterCity(-1);
+        _host.SetHeading(heading);
+        _host.ShowShip = true;
+        if (sail) _host.SteerTo(heading);
+        _game.Bgm.Play(SeaTrackHere());
+        return "";
+    }
+
     private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
         // <b>작업표시줄 단추를 하나로 둔다.</b> 개발도구에서 띄운 것이면 이 창까지
@@ -8150,9 +8190,11 @@ public sealed class WorldMapWindow : Window
         // 눈에 보인다 — WPF 의 ShowDialog 가 앱의 창을 다 잠갔다 푸는 통에 활성 창이
         // 잠깐 주인 쪽으로 넘어가기 때문이다. 주인이 없으면(게임 전용 exe) 제 단추를
         // 갖는다.
-        ShowInTaskbar = Owner == null;
+        // 화면 밖 시험(CDS_OFFSCREEN)은 작업 표시줄 단추도 안 낸다.
+        ShowInTaskbar = Owner == null && !OffscreenTest.Enabled;
 
-        var dir = Path.GetDirectoryName(AppSettings.LastSaveFilePath);
+        // 시험 판은 CDS_GAMEDIR(없으면 사용자 설정을 읽기만 해서) 게임 폴더를 찾는다 — CDS_SAVEDIR 의 빈 설정에는 자리가 없다.
+        var dir = OffscreenTest.GameDir ?? Path.GetDirectoryName(AppSettings.LastSaveFilePath);
         if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
             dir = AppContext.BaseDirectory;
 
@@ -8170,13 +8212,14 @@ public sealed class WorldMapWindow : Window
 
         // 켜면 로고와 오프닝 동영상을 튼 뒤 메인메뉴로 간다(0x00410AE3 · 0x00410B22). 누르면 건너뛴다.
         // 모드 창에서 끄면 둘 다 건너뛰고 곧장 메인메뉴다.
-        if (GameSettings.PlayOpeningMovie)
+        if (GameSettings.PlayOpeningMovie && !OffscreenTest.Isolated)
         {
             MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.LogoStem));
             MoviePlayer.Play(this, MovieFiles.Resolve(dir, MovieFiles.OpeningStem));
         }
 
-        if (!BgmPlayer.IsAvailable(dir))
+        // 시험 판은 묻지도 받지도 않는다 — 사람을 기다리고 바깥으로 나가는 것이다.
+        if (!OffscreenTest.Isolated && !BgmPlayer.IsAvailable(dir))
         {
             var result = MessageBox.Show(
                 "배경음악 파일이 없습니다.\n릴리즈에서 BGM을 다운로드할까요?",
@@ -8204,7 +8247,7 @@ public sealed class WorldMapWindow : Window
         }
 
         // 빠진 원본 동영상(MP4)을 릴리즈에서 뒤에서 하나씩 받는다 — 갈아 끼운 것은 건너뛴다.
-        MovieAssetDownloader.StartBackground();
+        if (!OffscreenTest.Isolated) MovieAssetDownloader.StartBackground();
 
         _game.Bgm.Enabled = GameSettings.BgmEnabled;   // 설정 창에서 꺼 뒀으면 조용히 시작한다
         _game.Bgm.Play(BgmPlayer.TitleTrack);   // 메뉴 화면에서는 bgm/Track23.mp3

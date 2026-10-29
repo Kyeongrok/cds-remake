@@ -50,3 +50,35 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 ```
 
 사용자가 「실행한다」를 고르면 위 차례를 그대로 밟는다.
+
+## 화면 밖 시험 (사람 화면을 안 건드리고 확인할 때)
+
+사용자가 PC 를 쓰는 중이면 위 차례(닫고 · 굽고 · 띄우기) 대신 **이것으로** 확인한다. 창은 화면 밖(-8000)에 포커스 ·
+작업 표시줄 단추 없이 뜨고, 소리는 꺼지고, 세이브 · 설정은 시험 폴더에 적힌다(`%APPDATA%\CdsHelper` 는 읽기만).
+스위치는 환경 변수다(`CdsHelper.Support/Local/Helpers/OffscreenTest.cs`, 장치는 `CdsHelper.Game/UI/Testing/OffscreenHarness.cs`).
+없으면 아무 일도 안 한다.
+
+| 변수 | 하는 일 |
+|---|---|
+| `CDS_OFFSCREEN=1` | 화면 밖 · 포커스 없이(이 실의 창은 CBT 훅으로 아예 활성이 안 된다 — 커서도 배를 안 몬다) |
+| `CDS_SAVEDIR=<폴더>` | 사용자 자료 폴더(`UserDataFolder.Roaming`)를 그 폴더로. 업데이트 · 통계 · 내려받기 · 처음 묻는 창 · 오류 알림(클립보드)도 끈다 |
+| `CDS_MUTE=1` | 소리 끔(화면 밖이면 저절로, `CDS_MUTE=0` 이면 낸다) |
+| `CDS_GAMEDIR=<폴더>` | 원본 게임 폴더. 없으면 사용자 `settings.json` 의 세이브 자리를 읽기만 해서 쓴다 |
+| `CDS_START=sea:<도시>:<선체 key>` | 타이틀을 건너뛰고 라몬이 그 배 한 척으로 그 도시 앞바다에서 항해 지도에 든다(암스테르담 24 · 제노바 28 · 리스본 …) |
+| `CDS_HEADING=<0~7>` · `CDS_SAIL=1` | 뱃머리(0 북 · 2 서 · 4 남 · 6 동 · 7 북동, `ShipRegistry.DirectionNames` 차례)와 저절로 나아가기 |
+| `CDS_SHOT=<png>:<초>[;…]` | **바다로 든 뒤** 그 초에 찍고, 마지막 것을 찍으면 스스로 닫힌다 |
+| 메시지 `0x8001` | 창에 `PostMessage` 하면 `<SAVEDIR 또는 %TEMP%>\cds_snapshot.png`. 창 핸들은 같은 폴더 `cds_hwnd.txt` |
+
+도우미 스크립트가 굽기(따로 둔 폴더로 — 사용자의 `bin\Debug` 는 띄워 둔 앱이 잠그고 있을 수 있다) · 띄우기 · 기다리기 · 끄기를 한다.
+
+```powershell
+pwsh -File tools/offscreen-shot.ps1 -Build -OutDir <스크래치>\cds-shot -Start sea:24:ketch -Heading 2 -Sail -Shots 0.5,1.5 -Name ketch-west
+pwsh -File tools/offscreen-shot.ps1 -Exe <스크래치>\cds-shot\build\CostaDelSol.exe -OutDir <스크래치>\cds-shot -PostAt 8   # 타이틀을 떠 둔 채 한 장
+```
+
+- 찍은 PNG 는 `Read` 로 **직접 열어** 본다. 작은 것은 PIL 로 잘라 키워 본다(배 그림 따위).
+- 케치는 빠르다 — 암스테르담에서 서쪽으로 6초면 브리튼 해안에 막힌다. 항해 중 그림은 1~3초에 찍는다.
+- 끄는 것은 **스크립트가 띄운 PID 만**이다. `taskkill /IM` 은 쓰지 않는다(사용자가 띄워 둔 게임까지 죽는다).
+  끝나면 `Get-Process CostaDelSol` 로 내가 띄운 것이 안 남았는지 본다.
+- 못 찍는 것: WPF `Popup`(좌표 상자 · 미니맵 · 비 · 눈 — 창이 활성일 때만 뜨므로 화면 밖에서는 원래 없다)과 딴 실의 창(불러오는 쪽지).
+- `CDS_OFFSCREEN` 은 늘 `CDS_SAVEDIR` 와 함께 건다 — 혼자 걸면 시험 판이 사용자 세이브에 적는다(스크립트는 늘 건다).

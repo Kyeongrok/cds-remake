@@ -1,7 +1,8 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -20,8 +21,7 @@ public static class CrashReport
     /// <summary>남겨 둘 보고 파일 수.</summary>
     private const int Keep = 20;
 
-    private static readonly string Folder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CdsHelper", "crash");
+    private static readonly string Folder = UserDataFolder.Combine("crash");
 
     /// <summary>같은 오류가 잇달아 날 때 창이 끝없이 뜨지 않게 — 한 번 띄운 오류 자리는 다시 안 띄운다.</summary>
     private static readonly HashSet<string> Shown = [];
@@ -47,6 +47,9 @@ public static class CrashReport
         string where = $"{ex.GetType().FullName}@{ex.TargetSite?.DeclaringType?.FullName}.{ex.TargetSite?.Name}";
         lock (Shown)
             if (!fatal && !Shown.Add(where)) return;
+
+        // 화면 밖 시험은 파일에만 남긴다 — 알림 창은 사람 화면 한가운데 뜨고, 클립보드는 사용자 것이다.
+        if (OffscreenTest.Isolated) return;
 
         bool copied = Copy(text);
         try

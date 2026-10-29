@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CdsHelper.Support.Local.Helpers;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -180,8 +181,7 @@ public sealed class OpenBookArt
     private static IEnumerable<string> AssetDirectories()
     {
         if (SourceDirectory() is { } near) yield return near;
-        yield return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                  "CdsHelper", "asset", "openbook");
+        yield return UserDataFolder.Combine("asset", "openbook");
         yield return Path.Combine(AppContext.BaseDirectory, AssetDirectory);
     }
 
