@@ -43,6 +43,12 @@ export const DASHBOARD_HTML = `<!doctype html>
   .good { color: var(--good); } .bad { color: var(--bad); }
   .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
   #error { color: var(--bad); }
+  .pagetabs { margin-bottom: 16px; position: sticky; top: 0; z-index: 1; background: var(--bg); padding: 6px 0; }
+  .pagetabs button { padding: 7px 14px; }
+  [data-tab][hidden] { display: none; }
+  .pager { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 8px; color: var(--dim); }
+  .pager:empty { display: none; }
+  .pager button:disabled { opacity: .4; cursor: default; }
 </style>
 </head>
 <body>
@@ -55,24 +61,29 @@ export const DASHBOARD_HTML = `<!doctype html>
     <span id="error"></span>
   </div>
   <div class="tiles" id="tiles"></div>
-  <section><h2>모드 옵션 <small>설치별 마지막 값</small></h2><div class="tabs" id="modtabs"></div><div class="scroll"><table id="mods"></table></div></section>
-  <section><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table></div></section>
-  <div class="two">
-    <section><h2>고용한 부하 <small>술집에서 고용</small></h2><div class="scroll"><table id="hires"></table></div></section>
-    <section><h2>해고한 부하 <small>부하편성 해고 · 재계약 거절</small></h2><div class="scroll"><table id="dismisses"></table></div></section>
+  <div class="tabs pagetabs" id="pagetabs">
+    <button data-tab="mods">모드 옵션</button><button data-tab="disc">발견물</button><button data-tab="mates">부하</button>
+    <button data-tab="nation">나라 · 기함 · 투자</button><button data-tab="heroes">주인공</button><button data-tab="voyage">항해</button>
+    <button data-tab="play">네비 · 전투 · 사건</button><button data-tab="errors">오류</button><button data-tab="days">날짜별</button>
   </div>
-  <section><h2>나라 <small>어느 나라로 하는지 · 교역소 투자 — 판마다 마지막 값 · 투자는 v1.1.57 부터</small></h2><table id="nations"></table></section>
-  <div class="two">
-    <section><h2>기함 선체 <small>판마다 지금 기함 · v1.1.57 부터</small></h2><div class="scroll"><table id="flagships"></table></div></section>
-    <section><h2>투자한 도시 <small>도시마다 투자한 판 · 금액 합</small></h2><div class="scroll"><table id="investcities"></table></div></section>
+  <section data-tab="mods"><h2>모드 옵션 <small>설치별 마지막 값</small></h2><div class="tabs" id="modtabs"></div><div class="scroll"><table id="mods"></table></div></section>
+  <section data-tab="disc"><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table><div class="pager" id="discoveries_pg"></div></div></section>
+  <div class="two" data-tab="mates">
+    <section><h2>고용한 부하 <small>술집에서 고용</small></h2><div class="scroll"><table id="hires"></table><div class="pager" id="hires_pg"></div></div></section>
+    <section><h2>해고한 부하 <small>부하편성 해고 · 재계약 거절</small></h2><div class="scroll"><table id="dismisses"></table><div class="pager" id="dismisses_pg"></div></div></section>
   </div>
-  <section><h2>주인공 <small>판마다 처음 → 마지막 능력치 · 기함 · 투자 · 최근 받은 300판</small></h2><div class="scroll"><table id="heroes"></table></div></section>
-  <section><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회 · v1.1.30 까지</small></h2><div class="scroll"><table id="voyages"></table></div></section>
-  <section><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
-  <section><h2>전투</h2><table id="battles"></table></section>
-  <section><h2>사건 <small>바다 · 육지에서 하루를 넘길 때 — 밑수(넘긴 날)와 견줘 본다</small></h2><table id="events"></table></section>
-  <section><h2>오류</h2><div class="scroll"><table id="errors"></table></div></section>
-  <section><h2>날짜별 · 버전별</h2><table id="days"></table></section>
+  <section data-tab="nation"><h2>나라 <small>어느 나라로 하는지 · 교역소 투자 — 판마다 마지막 값 · 투자는 v1.1.57 부터</small></h2><table id="nations"></table></section>
+  <div class="two" data-tab="nation">
+    <section><h2>기함 선체 <small>판마다 지금 기함 · v1.1.57 부터</small></h2><div class="scroll"><table id="flagships"></table><div class="pager" id="flagships_pg"></div></div></section>
+    <section><h2>투자한 도시 <small>도시마다 투자한 판 · 금액 합</small></h2><div class="scroll"><table id="investcities"></table><div class="pager" id="investcities_pg"></div></div></section>
+  </div>
+  <section data-tab="heroes"><h2>주인공 <small>판마다 처음 → 마지막 능력치 · 기함 · 투자 · 최근 받은 300판 · 한 쪽에 50판</small></h2><div class="scroll"><table id="heroes"></table><div class="pager" id="heroes_pg"></div></div></section>
+  <section data-tab="voyage"><h2>항해 <small>어디서 어디로 · 평균 날수 · 평균 선회 · v1.1.30 까지</small></h2><div class="scroll"><table id="voyages"></table><div class="pager" id="voyages_pg"></div></div></section>
+  <section data-tab="play"><h2>네비게이션 <small>자동항해에서 고른 것 · 끝난 꼴</small></h2><table id="navs"></table></section>
+  <section data-tab="play"><h2>전투</h2><table id="battles"></table></section>
+  <section data-tab="play"><h2>사건 <small>바다 · 육지에서 하루를 넘길 때 — 밑수(넘긴 날)와 견줘 본다</small></h2><table id="events"></table></section>
+  <section data-tab="errors"><h2>오류</h2><div class="scroll"><table id="errors"></table><div class="pager" id="errors_pg"></div></div></section>
+  <section data-tab="days"><h2>날짜별 · 버전별</h2><table id="days"></table><div class="pager" id="days_pg"></div></section>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -138,19 +149,46 @@ let modTab = 'all';
 const COLS = [['n', '횟수'], ['installs', '설치']];
 const bar = (v, top) => '<td class="bar"><i style="width:' + (100 * v / Math.max(1, top)).toFixed(1) + '%"></i></td>';
 const sortHead = (id) => COLS.map(([k, label]) => '<th class="sort ' + (k === sorts[id] ? 'on' : '') + '" data-k="' + k + '">' + label + (k === sorts[id] ? ' ▼' : '') + '</th>').join('');
-const bindSort = (id) => $(id).querySelectorAll('th.sort').forEach((th) => th.onclick = () => { sorts[id] = th.dataset.k; render(); });
+const bindSort = (id) => $(id).querySelectorAll('th.sort').forEach((th) => th.onclick = () => { sorts[id] = th.dataset.k; pages[id] = 0; render(); });
 const tabs = (id, list, picked, pick) => {
   $(id).innerHTML = list.map(([k, label]) => '<button data-k="' + k + '" class="' + (k === picked ? 'on' : '') + '">' + label + '</button>').join('');
   $(id).querySelectorAll('button').forEach((b) => b.onclick = () => { pick(b.dataset.k); render(); });
 };
+
+// 쪽 나누기 — 긴 표는 PAGE 줄씩 보이고 표 밑의 단추로 넘긴다. 줄 세우기 · 거르기를 바꾸면 첫 쪽으로.
+const PAGE = 50, pages = {};
+function paged(id, rows) {
+  const count = Math.max(1, Math.ceil(rows.length / PAGE));
+  const at = Math.min(pages[id] || 0, count - 1);
+  pages[id] = at;
+  const pg = $(id + '_pg');
+  if (pg) {
+    pg.innerHTML = count < 2 ? '' : '<button data-d="-1"' + (at ? '' : ' disabled') + '>◀ 앞</button><span>' + (at + 1) + ' / ' + count + ' 쪽 · ' + n(rows.length) + '줄</span>'
+      + '<button data-d="1"' + (at < count - 1 ? '' : ' disabled') + '>뒤 ▶</button>';
+    pg.querySelectorAll('button').forEach((b) => b.onclick = () => { pages[id] = at + Number(b.dataset.d); render(); });
+  }
+  return { rows: rows.slice(at * PAGE, at * PAGE + PAGE), from: at * PAGE };
+}
+
+// 화면 탭 — 섹션을 탭으로 나눠 하나씩 보인다. 고른 탭은 이 브라우저에 남는다.
+function pickTab(tab) {
+  document.querySelectorAll('main > [data-tab]').forEach((el) => el.hidden = el.dataset.tab !== tab);
+  document.querySelectorAll('#pagetabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+  try { localStorage.setItem('cdsDashTab', tab); } catch (e) { }
+}
+document.querySelectorAll('#pagetabs button').forEach((b) => b.onclick = () => pickTab(b.dataset.tab));
+let savedTab = null;
+try { savedTab = localStorage.getItem('cdsDashTab'); } catch (e) { }
+pickTab(document.querySelector('#pagetabs button[data-tab="' + savedTab + '"]') ? savedTab : 'mods');
 
 // 순위 표 — 횟수 · 설치 머리를 눌러 줄 세운다.
 function rankTable(id, label, rows, nameOf) {
   const k = sorts[id];
   rows = [...rows].sort((a, b) => b[k] - a[k] || b.n - a.n);
   const top = Math.max(1, ...rows.map((r) => r[k]));
+  const { rows: shown, from } = paged(id, rows);
   $(id).innerHTML = '<tr><th>#</th><th class="name">' + label + '</th>' + sortHead(id) + '<th></th></tr>'
-    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name wrap">' + nameOf(r) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td>' + bar(r[k], top) + '</tr>').join('')
+    + (rows.length ? shown.map((r, i) => '<tr><td class="dim">' + (from + i + 1) + '</td><td class="name wrap">' + nameOf(r) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td>' + bar(r[k], top) + '</tr>').join('')
       : EMPTY(5));
   bindSort(id);
 }
@@ -174,8 +212,9 @@ function renderMods() {
 function renderVoyages() {
   const k = sorts.voyages, rows = [...(data.voyages || [])].sort((a, b) => b[k] - a[k] || b.n - a.n);
   const top = Math.max(1, ...rows.map((r) => r[k])), avg = (sum, count) => (count ? (Math.round(sum / count * 10) / 10).toLocaleString('ko-KR') : '-');
+  const { rows: shown, from } = paged('voyages', rows);
   $('voyages').innerHTML = '<tr><th>#</th><th class="name">구간</th>' + sortHead('voyages') + '<th>평균 날수</th><th>평균 선회</th><th></th></tr>'
-    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name wrap">' + esc(r.name || r.key) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td><td>'
+    + (rows.length ? shown.map((r, i) => '<tr><td class="dim">' + (from + i + 1) + '</td><td class="name wrap">' + esc(r.name || r.key) + '</td><td>' + n(r.n) + '</td><td>' + n(r.installs) + '</td><td>'
         + avg(r.days, r.n) + '</td><td>' + avg(r.turns, r.n) + '</td>' + bar(r[k], top) + '</tr>').join('') : EMPTY(7));
   bindSort('voyages');
 }
@@ -191,7 +230,7 @@ function renderHeroes() {
   $('heroes').innerHTML = '<tr><th class="name">이름</th><th class="name">나라</th><th class="name">게임 날짜</th>' + ABILITIES.map((a) => '<th>' + a + '</th>').join('')
       + '<th class="name">기함</th><th>투자</th><th class="name">버전</th></tr>'
     + (rows.length ? '<tr><td class="name dim" colspan="3">처음 능력치 평균 (' + n(rows.length) + '판)</td>' + ABILITIES.map((_, i) => '<td class="dim">' + avg(i) + '</td>').join('') + '<td></td><td></td><td></td></tr>'
-        + rows.map((h) => '<tr><td class="name">' + esc(h.name) + '</td><td class="name">' + esc(h.nation) + '</td><td class="name">' + esc(h.first_date === h.date ? h.date : h.first_date + ' → ' + h.date)
+        + paged('heroes', rows).rows.map((h) => '<tr><td class="name">' + esc(h.name) + '</td><td class="name">' + esc(h.nation) + '</td><td class="name">' + esc(h.first_date === h.date ? h.date : h.first_date + ' → ' + h.date)
           + '</td>' + ABILITIES.map((_, i) => '<td>' + cell(h.first[i], h.now[i]) + '</td>').join('') + '<td class="name">' + hull(h) + '</td><td>' + (h.invested ? n(h.invested) : '<span class="dim">-</span>')
           + '</td><td class="name dim">' + esc(h.version) + '</td></tr>').join('') : EMPTY(12));
 }
@@ -210,7 +249,7 @@ function renderNations() {
 function renderFlagships() {
   const rows = data.flagships || [], games = sum(rows, 'games');
   $('flagships').innerHTML = '<tr><th>#</th><th class="name">선체</th><th>판</th><th>몫</th><th class="name">나라</th></tr>'
-    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(r.flagship) + '</td><td>' + n(r.games) + '</td><td>' + pct(r.games, games) + '</td><td class="name wrap dim">'
+    + (rows.length ? ((p) => p.rows.map((r, i) => [r, p.from + i]))(paged('flagships', rows)).map(([r, i]) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(r.flagship) + '</td><td>' + n(r.games) + '</td><td>' + pct(r.games, games) + '</td><td class="name wrap dim">'
         + Object.entries(r.nations).sort((a, b) => b[1] - a[1]).map(([k, v]) => esc(k) + ' ' + n(v)).join(' · ') + '</td></tr>').join('') : EMPTY(5));
 }
 
@@ -218,7 +257,7 @@ function renderFlagships() {
 function renderInvestCities() {
   const rows = data.investCities || [], top = Math.max(1, ...rows.map((r) => r.invested));
   $('investcities').innerHTML = '<tr><th>#</th><th class="name">도시</th><th>판</th><th>금액 합</th><th></th></tr>'
-    + (rows.length ? rows.map((r, i) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(r.city) + '</td><td>' + n(r.games) + '</td><td>' + n(r.invested) + '</td>' + bar(r.invested, top) + '</tr>').join('') : EMPTY(5));
+    + (rows.length ? ((p) => p.rows.map((r, i) => [r, p.from + i]))(paged('investcities', rows)).map(([r, i]) => '<tr><td class="dim">' + (i + 1) + '</td><td class="name">' + esc(r.city) + '</td><td>' + n(r.games) + '</td><td>' + n(r.invested) + '</td>' + bar(r.invested, top) + '</tr>').join('') : EMPTY(5));
 }
 
 // 네비게이션 — 열쇠는 「묶음:값」이다. 묶음마다 그 안에서의 몫을 낸다.
@@ -284,7 +323,7 @@ function render() {
   rankTable('errors', '오류 갈래 @ 난 자리', data.errors, (r) => { const [type, at] = r.key.split('@'); return esc(type) + (at ? ' <span class="dim">@ ' + esc(at) + '</span>' : ''); });
 
   $('days').innerHTML = '<tr><th class="name">날짜</th><th class="name">버전</th><th>설치</th><th>덩이</th></tr>'
-    + (data.days.length ? data.days.map((d) => '<tr><td class="name">' + esc(d.day) + '</td><td class="name">' + esc(d.version) + '</td><td>' + n(d.installs) + '</td><td>' + n(d.batches) + '</td></tr>').join('') : EMPTY(4));
+    + (data.days.length ? paged('days', data.days).rows.map((d) => '<tr><td class="name">' + esc(d.day) + '</td><td class="name">' + esc(d.version) + '</td><td>' + n(d.installs) + '</td><td>' + n(d.batches) + '</td></tr>').join('') : EMPTY(4));
 }
 
 async function load() {
@@ -300,7 +339,7 @@ async function load() {
     render();
   } catch (e) { $('error').textContent = '불러오지 못했습니다: ' + e.message; }
 }
-$('version').onchange = (e) => { state.version = e.target.value; load(); };
+$('version').onchange = (e) => { state.version = e.target.value; for (const k in pages) pages[k] = 0; load(); };
 load();
 </script>
 </body>
