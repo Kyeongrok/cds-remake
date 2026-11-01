@@ -33,6 +33,10 @@ public sealed class Game
         CityFounding.Discovered = FoundBy;
         // 고르는 둘 밖의 나라(시나리오의 주인공)는 나라 표에서 이름을 찾는다.
         Player.NationNameOf = id => Nations?.Find(id)?.Name;
+        // 부하 나이 — 표의 나이는 표를 구운 해의 것이라 해로 셈한다. 해를 모르는 표는 적어 둔 나이를 쓴다.
+        Player.MateAgeOf = (name, year) =>
+            World is { Table.Year: > 0 } world && world.People.FirstOrDefault(r => r.Name == name) is { } row
+                ? world.Table.AgeOn(row, year) : null;
     }
 
     /// <summary>모드 「중량 없음」을 주인공 쪽 무게 셈에 건다 — 설정은 이쪽에만 있다.</summary>

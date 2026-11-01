@@ -753,8 +753,19 @@ public sealed class Player
     }
 
     /// <summary>그 이름으로 적어 둔 자료. 없으면 null.</summary>
-    public MateInfo? MateInfoOf(string name) =>
-        _mateBook.TryGetValue(name ?? "", out var who) ? who : null;
+    /// <remarks>
+    /// 나이만 오늘 것으로 고쳐 낸다 — 적어 둔 값은 고용한 해의 나이다. 원본의 나이는 인물도 제독과 같은
+    /// 함수(<c>0x0047CB20</c>)로 날짜에서 셈하므로 부하도 해마다 한 살씩 먹는다. 능력치는 그대로다 —
+    /// 늙어서 능력치가 움직이는 것은 제독뿐이다(<c>0x0047C688</c>).
+    /// </remarks>
+    public MateInfo? MateInfoOf(string name)
+    {
+        if (!_mateBook.TryGetValue(name ?? "", out var who)) return null;
+        return MateAgeOf?.Invoke(who.Name, Date.Year) is { } age ? who with { Age = age } : who;
+    }
+
+    /// <summary>그 사람이 그 해에 몇 살인가 — 인물 표를 든 쪽(게임)이 건다. 표에 없는 사람은 null 이고 적어 둔 나이를 쓴다.</summary>
+    public static Func<string, int, int?>? MateAgeOf { get; set; }
 
     /// <summary>세이브에서 부하 자료를 되돌린다.</summary>
     public void RestoreMateBook(IEnumerable<MateInfo>? book)
