@@ -4903,6 +4903,8 @@ public sealed class WorldMapWindow : Window
         // 무리가 붙는 주사위는 날이 아니라 걸음마다 굴린다 — 원본도 고리 한 바퀴에 한 번이다.
         // 이번 틱에 보이는 배가 새로 붙었으면 굴리지 않는다(0x0048C126).
         if (!_host.IsOnLand && !_folkEntered) CheckEncounter(since);
+        // 육지의 무리도 걸음마다다(0x0048EF18 → 0x0048BE80) — 평지면 하루가 스물네 걸음이다. 게임이 끝났으면 날을 안 센다.
+        else if (_host.IsOnLand && !_folkEntered && CheckLandParty(since)) return;
 
         _ticks += since * TerrainTable.TicksOfClass(_host.TerrainClass);
         if (_ticks < TerrainTable.TicksPerDay) return;
@@ -5948,9 +5950,6 @@ public sealed class WorldMapWindow : Window
         // 뭍에서는 짐승과 독충을 마주친다.
         CheckLandEvent();
 
-        // 그리고 오백에 한 번 <b>그 구역의 무리</b>와 마주쳐 들싸움이 붙는다(0x0048BE9B).
-        CheckLandParty();
-
         // 규율이 바닥나면 반란이다 — 뭍에서는 <b>이전 규율 &gt; 0 이고 새 값이 0</b> 일 때만
         // 0x004751E0 을 부른다(0x00475569). 바다는 새 값만 본다(PassSeaMorale).
         // 대표와의 일기토까지는 이미 옮겨 두었다(바다 사건 쪽 Mutiny).
@@ -6275,15 +6274,21 @@ public sealed class WorldMapWindow : Window
     /// 무리는 그 구역의 둘 가운데 <c>rand(2)</c>, 병력은 그 무리의 <c>밑 + rand(폭)</c> 이다.
     /// 판은 <b>들싸움</b>이라 버티기만 해도 이긴 것으로 친다(<see cref="LandBattle.Field"/>).
     /// 지면 게임이 끝난다 — 마을 공략과 같다.
+    ///
+    /// 주사위는 <b>날이 아니라 걸음마다</b> 굴린다. 예전에는 하루에 한 번만 굴려 평지에서 스물네 배 드물었다.
     /// </remarks>
-    private void CheckLandParty()
+    /// <param name="steps">지난번 뒤로 걸은 걸음 수.</param>
+    /// <returns>싸움에 져서 게임이 끝났으면 true.</returns>
+    private bool CheckLandParty(int steps)
     {
         var dice = _game.Random;
-        if (dice.Next(LandFieldFoes.Roll) != 0) return;
+        bool met = false;
+        for (int i = 0; i < steps; i++) met |= dice.Next(LandFieldFoes.Roll) == 0;
+        if (!met) return false;
 
         var (lat, lon) = _host.ShipLatLon;
         int zone = LandFieldFoes.ZoneAt(lat, lon);
-        if (zone < 0) return;
+        if (zone < 0) return false;
 
         int at = LandFieldFoes.PartyAt(zone, new GameRandom(Environment.TickCount));
         var party = LandFieldFoes.All[at];
@@ -6310,7 +6315,7 @@ public sealed class WorldMapWindow : Window
             // 모드 「자동 도망」이면 고르기 창 없이 도망(1)이다 — 굴림은 그대로라 실패하면 싸운다.
             switch (GameSettings.AutoFlee ? 1 : ChoiceDialog.Pick(this, "", Encounter.Choices))
             {
-                case 0 when Talked(band, dice, talkFace, weight: foeMen): return;
+                case 0 when Talked(band, dice, talkFace, weight: foeMen): return false;
                 case 1:
                     bool fled = Encounter.Escapes(player, band, dice,
                                                   MateRow(0) is { } who && who.Stats.Length > Ability.Luck
@@ -6319,7 +6324,7 @@ public sealed class WorldMapWindow : Window
                     if (fled)
                     {
                         ConfirmDialog.Tell(this, Encounter.FledWord(dice), "도망성공", talkFace);
-                        return;
+                        return false;
                     }
                     ConfirmDialog.Tell(this, Encounter.CaughtWord(dice), "도망실패", talkFace);
                     break;
@@ -6328,7 +6333,7 @@ public sealed class WorldMapWindow : Window
                     break;
             }
 
-            if (LandDeployDialog.Show(this, _game, "", -1) is not { } line) return;
+            if (LandDeployDialog.Show(this, _game, "", -1) is not { } line) return false;
 
             var roll = new GameRandom(Environment.TickCount);
             var (foe, foeSkills, culture) = LeaderOf(at, party.Culture);
@@ -6347,11 +6352,12 @@ public sealed class WorldMapWindow : Window
                 // 일기토에 나서는 것도 그 무리의 대장이다(0x004478B1 — [+0x9C] 의 인물). 안 넘기면 얼굴 없이 「적장」으로 선다.
                 FoePerson = bandLeader,
             };
-            if (LandBattleScene.Run(this, _game, field, roll)) return;
-            if (!field.Wiped) return;
+            if (LandBattleScene.Run(this, _game, field, roll)) return false;
+            if (!field.Wiped) return false;
 
             GameOver(GameOverDialog.LandLost);   // 육상전 전멸은 까닭 3(0x00449920)
             Dispatcher.BeginInvoke(ReturnToTitle);
+            return true;
         }
         finally { _host.Paused = false; _asking = false; }
     }
@@ -7719,6 +7725,24 @@ public sealed class WorldMapWindow : Window
     /// <summary>조건이 안 맞아 넘긴 발견물 — 그 자리를 벗어나기 전에는 다시 안 본다.</summary>
     private int _heldDiscovery = -1;
 
+    /// <summary>이 주인공에게 이미 일러 준, 남이 보고를 끝낸 자리.</summary>
+    private readonly HashSet<(Player, int)> _toldScooped = [];
+
+    /// <summary>
+    /// 남이 보고를 끝낸 자리에 닿으면 까닭을 일러 준다(원본에 없는 알림) — 원본은 아무 일도 없어 왜 안 찾아지는지 알 길이 없었다.
+    /// </summary>
+    private void TellScoopedPlace(DiscoveryLog log, (int X, int Y) cell)
+    {
+        var player = _game.Player;
+        if (log.ScoopedAt(player, cell.X, cell.Y, _host.IsOnLand) is not { } row) return;
+        if (!_toldScooped.Add((player, row.Id)) || player.ScoopedBy(row.Id) is not { } who) return;
+
+        _asking = true;
+        _host.Paused = true;
+        try { NoticeDialog.Show(this, $"이곳은 이미 {who}{GameUi.Josa(who, "이", "가")} 발견해 보고했습니다"); }
+        finally { _host.Paused = false; _asking = false; }
+    }
+
     private void CheckDiscovery()
     {
         if (_asking || _host.Paused || _host.SeaBlocked) return;
@@ -7736,7 +7760,7 @@ public sealed class WorldMapWindow : Window
             if (id >= 0) break;
         }
 
-        if (id < 0) { _heldDiscovery = -1; return; }
+        if (id < 0) { _heldDiscovery = -1; TellScoopedPlace(log, now); return; }
         if (log.Table.Find(id) is not { } row) return;
 
         // 대본이 있는데 조건이 안 맞으면(힌트가 없으면) <b>아무 일도 없다</b> — 원본은 대본만 틀고 대본이 고를 몸통이

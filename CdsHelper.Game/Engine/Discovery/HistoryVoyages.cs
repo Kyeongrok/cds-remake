@@ -39,6 +39,7 @@ namespace CdsHelper.Game.Engine.Discovery;
 ///   01 0B &lt;u16 발견물&gt;   그 발견물을 이 사람 이름으로 채간다
 ///   3C 08 &lt;u16 도시&gt;     이 사람을 그 도시로 <b>떠나보낸다</b>   (0x0040AB77)
 ///   3C 0B &lt;u16 발견물&gt;   이 사람을 그 발견물 자리로 보낸다       (0x0040AC82)
+///   01 15 &lt;u16 교역품&gt;   그 교역품의 판매를 켠다                 (0x004088D8)
 /// </code>
 /// <b>사람은 피연산자가 아니다</b> — <c>3C</c> 는 대본의 주인을 옮긴다(<c>ctx+0x10</c>).
 /// 둘 다 끝에서 목적지·출발좌표를 박고 <c>날 셈 = 0</c>, <c>[인물+0xB4] = -1</c> 로 도시에서
@@ -54,7 +55,7 @@ public sealed class HistoryVoyages
     public const string CacheName = "역사항해자";
 
     /// <summary>알맹이 모양 판.</summary>
-    private const int SnapshotVersion = 4;
+    private const int SnapshotVersion = 5;
 
     /// <summary>역사 항해자 수. 파일 파트 수이자 인물 번호 0~13 이다.</summary>
     public const int Count = 14;
@@ -136,8 +137,18 @@ public sealed class HistoryVoyages
         public DateTime On => new(Year, Month, 1);
     }
 
+    /// <summary>
+    /// 대본이 교역품 판매를 켜는 달 — <c>01 15</c>. 판매 깃발은 대본 주인을 안 가려 주인공이 안 찾아도 교역소에 나온다.
+    /// </summary>
+    public readonly record struct GoodsOpen(int Voyager, int Year, int Month, int Goods)
+    {
+        /// <summary>대본이 도는 날 — 달의 첫날이다.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public DateTime On => new(Year, Month, 1);
+    }
+
     internal sealed record Snapshot(List<Voyage> Voyages, List<Move>? Moves = null, List<Death>? Deaths = null,
-                                    List<Report>? Reports = null);
+                                    List<Report>? Reports = null, List<GoodsOpen>? GoodsOpens = null);
 
     /// <summary>사람 차례, 그 다음 날짜 차례.</summary>
     /// <summary>사람 차례 · 날짜 차례로 세우는 견줌.</summary>
@@ -159,9 +170,13 @@ public sealed class HistoryVoyages
 
     private readonly List<Report> _reports;
 
-    private HistoryVoyages(List<Voyage> original, List<Move> moves, List<Death> deaths, List<Report> reports)
+    private readonly List<GoodsOpen> _goodsOpens;
+
+    private HistoryVoyages(List<Voyage> original, List<Move> moves, List<Death> deaths, List<Report> reports,
+                           List<GoodsOpen> goodsOpens)
     {
         _reports = reports;
+        _goodsOpens = goodsOpens;
         _moves = moves;
         _deaths = deaths;
         _original = original;
@@ -207,6 +222,9 @@ public sealed class HistoryVoyages
     /// <summary>대본이 발표를 시키는 달들(<see cref="Report"/>). 날짜 차례다.</summary>
     public IReadOnlyList<Report> Reports => _reports;
 
+    /// <summary>대본이 교역품 판매를 켜는 달들(<see cref="GoodsOpen"/>).</summary>
+    public IReadOnlyList<GoodsOpen> GoodsOpens => _goodsOpens;
+
     /// <summary>
     /// 그 발견물의 칸 1 에 이름을 올리는 사람 — <b>가장 먼저</b> 채가는 항해자다. 없으면 null.
     /// </summary>
@@ -250,17 +268,19 @@ public sealed class HistoryVoyages
         var moves = new List<Move>();
         var deaths = new List<Death>();
         var reports = new List<Report>();
-        var voyages = FromFile(gameDirectory, moves, deaths, reports);
+        var goods = new List<GoodsOpen>();
+        var voyages = FromFile(gameDirectory, moves, deaths, reports, goods);
         if (voyages != null)
             TableCache.Write(CacheName, new TableCache.Cached<Snapshot>(
                 $"{Count}명 {voyages.Count}건 · 이동 {moves.Count}수 · 퇴장 {deaths.Count}",
-                new Snapshot(voyages, moves, deaths, reports), FileName, SnapshotVersion));
+                new Snapshot(voyages, moves, deaths, reports, goods), FileName, SnapshotVersion));
         else if (TableCache.Read<Snapshot>(CacheName)?.Data is { } kept)
         {
             voyages = kept.Voyages;
             moves = kept.Moves ?? [];
             deaths = kept.Deaths ?? [];
             reports = kept.Reports ?? [];
+            goods = kept.GoodsOpens ?? [];
         }
 
         if (voyages == null || voyages.Count == 0)
@@ -271,12 +291,12 @@ public sealed class HistoryVoyages
 
         LastError = "";
         reports.Sort((a, b) => a.On != b.On ? a.On.CompareTo(b.On) : a.Voyager - b.Voyager);
-        return new HistoryVoyages(voyages, moves, deaths, reports);
+        return new HistoryVoyages(voyages, moves, deaths, reports, goods);
     }
 
     /// <summary><c>HISTCHR.CDS</c> 에서 읽어 낸다. 못 읽으면 null 이고 까닭이 남는다.</summary>
     private static List<Voyage>? FromFile(string gameDirectory, List<Move> moves, List<Death> deaths,
-                                          List<Report> reports)
+                                          List<Report> reports, List<GoodsOpen> goods)
     {
         if (gameDirectory.Length == 0) { LastError = "게임 폴더를 모릅니다"; return null; }
 
@@ -291,7 +311,7 @@ public sealed class HistoryVoyages
 
         var voyages = new List<Voyage>();
         for (int who = 0; who < Count; who++)
-            if (archive.Decode(who) is { } part) Read(who, part, voyages, moves, deaths, reports);
+            if (archive.Decode(who) is { } part) Read(who, part, voyages, moves, deaths, reports, goods);
 
         if (voyages.Count == 0) { LastError = $"{FileName} 에서 발견 기록을 못 찾았습니다"; return null; }
 
@@ -321,7 +341,7 @@ public sealed class HistoryVoyages
 
     /// <summary>대본 하나에서 날짜 붙은 발견 기록과 이동을 뽑는다.</summary>
     private static void Read(int who, byte[] part, List<Voyage> into, List<Move> moves, List<Death> deaths,
-                             List<Report> reports)
+                             List<Report> reports, List<GoodsOpen> goods)
     {
         if (part.Length < 4) return;
 
@@ -378,6 +398,16 @@ public sealed class HistoryVoyages
             into.Add(new Voyage(who, blocks[at].Year, blocks[at].Month, id));
         }
 
+        // 01 15 <교역품> — 그 달에 판매를 켠다.
+        for (int i = 0; i + 3 < part.Length; i++)
+        {
+            if (part[i] != 0x01 || part[i + 1] != 0x15 || part[i + 3] != 0) continue;
+
+            int at = -1;
+            for (int k = 0; k < blocks.Count && blocks[k].Body <= i; k++) at = k;
+            if (at >= 0) goods.Add(new GoodsOpen(who, blocks[at].Year, blocks[at].Month, part[i + 2]));
+        }
+
         // 3C 08 <도시> · 3C 0B <발견물> — 대본의 주인을 옮긴다.
         for (int i = 0; i + 3 < part.Length; i++)
         {
@@ -403,10 +433,11 @@ public sealed class HistoryVoyages
     /// 그 본문에 발표(<c>3F</c>)가 들었는가 — 본문은 다음 칸(조건이든 본문이든)이 시작하는 데까지다.
     /// </summary>
     /// <remarks>
-    /// 글과 뜀 오프셋 속의 우연한 <c>3F</c> 를 안 집으려고 꼴을 못박아 본다. HISTCHR 의 발표는 두 꼴뿐이다.
+    /// 글과 뜀 오프셋 속의 우연한 <c>3F</c> 를 안 집으려고 꼴을 못박아 본다. HISTCHR 의 발표는 세 꼴뿐이다.
     /// <code>
     ///   … 3F FF                      칸의 맨 끝          26 08 00 00 3F FF(디아스 1488.12) · 긴 말 뒤의 3F FF
-    ///   &lt;명령 u16&gt; 3F &lt;다음 명령&gt;   명령 바로 뒤        26 08 0B 00 3F 20 0A …(코론 1493.05) · 01 0B 07 00 3F 26 0A …(엘카노 1522.09)
+    ///   &lt;명령 u16&gt; 3F &lt;다음 명령&gt;   명령 바로 뒤        26 08 0B 00 3F 20 0A …(코론 1493.05) · 26 08 DD 00 3F 21 08 …(피사로 1532.07)
+    ///   … 00 08 00 00 3F &lt;다음 명령&gt;  소문 명령 뒤        20 0A 글 00 08 00 00 3F 26 0A …(다·가마 1499.09)
     /// </code>
     /// <c>43 4B 3F 00</c>(뜀 오프셋) · <c>22 00 3F 00</c>(인자) 같은 것은 어느 꼴도 아니라 걸러진다.
     /// </remarks>
@@ -422,9 +453,15 @@ public sealed class HistoryVoyages
 
         for (int i = body + 4; i + 1 < end; i++)
         {
-            if (part[i] != 0x3F || part[i + 1] is not (0xFF or 0x20 or 0x26)) continue;
+            if (part[i] != 0x3F) continue;
+            bool next = part[i + 1] == 0xFF
+                        || (i + 2 < end && (part[i + 1], part[i + 2]) is (0x20, 0x0A) or (0x26, 0x0A) or (0x21, 0x08));
+            if (!next) continue;
+
             int op = part[i - 4] << 8 | part[i - 3];
             if (op is 0x2608 or 0x010B or 0x3C08) return true;
+            // 도시 · 문화권 소문(20 0A 글 00 08|19 u16) 바로 뒤.
+            if (part[i - 4] == 0 && part[i - 3] is 0x08 or 0x19) return true;
         }
         return false;
     }

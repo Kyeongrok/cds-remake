@@ -3636,6 +3636,12 @@
         "On": "1499-04-01T00:00:00"
       },
       {
+        "Voyager": 3,
+        "Year": 1499,
+        "Month": 9,
+        "On": "1499-09-01T00:00:00"
+      },
+      {
         "Voyager": 1,
         "Year": 1501,
         "Month": 6,
@@ -3793,6 +3799,12 @@
       },
       {
         "Voyager": 7,
+        "Year": 1532,
+        "Month": 7,
+        "On": "1532-07-01T00:00:00"
+      },
+      {
+        "Voyager": 7,
         "Year": 1533,
         "Month": 11,
         "On": "1533-11-01T00:00:00"
@@ -3815,8 +3827,94 @@
         "Month": 5,
         "On": "1536-05-01T00:00:00"
       }
+    ],
+    "GoodsOpens": [
+      {
+        "Voyager": 2,
+        "Year": 1508,
+        "Month": 12,
+        "Goods": 49
+      },
+      {
+        "Voyager": 3,
+        "Year": 1498,
+        "Month": 5,
+        "Goods": 23
+      },
+      {
+        "Voyager": 3,
+        "Year": 1516,
+        "Month": 7,
+        "Goods": 52
+      },
+      {
+        "Voyager": 4,
+        "Year": 1492,
+        "Month": 3,
+        "Goods": 59
+      },
+      {
+        "Voyager": 4,
+        "Year": 1504,
+        "Month": 8,
+        "Goods": 58
+      },
+      {
+        "Voyager": 4,
+        "Year": 1512,
+        "Month": 4,
+        "Goods": 24
+      },
+      {
+        "Voyager": 5,
+        "Year": 1504,
+        "Month": 7,
+        "Goods": 32
+      },
+      {
+        "Voyager": 7,
+        "Year": 1527,
+        "Month": 12,
+        "Goods": 2
+      },
+      {
+        "Voyager": 7,
+        "Year": 1530,
+        "Month": 7,
+        "Goods": 31
+      },
+      {
+        "Voyager": 7,
+        "Year": 1534,
+        "Month": 8,
+        "Goods": 3
+      },
+      {
+        "Voyager": 8,
+        "Year": 1514,
+        "Month": 3,
+        "Goods": 53
+      },
+      {
+        "Voyager": 9,
+        "Year": 1521,
+        "Month": 12,
+        "Goods": 27
+      },
+      {
+        "Voyager": 13,
+        "Year": 1518,
+        "Month": 9,
+        "Goods": 51
+      },
+      {
+        "Voyager": 13,
+        "Year": 1519,
+        "Month": 4,
+        "Goods": 47
+      }
     ]
   },
   "Source": "HISTCHR.CDS",
-  "Version": 4
+  "Version": 5
 }

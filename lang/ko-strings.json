@@ -1075,6 +1075,10 @@
   "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:284",
   "args": 0
  },
+ "이곳은 이미 {0}{1} 발견해 보고했습니다": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs",
+  "args": 2
+ },
  "이제 교역소에서 [{0}]{1} 취급합니다": {
   "at": "CdsHelper.Game/Engine/Disev/DisevRunner.cs:285",
   "args": 2

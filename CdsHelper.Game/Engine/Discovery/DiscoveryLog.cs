@@ -199,6 +199,18 @@ public sealed class DiscoveryLog
     public int At(Player player, int cellX, int cellY, bool onLand)
     {
         // ① 자리와 너비만 보고 한 줄을 고른다(0x00425640).
+        if (PickAt(cellX, cellY) is not { } picked) return -1;
+
+        // ② 그 한 줄에만 관문을 건다(0x0048D462 → 0x004AAD20).
+        if (!CanFire(player, picked)) return -1;
+        if (picked.OnLand != onLand) return -1;      // 표 +0x28 과 0x5B61B4 를 견주는 자리
+
+        return picked.Id;
+    }
+
+    /// <summary>그 칸을 덮는 것 가운데 가장 좁은 한 줄(<c>0x00425640</c>).</summary>
+    private DiscoveryTable.Record? PickAt(int cellX, int cellY)
+    {
         int found = -1;
         int best = int.MaxValue;
 
@@ -210,13 +222,17 @@ public sealed class DiscoveryLog
             found = row.Id;
         }
 
-        if (found < 0 || _table.Find(found) is not { } picked) return -1;
+        return found >= 0 ? _table.Find(found) : null;
+    }
 
-        // ② 그 한 줄에만 관문을 건다(0x0048D462 → 0x004AAD20).
-        if (!CanFire(player, picked)) return -1;
-        if (picked.OnLand != onLand) return -1;      // 표 +0x28 과 0x5B61B4 를 견주는 자리
-
-        return found;
+    /// <summary>
+    /// 그 칸이 <b>남이 보고를 끝내</b> 내가 찾을 길이 없는 자리면 그 줄을 낸다. 아니면 null.
+    /// </summary>
+    public DiscoveryTable.Record? ScoopedAt(Player player, int cellX, int cellY, bool onLand)
+    {
+        if (PickAt(cellX, cellY) is not { } row || row.OnLand != onLand || row.Indirect) return null;
+        if (player.ScoopedBy(row.Id) == null || player.HasFound(row.Id)) return null;
+        return CanFire(player, row) ? null : row;
     }
 
     /// <summary>
@@ -241,7 +257,10 @@ public sealed class DiscoveryLog
         // 계약까지 맺고 가도 아무 일이 없어, 여기서는 <b>남이 찾은 뒤에도</b> 사건을 띄운다. 그 사람이 발표(3F)하기
         // 전에 내가 먼저 보고하면 내 것이고, 발표한 뒤면 명성 없이 사례가 깎인다(Game.RunVoyagerReports).
         if (row.Once) return !player.HasFound(row.Id);
-        return !player.HasAnnounced(row.Id) && player.ScoopedBy(row.Id) == null;
+        if (player.HasAnnounced(row.Id)) return false;
+        // 원본과 다르다 — 계약으로만 열리는 것(인도 · 신대륙 따위)은 계약해 둔 뒤 남이 보고해도 한 번짜리처럼 찾게 둔다.
+        // 안 그러면 계약까지 맺고 가도 아무 일이 없다.
+        return player.ScoopedBy(row.Id) == null || (!row.OpenAtStart && !player.HasFound(row.Id));
     }
 
     /// <summary>

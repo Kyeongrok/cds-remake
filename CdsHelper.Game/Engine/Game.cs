@@ -253,6 +253,8 @@ public sealed class Game
                 int done = player.HistoryMonth;
                 RunVoyagerReports(player, DateTime.MinValue,
                                   new DateTime((done - 1) / 12, (done - 1) % 12 + 1, 1), tell: false);
+                RunVoyagerGoods(player, DateTime.MinValue,
+                                new DateTime((done - 1) / 12, (done - 1) % 12 + 1, 1), tell: false);
                 _reportsFor = player;
             }
             _reportsKey = now;
@@ -279,6 +281,7 @@ public sealed class Game
                     // 한참 밀린 달(옛 세이브)은 알리지 않는다 — 수십 건이 한꺼번에 뜬다.
                     bool tell = now - key < 12;
                     if (tell) TellVoyagerFinds(player, when);
+                    RunVoyagerGoods(player, when, when, tell);
                     History?.RunMonth(player, year, month, CityRows, Nations, Found,
                                       tell ? TellVoyagerCapture : null);
                     HistoryRumors.RunMonth(player, when);   // 더해 넣은 역사 소문(1507년 제노바 따위)
@@ -325,6 +328,27 @@ public sealed class Game
             if (log.Table.Find(voyage.Discovery) is not { } row || row.Indirect) continue;
             if (player.HasAnnounced(row.Id) || player.Scooped.ContainsKey(row.Id)) continue;
             VoyagerReports.Enqueue((HistoryVoyages.NameOf(voyage.Voyager), row.Name, "발견했습니다"));
+        }
+    }
+
+    /// <summary>
+    /// 그 사이에 역사 항해자가 찾아 판매가 켜진 교역품 — 대본의 <c>01 15</c>(<c>0x004088D8</c>).
+    /// </summary>
+    /// <remarks>
+    /// 판매 깃발 <c>0x0058BAB0</c> 은 대본 주인을 안 가리고 켜진다. 처음 켤 때만 「%s%s [%s]%s 발견했습니다」
+    /// (<c>0x00538548</c>)가 뜬다. 발견물과 이름이 같으면 <see cref="TellVoyagerFinds"/> 와 글이 겹쳐 한 번만 넣는다.
+    /// </remarks>
+    private void RunVoyagerGoods(Player player, DateTime from, DateTime through, bool tell)
+    {
+        if (Voyagers is not { } voyagers) return;
+
+        foreach (var open in voyagers.GoodsOpens)
+        {
+            if (open.On < from || open.On > through || !player.ActivateGoods(open.Goods) || !tell) continue;
+            if (Goods?.Find(open.Goods)?.Name is not { Length: > 0 } name) continue;
+
+            var told = (HistoryVoyages.NameOf(open.Voyager), name, "발견했습니다");
+            if (!VoyagerReports.Contains(told)) VoyagerReports.Enqueue(told);
         }
     }
 

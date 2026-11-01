@@ -67,7 +67,8 @@ public static class GameInfo
         var hints = game.Hints;
 
         return [.. game.Player.Hints.Order()
-                   .Where(id => !Found(game, table, hints, id))
+                   .Where(id => !Found(game, table, hints, id)
+                                && game.Discoveries?.IsHintDone(game.Player, id) != true)   // 남이 보고한 것도 뺀다
                    .Select(id => HintLabel(game, id))];
     }
 
