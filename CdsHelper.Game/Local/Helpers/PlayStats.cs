@@ -93,6 +93,12 @@ public static class PlayStats
 
     private static bool CanUpload => CanUploadBuild && GameSettings.SendStats == true;
 
+    /// <summary>받는 곳 주소 — 보낼 수 있는 판일 때만, 아니면 빈 글(<see cref="BugReport"/> 가 쓴다).</summary>
+    internal static string UploadUrl => CanUploadBuild ? _url : "";
+
+    /// <summary>이 판의 번호(<see cref="BugReport"/> 가 쓴다).</summary>
+    internal static string Version => _version;
+
     /// <summary>
     /// 게임을 켤 때 한 번 — 받는 곳 주소와 판 번호를 읽고, 지난번에 못 보낸 것을 뒤에서 보낸다.
     /// </summary>
@@ -106,6 +112,7 @@ public static class PlayStats
         _release = version is not null && ReleaseNotes.Since(ReleaseNotes.Read(), "", version).Length > 0;
         Started = true;
         UploadInBackground();
+        BugReport.ResendInBackground();
     }
 
     private static string ReadUrl()
@@ -332,7 +339,7 @@ public static class PlayStats
     /// <summary>
     /// 지금 켜 둔 옵션들 — 설정의 참·거짓 값 전부와 단계가 있는 몇 가지다. 글로 된 값(글쇠 이름 따위)은 안 싣는다.
     /// </summary>
-    private static Dictionary<string, int> Mods()
+    internal static Dictionary<string, int> Mods()
     {
         var mods = new Dictionary<string, int>();
         foreach (var p in typeof(GameSettings).GetProperties(BindingFlags.Public | BindingFlags.Static))
@@ -361,7 +368,7 @@ public static class PlayStats
     private static extern uint GetDpiForSystem();
 
     /// <summary>주 모니터의 폭 · 높이(화면 점)와 배율(100 이 100%). 못 읽으면 0 이다.</summary>
-    private static (int Width, int Height, int Scale) Screen()
+    internal static (int Width, int Height, int Scale) Screen()
     {
         try
         {
@@ -388,7 +395,7 @@ public static class PlayStats
     ];
 
     /// <summary>설치마다 하나인 무작위 번호 — 누구인지는 모르고 같은 설치인지만 안다.</summary>
-    private static string InstallId()
+    internal static string InstallId()
     {
         if (File.Exists(InstallPath) && Guid.TryParse(File.ReadAllText(InstallPath).Trim(), out var known))
             return known.ToString();

@@ -21,7 +21,7 @@ public static class CrashReport
     /// <summary>남겨 둘 보고 파일 수.</summary>
     private const int Keep = 20;
 
-    private static readonly string Folder = UserDataFolder.Combine("crash");
+    internal static readonly string Folder = UserDataFolder.Combine("crash");
 
     /// <summary>같은 오류가 잇달아 날 때 창이 끝없이 뜨지 않게 — 한 번 띄운 오류 자리는 다시 안 띄운다.</summary>
     private static readonly HashSet<string> Shown = [];
@@ -56,7 +56,7 @@ public static class CrashReport
         {
             var sb = new StringBuilder();
             sb.AppendLine(Lang.T(fatal ? "오류가 나서 게임이 꺼집니다." : "오류가 났습니다."));
-            sb.AppendLine(Lang.T("버그 리포트를 보내 주시면 고치는 데 큰 도움이 됩니다."));
+            sb.AppendLine(Lang.T("왼쪽 위 메뉴의 「버그 리포트」로 알려 주시면 고치는 데 큰 도움이 됩니다."));
             sb.AppendLine();
             if (copied) sb.AppendLine(Lang.T("오류 내용을 클립보드에 복사했습니다. 그대로 붙여 넣어 보내 주세요."));
             if (path != null) sb.AppendLine(Lang.T("오류 내용을 파일로도 저장했습니다:")).AppendLine(path);

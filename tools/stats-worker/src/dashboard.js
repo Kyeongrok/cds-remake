@@ -49,6 +49,12 @@ export const DASHBOARD_HTML = `<!doctype html>
   .pager { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 8px; color: var(--dim); }
   .pager:empty { display: none; }
   .pager button:disabled { opacity: .4; cursor: default; }
+  .bug { border-top: 1px solid var(--line); padding: 10px 0; }
+  .bug .head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .bug .text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
+  .bug pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; color: var(--dim); max-height: 300px; overflow: auto; }
+  .tag { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font-size: 12px; }
+  .tag.new { color: var(--gold); border-color: var(--gold); } .tag.fixed { color: var(--good); border-color: var(--good); }
 </style>
 </head>
 <body>
@@ -64,7 +70,7 @@ export const DASHBOARD_HTML = `<!doctype html>
   <div class="tabs pagetabs" id="pagetabs">
     <button data-tab="mods">모드 옵션</button><button data-tab="disc">발견물</button><button data-tab="mates">부하</button>
     <button data-tab="nation">나라 · 기함 · 투자</button><button data-tab="heroes">주인공</button><button data-tab="voyage">항해</button>
-    <button data-tab="play">네비 · 전투 · 사건</button><button data-tab="errors">오류</button><button data-tab="days">날짜별</button>
+    <button data-tab="play">네비 · 전투 · 사건</button><button data-tab="errors">오류</button><button data-tab="days">날짜별</button><button data-tab="bugs">버그 리포트</button>
   </div>
   <section data-tab="mods"><h2>모드 옵션 <small>설치별 마지막 값</small></h2><div class="tabs" id="modtabs"></div><div class="scroll"><table id="mods"></table></div></section>
   <section data-tab="disc"><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table><div class="pager" id="discoveries_pg"></div></div></section>
@@ -84,6 +90,11 @@ export const DASHBOARD_HTML = `<!doctype html>
   <section data-tab="play"><h2>사건 <small>바다 · 육지에서 하루를 넘길 때 — 밑수(넘긴 날)와 견줘 본다</small></h2><table id="events"></table></section>
   <section data-tab="errors"><h2>오류</h2><div class="scroll"><table id="errors"></table><div class="pager" id="errors_pg"></div></div></section>
   <section data-tab="days"><h2>날짜별 · 버전별</h2><table id="days"></table><div class="pager" id="days_pg"></div></section>
+  <section data-tab="bugs"><h2>버그 리포트</h2>
+    <div class="sub">게임의 「버그 리포트」로 받은 글입니다. 오류 기록이 들어 있어 관리자 키(BUG_ADMIN_KEY)를 넣어야 보입니다 — 키는 이 브라우저에만 남습니다.</div>
+    <div class="filters"><label>상태 <select id="bugstatus"><option value="new">새로 온 것</option><option value="all">전체</option><option value="seen">봤음</option><option value="fixed">고침</option><option value="wontfix">안 고침</option></select></label>
+      <button id="bugkey">관리자 키</button><button id="bugreload">새로 고침</button><span id="bugerr" class="bad"></span></div>
+    <div id="bugs" class="dim">관리자 키를 넣으면 보입니다.</div></section>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -339,6 +350,54 @@ async function load() {
     render();
   } catch (e) { $('error').textContent = '불러오지 못했습니다: ' + e.message; }
 }
+// 버그 리포트 — 관리자 키로 /v1/bugs 를 읽고, 카드마다 상태를 바꾼다. 집계와 따로 불러 키가 없어도 다른 탭은 그대로 뜬다.
+const STATUS_NAME = { new: '새로', seen: '봤음', fixed: '고침', wontfix: '안 고침' };
+const bugState = { status: 'new' };
+const bugKey = () => { try { return localStorage.getItem('cdsBugAdminKey') || ''; } catch (e) { return ''; } };
+function bugCard(b) {
+  const c = b.context || {};
+  const when = new Date(b.created_at).toLocaleString('ko-KR');
+  const where = [c.where, c.city].filter(Boolean).join(' ');
+  const buttons = Object.keys(STATUS_NAME).filter((s) => s !== b.status)
+    .map((s) => '<button data-id="' + b.id + '" data-s="' + s + '">' + STATUS_NAME[s] + '</button>').join(' ');
+  return '<div class="bug"><div class="head"><b>#' + b.id + '</b><span class="tag ' + esc(b.status) + '">' + esc(STATUS_NAME[b.status] || b.status) + '</span>'
+    + '<span class="dim">' + esc(when) + (b.version ? ' · v' + esc(b.version) : '') + (where ? ' · ' + esc(where) : '') + (c.crashLog ? ' · 오류 기록 있음' : '') + '</span><span style="flex:1"></span>' + buttons + '</div>'
+    + '<div class="text">' + esc(b.text) + '</div>'
+    + (b.note ? '<div class="dim">메모: ' + esc(b.note) + '</div>' : '')
+    + '<details><summary class="dim">같이 온 것</summary><pre>' + esc(JSON.stringify(c, null, 2)) + '</pre></details></div>';
+}
+async function loadBugs() {
+  const key = bugKey();
+  $('bugerr').textContent = '';
+  if (!key) { $('bugs').innerHTML = '<span class="dim">관리자 키를 넣으면 보입니다.</span>'; return; }
+  try {
+    const res = await fetch('/v1/bugs?status=' + bugState.status + '&order=desc&limit=200', { headers: { Authorization: 'Bearer ' + key } });
+    if (res.status === 401) throw new Error('키가 맞지 않습니다');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const bugs = (await res.json()).bugs || [];
+    $('bugs').innerHTML = bugs.length ? bugs.map(bugCard).join('') : '<span class="dim">없습니다.</span>';
+    $('bugs').querySelectorAll('button[data-id]').forEach((b) => b.onclick = () => markBug(Number(b.dataset.id), b.dataset.s));
+  } catch (e) { $('bugerr').textContent = '불러오지 못했습니다: ' + e.message; }
+}
+async function markBug(id, status) {
+  const asks = status === 'fixed' || status === 'wontfix';
+  const note = asks ? prompt('메모(선택 — 고친 커밋 · 버전 따위)', '') : null;
+  if (asks && note === null) return;
+  const res = await fetch('/v1/bugs/' + id + '/status', { method: 'POST', headers: { Authorization: 'Bearer ' + bugKey(), 'content-type': 'application/json' },
+    body: JSON.stringify(note ? { status, note } : { status }) });
+  if (!res.ok) { $('bugerr').textContent = '바꾸지 못했습니다: HTTP ' + res.status; return; }
+  loadBugs();
+}
+$('bugkey').onclick = () => {
+  const k = prompt('관리자 키(BUG_ADMIN_KEY)', bugKey());
+  if (k === null) return;
+  try { localStorage.setItem('cdsBugAdminKey', k.trim()); } catch (e) { }
+  loadBugs();
+};
+$('bugreload').onclick = loadBugs;
+$('bugstatus').onchange = (e) => { bugState.status = e.target.value; loadBugs(); };
+loadBugs();
+
 $('version').onchange = (e) => { state.version = e.target.value; for (const k in pages) pages[k] = 0; load(); };
 load();
 </script>

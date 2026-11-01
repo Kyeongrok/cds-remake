@@ -544,6 +544,8 @@ public sealed class WorldMapWindow : Window
             ("단축키", () => { ShortcutDialog.Show(this); _refreshNav(); }),
             // 업데이트한 뒤 한 번 뜨고 마는 글을 다시 본다 — 새 판 둘의 대목이다.
             ("릴리즈 노트", ShowReleaseNotes),
+            // 글을 써서 보내면 통계 대시보드의 「버그 리포트」 탭에 온다.
+            ("버그 리포트", ShowBugReport),
             // 원본에 없던 발견물(돌묵상어 · 여우원숭이)의 글과 그림이 어디서 왔는지.
             ("출처", () => NoticeDialog.Notes(this, ExtraCredits, "출처")),
             // 「하드코어 랭킹」 줄은 아직 안 낸다(PlayStats.RankingOpen) — 열 때 여기에 ("하드코어 랭킹", OpenHardcoreRanking) 을 넣는다.
@@ -3210,6 +3212,26 @@ public sealed class WorldMapWindow : Window
         "  그림: Charles d'Orbigny, Dictionnaire universel\n" +
         "      d'histoire naturelle (1849) 도판\n" +
         "      위키미디어 공용, 퍼블릭 도메인";
+
+    private void ShowBugReport()
+    {
+        bool title = ReferenceEquals(_screen.Content, _titleRoot);
+        bool inCity = !title && _host.SeaBlocked;
+        var player = _game.Player;
+        var context = BugReport.Context(
+            title ? "타이틀" : inCity ? "도시" : _host.IsOnLand ? "육지" : "바다",
+            inCity ? _game.CityName(player.CityId) : null,
+            title ? null : player.Date.ToString("yyyy-MM-dd"),
+            title ? null : _game.Nations?.Find(player.Nation)?.Name,
+            title ? null : player.FlagshipHull?.Hull.Name);
+        if (BugReportDialog.Ask(this, BugReport.Summary(context), text => BugReport.Submit(text, context)) is not { } result) return;
+        NoticeDialog.Show(this, result switch
+        {
+            BugReport.Result.Sent => "보냈습니다. 고맙습니다.",
+            BugReport.Result.Later => "지금은 보내지 못했습니다. 다음에 게임을 켤 때 다시 보냅니다.",
+            _ => "개발 빌드에서는 보내지 않습니다.",
+        }, "버그 리포트");
+    }
 
     private void ShowReleaseNotes()
     {
