@@ -111,6 +111,9 @@ public sealed class SupplyDialog : GameWindow
     private readonly GameUi.GameLabel _total = Label("");
     private readonly GameButton _decide;
 
+    /// <summary>아래 단추 여섯의 키보드 초점.</summary>
+    private readonly GameUi.FocusGroup _keys = new();
+
     /// <summary>이 도시가 탄약을 파는지(도시 형편 비트 8, <c>0x00493FB0</c> · <c>0x0040EC40</c>).</summary>
     private readonly bool _ammoSold;
 
@@ -191,12 +194,17 @@ public sealed class SupplyDialog : GameWindow
         }
 
         _decide = Tight(new GameButton("결정", Decide) { On = false }, ButtonGap);
+        var fill = Tight(new GameButton("최대", Fill), ButtonGap);
+        var tenDays = Tight(new GameButton("10일분", TenDays), ButtonGap);
+        var askDays = Tight(new GameButton("일지정", AskDays), ButtonGap);
+        var last = Tight(new GameButton("전회분", Last), 0);
+        var back = Tight(new GameButton("돌아간다", Close), 0);
 
         var left = new StackPanel { Orientation = Orientation.Horizontal };
-        left.Children.Add(Tight(new GameButton("최대", Fill), ButtonGap));
-        left.Children.Add(Tight(new GameButton("10일분", TenDays), ButtonGap));
-        left.Children.Add(Tight(new GameButton("일지정", AskDays), ButtonGap));
-        left.Children.Add(Tight(new GameButton("전회분", Last), 0));
+        left.Children.Add(fill);
+        left.Children.Add(tenDays);
+        left.Children.Add(askDays);
+        left.Children.Add(last);
 
         var right = new StackPanel
         {
@@ -204,7 +212,14 @@ public sealed class SupplyDialog : GameWindow
             HorizontalAlignment = HorizontalAlignment.Right,
         };
         right.Children.Add(_decide);
-        right.Children.Add(Tight(new GameButton("돌아간다", Close), 0));
+        right.Children.Add(back);
+
+        // 키보드 — 원본은 창이 뜰 때 「결정」에 초점이 있어, 여는 차례에 채워 둔 전회분(또는 최대)을 엔터 한 번으로 싣는다.
+        // 단추는 만든 차례로 Tab · 방향키(숫자판 포함)로 돌고, 엔터 · 스페이스로 누른다. 흐린 단추도 초점은 받는다.
+        GameButton[] ring = [fill, tenDays, askDays, last, _decide, back];
+        foreach (var button in ring)
+            _keys.Add(button, on => button.Focused = on, () => { if (button.On) button.Run?.Invoke(); });
+        _keys.Focus(Array.IndexOf(ring, _decide));
 
         var buttons = new DockPanel { Margin = new Thickness(10, 0, 10, 10) };
         DockPanel.SetDock(left, Dock.Left);
@@ -220,7 +235,15 @@ public sealed class SupplyDialog : GameWindow
         GameUi.EnableDrag(this, frame);
         Content = frame;
 
-        KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+        // PreviewKeyDown 으로 먼저 받는다 — 마우스가 지나간 단추가 WPF 초점을 쥐고 있으면 그 단추가 엔터를 가로챈다.
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key is Key.Escape) { Close(); e.Handled = true; return; }
+            Key key = e.Key is Key.Tab
+                ? Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? Key.Left : Key.Right
+                : e.Key;
+            if (_keys.HandleKey(key)) e.Handled = true;
+        };
         Paint();
     }
 
