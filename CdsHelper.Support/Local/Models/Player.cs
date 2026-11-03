@@ -2660,7 +2660,9 @@ public sealed class Player
         _met.Clear();
         if (met != null) foreach (var name in met) _met.Add(name);
         _items.Clear();
-        if (items != null) foreach (int id in items) Take(id);
+        // 칸 한도로 거르지 않는다 — 작위 혜택(자작부터 소지품 칸 +)은 작위를 되돌린 뒤에야 서므로, Take 로 넣으면
+        // 열여섯 칸 뒤가 불러올 때마다 버려졌다(버그 리포트 #9). 세이브에 적힌 것이 곧 지닌 것이다.
+        if (items != null) foreach (int id in items) if (id >= 0) _items.Add(id);
         _found.Clear();
         if (discoveries != null) foreach (int id in discoveries) if (!RemovedDiscoveries.Contains(id)) _found.Add(id);
         _announced.Clear();
