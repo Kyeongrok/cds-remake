@@ -74,6 +74,10 @@ public static class CrashReport
         var sb = new StringBuilder();
         sb.AppendLine($"대항해시대3 리메이크 {(_version.Length > 0 ? "v" + _version : "(개발 판)")}{(fatal ? " — 꺼짐" : "")}");
         sb.AppendLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}  ·  {Environment.OSVersion}  ·  {Lang.Current.Code}");
+        // 어느 그래픽 카드 · 드라이버였는지, 장치가 끊겼으면 왜인지(DXGI_ERROR_DEVICE_REMOVED 제보 — 원인을 못 좁혔다).
+        string gpu;
+        try { gpu = UI.Views.GpuInfo.Describe(ex); } catch { gpu = ""; }
+        if (gpu.Length > 0) sb.AppendLine(gpu);
         sb.AppendLine();
         sb.AppendLine(ex.ToString());
         return sb.ToString();

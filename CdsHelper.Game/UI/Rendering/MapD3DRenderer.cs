@@ -1226,6 +1226,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         made.CheckError();
         _device = dev;
         _ctx = ctx;
+        GpuInfo.Watch(dev, Software);
 
         var vsBlob = Compiler.Compile(ShaderSource, "VS", "map.hlsl", "vs_4_0");
         var psBlob = Compiler.Compile(ShaderSource, "PS", "map.hlsl", "ps_4_0");
