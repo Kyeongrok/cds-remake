@@ -427,7 +427,7 @@ internal static class HostileCityMenu
         uint[]? relayer = null;
         int best = mine;
         if (game.World?.People is { } people)
-            foreach (int slot in (int[])[0, 3])   // 부관 · 통역
+            foreach (int slot in KeeperTongue.RelaySlots)   // 부관 · 통역(모드면 아무 자리나)
             {
                 string mate = player.MateAt(slot);
                 if (mate.Length == 0 || people.FirstOrDefault(r => r.Name == mate) is not { } row) continue;

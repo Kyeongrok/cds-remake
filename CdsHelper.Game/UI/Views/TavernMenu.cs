@@ -1273,7 +1273,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         int best = mine;
         relayer = "";
         if (language is >= 0 and < 14)
-            foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+            foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
                 if (RowOf(_player.MateAt(slot)) is { } mate && mate.Languages[language] > best)
                 {
                     best = mate.Languages[language];
@@ -2214,7 +2214,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     {
         if (RowOf(person) is not { } row) return FluentTongue;
         int best = PlayerTongue(row);
-        foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+        foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
             if (RowOf(_player.MateAt(slot)) is { } mate)
                 best = Math.Max(best, Shared(mate.Languages, i => row.Languages[i]));
         return best;
@@ -2238,7 +2238,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
             theirs[i] = (her.Tongues & (1 << i)) != 0 ? FluentTongue : 0;
 
         int best = Shared(theirs, i => _player.TongueOf(Skill.Languages[i]));
-        foreach (int slot in (int[])[FirstMateSlot, InterpreterSlot])
+        foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
             if (RowOf(_player.MateAt(slot)) is { } mate)
                 best = Math.Max(best, Shared(mate.Languages, i => theirs[i]));
         return best;

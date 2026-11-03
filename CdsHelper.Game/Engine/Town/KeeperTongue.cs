@@ -29,6 +29,15 @@ public static class KeeperTongue
     /// <param name="RelayerLevel">그 사람의 수준.</param>
     public readonly record struct Listener(int Level, uint[]? Relayer, int RelayerLevel);
 
+    /// <summary>
+    /// 말을 옮겨 주는 부하 자리 — 원본은 부관(0) · 통역(3)뿐이다(<c>0x00468F70</c>). 모드 「아무 자리나 통역」을 켜면
+    /// 항해사(1) · 측량사(2)도 센다. 같은 수준이면 앞 자리가 옮기도록 부관 · 통역을 먼저 둔다.
+    /// </summary>
+    public static int[] RelaySlots => Local.Settings.GameSettings.AnySeatInterprets ? [0, 3, 1, 2] : [0, 3];
+
+    /// <summary>그 자리 부하가 말을 옮기는 자리인지.</summary>
+    public static bool Relays(int slot) => Array.IndexOf(RelaySlots, slot) >= 0;
+
     /// <summary>지금 든 건물의 듣기 — 건물에 들 때 도시 화면이 건다. 도시를 나서면 null 이다.</summary>
     public static Func<Listener>? Here { get; set; }
 

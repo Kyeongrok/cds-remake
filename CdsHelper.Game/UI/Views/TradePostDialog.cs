@@ -317,7 +317,7 @@ public sealed class TradePostDialog : GameWindow
     private int CrewTongue(int language)
     {
         int best = 0;
-        foreach (int slot in (int[])[0, 3])
+        foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
         {
             string mate = _player.MateAt(slot);
             if (mate.Length == 0 || _game.World?.People.FirstOrDefault(r => r.Name == mate) is not { } row) continue;

@@ -212,7 +212,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         {
             if ((s.Languages & (1 << i)) == 0) continue;
             if (_player.TongueOf(Skill.Languages[i]) >= SponsorTongue) return true;
-            foreach (int slot in (int[])[0, 3])
+            foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
             {
                 string name = _player.MateAt(slot);
                 if (name.Length > 0 && people?.FirstOrDefault(r => r.Name == name) is { } row

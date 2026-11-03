@@ -352,6 +352,9 @@ public sealed class GameSettingsData
     /// <summary>보고를 마치고 나설 때 부하 재계약을 안 물을지(부하 해고를 켰을 때만). 켜 두고 시작한다.</summary>
     public bool SkipRecontract { get; set; } = true;
 
+    /// <summary>부관 · 통역이 아니어도 그 말을 가장 잘하는 부하가 통역할지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool AnySeatInterprets { get; set; }
+
     /// <summary>보고 때 무기 · 방어구 증거품을 가질지 후원자가 물을지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool PatronGivesArms { get; set; }
 
@@ -1387,6 +1390,15 @@ public static class GameSettings
     {
         get => Get(d => d.SkipRecontract);
         set => Set(d => d.SkipRecontract = value);
+    }
+
+    /// <summary>
+    /// 아무 자리나 통역 — 원본은 부관(자리 0) · 통역(자리 3)만 말을 옮기고 말로 막힌 곳을 열어 준다. 켜면 항해사 · 측량사도 센다.
+    /// </summary>
+    public static bool AnySeatInterprets
+    {
+        get => Get(d => d.AnySeatInterprets);
+        set => Set(d => d.AnySeatInterprets = value);
     }
 
     /// <summary>

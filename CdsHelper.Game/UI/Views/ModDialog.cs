@@ -449,6 +449,11 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 스핑크스 퀴즈에서 고르는 창의 정답 줄에 「← 답」을 붙입니다."
             + " 셈 문제의 답은 늘 다리 넷 달린 괴물의 수입니다."));
 
+        // 아무 자리나 통역 — 부관 · 통역 말고 항해사 · 측량사도 말을 옮긴다.
+        rows.Children.Add(Toggle("아무 자리나 통역", GameSettings.AnySeatInterprets, on => GameSettings.AnySeatInterprets = on,
+            "원본에 없는 것입니다 — 원본은 부관과 통역만 말을 옮겨 줍니다. 켜면 항해사 · 측량사까지 부하 가운데 그 말을 가장 잘하는 사람이"
+            + " 통역해 주고, 교역소 흥정 · 후원자 · 항구 소문 · 해상 교섭처럼 말이 통해야 하는 곳도 그 사람 실력으로 봅니다."));
+
         // 추가 발견물 — 원본 274개 뒤에 더해 넣은 것(돌묵상어 따위)과 그 힌트.
         discovery.Children.Add(Toggle("추가 발견물", GameSettings.ExtraDiscoveries,
             on => GameSettings.ExtraDiscoveries = on,

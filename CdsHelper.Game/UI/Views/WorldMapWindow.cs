@@ -4768,7 +4768,7 @@ public sealed class WorldMapWindow : Window
         if (language is >= 0 and < 14)
         {
             int best = player.TongueOf(Skill.Languages[language]);
-            foreach (int slot in (int[])[0, 3])
+            foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
             {
                 string mate = player.MateAt(slot);
                 if (mate.Length > 0 && _game.World?.People.FirstOrDefault(r => r.Name == mate) is { } row)
@@ -6982,7 +6982,7 @@ public sealed class WorldMapWindow : Window
         if (tongue < 0 || tongue >= Skill.Languages.Length) return true;   // 나라를 모르면 막지 않는다
 
         if (_game.Player.TongueOf(Skill.Languages[tongue]) > 0) return true;
-        foreach (int slot in (int[])[0, 3])
+        foreach (int slot in Engine.Town.KeeperTongue.RelaySlots)
             if (MateRow(slot) is { } row && tongue < row.Languages.Length && row.Languages[tongue] > 0)
                 return true;
         return false;

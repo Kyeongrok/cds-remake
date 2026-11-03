@@ -103,7 +103,7 @@ internal static class PersonInfoMenu
             int at = slot;
             skills.Add(row is { } r
                 ? SkillLine(i => i < r.Skills.Length ? r.Skills[i] : 0, i => ActiveSkill(at, i)) + "\n"
-                  + LanguageLine(i => i < r.Languages.Length ? r.Languages[i] : 0, at is FirstMateSlot or InterpreterSlot)
+                  + LanguageLine(i => i < r.Languages.Length ? r.Languages[i] : 0, Engine.Town.KeeperTongue.Relays(at))
                 : "");
             roles.Add(Lang.T(Player.MateRoles[slot]));
             notes.Add(Explain(slot, name,
@@ -169,7 +169,7 @@ internal static class PersonInfoMenu
             any = true;
         }
 
-        bool speaks = slot < 0 || slot is FirstMateSlot or InterpreterSlot;
+        bool speaks = slot < 0 || Engine.Town.KeeperTongue.Relays(slot);
         var tongues = Enumerable.Range(0, Skill.Languages.Length).Where(i => tongueOf(i) > 0).ToList();
         if (speaks && tongues.Count > 0)
         {
