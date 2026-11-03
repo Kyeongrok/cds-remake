@@ -2951,7 +2951,10 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!Engine.Town.Exile.Trusted(king == null ? -1 : _player.ClosenessOf(king.Name)))
         {
             _game.Sfx?.Play(SoundBank.BandNoticePart);
-            const string NotTrusted = "제독, 아직 국왕 폐하의 신임이 두텁지 않습니다. 망명을 청하려면 친밀도를 더 쌓으셔야 합니다";
+            // 얼마나 더 쌓아야 하는지 수로 알린다 — 제노바 총독부에서 친밀도 50 으로 막히고 버그인 줄 알았다(버그 리포트 #8).
+            string lord = king == null ? "국왕 폐하" : $"{king.Name} {_game.Sponsors?.FindByName(king.Name)?.Honorific ?? "각하"}";
+            string NotTrusted = $"제독, 아직 {lord}의 신임이 두텁지 않습니다. 망명을 청하려면 친밀도가 "
+                                + $"{Player.MaxCloseness}까지 차야 합니다(지금 {(king == null ? 0 : _player.ClosenessOf(king.Name))})";
             if (_player.MateAt(0).Length > 0 && _game.AideFace is { } aide)
                 TalkDialog.Say(owner, aide, "", NotTrusted);
             else
