@@ -228,7 +228,7 @@ public sealed class SponsorTable
     /// 코드 0(항구)은 없고, 81명 가운데 이 여섯 밖의 값을 가진 사람은 에라스무스 하나다.
     /// 그래도 한 사람을 통째로 잃지 않도록 <b>우리가 고쳐</b> 신부 자리인 <b>런던 교회(건물 3, 캔터베리 대성당)</b>에 앉힌다.
     /// </remarks>
-    private static int SeatOf(Sponsor s) =>
+    public static int SeatOf(Sponsor s) =>
         s.City == LondonCity && s.Building == HarborCode && Key(s.Name).Contains("에라스무스") ? LondonChurch : s.Building;
 
     /// <summary>런던 · 항구 건물 코드 · 런던 교회(캔터베리 대성당) 건물 번호.</summary>

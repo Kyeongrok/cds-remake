@@ -4746,6 +4746,12 @@ public sealed class WorldMapWindow : Window
     ///   → 항구 사람 · 감찰관 · 항구 사람 · 부관 네 마디, 계약 파기(0x00477050), 「%s와의 계약은 파기되었습니다!」
     /// </code>
     /// 원본 한국어판은 이 다섯 줄이 일본어(Shift-JIS) 그대로라 깨져 나온다. 뜻을 옮겨 한국어로 넣었다.
+    ///
+    /// <b>후원자가 앉는 건물이 역사 대본으로 사라졌을 때</b>도 같은 길로 깬다 — 원본에 없는 것이다(버그 리포트 #6).
+    /// 1507년 5월 HIST_EV 파트 31 이 제노바(28)를 프랑스(3)에 넘기면서 건물 비트 2(자노·프레고소의 총독부)를 끄는데,
+    /// 제노바 공화국(6)은 멸망(<c>22 00</c>)으로 적히지 않아 위 조건이 안 걸린다. 그러면 1523년 11월 파트 52 가 되돌릴 때까지
+    /// 보고할 곳도 없고, 딴 후원자를 설득하면 감찰관이 「보고하라」며 막아(<c>0x0044FC80</c>) 판이 묶였다.
+    /// 원본도 그렇게 묶이지만 막다른 길이라 소문 첫 마디만 「넘어갔다」로 바꿔 계약을 푼다.
     /// </remarks>
     private void CheckSponsorFallen(int city)
     {
@@ -4753,7 +4759,10 @@ public sealed class WorldMapWindow : Window
         if (player.Contract is not { } deal) return;
         if (_game.Sponsors?.FindByName(deal.Sponsor) is not { Nation: >= 0 } sponsor) return;
         _game.CatchUpMonths();
-        if (!player.IsNationFallen(sponsor.Nation)) return;
+        bool fell = player.IsNationFallen(sponsor.Nation);
+        bool seatGone = !fell && sponsor.City >= 0
+                        && !(_game.CityRows?.HasBuilding(sponsor.City, Local.Helpers.SponsorTable.SeatOf(sponsor)) ?? true);
+        if (!fell && !seatGone) return;
 
         int nation = _game.CityRows?.NationOf(city) ?? -1;
         if (Standoff.EntryOf(player, _game.Nations, nation) == 2) return;
@@ -4779,7 +4788,16 @@ public sealed class WorldMapWindow : Window
 
         _asking = true;
         _host.Paused = true;
-        TalkDialog.Say(this, port, "", $"어이, 자네 들었나? {fallen}{GameUi.Josa(fallen, "이", "가")} 멸망했다는 소문이야.");
+        if (fell)
+            TalkDialog.Say(this, port, "", $"어이, 자네 들었나? {fallen}{GameUi.Josa(fallen, "이", "가")} 멸망했다는 소문이야.");
+        else
+        {
+            string seat = CityNames.Of(sponsor.City);
+            string taker = _game.Nations?.Find(_game.CityRows?.NationOf(sponsor.City) ?? -1)?.Name ?? "";
+            TalkDialog.Say(this, port, "", taker.Length > 0 && taker != fallen
+                ? $"어이, 자네 들었나? {seat}{GameUi.Josa(seat, "이", "가")} {taker} 손에 넘어갔다는 소문이야."
+                : $"어이, 자네 들었나? {seat}의 {deal.Sponsor}{GameUi.Josa(deal.Sponsor, "이", "가")} 자리에서 쫓겨났다는 소문이야.");
+        }
         TalkDialog.Say(this, inspector, "", "그, 그럴 수가, 말도 안 돼! 네놈 그 이야기를 누구한테서 들었나!?");
         TalkDialog.Say(this, port, "", "자네들과 같은 뱃사람이지. 거짓말이라고 생각하면 직접 확인해 보게!");
         TalkDialog.Say(this, MateFace(), "", "이럴 수가. 이래서는 계약은 없던 일이 되겠군요.");
