@@ -89,7 +89,11 @@ export const DASHBOARD_HTML = `<!doctype html>
   <section data-tab="play"><h2>전투</h2><table id="battles"></table></section>
   <section data-tab="play"><h2>사건 <small>바다 · 육지에서 하루를 넘길 때 — 밑수(넘긴 날)와 견줘 본다</small></h2><table id="events"></table></section>
   <section data-tab="errors"><h2>오류</h2><div class="scroll"><table id="errors"></table><div class="pager" id="errors_pg"></div></div></section>
-  <section data-tab="days"><h2>날짜별 · 버전별</h2><table id="days"></table><div class="pager" id="days_pg"></div></section>
+  <section data-tab="days"><h2>날짜별</h2>
+    <div class="filters"><label>묶음 <select id="dayUnit"><option value="day">하루</option><option value="week">주(월요일 시작)</option><option value="month">달</option><option value="dayVersion">하루 · 버전</option></select></label>
+      <label>기간 <input type="date" id="dayFrom"> ~ <input type="date" id="dayTo"></label> <button id="dayClear">전체</button> <span class="dim" id="daySum"></span></div>
+    <div class="sub">날짜는 UTC 기준입니다(한국 시각 오전 9시에 날이 바뀝니다).</div>
+    <table id="days"></table><div class="pager" id="days_pg"></div></section>
   <section data-tab="bugs"><h2>버그 리포트</h2>
     <div class="sub">게임의 「버그 리포트」로 받은 글입니다. 오류 기록이 들어 있어 관리자 키(BUG_ADMIN_KEY)를 넣어야 보입니다 — 키는 이 브라우저에만 남습니다.</div>
     <div class="filters"><label>상태 <select id="bugstatus"><option value="new">새로 온 것</option><option value="all">전체</option><option value="seen">봤음</option><option value="fixed">고침</option><option value="wontfix">안 고침</option></select></label>
@@ -333,8 +337,34 @@ function render() {
   renderEvents();
   rankTable('errors', '오류 갈래 @ 난 자리', data.errors, (r) => { const [type, at] = r.key.split('@'); return esc(type) + (at ? ' <span class="dim">@ ' + esc(at) + '</span>' : ''); });
 
-  $('days').innerHTML = '<tr><th class="name">날짜</th><th class="name">버전</th><th>설치</th><th>덩이</th></tr>'
-    + (data.days.length ? paged('days', data.days).rows.map((d) => '<tr><td class="name">' + esc(d.day) + '</td><td class="name">' + esc(d.version) + '</td><td>' + n(d.installs) + '</td><td>' + n(d.batches) + '</td></tr>').join('') : EMPTY(4));
+  renderDays();
+}
+
+// 날짜별 탭 — 묶음(하루 · 주 · 달 · 하루×버전)과 기간(시작 · 끝 날짜, 그 기간에 걸친 줄만).
+const dayView = { unit: 'day', from: '', to: '' };
+function renderDays() {
+  if (!data) return;
+  const { unit, from, to } = dayView;
+  // 줄이 덮는 날 [시작, 끝] — 주는 7일, 달은 그 달 끝까지.
+  const span = (key) => {
+    if (unit === 'week') { const e = new Date(key + 'T00:00:00Z'); e.setUTCDate(e.getUTCDate() + 6); return [key, e.toISOString().slice(0, 10)]; }
+    if (unit === 'month') return [key + '-01', key + '-31'];
+    return [key, key];
+  };
+  const inRange = (key) => { const [a, b] = span(key); return (!from || b >= from) && (!to || a <= to); };
+  let rows, head;
+  if (unit === 'dayVersion') {
+    rows = data.days.filter((d) => inRange(d.day));
+    head = '<tr><th class="name">날짜</th><th class="name">버전</th><th>설치</th><th>덩이</th></tr>';
+    $('days').innerHTML = head + (rows.length ? paged('days', rows).rows.map((d) => '<tr><td class="name">' + esc(d.day) + '</td><td class="name">' + esc(d.version) + '</td><td>' + n(d.installs) + '</td><td>' + n(d.batches) + '</td></tr>').join('') : EMPTY(4));
+  } else {
+    rows = ((data.periods || {})[unit] || []).filter((d) => inRange(d.key));
+    const max = Math.max(1, ...rows.map((r) => r.batches));
+    head = '<tr><th class="name">' + { day: '날짜', week: '주(월요일)', month: '달' }[unit] + '</th><th>설치</th><th>덩이</th><th></th></tr>';
+    $('days').innerHTML = head + (rows.length ? paged('days', rows).rows.map((d) => '<tr><td class="name">' + esc(d.key) + '</td><td>' + n(d.installs) + '</td><td>' + n(d.batches) + '</td>'
+      + '<td class="bar"><i style="width:' + (100 * d.batches / max).toFixed(1) + '%"></i></td></tr>').join('') : EMPTY(4));
+  }
+  $('daySum').textContent = from || to ? '이 기간 덩이 ' + n(rows.reduce((s, r) => s + r.batches, 0)) : '';
 }
 
 async function load() {
@@ -398,6 +428,10 @@ $('bugreload').onclick = loadBugs;
 $('bugstatus').onchange = (e) => { bugState.status = e.target.value; loadBugs(); };
 loadBugs();
 
+$('dayUnit').onchange = (e) => { dayView.unit = e.target.value; pages.days = 0; renderDays(); };
+$('dayFrom').onchange = (e) => { dayView.from = e.target.value; pages.days = 0; renderDays(); };
+$('dayTo').onchange = (e) => { dayView.to = e.target.value; pages.days = 0; renderDays(); };
+$('dayClear').onclick = () => { dayView.from = dayView.to = ''; $('dayFrom').value = $('dayTo').value = ''; pages.days = 0; renderDays(); };
 $('version').onchange = (e) => { state.version = e.target.value; for (const k in pages) pages[k] = 0; load(); };
 load();
 </script>

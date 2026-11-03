@@ -267,7 +267,7 @@ async function getDashboard(url, env) {
   if (!version) return json(all);
   // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
   if (!all.versions.includes(version))
-    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], heroes: [],
+    return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], periods: { day: [], week: [], month: [] }, heroes: [],
                   nations: [], flagships: [], investCities: [] });
   return json(await snapshot(env, version, all));
 }
@@ -296,7 +296,7 @@ async function aggregate(env, version, whole) {
   const cond = version ? 'AND version = ?' : '', args = version ? [version] : [];
   const all = (sql, ...bound) => env.DB.prepare(sql).bind(...bound).all().then((r) => r.results);
 
-  const [total, tally, legacy, modValues, days, known, heroes] = await Promise.all([
+  const [total, tally, legacy, modValues, days, known, heroes, byDay, byWeek, byMonth] = await Promise.all([
     env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${cond}`).bind(...args).first(),
     all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, SUM(days) AS days, SUM(turns) AS turns, COUNT(DISTINCT install) AS installs
          FROM tally WHERE kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, ...READ_KINDS, ...args),
@@ -309,6 +309,10 @@ async function aggregate(env, version, whole) {
     all(`SELECT name, nation, first_date, date, first_abilities, abilities, first_flagship, flagship, invested, version, updated_at
          FROM heroes WHERE 1 = 1 ${cond} ORDER BY updated_at DESC LIMIT ${HERO_LIMIT}`, ...args)
       .then((r) => r.map(({ first_abilities, abilities, ...h }) => ({ ...h, first: JSON.parse(first_abilities), now: JSON.parse(abilities) }))),
+    // 날짜별 탭의 묶음 — 하루 · 주(월요일 시작) · 달마다 설치 수(겹치지 않게) · 덩이 수. daily 의 day 는 UTC 날짜다.
+    ...[['day', 400], [`date(day, 'weekday 0', '-6 days')`, 200], ['substr(day, 1, 7)', 120]].map(([key, limit]) =>
+      all(`SELECT ${key} AS key, COUNT(DISTINCT install) AS installs, SUM(batches) AS batches
+           FROM daily WHERE 1 = 1 ${cond} GROUP BY 1 ORDER BY 1 DESC LIMIT ${limit}`, ...args)),
   ]);
   const { nations, flagships, investCities } = await nationsOf(all, cond, args);
 
@@ -342,7 +346,8 @@ async function aggregate(env, version, whole) {
   const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (old.get(r.key)?.[0] || 0), turns: (r.turns || 0) + (old.get(r.key)?.[1] || 0) }));
 
   return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
-           battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, versions: known, heroes,
+           battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, periods: { day: byDay, week: byWeek, month: byMonth },
+           versions: known, heroes,
            nations, flagships, investCities };
 }
 
