@@ -3233,12 +3233,8 @@ public sealed class WorldMapWindow : Window
         }, "버그 리포트");
     }
 
-    private void ShowReleaseNotes()
-    {
-        string notes = ReleaseNotes.Recent(ReleaseNotes.Read());
-        if (notes.Length == 0) NoticeDialog.Show(this, "릴리즈 노트를 찾지 못했습니다.", "릴리즈 노트");
-        else NoticeDialog.Notes(this, notes, "릴리즈 노트");
-    }
+    // 역대 판 목록 · 판별 보기 · 낱말 찾기(버그 리포트 #7) — 예전에는 최근 두 판만 알림창으로 띄웠다.
+    private void ShowReleaseNotes() => ReleaseNotesDialog.Show(this);
 
     private void OnMapKey(object sender, KeyEventArgs e)
     {

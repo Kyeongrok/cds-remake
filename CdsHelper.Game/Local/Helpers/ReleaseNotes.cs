@@ -97,6 +97,10 @@ public static class ReleaseNotes
 
     public static Version Trim(Version v) => new(v.Major, Math.Max(0, v.Minor), Math.Max(0, v.Build));
 
+    /// <summary>노트의 판 대목 모두 — 새 판부터. 햄버거 「릴리즈 노트」 창이 판 목록 · 검색에 쓴다.</summary>
+    public static List<(Version Version, string Body)> Sections(string text) =>
+        Parse(text).OrderByDescending(s => s.Version).ToList();
+
     private static List<(Version Version, string Body)> Parse(string text)
     {
         var sections = new List<(Version, string)>();
