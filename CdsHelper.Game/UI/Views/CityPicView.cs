@@ -1550,6 +1550,12 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _game.Sponsors?.FindByName(patron.Name) is { } known && _player.HasMet(known.Name))
             return true;
 
+        // <b>작위를 받은 사람은 본국 수도 왕궁의 문을 안 본다</b>(모드 「작위」, 원본에 없다). 작위 장면은 문간보다 먼저 돌고
+        // 건물을 나서므로(CheckStory), 국왕이 기사로 서임해 놓고 다음에 들면 문지기가 명성으로 내쫓았다(버그 리포트 #5).
+        if (building.Code == PalaceCode && Engine.Town.Nobility.Enabled && _player.NobleRank > 0
+            && Engine.Town.Nobility.InHomeCapital(_game))
+            return true;
+
         // 안목에 거는 배수가 건물마다 다르다 — 왕궁(코드 2)은 0x00470AC1 의 x100, 저택(12~15)은
         // 0x0040D371 의 x70 이다(0x0044E740: 안목 x 배수 ≤ 명성이면 통과). patrons.json 의 fame 은 x70 값이다.
         var row = _game.Sponsors?.FindByName(patron.Name);
