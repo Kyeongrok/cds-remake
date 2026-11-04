@@ -9,7 +9,7 @@ namespace CdsHelper.Game.Engine.Town;
 /// 왕궁 「망명」 — 리스본 · 세비야 · 파리 · 런던 왕궁과 제노바 총독부(코드 2 라 왕궁 갈래다)에서 그 나라로 국적을 옮기고 자택도 그 도시로 옮긴다. 원본에 없는 줄이다(모드 「망명」).
 /// </summary>
 /// <remarks>
-/// 명성 <see cref="Fame"/> 이상과 그 왕궁 국왕과의 친밀도 100(<see cref="Player.MaxCloseness"/>)이 있어야 하고,
+/// 명성 <see cref="Fame"/> 이상과 그 왕궁 국왕과의 친밀도 <see cref="Closeness"/> 이상이 있어야 하고,
 /// 망명하면 금화 <see cref="Fee"/> 닢과 명성 <see cref="FameCost"/> 이 깎인다.
 /// 후원자와 계약 중이거나 개인 이야기 의뢰(<see cref="Player.StoryQuestDeadline"/>)를 하는 중에는 안 된다.
 ///
@@ -83,8 +83,14 @@ public static class Exile
         return null;
     }
 
-    /// <summary>그 왕궁 국왕과의 친밀도가 다 찼는지. 국왕이 없으면 -1 을 넘긴다.</summary>
-    public static bool Trusted(int closeness) => closeness >= Player.MaxCloseness;
+    /// <summary>
+    /// 망명에 드는 국왕과의 친밀도. 예전에는 100(다 참)이었는데, 제노바 총독은 좋아하는 발견물을 다 갖다 줘도 75 언저리에서
+    /// 멈춰 망명할 길이 없었다(버그 리포트 #11, 사용자 요청으로 75).
+    /// </summary>
+    public const int Closeness = 75;
+
+    /// <summary>그 왕궁 국왕과의 친밀도가 망명할 만큼 찼는지. 국왕이 없으면 -1 을 넘긴다.</summary>
+    public static bool Trusted(int closeness) => closeness >= Closeness;
 
     /// <summary>명성 · 금화가 다 갖춰졌는지.</summary>
     public static bool Affords(Player player) => player.Fame >= Fame && player.Gold >= Fee;
