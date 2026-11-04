@@ -1100,7 +1100,7 @@ public sealed class WorldMapHost : HwndHost
         //   뭍에 있을 때  대 둔 배. 어디로 상륙했는지 그 자리에 남는다.
         var overlay = (0f, 0f, 0f, 0f);
         if (ShowShip && _anchored && !_onLand && _shipKnown && _spriteReady) overlay = rect;
-        else if (ShowShip && _onLand && _moored && !_mooredInPort) overlay = SpriteRectAt(_mooredX, _mooredY, origin);
+        else if (ShowShip && _onLand && _moored && !HidesPortShip) overlay = SpriteRectAt(_mooredX, _mooredY, origin);
         SyncOverlaySprite();
 
         // 남의 배가 옮겨 앉았으면 다시 그려야 한다. 자리가 그대로면 아무 일도 없다 —
@@ -1969,6 +1969,12 @@ public sealed class WorldMapHost : HwndHost
 
     private bool _mooredInPort;
 
+    /// <summary>
+    /// 대 둔 배를 숨기고 물가 승선을 막을지 — 함대가 항구에 있는 채로 섰고, 모드 「성문으로 나서도 배 보이기」가 꺼져 있으면.
+    /// 모드를 켜면 예전처럼 도시 앞바다에 배가 보이고 그 곁에서 오른다.
+    /// </summary>
+    private bool HidesPortShip => _mooredInPort && !Local.Settings.GameSettings.PortShipAshore;
+
     /// <summary>덧그림 자리에 지금 무엇이 올라가 있는지.</summary>
     private enum OverlayArt { None, Anchor, MooredShip }
 
@@ -1986,7 +1992,7 @@ public sealed class WorldMapHost : HwndHost
     {
         // 뭍에서 선 것은 닻이 아니다 — 그 자리에는 대 둔 배가 그대로 남아 있어야 한다.
         var want = _anchored && !_onLand ? OverlayArt.Anchor
-                 : _onLand && _moored && !_mooredInPort ? OverlayArt.MooredShip
+                 : _onLand && _moored && !HidesPortShip ? OverlayArt.MooredShip
                  : OverlayArt.None;
         // 대 둔 배는 <b>기함 그림이 바뀌면</b> 다시 올린다 - 불러올 때는 배를 뭍에 놓는 것이 기함 그림을 정하는 것보다
         // 먼저라, 안 그러면 앞 판(또는 처음 값)의 배 모양이 그대로 남았다(다우가 카라벨로 보이던 것).
@@ -3390,7 +3396,7 @@ public sealed class WorldMapHost : HwndHost
     /// </remarks>
     public bool IsNearMoor(int radiusCells = 4)
     {
-        if (!_onLand || !_moored || _mooredInPort) return false;
+        if (!_onLand || !_moored || HidesPortShip) return false;
         double dx = _shipX - _mooredX, w = WorldMapRenderer.CellW;
         if (dx < -w / 2) dx += w;
         else if (dx > w / 2) dx -= w;

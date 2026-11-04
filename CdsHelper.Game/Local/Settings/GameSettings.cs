@@ -436,6 +436,9 @@ public sealed class GameSettingsData
     /// <summary>놓친 바다 괴물을 그 자리에서 다시 만날 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MonsterRetry { get; set; }
 
+    /// <summary>입항한 도시의 성문으로 나서도 앞바다에 배를 그리고 물가 승선을 받을지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PortShipAshore { get; set; }
+
     /// <summary>발견물 동영상을 새로 만든 것(asset/movie)으로 틀지. 켜 두고 시작한다.</summary>
     public bool NewDiscoveryMovies { get; set; } = true;
 
@@ -1700,6 +1703,16 @@ public static class GameSettings
     {
         get => Get(d => d.MonsterRetry);
         set => Set(d => d.MonsterRetry = value);
+    }
+
+    /// <summary>
+    /// 입항한 도시의 성문으로 나서도 도시 앞바다에 배를 그리고, 그 배 곁 물가에서 승선할 수 있게 할지 — 모드 창에서 켜고 끈다.
+    /// 원본은 성문으로 나서면 배가 안 보이고 그 도시로 돌아가야 배에 오른다(<see cref="UI.Rendering.WorldMapHost.MooredInPort"/>).
+    /// </summary>
+    public static bool PortShipAshore
+    {
+        get => Get(d => d.PortShipAshore);
+        set => Set(d => d.PortShipAshore = value);
     }
 
     /// <summary>

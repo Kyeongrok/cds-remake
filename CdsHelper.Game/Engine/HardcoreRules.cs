@@ -40,6 +40,7 @@ public static class HardcoreRules
         (nameof(GameSettings.ShowDiscoveryMapMenu), () => GameSettings.ShowDiscoveryMapMenu),
         (nameof(GameSettings.RerollOnJob), () => GameSettings.RerollOnJob),
         (nameof(GameSettings.MonsterRetry), () => GameSettings.MonsterRetry),
+        (nameof(GameSettings.PortShipAshore), () => GameSettings.PortShipAshore),
         (nameof(GameSettings.PatronGivesArms), () => GameSettings.PatronGivesArms),
         (nameof(GameSettings.AddOns), () => GameSettings.AddOns),
     ];

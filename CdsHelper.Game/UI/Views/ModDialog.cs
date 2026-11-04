@@ -645,6 +645,12 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 바다에서 만난 괴물(크라켄 · 시서펜트 · 식인상어 · 맨터)을 놓쳐도 그 자리를 벗어났다가"
             + " 다시 가면 또 만납니다. 원본은 한 번 놓치면 다시 나오지 않습니다."));
 
+        // 성문으로 나서도 배 보이기 — 원본은 입항한 도시의 성문으로 나서면 바다에 배가 없고 물가 승선도 안 된다.
+        general.Children.Add(Toggle("성문으로 나서도 배 보이기", GameSettings.PortShipAshore,
+            on => GameSettings.PortShipAshore = on,
+            "원본에 없는 것입니다 — 입항한 도시의 성문으로 나서도 도시 앞바다에 배가 보이고, 그 배 곁 물가에서 승선할 수 있습니다."
+            + " 원본은 성문으로 나서면 배가 안 보이고, 그 도시로 돌아가야 배에 오릅니다."));
+
 
         // 직업 누르면 다시 굴림 — 원본은 직업을 바꿔도 안 굴린다(0x0045D8DA).
         character.Children.Add(Toggle("직업 누르면 다시 굴림", GameSettings.RerollOnJob,
