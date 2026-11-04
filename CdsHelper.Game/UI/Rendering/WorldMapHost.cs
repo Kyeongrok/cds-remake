@@ -1100,7 +1100,7 @@ public sealed class WorldMapHost : HwndHost
         //   뭍에 있을 때  대 둔 배. 어디로 상륙했는지 그 자리에 남는다.
         var overlay = (0f, 0f, 0f, 0f);
         if (ShowShip && _anchored && !_onLand && _shipKnown && _spriteReady) overlay = rect;
-        else if (ShowShip && _onLand && _moored) overlay = SpriteRectAt(_mooredX, _mooredY, origin);
+        else if (ShowShip && _onLand && _moored && !_mooredInPort) overlay = SpriteRectAt(_mooredX, _mooredY, origin);
         SyncOverlaySprite();
 
         // 남의 배가 옮겨 앉았으면 다시 그려야 한다. 자리가 그대로면 아무 일도 없다 —
@@ -1956,6 +1956,19 @@ public sealed class WorldMapHost : HwndHost
     private int _mooredHeading;
     private bool _moored;
 
+    /// <summary>
+    /// 함대가 도시 항구에 들어가 있는 채로 뭍에 섰는지 — 입항한 도시의 성문으로 나서면 참이다. 그동안은 대 둔 배를
+    /// 안 그리고 물가에서 승선도 못 한다. 원본도 성문으로 나서면 바다에 배가 안 보이고, 그 도시로 돌아가야 배에 오른다
+    /// (버그 리포트 #11). 대 둔 자리는 그대로 들고 있다 — 도시에 다시 들 때 그 자리로 배를 되돌린다.
+    /// </summary>
+    public bool MooredInPort
+    {
+        get => _mooredInPort;
+        set { if (_mooredInPort == value) return; _mooredInPort = value; _dirty = true; }
+    }
+
+    private bool _mooredInPort;
+
     /// <summary>덧그림 자리에 지금 무엇이 올라가 있는지.</summary>
     private enum OverlayArt { None, Anchor, MooredShip }
 
@@ -1973,7 +1986,7 @@ public sealed class WorldMapHost : HwndHost
     {
         // 뭍에서 선 것은 닻이 아니다 — 그 자리에는 대 둔 배가 그대로 남아 있어야 한다.
         var want = _anchored && !_onLand ? OverlayArt.Anchor
-                 : _onLand && _moored ? OverlayArt.MooredShip
+                 : _onLand && _moored && !_mooredInPort ? OverlayArt.MooredShip
                  : OverlayArt.None;
         // 대 둔 배는 <b>기함 그림이 바뀌면</b> 다시 올린다 - 불러올 때는 배를 뭍에 놓는 것이 기함 그림을 정하는 것보다
         // 먼저라, 안 그러면 앞 판(또는 처음 값)의 배 모양이 그대로 남았다(다우가 카라벨로 보이던 것).
@@ -3377,7 +3390,7 @@ public sealed class WorldMapHost : HwndHost
     /// </remarks>
     public bool IsNearMoor(int radiusCells = 4)
     {
-        if (!_onLand || !_moored) return false;
+        if (!_onLand || !_moored || _mooredInPort) return false;
         double dx = _shipX - _mooredX, w = WorldMapRenderer.CellW;
         if (dx < -w / 2) dx += w;
         else if (dx > w / 2) dx -= w;
@@ -3446,6 +3459,8 @@ public sealed class WorldMapHost : HwndHost
         StopAutoSail();   // 뭍에 오르면 자동항해는 뜻이 없다
 
         // 배는 지금 자리에 대 둔다 — 뭍에 있는 동안 그 자리에 남아 어디로 상륙했는지 보인다.
+        // 성문으로 나선 것이면 부른 쪽이 곧바로 MooredInPort 를 세운다.
+        _mooredInPort = false;
         // 원본도 자리를 적어 두었다가 출항할 때 그대로 되돌린다(0x004936DE).
         _mooredX = _shipX;
         _mooredY = _shipY;
@@ -3477,6 +3492,7 @@ public sealed class WorldMapHost : HwndHost
         if (spot == null) return false;
 
         _moored = false;
+        _mooredInPort = false;
         (_shipX, _shipY) = spot.Value;
         _targetX = _shipX;
         _targetY = _shipY;

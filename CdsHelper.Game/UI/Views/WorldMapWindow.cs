@@ -3825,6 +3825,8 @@ public sealed class WorldMapWindow : Window
                       && _host.PlaceAshore(ax, ay, sx, sy, saved.MooredHeading ?? 0)))
                     _host.PlaceAtSea(sx, sy);
             }
+            // 뭍에서 적은 판이 함대를 도시 항구에 둔 채였으면(성문으로 나섰다) 대 둔 배를 안 그린다.
+            _host.MooredInPort = _host.IsOnLand && _game.Player.FleetCity >= 0;
             // 뱃머리도 적어 둔 쪽으로(제독 +0x328). 예전에는 앞 판이나 처음 값 그대로라 엉뚱한 쪽을 보고 섰다.
             if (saved.Heading is { } heading) _host.SetHeading(heading);
             // 쥐고 있던 바람도 적어 둔 그대로(0x00586168). 예전에는 열 때 방위를 새로 흔들어(rand(3) − 1,
@@ -7816,8 +7818,9 @@ public sealed class WorldMapWindow : Window
             // 발견 판정 0x004AAD20 이 첫 줄에서 그것을 보고 막으므로 그 자리 사건은 다시 안 뜬다.
             if (!over) DiscoveryLog.Settle(_game.Player, id, scripted);
             // 괴물을 놓쳐 매듭을 안 지었으면(모드 「괴물 다시 만나기」) 그 자리를 벗어날 때까지는 다시 안 띄운다 —
-            // 안 그러면 다음 걸음에 곧바로 또 만난다.
-            if (!over && DisevRunner.LastMissedMonster && !_game.Player.IsSettled(id)) _heldDiscovery = id;
+            // 안 그러면 다음 걸음에 곧바로 또 만난다. 예전에 매듭진 괴물을 모드로 다시 만난 것(DiscoveryLog.Rematch)은
+            // 이미 매듭이 서 있으므로 매듭 여부로 거르지 않는다 — 모드가 꺼져 매듭지었으면 어차피 다시 안 뜬다.
+            if (!over && DisevRunner.LastMissedMonster) _heldDiscovery = id;
         }
         finally
         {
@@ -8097,6 +8100,8 @@ public sealed class WorldMapWindow : Window
             // 이미 뭍에 서 있으면(말로 걸어 들어온 마을이면) Land() 는 거짓을 낸다 — 그때도 걷는
             // 것이다. 예전에는 그 거짓을 그대로 받아 성문으로 나섰는데 출항 곡이 돌았다.
             bool walking = dialog.Explored && (_host.IsOnLand || _host.Land());
+            // 입항한 도시의 성문으로 나섰으면 함대는 항구에 있다 — 바다에 배를 안 그리고 물가 승선도 막는다.
+            if (walking) _host.MooredInPort = _game.Player.FleetCity >= 0;
             _game.Bgm.Play(walking ? BgmPlayer.LandTrack : SeaTrackHere());
             // 나오면 닻을 내린 채 선다(0x0048EB32) — 클릭으로 닻을 올려야 간다. 뭍에 오른 뒤에 해야
             // Land() 가 지운 것을 도로 세운다.
