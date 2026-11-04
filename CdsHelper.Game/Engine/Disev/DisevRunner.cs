@@ -439,6 +439,27 @@ public sealed class DisevRunner
         }
     }
 
+    private static readonly Dictionary<int, bool> MonsterParts = [];
+
+    /// <summary>그 발견물 대본에 바다 괴물 해전(<c>0D 0D</c>)이 있는지. 대본이 없으면 false. 한 번 본 것은 기억한다.</summary>
+    public static bool FightsMonster(Game game, int discoveryId)
+    {
+        lock (MonsterParts)
+            if (MonsterParts.TryGetValue(discoveryId, out bool known)) return known;
+
+        bool fights = false;
+        if (Open(game.Directory, DisevBook.CacheName) is { } book && book.Has(discoveryId)
+            && DisevPart.Parse(book.Part(discoveryId), out _) is { } part)
+            foreach (int start in part.ChunkStarts)
+            {
+                var (from, to) = part.ChunkRange(start);
+                if (Lines(part, from, to).Any(line => line.Call == DisevCall.SeaBattle)) { fights = true; break; }
+            }
+
+        lock (MonsterParts) MonsterParts[discoveryId] = fights;
+        return fights;
+    }
+
     /// <summary>
     /// 그 발견물 대본이 발견을 적는지(<c>01 0B</c>). 사람 · 비보(코페르니쿠스 · 튀니스의 비보 따위)는
     /// 대본이 물건만 주고 끝나 발견으로는 영영 안 적힌다 — 그런 것은 사건이 끝났는지(<see cref="Player.IsSettled"/>)로 본다.

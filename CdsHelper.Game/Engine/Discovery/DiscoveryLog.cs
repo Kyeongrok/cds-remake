@@ -235,6 +235,19 @@ public sealed class DiscoveryLog
         return CanFire(player, row) ? null : row;
     }
 
+    /// <summary>그 발견물 대본이 바다 괴물과 싸우는지(<c>0D 0D</c>). 판이 걸어 둔다 — 없으면 아무것도 아니라고 본다.</summary>
+    public static Func<int, bool>? FightsMonster { get; set; }
+
+    /// <summary>
+    /// 매듭지은 사건이라도 다시 띄울지 — 모드 「괴물 다시 만나기」를 켰고, 괴물과 싸우는 사건인데 아직 그 발견물을 못 찾았으면.
+    /// </summary>
+    /// <remarks>
+    /// 모드를 끈 채 괴물을 놓치면 원본처럼 매듭(깃발 <c>0x0100</c>)이 서 버려, 뒤에 모드를 켜도 그 괴물은 영영 안 나왔다(버그 리포트 #12).
+    /// 그래서 매듭을 지울 것 없이 여기서 건너뛴다 — 모드를 다시 끄면 원본대로 막힌다.
+    /// </remarks>
+    private static bool Rematch(Player player, int id) =>
+        Local.Settings.GameSettings.MonsterRetry && !player.HasFound(id) && FightsMonster?.Invoke(id) == true;
+
     /// <summary>
     /// 그 발견물의 사건이 뜰 수 있는지 — 원본의 <c>0x004AAD20</c> 이다. 바다·뭍 자리, 도시 입장,
     /// 발견물이 된 건물 셋이 모두 이것으로 거른다(<c>0x0048D462</c> · <c>0x004928D8</c> · <c>0x00492A79</c>).
@@ -251,7 +264,7 @@ public sealed class DiscoveryLog
     /// </remarks>
     public bool CanFire(Player player, in DiscoveryTable.Record row)
     {
-        if (player.IsSettled(row.Id)) return false;
+        if (player.IsSettled(row.Id) && !Rematch(player, row.Id)) return false;
         if (!IsOpen(player, row)) return false;
         // <b>원본과 다르다.</b> 원본은 역사 항해자가 칸 1 에 이름을 올리면 한 번짜리가 영영 잠긴다(4AAD47).
         // 계약까지 맺고 가도 아무 일이 없어, 여기서는 <b>남이 찾은 뒤에도</b> 사건을 띄운다. 그 사람이 발표(3F)하기

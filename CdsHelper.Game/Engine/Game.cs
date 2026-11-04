@@ -461,6 +461,8 @@ public sealed class Game
                 Debug.WriteLine($"[Game] 발견물 표 없음: {DiscoveryTable.LastError}");
                 return null;
             }
+            // 모드 「괴물 다시 만나기」가 매듭지은 괴물 사건을 되살릴지 가리는 물음 — 대본에 괴물 해전(0D 0D)이 있는지.
+            DiscoveryLog.FightsMonster = id => Disev.DisevRunner.FightsMonster(this, id);
             return _discoveries = new DiscoveryLog(table, Hints, Voyagers);
         }
     }
