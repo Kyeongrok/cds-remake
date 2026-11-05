@@ -20,8 +20,8 @@ namespace CdsHelper.Game.Engine.Town;
 ///
 /// 해마다 <b>하나씩만</b> 더하므로 한 해에 둘이 한꺼번에 문턱을 넘으면 작은 것은 영영 안 켜진다 —
 /// 판을 열 때 이미 넘은 것은 첫 셈이 다 켜 준다. 값은 해가 바뀔 때만 오르므로 여기서는 해마다 한 번
-/// 되짚는다. 규모는 <b>지금 규모</b>로 센다 — 역사 대본이 규모를 바꾸면 원본은 그 달부터 셈이 달라지지만
-/// 여기서는 처음부터 그 규모였던 것처럼 센다.
+/// 되짚는다. 규모는 모드 「도시 투자 성장」을 켰으면 <b>지금 규모</b>로 센다(처음부터 그 규모였던 것처럼 — 오르면 곧바로 풀린다),
+/// 꺼져 있으면 <b>표의 처음 규모</b>로 센다. 역사 대본이 규모를 바꾸는 것은 세비야 1504년 +1 하나뿐이라 꺼진 판에서는 그 한 칸을 안 센다.
 ///
 /// 하나도 없으면 「미안하지만, 우리집은 새로 만든 배는 취급하지 않네.」로 끝난다(<c>0x0044B76B</c>).
 /// </remarks>
@@ -59,7 +59,10 @@ public static class ShipyardStock
     /// </remarks>
     public static IReadOnlySet<int> HullsAt(CityExeTable cities, int city, DateTime date, bool yearly)
     {
-        int mask = cities.HullMaskOf(city), scale = cities.ScaleOf(city);
+        // 규모 — 모드 「도시 투자 성장」을 켰을 때만 자란 규모로 센다(오르면 그 규모의 배가 곧바로 풀린다, 버그 리포트 #14 · 사용자 결정).
+        // 꺼져 있으면 표의 처음 규모로 센다 — 투자로 키워 둔 뒤 모드를 끄거나, 그 밖의 길로 규모가 바뀌어도 배는 원본 연도대로 풀린다.
+        int mask = cities.HullMaskOf(city);
+        int scale = CityGrowth.Enabled ? cities.ScaleOf(city) : cities.StartScaleOf(city);
         var got = new HashSet<int>();
 
         // 판을 열 때의 셈 — 처음 건물 낱말에 조선소(비트 6)가 있는 도시만 돈다(0x00429A25 test al, 0x40).

@@ -224,7 +224,10 @@ public sealed class CityExeTable
     /// </summary>
     public int ScaleOf(int cityId) =>
         Live?.CityScales.TryGetValue(cityId, out int grown) == true ? grown
-        : cityId >= 0 && cityId < _scales.Length ? _scales[cityId] : 0;
+        : StartScaleOf(cityId);
+
+    /// <summary>표에 적힌 처음 규모 — 게임 중에 자란 것(역사 대본 · 모드 「도시 투자 성장」)은 안 든다.</summary>
+    public int StartScaleOf(int cityId) => cityId >= 0 && cityId < _scales.Length ? _scales[cityId] : 0;
 
     /// <summary>
     /// 게임 중에 바뀐 값을 든 주인공 — 역사 대본이 바꾼 나라(<see cref="Player.HistoryNations"/>)와
