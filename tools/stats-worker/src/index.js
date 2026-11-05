@@ -3,6 +3,7 @@
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
 //   GET  /v1/dashboard   집계(?period=day|week|month|all · ?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
+//   GET  /embed.js       대시보드 화면 부품 <cds-dashboard> — /dashboard 와 창세기전3 통계 대시보드가 불러 쓴다.
 //   POST /v1/hardcore    하드코어 판 하나가 끝난 기록 — 판 표지(gameId)마다 한 번만 들어간다.
 //   GET  /v1/ranking     하드코어 랭킹(발견물 수 차례) 상위 100.
 //   GET  /ranking        하드코어 랭킹 페이지.
@@ -12,7 +13,7 @@
 //
 // 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다. 이름은 주인공 이름(heroes · hardcore)만 받는다.
 
-import { DASHBOARD_HTML } from './dashboard.js';
+import { DASHBOARD_HTML, EMBED_JS } from './dashboard.js';
 import { RANKING_HTML } from './ranking.js';
 
 const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
@@ -436,9 +437,30 @@ function countModValues(rows) {
   return [...tally.values()].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : a.value - b.value));
 }
 
+// 다른 곳에서 부르는 대시보드 — 창세기전3 통계 대시보드가 대항해시대 화면을 제 페이지 안에 넣고 이 API 를 부른다.
+// 버그 리포트는 관리자 키를 머리(Authorization)에 실어 보내므로, 미리 묻는 요청(OPTIONS)에 답하고 아는 곳만 받아 준다.
+const CORS_ORIGINS = ['https://war-of-genesis-stats.oceanfog1.workers.dev'];
+function withCors(request, response) {
+  const origin = request.headers.get('origin');
+  if (!origin || !CORS_ORIGINS.includes(origin)) return response;
+  const headers = new Headers(response.headers);
+  headers.set('access-control-allow-origin', origin);
+  headers.append('vary', 'origin');
+  return new Response(response.body, { status: response.status, headers });
+}
+
 export default {
   async fetch(request, env) {
+    const res = await route(request, env);
+    return withCors(request, res);
+  },
+};
+
+async function route(request, env) {
     const url = new URL(request.url), { pathname } = url;
+    if (request.method === 'OPTIONS' && pathname.startsWith('/v1/'))
+      return new Response(null, { status: 204, headers: { 'access-control-allow-methods': 'GET, POST', 'access-control-allow-headers': 'authorization, content-type',
+                                                           'access-control-max-age': '86400' } });
     try {
       if (request.method === 'POST' && pathname === '/v1/play') return await postPlay(request, env);
       if (request.method === 'GET' && pathname === '/v1/dashboard') return await getDashboard(url, env);
@@ -456,10 +478,11 @@ export default {
         return new Response(RANKING_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
       if (request.method === 'GET' && (pathname === '/dashboard' || pathname === '/'))
         return new Response(DASHBOARD_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
+      if (request.method === 'GET' && pathname === '/embed.js')
+        return new Response(EMBED_JS, { headers: { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'public, max-age=300' } });
       return json({ error: 'not found' }, 404);
     } catch (e) {
       console.error(e && e.stack || e);
       return json({ error: 'server error' }, 500);
     }
-  },
-};
+}

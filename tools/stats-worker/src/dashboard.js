@@ -1,19 +1,12 @@
-// 대시보드 — /dashboard 가 이 HTML 을 그대로 내고, 페이지가 /v1/dashboard 에서 집계를 받아 그린다.
+// 대시보드 — 화면은 <cds-dashboard> 부품 하나다. /embed.js 가 그 부품을 정의하고, /dashboard 는 그 부품을 얹은 페이지다.
+// 창세기전3 통계 대시보드(war-of-genesis-stats)도 /embed.js 를 불러 같은 부품을 페이지 안에 넣는다 — 화면 코드는 여기 하나뿐이다.
+// 부품은 그림자 뿌리(shadow DOM) 안에 그려 바깥 페이지의 id · 스타일과 안 섞인다. 집계는 부품의 api 속성(없으면 /embed.js 를 낸 Worker)에서 받는다.
 // 바깥 라이브러리 없이 표와 막대만 쓴다.
 
-export const DASHBOARD_HTML = `<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>코스타 델 솔 — 게임 통계</title>
-<style>
-  :root { --bg: #0d1424; --panel: #16203a; --line: #2b3a63; --text: #e8ecf7; --dim: #93a0c2; --accent: #6ea8ff; --gold: #ffe070; --bar: #3b6fd6; --good: #5fd08a; --bad: #ff7a7a; }
-  @media (prefers-color-scheme: light) { :root { --bg: #f4f6fb; --panel: #ffffff; --line: #d5dbea; --text: #1b2338; --dim: #5d6885; --accent: #2a5fd0; --gold: #a06a00; --bar: #8fb2f2; --good: #1d8a4c; --bad: #c23636; } }
+const CSS = `  :host { --bg: #0d1424; --panel: #16203a; --line: #2b3a63; --text: #e8ecf7; --dim: #93a0c2; --accent: #6ea8ff; --gold: #ffe070; --bar: #3b6fd6; --good: #5fd08a; --bad: #ff7a7a; }
+  @media (prefers-color-scheme: light) { :host { --bg: #f4f6fb; --panel: #ffffff; --line: #d5dbea; --text: #1b2338; --dim: #5d6885; --accent: #2a5fd0; --gold: #a06a00; --bar: #8fb2f2; --good: #1d8a4c; --bad: #c23636; } }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 "Segoe UI", "Malgun Gothic", sans-serif; }
-  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
-  h1 { font-size: 20px; margin: 0 0 4px; }
+  :host { display: block; color: var(--text); font: 14px/1.5 "Segoe UI", "Malgun Gothic", sans-serif; }
   h2 { font-size: 15px; margin: 0 0 10px; color: var(--gold); }
   h2 small { color: var(--dim); font-weight: 400; font-size: 13px; }
   .sub { color: var(--dim); margin-bottom: 16px; }
@@ -55,11 +48,9 @@ export const DASHBOARD_HTML = `<!doctype html>
   .bug pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; color: var(--dim); max-height: 300px; overflow: auto; }
   .tag { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font-size: 12px; }
   .tag.new { color: var(--gold); border-color: var(--gold); } .tag.fixed { color: var(--good); border-color: var(--good); }
-</style>
-</head>
-<body>
-<main>
-  <h1>코스타 델 솔 — 게임 통계</h1>
+`;
+
+const BODY = `<div class="cds-main">
   <div class="sub">익명으로 수집한 게임 셈입니다. 모드 옵션은 설치마다 마지막 값이라 버전으로 거르지 않습니다.
     기간은 받은 날(UTC) 기준입니다 — Day 는 어제부터, Week 는 7일 전부터, Month 는 30일 전부터입니다. 셈(발견 · 고용 · 전투 따위)의 기간 거르기는 2026-11-05 부터 쌓였습니다. 날짜별 탭은 기간으로 거르지 않습니다.</div>
   <div class="filters">
@@ -101,9 +92,11 @@ export const DASHBOARD_HTML = `<!doctype html>
     <div class="filters"><label>상태 <select id="bugstatus"><option value="new">새로 온 것</option><option value="all">전체</option><option value="seen">봤음</option><option value="fixed">고침</option><option value="wontfix">안 고침</option></select></label>
       <button id="bugkey">관리자 키</button><button id="bugreload">새로 고침</button><span id="bugerr" class="bad"></span></div>
     <div id="bugs" class="dim">관리자 키를 넣으면 보입니다.</div></section>
-</main>
-<script>
-const $ = (id) => document.getElementById(id);
+</div>`;
+
+// 부품을 그리고 움직이는 코드 — 브라우저에서 돈다. root 는 그림자 뿌리, api 는 Worker 주소(끝에 / 없이).
+const APP = String.raw`function cdsDashboard(root, api) {
+const $ = (id) => root.getElementById(id);
 const n = (v) => Number(v || 0).toLocaleString('ko-KR');
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sum = (rows, k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
@@ -189,15 +182,15 @@ function paged(id, rows) {
 
 // 화면 탭 — 섹션을 탭으로 나눠 하나씩 보인다. 고른 탭은 이 브라우저에 남는다.
 function pickTab(tab) {
-  document.querySelectorAll('main > [data-tab]').forEach((el) => el.hidden = el.dataset.tab !== tab);
-  document.querySelectorAll('#pagetabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+  root.querySelectorAll('.cds-main > [data-tab]').forEach((el) => el.hidden = el.dataset.tab !== tab);
+  root.querySelectorAll('#pagetabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
   try { localStorage.setItem('cdsDashTab2', tab); } catch (e) { }
 }
-document.querySelectorAll('#pagetabs button').forEach((b) => b.onclick = () => pickTab(b.dataset.tab));
+root.querySelectorAll('#pagetabs button').forEach((b) => b.onclick = () => pickTab(b.dataset.tab));
 let savedTab = null;
 // 기본 탭을 버그 리포트로 바꿀 때 열쇠를 갈았다 — 예전에 고른 탭은 안 읽는다.
 try { savedTab = localStorage.getItem('cdsDashTab2'); } catch (e) { }
-pickTab(document.querySelector('#pagetabs button[data-tab="' + savedTab + '"]') ? savedTab : 'bugs');
+pickTab(root.querySelector('#pagetabs button[data-tab="' + savedTab + '"]') ? savedTab : 'bugs');
 
 // 순위 표 — 횟수 · 설치 머리를 눌러 줄 세운다.
 function rankTable(id, label, rows, nameOf) {
@@ -373,7 +366,7 @@ function renderDays() {
 async function load() {
   $('error').textContent = '';
   try {
-    const res = await fetch('/v1/dashboard?' + new URLSearchParams({ period: state.period, version: state.version }));
+    const res = await fetch(api + '/v1/dashboard?' + new URLSearchParams({ period: state.period, version: state.version }));
     if (!res.ok) throw new Error('HTTP ' + res.status);
     data = await res.json();
     const sel = $('version'), keep = state.version;
@@ -404,7 +397,7 @@ async function loadBugs() {
   $('bugerr').textContent = '';
   if (!key) { $('bugs').innerHTML = '<span class="dim">관리자 키를 넣으면 보입니다.</span>'; return; }
   try {
-    const res = await fetch('/v1/bugs?status=' + bugState.status + '&order=desc&limit=200', { headers: { Authorization: 'Bearer ' + key } });
+    const res = await fetch(api + '/v1/bugs?status=' + bugState.status + '&order=desc&limit=200', { headers: { Authorization: 'Bearer ' + key } });
     if (res.status === 401) throw new Error('키가 맞지 않습니다');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const bugs = (await res.json()).bugs || [];
@@ -416,7 +409,7 @@ async function markBug(id, status) {
   const asks = status === 'fixed' || status === 'wontfix';
   const note = asks ? prompt('메모(선택 — 고친 커밋 · 버전 따위)', '') : null;
   if (asks && note === null) return;
-  const res = await fetch('/v1/bugs/' + id + '/status', { method: 'POST', headers: { Authorization: 'Bearer ' + bugKey(), 'content-type': 'application/json' },
+  const res = await fetch(api + '/v1/bugs/' + id + '/status', { method: 'POST', headers: { Authorization: 'Bearer ' + bugKey(), 'content-type': 'application/json' },
     body: JSON.stringify(note ? { status, note } : { status }) });
   if (!res.ok) { $('bugerr').textContent = '바꾸지 못했습니다: HTTP ' + res.status; return; }
   loadBugs();
@@ -438,6 +431,45 @@ $('dayClear').onclick = () => { dayView.from = dayView.to = ''; $('dayFrom').val
 $('version').onchange = (e) => { state.version = e.target.value; for (const k in pages) pages[k] = 0; load(); };
 $('period').onchange = (e) => { state.period = e.target.value; for (const k in pages) pages[k] = 0; load(); };
 load();
-</script>
+}
+`;
+
+export const EMBED_JS = `(() => {
+const CSS = ${JSON.stringify(CSS)};
+const BODY = ${JSON.stringify(BODY)};
+const ORIGIN = new URL(document.currentScript.src, location.href).origin;
+${APP}
+class CdsDashboard extends HTMLElement {
+  connectedCallback() {
+    if (this.shadowRoot) return;
+    const root = this.attachShadow({ mode: 'open' });
+    root.innerHTML = '<style>' + CSS + '</style>' + BODY;
+    cdsDashboard(root, (this.getAttribute('api') || ORIGIN).replace(/[/]$/, ''));
+  }
+}
+if (!customElements.get('cds-dashboard')) customElements.define('cds-dashboard', CdsDashboard);
+})();
+`;
+
+export const DASHBOARD_HTML = `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>코스타 델 솔 — 게임 통계</title>
+<style>
+  :root { --bg: #0d1424; --text: #e8ecf7; }
+  @media (prefers-color-scheme: light) { :root { --bg: #f4f6fb; --text: #1b2338; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 "Segoe UI", "Malgun Gothic", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>코스타 델 솔 — 게임 통계</h1>
+  <cds-dashboard></cds-dashboard>
+</main>
+<script src="/embed.js"></script>
 </body>
 </html>`;
