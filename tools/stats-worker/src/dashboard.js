@@ -70,9 +70,9 @@ export const DASHBOARD_HTML = `<!doctype html>
   </div>
   <div class="tiles" id="tiles"></div>
   <div class="tabs pagetabs" id="pagetabs">
-    <button data-tab="mods">모드 옵션</button><button data-tab="disc">발견물</button><button data-tab="mates">부하</button>
+    <button data-tab="bugs">버그 리포트</button><button data-tab="mods">모드 옵션</button><button data-tab="disc">발견물</button><button data-tab="mates">부하</button>
     <button data-tab="nation">나라 · 기함 · 투자</button><button data-tab="heroes">주인공</button><button data-tab="voyage">항해</button>
-    <button data-tab="play">네비 · 전투 · 사건</button><button data-tab="errors">오류</button><button data-tab="days">날짜별</button><button data-tab="bugs">버그 리포트</button>
+    <button data-tab="play">네비 · 전투 · 사건</button><button data-tab="errors">오류</button><button data-tab="days">날짜별</button>
   </div>
   <section data-tab="mods"><h2>모드 옵션 <small>설치별 마지막 값</small></h2><div class="tabs" id="modtabs"></div><div class="scroll"><table id="mods"></table></div></section>
   <section data-tab="disc"><h2>발견물 순위</h2><div class="scroll"><table id="discoveries"></table><div class="pager" id="discoveries_pg"></div></div></section>
@@ -191,12 +191,12 @@ function paged(id, rows) {
 function pickTab(tab) {
   document.querySelectorAll('main > [data-tab]').forEach((el) => el.hidden = el.dataset.tab !== tab);
   document.querySelectorAll('#pagetabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
-  try { localStorage.setItem('cdsDashTab', tab); } catch (e) { }
+  try { localStorage.setItem('cdsDashTab2', tab); } catch (e) { }
 }
 document.querySelectorAll('#pagetabs button').forEach((b) => b.onclick = () => pickTab(b.dataset.tab));
 let savedTab = null;
-try { savedTab = localStorage.getItem('cdsDashTab'); } catch (e) { }
-pickTab(document.querySelector('#pagetabs button[data-tab="' + savedTab + '"]') ? savedTab : 'mods');
+try { savedTab = localStorage.getItem('cdsDashTab2');   // 기본 탭을 버그 리포트로 바꿀 때 열쇠를 갈았다 — 예전에 고른 탭은 안 읽는다 } catch (e) { }
+pickTab(document.querySelector('#pagetabs button[data-tab="' + savedTab + '"]') ? savedTab : 'bugs');
 
 // 순위 표 — 횟수 · 설치 머리를 눌러 줄 세운다.
 function rankTable(id, label, rows, nameOf) {
