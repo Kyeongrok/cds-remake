@@ -195,7 +195,8 @@ function pickTab(tab) {
 }
 document.querySelectorAll('#pagetabs button').forEach((b) => b.onclick = () => pickTab(b.dataset.tab));
 let savedTab = null;
-try { savedTab = localStorage.getItem('cdsDashTab2');   // 기본 탭을 버그 리포트로 바꿀 때 열쇠를 갈았다 — 예전에 고른 탭은 안 읽는다 } catch (e) { }
+// 기본 탭을 버그 리포트로 바꿀 때 열쇠를 갈았다 — 예전에 고른 탭은 안 읽는다.
+try { savedTab = localStorage.getItem('cdsDashTab2'); } catch (e) { }
 pickTab(document.querySelector('#pagetabs button[data-tab="' + savedTab + '"]') ? savedTab : 'bugs');
 
 // 순위 표 — 횟수 · 설치 머리를 눌러 줄 세운다.
