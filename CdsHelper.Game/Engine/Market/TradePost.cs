@@ -464,10 +464,15 @@ public sealed class TradePost
         player.Earn(gain);
 
         int cost = CostOf(deal);
+        // 짐에 적어 둘 한 개 산 값 — 흥정으로 총액이 깎였으면 줄마다 같은 비율로 나눠 진다.
+        long listed = deal.Buys.Where(b => b.Count > 0).Sum(b => (long)b.Count * Discounted(b.Row.Price, deal.Pct));
         foreach (var (row, n) in deal.Buys)
         {
             if (n <= 0) continue;
-            player.LoadCargo(row.Kind, n, row.Origin, WeightOf(row.Kind), FreshShelfOf(row.Kind));
+            long line = (long)n * Discounted(row.Price, deal.Pct);
+            if (listed > 0 && cost != listed) line = line * cost / listed;
+            int unit = (int)Math.Max(1, (line + n / 2) / n);   // 0 은 「모름」이다
+            player.LoadCargo(row.Kind, n, row.Origin, WeightOf(row.Kind), FreshShelfOf(row.Kind), unit);
             Take(player, row.Origin, row.Cell, n);
         }
         player.SetGold(player.Gold - cost);

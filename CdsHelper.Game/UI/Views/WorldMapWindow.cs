@@ -8260,8 +8260,9 @@ public sealed class WorldMapWindow : Window
         _game.Player.EnterCity(city, name);
         _game.Player.SetGold(100_000);
         // 멀리서 실어 온 짐 — 원산지 이름이 길어 셋째 줄이 넘치는 것을 본다.
-        foreach (var (kind, origin) in new[] { (0, 30), (5, 70), (12, 100) })
-            if (goods.Find(kind) is { } g) _game.Player.LoadCargo(kind, 40, origin, g.Weight, post.FreshShelfOf(kind));
+        // 산 값 — 첫째는 한 번, 둘째는 두 번 사서 가중 평균(40개 100닢 + 20개 130닢 → 110닢), 셋째는 모름(옛 세이브 꼴).
+        foreach (var (kind, origin, n, cost) in new[] { (0, 30, 40, 123), (5, 70, 40, 100), (5, 70, 20, 130), (12, 100, 40, Player.UnknownCost) })
+            if (goods.Find(kind) is { } g) _game.Player.LoadCargo(kind, n, origin, g.Weight, post.FreshShelfOf(kind), cost);
         TradePostDialog.Show(this, _game, post, city, name, _game.CityRows?.CultureOf(city) ?? 0);
         return "";
     }

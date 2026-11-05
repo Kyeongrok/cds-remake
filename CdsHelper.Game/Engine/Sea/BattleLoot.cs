@@ -25,8 +25,9 @@ public static class BattleLoot
 
     /// <summary>빼앗은 교역품 한 무더기.</summary>
     /// <param name="Shelf">유통 기한(날). 빼앗은 것은 가득이다(<c>0x00435045</c>).</param>
+    /// <param name="Cost">한 개 산 값 — 빼앗은 것은 모른다(<see cref="Player.UnknownCost"/>). 제 짐을 이 꼴로 옮겨 다룰 때 지킨다.</param>
     public readonly record struct Goods(int Kind, int Count, int Origin, int UnitWeight,
-                                        int Shelf = Player.NeverSpoils);
+                                        int Shelf = Player.NeverSpoils, int Cost = Player.UnknownCost);
 
     /// <summary>보급품마다의 풀 N(통).</summary>
     public static int PoolOf(int volume, int weight)

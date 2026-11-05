@@ -132,7 +132,7 @@ public sealed class LootDialog : GameWindow
             _original[i] = _now[i] = _player.SupplyOf(Supply.All[i].Kind);
         _rows.Clear();
         foreach (var c in _player.CargoHold)
-            _rows.Add(new GoodsRow(new BattleLoot.Goods(c.Kind, c.Count, c.Origin, c.UnitWeight, c.Shelf)));
+            _rows.Add(new GoodsRow(new BattleLoot.Goods(c.Kind, c.Count, c.Origin, c.UnitWeight, c.Shelf, c.Cost)));
         _aside = _loot;
     }
 
@@ -355,7 +355,7 @@ public sealed class LootDialog : GameWindow
         for (int i = 0; i < Supply.Count; i++) _player.SetSupply(Supply.All[i].Kind, _now[i]);
         _player.RestoreCargo(_rows.Where(r => r.Now > 0)
                                   .Select(r => new Player.Cargo(r.Goods.Kind, r.Now, r.Goods.Origin, r.Goods.UnitWeight,
-                                                                r.Goods.Shelf)));
+                                                                r.Goods.Shelf, r.Goods.Cost)));
         _decided = true;
         Close();
     }
