@@ -1,7 +1,7 @@
 // 게임 통계를 받는 Cloudflare Worker — 게임(CdsHelper.Game/Local/Helpers/PlayStats.cs)이 몇 분마다, 그리고 끌 때 셈 한 덩이를 보낸다.
 //
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
-//   GET  /v1/dashboard   집계(?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
+//   GET  /v1/dashboard   집계(?period=day|week|month|all · ?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
 //   POST /v1/hardcore    하드코어 판 하나가 끝난 기록 — 판 표지(gameId)마다 한 번만 들어간다.
 //   GET  /v1/ranking     하드코어 랭킹(발견물 수 차례) 상위 100.
@@ -68,6 +68,15 @@ async function postPlay(request, env) {
        ON CONFLICT (kind, key, version, install) DO UPDATE SET n = n + excluded.n, days = days + excluded.days,
                                                               turns = turns + excluded.turns, name = excluded.name`)
       .bind(version, b.install, JSON.stringify(counts), b.batch));
+  // 같은 셈을 받은 날(UTC)마다도 더한다 — 대시보드의 하루 · 주 · 달 거르기가 이것을 센다. tally 에는 날짜가 없다.
+  // 기간 거르기는 길어야 한 달이라 PERIOD_KEEP_DAYS 가 지난 줄은 집계할 때 지운다(pruneDaily).
+  if (counts.length)
+    rows.push(env.DB.prepare(
+      `INSERT INTO tally_daily (day, kind, key, version, install, name, n)
+       SELECT ?, json_extract(value, '$.kind'), json_extract(value, '$.key'), ?, ?, json_extract(value, '$.name'), json_extract(value, '$.n')
+       FROM json_each(?) WHERE ${fresh}
+       ON CONFLICT (day, kind, key, version, install) DO UPDATE SET n = n + excluded.n, name = excluded.name`)
+      .bind(now.slice(0, 10), version, b.install, JSON.stringify(counts), b.batch));
 
   // 모드 옵션은 설치마다 마지막 값 한 벌을 한 줄(JSON)로 남긴다. 그대로면 안 쓴다.
   // 예전에는 옵션마다 한 줄(mods 표)이라 새 설치 하나에 백 줄 넘게 쓰였고, 그것으로 D1 하루 쓰기 한도(십만 줄)가 찼다.
@@ -259,31 +268,41 @@ const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, nav: 100,
 // 옛 항해 날수 · 선회는 voyage_legacy 에 버전마다 한 줄로 묶어 두었다(migrate-reads.sql).
 const READ_KINDS = Object.keys(LIMITS);
 const HERO_LIMIT = 300;
+// 대시보드 기간 — 받은 날(UTC) 기준으로 오늘을 넣어 며칠 거슬러 오르는지. all 은 거르지 않는다(tally 를 센다).
+// 하루는 어제부터다 — 날이 UTC 로 바뀌어(한국 오전 9시) 오늘만 보면 아침에는 거의 비어 있다.
+const PERIODS = { day: 1, week: 7, month: 30, all: 0 };
+const DEFAULT_PERIOD = 'week';
+// tally_daily 를 남겨 두는 날수 — 가장 긴 기간(달)보다 조금 길게.
+const PERIOD_KEEP_DAYS = 35;
+const sinceDay = (days) => new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
 
-// 대시보드 집계 — 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
+// 대시보드 집계 — 기간과 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
 async function getDashboard(url, env) {
   const version = (url.searchParams.get('version') || '').slice(0, 32);
-  const all = await snapshot(env, '', null);
+  const asked = url.searchParams.get('period') || DEFAULT_PERIOD;
+  const period = Object.hasOwn(PERIODS, asked) ? asked : DEFAULT_PERIOD;
+  const all = await snapshot(env, period, '', null);
   if (!version) return json(all);
   // 모르는 버전으로는 표를 안 훑는다 — 주소만 바꿔 가며 부르면 그때마다 새로 세게 된다.
   if (!all.versions.includes(version))
     return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], periods: { day: [], week: [], month: [] }, heroes: [],
                   nations: [], flagships: [], investCities: [] });
-  return json(await snapshot(env, version, all));
+  return json(await snapshot(env, period, version, all));
 }
 
-// 묵혀 둔 집계를 내고, 없거나 낡았으면 새로 세어 적어 둔다.
-async function snapshot(env, version, whole) {
-  const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind(version).first();
+// 묵혀 둔 집계를 내고, 없거나 낡았으면 새로 세어 적어 둔다. 전체 기간은 예전처럼 버전 글 그대로, 다른 기간은 「기간:버전」을 열쇠로 둔다.
+async function snapshot(env, period, version, whole) {
+  const slot = period === 'all' ? version : period + ':' + version;
+  const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind(slot).first();
   if (kept && Date.now() - Date.parse(kept.made_at) < SNAPSHOT_TTL) return JSON.parse(kept.body);
 
   // 새로 세거나 적어 두다 막히면(D1 하루 한도) 대시보드째 죽지 않게 한다 — 못 세면 낡은 것이라도 내고, 못 적으면 센 것만 낸다.
   let body;
-  try { body = await aggregate(env, version, whole); }
+  try { body = await aggregate(env, period, version, whole); }
   catch (e) { if (!kept) throw e; console.error(e && e.stack || e); return JSON.parse(kept.body); }
   try {
     await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)')
-      .bind(version, body.madeAt, JSON.stringify(body)).run();
+      .bind(slot, body.madeAt, JSON.stringify(body)).run();
   } catch (e) { console.error(e && e.stack || e); }
   return body;
 }
@@ -292,29 +311,41 @@ async function snapshot(env, version, whole) {
 // D1 은 훑은 줄을 모두 읽기로 센다. 예전에는 덩이 표(batches)를 세 번, 모드 표를 json_each 로 펼쳐(설치 × 옵션 수) 세어
 // 한 번 셀 때 오십만 줄 가까이 읽었다 — 그래서 덩이 표 대신 daily, 모드는 몸통만 읽어 여기서 센다.
 // 모드 옵션 · 버전 목록은 버전으로 안 거르므로, 버전 집계는 전체 집계(whole)의 것을 그대로 쓴다 — 모드 표를 버전마다 또 훑지 않게.
-async function aggregate(env, version, whole) {
+async function aggregate(env, period, version, whole) {
   const cond = version ? 'AND version = ?' : '', args = version ? [version] : [];
   const all = (sql, ...bound) => env.DB.prepare(sql).bind(...bound).all().then((r) => r.results);
+  // 기간 — 설치 수 · 덩이(daily)는 받은 날로, 셈은 tally_daily 로, 주인공은 마지막으로 받은 때로, 모드 옵션은 그 기간에 보낸 설치로 거른다.
+  // 날짜별 탭(days · periods)은 제 날짜 거르기가 있어 기간으로 안 거른다.
+  const since = PERIODS[period] ? sinceDay(PERIODS[period]) : '';
+  const dayCond = since ? 'AND day >= ?' : '', dayArgs = since ? [since] : [];
+  if (period === 'month' && !version) await pruneDaily(env);
 
   const [total, tally, legacy, modValues, days, known, heroes, byDay, byWeek, byMonth] = await Promise.all([
-    env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${cond}`).bind(...args).first(),
-    all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, SUM(days) AS days, SUM(turns) AS turns, COUNT(DISTINCT install) AS installs
-         FROM tally WHERE kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, ...READ_KINDS, ...args),
-    all(`SELECT body FROM voyage_legacy WHERE 1 = 1 ${cond}`, ...args),
-    whole ? whole.modValues : all('SELECT body FROM options').then(countModValues),
+    env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${dayCond} ${cond}`)
+      .bind(...dayArgs, ...args).first(),
+    since
+      ? all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, 0 AS days, 0 AS turns, COUNT(DISTINCT install) AS installs
+             FROM tally_daily WHERE day >= ? AND kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, since, ...READ_KINDS, ...args)
+      : all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, SUM(days) AS days, SUM(turns) AS turns, COUNT(DISTINCT install) AS installs
+             FROM tally WHERE kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, ...READ_KINDS, ...args),
+    // 옛 항해 날수 · 선회는 v1.1.30 까지 받은 것이라 기간을 거르면 안 든다.
+    since ? [] : all(`SELECT body FROM voyage_legacy WHERE 1 = 1 ${cond}`, ...args),
+    whole ? whole.modValues
+      : since ? all('SELECT body FROM options WHERE install IN (SELECT install FROM daily WHERE day >= ?)', since).then(countModValues)
+      : all('SELECT body FROM options').then(countModValues),
     all(`SELECT day, version, COUNT(*) AS installs, SUM(batches) AS batches
          FROM daily WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
     whole ? whole.versions : all('SELECT DISTINCT version FROM daily ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
     // 주인공 — 마지막으로 받은 차례로 앞 HERO_LIMIT 판만(색인 heroes_recent 를 따라 그만큼만 읽는다). 버전은 마지막으로 보낸 판의 것이다.
     all(`SELECT name, nation, first_date, date, first_abilities, abilities, first_flagship, flagship, invested, version, updated_at
-         FROM heroes WHERE 1 = 1 ${cond} ORDER BY updated_at DESC LIMIT ${HERO_LIMIT}`, ...args)
+         FROM heroes WHERE updated_at >= ? ${cond} ORDER BY updated_at DESC LIMIT ${HERO_LIMIT}`, since, ...args)
       .then((r) => r.map(({ first_abilities, abilities, ...h }) => ({ ...h, first: JSON.parse(first_abilities), now: JSON.parse(abilities) }))),
     // 날짜별 탭의 묶음 — 하루 · 주(월요일 시작) · 달마다 설치 수(겹치지 않게) · 덩이 수. daily 의 day 는 UTC 날짜다.
     ...[['day', 400], [`date(day, 'weekday 0', '-6 days')`, 200], ['substr(day, 1, 7)', 120]].map(([key, limit]) =>
       all(`SELECT ${key} AS key, COUNT(DISTINCT install) AS installs, SUM(batches) AS batches
            FROM daily WHERE 1 = 1 ${cond} GROUP BY 1 ORDER BY 1 DESC LIMIT ${limit}`, ...args)),
   ]);
-  const { nations, flagships, investCities } = await nationsOf(all, cond, args);
+  const { nations, flagships, investCities } = await nationsOf(all, 'AND updated_at >= ? ' + cond, [since, ...args]);
 
   // 갈래마다 합계와 순위 — 순위는 줄 수에 끝이 있어, 타일의 셈은 자르기 전에 따로 낸다.
   const kinds = [], tops = {};
@@ -345,10 +376,16 @@ async function aggregate(env, version, whole) {
     }
   const voyages = tops.voyage.map((r) => ({ ...r, days: (r.days || 0) + (old.get(r.key)?.[0] || 0), turns: (r.turns || 0) + (old.get(r.key)?.[1] || 0) }));
 
-  return { madeAt: new Date().toISOString(), total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
+  return { madeAt: new Date().toISOString(), period, since, total, kinds, discoveries: tops.discovery, hires: tops.hire, dismisses: tops.dismiss, voyages, navs: tops.nav,
            battles: tops.battle, events: tops.event, errors: tops.error, mods, modValues, days, periods: { day: byDay, week: byWeek, month: byMonth },
            versions: known, heroes,
            nations, flagships, investCities };
+}
+
+// 기간 거르기가 안 쓰는 날의 셈을 지운다 — 한 달 집계를 새로 셀 때(한 시간에 한 번 넘지 않게) 같이 한다.
+async function pruneDaily(env) {
+  try { await env.DB.prepare('DELETE FROM tally_daily WHERE day < ?').bind(sinceDay(PERIOD_KEEP_DAYS)).run(); }
+  catch (e) { console.error(e && e.stack || e); }
 }
 
 // 나라 · 기함 · 투자 — 판마다 한 줄인 heroes 를 통째로 센다(한 시간에 한 번). 기함 · 투자는 v1.1.57 부터 온 판에만 있다.

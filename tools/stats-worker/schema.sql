@@ -23,7 +23,19 @@ CREATE TABLE IF NOT EXISTS tally (
   PRIMARY KEY (kind, key, version, install)
 ) WITHOUT ROWID;
 
--- 대시보드 집계를 묵혀 두는 곳 — 버전(전체는 빈 글)마다 한 줄, 한 시간이 지나면 새로 센다.
+-- 같은 셈을 받은 날(UTC)마다도 — 대시보드의 하루 · 주 · 달 거르기가 센다(migrate-period.sql). 35일 지난 줄은 지운다.
+CREATE TABLE IF NOT EXISTS tally_daily (
+  day     TEXT NOT NULL,          -- 받은 날(UTC, yyyy-MM-dd)
+  kind    TEXT NOT NULL,
+  key     TEXT NOT NULL,
+  version TEXT NOT NULL,
+  install TEXT NOT NULL,
+  name    TEXT NOT NULL,
+  n       INTEGER NOT NULL,
+  PRIMARY KEY (day, kind, key, version, install)
+) WITHOUT ROWID;
+
+-- 대시보드 집계를 묵혀 두는 곳 — 열쇠는 버전(전체 기간, 전체 버전은 빈 글) 또는 「기간:버전」(하루 · 주 · 달)마다 한 줄, 한 시간이 지나면 새로 센다.
 CREATE TABLE IF NOT EXISTS snapshots (
   version TEXT PRIMARY KEY,
   made_at TEXT NOT NULL,

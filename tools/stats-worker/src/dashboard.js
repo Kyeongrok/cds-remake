@@ -60,8 +60,10 @@ export const DASHBOARD_HTML = `<!doctype html>
 <body>
 <main>
   <h1>코스타 델 솔 — 게임 통계</h1>
-  <div class="sub">익명으로 수집한 게임 셈입니다. 모드 옵션은 설치마다 마지막 값이라 버전으로 거르지 않습니다.</div>
+  <div class="sub">익명으로 수집한 게임 셈입니다. 모드 옵션은 설치마다 마지막 값이라 버전으로 거르지 않습니다.
+    기간은 받은 날(UTC) 기준입니다 — Day 는 어제부터, Week 는 7일 전부터, Month 는 30일 전부터입니다. 셈(발견 · 고용 · 전투 따위)의 기간 거르기는 2026-11-05 부터 쌓였습니다. 날짜별 탭은 기간으로 거르지 않습니다.</div>
   <div class="filters">
+    <label>기간 <select id="period"><option value="day">Day</option><option value="week" selected>Week</option><option value="month">Month</option><option value="all">전체</option></select></label>
     <label>버전 <select id="version"><option value="">전체</option></select></label>
     <span class="dim" id="made"></span>
     <span id="error"></span>
@@ -158,7 +160,7 @@ const modName = (name) => '<span title="' + esc(name) + '">' + esc(MOD_NAMES[nam
 const SEA = [['Won', '승리'], ['Defeated', '패배'], ['Escaped', '퇴각'], ['Surrendered', '항복']];
 
 let data = null;
-const state = { version: '' }, sorts = { discoveries: 'n', hires: 'n', dismisses: 'n', voyages: 'n', errors: 'n' };
+const state = { version: '', period: 'week' }, sorts = { discoveries: 'n', hires: 'n', dismisses: 'n', voyages: 'n', errors: 'n' };
 let modTab = 'all';
 
 const COLS = [['n', '횟수'], ['installs', '설치']];
@@ -370,7 +372,7 @@ function renderDays() {
 async function load() {
   $('error').textContent = '';
   try {
-    const res = await fetch('/v1/dashboard?' + new URLSearchParams({ version: state.version }));
+    const res = await fetch('/v1/dashboard?' + new URLSearchParams({ period: state.period, version: state.version }));
     if (!res.ok) throw new Error('HTTP ' + res.status);
     data = await res.json();
     const sel = $('version'), keep = state.version;
@@ -433,6 +435,7 @@ $('dayFrom').onchange = (e) => { dayView.from = e.target.value; pages.days = 0; 
 $('dayTo').onchange = (e) => { dayView.to = e.target.value; pages.days = 0; renderDays(); };
 $('dayClear').onclick = () => { dayView.from = dayView.to = ''; $('dayFrom').value = $('dayTo').value = ''; pages.days = 0; renderDays(); };
 $('version').onchange = (e) => { state.version = e.target.value; for (const k in pages) pages[k] = 0; load(); };
+$('period').onchange = (e) => { state.period = e.target.value; for (const k in pages) pages[k] = 0; load(); };
 load();
 </script>
 </body>

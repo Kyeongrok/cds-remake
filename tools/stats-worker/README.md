@@ -18,7 +18,7 @@ npx wrangler deploy                              # https://cds-remake-stats.<계
 
 ## 보기
 
-- 대시보드: `https://…workers.dev/dashboard` — 합계 타일 · 모드 옵션(켬·끔 비율 / 단계 옵션은 값마다 설치 수) · 발견물 순위 · 고용한 부하 · 해고한 부하(횟수 · 설치로 줄 세우기) · 주인공(판마다 처음 → 마지막 능력치) · 항해(v1.1.30 까지 받은 옛 자료) · 네비게이션(고른 길 · 자동이동 모드 · 끝난 꼴) · 전투(해전 · 육상전 승률) · 오류 · 날짜/버전별. 지금은 누구나 볼 수 있다. 「버그 리포트」 탭만 관리자 키를 넣어야 보인다.
+- 대시보드: `https://…workers.dev/dashboard` — 맨 위 「기간」(Day · Week · Month · 전체, 처음은 Week)으로 거른다. 셈은 `tally_daily`(받은 날마다, 2026-11-05 부터), 설치 · 메시지는 `daily`, 주인공은 마지막으로 받은 때, 모드 옵션은 그 기간에 보낸 설치로 거르고, 전체는 예전처럼 `tally` 를 센다. 날짜별 탭은 기간으로 안 거른다. 합계 타일 · 모드 옵션(켬·끔 비율 / 단계 옵션은 값마다 설치 수) · 발견물 순위 · 고용한 부하 · 해고한 부하(횟수 · 설치로 줄 세우기) · 주인공(판마다 처음 → 마지막 능력치) · 항해(v1.1.30 까지 받은 옛 자료) · 네비게이션(고른 길 · 자동이동 모드 · 끝난 꼴) · 전투(해전 · 육상전 승률) · 오류 · 날짜/버전별. 지금은 누구나 볼 수 있다. 「버그 리포트」 탭만 관리자 키를 넣어야 보인다.
 - 마음대로 묻기:
 
 ```
@@ -37,6 +37,8 @@ D1 무료 판은 하루에 읽기 오백만 줄 · 쓰기 십만 줄까지다(�
 - 지금 얼마나 썼는지: `npx wrangler d1 info cds-remake-stats` 의 `rows_read_24h` · `rows_written_24h`.
 
 ## 적히는 것
+
+- `tally_daily` — `tally` 와 같은 셈을 받은 날(UTC)마다도 한 줄에 더한다(`migrate-period.sql`). 대시보드 기간 거르기용이고, 35일 지난 줄은 Month 집계를 새로 셀 때 지운다.
 
 - `batches` — 덩이 하나에 한 줄(설치 번호 · 버전 · 받은 때).
 - `tally` — 셈. (갈래 · 열쇠 · 버전 · 설치)마다 한 줄이고 받을 때마다 더한다. `kind` 는 `discovery`(발견물 번호) · `hire` · `dismiss`(고용 · 해고한 부하의 인물 번호 — 해고는 부하편성의 「해고」와 재계약 거절만) · `voyage` · `voyage_days` · `voyage_turns`(열쇠는 셋 다 「떠난 도시 번호>닿은 도시 번호」 — 횟수 · 날수의 합 · 선회의 합) · `nav`(`pick:quick` · `helm:steady` · `from:city` · `end:arrived` · `trip:auto` …) · `event`(바다 · 육지에서 하루를 넘길 때의 일 — `sea:day` · `sea:eligible` · `sea:Storm` · `land:day` · `land:Beast` …) · `battle`(`sea:Won` · `sea:Defeated` · `sea:Escaped` · `land:win` · `land:lose`) · `error`(「오류 갈래@클래스.메서드」 — 오류 글은 안 싣는다).
