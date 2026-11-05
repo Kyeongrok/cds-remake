@@ -2679,7 +2679,17 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 술 줄에 적을 이름. 그 고장 말을 둘 이상 알아야 진짜 이름이 나온다 —
     /// 모르면 "붉은 술" 처럼 겉모습으로 부른다(<c>0x0042FB20</c>).
     /// </summary>
-    private string DrinkNameOf(DrinkTable.Drink drink) => DrinkTable.NameFor(drink, CityTongue);
+    /// <remarks>
+    /// 원본은 제독과 주인이 함께 하는 말의 수준만 본다(<c>0x00478050</c>). 우리는 주인 말을 부관 · 통역이 옮겨 주므로(<see cref="Engine.Town.KeeperTongue"/>)
+    /// 옮겨 주는 사람이 그 말을 알면 술 이름도 진짜로 옮긴다 — 「붉은 술은 4닢입니다」라고 통역하던 것을 고쳤다(버그 리포트 #13).
+    /// </remarks>
+    private string DrinkNameOf(DrinkTable.Drink drink) => DrinkTable.NameFor(drink, DrinkTongue);
+
+    /// <summary>술 이름을 알아듣는 수준 — 이 건물 주인 말을 제독 또는 옮겨 주는 부하가 아는 만큼. 건물 밖이면 도시 말 수준.</summary>
+    private int DrinkTongue =>
+        Engine.Town.KeeperTongue.Here is { } here && here() is var hear
+            ? Math.Max(hear.Level, hear.Relayer != null ? hear.RelayerLevel : 0)
+            : CityTongue;
 
     /// <summary>이 도시 말을 얼마나 아는지. 나라를 모르면 0 이다.</summary>
     private int CityTongue
