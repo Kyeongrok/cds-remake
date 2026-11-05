@@ -494,13 +494,11 @@ public sealed class TradePostDialog : GameWindow
             ? $"★ {_post.NameOf(row.Kind)}" : _post.NameOf(row.Kind);
 
         var lines = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-        lines.Children.Add(Dark(name, 14, Ink));
+        lines.Children.Add(NameLine(name, row.Kind));
         lines.Children.Add(Dark($"단가 {row.Price:N0}닢 · 공급 {rest:N0}", 14, q > 0 && rest == 0 ? Cart : Ink));
         var third = new StackPanel { Orientation = Orientation.Horizontal };
         third.Children.Add(Dark($"무게 {_post.WeightOf(row.Kind)}   ", 12, Ink));
         third.Children.Add(Dark($"{CityName(row.Origin)}산", 12, q > 0 ? Cart : Dim));
-        // 교역품별 시세(모드) — 이 도시에서 이 물건이 지금 몇 % 인지.
-        if (Local.Settings.GameSettings.GoodsMarkets) third.Children.Add(Dark($"   시세 {_player.GoodsRateOf(_city, row.Kind)}%", 12, Dim));
         lines.Children.Add(third);
 
         var buttons = StepButtons(n => AddBuy(i, n),
@@ -527,7 +525,7 @@ public sealed class TradePostDialog : GameWindow
         int diff = here - buy;
 
         var lines = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-        lines.Children.Add(Dark(_post.NameOf(r.Kind), 14, Ink));
+        lines.Children.Add(NameLine(_post.NameOf(r.Kind), r.Kind));
 
         var second = new DockPanel { LastChildFill = true };
         var count = Dark(have + pend > 0 ? $"{have + pend:N0}개" : "아직 없음", 14, pend > 0 ? Cart : Ink);
@@ -549,8 +547,6 @@ public sealed class TradePostDialog : GameWindow
         // 썩는 짐이면 내구도(남은 달)를 붙인다 — 원본 수량 창의 「내구도」(0x00532F08) 값이다.
         if (r.Slot >= 0 && _player.CargoHold[r.Slot] is { Shelf: not Player.NeverSpoils } kept)
             third += kept.Spoiled ? " · 썩었다" : $" · 내구도 {kept.Months}";
-        // 교역품별 시세(모드) — 이 도시에서 이 물건이 지금 몇 % 인지. 많이 팔면 내려간다.
-        if (Local.Settings.GameSettings.GoodsMarkets) third += $" · 시세 {_player.GoodsRateOf(_city, r.Kind)}%";
         lines.Children.Add(Dark(third, 12, sell > 0 ? Warn : pend > 0 ? Cart : Dim));
 
         FrameworkElement buttons;
@@ -574,6 +570,25 @@ public sealed class TradePostDialog : GameWindow
                 if (e.ClickCount == 2) AddSell(r.Slot, (have + 1) / 2);
             };
         return border;
+    }
+
+    /// <summary>
+    /// 첫 줄 — 교역품 이름, 모드 「교역품별 시세」면 오른쪽 끝에 이 도시의 그 물건 시세(%)를 붙인다. 많이 팔면 내려간다.
+    /// </summary>
+    /// <remarks>
+    /// 시세는 예전에 셋째 줄 끝에 붙였는데, 그 줄은 원산지 · 매입가 · 팔 것 · 내구도까지 들어 길어서 잘려 안 보였다
+    /// (버그 리포트 #14). 이름 줄은 짧아 늘 보인다.
+    /// </remarks>
+    private FrameworkElement NameLine(string name, int kind)
+    {
+        if (!Local.Settings.GameSettings.GoodsMarkets) return Dark(name, 14, Ink);
+        var line = new DockPanel { LastChildFill = true };
+        var rate = Dark($"   시세 {_player.GoodsRateOf(_city, kind)}%", 12, Dim);
+        rate.VerticalAlignment = VerticalAlignment.Bottom;
+        DockPanel.SetDock(rate, Dock.Right);
+        line.Children.Add(rate);
+        line.Children.Add(Dark(name, 14, Ink));
+        return line;
     }
 
     private Border Row(int index, int kind, FrameworkElement lines, FrameworkElement buttons)

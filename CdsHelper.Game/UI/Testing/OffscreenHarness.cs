@@ -24,6 +24,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///                  WPF 화면(RenderTargetBitmap) 위에 지도 칸(D3D 스왑체인 백버퍼)과 딸린 창(도시 화면 · 대화 창)을 겹쳐 그린다.
 ///   바로 시작      CDS_START=sea:&lt;도시&gt;:&lt;선체 key&gt; (+ CDS_HEADING · CDS_SAIL) — WorldMapWindow.StartAtSeaForTest.
 ///   내 리포트 창   CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
+///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
 /// </code>
 /// 무엇을 했는지는 <c>OffscreenTest.OutputFolder\cds_test.log</c> 에 한 줄씩 적는다. 창 핸들은 <see cref="OffscreenTest.HwndFile"/>.
@@ -97,6 +98,20 @@ public static class OffscreenHarness
                             if (w is MyBugReportsDialog) { w.Left = window.Left + 80; w.Top = window.Top + 80; }
                     }, DispatcherPriority.ApplicationIdle);
                     MyBugReportsDialog.Open(window);
+                }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=trade:<도시> — 그 도시 교역소 매매 창을 짐을 실은 채 띄운다. CDS_START 로 그 도시 앞바다에 든 뒤에 쓴다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } dialog && dialog.StartsWith("trade:")
+                && int.TryParse(dialog[6..], out int tradeCity))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log($"매매 창을 띄운다 — 도시 {tradeCity}");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is TradePostDialog) { w.Left = window.Left + 40; w.Top = window.Top + 40; }
+                    }, DispatcherPriority.ApplicationIdle);
+                    string error = window.OpenTradeForTest(tradeCity);
+                    if (error.Length > 0) Log($"매매 창 실패 — {error}");
                 }, DispatcherPriority.ApplicationIdle);
         }, DispatcherPriority.ApplicationIdle);
     }

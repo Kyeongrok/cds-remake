@@ -8248,6 +8248,24 @@ public sealed class WorldMapWindow : Window
         return "";
     }
 
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_DIALOG=trade</c>) — 그 도시 교역소 매매 창을 짐 몇 가지를 실은 채 띄운다(도시 화면은 안 거친다).
+    /// </summary>
+    /// <returns>띄웠으면 빈 글, 아니면 까닭. 창은 닫힐 때까지 돌아오지 않는다.</returns>
+    internal string OpenTradeForTest(int city)
+    {
+        if (_game.Trade is not { } trade || _game.Goods is not { } goods) return "교역소 표 · 교역품 표를 못 읽었다";
+        var post = new Engine.Market.TradePost(trade, goods, _game.Rates, _game.CityRows, _game.Nations, _game.Discoveries?.Table);
+        string name = _game.CityTable.Find(city)?.Name ?? $"도시 {city}";
+        _game.Player.EnterCity(city, name);
+        _game.Player.SetGold(100_000);
+        // 멀리서 실어 온 짐 — 원산지 이름이 길어 셋째 줄이 넘치는 것을 본다.
+        foreach (var (kind, origin) in new[] { (0, 30), (5, 70), (12, 100) })
+            if (goods.Find(kind) is { } g) _game.Player.LoadCargo(kind, 40, origin, g.Weight, post.FreshShelfOf(kind));
+        TradePostDialog.Show(this, _game, post, city, name, _game.CityRows?.CultureOf(city) ?? 0);
+        return "";
+    }
+
     private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
         // <b>작업표시줄 단추를 하나로 둔다.</b> 개발도구에서 띄운 것이면 이 창까지

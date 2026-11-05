@@ -12309,55 +12309,63 @@
   "args": 3
  },
  "창 핸들을 적지 못했다 — {0}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:79",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:80",
   "args": 1
  },
  "창 {0} · 화면 밖 {1} · 소리 끔 {2} · 자료 {3}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:80",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:81",
   "args": 4
  },
  "내 리포트 창을 띄운다": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:92",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:93",
   "args": 0
  },
+ "매매 창을 띄운다 — 도시 {0}": {
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:107",
+  "args": 1
+ },
+ "매매 창 실패 — {0}": {
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:114",
+  "args": 1
+ },
  "CDS_START 를 못 읽었다 — [{0}] (꼴: sea:<도시 번호>:<선체 key>)": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:112",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:127",
   "args": 1
  },
  "바다로 들었다 — 도시 {0} · 선체 {1} · 뱃머리 {2} · 항해 {3}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:123",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:138",
   "args": 4
  },
  "바로 시작 실패 — {0}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:124",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:139",
   "args": 1
  },
  "CDS_SHOT 을 못 읽었다 — [{0}] (꼴: <png 경로>:<초>)": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:140",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:155",
   "args": 1
  },
  "CDS_SHOT 을 다 찍었다 — 창을 닫는다": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:161",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:176",
   "args": 0
  },
  "스냅샷 {0}{1}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:187",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:202",
   "args": 2
  },
  " (지도 {0}x{1})": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:187",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:202",
   "args": 2
  },
  " (지도 없음)": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:187",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:202",
   "args": 0
  },
  "스냅샷 실패 {0} — {1}: {2}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:189",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:204",
   "args": 3
  },
  "활성 막기 훅을 못 걸었다 (Win32 {0})": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:303",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:318",
   "args": 1
  },
  "[모드] 직업을 누르면 다시 굴린다.": {
@@ -24594,84 +24602,80 @@
   "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:500",
   "args": 1
  },
- "   시세 {0}%": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:503",
-  "args": 1
- },
  "아직 없음": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:533",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:531",
   "args": 0
  },
  "매각 {0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:542",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:540",
   "args": 1
  },
  "{0}산 · 팔 것 {1}개 ({2}닢)": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:546",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:544",
   "args": 3
  },
  "{0}산 · 매입 {1}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:547",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:545",
   "args": 2
  },
  " · 썩었다": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:551",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:549",
   "args": 0
  },
  " · 내구도 {0}": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:551",
-  "args": 1
- },
- " · 시세 {0}%": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:553",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:549",
   "args": 1
  },
  "비움": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:567",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:563",
   "args": 0
  },
+ "   시세 {0}%": {
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:586",
+  "args": 1
+ },
  "소지금 {0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:671",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:686",
   "args": 1
  },
  "지출({0}%↓)": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:687",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:702",
   "args": 1
  },
  "지출": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:687",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:702",
   "args": 0
  },
  "수입": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:688",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:703",
   "args": 0
  },
  "수익": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:690",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:705",
   "args": 0
  },
  "+{0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:690",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:705",
   "args": 1
  },
  "−{0}닢": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:690",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:705",
   "args": 1
  },
  "값을 깎는다": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:764",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:779",
   "args": 0
  },
  "제독, 여기는 교역소입니다. 무언가 거래를 하실 건가요?": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:818",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:833",
   "args": 0
  },
  "이봐요, 좋은 물건있으니 사 가지고 안 가겠나?": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:820",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:835",
   "args": 0
  },
  "이 고장의 {0}{1} 아직 세상에 알려지지 않아서 말이지.": {
-  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:851",
+  "at": "CdsHelper.Game/UI/Views/TradePostDialog.cs:866",
   "args": 2
  },
  "더 이상 기능을 습득할 수 없습니다": {
@@ -27312,37 +27316,41 @@
   "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8240",
   "args": 1
  },
+ "교역소 표 · 교역품 표를 못 읽었다": {
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8257",
+  "args": 0
+ },
  "배경음악 파일이 없습니다.\n릴리즈에서 BGM을 다운로드할까요?": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8290",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8308",
   "args": 0
  },
  "BGM 다운로드": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8291",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8309",
   "args": 0
  },
  "BGM 다운로드 중...": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8296",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8314",
   "args": 0
  },
  "BGM 다운로드 실패: {0}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8301",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8319",
   "args": 1
  },
  "배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8303",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8321",
   "args": 0
  },
  "배경음악을 받지 못했습니다. 배경음악 없이 게임은 그대로 할 수 있습니다.\n(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n{0}": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8303",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8321",
   "args": 1,
   "chain": true
  },
  "(인터넷 연결이나 보안 프로그램이 GitHub 접속을 막고 있을 수 있습니다.)\n\n": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8304",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8322",
   "args": 0
  },
  "BGM 다운로드 완료": {
-  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8309",
+  "at": "CdsHelper.Game/UI/Views/WorldMapWindow.cs:8327",
   "args": 0
  },
  "···돌아왔구나.": {
