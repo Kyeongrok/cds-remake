@@ -12309,51 +12309,55 @@
   "args": 3
  },
  "창 핸들을 적지 못했다 — {0}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:78",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:79",
   "args": 1
  },
  "창 {0} · 화면 밖 {1} · 소리 끔 {2} · 자료 {3}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:79",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:80",
   "args": 4
  },
+ "내 리포트 창을 띄운다": {
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:92",
+  "args": 0
+ },
  "CDS_START 를 못 읽었다 — [{0}] (꼴: sea:<도시 번호>:<선체 key>)": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:98",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:112",
   "args": 1
  },
  "바다로 들었다 — 도시 {0} · 선체 {1} · 뱃머리 {2} · 항해 {3}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:109",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:123",
   "args": 4
  },
  "바로 시작 실패 — {0}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:110",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:124",
   "args": 1
  },
  "CDS_SHOT 을 못 읽었다 — [{0}] (꼴: <png 경로>:<초>)": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:126",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:140",
   "args": 1
  },
  "CDS_SHOT 을 다 찍었다 — 창을 닫는다": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:147",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:161",
   "args": 0
  },
  "스냅샷 {0}{1}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:173",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:187",
   "args": 2
  },
  " (지도 {0}x{1})": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:173",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:187",
   "args": 2
  },
  " (지도 없음)": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:173",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:187",
   "args": 0
  },
  "스냅샷 실패 {0} — {1}: {2}": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:175",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:189",
   "args": 3
  },
  "활성 막기 훅을 못 걸었다 (Win32 {0})": {
-  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:289",
+  "at": "CdsHelper.Game/UI/Testing/OffscreenHarness.cs:303",
   "args": 1
  },
  "[모드] 직업을 누르면 다시 굴린다.": {
@@ -13722,199 +13726,199 @@
   "args": 2
  },
  "항구에 편성돼 있지 않은 선박이 있습니다! 탐험대를 모집할 수 없습니다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2732",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2742",
   "args": 0
  },
  "제독, ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2734",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2744",
   "args": 0
  },
  "제독, {0}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2734",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2744",
   "args": 1,
   "chain": true
  },
  "제독, 저희들만으로 탐험을 하는 것은 무모한 짓입니다! ": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2745",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2755",
   "args": 0
  },
  "제독, 저희들만으로 탐험을 하는 것은 무모한 짓입니다! 항구에서 사람을 모집한 후로 합시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2745",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2755",
   "args": 0,
   "chain": true
  },
  "항구에서 사람을 모집한 후로 합시다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2746",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2756",
   "args": 0
  },
  "성밖은 위험하다. 통행을 금지한다.": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2750",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2760",
   "args": 0
  },
  "탐험을 떠납니까? 준비하는데 {0}일 걸립니다. 좋습니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2871",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2881",
   "args": 1
  },
  "탐험하러 출발하십니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2872",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2882",
   "args": 0
  },
  "{0}산": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2899",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2909",
   "args": 1
  },
  "제독, 배가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2918",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2928",
   "args": 0
  },
  "배가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2920",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2930",
   "args": 0
  },
  "국왕 폐하": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2955",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2965",
   "args": 0
  },
  "제독, 아직 {0}의 신임이 두텁지 않습니다. 망명을 청하려면 친밀도가 더 필요합니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2956",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2966",
   "args": 1
  },
  "{0}에 망명하려면 다음이 필요합니다{1}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2965",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2975",
   "args": 2
  },
  "{0}에 망명하려면 다음이 필요합니다{1}· 명성 {2} 이상 (지금 {3}){4}· 금화 {5}닢 (지금 {6}닢){7}망명하면 국적이 {8}(으)로 바뀌고 자택도 {9}(으)로 옮겨집니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2965",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2975",
   "args": 10,
   "chain": true
  },
  "· 명성 {0} 이상 (지금 {1}){2}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2966",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2976",
   "args": 3
  },
  "· 금화 {0}닢 (지금 {1}닢){2}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2967",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2977",
   "args": 3
  },
  "망명하면 국적이 {0}(으)로 바뀌고 자택도 {1}(으)로 옮겨집니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2968",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2978",
   "args": 2
  },
  "명성이 모자랍니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2971",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2981",
   "args": 0
  },
  "금화가 모자랍니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2971",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2981",
   "args": 0
  },
  "금화 {0}닢과 명성 {1}이 깎이는데 괜찮겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2975",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2985",
   "args": 2
  },
  "{0}에 망명했습니다{1}자택이 {2}(으)로 옮겨졌습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2987",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:2997",
   "args": 3
  },
  "{0} (수행 중)": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3002",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3012",
   "args": 1
  },
  "지금 맡을 수 있는 의뢰가 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3005",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3015",
   "args": 0
  },
  "그만둔다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3008",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3018",
   "args": 0
  },
  "의뢰 목록": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3009",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3019",
   "args": 0
  },
  "창고 목재 배송": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3013",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3023",
   "args": 0
  },
  "작위를 받으셨다니 축하드립니다. 자택 창고를 늘리려면 목재가 필요합니다.{0}": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3027",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3037",
   "args": 1
  },
  "작위를 받으셨다니 축하드립니다. 자택 창고를 늘리려면 목재가 필요합니다.{0}목재 {1}통을 실어 와 주시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3027",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3037",
   "args": 2,
   "chain": true
  },
  "목재 {0}통을 실어 와 주시겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3028",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3038",
   "args": 1
  },
  "목재 {0}통을 실어 조합에 가져오십시오{1}어느 도시의 조합이든 받아 드립니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3031",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3041",
   "args": 2
  },
  "목재 {0}통을 실어 오십시오 (지금 {1}통)": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3038",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3048",
   "args": 2
  },
  "목재 {0}통을 넘기겠습니까?": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3041",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3051",
   "args": 1
  },
  "목재 {0}통을 넘겼습니다{1}이제 자택 「보관」에서 보관함을 넓힐 수 있습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3043",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3053",
   "args": 2
  },
  "투자할 돈이 없습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3059",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3069",
   "args": 0
  },
  "투자액": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3068",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3078",
   "args": 0
  },
  "공  적": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3070",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3080",
   "args": 0
  },
  "규  모": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3074",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3084",
   "args": 0
  },
  "다음까지": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3076",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3086",
   "args": 0
  },
  "투자한다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3078",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3088",
   "args": 0
  },
  "금  액": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3078",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3088",
   "args": 0
  },
  "닢": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3078",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3088",
   "args": 0
  },
  "금화 {0}닢을 {1} 교역소에 투자했습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3087",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3097",
   "args": 2
  },
  "{0}공적이 {1} 올랐습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3088",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3098",
   "args": 2
  },
  "{0}{1}의 규모가 {2}{3} 커졌습니다": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3089",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3099",
   "args": 4
  },
  "도시그림창 닫힘": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3177",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3187",
   "args": 0
  },
  "도시그림창 초점 잃음": {
-  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3178",
+  "at": "CdsHelper.Game/UI/Views/CityPicView.cs:3188",
   "args": 0
  },
  "소문 도시 고르기 (셋까지)": {
@@ -28599,39 +28603,39 @@
   "args": 0
  },
  "메인마스트": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:189",
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:190",
   "args": 0
  },
  "세브마스트": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:189",
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:190",
   "args": 0
  },
  "선미마스트": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:189",
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:190",
   "args": 0
  },
  "삼각돛": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:192",
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:193",
   "args": 0
  },
  "사각돛": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:192",
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:193",
   "args": 0
  },
  "최대추진력": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:628",
-  "args": 0
- },
- "최대내구력": {
   "at": "CdsHelper.Support/Local/Models/Ship.cs:629",
   "args": 0
  },
- "최저승원수": {
+ "최대내구력": {
   "at": "CdsHelper.Support/Local/Models/Ship.cs:630",
   "args": 0
  },
+ "최저승원수": {
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:631",
+  "args": 0
+ },
  "최대승원수": {
-  "at": "CdsHelper.Support/Local/Models/Ship.cs:648",
+  "at": "CdsHelper.Support/Local/Models/Ship.cs:649",
   "args": 0
  },
  "산티아고": {

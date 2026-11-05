@@ -35,6 +35,12 @@ public sealed class ShipRegistryDialog : Window
     private readonly NumericSpinner _tonnage;
     private readonly NumericSpinner _crew;
     private readonly NumericSpinner _guns;
+    // 개조 한계(선체 표 +0x18 · +0x10 · +0x28 · +0x20 · +0x30 과 같은 것) — 0 이면 Hull.GuessTop 이 어림한다(#15).
+    private readonly NumericSpinner _hpTop;
+    private readonly NumericSpinner _capacityTop;
+    private readonly NumericSpinner _tonnageTop;
+    private readonly NumericSpinner _gunsTop;
+    private readonly TextBlock _topHint = Note("");
     private readonly NumericSpinner _price;
     private readonly NumericSpinner _maxMasts;
     private readonly CheckBox _canChangeSail;
@@ -81,6 +87,10 @@ public sealed class ShipRegistryDialog : Window
         _tonnage = Spinner(1, 99999, step: 50);
         _crew = Spinner(1, 999);
         _guns = Spinner(0, 999);
+        _hpTop = Spinner(0, 9999);
+        _capacityTop = Spinner(0, 99999);
+        _tonnageTop = Spinner(0, 999999, step: 50);
+        _gunsTop = Spinner(0, 999);
         _price = Spinner(1, 999999, step: 10);
         _maxMasts = Spinner(1, Hull.MastLimit);
         _canChangeSail = new CheckBox { Content = "돛 종류를 바꿀 수 있다", VerticalAlignment = VerticalAlignment.Center };
@@ -108,8 +118,9 @@ public sealed class ShipRegistryDialog : Window
         Content = BuildContent();
 
         _name.TextChanged += (_, _) => Touch();
-        foreach (var spinner in new[] { _hp, _speed, _speedTop, _capacity, _tonnage, _crew, _guns, _price, _maxMasts })
-            spinner.ValueChanged += (_, _) => Touch();
+        foreach (var spinner in new[] { _hp, _speed, _speedTop, _capacity, _tonnage, _crew, _guns, _price, _maxMasts,
+                                         _hpTop, _capacityTop, _tonnageTop, _gunsTop })
+            spinner.ValueChanged += (_, _) => { Touch(); HintTops(); };
         _canChangeSail.Checked += (_, _) => Touch();
         _canChangeSail.Unchecked += (_, _) => Touch();
         foreach (var radio in new[] { _sellAll, _sellNone, _sellSome })
@@ -184,8 +195,6 @@ public sealed class ShipRegistryDialog : Window
         var specs = new WrapPanel();
         specs.Children.Add(Field("내구력", _hp));
         specs.Children.Add(Field("추진력", _speed));
-        // 0 이면 추진력의 2배까지 돛으로 올라간다. 붙박이 다섯은 선체표(exe-tables/hulls.json)의 한계다.
-        specs.Children.Add(Field("추진력 한계(0=2배)", _speedTop));
         specs.Children.Add(Field("적재용량", _capacity));
         specs.Children.Add(Field("적재중량", _tonnage));
         specs.Children.Add(Field("필요승원", _crew));
@@ -195,6 +204,17 @@ public sealed class ShipRegistryDialog : Window
         form.Children.Add(specs);
         form.Children.Add(Row(_canChangeSail));
         form.Children.Add(Note("값은 조선소 표에 그대로 뜬다. 되사 주는 값은 그 6할이다."));
+
+        // 조선소 개조(보강 · 돛 추가 · 용량증가 · 부력증가 · 포탑)가 넘지 않는 끝. 붙박이 다섯은 선체표(exe-tables/hulls.json)의 한계다.
+        form.Children.Add(Section("개조 한계 (0 = 자동)"));
+        var tops = new WrapPanel();
+        tops.Children.Add(Field("내구력 한계", _hpTop));
+        tops.Children.Add(Field("추진력 한계", _speedTop));
+        tops.Children.Add(Field("적재용량 한계", _capacityTop));
+        tops.Children.Add(Field("적재중량 한계", _tonnageTop));
+        tops.Children.Add(Field("대포수 한계", _gunsTop));
+        form.Children.Add(tops);
+        form.Children.Add(_topHint);
 
         _sellPanel.Children.Add(Section("파는 조선소"));
         _sellPanel.Children.Add(Row(_sellAll, _sellNone, _sellSome,
@@ -380,6 +400,10 @@ public sealed class ShipRegistryDialog : Window
             _tonnage.Value = design.Tonnage;
             _crew.Value = design.Crew;
             _guns.Value = design.Guns;
+            _hpTop.Value = design.HpTop;
+            _capacityTop.Value = design.CapacityTop;
+            _tonnageTop.Value = design.TonnageTop;
+            _gunsTop.Value = design.GunsTop;
             _price.Value = design.Price;
             _maxMasts.Value = Math.Clamp(design.MaxMasts, 1, Hull.MastLimit);
             _canChangeSail.IsChecked = design.CanChangeSail;
@@ -396,6 +420,8 @@ public sealed class ShipRegistryDialog : Window
         {
             _filling = false;
         }
+
+        HintTops();
 
         FillSlots();
         FillHiSlots();
@@ -448,6 +474,23 @@ public sealed class ShipRegistryDialog : Window
         _sellSummary.Text = _sellAll.IsChecked == true ? "모든 조선소에서 판다."
             : _sellNone.IsChecked == true ? "어디서도 안 판다."
             : picked.Count == 0 ? "고른 도시가 없어 어디서도 안 판다." : $"{picked.Count}곳: {string.Join(", ", picked)}";
+    }
+
+    /// <summary>
+    /// 한계를 0 으로 둔 칸이 어디까지 가는지 보여 준다 — 가장 비슷한 원본 선체의 위값 ÷ 아래값 비율(<see cref="Hull.GuessTop"/>).
+    /// </summary>
+    private void HintTops()
+    {
+        int hp = (int)_hp.Value, speed = (int)_speed.Value, capacity = (int)_capacity.Value, tonnage = (int)_tonnage.Value, guns = (int)_guns.Value;
+        if (Hull.NearestRow(hp, speed, capacity, tonnage) is not { } row)
+        {
+            _topHint.Text = $"0 이면 처음값의 {Ship.RefitCeiling}배까지 오른다.";
+            return;
+        }
+        int Guess(Hull.Stat stat) => Hull.GuessTop(stat, hp, speed, capacity, tonnage, guns);
+        _topHint.Text = $"0 이면 가장 비슷한 원본 선체({row.Name})의 비율로 — 내구력 {Guess(Hull.Stat.Hp)} · 추진력 {Guess(Hull.Stat.Speed)}"
+                      + $" · 적재용량 {Guess(Hull.Stat.Capacity)} · 적재중량 {Guess(Hull.Stat.Tonnage)} · 대포수 {Guess(Hull.Stat.Guns)} 까지 오른다."
+                      + " 조선소 개조(보강 · 돛 추가 · 용량증가 · 부력증가 · 포탑)는 이 한계를 넘지 않는다.";
     }
 
     private void Touch()
@@ -899,6 +942,10 @@ public sealed class ShipRegistryDialog : Window
         design.Tonnage = (int)_tonnage.Value;
         design.Crew = (int)_crew.Value;
         design.Guns = (int)_guns.Value;
+        design.HpTop = (int)_hpTop.Value;
+        design.CapacityTop = (int)_capacityTop.Value;
+        design.TonnageTop = (int)_tonnageTop.Value;
+        design.GunsTop = (int)_gunsTop.Value;
         design.Price = (int)_price.Value;
         design.MaxMasts = (int)_maxMasts.Value;
         design.CanChangeSail = _canChangeSail.IsChecked == true;

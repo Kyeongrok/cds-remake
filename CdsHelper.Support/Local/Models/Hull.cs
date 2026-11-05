@@ -29,7 +29,7 @@ namespace CdsHelper.Support.Local.Models;
 /// </param>
 /// <param name="HpTop">
 /// 개조로 갈 수 있는 <b>내구 한계</b>(선체 표 <c>+0x18</c>). 0 이면 등록해 넣은 배라
-/// <see cref="Ship.RefitCeiling"/> 배로 갈음한다. <paramref name="SpeedTop"/>(<c>+0x10</c>) ·
+/// 가장 비슷한 원본 선체의 비율로 갈음한다(<see cref="GuessTop"/>). <paramref name="SpeedTop"/>(<c>+0x10</c>) ·
 /// <paramref name="CapacityTop"/>(<c>+0x28</c>) · <paramref name="TonnageTop"/>(<c>+0x20</c>) ·
 /// <paramref name="GunsTop"/>(<c>+0x30</c>) 도 같다.
 /// </param>
@@ -78,20 +78,71 @@ public sealed record Hull(
     /// </summary>
     public bool Bundled { get; init; }
 
-    /// <summary>내구를 개조로 올릴 수 있는 데까지(선체 표 <c>+0x18</c>).</summary>
-    public int HpCeiling => HpTop > 0 ? HpTop : Hp * Ship.RefitCeiling;
+    /// <summary>내구를 개조로 올릴 수 있는 데까지(선체 표 <c>+0x18</c>, 보강 <c>0x00495920</c>).</summary>
+    public int HpCeiling => HpTop > 0 ? HpTop : GuessTop(Stat.Hp, Hp, Speed, Capacity, Tonnage, Guns);
 
-    /// <summary>추진력 한계(<c>+0x10</c>).</summary>
-    public int SpeedCeiling => SpeedTop > 0 ? SpeedTop : Speed * Ship.RefitCeiling;
+    /// <summary>추진력 한계(<c>+0x10</c>, 돛 추가 <c>0x004951C0</c>).</summary>
+    public int SpeedCeiling => SpeedTop > 0 ? SpeedTop : GuessTop(Stat.Speed, Hp, Speed, Capacity, Tonnage, Guns);
 
-    /// <summary>적재용량 한계(<c>+0x28</c>).</summary>
-    public int CapacityCeiling => CapacityTop > 0 ? CapacityTop : Capacity * Ship.RefitCeiling;
+    /// <summary>적재용량 한계(<c>+0x28</c>, 용량증가 <c>0x004953F0</c>).</summary>
+    public int CapacityCeiling => CapacityTop > 0 ? CapacityTop : GuessTop(Stat.Capacity, Hp, Speed, Capacity, Tonnage, Guns);
 
-    /// <summary>적재중량 한계(<c>+0x20</c>).</summary>
-    public int TonnageCeiling => TonnageTop > 0 ? TonnageTop : Tonnage * Ship.RefitCeiling;
+    /// <summary>적재중량 한계(<c>+0x20</c>, 부력증가 <c>0x004956A0</c>).</summary>
+    public int TonnageCeiling => TonnageTop > 0 ? TonnageTop : GuessTop(Stat.Tonnage, Hp, Speed, Capacity, Tonnage, Guns);
 
-    /// <summary>포탑 한계(<c>+0x30</c>).</summary>
-    public int GunsCeiling => GunsTop > 0 ? GunsTop : Guns * Ship.RefitCeiling;
+    /// <summary>포탑 한계(<c>+0x30</c>, 포탑 <c>0x004961D6</c>).</summary>
+    public int GunsCeiling => GunsTop > 0 ? GunsTop : GuessTop(Stat.Guns, Hp, Speed, Capacity, Tonnage, Guns);
+
+    /// <summary>개조 한계를 어림하는 값 갈래.</summary>
+    public enum Stat { Hp, Speed, Capacity, Tonnage, Guns }
+
+    /// <summary>
+    /// 한계를 안 적은 선체(등록해 넣은 배)의 개조 한계 — <b>가장 비슷한 원본 선체의 위값 ÷ 아래값 비율</b>을 처음값에 먹인다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 개조 한계를 선체 표(<c>0x004FC1E0</c>, 64바이트)에 값마다 따로 들고, 조선소 개조가 그것과 견준다 —
+    /// 보강 <c>0x00495920</c> 은 <c>[표+0x18]</c>, 돛 추가 <c>0x004951C0</c> 은 <c>[표+0x10]</c>, 용량증가 <c>0x004953F0</c> ·
+    /// 부력증가 <c>0x004956A0</c> 은 용량 · 중량 한계 게터(<c>0x0044C920</c> · <c>0x0044C8C0</c>)와 견준다.
+    /// 등록해 넣은 배는 그 표에 줄이 없다. 예전에는 「처음값 x 2」로 갈음했는데 원본 여덟 척의 한계는 그보다 훨씬 좁다
+    /// (내구 1.2~1.7배 · 추진 +20 · 용량 1.2~1.8배 · 중량 1.25~1.6배) — 그래서 내구 · 추진 · 용량 · 중량이
+    /// 비율로 가장 가까운 원본 선체(로그 거리 합이 가장 작은 것)를 골라 그 선체의 비율을 쓴다.
+    /// <code>
+    ///   예  케치(내구 25 · 추진 85 · 용량 150 · 중량 1500 · 대포 4) → 가장 가까운 카라벨(20 · 80 · 125 · 1250 · 2)
+    ///       한계 = 내구 25x30/20=38 · 추진 85x100/80=106 · 용량 150x225/125=270 · 중량 1500x2000/1250=2400 · 대포 4x8/2=16
+    /// </code>
+    /// 아래값이 0 인 칸(코구 대포)은 비율을 못 내므로 그 차이(위값 − 아래값)를 더한다. 한계는 처음값보다 작지 않다.
+    /// 이 어림은 우리 것이다 — 원본에는 표에 없는 선체가 없다.
+    /// </remarks>
+    public static int GuessTop(Stat stat, int hp, int speed, int capacity, int tonnage, int guns)
+    {
+        int value = stat switch
+        {
+            Stat.Hp => hp, Stat.Speed => speed, Stat.Capacity => capacity, Stat.Tonnage => tonnage, _ => guns,
+        };
+        if (NearestRow(hp, speed, capacity, tonnage) is not { } row) return Math.Max(1, value * Ship.RefitCeiling);
+        var (low, top) = stat switch
+        {
+            Stat.Hp => (row.Hp, row.HpTop),
+            Stat.Speed => (row.Speed, row.SpeedTop),
+            Stat.Capacity => (row.Capacity, row.CapacityTop),
+            Stat.Tonnage => (row.Tonnage, row.TonnageTop),
+            _ => (row.GunsMin, row.GunsTop),
+        };
+        long guessed = low > 0 ? (long)Math.Round((double)value * top / low) : value + Math.Max(0, top - low);
+        return (int)Math.Clamp(guessed, Math.Max(0, value), int.MaxValue);
+    }
+
+    /// <summary>
+    /// 내구 · 추진 · 용량 · 중량이 비율로 가장 가까운 원본 선체 줄(<see cref="Rows"/>) — 한계를 다 든 줄만 본다. 없으면 null.
+    /// </summary>
+    public static HullTable.Row? NearestRow(int hp, int speed, int capacity, int tonnage)
+    {
+        static double Gap(int a, int b) => Math.Abs(Math.Log(Math.Max(1, a) / (double)Math.Max(1, b)));
+        return Rows.Where(r => r.HpTop > 0 && r.SpeedTop > 0 && r.CapacityTop > 0 && r.TonnageTop > 0 && r.GunsTop > 0)
+                   .OrderBy(r => Gap(hp, r.Hp) + Gap(speed, r.Speed) + Gap(capacity, r.Capacity) + Gap(tonnage, r.Tonnage))
+                   .ThenBy(r => r.Id)
+                   .FirstOrDefault();
+    }
 
     /// <summary>게임 선체 번호.</summary>
     public const int Cog = 0, Caravel = 1, LargeCaravel = 2, Carrack = 3, LargeCarrack = 4,
