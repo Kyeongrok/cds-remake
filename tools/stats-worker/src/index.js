@@ -9,7 +9,8 @@
 //   GET  /ranking        하드코어 랭킹 페이지.
 //   POST /v1/bug         버그 리포트 한 건(게임의 「버그 리포트」 창, CdsHelper.Game/Local/Helpers/BugReport.cs) — {id} 를 돌려준다. 설치마다 한 시간에 10 건까지.
 //   GET  /v1/bugs?since=<id>&status=new&order=desc   받은 버그 리포트(관리자만 — Authorization: Bearer <BUG_ADMIN_KEY>)
-//   POST /v1/bugs/<id>/status {status, note}         버그 리포트의 상태를 바꾼다(관리자만)
+//   POST /v1/bugs/<id>/status {status, note, reply}  버그 리포트의 상태를 바꾼다(관리자만) — reply 는 보낸 사람에게 보이는 답
+//   GET  /v1/bugs/mine?install=<id>                  그 설치가 보낸 리포트의 상태 · 답(게임의 「내 리포트」, 키 없이)
 //
 // 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다. 이름은 주인공 이름(heroes · hardcore)만 받는다.
 
@@ -240,7 +241,7 @@ async function listBugs(url, env) {
   const status = url.searchParams.get('status') || 'new';
   const limit = Math.max(1, Math.min(200, int(Number(url.searchParams.get('limit') || 100))));
   if (status !== 'all' && !STATUS.test(status)) return json({ error: 'bad status' }, 400);
-  const sql = `SELECT id, created_at, version, install, text, context, status, note FROM bug_reports WHERE id > ?`
+  const sql = `SELECT id, created_at, version, install, text, context, status, note, reply FROM bug_reports WHERE id > ?`
     + (status === 'all' ? '' : ' AND status = ?') + (url.searchParams.get('order') === 'desc' ? ' ORDER BY id DESC LIMIT ?' : ' ORDER BY id LIMIT ?');   // desc — 대시보드는 새 것부터
   const args = status === 'all' ? [since, limit] : [since, status, limit];
   const { results } = await env.DB.prepare(sql).bind(...args).all();
@@ -252,12 +253,27 @@ async function listBugs(url, env) {
   return json({ bugs });
 }
 
+// 내 리포트 — 게임이 제 설치 번호로 자기가 보낸 리포트의 상태와 답을 본다(관리자 키 없이). 설치 번호는 무작위라 남의 것은 못 고른다.
+// 글은 앞 300자만, 같이 온 것 · 관리자 메모(note)는 안 준다.
+async function myBugs(url, env) {
+  const install = url.searchParams.get('install');
+  if (!isId(install)) return json({ error: 'bad install' }, 400);
+  const { results } = await env.DB.prepare(
+    `SELECT id, created_at, version, substr(text, 1, 300) AS text, status, reply FROM bug_reports WHERE install = ? ORDER BY id DESC LIMIT 50`)
+    .bind(install).all();
+  return json({ bugs: results });
+}
+
 async function setBugStatus(id, request, env) {
   let b;
   try { b = JSON.parse(await request.text()); } catch { return json({ error: 'bad json' }, 400); }
   if (!b || typeof b.status !== 'string' || !STATUS.test(b.status)) return json({ error: 'bad status' }, 400);
   const note = typeof b.note === 'string' ? b.note.slice(0, 2000) : null;
-  const done = await env.DB.prepare(`UPDATE bug_reports SET status = ?, note = COALESCE(?, note) WHERE id = ?`).bind(b.status, note, id).run();
+  // reply — 보낸 사람이 「내 리포트」에서 보는 답. 빈 글이면 지운다, 없으면 그대로 둔다.
+  const reply = typeof b.reply === 'string' ? b.reply.trim().slice(0, 2000) : null;
+  const done = await env.DB.prepare(
+    `UPDATE bug_reports SET status = ?, note = COALESCE(?, note), reply = CASE WHEN ? IS NULL THEN reply ELSE NULLIF(?, '') END WHERE id = ?`)
+    .bind(b.status, note, reply, reply, id).run();
   if (!done.meta.changes) return json({ error: 'not found' }, 404);
   return json({ ok: true, id, status: b.status });
 }
@@ -467,6 +483,7 @@ async function route(request, env) {
       if (request.method === 'POST' && pathname === '/v1/hardcore') return await postHardcore(request, env);
       if (request.method === 'GET' && pathname === '/v1/ranking') return await getRanking(env);
       if (request.method === 'POST' && pathname === '/v1/bug') return await postBug(request, env);
+      if (request.method === 'GET' && pathname === '/v1/bugs/mine') return await myBugs(url, env);
       if (pathname === '/v1/bugs' || pathname.startsWith('/v1/bugs/')) {
         if (!isAdmin(request, env)) return json({ error: 'unauthorized' }, 401);
         if (request.method === 'GET' && pathname === '/v1/bugs') return await listBugs(url, env);

@@ -10408,47 +10408,47 @@
   "args": 0
  },
  "(개발 빌드)": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:121",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:161",
   "args": 0
  },
  "{0} {1} · {2}": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:185",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:225",
   "args": 3
  },
  "게임": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:185",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:225",
   "args": 0
  },
  "화면": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:186",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:226",
   "args": 0
  },
  "{0}: {1}": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:187",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:227",
   "args": 2
  },
  "지금 자리": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:187",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:227",
   "args": 0
  },
  "{0}: {1}{2}": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:188",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:228",
   "args": 3
  },
  "켠 모드": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:188",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:228",
   "args": 0
  },
  "개": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:188",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:228",
   "args": 0
  },
  "오류 기록의 끝": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:190",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:230",
   "args": 0
  },
  "이름 · 세이브 · 폴더 경로는 보내지 않습니다. 설치마다 하나인 무작위 번호만 같이 갑니다.": {
-  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:191",
+  "at": "CdsHelper.Game/Local/Helpers/BugReport.cs:231",
   "args": 0
  },
  "MPCG.CDS 에 사진이 모자랍니다": {
@@ -12749,12 +12749,16 @@
   "at": "CdsHelper.Game/UI/Views/BugReportDialog.cs:84",
   "args": 0
  },
+ "내 리포트": {
+  "at": "CdsHelper.Game/UI/Views/BugReportDialog.cs:89",
+  "args": 0
+ },
  "어떤 일이 있었는지 적어 주세요. 무엇을 하다가, 무엇이 보였고, 원래는 어땠어야 하는지 적어 주시면 고치기 쉽습니다.": {
-  "at": "CdsHelper.Game/UI/Views/BugReportDialog.cs:96",
+  "at": "CdsHelper.Game/UI/Views/BugReportDialog.cs:100",
   "args": 0
  },
  "보내는 중입니다…": {
-  "at": "CdsHelper.Game/UI/Views/BugReportDialog.cs:151",
+  "at": "CdsHelper.Game/UI/Views/BugReportDialog.cs:155",
   "args": 0
  },
  "Consolas, D2Coding, 맑은 고딕": {
@@ -19468,6 +19472,46 @@
  },
  " (제독 스프라이트셋 0)": {
   "at": "CdsHelper.Game/UI/Views/MotionMakerDialog.cs:1722",
+  "args": 0
+ },
+ "이 PC 에서 보내신 버그 리포트입니다. 고치거나 답을 달면 여기에 보입니다.": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:53",
+  "args": 0
+ },
+ "불러오는 중입니다…": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:57",
+  "args": 0
+ },
+ "접수": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:84",
+  "args": 0
+ },
+ "확인함": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:85",
+  "args": 0
+ },
+ "고치지 않음": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:87",
+  "args": 0
+ },
+ "아직 못 보낸 것 {0}건": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:95",
+  "args": 0
+ },
+ "불러오지 못했습니다. 인터넷 연결을 확인해 주세요.": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:98",
+  "args": 0
+ },
+ "{0}건": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:101",
+  "args": 0
+ },
+ "아직 보내신 리포트가 없습니다.": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:104",
+  "args": 0
+ },
+ "답": {
+  "at": "CdsHelper.Game/UI/Views/MyBugReportsDialog.cs:128",
   "args": 0
  },
  "이름 일람": {

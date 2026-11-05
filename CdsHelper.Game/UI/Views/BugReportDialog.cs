@@ -7,7 +7,7 @@ using CdsHelper.Game.Local.Helpers;
 
 namespace CdsHelper.Game.UI.Views;
 
-/// <summary>버그 리포트 글 쓰는 창 — 여러 줄 글 칸 · 같이 보내는 것 요약 · 보내기 / 취소.</summary>
+/// <summary>버그 리포트 글 쓰는 창 — 여러 줄 글 칸 · 같이 보내는 것 요약 · 내 리포트 · 보내기 / 취소.</summary>
 /// <remarks>
 /// <b>글자 크기.</b> 창세기전3 리메이크의 같은 창은 고정 높이로 지어 화면 배율이 큰 모니터에서 글자 · 단추가 잘렸다.
 /// 그래서 이 창에는 칸 높이를 못 박지 않는다 — 글이 정하는 줄(안내 · 글자 수 · 단추)은 Auto 로 글만큼 서고,
@@ -85,7 +85,11 @@ public sealed class BugReportDialog : GameWindow
         _cancel = new GameButton("취소", Close, width: 110);
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Children = { _send, _cancel } };
         DockPanel.SetDock(buttons, Dock.Right);
-        var bottom = new DockPanel { Margin = new Thickness(0, 10, 0, 0), Children = { buttons, _hint } };
+        // 내 리포트 — 이 PC 에서 보낸 리포트의 상태 · 답을 본다(MyBugReportsDialog).
+        var mine = new GameButton("내 리포트", () => { if (!_sending) MyBugReportsDialog.Open(this); }, width: 110);
+        mine.Margin = new Thickness(0, 0, 10, 0);
+        DockPanel.SetDock(mine, Dock.Left);
+        var bottom = new DockPanel { Margin = new Thickness(0, 10, 0, 0), Children = { buttons, mine, _hint } };
 
         var body = new Grid { Margin = new Thickness(14, 8, 14, 12) };
         body.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });

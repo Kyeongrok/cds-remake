@@ -49,6 +49,7 @@ D1 무료 판은 하루에 읽기 오백만 줄 · 쓰기 십만 줄까지다(�
 - `hardcore` — 하드코어 랭킹. 하드코어 판이 게임 오버가 될 때 한 판에 한 줄(판 표지가 주키). 주인공 이름 · 나라 · 발견물 수 · 게임 오버 날짜와 까닭 · 그 판에서 한 번이라도 켠 · 줄인 모드와 쓴 개발 기능(`marks`)을 적는다. 기록은 게임에 박힌 열쇠로 HMAC 서명되어 오고, Worker 비밀 `HARDCORE_KEY` 로 대 보아 안 맞으면 버린다. 열쇠는 GitHub 비밀 `HARDCORE_KEY` 와 같아야 한다(릴리즈 빌드가 게임에 박는다) — 바꾸려면 둘 다 `npx wrangler secret put HARDCORE_KEY` · `gh secret set HARDCORE_KEY` 로 함께 바꾼다. 페이지는 `https://…workers.dev/ranking`.
 
 - `bug_reports` — 게임의 「버그 리포트」(왼쪽 위 메뉴)가 보낸 글. 글(8000자까지)과 게임이 붙인 것(`context` — 버전 · OS · 화면 · 지금 자리 · 모드 · 오류 기록 끝)에 상태(`new` · `seen` · `fixed` · `wontfix`) · 메모를 둔다(`migrate-bugs.sql`). 보내는 쪽은 `CdsHelper.Game/Local/Helpers/BugReport.cs` — 사용자가 보내기를 누른 것이라 「통계 보내기」 답과 상관없이 가고, 못 보내면 `%APPDATA%\CdsHelper\bug-queue` 에 두었다가 다음에 켤 때 다시 보낸다. 설치 하나가 한 시간에 10 건(모두 합쳐 300 건)을 넘으면 429.
+  - 보낸 사람은 게임 버그 리포트 창의 「내 리포트」에서 제 설치 번호로 자기 리포트의 상태 · 답을 본다(`GET /v1/bugs/mine?install=` — 키 없이, 글 앞 300자 · 상태 · 답만). 답(`reply`)은 대시보드 카드의 「답 달기」로 달고, 메모(`note`)는 관리자끼리만 본다(`migrate-reply.sql`).
   - 읽기 · 상태 바꾸기는 Worker 비밀 `BUG_ADMIN_KEY`(16자 넘게, `npx wrangler secret put BUG_ADMIN_KEY`)가 있어야 한다. 값은 이 PC 의 `~\.cds-bug-admin-key` 에 적어 두었다. 대시보드 「버그 리포트」 탭의 「관리자 키」에 넣으면 그 브라우저에 남는다.
 
 계정 · IP · 세이브 내용은 적지 않는다. 이름은 주인공 이름만 적는다(`heroes` · `hardcore`). 차림표 줄(`menu`)은 예전에 받았는데 이제 안 받는다 — 줄 글에 회원이 지은 이름(배 이름 따위)이 섞여 들어올 수 있었다. 들른 도시(`city`)와 항해(`voyage` · `voyage_days` · `voyage_turns`)도 이제 안 받는다(항해는 v1.1.30 까지). 표에 남은 옛 줄은 집계에 안 든다(지우려면 `DELETE FROM tally WHERE kind IN ('menu', 'city')`).

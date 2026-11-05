@@ -72,6 +72,46 @@ public static class BugReport
         return await SendQueued(url) ? Result.Sent : Result.Later;
     }
 
+    /// <summary>내 리포트 한 건 — 받는 곳이 돌려준 것(글은 앞 300자).</summary>
+    public sealed record Mine(long Id, string CreatedAt, string Version, string Text, string Status, string? Reply);
+
+    /// <summary>못 보낸 채 줄에 남은 리포트 수 — 「내 리포트」 창이 「아직 못 보낸 것」으로 알린다.</summary>
+    public static int QueuedCount()
+    {
+        try { return Directory.Exists(QueueFolder) ? Directory.GetFiles(QueueFolder, "*.json").Length : 0; }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return 0; }
+    }
+
+    /// <summary>
+    /// 이 설치가 보낸 리포트의 상태 · 답 — 받는 곳 <c>GET /v1/bugs/mine?install=</c>(관리자 키 없이 제 설치 번호로만).
+    /// 받을 곳이 없는 판(개발 빌드)이거나 못 받으면 null.
+    /// </summary>
+    public static async Task<List<Mine>?> LoadMine()
+    {
+        string url = Url;
+        if (url.Length == 0) return null;
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            using var reply = await http.GetAsync($"{url}/v1/bugs/mine?install={Uri.EscapeDataString(PlayStats.InstallId())}");
+            if (!reply.IsSuccessStatusCode) return null;
+            using var doc = JsonDocument.Parse(await reply.Content.ReadAsStringAsync());
+            var list = new List<Mine>();
+            foreach (var b in doc.RootElement.GetProperty("bugs").EnumerateArray())
+            {
+                string Str(string key) => b.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
+                list.Add(new Mine(b.GetProperty("id").GetInt64(), Str("created_at"), Str("version"), Str("text"), Str("status"),
+                    Str("reply") is { Length: > 0 } r ? r : null));
+            }
+            return list;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            System.Diagnostics.Debug.WriteLine($"[BugReport] mine {ex.GetType().Name}: {ex.Message}");
+            return null;
+        }
+    }
+
     /// <summary>지난번에 못 보낸 것을 뒤에서 보낸다 — 켤 때.</summary>
     public static void ResendInBackground()
     {
