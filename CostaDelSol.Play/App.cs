@@ -35,8 +35,17 @@ internal sealed class App : Application
 
         var app = new App();
         app.InitializeComponent_();
-        app.Run();
+        try { app.Run(); }
+        catch (System.Runtime.InteropServices.COMException ex) when ((uint)ex.HResult == RenderThreadFailure && app.Dispatcher.HasShutdownStarted)
+        {
+            // 끄는 길에 WPF 그리기 스레드가 죽은 것이다(UCEERR_RENDERTHREADFAILURE — 그래픽 드라이버가 끊기거나 화면이 바뀐 사이).
+            // 이미 끄는 중이고 Exit(통계 · 주인공 적기)도 돈 뒤라 지킬 것이 없다 — 「꺼짐」 알림을 띄우지 않고 조용히 끝낸다(버그 리포트 #17).
+            try { PlayStats.Error(ex); } catch { }
+        }
     }
+
+    /// <summary>WPF 그리기 스레드가 죽었다는 오류 번호(<c>UCEERR_RENDERTHREADFAILURE</c>).</summary>
+    private const uint RenderThreadFailure = 0x88980406;
 
     private void InitializeComponent_()
     {
