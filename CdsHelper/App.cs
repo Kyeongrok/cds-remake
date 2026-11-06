@@ -72,6 +72,8 @@ internal class App : PrismApplication
         // 게임 설정을 앱 설정보다 먼저 읽어 둔다. 옛 settings.json 에서 옮겨 오는 일이
         // 여기서 벌어지는데, 앱 설정이 먼저 저장되면 옛 값이 지워진 뒤라 놓치게 된다.
         GameSettings.Load();
+        // 개발도구에서 골라 둔 커스텀 팩을 켠다 — 편집 창들이 그 팩에 적는다(없는 팩이면 기본 표 자리).
+        CdsHelper.Game.Local.Helpers.CustomPacks.Use(GameSettings.EditorPack);
 
         // BGM 은 게임 창(WorldMapWindow)을 열어야 받아지는데, 헬퍼는 그 창을 안 거치고도
         // 오래 쓴다 — 여기서도 조용히 미리 받아 둔다(물음창 없이, 실패해도 그냥 넘어간다).

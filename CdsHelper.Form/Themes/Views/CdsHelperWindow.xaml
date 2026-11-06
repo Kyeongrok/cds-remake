@@ -350,6 +350,11 @@
                                             Header="책"
                                             ToolTip="책 257권을 보고 고치거나, 원본에 없던 새 책을 더한다 — 힌트는 책에 물려야 도서관에서 읽어 얻어진다" />
                                     </MenuItem>
+                                    <!--  커스텀 팩 — 고르면 편집 창들이 그 팩(%APPDATA%\CdsHelper\packs)에 적는다. 항목은 코드가 짓는다(CustomPackMenu)  -->
+                                    <MenuItem
+                                        x:Name="PART_PackMenu"
+                                        Header="커스텀 팩: 없음"
+                                        ToolTip="편집 창이 고친 값을 적을 커스텀 팩을 고른다 — 팩은 업데이트에도 남고, zip 으로 내보내 게임 타이틀에서 골라 쓴다" />
                                     <MenuItem x:Name="PART_HelpMenu" Header="도움말" />
                                 </Menu>
 

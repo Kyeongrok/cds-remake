@@ -52,6 +52,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_RumorEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_GameMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_HelpMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_PackMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_CitySpriteMenu, Type = typeof(MenuItem))]
@@ -97,6 +98,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_RumorEditMenu = "PART_RumorEditMenu";
     private const string PART_GameMapMenu = "PART_GameMapMenu";
     private const string PART_HelpMenu = "PART_HelpMenu";
+    private const string PART_PackMenu = "PART_PackMenu";
     private const string PART_WorldMapMenu = "PART_WorldMapMenu";
     private const string PART_WorldEditMenu = "PART_WorldEditMenu";
     private const string PART_CitySpriteMenu = "PART_CitySpriteMenu";
@@ -315,6 +317,10 @@ public class CdsHelperWindow : CdsWindow
         {
             helpMenu.Click += OnHelpMenuClick;
         }
+
+        // 커스텀 팩 고르개 — 고른 팩은 game-settings.json 의 EditorPack 에 남는다.
+        if (GetTemplateChild(PART_PackMenu) is MenuItem packMenu)
+            CdsHelper.Game.UI.Views.CustomPackMenu.Attach(packMenu, this);
 
 
         if (GetTemplateChild(PART_WorldMapMenu) is MenuItem worldMapMenu)

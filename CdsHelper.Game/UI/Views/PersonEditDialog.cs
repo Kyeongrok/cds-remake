@@ -12,13 +12,15 @@ using CdsHelper.Support.Local.Settings;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 인물 표를 고치는 창 — 이름 · 나이 · 자리 · 고용 · 이동 갈래 · 기술 · 언어.
+/// 인물 표를 고치는 창 — 이름 · 나이 · 자리 · 고용 · 이동 갈래 · 계약금 · 능력치 · 기술 · 언어.
 /// </summary>
 /// <remarks>
 /// 고치는 것은 <b>세이브가 아니라 <see cref="PersonTable"/>(<c>인물표.json</c>)</b> 이다.
 /// 나라 표·도시 문화권 창과 같은 결이라 남의 세이브는 한 바이트도 건드리지 않고,
-/// 고친 것은 <c>%APPDATA%\CdsHelper\exe-tables\인물표-고친것.json</c> 에 남아
-/// <b>게임에도 그대로 쓰인다</b>.
+/// 고친 것은 표 자리의 <c>persons-edits.json</c>(개발도구 메뉴 「커스텀 팩」을 골라 두면 그 팩 폴더에 고친 줄만)에 남아
+/// <b>게임에도 그대로 쓰인다</b>. 표 자리는 설치판에서 업데이트가 갈아 끼우므로, 남길 값은 커스텀 팩에 고친다.
+/// 팩이 켜져 있으면 이름 · 성 칸은 잠근다 — 고용한 부하 · 술집 손님은 세이브가 이름으로 찾는다.
+/// 능력치는 표에 <b>세이브 날값</b>(원본 값 + 1)으로 들어 있어, 창에는 원본 값으로 보이고 적을 때 1 을 더한다.
 /// "본으로 되돌리기" 는 고쳐 둔 것을 걷어 같이 깔린 <c>인물표.json</c> 으로 돌려놓고,
 /// "세이브에서 굽기" 는 고른 세이브에서 표를 통째로 다시 굽는다.
 ///
@@ -82,6 +84,7 @@ public sealed class PersonEditDialog : GameWindow
     private readonly TextBlock _status = new() { Margin = new Thickness(10, 2, 10, 8) };
 
     private readonly List<TextBox> _skillBoxes = [];
+    private readonly List<TextBox> _statBoxes = [];
     private readonly List<TextBox> _langBoxes = [];
     private readonly List<Choice> _cityChoices = [];
 
@@ -247,8 +250,10 @@ public sealed class PersonEditDialog : GameWindow
         Col("구분", nameof(PersonTable.Row.Id), new KindOfPerson(), 66);
         Art("초상화", nameof(PersonTable.Row.Face), Portraits.Width * FaceZoom + 12);
         Text(FaceHeader, nameof(PersonTable.Row.Face), 54);
-        Text("이름", nameof(PersonTable.Row.First), 110);
-        Text("성", nameof(PersonTable.Row.Last), 140);
+        // 커스텀 팩은 이름을 못 바꾼다 — 고용한 부하 · 후원자 친밀도는 세이브가 이름으로 찾는다.
+        bool locked = CustomPacks.Active != null;
+        Text("이름", nameof(PersonTable.Row.First), 110, readOnly: locked);
+        Text("성", nameof(PersonTable.Row.Last), 140, readOnly: locked);
         Text("나이", nameof(PersonTable.Row.Age), 48);
         Pick("등장", nameof(PersonTable.Row.Appear), Appears, 70);
         Pick("등급", nameof(PersonTable.Row.Grade), Grades, 82);
@@ -259,6 +264,7 @@ public sealed class PersonEditDialog : GameWindow
         Pick("이동 갈래", nameof(PersonTable.Row.Kind), Kinds, 108);
         Pick("목적지", nameof(PersonTable.Row.Dest), _cityChoices, 138);
         Text("날 셈", nameof(PersonTable.Row.Wait), 58);
+        Text("계약금", nameof(PersonTable.Row.Fee), 62);
     }
 
     private void Text(string header, string path, double width, bool readOnly = false) =>
@@ -317,12 +323,49 @@ public sealed class PersonEditDialog : GameWindow
             Width = new DataGridLength(width),
         });
 
-    /// <summary>기술 열셋 · 언어 열넷을 고치는 판. 고른 줄의 것을 보인다.</summary>
+    /// <summary>능력치 여섯의 이름 — 표 차례(<c>Row.Stats</c>)다.</summary>
+    private static readonly string[] StatNames = ["체력", "지력", "무력", "매력", "운", "신앙"];
+
+    /// <summary>능력치 · 기술 열셋 · 언어 열넷을 고치는 판. 고른 줄의 것을 보인다.</summary>
     private void BuildSkillPanel()
     {
+        for (int i = 0; i < StatNames.Length; i++) _statBoxes.Add(StatCell(StatNames[i], i));
         for (int i = 0; i < Skill.Names.Length; i++) _skillBoxes.Add(Cell(Skill.Names[i], i, false));
         for (int i = 0; i < Skill.Languages.Length; i++)
             _langBoxes.Add(Cell(Skill.Languages[i], i, true));
+    }
+
+    /// <summary>능력치 칸 — 원본 값(날값 − 1)으로 보이고 적을 때 1 을 더한다.</summary>
+    private TextBox StatCell(string label, int slot)
+    {
+        var box = new TextBox { Width = 34, TextAlignment = TextAlignment.Center, Margin = new Thickness(3, 1, 0, 1) };
+        box.LostFocus += (_, _) => TakeStat(box, slot);
+        _skillPanel.Children.Add(new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(0, 2, 10, 2),
+            Children =
+            {
+                new TextBlock { Text = label, VerticalAlignment = VerticalAlignment.Center, Foreground = Brushes.DarkGreen },
+                box,
+            },
+        });
+        return box;
+    }
+
+    private void TakeStat(TextBox box, int slot)
+    {
+        if (_filling || _picked is not { } row) return;
+        int was = Math.Max(0, row.Stats[slot] - 1);
+        // 날값은 한 바이트라 원본 값은 0~254 다.
+        if (!int.TryParse(box.Text, out int value) || value < 0 || value > byte.MaxValue - 1)
+        {
+            box.Text = was.ToString();
+            return;
+        }
+        if (value == was) return;
+        row.Stats[slot] = value + 1;
+        Save(row);
     }
 
     private TextBox Cell(string label, int slot, bool language)
@@ -394,8 +437,12 @@ public sealed class PersonEditDialog : GameWindow
         if (keep >= 0) _grid.SelectedItem = rows.FirstOrDefault(r => r.Id == keep);
         FillSkills(_grid.SelectedItem as PersonTable.Row);
 
-        _revert.IsEnabled = PersonTable.Edited;
+        bool pack = CustomPacks.Active != null;
+        _revert.IsEnabled = pack ? PersonTable.InPack : PersonTable.Edited;
+        _revert.Content = pack ? "팩의 인물 줄 걷기" : "본으로 되돌리기";
+        _bake.IsEnabled = !pack;
         _status.Text =
+            (pack ? $"[커스텀 팩 「{CustomPacks.Active}」 — 고친 줄만 팩에 적는다 · 이름 잠금]   " : "") +
             $"인물 {rows.Count}명 보임"
             + (table.Year > 0 ? $" · 나이는 {table.Year}년 기준" : "")
             + (hidden == 0 ? "" : $" (등장 안 한 {hidden}명은 가림)")
@@ -410,10 +457,12 @@ public sealed class PersonEditDialog : GameWindow
         _picked = row;
         _skillPanel.IsEnabled = row != null;
         _who.Text = row == null
-            ? "기술 열셋 · 언어 열넷 — 위에서 사람을 고르세요"
-            : $"{row.Id}. {row.Name} — 기술 열셋 · 언어 열넷 (게임 한도는 {Skill.MaxLevel})";
+            ? "능력치 여섯 · 기술 열셋 · 언어 열넷 — 위에서 사람을 고르세요"
+            : $"{row.Id}. {row.Name} — 능력치 여섯(원본 값) · 기술 열셋 · 언어 열넷 (기술 게임 한도는 {Skill.MaxLevel})";
 
         _filling = true;
+        for (int i = 0; i < _statBoxes.Count; i++)
+            _statBoxes[i].Text = row == null ? "" : Math.Max(0, row.Stats[i] - 1).ToString();
         for (int i = 0; i < _skillBoxes.Count; i++)
             _skillBoxes[i].Text = row == null ? "" : row.Skills[i].ToString();
         for (int i = 0; i < _langBoxes.Count; i++)
@@ -452,9 +501,10 @@ public sealed class PersonEditDialog : GameWindow
     /// <summary>고쳐 둔 것을 걷어 같이 깔린 본으로 돌려놓는다.</summary>
     private void Revert()
     {
-        if (MessageBox.Show(this,
-                "고쳐 둔 것을 몽땅 걷고 같이 깔린 인물표.json 으로 돌려놓습니다.\n계속할까요?",
-                "본으로 되돌리기", MessageBoxButton.OKCancel, MessageBoxImage.Question)
+        string ask = CustomPacks.Active is { } pack
+            ? $"커스텀 팩 「{pack}」에 고쳐 둔 인물 줄을 몽땅 걷습니다.\n계속할까요?"
+            : "고쳐 둔 것을 몽땅 걷고 같이 깔린 인물표.json 으로 돌려놓습니다.\n계속할까요?";
+        if (MessageBox.Show(this, ask, (string)_revert.Content, MessageBoxButton.OKCancel, MessageBoxImage.Question)
             != MessageBoxResult.OK) return;
 
         PersonTable.Forget();
