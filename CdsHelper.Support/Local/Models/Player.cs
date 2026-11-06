@@ -128,6 +128,14 @@ public sealed class Player
     public string GameId { get; set; } = Guid.NewGuid().ToString("N");
 
     /// <summary>
+    /// 이 판을 시작한 커스텀 팩 이름(<c>CustomPacks</c>) — 팩 없이 시작했으면 빈 글. 다른 팩으로 불러오면 묻는다. 원본에는 없다.
+    /// </summary>
+    public string Pack { get; set; } = "";
+
+    /// <summary>시작한 커스텀 팩의 지문(<c>CustomPacks.Fingerprint</c>) — 같은 이름이라도 알맹이가 바뀌었는지 가린다.</summary>
+    public string PackPrint { get; set; } = "";
+
+    /// <summary>
     /// 하드코어 판인지 — 게임 오버가 되면 이 판의 세이브를 모두 지운다(<c>GameSave.DeleteRun</c>). 원본에는 없다.
     /// NEW GAME 에서 모드 「하드코어 모드」를 켰을 때만 고를 수 있다.
     /// </summary>

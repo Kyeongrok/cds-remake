@@ -217,6 +217,7 @@ public sealed class PlayerInfoDialog : GameWindow
         "dev:scenario" => "시나리오", "dev:discovery" => "발견물", "dev:duel-immortal" => "일기토 불사",
         "dev:mutiny" => "반란 빈도", "dev:ctrl-click" => "Ctrl+클릭 배 놓기", Engine.HardcoreRules.Tampered => "변조",
         _ when key.StartsWith("edited:") => $"{key["edited:".Length..]} 표 고침",
+        _ when key.StartsWith(Engine.HardcoreRules.PackMark) => $"커스텀 팩 {key[Engine.HardcoreRules.PackMark.Length..]}(랭킹 제외)",
         _ => key,
     };
 }

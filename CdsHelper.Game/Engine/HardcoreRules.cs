@@ -77,9 +77,17 @@ public static class HardcoreRules
             if (value() is var v && eased(v)) yield return $"{name}={v}";
         // 도구 앱으로 고친 표(인물 · 경쟁자 · 도시 따위의 수치) — 「이름-고친것.json」이 있으면 그 표를 고친 것이다.
         foreach (var name in EditedTables()) yield return $"edited:{name}";
+        // 커스텀 팩을 켠 판 — 랭킹에 올리지 않는다(GameOverDialog). 팩의 「-고친것」 표는 위 edited: 에도 잡힌다.
+        if (Local.Helpers.CustomPacks.Active is { } pack) yield return $"{PackMark}{pack}";
     }
 
-    /// <summary>도구 앱이 고쳐 둔 표 이름들(<c>exe-tables\이름-고친것.json</c>).</summary>
+    /// <summary>커스텀 팩을 켠 판에 붙는 열쇠 머리(「pack:팩 이름」). 이 열쇠가 든 하드코어 판은 랭킹에 안 올린다.</summary>
+    public const string PackMark = "pack:";
+
+    /// <summary>커스텀 팩을 한 번이라도 켠 판인지 — 랭킹에서 뺀다.</summary>
+    public static bool UsedPack(IEnumerable<string> marks) => marks.Any(m => m.StartsWith(PackMark, StringComparison.Ordinal));
+
+    /// <summary>도구 앱이 고쳐 둔 표 이름들(표 자리 · 켠 커스텀 팩의 <c>*-edits.json</c>).</summary>
     private static IEnumerable<string> EditedTables()
     {
         // 파일 이름은 ASCII 라(「rumors-added.json」 따위) 표 이름으로 되짚어 본다(TableCache.NamesEndingWith).

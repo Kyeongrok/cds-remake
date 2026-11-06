@@ -1897,6 +1897,10 @@ public sealed class WorldMapWindow : Window
                 }
                 : null));
         items.Children.Add(TitleMenuItem("MINI GAME", MiniGames));
+        // 커스텀 팩 — 원본에 없는 줄이다. 개발도구로 만든 팩(%APPDATA%\CdsHelper\packs)이 있을 때만 낸다. 판을 시작하기 전,
+        // 여기서만 바꾼다 — 게임 중에 바꾸면 이미 읽은 표와 섞인다.
+        if (CustomPacks.Active != null || CustomPacks.Names().Count > 0)
+            items.Children.Add(TitleMenuItem($"커스텀 팩: {CustomPacks.Active ?? "없음"}", PickPack));
         items.Children.Add(TitleMenuItem("END GAME", Close));
         // 사운드테스트 줄은 <b>헬퍼의 「도구」로 옮겼다</b>(0x00571BE8 — 원본 타이틀에는 있다).
         // 게임을 시작하는 자리에 시험 줄이 섞여 있는 것이 거슬린다는 뜻이었다.
@@ -1953,6 +1957,32 @@ public sealed class WorldMapWindow : Window
         screen.Children.Add(middle);
 
         return screen;
+    }
+
+    /// <summary>
+    /// 타이틀 「커스텀 팩」 — 팩을 고르면 표 캐시를 비우고 다시 읽는다. 고른 팩은 <c>game-settings.json</c> 에 남는다.
+    /// </summary>
+    private void PickPack()
+    {
+        var names = CustomPacks.Names();
+        var rows = new List<string> { "없음" };
+        rows.AddRange(names.Select(n => n == CustomPacks.Active ? $"{n} (사용 중)" : n));
+        int at = ChoiceDialog.Ask(this, "커스텀 팩을 선택해 주십시오", rows);
+        if (at < 0) return;
+        string? pick = at == 0 ? null : names[at - 1];
+        if (pick == CustomPacks.Active) return;
+
+        var skipped = CustomPacks.Use(pick);
+        GameSettings.CustomPack = pick ?? "";
+        _game.ForgetTables();
+        _titleRoot = BuildTitleScreen();
+        _screen.Content = _titleRoot;
+
+        string head = pick == null
+            ? "커스텀 팩을 껐습니다."
+            : $"커스텀 팩 「{pick}」{GameUi.Josa(pick, "을", "를")} 켰습니다.\n팩을 켜고 시작한 하드코어 게임은 랭킹에 오르지 않습니다.";
+        NoticeDialog.Show(this, skipped.Count == 0 ? head
+            : head + "\n\n형식이 맞지 않아 기본 값으로 쓰는 표가 있습니다.\n" + string.Join("\n", skipped));
     }
 
     /// <summary>
@@ -2667,6 +2697,9 @@ public sealed class WorldMapWindow : Window
 
         // NEW GAME 차림표에서 「하드코어로 시작한다」를 골랐으면 하드코어 판이다 — 게임 오버가 되면 이 판의 세이브가 모두 지워진다.
         _game.Player.Hardcore = hard;
+        // 이 판을 시작한 커스텀 팩과 지문 — 다른 팩으로 불러오면 묻는다.
+        _game.Player.Pack = CustomPacks.Active ?? "";
+        _game.Player.PackPrint = CustomPacks.Fingerprint(CustomPacks.Active);
         // 시작할 때 켜 둔 모드부터 적는다(직업 다시 굴림처럼 시작할 때만 먹는 것도 여기서 잡힌다).
         HardcoreRules.Note(_game.Player);
         SyncHardTitle();
@@ -3544,6 +3577,10 @@ public sealed class WorldMapWindow : Window
                 NoticeDialog.Show(this, "적어 둔 기록이 없다.");
                 return;
             }
+            // 다른 커스텀 팩(또는 팩 없이)으로 시작한 세이브면 묻는다 — 표 값이 달라 그대로 이어지지 않을 수 있다.
+            if (CustomPacks.MismatchQuestion(saved.Pack, saved.PackPrint) is { } question
+                && !ConfirmDialog.Ask(this, question, "커스텀 팩"))
+                return;
         }
 
         _screen.Content = _mapRoot;
@@ -3756,6 +3793,9 @@ public sealed class WorldMapWindow : Window
             // 판 표지. 이 칸 앞의 세이브는 새로 뽑는다 — 앞 칸들은 은퇴·삭제 때 이름으로 가린다.
             _game.Player.GameId = !string.IsNullOrEmpty(saved.GameId) ? saved.GameId : Guid.NewGuid().ToString("N");
             _game.Player.Hardcore = saved.Hardcore == true;
+            // 이 판을 시작한 커스텀 팩 — 다른 팩으로 불러와도 시작한 팩을 그대로 든다.
+            _game.Player.Pack = saved.Pack ?? "";
+            _game.Player.PackPrint = saved.PackPrint ?? "";
             // 하드코어 판이 켠 모드 — 봉인이 안 맞으면(세이브를 손으로 고쳤으면) 「변조」를 붙인다.
             _game.Player.HardcoreMarks.Clear();
             if (_game.Player.Hardcore)

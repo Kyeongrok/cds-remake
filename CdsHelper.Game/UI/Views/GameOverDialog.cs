@@ -147,7 +147,9 @@ public sealed class GameOverDialog : GameWindow
             var hardcore = run.Player;
             Engine.HardcoreRules.Note(hardcore);
             Engine.GameSave.DeleteRun(hardcore);
-            PlayStats.HardcoreOver(hardcore.GameId, hardcore.Name, run.Nations?.Find(hardcore.Nation)?.Name ?? "",
+            // 커스텀 팩을 켠 판은 랭킹에 안 올린다 — 팩이 수치를 바꿔 다른 판과 견줄 수 없다.
+            if (!Engine.HardcoreRules.UsedPack(hardcore.HardcoreMarks))
+                PlayStats.HardcoreOver(hardcore.GameId, hardcore.Name, run.Nations?.Find(hardcore.Nation)?.Name ?? "",
                                    // 발견물 수는 화면과 같은 거름이다 — 모조품 · 인물 · 사건 · 비보는 안 센다.
                                    run.Discoveries?.Table.CountedFound(hardcore.Discoveries) ?? hardcore.Discoveries.Count,
                                    hardcore.Date, picture, hardcore.HardcoreMarks);

@@ -83,6 +83,8 @@ internal sealed class App : Application
         // 게임 자료가 CP949 라 코드페이지를 먼저 열어 둔다.
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         GameSettings.Load();
+        // 타이틀에서 골라 둔 커스텀 팩을 켠다 — 표를 읽기 전에(없는 팩이면 팩 없이 돈다).
+        CdsHelper.Game.Local.Helpers.CustomPacks.Use(GameSettings.CustomPack);
         // 일본어면 윈도 글자도 번역한다 — 맨 먼저 뜨는 창(불러오는 창 따위)도 놓치지 않게 게임 창보다 먼저 건다.
         CdsHelper.Game.Local.Helpers.Lang.InstallWpfHook();
 

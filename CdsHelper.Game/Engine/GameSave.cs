@@ -409,7 +409,8 @@ public static class GameSave
         List<string>? HardcoreMarks = null, string? HardcoreSeal = null,
         Dictionary<int, long>? GrowthFunds = null, Dictionary<int, int>? GoodsRates = null,
         int? StoreExpansions = null, int? StoreQuestCleared = null, bool? StoreQuestTaken = null,
-        List<string>? DevMarks = null, string? DevSeal = null)
+        List<string>? DevMarks = null, string? DevSeal = null,
+        string? Pack = null, string? PackPrint = null)
     {
         /// <summary>읽을 때 봉인을 대 본 결과 — 맞으면 참, 안 맞거나 없으면 거짓, 따지지 않는 앞 판이면 null. 파일에는 안 적는다.</summary>
         [JsonIgnore] public bool? SealOk { get; init; }
@@ -610,7 +611,10 @@ public static class GameSave
                             // 교역품별 시세(모드). 이 칸 앞의 세이브는 모든 교역품이 100 이다.
                             GoodsRates: player.GoodsRates.Count > 0 ? player.GoodsRates.ToDictionary(e => e.Key, e => e.Value) : null,
                             // 개발 기능으로 고친 기록. 봉인은 글을 다 짓고 붙인다(Sealed).
-                            DevMarks: player.DevMarks.Count > 0 ? HardcoreRules.Sorted(player.DevMarks) : null);
+                            DevMarks: player.DevMarks.Count > 0 ? HardcoreRules.Sorted(player.DevMarks) : null,
+                            // 이 판을 시작한 커스텀 팩과 그 지문. 팩 없이 시작했거나 이 칸 앞의 세이브는 비어 있다.
+                            Pack: player.Pack.Length > 0 ? player.Pack : null,
+                            PackPrint: player.PackPrint.Length > 0 ? player.PackPrint : null);
         try
         {
             string file = string.IsNullOrEmpty(path) ? Path : path;
