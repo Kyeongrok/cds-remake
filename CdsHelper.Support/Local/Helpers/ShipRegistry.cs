@@ -86,6 +86,19 @@ public static class ShipRegistry
         /// <summary>파는 조선소의 도시 번호(<see cref="Hull.Cities"/>). null 이면 모든 조선소, 비어 있으면 어디서도 안 판다.</summary>
         public int[]? Cities { get; set; }
 
+        /// <summary>
+        /// 그림 · 영상을 빌려 쓸 원본 선체의 id(선체표 <c>Key</c>, 「galleon」) — 조선소에서 돛대를 달 때 그림과 살 때 동영상이 그 선체 것이다
+        /// (<see cref="Hull.Look"/>). 비어 있으면 가장 비슷한 원본 선체(<see cref="LookOf"/>)다. 기능 요청 #16-2 때 더했다.
+        /// </summary>
+        /// <remarks><see cref="Movie"/> 를 적은 배(바사)는 동영상만은 그것을 튼다.</remarks>
+        public string? Look { get; set; }
+
+        /// <summary>산 직후 세운 돛대 수(<see cref="Hull.StartMasts"/>). 0 이면 고른 원본 선체의 선체표 돛 수다(#16-2).</summary>
+        public int StartMasts { get; set; }
+
+        /// <summary>최대 승원(<see cref="Hull.MaxCrew"/>). 0 이면 원본처럼 필요승원 x 5 다(버그 리포트 #18).</summary>
+        public int MaxCrew { get; set; }
+
         /// <summary>붙박이를 덧씌우는 줄인지.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public bool IsBuiltin => !string.IsNullOrEmpty(Builtin);
@@ -362,7 +375,19 @@ public static class ShipRegistry
         SpriteFolder: folder,
         Movie: design.Movie,
         Cities: design.Cities,
-        Key: design.Id);
+        Key: design.Id,
+        Look: LookOf(design),
+        StartMasts: design.StartMasts > 0 ? Math.Clamp(design.StartMasts, 1, Math.Clamp(design.MaxMasts, 1, Hull.MastLimit)) : 0,
+        MaxCrew: Math.Max(0, design.MaxCrew));
+
+    /// <summary>
+    /// 등록 배가 그림 · 영상을 빌려 쓸 원본 선체 번호 — 적은 id(<see cref="Design.Look"/>)가 있으면 그것, 없으면(예전 배)
+    /// 내구 · 추진 · 용량 · 중량이 가장 비슷한 원본 선체(<see cref="Hull.NearestRow"/>), 그것도 없으면 카라벨.
+    /// </summary>
+    public static int LookOf(Design design) =>
+        Hull.Rows.FirstOrDefault(r => !string.IsNullOrEmpty(design.Look) && r.Key == design.Look)?.Id
+        ?? Hull.NearestRow(design.Hp, design.Speed, design.Capacity, design.Tonnage)?.Id
+        ?? Hull.Caravel;
 
     /// <summary>
     /// 그림 한 장을 배의 그림 폴더에 <see cref="SpriteWidth"/> 크기로 맞춰 넣는다.

@@ -580,8 +580,20 @@ public sealed class Ship
                 Sails: SailsOf(hull));
 
         /// <summary>그 선체가 처음 이는 돛 셋(선체표 <c>+0x3C</c>).</summary>
-        public static int[] SailsOf(Hull hull) =>
-            hull.Id is >= 0 and < 8 ? Hull.Table[hull.Id].Sails : [Lateen, NoSail, NoSail];
+        /// <remarks>
+        /// 등록해 넣은 배는 고른 원본 선체(<see cref="Hull.Look"/>)의 표 돛을 따르되, 돛대 수를 적었으면(<see cref="Hull.StartMasts"/>)
+        /// 그만큼만 세운다 — 표에 없는 자리는 삼각돛이다. 마스트 상한(<see cref="Hull.MaxMasts"/>)은 넘지 않는다(#16-2).
+        /// </remarks>
+        public static int[] SailsOf(Hull hull)
+        {
+            if (hull.Id is >= 0 and < 8) return Hull.Table[hull.Id].Sails;
+            int[] look = hull.Look is >= 0 and < 8 ? Hull.Table[hull.Look].Sails : [Lateen, NoSail, NoSail];
+            int count = hull.StartMasts > 0 ? hull.StartMasts : look.Count(v => v != NoSail);
+            count = Math.Clamp(count, 1, Math.Clamp(hull.MaxMasts, 1, MastSlots));
+            var sails = new int[MastSlots];
+            for (int i = 0; i < count; i++) sails[i] = look[i] != NoSail ? look[i] : Lateen;
+            return sails;
+        }
     }
 
     /// <summary>지금 값을 통째로.</summary>

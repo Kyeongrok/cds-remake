@@ -3629,8 +3629,12 @@ public sealed class Player
     public static int NeedCrewOf(Ship ship) => ship.Crew;
 
     /// <summary>그 배에 태울 수 있는 끝(<c>0x0044C790</c> — 선체표 <c>+0x34</c> x 5 + 50 = 필요 x 5).</summary>
-    /// <remarks>개조로 는 필요승원(<see cref="Ship.Crew"/>)이 아니라 선체의 처음 필요승원(<see cref="Hull.Crew"/>)을 쓴다.</remarks>
-    public static int MaxCrewOf(Ship ship) => ship.Hull.Crew * 5;
+    /// <remarks>
+    /// 개조로 는 필요승원(<see cref="Ship.Crew"/>)이 아니라 선체의 처음 필요승원(<see cref="Hull.Crew"/>)을 쓴다.
+    /// 등록해 넣은 배가 최대 승원을 적었으면(<see cref="Hull.MaxCrew"/>, 버그 리포트 #18) 그 값이다 — 필요승원보다 작지는 않다.
+    /// </remarks>
+    public static int MaxCrewOf(Ship ship) =>
+        ship.Hull.MaxCrew > 0 ? Math.Max(ship.Hull.MaxCrew, ship.Hull.Crew) : ship.Hull.Crew * 5;
 
     /// <summary>
     /// 선원을 배마다 고르게 나눈다(<c>0x004744F0</c>) — 한 명씩, 최대에 안 찬 배 가운데

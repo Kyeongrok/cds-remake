@@ -81,11 +81,17 @@ public static class MovieFiles
     /// 그 선체의 동영상 자리 — 원본 여덟 척은 이름으로 <see cref="HullStem"/> 을, 붙인 배는 제 줄기(<see cref="Hull.Movie"/>)를 찾는다.
     /// 없으면 null(안 튼다).
     /// </summary>
-    public static string? HullMovie(string? gameDirectory, Hull hull)
+    public static string? HullMovie(string? gameDirectory, Hull hull) =>
+        HullStemOf(hull) is { } stem ? Resolve(gameDirectory, stem) : null;
+
+    /// <summary>
+    /// 그 선체의 동영상 줄기 — 원본 여덟 척은 이름으로, 붙인 배는 제 줄기(<see cref="Hull.Movie"/>), 그것도 없으면
+    /// 고른 원본 선체(<see cref="Hull.Look"/>)의 것이다(기능 요청 #16-2). 없으면 null.
+    /// </summary>
+    public static string? HullStemOf(Hull hull)
     {
         int n = Hulls.IndexOf(hull.Name);
-        string? stem = n >= 0 ? HullStem(n) : hull.Movie;
-        return stem == null ? null : Resolve(gameDirectory, stem);
+        return n >= 0 ? HullStem(n) : hull.Movie ?? (hull.Look is >= 0 and < 8 ? HullStem(hull.Look) : null);
     }
 
     /// <summary>

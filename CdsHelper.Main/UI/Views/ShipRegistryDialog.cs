@@ -44,6 +44,12 @@ public sealed class ShipRegistryDialog : Window
     private readonly NumericSpinner _price;
     private readonly NumericSpinner _maxMasts;
     private readonly CheckBox _canChangeSail;
+    // 산 직후 돛대 수 · 최대 승원 · 그림 · 영상을 빌릴 원본 선체(#16-2 · #18) — 붙박이는 원본 그대로라 안 뜬다.
+    private readonly NumericSpinner _startMasts;
+    private readonly NumericSpinner _maxCrew;
+    private readonly ComboBox _look = new() { Width = 220, VerticalContentAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _lookHint = Note("");
+    private readonly StackPanel _registeredPanel = new();
     private readonly WrapPanel _slots;
     private readonly Button _saveButton;
     private readonly Button _deleteButton;
@@ -93,6 +99,8 @@ public sealed class ShipRegistryDialog : Window
         _gunsTop = Spinner(0, 999);
         _price = Spinner(1, 999999, step: 10);
         _maxMasts = Spinner(1, Hull.MastLimit);
+        _startMasts = Spinner(0, Hull.MastLimit);
+        _maxCrew = Spinner(0, 99999);
         _canChangeSail = new CheckBox { Content = "돛 종류를 바꿀 수 있다", VerticalAlignment = VerticalAlignment.Center };
 
         _slots = new WrapPanel();
@@ -119,10 +127,11 @@ public sealed class ShipRegistryDialog : Window
 
         _name.TextChanged += (_, _) => Touch();
         foreach (var spinner in new[] { _hp, _speed, _speedTop, _capacity, _tonnage, _crew, _guns, _price, _maxMasts,
-                                         _hpTop, _capacityTop, _tonnageTop, _gunsTop })
+                                         _hpTop, _capacityTop, _tonnageTop, _gunsTop, _startMasts, _maxCrew })
             spinner.ValueChanged += (_, _) => { Touch(); HintTops(); };
         _canChangeSail.Checked += (_, _) => Touch();
         _canChangeSail.Unchecked += (_, _) => Touch();
+        _look.SelectionChanged += (_, _) => { Touch(); HintTops(); };
         foreach (var radio in new[] { _sellAll, _sellNone, _sellSome })
             radio.Checked += (_, _) => { _cityChecks.IsEnabled = _sellSome.IsChecked == true; SummarizeSale(); Touch(); };
         _cityFilter.TextChanged += (_, _) => FilterCities();
@@ -204,6 +213,17 @@ public sealed class ShipRegistryDialog : Window
         form.Children.Add(specs);
         form.Children.Add(Row(_canChangeSail));
         form.Children.Add(Note("값은 조선소 표에 그대로 뜬다. 되사 주는 값은 그 6할이다."));
+
+        // 등록해 넣은 배만 — 붙박이는 원본 선체 그대로다.
+        _registeredPanel.Children.Add(Section("돛대 · 승원 · 그림 (0 = 자동)"));
+        var extra = new WrapPanel();
+        extra.Children.Add(Field("처음 돛대", _startMasts));
+        extra.Children.Add(Field("최대 승원", _maxCrew));
+        _registeredPanel.Children.Add(extra);
+        _registeredPanel.Children.Add(Row(
+            new TextBlock { Text = "그림 · 영상", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, _look));
+        _registeredPanel.Children.Add(_lookHint);
+        form.Children.Add(_registeredPanel);
 
         // 조선소 개조(보강 · 돛 추가 · 용량증가 · 부력증가 · 포탑)가 넘지 않는 끝. 붙박이 다섯은 선체표(exe-tables/hulls.json)의 한계다.
         form.Children.Add(Section("개조 한계 (0 = 자동)"));
@@ -407,6 +427,10 @@ public sealed class ShipRegistryDialog : Window
             _price.Value = design.Price;
             _maxMasts.Value = Math.Clamp(design.MaxMasts, 1, Hull.MastLimit);
             _canChangeSail.IsChecked = design.CanChangeSail;
+            _startMasts.Value = Math.Clamp(design.StartMasts, 0, Hull.MastLimit);
+            _maxCrew.Value = Math.Max(0, design.MaxCrew);
+            FillLooks(design.Look);
+            _registeredPanel.Visibility = builtin ? Visibility.Collapsed : Visibility.Visible;
 
             _sellPanel.Visibility = builtin ? Visibility.Collapsed : Visibility.Visible;
             (design.Cities switch { null => _sellAll, { Length: 0 } => _sellNone, _ => _sellSome }).IsChecked = true;
@@ -481,6 +505,7 @@ public sealed class ShipRegistryDialog : Window
     /// </summary>
     private void HintTops()
     {
+        HintLook();
         int hp = (int)_hp.Value, speed = (int)_speed.Value, capacity = (int)_capacity.Value, tonnage = (int)_tonnage.Value, guns = (int)_guns.Value;
         if (Hull.NearestRow(hp, speed, capacity, tonnage) is not { } row)
         {
@@ -491,6 +516,37 @@ public sealed class ShipRegistryDialog : Window
         _topHint.Text = $"0 이면 가장 비슷한 원본 선체({row.Name})의 비율로 — 내구력 {Guess(Hull.Stat.Hp)} · 추진력 {Guess(Hull.Stat.Speed)}"
                       + $" · 적재용량 {Guess(Hull.Stat.Capacity)} · 적재중량 {Guess(Hull.Stat.Tonnage)} · 대포수 {Guess(Hull.Stat.Guns)} 까지 오른다."
                       + " 조선소 개조(보강 · 돛 추가 · 용량증가 · 부력증가 · 포탑)는 이 한계를 넘지 않는다.";
+    }
+
+    /// <summary>
+    /// 그림 · 영상 고르개를 채운다 — 맨 위 「자동」(가장 비슷한 원본 선체), 그 밑에 원본 여덟 척. <paramref name="key"/> 를 고른다.
+    /// </summary>
+    private void FillLooks(string? key)
+    {
+        _look.Items.Clear();
+        _look.Items.Add(new ComboBoxItem { Content = "자동 (가장 비슷한 원본 선체)", Tag = null });
+        foreach (var row in Hull.Rows)
+            _look.Items.Add(new ComboBoxItem { Content = row.Name, Tag = row.Key });
+        _look.SelectedItem = _look.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (i.Tag as string) == key) ?? _look.Items[0];
+    }
+
+    /// <summary>
+    /// 처음 돛대 · 최대 승원 · 그림을 「자동」으로 두면 무엇이 되는지 — <see cref="ShipRegistry.LookOf"/> · <see cref="Ship.Stats.SailsOf"/> ·
+    /// <see cref="Player.MaxCrewOf"/> 와 같은 셈이다.
+    /// </summary>
+    private void HintLook()
+    {
+        var probe = new ShipRegistry.Design
+        {
+            Hp = (int)_hp.Value, Speed = (int)_speed.Value, Capacity = (int)_capacity.Value, Tonnage = (int)_tonnage.Value,
+            Look = (_look.SelectedItem as ComboBoxItem)?.Tag as string,
+        };
+        int look = ShipRegistry.LookOf(probe);
+        string name = Hull.Rows[Math.Clamp(look, 0, Hull.Rows.Length - 1)].Name;
+        int tableMasts = Hull.Table[Math.Clamp(look, 0, Hull.Table.Length - 1)].Sails.Count(v => v != Ship.NoSail);
+        int masts = Math.Clamp(tableMasts, 1, (int)_maxMasts.Value);
+        int crew = (int)_crew.Value;
+        _lookHint.Text = $"그림 · 영상은 {name}의 것을 쓴다 — 조선소에서 돛대를 달 때 그림과 살 때 동영상이다. 처음 돛대 0 이면 {name} 선체표대로 {masts}개, 최대 승원 0 이면 필요승원 x 5 = {crew * 5}명이다. 최대 승원을 필요승원보다 작게 적으면 필요승원만큼 태운다.";
     }
 
     private void Touch()
@@ -949,7 +1005,13 @@ public sealed class ShipRegistryDialog : Window
         design.Price = (int)_price.Value;
         design.MaxMasts = (int)_maxMasts.Value;
         design.CanChangeSail = _canChangeSail.IsChecked == true;
-        if (!design.IsBuiltin) design.Cities = PickedCities();
+        if (!design.IsBuiltin)
+        {
+            design.Cities = PickedCities();
+            design.StartMasts = Math.Min((int)_startMasts.Value, design.MaxMasts);
+            design.MaxCrew = (int)_maxCrew.Value;
+            design.Look = (_look.SelectedItem as ComboBoxItem)?.Tag as string;
+        }
 
         // 앱에 실은 배는 제 폴더의 design.json 에 적는다 — 저장소에서 띄웠으면 저장소 파일이라 커밋하면 업데이트로 간다.
         if (design.IsBundled)

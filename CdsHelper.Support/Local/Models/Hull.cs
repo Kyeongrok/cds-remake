@@ -41,6 +41,19 @@ namespace CdsHelper.Support.Local.Models;
 /// 선체 id(ASCII) — <b>세이브는 선체를 이 id 로 적는다</b>. 원본 여덟은 선체표의 id(「caravel」), 붙인 배는 등록 id(「vasa」)다.
 /// 비어 있으면 이름으로 갈음한다(<see cref="Ident"/>).
 /// </param>
+/// <param name="Look">
+/// 등록해 넣은 배가 빌려 쓰는 <b>원본 선체 번호</b>(0~7) — 조선소 돛대 그림(<c>ShipStill</c>) · 구입 동영상(<c>S{번호}_0001</c>) ·
+/// 해전 그림 · 뱃머리 도는 빠르기가 이 선체 것이 된다(<see cref="GameId"/>). −1 이면 예전처럼 그림벌로 어림한다.
+/// <see cref="ShipRegistry.ToHull(ShipRegistry.Design, string)"/> 가 등록 배의 칸(없으면 <see cref="NearestRow"/>)으로 채운다.
+/// </param>
+/// <param name="StartMasts">
+/// 등록해 넣은 배가 산 직후 세운 돛대 수(1~<see cref="MaxMasts"/>). 0 이면 <paramref name="Look"/> 선체의 선체표 돛 수다 —
+/// 원본은 배를 지을 때 선체표 <c>+0x3C</c> 돛 비트를 그대로 넣는다(<c>0x004232AA</c>).
+/// </param>
+/// <param name="MaxCrew">
+/// 등록해 넣은 배의 최대 승원. 0 이면 원본 셈(필요승원 x 5, <c>0x0044C790</c>)이다. 필요승원보다 작게 적으면 필요승원으로 본다.
+/// 붙박이는 늘 0 이다.
+/// </param>
 /// <param name="Cities">
 /// 이 배를 파는 조선소의 도시 번호. null 이면 <b>모든 조선소</b>(손으로 등록한 배의 예전 그대로), 비어 있으면 <b>어디서도 안 판다</b> —
 /// 앱에 실어만 두고 팔 곳은 나중에 잇는다(<see cref="SoldIn"/>).
@@ -49,7 +62,8 @@ public sealed record Hull(
     string Name, int Hp, int Speed, int Capacity, int Tonnage, int Crew, int Guns, int Price,
     int Skin, int MaxMasts = 3, bool CanChangeSail = true, string? SpriteFolder = null, int Id = -1,
     int HpTop = 0, int SpeedTop = 0, int CapacityTop = 0, int TonnageTop = 0, int GunsTop = 0,
-    string? Movie = null, int[]? Cities = null, string Key = "")
+    string? Movie = null, int[]? Cities = null, string Key = "",
+    int Look = -1, int StartMasts = 0, int MaxCrew = 0)
 {
     /// <summary>선체를 가리는 값 — <see cref="Key"/>, 없으면 이름.</summary>
     public string Ident => string.IsNullOrEmpty(Key) ? Name : Key;
@@ -233,6 +247,7 @@ public sealed record Hull(
         get
         {
             if (Id is >= 0 and < 8) return Id;
+            if (Look is >= 0 and < 8) return Look;
             int byName = Array.FindIndex(Table, s => s.Name == Name);
             if (byName >= 0) return byName;
             return Skin switch { 0 => Cog, 2 => Carrack, 3 => Galleon, _ => Caravel };
