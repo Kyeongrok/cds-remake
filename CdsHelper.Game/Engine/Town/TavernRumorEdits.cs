@@ -6,13 +6,18 @@ namespace CdsHelper.Game.Engine.Town;
 /// 술집 · 여관 무명 손님 소문을 손으로 고쳐 둔 것. 원본 벌(<see cref="TavernRumors"/>) 위에 갈래째 덧씌운다.
 /// </summary>
 /// <remarks>
-/// 코드에 박힌 원본 줄은 건드리지 않는다 — 고친 갈래만 <c>exe-tables/소문-고친것.json</c> 에 통째로 적어 두고,
-/// 소문을 고를 때 그 갈래는 이것을 쓴다. 도구 앱 「요소 → 소문」 창(<c>TavernRumorEditDialog</c>)이 고친다.
+/// 코드에 박힌 원본 줄은 건드리지 않는다 — 고친 갈래만 <c>tavern-rumors-edits.json</c>(표 이름 「손님소문-고친것」, 켠 커스텀 팩이 있으면 그 팩)에
+/// 통째로 적어 두고, 소문을 고를 때 그 갈래는 이것을 쓴다. 도구 앱 「요소 → 소문」 창(<c>TavernRumorEditDialog</c>)이 고친다.
+/// 예전에는 「더해 넣은 소문」(<see cref="Table.RumorTable"/>)과 같은 <c>rumors-added.json</c> 에 써서, 여기서 저장하면 더한 소문 줄이 지워졌다 —
+/// 이제 제 파일을 쓰고, 옛 파일에 갈래가 있으면 처음 한 번 읽어 온다(<see cref="LegacyName"/>).
 /// </remarks>
 public static class TavernRumorEdits
 {
     /// <summary>적어 둘 파일 이름.</summary>
-    private const string CacheName = "소문-고친것";
+    private const string CacheName = "손님소문-고친것";
+
+    /// <summary>예전에 적던 자리 — 「더해 넣은 소문」과 같은 파일(<c>rumors-added.json</c>). 읽기만 한다.</summary>
+    private const string LegacyName = "소문-고친것";
 
     /// <summary>고쳐 둔 갈래 하나 — 갈래 번호와 그 줄 전부.</summary>
     public sealed record SetEdit(int Set, List<TavernRumors.Line> Lines);
@@ -52,7 +57,9 @@ public static class TavernRumorEdits
     private static Dictionary<int, List<TavernRumors.Line>> Load()
     {
         var map = new Dictionary<int, List<TavernRumors.Line>>();
-        foreach (var edit in TableCache.Read<Snapshot>(CacheName)?.Data.Sets ?? [])
+        // 제 파일이 없으면 옛 자리(더한 소문과 같은 파일)에 적혀 있던 갈래를 읽어 온다 — 다음 저장부터 제 파일에 적힌다.
+        var sets = TableCache.Read<Snapshot>(CacheName)?.Data.Sets ?? TableCache.Read<Snapshot>(LegacyName)?.Data.Sets ?? [];
+        foreach (var edit in sets)
             if (edit.Set >= 0 && edit.Set < TavernRumors.SetNames.Length && edit.Lines is { Count: > 0 })
                 map[edit.Set] = edit.Lines;
         return map;
