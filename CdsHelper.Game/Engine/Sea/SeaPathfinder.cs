@@ -44,15 +44,18 @@ public static class SeaPathfinder
     /// </summary>
     /// <param name="land">참이면 <b>뭍길</b>을 찾는다(<see cref="TerrainTable.CanWalk"/> — 뭍 자동이동). 기본은 바닷길이다.</param>
     /// <param name="pace">걸음 값. 주면 가장 <b>빠른</b> 길을 찾는다(바닷길에서만 뜻이 있다).</param>
+    /// <param name="offShore">참이면 뭍 가까운 칸에 덤을 매겨 해안에서 두세 칸 띄운 길을 낸다(자동항해).
+    /// 커서 쪽 길잡이(항해사 + 나침반)는 거짓으로 준다 — 원본 길잡이(<c>0x00494770</c> · <c>0x004944B0</c>)는 화면 칸을
+    /// 커서에서부터 여덟 이웃 모두 1 씩 번져 나가는 고른 값이라 해안 바로 옆 물칸도 똑같이 지난다.</param>
     public static List<(double X, double Y)>? FindRoute(
         byte[] world, TerrainTable terrain, (double X, double Y) start, (double X, double Y) goal, bool land = false,
-        SailCost? pace = null)
+        SailCost? pace = null, bool offShore = true)
     {
         bool ok(int x, int y) => Passable(world, terrain, x, y, land);
 
         // 걸음 값 — 거리(또는 시간)에 <b>뭍 가까운 칸의 덤</b>을 곱한다. 배는 8방위로만 가고 해류에도
         // 밀려서 그은 길에서 한두 칸은 벗어난다 — 길이 해안선에 붙어 있으면 그대로 뭍에 걸린다.
-        byte[]? shore = land ? null : ShoreOf(world, terrain);
+        byte[]? shore = land || !offShore ? null : ShoreOf(world, terrain);
         double cost(int x, int y, int k)
         {
             double step = pace == null ? Steps[k].Cost

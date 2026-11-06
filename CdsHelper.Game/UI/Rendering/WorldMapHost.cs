@@ -3338,7 +3338,9 @@ public sealed class WorldMapHost : HwndHost
         _assistFrom = want;
         _assistStep = null;
 
-        var route = Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), (toX, toY));
+        // 해안 덤 없이 찾는다 — 덤을 매기면 해안에서 두세 칸 띄워 돌다가 커서 가까이 와서야 붙어, 해안을 훑으며
+        // 도시를 찾기 어려웠다(버그 리포트 #20). 원본 길잡이는 고른 값이라 해안 바로 옆으로 간다.
+        var route = Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), (toX, toY), offShore: false);
         // 도는 원이 큰 배(빠른 카락)는 원 안에 든 길목을 못 밟고 그 둘레를 맴돈다 — 그런 길목은 지난 것으로 친다.
         if (route is { Count: > 1 })
         {
