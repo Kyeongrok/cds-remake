@@ -24,6 +24,9 @@ public static class DiscoveryEdits
 
     private static Dictionary<int, DiscoveryTable.Record>? _map;
 
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static DiscoveryEdits() => TableCache.Reloaded += () => _map = null;
+
     /// <summary>발견물이 더해지거나 고쳐졌을 때 알린다 — 표를 들고 있던 쪽이 다시 읽는다.</summary>
     public static event Action? Changed;
 

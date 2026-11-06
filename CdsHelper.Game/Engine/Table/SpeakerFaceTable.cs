@@ -27,7 +27,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class SpeakerFaceTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\화자표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\speakers.json</c>).</summary>
     private const string CacheName = "화자표";
 
     private const int TableVa = 0x0056823C;

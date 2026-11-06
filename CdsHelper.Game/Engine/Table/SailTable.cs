@@ -33,7 +33,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class SailTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\돛효율표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\sails.json</c>).</summary>
     private const string CacheName = "돛효율표";
 
     private const int TableVa = 0x00569800;

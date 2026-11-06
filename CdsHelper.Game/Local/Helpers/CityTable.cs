@@ -32,7 +32,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class CityTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\도시표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\cities.json</c>).</summary>
     private const string CacheName = "도시표";
 
     /// <summary>도시 한 곳. 건물 표가 <see cref="Id"/> 로 이것을 가리킨다.</summary>

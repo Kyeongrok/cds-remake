@@ -21,7 +21,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class ItemDescriptions
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\아이템설명.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\item-descriptions.json</c>).</summary>
     private const string CacheName = "아이템설명";
 
     /// <summary>포인터 표. 4바이트짜리가 <see cref="Count"/> 개 늘어서 있다.</summary>

@@ -37,7 +37,7 @@
 /// </remarks>
 public sealed class WindTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\바람표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\winds.json</c>).</summary>
     private const string CacheName = "바람표";
 
     private const int WindFirstHalfVa = 0x004CB290;   // 1~6월

@@ -87,7 +87,7 @@ public sealed class TavernGuests
         ["동아시아"] = (55, 13),   // 앱이 더한 문화권 — 중국 구간을 베껴 둔 칸(CityCultureEdits.CopiedFrom)
     };
 
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\손님표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\tavern-guests.json</c>).</summary>
     private const string CacheName = "손님표";
 
     /// <summary>JSON 으로 적어 두는 알맹이 — 성별과 크기다. 그림은 asset 에 따로 있다.</summary>

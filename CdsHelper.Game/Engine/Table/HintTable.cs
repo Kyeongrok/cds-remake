@@ -95,7 +95,7 @@ public sealed class HintTable
         int Id, string Name, int Grade, int Category, int Funds, int Deadline, int Discovery,
         string Text = "");
 
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\힌트표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\hints.json</c>).</summary>
     private const string CacheName = "힌트표";
 
     /// <summary>JSON 으로 적어 두는 알맹이. EXE 를 읽어야만 알 수 있는 것 전부다.</summary>

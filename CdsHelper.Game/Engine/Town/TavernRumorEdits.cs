@@ -22,6 +22,9 @@ public static class TavernRumorEdits
 
     private static Dictionary<int, List<TavernRumors.Line>>? _map;
 
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static TavernRumorEdits() => TableCache.Reloaded += () => _map = null;
+
     private static Dictionary<int, List<TavernRumors.Line>> Map => _map ??= Load();
 
     /// <summary>그 갈래에 씌운 줄들. 안 고쳤으면 null.</summary>

@@ -8,8 +8,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <b>본</b>이라 판이 바뀌거나 알맹이 모양이 올라가면 통째로 다시 구워진다. 그래서 고친
 /// 것만 따로 적어 두고 표가 읽힐 때 얹는다 — <see cref="NationEdits"/> 와 같은 결이다.
 ///
-/// EXE 는 손대지 않는다. 고친 것은 <c>%APPDATA%\CdsHelper\exe-tables</c> 에 남아 앱을
-/// 껐다 켜도 그대로다.
+/// EXE 는 손대지 않는다. 고친 것(<c>hints-edits.json</c>)은 표 자리(<c>exe-tables</c>, 설치판은 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c> — 업데이트가 갈아 끼운다)에 적고, 개발도구에서 커스텀 팩을 골라 두면 그 팩 폴더(<c>%APPDATA%\CdsHelper\packs</c>)에 고친 줄만 적어 업데이트 뒤에도 남는다(<see cref="CustomPacks"/>).
 /// </remarks>
 public static class HintEdits
 {
@@ -29,6 +28,9 @@ public static class HintEdits
     internal sealed record Snapshot(List<Entry> Hints);
 
     private static Dictionary<int, Entry>? _map;
+
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static HintEdits() => TableCache.Reloaded += () => _map = null;
 
     /// <summary>힌트가 고쳐졌을 때 알린다 — 표를 들고 있던 쪽이 다시 읽는다.</summary>
     public static event Action? Changed;

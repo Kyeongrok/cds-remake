@@ -51,7 +51,7 @@ public sealed class HistoryVoyages
     /// <summary>대본이 든 파일.</summary>
     public const string FileName = "HISTCHR.CDS";
 
-    /// <summary>구워 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\역사항해자.json</c>).</summary>
+    /// <summary>구워 둘 파일 이름(<c>exe-tables\history-voyagers.json</c>).</summary>
     public const string CacheName = "역사항해자";
 
     /// <summary>알맹이 모양 판.</summary>

@@ -141,7 +141,7 @@ public sealed class SponsorTable
         };
     }
 
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\후원자표.json</c>).</summary>
+    /// <summary>적어 둔 표 이름(표 자리 <c>exe-tables\sponsors.json</c> — 앱과 함께 깔린다). 손으로 고친 수치는 <see cref="SponsorEdits"/> 가 얹는다.</summary>
     private const string CacheName = "후원자표";
 
     /// <summary>JSON 으로 적어 두는 알맹이.</summary>
@@ -164,6 +164,9 @@ public sealed class SponsorTable
         foreach (var added in TableCache.Read<Snapshot>(AddedName)?.Data.Sponsors ?? [])
             if (!sponsors.Any(s => Key(s.Name) == Key(added.Name)))
                 sponsors.Add(added with { Index = Math.Max(added.Index, next++) });
+        // 도구 앱 · 커스텀 팩이 고친 수치(안목 · 인심 · 자리 …)를 번호로 얹는다 — 이름은 안 바뀐다.
+        _original = new List<Sponsor>(sponsors);
+        for (int i = 0; i < sponsors.Count; i++) sponsors[i] = SponsorEdits.Apply(sponsors[i]);
         _sponsors = sponsors;
         _byName = [];
         foreach (var s in sponsors) _byName[Key(s.Name)] = s;
@@ -174,6 +177,11 @@ public sealed class SponsorTable
 
     /// <summary>표에 있는 후원자 전부.</summary>
     public IReadOnlyList<Sponsor> Sponsors => _sponsors;
+
+    private readonly List<Sponsor> _original;
+
+    /// <summary>손으로 고친 것(<see cref="SponsorEdits"/>)을 얹기 전의 그 후원자 — 고치는 창이 고친 칸만 가리려고 쓴다.</summary>
+    public Sponsor? OriginalOf(int index) => _original.FirstOrDefault(s => s.Index == index) is { Name: not null } s ? s : null;
 
     /// <summary>이름으로 찾는다. 가운뎃점과 빈칸은 무시한다. 없으면 null.</summary>
     public Sponsor? FindByName(string name) =>

@@ -31,7 +31,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class BarmaidTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\여급표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\barmaids.json</c>).</summary>
     private const string CacheName = "여급표";
 
     private const int TableVa = 0x00517AF8;

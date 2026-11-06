@@ -24,7 +24,7 @@ public sealed class TownFolkTable
     /// <summary>이 갈래부터가 여자다(<c>0x00491BB4</c> 의 <c>cmp 200</c>).</summary>
     public const int FemaleKind = 200;
 
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\마을사람표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\town-folk.json</c>).</summary>
     private const string CacheName = "마을사람표";
 
     /// <summary>알맹이 모양 판. 판 2 는 64바이트가 넘는 말 14줄을 되살렸다.</summary>

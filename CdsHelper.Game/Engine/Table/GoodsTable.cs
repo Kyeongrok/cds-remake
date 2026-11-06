@@ -21,7 +21,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class GoodsTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\교역품표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\goods.json</c>).</summary>
     private const string CacheName = "교역품표";
 
     private const int TableVa = 0x004DCBB0;

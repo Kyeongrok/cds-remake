@@ -24,7 +24,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class ItemTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\아이템표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\items.json</c>).</summary>
     private const string CacheName = "아이템표";
 
     private const int TableVa = 0x004FD558;

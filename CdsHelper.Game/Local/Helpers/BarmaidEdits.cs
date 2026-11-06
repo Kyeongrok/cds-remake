@@ -11,7 +11,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 둘뿐이고 셋·여섯은 아홉이다 — 쏠린 데를 손볼 때 쓴다.
 /// 얼굴은 여급 수첩에서 바꾼다 — 여자 초상화 번호이고, 궁합 코드와는 따로 논다.
 ///
-/// 고친 것은 <c>%APPDATA%\CdsHelper\exe-tables\여급-고친것.json</c> 에 남고, 적어 둔
+/// 고친 것(<c>barmaids-edits.json</c>)은 표 자리(<c>exe-tables</c>, 설치판은 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c> — 업데이트가 갈아 끼운다)에 적고, 개발도구에서 커스텀 팩을 골라 두면 그 팩 폴더(<c>%APPDATA%\CdsHelper\packs</c>)에 고친 줄만 적어 업데이트 뒤에도 남는다(<see cref="CustomPacks"/>). 적어 둔
 /// 여급표(<c>여급표.json</c>)는 EXE 를 읽어 구운 본이라 손대지 않는다.
 /// </remarks>
 public static class BarmaidEdits
@@ -26,6 +26,9 @@ public static class BarmaidEdits
     internal sealed record Snapshot(List<Entry> Barmaids);
 
     private static Dictionary<int, Entry>? _map;
+
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static BarmaidEdits() => TableCache.Reloaded += () => _map = null;
 
     /// <summary>코드나 얼굴이 바뀌었을 때 알린다.</summary>
     public static event Action? Changed;

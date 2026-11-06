@@ -82,7 +82,7 @@ public sealed class BookTable
     public readonly record struct HintNeed(int Skill, int Level, IReadOnlyList<int>? Parents = null,
                                            int Picture = -1, int Language = -1);
 
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\책표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\books.json</c>).</summary>
     private const string CacheName = "책표";
 
     /// <summary>알맹이 모양 판. 삽화 칸(<see cref="HintNeed.Picture"/>)으로 3, 언어 칸(<see cref="HintNeed.Language"/>)으로 4 로 올렸다.</summary>

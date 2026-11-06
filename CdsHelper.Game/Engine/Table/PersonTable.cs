@@ -10,11 +10,15 @@
 /// 그래서 한 번만 구워 두고 그 뒤로는 <b>세이브를 보지 않는다</b>.
 ///
 /// <code>
-///   %APPDATA%\CdsHelper\exe-tables\인물표-고친것.json  사람이 고친 것 ← 있으면 이것
-///   실행 파일 옆 인물표.json                      같이 깔린 본     ← 이것이 유일한 기본 표
-///   세이브(SAVEDATA.CDS)                          씨앗            ← 기본 표가 없을 때만
+///   켠 커스텀 팩의 persons-edits.json            팩이 고친 줄  ← 아래 표 위에 번호로 얹는다(고친 줄만 든다)
+///   표 자리(exe-tables)의 persons-edits.json     사람이 고친 것 ← 있으면 이것(개발 · 팩 없음일 때 개발도구가 적는다)
+///   실행 파일 옆 persons.json                    같이 깔린 본   ← 이것이 유일한 기본 표
+///   세이브(SAVEDATA.CDS)                          씨앗          ← 기본 표가 없을 때만
 ///   아무것도 없다                                 빈 표 — 술집에는 지나가는 사람만 선다
 /// </code>
+/// 표 자리는 설치판에서 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c> 라 업데이트가 통째로 갈아 끼운다 — 업데이트 뒤에도
+/// 남길 값은 커스텀 팩(<see cref="CustomPacks"/>, <c>%APPDATA%\CdsHelper\packs</c>)에 고친다. 팩은 이름을 못 바꾼다 —
+/// 고용한 부하 · 술집 손님은 세이브가 이름으로 찾는다.
 ///
 /// <b>본이 같이 깔리므로 세이브가 아예 없어도 게임이 돈다.</b> 본은 이 프로젝트의
 /// <c>CdsHelper\인물표.json</c> 하나이며 게임 exe 옆으로 복사된다.
@@ -247,13 +251,43 @@ public sealed class PersonTable
     /// </param>
     public static PersonTable Open(string? seedSavePath = null)
     {
+        var table = OpenBase(seedSavePath);
+        InPack = false;
+        if (table.IsEmpty || TableCache.ReadPack<Snapshot>(CacheName) is not { } pack) return table;
+
+        // 켠 커스텀 팩 — 고친 줄만 들어 있다. 번호로 짝지어 갈아 끼우되 이름은 본 것을 둔다(팩은 이름을 못 바꾼다).
+        if (pack.Version != Shape)
+        {
+            TableCache.NoteSkipped(CacheName, $"표 형식이 다릅니다(팩 {pack.Version} · 게임 {Shape})");
+            return table;
+        }
+        foreach (var row in pack.Data.People)
+        {
+            int at = table._rows.FindIndex(r => r.Id == row.Id);
+            if (at < 0) continue;
+            var fixedRow = row.Fixed();
+            fixedRow.First = table._rows[at].First;
+            fixedRow.Last = table._rows[at].Last;
+            table._rows[at] = fixedRow;
+        }
+        InPack = true;
+        Source = $"커스텀 팩 · {Source}";
+        return table;
+    }
+
+    /// <summary>지금 쓰는 표에 켠 커스텀 팩의 줄이 얹혀 있는지.</summary>
+    public static bool InPack { get; private set; }
+
+    /// <summary>팩을 빼고 연 표 — 기본 자리의 고친 것 · 같이 깔린 본 · 씨앗 세이브 차례.</summary>
+    private static PersonTable OpenBase(string? seedSavePath)
+    {
         LastError = "";
 
-        // ① 사람이 고친 것
-        var saved = TableCache.Read<Snapshot>(CacheName);
+        // ① 사람이 고친 것(기본 자리)
+        var saved = TableCache.ReadBase<Snapshot>(CacheName);
         if (saved == null)
         {
-            var legacy = TableCache.Read<Snapshot>(LegacyCacheName);
+            var legacy = TableCache.ReadBase<Snapshot>(LegacyCacheName);
             if (legacy is { Version: Shape } && legacy.Data.People.Count > 0)
             {
                 saved = legacy;
@@ -338,12 +372,12 @@ public sealed class PersonTable
 
     private static void MigrateLegacyCache(TableCache.Cached<Snapshot> saved)
     {
-        TableCache.Write(CacheName, saved with { Source = CacheName + ".json" });
+        TableCache.WriteBase(CacheName, saved with { Source = CacheName + ".json" });
         try
         {
-            string migrated = TableCache.PathFor(CacheName);
+            string migrated = TableCache.BasePathFor(CacheName);
             if (System.IO.File.Exists(migrated))
-                System.IO.File.Delete(TableCache.PathFor(LegacyCacheName));
+                System.IO.File.Delete(TableCache.BasePathFor(LegacyCacheName));
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
         {
@@ -392,21 +426,60 @@ public sealed class PersonTable
         return "";
     }
 
-    /// <summary>고친 표를 적어 둔다. 창이 한 줄을 만질 때마다 부른다.</summary>
+    /// <summary>
+    /// 고친 표를 적어 둔다. 창이 한 줄을 만질 때마다 부른다. 커스텀 팩이 켜져 있으면 팩에 <b>팩을 뺀 표와 다른 줄만</b> 적는다 —
+    /// 업데이트로 본이 바뀌어도 팩은 고친 줄만 덮는다.
+    /// </summary>
     public void Save()
     {
+        if (TableCache.PackFolder != null)
+        {
+            var under = OpenBase(null).People.ToDictionary(r => r.Id);
+            var changed = _rows.Where(r => !under.TryGetValue(r.Id, out var b) || !SameRow(b, r)).ToList();
+            if (changed.Count == 0) TableCache.DeletePack(CacheName);
+            else TableCache.WritePack(CacheName, new TableCache.Cached<Snapshot>(
+                     $"{changed.Count}명", new Snapshot(changed, Year), "커스텀 팩", Shape));
+            InPack = changed.Count > 0;
+            Revision++;
+            Changed?.Invoke();
+            return;
+        }
+
         Write(_rows, Source.Length > 0 ? Source : "고친 것");
         Edited = true;
         Revision++;
         Changed?.Invoke();
     }
 
-    /// <summary>고쳐 둔 것을 지운다 — 다음에 열 때 같이 깔린 본으로 돌아간다.</summary>
+    /// <summary>두 줄이 칸 하나 안 다르고 같은지(이름 · 능력 · 기술 · 언어까지).</summary>
+    private static bool SameRow(Row a, Row b) =>
+        System.Text.Json.JsonSerializer.Serialize(a) == System.Text.Json.JsonSerializer.Serialize(b);
+
+    /// <summary>
+    /// 표를 들고 있는 쪽이 다시 읽게 한다 — 켠 커스텀 팩이 바뀌었을 때(<see cref="CustomPacks.Use"/>).
+    /// </summary>
+    public static void Reload()
+    {
+        Revision++;
+        Changed?.Invoke();
+    }
+
+    /// <summary>
+    /// 고쳐 둔 것을 지운다 — 다음에 열 때 같이 깔린 본으로 돌아간다. 커스텀 팩이 켜져 있으면 팩의 인물 줄만 지운다.
+    /// </summary>
     public static void Forget()
     {
+        if (TableCache.PackFolder != null)
+        {
+            TableCache.DeletePack(CacheName);
+            InPack = false;
+            Revision++;
+            Changed?.Invoke();
+            return;
+        }
         try
         {
-            string path = TableCache.PathFor(CacheName);
+            string path = TableCache.BasePathFor(CacheName);
             if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
@@ -420,6 +493,6 @@ public sealed class PersonTable
     }
 
     private static void Write(List<Row> rows, string source) =>
-        TableCache.Write(CacheName, new TableCache.Cached<Snapshot>(
+        TableCache.WriteBase(CacheName, new TableCache.Cached<Snapshot>(
             $"{rows.Count}명", new Snapshot(rows), source, Shape));
 }

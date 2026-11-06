@@ -28,7 +28,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class PlayerNameTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\이름표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\player-names.json</c>).</summary>
     private const string CacheName = "이름표";
 
     private const int SnapshotVersion = 1;

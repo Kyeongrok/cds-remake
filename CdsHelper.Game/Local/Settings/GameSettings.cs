@@ -504,6 +504,12 @@ public sealed class GameSettingsData
 
     /// <summary>등록한 곡 갈아 끼우기를 쓸지 — 모드 창에서 켜고 끈다.</summary>
     public bool CustomBgmEnabled { get; set; }
+
+    /// <summary>게임 타이틀에서 고른 커스텀 팩 이름(<c>%APPDATA%\CdsHelper\packs\이름</c>). 비면 팩 없이 돈다.</summary>
+    public string CustomPack { get; set; } = "";
+
+    /// <summary>개발도구(Editor)에서 고른 커스텀 팩 이름 — 편집 창들이 이 팩에 적는다. 비면 기본 표 자리에 적는다.</summary>
+    public string EditorPack { get; set; } = "";
 }
 
 /// <summary>
@@ -979,6 +985,20 @@ public static class GameSettings
 
     /// <summary>항해 글쇠를 바꾼다. 빈 글이면 그 일에는 글쇠를 안 쓴다.</summary>
     public static void SetSailKey(string id, string key) => Set(d => (d.SailKeys ??= [])[id] = key);
+
+    /// <summary>게임 타이틀에서 고른 커스텀 팩 이름. 비면 팩 없이 돈다(<see cref="Local.Helpers.CustomPacks"/>).</summary>
+    public static string CustomPack
+    {
+        get => Get(d => d.CustomPack ?? "");
+        set => Set(d => d.CustomPack = value ?? "");
+    }
+
+    /// <summary>개발도구에서 고른 커스텀 팩 이름. 비면 편집 창들이 기본 표 자리에 적는다.</summary>
+    public static string EditorPack
+    {
+        get => Get(d => d.EditorPack ?? "");
+        set => Set(d => d.EditorPack = value ?? "");
+    }
 
     /// <summary>편리한 보관함 — 자택 「보관」 창에서 줄을 누르면 곧바로 반대쪽으로 옮긴다. 모드 창에서 켜고 끈다.</summary>
     public static bool QuickStorage

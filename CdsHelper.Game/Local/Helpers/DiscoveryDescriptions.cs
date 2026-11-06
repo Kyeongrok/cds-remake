@@ -13,7 +13,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class DiscoveryDescriptions
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\발견물설명.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\discovery-descriptions.json</c>).</summary>
     private const string CacheName = "발견물설명";
 
     /// <summary>포인터 표.</summary>

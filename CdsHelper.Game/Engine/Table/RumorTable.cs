@@ -106,6 +106,9 @@ public sealed class RumorTable
 
     private static List<Rumor>? _added;
 
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static RumorTable() => TableCache.Reloaded += () => _added = null;
+
     private static List<Rumor> Added => _added ??=
         [.. (TableCache.Read<Snapshot>(AddedName)?.Data.Rumors ?? [])
             .Select(r => r with { Text = TextOf(r) })];

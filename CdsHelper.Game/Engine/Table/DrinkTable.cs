@@ -27,7 +27,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class DrinkTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\술표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\drinks.json</c>).</summary>
     private const string CacheName = "술표";
 
     /// <summary>알맹이 모양 판.</summary>

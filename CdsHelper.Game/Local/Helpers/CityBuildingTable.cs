@@ -114,7 +114,7 @@ public sealed class CityBuildingTable
         [JsonIgnore] public bool Teaches => TeachMask != 0;
     }
 
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\건물표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\buildings.json</c>).</summary>
     private const string CacheName = "건물표";
 
     /// <summary>알맹이 모양 판. 발견물 번호와 그림 번호를 더하며 2 로, 빠진 끝 넉 줄을 더하며 4 로 올렸다.</summary>

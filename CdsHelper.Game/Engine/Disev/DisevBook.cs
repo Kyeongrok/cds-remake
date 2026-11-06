@@ -14,7 +14,8 @@ namespace CdsHelper.Game.Engine.Disev;
 /// <remarks>
 /// <b>차례가 이렇다.</b>
 /// <list type="number">
-///   <item>적어 둔 <c>%APPDATA%\CdsHelper\exe-tables\발견이벤트.json</c> 이 있으면 <b>그것을 읽는다</b>.</item>
+///   <item>표 자리(<c>exe-tables\disev.json</c>, 설치판은 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c>)에 적어 둔 것이 있으면 <b>그것을 읽는다</b>.
+///         업데이트가 그 폴더를 갈아 끼우므로 사람이 고친 책은 <c>disev-kept</c> 에 한 벌 지켜 둔다(<see cref="CheckKept"/>). 대본은 아직 커스텀 팩에 안 담긴다.</item>
 ///   <item>없으면 <b>앱 옆에 실어 둔 <c>발견이벤트.json</c></b>(<see cref="BundledPath"/>)을 먼저 적어 두고 그것을 읽는다.</item>
 ///   <item>편집기가 고치는 것도 적어 둔 JSON 이다.</item>
 /// </list>

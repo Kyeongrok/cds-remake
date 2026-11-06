@@ -28,7 +28,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class NationTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\나라표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\nations.json</c>).</summary>
     private const string CacheName = "나라표";
 
     private const int TableVa = 0x004CA370;

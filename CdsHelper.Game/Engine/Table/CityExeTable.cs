@@ -40,7 +40,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class CityExeTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\도시표-게임.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\cities-exe.json</c>).</summary>
     private const string CacheName = "도시표-게임";
 
     /// <summary>알맹이 모양 판. 지역 무리를 더하며 5 로, 들어서면 발견되는 발견물을 더하며 10 으로 올렸다.</summary>

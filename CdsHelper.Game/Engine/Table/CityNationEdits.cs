@@ -9,8 +9,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// cref="CityExeTable.NationOf"/> 가 여기를 먼저 보므로, 왕국을 묻는 자리는 어디든
 /// 저절로 따라온다. 왕국 이름은 나라 표(<see cref="NationTable"/>)에서 온다.
 ///
-/// EXE 는 손대지 않는다. 갈아 둔 것은 <c>%APPDATA%\CdsHelper\exe-tables</c> 에 적어 두어
-/// 앱을 껐다 켜도 남는다.
+/// EXE 는 손대지 않는다. 갈아 둔 것(<c>city-nations-edits.json</c>)은 표 자리(<c>exe-tables</c>, 설치판은 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c> — 업데이트가 갈아 끼운다)에 적고, 개발도구에서 커스텀 팩을 골라 두면 그 팩 폴더(<c>%APPDATA%\CdsHelper\packs</c>)에 고친 줄만 적어 업데이트 뒤에도 남는다(<see cref="CustomPacks"/>).
 /// </remarks>
 public static class CityNationEdits
 {
@@ -27,6 +26,9 @@ public static class CityNationEdits
     public const int None = -1;
 
     private static Dictionary<int, int>? _map;
+
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static CityNationEdits() => TableCache.Reloaded += () => _map = null;
 
     /// <summary>왕국이 갈렸을 때 알린다.</summary>
     public static event Action? Changed;

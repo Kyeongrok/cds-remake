@@ -22,7 +22,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class PersonTemplate
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\인물밑표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\person-templates.json</c>).</summary>
     private const string CacheName = "인물밑표";
 
     private const int TableVa = 0x004DF3F0;

@@ -15,8 +15,8 @@ namespace CdsHelper.Game.Engine.Discovery;
 /// <b>줄 단위가 아니라 사람 단위로 갈아 끼운다.</b> 줄을 더하고 지우는 것까지 해야 해서,
 /// 한 사람의 목록을 통째로 두는 편이 어긋날 일이 없다. 손대지 않은 사람은 파일 그대로다.
 ///
-/// <c>HISTCHR.CDS</c> 는 손대지 않는다. 고친 것은
-/// <c>%APPDATA%\CdsHelper\exe-tables\경쟁자-고친것.json</c> 에 남아 앱을 껐다 켜도 그대로다.
+/// <c>HISTCHR.CDS</c> 는 손대지 않는다. 고친 것(<c>voyagers-edits.json</c>)은
+/// 표 자리(<c>exe-tables</c>, 설치판은 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c> — 업데이트가 갈아 끼운다)에 적고, 개발도구에서 커스텀 팩을 골라 두면 그 팩 폴더(<c>%APPDATA%\CdsHelper\packs</c>)에 고친 줄만 적어 업데이트 뒤에도 남는다(<see cref="Local.Helpers.CustomPacks"/>).
 /// </remarks>
 public static class VoyagerEdits
 {
@@ -32,6 +32,9 @@ public static class VoyagerEdits
     internal sealed record Snapshot(List<Entry> Voyagers);
 
     private static Dictionary<int, List<HistoryVoyages.Voyage>>? _map;
+
+    /// <summary>켠 커스텀 팩이 바뀌면 담아 둔 것을 버린다 — 다음에 물을 때 새 팩으로 다시 읽는다.</summary>
+    static VoyagerEdits() => TableCache.Reloaded += () => _map = null;
 
     /// <summary>
     /// 고칠 때마다 하나씩 는다. 표를 들고 있는 쪽이 이 수를 재어 두었다가 <b>달라졌을 때만</b>

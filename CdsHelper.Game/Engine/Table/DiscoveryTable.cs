@@ -29,7 +29,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </remarks>
 public sealed class DiscoveryTable
 {
-    /// <summary>적어 둘 파일 이름(<c>%APPDATA%\CdsHelper\exe-tables\발견물표.json</c>).</summary>
+    /// <summary>적어 둘 파일 이름(<c>exe-tables\discoveries.json</c>).</summary>
     private const string CacheName = "발견물표";
 
     /// <summary>알맹이 모양 판. 그림·동영상·파는 도시 칸을 더하면서 올렸다.</summary>
