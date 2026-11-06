@@ -4831,26 +4831,19 @@ public sealed class WorldMapWindow : Window
         if (!angry && !treaty) return true;
 
         // 조약 쪽은 무엇에 막혔는지를 먼저 이른다(0x0046A6C0) — <b>문지기가 얼굴을 걸고</b>
-        // 말하고, 마을(0x00552208)과 항구(0x00552240)의 글이 다르다.
+        // 말하고, 마을(0x00552208)과 항구(0x00552240)의 글이 다르다. 원본은 도시 그림이 펴진 뒤에(0x0046ABB0 이 도시 화면 위에서)
+        // 말하므로 HostileCityMenu 가 그림을 편 다음 부른다 — 예전에는 그림보다 먼저 지도 위에 떴다(버그 리포트 #19).
+        Action<Window>? treatyLine = null;
         if (treaty && !angry)
         {
             string theirs = _game.Nations?.Find(nation)?.Name ?? "";
             string mine = _game.Player.NationName;
             int culture = _game.CityRows?.CultureOf(city) ?? 0;
             var gate = _game.SpeakerFace(Standoff.GateSpeaker(byLand), culture);
-            // 문지기 말이다 — 대사 창이 말 수준만큼 뭉개고 부관 · 통역이 옮긴다(HostileCityMenu.GateListener).
-            var was = Engine.Town.KeeperTongue.Here;
-            Engine.Town.KeeperTongue.Here = () => HostileCityMenu.GateListener(_game, city);
-            try
-            {
-                TalkDialog.Say(this, gate, "", byLand
-                    ? string.Format(Standoff.TreatyWord, Standoff.TreatyName, mine)
-                    : string.Format(Standoff.TreatyPortWord, theirs, Standoff.TreatyName, mine));
-            }
-            finally
-            {
-                Engine.Town.KeeperTongue.Here = was;
-            }
+            // 문지기 말이다 — 대사 창이 말 수준만큼 뭉개고 부관 · 통역이 옮긴다(HostileCityMenu.Run 이 GateListener 를 걸어 둔 채 부른다).
+            treatyLine = owner => TalkDialog.Say(owner, gate, "", byLand
+                ? string.Format(Standoff.TreatyWord, Standoff.TreatyName, mine)
+                : string.Format(Standoff.TreatyPortWord, theirs, Standoff.TreatyName, mine));
         }
 
         // 도시 그림이 펴지는 동안은 이미 도시에 닿은 것이다 — 지도에 남색 막을 씌운다.
@@ -4862,7 +4855,7 @@ public sealed class WorldMapWindow : Window
         EndWeather();
 
         var end = HostileCityMenu.Run(this, _game, city, name, byLand, MapAreaOnScreen(),
-                                      byTreaty: treaty && !angry);
+                                      byTreaty: treaty && !angry, opening: treatyLine);
 
         // 성문 앞에서는 막이 씌워지고 그 도시 곡이 돌았다. 못 들어가고 물러서면 되돌린다 —
         // 들어갔으면 ShowCityPicture 가 막도 곡도 제 것으로 다시 건다.

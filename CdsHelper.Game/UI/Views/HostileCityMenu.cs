@@ -62,9 +62,13 @@ internal static class HostileCityMenu
     /// <param name="stage">
     /// <paramref name="inCity"/> 일 때 하트·동전을 돌릴 무대 — 도시 그림 창 자신이다.
     /// </param>
+    /// <param name="opening">
+    /// 그림이 펴진 <b>뒤에</b> 할 말 — 조약에 막힌 문지기의 첫마디(<c>0x0046A6C0</c>)다. 원본은 도시 화면이 이미 떠 있는
+    /// 채로 그 말을 하는데, 예전에는 그림보다 먼저 말해 지도 위에 대사가 떴다(버그 리포트 #19). 인자는 말을 띄울 창이다.
+    /// </param>
     public static Outcome Run(Window owner, Engine.Game game, int city, string cityName,
                               bool byLand, Rect mapArea = default, bool byTreaty = false,
-                              bool inCity = false, IGateStage? stage = null)
+                              bool inCity = false, IGateStage? stage = null, Action<Window>? opening = null)
     {
         // 원본도 그림부터 편다 — 도시는 그려지고 성문에서 막히는 것이다.
         var scene = inCity ? null : GateScene.Open(owner, game, city, mapArea);
@@ -79,6 +83,7 @@ internal static class HostileCityMenu
         KeeperTongue.Here = () => GateListener(game, city);
         try
         {
+            opening?.Invoke(scene as Window ?? owner);
             return AtTheGate(scene as Window ?? owner, fx, game, city, cityName, byLand, byTreaty);
         }
         finally
