@@ -2839,7 +2839,8 @@ public sealed class WorldMapWindow : Window
     /// <returns>새로 만들어도 되면 true, 물러났으면 false.</returns>
     private bool BreakOff()
     {
-        var saved = GameSave.Load();
+        // 원본처럼 중단저장부터 본다(0x004787E5 — SAVEDATA.TMP 가 없으면 SAVEDATA.CDS).
+        var saved = GameSave.Load(GameSave.SuspendPath) ?? GameSave.Load();
         if (saved == null) return true;
 
         string name = !string.IsNullOrEmpty(saved.Name) ? saved.Name : "이름 없는 제독";
@@ -3513,6 +3514,7 @@ public sealed class WorldMapWindow : Window
             string name = !string.IsNullOrEmpty(d.Name) ? d.Name
                         : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } full ? full : "이름 없는 제독";
             if (d.Hardcore == true) name += "(H)";   // 하드코어 주인공 — 게임 오버가 되면 이 세이브가 지워진다
+            if (GameSave.IsSuspendFile(s.File)) name += Lang.T("(중단)");   // 게임 중단으로 적은 것 — 열면 지워진다
             string city = string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName;
             return Row(name, city, Day(d), $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
         }).ToList();
@@ -3527,6 +3529,7 @@ public sealed class WorldMapWindow : Window
                 string who = !string.IsNullOrEmpty(d.Name) ? d.Name
                            : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } whole ? whole : "이름 없는 제독";
                 if (d.Hardcore == true) who += "(H)";
+                if (GameSave.IsSuspendFile(s.File)) who += Lang.T("(중단)");
                 return new[]
                 {
                     who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName, Day(d),
@@ -3706,6 +3709,8 @@ public sealed class WorldMapWindow : Window
             _game.Player.SkipsCumulative = saved.SkipsCumulative ?? false;
             // 중단저장으로 적힌 판을 열었으면 「아직 저장 안 됨」이 선다(0x00478E2B).
             _game.Unsaved = saved.Suspended == true;
+            // 중단저장(SAVEDATA.TMP)은 열고 나면 지운다(0x00478E26) — 한 번만 이어 한다. 일반 세이브는 그대로 남는다.
+            if (GameSave.IsSuspendFile(path)) GameSave.DeleteSuspend();
             // 앞 판은 발견물 아이템을 발견할 때 소지품에 넣었다 — 아직 안 알린 것은 한 벌씩 걷어 낸다.
             if (saved.Version < GameSave.VirtualItemsFrom)
                 foreach (int item in GameInfo.VirtualItems(_game)) _game.Player.Drop(item);
@@ -4265,7 +4270,8 @@ public sealed class WorldMapWindow : Window
     /// 중단하겠습니다." <c>0x00568C80</c>). 적지 못했으면 나가지 않는다 — 나가 버리면
     /// 그 판이 그대로 사라진다.
     ///
-    /// 적는 자리는 도시에서 적는 것과 같다. 도시에 들어가 있지 않으므로
+    /// 적는 자리는 일반 세이브가 아니라 중단저장(<see cref="GameSave.SuspendPath"/>, 원본 <c>SAVEDATA.TMP</c>)이다 —
+    /// 바다에서는 정식 저장이 안 된다. 도시에 들어가 있지 않으므로
     /// <see cref="Player.CityId"/> 가 -1 로 남는데, 그 값이 곧 "바다에서 적었다" 는 표시다.
     /// </remarks>
     private void Suspend()

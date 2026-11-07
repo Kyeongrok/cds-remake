@@ -103,6 +103,35 @@ public static class GameSave
     public static string Path => UserDataFolder.Combine("SAVEDATA.CDS");
 
     /// <summary>
+    /// <b>중단저장</b> 자리 — 원본의 <c>SAVEDATA.TMP</c>(<c>0x00537644</c>, 포인터 <c>0x0056877C</c>)다.
+    /// </summary>
+    /// <remarks>
+    /// 원본의 「게임 중단」(<c>0x004791D0</c> — 바다 「기능」 <c>0x0048B771</c> · 남의 나라 여관 <c>0x004A27E4</c>)은
+    /// 이 파일만 지우고 다시 적는다. <c>SAVEDATA.CDS</c> 는 건드리지 않는다. 로드(<c>0x00478A60</c>)는 이 파일을 <b>먼저</b> 찾고,
+    /// 있으면 그것을 연 뒤 <b>지우고</b> 「아직 저장 안 됨」을 세운다(<c>0x00478E17</c>~<c>0x00478E2B</c>) — 한 번만 이어 할 수 있다.
+    /// 여느 저장(끝 <c>0x00479101</c>~)은 이 파일과 <c>SAVEDATA.CDS</c> 를 함께 지운 뒤 <c>SAVEDATA.CDS</c> 를 적는다.
+    /// 예전에는 중단도 <see cref="Path"/> 와 손으로 적은 칸에 적어 일반 세이브를 덮었다(버그 리포트 #21).
+    /// </remarks>
+    public static string SuspendPath => UserDataFolder.Combine("SAVEDATA.TMP");
+
+    /// <summary>열려는 파일이 중단저장 자리인지.</summary>
+    public static bool IsSuspendFile(string? file) =>
+        !string.IsNullOrEmpty(file)
+        && string.Equals(System.IO.Path.GetFullPath(file), System.IO.Path.GetFullPath(SuspendPath),
+                         StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>중단저장을 지운다 — 이어 하기로 연 뒤(원본 <c>0x00478E26</c>)다. 지웠거나 없으면 true.</summary>
+    public static bool DeleteSuspend()
+    {
+        try
+        {
+            if (File.Exists(SuspendPath)) File.Delete(SuspendPath);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    /// <summary>
     /// 예전 <b>자동저장</b> 파일 자리 — 한 칸을 덮어쓰던 때의 것이다.
     /// </summary>
     /// <remarks>
@@ -165,11 +194,14 @@ public static class GameSave
         var slots = Slots(ManualFiles());
         if (Load() is { } latest && !slots.Any(s => s.Save.SavedAt == latest.SavedAt))
             slots = [.. slots.Append(new AutoSlot(Path, latest)).OrderByDescending(s => s.Save.SavedAt)];
+        // 중단저장도 한 줄로 낸다 — 원본 로드는 이것부터 연다(0x00478ABD). 열고 나면 지워진다.
+        if (Load(SuspendPath) is { } suspended)
+            slots = [.. slots.Append(new AutoSlot(SuspendPath, suspended)).OrderByDescending(s => s.Save.SavedAt)];
         return slots;
     }
 
-    /// <summary>손으로 적은 세이브가 하나라도 있는지 — 파일만 보고 열지는 않는다.</summary>
-    public static bool HasManualSave() => File.Exists(Path) || ManualFiles().Count > 0;
+    /// <summary>손으로 적은 세이브(중단저장 포함)가 하나라도 있는지 — 파일만 보고 열지는 않는다.</summary>
+    public static bool HasManualSave() => File.Exists(Path) || File.Exists(SuspendPath) || ManualFiles().Count > 0;
 
     /// <summary><see cref="ManualSlots"/> 개를 넘는 오래된 칸을 지운다. <see cref="Path"/> 는 안 건드린다.</summary>
     private static void PruneManualSaves()
@@ -256,7 +288,8 @@ public static class GameSave
 
         int gone = 0;
         // 손으로 적은 지난 칸(ManualDirectory)도 같이 걷는다 — 남기면 LOAD GAME 목록에서 은퇴한 제독이 되살아난다.
-        foreach (var slot in AutoSaves().Concat(Slots(ManualFiles())))
+        // 중단저장(SAVEDATA.TMP)도 그 판 것이면 지운다 — 원본도 은퇴 · 삭제에서 함께 지운다(0x0045F909).
+        foreach (var slot in AutoSaves().Concat(Slots(ManualFiles())).Concat(Slots(File.Exists(SuspendPath) ? [SuspendPath] : [])))
         {
             if (!Same(slot.Save)) continue;
             try { File.Delete(slot.File); gone++; }
@@ -430,7 +463,8 @@ public static class GameSave
     /// <summary>지금 상태를 적는다. 실패하면 까닭을 돌려준다(성공이면 빈 문자열).</summary>
     /// <param name="suspended">
     /// 중단저장인지 — 원본은 중단이면 <c>SAVEDATA.TMP</c> 로 적고, 그것을 불러온 판에 「아직 저장 안 됨」
-    /// 비트(<c>0x005A4D18 &amp; 0x80</c>)를 세운다(<c>0x00478E2B</c>). 우리는 파일이 하나라 이 칸으로 든다.
+    /// 비트(<c>0x005A4D18 &amp; 0x80</c>)를 세운다(<c>0x00478E2B</c>). 우리도 <see cref="SuspendPath"/> 에 적고,
+    /// 불러올 때 이 칸을 보고 그 비트를 세운다.
     /// </param>
     /// <param name="path">
     /// 적을 자리. 안 주면 <see cref="Path"/> 다 — <b>자동저장</b>만 <see cref="AutoPath"/> 를 준다.
@@ -617,14 +651,16 @@ public static class GameSave
                             PackPrint: player.PackPrint.Length > 0 ? player.PackPrint : null);
         try
         {
-            string file = string.IsNullOrEmpty(path) ? Path : path;
+            // 중단은 제 자리(SAVEDATA.TMP)에만 적는다 — 일반 세이브와 손으로 적은 칸은 그대로 둔다(0x00479447~0x0047946F).
+            bool manual = string.IsNullOrEmpty(path) && !suspended;
+            string file = !string.IsNullOrEmpty(path) ? path : suspended ? SuspendPath : Path;
             var dir = System.IO.Path.GetDirectoryName(file);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
             string json = Sealed(data);
 
             // 「가장 새 것」 자리를 덮기 전에, 그 자리에 있던 것이 지난 칸에 없으면 한 칸으로 옮겨 둔다 —
             // 칸이 생기기 전에 적은 세이브나, 딴 캐릭터를 남겨 둔 채 새 캐릭터가 처음 적을 때 앞의 것이 사라지지 않게.
-            if (string.IsNullOrEmpty(path) && Load() is { } before
+            if (manual && Load() is { } before
                 && !Slots(ManualFiles()).Any(s => s.Save.SavedAt == before.SavedAt))
             {
                 try
@@ -640,8 +676,14 @@ public static class GameSave
 
             // 손으로 적은 것이면 지난 칸으로도 한 벌 남긴다 — 다섯 칸을 넘으면 가장 오래된 것이 빠진다.
             // 칸을 못 남겨도 저장 자체는 된 것이라 까닭을 올리지 않는다.
-            if (string.IsNullOrEmpty(path))
+            if (manual)
             {
+                // 여느 저장은 중단저장을 지운다(0x00479119) — 남기면 지난 중단 자리로 되돌아갈 수 있다.
+                // 우리는 딴 캐릭터를 남겨 둘 수 있으므로 <b>같은 판</b>의 중단저장만 지운다.
+                if (Load(SuspendPath) is { } stale
+                    && (string.IsNullOrEmpty(stale.GameId) || string.IsNullOrEmpty(player.GameId)
+                        || stale.GameId == player.GameId))
+                    DeleteSuspend();
                 try
                 {
                     Directory.CreateDirectory(ManualDirectory);
