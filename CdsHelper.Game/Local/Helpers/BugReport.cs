@@ -171,6 +171,11 @@ public static class BugReport
             ["mods"] = PlayStats.Mods(),
         };
         if (CrashLogTail() is { } crash) { context["crashLogAt"] = crash.At; context["crashLog"] = crash.Tail; }
+        // 세이브 자리 요약과 마지막 불러오기 결과 — 「로딩이 아예 안 된다」(버그 리포트 #26)는 오류 기록이 없어 가를 길이 없었다.
+        // 파일 이름 · 칸 수 · 까닭만 싣는다(경로는 Scrub 으로 지운다).
+        context["saves"] = Scrub(Engine.GameSave.Census());
+        if (Engine.GameSave.LastLoadOutcome.Length > 0) context["lastLoad"] = Scrub(Engine.GameSave.LastLoadOutcome);
+        if (CustomPacks.Active is { } pack) context["pack"] = pack;
         return context;
     }
 

@@ -67,6 +67,8 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 | `CDS_START=sea:<도시>:<선체 key>` | 타이틀을 건너뛰고 라몬이 그 배 한 척으로 그 도시 앞바다에서 항해 지도에 든다(암스테르담 24 · 제노바 28 · 리스본 …) |
 | `CDS_START=land:<도시>:<선체 key>:<x>:<y>` | 같은 바로 시작인데 배는 그 도시 앞바다에 대 두고 말을 그 칸(가까운 육지)에 세운다 — 발견물 자리 사건을 밟아 볼 때(로제타석: `land:78:ketch:1460.5:407.5` + 뱃머리 6 · 걷기) |
 | `CDS_DIALOG=bugreport` | 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다 — 메뉴 창이 떠 있는 동안 배 · 말이 서는지 본다 |
+| `CDS_TITLE=Down,Enter` | 타이틀에서 그 글쇠들을 1초 간격으로 누른다(LOAD GAME = `Down,Enter`, CONTINUE = `Down,Down,Enter`). 기록에 세이브 자리 요약(`GameSave.Census`)과 1초마다 화면 · 마지막 불러오기 결과를 적는다 |
+| `CDS_AUTOKEY=Enter` | `CDS_TITLE` 과 함께 — 새로 뜬 창마다 종류 · 물음 글(ConfirmDialog 는 이름으로)을 적고 그 글쇠를 한 번 보낸다(목록은 맨 위 칸, 물음은 「예」) |
 | `CDS_HEADING=<0~7>` · `CDS_SAIL=1` | 뱃머리(0 북 · 2 서 · 4 남 · 6 동 · 7 북동, `ShipRegistry.DirectionNames` 차례)와 저절로 나아가기 |
 | `CDS_SHOT=<png>:<초>[;…]` | **바다로 든 뒤** 그 초에 찍고, 마지막 것을 찍으면 스스로 닫힌다 |
 | 메시지 `0x8001` | 창에 `PostMessage` 하면 `<SAVEDIR 또는 %TEMP%>\cds_snapshot.png`. 창 핸들은 같은 폴더 `cds_hwnd.txt` |

@@ -68,6 +68,8 @@ public sealed class ConfirmDialog : GameWindow
         // 일본어로 켰으면 글 통째로 번역표에서 찾아 바꾼다(줄을 가르기 전에) — 대사 · 알림이 다 이 창을 지난다.
         text = Lang.T(text);
         if (title != null) title = Lang.T(title);
+        // 글은 제 손으로 그려 창 나무에 글자가 없다 — 화면 밖 시험 기록 · 읽어 주는 프로그램이 읽을 수 있게 이름으로 걸어 둔다.
+        System.Windows.Automation.AutomationProperties.SetName(this, text);
 
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;

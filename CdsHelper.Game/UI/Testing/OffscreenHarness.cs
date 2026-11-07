@@ -27,6 +27,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   버그 리포트 창 CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 띄운다(그동안 배 · 말이 서는지 본다).
 ///   내 리포트 창   CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
+///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
 /// </code>
 /// 무엇을 했는지는 <c>OffscreenTest.OutputFolder\cds_test.log</c> 에 한 줄씩 적는다. 창 핸들은 <see cref="OffscreenTest.HwndFile"/>.
@@ -88,6 +89,9 @@ public static class OffscreenHarness
         {
             if (OffscreenTest.Start is { } start) RunStart(window, start);
             ScheduleShots(window);
+            // CDS_TITLE=Down,Enter — 타이틀에서 그 글쇠들을 1초 간격으로 누른다(LOAD GAME · CONTINUE 따위).
+            // CDS_AUTOKEY=Enter — 새로 뜬 창마다 그 글을 기록에 적고, 그 글쇠를 한 번 보낸다(목록은 맨 위 칸 · 물음은 「예」).
+            if (Environment.GetEnvironmentVariable("CDS_TITLE") is { Length: > 0 } title) RunTitleKeys(window, title);
             // CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다. 닫힐 때까지 돌아오지 않는다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "bugreport")
                 window.Dispatcher.BeginInvoke(() =>
@@ -158,6 +162,92 @@ public static class OffscreenHarness
         Log(error.Length == 0
             ? $"바다로 들었다 — 도시 {city} · 선체 {parts[2]} · 뱃머리 {ShipRegistry.DirectionNames[heading / 2]} · 항해 {OffscreenTest.Sail}"
             : $"바로 시작 실패 — {error}");
+    }
+
+    // ── 타이틀 글쇠 ─────────────────────────────────────────────────────────
+
+    /// <summary><c>CDS_TITLE</c> 의 글쇠를 차례로 누르고, 뜨는 창을 지켜본다(<c>CDS_AUTOKEY</c>).</summary>
+    private static void RunTitleKeys(WorldMapWindow window, string spec)
+    {
+        var keys = new Queue<System.Windows.Input.Key>();
+        foreach (string name in spec.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            if (Enum.TryParse(name, true, out System.Windows.Input.Key key)) keys.Enqueue(key);
+            else Log($"CDS_TITLE 글쇠를 못 읽었다 — [{name}]");
+        System.Windows.Input.Key? auto = Environment.GetEnvironmentVariable("CDS_AUTOKEY") is { } autoName
+                                         && Enum.TryParse(autoName, true, out System.Windows.Input.Key a) ? a : null;
+
+        Log($"세이브 자리 — {Engine.GameSave.Census()}");
+        var seen = new HashSet<Window>();
+        int ticks = 0;
+        var watch = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromMilliseconds(500) };
+        watch.Tick += (_, _) =>
+        {
+            ticks++;
+            foreach (Window w in Application.Current.Windows)
+            {
+                if (ReferenceEquals(w, window) || !w.IsVisible || !seen.Add(w)) continue;
+                Log($"창이 떴다 — {w.GetType().Name} · 제목 [{w.Title}] · 주인 {w.Owner?.GetType().Name ?? "없음"} · 자리 ({w.Left:0}, {w.Top:0}) · 이름 [{System.Windows.Automation.AutomationProperties.GetName(w).Replace('\n', ' ')}] · 글 [{TextOf(w)}]");
+                if (auto is { } send)
+                {
+                    var target = w;
+                    var later = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromMilliseconds(700) };
+                    later.Tick += (_, _) =>
+                    {
+                        later.Stop();
+                        if (!target.IsVisible) return;
+                        Log($"{target.GetType().Name} 에 {send} 를 보낸다");
+                        window.Dispatcher.BeginInvoke(() => Press(target, send));
+                    };
+                    later.Start();
+                }
+            }
+            if (ticks % 2 == 0)
+            {
+                if (keys.Count > 0)
+                {
+                    var key = keys.Dequeue();
+                    Log($"타이틀 글쇠 {key}");
+                    // 엔터가 띄우는 창(ShowDialog)은 닫힐 때까지 안 돌아온다 — 이 시계가 멎지 않게 따로 부른다.
+                    window.Dispatcher.BeginInvoke(() => Log($"타이틀 글쇠 {key} 가 돌아왔다 → {window.TitleKeyForTest(key)}"));
+                }
+                else Log($"화면 — {window.ScreenStateForTest()} · 마지막 불러오기 [{Engine.GameSave.LastLoadOutcome}]");
+            }
+        };
+        watch.Start();
+    }
+
+    /// <summary>창에 글쇠 하나를 미리보기 · 누름 차례로 쏜다(창이 활성이 아니어도 그 창의 처리기가 받는다).</summary>
+    private static void Press(Window w, System.Windows.Input.Key key)
+    {
+        var source = PresentationSource.FromVisual(w);
+        if (source == null) return;
+        var target = (IInputElement?)System.Windows.Input.Keyboard.FocusedElement is DependencyObject d && Window.GetWindow(d) == w
+            ? (IInputElement)System.Windows.Input.Keyboard.FocusedElement : w;
+        var preview = new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, source, 0, key)
+            { RoutedEvent = System.Windows.Input.Keyboard.PreviewKeyDownEvent };
+        target.RaiseEvent(preview);
+        if (preview.Handled) return;
+        target.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, source, 0, key)
+            { RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent });
+    }
+
+    /// <summary>창 안의 글(TextBlock · 글 상자)을 이어 붙인다 — 기록용.</summary>
+    private static string TextOf(DependencyObject root)
+    {
+        var parts = new List<string>();
+        void Walk(DependencyObject node)
+        {
+            switch (node)
+            {
+                case System.Windows.Controls.TextBlock t when !string.IsNullOrWhiteSpace(t.Text): parts.Add(t.Text.Trim()); break;
+                case System.Windows.Controls.TextBox b when !string.IsNullOrWhiteSpace(b.Text): parts.Add(b.Text.Trim()); break;
+            }
+            int n = VisualTreeHelper.GetChildrenCount(node);
+            for (int i = 0; i < n; i++) Walk(VisualTreeHelper.GetChild(node, i));
+        }
+        Walk(root);
+        string all = string.Join(" | ", parts).Replace('\n', ' ');
+        return all.Length > 400 ? all[..400] + "…" : all;
     }
 
     // ── 찍고 끄기 ───────────────────────────────────────────────────────────

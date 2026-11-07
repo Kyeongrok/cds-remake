@@ -3531,6 +3531,20 @@ public sealed class WorldMapWindow : Window
         // 달 · 날이 한 자리면 앞을 한 칸 띄워 줄끼리 「월 · 일」 자리를 맞춘다(요청) — 「1506년  1월  9일」.
         static string Day(GameSave.Data d) => d.Date == default ? "-" : Lang.T($"{d.Date.Year}년 {d.Date.Month,2}월 {d.Date.Day,2}일");
 
+        // 파일은 있는데 하나도 못 읽었으면 「없습니다」만 띄우지 않고 까닭을 함께 보인다 — 예전에는 못 읽은 칸이 말없이 빠져
+        // 「로딩이 아예 안 된다」(버그 리포트 #26)를 가를 길이 없었다.
+        if (slots.Count == 0)
+        {
+            var unreadable = GameSave.LoadErrorLines();
+            GameSave.LastLoadOutcome = unreadable.Count > 0 ? $"{caption}: 목록 비었음 — 못 읽은 것 {unreadable.Count}개" : $"{caption}: 목록 비었음";
+            if (unreadable.Count > 0)
+            {
+                NoticeDialog.Show(owner, $"{Lang.T(whenEmpty)}\n\n{Lang.T("세이브 파일을 읽지 못했습니다")} ({unreadable.Count})\n"
+                                         + string.Join("\n", unreadable.Take(5)));
+                return null;
+            }
+        }
+
         var rows = slots.Select(s =>
         {
             var d = s.Save;
@@ -3560,6 +3574,7 @@ public sealed class WorldMapWindow : Window
                 };
             }).ToList();
             int pick = SaveListDialog.Pick(owner, caption, ["캐릭터", "도시", "날짜", "저장한 시각", "발견물"], table);
+            if (pick < 0 || pick >= slots.Count) GameSave.LastLoadOutcome = $"{caption}: 고르지 않고 닫음({slots.Count}칸)";
             return pick >= 0 && pick < slots.Count ? slots[pick].File : null;
         }
 
@@ -3569,6 +3584,7 @@ public sealed class WorldMapWindow : Window
                                      listWidth: 740,
                                      // 맨 위(가장 새것)를 골라 둔다 — 결정만 누르면 곧바로 불러온다.
                                      preselect: 0);
+        if (slots.Count > 0 && (at < 0 || at >= slots.Count)) GameSave.LastLoadOutcome = $"{caption}: 고르지 않고 닫음({slots.Count}칸)";
         return at >= 0 && at < slots.Count ? slots[at].File : null;
     }
 
@@ -3598,15 +3614,23 @@ public sealed class WorldMapWindow : Window
         if (!fresh)
         {
             saved = GameSave.Load(path);
+            string file = System.IO.Path.GetFileName(string.IsNullOrEmpty(path) ? GameSave.Path : path);
             if (saved == null)
             {
-                NoticeDialog.Show(this, "적어 둔 기록이 없다.");
+                // 못 읽은 까닭이 있으면 함께 보인다 — 「기록이 없다」만으로는 파일이 없는지 깨졌는지 알 수 없다(버그 리포트 #26).
+                string? why = GameSave.LoadError(path);
+                GameSave.LastLoadOutcome = why == null ? $"기록 없음 {file}" : $"못 읽음 {file} — {why}";
+                NoticeDialog.Show(this, why == null ? "적어 둔 기록이 없다." : $"{Lang.T("적어 둔 기록을 읽지 못했다.")}\n{file}\n{why}");
                 return;
             }
             // 다른 커스텀 팩(또는 팩 없이)으로 시작한 세이브면 묻는다 — 표 값이 달라 그대로 이어지지 않을 수 있다.
             if (CustomPacks.MismatchQuestion(saved.Pack, saved.PackPrint) is { } question
                 && !ConfirmDialog.Ask(this, question, "커스텀 팩"))
+            {
+                GameSave.LastLoadOutcome = $"팩 물음에서 아니오 {file} (세이브 팩 [{saved.Pack}] · 지금 팩 [{CustomPacks.Active}])";
                 return;
+            }
+            GameSave.LastLoadOutcome = $"여는 중 {file}";
         }
 
         _screen.Content = _mapRoot;
@@ -3653,7 +3677,7 @@ public sealed class WorldMapWindow : Window
                                           + ex.Message, "오류", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-                if (!up) { _status.Text = _host.Status; return; }
+                if (!up) { _status.Text = _host.Status; GameSave.LastLoadOutcome = $"지도 못 엶 — {_host.Status}"; return; }
                 _host.ShowFlowArrows = GameSettings.ShowFlowArrows;
                 _host.SeaEffect = GameSettings.SeaEffect;
                 _host.SeaBrightness = GameSettings.SeaBrightness;
@@ -3907,6 +3931,9 @@ public sealed class WorldMapWindow : Window
                     ? $"뭍에서 이어 간다 — {saved.Date:yyyy년 M월 d일}"
                     : $"바다에서 이어 간다 — {saved.Date:yyyy년 M월 d일}";
         }
+
+        if (saved != null)
+            GameSave.LastLoadOutcome = $"불러옴 {System.IO.Path.GetFileName(string.IsNullOrEmpty(path) ? GameSave.Path : path)}";
 
         // 뭍에서 연 판은 걷는 곡이다 — 상륙할 때(Land)와 같다. 예전에는 늘 바다 곡이 났다.
         _game.Bgm.Play(_host.IsOnLand ? BgmPlayer.LandTrack : SeaTrackHere());
@@ -8329,6 +8356,15 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=bugreport</c>) — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다.</summary>
     internal void OpenBugReportForTest() => MenuItem(ShowBugReport)();
+
+    /// <summary>화면 밖 시험(<c>CDS_TITLE</c>) — 타이틀에서 글쇠 하나를 누른 것처럼 한다(위아래 · 엔터). 타이틀이 아니면 false.</summary>
+    internal bool TitleKeyForTest(Key key) =>
+        ReferenceEquals(_screen.Content, _titleRoot) && _titleFocus.HandleKey(key);
+
+    /// <summary>화면 밖 시험 — 지금 화면이 타이틀인지 지도인지와 제독 · 도시 · 날짜를 한 줄로.</summary>
+    internal string ScreenStateForTest() =>
+        (ReferenceEquals(_screen.Content, _titleRoot) ? "타이틀" : ReferenceEquals(_screen.Content, _mapRoot) ? "지도" : "그 밖")
+        + $" · 제독 {_game.Player.Name} · 도시 {_game.Player.CityId} · {_game.Player.Date:yyyy-MM-dd} · 멈춤 {_host.Paused} · 묻는 중 {_asking}";
 
     /// <summary>
     /// 화면 밖 시험(<c>CDS_DIALOG=trade</c>) — 그 도시 교역소 매매 창을 짐 몇 가지를 실은 채 띄운다(도시 화면은 안 거친다).

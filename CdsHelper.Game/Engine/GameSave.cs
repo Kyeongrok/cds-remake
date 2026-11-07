@@ -767,17 +767,86 @@ public static class GameSave
 
     public static Data? Load(string? path = null)
     {
+        string file = string.IsNullOrEmpty(path) ? Path : path;
         try
         {
-            string file = string.IsNullOrEmpty(path) ? Path : path;
             if (!File.Exists(file)) return null;
             string text = File.ReadAllText(file);
-            if (JsonSerializer.Deserialize<Data>(text) is not { } data) return null;
+            if (JsonSerializer.Deserialize<Data>(text) is not { } data)
+            {
+                NoteLoadError(file, null, "빈 파일(null)");
+                return null;
+            }
+            LoadErrors.TryRemove(System.IO.Path.GetFileName(file), out _);
             return data with { SealOk = data.Version < DevSealFrom ? null : SealMatches(text, data.DevSeal) };
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception ex)
         {
+            // 어떤 까닭이든 세이브 하나를 못 읽었다고 게임이 서면 안 된다 — 다만 <b>조용히 삼키지 않는다</b>. 예전에는
+            // IO · JSON 오류만 null 로 넘겨 목록에서 그 칸이 말없이 빠졌고, 「로딩이 아예 안 된다」(버그 리포트 #26)에
+            // 남은 것이 없었다. 까닭을 적어 두어 목록 · 불러오기 알림과 버그 리포트 컨텍스트(Census)에 싣는다.
+            // JSON 오류 글은 길다 — 어느 칸 · 몇째 줄에서 깨졌는지만 남긴다(알림 창 한 줄에 들게).
+            NoteLoadError(file, ex, ex is JsonException json
+                ? $"JsonException {json.Path} (줄 {(json.LineNumber is { } line ? line + 1 : 0)})"
+                : $"{ex.GetType().Name}: {ex.Message}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// 못 읽은 세이브 — 파일 이름 → 까닭. 다시 읽혀 성공하면 빠진다. 경로는 안 적는다(버그 리포트로 나간다).
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> LoadErrors =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>통계에 한 번씩만 올린 것(파일 · 오류 갈래) — 목록을 열 때마다 같은 오류를 또 보내지 않는다.</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> ReportedLoadErrors = new();
+
+    private static void NoteLoadError(string file, Exception? ex, string why)
+    {
+        string name = System.IO.Path.GetFileName(file);
+        if (why.Length > 240) why = why[..240] + "…";
+        LoadErrors[name] = why;
+        if (ex != null && ReportedLoadErrors.TryAdd($"{name}|{ex.GetType().Name}", 0))
+        {
+            try { Local.Helpers.PlayStats.Error(ex); } catch { /* 통계를 못 올려도 불러오기는 그대로다 */ }
+        }
+    }
+
+    /// <summary>그 파일을 못 읽은 까닭. 읽혔거나 아직 안 열어 봤으면 null.</summary>
+    public static string? LoadError(string? file) =>
+        LoadErrors.TryGetValue(System.IO.Path.GetFileName(string.IsNullOrEmpty(file) ? Path : file), out var why) ? why : null;
+
+    /// <summary>지금까지 못 읽은 세이브들(「파일: 까닭」). 없으면 빈 목록.</summary>
+    public static List<string> LoadErrorLines() => [.. LoadErrors.Select(e => $"{e.Key}: {e.Value}").Order()];
+
+    /// <summary>
+    /// 마지막 불러오기가 어떻게 끝났는지 — 「불러옴」 · 「목록 비었음」 · 「팩 물음에서 아니오」 따위. 버그 리포트 컨텍스트에 싣는다.
+    /// </summary>
+    public static string LastLoadOutcome { get; set; } = "";
+
+    /// <summary>
+    /// 세이브 자리의 한 줄 요약 — 칸마다 파일 수와 읽힌 수, 중단저장 · 가장 새 세이브가 있는지, 못 읽은 까닭.
+    /// 버그 리포트 컨텍스트에 싣는다(파일 이름만, 경로 없이). 「로딩이 아예 안 된다」를 다음에는 가를 수 있게 한다(버그 리포트 #26).
+    /// </summary>
+    public static string Census()
+    {
+        static (int Files, int Read) Count(IReadOnlyCollection<string> files) =>
+            (files.Count, files.Count(f => Load(f) != null));
+        try
+        {
+            var manual = Count(ManualFiles());
+            var autoFiles = new List<string>();
+            if (Directory.Exists(AutoDirectory)) autoFiles.AddRange(Directory.GetFiles(AutoDirectory, "*.CDS"));
+            if (File.Exists(AutoPath)) autoFiles.Add(AutoPath);
+            var auto = Count(autoFiles);
+            string Main(string file) => !File.Exists(file) ? "없음" : Load(file) != null ? "읽힘" : "못 읽음";
+            string line = $"SAVEDATA.CDS {Main(Path)} · save {manual.Read}/{manual.Files} · autosave {auto.Read}/{auto.Files}"
+                        + $" · SAVEDATA.TMP {Main(SuspendPath)}";
+            var errors = LoadErrorLines();
+            if (errors.Count > 0) line += " · 못 읽은 것 " + string.Join(" | ", errors.Take(3));
+            return line;
+        }
+        catch (Exception ex) { return $"세이브 자리를 못 셌다 — {ex.GetType().Name}: {ex.Message}"; }
     }
 }
