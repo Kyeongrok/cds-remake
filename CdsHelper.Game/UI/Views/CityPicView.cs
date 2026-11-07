@@ -1939,8 +1939,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 「%s%s 크면」의 조사는 은/는이다(0x004147F7 의 0x004281B0(이름, 1)).
         TalkDialog.Say(this, face, "",
                        string.Format(talk.Wife, child.Name, GameUi.Josa(child.Name, "은", "는")));
-        TalkDialog.Say(this, _game.Faces?.TryGetBgra(Home.FaceOf(child, age), child.Daughter),
-                       child.Name, talk.Child);
+        // 네 살까지는 아기 대본(「아~, 아~.」)인데, 원본 얼굴 표(0x00560D10)의 첫 칸은 딸이 139 · 140 이라
+        // 열 살 넘어 보이는 소녀 그림이 떴다(버그 리포트 #23 — 원본 0x004149F0 → 0x00469540 도 같은 얼굴이다).
+        // 소개 때 쓰는 아기 그림(EVSTILL 8, 0x0045FFE6)을 걸어 나이에 맞춘다 — 원본과 다르게 했다.
+        if (age < Home.BabyTo)
+            DiscoveryDialog.Show(this, _game.EventStills, Home.BabyStill, talk.Child, title: child.Name);
+        else
+            TalkDialog.Say(this, _game.Faces?.TryGetBgra(Home.FaceOf(child, age), child.Daughter),
+                           child.Name, talk.Child);
     }
 
     /// <summary>

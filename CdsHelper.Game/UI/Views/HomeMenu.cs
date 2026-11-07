@@ -396,19 +396,25 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         string Is(string name) => name + GameUi.Josa(name, "은", "는");
 
         var son = Home.EldestSon(_player);
-        var daughter = _player.Children.Where(c => c.Daughter).OrderBy(c => c.Born).FirstOrDefault();
+        // 맏딸도 이미 태어난 아이만 센다(0x00461958 의 0x004AB790(1, 0)) — 배 속의 딸이 끼면 안 된다(버그 리포트 #22).
+        var daughter = Home.EldestDaughter(_player);
         int sonAge = son?.AgeOn(_player.Date) ?? -1;
+        bool wife = _player.Spouse.Length > 0;
 
         if (son == null || sonAge < Home.EducateAge)
         {
             // 딸을 먼저 적고 아들을 뒤에 적으며, 끝은 <b>아들 이름</b>이다 — 밀어넣는 차례가
             // 딸이름·딸조사·딸나이·아들이름·아들조사·아들나이·아들이름이다(0x004619A3~0x004619C0).
+            // 아내 말 뒤에 아래 띠에도 까닭을 적는다(0x00461A08 · 0x00461A4D → 0x0040E0A0, 소리 0x1D) —
+            // 아내가 없으면 둘 다 없다(0x0046194E).
             if (son != null && daughter != null)
                 Wife($"{Is(daughter.Name)} {Math.Max(0, daughter.AgeOn(_player.Date))}세, {Is(son.Name)} {Math.Max(0, sonAge)}세에요. {son.Name}에게는 교육은 아직 무리에요.");
             else if (son != null)
                 Wife($"{Is(son.Name)} 아직 {Math.Max(0, sonAge)}세에요. 교육은 아직 일러요");
             else if (daughter != null)
                 Wife($"{Is(daughter.Name)} 아직 {Math.Max(0, daughter.AgeOn(_player.Date))}세예요. 가정 교육은 나에게 맡겨 주세요.");
+            if (wife && son != null) Band("10세 미만의 남자아이는 교육할 수 없습니다");   // 0x0053A200
+            else if (wife && daughter != null) Band("여자아이는 교육할 수 없습니다");     // 0x0053A268
             return;
         }
 
@@ -417,6 +423,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         if (_player.Contract != null)
         {
             Wife("여보, 당신 지금 계약중이죠? 아이에게 가르쳐 주는 건 고맙지만, 일을 먼저 끝낸 다음에 해 주세요.");
+            if (wife) Band("계약중에는 교육할 수 없습니다");   // 0x0053A178 (0x0046186D)
             return;
         }
 
@@ -489,6 +496,15 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
         if (remark != null) TalkDialog.Say(owner, ChildFace(son), son.Name, remark);
     }
 
+    /// <summary>
+    /// 아래 띠에 까닭을 적고 띠 소리(<c>0x1D</c>)를 낸다 — 원본 <c>0x0040E0A0(0x580C48, 글, 5)</c>.
+    /// </summary>
+    private void Band(string text)
+    {
+        (_view.Owner as WorldMapWindow)?.Say(text);
+        _game.Sfx?.Play(Local.Helpers.SoundBank.BandNoticePart);
+    }
+
     // ── 세대교체 ────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -520,20 +536,25 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             if (_player.Spouse.Length > 0) TalkDialog.Say(owner, WifeFace(), "", words);
         }
 
+        string Is(string name) => name + GameUi.Josa(name, "은", "는");
+
         if (Home.EldestSon(_player) is not { } son) return;
 
         int age = son.AgeOn(_player.Date);
         if (age < Home.SucceedAge)
         {
-            // 「%s%s %d세입니다. 18세 미만의 아이는…」(0x0053A458)은 안 보이는 기록용
-            // 힌트 패널로만 간다(0x00461F9F → 0x0040E0A0(0x580C48, …)) — 창으로 띄우지 않는다.
             Wife($"{son.Name}에게는 책임이 너무 무거운 것 같아요. 당신도 아직 일할 수 있잖아요.");
+            // 그 뒤 아래 띠에 「%s%s %d세입니다. 18세 미만의 아이는…」(0x0053A458)을 적고 소리 0x1D 를 낸다
+            // (0x00461F63~0x00461FA4 → 0x0040E0A0(0x580C48, 글, 5)). 아내가 없어도 띠는 선다(0x00461F41 → 0x00461F5A).
+            // 예전에는 0x00580C48 을 안 보이는 힌트 패널로 잘못 보고 안 냈다(버그 리포트 #22).
+            Band($"{Is(son.Name)} {Math.Max(0, age)}세입니다. 18세 미만의 아이는 세대교체를 할 수 없습니다.");
             return;
         }
         if (_player.Contract != null)
         {
-            // 「계약중에는 세대교체를 할 수 없습니다」(0x0053A3E8)도 힌트 패널행이다(0x00461F1F).
+            // 「계약중에는 세대교체를 할 수 없습니다」(0x0053A3E8)도 띠로 간다(0x00461F18) — 이쪽은 아내가 있어야 한다(0x00461EF5).
             Wife("여보, 당신 지금 계약중이 아니에요? 자기 계약은 스스로 끝내 주세요.");
+            if (_player.Spouse.Length > 0) Band("계약중에는 세대교체를 할 수 없습니다");
             return;
         }
         if (!ConfirmDialog.Ask(owner, $"{son.Name}에게 뒤를 잇게 하겠습니까?")) return;
@@ -591,7 +612,7 @@ internal sealed class HomeMenu(Window view, Engine.Game game, GameMenuHost menu)
             $"{father}의 아들 {son.Name}{GameUi.Josa(son.Name, "은", "는")} {jobName}{GameUi.Josa(jobName, "으로", "로")}서의 첫걸음을 내디뎠다.");
 
         // 딸이 있으면 작별 인사를 한다.
-        if (_player.Children.FirstOrDefault(c => c.Daughter) is { } daughter)
+        if (Home.EldestDaughter(_player) is { } daughter)
         {
             int her = daughter.AgeOn(_player.Date);
             string? words = her >= 15

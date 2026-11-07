@@ -691,6 +691,17 @@ public static class Home
         player.Children.Where(c => !c.Daughter && c.IsBornBy(player.Date))
                        .OrderBy(c => c.Born).FirstOrDefault();
 
+    /// <summary>
+    /// 맏딸 — 성별 1 가운데 가장 나이 많은 것(<c>0x004AB790(1, 0)</c>). 없으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 맏아들처럼 <b>이미 태어난</b> 딸만 센다(<c>0x004AB7D8</c> 의 나이 ≥ 0). 배 속의 딸을 세면 교육을 누를 때
+    /// 「(딸)은 0세, (아들)은 2세에요」처럼 아직 안 태어난 아이가 함께 나왔다(버그 리포트 #22).
+    /// </remarks>
+    public static Player.Child? EldestDaughter(Player player) =>
+        player.Children.Where(c => c.Daughter && c.IsBornBy(player.Date))
+                       .OrderBy(c => c.Born).FirstOrDefault();
+
     /// <summary>이미 태어난 아이가 하나라도 있는지 — 「교육」 줄의 조건이다(<c>0x004AB8C0(0)</c>).</summary>
     public static bool HasBornChild(Player player) =>
         player.Children.Any(c => c.IsBornBy(player.Date));
