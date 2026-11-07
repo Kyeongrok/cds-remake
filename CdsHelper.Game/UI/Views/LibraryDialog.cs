@@ -356,12 +356,18 @@ public sealed class LibraryDialog : GameWindow
     /// 책등 색을 고른다 — 게임 <c>0x4716A0</c> 의 규칙을 그대로 옮겼다.
     /// 이미 얻은 힌트는 세지 않으므로, 한 번도 안 편 책이 곧장 초록일 수 있다.
     /// </summary>
+    /// <remarks>
+    /// 원본은 힌트 상태 <c>[힌트+4] &amp; 3</c> 이 0 이 아닌 것을 건너뛴다(<c>0x00471711</c>) — bit0 · bit1 은
+    /// 힌트를 얻었을 때와 <b>그 발견물을 누가 보고했을 때</b>(<c>0x004AACA0</c> 의 <c>or [힌트+4], 3</c>) 켜진다.
+    /// 예전에는 얻은 것만 건너뛰어, 역사 항해자가 신대륙 같은 것을 먼저 보고한 뒤에도 그 힌트가 남은 것으로 쳐져
+    /// 기능이 모자라면 빨간 책으로 서 있었다(버그 리포트 #27). 원본은 그 힌트를 안 세어 초록이 된다.
+    /// </remarks>
     private int SpineColor(BookTable.Book book)
     {
         bool left = false;      // 아직 못 얻은 힌트가 남았나
         foreach (int hint in book.Hints)
         {
-            if (_player.HasHint(hint)) continue;
+            if (_player.HasHint(hint) || _reported?.Invoke(hint) == true) continue;
             left = true;
             if (CanRead(book) && Unlocked(hint) && KnowsSkill(hint)) return 1;   // 파랑
         }
