@@ -527,11 +527,11 @@ public sealed class WorldMapWindow : Window
             // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동 · 애드온)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
             [
                 // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는 볼 길이 없다.
-                (BarmaidBookRow, () => BarmaidBookDialog.Show(this, _game)),
+                (BarmaidBookRow, MenuItem(() => BarmaidBookDialog.Show(this, _game))),
                 // 누가 어느 도시로 가고 있는지는 지도에 배만 떠 있어 알 길이 없다.
-                (PersonMoveRow, () => PersonMoveDialog.Show(this, _game)),
+                (PersonMoveRow, MenuItem(() => PersonMoveDialog.Show(this, _game))),
                 // 애드온을 하나씩 켜고 끈다 — 모드 「애드온」을 켜야 줄이 선다.
-                (AddOnsRow, () => AddOnListDialog.Show(this)),
+                (AddOnsRow, MenuItem(() => AddOnListDialog.Show(this))),
             ],
             out _refreshApps,
             // 햄버거 오른쪽 「네비게이션(R)」 — 목적지 도시를 골라 자동항해(도시 안이면 출항부터)를 건다.
@@ -540,22 +540,22 @@ public sealed class WorldMapWindow : Window
             // 설정은 게임 띠에 두었다가 햄버거로 옮겼다 — 게임 띠에 없는 칸이라
             // 섞여 있으면 원본과 달라 보인다(개발 창을 옮긴 것과 같은 까닭이다).
             // 지도 배율은 고르는 그 자리에서 지도에 먹인다.
-            ("설정", () => SettingsDialog.Show(this, _game.Bgm, s => _host.ApplyMapScale(s))),
-            ("단축키", () => { ShortcutDialog.Show(this); _refreshNav(); }),
+            ("설정", MenuItem(() => SettingsDialog.Show(this, _game.Bgm, s => _host.ApplyMapScale(s)))),
+            ("단축키", MenuItem(() => { ShortcutDialog.Show(this); _refreshNav(); })),
             // 업데이트한 뒤 한 번 뜨고 마는 글을 다시 본다 — 새 판 둘의 대목이다.
-            ("릴리즈 노트", ShowReleaseNotes),
+            ("릴리즈 노트", MenuItem(ShowReleaseNotes)),
             // 글을 써서 보내면 통계 대시보드의 「버그 리포트」 탭에 온다.
-            ("버그 리포트", ShowBugReport),
+            ("버그 리포트", MenuItem(ShowBugReport)),
             // 원본에 없던 발견물(돌묵상어 · 여우원숭이)의 글과 그림이 어디서 왔는지.
-            ("출처", () => NoticeDialog.Notes(this, ExtraCredits, "출처")),
+            ("출처", MenuItem(() => NoticeDialog.Notes(this, ExtraCredits, "출처"))),
             // 「하드코어 랭킹」 줄은 아직 안 낸다(PlayStats.RankingOpen) — 열 때 여기에 ("하드코어 랭킹", OpenHardcoreRanking) 을 넣는다.
             // 걷은 줄 둘 — 「게임데이터」는 도구 앱 「개발」 차림표로 옮겼고,
             // 「제독 정보」는 자택 차림표에서 여는 길이 있어 창만 남겼다.
             // 「발견물 지도」는 커맨드 「정보」로 옮겼다 — 게임 화면 안에서 여는 편이 찾기 쉽다.
             // 「도구 앱」은 개발 창으로 옮겼다 — 표를 손보는 길이라 개발 쪽이 맞다.
             // 원본에 없는 편의 기능(컨디션·미니맵·바람 화살표·기능·언어·출입 일수)은 모드 창에 모아 두었다.
-            ("모드", ShowModDialog),
-            ("개발", ShowDevDialog));
+            ("모드", MenuItem(ShowModDialog)),
+            ("개발", MenuItem(ShowDevDialog)));
         DockPanel.SetDock(titleBar, Dock.Top);
         shell.Children.Add(titleBar);
         shell.Children.Add(_screen);
@@ -3462,6 +3462,29 @@ public sealed class WorldMapWindow : Window
             if (!_asking && !_host.SeaBlocked && !CommandMenu.IsOpen) _host.Paused = false;
         }
     }
+
+    /// <summary>
+    /// 왼쪽 위 메뉴(설정 · 릴리즈 노트 · 버그 리포트 · 모드 · 개발 따위)와 그 옆 도시락 단추가 띄운 창이 떠 있는 동안 배 · 말을 세운다.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 창이 뜨면 항해 고리째로 선다. 이 메뉴는 원본에 없는 것이라 그동안 아무것도 안 세워, 버그 리포트를 쓰는
+    /// 사이에도 말이 걸어가 로제타석 자리를 밟았다(버그 리포트 #24 · #25). 대본은 그 창 위에서 돌았고 그림(00 0C — 아무
+    /// 글쇠에 닫힌다)과 「로제타석을 손에 넣었다！」 상자는 치던 글자에 곧바로 닫혀, 발견만 조용히 적혔다.
+    /// 멈춤을 걸어 두면 자리 판정 · 날 눈금 · 조우가 모두 쉰다(<see cref="CheckDiscovery"/> · <see cref="PassTime"/>).
+    /// </remarks>
+    private Action MenuItem(Action show) => () =>
+    {
+        // 도시 안(SeaBlocked)에서 열 수도 있어 멈춤은 연 때의 값으로 되돌린다 — 커맨드 창 것(HoldAfterCommand)처럼 풀어 버리지 않는다.
+        bool asking = _asking, paused = _host.Paused;
+        _asking = true;
+        _host.Paused = true;
+        try { show(); }
+        finally
+        {
+            _asking = asking;
+            _host.Paused = paused;
+        }
+    };
 
     /// <summary>창이 떠 있는 동안 배를 세운다 — 묻는 사이에 흘러가지 않게.</summary>
     private void Hold(Action show)
@@ -8286,6 +8309,26 @@ public sealed class WorldMapWindow : Window
         _game.Bgm.Play(SeaTrackHere());
         return "";
     }
+
+    /// <summary>
+    /// 화면 밖 시험의 육지 시작(<c>CDS_START=land:&lt;도시&gt;:&lt;선체&gt;:&lt;x&gt;:&lt;y&gt;</c>) — 바로 시작과 같이 바다로 든 뒤,
+    /// 배는 그 도시 앞바다에 대 두고 말은 그 칸(가까운 육지)에 세운다. 발견물 자리 사건을 화면 밖에서 밟아 볼 때 쓴다.
+    /// </summary>
+    /// <param name="walk">참이면 그 뱃머리 쪽으로 걸어간다.</param>
+    internal string StartAshoreForTest(int city, string hullKey, double x, double y, int heading, bool walk)
+    {
+        string error = StartAtSeaForTest(city, hullKey, heading, false);
+        if (error.Length > 0) return error;
+        var (mooredX, mooredY) = _host.ShipCell is { } at ? (at.CellX + 0.5, at.CellY + 0.5) : (x, y);
+        if (!_host.PlaceAshore(x, y, mooredX, mooredY, heading)) return $"({x}, {y}) 언저리에 육지가 없다";
+        _lastChecked = null;
+        _host.SetHeading(heading);
+        if (walk) _host.SteerTo(heading);
+        return "";
+    }
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=bugreport</c>) — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다.</summary>
+    internal void OpenBugReportForTest() => MenuItem(ShowBugReport)();
 
     /// <summary>
     /// 화면 밖 시험(<c>CDS_DIALOG=trade</c>) — 그 도시 교역소 매매 창을 짐 몇 가지를 실은 채 띄운다(도시 화면은 안 거친다).

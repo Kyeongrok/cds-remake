@@ -23,6 +23,8 @@ namespace CdsHelper.Game.UI.Testing;
 ///   스냅샷         창에 PostMessage(0x8001) → OffscreenTest.SnapshotPath(%TEMP% 또는 CDS_SAVEDIR 의 cds_snapshot.png).
 ///                  WPF 화면(RenderTargetBitmap) 위에 지도 칸(D3D 스왑체인 백버퍼)과 딸린 창(도시 화면 · 대화 창)을 겹쳐 그린다.
 ///   바로 시작      CDS_START=sea:&lt;도시&gt;:&lt;선체 key&gt; (+ CDS_HEADING · CDS_SAIL) — WorldMapWindow.StartAtSeaForTest.
+///                  CDS_START=land:&lt;도시&gt;:&lt;선체 key&gt;:&lt;x&gt;:&lt;y&gt; — 말을 그 칸에 세운다(발견물 자리 사건 밟기, StartAshoreForTest).
+///   버그 리포트 창 CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 띄운다(그동안 배 · 말이 서는지 본다).
 ///   내 리포트 창   CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
@@ -86,6 +88,14 @@ public static class OffscreenHarness
         {
             if (OffscreenTest.Start is { } start) RunStart(window, start);
             ScheduleShots(window);
+            // CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다. 닫힐 때까지 돌아오지 않는다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "bugreport")
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log("버그 리포트 창을 띄운다");
+                    window.OpenBugReportForTest();
+                    Log("버그 리포트 창이 닫혔다");
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "mybugs")
                 window.Dispatcher.BeginInvoke(() =>
@@ -122,9 +132,20 @@ public static class OffscreenHarness
     private static void RunStart(WorldMapWindow window, string start)
     {
         var parts = start.Split(':');
+        // land:<도시>:<선체 key>:<x>:<y> — 배는 그 도시 앞바다에 대 두고 말을 그 칸에 세운다(CDS_HEADING · CDS_SAIL 이면 걸어간다).
+        if (parts.Length == 5 && parts[0] == "land" && int.TryParse(parts[1], out int landCity)
+            && double.TryParse(parts[3], System.Globalization.CultureInfo.InvariantCulture, out double landX)
+            && double.TryParse(parts[4], System.Globalization.CultureInfo.InvariantCulture, out double landY))
+        {
+            string landError;
+            try { landError = window.StartAshoreForTest(landCity, parts[2], landX, landY, (OffscreenTest.Heading ?? 0) * 2, OffscreenTest.Sail); }
+            catch (Exception ex) { landError = $"{ex.GetType().Name}: {ex.Message}"; }
+            Log(landError.Length == 0 ? $"육지에 섰다 — ({landX}, {landY}) · 걷기 {OffscreenTest.Sail}" : $"육지 시작 실패 — {landError}");
+            return;
+        }
         if (parts.Length != 3 || parts[0] != "sea" || !int.TryParse(parts[1], out int city))
         {
-            Log($"CDS_START 를 못 읽었다 — [{start}] (꼴: sea:<도시 번호>:<선체 key>)");
+            Log($"CDS_START 를 못 읽었다 — [{start}] (꼴: sea:<도시 번호>:<선체 key> · land:<도시 번호>:<선체 key>:<x>:<y>)");
             return;
         }
         // 모드 「추가 선박」을 켜 둔다 — 시험 폴더(CDS_SAVEDIR)일 때만. 사람 설정은 안 건드린다(선체는 꺼져 있어도 찾힌다).
