@@ -43,6 +43,21 @@ public sealed class WorldMapHost : HwndHost
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool DestroyWindow(IntPtr hwnd);
 
+    [DllImport("shell32.dll")]
+    private static extern void DragAcceptFiles(IntPtr hwnd, bool accept);
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern uint DragQueryFileW(IntPtr drop, uint index, System.Text.StringBuilder? file, uint size);
+
+    [DllImport("shell32.dll")]
+    private static extern void DragFinish(IntPtr drop);
+
+    /// <summary>
+    /// 지도 위에 파일을 끌어다 놓았을 때 — 지도는 WPF 가 아닌 자식 창이라 WPF 의 끌어 놓기(AllowDrop)가 닿지 않는다.
+    /// 그래서 자식 창이 <c>WM_DROPFILES</c> 를 받아 놓은 파일 경로들을 알린다(사용자 발견물 불러오기).
+    /// </summary>
+    public event Action<string[]>? FilesDropped;
+
     private readonly MapD3DRenderer _renderer = new();
     private readonly GameShipReader _ship = new();
 
@@ -887,6 +902,7 @@ public sealed class WorldMapHost : HwndHost
         if (_hwnd == IntPtr.Zero)
             throw new InvalidOperationException(
                 $"함대 창의 자식 창을 만들지 못했습니다 (Win32 {Marshal.GetLastWin32Error()})");
+        DragAcceptFiles(_hwnd, true);
         return new HandleRef(this, _hwnd);
     }
 
@@ -1058,8 +1074,24 @@ public sealed class WorldMapHost : HwndHost
     /// </summary>
     protected override IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        const int WmPaint = 0x000F;
+        const int WmPaint = 0x000F, WmDropFiles = 0x0233;
         if (msg == WmPaint) _dirty = true;
+        if (msg == WmDropFiles)
+        {
+            var files = new List<string>();
+            uint count = DragQueryFileW(wParam, 0xFFFFFFFF, null, 0);
+            for (uint i = 0; i < count; i++)
+            {
+                var path = new System.Text.StringBuilder((int)DragQueryFileW(wParam, i, null, 0) + 1);
+                DragQueryFileW(wParam, i, path, (uint)path.Capacity);
+                files.Add(path.ToString());
+            }
+            DragFinish(wParam);
+            handled = true;
+            // 고리 밖에서 알린다 — 받는 쪽이 확인 창을 띄워도 WndProc 안에서 막히지 않게.
+            if (files.Count > 0) Dispatcher.BeginInvoke(() => FilesDropped?.Invoke([.. files]));
+            return IntPtr.Zero;
+        }
         return base.WndProc(hwnd, msg, wParam, lParam, ref handled);
     }
 

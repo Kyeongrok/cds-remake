@@ -340,6 +340,32 @@ public sealed class WorldMapWindow : Window
         }
     }
 
+    /// <summary>
+    /// 끌어다 놓은 파일 가운데 사용자 발견물(<c>.cdsdiscovery</c>)을 불러온다 — 개발 창 사용자 발견물 창의 「불러오기…」와 같다.
+    /// 같은 발견물이 이미 있으면 덮어쓸지 묻고, 끝나면 무엇을 불러왔는지 알린다.
+    /// </summary>
+    private void ImportDropped(string[] files)
+    {
+        var picked = files.Where(f => string.Equals(Path.GetExtension(f), ".cdsdiscovery", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (picked.Count == 0)
+        {
+            NoticeDialog.Show(this, "사용자 발견물 파일(.cdsdiscovery)만 끌어다 놓아 불러올 수 있습니다.", "발견물 불러오기");
+            return;
+        }
+        var lines = new List<string>();
+        foreach (string file in picked)
+        {
+            var (entry, message) = UserDiscoveries.Import(file, (had, got) => ConfirmDialog.Ask(this,
+                $"같은 발견물 「{had.Name}」 이 이미 있습니다. 불러온 「{got.Name}」 으로 덮어쓸까요?", "발견물 불러오기"));
+            lines.Add(entry != null ? message : $"{Path.GetFileName(file)} — {message}");
+        }
+        if (!Local.Settings.GameSettings.ExtraDiscoveries)
+            lines.Add("모드 「추가 발견물」을 켜야 불러온 발견물이 게임에 나옵니다.");
+        HideCities();
+        // 줄마다 번역한 뒤 잇는다 — 이은 글은 번역표에 없다.
+        NoticeDialog.Show(this, string.Join("\n", lines.Select(Lang.T)), "발견물 불러오기");
+    }
+
     public WorldMapWindow()
     {
         UiFont.Install();   // 모드 「리디바탕 글꼴」 — 뜨는 창마다 글꼴을 건다
@@ -349,6 +375,11 @@ public sealed class WorldMapWindow : Window
         Width = 1200;
         Height = 800;
         Loaded += (_, _) => SettingsDialog.Apply(this);
+        // 사용자 발견물 파일(.cdsdiscovery)을 게임 창에 끌어다 놓으면 불러온다 — 지도 위는 자식 창이 받고(WM_DROPFILES),
+        // 그 밖의 자리(테두리 · 제목 줄)는 WPF 가 받는다.
+        AllowDrop = true;
+        Drop += (_, e) => { if (e.Data.GetData(DataFormats.FileDrop) is string[] files) ImportDropped(files); };
+        _host.FilesDropped += ImportDropped;
         Background = Brushes.Black;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         // 인물 세상을 새로 지을 때마다(불러오기 포함) 누적 캐릭터를 다시 앉힌다.
