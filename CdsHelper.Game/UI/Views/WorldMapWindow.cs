@@ -3527,14 +3527,17 @@ public sealed class WorldMapWindow : Window
     private Action MenuItem(Action show) => () =>
     {
         // 도시 안(SeaBlocked)에서 열 수도 있어 멈춤은 연 때의 값으로 되돌린다 — 커맨드 창 것(HoldAfterCommand)처럼 풀어 버리지 않는다.
-        bool asking = _asking, paused = _host.Paused;
+        bool asking = _asking, paused = _host.Paused, blocked = _host.SeaBlocked;
         _asking = true;
         _host.Paused = true;
         try { show(); }
         finally
         {
             _asking = asking;
-            _host.Paused = paused;
+            // 여급 수첩 · 인물 이동 같은 창은 도시 화면을 막지 않아, 띄워 둔 채 출항할 수 있다. 그러면 출항이 멈춤을 풀었는데
+            // 창을 닫을 때 도시에서 연 값(멈춤)으로 되돌려 바다에서 배가 영영 섰다(버그 리포트 #36). 그동안 누가 멈춤을 풀었거나
+            // 도시 안팎이 바뀌었으면 지금 값을 그대로 둔다.
+            if (_host.Paused && _host.SeaBlocked == blocked) _host.Paused = paused;
         }
     };
 
