@@ -88,6 +88,9 @@ public static class OffscreenHarness
         window.Loaded += (_, _) => window.Dispatcher.BeginInvoke(() =>
         {
             if (OffscreenTest.Start is { } start) RunStart(window, start);
+            // CDS_NAV=<도시> — 바로 시작한 뒤 네비게이션으로 그 도시에 자동항해를 걸고, 1초마다 배 자리 · 끝 · 뜬 창을 적는다.
+            if (Environment.GetEnvironmentVariable("CDS_NAV") is { } nav && int.TryParse(nav, out int navCity))
+                RunNav(window, navCity);
             ScheduleShots(window);
             // CDS_TITLE=Down,Enter — 타이틀에서 그 글쇠들을 1초 간격으로 누른다(LOAD GAME · CONTINUE 따위).
             // CDS_AUTOKEY=Enter — 새로 뜬 창마다 그 글을 기록에 적고, 그 글쇠를 한 번 보낸다(목록은 맨 위 칸 · 물음은 「예」).
@@ -162,6 +165,31 @@ public static class OffscreenHarness
         Log(error.Length == 0
             ? $"바다로 들었다 — 도시 {city} · 선체 {parts[2]} · 뱃머리 {ShipRegistry.DirectionNames[heading / 2]} · 항해 {OffscreenTest.Sail}"
             : $"바로 시작 실패 — {error}");
+    }
+
+    // ── 네비게이션 ──────────────────────────────────────────────────────────
+
+    /// <summary><c>CDS_NAV</c> — 그 도시로 자동항해를 걸고 1초마다 배 자리 · 어귀 · 뜬 창을 적는다. 창은 닫지 않는다.</summary>
+    private static void RunNav(WorldMapWindow window, int city)
+    {
+        var host = window.MapHost;
+        host.AutoSailEnded += message => Log($"자동항해 끝 — {message} · 어귀 [{string.Join(",", host.TownsAt())}]");
+        string error = window.NavForTest(city);
+        Log(error.Length == 0 ? $"네비게이션 — 도시 {city} 로 자동항해를 걸었다" : $"네비게이션 실패 — {error}");
+        var seen = new HashSet<Window>();
+        int seconds = 0;
+        var watch = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromSeconds(1) };
+        watch.Tick += (_, _) =>
+        {
+            seconds++;
+            var at = host.ShipCell;
+            Log($"{seconds}초 — 배 {at?.CellX:0.0},{at?.CellY:0.0} · 자동항해 {host.AutoSailing} · 마디 {host.AutoWaypointIndex + 1}/{host.AutoRouteCount}"
+                + $" · 어귀 [{string.Join(",", host.TownsAt())}] · {window.ScreenStateForTest()}");
+            foreach (Window w in Application.Current.Windows)
+                if (!ReferenceEquals(w, window) && w.IsVisible && seen.Add(w))
+                    Log($"창이 떴다 — {w.GetType().Name} · 글 [{TextOf(w)}]");
+        };
+        watch.Start();
     }
 
     // ── 타이틀 글쇠 ─────────────────────────────────────────────────────────

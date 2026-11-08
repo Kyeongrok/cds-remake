@@ -1650,6 +1650,8 @@ public sealed class WorldMapHost : HwndHost
         _autoKind = kind;
         _autoExact = exact || city >= 0;
         _autoIndex = 0;
+        _approachFrom = -1;
+        _autoRecover = false;
         _anchored = false;
         _tickAccum = 0;
         _stuckX = _shipX;
@@ -1774,6 +1776,8 @@ public sealed class WorldMapHost : HwndHost
         _autoCity = -1;
         _autoExact = false;
         _autoIndex = 0;
+        _approachFrom = -1;
+        _autoRecover = false;
         _anchored = false;
         _tickAccum = 0;
         _stuckX = _shipX;
@@ -1842,6 +1846,15 @@ public sealed class WorldMapHost : HwndHost
                 : left <= AutoTurnEarly || (left <= turnEarly && (last || SeaClear(route[_autoIndex + 1])));
             if (passed)
             {
+                // 도시로 가는 길인데 마지막 마디(어귀 물칸)를 선을 따라 다 와도 어귀 네모에 아직 안 들었다 — 여기서 멎으면
+                // 입항 물음이 안 뜬 채 닻만 내려 날이 흘렀다(버그 리포트 #30). 마디는 선을 따라 남은 거리로만 넘기므로
+                // 어귀 칸이 네모 가장자리면 반 칸 · 도는 원만큼 앞에서, 옆으로 비껴 있으면 더 멀리서 넘겼다.
+                // 어귀 칸으로 곧장 몇 칸 더 다가서고, 그래도 못 들면 멈추고 알린다.
+                if (last && _autoCity >= 0 && !_onLand)
+                {
+                    ApproachPort(wx, wy);
+                    return;
+                }
                 _autoIndex++;
                 continue;
             }
@@ -1887,6 +1900,34 @@ public sealed class WorldMapHost : HwndHost
         }
         CompleteAutoSail(_onLand ? "도착했습니다" : "도착했습니다. 닻을 내렸습니다");
     }
+
+    /// <summary>
+    /// 마지막 마디를 지나고도 어귀에 못 든 배를 어귀 칸으로 곧장 몬다. <see cref="PortApproachTicks"/> 틱 안에 못 들면
+    /// 닻을 내리고 <see cref="MissedPortMessage"/> 로 끝낸다 — 도는 원이 큰 배가 어귀 칸 둘레를 맴도는 것도 여기서 멎는다.
+    /// </summary>
+    private void ApproachPort(double wx, double wy)
+    {
+        if (_approachFrom < 0) _approachFrom = Ticks;
+        else if (Ticks - _approachFrom > PortApproachTicks)
+        {
+            CompleteAutoSail(MissedPortMessage);
+            return;
+        }
+        _targetX = _shipX + WrapDx(wx - _shipX);
+        _targetY = wy;
+    }
+
+    /// <summary>어귀 칸으로 곧장 다가서는 데 주는 틱 수(0.1초 x 100 = 10초, 게임 날로 이틀 남짓).</summary>
+    private const int PortApproachTicks = 100;
+
+    /// <summary>어귀에 다가서기 시작한 틱(<see cref="Ticks"/>). 아직이면 −1.</summary>
+    private long _approachFrom = -1;
+
+    /// <summary>도시로 가는 자동항해가 어귀에 못 들고 멎었을 때 <see cref="AutoSailEnded"/> 가 넘기는 말.</summary>
+    public const string MissedPortMessage = "항구에 들어서지 못해 자동항해를 멈췄습니다. 닻을 내렸습니다";
+
+    /// <summary>오래 못 나아가 자동항해를 끊었을 때 <see cref="AutoSailEnded"/> 가 넘기는 말.</summary>
+    public const string StuckMessage = "길이 막혀 자동항해를 멈췄습니다";
 
     /// <summary>배에서 그 자리까지 곧게 물이 이어지는지 — 반 칸마다 짚어 본다.</summary>
     private bool SeaClear((double X, double Y) to)
@@ -1941,8 +1982,11 @@ public sealed class WorldMapHost : HwndHost
         _autoRoute = null;
         _autoIndex = 0;
         _stuckTicks = 0;
+        // 막힌 쪽으로 계속 밀지 않게 세운다 — 알림 창을 닫은 뒤 손으로 몰면(클릭) 다시 간다.
+        _anchored = true;
+        _tickAccum = 0;
         _dirty = true;
-        AutoSailEnded?.Invoke("길이 막혀 자동항해를 멈췄습니다");
+        AutoSailEnded?.Invoke(StuckMessage);
     }
 
     /// <summary>지난 프레임에 그린 항로 마디 수.</summary>
@@ -2428,6 +2472,10 @@ public sealed class WorldMapHost : HwndHost
                 _targetY = origin.Y + _mouse.Y * dpiY * _cellsPerPixel;
 
                 // 항해사와 나침반이 있으면 곧장 돌지 않고 바닷길의 첫 길목으로 돈다(0x0048EE2E).
+                // 커서가 항구 도시(뭍) 위면 그 도시의 어귀 물칸을 향한다 — 뭍 칸을 그대로 주면 길찾기가 커서에서 가장 가까운
+                // 물칸(북쪽부터 훑는다)으로 밀어, 항구 코앞에서 어귀 아닌 데로 돌아 들어갔다(버그 리포트 #30).
+                if (PathAssist && !_onLand && PortUnder(_targetX, _targetY) is { } mouth)
+                    (_targetX, _targetY) = mouth;
                 if (PathAssist && !_onLand && NextWaypoint(_targetX, _targetY) is { } step)
                 {
                     _targetX = step.X;
@@ -3374,19 +3422,42 @@ public sealed class WorldMapHost : HwndHost
         // 도시를 찾기 어려웠다(버그 리포트 #20). 원본 길잡이는 고른 값이라 해안 바로 옆으로 간다.
         var route = Engine.Sea.SeaPathfinder.FindRoute(_world, _terrain, (_shipX, _shipY), (toX, toY), offShore: false);
         // 도는 원이 큰 배(빠른 카락)는 원 안에 든 길목을 못 밟고 그 둘레를 맴돈다 — 그런 길목은 지난 것으로 친다.
+        // 길목은 이미 칸 한가운데다(SeaPathfinder.Simplify 의 Center). 예전에는 여기서 0.5 를 또 더해 길목마다 남동쪽
+        // 모서리를 바라봐, 가까운 길목일수록 뱃머리가 비뚤어지고 뭍 모서리 너머를 바라보기도 했다(버그 리포트 #30).
         if (route is { Count: > 1 })
         {
             double radius = TurnRadiusCells;
             int at = 1;
             while (at < route.Count - 1)
             {
-                double gx = WrapDx(route[at].X + 0.5 - _shipX), gy = route[at].Y + 0.5 - _shipY;
+                double gx = WrapDx(route[at].X - _shipX), gy = route[at].Y - _shipY;
                 if (gx * gx + gy * gy > radius * radius) break;
                 at++;
             }
-            _assistStep = (route[at].X + 0.5, route[at].Y + 0.5);
+            _assistStep = route[at];
         }
         return _assistStep;
+    }
+
+    /// <summary>
+    /// 그 자리가 뭍이고 어느 항구 도시의 어귀 네모(둘레 한 칸까지) 안이면 그 도시의 어귀 물칸(<see cref="PortCellOf"/>). 아니면 null.
+    /// </summary>
+    private (double X, double Y)? PortUnder(double x, double y)
+    {
+        if (_cities == null || !IsLand(x, y)) return null;
+        int fx = (int)Math.Floor(x), fy = (int)Math.Floor(y);
+        for (int id = 0; id < CityExeTable.Count; id++)
+        {
+            if (CityOpen is { } open && !open(id)) continue;
+            if (!_cities.TryCell(id, out int cx, out int cy, out int reach)) continue;
+            if (fy < cy - TownSlack - 1 || fy > cy + reach + 1) continue;
+            int dx = fx - cx;
+            if (dx > WorldMapRenderer.UnfoldedW / 2) dx -= WorldMapRenderer.UnfoldedW;
+            if (dx < -WorldMapRenderer.UnfoldedW / 2) dx += WorldMapRenderer.UnfoldedW;
+            if (dx < -TownSlack - 1 || dx > reach + 1) continue;
+            if (PortCellOf(id) is { } mouth) return (_shipX + WrapDx(mouth.X - _shipX), mouth.Y);
+        }
+        return null;
     }
 
     /// <summary>둘레 3x3 에서 가장 가까운 부류 2 칸. 없으면 null.</summary>

@@ -1179,16 +1179,30 @@ public sealed class WorldMapWindow : Window
     /// <summary>자동항해가 스스로 멎었다 — 알리고, 목적지 도시 어귀에 닿아 멎은 것이면 들어간다.</summary>
     private void AutoSailEnded(string message)
     {
-        if (!_host.IsOnLand) PlayStats.Nav(message.StartsWith("도착", StringComparison.Ordinal) ? "end:arrived" : "end:stuck");
+        bool arrived = message.StartsWith("도착", StringComparison.Ordinal);
+        bool missed = message == WorldMapHost.MissedPortMessage;
+        if (!_host.IsOnLand) PlayStats.Nav(arrived ? "end:arrived" : missed ? "end:missed" : "end:stuck");
 
         // 내륙 도시는 배를 댄 데서 내려 걸어가야 한다 — 어귀가 아니라 입항 물음이 안 뜬다.
         int to = _sailTo;
-        bool afoot = to >= 0 && message.StartsWith("도착", StringComparison.Ordinal)
-                     && !(_game.CityRows?.HasBuilding(to, HarborCode) ?? true);
-        Say(afoot ? $"[{_game.CityName(to)}] 쪽 해안에 닿았습니다. 상륙해서 걸어가십시오" : message);
+        bool afoot = to >= 0 && arrived && !(_game.CityRows?.HasBuilding(to, HarborCode) ?? true);
+        string text = afoot ? $"[{_game.CityName(to)}] 쪽 해안에 닿았습니다. 상륙해서 걸어가십시오"
+                    : missed && to >= 0 ? $"[{_game.CityName(to)}] 항구에 들어서지 못해 자동항해를 멈췄습니다. 손으로 몰아 들어가십시오"
+                    : message;
+        Say(text);
 
         // 목적지 어귀에 닿아 멎었으면 입항 물음은 CheckPort 가 낸다 — 손으로 다가갔을 때와 같은 길이다.
         _sailTo = -1;
+
+        // 입항 물음이 안 뜨는 끝(못 들었다 · 막혔다 · 내륙 도시 해안)은 알림 창으로 세운다 — 띠 글만으로는 못 알아챈 채
+        // 닻을 내린 배 위로 날이 흘렀다(버그 리포트 #30). 창이 떠 있는 동안은 멈춤이다(Hold).
+        // 이 알림은 그리기 틱 안에서 오므로 한 박자 뒤에 띄운다.
+        if (afoot || !arrived)
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (!IsVisible || _host.SeaBlocked || _host.AutoSailing) return;
+                Hold(() => NoticeDialog.Show(this, text));
+            });
     }
 
     /// <summary>
@@ -8383,6 +8397,20 @@ public sealed class WorldMapWindow : Window
         _lastChecked = null;
         _host.SetHeading(heading);
         if (walk) _host.SteerTo(heading);
+        return "";
+    }
+
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_NAV=&lt;도시&gt;</c>) — 네비게이션에서 그 도시의 첫 길(가장 빠른 길)을 고른 것처럼 자동항해를 건다.
+    /// </summary>
+    /// <returns>걸었으면 빈 글, 아니면 까닭.</returns>
+    internal string NavForTest(int city)
+    {
+        if (SailGoals(city) is not [var goal, ..]) return $"도시 {city} 로 가는 길 후보가 없다";
+        _sailTo = city;
+        _sailGoal = goal;
+        var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
+        if (!ok) { _sailTo = -1; return message; }
         return "";
     }
 
