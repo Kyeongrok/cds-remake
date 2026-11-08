@@ -95,7 +95,7 @@ public sealed class VoyagerEditDialog : GameWindow
         {
             // 칸을 다 쓰고 나서야 값이 들어온다 — 한 박자 뒤에 거둔다.
             if (e.EditAction == DataGridEditAction.Commit)
-                Dispatcher.BeginInvoke(new Action(Collect));
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => { _grid.CommitEdit(DataGridEditingUnit.Row, true); Collect(); }));   // 줄 편집을 마친 뒤 거둔다 — 편집 중에 표를 다시 지으면 꺼진다(버그 리포트 #29)
         };
 
         _who.SelectionChanged += (_, _) => Rebuild();

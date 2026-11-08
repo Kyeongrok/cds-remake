@@ -99,7 +99,7 @@ public sealed class BookEditDialog : GameWindow
         _grid.CellEditEnding += (_, e) =>
         {
             if (e.EditAction == DataGridEditAction.Commit)
-                Dispatcher.BeginInvoke(new Action(Collect));
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => { _grid.CommitEdit(DataGridEditingUnit.Row, true); Collect(); }));   // 줄 편집을 마친 뒤 거둔다 — 편집 중에 표를 다시 지으면 꺼진다(버그 리포트 #29)
         };
 
         _search.TextChanged += (_, _) => Rebuild();

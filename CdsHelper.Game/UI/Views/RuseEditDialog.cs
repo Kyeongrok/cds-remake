@@ -69,9 +69,18 @@ public sealed class RuseEditDialog : GameWindow
 
         _grid.CellEditEnding += (_, e) =>
         {
-            // 칸을 다 쓰고 나서야 값이 들어온다 — 한 박자 뒤에 거둔다.
-            if (e.EditAction == DataGridEditAction.Commit)
-                Dispatcher.BeginInvoke(new Action(Collect));
+            if (e.EditAction != DataGridEditAction.Commit || e.Row.Item is not Row row) return;
+            // 적은 글을 여기서 바로 읽어 적어 둔다 — 줄 편집이 아직 안 끝나 Row.Odds 에는 옛 값이 남아 있을 수 있다.
+            // 예전에는 한 박자 뒤에 Row.Odds 를 거두고 표를 다시 지었는데, 줄 편집(EditItem) 중에 ItemsSource 를 갈아
+            // 「AddNew 또는 EditItem 트랜잭션 중에는 'Sorting'을 사용할 수 없습니다」로 꺼지고 값도 안 들었다(버그 리포트 #29).
+            if (e.EditingElement is TextBox box && int.TryParse(box.Text.Trim(), out int typed))
+                Apply(row.Index, typed);
+            // 줄 편집까지 끝낸 뒤에 표를 다시 짓는다.
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            {
+                _grid.CommitEdit(DataGridEditingUnit.Row, true);
+                Rebuild();
+            }));
         };
 
         _reset.Click += (_, _) =>
@@ -160,18 +169,12 @@ public sealed class RuseEditDialog : GameWindow
                      + "원본 그대로다. 심판은 굴리지 않아 늘 떨어진다.";
     }
 
-    /// <summary>고친 칸만 골라 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
-    private void Collect()
+    /// <summary>고친 칸 하나를 적어 둔다 — 원본 값과 같으면 씌우지 않는다.</summary>
+    private static void Apply(int index, int value)
     {
-        if (_grid.ItemsSource is not List<Row> rows) return;
-
-        foreach (var row in rows)
-        {
-            int odds = Math.Clamp(row.Odds, 0, 100);
-            if (odds == LandBattle.BuiltinRuseOdds(row.Index)) RuseEdits.Reset(row.Index);
-            else RuseEdits.Set(row.Index, odds);
-        }
-        Rebuild();
+        int odds = Math.Clamp(value, 0, 100);
+        if (odds == LandBattle.BuiltinRuseOdds(index)) RuseEdits.Reset(index);
+        else RuseEdits.Set(index, odds);
     }
 
     /// <summary>창을 띄운다.</summary>
