@@ -9,7 +9,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 커스텀 발견물의 소문 도시를 고르는 창 — 네비게이션(<see cref="AutoSailDialog"/>)처럼 문화권 탭마다 도시를 늘어놓는다.
 /// 네비게이션은 아는 도시만 내지만 여기는 모든 도시다.
 /// </summary>
-/// <remarks>소문 줄은 도시 칸이 셋이라(<see cref="RumorTable"/>) 셋까지만 고른다.</remarks>
+/// <remarks>소문 줄은 도시 칸이 넷이라(<see cref="RumorTable.CitySlots"/>) 넷까지만 고른다.</remarks>
 public sealed class CityPickerDialog : GameWindow
 {
     private readonly List<(CheckBox Box, int Id, string Name)> _boxes = [];
@@ -25,7 +25,7 @@ public sealed class CityPickerDialog : GameWindow
     private CityPickerDialog(Engine.Game game, IReadOnlyList<int> current, int limit)
     {
         _limit = limit;
-        Title = $"소문 도시 고르기 (셋까지)";
+        Title = "소문 도시 고르기 (넷까지)";
         Width = 900;
         Height = 620;
         Background = Brushes.White;
@@ -82,8 +82,8 @@ public sealed class CityPickerDialog : GameWindow
             if (_order.Contains(id)) return;
             if (_order.Count >= _limit)
             {
-                box.IsChecked = false;   // 셋을 넘으면 되돌린다
-                _chosen.Text = $"셋까지만 고를 수 있습니다 — 먼저 하나를 풀어 주세요.   고른 도시: {Names()}";
+                box.IsChecked = false;   // 넷을 넘으면 되돌린다
+                _chosen.Text = $"넷까지만 고를 수 있습니다 — 먼저 하나를 풀어 주세요.   고른 도시: {Names()}";
                 return;
             }
             _order.Add(id);
@@ -98,7 +98,7 @@ public sealed class CityPickerDialog : GameWindow
     private void ShowChosen() => _chosen.Text = $"고른 도시: {Names()}";
 
     /// <summary>창을 띄워 도시를 고르게 한다. 고른 번호들, 취소했으면 null.</summary>
-    public static List<int>? Pick(Window owner, Engine.Game game, IReadOnlyList<int> current, int limit = 3)
+    public static List<int>? Pick(Window owner, Engine.Game game, IReadOnlyList<int> current, int limit = RumorTable.CitySlots)
     {
         var window = new CityPickerDialog(game, current, limit) { Owner = owner };
         window.ShowDialog();

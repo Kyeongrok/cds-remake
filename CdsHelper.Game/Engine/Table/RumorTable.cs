@@ -40,7 +40,7 @@ public sealed class RumorTable
     /// <param name="Discovery">발견물 번호(계약 힌트의 목표와 같은 값).</param>
     /// <param name="Cities">들을 수 있는 도시 넷. −1 은 빈 칸이다.</param>
     /// <param name="Text">그 도시에서 들려주는 본문(한국어). 표를 열면 지금 언어의 글로 바뀌어 있다.</param>
-    /// <param name="Id">소문의 열쇠(UUID). 한 번 붙이면 안 바꾼다. 사용자 발견물 소문은 그 발견물의 UUID 다.</param>
+    /// <param name="Id">소문의 열쇠(UUID). 한 번 붙이면 안 바꾼다. 사용자 발견물 소문은 그 발견물의 UUID(둘째 벌부터 「UUID#1」)다.</param>
     /// <param name="Line">원본 표의 줄 번호(0~190) — 일본어판에서 같은 줄을 찾는 보조 열쇠. 원본 밖 소문은 −1 이다.</param>
     /// <param name="Ja">일본어 본문. 없으면 한국어로 낸다.</param>
     [method: JsonConstructor]
@@ -114,7 +114,8 @@ public sealed class RumorTable
             .Select(r => r with { Text = TextOf(r) })];
 
     /// <summary>
-    /// 사용자 발견물 소문 한 줄 — 열쇠는 그 발견물의 UUID 다(발견물마다 소문이 하나라 겹치지 않는다).
+    /// 사용자 발견물 소문 한 줄 — 열쇠는 첫 벌이 그 발견물의 UUID, 둘째부터 「UUID#1」 꼴이다(<see cref="UserDiscoveries.RumorId"/>).
+    /// 한 발견물에 도시마다 다른 글을 여러 벌 둘 수 있어 원본 표처럼 같은 발견물 줄이 여럿 선다.
     /// 글은 지은이가 적은 그대로라 일본어 칸이 없고, 표준 표기도 안 거친다.
     /// </summary>
     internal static Rumor UserRumor(string uuid, int discovery, int[] cities, string text) =>

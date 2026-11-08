@@ -54,15 +54,56 @@ public static class UserDiscoveries
     /// <param name="X1">세계 지도 칸 범위.</param>
     /// <param name="Chance">발견 확률 분모 — 1 이면 늘, 3 이면 세 번에 한 번.</param>
     /// <param name="Book">힌트를 실을 책 제목(박물지 따위). 비우면 책에 안 싣는다.</param>
-    /// <param name="RumorCities">소문을 들려줄 도시 번호 셋까지.</param>
+    /// <param name="RumorCities">옛 모양의 소문 도시(한 벌뿐이던 때). 이제는 <paramref name="Rumors"/> 첫 벌을 옛 판이 읽게 베껴 적는다.</param>
+    /// <param name="RumorText">옛 모양의 소문 글 — <paramref name="RumorCities"/> 와 같다.</param>
     /// <param name="Credit">그림 · 글의 출처와 라이선스.</param>
+    /// <param name="Rumors">
+    /// 술집 소문 여러 벌 — 원본 소문 표처럼 한 발견물에 도시마다 다른 글을 둔다. 없는(null) 옛 파일은
+    /// <paramref name="RumorCities"/> · <paramref name="RumorText"/> 한 벌로 읽는다(<see cref="RumorsOf"/>).
+    /// </param>
     public sealed record Entry(
         string Uuid, string Name, int Category, int Reward, bool OnLand, bool OpenAtStart,
         int X1, int Y1, int X2, int Y2,
         string HintName, int HintGrade, int HintCategory, int HintFunds, int HintDeadline, string HintText,
         int[] RumorCities, string RumorText, string Book, string Description,
         int Chance, List<SceneLine> Lines, string Credit = "", string Author = "", int Version = FormatVersion,
-        string License = DefaultLicense, string Lock = "", bool HasHint = true);
+        string License = DefaultLicense, string Lock = "", bool HasHint = true, List<RumorEntry>? Rumors = null);
+
+    /// <summary>술집 소문 한 벌 — 들려줄 도시(넷까지, <see cref="RumorTable.CitySlots"/>)와 그 도시들에서 들려줄 글.</summary>
+    public sealed record RumorEntry(int[] Cities, string Text);
+
+    /// <summary>
+    /// 그 발견물의 소문들 — 새 모양(<see cref="Entry.Rumors"/>)이 있으면 그것, 없으면 옛 모양(소문 도시 · 소문 글 한 벌)을
+    /// 한 벌로 바꾼다. 옛 모양이 비었으면 빈 목록이다.
+    /// </summary>
+    public static IReadOnlyList<RumorEntry> RumorsOf(Entry e)
+    {
+        if (e.Rumors != null)
+            return [.. e.Rumors.Where(r => r != null).Select(r => new RumorEntry(r.Cities ?? [], r.Text ?? ""))];
+        int[] cities = e.RumorCities ?? [];
+        string text = e.RumorText ?? "";
+        return cities.Length == 0 && text.Length == 0 ? [] : [new RumorEntry(cities, text)];
+    }
+
+    /// <summary>
+    /// 적을 모양으로 — 소문을 <see cref="Entry.Rumors"/> 에 두고, 옛 칸(소문 도시 · 소문 글)에는 첫 벌을 베껴 둔다.
+    /// 옛 판 앱이 이 파일을 불러와도 첫 소문은 나오게.
+    /// </summary>
+    public static Entry Normalized(Entry e)
+    {
+        var rumors = RumorsOf(e).ToList();
+        return e with
+        {
+            Rumors = rumors,
+            RumorCities = rumors.Count > 0 ? rumors[0].Cities : [],
+            RumorText = rumors.Count > 0 ? rumors[0].Text : "",
+        };
+    }
+
+    /// <summary>
+    /// 소문 한 벌의 열쇠(<see cref="RumorTable.Rumor.Id"/>) — 첫 벌은 예전처럼 발견물 UUID 그대로, 둘째부터는 「UUID#1」 · 「UUID#2」다.
+    /// </summary>
+    public static string RumorId(string uuid, int index) => index == 0 ? uuid : $"{uuid}#{index}";
 
     /// <summary>
     /// 장면의 「[해전] 이름」이 덤빌 수 있는 바다 괴물 — 인물 표 뒤쪽의 괴물 자리다(<see cref="Engine.Sea.EnemyFleet"/>).
@@ -148,7 +189,7 @@ public static class UserDiscoveries
         X1: 1409, Y1: 358, X2: 1412, Y2: 360,
         HintName: "파르테논 신전", HintGrade: 1, HintCategory: 1, HintFunds: 12000, HintDeadline: 3,
         HintText: "옛날 그리스 아테네의 아크로폴리스 언덕에 솟아 있는 파르테논신전은 수호신 아테나에게 바쳐진 것이다. 그 아름다움은 그리스건축의 대표격이다.",
-        RumorCities: [], RumorText: "", Book: "그리스 이야기",
+        RumorCities: [], RumorText: "", Rumors: [], Book: "그리스 이야기",
         Description: "아테네의 수호신 아테나를 기리는 신전. 당시의 그리스 최고 예술가를 총동원하여 기원전 432년에 완성. 장중한 도리아식 외견과 우아한 이오이아식 세부구조가 훌륭하게 조화를 이룬 그리스 건축의 최고 걸작이다.",
         Chance: 1,
         Lines:
@@ -190,8 +231,11 @@ public static class UserDiscoveries
         X1: 1168, Y1: 224, X2: 1194, Y2: 240,
         HintName: "햇볕을 쬐는 큰 물고기", HintGrade: 2, HintCategory: 5, HintFunds: 30000, HintDeadline: 4,
         HintText: "북쪽 바다에는 작은 배보다도 큰 물고기가 산다고 한다. 동굴 같은 입을 벌린 채 수면 가까이를 떠다니지만 사람을 해치지는 않는다. 볕이 좋은 날이면 등지느러미를 물 밖으로 내놓고 햇볕을 쬔다고 한다.",
-        RumorCities: [43, 42, 40],
-        RumorText: "스코틀랜드 서쪽 섬들 앞바다에 배만 한 물고기가 입을 벌린 채 떠다닌다더군. 볕 좋은 날이면 등지느러미가 물 위로 보인다고 하네.",
+        RumorCities: [], RumorText: "",
+        Rumors:
+        [
+            new([43, 42, 40], "스코틀랜드 서쪽 섬들 앞바다에 배만 한 물고기가 입을 벌린 채 떠다닌다더군. 볕 좋은 날이면 등지느러미가 물 위로 보인다고 하네."),
+        ],
         Book: "박물지",
         Description: "북대서양을 비롯한 온대 바다에 사는 거대한 상어. 고래상어 다음으로 큰 물고기로 몸길이가 10미터를 넘기도 한다. 큰 입을 벌린 채 수면 가까이를 헤엄치며 작은 먹이를 걸러 먹는다. 성질이 온순해 사람을 해치지 않는다.",
         Chance: 3,
@@ -342,10 +386,16 @@ public static class UserDiscoveries
                                   Math.Max(0, e.HintFunds), Math.Max(1, e.HintDeadline), l.Numbers.Serial, e.HintText);
     }
 
-    /// <summary>술집 소문들(모드를 켰을 때). 소문 글이 빈 것은 안 낸다.</summary>
-    public static IEnumerable<RumorTable.Rumor> Rumors =>
-        On ? All.Where(l => l.Entry.HasHint && l.Entry.RumorText.Length > 0)
-                .Select(l => RumorTable.UserRumor(l.Entry.Uuid, l.Numbers.Serial, Cities(l.Entry.RumorCities), l.Entry.RumorText)) : [];
+    /// <summary>
+    /// 술집 소문들(모드를 켰을 때) — 발견물마다 적어 둔 벌을 다 낸다. 소문 글이 빈 벌은 안 낸다. 원본 표처럼 같은 발견물 줄이
+    /// 여럿이면 술집이 이 도시가 든 줄을 먼저 고르므로(<c>0x0042E780</c>) 도시마다 다른 글이 나온다.
+    /// </summary>
+    public static IEnumerable<RumorTable.Rumor> Rumors => On ? All.Where(l => l.Entry.HasHint).SelectMany(RumorsFor) : [];
+
+    /// <summary>한 발견물의 소문 줄들 — 열쇠는 <see cref="RumorId"/>.</summary>
+    internal static IEnumerable<RumorTable.Rumor> RumorsFor(Loaded l) =>
+        RumorsOf(l.Entry).Select((r, i) => (r, i)).Where(x => x.r.Text.Length > 0)
+            .Select(x => RumorTable.UserRumor(RumorId(l.Entry.Uuid, x.i), l.Numbers.Serial, Cities(x.r.Cities), x.r.Text));
 
     /// <summary>소문 도시 넷 칸 — 원본 줄처럼 남는 칸은 -1.</summary>
     private static int[] Cities(int[]? cities)
@@ -543,7 +593,7 @@ public static class UserDiscoveries
         Guid.NewGuid().ToString(), "새 발견물", Category: 6, Reward: 30000, OnLand: true, OpenAtStart: true,
         X1: -1, Y1: -1, X2: -1, Y2: -1,
         HintName: "새 힌트", HintGrade: 2, HintCategory: 5, HintFunds: 30000, HintDeadline: 4, HintText: "",
-        RumorCities: [], RumorText: "", Book: "박물지", Description: "",
+        RumorCities: [], RumorText: "", Rumors: [], Book: "박물지", Description: "",
         Chance: 3,
         Lines:
         [
@@ -561,7 +611,7 @@ public static class UserDiscoveries
         {
             string dir = Path.Combine(Folder, entry.Uuid);
             Directory.CreateDirectory(dir);
-            File.WriteAllText(Path.Combine(dir, EntryFile), JsonSerializer.Serialize(entry with { Version = FormatVersion }, Pretty));
+            File.WriteAllText(Path.Combine(dir, EntryFile), JsonSerializer.Serialize(Normalized(entry) with { Version = FormatVersion }, Pretty));
             if (picture is var (bgra, w, h)) SavePng(bgra, w, h, Path.Combine(dir, PictureFile));
             if (movie is { Length: > 0 })
             {

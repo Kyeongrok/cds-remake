@@ -44,16 +44,28 @@ public sealed class UserDiscoveryDialog : GameWindow
     private readonly CheckBox _land = new() { Content = "육지", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
     private readonly CheckBox _open = new() { Content = "처음부터 열림(힌트 없이도 발견)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
     private readonly TextBox _hintName = Box(), _hintGrade = Box(60), _hintCategory = Box(60), _hintFunds = Box(), _hintDeadline = Box(60);
-    private readonly TextBox _hintText = Area(60), _rumorText = Area(48), _book = Box(), _description = Area(60);
+    private readonly TextBox _hintText = Area(60), _book = Box(), _description = Area(60);
 
-    /// <summary>소문 도시 — 도시 이름으로 보이고 「도시 고르기…」로만 바꾼다. 번호는 <see cref="_rumorIds"/> 가 든다.</summary>
-    private readonly TextBox _rumorCities = new()
+    /// <summary>
+    /// 술집 소문 벌들 — 벌마다 「소문 도시」 · 「소문 글」 두 줄이다. 원본 소문 표처럼 도시마다 다른 글을 둘 수 있게
+    /// 「소문 더하기」로 늘리고 「소문 빼기」로 뺀다(<see cref="UserDiscoveries.Entry.Rumors"/>).
+    /// </summary>
+    private readonly StackPanel _rumorPanel = new();
+    private readonly List<RumorRow> _rumorRows = [];
+
+    /// <summary>소문 한 벌의 칸 — 도시는 이름으로 보이고 「도시 고르기…」로만 바꾼다. 번호는 <see cref="Ids"/> 가 든다.</summary>
+    private sealed class RumorRow(TextBlock number, TextBox cities, TextBox text, Button[] buttons, UIElement panel)
     {
-        Width = 320, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center,
-        IsReadOnly = true, Background = Brushes.WhiteSmoke,
-    };
+        public List<int> Ids { get; set; } = [];
+        public TextBlock Number { get; } = number;
+        public TextBox Cities { get; } = cities;
+        public TextBox Text { get; } = text;
+        public Button[] Buttons { get; } = buttons;
+        public UIElement Panel { get; } = panel;
+    }
 
-    private List<int> _rumorIds = [];
+    /// <summary>칸을 고칠 수 있는지 — 나중에 더한 소문 줄도 이것을 따른다.</summary>
+    private bool _editable;
 
     /// <summary>자리 칸을 게임 위도 · 경도로 옮겨 보인다.</summary>
     private readonly TextBlock _where = new() { Margin = new Thickness(90, 0, 0, 6), Foreground = Brushes.DarkSlateBlue };
@@ -117,8 +129,15 @@ public sealed class UserDiscoveryDialog : GameWindow
                           Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline),
                      Line("힌트 글", _hintText),
                      Line("힌트를 실을 책", _book, Edit("책 고르기…", PickBook)),
-                     Line("소문 도시", _rumorCities, Edit("도시 고르기…", PickCities)),
-                     Line("소문 글", _rumorText),
+                     _rumorPanel,
+                     Line("", Edit("소문 더하기", AddRumor)),
+                     new TextBlock
+                     {
+                         Margin = new Thickness(90, 0, 0, 8), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap, Width = 720,
+                         HorizontalAlignment = HorizontalAlignment.Left,
+                         Text = "도시마다 다른 소문을 들려주려면 「소문 더하기」로 소문을 늘리고, 소문마다 도시(넷까지)와 글을 고르세요."
+                                + " 술집은 그 도시가 든 소문을 먼저 들려주고, 없으면 다른 소문의 도시를 「~에서 비슷한 소문을 들은 적이 있네」처럼 알려 줍니다.",
+                     },
                  })
         {
             _hintParts.Add(part);
@@ -231,13 +250,15 @@ public sealed class UserDiscoveryDialog : GameWindow
     private IEnumerable<TextBox> Boxes =>
     [
         _name, _reward, _x1, _y1, _x2, _y2, _chance, _hintName, _hintGrade, _hintCategory, _hintFunds, _hintDeadline,
-        _hintText, _rumorText, _book, _description, _scene, _credit, _author,
+        _hintText, _book, _description, _scene, _credit, _author, .. _rumorRows.Select(r => r.Text),
     ];
 
     /// <summary>칸을 고칠 수 있게 하거나 읽기만 하게 둔다 — 읽기만 해도 글은 골라 베낄 수 있다.</summary>
     private void SetEditable(bool on)
     {
+        _editable = on;
         foreach (var box in Boxes) box.IsReadOnly = !on;
+        foreach (var button in _rumorRows.SelectMany(r => r.Buttons)) button.IsEnabled = on;
         _category.IsEnabled = _land.IsEnabled = _open.IsEnabled = _license.IsEnabled = _hasHint.IsEnabled = on;
         foreach (var button in _editors) button.IsEnabled = on;
         _save.IsEnabled = on;
@@ -339,8 +360,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _hintFunds.Text = $"{e.HintFunds}";
         _hintDeadline.Text = $"{e.HintDeadline}";
         _hintText.Text = e.HintText;
-        ShowCities([.. e.RumorCities ?? []]);
-        _rumorText.Text = e.RumorText;
+        ShowRumors(UserDiscoveries.RumorsOf(e));
         _book.Text = e.Book;
         _description.Text = e.Description;
         _scene.Text = string.Join("\n", (e.Lines ?? []).Select(SceneText));
@@ -425,22 +445,31 @@ public sealed class UserDiscoveryDialog : GameWindow
             || N(_hintGrade, "힌트 등급") is not { } grade || N(_hintCategory, "힌트 갈래") is not { } hintCategory
             || N(_hintFunds, "힌트 자금") is not { } funds || N(_hintDeadline, "힌트 기한") is not { } deadline)
             return null;
-        var cities = _rumorIds;
-        if (cities.Count > 3) { Tell("소문 도시는 셋까지입니다."); return null; }
+        var rumors = new List<UserDiscoveries.RumorEntry>();
+        for (int i = 0; i < _rumorRows.Count; i++)
+        {
+            var row = _rumorRows[i];
+            string text = row.Text.Text.Trim();
+            if (text.Length == 0 && row.Ids.Count == 0) continue;   // 빈 벌은 버린다
+            if (row.Ids.Count > RumorTable.CitySlots) { Tell($"소문 {i + 1}: 도시는 넷까지입니다."); return null; }
+            if (row.Ids.Count == 0) { Tell($"소문 {i + 1}: 들려줄 도시를 골라 주세요 — 「도시 고르기…」."); return null; }
+            if (text.Length == 0) { Tell($"소문 {i + 1}: 소문 글이 비었습니다."); return null; }
+            rumors.Add(new([.. row.Ids], text));
+        }
 
-        return e with
+        return UserDiscoveries.Normalized(e with
         {
             Name = _name.Text.Trim(), Category = Math.Max(0, _category.SelectedIndex), Reward = Math.Max(0, reward),
             OnLand = _land.IsChecked == true, OpenAtStart = _open.IsChecked == true,
             X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Chance = Math.Max(1, chance),
             HintName = _hintName.Text.Trim(), HintGrade = Math.Clamp(grade, 1, 3), HintCategory = Math.Max(0, hintCategory),
             HintFunds = Math.Max(0, funds), HintDeadline = Math.Max(1, deadline), HintText = _hintText.Text.Trim(),
-            RumorCities = [.. cities], RumorText = _rumorText.Text.Trim(), Book = _book.Text.Trim(),
+            Rumors = rumors, Book = _book.Text.Trim(),
             Description = _description.Text.Trim(), Lines = ParseScene(_scene.Text),
             Credit = _credit.Text.Trim(), Author = _author.Text.Trim(),
             License = _license.Text.Trim() is { Length: > 0 } license ? license : UserDiscoveries.DefaultLicense,
             HasHint = _hasHint.IsChecked == true,
-        };
+        });
     }
 
     /// <summary>지난번에 적은 만든 이 — 같은 사람이 여럿 짓는 일이 많다.</summary>
@@ -715,13 +744,81 @@ public sealed class UserDiscoveryDialog : GameWindow
         Tell($"장면에 「{line}」 을 넣었습니다 — 그 아래에 이겼을 때의 줄을, 「[놓쳤을 때]」 아래에 졌을 때의 줄을 적고 「저장」을 눌러 주세요.");
     }
 
-    /// <summary>문화권 탭으로 도시를 늘어놓는 창을 띄워 소문 도시를 셋까지 고른다.</summary>
-    private void PickCities()
+    /// <summary>문화권 탭으로 도시를 늘어놓는 창을 띄워 그 소문의 도시를 넷까지 고른다.</summary>
+    private void PickCities(RumorRow row)
     {
         if (_game == null) { Tell("도시 표를 읽지 못했습니다 — 게임 안에서 개발 창을 열어 주세요."); return; }
-        if (CityPickerDialog.Pick(this, _game, _rumorIds) is not { } picked) return;
-        ShowCities(picked);
-        Tell($"소문 도시: {_rumorCities.Text} — 「저장」을 눌러야 적힙니다.");
+        if (CityPickerDialog.Pick(this, _game, row.Ids) is not { } picked) return;
+        ShowCities(row, picked);
+        Tell($"소문 {_rumorRows.IndexOf(row) + 1} 도시: {row.Cities.Text} — 「저장」을 눌러야 적힙니다.");
+    }
+
+    /// <summary>소문 벌들로 칸을 다시 짓는다. 하나도 없으면 빈 벌 하나를 둔다 — 적을 자리가 보이게.</summary>
+    private void ShowRumors(IReadOnlyList<UserDiscoveries.RumorEntry> rumors)
+    {
+        _rumorRows.Clear();
+        _rumorPanel.Children.Clear();
+        foreach (var rumor in rumors) AddRumorRow(rumor);
+        if (_rumorRows.Count == 0) AddRumorRow(new([], ""));
+        Renumber();
+    }
+
+    /// <summary>소문 한 벌의 칸을 끝에 붙인다.</summary>
+    private RumorRow AddRumorRow(UserDiscoveries.RumorEntry rumor)
+    {
+        RumorRow? row = null;
+        var number = new TextBlock
+        {
+            Width = 28, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.Bold, Foreground = Brushes.DarkSlateBlue,
+        };
+        var cities = new TextBox
+        {
+            Width = 292, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center,
+            IsReadOnly = true, Background = Brushes.WhiteSmoke,
+        };
+        var text = Area(48);
+        text.Text = rumor.Text;
+        text.IsReadOnly = !_editable;
+        var pick = Push("도시 고르기…", () => PickCities(row!));
+        var remove = Push("소문 빼기", () => RemoveRumor(row!));
+        pick.IsEnabled = remove.IsEnabled = _editable;
+        var panel = new StackPanel
+        {
+            Margin = new Thickness(0, 4, 0, 4),
+            Children = { Line("소문 도시", number, cities, pick, remove), Line("소문 글", text) },
+        };
+        row = new RumorRow(number, cities, text, [pick, remove], panel);
+        ShowCities(row, [.. rumor.Cities]);
+        _rumorRows.Add(row);
+        _rumorPanel.Children.Add(panel);
+        return row;
+    }
+
+    /// <summary>소문 벌 번호를 다시 매긴다.</summary>
+    private void Renumber()
+    {
+        for (int i = 0; i < _rumorRows.Count; i++) _rumorRows[i].Number.Text = $"{i + 1}";
+    }
+
+    /// <summary>빈 소문 벌을 하나 더한다 — 도시마다 다른 글을 들려줄 때.</summary>
+    private void AddRumor()
+    {
+        if (_editing == null) return;
+        var row = AddRumorRow(new([], ""));
+        Renumber();
+        row.Text.Focus();
+        Tell($"소문 {_rumorRows.Count}을(를) 더했습니다 — 「도시 고르기…」로 도시를 고르고 글을 적은 뒤 「저장」을 눌러 주세요.");
+    }
+
+    /// <summary>그 소문 벌을 뺀다.</summary>
+    private void RemoveRumor(RumorRow row)
+    {
+        int at = _rumorRows.IndexOf(row);
+        if (at < 0) return;
+        _rumorRows.RemoveAt(at);
+        _rumorPanel.Children.Remove(row.Panel);
+        Renumber();
+        Tell($"소문 {at + 1}을(를) 뺐습니다 — 「저장」을 눌러야 적힙니다.");
     }
 
     /// <summary>
@@ -753,10 +850,10 @@ public sealed class UserDiscoveryDialog : GameWindow
     }
 
     /// <summary>소문 도시를 들고 이름으로 보인다. 도시 표가 없으면 번호로.</summary>
-    private void ShowCities(List<int> ids)
+    private void ShowCities(RumorRow row, List<int> ids)
     {
-        _rumorIds = ids;
-        _rumorCities.Text = ids.Count == 0 ? "(없음)"
+        row.Ids = ids;
+        row.Cities.Text = ids.Count == 0 ? "(없음)"
             : string.Join(", ", ids.Select(id => _game?.CityName(id) is { Length: > 0 } name ? name : $"도시 {id}"));
     }
 
