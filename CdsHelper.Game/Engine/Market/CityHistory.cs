@@ -120,7 +120,7 @@ public sealed class CityHistory
             int owner = who;
             Run(part, body.Body, BodyEnd(part, body.Body), player, cities, nations, when, statesOnly: true,
                 captured == null ? null : city => captured(owner, city));
-            SpeakLines(part, body.Body, BodyEnd(part, body.Body), player, who, when);
+            SpeakLines(part, body.Body, BodyEnd(part, body.Body), player, cities, found, who, when);
         }
 
         for (int i = 0; i < _parts.Length; i++)
@@ -341,19 +341,86 @@ public sealed class CityHistory
     /// 사람 대본의 <c>26 0A [글] 00</c> — 그 사람이 술집에서 「정보를 듣는다」에 할 말을 적는다(<c>0x0040A082</c>).
     /// 글 속 바이트는 0x81 이상이라 <c>26 0A</c> 꼴과 헷갈리지 않는다.
     /// </summary>
-    private static void SpeakLines(byte[] p, int i, int end, Player player, int who, DateTime when)
+    /// <remarks>
+    /// <b>갈림(<c>43 [조건] [u16 n]</c>)을 따른다</b> — 조건이 거짓이면 명령 끝에서 n 만큼 뛴다(<c>0x0040BCF9</c>).
+    /// 사람 대본이 쓰는 조건은 넷이다.
+    /// <code>
+    ///   5E 0B [발견물]                 주인공이 먼저 보고했나(0x00407E06: +0x16 &amp; 0x80 — 0x004AACA0 이 보고자 +4 == 0 일 때만 세운다)
+    ///   3A 0B [발견물]                 아무도 못 찾았나(0x0040AB27)
+    ///   28 00 [나라] 08 [도시]          그 도시가 그 나라가 아닌가
+    ///   4B                             바로 앞 조건이 거짓인가(0x0040B23F) — 앞 조건이 참이면 뛴다
+    /// </code>
+    /// 콜론(사람 5)의 1487년 3월 칸은 「주인공이 서회항로(#1)를 보고했으면 『같은 곳을 노리고 있는 자가 있으리라고는!』,
+    /// 아니면 소문 둘과 『역시 해양 선진국인 포르투갈이 아니면…』」이다. 예전에는 갈림을 안 보고 몸통의 <c>26 0A</c> 를
+    /// 모두 적어 <b>마지막 줄</b>이 남았다 — 서회항로를 보고하지 않았는데도 「같은 곳을 노리는 자」라 했다(버그 리포트 #28).
+    /// 모르는 조건은 갈림으로 치지 않고 한 바이트씩 건넌다(예전 훑기와 같다).
+    /// </remarks>
+    private static void SpeakLines(byte[] p, int i, int end, Player player, CityExeTable? cities, FoundCheck found,
+                                   int who, DateTime when)
     {
         end = Math.Min(end, p.Length);
-        for (; i + 2 < end; i++)
+        bool last = true;
+        while (i + 2 < end)
         {
-            if (p[i] != 0x26 || p[i + 1] != 0x0A) continue;
-            int zero = Array.IndexOf(p, (byte)0, i + 2);
-            if (zero < 0 || zero > end) return;
-            string text = DisevScript.DecodeDialogue(p.AsSpan(i + 2, zero - i - 2), normalize: true,
-                                                     player: player.CallName).Body;
-            player.SetPersonLine(who, text, when);
-            i = zero;
+            if (p[i] == 0xFF) return;
+            if (p[i] is 0x26 or 0x20 && p[i + 1] == 0x0A)
+            {
+                int zero = Array.IndexOf(p, (byte)0, i + 2);
+                if (zero < 0 || zero > end) return;
+                if (p[i] == 0x26)
+                {
+                    string text = DisevScript.DecodeDialogue(p.AsSpan(i + 2, zero - i - 2), normalize: true,
+                                                             player: player.CallName).Body;
+                    player.SetPersonLine(who, text, when);
+                    i = zero + 1;
+                }
+                else i = zero + 4;                                   // 소문 — 글 00 [08|19] u16
+                continue;
+            }
+            if (p[i] == 0x43 && Branch(p, i + 1, end, player, cities, found, when, last) is { } branch)
+            {
+                last = branch.Value;
+                i = branch.Value ? branch.Next : branch.Next + branch.Skip;
+                continue;
+            }
+            i++;
         }
+    }
+
+    /// <summary>
+    /// 사람 대본 갈림의 조건 하나(<c>43</c> 뒤)를 따진다 — 값, 명령 끝 자리, 거짓일 때 뛸 거리. 모르는 조건이면 null.
+    /// </summary>
+    private static (bool Value, int Next, int Skip)? Branch(byte[] p, int i, int end, Player player, CityExeTable? cities,
+                                                            FoundCheck found, DateTime when, bool last)
+    {
+        bool value;
+        switch (p[i])
+        {
+            case 0x5E or 0x3A when i + 3 < end && p[i + 1] == 0x0B:
+            {
+                int discovery = U16(p, i + 2);
+                value = p[i] == 0x5E ? player.HasAnnounced(discovery) : !found(discovery, when);
+                i += 4;
+                break;
+            }
+            case 0x28 when i + 6 < end && p[i + 1] == 0x00 && p[i + 4] == 0x08:
+            {
+                int nation = U16(p, i + 2), city = U16(p, i + 5);
+                int now = player.HistoryNations.TryGetValue(city, out int changed)
+                    ? changed : cities?.StartNationOf(city) ?? -1;
+                value = now != nation;
+                i += 7;
+                break;
+            }
+            case 0x4B:
+                value = !last;
+                i += 1;
+                break;
+            default:
+                return null;
+        }
+        if (i + 1 >= end) return null;
+        return (value, i + 2, U16(p, i));
     }
 
     /// <summary>
