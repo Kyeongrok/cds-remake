@@ -26,6 +26,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///                  CDS_START=land:&lt;도시&gt;:&lt;선체 key&gt;:&lt;x&gt;:&lt;y&gt; — 말을 그 칸에 세운다(발견물 자리 사건 밟기, StartAshoreForTest).
 ///   버그 리포트 창 CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 띄운다(그동안 배 · 말이 서는지 본다).
 ///   내 리포트 창   CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
+///   개발 창       CDS_DIALOG=dev:&lt;탭&gt; — 개발 창을 그 탭(「에디터」 따위)으로 띄운다.
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
@@ -115,6 +116,19 @@ public static class OffscreenHarness
                             if (w is MyBugReportsDialog) { w.Left = window.Left + 80; w.Top = window.Top + 80; }
                     }, DispatcherPriority.ApplicationIdle);
                     MyBugReportsDialog.Open(window);
+                }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=dev:<탭> — 개발 창을 그 탭(「에디터」 따위)으로 띄운다. 창은 주인 안으로 옮겨 스냅숏에 들게 한다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } devDialog && devDialog.StartsWith("dev:"))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log($"개발 창을 띄운다 — 탭 {devDialog[4..]}");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is DevDialog) { w.Left = window.Left + 40; w.Top = window.Top + 20; }
+                    }, DispatcherPriority.ApplicationIdle);
+                    window.OpenDevForTest(devDialog[4..]);
+                    Log("개발 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=trade:<도시> — 그 도시 교역소 매매 창을 짐을 실은 채 띄운다. CDS_START 로 그 도시 앞바다에 든 뒤에 쓴다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } dialog && dialog.StartsWith("trade:")

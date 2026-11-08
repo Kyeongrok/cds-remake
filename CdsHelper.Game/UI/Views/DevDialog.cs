@@ -25,7 +25,7 @@ namespace CdsHelper.Game.UI.Views;
 /// 놀 때 켜고 끄는 편의 기능(컨디션·미니맵·기능·언어·출입 일수)은 <see cref="ModDialog"/> 로
 /// 옮겼다 — 여기는 값을 밀어 넣어 <b>시험</b>하는 데다.
 /// </remarks>
-public sealed class DevDialog : GameWindow
+public sealed partial class DevDialog : GameWindow
 {
     /// <summary>단추 한 번에 움직이는 폭.</summary>
     private const int GoldStep = 10000, FameStep = 500;
@@ -88,6 +88,9 @@ public sealed class DevDialog : GameWindow
 
         /// <summary>초상화 — 「여급」 탭이 줄 왼쪽에 얼굴을 낸다. 없으면 얼굴 없이 늘어놓는다.</summary>
         public Portraits? Faces { get; init; }
+
+        /// <summary>처음 펼칠 탭 이름 — 화면 밖 시험(CDS_DIALOG=dev:…)이 쓴다. 없으면 「일반」.</summary>
+        public string? StartTab { get; init; }
     }
 
     /// <summary>발견물 탭에서 체크를 하나라도 바꿨는지.</summary>
@@ -399,6 +402,8 @@ public sealed class DevDialog : GameWindow
         // 「편집기 색」 — 퀘스트 편집기 · 모션 메이커 따위 도구 창의 붓만 따로 — 게임 화면 색과 섞이면 헷갈렸다.
         var toolColors = ColorsPage(editor: true);
         var pages = new List<(string, FrameworkElement)> { ("일반", rows), ("테스트", tests) };
+        // 「에디터」 탭 — 지금 게임 주인공의 능력치 · 기능 · 언어(버그 리포트 #35).
+        pages.Add(("에디터", PlayerEditorPage()));
         if (options.Discoveries is { } table)
         {
             pages.Add(("발견물", FindsPage(table, options.EventDone)));
@@ -413,7 +418,7 @@ public sealed class DevDialog : GameWindow
         pages.Add(("애드온", addOns));
         pages.Add(("색", colors));
         pages.Add(("편집기 색", toolColors));
-        stack.Children.Add(Tabs([.. pages]));
+        stack.Children.Add(Tabs(options.StartTab, [.. pages]));
         foreach (var (_, page) in pages) stack.Children.Add(page);
         stack.Children.Add(buttons);
 
@@ -598,7 +603,7 @@ public sealed class DevDialog : GameWindow
     }
 
     /// <summary>탭 머리 — 누른 쪽 판만 보이고 머리는 밝게 선다(<see cref="ModDialog"/> 와 같은 모양).</summary>
-    private static FrameworkElement Tabs(params (string Text, FrameworkElement Page)[] pages)
+    private static FrameworkElement Tabs(string? start, params (string Text, FrameworkElement Page)[] pages)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
         var heads = new List<(Border Head, FrameworkElement Page)>();
@@ -629,7 +634,7 @@ public sealed class DevDialog : GameWindow
             heads.Add((head, page));
             bar.Children.Add(head);
         }
-        Select(pages[0].Page);
+        Select((pages.FirstOrDefault(p => p.Text == start).Page) ?? pages[0].Page);
         return bar;
     }
 

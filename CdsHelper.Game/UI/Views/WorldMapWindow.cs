@@ -4162,8 +4162,14 @@ public sealed class WorldMapWindow : Window
         }
     }
 
-    private void ShowDevDialog() => DevDialog.Show(this, _game.Player, new DevDialog.Options
+    /// <summary>화면 밖 시험(CDS_DIALOG=dev:&lt;탭&gt;) — 개발 창을 그 탭으로 띄운다.</summary>
+    internal void OpenDevForTest(string tab) => ShowDevDialog(tab);
+
+    private void ShowDevDialog() => ShowDevDialog(null);
+
+    private void ShowDevDialog(string? startTab) => DevDialog.Show(this, _game.Player, new DevDialog.Options
     {
+        StartTab = startTab,
         GiveItem = GiveItemToSave,
         CoordsOn = () => _overlayWanted,
         SetCoords = on =>
