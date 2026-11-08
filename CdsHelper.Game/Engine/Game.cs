@@ -165,9 +165,19 @@ public sealed class Game
         Once(ref _hints, ref _hintsTried, HintTable.Open, () => HintTable.LastError, "힌트 표");
 
     /// <summary>후원자 표(CDS_95.EXE). 어느 자리에 누가 앉았는지와 얼굴 번호가 여기서 온다.</summary>
-    public SponsorTable? Sponsors =>
-        Once(ref _sponsors, ref _sponsorsTried, SponsorTable.Open,
-             () => SponsorTable.LastError, "후원자 표");
+    /// <remarks>
+    /// 개발도구(딴 프로세스)가 후원자 수치를 고쳐 적었으면 다시 짓는다(<see cref="Local.Helpers.SponsorEdits.ReloadIfChanged"/>) —
+    /// 게임을 껐다 켜지 않아도 다음에 후원자 정보를 열 때 새 값이 보인다.
+    /// </remarks>
+    public SponsorTable? Sponsors
+    {
+        get
+        {
+            if (Local.Helpers.SponsorEdits.ReloadIfChanged()) { _sponsors = null; _sponsorsTried = false; }
+            return Once(ref _sponsors, ref _sponsorsTried, SponsorTable.Open,
+                        () => SponsorTable.LastError, "후원자 표");
+        }
+    }
 
     /// <summary>아이템 표(CDS_95.EXE). 발견물이 주는 물건 이름을 여기서 얻는다.</summary>
     public ItemTable? Items =>

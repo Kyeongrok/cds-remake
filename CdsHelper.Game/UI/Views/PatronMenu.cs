@@ -2650,6 +2650,38 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     private int WealthOf(Patron patron) =>
         _game.Sponsors?.FindByName(patron.Name) is { Wealth: > 0 } sponsor ? sponsor.Wealth : patron.Wealth;
 
+    /// <summary>
+    /// 개발도구에서 고친 후원자 수치(<see cref="SponsorEdits"/>)를 <c>patrons.json</c> 줄에 얹은 사본 — 고친 칸만 바꾼다.
+    /// 고친 것이 없으면 그 줄을 그대로 준다.
+    /// </summary>
+    /// <remarks>
+    /// 권력 글자는 표 <c>+0x20</c>(안목)에서 원본 셈 그대로 낸다 — <c>0x00560F50</c>[(값 − 1) / 20] 이 E · D · C · B · A 다
+    /// (<c>patrons.json</c> 81명의 권력 글자와 모두 맞는다). 취향 비트 차례는 <see cref="Patron.Likes"/> 의 갈래 차례다.
+    /// </remarks>
+    private Patron Edited(Patron patron, SponsorTable.Sponsor? row)
+    {
+        if (row is not { } s || SponsorEdits.Of(s.Index) is not { } e) return patron;
+        var copy = System.Text.Json.JsonSerializer.Deserialize<Patron>(System.Text.Json.JsonSerializer.Serialize(patron)) ?? patron;
+        if (e.Tastes != null)
+            copy.Preferences = new PatronPreferences
+            {
+                Geography = (s.Tastes & 1) != 0,
+                History = (s.Tastes & 2) != 0,
+                Treasure = (s.Tastes & 4) != 0,
+                Religion = (s.Tastes & 8) != 0,
+                TradeGoods = (s.Tastes & 16) != 0,
+                Superstition = (s.Tastes & 32) != 0,
+                Creature = (s.Tastes & 64) != 0,
+                Ethnicity = (s.Tastes & 128) != 0,
+            };
+        if (e.Eye != null) copy.Power = "EDCBA"[Math.Clamp((s.Eye - 1) / 20, 0, 4)].ToString();
+        if (e.City != null && s.City >= 0) copy.City = _game.CityName(s.City);
+        if (e.Appear != null) copy.AppearYear = SponsorTable.FirstYear + s.Appear;
+        if (e.Retire != null) copy.RetireYear = s.Retire > 0 ? s.Retire : null;
+        if (e.Wealth != null) copy.Wealth = s.Wealth;
+        return copy;
+    }
+
     /// <summary>후원자 자료. 못 읽으면 빈 목록이다 — 그렇다고 도시 화면까지 막을 일은 아니다.</summary>
     private static List<Patron> LoadPatrons()
     {
@@ -2698,9 +2730,12 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         int year = _player.Date.Year;
         var table = _game.Sponsors;
 
+        // 개발도구 후원자 창에서 고친 수치(취향 · 안목 · 도시 · 등장/은퇴 해 · 재력)를 얹는다 — 일람 · 상세 창은 patrons.json 줄을
+        // 그리는데 고친 것은 후원자 표(SponsorEdits)에만 얹혀, 고쳐도 게임 안 후원자 정보는 옛 값이었다(버그 리포트 #30).
         var mine = LoadPatrons()
-            .Where(p => p.IsActive(year) && _player.HasMet(p.Name))
             .Select(p => (Patron: p, Row: table?.FindByName(p.Name)))
+            .Select(m => (Patron: Edited(m.Patron, m.Row), m.Row))
+            .Where(m => m.Patron.IsActive(year) && _player.HasMet(m.Patron.Name))
             .ToList();
         var names = mine.Select(m => m.Row?.Name ?? m.Patron.Name).ToList();
 

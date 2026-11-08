@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace CdsHelper.Game.Local.Helpers;
@@ -91,8 +92,42 @@ public static class SponsorEdits
 
     private static Dictionary<int, Entry> Map => _map ??= Load();
 
+    /// <summary>담아 둘 때 읽은 파일 자리와 그때 고친 시각 — 딴 프로세스(개발도구)가 고쳤는지 볼 때 견준다.</summary>
+    private static (string Path, DateTime Stamp) _loaded;
+
+    /// <summary>마지막으로 파일을 견준 때(<see cref="Environment.TickCount64"/>).</summary>
+    private static long _checkedAt;
+
+    /// <summary>파일을 이보다 자주 견주지 않는다(밀리초).</summary>
+    private const int CheckEveryMs = 1000;
+
+    /// <summary>
+    /// 개발도구(딴 프로세스)가 <c>sponsors-edits.json</c> 을 고쳤으면 담아 둔 것을 버리고 참을 낸다 — 게임이 후원자 표를
+    /// 다시 짓게 한다(<see cref="Engine.Game.Sponsors"/>). 게임을 켠 채 개발도구에서 후원자를 고쳐도 게임 안 후원자 정보가 옛 값이던
+    /// 것을 푼다(버그 리포트 #30). 한 번 읽기 전이거나 1초 안에 다시 물으면 거짓이다.
+    /// </summary>
+    public static bool ReloadIfChanged()
+    {
+        if (_map == null) return false;
+        long now = Environment.TickCount64;
+        if (now - _checkedAt < CheckEveryMs) return false;
+        _checkedAt = now;
+        if (StampOf(TableCache.PathFor(CacheName)) == _loaded) return false;
+        _map = null;
+        return true;
+    }
+
+    private static (string Path, DateTime Stamp) StampOf(string path)
+    {
+        try { return (path, File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue); }
+        catch (IOException) { return (path, DateTime.MinValue); }
+        catch (UnauthorizedAccessException) { return (path, DateTime.MinValue); }
+    }
+
     private static Dictionary<int, Entry> Load()
     {
+        _loaded = StampOf(TableCache.PathFor(CacheName));
+        _checkedAt = Environment.TickCount64;
         var map = new Dictionary<int, Entry>();
         foreach (var row in TableCache.Read<Snapshot>(CacheName)?.Data.Sponsors ?? [])
             if (row.Index >= 0) map[row.Index] = row;
@@ -104,6 +139,7 @@ public static class SponsorEdits
         var rows = Map.OrderBy(p => p.Key).Select(p => p.Value).ToList();
         TableCache.Write(CacheName, new TableCache.Cached<Snapshot>(
             $"{rows.Count}명", new Snapshot(rows), "사람이 고친 것"));
+        _loaded = StampOf(TableCache.PathFor(CacheName));   // 제가 적은 것은 딴 프로세스가 고친 것으로 안 친다
         Changed?.Invoke();
     }
 }
