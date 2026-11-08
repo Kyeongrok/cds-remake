@@ -553,9 +553,10 @@ public sealed class WorldMapWindow : Window
                 BarmaidBookRow => GameSettings.ShowBarmaidBookMenu,
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
                 AddOnsRow => GameSettings.AddOns,
+                UserDiscoveriesRow => GameSettings.ExtraDiscoveries,
                 _ => true,
             },
-            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동 · 애드온)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
+            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동 · 애드온 · 발견물 추가)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
             [
                 // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는 볼 길이 없다.
                 (BarmaidBookRow, MenuItem(() => BarmaidBookDialog.Show(this, _game))),
@@ -563,6 +564,9 @@ public sealed class WorldMapWindow : Window
                 (PersonMoveRow, MenuItem(() => PersonMoveDialog.Show(this, _game))),
                 // 애드온을 하나씩 켜고 끈다 — 모드 「애드온」을 켜야 줄이 선다.
                 (AddOnsRow, MenuItem(() => AddOnListDialog.Show(this))),
+                // 사람이 지어 넣는 발견물 — 짓기 · 고치기 · 내보내기 · 불러오기. 개발 창 「발견물」 탭에서 옮겼다(요청).
+                // 지은 발견물은 모드 「추가 발견물」을 켜야 게임에 나오므로 그때만 줄이 선다. 닫은 뒤 지도의 발견물 그림을 다시 맞춘다.
+                (UserDiscoveriesRow, MenuItem(() => { UserDiscoveryDialog.Show(this, DiscoveryAreaMap, _game); HideCities(); })),
             ],
             out _refreshApps,
             // 햄버거 오른쪽 「네비게이션(R)」 — 목적지 도시를 골라 자동항해(도시 안이면 출항부터)를 건다.
@@ -848,6 +852,9 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>도시락의 애드온 줄 이름. 모드 「애드온」이 이 줄을 켜고 끈다.</summary>
     internal const string AddOnsRow = "애드온";
+
+    /// <summary>도시락의 커스텀 발견물 줄 이름. 모드 「추가 발견물」이 이 줄을 켜고 끈다.</summary>
+    internal const string UserDiscoveriesRow = "발견물 추가";
 
     private void ShowDiscoveryMap()
     {
@@ -4168,12 +4175,6 @@ public sealed class WorldMapWindow : Window
         DiscoveriesChanged = () => HideCities(),
         // 인물 · 비보는 대본이 발견을 안 적는다 — 발견물 지도처럼 사건을 마쳤으면 찾은 것으로 본다.
         EventDone = id => _game.Player.IsSettled(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id),
-        // 사람이 지어 넣는 발견물 — 자리는 세계 지도를 띄워 드래그로 잡는다. 닫은 뒤 지도의 발견물 그림을 다시 맞춘다.
-        UserDiscoveries = () =>
-        {
-            UserDiscoveryDialog.Show(this, DiscoveryAreaMap, _game);
-            HideCities();
-        },
         // 「역사이벤트」 탭 — 등록된 역사 대본 칸과 지금 날짜로 본 상태.
         HistoryEvents = () => _game.HistoryCatalog(),
         // 「여급」 탭 — 여급 127명의 서는 해 · 도시 · 언어 · 취향.

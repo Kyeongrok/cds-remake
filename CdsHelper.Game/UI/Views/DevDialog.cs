@@ -76,8 +76,6 @@ public sealed class DevDialog : GameWindow
         /// </summary>
         public Func<int, bool>? EventDone { get; init; }
 
-        /// <summary>커스텀 발견물 창 — 「발견물」 탭의 단추가 창을 닫은 뒤 부른다.</summary>
-        public Action? UserDiscoveries { get; init; }
 
         /// <summary>등록된 역사 대본 칸들 — 「역사이벤트」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
         public Func<List<Engine.Market.CityHistory.Entry>>? HistoryEvents { get; init; }
@@ -403,7 +401,7 @@ public sealed class DevDialog : GameWindow
         var pages = new List<(string, FrameworkElement)> { ("일반", rows), ("테스트", tests) };
         if (options.Discoveries is { } table)
         {
-            pages.Add(("발견물", FindsPage(table, options.EventDone, options.UserDiscoveries)));
+            pages.Add(("발견물", FindsPage(table, options.EventDone)));
             Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
         }
         if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
@@ -782,7 +780,7 @@ public sealed class DevDialog : GameWindow
     /// <c>0x004321B0</c>), 사건 매듭(<see cref="Player.Settle"/>)만 남는다. 그래서 찾은 것 · 보고한 것만 보면 늘 비어
     /// 있었다. 발견물 지도와 같이 <paramref name="eventDone"/> 이 참인 것도 체크해 「(사건)」으로 적는다.
     /// </remarks>
-    private FrameworkElement FindsPage(DiscoveryTable table, Func<int, bool>? eventDone, Action? userDiscoveries)
+    private FrameworkElement FindsPage(DiscoveryTable table, Func<int, bool>? eventDone)
     {
         var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 560 };
         var count = new TextBlock { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
@@ -884,9 +882,7 @@ public sealed class DevDialog : GameWindow
         });
         top.Children.Add(find);
         top.Children.Add(count);
-        // 사람이 지어 넣는 발견물 — 짓기 · 고치기 · 내보내기 · 불러오기(UserDiscoveryDialog).
-        if (userDiscoveries is { } open)
-            top.Children.Add(GameUi.PushButton("발견물 추가…", () => { Close(); open(); }, 140));
+        // 사람이 지어 넣는 발견물(UserDiscoveryDialog)은 제목 줄 도시락 「발견물 추가」로 옮겼다(요청).
         page.Children.Add(top);
         var sheet = new DockPanel();
         var head = new Border
