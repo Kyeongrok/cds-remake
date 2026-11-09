@@ -176,6 +176,9 @@ public static class BugReport
         context["saves"] = Scrub(Engine.GameSave.Census());
         if (Engine.GameSave.LastLoadOutcome.Length > 0) context["lastLoad"] = Scrub(Engine.GameSave.LastLoadOutcome);
         if (CustomPacks.Active is { } pack) context["pack"] = pack;
+        // 소리 진단 — 「소리가 아예 안 난다」(버그 리포트 #38)는 장치 탓인지 앱 탓인지 가를 것이 없었다. 오류 글의 경로는 지운다.
+        context["sound"] = SoundDiagnostics.Collect()
+            .ToDictionary(p => p.Key, p => p.Value is string text ? Scrub(text) : p.Value);
         return context;
     }
 
@@ -232,6 +235,8 @@ public static class BugReport
             $"{Lang.T("지금 자리")}: {place}",
             $"{Lang.T("켠 모드")}: {on}{Lang.T("개")}",
         };
+        if (context.TryGetValue("sound", out var sound) && sound is Dictionary<string, object?> heard)
+            lines.Add($"{Lang.T("소리")}: {SoundDiagnostics.Summary(heard)}");
         if (context.TryGetValue("crashLogAt", out var at)) lines.Add($"{Lang.T("오류 기록의 끝")}: {at}");
         lines.Add(Lang.T("이름 · 세이브 · 폴더 경로는 보내지 않습니다. 설치마다 하나인 무작위 번호만 같이 갑니다."));
         return string.Join(Environment.NewLine, lines);

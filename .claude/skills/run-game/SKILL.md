@@ -68,6 +68,7 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 | `CDS_START=land:<도시>:<선체 key>:<x>:<y>` | 같은 바로 시작인데 배는 그 도시 앞바다에 대 두고 말을 그 칸(가까운 육지)에 세운다 — 발견물 자리 사건을 밟아 볼 때(로제타석: `land:78:ketch:1460.5:407.5` + 뱃머리 6 · 걷기) |
 | `CDS_DIALOG=bugreport` | 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다 — 메뉴 창이 떠 있는 동안 배 · 말이 서는지 본다 |
 | `CDS_DIALOG=mod[:<찾는 말>]` | 모드 창을 띄우고 찾기 칸에 그 말을 넣는다(`mod:자동` — 모든 탭을 가로질러 걸러진 화면). `CDS_START` 와 함께 쓴다 |
+| `CDS_DIALOG=sound` | 2초마다 다섯 번 효과음(닻)을 내고 소리 진단(버그 리포트의 `sound` — 곡 상태 · 재생 위치 · 트는 손 · 기본 출력 장치 · 앱 음량)을 기록에 적는다. 소리를 내려면 `CDS_MUTE=0`(크기는 시험 폴더 `game-settings.json` 의 `BgmVolume`/`SfxVolume` 0 으로 조용히). `CDS_AUDIO=winrt` 면 WPF MediaPlayer 대신 WinRT 쪽으로 튼다 |
 | `CDS_DIALOG=dev:<탭>` | 개발 창을 그 탭으로 띄운다(`dev:에디터` = 주인공 능력치 · 기능 · 언어 고치기). `CDS_START` 와 함께 쓴다 |
 | `CDS_TITLE=Down,Enter` | 타이틀에서 그 글쇠들을 1초 간격으로 누른다(LOAD GAME = `Down,Enter`, CONTINUE = `Down,Down,Enter`). 기록에 세이브 자리 요약(`GameSave.Census`)과 1초마다 화면 · 마지막 불러오기 결과를 적는다 |
 | `CDS_AUTOKEY=Enter` | `CDS_TITLE` 과 함께 — 새로 뜬 창마다 종류 · 물음 글(ConfirmDialog 는 이름으로)을 적고 그 글쇠를 한 번 보낸다(목록은 맨 위 칸, 물음은 「예」) |

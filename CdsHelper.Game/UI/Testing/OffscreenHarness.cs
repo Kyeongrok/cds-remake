@@ -5,6 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using CdsHelper.Game.Local.Helpers;
 using CdsHelper.Game.Local.Settings;
 using CdsHelper.Game.UI.Views;
 using CdsHelper.Support.Local.Helpers;
@@ -105,6 +106,19 @@ public static class OffscreenHarness
                     window.OpenBugReportForTest();
                     Log("버그 리포트 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=sound — 효과음 하나를 내고 배경음악이 도는 동안 소리 진단(버그 리포트에 싣는 것)을 2초마다 다섯 번 적는다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "sound")
+            {
+                int left = 5;
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                timer.Tick += (_, _) =>
+                {
+                    SoundBank.Current?.Play(SoundBank.AnchorPart);
+                    Log("소리 " + string.Join(" | ", SoundDiagnostics.Collect().Select(p => $"{p.Key}={p.Value}")));
+                    if (--left == 0) timer.Stop();
+                };
+                timer.Start();
+            }
             // CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "mybugs")
                 window.Dispatcher.BeginInvoke(() =>

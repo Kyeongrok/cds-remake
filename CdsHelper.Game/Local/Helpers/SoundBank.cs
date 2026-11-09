@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Media;
+using System.Runtime.InteropServices;
 using CdsHelper.Support.Local.Helpers;
 
 using CdsHelper.Support.Local.Settings;
@@ -12,7 +12,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </summary>
 /// <remarks>
 /// <see cref="WaveBank"/> 가 파트를 RIFF WAVE 통째로 풀어 주므로 그대로
-/// <see cref="SoundPlayer"/> 에 넘기면 된다. 효과음 목록을 보는 창
+/// Win32 <c>PlaySound</c> 에 넘기면 된다. 효과음 목록을 보는 창
 /// (<c>WaveBankDialog</c>)과 같은 길이다.
 ///
 /// 배경음악(<see cref="BgmPlayer"/>)과 따로 논다 — 효과음은 곡을 끊지 않고 겹쳐 난다.
@@ -90,7 +90,52 @@ public sealed class SoundBank : IDisposable
     public const int BandNoticePart = 0x1D - WaveBank.FirstSoundId;
 
     private readonly WaveBank? _bank;
-    private readonly SoundPlayer _player = new();
+    // ── Win32 PlaySound ─────────────────────────────────────────────────────
+    // 예전에는 SoundPlayer 였다. SoundPlayer 는 PlaySound 가 실패(false)를 내도 버려, 소리 장치를 못 열 때 아무 흔적이
+    // 없었다(버그 리포트 #38). 직접 불러 실패를 세고, 실패하면 MediaVoice 쪽(PlayOver)으로 한 번 더 낸다.
+
+    [DllImport("winmm.dll", EntryPoint = "PlaySoundW", ExactSpelling = true)]
+    private static extern bool PlaySound(IntPtr sound, IntPtr module, uint flags);
+
+    private const uint SndAsync = 0x0001, SndNoDefault = 0x0002, SndMemory = 0x0004;
+
+    /// <summary>
+    /// PlaySound 에 넘긴 소리 알맹이 — <c>SND_MEMORY | SND_ASYNC</c> 는 소리가 끝날 때까지 그 메모리를 읽으므로 GC 가 못
+    /// 옮기는 곳에 둔다. 새 소리를 틀면 앞 소리는 PlaySound 안에서 멎으므로, 그 앞 것부터 놓는다.
+    /// </summary>
+    private readonly IntPtr[] _held = new IntPtr[2];
+
+    /// <summary>효과음(PlaySound)을 낸 횟수 · 못 낸 횟수 · 마지막으로 못 낸 까닭 — 버그 리포트에 싣는다.</summary>
+    public static int Plays { get; private set; }
+
+    public static int PlayFailures { get; private set; }
+
+    public static string LastPlayError { get; private set; } = "";
+
+    /// <summary>지금 한 벌이 어디서 소리를 꺼내는지 — WAVES.CDS · 뽑아 둔 것.</summary>
+    public string Origin => _bank != null ? "WAVES.CDS" : "asset/sfx";
+
+    private bool PlayMemory(byte[] wav)
+    {
+        IntPtr buffer = Marshal.AllocHGlobal(wav.Length);
+        Marshal.Copy(wav, 0, buffer, wav.Length);
+        bool ok = PlaySound(buffer, IntPtr.Zero, SndMemory | SndAsync | SndNoDefault);
+        // 앞앞 것을 놓고 한 칸씩 민다 — 바로 앞 것은 PlaySound 가 멈췄지만 한 박자 더 들고 있는다.
+        if (_held[0] != IntPtr.Zero) Marshal.FreeHGlobal(_held[0]);
+        _held[0] = _held[1];
+        _held[1] = buffer;
+        return ok;
+    }
+
+    private void FreeHeld()
+    {
+        for (int i = 0; i < _held.Length; i++)
+        {
+            if (_held[i] == IntPtr.Zero) continue;
+            Marshal.FreeHGlobal(_held[i]);
+            _held[i] = IntPtr.Zero;
+        }
+    }
 
     private SoundBank(WaveBank? bank) => _bank = bank;
 
@@ -235,18 +280,27 @@ public sealed class SoundBank : IDisposable
             var wav = WavOf(part);
             if (wav == null) return;
 
-            // SoundPlayer 는 스트림을 물고 있으므로 틀 때마다 새로 잡아 넘긴다.
-            _player.Stream = new MemoryStream(Scaled(wav, GameSettings.SfxVolume));
-            _player.Play();
+            if (PlayMemory(Scaled(wav, GameSettings.SfxVolume))) { Plays++; return; }
+
+            // PlaySound(winmm)가 장치를 못 열었다 — 까닭을 남기고 Media Foundation 쪽으로 낸다.
+            PlayFailures++;
+            LastPlayError = $"{DateTime.Now:HH:mm:ss} PlaySound 파트 {part} 실패 (waveOut 장치 {waveOutGetNumDevs()})";
+            System.Diagnostics.Debug.WriteLine($"[SoundBank] {LastPlayError}");
+            PlayOver(part);
         }
         catch (Exception ex)
         {
+            PlayFailures++;
+            LastPlayError = $"{DateTime.Now:HH:mm:ss} 파트 {part} — {ex.GetType().Name} {ex.Message}";
             System.Diagnostics.Debug.WriteLine($"[SoundBank] 파트 {part} 를 틀지 못했습니다 — {ex.Message}");
         }
     }
 
+    [DllImport("winmm.dll")]
+    internal static extern uint waveOutGetNumDevs();
+
     /// <summary>
-    /// 소리를 그 크기로 줄인 벌을 낸다 — <see cref="SoundPlayer"/> 에는 크기 손잡이가 없다.
+    /// 소리를 그 크기로 줄인 벌을 낸다 — PlaySound 에는 크기 손잡이가 없다.
     /// </summary>
     /// <remarks>
     /// 게임 효과음은 22kHz <b>8비트 부호 없는</b> 소리라 128 이 무음이다. 그 자리를 밑삼아
@@ -272,7 +326,7 @@ public sealed class SoundBank : IDisposable
     /// </summary>
     public void Stop()
     {
-        try { _player.Stop(); }
+        try { PlaySound(IntPtr.Zero, IntPtr.Zero, 0); }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[SoundBank] 소리를 끊지 못했습니다 — {ex.Message}");
@@ -290,11 +344,11 @@ public sealed class SoundBank : IDisposable
     private const int WavHeader = 44, Silence = 128;
 
     /// <summary>
-    /// 되풀이 소리를 트는 손 — <see cref="SoundPlayer"/> 가 아니다. SoundPlayer 는 Win32 <c>PlaySound</c> 라
+    /// 되풀이 소리를 트는 손 — PlaySound 가 아니다. Win32 <c>PlaySound</c> 는
     /// 한 프로세스에 <b>한 소리만</b> 난다 — 효과음 하나(<see cref="Play"/>)가 빗소리·사건 장면 소리를 대신하며
     /// 끊고, <see cref="Stop"/> 도 되풀이를 함께 껐다. MediaPlayer 는 따로 섞여 나므로 둘이 겹쳐 난다.
     /// </summary>
-    private System.Windows.Media.MediaPlayer? _loop;
+    private MediaVoice? _loop;
 
     /// <summary>되풀이할 소리를 풀어 두는 곳 — MediaPlayer 는 메모리 스트림을 못 받아 파일로 넘긴다.</summary>
     private static readonly string LoopDirectory = Path.Combine(Path.GetTempPath(), "CostaDelSol-sfx");
@@ -318,12 +372,12 @@ public sealed class SoundBank : IDisposable
 
             if (_loop == null)
             {
-                _loop = new System.Windows.Media.MediaPlayer { Volume = 1.0 };
+                _loop = new MediaVoice { Volume = 1.0 };
                 // 끝에 닿으면 처음으로 되감아 다시 튼다.
                 _loop.MediaEnded += (_, _) =>
                 {
                     if (_loop == null) return;
-                    _loop.Position = TimeSpan.Zero;
+                    _loop.Rewind();
                     _loop.Play();
                 };
             }
@@ -342,7 +396,7 @@ public sealed class SoundBank : IDisposable
     /// <b>겹쳐 나는</b> 효과음 — 앞 소리를 끊지 않고 그 위에 섞어 낸다. 해전처럼 소리가 잇달아 나는 판에 쓴다.
     /// </summary>
     /// <remarks>
-    /// <see cref="Play"/> 의 SoundPlayer(Win32 <c>PlaySound</c>)는 한 프로세스에 한 소리뿐이라, 해전에서 포탄이 닿자마자 나는
+    /// <see cref="Play"/> 의 Win32 <c>PlaySound</c> 는 한 프로세스에 한 소리뿐이라, 해전에서 포탄이 닿자마자 나는
     /// 명중 소리가 0.74초짜리 발사 소리를 0.1초 남짓에서 끊고, 다음 발의 발사 소리가 1.3초짜리 명중 소리를 또 끊었다.
     /// 여기서는 MediaPlayer 여럿을 돌려 가며 쓴다 — MediaPlayer 는 저마다 따로 섞여 난다. 소리 알맹이는 되풀이 소리처럼
     /// 크기를 먹여 파일로 한 번 적어 두고 다시 쓴다.
@@ -361,7 +415,7 @@ public sealed class SoundBank : IDisposable
             if (!File.Exists(path)) File.WriteAllBytes(path, Scaled(wav, volume));
 
             // 돌려 쓰는 자리 — 차례로 하나씩. 가장 오래 전에 튼 것을 다시 잡으므로, 한꺼번에 OverVoices 개까지 겹친다.
-            var player = _over[_overNext] ??= new System.Windows.Media.MediaPlayer();
+            var player = _over[_overNext] ??= new MediaVoice();
             _overNext = (_overNext + 1) % _over.Length;
             player.Stop();
             player.Open(new Uri(path));
@@ -377,7 +431,7 @@ public sealed class SoundBank : IDisposable
     /// <summary>한꺼번에 겹쳐 낼 수 있는 소리 수.</summary>
     private const int OverVoices = 6;
 
-    private readonly System.Windows.Media.MediaPlayer?[] _over = new System.Windows.Media.MediaPlayer?[OverVoices];
+    private readonly MediaVoice?[] _over = new MediaVoice?[OverVoices];
     private int _overNext;
 
     /// <summary>겹쳐 내던 소리를 모두 끊는다.</summary>
@@ -409,7 +463,8 @@ public sealed class SoundBank : IDisposable
 
     public void Dispose()
     {
-        _player.Dispose();
+        Stop();
+        FreeHeld();
         StopLoop();
         _loop = null;
         StopOver();

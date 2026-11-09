@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Windows.Media;
 
 namespace CdsHelper.Game.Local.Helpers;
 
@@ -10,7 +9,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 파일은 게임 폴더 밑 <c>bgm/TrackNN.mp3</c> 다. 저장소로 복사하지 않고 그 자리에서 읽는다 —
 /// 한 벌이 130MB 라 들고 다닐 것이 못 된다. 폴더가 없으면 아무 소리도 내지 않고 넘어간다.
 ///
-/// <see cref="MediaPlayer"/> 는 만든 스레드(UI)에 매인다. 창에서 하나 만들어 쓰고 닫을 때 놓는다.
+/// 트는 손(<see cref="MediaVoice"/>)은 만든 스레드(UI)에 매인다. 창에서 하나 만들어 쓰고 닫을 때 놓는다.
 /// </remarks>
 public sealed class BgmPlayer : IDisposable
 {
@@ -225,7 +224,7 @@ public sealed class BgmPlayer : IDisposable
         (SponsorTrack, "후원자 알현(보고 · 설득 · 계약중단)"),
     ];
 
-    private readonly MediaPlayer _player = new();
+    private readonly MediaVoice _player = new();
     private string _dir = "";
     private int _track = -1;
 
@@ -252,6 +251,15 @@ public sealed class BgmPlayer : IDisposable
         // 지난번에 맞춰 둔 소리 크기로 시작한다.
         Volume = Settings.GameSettings.BgmVolume / (double)Settings.GameSettings.MaxVolume;
 
+        // 못 틀었으면(장치 · 코덱 · 파일) 까닭을 남기고 「안 돌고 있음」으로 돌린다 — 다음 Play 나 창이 앞으로 올 때
+        // (Follow) 다시 연다. 예전에는 이 알림을 아무도 안 들어 LastError 가 빈 채 조용했다(버그 리포트 #38).
+        _player.Failed += why =>
+        {
+            LastError = $"Track{_track:D2} — {why}";
+            _track = -1;
+            _failed = true;
+        };
+
         _player.MediaEnded += (_, _) =>
         {
             // 기다리라고 해 둔 곡이 있으면 이제 갈아탄다(해상에서 해역이 바뀔 때다).
@@ -264,7 +272,7 @@ public sealed class BgmPlayer : IDisposable
             }
 
             // 없으면 처음으로 되감아 다시 튼다. 이어 재생은 이 한 줄이면 된다.
-            _player.Position = TimeSpan.Zero;
+            _player.Rewind();
             _player.Play();
         };
     }
@@ -277,6 +285,27 @@ public sealed class BgmPlayer : IDisposable
 
     /// <summary>못 튼 까닭 한 줄. 잘 돌고 있으면 빈 문자열.</summary>
     public string LastError { get; private set; } = "";
+
+    /// <summary>마지막으로 연 파일 — 버그 리포트에 어느 자리(게임 폴더 · 받은 것 · 갈아 끼운 것)인지만 싣는다.</summary>
+    public string Source { get; private set; } = "";
+
+    /// <summary>
+    /// 버그 리포트에 싣는 지금 상태 한 줄 — 켬 · 곡 · 자리 · 크기 · 뒤에 있음.
+    /// </summary>
+    public string Describe()
+    {
+        string where = Source.Length == 0 ? "-"
+            : Source.StartsWith(BgmAssetDownloader.CacheDirectory, StringComparison.OrdinalIgnoreCase) ? "받은 곡"
+            : _dir.Length > 0 && Source.StartsWith(_dir, StringComparison.OrdinalIgnoreCase) ? "게임 폴더"
+            : Source.StartsWith(AppContext.BaseDirectory, StringComparison.OrdinalIgnoreCase) ? "실행 폴더"
+            : "갈아 끼운 곡";
+        string length = _player.Duration is { } d ? $"{d.TotalSeconds:0}s" : "?";
+        return $"{(_enabled ? "켬" : "끔")} · 곡 {_track} (원함 {_wanted}) · {where} · {_player.State} {_player.Position.TotalSeconds:0.0}/{length}"
+               + $" · 크기 {_volume:0.00} → {Heard:0.00}{(_away ? " · 뒤에 있음" : "")}";
+    }
+
+    /// <summary>게임 창이 뒤에 있다고 보는지 — 「백그라운드 음소거」가 이것을 따른다.</summary>
+    public static bool Away => _away;
 
     /// <summary>지금 도는 곡 번호. 아무것도 안 틀고 있으면 -1.</summary>
     public int Track => _track;
@@ -353,11 +382,13 @@ public sealed class BgmPlayer : IDisposable
 
         try
         {
+            _track = track;
+            _failed = false;
+            LastError = "";
+            Source = path;
             _player.Open(new Uri(path));
             _player.Volume = Heard;
             _player.Play();
-            _track = track;
-            LastError = "";
         }
         catch (Exception ex)
         {
@@ -404,11 +435,26 @@ public sealed class BgmPlayer : IDisposable
         }
         if (System.Windows.Application.Current is { } app)
         {
-            app.Activated += (_, _) => { front = true; Sync(); };
+            app.Activated += (_, _) => { front = true; Sync(); Current?.Retry(); };
             app.Deactivated += (_, _) => { front = false; Sync(); };
         }
         main.StateChanged += (_, _) => Sync();
         Sync();
+    }
+
+    /// <summary>
+    /// 틀어야 할 곡이 있는데 못 틀고 있으면 다시 연다 — 소리 장치가 잠시 막혔다 풀렸을 때(다른 프로그램 · 장치 바뀜) 창을
+    /// 다시 앞으로 가져오면 돌아오게.
+    /// </summary>
+    /// <summary>틀다가 못 틀었다 — 일부러 멈춘 것(<see cref="Stop"/>)과 갈라, 이때만 <see cref="Retry"/> 가 다시 연다.</summary>
+    private bool _failed;
+
+    private void Retry()
+    {
+        if (!_failed || !_enabled || _track >= 0 || _wanted < 0) return;
+        int again = _wanted;
+        _wanted = -1;
+        Play(again);
     }
 
     /// <summary>「백그라운드 음소거」를 바꿨거나 앞뒤가 바뀌었다 — 지금 크기를 다시 먹인다.</summary>
@@ -437,6 +483,7 @@ public sealed class BgmPlayer : IDisposable
         _player.Stop();
         _player.Close();
         _track = -1;
+        _failed = false;
     }
 
     public void Dispose() => Stop();
