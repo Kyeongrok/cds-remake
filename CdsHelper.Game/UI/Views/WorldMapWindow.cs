@@ -4121,8 +4121,19 @@ public sealed class WorldMapWindow : Window
         _host.RefreshGrownCities();   // 「도시 투자 성장」을 켜고 껐으면 자란 도시 그림을 바꾼다
     }
 
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=mod[:찾는 말]</c>) — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.</summary>
+    internal void OpenModForTest(string? query)
+    {
+        _modQuery = query;
+        try { ShowModDialog(); }
+        finally { _modQuery = null; }
+    }
+
+    private string? _modQuery;
+
     private void ShowModDialogCore() => ModDialog.Show(this, new ModDialog.Options
     {
+        StartQuery = _modQuery,
         // 발견물 수는 도시 창 쪽지다 — 켜고 끄면 떠 있는 도시 창이 설정 알림을 받아 곧바로 고친다.
         DiscoveryCountOn = () => GameSettings.ShowDiscoveryCount,
         SetDiscoveryCount = on => GameSettings.ShowDiscoveryCount = on,

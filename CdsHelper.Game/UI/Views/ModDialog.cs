@@ -62,10 +62,16 @@ public sealed class ModDialog : GameWindow
         /// <summary>부드러운 구름.</summary>
         public Func<bool> SmoothCloudsOn { get; init; } = () => true;
         public Action<bool> SetSmoothClouds { get; init; } = _ => { };
+
+        /// <summary>열자마자 찾기 칸에 넣을 말 — 화면 밖 시험(CDS_DIALOG=mod:…)이 쓴다.</summary>
+        public string? StartQuery { get; init; }
     }
 
     /// <summary>줄 목록과 설명 칸의 너비.</summary>
     private const double ListWidth = 290, TipWidth = 480;
+
+    /// <summary>탭 판의 둘레 — 판마다 같다.</summary>
+    private static readonly Thickness PageMargin = new(12, 10, 8, 4);
     // 막대 줄 = 들여쓰기 18 + 이름 64 + 틈 18 + 막대 + 수치 48 — 목록 너비(250)를 넘으면 오른쪽 수치가 잘려 안 보인다
     private const double SliderWidth = 102;
 
@@ -789,14 +795,33 @@ public sealed class ModDialog : GameWindow
         lab.Visibility = Visibility.Hidden;
         general.Visibility = Visibility.Hidden;
 
-        pages.SizeChanged += (_, e) => side.Height = Math.Max(0, e.NewSize.Height - 14);
+        // 판들은 굴림 칸에 담는다 — 평소에는 굴리지 않고(판 높이 그대로), 찾는 동안만 그 높이에 묶어 두고 굴린다.
+        _list = new ScrollViewer
+        {
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = pages,
+        };
+        _pages = pages;
+        _list.SizeChanged += (_, e) => side.Height = Math.Max(0, e.NewSize.Height - 14);
         var body = new StackPanel { Orientation = Orientation.Horizontal };
-        body.Children.Add(pages);
+        body.Children.Add(_list);
         body.Children.Add(side);
+
+        var tabs = Tabs(
+        [
+            ("권장", preset), ("편의성", rows), ("정보", info), ("미니맵", mini), ("고해상도", hires), ("UI", ui),
+            ("추가 기능", extra),
+            // 리디바탕은 한글 글꼴이라 일본어에서는 탭을 안 낸다
+            .. (UiFont.Supported ? new[] { ("폰트", font) } : Array.Empty<(string, StackPanel)>()),
+            ("캐릭터", character), ("발견물", discovery), ("저장", save), ("일반", general), ("실험", lab),
+        ]);
+        BuildSearchIndex();
 
         var stack = new StackPanel();
         stack.Children.Add(title);
-        stack.Children.Add(Tabs(preset, rows, info, mini, hires, ui, extra, font, character, discovery, save, general, lab));
+        stack.Children.Add(SearchBar());
+        stack.Children.Add(tabs);
         stack.Children.Add(body);
         stack.Children.Add(buttons);
 
@@ -809,32 +834,41 @@ public sealed class ModDialog : GameWindow
             Child = stack,
         };
 
+        // Esc — 찾는 말이 있으면 먼저 지우고, 없으면 창을 닫는다. Ctrl+F — 찾기 칸으로.
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                _search.Focus();
+                _search.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && _search.Text.Length > 0)
+            {
+                _search.Text = "";
+                e.Handled = true;
+            }
+        };
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
+        // 열자마자 글쇠를 치면 곧바로 찾도록 찾기 칸에 커서를 둔다.
+        Loaded += (_, _) =>
+        {
+            _search.Focus();
+            if (!string.IsNullOrEmpty(options.StartQuery)) _search.Text = options.StartQuery;
+        };
     }
 
+    /// <summary>탭 하나 — 머리 이름 · 머리 · 판.</summary>
+    private readonly List<(string Name, Border Head, StackPanel Page)> _tabs = [];
+
+    /// <summary>마지막으로 고른 탭의 판 — 찾기를 끝내면 이 판으로 돌아간다.</summary>
+    private StackPanel? _current;
+
     /// <summary>탭 머리 — 「편의성」·「일반」. 누른 쪽 판만 보이고 머리는 밝게 선다.</summary>
-    private FrameworkElement Tabs(FrameworkElement preset, FrameworkElement convenience, FrameworkElement info, FrameworkElement mini,
-                                  FrameworkElement hires, FrameworkElement ui, FrameworkElement extra, FrameworkElement font, FrameworkElement character, FrameworkElement discovery, FrameworkElement save, FrameworkElement general,
-                                  FrameworkElement lab)
+    private FrameworkElement Tabs(IReadOnlyList<(string Name, StackPanel Page)> pages)
     {
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 8, 12, 0) };
-        var heads = new List<(Border Head, FrameworkElement Page)>();
-
-        void Select(FrameworkElement page)
-        {
-            foreach (var (head, p) in heads)
-            {
-                bool on = ReferenceEquals(p, page);
-                p.Visibility = on ? Visibility.Visible : Visibility.Hidden;
-                head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
-                ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
-            }
-            _tipName.Text = "";
-            _tipText.Text = Greeting;
-            ShowTipImage(null);
-        }
-
-        void Add(string text, FrameworkElement page)
+        foreach (var (text, page) in pages)
         {
             var head = new Border
             {
@@ -845,26 +879,270 @@ public sealed class ModDialog : GameWindow
                 Cursor = Cursors.Hand,
                 Child = new TextBlock { Text = text, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15 },
             };
-            head.MouseLeftButtonDown += (_, _) => Select(page);
-            heads.Add((head, page));
+            // 찾는 중에 머리를 누르면 찾기를 끝내고 그 탭으로 간다.
+            head.MouseLeftButtonDown += (_, _) =>
+            {
+                if (_search.Text.Length > 0) _search.Text = "";
+                SelectTab(page);
+            };
+            _tabs.Add((text, head, page));
             bar.Children.Add(head);
         }
-
-        Add("권장", preset);
-        Add("편의성", convenience);
-        Add("정보", info);
-        Add("미니맵", mini);
-        Add("고해상도", hires);
-        Add("UI", ui);
-        Add("추가 기능", extra);
-        if (UiFont.Supported) Add("폰트", font);   // 리디바탕은 한글 글꼴이라 일본어에서는 탭을 안 낸다
-        Add("캐릭터", character);
-        Add("발견물", discovery);
-        Add("저장", save);
-        Add("일반", general);
-        Add("실험", lab);
-        Select(preset);
+        SelectTab(pages[0].Page);
         return bar;
+    }
+
+    /// <summary>그 탭의 판만 보이고 머리를 밝게 세운다. 설명 칸은 처음 글로 돌린다.</summary>
+    private void SelectTab(StackPanel page)
+    {
+        _current = page;
+        foreach (var (_, head, p) in _tabs)
+        {
+            bool on = ReferenceEquals(p, page);
+            p.Visibility = on ? Visibility.Visible : Visibility.Hidden;
+            head.Background = on ? new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)) : Brushes.Transparent;
+            ((TextBlock)head.Child).Opacity = on ? 1 : 0.6;
+        }
+        _tipName.Text = "";
+        _tipText.Text = Greeting;
+        ShowTipImage(null);
+    }
+
+    // ── 찾기 ─────────────────────────────────────────────────────────────
+
+    /// <summary>찾기 칸 — 줄 이름과 설명에서 찾는다.</summary>
+    private readonly TextBox _search = new()
+    {
+        Width = 280,
+        FontSize = 14,
+        VerticalContentAlignment = VerticalAlignment.Center,
+        Padding = new Thickness(2, 1, 2, 1),
+        BorderThickness = new Thickness(2),
+        BorderBrush = GameUi.ItemEdge,
+    };
+
+    /// <summary>찾은 줄 수 · 「찾는 모드가 없습니다」.</summary>
+    private readonly TextBlock _hitNote = new()
+    {
+        Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0),
+    };
+
+    /// <summary>판들을 담은 굴림 칸과 판들의 칸 — 찾는 동안 판을 위아래로 늘어놓는다.</summary>
+    private ScrollViewer _list = null!;
+    private Grid _pages = null!;
+
+    /// <summary>찾는 동안 판 밑에 세우는 「찾는 모드가 없습니다」.</summary>
+    private readonly TextBlock _noHit = new()
+    {
+        Text = "찾는 모드가 없습니다",
+        Foreground = GameUi.Text, FontSize = 14, Opacity = 0.8,
+        Margin = new Thickness(12, 16, 8, 4),
+        Visibility = Visibility.Collapsed,
+    };
+
+    /// <summary>
+    /// 줄(또는 묶음 안 줄)마다 찾을 글 — <see cref="Watch"/> 가 이름과 설명을 적는다. 권장 단계 줄은 이름과 요약만 적는다
+    /// (설명에 다른 줄 이름이 다 들어 있어 무엇을 찾든 걸린다).
+    /// </summary>
+    private readonly Dictionary<FrameworkElement, (string Label, string Tip)> _searchText = new();
+
+    /// <summary>판의 줄 하나 — 혼자 선 줄이면 <c>Parts</c> 가 비고, 묶음이면 첫 칸이 머리 줄이다.</summary>
+    private sealed record SearchEntry(UIElement Element, string Text, (UIElement Part, string Text)[] Parts);
+
+    /// <summary>찾을 판 하나 — 맨 위에 탭 이름 머리를 끼워 두고 찾는 동안만 세운다.</summary>
+    private sealed record SearchPage(StackPanel Page, FrameworkElement Head, SearchEntry[] Entries);
+
+    private readonly List<SearchPage> _searchPages = [];
+
+    /// <summary>찾는 중인지 — 굴림 칸 크기를 묶어 두었는지.</summary>
+    private bool _searching;
+
+    /// <summary>창 위의 찾기 줄 — 「찾기」 · 찾기 칸(빈 동안 안내 글) · 한/영 표시 · 찾은 수.</summary>
+    private FrameworkElement SearchBar()
+    {
+        var hint = new TextBlock
+        {
+            Text = "모드 이름 · 설명으로 찾기 (Ctrl+F)",
+            Foreground = Brushes.Gray, FontSize = 13, IsHitTestVisible = false,
+            Margin = new Thickness(6, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
+        };
+        _search.TextChanged += (_, _) =>
+        {
+            hint.Visibility = _search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            Search();
+        };
+        var field = new Grid();
+        field.Children.Add(_search);
+        field.Children.Add(hint);
+        return new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(12, 8, 12, 0),
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "찾기", Foreground = GameUi.Text, FontSize = 15, FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center,
+                },
+                field,
+                GameUi.ImeBadge(_search),
+                _hitNote,
+            },
+        };
+    }
+
+    /// <summary>찾는 글을 고른다 — 대소문자 · 빈칸을 안 가린다.</summary>
+    private static string Fold(string text) =>
+        new(text.Where(c => !char.IsWhiteSpace(c)).Select(char.ToLowerInvariant).ToArray());
+
+    /// <summary>그 칸 밑(자신 포함)에서 <see cref="Watch"/> 가 단 이름 · 설명을 모두 모아 지금 언어로 옮겨 고른다.</summary>
+    private string TextUnder(DependencyObject node)
+    {
+        var parts = new List<string>();
+        void Walk(DependencyObject at)
+        {
+            if (at is FrameworkElement element && _searchText.TryGetValue(element, out var text))
+            {
+                parts.Add(Local.Helpers.Lang.T(text.Label));
+                parts.Add(Local.Helpers.Lang.T(text.Tip));
+            }
+            foreach (object child in LogicalTreeHelper.GetChildren(at))
+                if (child is DependencyObject next) Walk(next);
+        }
+        Walk(node);
+        return Fold(string.Join("\n", parts));
+    }
+
+    /// <summary>
+    /// 판마다 줄을 모은다 — 판의 바로 밑 칸이 한 줄이다. 그 칸이 설명을 단 줄이 아니면서 안에 설명 단 줄을 품었으면
+    /// 묶음(미니맵 · 자동 보급 · 바다 입체 효과처럼 머리 줄 밑에 들여쓴 줄)으로 보고 칸마다 따로 맞춘다.
+    /// 판마다 맨 위에 탭 이름 머리를 끼워 넣는다(평소에는 접어 둔다).
+    /// </summary>
+    private void BuildSearchIndex()
+    {
+        for (int i = 0; i < _tabs.Count; i++)
+        {
+            var (name, _, page) = _tabs[i];
+            var entries = new List<SearchEntry>();
+            foreach (UIElement child in page.Children)
+            {
+                if (child is FrameworkElement row && !_searchText.ContainsKey(row) && row is Panel group
+                    && group.Children.Count > 1 && TextUnder(group).Length > 0)
+                    entries.Add(new SearchEntry(child, "",
+                        [.. group.Children.Cast<UIElement>().Select(part => (part, TextUnder(part)))]));
+                else
+                    entries.Add(new SearchEntry(child, TextUnder(child), []));
+            }
+
+            var head = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(0x50, 0xFF, 0xFF, 0xFF)),
+                BorderBrush = GameUi.Edge,
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding = new Thickness(6, 2, 6, 2),
+                Margin = new Thickness(0, 4, 0, 0),
+                Visibility = Visibility.Collapsed,
+                Child = new TextBlock { Text = name, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 13 },
+            };
+            page.Children.Insert(0, head);
+            // 행이 없으면 모두 한 칸에 겹친다(평소). 찾는 동안만 행을 깔아 판을 위아래로 늘어놓는다.
+            Grid.SetRow(page, i);
+            _searchPages.Add(new SearchPage(page, head, [.. entries]));
+        }
+        // 탭이 없는 판(일본어의 「폰트」)은 아예 접는다 — 찾는 동안 첫 행에 빈자리를 차지하지 않게.
+        foreach (UIElement child in _pages.Children)
+            if (!_tabs.Exists(t => ReferenceEquals(t.Page, child))) child.Visibility = Visibility.Collapsed;
+        Grid.SetRow(_noHit, _tabs.Count);
+        _pages.Children.Add(_noHit);
+    }
+
+    /// <summary>찾기 칸의 말로 줄을 거른다 — 말이 있으면 모든 탭을 가로질러 맞는 줄만, 없으면 마지막에 보던 탭으로.</summary>
+    private void Search()
+    {
+        string query = Fold(_search.Text);
+        if (query.Length == 0)
+        {
+            if (!_searching) return;
+            _searching = false;
+            _pages.RowDefinitions.Clear();
+            foreach (var page in _searchPages)
+            {
+                page.Page.Width = ListWidth;
+                page.Page.Margin = PageMargin;
+                page.Head.Visibility = Visibility.Collapsed;
+                foreach (var entry in page.Entries)
+                {
+                    entry.Element.Visibility = Visibility.Visible;
+                    foreach (var (part, _) in entry.Parts) part.Visibility = Visibility.Visible;
+                }
+            }
+            _noHit.Visibility = Visibility.Collapsed;
+            _hitNote.Text = "";
+            _list.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            _list.Height = double.NaN;
+            _list.Width = double.NaN;
+            SelectTab(_current ?? _searchPages[0].Page);
+            return;
+        }
+
+        if (!_searching)
+        {
+            // 굴림 칸을 지금(탭 화면) 크기에 묶는다 — 찾은 줄이 많아도 창이 안 커지고 칸 안에서 굴린다.
+            _searching = true;
+            _list.Height = _list.ActualHeight;
+            _list.Width = _list.ActualWidth;
+            _list.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            // 굴림대가 설 자리만큼 판을 좁힌다 — 칸 너비를 묶었으니 안 좁히면 줄 오른쪽이 잘린다.
+            double bar = SystemParameters.VerticalScrollBarWidth;
+            foreach (var page in _searchPages)
+            {
+                page.Page.Margin = new Thickness(PageMargin.Left, PageMargin.Top, 0, PageMargin.Bottom);
+                page.Page.Width = Math.Max(0, ListWidth + PageMargin.Right - bar);
+            }
+            foreach (var (_, head, _) in _tabs)
+            {
+                head.Background = Brushes.Transparent;
+                ((TextBlock)head.Child).Opacity = 0.6;
+            }
+            _pages.RowDefinitions.Clear();
+            for (int i = 0; i <= _tabs.Count; i++) _pages.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        }
+
+        int hits = 0;
+        foreach (var page in _searchPages)
+        {
+            int found = 0;
+            foreach (var entry in page.Entries)
+            {
+                if (entry.Parts.Length == 0)
+                {
+                    bool hit = entry.Text.Contains(query, StringComparison.Ordinal);
+                    entry.Element.Visibility = hit ? Visibility.Visible : Visibility.Collapsed;
+                    if (hit) found++;
+                    continue;
+                }
+                // 묶음 — 머리 줄이 맞으면 딸린 줄까지 다, 딸린 줄만 맞으면 머리 줄과 그 줄만.
+                bool headHit = entry.Parts[0].Text.Contains(query, StringComparison.Ordinal);
+                int partHits = 0;
+                for (int k = 0; k < entry.Parts.Length; k++)
+                {
+                    var (part, text) = entry.Parts[k];
+                    bool hit = k == 0 || headHit || text.Contains(query, StringComparison.Ordinal);
+                    part.Visibility = hit ? Visibility.Visible : Visibility.Collapsed;
+                    if (k > 0 && text.Contains(query, StringComparison.Ordinal)) partHits++;
+                }
+                bool any = headHit || partHits > 0;
+                entry.Element.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+                if (any) found += (headHit ? 1 : 0) + partHits;
+            }
+            page.Head.Visibility = found > 0 ? Visibility.Visible : Visibility.Collapsed;
+            page.Page.Visibility = found > 0 ? Visibility.Visible : Visibility.Collapsed;
+            hits += found;
+        }
+        _noHit.Visibility = hits == 0 ? Visibility.Visible : Visibility.Collapsed;
+        _hitNote.Text = hits > 0 ? Local.Helpers.Lang.T($"{hits}개") : "";
+        _list.ScrollToTop();
     }
 
     /// <summary>커스텀 BGM 켜고 끄기와 그 밑의 「곡 등록」 단추. 단추는 꺼 둔 채로도 눌린다.</summary>
@@ -1083,6 +1361,8 @@ public sealed class ModDialog : GameWindow
             Watch(radio, "권장 옵션 — " + pick.Name, pick.Summary
                 + (pick.On.Length > 0 ? "\n\n켜는 것: " + string.Join(", ", pick.On) : "")
                 + (pick.Off.Length > 0 ? "\n\n끄는 것: " + string.Join(", ", pick.Off) : ""));
+            // 찾기는 단계 이름과 요약으로만 — 켜고 끄는 줄 이름까지 넣으면 무엇을 찾든 걸린다.
+            _searchText[radio] = (pick.Name, pick.Summary);
             page.Children.Add(radio);
         }
 
@@ -1164,6 +1444,7 @@ public sealed class ModDialog : GameWindow
             ShowTipImage(images);
         }
 
+        _searchText[row] = (label, tip);
         row.MouseEnter += (_, _) => Show();
         row.GotKeyboardFocus += (_, _) => Show();
         row.PreviewMouseLeftButtonDown += (_, _) => Show();

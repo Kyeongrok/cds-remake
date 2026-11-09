@@ -27,6 +27,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   버그 리포트 창 CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 띄운다(그동안 배 · 말이 서는지 본다).
 ///   내 리포트 창   CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
 ///   개발 창       CDS_DIALOG=dev:&lt;탭&gt; — 개발 창을 그 탭(「에디터」 따위)으로 띄운다.
+///   모드 창       CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
@@ -126,6 +127,20 @@ public static class OffscreenHarness
                     window.OpenLiveMapForTest();
                     foreach (Window w in window.OwnedWindows)
                         if (w is LiveMapWindow) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
+                }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다. 창은 주인 안으로 옮겨 스냅숏에 들게 한다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } modDialog && (modDialog == "mod" || modDialog.StartsWith("mod:")))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    string? query = modDialog.Length > 4 ? modDialog[4..] : null;
+                    Log($"모드 창을 띄운다 — 찾는 말 {query ?? "(없음)"}");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is ModDialog) { w.Left = window.Left + 20; w.Top = window.Top + 20; }
+                    }, DispatcherPriority.ApplicationIdle);
+                    window.OpenModForTest(query);
+                    Log("모드 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=dev:<탭> — 개발 창을 그 탭(「에디터」 따위)으로 띄운다. 창은 주인 안으로 옮겨 스냅숏에 들게 한다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } devDialog && devDialog.StartsWith("dev:"))
