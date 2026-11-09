@@ -3795,7 +3795,70 @@ public sealed class WorldMapHost : HwndHost
         }
         _placeCells = placeCells;
 
+        if (!SamePatch(_shownPatch, patch)) { _shownPatch = patch; ShownMapVersion++; }
         _renderer.Erase(patch);
+    }
+
+    /// <summary>지도에 덮어 그린 칸(안 선 도시 · 못 찾은 발견물) — 세계지도 창(<see cref="GameTiles"/>)이 같은 그림을 그리려고 쓴다.</summary>
+    private IReadOnlyDictionary<(int X, int Y), ushort> _shownPatch = new Dictionary<(int X, int Y), ushort>();
+
+    /// <summary>덮어 그린 칸이 바뀔 때마다 오른다 — 세계지도 창이 바탕을 다시 지을 때를 안다.</summary>
+    public int ShownMapVersion { get; private set; }
+
+    private static bool SamePatch(IReadOnlyDictionary<(int X, int Y), ushort> a, IReadOnlyDictionary<(int X, int Y), ushort> b)
+    {
+        if (a.Count != b.Count) return false;
+        foreach (var (at, tile) in a)
+            if (!b.TryGetValue(at, out ushort had) || had != tile) return false;
+        return true;
+    }
+
+    /// <summary>
+    /// 게임 지도 그림 한 조각을 BGRA 로 짓는다 — 칸 하나가 <paramref name="scale"/> x <paramref name="scale"/> 점이다(타일 16x16 을 줄인 평균색).
+    /// 지도를 못 읽었으면 null.
+    /// </summary>
+    /// <remarks>
+    /// 세계지도 창의 「게임 지도」 바탕이다. 화면 지도와 같은 타일(OCEAN.CDS)에 같은 덮개(<see cref="HideCities"/>)를 씌우므로
+    /// 안 선 도시 · 못 찾은 발견물은 여기서도 안 보인다. 가로는 이어져 있어 접고, 세로로 지도 밖인 줄은 비워 둔다(투명).
+    /// 고해상도 바다 · 도시 그림(셰이더)은 안 따른다 — 원본 타일 그대로다.
+    /// </remarks>
+    public uint[]? GameTiles(int x0, int y0, int cols, int rows, int scale)
+    {
+        var (world, ocean) = (_world, _ocean);
+        if (world == null || ocean == null || cols <= 0 || rows <= 0) return null;
+        scale = Math.Clamp(scale, 1, OceanTiles.TileW);
+        var avg = ocean.GetAverages(scale);
+        int per = scale * scale, w = cols * scale;
+        var px = new uint[w * rows * scale];
+
+        void Put(int c, int r, int tile)
+        {
+            int src = (tile & OceanTiles.TileMask) * per;
+            for (int qy = 0; qy < scale; qy++)
+            {
+                int row = (r * scale + qy) * w + c * scale;
+                for (int qx = 0; qx < scale; qx++)
+                    px[row + qx] = 0xFF000000u | (uint)avg[src + qy * scale + qx];
+            }
+        }
+
+        for (int r = 0; r < rows; r++)
+        {
+            int cy = y0 + r;
+            if (cy < 0 || cy >= WorldMapRenderer.CellH) continue;
+            for (int c = 0; c < cols; c++)
+                Put(c, r, CellAt(RawAt(x0 + c, cy).Offset));
+        }
+
+        // 덮개는 따로 덧칠한다 — 칸마다 사전을 뒤지면 온 지도(삼백만 칸)가 느리다.
+        foreach (var ((x, y), tile) in _shownPatch)
+        {
+            int r = y - y0;
+            if (r < 0 || r >= rows) continue;
+            int c = Wrap(x - x0);
+            if (c < cols) Put(c, r, tile);
+        }
+        return px;
     }
 
     /// <summary>

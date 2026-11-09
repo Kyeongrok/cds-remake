@@ -459,6 +459,18 @@ public sealed class GameSettingsData
     /// <summary>햄버거에 「인물 이동」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowPersonMoveMenu { get; set; }
 
+    /// <summary>도시락에 「세계지도」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
+    public bool ShowLiveMapMenu { get; set; }
+
+    /// <summary>세계지도 창 바탕을 양피지(발견물 지도 그림)로 깔지. 기본은 게임 지도 그림이다.</summary>
+    public bool LiveMapParchment { get; set; }
+
+    /// <summary>세계지도 창이 게임 지도 바탕일 때 발견물 표식을 얹을지. 꺼 두고 시작한다.</summary>
+    public bool LiveMapSpots { get; set; }
+
+    /// <summary>세계지도 창이 내 배를 따라 지도를 옮기지 않을지. 기본은 따라간다.</summary>
+    public bool LiveMapNoFollow { get; set; }
+
     /// <summary>
     /// 게임 상단 띠에 켜 둔 칸 이름들("날짜"·"소지금" …). 한 번도 안 건드렸으면 null 이라
     /// 부르는 쪽 기본값이 선다.
@@ -1147,6 +1159,37 @@ public static class GameSettings
     {
         get => Get(d => d.ShowBarmaidBookMenu);
         set => Set(d => d.ShowBarmaidBookMenu = value);
+    }
+
+    /// <summary>
+    /// 도시락에 <b>세계지도</b> 줄을 낼지. 모드 창의 「세계지도」가 켜고 끈다.
+    /// </summary>
+    /// <remarks>게임 옆에 띄워 두는 보조 지도다(버그 리포트 #30) — 원본에는 없는 창이다.</remarks>
+    public static bool ShowLiveMapMenu
+    {
+        get => Get(d => d.ShowLiveMapMenu);
+        set => Set(d => d.ShowLiveMapMenu = value);
+    }
+
+    /// <summary>세계지도 창 바탕이 양피지인지 — 창 위 「바탕」 단추로 고른다. 기본은 게임 지도.</summary>
+    public static bool LiveMapParchment
+    {
+        get => Get(d => d.LiveMapParchment);
+        set => Set(d => d.LiveMapParchment = value);
+    }
+
+    /// <summary>세계지도 창이 게임 지도 바탕일 때 발견물을 찍을지. 양피지 바탕은 발견물 지도 설정(<see cref="DiscoveryMapSpots"/>)을 따른다.</summary>
+    public static bool LiveMapSpots
+    {
+        get => Get(d => d.LiveMapSpots);
+        set => Set(d => d.LiveMapSpots = value);
+    }
+
+    /// <summary>세계지도 창이 내 배를 따라 지도를 옮길지. 기본은 켬.</summary>
+    public static bool LiveMapFollow
+    {
+        get => !Get(d => d.LiveMapNoFollow);
+        set => Set(d => d.LiveMapNoFollow = !value);
     }
 
     /// <summary>항해·뭍 이동 중 <b>미니맵</b>을 지도 오른쪽 아래에 띄울지. 개발 창의 「미니맵」이 켜고 끈다.</summary>

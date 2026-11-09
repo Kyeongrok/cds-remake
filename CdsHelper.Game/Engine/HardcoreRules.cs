@@ -38,6 +38,7 @@ public static class HardcoreRules
         (nameof(GameSettings.SpecialOrder), () => GameSettings.SpecialOrder),
         (nameof(GameSettings.MiniMapYet), () => GameSettings.ShowMiniMap && GameSettings.MiniMapYet),
         (nameof(GameSettings.ShowDiscoveryMapMenu), () => GameSettings.ShowDiscoveryMapMenu),
+        (nameof(GameSettings.ShowLiveMapMenu), () => GameSettings.ShowLiveMapMenu),
         (nameof(GameSettings.RerollOnJob), () => GameSettings.RerollOnJob),
         (nameof(GameSettings.MonsterRetry), () => GameSettings.MonsterRetry),
         (nameof(GameSettings.PortShipAshore), () => GameSettings.PortShipAshore),

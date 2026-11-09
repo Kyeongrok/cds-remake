@@ -552,6 +552,7 @@ public sealed class WorldMapWindow : Window
             {
                 BarmaidBookRow => GameSettings.ShowBarmaidBookMenu,
                 PersonMoveRow => GameSettings.ShowPersonMoveMenu,
+                LiveMapRow => GameSettings.ShowLiveMapMenu,
                 AddOnsRow => GameSettings.AddOns,
                 UserDiscoveriesRow => GameSettings.ExtraDiscoveries,
                 _ => true,
@@ -562,6 +563,8 @@ public sealed class WorldMapWindow : Window
                 (BarmaidBookRow, MenuItem(() => BarmaidBookDialog.Show(this, _game))),
                 // 누가 어느 도시로 가고 있는지는 지도에 배만 떠 있어 알 길이 없다.
                 (PersonMoveRow, MenuItem(() => PersonMoveDialog.Show(this, _game))),
+                // 게임 옆에 띄워 두는 세계지도 — 모달이 아니라 게임을 안 세운다(MenuItem 을 안 거친다). 버그 리포트 #30.
+                (LiveMapRow, ShowLiveMap),
                 // 애드온을 하나씩 켜고 끈다 — 모드 「애드온」을 켜야 줄이 선다.
                 (AddOnsRow, MenuItem(() => AddOnListDialog.Show(this))),
                 // 사람이 지어 넣는 발견물 — 짓기 · 고치기 · 내보내기 · 불러오기. 개발 창 「발견물」 탭에서 옮겼다(요청).
@@ -697,6 +700,8 @@ public sealed class WorldMapWindow : Window
             CheckBoard();
             PassTime();
             MarkSeen();
+            // 세계지도 창의 지나온 뱃길 — 창을 닫아 둬도 이번 실행 동안은 적어 둔다(모드 「세계지도」를 켰을 때만).
+            if (GameSettings.ShowLiveMapMenu && _host.ShipCell is { } trailAt) ShipTrail.Note(WrapCell(trailAt.X), trailAt.Y);
             FillBarTexts();
             if (!_barReady && _started)
             {
@@ -850,6 +855,9 @@ public sealed class WorldMapWindow : Window
     /// <summary>도시락의 인물 이동 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string PersonMoveRow = "인물 이동";
 
+    /// <summary>도시락의 세계지도 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
+    internal const string LiveMapRow = "세계지도";
+
     /// <summary>도시락의 애드온 줄 이름. 모드 「애드온」이 이 줄을 켜고 끈다.</summary>
     internal const string AddOnsRow = "애드온";
 
@@ -865,25 +873,8 @@ public sealed class WorldMapWindow : Window
         if (chart == null) { NoticeDialog.Show(this, "지도를 아직 못 읽었습니다"); return; }
 
         var at = _host.ShipCell is { } cell ? ((double, double)?)(cell.CellX, cell.CellY) : null;
-        // 도시 — 지금 아는 도시만(자동항해 고르기와 같다). 도서관이 있으면 동그라미에 「도」.
-        // 도서관은 원본 건물표로 가린다(cities.json 은 손으로 적어 항주 · 베니스가 빠져 있었다).
-        var cities = Enumerable.Range(0, GameMapCoords.CityCount)
-            .Where(id => _game.CityVisible(id))
-            .Select(id => GameMapCoords.TryCityCell(id, out double cx, out double cy)
-                ? ((string, double, double, bool)?)(_game.CityName(id), cx, cy,
-                                                    _game.Buildings is { } bt
-                                                        ? bt.Find(id, "도서관") != null
-                                                        : _game.CityTable.Find(id)?.HasLibrary == true)
-                : null)
-            .OfType<(string Name, double X, double Y, bool Library)>()
-            .ToList();
-
-        // 건물 속에서 찾는 발견물(진흙 모스크 따위)은 바다 · 뭍 자리가 없다 — 그 도시 자리로 찍는다.
-        var inTown = new Dictionary<int, (double X, double Y)>();
-        foreach (var b in _game.Buildings?.Buildings ?? [])
-            if (b.IsDiscovery && !inTown.ContainsKey(b.Discovery)
-                && GameMapCoords.TryCityCell(b.City, out double bx, out double by))
-                inTown[b.Discovery] = (bx, by);
+        var cities = KnownCityMarks();
+        var inTown = TownDiscoveryCells();
 
         // 모드 「뭍 자동이동」 — 뭍에 있을 때 발견물 점을 오른쪽 단추로 누르면 그 자리까지 걸어간다.
         Func<double, double, (bool, string)>? walk = GameSettings.LandAutoWalk && _host.IsOnLand
@@ -896,6 +887,93 @@ public sealed class WorldMapWindow : Window
                                 WindTable.Open(_game.Directory), GameSettings.DiscoveryMapWarp ? WarpTo : null,
                                 AutoSail, cities, inTown, walk,
                                 EventsDoneDiscoveries());
+    }
+
+    /// <summary>
+    /// 지도에 찍을 도시 — 지금 아는 도시만(자동항해 고르기와 같다). 도서관이 있으면 동그라미에 「도」.
+    /// 발견물 지도와 세계지도 창이 같이 쓴다.
+    /// </summary>
+    private List<(string Name, double X, double Y, bool Library)> KnownCityMarks()
+    {
+        // 도서관은 원본 건물표로 가린다(cities.json 은 손으로 적어 항주 · 베니스가 빠져 있었다).
+        return Enumerable.Range(0, GameMapCoords.CityCount)
+            .Where(id => _game.CityVisible(id))
+            .Select(id => GameMapCoords.TryCityCell(id, out double cx, out double cy)
+                ? ((string, double, double, bool)?)(_game.CityName(id), cx, cy,
+                                                    _game.Buildings is { } bt
+                                                        ? bt.Find(id, "도서관") != null
+                                                        : _game.CityTable.Find(id)?.HasLibrary == true)
+                : null)
+            .OfType<(string Name, double X, double Y, bool Library)>()
+            .ToList();
+    }
+
+    /// <summary>건물 속에서 찾는 발견물(진흙 모스크 따위)은 바다 · 뭍 자리가 없다 — 그 도시 자리로 찍는다. 발견물 번호 → 칸.</summary>
+    private Dictionary<int, (double X, double Y)> TownDiscoveryCells()
+    {
+        var inTown = new Dictionary<int, (double X, double Y)>();
+        foreach (var b in _game.Buildings?.Buildings ?? [])
+            if (b.IsDiscovery && !inTown.ContainsKey(b.Discovery)
+                && GameMapCoords.TryCityCell(b.City, out double bx, out double by))
+                inTown[b.Discovery] = (bx, by);
+        return inTown;
+    }
+
+    /// <summary>
+    /// 세계지도 창을 띄운다 — 모달이 아니라 곧바로 돌아오고, 떠 있는 동안 게임은 그대로 흐른다(버그 리포트 #30).
+    /// </summary>
+    /// <remarks>
+    /// 도구 앱의 「좌표 추적」 세계지도는 원본 CDS_95 만 따라가 리메이크와 안 맞아서, 그 쓰임(배 자리 · 지나온 뱃길 ·
+    /// 마우스 칸 정보)만 게임 안으로 옮겼다. 발견물은 발견물 지도와 같은 셈(찾음 · 사건 마침 · 건물 속은 도시 자리)이다.
+    /// 발견물 목록은 2초에 한 번만 다시 센다 — 창이 0.5초마다 묻는다.
+    /// </remarks>
+    private void ShowLiveMap()
+    {
+        if (!_started) return;
+        Dictionary<int, (double X, double Y)>? inTown = null;
+        List<(string Name, double X, double Y, bool Found)> spots = [];
+        DateTime spotsAt = DateTime.MinValue;
+
+        IReadOnlyList<(string Name, double X, double Y, bool Found)> Spots()
+        {
+            var now = DateTime.UtcNow;
+            if (now - spotsAt < TimeSpan.FromSeconds(2)) return spots;
+            spotsAt = now;
+            inTown ??= TownDiscoveryCells();
+            var done = EventsDoneDiscoveries();
+            var list = new List<(string Name, double X, double Y, bool Found)>();
+            foreach (var row in _game.Discoveries?.Table.Discoveries ?? [])
+            {
+                double x, y;
+                if (row.HasPlace) { x = (row.X1 + row.X2) / 2.0; y = (row.Y1 + row.Y2) / 2.0; }
+                else if (inTown.TryGetValue(row.Id, out var town)) (x, y) = town;
+                else continue;
+                list.Add((row.Name, x, y, _game.Player.HasFound(row.Id) || done.Contains(row.Id)));
+            }
+            return spots = list;
+        }
+
+        LiveMapWindow.Toggle(this, new LiveMapWindow.Source(
+            Ship: () => _host.ShipCell is { } c ? (WrapCell(c.X), c.Y) : null,
+            MapVersion: () => _host.ShownMapVersion,
+            Tiles: _host.GameTiles,
+            Parchment: () =>
+            {
+                var all = new ExploredMap();
+                all.RevealAll();
+                return _host.Chart(all, out int w, out int h) is { } px ? (px, w, h) : null;
+            },
+            IsLand: _host.IsLandCell,
+            Cities: KnownCityMarks,
+            Spots: Spots));
+    }
+
+    /// <summary>가로로 이어진 칸 자리를 0~2500 으로 접는다.</summary>
+    private static double WrapCell(double x)
+    {
+        const double w = WorldMapRenderer.UnfoldedW;
+        x %= w;
+        return x < 0 ? x + w : x;
     }
 
     /// <summary>
@@ -8425,6 +8503,9 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=bugreport</c>) — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다.</summary>
     internal void OpenBugReportForTest() => MenuItem(ShowBugReport)();
+
+    /// <summary>시험 장치(<c>CDS_DIALOG=livemap</c>)가 도시락 「세계지도」를 누른 것처럼 연다.</summary>
+    internal void OpenLiveMapForTest() => ShowLiveMap();
 
     /// <summary>화면 밖 시험(<c>CDS_TITLE</c>) — 타이틀에서 글쇠 하나를 누른 것처럼 한다(위아래 · 엔터). 타이틀이 아니면 false.</summary>
     internal bool TitleKeyForTest(Key key) =>

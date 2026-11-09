@@ -117,6 +117,16 @@ public static class OffscreenHarness
                     }, DispatcherPriority.ApplicationIdle);
                     MyBugReportsDialog.Open(window);
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=livemap — 도시락 「세계지도」 창을 띄운다(모달이 아니다 — CDS_SAIL 과 함께 쓰면 배를 따라가는지 본다).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "livemap")
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log("세계지도 창을 띄운다");
+                    GameSettings.ShowLiveMapMenu = true;   // 뱃길은 이 모드가 켜져 있어야 적힌다
+                    window.OpenLiveMapForTest();
+                    foreach (Window w in window.OwnedWindows)
+                        if (w is LiveMapWindow) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=dev:<탭> — 개발 창을 그 탭(「에디터」 따위)으로 띄운다. 창은 주인 안으로 옮겨 스냅숏에 들게 한다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } devDialog && devDialog.StartsWith("dev:"))
                 window.Dispatcher.BeginInvoke(() =>

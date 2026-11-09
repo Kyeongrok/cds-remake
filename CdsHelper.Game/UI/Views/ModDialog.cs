@@ -262,6 +262,14 @@ public sealed class ModDialog : GameWindow
             on => GameSettings.ShowPersonMoveMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「인물 이동」을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
 
+        // 세계지도 — 게임 옆에 띄워 두는 보조 지도(버그 리포트 #30). 발견물 지도처럼 원본보다 많이 보여 준다.
+        extra.Children.Add(Toggle("세계지도", GameSettings.ShowLiveMapMenu,
+            on => GameSettings.ShowLiveMapMenu = on,
+            "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「세계지도」를 냅니다."
+            + " 게임 옆에 띄워 두는 지도 창으로, 띄워 둔 채 항해해도 게임이 멈추지 않고 내 배를 따라갑니다."
+            + " 바탕은 게임 지도와 양피지 가운데 고르고, 지나온 뱃길 · 마우스를 올린 칸의 좌표 · 바다/육지 · 가까운 도시를 보여 줍니다."
+            + " 발견물 표시도 켤 수 있습니다."));
+
         // 애드온은 아직 만드는 중이라 개발 창 「애드온」 탭에서만 켠다(DevDialog).
 
         // Ctrl+클릭 배 놓기 — 지도를 찍은 자리로 배가 뛴다. 켠 채로 시작한다.
