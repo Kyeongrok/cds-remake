@@ -4252,6 +4252,9 @@ public sealed class WorldMapWindow : Window
     {
         StartTab = startTab,
         GiveItem = GiveItemToSave,
+        // 「특수템추가」 탭 — 지금 게임 주인공 소지품에 넣으므로 타이틀에서는 단추를 끈다.
+        Items = _game.Items,
+        GameLoaded = () => _started && !ReferenceEquals(_screen.Content, _titleRoot),
         CoordsOn = () => _overlayWanted,
         SetCoords = on =>
         {

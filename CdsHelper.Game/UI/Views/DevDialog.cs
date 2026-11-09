@@ -89,6 +89,12 @@ public sealed partial class DevDialog : GameWindow
         /// <summary>초상화 — 「여급」 탭이 줄 왼쪽에 얼굴을 낸다. 없으면 얼굴 없이 늘어놓는다.</summary>
         public Portraits? Faces { get; init; }
 
+        /// <summary>아이템 표 — 「특수템추가」 탭이 이름을 읽는다. 못 읽었으면 원본 이름을 그대로 쓴다.</summary>
+        public ItemTable? Items { get; init; }
+
+        /// <summary>게임을 불러와 지도에 들었는지 — 아니면(타이틀) 「특수템추가」 탭의 단추를 끈다.</summary>
+        public Func<bool> GameLoaded { get; init; } = () => false;
+
         /// <summary>처음 펼칠 탭 이름 — 화면 밖 시험(CDS_DIALOG=dev:…)이 쓴다. 없으면 「일반」.</summary>
         public string? StartTab { get; init; }
     }
@@ -404,6 +410,8 @@ public sealed partial class DevDialog : GameWindow
         var pages = new List<(string, FrameworkElement)> { ("일반", rows), ("테스트", tests) };
         // 「에디터」 탭 — 지금 게임 주인공의 능력치 · 기능 · 언어(버그 리포트 #35).
         pages.Add(("에디터", PlayerEditorPage()));
+        // 「특수템추가」 탭 — 잠수폭탄 · 속사포 · 작렬탄 · 특수 선수상을 주인공 소지품에 바로 넣는다(버그 리포트 #37).
+        pages.Add(("특수템추가", SpecialItemsPage(options.Items, options.GameLoaded())));
         if (options.Discoveries is { } table)
         {
             pages.Add(("발견물", FindsPage(table, options.EventDone)));
