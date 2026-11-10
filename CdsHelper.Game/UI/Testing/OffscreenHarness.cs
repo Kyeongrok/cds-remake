@@ -169,6 +169,26 @@ public static class OffscreenHarness
                     window.OpenDevForTest(devDialog[4..]);
                     Log("개발 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=childname — 자녀 이름 다시 짓기 창(선명입력 창)을 띄우고, 뜬 뒤 그 창의 초점이 어디 갔는지 적은 다음 닫는다.
+            // 화면 밖 창은 활성이 안 되므로 글쇠 초점(Keyboard)이 아니라 창이 쥔 논리 초점(FocusManager)을 본다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "childname")
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log("자녀 이름 창을 띄운다");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is ShipNameDialog)
+                            {
+                                var held = System.Windows.Input.FocusManager.GetFocusedElement(w);
+                                string text = held is System.Windows.Controls.TextBox box ? $" 「{box.Text}」 고른 {box.SelectionLength}자" : "";
+                                Log($"자녀 이름 창 초점 — {held?.GetType().Name ?? "(없음)"}{text}");
+                                w.Close();
+                            }
+                    }, DispatcherPriority.ApplicationIdle);
+                    var got = ShipNameDialog.Ask(window, "후안", ["후안", "카를로스"], "아들의 이름", 8);
+                    Log($"자녀 이름 창이 닫혔다 — {got ?? "(중단)"}");
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=trade:<도시> — 그 도시 교역소 매매 창을 짐을 실은 채 띄운다. CDS_START 로 그 도시 앞바다에 든 뒤에 쓴다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } dialog && dialog.StartsWith("trade:")
                 && int.TryParse(dialog[6..], out int tradeCity))

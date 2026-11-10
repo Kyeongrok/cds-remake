@@ -148,14 +148,47 @@ internal sealed class GameMenu : Border
     {
         if (_keys != null) return;
         _keys = Window.GetWindow(this);
-        if (_keys != null) _keys.PreviewKeyDown += OnKey;
+        if (_keys == null) return;
+        _keys.PreviewKeyDown += OnKey;
+        _keys.Activated += OnActivated;
+        ClaimKeys();
     }
 
     private void Deafen()
     {
         if (_keys == null) return;
         _keys.PreviewKeyDown -= OnKey;
+        _keys.Activated -= OnActivated;
         _keys = null;
+    }
+
+    /// <summary>
+    /// 창이 다시 앞에 나서면 글쇠가 이 창에 들게 한다 — 윈도가 초점을 되돌리는 일이 끝난 뒤에 본다.
+    /// </summary>
+    private void OnActivated(object? sender, EventArgs e) =>
+        Dispatcher.BeginInvoke(ClaimKeys, System.Windows.Threading.DispatcherPriority.Input);
+
+    /// <summary>
+    /// 창 안에 글쇠 초점을 쥔 것이 없으면 <b>창이 쥔다</b> — 그래야 방향키가 곧바로 줄을 옮긴다.
+    /// </summary>
+    /// <remarks>
+    /// 줄을 누르면(또는 쥐가 지나가면) 그 줄 단추가 WPF 초점을 쥔다. 그런데 보고처럼 일을 하는 동안 창을
+    /// 숨기고(<c>PatronMenu.Alone</c>) 그 사이 줄을 다시 지으면(<see cref="GameMenuHost.Refresh"/>), 창이 다시
+    /// 떴을 때 WPF 가 되돌려 줄 초점 자리가 <b>떨어져 나간 옛 단추</b>라 아무것도 초점을 못 쥐었다. 그러면
+    /// 글쇠가 창에 안 들어와 방향키 · 엔터가 다 안 먹고, Tab 만 HWND 쪽 초점 옮기기로 들어가 초점을 되살렸다
+    /// (버그 리포트 #39 — 보고 뒤 설득 차림표가 Tab 을 눌러야 방향키를 받았다).
+    /// 글자 칸 따위 창 안의 것이 이미 쥐고 있으면 손대지 않는다.
+    /// </remarks>
+    private void ClaimKeys()
+    {
+        if (_keys is not { IsActive: true } window) return;
+        if (Keyboard.FocusedElement is DependencyObject held && Inside(held, window)) return;
+        if (FocusManager.GetFocusedElement(window) is DependencyObject stale && !Inside(stale, window))
+            FocusManager.SetFocusedElement(window, null);
+        window.Focus();
+
+        static bool Inside(DependencyObject what, Window window) =>
+            what == window || (what is System.Windows.Media.Visual visual && visual.IsDescendantOf(window));
     }
 
     /// <summary>

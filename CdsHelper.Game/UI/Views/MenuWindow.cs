@@ -180,6 +180,8 @@ public sealed class MenuWindow : GameWindow
         // 대화 창을 여닫을 때 화면이 깜빡이던 것이 그것이다. 이 창은 네모지고 속이 꽉
         // 차 있어 비침이 필요 없다.
         Background = GameUi.Back;
+        // 줄 단추가 초점을 놓쳤을 때 창이 글쇠 초점을 대신 쥔다(GameMenu.ClaimKeys) — 점선 테는 안 그린다.
+        FocusVisualStyle = null;
 
         _root = new Border
         {

@@ -17,6 +17,9 @@ namespace CdsHelper.Game.UI.Views;
 /// 하나씩 찍어 지을 수 있고, 밑의 목록에서 <b>미리 갖춰 둔 이름</b>(<see cref="ShipNames.All"/>)
 /// 을 골라도 된다.
 ///
+/// <b>창이 뜨면 곧바로 키보드로 적을 수 있다</b> — 위 줄에 글상자(<see cref="_edit"/>)를 얹어 초점을 준다.
+/// 원본에 없는 것이다(원본은 「문자입력」 판뿐이다). 신상 창 이름 칸(<see cref="CharacterMakeDialog"/>)과 같은 결이다.
+///
 /// 원본은 이 창을 <c>0x00454D30(창, 버퍼, 0x24, 목록수, 목록, "선명입력")</c> 하나로 내고
 /// 배를 살 때도 같은 창을 쓴다. 우리도 그렇다 — 개조의 "선명변경" 과 조선소의 "구입" 둘 다
 /// 이 창을 낸다(<see cref="HullSelectDialog"/>).
@@ -29,6 +32,7 @@ namespace CdsHelper.Game.UI.Views;
 public sealed class ShipNameDialog : GameWindow
 {
     private readonly GameUi.GameLabel _name;
+    private TextBox _edit;
     private readonly List<Border> _rows = [];
     private readonly IReadOnlyList<string> _names;
     private readonly int _maxLength;
@@ -56,7 +60,7 @@ public sealed class ShipNameDialog : GameWindow
         var top = new DockPanel { LastChildFill = true };
         DockPanel.SetDock(pad, Dock.Right);
         top.Children.Add(pad);
-        top.Children.Add(_name);
+        top.Children.Add(TypeOver());
 
         var list = new StackPanel();
         foreach (string name in names)
@@ -108,8 +112,69 @@ public sealed class ShipNameDialog : GameWindow
         };
 
         Mark(current);
+        // 뜨자마자 글상자에 초점을 준다 — 이름을 곧바로 칠 수 있다(버그 리포트 #39).
+        Loaded += (_, _) => OpenEdit();
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Cancel(); };
         MouseRightButtonUp += (_, _) => Cancel();
+    }
+
+    /// <summary>
+    /// 위 줄 — 게임 글꼴로 찍은 이름 위에 키보드로 적는 글상자를 얹는다. 글상자는 창이 뜰 때 펴지고,
+    /// 딴 곳으로 초점이 가면 적은 것을 이름 줄에 넣고 접힌다. 줄을 다시 누르면 또 펴진다.
+    /// Enter 는 적은 것으로 결정, Esc 는 중단이다.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_edit))]
+    private Grid TypeOver()
+    {
+        _edit = new TextBox
+        {
+            MaxLength = _maxLength,
+            FontSize = 12,
+            Padding = new Thickness(1, 0, 1, 0),
+            BorderThickness = new Thickness(1),
+            BorderBrush = GameUi.ItemEdge,
+            Background = GameUi.PageFill,
+            Foreground = Brushes.Black,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(4, 1, 4, 1),
+            Visibility = Visibility.Collapsed,
+        };
+        // 이름 위에 안 보이는 손잡이를 얹어 누름을 받는다 — 글자 그림은 손을 안 받는 자리가 있다.
+        var hit = new Border { Background = Brushes.Transparent, Cursor = Cursors.IBeam };
+        hit.MouseLeftButtonDown += (_, e) => { e.Handled = true; OpenEdit(); };
+        _edit.LostKeyboardFocus += (_, _) => TakeEdit();
+        _edit.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter) { e.Handled = true; Decide(); }
+            else if (e.Key == Key.Escape) { e.Handled = true; Cancel(); }
+        };
+
+        var grid = new Grid();
+        grid.Children.Add(_name);
+        grid.Children.Add(hit);
+        grid.Children.Add(_edit);
+        return grid;
+    }
+
+    /// <summary>글상자를 펴고 초점을 준다. 지금 이름을 통째로 골라 두어 치면 바로 갈린다.</summary>
+    private void OpenEdit()
+    {
+        _edit.Text = _name.Text;
+        _edit.Visibility = Visibility.Visible;
+        _edit.Focus();
+        Keyboard.Focus(_edit);
+        _edit.SelectAll();
+    }
+
+    /// <summary>글상자에 적은 것을 이름 줄로 옮기고 접는다. 접혀 있으면 아무 일도 없다.</summary>
+    private void TakeEdit()
+    {
+        if (_edit.Visibility != Visibility.Visible) return;
+        _edit.Visibility = Visibility.Collapsed;
+        string typed = _edit.Text.Trim();
+        if (typed == _name.Text) return;
+        _name.Text = typed;
+        Mark(typed);
     }
 
     private static Border Framed(UIElement child, Thickness margin) => new()
@@ -127,6 +192,12 @@ public sealed class ShipNameDialog : GameWindow
     {
         _name.Text = name;
         Mark(name);
+        // 줄은 초점을 안 가져가 글상자가 펴진 채다 — 고른 이름을 글상자에도 올려 이어 고칠 수 있게 한다.
+        if (_edit.Visibility == Visibility.Visible)
+        {
+            _edit.Text = name;
+            _edit.SelectAll();
+        }
     }
 
     /// <summary>위 줄과 같은 이름의 줄을 도드라지게 칠한다.</summary>
@@ -139,6 +210,7 @@ public sealed class ShipNameDialog : GameWindow
     /// <summary>글자판을 열어 손으로 짓는다.</summary>
     private void TypeIt()
     {
+        TakeEdit();
         if (TextInputDialog.Ask(this, _name.Text, _maxLength) is { } typed)
         {
             _name.Text = typed;
@@ -149,6 +221,7 @@ public sealed class ShipNameDialog : GameWindow
     /// <summary>결정 — 빈 이름도 그대로 낸다. 비었을 때 알리고 다시 여는 것은 <see cref="Settle"/> 이 한다.</summary>
     private void Decide()
     {
+        TakeEdit();
         _result = _name.Text.Trim();
         Close();
     }
