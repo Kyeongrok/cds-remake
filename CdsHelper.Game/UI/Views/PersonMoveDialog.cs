@@ -388,6 +388,11 @@ public sealed class PersonMoveDialog : GameWindow
         var rows = new List<Row>();
         foreach (var person in _world.People)
         {
+            // 제 부하는 뺀다 — 함대에 탄 사람이다. 원본도 고용하면(0x00453430) 고용 칸을 3, 건물을 -1 로만 두고
+            // 소재 도시는 그대로 두어 달 넘김(0x004327F0)이 계속 옮긴다. 원본은 그것을 보일 곳이 없어 티가 안 났는데
+            // 이 표는 떠돌던 그 줄을 그대로 보여 「등용한 사람이 복제되어 돌아다닌다」로 보였다(버그 리포트 #42).
+            if (_game.Player.HasMate(person.Name)) continue;
+
             bool onRoad = PersonWorld.Moving(person);
             bool active = _world.IsActive(person);
             if (onRoad) moving++;

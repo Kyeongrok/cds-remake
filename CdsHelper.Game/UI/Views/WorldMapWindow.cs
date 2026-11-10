@@ -5510,14 +5510,20 @@ public sealed class WorldMapWindow : Window
         world.Advance(_game.Player.Date);
         TellVoyagerReports();
 
-        var now = (_game.Player.Date, world.Revision, _ticks);
+        // 부하를 들이거나 내보내면 바다에 뜬 배도 다시 짠다 — 그래서 부하 수도 도장에 넣는다.
+        var now = (_game.Player.Date, world.Revision * 8 + _game.Player.MateCount, _ticks);
         if (_folkStamp == now) return _folkList;
         _folkStamp = now;
 
         double dayPart = (double)_ticks / TerrainTable.TicksPerDay;
         _folkList.Clear();
         foreach (var (who, x, y, heading) in world.Afloat(dayPart))
+        {
+            // 제 부하는 내 배에 타 있다 — 표의 줄은 원본대로 계속 떠돌지만(0x00453430 은 소재 도시를 안 건드린다)
+            // 따로 배를 띄우지 않는다(버그 리포트 #42).
+            if (_game.Player.HasMate(who.Name)) continue;
             _folkList.Add((x, y, heading, who.Id, FolkSkin(world, who.Id)));
+        }
         ChasePirates(world);
         return _folkList;
     }
@@ -5575,7 +5581,8 @@ public sealed class WorldMapWindow : Window
         {
             var (x, y, heading) = _chasers[id];
             double far = Distance(x, y, ship.X, ship.Y);
-            if (far > ChaseLost || world.People.FirstOrDefault(r => r.Id == id) is not { Appear: not 0 })
+            if (far > ChaseLost || world.People.FirstOrDefault(r => r.Id == id) is not { Appear: not 0 } chaser
+                || _game.Player.HasMate(chaser.Name))
             {
                 _chasers.Remove(id);
                 _chaseRest[id] = today.AddDays(ChaseRestDays);   // 따돌렸다
