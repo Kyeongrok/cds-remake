@@ -715,7 +715,9 @@ public sealed class TradePostDialog : GameWindow
                    profit >= 0 ? Frozen(140, 180, 240) : Frozen(240, 120, 100))
             : Pair("수익", "—", GameUi.Text));
 
-        var decide = new GameButton("결정", Decide, width: 90) { On = cost > 0 || income > 0 };
+        // 돈이 아니라 담은 것으로 켠다 — 썩은 짐(0 닢)만 팔 때도 눌려야 한다. 원본도 0 닢에 판다(0x004810C1 · 0x00481430).
+        // 예전에는 지출·수입이 둘 다 0 이면 꺼져서, 썩은 짐을 같은 물건을 새로 사며 함께 팔 수밖에 없었다(버그 리포트 #40).
+        var decide = new GameButton("결정", Decide, width: 90) { On = _qty.Sum() > 0 || _sell.Sum() > 0 };
         var right = new DockPanel { Width = ColumnWidth, LastChildFill = true };
         DockPanel.SetDock(decide, Dock.Right);
         right.Children.Add(decide);
