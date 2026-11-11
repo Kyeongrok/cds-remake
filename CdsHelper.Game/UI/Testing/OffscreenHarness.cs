@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -30,6 +30,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   개발 창       CDS_DIALOG=dev:&lt;탭&gt; — 개발 창을 그 탭(「에디터」 따위)으로 띄운다.
 ///   발견물 추가   CDS_DIALOG=userdiscovery[:&lt;탭&gt;] — 커스텀 발견물 창을 그 탭(「아이템」 따위)으로 띄운다. CDS_ITEMPIC=&lt;그림&gt; 이면 아이템 그림 칸에 올린다.
 ///   모드 창       CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.
+///   인물 이동 성문 CDS_DIALOG=personmove-gate:&lt;도시&gt; — 도시에 들어가 인물 이동 창을 띄운 채 성문으로 나서고 닫는다(묻는 중 · 멈춤이 남는지).
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
@@ -108,6 +109,10 @@ public static class OffscreenHarness
                     window.OpenBugReportForTest();
                     Log("버그 리포트 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=personmove-gate:<도시> — 그 도시에 들어가 인물 이동 창을 띄운 채 성문으로 나서고 닫는다(버그 리포트 #44).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } gate && gate.StartsWith("personmove-gate:")
+                && int.TryParse(gate["personmove-gate:".Length..], out int gateCity))
+                window.Dispatcher.BeginInvoke(() => window.PersonMoveGateForTest(gateCity, Log), DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=sound — 효과음 하나를 내고 배경음악이 도는 동안 소리 진단(버그 리포트에 싣는 것)을 2초마다 다섯 번 적는다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "sound")
             {

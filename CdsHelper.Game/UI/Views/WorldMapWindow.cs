@@ -106,6 +106,20 @@ public sealed class WorldMapWindow : Window
     /// <summary>다이얼로그가 떠 있는 동안 또 묻지 않게.</summary>
     private bool _asking;
 
+    /// <summary>왼쪽 위 메뉴 · 도시락으로 연 창이 몇 겹 떠 있는지(<see cref="MenuItem"/>).</summary>
+    private int _menuDepth;
+
+    /// <summary>바깥 메뉴 창을 열기 직전의 지도 상태(<see cref="MapState"/>) — 버그 리포트가 싣는다.</summary>
+    private string _beforeMenu = "";
+
+    /// <summary>
+    /// 말 · 배가 왜 서 있는지 가를 지도 상태 한 줄 — 「바깥에 나오면 멈춘다」(버그 리포트 #44)는 오류 기록이 없어
+    /// 멈춤 · 묻는 중 · 커맨드 창 가운데 무엇이 남았는지 알 길이 없었다.
+    /// </summary>
+    private string MapState() =>
+        $"paused={_host.Paused} asking={_asking} inCity={_host.SeaBlocked} onLand={_host.IsOnLand} " +
+        $"command={CommandMenu.IsOpen} autoSail={_host.AutoSailing} cityView={_cityView != null}";
+
     /// <summary>첫 출항 갈매기(장면 16)를 이미 치렀는가 — 원본 항해 고리의 <c>[ebp-0x2C]</c>.</summary>
     private bool _gullsShown;
 
@@ -3388,6 +3402,7 @@ public sealed class WorldMapWindow : Window
             title ? null : player.Date.ToString("yyyy-MM-dd"),
             title ? null : _game.Nations?.Find(player.Nation)?.Name,
             title ? null : player.FlagshipHull?.Hull.Name);
+        if (!title) context["mapState"] = _beforeMenu;
         if (BugReportDialog.Ask(this, BugReport.Summary(context), text => BugReport.Submit(text, context)) is not { } result) return;
         NoticeDialog.Show(this, result switch
         {
@@ -3606,16 +3621,25 @@ public sealed class WorldMapWindow : Window
     {
         // 도시 안(SeaBlocked)에서 열 수도 있어 멈춤은 연 때의 값으로 되돌린다 — 커맨드 창 것(HoldAfterCommand)처럼 풀어 버리지 않는다.
         bool asking = _asking, paused = _host.Paused, blocked = _host.SeaBlocked;
+        // 버그 리포트에 실을 「메뉴를 열기 전」 상태 — 겹쳐 열면 바깥 것만 적는다(버그 리포트 창도 이 길로 열린다).
+        if (_menuDepth++ == 0) _beforeMenu = MapState();
         _asking = true;
         _host.Paused = true;
         try { show(); }
         finally
         {
-            _asking = asking;
+            _menuDepth--;
             // 여급 수첩 · 인물 이동 같은 창은 도시 화면을 막지 않아, 띄워 둔 채 출항할 수 있다. 그러면 출항이 멈춤을 풀었는데
             // 창을 닫을 때 도시에서 연 값(멈춤)으로 되돌려 바다에서 배가 영영 섰다(버그 리포트 #36). 그동안 누가 멈춤을 풀었거나
             // 도시 안팎이 바뀌었으면 지금 값을 그대로 둔다.
-            if (_host.Paused && _host.SeaBlocked == blocked) _host.Paused = paused;
+            //
+            // 「묻는 중」도 같다 — 도시 안에서는 도시 창이 닫힐 때까지 참이라(CheckPort · EnterCity) 연 값이 참이다. 창을 띄운 채
+            // 성문으로 나선 뒤 닫으면 그 참이 되살아나, 뭍에서 도시 · 배에 다가가도 묻지 않고 날도 안 가다가 커맨드 창을 한 번
+            // 열면(닫힐 때 「묻는 중」이면 멈춤을 안 푼다) 말이 영영 섰다(버그 리포트 #44). 도시 안팎이 바뀌었으면 도시 창
+            // 쪽이 정한 지금 값을 둔다.
+            bool sameSide = _host.SeaBlocked == blocked;
+            if (sameSide) _asking = asking;
+            if (_host.Paused && sameSide) _host.Paused = paused;
         }
     };
 
@@ -8558,6 +8582,30 @@ public sealed class WorldMapWindow : Window
         var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
         if (!ok) { _sailTo = -1; return message; }
         return "";
+    }
+
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_DIALOG=personmove-gate:&lt;도시&gt;</c>, 버그 리포트 #44) — 그 도시에 들어가 도시락 「인물 이동」을 띄운 채
+    /// 성문으로 나선 뒤 창을 닫고, 걸음마다 지도 상태를 적는다. 끝에 커맨드 창을 열었다 닫아 말이 다시 서는지도 본다.
+    /// </summary>
+    internal void PersonMoveGateForTest(int city, Action<string> log)
+    {
+        EnterCity(city);
+        log($"도시에 들었다 — {MapState()}");
+        Dispatcher.BeginInvoke(() =>
+        {
+            log($"인물 이동 창이 떠 있다 — {MapState()} · 창 {string.Join(",", OwnedWindows.OfType<Window>().Select(w => w.GetType().Name))}");
+            _cityView?.ExploreForTest();
+            log($"성문으로 나섰다 — {MapState()}");
+            foreach (var w in OwnedWindows.OfType<PersonMoveDialog>().ToList()) w.Close();
+        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        MenuItem(() => PersonMoveDialog.Show(this, _game))();
+        log($"인물 이동 창을 닫았다 — {MapState()}");
+        var anchor = (FrameworkElement)_screen;
+        ShowCommandMenu(anchor, new Point(100, 100));
+        CommandMenu.Close();
+        Dispatcher.BeginInvoke(() => log($"커맨드 창을 열었다 닫았다 — {MapState()}"),
+                               System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=bugreport</c>) — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다.</summary>

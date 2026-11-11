@@ -2894,6 +2894,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         Close();
     }
 
+    /// <summary>화면 밖 시험 — 묻지 않고 성문으로 나선다(<see cref="ITownScreen.Explore"/> 의 끝과 같다).</summary>
+    internal void ExploreForTest()
+    {
+        Explored = true;
+        _gateway = null;
+        Close();
+    }
+
     void ITownScreen.ShowComment(int buildingCode) => ShowComment(buildingCode);
 
     void ITownScreen.OpenFleetForm() => Menu.Push(Port.FleetMenu);
