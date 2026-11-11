@@ -4257,6 +4257,9 @@ public sealed class WorldMapWindow : Window
     /// <summary>화면 밖 시험(CDS_DIALOG=dev:&lt;탭&gt;) — 개발 창을 그 탭으로 띄운다.</summary>
     internal void OpenDevForTest(string tab) => ShowDevDialog(tab);
 
+    /// <summary>화면 밖 시험(CDS_DIALOG=userdiscovery[:&lt;탭&gt;]) — 도시락 「발견물 추가」처럼 커스텀 발견물 창을 그 탭으로 띄운다.</summary>
+    internal void OpenUserDiscoveriesForTest(string? tab) => UserDiscoveryDialog.Show(this, DiscoveryAreaMap, _game, tab);
+
     private void ShowDevDialog() => ShowDevDialog(null);
 
     private void ShowDevDialog(string? startTab) => DevDialog.Show(this, _game.Player, new DevDialog.Options

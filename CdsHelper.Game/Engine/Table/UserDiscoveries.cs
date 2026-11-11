@@ -16,6 +16,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </summary>
 /// <remarks>
 /// 한 벌은 발견물 줄 · 힌트 · 술집 소문 · 책 · 설명 · 발견 장면 · 그림 · 출처를 다 든다. 번호는 들고 다니지 않는다.
+/// 장면이 주는 사람이 지은 아이템(<see cref="UserItems"/>)은 UUID 로 가리키고, 내보낼 때 파일에 함께 담는다.
 /// <code>
 ///   신분     UUID — 지을 때 한 번 정하고 안 바뀐다. 같은 UUID 를 또 불러오면 새 판으로 덮는다
 ///   번호     발견물 · 일련번호 · 힌트 · 그림 번호를 UUID 로 셈해 2000~9999 에서 받는다(겹치면 다음 칸)
@@ -29,8 +30,39 @@ public static class UserDiscoveries
     /// <summary>번호를 받는 구간 — 앱에 실린 추가 발견물(274~)과 원본 번호들보다 한참 위다.</summary>
     public const int NumberBase = 2000, NumberEnd = 9999;
 
-    /// <summary>파일 모양 판. 2 부터 라이선스 · 잠금이 든다 — 잠금을 모르는 옛 판이 잠긴 발견물을 고치지 못하게 올렸다.</summary>
-    public const int FormatVersion = 2;
+    /// <summary>
+    /// 파일 모양 판. 2 부터 라이선스 · 잠금이 든다 — 잠금을 모르는 옛 판이 잠긴 발견물을 고치지 못하게 올렸다.
+    /// 3 은 장면이 사람이 지은 아이템(UUID)을 주는 것 — 그런 발견물만 3 으로 적어(<see cref="VersionOf"/>), 아이템을 모르는 옛 판은
+    /// 그것만 못 불러오고 나머지는 그대로 불러온다.
+    /// </summary>
+    public const int FormatVersion = 3;
+
+    /// <summary>아이템 없이 적는 판 — 옛 판 앱도 불러온다.</summary>
+    private const int PlainVersion = 2;
+
+    /// <summary>그 발견물을 적을 판 — 장면이 사람이 지은 아이템을 주면 3, 아니면 2.</summary>
+    public static int VersionOf(Entry e) => ItemRefs(e).Any() ? FormatVersion : PlainVersion;
+
+    /// <summary>장면이 가리키는 사람이 지은 아이템들의 UUID(겹치지 않게).</summary>
+    public static IEnumerable<string> ItemRefs(Entry e) =>
+        (e.Lines ?? []).Where(x => x.Kind == "item" && UserItems.IsReference(x.Text)).Select(x => x.Text.Trim()).Distinct(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// 발견하면 주는 아이템(발견물 줄의 <see cref="DiscoveryTable.Record.ItemId"/>) — 장면에서 「[놓쳤을 때]」 앞의 첫 「[아이템]」 줄이
+    /// 사람이 지은 아이템이면 그 번호다. 원본 발견물 아이템처럼 발견하면 소지품 일람에 비치고 발표할 때 들어온다. 없으면 -1.
+    /// </summary>
+    /// <remarks>
+    /// 앱에 실린 아이템 줄은 예전처럼 보여 주기만 한다 — 발견물 아이템으로 걸면 원본 대본이 같은 아이템을 주는 자리(05 05)가 막힌다.
+    /// </remarks>
+    public static int GivenItem(Entry e)
+    {
+        foreach (var line in e.Lines ?? [])
+        {
+            if (line.Kind == "lose") break;
+            if (line.Kind == "item" && UserItems.IsReference(line.Text)) return UserItems.Resolve(line.Text) ?? -1;
+        }
+        return -1;
+    }
 
     /// <summary>고를 수 있는 라이선스 — 크리에이티브 커먼즈.</summary>
     public static readonly string[] Licenses =
@@ -341,6 +373,9 @@ public static class UserDiscoveries
         }
     }
 
+    /// <summary>사람이 지은 아이템이 바뀌었을 때 — 발견물 줄 · 구운 장면이 그 번호를 들고 있다.</summary>
+    internal static void ItemsChanged() => Forget();
+
     private static void Forget()
     {
         _all = null;
@@ -362,7 +397,7 @@ public static class UserDiscoveries
     private static DiscoveryTable.Record ToRecord(Loaded l)
     {
         var e = l.Entry;
-        return new DiscoveryTable.Record(l.Numbers.Id, e.Name, e.Category, l.Numbers.Serial, e.Reward, -1,
+        return new DiscoveryTable.Record(l.Numbers.Id, e.Name, e.Category, l.Numbers.Serial, e.Reward, GivenItem(e),
             Indirect: false, e.OpenAtStart, e.OnLand, Once: false,
             Math.Min(e.X1, e.X2), Math.Min(e.Y1, e.Y2), Math.Max(e.X1, e.X2), Math.Max(e.Y1, e.Y2),
             Picture: l.PicturePath != null ? l.Numbers.Picture : -1, Movie: l.MoviePath != null ? l.Numbers.Movie : -1,
@@ -484,7 +519,8 @@ public static class UserDiscoveries
                 case "say" when line.Text.Length > 0:
                     body.Add(Say(line.Text, line.Speaker));
                     break;
-                case "item" when int.TryParse(line.Text.Trim(), out int item):
+                // 아이템은 번호(앱에 실린 것)나 UUID(사람이 지은 것)로 든다 — UUID 는 이 PC 에서 받은 번호로 바꾼다. 없는 아이템이면 건너뛴다.
+                case "item" when UserItems.Resolve(line.Text) is int item:
                     body.Add(new JsonObject { ["OpCode"] = "00 05", ["Call"] = "GiveItem", ["Args"] = new JsonObject { ["Item"] = item } });
                     break;
                 case "gameover":
@@ -611,7 +647,7 @@ public static class UserDiscoveries
         {
             string dir = Path.Combine(Folder, entry.Uuid);
             Directory.CreateDirectory(dir);
-            File.WriteAllText(Path.Combine(dir, EntryFile), JsonSerializer.Serialize(Normalized(entry) with { Version = FormatVersion }, Pretty));
+            File.WriteAllText(Path.Combine(dir, EntryFile), JsonSerializer.Serialize(Normalized(entry) with { Version = VersionOf(entry) }, Pretty));
             if (picture is var (bgra, w, h)) SavePng(bgra, w, h, Path.Combine(dir, PictureFile));
             if (movie is { Length: > 0 })
             {
@@ -655,7 +691,10 @@ public static class UserDiscoveries
 
     // ── 내보내기 · 불러오기 ─────────────────────────────────────
 
-    /// <summary>한 벌을 <c>.cdsdiscovery</c>(zip) 하나로 내보낸다. 잘 됐으면 null, 아니면 까닭.</summary>
+    /// <summary>
+    /// 한 벌을 <c>.cdsdiscovery</c>(zip) 하나로 내보낸다 — 장면이 주는 사람이 지은 아이템(<c>items/{UUID}/</c>)도 함께 담는다.
+    /// 잘 됐으면 null, 아니면 까닭.
+    /// </summary>
     public static string? Export(string uuid, string path)
     {
         if (All.FirstOrDefault(l => l.Entry.Uuid == uuid) is not { } l) return "그 발견물이 없습니다";
@@ -666,13 +705,19 @@ public static class UserDiscoveries
             zip.CreateEntryFromFile(Path.Combine(l.Folder, EntryFile), EntryFile);
             if (l.PicturePath is { } picture) zip.CreateEntryFromFile(picture, PictureFile);
             if (l.MoviePath is { } movie) zip.CreateEntryFromFile(movie, Path.GetFileName(movie), CompressionLevel.NoCompression);
+            foreach (string item in ItemRefs(l.Entry)) UserItems.WriteTo(zip, item);
             return null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException) { return ex.Message; }
     }
 
-    /// <summary>불러온다 — 같은 UUID 가 있으면 <paramref name="overwrite"/> 로 물어 덮는다. 불러온 것(못 했으면 null)과 알릴 말.</summary>
-    public static (Entry? Entry, string Message) Import(string path, Func<Entry, Entry, bool> overwrite)
+    /// <summary>
+    /// 불러온다 — 같은 UUID 가 있으면 <paramref name="overwrite"/> 로 물어 덮는다. 불러온 것(못 했으면 null)과 알릴 말.
+    /// 파일에 든 아이템도 들인다(<see cref="UserItems.ImportFrom"/>) — 같은 UUID 의 아이템이 있으면 번호를 그대로 두고, 알맹이가 다를 때만
+    /// <paramref name="overwriteItem"/> 으로 물어 덮는다. 새 아이템은 이 PC 의 빈 번호를 받으니 남의 PC 번호와 겹칠 일이 없다.
+    /// </summary>
+    public static (Entry? Entry, string Message) Import(string path, Func<Entry, Entry, bool> overwrite,
+                                                        Func<UserItems.Entry, UserItems.Entry, bool>? overwriteItem = null)
     {
         try
         {
@@ -686,6 +731,9 @@ public static class UserDiscoveries
             if (All.FirstOrDefault(l => l.Entry.Uuid == entry.Uuid) is { } had && !overwrite(had.Entry, entry))
                 return (null, "불러오지 않았습니다.");
 
+            // 아이템을 먼저 들인다 — 발견물 줄(발견하면 주는 아이템)이 아이템 번호를 찾아 쥔다.
+            var items = UserItems.ImportFrom(zip, overwriteItem);
+
             string dir = Path.Combine(Folder, entry.Uuid);
             Directory.CreateDirectory(dir);
             head.ExtractToFile(Path.Combine(dir, EntryFile), overwrite: true);
@@ -698,7 +746,14 @@ public static class UserDiscoveries
                 clip.ExtractToFile(Path.Combine(dir, MovieStem + Path.GetExtension(clip.Name).ToLowerInvariant()), overwrite: true);
             Forget();
             var numbers = All.First(l => l.Entry.Uuid == entry.Uuid).Numbers;
-            return (entry, $"「{entry.Name}」 을 불러왔습니다 — 발견물 {numbers.Id}번.");
+            // 알릴 말은 줄로 잇는다 — 번역(Lang)이 줄마다 틀을 맞춘다.
+            var message = new List<string> { $"「{entry.Name}」 을 불러왔습니다 — 발견물 {numbers.Id}번." };
+            var got = items.Added.Concat(items.Replaced).ToList();
+            if (got.Count > 0) message.Add($"아이템도 불러왔습니다 — {string.Join(" · ", got.Select(i => $"{i.Entry.Name}({i.Id}번)"))}.");
+            if (items.Kept.Count > 0) message.Add($"이미 있던 아이템 {items.Kept.Count}개는 그대로 두었습니다.");
+            int missing = ItemRefs(entry).Count(u => UserItems.ByUuid(u) == null);
+            if (missing > 0) message.Add($"장면이 주는 아이템 {missing}개가 파일에 없어 그 줄은 건너뜁니다.");
+            return (entry, string.Join("\n", message));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException
                                       or JsonException or NotSupportedException)

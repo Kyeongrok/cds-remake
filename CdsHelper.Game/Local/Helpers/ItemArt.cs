@@ -98,6 +98,8 @@ public sealed class ItemArt
     /// </summary>
     public uint[]? TryGetBgra(int pic)
     {
+        // 사람이 지은 아이템의 그림(그림 번호 = 아이템 번호 1000~) — 창에서 갈아 끼울 수 있어 들고 있지 않는다.
+        if (pic >= UserItems.NumberBase) return UserItems.PicturePath(pic) is { } path ? UserItems.ReadPicture(path) : null;
         if (pic < 0 || pic > ItemTable.MaxPic) return null;
         if (_cache.TryGetValue(pic, out var got)) return got;
 

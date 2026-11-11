@@ -57,9 +57,9 @@ public sealed class ItemDescriptions
     /// <summary>왜 못 읽었는지. 잘 열렸으면 빈 문자열.</summary>
     public static string LastError { get; private set; } = "";
 
-    /// <summary>그 아이템의 설명문. 없으면 빈 문자열 — 부르는 쪽이 자리를 비워 두면 된다.</summary>
+    /// <summary>그 아이템의 설명문 — 사람이 지은 아이템(<see cref="UserItems"/>)도 낸다. 없으면 빈 문자열 — 부르는 쪽이 자리를 비워 두면 된다.</summary>
     public string Of(int itemId) =>
-        itemId >= 0 && itemId < _texts.Length ? _texts[itemId] : "";
+        itemId >= 0 && itemId < _texts.Length ? _texts[itemId] : UserItems.Description(itemId) ?? "";
 
     /// <summary>설명문 전부. 색인이 아이템 id 다.</summary>
     public IReadOnlyList<string> All => _texts;

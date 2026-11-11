@@ -28,6 +28,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   버그 리포트 창 CDS_DIALOG=bugreport — 왼쪽 위 메뉴로 연 것처럼 띄운다(그동안 배 · 말이 서는지 본다).
 ///   내 리포트 창   CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
 ///   개발 창       CDS_DIALOG=dev:&lt;탭&gt; — 개발 창을 그 탭(「에디터」 따위)으로 띄운다.
+///   발견물 추가   CDS_DIALOG=userdiscovery[:&lt;탭&gt;] — 커스텀 발견물 창을 그 탭(「아이템」 따위)으로 띄운다. CDS_ITEMPIC=&lt;그림&gt; 이면 아이템 그림 칸에 올린다.
 ///   모드 창       CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
@@ -189,6 +190,25 @@ public static class OffscreenHarness
                     }, DispatcherPriority.ApplicationIdle);
                     window.OpenDevForTest(devDialog[4..]);
                     Log("개발 창이 닫혔다");
+                }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=userdiscovery[:<탭>] — 커스텀 발견물 창을 그 탭으로 띄운다. CDS_ITEMPIC=<그림> 이면 고른 아이템의 그림 칸에 올린다(끌기 전 첫 자리).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } userDialog && (userDialog == "userdiscovery" || userDialog.StartsWith("userdiscovery:")))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    string? tab = userDialog.Length > 14 ? userDialog[14..] : null;
+                    Log($"커스텀 발견물 창을 띄운다 — 탭 {tab ?? "(발견물)"}");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is UserDiscoveryDialog found)
+                            {
+                                (w.Left, w.Top) = (window.Left + 10, window.Top + 10);
+                                if (Environment.GetEnvironmentVariable("CDS_ITEMPIC") is { Length: > 0 } picture)
+                                    Log($"아이템 그림 올리기 — {found.LoadItemPicture(picture)}");
+                            }
+                    }, DispatcherPriority.ApplicationIdle);
+                    window.OpenUserDiscoveriesForTest(tab);
+                    Log("커스텀 발견물 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=childname — 자녀 이름 다시 짓기 창(선명입력 창)을 띄우고, 뜬 뒤 그 창의 초점이 어디 갔는지 적은 다음 닫는다.
             // 화면 밖 창은 활성이 안 되므로 글쇠 초점(Keyboard)이 아니라 창이 쥔 논리 초점(FocusManager)을 본다.

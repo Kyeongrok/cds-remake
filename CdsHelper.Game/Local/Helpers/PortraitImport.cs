@@ -51,10 +51,16 @@ public static class PortraitImport
     public readonly record struct Crop(double Zoom, double CenterX, double CenterY)
     {
         /// <summary>그림 크기에 <paramref name="fit"/> 을 적용한 첫 자리 — 가운데를 문다.</summary>
-        public static Crop For(int width, int height, Fit fit)
+        public static Crop For(int width, int height, Fit fit) => For(width, height, fit, Portraits.Width, Portraits.Height);
+
+        /// <summary>
+        /// 초상화가 아닌 네모(<paramref name="boxWidth"/> x <paramref name="boxHeight"/>)에 맞춘 첫 자리 — 아이템 그림(120x120)처럼
+        /// 크기가 다른 그림도 같은 끌기 · 굴리기로 고르게 한다.
+        /// </summary>
+        public static Crop For(int width, int height, Fit fit, int boxWidth, int boxHeight)
         {
-            double sx = (double)Portraits.Width / Math.Max(1, width);
-            double sy = (double)Portraits.Height / Math.Max(1, height);
+            double sx = (double)boxWidth / Math.Max(1, width);
+            double sy = (double)boxHeight / Math.Max(1, height);
             return new Crop(fit == Fit.Cover ? Math.Max(sx, sy) : Math.Min(sx, sy),
                             width / 2.0, height / 2.0);
         }
@@ -105,9 +111,14 @@ public static class PortraitImport
     }
 
     /// <summary>이미 읽어 둔 그림에서 <paramref name="crop"/> 자리를 80x96 BGRA 로 뜬다.</summary>
-    public static uint[] Shape(BitmapSource source, Crop crop)
+    public static uint[] Shape(BitmapSource source, Crop crop) => Shape(source, crop, Portraits.Width, Portraits.Height, Brushes.Black);
+
+    /// <summary>
+    /// 같은 자리를 <paramref name="w"/> x <paramref name="h"/> BGRA 로 뜬다. 그림보다 네모가 클 때 남는 자리는 <paramref name="fill"/> 로
+    /// 메운다(아이템 그림은 투명으로 둔다). <paramref name="smooth"/> 면 곱게 줄인다 — 큰 사진을 작은 그림으로 줄일 때 계단이 덜 진다.
+    /// </summary>
+    public static uint[] Shape(BitmapSource source, Crop crop, int w, int h, Brush fill, bool smooth = false)
     {
-        int w = Portraits.Width, h = Portraits.Height;
 
         double zoom = Math.Clamp(crop.Zoom, MinZoom, MaxZoom);
         double drawW = source.PixelWidth * zoom;
@@ -118,18 +129,20 @@ public static class PortraitImport
                            h / 2.0 - crop.CenterY * zoom, drawW, drawH);
 
         var canvas = new DrawingVisual();
+        if (smooth) RenderOptions.SetBitmapScalingMode(canvas, BitmapScalingMode.HighQuality);
         using (var draw = canvas.RenderOpen())
         {
-            // 남는 자리는 검정으로 메운다 — 그림보다 네모가 클 때만 보인다.
-            draw.DrawRectangle(Brushes.Black, null, new Rect(0, 0, w, h));
+            // 남는 자리를 메운다(초상화는 검정) — 그림보다 네모가 클 때만 보인다.
+            draw.DrawRectangle(fill, null, new Rect(0, 0, w, h));
             draw.DrawImage(source, box);
         }
 
         var shot = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
         shot.Render(canvas);
 
+        // 미리 곱한 알파(Pbgra32)를 풀어 낸다 — 투명하게 메운 가장자리가 어둡게 남지 않게. 불투명이면 값이 같다.
         var bgra = new uint[w * h];
-        shot.CopyPixels(bgra, w * 4, 0);
+        new FormatConvertedBitmap(shot, PixelFormats.Bgra32, null, 0).CopyPixels(bgra, w * 4, 0);
         return bgra;
     }
 

@@ -71,8 +71,8 @@ public sealed class ItemTable
     public readonly record struct Record(
         int Id, string Name, int Pic, int BuyList, int SellList, int Effect, int Category, int Hint = -1)
     {
-        /// <summary>그림이 있는지.</summary>
-        [JsonIgnore] public bool HasPic => Pic >= 0 && Pic <= MaxPic;
+        /// <summary>그림이 있는지 — 사람이 지은 아이템(<see cref="UserItems"/>)은 그림 번호가 제 아이템 번호다.</summary>
+        [JsonIgnore] public bool HasPic => Pic >= 0 && Pic <= MaxPic || UserItems.HasPicture(Pic);
 
         /// <summary>분류 이름. 모르는 번호면 빈 문자열.</summary>
         /// <remarks>
@@ -145,19 +145,22 @@ public sealed class ItemTable
     private static Record Shown(Record r) =>
         Local.Settings.GameSettings.EnhancedItemArt && EnhancedPics.TryGetValue(r.Id, out int pic) ? r with { Pic = pic } : r;
 
-    /// <summary>아이템 전부. 색인이 곧 아이템 번호다.</summary>
+    /// <summary>
+    /// 아이템 전부. 앱에 실린 것은 색인이 곧 아이템 번호이고, 그 뒤에 사람이 지은 아이템(<see cref="UserItems"/>, 1000~)이
+    /// 번호 차례로 붙는다 — 그것들은 색인과 번호가 다르니 <see cref="Record.Id"/> 를 본다.
+    /// </summary>
     public IReadOnlyList<Record> Items =>
-        Local.Settings.GameSettings.EnhancedItemArt ? [.. _items.Select(Shown)] : _items;
+        [.. Local.Settings.GameSettings.EnhancedItemArt ? _items.Select(Shown) : _items, .. UserItems.Records];
 
-    /// <summary>그 아이템. 범위 밖이면 null.</summary>
-    public Record? Find(int id) => id >= 0 && id < _items.Length ? Shown(_items[id]) : null;
+    /// <summary>그 아이템. 앱에 실린 범위 밖이면 사람이 지은 아이템에서 찾고, 거기도 없으면 null.</summary>
+    public Record? Find(int id) => id >= 0 && id < _items.Length ? Shown(_items[id]) : UserItems.Record(id);
 
-    /// <summary>이름으로 찾는다. 없으면 null.</summary>
+    /// <summary>이름으로 찾는다 — 앱에 실린 것이 먼저다. 없으면 null.</summary>
     public Record? Find(string name)
     {
         foreach (var r in _items)
             if (r.Name == name) return Shown(r);
-        return null;
+        return UserItems.Record(name);
     }
 
     /// <summary>

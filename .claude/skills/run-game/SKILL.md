@@ -73,6 +73,7 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 | `CDS_FOUND=<이름>[,<이름>…]` | 바로 시작한 뒤 그 이름의 발견물들을 찾은 것으로 적고 지도를 다시 짓는다 — 사람 발견물 그림이 지도에 서는지 볼 때(사람 발견물은 `<SAVEDIR>\discoveries\<uuid>\discovery.json` 에 미리 넣어 두고 `-KeepSave`) |
 | `CDS_DIALOG=childname` | 자녀 이름 다시 짓기 창(선명입력 창)을 띄우고 그 창이 쥔 초점(글상자 · 고른 글자 수)을 기록에 적은 뒤 닫는다 |
 | `CDS_DIALOG=dev:<탭>` | 개발 창을 그 탭으로 띄운다(`dev:에디터` = 주인공 능력치 · 기능 · 언어 고치기). `CDS_START` 와 함께 쓴다 |
+| `CDS_DIALOG=userdiscovery[:<탭>]` | 도시락 「발견물 추가」처럼 커스텀 발견물 창을 그 탭(`userdiscovery:아이템`)으로 띄운다. `CDS_ITEMPIC=<그림>` 이면 고른 아이템의 그림 칸에 그 그림을 올린다(120x120 에 통째로 맞춘 첫 자리). 지은 아이템 · 발견물은 `CDS_SAVEDIR` 의 `items` · `discoveries` 에서 읽는다 |
 | `CDS_TITLE=Down,Enter` | 타이틀에서 그 글쇠들을 1초 간격으로 누른다(LOAD GAME = `Down,Enter`, CONTINUE = `Down,Down,Enter`). 기록에 세이브 자리 요약(`GameSave.Census`)과 1초마다 화면 · 마지막 불러오기 결과를 적는다 |
 | `CDS_AUTOKEY=Enter` | `CDS_TITLE` 과 함께 — 새로 뜬 창마다 종류 · 물음 글(ConfirmDialog 는 이름으로)을 적고 그 글쇠를 한 번 보낸다(목록은 맨 위 칸, 물음은 「예」) |
 | `CDS_NAV=<도시>` | `CDS_START` 와 함께 — 네비게이션에서 그 도시의 첫 길을 고른 것처럼 자동항해를 걸고, 1초마다 배 자리 · 마디 · 어귀 · 끝난 말 · 뜬 창을 기록에 적는다(`sea:75:large-carrack` + `78` = 파마구스타에서 알렉산드리아) |
