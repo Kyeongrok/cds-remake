@@ -5348,7 +5348,7 @@ public sealed class WorldMapWindow : Window
                             : !CityFounding.Hidden.Contains(city) || up.Contains(city);
             if (!standing || !_game.CityKnown(city)) gone.Add(city);
         }
-        _host.HideCities(gone, HiddenPlaces());
+        _host.HideCities(gone, HiddenPlaces(), UserLandmarks());
     }
 
     /// <summary>
@@ -5379,6 +5379,34 @@ public sealed class WorldMapWindow : Window
             if (target >= 0 && row.Hint == target) continue;
 
             yield return (row.X1, row.Y1, block);
+        }
+    }
+
+    /// <summary>
+    /// 지도에 그림을 얹을 사람 발견물(<see cref="UserDiscoveries"/>) — 원본에 없는 것이다.
+    /// </summary>
+    /// <remarks>
+    /// 사람 발견물은 WORLD.CDS 에 그림이 박혀 있지 않아 찾아도 지도에 아무것도 안 섰다. 원본 발견물 그림이 드러나는 셈
+    /// (<see cref="HiddenPlaces"/> 가 안 덮는 셋 — 내가 찾음 · 역사 항해자가 찾음 · 계약 목표)을 그대로 따라, 드러난 것에
+    /// 원본 발견물 그림 하나를 빌려 얹는다(<see cref="WorldMapHost.HideCities"/>). 원본에 지도 그림이 하나도 없는 갈래
+    /// (생물 · 교역품 · 보물)와 바다 발견물은 얹지 않는다(<see cref="WorldMapHost.LandmarkCategory"/>).
+    /// </remarks>
+    private IEnumerable<WorldMapHost.Landmark> UserLandmarks()
+    {
+        if (_game.Discoveries is not { } log) yield break;
+
+        var player = _game.Player;
+        int target = player.Contract is { } contract && _game.Hints?.Find(contract.Hint) is { } hint
+                   ? hint.Discovery : -1;
+
+        foreach (var row in log.Table.Discoveries)
+        {
+            if (row.Id < UserDiscoveries.NumberBase || !row.HasPlace || !row.OnLand) continue;
+            if (!WorldMapHost.LandmarkCategory(row.Category)) continue;
+            if (!log.Named(player, row.Id, player.Date) && !(target >= 0 && row.Hint == target)) continue;
+
+            yield return new(row.X1, row.Y1, row.X2, row.Y2, row.Category,
+                             player.HasFound(row.Id) || player.HasAnnounced(row.Id));
         }
     }
 

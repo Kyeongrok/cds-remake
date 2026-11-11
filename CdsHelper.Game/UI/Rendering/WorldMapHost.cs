@@ -2928,6 +2928,8 @@ public sealed class WorldMapHost : HwndHost
                            Dictionary<(int X, int Y), byte> finds)
     {
         if (cx == shipX && cy == shipY) return NearShip;
+        // 사람 발견물에 빌려 얹은 그림 칸 — 원본 발견물처럼 찾았거나 발표된 것만 담겨 있다(HideCities).
+        if (_landmarkChart.Count > 0 && _landmarkChart.Contains((cx, cy))) return NearFind;
 
         int w = CellAt(RawAt(cx, cy).Offset);
         if ((w & PictureBit) != 0)
@@ -3758,7 +3760,8 @@ public sealed class WorldMapHost : HwndHost
     /// 예순 해에 스무 번뿐이라 값이 싸다.
     /// </remarks>
     public void HideCities(IEnumerable<int> hidden,
-                           IEnumerable<(int X, int Y, ushort[] Block)>? places = null)
+                           IEnumerable<(int X, int Y, ushort[] Block)>? places = null,
+                           IEnumerable<Landmark>? landmarks = null)
     {
         if (_cities is not { } cities) return;
 
@@ -3795,8 +3798,120 @@ public sealed class WorldMapHost : HwndHost
         }
         _placeCells = placeCells;
 
+        // 드러난 사람 발견물에는 원본 발견물 그림을 빌려 얹는다 — 그림만이다(지날 수 있는지는 원래 칸 그대로, _placeCells 에 안 넣는다).
+        var chartCells = new HashSet<(int X, int Y)>();
+        foreach (var mark in landmarks ?? [])
+        {
+            if (PlaceLandmark(mark, patch) is not { } laid) continue;
+            foreach (var (at, tile) in laid)
+            {
+                patch[at] = tile;
+                if (mark.Chart) chartCells.Add(at);
+            }
+        }
+        _landmarkChart = chartCells;
+
         if (!SamePatch(_shownPatch, patch)) { _shownPatch = patch; ShownMapVersion++; }
         _renderer.Erase(patch);
+    }
+
+    /// <summary>
+    /// 사람이 지어 넣은 발견물(<see cref="UserDiscoveries"/>) 가운데 지도에 그림을 얹을 것 — 범위와 갈래,
+    /// 그리고 주변지도에도 설지(<paramref name="Chart"/>, 원본 발견물처럼 내가 찾았거나 발표된 것).
+    /// </summary>
+    public readonly record struct Landmark(int X1, int Y1, int X2, int Y2, int Category, bool Chart);
+
+    /// <summary>
+    /// 그림을 얹는 갈래 — 원본 발견물 가운데 지도 그림(발견물 표 <c>+0x54</c>)이 있는 44개의 갈래다.
+    /// <code>
+    ///   역사 26 · 지리 7 · 종교 7 · 민족 3 · 미신 1(무제국)        → 얹는다
+    ///   생물 0/43 · 교역품 0/13 · 보물 0/11                         → 원본에 그림이 하나도 없어 안 얹는다
+    /// </code>
+    /// </summary>
+    public static bool LandmarkCategory(int category) => category is 0 or 1 or 3 or 5 or 7;
+
+    /// <summary>주변지도에 발견물 색으로 칠할 사람 발견물 그림 칸.</summary>
+    private HashSet<(int X, int Y)> _landmarkChart = [];
+
+    /// <summary>그림을 빌려 올 원본 발견물 — 육지에 있고 지도 그림이 있는 것(자리 · 바탕 타일 2x2 · 갈래).</summary>
+    private List<(int X, int Y, ushort[] Erase, int Category)>? _landmarkDonors;
+
+    private List<(int X, int Y, ushort[] Erase, int Category)> LandmarkDonors()
+    {
+        if (_landmarkDonors is { Count: > 0 } had) return had;
+        var list = new List<(int X, int Y, ushort[] Erase, int Category)>();
+        if (_gameDir.Length > 0 && DiscoveryTable.Open(_gameDir) is { } table)
+            foreach (var row in table.Discoveries)
+            {
+                if (row.Id >= UserDiscoveries.NumberBase || !row.HasPlace || !row.OnLand) continue;
+                if (row.Erase is not { Length: DiscoveryTable.EraseWidth * DiscoveryTable.EraseWidth } erase
+                    || erase.All(v => v == DiscoveryTable.Keep)) continue;
+                list.Add((row.X1, row.Y1, erase, row.Category));
+            }
+        return _landmarkDonors = list;
+    }
+
+    /// <summary>
+    /// 사람 발견물 그림을 놓을 칸과 타일 — 범위 가운데 가까이에서 2x2 칸이 모두 육지이고 다른 그림(도시 · 발견물)이 없는 자리를 찾아,
+    /// 원본 발견물 그림 가운데 <b>바탕 타일이 그 자리 칸과 가장 많이 같은 것</b>(같으면 같은 갈래를 먼저)을 빌린다.
+    /// 그래야 풀밭에 사막 네모가 생기지 않는다. 놓을 데가 없으면 null.
+    /// </summary>
+    private List<((int X, int Y) At, ushort Tile)>? PlaceLandmark(Landmark mark, Dictionary<(int X, int Y), ushort> taken)
+    {
+        if (_world == null || _terrain == null) return null;
+        var donors = LandmarkDonors();
+        if (donors.Count == 0) return null;
+        const int w = DiscoveryTable.EraseWidth;
+
+        int xHi = Math.Max(mark.X1, mark.X2 - (w - 1)), yHi = Math.Max(mark.Y1, mark.Y2 - (w - 1));
+        double cx = (mark.X1 + mark.X2 + 1) / 2.0 - w / 2.0, cy = (mark.Y1 + mark.Y2 + 1) / 2.0 - w / 2.0;
+        const int Reach = 8;   // 넓은 범위도 가운데 둘레만 본다
+        var spots = new List<(int X, int Y, double D)>();
+        for (int y = Math.Max(mark.Y1, (int)cy - Reach); y <= Math.Min(yHi, (int)cy + Reach); y++)
+            for (int x = Math.Max(mark.X1, (int)cx - Reach); x <= Math.Min(xHi, (int)cx + Reach); x++)
+                spots.Add((x, y, (x - cx) * (x - cx) + (y - cy) * (y - cy)));
+
+        (int X, int Y, int Donor, double Score)? best = null;
+        var under = new int[w * w];
+        foreach (var (x, y, d) in spots.OrderBy(s => s.D))
+        {
+            bool fits = true;
+            for (int k = 0; k < under.Length && fits; k++)
+            {
+                int px = x + k % w, py = y + k / w;
+                if (py < 0 || py >= WorldMapRenderer.CellH || taken.ContainsKey((px, py))) { fits = false; break; }
+                under[k] = CellValue(px + 0.5, py + 0.5);
+                if ((under[k] & PictureBit) != 0 || IsSeaClass(under[k])) fits = false;
+            }
+            if (!fits) continue;
+
+            for (int i = 0; i < donors.Count; i++)
+            {
+                var erase = donors[i].Erase;
+                int picture = 0, same = 0;
+                for (int k = 0; k < erase.Length; k++)
+                {
+                    if (erase[k] == DiscoveryTable.Keep) continue;
+                    picture++;
+                    if ((erase[k] & OceanTiles.TileMask) == (under[k] & OceanTiles.TileMask)) same++;
+                }
+                if (picture == 0) continue;
+                // 바탕이 맞는 것이 먼저, 그다음 같은 갈래, 그다음 가운데에 가까운 자리.
+                double score = same * 100.0 / picture + (donors[i].Category == mark.Category ? 10 : 0) - Math.Sqrt(d) * 2;
+                if (best is not { } b || score > b.Score) best = (x, y, i, score);
+            }
+        }
+        if (best is not { } pick) return null;
+
+        var (dx, dy, from, _) = donors[pick.Donor];
+        var laid = new List<((int X, int Y) At, ushort Tile)>();
+        for (int k = 0; k < from.Length; k++)
+        {
+            if (from[k] == DiscoveryTable.Keep) continue;
+            int tile = CellValue(dx + k % w + 0.5, dy + k / w + 0.5) & OceanTiles.TileMask;
+            laid.Add(((pick.X + k % w, pick.Y + k / w), (ushort)tile));
+        }
+        return laid;
     }
 
     /// <summary>지도에 덮어 그린 칸(안 선 도시 · 못 찾은 발견물) — 세계지도 창(<see cref="GameTiles"/>)이 같은 그림을 그리려고 쓴다.</summary>
