@@ -302,7 +302,7 @@ public sealed class BgmPlayer : IDisposable
             : "갈아 끼운 곡";
         string length = _player.Duration is { } d ? $"{d.TotalSeconds:0}s" : "?";
         return $"{(_enabled ? "켬" : "끔")} · 곡 {_track} (원함 {_wanted}) · {where} · {_player.State} {_player.Position.TotalSeconds:0.0}/{length}"
-               + $" · 크기 {_volume:0.00} → {Heard:0.00}{(_away ? " · 뒤에 있음" : "")}{(_hushed ? " · 숨죽임" : "")}";
+               + $" · 크기 {_volume:0.00} → {Heard:0.00}{(_away ? " · 뒤에 있음" : "")}{(_hushed ? " · 숨죽임" : "")}{(_paused ? " · 멈춘 척" : "")}";
     }
 
     /// <summary>게임 창이 뒤에 있다고 보는지 — 「백그라운드 음소거」가 이것을 따른다.</summary>
@@ -385,6 +385,7 @@ public sealed class BgmPlayer : IDisposable
         {
             _track = track;
             _failed = false;
+            _paused = false;   // 새 곡을 열었으니 멈춘 자리는 버린다
             LastError = "";
             Source = path;
             _player.Open(new Uri(path));
@@ -413,8 +414,8 @@ public sealed class BgmPlayer : IDisposable
 
     private double _volume = 1;
 
-    /// <summary>실제로 내는 크기 — 숨죽이는 중(<see cref="Hush"/>)이거나, 게임 창이 뒤에 있고 「백그라운드 음소거」가 켜져 있으면 0 이다.</summary>
-    private double Heard => _hushed || (_away && Settings.GameSettings.MuteBgmInBackground) ? 0 : _volume;
+    /// <summary>실제로 내는 크기 — 숨죽이는 중(<see cref="Hush"/> · <see cref="Pause"/>)이거나, 게임 창이 뒤에 있고 「백그라운드 음소거」가 켜져 있으면 0 이다.</summary>
+    private double Heard => _hushed || _paused || (_away && Settings.GameSettings.MuteBgmInBackground) ? 0 : _volume;
 
     /// <summary>곡을 숨죽이고 있는지 — <see cref="Hush"/> 와 <see cref="Unhush"/> 사이.</summary>
     private bool _hushed;
@@ -504,16 +505,39 @@ public sealed class BgmPlayer : IDisposable
     /// 곡을 그 자리에서 멈춘다 — <see cref="Resume"/> 이 멈춘 자리부터 잇는다. 원본의 CDAudioPause
     /// (<c>0x00422B50</c> → koeicda.dll)다. 해전이 끝나 승패 소리를 낼 동안 쓴다.
     /// </summary>
+    /// <remarks>
+    /// 정말로 멈추지 않는다 — 소리만 0 으로 두고 곡은 흘려 두었다가, <see cref="Resume"/> 이 멈춘 자리로 되돌려 제 크기로 잇는다.
+    /// 효과음까지 꺼 둔 판에서 흐름이 끊기면 소리 장치가 쉬었다 깨며 Windows 음량을 100 으로 올리는 장치가 있다(버그 리포트 #45 · #46 · #47).
+    /// </remarks>
     public void Pause()
     {
-        if (_track >= 0) _player.Pause();
+        if (_track < 0 || _paused) return;
+        _pausedAt = _player.Position;
+        _paused = true;
+        _player.Volume = Heard;
+        SoundDiagnostics.Doing("곡 멈춘 척");
     }
 
     /// <summary>멈춘 곡을 잇는다 — 원본의 CDAudioResume(<c>0x00422B90</c>).</summary>
     public void Resume()
     {
-        if (_track >= 0 && _enabled) _player.Play();
+        if (!_paused) return;
+        _paused = false;
+        if (_track >= 0 && _enabled)
+        {
+            _player.Seek(_pausedAt);
+            _player.Volume = Heard;
+            _player.Play();
+        }
+        else _player.Volume = Heard;
+        SoundDiagnostics.Doing($"곡 {_track} 이음");
     }
+
+    /// <summary><see cref="Pause"/> 와 <see cref="Resume"/> 사이 — 소리만 죽이고 흘려 둔다.</summary>
+    private bool _paused;
+
+    /// <summary><see cref="Pause"/> 한 자리 — <see cref="Resume"/> 이 여기로 되돌린다.</summary>
+    private TimeSpan _pausedAt;
 
     public void Stop()
     {
@@ -522,6 +546,7 @@ public sealed class BgmPlayer : IDisposable
         _track = -1;
         _failed = false;
         _hushed = false;
+        _paused = false;
         SoundDiagnostics.Doing("곡 멈춤");
     }
 

@@ -44,53 +44,173 @@ public static class SoundDiagnostics
     // 「폭풍이 지나가면 Windows 음량이 100 이 된다」 — 앱은 장치 음량을 쓰지 않는다(위 IAudioEndpointVolume 은 읽기만).
     // 언제 · 무엇을 하던 중에 · 누가(바꾼 쪽이 넘긴 이벤트 문맥 GUID) 바꿨는지 남겨, 다음 리포트에서 장치 탓인지 가른다.
 
+    // 버그 리포트 #46 · #47 — 육상전 뒤에 음량이 뛰었다는데 deviceChanges 가 null 로 왔다. 예전 감시는 앱을 켤 때 잡은
+    // 기본 장치의 음량 알림 하나뿐이라, (1) 감시가 걸렸는지조차 리포트에 안 남았고 (2) USB 장치가 쉬었다 깨며 다시 잡히면
+    // (끊겼다 붙음 · 기본 장치 바뀜) 옛 장치 객체의 알림이 끊겨 그 뒤의 바뀜을 하나도 못 잡았다.
+    // 이제는 감시를 건 때 · 그때 음량을 늘 싣고, 장치가 붙고 떨어지고 기본이 바뀌는 것(IMMNotificationClient)도 적고,
+    // 소리 쪽 일을 할 때마다(Doing) · 리포트를 모을 때 음량을 몸소 다시 읽어 알림 없이 바뀐 것도 적고 새 장치로 감시를 옮겨 건다.
+
     private static readonly object Gate = new();
     private static readonly Queue<string> Recent = new();
-    private const int KeepChanges = 8;
+    private const int KeepChanges = 12;
     private static volatile string _doing = "-";
     private static IAudioEndpointVolume? _watched;
+    private static string? _watchedId;
     private static VolumeWatcher? _watcher;
     private static IntPtr _watcherPtr;
+    private static IMMDeviceEnumerator? _deviceEnumerator;
+    private static DeviceWatcher? _deviceWatcher;
+    private static IntPtr _deviceWatcherPtr;
     private static float _lastLevel = -1;
+    /// <summary>감시를 건 때 · 그때 음량 — 또는 못 건 까닭. 리포트에 늘 싣는다.</summary>
+    private static string _watchNote = "감시 안 함";
 
-    /// <summary>소리 쪽에서 지금 하는 일 — 장치 음량이 바뀌면 이것과 함께 적는다.</summary>
-    public static void Doing(string what) => _doing = $"{DateTime.Now:HH:mm:ss} {what}";
+    /// <summary>소리 쪽에서 지금 하는 일 — 장치 음량이 바뀌면 이것과 함께 적는다. 그 김에 음량을 몸소 다시 읽는다.</summary>
+    public static void Doing(string what)
+    {
+        _doing = $"{DateTime.Now:HH:mm:ss} {what}";
+        Peek();
+    }
 
-    /// <summary>기본 출력 장치의 음량 바뀜을 지켜보기 시작한다. 한 번만 건다 — 못 걸면 조용히 넘어간다.</summary>
+    /// <summary>기본 출력 장치의 음량 바뀜과 장치 붙고 떨어짐을 지켜보기 시작한다. 한 번만 건다 — 못 걸면 까닭을 남기고 넘어간다.</summary>
     public static void Watch()
     {
-        if (_watched != null) return;
+        try
+        {
+            if (_deviceWatcher == null)
+            {
+                _deviceEnumerator = Enumerator();
+                _deviceWatcher = new DeviceWatcher();
+                _deviceWatcherPtr = Marshal.GetComInterfaceForObject(_deviceWatcher, typeof(IMMNotificationClient));
+                int hr = _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceWatcherPtr);
+                if (hr != 0) Note($"장치 알림 못 검 0x{hr:X8}");
+            }
+        }
+        catch (Exception ex) { Note($"장치 알림 못 검 — {ex.GetType().Name} 0x{ex.HResult:X8}"); }
+        if (_watched == null) WatchDefault();
+    }
+
+    /// <summary>지금 기본 장치에 음량 알림을 건다 — 앞서 건 것이 있으면 풀고.</summary>
+    private static void WatchDefault()
+    {
+        try
+        {
+            if (_watched != null)
+            {
+                try { _watched.UnregisterControlChangeNotify(_watcherPtr); } catch (Exception) { /* 이미 사라진 장치다 */ }
+                _watched = null;
+                _watchedId = null;
+            }
+            var enumerator = Enumerator();
+            int hr = enumerator.GetDefaultAudioEndpoint(EDataFlowRender, ERoleConsole, out var device);
+            if (hr != 0 || device == null) { _watchNote = $"{DateTime.Now:HH:mm:ss} 감시 못 함 — 기본 장치 없음 0x{hr:X8}"; return; }
+            string? id = IdOf(device);
+            var iid = typeof(IAudioEndpointVolume).GUID;
+            hr = device.Activate(ref iid, ClsctxAll, IntPtr.Zero, out var activated);
+            if (hr != 0 || activated is not IAudioEndpointVolume volume) { _watchNote = $"{DateTime.Now:HH:mm:ss} 감시 못 함 — 음량 0x{hr:X8}"; return; }
+            volume.GetMasterVolumeLevelScalar(out float level);
+            lock (Gate) _lastLevel = level;
+            _watcher ??= new VolumeWatcher();
+            if (_watcherPtr == IntPtr.Zero) _watcherPtr = Marshal.GetComInterfaceForObject(_watcher, typeof(IAudioEndpointVolumeCallback));
+            hr = volume.RegisterControlChangeNotify(_watcherPtr);
+            if (hr != 0) { _watchNote = $"{DateTime.Now:HH:mm:ss} 감시 못 함 — 알림 0x{hr:X8}"; return; }
+            _watched = volume;
+            _watchedId = id;
+            _watchNote = $"{DateTime.Now:HH:mm:ss} 감시 {level * 100:0}% {FriendlyName(device)}";
+        }
+        catch (Exception ex) { _watchNote = $"{DateTime.Now:HH:mm:ss} 감시 못 함 — {ex.GetType().Name} 0x{ex.HResult:X8}"; }
+    }
+
+    /// <summary>
+    /// 기본 장치의 음량을 몸소 다시 읽는다 — 알림 없이 바뀐 것을 적고, 기본 장치가 갈렸으면(USB 장치가 다시 잡힘) 감시를 옮겨 건다.
+    /// </summary>
+    private static void Peek()
+    {
+        if (_watched == null && _deviceWatcher == null) return;   // 감시를 건 적이 없다(시작 전)
         try
         {
             var enumerator = Enumerator();
             if (enumerator.GetDefaultAudioEndpoint(EDataFlowRender, ERoleConsole, out var device) != 0 || device == null) return;
-            var iid = typeof(IAudioEndpointVolume).GUID;
-            if (device.Activate(ref iid, ClsctxAll, IntPtr.Zero, out var activated) != 0 || activated is not IAudioEndpointVolume volume)
+            string? id = IdOf(device);
+            if (_watched == null)
+            {
+                // 못 걸었던 감시를 다시 건다 — 걸렸을 때만 적는다(못 걸면 일마다 같은 줄이 쌓인다).
+                WatchDefault();
+                if (_watched != null) Note($"감시 다시 걺 — {_watchNote}");
                 return;
-            volume.GetMasterVolumeLevelScalar(out _lastLevel);
-            _watcher = new VolumeWatcher();
-            _watcherPtr = Marshal.GetComInterfaceForObject(_watcher, typeof(IAudioEndpointVolumeCallback));
-            if (volume.RegisterControlChangeNotify(_watcherPtr) == 0) _watched = volume;
+            }
+            if (id != _watchedId)
+            {
+                WatchDefault();
+                Note($"기본 장치가 다시 잡혀 감시 옮김 — {_watchNote}");
+                return;
+            }
+            var iid = typeof(IAudioEndpointVolume).GUID;
+            if (device.Activate(ref iid, ClsctxAll, IntPtr.Zero, out var activated) != 0 || activated is not IAudioEndpointVolume volume) return;
+            volume.GetMasterVolumeLevelScalar(out float level);
+            float was;
+            lock (Gate) { was = _lastLevel; if (Math.Abs(level - was) >= 0.005f) _lastLevel = level; }
+            if (Math.Abs(level - was) >= 0.005f) Note($"{was * 100:0}→{level * 100:0}% (알림 없이 — 다시 읽어 앎)");
         }
-        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SoundDiagnostics] 장치 음량을 지켜보지 못했습니다 — {ex.Message}"); }
+        catch (Exception) { /* 진단일 뿐이다 */ }
+    }
+
+    private static string? IdOf(IMMDevice device)
+    {
+        if (device.GetId(out var ptr) != 0 || ptr == IntPtr.Zero) return null;
+        try { return Marshal.PtrToStringUni(ptr); }
+        finally { Marshal.FreeCoTaskMem(ptr); }
     }
 
     private static string? Changes()
     {
-        lock (Gate) return Recent.Count == 0 ? null : string.Join(" / ", Recent);
+        Peek();
+        lock (Gate) return Recent.Count == 0 ? $"{_watchNote} · 바뀜 없음" : $"{_watchNote} · " + string.Join(" / ", Recent);
+    }
+
+    /// <summary>자취 한 줄을 적는다 — 때와 하던 일을 붙인다.</summary>
+    private static void Note(string what)
+    {
+        string line = $"{DateTime.Now:HH:mm:ss} {what} (하던 일 {_doing})";
+        lock (Gate)
+        {
+            Recent.Enqueue(line);
+            while (Recent.Count > KeepChanges) Recent.Dequeue();
+        }
     }
 
     private static void Noted(Guid context, bool mute, float level)
     {
         // 음소거만 바뀐 알림은 음량이 같다 — 그래도 적는다(드물다).
         string from = context == Guid.Empty ? "문맥 없음" : context.ToString()[..8];
-        string line = $"{DateTime.Now:HH:mm:ss} {_lastLevel * 100:0}→{level * 100:0}%{(mute ? " 음소거" : "")} ({from}, 하던 일 {_doing})";
-        _lastLevel = level;
-        lock (Gate)
+        float was;
+        lock (Gate) { was = _lastLevel; _lastLevel = level; }
+        Note($"{was * 100:0}→{level * 100:0}%{(mute ? " 음소거" : "")} ({from})");
+    }
+
+    /// <summary>장치가 붙고 떨어지고 기본 장치가 바뀌는 알림을 받는 COM 손. 딴 스레드에서 불린다 — 여기서는 적기만 한다.</summary>
+    private sealed class DeviceWatcher : IMMNotificationClient
+    {
+        private static string Which(string? id) => id != null && id == _watchedId ? "지켜보던 장치" : "다른 장치";
+
+        public int OnDeviceStateChanged(string? id, int state)
         {
-            Recent.Enqueue(line);
-            while (Recent.Count > KeepChanges) Recent.Dequeue();
+            string word = state switch { 1 => "켜짐", 2 => "꺼짐", 4 => "없음", 8 => "뽑힘", _ => state.ToString() };
+            Note($"{Which(id)} {word}");
+            return 0;
         }
+
+        public int OnDeviceAdded(string? id) { Note($"{Which(id)} 붙음"); return 0; }
+
+        public int OnDeviceRemoved(string? id) { Note($"{Which(id)} 떨어짐"); return 0; }
+
+        public int OnDefaultDeviceChanged(int flow, int role, string? id)
+        {
+            if (flow == EDataFlowRender && role == ERoleConsole) Note($"기본 출력 장치 바뀜 → {Which(id)}");
+            return 0;
+        }
+
+        public int OnPropertyValueChanged(string? id, PropertyKey key) => 0;   // 잦고 쓸모없다
     }
 
     /// <summary>장치 음량 알림을 받는 COM 손. 딴 스레드에서 불린다.</summary>
@@ -212,6 +332,19 @@ public static class SoundDiagnostics
     {
         [PreserveSig] int EnumAudioEndpoints(int dataFlow, int stateMask, out IMMDeviceCollection? devices);
         [PreserveSig] int GetDefaultAudioEndpoint(int dataFlow, int role, out IMMDevice? device);
+        [PreserveSig] int GetDevice([MarshalAs(UnmanagedType.LPWStr)] string id, out IMMDevice? device);
+        [PreserveSig] int RegisterEndpointNotificationCallback(IntPtr client);
+        [PreserveSig] int UnregisterEndpointNotificationCallback(IntPtr client);
+    }
+
+    [ComImport, Guid("7991EEC9-7E89-4D85-8390-6C703CEC60C0"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IMMNotificationClient
+    {
+        [PreserveSig] int OnDeviceStateChanged([MarshalAs(UnmanagedType.LPWStr)] string? id, int state);
+        [PreserveSig] int OnDeviceAdded([MarshalAs(UnmanagedType.LPWStr)] string? id);
+        [PreserveSig] int OnDeviceRemoved([MarshalAs(UnmanagedType.LPWStr)] string? id);
+        [PreserveSig] int OnDefaultDeviceChanged(int flow, int role, [MarshalAs(UnmanagedType.LPWStr)] string? id);
+        [PreserveSig] int OnPropertyValueChanged([MarshalAs(UnmanagedType.LPWStr)] string? id, PropertyKey key);
     }
 
     [ComImport, Guid("0BD7A1BE-7A1A-44DB-8397-CC5392387B5E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -226,6 +359,7 @@ public static class SoundDiagnostics
     {
         [PreserveSig] int Activate(ref Guid iid, int clsCtx, IntPtr activationParams, [MarshalAs(UnmanagedType.IUnknown)] out object? activated);
         [PreserveSig] int OpenPropertyStore(int access, out IPropertyStore? store);
+        [PreserveSig] int GetId(out IntPtr id);
     }
 
     [ComImport, Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

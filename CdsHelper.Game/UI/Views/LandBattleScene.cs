@@ -161,6 +161,7 @@ internal sealed class LandBattleScene : GameWindow
 
         // 싸움 곡으로 갈아 끼웠다가 끝나면 듣던 것으로 되돌린다.
         int was = game.Bgm.Track;
+        SoundDiagnostics.Doing("육상전 시작");
 
         scene.Show();
         try
@@ -170,7 +171,22 @@ internal sealed class LandBattleScene : GameWindow
             AddOns.AddOnHost.Fire("LAND_BATTLE_ENDED", won);
             return won;
         }
-        finally { scene.Close(); game.Bgm.Play(was); }
+        finally
+        {
+            scene.Close();
+            RestoreMusic(game.Bgm, was);
+        }
+    }
+
+    /// <summary>
+    /// 끝맺음에서 숨죽인 곡(<see cref="BgmPlayer.Hush"/>)을 듣던 곡으로 되돌린다. 듣던 곡이 없었으면 그제야 닫는다.
+    /// 화면 밖 시험 <c>CDS_DIALOG=landbattle-sound</c> 도 이것을 부른다.
+    /// </summary>
+    internal static void RestoreMusic(BgmPlayer bgm, int was)
+    {
+        if (was < 0) bgm.Stop();
+        else { bgm.Play(was); bgm.Unhush(); }
+        SoundDiagnostics.Doing("육상전 끝");
     }
 
     private Engine.Game? _game;
@@ -1372,10 +1388,12 @@ internal sealed class LandBattleScene : GameWindow
         }
 
         // 끝맺음 소리 — <b>이김과 물러남에만</b> 있다(0x004499B5 · 0x004499FF). 봐 준 자리는 소리가 없다.
-        // 그 앞에 곡을 끊는다(0x004499A9 · 0x004499F3 의 0x00422A40(-1, 3)).
+        // 그 앞에 곡을 끊는다(0x004499A9 · 0x004499F3 의 0x00422A40(-1, 3)) — 닫지 않고 숨만 죽인다. 효과음을 꺼 둔 판에서
+        // 소리 흐름이 끊기면 장치가 쉬었다 깨며 Windows 음량을 100 으로 올리는 소리 장치가 있다(버그 리포트 #45 · #46 · #47).
+        // 듣던 곡으로 되돌리는 것은 부르는 쪽(Run)이다.
         else
         {
-            _game?.Bgm.Stop();
+            _game?.Bgm.Hush();
             _game?.Sfx?.Play(won ? LandUnits.Sound.Won : LandUnits.Sound.Retreat);
         }
 

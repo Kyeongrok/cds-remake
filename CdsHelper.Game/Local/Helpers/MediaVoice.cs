@@ -134,12 +134,15 @@ public sealed class MediaVoice
     }
 
     /// <summary>처음으로 되감는다.</summary>
-    public void Rewind()
+    public void Rewind() => Seek(TimeSpan.Zero);
+
+    /// <summary>그 자리로 옮긴다 — 흐름은 끊지 않는다.</summary>
+    public void Seek(TimeSpan at)
     {
         try
         {
-            if (_rt != null) _rt.PlaybackSession.Position = TimeSpan.Zero;
-            if (_wpf != null) _wpf.Position = TimeSpan.Zero;
+            if (_rt != null) _rt.PlaybackSession.Position = at;
+            if (_wpf != null) _wpf.Position = at;
         }
         catch (Exception ex) { Note($"되감기 — {ex.Message}"); }
     }

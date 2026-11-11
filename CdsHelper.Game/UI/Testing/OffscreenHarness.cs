@@ -143,6 +143,40 @@ public static class OffscreenHarness
                     after.Tick += (_, _) => { Sound("폭풍 뒤 " + (4 - left) * 2 + "초"); if (--left == 0) after.Stop(); };
                     after.Start();
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=landbattle-sound — 육상전이 곡을 다루는 차례(전투 곡 → 끝맺음 숨죽임 → 듣던 곡)와 해전 · 일기토의 승패 소리
+            // 멈춤(Pause → Resume)을 그대로 밟으며 1초마다 곡 상태 · 장치 음량 자취를 적는다(버그 리포트 #46 · #47). 흐름이 끊기면 State 가 Idle 이 된다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "landbattle-sound")
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    var bgm = window.CurrentGame.Bgm;
+                    void Sound(string when) => Log($"소리 {when} bgm={bgm.Describe()} | device={SoundDiagnostics.Collect()["device"]}"
+                                                   + $" | deviceChanges={SoundDiagnostics.Collect()["deviceChanges"]}");
+                    int was = bgm.Track;
+                    var steps = new (string Name, Action Act)[]
+                    {
+                        ("육상전 시작(전투 곡)", () => bgm.Play(BgmPlayer.BattleTrack)),
+                        ("싸우는 중", () => { }),
+                        ("끝맺음(숨죽임 · 알림 창)", () => bgm.Hush()),
+                        ("알림 창 1초", () => { }),
+                        ("알림 창 2초", () => { }),
+                        ("육상전 끝(듣던 곡)", () => LandBattleScene.RestoreMusic(bgm, was)),
+                        ("승패 소리 멈춤(Pause)", () => bgm.Pause()),
+                        ("승패 소리 1초", () => { }),
+                        ("이음(Resume)", () => bgm.Resume()),
+                        ("끝", () => { }),
+                    };
+                    int at = 0;
+                    Sound("앞");
+                    var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+                    timer.Tick += (_, _) =>
+                    {
+                        var (name, act) = steps[at];
+                        act();
+                        Sound(name);
+                        if (++at == steps.Length) timer.Stop();
+                    };
+                    timer.Start();
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "mybugs")
                 window.Dispatcher.BeginInvoke(() =>
