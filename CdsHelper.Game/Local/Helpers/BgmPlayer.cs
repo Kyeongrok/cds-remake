@@ -248,6 +248,7 @@ public sealed class BgmPlayer : IDisposable
     public BgmPlayer()
     {
         Current = this;
+        SoundDiagnostics.Watch();   // 장치 음량이 바뀌면 자취를 남긴다(버그 리포트 #45)
         // 지난번에 맞춰 둔 소리 크기로 시작한다.
         Volume = Settings.GameSettings.BgmVolume / (double)Settings.GameSettings.MaxVolume;
 
@@ -301,7 +302,7 @@ public sealed class BgmPlayer : IDisposable
             : "갈아 끼운 곡";
         string length = _player.Duration is { } d ? $"{d.TotalSeconds:0}s" : "?";
         return $"{(_enabled ? "켬" : "끔")} · 곡 {_track} (원함 {_wanted}) · {where} · {_player.State} {_player.Position.TotalSeconds:0.0}/{length}"
-               + $" · 크기 {_volume:0.00} → {Heard:0.00}{(_away ? " · 뒤에 있음" : "")}";
+               + $" · 크기 {_volume:0.00} → {Heard:0.00}{(_away ? " · 뒤에 있음" : "")}{(_hushed ? " · 숨죽임" : "")}";
     }
 
     /// <summary>게임 창이 뒤에 있다고 보는지 — 「백그라운드 음소거」가 이것을 따른다.</summary>
@@ -389,6 +390,7 @@ public sealed class BgmPlayer : IDisposable
             _player.Open(new Uri(path));
             _player.Volume = Heard;
             _player.Play();
+            SoundDiagnostics.Doing($"곡 {track} 틂");
         }
         catch (Exception ex)
         {
@@ -411,8 +413,43 @@ public sealed class BgmPlayer : IDisposable
 
     private double _volume = 1;
 
-    /// <summary>실제로 내는 크기 — 게임 창이 뒤에 있고 「백그라운드 음소거」가 켜져 있으면 0 이다.</summary>
-    private double Heard => _away && Settings.GameSettings.MuteBgmInBackground ? 0 : _volume;
+    /// <summary>실제로 내는 크기 — 숨죽이는 중(<see cref="Hush"/>)이거나, 게임 창이 뒤에 있고 「백그라운드 음소거」가 켜져 있으면 0 이다.</summary>
+    private double Heard => _hushed || (_away && Settings.GameSettings.MuteBgmInBackground) ? 0 : _volume;
+
+    /// <summary>곡을 숨죽이고 있는지 — <see cref="Hush"/> 와 <see cref="Unhush"/> 사이.</summary>
+    private bool _hushed;
+
+    /// <summary>
+    /// 곡을 <b>끊은 것처럼</b> 들리게 한다 — 소리만 0 으로 두고 곡은 그대로 돌린다. <see cref="Unhush"/> 가 처음부터 되튼다.
+    /// 폭풍 장면처럼 원본이 곡을 끊었다 끝에 다시 트는 자리(<c>0x00497768</c> · <c>0x004229F0</c>)에 쓴다.
+    /// </summary>
+    /// <remarks>
+    /// 예전에는 <see cref="Stop"/> 으로 곡을 닫았다가 다시 열었다. 효과음까지 꺼 둔 판이면 그동안 이 앱의 소리 흐름이 하나도 없어
+    /// 소리 장치가 쉬었다가 다시 깨는데, 그때 <b>장치(Windows) 음량을 100 으로 되돌리는 USB 소리 장치</b>가 있는 것으로 본다
+    /// (버그 리포트 #45 — Sound Blaster X4, 장치 음량 5 → 폭풍이 지나가면 100. 앱 코드는 장치 음량을 읽기만 하고, 다른 장치에서는
+    /// 같은 차례로 돌려도 장치 음량이 그대로였다). 흐름을 끊지 않으면 장치는 쉬지 않는다.
+    /// </remarks>
+    public void Hush()
+    {
+        _hushed = true;
+        _player.Volume = Heard;
+        SoundDiagnostics.Doing("곡 숨죽임");
+    }
+
+    /// <summary>숨죽인 곡을 처음으로 되감아 제 크기로 되튼다.</summary>
+    public void Unhush()
+    {
+        if (!_hushed) return;
+        _hushed = false;
+        if (_track >= 0 && _enabled)
+        {
+            _player.Rewind();
+            _player.Volume = Heard;
+            _player.Play();
+        }
+        else _player.Volume = Heard;
+        SoundDiagnostics.Doing($"곡 {_track} 되틂");
+    }
 
     /// <summary>게임이 뒤에 있는지 — 다른 프로그램이 앞에 있거나 게임 창이 접혔다.</summary>
     private static bool _away;
@@ -484,6 +521,8 @@ public sealed class BgmPlayer : IDisposable
         _player.Close();
         _track = -1;
         _failed = false;
+        _hushed = false;
+        SoundDiagnostics.Doing("곡 멈춤");
     }
 
     public void Dispose() => Stop();

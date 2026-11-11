@@ -129,8 +129,10 @@ internal sealed partial class EventAnimationPopup : Window
         play.Start(w, h, at, new Random());
 
         // 곡을 끊는 장면은 폭풍 하나다(0x00497768 가 모든 소리를 끄고, 끝에 0x004229F0 이 곡을 되튼다).
-        int track = play.StopsMusic ? game.Bgm.Track : -1;
-        if (track >= 0) game.Bgm.Stop();
+        // 곡을 닫지 않고 숨만 죽인다 — 소리 흐름이 끊기면 장치가 쉬었다 깨며 Windows 음량을 100 으로 올리는 소리 장치가 있는 것으로 본다(버그 리포트 #45).
+        bool hush = play.StopsMusic && game.Bgm.Track >= 0;
+        if (hush) game.Bgm.Hush();
+        SoundDiagnostics.Doing($"장면 {scene} 시작");
         var sfx = game.Sfx;
         play.Sfx = sfx;
         // 여는 참의 소리(0x40·0x41·0x42·0x36)는 소리 표 0x004C3810 의 +0x10 이 2 라 <b>되풀이한다</b>
@@ -151,7 +153,8 @@ internal sealed partial class EventAnimationPopup : Window
             if (play.EndsOnClick) owner.PreviewMouseDown -= Click;
             popup.Close();
             if (play.SoundPart >= 0) sfx?.StopLoop();      // 끝에 제 소리를 끈다(0x00422A40(소리, 3))
-            if (track >= 0) game.Bgm.Play(track);
+            if (hush) game.Bgm.Unhush();
+            SoundDiagnostics.Doing($"장면 {scene} 끝");
         }
     }
 

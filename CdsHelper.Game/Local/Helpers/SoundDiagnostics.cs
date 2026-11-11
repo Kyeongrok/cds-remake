@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using CdsHelper.Game.Local.Settings;
 
 namespace CdsHelper.Game.Local.Helpers;
@@ -9,7 +9,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// <remarks>
 /// 싣는 것: 배경음악 · 효과음 상태와 마지막 오류, 트는 손(<see cref="MediaVoice.Backend"/>)과 wmp.dll 유무,
 /// 기본 출력 장치 이름 · 켜진 출력 장치 수 · 장치 음량/음소거, <b>이 앱의 볼륨 믹서 음량/음소거</b>(Windows 가 앱마다 기억한다),
-/// waveOut 장치 수. 어느 하나를 못 읽어도 나머지는 싣는다.
+/// waveOut 장치 수, <b>장치 음량이 바뀐 자취</b>(언제 · 무엇을 하던 중에 — 버그 리포트 #45). 어느 하나를 못 읽어도 나머지는 싣는다.
+/// 장치 음량 · 앱 음량은 <b>읽기만</b> 한다 — 이 앱은 Windows 음량을 바꾸지 않는다.
 /// </remarks>
 public static class SoundDiagnostics
 {
@@ -35,7 +36,79 @@ public static class SoundDiagnostics
         Try("device", DefaultDevice);
         Try("devices", ActiveDevices);
         Try("session", AppSession);
+        Try("deviceChanges", () => Changes());
         return sound;
+    }
+
+    // ── 장치 음량이 바뀐 자취 (버그 리포트 #45) ─────────────────────────────
+    // 「폭풍이 지나가면 Windows 음량이 100 이 된다」 — 앱은 장치 음량을 쓰지 않는다(위 IAudioEndpointVolume 은 읽기만).
+    // 언제 · 무엇을 하던 중에 · 누가(바꾼 쪽이 넘긴 이벤트 문맥 GUID) 바꿨는지 남겨, 다음 리포트에서 장치 탓인지 가른다.
+
+    private static readonly object Gate = new();
+    private static readonly Queue<string> Recent = new();
+    private const int KeepChanges = 8;
+    private static volatile string _doing = "-";
+    private static IAudioEndpointVolume? _watched;
+    private static VolumeWatcher? _watcher;
+    private static IntPtr _watcherPtr;
+    private static float _lastLevel = -1;
+
+    /// <summary>소리 쪽에서 지금 하는 일 — 장치 음량이 바뀌면 이것과 함께 적는다.</summary>
+    public static void Doing(string what) => _doing = $"{DateTime.Now:HH:mm:ss} {what}";
+
+    /// <summary>기본 출력 장치의 음량 바뀜을 지켜보기 시작한다. 한 번만 건다 — 못 걸면 조용히 넘어간다.</summary>
+    public static void Watch()
+    {
+        if (_watched != null) return;
+        try
+        {
+            var enumerator = Enumerator();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlowRender, ERoleConsole, out var device) != 0 || device == null) return;
+            var iid = typeof(IAudioEndpointVolume).GUID;
+            if (device.Activate(ref iid, ClsctxAll, IntPtr.Zero, out var activated) != 0 || activated is not IAudioEndpointVolume volume)
+                return;
+            volume.GetMasterVolumeLevelScalar(out _lastLevel);
+            _watcher = new VolumeWatcher();
+            _watcherPtr = Marshal.GetComInterfaceForObject(_watcher, typeof(IAudioEndpointVolumeCallback));
+            if (volume.RegisterControlChangeNotify(_watcherPtr) == 0) _watched = volume;
+        }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SoundDiagnostics] 장치 음량을 지켜보지 못했습니다 — {ex.Message}"); }
+    }
+
+    private static string? Changes()
+    {
+        lock (Gate) return Recent.Count == 0 ? null : string.Join(" / ", Recent);
+    }
+
+    private static void Noted(Guid context, bool mute, float level)
+    {
+        // 음소거만 바뀐 알림은 음량이 같다 — 그래도 적는다(드물다).
+        string from = context == Guid.Empty ? "문맥 없음" : context.ToString()[..8];
+        string line = $"{DateTime.Now:HH:mm:ss} {_lastLevel * 100:0}→{level * 100:0}%{(mute ? " 음소거" : "")} ({from}, 하던 일 {_doing})";
+        _lastLevel = level;
+        lock (Gate)
+        {
+            Recent.Enqueue(line);
+            while (Recent.Count > KeepChanges) Recent.Dequeue();
+        }
+    }
+
+    /// <summary>장치 음량 알림을 받는 COM 손. 딴 스레드에서 불린다.</summary>
+    private sealed class VolumeWatcher : IAudioEndpointVolumeCallback
+    {
+        public int OnNotify(IntPtr data)
+        {
+            try
+            {
+                // AUDIO_VOLUME_NOTIFICATION_DATA: GUID guidEventContext; BOOL bMuted; float fMasterVolume; …
+                var context = Marshal.PtrToStructure<Guid>(data);
+                bool mute = Marshal.ReadInt32(data, 16) != 0;
+                float level = BitConverter.Int32BitsToSingle(Marshal.ReadInt32(data, 20));
+                Noted(context, mute, level);
+            }
+            catch (Exception) { /* 진단일 뿐이다 */ }
+            return 0;
+        }
     }
 
     /// <summary>한 줄 요약 — 버그 리포트 창 아래에 보인다.</summary>
@@ -179,6 +252,12 @@ public static class SoundDiagnostics
         [PreserveSig] int GetChannelVolumeLevelScalar(uint channel, out float level);
         [PreserveSig] int SetMute([MarshalAs(UnmanagedType.Bool)] bool mute, ref Guid context);
         [PreserveSig] int GetMute([MarshalAs(UnmanagedType.Bool)] out bool mute);
+    }
+
+    [ComImport, Guid("657804FA-D6AD-4496-8A60-352752AF4F89"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IAudioEndpointVolumeCallback
+    {
+        [PreserveSig] int OnNotify(IntPtr data);
     }
 
     [ComImport, Guid("BFA971F1-4D5E-40BB-935E-967039BFBEE4"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

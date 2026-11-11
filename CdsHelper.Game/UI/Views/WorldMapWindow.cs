@@ -8608,6 +8608,14 @@ public sealed class WorldMapWindow : Window
                                System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=storm</c>, 버그 리포트 #45) — 바다에서 폭풍 장면만 돌린다(대사 창 없이).</summary>
+    internal void StormSceneForTest()
+    {
+        _host.Paused = true;   // 폭풍 자리(CheckSeaEvent)처럼 멈춘 채 — 그래야 해상 곡 맞추기가 끊은 곡을 곧장 되틀지 않는다
+        try { PlayEventScene(EventAnimation.Storm); }
+        finally { _host.Paused = false; }
+    }
+
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=bugreport</c>) — 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다.</summary>
     internal void OpenBugReportForTest() => MenuItem(ShowBugReport)();
 

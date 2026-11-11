@@ -126,6 +126,23 @@ public static class OffscreenHarness
                 };
                 timer.Start();
             }
+            // CDS_DIALOG=storm — 바로 시작한 바다에서 폭풍 장면을 돌리고, 앞뒤와 도는 동안 소리 진단(장치 음량 · 앱 음량 · 곡)을 적는다(버그 리포트 #45).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "storm")
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    void Sound(string when) => Log($"소리 {when} " + string.Join(" | ", SoundDiagnostics.Collect().Select(p => $"{p.Key}={p.Value}")));
+                    Sound("폭풍 앞");
+                    var during = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+                    during.Tick += (_, _) => Sound("폭풍 중");
+                    during.Start();
+                    window.StormSceneForTest();
+                    during.Stop();
+                    Sound("폭풍 뒤");
+                    var after = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                    int left = 3;
+                    after.Tick += (_, _) => { Sound("폭풍 뒤 " + (4 - left) * 2 + "초"); if (--left == 0) after.Stop(); };
+                    after.Start();
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=mybugs — 버그 리포트의 「내 리포트」 창을 띄운다(받는 곳은 CDS_STATS_URL).
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "mybugs")
                 window.Dispatcher.BeginInvoke(() =>

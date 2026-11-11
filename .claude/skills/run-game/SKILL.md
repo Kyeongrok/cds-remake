@@ -70,6 +70,7 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 | `CDS_DIALOG=personmove-gate:<도시>` | `CDS_START=sea:<도시>:…` 와 함께 — 그 도시에 들어가 도시락 「인물 이동」을 띄운 채 성문으로 나서고 창을 닫은 뒤 커맨드 창을 열었다 닫는다. 걸음마다 지도 상태(멈춤 · 묻는 중 · 도시 안)를 기록에 적는다(버그 리포트 #44) |
 | `CDS_DIALOG=mod[:<찾는 말>]` | 모드 창을 띄우고 찾기 칸에 그 말을 넣는다(`mod:자동` — 모든 탭을 가로질러 걸러진 화면). `CDS_START` 와 함께 쓴다 |
 | `CDS_DIALOG=sound` | 2초마다 다섯 번 효과음(닻)을 내고 소리 진단(버그 리포트의 `sound` — 곡 상태 · 재생 위치 · 트는 손 · 기본 출력 장치 · 앱 음량)을 기록에 적는다. 소리를 내려면 `CDS_MUTE=0`(크기는 시험 폴더 `game-settings.json` 의 `BgmVolume`/`SfxVolume` 0 으로 조용히). `CDS_AUDIO=winrt` 면 WPF MediaPlayer 대신 WinRT 쪽으로 튼다 |
+| `CDS_DIALOG=storm` | `CDS_START=sea:…` 와 함께 — 지도를 멈춘 채 폭풍 장면만 돌리고, 앞 · 도는 동안(1초마다) · 뒤의 소리 진단(곡 상태 · 장치 음량 · 앱 음량 · 장치 음량이 바뀐 자취 `deviceChanges`)을 기록에 적는다(버그 리포트 #45). 곡을 들으려면 `CDS_MUTE=0` 과 시험 폴더 `game-settings.json` 의 작은 `BgmVolume` |
 | `CDS_DIALOG=areapick[:x1,y1,x2,y2[,1]]` | 사람 발견물 창의 「지도에서 고르기…」(세계지도 고르기 모드)를 그 범위에서 띄운다(끝의 1 은 육지). `CDS_START` 없이 걸면 타이틀에서 WORLD.CDS 로 지은 지도로 뜬다 |
 | `CDS_FOUND=<이름>[,<이름>…]` | 바로 시작한 뒤 그 이름의 발견물들을 찾은 것으로 적고 지도를 다시 짓는다 — 사람 발견물 그림이 지도에 서는지 볼 때(사람 발견물은 `<SAVEDIR>\discoveries\<uuid>\discovery.json` 에 미리 넣어 두고 `-KeepSave`) |
 | `CDS_DIALOG=childname` | 자녀 이름 다시 짓기 창(선명입력 창)을 띄우고 그 창이 쥔 초점(글상자 · 고른 글자 수)을 기록에 적은 뒤 닫는다 |
