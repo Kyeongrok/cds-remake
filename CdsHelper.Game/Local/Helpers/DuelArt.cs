@@ -75,6 +75,21 @@ public sealed class DuelArt
                         Tavern = "duel-tavern", Mosque = "duel-mosque", Temple = "duel-temple";
 
     /// <summary>
+    /// 무대 번호(0~6)의 배경 — <c>0x004A9200</c> 이 그림 파트 <c>0x12 + 무대 * 2</c> 를 읽는 그대로다.
+    /// 대본 일기토는 <c>26 0F</c> 가 둔 수를 무대로 넘긴다(<c>0x0040A110</c> → <c>0x00408C06</c>). 범위 밖이면 초원.
+    /// </summary>
+    public static string ForStage(int stage) => stage switch
+    {
+        0 => Deck,
+        2 => "duel-wood",
+        3 => "duel-sand",
+        4 => Tavern,
+        5 => Mosque,
+        6 => Temple,
+        _ => Field,
+    };
+
+    /// <summary>
     /// 술집·여관 일기토의 배경 — 도시 문화권으로 갈린다(표 <c>0x004A2E6C</c>).
     /// 0·1·2 술집 · 3·4·5·10 모스크 · 6·7·8·9 사원.
     /// </summary>

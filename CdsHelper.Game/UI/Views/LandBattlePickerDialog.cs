@@ -6,12 +6,13 @@ using CdsHelper.Game.Local.Helpers;
 namespace CdsHelper.Game.UI.Views;
 
 /// <summary>
-/// 커스텀 발견물 장면의 「[육상전]」 줄을 짓는 창 — 상대 대장(인물)을 찾아 고르고, 상대 · 아군 병력과 일기토 그림 벌을 정한다.
+/// 커스텀 발견물 장면의 「[육상전]」 줄을 짓는 창 — 상대 대장(인물)을 찾아 고르고, 상대 · 아군 병력과 일기토 무대를 정한다.
 /// </summary>
 /// <remarks>
 /// 지은 줄은 「[육상전] 아테네의 장군 상대 100~139 아군 70 그림 3」 꼴이다(<see cref="UserDiscoveries.LandTerms"/>).
 /// 병력을 비우면 그 칸은 안 건드린다 — 상대는 그 인물의 무리 그대로, 아군은 지금 선원 그대로다.
-/// 그림 벌은 이 싸움 뒤에 이어지는 대본 일기토의 상대 그림이다(<c>26 0F</c>).
+/// 「그림」 수는 이 싸움 뒤에 이어지는 대본 일기토의 <b>무대</b>(배경)다(<c>26 0F</c>, <see cref="DuelArt.ForStage"/>) —
+/// 상대 몸짓 그림은 원본처럼 그 인물 나라의 수도 문화권으로 저절로 고른다.
 /// </remarks>
 public sealed class LandBattlePickerDialog : GameWindow
 {
@@ -24,8 +25,8 @@ public sealed class LandBattlePickerDialog : GameWindow
     /// <summary>지은 줄의 글(「[육상전]」 뒤). 안 지었으면 null.</summary>
     public string? Picked { get; private set; }
 
-    /// <summary>일기토 상대 그림 벌 이름(<see cref="FighterSprites.SetForCulture"/> 의 1~8).</summary>
-    private static readonly string[] SetNames = ["유럽", "아프리카", "아랍", "아시아A", "아시아B", "중국", "일본", "아즈텍"];
+    /// <summary>일기토 무대 이름(<see cref="DuelArt.ForStage"/> 의 0~6).</summary>
+    private static readonly string[] SetNames = ["갑판", "초원", "숲", "모래", "술집", "모스크", "사원"];
 
     private static TextBox Box() => new() { Width = 60, Margin = new Thickness(0, 0, 6, 0), VerticalContentAlignment = VerticalAlignment.Center };
 
@@ -39,7 +40,7 @@ public sealed class LandBattlePickerDialog : GameWindow
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
         _set.Items.Add("정하지 않음");
-        for (int i = 0; i < SetNames.Length; i++) _set.Items.Add($"{i + 1} {SetNames[i]}");
+        for (int i = 0; i < SetNames.Length; i++) _set.Items.Add($"{i} {SetNames[i]}");
         _set.SelectedIndex = 0;
 
         var top = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(10, 10, 10, 0) };
@@ -55,7 +56,7 @@ public sealed class LandBattlePickerDialog : GameWindow
         var terms = new StackPanel { Margin = new Thickness(0, 0, 0, 6) };
         terms.Children.Add(Row(Label("상대 병력"), _foeFrom, Label("~"), _foeTo, Label("명 (비우면 그 인물의 무리 그대로, 한 수만 적으면 그 수로)")));
         terms.Children.Add(Row(Label("아군 병력"), _ours, Label("명 (비우면 지금 선원 그대로)")));
-        terms.Children.Add(Row(Label("일기토 그림"), _set, Label("이 싸움 뒤 대본 일기토의 상대 그림")));
+        terms.Children.Add(Row(Label("일기토 무대"), _set, Label("이 싸움 뒤 대본 일기토의 배경")));
 
         var ok = new Button { Content = "넣기", Padding = new Thickness(14, 2, 14, 2), Margin = new Thickness(0, 0, 6, 0) };
         ok.Click += (_, _) => Choose();
@@ -81,7 +82,7 @@ public sealed class LandBattlePickerDialog : GameWindow
         var now = UserDiscoveries.LandTerms(current);
         if (now.FoeFrom >= 0) { _foeFrom.Text = $"{now.FoeFrom}"; if (now.FoeTo > now.FoeFrom) _foeTo.Text = $"{now.FoeTo}"; }
         if (now.Ours >= 0) _ours.Text = $"{now.Ours}";
-        if (now.DuelSet is >= 1 and <= 8) _set.SelectedIndex = now.DuelSet;
+        if (now.DuelSet >= 0 && now.DuelSet < SetNames.Length) _set.SelectedIndex = now.DuelSet + 1;
 
         _find.TextChanged += (_, _) => Fill(-1);
         _list.MouseDoubleClick += (_, _) => Choose();
@@ -121,7 +122,7 @@ public sealed class LandBattlePickerDialog : GameWindow
             if (int.TryParse(_foeTo.Text.Trim(), out int to) && to > from) text.Append($"~{to}");
         }
         if (int.TryParse(_ours.Text.Trim(), out int ours) && ours > 0) text.Append($" 아군 {ours}");
-        if (_set.SelectedIndex >= 1) text.Append($" 그림 {_set.SelectedIndex}");
+        if (_set.SelectedIndex >= 1) text.Append($" 그림 {_set.SelectedIndex - 1}");
         Picked = text.ToString();
         Close();
     }

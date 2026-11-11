@@ -1112,7 +1112,8 @@ public sealed class DisevRunner
                 return null;
             }
 
-            // 26 0F [벌] — 이어 붙는 일기토의 <b>벌 번호</b>를 적어 둔다(무대·몸짓 그림).
+            // 26 0F [무대] — 이어 붙는 일기토의 <b>무대 번호</b>(배경)를 적어 둔다(0x0040A110 → [ebp-0x6C]).
+            // 상대 몸짓 그림 벌이 아니다 — 그것은 일기토가 상대 인물에서 찾는다(<see cref="DuelWith"/>).
             case DisevCall.SetDuelSet:
                 _duelSet = I("Set");
                 return null;
@@ -1445,7 +1446,7 @@ public sealed class DisevRunner
     /// 파르테논 신전(파트 23)은 26 1C 02 = 70, 26 1C 10 = 100~139, 적 대장 206 이다.
     /// <b>지형</b>은 우리가 배 자리 부류를 안 들고 있어 도시 안이면 도시, 아니면 숲으로 둔다.
     /// </remarks>
-    /// <summary>이어 붙는 일기토의 벌(<c>26 0F</c>). 안 정했으면 1 이다.</summary>
+    /// <summary>이어 붙는 일기토의 무대(<c>26 0F</c>). 안 정했으면 1(초원)이다.</summary>
     private int _duelSet = 1;
 
     /// <summary>
@@ -1453,9 +1454,14 @@ public sealed class DisevRunner
     /// </summary>
     /// <remarks>
     /// 상대 능력치는 인물 표의 것을 그대로 쓴다(체력 0 · 무력 2 · 운 4, 검술은 기능 표).
-    /// 몸짓 그림 벌은 바로 앞의 <c>26 0F</c> 가 정한다(<see cref="_duelSet"/>). 무기·방어구는 인물 표에
-    /// 칸이 없어도 판을 지을 때 그 벌로 굴리고(<c>0x004A89D4</c>), 내 쪽은 지닌 것에서 가장 센 것을 쥔다
-    /// (<c>0x004A8829</c>) — 부관이 나가도 제독이 지닌 것을 쓴다.
+    /// 원본은 <c>0x004AA700(인물, [ebp-0x6C], 2, −1)</c> 로 판을 연다(<c>0x00408BFA</c>~<c>0x00408C06</c>).
+    /// <code>
+    ///   둘째 = 26 0F 가 둔 수 → 판 +0x1D0 = <b>무대</b>(0x004A85E0). 배경 그림 파트 0x12 + 무대*2 (0x004A9200)
+    ///   넷째 = −1           → 몸짓 그림 벌을 <b>상대 인물 나라의 수도 문화권</b>에서 찾는다(0x004A88EA)
+    /// </code>
+    /// 예전에는 무대 번호를 그림 벌로 써서 이스탄불 술집(파트 271, 무대 4)의 상대가 그림 벌 4 로 서고 배경은 늘
+    /// 초원이었다. 무기·방어구는 인물 표에 칸이 없어도 판을 지을 때 그 그림 벌로 굴리고(<c>0x004A89D4</c> 가
+    /// +0x15C 를 본다), 내 쪽은 지닌 것에서 가장 센 것을 쥔다(<c>0x004A8829</c>) — 부관이 나가도 제독이 지닌 것을 쓴다.
     /// </remarks>
     private bool DuelWith(int person)
     {
@@ -1478,17 +1484,31 @@ public sealed class DisevRunner
         if (stand is { } who)
             mine = new Town.Duel.Fighter(who.Name, who.Body, who.Might, who.Sword, who.Luck, 0, 0);
 
+        int foeSet = FoeSpriteSet(person);
         var duel = new Town.Duel(Town.Duel.Equipped(mine, me.Items, _game.Items),
-                                 Town.Duel.Armed(foe, Math.Max(0, _duelSet), _dice, _game.Items),
+                                 Town.Duel.Armed(foe, foeSet, _dice, _game.Items),
                                  me.Items.Contains(Town.Duel.EdithShieldId), Environment.TickCount);
         bool won = UI.Views.DuelDialog.Show(_owner, duel, _dice, face, _game.Fighters,
-            foeSet: Math.Max(0, _duelSet),
+            foeSet: foeSet,
             myFace: _game.DuelFace(stand),
+            arena: DuelArt.ForStage(_duelSet),
             bgm: _game.Bgm);
         // 대신 나간 사람이 다친다(0x004AA5CA).
         if (stand is { } hurt) me.HurtMate(hurt.Name, duel.BodyLost);
         else me.Hurt(duel.BodyLost);
         return won;
+    }
+
+    /// <summary>
+    /// 상대 몸짓 그림 벌 — 문화권 자리에 −1 이 오면 원본(<c>0x004A88EA</c>)은 그 인물의 나라 → 수도 → 그 도시
+    /// 문화권으로 고른다(<see cref="FighterSprites.SetForCulture"/>). 나라 · 수도를 모르면 1(유럽)이다.
+    /// </summary>
+    private int FoeSpriteSet(int person)
+    {
+        int nation = _game.PersonTemplates?.Find(person)?.Nation ?? -1;
+        int capital = nation >= 0 && _game.Nations?.Find(nation) is { } n ? n.Capital : -1;
+        int culture = capital >= 0 ? _game.CityRows?.CultureOf(capital) ?? -1 : -1;
+        return culture >= 0 ? FighterSprites.SetForCulture(culture) : 1;
     }
 
     private LandBattle LeaderBattle(int person)
