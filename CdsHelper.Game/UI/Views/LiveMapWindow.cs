@@ -78,9 +78,17 @@ internal static class ShipTrail
 /// </code>
 /// 자리는 모두 <b>칸</b>(가로 2500 · 세로 1250)이다. 떠 있는 동안 게임은 안 멈춘다 — <see cref="Tick"/> 이 0.5초마다 배 자리를 읽는다.
 /// 발견물은 양피지에서는 발견물 지도 설정을, 게임 지도에서는 이 창의 「발견물」 단추(기본 끔)를 따른다.
+///
+/// <b>고르기 모드</b>(<see cref="PickArea"/>)로도 띄운다 — 사람이 지어 넣는 발견물(<see cref="UserDiscoveryDialog"/>)의 자리를
+/// 같은 지도에서 왼쪽 단추로 끌어 잡는다. 그때는 모달이고, 옮기기는 오른쪽 단추로 끌기 · 화살표 글쇠이며, 다른 발견물 자리를
+/// 파란 네모로 깔고, 따라가기 · 뱃길은 쓰지 않는다.
 /// </remarks>
 public sealed class LiveMapWindow : Window
 {
+    /// <summary>고르기 모드에서 받는 것 — 처음 범위와 깔아 둘 다른 발견물 자리.</summary>
+    internal sealed record PickSetup(DiscoveryAreaPicker.Area? Start,
+                                     IReadOnlyList<(int X1, int Y1, int X2, int Y2, string Name)> Others);
+
     /// <summary>창이 지도에서 읽어 오는 것들 — 지도 창이 채운다.</summary>
     internal sealed record Source(
         Func<(double X, double Y)?> Ship,
@@ -110,6 +118,10 @@ public sealed class LiveMapWindow : Window
     private static readonly Brush CityInk = Frozen(Color.FromRgb(0xF0, 0x90, 0x10));
     private static readonly Brush TrailInk = Frozen(Color.FromArgb(0xE0, 0xFF, 0xE0, 0x40));
     private static readonly Brush Shade = Frozen(Color.FromArgb(0xA0, 0, 0, 0));
+    private static readonly Brush AreaInk = Frozen(Color.FromRgb(0x60, 0x90, 0xFF));
+    private static readonly Brush AreaFill = Frozen(Color.FromArgb(0x38, 0x20, 0x50, 0xFF));
+    private static readonly Brush PickInk = Frozen(Color.FromRgb(0xFF, 0x30, 0x30));
+    private static readonly Brush PickFill = Frozen(Color.FromArgb(0x50, 0xFF, 0x30, 0x30));
 
     private static SolidColorBrush Frozen(Color c)
     {
@@ -137,6 +149,11 @@ public sealed class LiveMapWindow : Window
     private readonly TranslateTransform _shift = new(0, 0);
     private readonly Border _viewport;
     private readonly TextBlock _hover, _status;
+    private readonly TextBlock _hint = new()
+    {
+        Foreground = GameUi.Text, FontSize = 12, Margin = new Thickness(6, 1, 6, 4),
+        TextTrimming = TextTrimming.CharacterEllipsis,
+    };
     private readonly DispatcherTimer _timer;
 
     /// <summary>표식 — 화면에서 늘 같은 크기로 보이게 배율마다 다시 놓는다.</summary>
@@ -156,16 +173,38 @@ public sealed class LiveMapWindow : Window
     private (int X0, int Y0, int Cols, int Rows, int Scale)? _detailFor;
     private bool _detailQueued;
 
+    /// <summary>바탕을 지금 양피지로 그렸는지 — 게임 지도를 못 지으면(타일이 없으면) 양피지로 갈음한다.</summary>
+    private bool _parchmentActual;
+
+    // ── 고르기 모드 ──
+    private readonly PickSetup? _pick;
+    private readonly Canvas _areaLayer = new();
+    private readonly System.Windows.Shapes.Rectangle _pickBox = new()
+    {
+        Stroke = PickInk, Fill = PickFill, IsHitTestVisible = false, Visibility = Visibility.Collapsed,
+    };
+    private readonly List<(System.Windows.Shapes.Rectangle Box, TextBlock Tag, int X1, int Y1)> _areas = [];
+    private (int X, int Y)? _pickFrom;
+    private DiscoveryAreaPicker.Area? _picked;
+    private bool _pickLand;
+    private Border? _landButton, _areasButton;
+
+    private bool Picking => _pick != null;
+
+    /// <summary>따라가기 — 고르기 모드에서는 늘 끈다.</summary>
+    private bool Follow => !Picking && GameSettings.LiveMapFollow;
+
     private double Z => Zooms[_zoom];
     private double ViewW => Math.Max(1, _viewport.ActualWidth - 2);
     private double ViewH => Math.Max(1, _viewport.ActualHeight - 2);
 
-    private LiveMapWindow(Source src)
+    private LiveMapWindow(Source src, PickSetup? pick = null)
     {
         _src = src;
-        Title = "세계지도";
-        Width = 900;
-        Height = 620;
+        _pick = pick;
+        Title = Lang.T(pick != null ? "발견물 자리 고르기" : "세계지도");
+        Width = pick != null ? 1200 : 900;
+        Height = pick != null ? 800 : 620;
         MinWidth = 420;
         MinHeight = 300;
         ResizeMode = ResizeMode.CanResize;
@@ -177,9 +216,11 @@ public sealed class LiveMapWindow : Window
         _world.Children.Add(_base);
         _world.Children.Add(_detail);
         _world.Children.Add(_trail);
+        _world.Children.Add(_areaLayer);
         _world.Children.Add(_cityLayer);
         _world.Children.Add(_spotLayer);
         _spotLayer.Children.Add(_yetLayer);
+        _world.Children.Add(_pickBox);
         _world.Children.Add(_ship);
 
         var moves = new TransformGroup();
@@ -200,7 +241,8 @@ public sealed class LiveMapWindow : Window
         };
         _viewport.SizeChanged += (_, _) => Apply();
         _viewport.MouseWheel += (_, e) => ZoomAt(e.Delta > 0 ? 1 : -1, e.GetPosition(_viewport));
-        _viewport.MouseLeftButtonDown += (_, e) =>
+        // 끌어서 옮기기 — 보통은 왼쪽 단추, 고르기 모드에서는 왼쪽이 범위 잡기라 오른쪽 단추다.
+        void BeginPan(MouseButtonEventArgs e)
         {
             Keyboard.Focus(_viewport);
             _dragging = true;
@@ -208,27 +250,53 @@ public sealed class LiveMapWindow : Window
             _grabVx = _vx;
             _grabVy = _vy;
             _viewport.CaptureMouse();
+            e.Handled = true;
+        }
+        void EndPan()
+        {
+            if (!_dragging) return;
+            _dragging = false;
+            _viewport.ReleaseMouseCapture();
+        }
+        _viewport.MouseLeftButtonDown += (_, e) =>
+        {
+            if (!Picking) { BeginPan(e); return; }
+            Keyboard.Focus(_viewport);
+            _pickFrom = CellUnder(e.GetPosition(_viewport));
+            _viewport.CaptureMouse();
+            DrawPick(_pickFrom.Value, _pickFrom.Value);
+            e.Handled = true;
         };
+        _viewport.MouseRightButtonDown += (_, e) => { if (Picking) BeginPan(e); };
         _viewport.MouseMove += (_, e) =>
         {
             var now = e.GetPosition(_viewport);
             if (_dragging)
             {
                 // 손으로 옮기면 따라가기를 끈다 — 다음 0.5초에 배 쪽으로 도로 끌려가면 둘러볼 수가 없다.
-                if (GameSettings.LiveMapFollow && (Math.Abs(now.X - _grab.X) > 3 || Math.Abs(now.Y - _grab.Y) > 3))
+                if (Follow && (Math.Abs(now.X - _grab.X) > 3 || Math.Abs(now.Y - _grab.Y) > 3))
                     SetFollow(false);
                 _vx = _grabVx - (now.X - _grab.X) / Z;
                 _vy = _grabVy - (now.Y - _grab.Y) / Z;
                 Apply();
             }
+            else if (_pickFrom is { } from && e.LeftButton == MouseButtonState.Pressed)
+                DrawPick(from, CellUnder(now));
             ShowHover(_vx + now.X / Z, _vy + now.Y / Z);
         };
         _viewport.MouseLeave += (_, _) => _hover.Text = Lang.T("지도 위에 마우스를 올리면 그 칸을 알려 줍니다");
-        _viewport.MouseLeftButtonUp += (_, _) =>
+        _viewport.MouseLeftButtonUp += (_, e) =>
         {
-            _dragging = false;
+            if (!Picking) { EndPan(); return; }
+            if (_pickFrom is not { } from) return;
+            _pickFrom = null;
             _viewport.ReleaseMouseCapture();
+            DrawPick(from, CellUnder(e.GetPosition(_viewport)));
+            // 육지인지는 고른 칸 가운데 육지가 바다보다 많은지로 먼저 정한다 — 단추로 바꿀 수 있다.
+            if (_picked is { } a) SetPickLand(MostlyLand(a));
+            e.Handled = true;
         };
+        _viewport.MouseRightButtonUp += (_, e) => { if (Picking) { EndPan(); e.Handled = true; } };
 
         // 위 단추 줄 — 바탕 · 표식 켜고 끄기 · 따라가기 · 내 위치로 · 경로 지우기.
         var bar = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
@@ -252,9 +320,24 @@ public sealed class LiveMapWindow : Window
         _cityButton = Button("", () => { GameSettings.DiscoveryMapCities = !GameSettings.DiscoveryMapCities; Refresh(); }, 110);
         bar.Children.Add(_cityButton);
         _followButton = Button("", () => SetFollow(!GameSettings.LiveMapFollow), 130);
-        bar.Children.Add(_followButton);
-        bar.Children.Add(Button("내 위치로", ToShip, 100));
-        bar.Children.Add(Button("경로 지우기", () => { ShipTrail.Clear(); Tick(); }, 110));
+        if (pick == null)
+        {
+            bar.Children.Add(_followButton);
+            bar.Children.Add(Button("내 위치로", ToShip, 100));
+            bar.Children.Add(Button("경로 지우기", () => { ShipTrail.Clear(); Tick(); }, 110));
+        }
+        else
+        {
+            // 고르기 모드 — 표식 단추 대신 다른 발견물 자리 · 육지/바다 · 고르기/그만두기.
+            _spotsButton.Visibility = _yetButton.Visibility = Visibility.Collapsed;
+            _areasButton = Button("", () => { _areaLayer.Visibility = _areaLayer.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible; RefreshButtons(); }, 150);
+            bar.Children.Add(_areasButton);
+            if (src.Ship() != null) bar.Children.Add(Button("내 위치로", ToShip, 100));
+            _landButton = Button("", () => SetPickLand(!_pickLand), 110);
+            bar.Children.Add(_landButton);
+            bar.Children.Add(Button("이 자리로", ConfirmPick, 100));
+            bar.Children.Add(Button("그만두기", () => DialogResult = false, 100));
+        }
 
         _hover = new TextBlock
         {
@@ -274,6 +357,7 @@ public sealed class LiveMapWindow : Window
         var foot = new StackPanel();
         foot.Children.Add(_hover);
         foot.Children.Add(_status);
+        if (pick != null) foot.Children.Add(_hint);
         DockPanel.SetDock(foot, Dock.Bottom);
         root.Children.Add(foot);
         root.Children.Add(_viewport);
@@ -286,9 +370,50 @@ public sealed class LiveMapWindow : Window
         Loaded += (_, _) =>
         {
             Tick();
-            if (_shipAt is { } at) CenterOn(at.X, at.Y); else CenterOn(WorldW / 2.0, WorldH / 2.0);
-            _timer.Start();
+            if (pick?.Start is { X1: >= 0, Y1: >= 0 } s)
+            {
+                // 고른 자리가 보이게 크게 해서 가운데로.
+                _zoom = Array.IndexOf(Zooms, 6.0);
+                CenterOn((s.X1 + s.X2 + 1) / 2.0, (s.Y1 + s.Y2 + 1) / 2.0);
+            }
+            else if (_shipAt is { } at) CenterOn(at.X, at.Y);
+            else
+            {
+                if (pick != null) _zoom = Array.IndexOf(Zooms, 0.5);   // 온 세계가 보이게
+                CenterOn(WorldW / 2.0, WorldH / 2.0);
+            }
+            // 고르기 모드는 모달이라 그동안 배가 안 움직인다 — 바탕 · 표식을 0.5초마다 다시 볼 일이 없다.
+            if (pick == null) _timer.Start();
+            Keyboard.Focus(_viewport);
         };
+        if (pick != null)
+        {
+            foreach (var (x1, y1, x2, y2, name) in pick.Others)
+            {
+                var box = new System.Windows.Shapes.Rectangle
+                {
+                    Width = Math.Max(1, x2 - x1 + 1), Height = Math.Max(1, y2 - y1 + 1),
+                    Stroke = AreaInk, Fill = AreaFill, ToolTip = Lang.T(name),
+                };
+                Canvas.SetLeft(box, x1);
+                Canvas.SetTop(box, y1);
+                var tag = new TextBlock
+                {
+                    Text = Lang.T(name), Foreground = AreaInk, FontWeight = FontWeights.Bold, IsHitTestVisible = false,
+                    Background = Shade, Visibility = Visibility.Collapsed,
+                };
+                Canvas.SetLeft(tag, x1);
+                _areaLayer.Children.Add(box);
+                _areaLayer.Children.Add(tag);
+                _areas.Add((box, tag, x1, y1));
+            }
+            if (pick.Start is { X1: >= 0, Y1: >= 0 } start)
+            {
+                DrawPick((start.X1, start.Y1), (start.X2, start.Y2));
+                SetPickLand(start.Land);
+            }
+            _status.Text = PickNote();
+        }
         Closed += (_, _) =>
         {
             _timer.Stop();
@@ -315,6 +440,65 @@ public sealed class LiveMapWindow : Window
     /// <summary>떠 있으면 닫는다 — 게임을 새로 불러올 때 따위.</summary>
     internal static void CloseOpen() => _open?.Close();
 
+    /// <summary>
+    /// 고르기 모드로 띄워 범위를 고르게 한다 — 닫힐 때까지 기다린다. 그만두면 null.
+    /// </summary>
+    internal static DiscoveryAreaPicker.Area? PickArea(Window owner, Source src, PickSetup setup)
+    {
+        var win = new LiveMapWindow(src, setup) { Owner = owner };
+        return win.ShowDialog() == true ? win._picked : null;
+    }
+
+    /// <summary>화면 점 밑의 칸 — 지도 안으로 자른다.</summary>
+    private (int X, int Y) CellUnder(Point at) =>
+        (Math.Clamp((int)Math.Floor(_vx + at.X / Z), 0, WorldW - 1),
+         Math.Clamp((int)Math.Floor(_vy + at.Y / Z), 0, WorldH - 1));
+
+    /// <summary>두 칸을 모서리로 하는 범위를 빨간 네모로 그리고 고른 것으로 둔다.</summary>
+    private void DrawPick((int X, int Y) a, (int X, int Y) b)
+    {
+        int x1 = Math.Min(a.X, b.X), y1 = Math.Min(a.Y, b.Y), x2 = Math.Max(a.X, b.X), y2 = Math.Max(a.Y, b.Y);
+        Canvas.SetLeft(_pickBox, x1);
+        Canvas.SetTop(_pickBox, y1);
+        _pickBox.Width = x2 - x1 + 1;
+        _pickBox.Height = y2 - y1 + 1;
+        _pickBox.Visibility = Visibility.Visible;
+        _pickBox.StrokeThickness = 2 / Z;
+        _picked = new DiscoveryAreaPicker.Area(x1, y1, x2, y2, _pickLand);
+        _status.Text = PickNote();
+    }
+
+    private void SetPickLand(bool land)
+    {
+        _pickLand = land;
+        if (_picked is { } a) _picked = a with { Land = land };
+        RefreshButtons();
+        if (Picking) _status.Text = PickNote();
+    }
+
+    /// <summary>고른 범위를 글로 — 아직 없으면 쓰는 법.</summary>
+    private string PickNote() => _picked is { } a
+        ? string.Format(Lang.T("고른 범위 ({0}, {1}) ~ ({2}, {3}) — {4}x{5}칸, {6}"),
+                        a.X1, a.Y1, a.X2, a.Y2, a.X2 - a.X1 + 1, a.Y2 - a.Y1 + 1, Lang.T(a.Land ? "육지" : "바다"))
+        : Lang.T("왼쪽 단추로 끌어 범위를 잡아 주세요");
+
+    private void ConfirmPick()
+    {
+        if (_picked == null) { _status.Text = Lang.T("먼저 지도 위를 끌어 범위를 잡아 주세요."); return; }
+        DialogResult = true;
+    }
+
+    /// <summary>범위 칸 가운데 육지가 바다보다 많은지 — 넓으면 듬성듬성 센다.</summary>
+    private bool MostlyLand(DiscoveryAreaPicker.Area a)
+    {
+        int step = Math.Max(1, Math.Max(a.X2 - a.X1, a.Y2 - a.Y1) / 32);
+        int land = 0, sea = 0;
+        for (int y = a.Y1; y <= a.Y2; y += step)
+            for (int x = a.X1; x <= a.X2; x += step)
+                if (_src.IsLand(x, y) is { } l) { if (l) land++; else sea++; }
+        return land > sea;
+    }
+
     private static Border Button(string text, Action run, double width)
     {
         var b = GameUi.PushButton(Lang.T(text), run, width);
@@ -336,10 +520,14 @@ public sealed class LiveMapWindow : Window
         SetText(_yetButton, Lang.T("못 찾은 것") + " " + Lang.T(GameSettings.DiscoveryMapYet ? "끄기" : "켜기"));
         SetText(_cityButton, Lang.T("도시") + " " + Lang.T(GameSettings.DiscoveryMapCities ? "끄기" : "켜기"));
         SetText(_followButton, Lang.T("따라가기") + " " + Lang.T(GameSettings.LiveMapFollow ? "끄기" : "켜기"));
+        if (_areasButton != null)
+            SetText(_areasButton, Lang.T("다른 발견물") + " " + Lang.T(_areaLayer.Visibility == Visibility.Visible ? "끄기" : "켜기"));
+        if (_landButton != null) SetText(_landButton, Lang.T("자리") + ": " + Lang.T(_pickLand ? "육지" : "바다"));
     }
 
     private void SetFollow(bool on)
     {
+        if (Picking) return;
         GameSettings.LiveMapFollow = on;
         RefreshButtons();
         if (on) ToShip();
@@ -380,11 +568,11 @@ public sealed class LiveMapWindow : Window
         if (_shipAt is { } at)
         {
             _ship.Visibility = Visibility.Visible;
-            if (GameSettings.LiveMapFollow && !_dragging && IsLoaded) CenterOn(at.X, at.Y, apply: false);
+            if (Follow && !_dragging && IsLoaded) CenterOn(at.X, at.Y, apply: false);
         }
         else _ship.Visibility = Visibility.Collapsed;
 
-        if (ShipTrail.Version != _trailVersion)
+        if (!Picking && ShipTrail.Version != _trailVersion)
         {
             _trailVersion = ShipTrail.Version;
             DrawTrail();
@@ -407,7 +595,11 @@ public sealed class LiveMapWindow : Window
     {
         _detailFor = null;
         _detail.Visibility = Visibility.Collapsed;
-        if (parchment && _src.Parchment() is { } chart)
+        // 게임 지도를 못 지으면(지도 창이 아직 지도를 안 읽은 첫 화면 따위) 양피지로 갈음하고 바탕 단추를 감춘다.
+        var px = parchment ? null : _src.Tiles(0, 0, WorldW, WorldH, 1);
+        if (!parchment && px == null) _baseButton.Visibility = Visibility.Collapsed;
+        _parchmentActual = px == null;
+        if (px == null && _src.Parchment() is { } chart)
         {
             var bmp = BitmapSource.Create(chart.Width, chart.Height, 96, 96, PixelFormats.Bgra32, null,
                                           chart.Pixels, chart.Width * 4);
@@ -420,7 +612,6 @@ public sealed class LiveMapWindow : Window
             return;
         }
 
-        var px = _src.Tiles(0, 0, WorldW, WorldH, 1);
         if (px == null) { _base.Source = null; return; }
         var tiles = BitmapSource.Create(WorldW, WorldH, 96, 96, PixelFormats.Bgra32, null, px, WorldW * 4);
         tiles.Freeze();
@@ -442,7 +633,7 @@ public sealed class LiveMapWindow : Window
 
     private void BuildDetail()
     {
-        if (GameSettings.LiveMapParchment || Z < DetailFrom)
+        if (_parchmentActual || Z < DetailFrom)
         {
             _detail.Visibility = Visibility.Collapsed;
             return;
@@ -524,6 +715,8 @@ public sealed class LiveMapWindow : Window
         const double Step = 60;
         switch (e.Key)
         {
+            case Key.Escape when Picking: DialogResult = false; return;
+            case Key.Enter when Picking: ConfirmPick(); e.Handled = true; return;
             case Key.Escape: Close(); return;
             case Key.Left: _vx -= Step / Z; SetFollow(false); break;
             case Key.Right: _vx += Step / Z; SetFollow(false); break;
@@ -549,7 +742,7 @@ public sealed class LiveMapWindow : Window
     {
         int want = Math.Clamp(_zoom + by, 0, Zooms.Length - 1);
         if (want == _zoom) return;
-        if (GameSettings.LiveMapFollow && _shipAt is { } ship)
+        if (Follow && _shipAt is { } ship)
         {
             _zoom = want;
             CenterOn(ship.X, ship.Y);
@@ -589,6 +782,16 @@ public sealed class LiveMapWindow : Window
             Canvas.SetTop(tag, y - 8 / Z);
         }
 
+        _pickBox.StrokeThickness = 2 / Z;
+        foreach (var (box, tag, _, y1) in _areas)
+        {
+            box.StrokeThickness = 1 / Z;
+            tag.Visibility = labels ? Visibility.Visible : Visibility.Collapsed;
+            if (!labels) continue;
+            tag.FontSize = 11 / Z;
+            Canvas.SetTop(tag, y1 - 14 / Z);
+        }
+
         if (_shipAt is { } at)
         {
             double s = 12 / Z;
@@ -599,9 +802,14 @@ public sealed class LiveMapWindow : Window
         }
         _trail.StrokeThickness = 2.5 / Z;
 
-        if (GameSettings.LiveMapParchment || Z < DetailFrom) _detail.Visibility = Visibility.Collapsed;
+        if (_parchmentActual || Z < DetailFrom) _detail.Visibility = Visibility.Collapsed;
         else QueueDetail();
 
+        if (Picking)
+        {
+            _hint.Text = $"{Lang.T("배율")} x{Z:0.##}   ·   " + Lang.T("휠 키우기·줄이기 · 왼쪽 단추로 끌어 범위 잡기 · 오른쪽 단추로 끌어 옮기기 · 파란 네모 다른 발견물");
+            return;
+        }
         string where = _shipAt is { } me ? $"   ·   {Lang.T("내 위치")} {LatLon(me.X, me.Y)}" : "";
         _status.Text = $"{Lang.T("배율")} x{Z:0.##}{where}   ·   " + Lang.T("휠 키우기·줄이기 · 끌어서 옮기기 · 노랑 지나온 뱃길 · 파랑 내 위치");
     }
@@ -623,6 +831,9 @@ public sealed class LiveMapWindow : Window
         }
         string city = near.Length > 0 ? "   ·   " + Lang.T($"가까운 도시 {near} ({best:0}칸)") : "";
         _hover.Text = $"{LatLon(x, y)}   ·   ({cx}, {cy})   ·   {kind}{city}";
+        if (Picking)
+            foreach (var (x1, y1, x2, y2, name) in _pick!.Others)
+                if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2) { _hover.Text += "   ·   " + Lang.T(name); break; }
     }
 
     /// <summary>칸 자리를 위도 · 경도 글로 — 가로 2500칸이 경도 -180~180, 세로 1250칸이 위도 90~-90 이다.</summary>

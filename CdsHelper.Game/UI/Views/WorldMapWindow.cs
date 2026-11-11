@@ -4299,7 +4299,8 @@ public sealed class WorldMapWindow : Window
     });
 
     /// <summary>
-    /// 발견물 자리를 고를 세계 지도 — 네비게이션과 같은 항해지도 그림(다 밝힌 것)에 다른 발견물 자리를 얹는다.
+    /// 발견물 자리를 고를 세계 지도 — 도시락 「세계지도」와 같은 게임 지도 타일(<see cref="WorldMapHost.GameTiles"/>)을 바탕으로,
+    /// 양피지로는 네비게이션과 같은 항해지도 그림(다 밝힌 것)을 쓰고 다른 발견물 자리를 얹는다.
     /// </summary>
     private DiscoveryAreaPicker.Map? DiscoveryAreaMap()
     {
@@ -4311,7 +4312,13 @@ public sealed class WorldMapWindow : Window
         chart.Freeze();
         var others = (_game.Discoveries?.Table?.Discoveries ?? [])
             .Where(r => r.HasPlace).Select(r => (r.X1, r.Y1, r.X2, r.Y2, r.Name)).ToList();
-        return new DiscoveryAreaPicker.Map(chart, (x, y) => _host.IsLandCell(x, y), others);
+        return new DiscoveryAreaPicker.Map(chart, (x, y) => _host.IsLandCell(x, y), others)
+        {
+            Tiles = _host.GameTiles,
+            Cities = KnownCityMarks,
+            Ship = () => _started && _host.ShipCell is { } c ? (WrapCell(c.X), c.Y) : null,
+            MapVersion = () => _host.ShownMapVersion,
+        };
     }
 
     /// <summary>
@@ -8555,6 +8562,21 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>시험 장치(<c>CDS_DIALOG=livemap</c>)가 도시락 「세계지도」를 누른 것처럼 연다.</summary>
     internal void OpenLiveMapForTest() => ShowLiveMap();
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=areapick</c>) — 발견물 자리 고르기 창을 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
+    internal DiscoveryAreaPicker.Area? PickAreaForTest(DiscoveryAreaPicker.Area? start) =>
+        (DiscoveryAreaMap() ?? DiscoveryAreaPicker.FromGame(_game)) is { } map ? DiscoveryAreaPicker.Pick(this, map, start) : null;
+
+    /// <summary>화면 밖 시험(<c>CDS_FOUND</c>) — 그 이름의 발견물들을 찾은 것으로 적고 지도를 다시 짓는다. 찾은 이름들을 돌려준다.</summary>
+    internal List<string> DiscoverForTest(IEnumerable<string> names)
+    {
+        var want = names.Select(n => n.Trim()).Where(n => n.Length > 0).ToHashSet();
+        var got = new List<string>();
+        foreach (var row in _game.Discoveries?.Table.Discoveries ?? [])
+            if (want.Contains(row.Name) && _game.Player.Discover(row.Id)) got.Add($"{row.Name}({row.Id})");
+        HideCities();
+        return got;
+    }
 
     /// <summary>화면 밖 시험(<c>CDS_TITLE</c>) — 타이틀에서 글쇠 하나를 누른 것처럼 한다(위아래 · 엔터). 타이틀이 아니면 false.</summary>
     internal bool TitleKeyForTest(Key key) =>

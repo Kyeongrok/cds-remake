@@ -143,6 +143,26 @@ public static class OffscreenHarness
                     foreach (Window w in window.OwnedWindows)
                         if (w is LiveMapWindow) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_FOUND=<이름>[,<이름>…] — 그 이름의 발견물들을 찾은 것으로 적는다(사람 발견물 그림이 지도에 서는지 본다).
+            if (Environment.GetEnvironmentVariable("CDS_FOUND") is { Length: > 0 } found)
+                window.Dispatcher.BeginInvoke(() =>
+                    Log("찾은 것으로 적었다 — " + string.Join(", ", window.DiscoverForTest(found.Split(',')))),
+                    DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=areapick[:x1,y1,x2,y2[,land]] — 사람 발견물 창의 「지도에서 고르기…」 창(세계지도 고르기 모드)을 띄운다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } pickDialog && (pickDialog == "areapick" || pickDialog.StartsWith("areapick:")))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    var n = pickDialog.Length > 9 ? pickDialog[9..].Split(',').Select(t => int.TryParse(t, out int v) ? v : -1).ToArray() : [];
+                    DiscoveryAreaPicker.Area? start = n.Length >= 4 ? new(n[0], n[1], n[2], n[3], n.Length > 4 && n[4] == 1) : null;
+                    Log($"자리 고르기 창을 띄운다 — 처음 범위 {start?.ToString() ?? "(없음)"}");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is LiveMapWindow) { w.Left = window.Left + 20; w.Top = window.Top + 20; }
+                    }, DispatcherPriority.ApplicationIdle);
+                    var got = window.PickAreaForTest(start);
+                    Log($"자리 고르기 창이 닫혔다 — {got?.ToString() ?? "(그만둠)"}");
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다. 창은 주인 안으로 옮겨 스냅숏에 들게 한다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } modDialog && (modDialog == "mod" || modDialog.StartsWith("mod:")))
                 window.Dispatcher.BeginInvoke(() =>
