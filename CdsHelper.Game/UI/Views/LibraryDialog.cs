@@ -154,7 +154,9 @@ public sealed class LibraryDialog : GameWindow
         Closed += (_, _) => _say?.Invoke("");
 
         KeyDown += (_, e) => { if (e.Key is Key.Escape) Close(); };
-        MouseRightButtonUp += (_, _) => Close();
+        // 오른쪽 단추는 닫지 않고 「서적 선택」 차림표를 낸다(0x00471DD0 — 사건 2 이면 0x00471C10).
+        // 책등 위에서 눌러도 같다 — 책등이 사건 2 를 서가의 것으로 바꿔 올려 보낸다(0x00470F80).
+        MouseRightButtonUp += (_, e) => { e.Handled = true; PickBook(); };
 
         _spines = spines;
         _picked = _spots.Count - 1;
@@ -303,15 +305,50 @@ public sealed class LibraryDialog : GameWindow
     /// </remarks>
     private bool _hovering;
 
+    /// <summary>
+    /// 「제목」저자 — 이름표와 「서적 선택」 줄이 같은 글이다(둘 다 <c>0x00471B30</c> 모드 0).
+    /// 읽을 수 없는 책(<c>0x00463DB0</c>)은 글자마다 x 로 가린다.
+    /// </summary>
+    private string TagLine(BookTable.Book book)
+    {
+        bool readable = CanRead(book);
+        string title = readable ? book.Title : Masked(book.Title);
+        string author = readable ? book.Author : Masked(book.Author);
+        return $"「{title}」{author}";
+    }
+
+    /// <summary>
+    /// 「서적 선택」 — 서가에 꽂힌 책을 <b>꽂힌 칸 차례</b>로 늘어놓고 「취소」를 붙여 차림표로 내고
+    /// (<c>0x00471C10</c> → <c>0x00469C40</c>), 고른 책을 곧장 편다(<c>0x00471FB0</c> — 책등을 누른 것과 같다).
+    /// </summary>
+    /// <remarks>
+    /// 줄은 <c>0x00471870(0)</c> 이 모은다 — 채움 책(-1)만 빠지고 <b>빨강·초록 책도, 못 읽는 책도 다 든다</b>.
+    /// 줄 글은 이름표와 같아 못 읽는 책은 x 로 가려 나오고, 줄은 모두 눌린다(줄마다 켜짐 1). 책이 열둘을 넘으면
+    /// 원본 차림표가 열두 줄만 보이고 굴린다(<c>0x00486A0F</c>).
+    /// </remarks>
+    private void PickBook()
+    {
+        if (_spots.Count == 0) return;
+        _tag.Visibility = Visibility.Collapsed;
+        _keyTag = false;
+        if (_hovering) { _hovering = false; _say?.Invoke(""); }
+
+        var rows = _spots.Select(s => TagLine(s.Book)).ToList();
+        int at = ChoiceDialog.Ask(this, "서적 선택", rows, scrollRows: MenuRows);
+        if (at < 0 || at >= _spots.Count) return;
+        var spot = _spots[at];
+        Read(spot.Book, spot.Image, _spines);
+    }
+
+    /// <summary>원본 차림표가 굴리지 않고 보이는 줄 수(<c>0x00486A0F</c> 의 <c>cmp …, 0xC</c>).</summary>
+    private const int MenuRows = 12;
+
     /// <summary>책등 밑에 제목·저자를 띄운다.</summary>
     private void ShowTag(BookTable.Book book, double x, double y)
     {
         _hovering = true;
         // 읽을 수 없는 책은 이름이 안 보인다 — 글자마다 x 로 가린다.
-        bool readable = CanRead(book);
-        string title = readable ? book.Title : Masked(book.Title);
-        string author = readable ? book.Author : Masked(book.Author);
-        _tagText.Text = $"「{title}」{author}";
+        _tagText.Text = TagLine(book);
         // 정보 제공 등급 「상세」 — 읽는 데 필요한 언어와, 실린 힌트를 알아듣는 데 필요한 기능.
         string need = Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoDetailed) ? NeedLine(book) : "";
         _tagNeed.Text = need;

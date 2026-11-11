@@ -76,11 +76,21 @@ internal sealed class GameMenu : Border
     /// <param name="title">제목 줄에 적을 글. 비우면 제목 줄 자체가 없다(기능 창이 그렇다).</param>
     /// <param name="rows">줄들.</param>
     /// <param name="onClose">제목 줄 오른쪽에 닫기(X)를 단다. null 이면 안 단다.</param>
-    public GameMenu(string title, IReadOnlyList<GameMenuRow> rows, Action? onClose = null)
+    /// <param name="scrollRows">
+    /// 0 보다 크고 줄이 이보다 많으면 <b>이만큼만 보이고 굴린다</b> — 제목 줄은 굴리지 않는다.
+    /// 원본 차림표(<c>0x00486940</c>)는 줄이 열둘을 넘으면 높이를 <c>0x130</c>(열두 줄 + 16)에 묶고
+    /// 폭 16 의 굴림대를 단다(<c>0x00486A0F</c> · <c>0x00486A77</c>). 지금은 도서관 「서적 선택」만 쓴다.
+    /// </param>
+    public GameMenu(string title, IReadOnlyList<GameMenuRow> rows, Action? onClose = null, int scrollRows = 0)
     {
         var stack = new StackPanel();
 
         if (title.Length > 0) stack.Children.Add(TitleRow(title, onClose));
+
+        // 굴리는 창이면 줄은 따로 쌓아 굴림 칸에 넣는다.
+        var outer = stack;
+        bool scroll = scrollRows > 0 && rows.Count > scrollRows;
+        if (scroll) stack = new StackPanel();
 
         for (int i = 0; i < rows.Count; i++)
         {
@@ -106,6 +116,14 @@ internal sealed class GameMenu : Border
             }
 
             stack.Children.Add(button);
+        }
+
+        if (scroll)
+        {
+            stack.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double rowHeight = stack.DesiredSize.Height / rows.Count;
+            outer.Children.Add(GameUi.Scroller(stack, Math.Ceiling(rowHeight * scrollRows)));
+            stack = outer;
         }
 
         Background = GameUi.MenuBack;
@@ -142,6 +160,7 @@ internal sealed class GameMenu : Border
         if (_at >= 0 && _at < _picks.Count) _picks[_at].Focused = false;
         _at = index;
         _picks[index].Focused = true;
+        _picks[index].BringIntoView();      // 굴리는 창이면 초점 간 줄이 보이게 굴린다
     }
 
     private void Listen()

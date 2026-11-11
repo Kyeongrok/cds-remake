@@ -8556,6 +8556,16 @@ public sealed class WorldMapWindow : Window
         return "";
     }
 
+    /// <summary>화면 밖 시험 — 그 도시 도서관 서가(열람)를 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
+    internal string OpenLibraryForTest(int city)
+    {
+        if (_game.Buildings is not { } buildings || _game.Books == null) return "건물 표 · 책 표를 못 읽었다";
+        string name = _game.CityTable.Find(city)?.Name ?? $"도시 {city}";
+        _game.Player.EnterCity(city, name);
+        new LibraryMenu(this, _game, city, name, _game.CityRows?.CultureOf(city) ?? 0, buildings).Read(this, Say);
+        return "";
+    }
+
     private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
         // <b>작업표시줄 단추를 하나로 둔다.</b> 개발도구에서 띄운 것이면 이 창까지

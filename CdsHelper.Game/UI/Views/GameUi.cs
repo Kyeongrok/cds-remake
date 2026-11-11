@@ -1217,13 +1217,16 @@ internal static class GameUi
 
         void Place()
         {
-            double room = trough.ActualHeight;
-            if (room <= 0 || view.ExtentHeight <= view.ViewportHeight)
+            if (view.ExtentHeight <= view.ViewportHeight)
             {
                 bar.Visibility = Visibility.Collapsed;
                 return;
             }
             bar.Visibility = Visibility.Visible;
+            // 숨겼던 굴림대는 홈 높이가 0 이다 — 그것으로 숨김을 정하면 다시는 안 선다(처음 잴 때 줄이 덜 찼던
+            // 도서관 「서적 선택」이 그랬다). 서고 나서 홈 크기가 잡히면 SizeChanged 가 다시 부른다.
+            double room = trough.ActualHeight;
+            if (room <= 0) return;
 
             double height = Math.Max(ThumbMin, room * view.ViewportHeight / view.ExtentHeight);
             double at = view.ScrollableHeight <= 0

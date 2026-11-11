@@ -30,6 +30,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   개발 창       CDS_DIALOG=dev:&lt;탭&gt; — 개발 창을 그 탭(「에디터」 따위)으로 띄운다.
 ///   모드 창       CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
+///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
 /// </code>
@@ -202,6 +203,41 @@ public static class OffscreenHarness
                     }, DispatcherPriority.ApplicationIdle);
                     string error = window.OpenTradeForTest(tradeCity);
                     if (error.Length > 0) Log($"매매 창 실패 — {error}");
+                }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=library:<도시>[:menu[:<글쇠>]] — 그 도시 도서관 서가를 띄운다. menu 면 오른쪽 단추를 눌러
+            // 「서적 선택」 차림표를 내고, 글쇠를 주면 차림표에 그 글쇠를 한 번 보낸다(Up 이면 맨 끝 줄로 감겨 굴러간다).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } lib && lib.StartsWith("library:")
+                && lib.Split(':') is { Length: >= 2 } libParts && int.TryParse(libParts[1], out int libCity))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log($"도서관 서가를 띄운다 — 도시 {libCity}");
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                        {
+                            if (w is not LibraryDialog shelf) continue;
+                            shelf.Left = window.Left + 40;
+                            shelf.Top = window.Top + 40;
+                            if (libParts.Length < 3 || libParts[2] != "menu") continue;
+                            window.Dispatcher.BeginInvoke(() =>
+                            {
+                                foreach (Window c in shelf.OwnedWindows)
+                                {
+                                    c.Left = shelf.Left + 120;      // 화면 밖이면 가운데 놓기가 (0, 0) 으로 빗나간다
+                                    c.Top = shelf.Top + 60;
+                                    Log($"차림표가 떴다 — {c.GetType().Name} · 자리 ({c.Left:0}, {c.Top:0}) · 크기 {c.ActualWidth:0}x{c.ActualHeight:0} · 보임 {c.IsVisible}");
+                                    if (libParts.Length >= 4 && Enum.TryParse(libParts[3], true, out System.Windows.Input.Key libKey))
+                                        Press(c, libKey);
+                                }
+                            }, DispatcherPriority.ApplicationIdle);
+                            Log("서가에 오른쪽 단추를 누른다");
+                            shelf.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0,
+                                                                                         System.Windows.Input.MouseButton.Right)
+                                { RoutedEvent = UIElement.MouseRightButtonUpEvent });
+                        }
+                    }, DispatcherPriority.ApplicationIdle);
+                    string error = window.OpenLibraryForTest(libCity);
+                    if (error.Length > 0) Log($"도서관 서가 실패 — {error}");
                 }, DispatcherPriority.ApplicationIdle);
         }, DispatcherPriority.ApplicationIdle);
     }

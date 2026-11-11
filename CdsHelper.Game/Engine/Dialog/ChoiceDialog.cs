@@ -59,7 +59,7 @@ internal sealed class ChoiceDialog : GameWindow
         MouseRightButtonUp += (_, _) => Close();
     }
 
-    private ChoiceDialog(string title, IReadOnlyList<string> rows, string? cancel, int dim)
+    private ChoiceDialog(string title, IReadOnlyList<string> rows, string? cancel, int dim, int scrollRows = 0)
     {
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
@@ -81,7 +81,7 @@ internal sealed class ChoiceDialog : GameWindow
         }
         if (cancel != null) items.Add(new GameMenuRow(cancel, Close));
 
-        var menu = new GameMenu(title, items);
+        var menu = new GameMenu(title, items, scrollRows: scrollRows);
         var root = new Border { Background = GameUi.Back, Child = menu };
         GameUi.EnableDrag(this, root);
         Content = root;
@@ -104,10 +104,11 @@ internal sealed class ChoiceDialog : GameWindow
     /// 주면 그 창 <b>바로 아래</b>에 선다 — 글을 띄워 둔 채(<see cref="ConfirmDialog.Hold"/>) 고르게 하는
     /// 자리다. 둘은 한 덩이로 주인 창 가운데에 앉는다.
     /// </param>
+    /// <param name="scrollRows">줄(나가기 줄 포함)이 이보다 많으면 이만큼만 보이고 굴린다(<see cref="GameMenu"/>). 0 이면 안 굴린다.</param>
     public static int Ask(Window owner, string title, IReadOnlyList<string> rows,
-                          string? cancel = "취소", int dim = -1, Window? under = null)
+                          string? cancel = "취소", int dim = -1, Window? under = null, int scrollRows = 0)
     {
-        var dialog = new ChoiceDialog(title, rows, cancel, dim) { Owner = owner };
+        var dialog = new ChoiceDialog(title, rows, cancel, dim, scrollRows) { Owner = owner };
         if (under != null) GameUi.PlaceUnder(dialog, under, GameUi.RootOf(owner));
         dialog.ShowDialog();
         return dialog._picked;
