@@ -33,6 +33,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   누적 캐릭터    CDS_DIALOG=acc[:del:&lt;자리&gt;][,hide:&lt;자리&gt;] — 누적 캐릭터를 등장시킨 게임으로 두고 누적 캐릭터 창을 띄운다(지우기 · 등장 안 함).
 ///   인물 이동 성문 CDS_DIALOG=personmove-gate:&lt;도시&gt; — 도시에 들어가 인물 이동 창을 띄운 채 성문으로 나서고 닫는다(묻는 중 · 멈춤이 남는지).
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
+///   스폰서 일람    CDS_DIALOG=patrons[:&lt;명&gt;][:story:&lt;명&gt;][:year:&lt;해&gt;][:city:&lt;도시&gt;] — 후원자를 만난 것으로 두고 일람을 띄워 휠 · 글쇠 · 굴림대로 굴려 본다.
 ///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
@@ -371,6 +372,20 @@ public static class OffscreenHarness
                     string error = window.OpenLibraryForTest(libCity);
                     if (error.Length > 0) Log($"도서관 서가 실패 — {error}");
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=patrons[:<명>][:story:<명>][:year:<해>][:city:<도시>] — 후원자를 그만큼 만난 것으로 두고(story 는 대본처럼 표 이름으로 더)
+            // 스폰서 일람을 띄운 뒤, 휠 · 글쇠 · 굴림대 화살표로 아래 줄까지 가는지 굴림 자리를 적고 걸음마다 창을 찍는다(버그 리포트 #48).
+            // city 면 도시 커맨드 길, 아니면 바다 「정보」 길.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } patronDialog
+                && (patronDialog == "patrons" || patronDialog.StartsWith("patrons:")))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    var parts = patronDialog.Split(':');
+                    int meet = parts.Length > 1 && int.TryParse(parts[1], out int m) ? m : 15;
+                    int Opt(string key) => Array.IndexOf(parts, key) is int at and > 0 && at + 1 < parts.Length
+                                           && int.TryParse(parts[at + 1], out int v) ? v : -1;
+                    window.Dispatcher.BeginInvoke(() => ProbeList(window, "patrons", 10), DispatcherPriority.ApplicationIdle);
+                    Log("스폰서 일람 — " + window.OpenPatronsForTest(meet, Opt("city"), Math.Max(0, Opt("story")), Opt("year")));
+                }, DispatcherPriority.ApplicationIdle);
         }, DispatcherPriority.ApplicationIdle);
     }
 
@@ -498,6 +513,110 @@ public static class OffscreenHarness
         if (preview.Handled) return;
         target.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, source, 0, key)
             { RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent });
+    }
+
+    /// <summary>
+    /// 떠 있는 목록 창(<see cref="ListPickDialog"/>)을 주인 안으로 옮기고 굴림 자리를 잰다 — 처음 · 휠 세 번 · 맨 위로 돌려 아래
+    /// 글쇠 열네 번 · 맨 위로 돌려 굴림대 아래 화살표 다섯 번. 걸음마다 창을 <c>&lt;이름&gt;-&lt;걸음&gt;.png</c> 로 찍고, 끝에 Esc 로 닫는다.
+    /// 창이 아직 안 떴으면 0.5초마다 <paramref name="tries"/> 번 더 찾는다.
+    /// </summary>
+    private static void ProbeList(WorldMapWindow window, string name, int tries)
+    {
+        var dlg = Application.Current.Windows.OfType<ListPickDialog>().FirstOrDefault(w => w.IsVisible);
+        if (dlg == null)
+        {
+            if (tries <= 0) { Log("목록 창을 못 찾았다"); return; }
+            // 도시에 들 때 뜨는 그림 · 쪽지 창이 막고 있으면 Enter 로 넘긴다(도시 커맨드 길).
+            var blocking = Application.Current.Windows.OfType<Window>()
+                .LastOrDefault(w => w.IsVisible && w is not WorldMapWindow && w is not CityPicView && w.GetType().Name != "FleetLabelWindow");
+            Log($"목록 창을 기다린다 — 떠 있는 창 {string.Join(",", Application.Current.Windows.OfType<Window>().Where(w => w.IsVisible).Select(w => w.GetType().Name))}"
+                + (blocking != null ? $" · {blocking.GetType().Name} 에 Enter" : ""));
+            if (blocking != null) Press(blocking, System.Windows.Input.Key.Enter);
+            var again = new DispatcherTimer(DispatcherPriority.ApplicationIdle, window.Dispatcher) { Interval = TimeSpan.FromSeconds(0.5) };
+            again.Tick += (_, _) => { again.Stop(); ProbeList(window, name, tries - 1); };
+            again.Start();
+            return;
+        }
+        dlg.Left = window.Left + 60;
+        dlg.Top = window.Top + 30;
+
+        var view = Descendants(dlg).OfType<System.Windows.Controls.ScrollViewer>().FirstOrDefault();
+        if (view == null) { Log("목록 창에 두루마리 칸이 없다"); return; }
+        var bar = (view.Parent as System.Windows.Controls.Grid)?.Children.OfType<FrameworkElement>().FirstOrDefault(e => !ReferenceEquals(e, view));
+        var down = (bar as System.Windows.Controls.Grid)?.Children.OfType<FrameworkElement>().LastOrDefault();
+        string State() =>
+            $"창 {dlg.ActualWidth:0}x{dlg.ActualHeight:0} · 주인 {dlg.Owner?.GetType().Name}"
+            + $" · 줄 {((view.Content as System.Windows.Controls.Border)?.Child as System.Windows.Controls.Panel)?.Children.Count} · 칸 높이 {view.ViewportHeight:0} / 전체 {view.ExtentHeight:0}"
+            + $" · 굴림 {view.VerticalOffset:0} / {view.ScrollableHeight:0} · 굴림대 {bar?.Visibility}";
+
+        var steps = new List<(string Step, Action Act)>
+        {
+            ("처음", () => { }),
+            ("휠", () =>
+            {
+                for (int i = 0; i < 3; i++)
+                    ((UIElement)view.Content).RaiseEvent(new System.Windows.Input.MouseWheelEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0, -120)
+                        { RoutedEvent = System.Windows.Input.Mouse.MouseWheelEvent });
+            }),
+            ("글쇠", () =>
+            {
+                view.ScrollToTop();
+                for (int i = 0; i < 14; i++) Press(dlg, System.Windows.Input.Key.Down);
+            }),
+            ("화살표", () =>
+            {
+                view.ScrollToTop();
+                for (int i = 0; i < 5; i++)
+                    down?.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice, 0,
+                                                                                    System.Windows.Input.MouseButton.Left)
+                        { RoutedEvent = UIElement.MouseLeftButtonUpEvent });
+            }),
+        };
+        int k = 0;
+        var timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, window.Dispatcher) { Interval = TimeSpan.FromSeconds(0.6) };
+        timer.Tick += (_, _) =>
+        {
+            if (k > 0)
+            {
+                // 앞 걸음의 결과 — 그림이 다 그려진 뒤에 잰다.
+                Log($"{name} {steps[k - 1].Step} — {State()}");
+                SavePng(dlg, Path.Combine(OffscreenTest.OutputFolder, $"{name}-{k - 1}-{steps[k - 1].Step}.png"));
+            }
+            if (k == steps.Count)
+            {
+                timer.Stop();
+                Press(dlg, System.Windows.Input.Key.Escape);
+                Log($"{name} 창을 닫았다");
+                return;
+            }
+            steps[k++].Act();
+        };
+        timer.Start();
+    }
+
+    /// <summary>창 하나만 PNG 로 적는다.</summary>
+    private static void SavePng(Window w, string path)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            using var stream = File.Create(path);
+            var png = new PngBitmapEncoder();
+            png.Frames.Add(BitmapFrame.Create(Render(w)));
+            png.Save(stream);
+        }
+        catch (Exception ex) { Log($"창 그림 실패 {path} — {ex.Message}"); }
+    }
+
+    /// <summary>눈에 보이는 나무를 다 훑는다.</summary>
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var d in Descendants(child)) yield return d;
+        }
     }
 
     /// <summary>창 안의 글(TextBlock · 글 상자)을 이어 붙인다 — 기록용.</summary>

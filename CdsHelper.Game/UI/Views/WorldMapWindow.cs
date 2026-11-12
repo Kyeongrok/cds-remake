@@ -8685,6 +8685,36 @@ public sealed class WorldMapWindow : Window
                                System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_DIALOG=patrons</c>, 버그 리포트 #48) — 지금 해에 자리에 있는 후원자 앞쪽 <paramref name="meet"/> 명을 만난 것으로
+    /// 두고 스폰서 일람을 띄운다. <paramref name="city"/> 가 0 이상이면 그 도시에 들어가 도시 커맨드처럼(주인 = 도시 그림 창),
+    /// 아니면 바다 「정보」처럼(주인 = 이 창) 연다. 닫힐 때까지 돌아오지 않는다.
+    /// <paramref name="story"/> 명은 그 뒤에서 더 골라 이야기 대본(38 12)처럼 <b>게임 표 이름</b>(가운뎃점)으로 만나 두고,
+    /// <paramref name="year"/> 가 0 보다 크면 날짜를 그 해 7월 4일로 옮긴다.
+    /// </summary>
+    internal string OpenPatronsForTest(int meet, int city, int story = 0, int year = 0)
+    {
+        if (year > 0) _game.Player.SetDate(new DateTime(year, 7, 4));
+        year = _game.Player.Date.Year;
+        var seated = new PatronService().LoadPatrons(Path.Combine(AppContext.BaseDirectory, "patrons.json"))
+                                        .Where(p => _game.Sponsors?.FindByName(p.Name) is { } row
+                                                    ? _game.Sponsors.IsSeated(row, year) : p.IsActive(year)).ToList();
+        foreach (var p in seated.Take(meet)) _game.Player.Meet(p.Name);
+        var byTable = seated.Skip(meet).Take(story).Select(p => _game.Sponsors?.FindByName(p.Name)?.Name ?? p.Name).ToList();
+        foreach (var name in byTable) _game.Player.Meet(name);
+        string note = $"{year}년 자리에 있는 후원자 {seated.Count}명 중 {Math.Min(meet, seated.Count)}명을 만난 것으로 뒀다"
+                      + (byTable.Count > 0 ? $" · 표 이름으로 {string.Join(", ", byTable)}" : "");
+        if (city < 0)
+        {
+            Info(() => ShowPatrons(this));
+            return note + " · 바다에서 열었다";
+        }
+        EnterCity(city);
+        if (_cityView is not { } town) return note + $" · 도시 {city} 에 못 들었다";
+        town.ShowPatronsForTest();
+        return note + $" · 도시 {city} 에서 열었다";
+    }
+
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=storm</c>, 버그 리포트 #45) — 바다에서 폭풍 장면만 돌린다(대사 창 없이).</summary>
     internal void StormSceneForTest()
     {

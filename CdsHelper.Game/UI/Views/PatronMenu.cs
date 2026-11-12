@@ -2713,8 +2713,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 보게" 하고 물을 때 지운다(<c>0x004AE595</c>). 그래서 <b>한 번 만나야 목록에 뜬다.</b>
     ///
     /// 우리 쪽은 비트를 따로 들지 않고 <see cref="Player.Met"/>(낯을 튼 사람)로 가른다.
-    /// 자리 판정은 <see cref="Patron.IsActive"/> 로 물러선다 — 원본처럼 같은 자리를 두고
-    /// 다투는 것까지는 못 가리지만, 대가 갈려 물러난 사람은 걸러진다.
+    /// 자리 판정은 <see cref="SponsorTable.IsSeated"/>(<c>0x004ADD70</c> 그대로 — 같은 자리에서 가장 늦게 나온 사람)로 하고,
+    /// 자리를 모르는 옛 표면 <see cref="Patron.IsActive"/> 로 물러선다.
     ///
     /// 이름은 게임 표에서 가져온다 — <c>patrons.json</c> 은 "페르난 마르틴스" 인데 게임 화면은
     /// 가운뎃점을 쓴다("페르난·마르틴스").
@@ -2735,8 +2735,20 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         var mine = LoadPatrons()
             .Select(p => (Patron: p, Row: table?.FindByName(p.Name)))
             .Select(m => (Patron: Edited(m.Patron, m.Row), m.Row))
-            .Where(m => m.Patron.IsActive(year) && _player.HasMet(m.Patron.Name))
+            .Where(m => Seated(m.Patron, m.Row) && Met(m.Patron, m.Row))
             .ToList();
+
+        // 자리 판정은 시설이 후원자를 물리는 것(At → SponsorTable.SeatedAt)과 같은 표로 한다 — patrons.json 의 은퇴 해는
+        // 뒷사람이 나오는 해와 한 해씩 어긋난 데가 있어(조안 2세는 1494, 마누엘 1세는 1495 에 나온다), 1494 년에 리스본 왕궁에서
+        // 만나는 조안 2세가 일람에서는 빠졌다(버그 리포트 #48). 자리를 모르는 옛 표면 json 해로 물러선다.
+        bool Seated(Patron patron, SponsorTable.Sponsor? row) =>
+            table is { KnowsSeats: true } && row is { } r ? table.IsSeated(r, year) : patron.IsActive(year);
+
+        // 낯을 튼 이름은 두 가지다 — 알현(Audience)은 patrons.json 이름("페르난 마르틴스")으로, 이야기 대본의 38 12 는
+        // 게임 표 이름("페르난·마르틴스")으로 적는다. json 이름만 보아 대본으로 만난 후원자(라몬의 파브리스 따위)가 빠졌다.
+        // 문간 관문(CityPicView.PassFameGate)은 이미 둘 다 본다.
+        bool Met(Patron patron, SponsorTable.Sponsor? row) =>
+            _player.HasMet(patron.Name) || row is { } r && _player.HasMet(r.Name);
         var names = mine.Select(m => m.Row?.Name ?? m.Patron.Name).ToList();
 
         // 줄 왼쪽에 작게 붙일 얼굴 — 알현 대사에 쓰는 것과 같은 그림이다. 게임 창에는 없는 것이다.
