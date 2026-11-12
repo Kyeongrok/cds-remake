@@ -61,6 +61,12 @@ public sealed class GameSettingsData
     /// <summary>게임 창이 뒤로 가거나 접히면 배경음악을 죽일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MuteBgmInBackground { get; set; }
 
+    /// <summary>
+    /// 볼륨 믹서에서 맞춘 이 앱의 음량(0~1, -1 은 아직 안 만짐) · 음소거 — Windows 가 다시 켤 때 잊으므로 여기 적어 둔다(<see cref="Helpers.AppVolumeKeeper"/>).
+    /// </summary>
+    public double AppVolume { get; set; } = -1;
+    public bool AppMute { get; set; }
+
     /// <summary>해상 지도 배율(0.5~1.5, 0.25 칸). 기본 0.75 — 원본 크기에 맞춘 값이다.</summary>
     public double MapScale { get; set; } = GameSettings.DefaultMapScale;
     public int SfxVolume { get; set; } = GameSettings.MaxVolume;
@@ -770,6 +776,19 @@ public static class GameSettings
         get => OffscreenTest.Muted ? 0 : Math.Clamp(Get(d => d.BgmVolume), 0, MaxVolume);
         set => Set(d => d.BgmVolume = Math.Clamp(value, 0, MaxVolume));
     }
+
+    /// <summary>볼륨 믹서에서 맞춘 앱 음량(0~1). 아직 안 만졌으면 -1.</summary>
+    public static double AppVolume => Get(d => d.AppVolume);
+
+    /// <summary>볼륨 믹서에서 앱을 음소거해 두었는지.</summary>
+    public static bool AppMute => Get(d => d.AppMute);
+
+    /// <summary>볼륨 믹서에서 맞춘 앱 음량 · 음소거를 적는다(<see cref="Helpers.AppVolumeKeeper"/>).</summary>
+    public static void SetAppVolume(double level, bool mute) => Set(d =>
+    {
+        d.AppVolume = Math.Clamp(level, 0, 1);
+        d.AppMute = mute;
+    });
 
     /// <summary>게임 창이 뒤로 가거나 접히면 배경음악을 죽일지 — 설정 창 「일반」.</summary>
     public static bool MuteBgmInBackground

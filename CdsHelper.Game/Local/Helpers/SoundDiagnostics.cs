@@ -36,6 +36,7 @@ public static class SoundDiagnostics
         Try("device", DefaultDevice);
         Try("devices", ActiveDevices);
         Try("session", AppSession);
+        Try("sessionKeep", AppVolumeKeeper.Describe);
         Try("deviceChanges", () => Changes());
         return sound;
     }

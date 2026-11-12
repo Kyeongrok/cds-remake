@@ -105,6 +105,10 @@ internal sealed class App : Application
         CrashReport.Start(typeof(App).Assembly);
         if (OffscreenTest.Isolated) return;
 
+        // 볼륨 믹서에서 맞춘 앱 음량을 되돌린다 — 배경음악 · 효과음 세션은 Windows 가 기억 못 해 다시 켜면 100% 였다(버그 리포트 #51).
+        AppVolumeKeeper.Start();
+        Exit += (_, _) => AppVolumeKeeper.Stop();
+
         // 창이 다 뜬 뒤에 띄운다 — 지금 띄우면 주인 창이 아직 자리를 못 잡아 알림이 엉뚱한 데 선다.
         window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskKeptBooks(window); AskStats(window); },
                                       System.Windows.Threading.DispatcherPriority.ApplicationIdle);
