@@ -149,37 +149,39 @@ internal sealed class CubePuzzleDialog : GameWindow
     private const int TurnMillis = 420;
 
     /// <summary>
-    /// 한 칸 그리는 간격(ms). 진척은 칸 수가 아니라 흐른 시간으로 잰다 — 윈도 타이머는 15.6ms 눈금이라
-    /// 16ms 를 걸면 31ms 마다 와서, 칸 수로 세면 PC 에 따라 두 배 가까이 느려졌다.
-    /// </summary>
-    private const int TurnTick = 16;
-
-    /// <summary>
     /// 좌대가 <b>한 칸 미끄러지는 데 걸리는 시간(ms)</b>. 걸음 빠르기는 이것만 만진다.
     /// </summary>
     private const int MoveMillis = 320;
 
     /// <summary>
     /// <paramref name="millis"/> 동안 0 에서 1 로 가는 진척을 <paramref name="frame"/> 에 넘기고, 다 가면
-    /// <paramref name="done"/> 을 부른다. 흐른 시간으로 재므로 타이머가 늦게 와도 걸리는 시간은 같다.
+    /// <paramref name="done"/> 을 부른다. 흐른 시간으로 재므로 프레임이 늦게 와도 걸리는 시간은 같다.
     /// </summary>
+    /// <remarks>
+    /// <b>화면 프레임마다 그린다</b>(<see cref="CompositionTarget.Rendering"/>, 버그 리포트 #49). 예전에는
+    /// 16ms <c>DispatcherTimer</c>(기본 우선도 Background)로 그렸는데, 뒤에서 지도가 프레임마다 그리는 동안에는
+    /// Background 일이 80~250ms 씩 밀려 90 도를 도는 동안 그림이 몇 번 안 바뀌고 툭툭 끊겼다.
+    /// </remarks>
     private static void Animate(int millis, Action<double> frame, Action done)
     {
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        var timer = new System.Windows.Threading.DispatcherTimer
+        TimeSpan last = TimeSpan.MinValue;
+        void OnFrame(object? sender, EventArgs e)
         {
-            Interval = TimeSpan.FromMilliseconds(TurnTick),
-        };
-        timer.Tick += (_, _) =>
-        {
+            // 한 프레임에 여러 번 불릴 수 있다 — 같은 프레임이면 다시 안 그린다.
+            if (e is RenderingEventArgs { RenderingTime: var at })
+            {
+                if (at == last) return;
+                last = at;
+            }
             double t = Math.Min(1.0, clock.Elapsed.TotalMilliseconds / millis);
             frame(t);
             if (t < 1.0) return;
 
-            timer.Stop();
+            CompositionTarget.Rendering -= OnFrame;
             done();
-        };
-        timer.Start();
+        }
+        CompositionTarget.Rendering += OnFrame;
     }
 
     /// <summary>
@@ -534,19 +536,22 @@ internal sealed class CubePuzzleDialog : GameWindow
 
     private void Explain() => Explain(this);
 
+    /// <summary>돌 블록 그림 — 한 번만 읽는다.</summary>
+    private BitmapImage? _stone;
+
     private void Sync()
     {
         _cube?.Draw(_game, 0, 0);
         foreach (var button in _spinButtons)
             button.Visibility = _game.JustSpun ? Visibility.Hidden : Visibility.Visible;
 
-        var stone = Picture("cube-stand.png");
+        var stone = _stone ??= Picture("cube-stand.png");
 
         for (int row = 0; row < CubePuzzle.Side; row++)
         for (int col = 0; col < CubePuzzle.Side; col++)
         {
             bool floor = _game.Floor(col, row);
-            _tile[col, row].Source = stone;
+            if (!ReferenceEquals(_tile[col, row].Source, stone)) _tile[col, row].Source = stone;
             _tile[col, row].Visibility = floor ? Visibility.Visible : Visibility.Collapsed;
         }
 

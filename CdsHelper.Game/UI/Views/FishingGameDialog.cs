@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Windows.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -57,9 +56,6 @@ internal sealed class FishingGameDialog : InfoDialog
 
     private const int BeastSize = 32, HookSize = 16, FishW = 32, FishH = 16, BigW = 64, BigH = 32;
 
-    /// <summary>타이머를 부르는 간격. 원본은 안 쉬고 그리는 대로 돈다.</summary>
-    private static readonly TimeSpan TickTime = TimeSpan.FromMilliseconds(15);
-
     /// <summary>
     /// 한 틱에 드는 밀리초. 한 줄(<see cref="FishingGame.TicksPerRow"/> = 40틱)이
     /// <c>40 x 28 ≈ 1.1초</c>다.
@@ -68,6 +64,10 @@ internal sealed class FishingGameDialog : InfoDialog
     /// 예전에는 20ms 라 한 줄이 0.8초였는데 눈으로 좇기에 너무 빨랐고, 40ms 는 답답했다.
     /// 틱은 흐른 시간으로 센다(<see cref="Beat"/>) — 윈도 타이머는 15.6ms 눈금이라 40ms 를 걸면
     /// 47ms 마다 오고, 화면이 바쁘면 더 늦어 PC 마다 빠르기가 달랐다.
+    ///
+    /// <b>틱은 화면 프레임마다 센다</b>(<see cref="CompositionTarget.Rendering"/>, 버그 리포트 #49). 예전에는
+    /// <c>DispatcherTimer</c>(기본 우선도 Background)로 불렀는데, 뒤에서 지도가 프레임마다 그리는 동안에는
+    /// Background 일이 80~250ms 씩 밀려 그림이 초당 스물 번 남짓만 바뀌고 한 번에 몇 점씩 뛰었다.
     /// </remarks>
     private const int TickMs = 28;
 
@@ -86,7 +86,9 @@ internal sealed class FishingGameDialog : InfoDialog
 
     /// <summary>헤엄쳐 다니는 것 열 마리.</summary>
     private readonly Image[] _swim = new Image[FishingGame.Swimmers];
-    private readonly DispatcherTimer _clock = new();
+
+    /// <summary>바늘이 내려가거나 감아 올리는 중인지 — 그동안만 화면 프레임에 매달린다.</summary>
+    private bool _running;
 
     private FishingGameDialog(Random rng)
     {
@@ -175,9 +177,7 @@ internal sealed class FishingGameDialog : InfoDialog
             else if (e.Key is Key.Down or Key.Enter or Key.Space) LetGo();
         };
 
-        _clock.Interval = TickTime;
-        _clock.Tick += (_, _) => Beat();
-        Closed += (_, _) => _clock.Stop();
+        Closed += (_, _) => Stop();
 
         Sync();
     }
@@ -206,18 +206,30 @@ internal sealed class FishingGameDialog : InfoDialog
         _scene.Children.Add(image);
     }
 
+    /// <summary>한 번 읽은 그림. 같은 이름이면 같은 그림을 돌려준다.</summary>
+    private static readonly Dictionary<string, BitmapImage?> Pictures = [];
+
     /// <summary>뽑아 둔 그림 한 장. 없으면 null.</summary>
+    /// <remarks>
+    /// <b>한 번만 읽는다</b>(버그 리포트 #49). 헤엄치는 것 열 마리의 그림을 틱마다 다시 고르므로, 예전처럼
+    /// 부를 때마다 파일을 열어 풀면 틱마다 PNG 열 장을 풀고 새 그림 열 장을 화면에 올렸다.
+    /// </remarks>
     private static BitmapImage? Picture(string name)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "asset", "minigame", name);
-        if (!File.Exists(path)) return null;
+        if (Pictures.TryGetValue(name, out var known)) return known;
 
-        var bmp = new BitmapImage();
-        bmp.BeginInit();
-        bmp.UriSource = new Uri(path);
-        bmp.CacheOption = BitmapCacheOption.OnLoad;
-        bmp.EndInit();
-        bmp.Freeze();
+        BitmapImage? bmp = null;
+        var path = Path.Combine(AppContext.BaseDirectory, "asset", "minigame", name);
+        if (File.Exists(path))
+        {
+            bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.UriSource = new Uri(path);
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.EndInit();
+            bmp.Freeze();
+        }
+        Pictures[name] = bmp;
         return bmp;
     }
 
@@ -251,11 +263,25 @@ internal sealed class FishingGameDialog : InfoDialog
         _game.Drop();
         _since.Restart();
         _beats = 0;
-        _clock.Start();
+        if (!_running)
+        {
+            _running = true;
+            CompositionTarget.Rendering += OnFrame;
+        }
         Sync();
     }
 
-    /// <summary>타이머가 올 때마다 흐른 시간만큼 틱을 돈다(한 번에 너무 많이 몰리지 않게 다섯까지).</summary>
+    /// <summary>화면 프레임에서 떼어 낸다.</summary>
+    private void Stop()
+    {
+        if (!_running) return;
+        _running = false;
+        CompositionTarget.Rendering -= OnFrame;
+    }
+
+    private void OnFrame(object? sender, EventArgs e) => Beat();
+
+    /// <summary>프레임마다 흐른 시간만큼 틱을 돈다(한 번에 너무 많이 몰리지 않게 다섯까지).</summary>
     private void Beat()
     {
         long due = (long)(_since.Elapsed.TotalMilliseconds / TickMs);
@@ -263,7 +289,7 @@ internal sealed class FishingGameDialog : InfoDialog
         {
             _beats++;
             OneBeat();
-            if (!_clock.IsEnabled) return;
+            if (!_running) return;
         }
         _beats = Math.Max(_beats, due - 5);   // 오래 멎었으면(창 끌기 따위) 밀린 것은 버린다
     }
@@ -295,7 +321,7 @@ internal sealed class FishingGameDialog : InfoDialog
         _reeling -= ReelStep;
         if (_reeling <= FishingGame.TopY)
         {
-            _clock.Stop();
+            Stop();
             Close();
             return;
         }
@@ -363,7 +389,8 @@ internal sealed class FishingGameDialog : InfoDialog
             // 머리가 가는 쪽을 본다. 벌 둘 가운데 <b>0 이 왼쪽</b>을 보므로(잉크가 왼쪽에
             // 몰려 있다) 오른쪽으로 가는 갈래 1 에는 <b>1</b> 을 걸어야 한다 —
             // 거꾸로 걸어 두어 지느러미 쪽으로 나아가고 있었다.
-            _swim[k].Source = Picture($"fish-small-{fish.Kind * 2 + (fish.Way == 1 ? 1 : 0)}.png");
+            var art = Picture($"fish-small-{fish.Kind * 2 + (fish.Way == 1 ? 1 : 0)}.png");
+            if (!ReferenceEquals(_swim[k].Source, art)) _swim[k].Source = art;
             // 게임(0x0047B3A2): 오른쪽으로 가면 (칸*40+0x38−0x30+틱, 줄*40+0x68+0x10),
             // 왼쪽으로 가면 (칸*40+0x38+0x0E−틱, 줄*40+0x68+0x0E). 가는 쪽마다 자리가 다르다.
             bool right = fish.Way == 1;

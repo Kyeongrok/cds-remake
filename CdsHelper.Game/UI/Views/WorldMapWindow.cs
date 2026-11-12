@@ -8772,6 +8772,22 @@ public sealed class WorldMapWindow : Window
         return "";
     }
 
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_DIALOG=minigame</c>, 버그 리포트 #49) — 미니 게임(<c>fish</c> 낚시 · <c>cube</c> 화살표 입방체)을 띄운다.
+    /// <paramref name="city"/> 가 0 이상이면 그 도시에 들어가 도시 그림 창을 주인으로 연다. 닫힐 때까지 돌아오지 않는다.
+    /// </summary>
+    internal string PlayMinigameForTest(string which, int city)
+    {
+        if (city >= 0) EnterCity(city);
+        Window owner = _cityView is { IsVisible: true } town ? town : this;
+        return which switch
+        {
+            "fish" => $"낚시 — 대어 {FishingGameDialog.Play(owner, _game.Random)}",
+            "cube" => $"입방체 — 나감 {CubePuzzleDialog.Play(owner, _game.Player, _game.Random, _game.Sfx)}",
+            _ => $"[{which}] 은 모르는 미니 게임이다",
+        };
+    }
+
     /// <summary>화면 밖 시험 — 그 도시 도서관 서가(열람)를 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
     internal string OpenLibraryForTest(int city)
     {

@@ -35,6 +35,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   스폰서 일람    CDS_DIALOG=patrons[:&lt;명&gt;][:story:&lt;명&gt;][:year:&lt;해&gt;][:city:&lt;도시&gt;] — 후원자를 만난 것으로 두고 일람을 띄워 휠 · 글쇠 · 굴림대로 굴려 본다.
 ///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
+///   미니 게임 프레임 CDS_DIALOG=minigame:&lt;fish|cube|none&gt;[:city:&lt;도시&gt;][:secs:&lt;초&gt;] — 미니 게임을 띄워 두고 WPF · 지도 프레임과 그림이 바뀐 틈을 잰다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
 /// </code>
@@ -386,7 +387,168 @@ public static class OffscreenHarness
                     window.Dispatcher.BeginInvoke(() => ProbeList(window, "patrons", 10), DispatcherPriority.ApplicationIdle);
                     Log("스폰서 일람 — " + window.OpenPatronsForTest(meet, Opt("city"), Math.Max(0, Opt("story")), Opt("year")));
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=minigame:<fish|cube>[:city:<도시>][:secs:<초>] — 미니 게임을 띄워 두고 1초마다 WPF 프레임 · 지도 프레임 · CPU 를 적는다(버그 리포트 #49).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } miniDialog && miniDialog.StartsWith("minigame:"))
+                window.Dispatcher.BeginInvoke(() => RunMinigameProbe(window, miniDialog), DispatcherPriority.ApplicationIdle);
         }, DispatcherPriority.ApplicationIdle);
+    }
+
+    // ── 미니 게임 프레임 ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// <c>CDS_DIALOG=minigame:&lt;fish|cube&gt;[:city:&lt;도시&gt;][:secs:&lt;초&gt;]</c>(버그 리포트 #49) — 미니 게임을 띄워 두고 1초마다
+    /// WPF 프레임 수 · 가장 긴 프레임 틈 · 33ms 넘은 틈 수 · 지도(D3D) 프레임 수 · Background 우선도 지연(미니 게임 타이머가 서는 줄) ·
+    /// CPU 를 적는다. 설명 · 결과 알림은 저절로 닫고, 입방체는 0.7초마다 방향키 · 스페이스를 보낸다. 그 초가 지나면 창을 닫는다.
+    /// </summary>
+    private static void RunMinigameProbe(WorldMapWindow window, string spec)
+    {
+        var parts = spec.Split(':');
+        string which = parts.Length > 1 ? parts[1] : "fish";
+        int Opt(string key, int fallback) => Array.IndexOf(parts, key) is int at and > 0 && at + 1 < parts.Length
+                                             && int.TryParse(parts[at + 1], out int v) ? v : fallback;
+        int city = Opt("city", -1), secs = Opt("secs", 12);
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var proc = System.Diagnostics.Process.GetCurrentProcess();
+        TimeSpan lastCpu = proc.TotalProcessorTime, lastRender = TimeSpan.Zero;
+        double lastSecond = 0, maxGap = 0, maxLag = 0, sumGap = 0;
+        int frames = 0, slow = 0, second = 0;
+        long lastMap = window.MapHost.FrameCount;
+        bool pinging = false;
+        var all = new List<double>();
+        // 미니 게임 그림이 실제로 바뀐 횟수 — 캔버스 그림들의 자리 · 다각형 점 묶음이 바뀌면 한 번으로 센다.
+        int moves = 0;
+        double lastMove = -1, maxStill = 0;
+        long lastSig = 0;
+        var stills = new List<double>();
+        long Signature(Window w)
+        {
+            long sig = 17;
+            void Walk(DependencyObject node)
+            {
+                for (int i = 0, n = VisualTreeHelper.GetChildrenCount(node); i < n; i++)
+                {
+                    var child = VisualTreeHelper.GetChild(node, i);
+                    if (child is UIElement { Visibility: Visibility.Visible } ui && VisualTreeHelper.GetParent(ui) is System.Windows.Controls.Canvas)
+                    {
+                        double l = System.Windows.Controls.Canvas.GetLeft(ui), t = System.Windows.Controls.Canvas.GetTop(ui);
+                        sig = sig * 31 + (double.IsNaN(l) ? 0 : (long)(l * 16));
+                        sig = sig * 31 + (double.IsNaN(t) ? 0 : (long)(t * 16));
+                        if (ui is System.Windows.Shapes.Polygon poly) sig = sig * 31 + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(poly.Points);
+                        if (ui is System.Windows.Controls.Image img && img.Source is { } src) sig = sig * 31 + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(src);
+                    }
+                    Walk(child);
+                }
+            }
+            Walk(w);
+            return sig;
+        }
+
+        void OnRender(object? sender, EventArgs e)
+        {
+            var at = ((RenderingEventArgs)e).RenderingTime;
+            if (at == lastRender) return;
+            if (lastRender != TimeSpan.Zero)
+            {
+                double gap = (at - lastRender).TotalMilliseconds;
+                frames++; sumGap += gap; all.Add(gap);
+                maxGap = Math.Max(maxGap, gap);
+                if (gap > 33.5) slow++;
+            }
+            lastRender = at;
+
+            // Background 우선도 일이 얼마나 늦게 도는지 — DispatcherTimer 의 기본 우선도가 이것이다.
+            if (!pinging)
+            {
+                pinging = true;
+                long sent = clock.ElapsedTicks;
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    maxLag = Math.Max(maxLag, (clock.ElapsedTicks - sent) * 1000.0 / System.Diagnostics.Stopwatch.Frequency);
+                    pinging = false;
+                }, DispatcherPriority.Background);
+            }
+
+            double now = clock.Elapsed.TotalSeconds;
+            if (Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is FishingGameDialog or CubePuzzleDialog) is { IsVisible: true } game)
+            {
+                long sig = Signature(game);
+                if (sig != lastSig)
+                {
+                    if (lastMove >= 0)
+                    {
+                        double still = (now - lastMove) * 1000;
+                        maxStill = Math.Max(maxStill, still);
+                        if (still < 300) stills.Add(still);   // 손을 놓고 쉬는 틈(입방체 단추 사이)은 빼고 잰다
+                    }
+                    lastSig = sig; lastMove = now; moves++;
+                }
+            }
+            else lastMove = -1;
+            if (now - lastSecond < 1.0) return;
+            proc.Refresh();
+            var cpu = proc.TotalProcessorTime;
+            long map = window.MapHost.FrameCount;
+            bool open = Application.Current.Windows.OfType<Window>().Any(w => w is FishingGameDialog or CubePuzzleDialog);
+            Log($"프레임 {++second}초 — 미니 게임 {(open ? "열림" : "닫힘")} · WPF {frames} · 평균 {(frames > 0 ? sumGap / frames : 0):0.0}ms · 최장 {maxGap:0.0}ms"
+                + $" · 33ms 넘음 {slow} · 지도 {map - lastMap} · Background 지연 최장 {maxLag:0.0}ms · CPU {(cpu - lastCpu).TotalMilliseconds / ((now - lastSecond) * 10):0}%"
+                + $" · 그림 바뀜 {moves} · 그림 멎음 최장 {maxStill:0}ms");
+            lastCpu = cpu; lastMap = map; lastSecond = now;
+            frames = 0; slow = 0; maxGap = 0; maxLag = 0; sumGap = 0; moves = 0; maxStill = 0;
+        }
+        CompositionTarget.Rendering += OnRender;
+
+        // 설명 · 결과 알림은 저절로 닫는다. 입방체는 글쇠를 차례로 보낸다.
+        System.Windows.Input.Key[] keys =
+            [System.Windows.Input.Key.Left, System.Windows.Input.Key.Up, System.Windows.Input.Key.Right,
+             System.Windows.Input.Key.Down, System.Windows.Input.Key.Space];
+        int sentKeys = 0;
+        double lastKey = 0;
+        var driver = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromMilliseconds(200) };
+        driver.Tick += (_, _) =>
+        {
+            foreach (var w in Application.Current.Windows.OfType<Window>().ToList())
+            {
+                if (w is ConfirmDialog && w.IsVisible) { Log($"알림을 닫는다 — [{TextOf(w)}]"); w.Close(); }
+                else if (w is CubePuzzleDialog cube && w.IsVisible && clock.Elapsed.TotalSeconds - lastKey > 0.7)
+                {
+                    lastKey = clock.Elapsed.TotalSeconds;
+                    var key = keys[sentKeys++ % keys.Length];
+                    if (PresentationSource.FromVisual(cube) is { } source)
+                        cube.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, source, 0, key)
+                        { RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent });
+                }
+            }
+            if (clock.Elapsed.TotalSeconds < secs) return;
+            foreach (var w in Application.Current.Windows.OfType<Window>().ToList())
+                if (w is FishingGameDialog or CubePuzzleDialog) { Log($"{secs}초 — 미니 게임 창을 닫는다"); w.Close(); }
+        };
+        driver.Start();
+
+        var all0 = all;
+        Log($"미니 게임 [{which}] 을 띄운다 — 도시 {city} · {secs}초");
+        // 한 판이 일찍 끝나면(낚시가 잡어에 걸리면) 그 초가 찰 때까지 다시 띄운다. none 이면 띄우지 않고 그대로 잰다.
+        var results = new List<string>();
+        if (which == "none")
+        {
+            if (city >= 0) window.PlayMinigameForTest(which, city);
+            var frame = new DispatcherFrame();
+            var stop = new DispatcherTimer(TimeSpan.FromSeconds(secs), DispatcherPriority.Normal, (_, _) => frame.Continue = false, window.Dispatcher);
+            Dispatcher.PushFrame(frame);
+            stop.Stop();
+        }
+        else
+            for (int round = 0; clock.Elapsed.TotalSeconds < secs; round++)
+                results.Add(window.PlayMinigameForTest(which, round == 0 ? city : -1));
+        string result = string.Join(" / ", results);
+        driver.Stop();
+        CompositionTarget.Rendering -= OnRender;
+        all0.Sort();
+        double P(double q) => all0.Count == 0 ? 0 : all0[Math.Min(all0.Count - 1, (int)(q * all0.Count))];
+        Log($"미니 게임 끝 — {result} · 프레임 {all0.Count} · 중앙 {P(0.5):0.0}ms · 95% {P(0.95):0.0}ms · 99% {P(0.99):0.0}ms · 최장 {P(1):0.0}ms");
+        stills.Sort();
+        double Q(double q) => stills.Count == 0 ? 0 : stills[Math.Min(stills.Count - 1, (int)(q * stills.Count))];
+        Log($"그림 바뀜 사이 — {stills.Count}번 · 중앙 {Q(0.5):0.0}ms · 95% {Q(0.95):0.0}ms · 99% {Q(0.99):0.0}ms");
     }
 
     // ── 바로 시작 ───────────────────────────────────────────────────────────
