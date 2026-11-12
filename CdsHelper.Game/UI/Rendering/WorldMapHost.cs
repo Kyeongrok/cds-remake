@@ -761,7 +761,26 @@ public sealed class WorldMapHost : HwndHost
     /// 지녔을 때만이다(<c>0x0048ECEF</c>~<c>0x0048ED13</c>). 켜져 있으면 커서 칸으로 곧장 뱃머리를
     /// 돌리지 않고, 바닷길을 찾아 <b>첫 길목</b> 쪽으로 돌린다(<c>0x0048EE2E</c>).
     /// </summary>
-    public bool PathAssist { get; set; }
+    public bool PathAssist { get => TestPathAssist ?? _pathAssist; set => _pathAssist = value; }
+
+    private bool _pathAssist;
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=steer</c>)이 길찾기 보정을 켜거나 끈 채로 둔다. null 이면 창이 정한 대로다.</summary>
+    public bool? TestPathAssist { get; set; }
+
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_DIALOG=steer</c>, 버그 리포트 #50) — 커서 대신 이 칸을 가리킨다. 화면 밖 창은 활성이 안 돼
+    /// 커서가 배를 못 몰므로, 커서가 그 칸 위에 있고 조타가 깨어 있는 것처럼 친다. null 이면 커서 그대로다.
+    /// </summary>
+    public (double X, double Y)? TestCursorCell { get; set; }
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=steer</c>)이 걸음에 곱하는 값 — 바람이 약한 1월에도 빠른 배를 흉내 낸다. 여느 때는 1.</summary>
+    public double TestStepScale { get; set; } = 1;
+
+    /// <summary>화면 밖 시험이 적는 배 상태 — 자리(소수) · 뱃머리 · 바라는 쪽 · 막힘 · 닻 · 바라보는 자리 · 걸음 · 도는 원.</summary>
+    public string SteerStateForTest =>
+        $"배 {_shipX:0.00},{_shipY:0.00} · 뱃머리 {_heading} → {_desired} · 막힘 {_blocked} · 닻 {_anchored}"
+        + $" · 목표 {_targetX:0.00},{_targetY:0.00} · 걸음 {LastStep:0.00} · 원 {TurnRadiusCells:0.00}";
 
     /// <summary>길찾기 보정이 마지막으로 셈한 배 칸 · 커서 칸과 그 첫 길목.</summary>
     private (int X, int Y, int ToX, int ToY) _assistFrom = (int.MinValue, int.MinValue, int.MinValue, int.MinValue);
@@ -2465,24 +2484,33 @@ public sealed class WorldMapHost : HwndHost
             {
                 UpdateAutoTarget();
             }
-            else if (_mouseInside && SteerArmed)
+            else if ((_mouseInside && SteerArmed) || TestCursorCell != null)
             {
                 // 커서가 가리키는 칸으로 뱃머리를 돌린다.
-                _targetX = origin.X + _mouse.X * dpiX * _cellsPerPixel;
-                _targetY = origin.Y + _mouse.Y * dpiY * _cellsPerPixel;
+                _targetX = TestCursorCell?.X ?? origin.X + _mouse.X * dpiX * _cellsPerPixel;
+                _targetY = TestCursorCell?.Y ?? origin.Y + _mouse.Y * dpiY * _cellsPerPixel;
 
-                // 항해사와 나침반이 있으면 곧장 돌지 않고 바닷길의 첫 길목으로 돈다(0x0048EE2E).
-                // 커서가 항구 도시(뭍) 위면 그 도시의 어귀 물칸을 향한다 — 뭍 칸을 그대로 주면 길찾기가 커서에서 가장 가까운
-                // 물칸(북쪽부터 훑는다)으로 밀어, 항구 코앞에서 어귀 아닌 데로 돌아 들어갔다(버그 리포트 #30).
-                if (PathAssist && !_onLand && PortUnder(_targetX, _targetY) is { } mouth)
+                // 커서가 항구 도시 위(그림이 선 뭍이든, 어귀 네모 안의 물이든)면 그 도시의 어귀 물칸을 향한다 — 뭍 칸을 그대로
+                // 주면 길찾기가 커서에서 가장 가까운 물칸(북쪽부터 훑는다)으로 밀어, 항구 코앞에서 어귀 아닌 데로 돌아
+                // 들어갔다(버그 리포트 #30). 보정이 없어도 겨눈다 — 어귀에 다가서면 Sail 이 곧장 들인다(버그 리포트 #50).
+                _portAim = _onLand ? null : PortAimAt(_targetX, _targetY);
+                if (_portAim is { } mouth)
                     (_targetX, _targetY) = mouth;
+                // 항해사와 나침반이 있으면 곧장 돌지 않고 바닷길의 첫 길목으로 돈다(0x0048EE2E).
+                _assistAim = false;
                 if (PathAssist && !_onLand && NextWaypoint(_targetX, _targetY) is { } step)
                 {
                     _targetX = step.X;
                     _targetY = step.Y;
+                    _assistAim = true;
                 }
             }
-            _hasHeadingTarget = AutoSailing || (_mouseInside && SteerArmed);
+            if (AutoSailing || (!(_mouseInside && SteerArmed) && TestCursorCell == null))
+            {
+                _portAim = null;
+                _assistAim = false;
+            }
+            _hasHeadingTarget = AutoSailing || (_mouseInside && SteerArmed) || TestCursorCell != null;
             Sail(dt);
             // <b>멈춤과 커서 놓침을 먼저 적는다.</b> 이 둘은 뱃머리가 안 도는 까닭인데,
             // 예전 줄은 그래도 "커서 쪽으로 항해 중" 이라 적어 서 있는 배와 구별이 안 됐다.
@@ -2626,10 +2654,110 @@ public sealed class WorldMapHost : HwndHost
             // 가로는 경도 보정만큼 늘린다(0x0048D23A) — 위도가 높을수록 경도 한 칸이 짧아서,
             // 같은 걸음이라도 지도 위에서는 더 많은 칸을 지난다. 해류도 같은 값을 받는다.
             double lon = Engine.Sea.Sailing.LonScale(ShipLatLon.Lat);
+            if (AimStep(step) is { } aim)
+            {
+                Step(aim.X, aim.Y);
+                Steps++;
+                continue;
+            }
             Step(vx * step * lon + driftX, vy * step + driftY);
             Steps++;
             if (AutoSailing) UpdateStuckGuard();
         }
+    }
+
+    /// <summary>커서가 가리키는 항구의 어귀 물칸(<see cref="PortAimAt"/>). 커서 조타 중이 아니거나 항구가 아니면 null.</summary>
+    private (double X, double Y)? _portAim;
+
+    /// <summary>지금 목표(<see cref="_targetX"/>)가 길찾기 보정이 준 길목인지 — 커서 쪽이 아니라 닿아야 할 자리다.</summary>
+    private bool _assistAim;
+
+    /// <summary>어귀 물칸이 이 칸 수(도는 원이 크면 그 지름 + 1, <see cref="AimSlideReach"/> 까지) 안이고 곧게 물로 이어지면 뱃머리 대신 곧장 들어선다.</summary>
+    private const double PortDockReach = 3.0;
+
+    /// <summary>막혔을 때 이 칸 수 안의 길목 · 어귀로 곧게 물이 이어지면 그 쪽으로 비켜 나간다.</summary>
+    private const double AimSlideReach = 8.0;
+
+    /// <summary>곧장 들어설 때의 가장 작은 걸음(칸) — 맞바람에 걸음이 0 이어도 어귀 코앞에서 서 버리지 않게.</summary>
+    private const double PortDockMinStep = 0.2;
+
+    /// <summary>
+    /// 이번 틱에 뱃머리 벡터 대신 <b>목표로 곧장</b> 갈 걸음(칸). 그럴 때가 아니면 null.
+    /// </summary>
+    /// <remarks>
+    /// 커서 조타는 원본 그대로 바라는 쪽을 8방위로만 내고 뱃머리를 한 틱에 1~3 눈금씩 돌린다. 그래서 커서를 항구에 대면
+    /// 어귀가 도는 원 안에 들거나 8방위 사이에 끼어, 배가 코앞에서 어귀를 지나쳐 뱅글뱅글 돌거나 해안에 대고 서 버렸다
+    /// (버그 리포트 #50 — 원본도 같다, <c>0x0048ECC2</c> 에 멈추는 조건이 없다). 이제 두 경우만 곧장 간다.
+    /// <code>
+    ///   어귀가 가깝다   커서가 항구 위이고 어귀 물칸이 PortDockReach(도는 원이 크면 그 지름 + 1, 8칸까지) 안, 곧게 물이면 → 어귀로
+    ///   막혔다         길목 · 어귀가 AimSlideReach 안이면 → 곧게 물이면 그 쪽으로, 아니면 22.5도씩 벌려 나아갈 수 있는 쪽으로
+    ///                  (8방위 뱃머리가 물길 옆 뭍 · 곶 모서리를 들이받은 것)
+    /// </code>
+    /// 해류는 안 받는다 — 어귀 코앞에서 밀려나면 또 돈다. 뱃머리는 여전히 목표 쪽으로 돌아 그림이 따라온다.
+    /// </remarks>
+    private (double X, double Y)? AimStep(double step)
+    {
+        if (_onLand || AutoSailing) return null;
+        // 1. 어귀가 가깝고 곧게 물이면 들어선다.
+        if (_portAim is { } mouth
+            && AimToward(mouth, _blocked ? AimSlideReach : Math.Clamp(TurnRadiusCells * 2 + 1, PortDockReach, AimSlideReach),
+                         Math.Max(step, PortDockMinStep), slide: false) is { } dock)
+            return dock;
+        if (!_blocked) return null;
+        // 2. 막혔으면 길목(보정이 있으면) 쪽으로, 없으면 어귀 쪽으로 비킨다 — 굽은 물길에서는 어귀보다 길목이 옳은 쪽이다.
+        if (_assistAim) return AimToward((_targetX, _targetY), AimSlideReach, step, slide: true);
+        if (_portAim is { } port) return AimToward(port, AimSlideReach, Math.Max(step, PortDockMinStep), slide: true);
+        return null;
+    }
+
+    /// <summary>
+    /// 그 자리로 곧장 갈 한 걸음 — <paramref name="reach"/> 칸 밖이거나 걸음이 없으면 null. 곧게 물이 아니면 <paramref name="slide"/> 일 때만
+    /// 목표 쪽에서 22.5도씩 벌려 나아갈 수 있는 쪽으로 비킨다(직각까지).
+    /// </summary>
+    private (double X, double Y)? AimToward((double X, double Y) aim, double reach, double step, bool slide)
+    {
+        double dx = WrapDx(aim.X - _shipX), dy = aim.Y - _shipY, far = Math.Sqrt(dx * dx + dy * dy);
+        if (far > reach || step <= 0) return null;
+        if (far < 1e-3) return (0, 0);   // 어귀 한가운데다 — 입항 물음을 이미 지나쳤으면(아니오) 여기 선다
+        double go = Math.Min(step, far), ux = dx / far, uy = dy / far;
+        if (SeaClear(aim)) return (ux * go, uy * go);
+        if (!slide) return null;
+        // 막혔는데 목표까지 곧게 물이 아니다 — 곶 모서리 · 물길 옆 뭍에 걸린 것이다. 다 막혔으면 뱃머리대로 둔다.
+        foreach (int turn in AimSlideTurns)
+        {
+            double a = turn * Math.PI / 8, c = Math.Cos(a), sn = Math.Sin(a);
+            double vx = (ux * c - uy * sn) * go, vy = (ux * sn + uy * c) * go;
+            if (CanGo(_shipX + vx, _shipY + vy)) return (vx, vy);
+        }
+        return null;
+    }
+
+    /// <summary>막혔을 때 목표 쪽에서 벌려 보는 각(22.5도 눈금) — 가까운 쪽부터, 직각까지.</summary>
+    private static readonly int[] AimSlideTurns = [1, -1, 2, -2, 3, -3, 4, -4];
+
+    /// <summary>
+    /// 커서 자리가 가리키는 항구의 어귀 물칸 — 항구 그림이 선 뭍(<see cref="PortUnder"/>)이거나, 어귀 네모(<see cref="TownsAt"/> 이 재는
+    /// 바다 쪽 네모) 안의 물이면 그 도시의 <see cref="PortCellOf"/>. 아니면 null.
+    /// </summary>
+    /// <remarks>세비야 · 런던 · 암스테르담처럼 도시 칸이 물칸인 항구는 예전에 뭍만 보느라 어귀를 못 겨눴다.</remarks>
+    private (double X, double Y)? PortAimAt(double x, double y)
+    {
+        if (PortUnder(x, y) is { } mouth) return mouth;
+        if (_cities == null || IsLand(x, y)) return null;
+        int fx = (int)Math.Floor(x), fy = (int)Math.Floor(y);
+        for (int id = 0; id < CityExeTable.Count; id++)
+        {
+            if (CityOpen is { } open && !open(id)) continue;
+            if (!_cities.TryCell(id, out int cx, out int cy, out int reach)) continue;
+            int slack = TouchSlack + MouthSlack(id);
+            if (fy < cy - TownSlack - slack || fy > cy + reach + slack) continue;
+            int dx = fx - cx;
+            if (dx > WorldMapRenderer.UnfoldedW / 2) dx -= WorldMapRenderer.UnfoldedW;
+            if (dx < -WorldMapRenderer.UnfoldedW / 2) dx += WorldMapRenderer.UnfoldedW;
+            if (dx < -TownSlack - slack || dx > reach + slack) continue;
+            if (PortCellOf(id) is { } cell) return (_shipX + WrapDx(cell.X - _shipX), cell.Y);
+        }
+        return null;
     }
 
     /// <summary>
@@ -2722,7 +2850,7 @@ public sealed class WorldMapHost : HwndHost
         LastWind = (wind.Dir, wind.Speed, (wind.Dir - _heading) & 0xF);
 
         bool fast = FastTile();
-        double step = Engine.Sea.Sailing.CellsPerTick(speed, fast, _onLand);
+        double step = Engine.Sea.Sailing.CellsPerTick(speed, fast, _onLand) * TestStepScale;
         LastFast = fast;
         LastStep = step;
         LastFlow = (0, 0);
@@ -3430,10 +3558,12 @@ public sealed class WorldMapHost : HwndHost
         {
             double radius = TurnRadiusCells;
             int at = 1;
+            // 건너뛰는 것은 그 다음 길목이 곧게 물로 보일 때만이다 — 굽은 물길(템스 강)에서 원 안의 길목을 건너뛰고 뭍 너머의
+            // 어귀를 바라보면, 그 쪽 뭍에 대고 서서 배 칸이 안 바뀌니 다시 셈하지도 않아 영영 섰다(버그 리포트 #50).
             while (at < route.Count - 1)
             {
                 double gx = WrapDx(route[at].X - _shipX), gy = route[at].Y - _shipY;
-                if (gx * gx + gy * gy > radius * radius) break;
+                if (gx * gx + gy * gy > radius * radius || !SeaClear(route[at + 1])) break;
                 at++;
             }
             _assistStep = route[at];

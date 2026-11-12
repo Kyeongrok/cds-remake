@@ -36,6 +36,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   스폰서 일람    CDS_DIALOG=patrons[:&lt;명&gt;][:story:&lt;명&gt;][:year:&lt;해&gt;][:city:&lt;도시&gt;] — 후원자를 만난 것으로 두고 일람을 띄워 휠 · 글쇠 · 굴림대로 굴려 본다.
 ///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
 ///   미니 게임 프레임 CDS_DIALOG=minigame:&lt;fish|cube|none&gt;[:city:&lt;도시&gt;][:secs:&lt;초&gt;] — 미니 게임을 띄워 두고 WPF · 지도 프레임과 그림이 바뀐 틈을 잰다.
+///   커서 조타     CDS_DIALOG=steer:&lt;도시&gt;[:dir:&lt;0~7&gt;][:dist:&lt;칸&gt;][:assist:&lt;0|1&gt;][:speed:&lt;곱&gt;] — 커서를 항구 위에 둔 것처럼 몰아 입항 물음까지 걸린 초를 잰다.
 ///   타이틀 글쇠    CDS_TITLE=Down,Enter — 타이틀에서 1초 간격으로 누른다(LOAD GAME). CDS_AUTOKEY=Enter 면 새로 뜬 창마다 글을 적고 그 글쇠를 보낸다.
 ///   찍고 끄기      CDS_SHOT=&lt;png&gt;:&lt;초&gt;[;&lt;png&gt;:&lt;초&gt;…] — 창이 뜬 지 그 초에 찍고, 마지막 것을 찍으면 창을 닫는다.
 /// </code>
@@ -390,6 +391,10 @@ public static class OffscreenHarness
             // CDS_DIALOG=minigame:<fish|cube>[:city:<도시>][:secs:<초>] — 미니 게임을 띄워 두고 1초마다 WPF 프레임 · 지도 프레임 · CPU 를 적는다(버그 리포트 #49).
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } miniDialog && miniDialog.StartsWith("minigame:"))
                 window.Dispatcher.BeginInvoke(() => RunMinigameProbe(window, miniDialog), DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=steer:<도시>[:dir:<0~7>][:dist:<칸>][:at:<x>,<y>][:aim:<dx>,<dy>][:assist:<0|1>][:speed:<곱>][:secs:<초>] — 커서를 그 도시(항구 그림) 위에
+            // 둔 것처럼 배를 몰며 0.5초마다 배 자리 · 뱃머리 · 막힘 · 어귀를 적는다. 입항 물음이 뜨면 적고 닫는다(버그 리포트 #50).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } steerDialog && steerDialog.StartsWith("steer:"))
+                window.Dispatcher.BeginInvoke(() => RunSteerProbe(window, steerDialog), DispatcherPriority.ApplicationIdle);
         }, DispatcherPriority.ApplicationIdle);
     }
 
@@ -606,6 +611,70 @@ public static class OffscreenHarness
             foreach (Window w in Application.Current.Windows)
                 if (!ReferenceEquals(w, window) && w.IsVisible && seen.Add(w))
                     Log($"창이 떴다 — {w.GetType().Name} · 글 [{TextOf(w)}]");
+        };
+        watch.Start();
+    }
+
+    // ── 커서 조타 ───────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// <c>CDS_DIALOG=steer:&lt;도시&gt;[:dir:&lt;0~7&gt;][:dist:&lt;칸&gt;][:at:&lt;x&gt;,&lt;y&gt;][:aim:&lt;dx&gt;,&lt;dy&gt;][:assist:&lt;0|1&gt;][:speed:&lt;곱&gt;][:secs:&lt;초&gt;]</c>(버그 리포트 #50) —
+    /// 배를 도시 칸에서 그 방위(8방위, 0 북 · 2 서 · 4 남 · 6 동 — 게임 방위 차례)로 그 칸 수만큼 떨어진 물칸(<c>at</c> 이면 그 칸)에 놓고,
+    /// 커서가 도시 칸(<c>aim</c> 이면 거기서 그만큼 옮긴 칸) 위에 있는 것처럼 몬다. <c>assist</c> 는 길찾기 보정(항해사 · 나침반)을 켜고 끄고, <c>speed</c> 는 걸음에 곱한다(빠른 배 흉내).
+    /// 0.5초마다 배 상태를 적고, 입항 물음이 뜨면 걸린 초와 함께 적은 뒤 닫고 끝낸다. 그 초(기본 40)가 지나도 안 뜨면 「안 떴다」로 끝낸다. 입항 물음이 아닌 창(어귀 밖에서 뜬 것)은 닫고 이어 간다.
+    /// </summary>
+    private static void RunSteerProbe(WorldMapWindow window, string spec)
+    {
+        var host = window.MapHost;
+        var parts = spec.Split(':');
+        if (parts.Length < 2 || !int.TryParse(parts[1], out int city)) { Log($"steer 를 못 읽었다 — [{spec}]"); return; }
+        string? Opt(string key) => Array.IndexOf(parts, key) is int at and > 0 && at + 1 < parts.Length ? parts[at + 1] : null;
+        (double, double)? Pair(string key) => Opt(key)?.Split(',') is [var a, var b]
+            && double.TryParse(a, System.Globalization.CultureInfo.InvariantCulture, out double x)
+            && double.TryParse(b, System.Globalization.CultureInfo.InvariantCulture, out double y) ? (x, y) : null;
+        int dir = int.TryParse(Opt("dir"), out int d) ? d & 7 : 0;
+        double dist = double.TryParse(Opt("dist"), System.Globalization.CultureInfo.InvariantCulture, out double far) ? far : 12;
+        int secs = int.TryParse(Opt("secs"), out int s) ? s : 40;
+        if (Opt("assist") is { } assist) host.TestPathAssist = assist == "1";
+        if (double.TryParse(Opt("speed"), System.Globalization.CultureInfo.InvariantCulture, out double speed)) host.TestStepScale = speed;
+
+        if (!GameMapCoords.TryCityCell(city, out double cx, out double cy)) { Log($"steer — 도시 {city} 자리를 모른다"); return; }
+        // 게임 방위는 반시계다 — 0 북, 2 서, 4 남, 6 동.
+        double a = dir * Math.PI / 4;
+        var (sx, sy) = Pair("at") ?? (cx - Math.Sin(a) * dist, cy - Math.Cos(a) * dist);
+        if (!host.PlaceAtSea(sx, sy, waterOnly: true)) { Log($"steer — ({sx:0.0}, {sy:0.0}) 둘레에 물칸이 없다"); return; }
+        var (ax, ay) = Pair("aim") ?? (0, 0);
+        host.SteerTo(dir * 2 + 8 & 0xF);           // 닻을 올리고 도시 쪽으로 뱃머리를 둔다
+        host.TestCursorCell = (cx + ax, cy + ay);
+        Log($"커서 조타 — 도시 {city} 칸 {cx:0.00},{cy:0.00} · 커서 {cx + ax:0.00},{cy + ay:0.00} · 보정 {host.PathAssist} · {host.SteerStateForTest}");
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        double nextLog = 0;
+        var watch = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromMilliseconds(100) };
+        watch.Tick += (_, _) =>
+        {
+            double t = clock.Elapsed.TotalSeconds;
+            foreach (Window w in Application.Current.Windows)
+            {
+                if (ReferenceEquals(w, window) || !w.IsVisible) continue;
+                Log($"{t:0.0}초 — 창이 떴다 {w.GetType().Name} · 글 [{TextOf(w)}] · {host.SteerStateForTest} · 어귀 [{string.Join(",", host.TownsAt())}]");
+                // 입항 물음이 아닌 창(날 눈금 · 사건 알림)은 닫고 이어 간다.
+                if (host.TownsAt().Count == 0) { w.Close(); continue; }
+                watch.Stop();
+                host.TestCursorCell = null;
+                Log($"커서 조타 끝 — 입항 물음 {t:0.0}초");
+                w.Close();
+                return;
+            }
+            if (t >= nextLog)
+            {
+                nextLog += 0.5;
+                Log($"{t:0.0}초 — {host.SteerStateForTest} · 어귀 [{string.Join(",", host.TownsAt())}] · {window.ScreenStateForTest()}");
+            }
+            if (t < secs) return;
+            watch.Stop();
+            host.TestCursorCell = null;
+            Log($"커서 조타 끝 — {secs}초 안에 입항 물음이 안 떴다");
         };
         watch.Start();
     }
