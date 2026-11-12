@@ -63,6 +63,9 @@ public sealed class ModDialog : GameWindow
         public Func<bool> SmoothCloudsOn { get; init; } = () => true;
         public Action<bool> SetSmoothClouds { get; init; } = _ => { };
 
+        /// <summary>「누적 캐릭터…」 창이 지금 게임과 잇는 손잡이(얼굴 · 앉은 사람 · 지운 뒤).</summary>
+        public AccCharacterDialog.Hooks Cumulative { get; init; } = new();
+
         /// <summary>열자마자 찾기 칸에 넣을 말 — 화면 밖 시험(CDS_DIALOG=mod:…)이 쓴다.</summary>
         public string? StartQuery { get; init; }
     }
@@ -573,6 +576,9 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다 — 리스본 · 세비야 · 런던 왕궁과 제노바 총독부에 「망명」 줄이 생겨, 그 나라(포르투갈 · 에스파니아 · 잉글랜드 · 제노바)로 국적을 옮기고 자택도 그 도시로 옮깁니다."
             + " 명성 60000 이상과 그 왕궁 국왕과의 친밀도 75 이상이 필요하고, 망명하면 금화 1000000닢과 명성 50000이 깎입니다."
             + " 후원자와 계약 중이거나 의뢰를 수행하는 중에는 망명할 수 없습니다."));
+
+        // 누적 캐릭터 — 올라 있는 은퇴 제독을 한 사람씩 지우거나 「등장 안 함」을 켠다. 원본은 한 사람씩 지울 길이 없다.
+        character.Children.Add(CumulativeButton(options));
 
         // 대화만 되던 인물 고용 — 고용 상태 1(대화만) 인물도 술집에서 고용한다.
         character.Children.Add(Toggle("대화만 되던 인물 고용", GameSettings.HireTalkOnly, on => GameSettings.HireTalkOnly = on,
@@ -1143,6 +1149,20 @@ public sealed class ModDialog : GameWindow
         _noHit.Visibility = hits == 0 ? Visibility.Visible : Visibility.Collapsed;
         _hitNote.Text = hits > 0 ? Local.Helpers.Lang.T($"{hits}개") : "";
         _list.ScrollToTop();
+    }
+
+    /// <summary>「누적 캐릭터…」 단추 — 누르면 누적 캐릭터 창(<see cref="AccCharacterDialog"/>)을 연다.</summary>
+    private UIElement CumulativeButton(Options options)
+    {
+        var open = GameUi.PushButton("누적 캐릭터…", () => AccCharacterDialog.Show(this, options.Cumulative), 150);
+        open.HorizontalAlignment = HorizontalAlignment.Left;
+        open.Margin = new Thickness(0, 10, 0, 2);
+        Watch(open, "누적 캐릭터",
+            "원본에 없는 것입니다 — 은퇴해 누적 캐릭터로 올라간 제독(최대 5명)을 얼굴 · 이름 · 나라 · 은퇴 날짜 · 명성과 함께 늘어놓습니다."
+            + " 한 사람씩 「삭제」하거나, 지우지 않고 「등장 안 함」을 켜 다음 게임부터 등장시키지 않을 수 있습니다."
+            + " 지금 게임에 나와 있는 사람을 지우면 지금 게임에서도 사라지고, 세이브를 불러와도 돌아오지 않습니다."
+            + " 원본은 한 사람씩 지울 수 없고, NEW GAME 에서 「등장시키지 않는다」를 고른 주인공이 은퇴할 때 다섯을 한꺼번에 지울 뿐입니다.");
+        return open;
     }
 
     /// <summary>커스텀 BGM 켜고 끄기와 그 밑의 「곡 등록」 단추. 단추는 꺼 둔 채로도 눌린다.</summary>

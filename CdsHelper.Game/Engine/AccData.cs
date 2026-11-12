@@ -32,11 +32,15 @@ public static class AccData
     /// <param name="RetiredOn">은퇴한 게임 날짜.</param>
     /// <param name="City">은퇴한 도시. 다음 판에서 그 자리에 선다. 옛 파일은 −1 이다.</param>
     /// <param name="Track">행적 — 어느 날 어느 도시에 들었는지. 다음 판에서 되돌려 튼다.</param>
+    /// <param name="Id">이 사람의 표지 — 판(세이브)이 앉힌 자리를 이것으로 기억한다(<see cref="Player.AccSeats"/>).
+    /// 이 칸 앞의 파일은 읽을 때 이름과 은퇴 날짜로 지어 붙인다(<see cref="LegacyId"/>).</param>
+    /// <param name="Hidden">「등장 안 함」 — 지우지 않고 다음 게임부터 안 내보낸다. 원본에 없는 것이다(모드 창 「누적 캐릭터…」).</param>
     public sealed record Character(string Name, string Family, string Given, int Face,
                                    int Nation, int JobIndex, int Blood, int Fame,
                                    int[] Abilities, Dictionary<string, int> Skills,
                                    Dictionary<string, int> Tongues, DateTime RetiredOn,
-                                   int City = -1, Player.Trace[]? Track = null);
+                                   int City = -1, Player.Trace[]? Track = null,
+                                   string? Id = null, bool Hidden = false);
 
     /// <summary>적어 두는 자리 — 세이브와 같은 폴더다.</summary>
     public static string Path => System.IO.Path.Combine(
@@ -45,18 +49,83 @@ public static class AccData
     private static readonly JsonSerializerOptions Pretty = new() { WriteIndented = true };
 
     /// <summary>올라 있는 사람들. 없으면 빈 목록이다.</summary>
+    /// <remarks>표지(<see cref="Character.Id"/>)가 없는 사람은 이름과 은퇴 날짜로 지어 붙이고 파일에도 적어 둔다.</remarks>
     public static List<Character> Load()
     {
+        List<Character> all;
         try
         {
             if (!File.Exists(Path)) return [];
-            return JsonSerializer.Deserialize<List<Character>>(File.ReadAllText(Path)) ?? [];
+            all = JsonSerializer.Deserialize<List<Character>>(File.ReadAllText(Path)) ?? [];
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             return [];
         }
+        bool named = false;
+        for (int i = 0; i < all.Count; i++)
+        {
+            if (!string.IsNullOrEmpty(all[i].Id)) continue;
+            all[i] = all[i] with { Id = LegacyId(all[i]) };
+            named = true;
+        }
+        if (named) Save(all);
+        return all;
     }
+
+    /// <summary>
+    /// 표지가 없던 사람의 표지 — 이름과 은퇴 날짜로 짓는다. 파일에 못 적어도 읽을 때마다 같은 값이 나와
+    /// 세이브가 기억한 자리(<see cref="Player.AccSeats"/>)와 맞는다.
+    /// </summary>
+    private static string LegacyId(Character who)
+    {
+        byte[] hash = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes($"{who.Name}|{who.RetiredOn.Ticks}|{who.Face}"));
+        return "old-" + Convert.ToHexString(hash, 0, 8).ToLowerInvariant();
+    }
+
+    private static string NewId() => Guid.NewGuid().ToString("N");
+
+    /// <summary>
+    /// 새 게임에 앉힐 사람들의 표지 — 「등장 안 함」을 뺀 앞의 다섯. 이 차례가 인물 276~280 이 된다.
+    /// </summary>
+    public static List<string?> SeatsForNewGame() =>
+        [.. Load().Where(c => !c.Hidden).Take(Slots).Select(c => (string?)c.Id)];
+
+    /// <summary>
+    /// 이 칸 앞의 세이브가 앉힌 자리 — 예전처럼 파일 차례 그대로 다섯이다(「등장 안 함」도 그대로 든다).
+    /// </summary>
+    public static List<string?> SeatsAsListed() =>
+        [.. Load().Take(Slots).Select(c => (string?)c.Id)];
+
+    /// <summary>
+    /// 그 사람을 지운다 — 원본에 없는 것이다(모드 창 「누적 캐릭터…」). 원본은 「등장시키지 않는다」를 고른 주인공이
+    /// 은퇴할 때 다섯을 통째로 지울 뿐이다(<see cref="Clear"/>).
+    /// </summary>
+    /// <remarks>
+    /// 남은 사람들의 차례가 당겨지지만 판마다 앉힌 자리를 표지로 기억하므로(<see cref="Player.AccSeats"/>)
+    /// 이미 앉힌 판에서 다른 사람이 그 자리로 밀려오지 않는다.
+    /// </remarks>
+    public static bool Remove(string id)
+    {
+        var all = Load();
+        int gone = all.RemoveAll(c => c.Id == id);
+        return gone > 0 && Save(all);
+    }
+
+    /// <summary>「등장 안 함」을 켜고 끈다 — 다음 게임부터 든다.</summary>
+    public static bool SetHidden(string id, bool hidden)
+    {
+        var all = Load();
+        int at = all.FindIndex(c => c.Id == id);
+        if (at < 0) return false;
+        all[at] = all[at] with { Hidden = hidden };
+        return Save(all);
+    }
+
+    /// <summary>앉힌 자리 표지로 사람을 찾는다. 지워졌으면 null.</summary>
+    public static Character? Find(IReadOnlyList<Character> all, string? id) =>
+        id == null ? null : all.FirstOrDefault(c => c.Id == id);
 
     /// <summary>그 이름을 쓰는 사람이 이미 있는지(<c>0x0045CF4A</c>).</summary>
     /// <remarks>새 제독을 지을 때 걸린다 — 「같은 성명을 쓰는 누적 캐릭터가 있습니다」(<c>0x00571758</c>).</remarks>
@@ -77,7 +146,7 @@ public static class AccData
                               [.. player.Abilities],
                               new Dictionary<string, int>(player.Skills),
                               new Dictionary<string, int>(player.Tongues),
-                              player.Date, player.HomePort, [.. player.Traces]));
+                              player.Date, player.HomePort, [.. player.Traces], NewId()));
         return Save(all);
     }
 
@@ -95,7 +164,7 @@ public static class AccData
                               saved.Abilities?.ToArray() ?? [],
                               new Dictionary<string, int>(saved.Skills),
                               new Dictionary<string, int>(saved.Tongues ?? []),
-                              saved.Date, saved.HomePort ?? -1, saved.Traces?.ToArray() ?? []));
+                              saved.Date, saved.HomePort ?? -1, saved.Traces?.ToArray() ?? [], NewId()));
         return Save(all);
     }
 
@@ -115,18 +184,24 @@ public static class AccData
     /// 그 사람을 만나 이야기할 수 있고, 바다에서 마주치면 해적질 대상이 된다.
     /// 나이는 적어 두지 않아 그 칸 그대로 둔다.
     /// </remarks>
+    /// <param name="seats">이 판이 앉힌 사람들의 표지 — 자리 i 가 인물 276+i 다(<see cref="Player.AccSeats"/>).
+    /// 표지가 있는데 그 사람이 지워졌으면 그 칸은 <b>세상에서 내린다</b>(등장 0) — 남은 사람을 당겨 앉히지 않는다.</param>
     /// <returns>앉힌 사람 수.</returns>
-    public static int Place(IReadOnlyList<Local.Helpers.PersonTable.Row> people)
+    public static int Place(IReadOnlyList<Local.Helpers.PersonTable.Row> people, IReadOnlyList<string?> seats)
     {
         var all = Load();
         int put = 0;
-        for (int i = 0; i < all.Count && i < Slots; i++)
+        for (int i = 0; i < seats.Count && i < Slots; i++)
         {
             int at = FirstPerson + i;
             if (at >= people.Count) break;
 
-            var who = all[i];
             var row = people[at];
+            if (Find(all, seats[i]) is not { } who)
+            {
+                if (seats[i] != null) Unseat(row);
+                continue;
+            }
             row.First = who.Given.Length > 0 ? who.Given : who.Name;
             row.Last = who.Family;
             row.Face = who.Face;
@@ -152,6 +227,16 @@ public static class AccData
             put++;
         }
         return put;
+    }
+
+    /// <summary>지운 사람이 앉아 있던 칸을 세상에서 내린다 — 만날 수도, 바다에서 마주칠 수도 없다.</summary>
+    public static void Unseat(Local.Helpers.PersonTable.Row row)
+    {
+        row.Appear = 0;
+        row.City = -1;
+        row.Building = -1;
+        row.Dest = -1;
+        row.From = -1;
     }
 
     /// <summary>다섯 자리를 통째로 비운다 — 「누적 캐릭터를 등장시키지 않는다」를 고른 뒤다(<c>0x0041AD55</c>).</summary>

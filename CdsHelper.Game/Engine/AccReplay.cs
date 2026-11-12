@@ -59,13 +59,15 @@ public sealed class AccReplay
     /// <summary>
     /// 올라 있는 사람들의 대본을 건다 — <see cref="AccData.Place"/> 바로 뒤에 부른다.
     /// </summary>
-    public void Load()
+    /// <param name="seats">이 판이 앉힌 사람들의 표지(<see cref="Player.AccSeats"/>) — 자리 i 가 인물 276+i 다.
+    /// 지운 사람의 자리는 대본을 걸지 않는다.</param>
+    public void Load(IReadOnlyList<string?> seats)
     {
         _runners.Clear();
         var all = AccData.Load();
-        for (int i = 0; i < all.Count && i < AccData.Slots; i++)
+        for (int i = 0; i < seats.Count && i < AccData.Slots; i++)
         {
-            var track = all[i].Track;
+            var track = AccData.Find(all, seats[i])?.Track;
             if (track is not { Length: > 0 }) continue;
             _runners.Add(new Runner
             {
@@ -107,6 +109,12 @@ public sealed class AccReplay
     /// 예전에는 도착 줄마다 등장 칸을 1 로 세워, 술집 일기토에서 처형한 누적 캐릭터가 다음 도착에서 되살아났다.
     /// </remarks>
     public Func<int, bool>? Gone { get; set; }
+
+    /// <summary>그 사람의 대본을 떼어 낸다 — 모드 창에서 지운 누적 캐릭터다. 더는 옮겨 다니지도, 바다에 함대로 나오지도 않는다.</summary>
+    public void Drop(int person) => _runners.RemoveAll(run => run.Person == person);
+
+    /// <summary>그 사람의 대본이 걸려 있는지.</summary>
+    public bool Runs(int person) => _runners.Exists(run => run.Person == person);
 
     /// <summary>걸린 대본이 하나라도 있는지.</summary>
     public bool Any => _runners.Count > 0;

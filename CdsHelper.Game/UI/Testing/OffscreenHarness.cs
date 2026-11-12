@@ -30,6 +30,7 @@ namespace CdsHelper.Game.UI.Testing;
 ///   개발 창       CDS_DIALOG=dev:&lt;탭&gt; — 개발 창을 그 탭(「에디터」 따위)으로 띄운다.
 ///   발견물 추가   CDS_DIALOG=userdiscovery[:&lt;탭&gt;] — 커스텀 발견물 창을 그 탭(「아이템」 따위)으로 띄운다. CDS_ITEMPIC=&lt;그림&gt; 이면 아이템 그림 칸에 올린다.
 ///   모드 창       CDS_DIALOG=mod[:찾는 말] — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.
+///   누적 캐릭터    CDS_DIALOG=acc[:del:&lt;자리&gt;][,hide:&lt;자리&gt;] — 누적 캐릭터를 등장시킨 게임으로 두고 누적 캐릭터 창을 띄운다(지우기 · 등장 안 함).
 ///   인물 이동 성문 CDS_DIALOG=personmove-gate:&lt;도시&gt; — 도시에 들어가 인물 이동 창을 띄운 채 성문으로 나서고 닫는다(묻는 중 · 멈춤이 남는지).
 ///   매매 창       CDS_DIALOG=trade:&lt;도시&gt; — 그 도시 교역소 매매 창을 짐 셋을 실은 채 띄운다.
 ///   도서관 서가    CDS_DIALOG=library:&lt;도시&gt;[:menu[:&lt;글쇠&gt;]] — 서가를 띄우고, menu 면 오른쪽 단추로 「서적 선택」을 낸다.
@@ -233,6 +234,41 @@ public static class OffscreenHarness
                     }, DispatcherPriority.ApplicationIdle);
                     window.OpenModForTest(query);
                     Log("모드 창이 닫혔다");
+                }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=acc[:del:<자리>][,hide:<자리>] — 누적 캐릭터를 등장시킨 게임으로 두고 누적 캐릭터 창을 띄운다. del 이면 그 자리(0~4)
+            // 사람을 묻지 않고 지운 뒤 json · 인물 276~280 · 행적 대본을 적고, 세상을 새로 지어(불러오기와 같은 길) 되살아나지 않는지 본다.
+            // hide 면 그 자리 사람의 「등장 안 함」을 켠다(json 깃발만 — 지금 게임은 그대로).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } accDialog && (accDialog == "acc" || accDialog.StartsWith("acc:")))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    string Names() => string.Join(", ", Engine.AccData.Load().Select(c => $"{c.Name}[{c.Id}]{(c.Hidden ? "(숨김)" : "")}"));
+                    Log($"누적 캐릭터 파일 {Engine.AccData.Path} — {Names()}");
+                    Log("앉힘 " + window.CumulativeStateForTest(open: true));
+                    var ops = accDialog.Length > 4 ? accDialog[4..].Split(',') : [];
+                    int Slot(string op) => ops.Select(o => o.Split(':')).Where(p => p.Length == 2 && p[0] == op)
+                                              .Select(p => int.TryParse(p[1], out int n) ? n : -1).DefaultIfEmpty(-1).First();
+                    int slot = Slot("del"), hideSlot = Slot("hide");
+                    window.OpenCumulativeForTest(dialog =>
+                    {
+                        // 주인이 -8000 이라 CenterOwner 가 실제 화면 가운데에 세운다 — 자리를 다 잡은 뒤 주인 안으로 옮겨 스냅숏에 들게 한다.
+                        window.Dispatcher.BeginInvoke(() => { dialog.Left = window.Left + 40; dialog.Top = window.Top + 20; },
+                                                      DispatcherPriority.ApplicationIdle);
+                        var seats = window.CurrentGame.Player.AccSeats;
+                        string? SeatId(int at) => seats != null && at >= 0 && at < seats.Count ? seats[at] : null;
+                        if (SeatId(hideSlot) is { } hideId)
+                        {
+                            dialog.SetHidden(hideId, true);
+                            Log($"자리 {hideSlot} 등장 안 함 [{hideId}] — 파일 {Names()} · 새 게임 자리 {string.Join(",", Engine.AccData.SeatsForNewGame())}");
+                        }
+                        if (slot < 0) return;
+                        string? id = SeatId(slot);
+                        Log($"자리 {slot} 지우기 [{id}] — {(id != null && dialog.Delete(id, ask: false) ? "지웠다" : "못 지웠다")}");
+                        Log($"지운 뒤 파일 — {Names()}");
+                        Log("지운 뒤 " + window.CumulativeStateForTest(open: false));
+                        window.RebuildWorldForTest();
+                        Log("다시 지은 뒤 " + window.CumulativeStateForTest(open: false));
+                    });
+                    Log("누적 캐릭터 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=dev:<탭> — 개발 창을 그 탭(「에디터」 따위)으로 띄운다. 창은 주인 안으로 옮겨 스냅숏에 들게 한다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } devDialog && devDialog.StartsWith("dev:"))

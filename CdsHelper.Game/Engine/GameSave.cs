@@ -443,7 +443,8 @@ public static class GameSave
         Dictionary<int, long>? GrowthFunds = null, Dictionary<int, int>? GoodsRates = null,
         int? StoreExpansions = null, int? StoreQuestCleared = null, bool? StoreQuestTaken = null,
         List<string>? DevMarks = null, string? DevSeal = null,
-        string? Pack = null, string? PackPrint = null)
+        string? Pack = null, string? PackPrint = null,
+        List<string?>? AccSeats = null)
     {
         /// <summary>읽을 때 봉인을 대 본 결과 — 맞으면 참, 안 맞거나 없으면 거짓, 따지지 않는 앞 판이면 null. 파일에는 안 적는다.</summary>
         [JsonIgnore] public bool? SealOk { get; init; }
@@ -648,7 +649,9 @@ public static class GameSave
                             DevMarks: player.DevMarks.Count > 0 ? HardcoreRules.Sorted(player.DevMarks) : null,
                             // 이 판을 시작한 커스텀 팩과 그 지문. 팩 없이 시작했거나 이 칸 앞의 세이브는 비어 있다.
                             Pack: player.Pack.Length > 0 ? player.Pack : null,
-                            PackPrint: player.PackPrint.Length > 0 ? player.PackPrint : null);
+                            PackPrint: player.PackPrint.Length > 0 ? player.PackPrint : null,
+                            // 누적 캐릭터를 앉힌 자리(표지). 이 칸 앞의 세이브는 누적캐릭터.json 차례로 채운다.
+                            AccSeats: player.AccSeats is { } seats ? [.. seats] : null);
         try
         {
             // 중단은 제 자리(SAVEDATA.TMP)에만 적는다 — 일반 세이브와 손으로 적은 칸은 그대로 둔다(0x00479447~0x0047946F).

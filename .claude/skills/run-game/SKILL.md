@@ -69,6 +69,7 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 | `CDS_DIALOG=bugreport` | 왼쪽 위 메뉴로 연 것처럼 버그 리포트 창을 띄운다 — 메뉴 창이 떠 있는 동안 배 · 말이 서는지 본다 |
 | `CDS_DIALOG=personmove-gate:<도시>` | `CDS_START=sea:<도시>:…` 와 함께 — 그 도시에 들어가 도시락 「인물 이동」을 띄운 채 성문으로 나서고 창을 닫은 뒤 커맨드 창을 열었다 닫는다. 걸음마다 지도 상태(멈춤 · 묻는 중 · 도시 안)를 기록에 적는다(버그 리포트 #44) |
 | `CDS_DIALOG=mod[:<찾는 말>]` | 모드 창을 띄우고 찾기 칸에 그 말을 넣는다(`mod:자동` — 모든 탭을 가로질러 걸러진 화면). `CDS_START` 와 함께 쓴다 |
+| `CDS_DIALOG=acc[:del:<자리>][,hide:<자리>]` | `CDS_START` 와 함께 — 이 게임에 누적 캐릭터를 등장시킨 것으로 두고(시험 폴더 `누적캐릭터.json` 을 미리 넣고 `-KeepSave`) 누적 캐릭터 창(모드 창 「누적 캐릭터…」)을 띄운다. `del` 이면 그 자리(0~4) 사람을 묻지 않고 지우고, `hide` 면 「등장 안 함」을 켠다. 앞뒤와 세상을 다시 지은 뒤(불러오기와 같은 길)의 인물 276~280 · 앉힌 표지 · 행적 대본을 기록에 적는다 |
 | `CDS_DIALOG=sound` | 2초마다 다섯 번 효과음(닻)을 내고 소리 진단(버그 리포트의 `sound` — 곡 상태 · 재생 위치 · 트는 손 · 기본 출력 장치 · 앱 음량)을 기록에 적는다. 소리를 내려면 `CDS_MUTE=0`(크기는 시험 폴더 `game-settings.json` 의 `BgmVolume`/`SfxVolume` 0 으로 조용히). `CDS_AUDIO=winrt` 면 WPF MediaPlayer 대신 WinRT 쪽으로 튼다 |
 | `CDS_DIALOG=storm` | `CDS_START=sea:…` 와 함께 — 지도를 멈춘 채 폭풍 장면만 돌리고, 앞 · 도는 동안(1초마다) · 뒤의 소리 진단(곡 상태 · 장치 음량 · 앱 음량 · 장치 음량이 바뀐 자취 `deviceChanges`)을 기록에 적는다(버그 리포트 #45). 곡을 들으려면 `CDS_MUTE=0` 과 시험 폴더 `game-settings.json` 의 작은 `BgmVolume` |
 | `CDS_DIALOG=landbattle-sound` | `CDS_START=sea:…` 와 함께 — 육상전이 곡을 다루는 차례(전투 곡 → 끝맺음 숨죽임 → 듣던 곡)와 해전 · 일기토 승패 소리의 멈춤(Pause → Resume)을 1초 간격으로 밟으며 곡 상태 · 장치 음량 · `deviceChanges` 를 적는다(버그 리포트 #46 · #47). 흐름이 안 끊기면 내내 `wpf Playing` 이고 자리가 흐른다. `CDS_MUTE=0` 과 시험 폴더 `game-settings.json` 의 `BgmVolume` 0 |

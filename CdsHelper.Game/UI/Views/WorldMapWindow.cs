@@ -2624,13 +2624,16 @@ public sealed class WorldMapWindow : Window
     /// <returns>이어서 제독을 지어도 되면 true.</returns>
     private bool AskCumulative()
     {
-        var all = Engine.AccData.Load();
+        // 「등장 안 함」(모드 창 「누적 캐릭터…」)을 켠 사람은 늘어놓지도 앉히지도 않는다 — 다 꺼 두었으면 묻지 않는다.
+        // 다섯이 다 찼는지(은퇴할 수 없게 되는지)는 꺼 둔 사람까지 센다 — 자리는 그대로 차 있다.
+        var registered = Engine.AccData.Load();
+        var all = registered.Where(c => !c.Hidden).ToList();
         if (all.Count == 0) return true;
 
         // 이름은 한 사람마다 「%s\n」(0x00537664)로 이어 붙여, 본문의 「%s\n」과 겹쳐 빈 줄이 하나 선다.
         // 다섯이 다 찼을 때의 글(0x0055DFE8)만 「%d 명의」로 띄어 쓴다.
         string names = string.Concat(all.Select(c => c.Name + "\n"));
-        bool full = all.Count >= Engine.AccData.Slots;
+        bool full = registered.Count >= Engine.AccData.Slots;
         string body = $"{names}\n{all.Count}{(full ? " 명의" : "명의")} 누적캐릭터가 등록되어 있습니다.\n"
                     + "이 캐릭터들을 게임 속에 등장시킬 수 있습니다만, 어떻게 하시겠습니까?"
                     + (full ? "\n또, 이 캐릭터들을 등장시키면 지금부터 시작하는 캐릭터로는 은퇴할 수 없게 됩니다." : "");
@@ -2653,6 +2656,8 @@ public sealed class WorldMapWindow : Window
         // 등장시키면 인물 276~280 자리에 앉고(0x0041AF00), 옛 발자취를 날마다 되짚는다. 앉힌 날을 적어 두면
         // 세상을 새로 지을 때마다(불러오기 포함) AttachCumulative 가 다시 앉힌다 — 여기서는 세상을 새로 짓게만 한다.
         _game.Player.SetAccOpened(_game.Player.Date);
+        // 앉힌 사람을 표지로 기억한다 — 나중에 누군가 지워져도 다른 사람이 그 자리로 당겨 앉지 않는다.
+        _game.Player.SetAccSeats(Engine.AccData.SeatsForNewGame());
         _game.ResetWorld();
         return true;
     }
@@ -2673,7 +2678,10 @@ public sealed class WorldMapWindow : Window
         var player = _game.Player;
         if (player.AccOpened is not { } opened || player.SkipsCumulative) return;
 
-        Engine.AccData.Place(world.People);
+        // 이 칸 앞의 세이브는 앉힌 자리를 모른다 — 예전처럼 파일 차례로 채우고 적어 둔다(다음 세이브에 남는다).
+        if (player.AccSeats == null) player.SetAccSeats(Engine.AccData.SeatsAsListed());
+        var seats = player.AccSeats!;
+        Engine.AccData.Place(world.People, seats);
         var replay = new Engine.AccReplay(opened);
         // 누적 캐릭터가 옛 공략을 되짚으면 그 도시가 그 나라로 넘어가고 알림이 뜬다(0x00409A7E).
         replay.Captured = (person, city, nation) =>
@@ -2694,11 +2702,47 @@ public sealed class WorldMapWindow : Window
             if (what.Length == 0) return;
             NoticeDialog.Show(this, $"{who}{GameUi.Josa(who, "이", "가")} [{what}]{GameUi.Josa(what, "을", "를")} 보고했습니다");
         };
-        replay.Load();
+        replay.Load(seats);
         foreach (var (person, days) in player.AccLate) replay.SetLate(person, days);
         // 지금 날짜까지는 이미 지난 일이다 — 알리지 않고 함대 목록·자리만 되살린다(막 앉힌 날이면 조용할 것이 없다).
         replay.QuietThrough = player.Date > opened ? player.Date : null;
         world.Replay = replay.Any ? replay : null;
+    }
+
+    /// <summary>누적 캐릭터 창(모드 창 「누적 캐릭터…」)이 지금 게임과 잇는 손잡이.</summary>
+    internal AccCharacterDialog.Hooks CumulativeHooks() => new()
+    {
+        Faces = _game.Faces,
+        Seated = id => CumulativeSeat(id) >= 0,
+        Removed = DropCumulative,
+    };
+
+    /// <summary>그 누적 캐릭터가 지금 게임에서 앉은 자리(0~4). 등장시키지 않은 게임이거나 안 앉았으면 −1.</summary>
+    private int CumulativeSeat(string id)
+    {
+        var player = _game.Player;
+        if (!_started || player.AccOpened == null || player.SkipsCumulative || player.AccSeats is not { } seats) return -1;
+        for (int i = 0; i < seats.Count && i < Engine.AccData.Slots; i++)
+            if (seats[i] == id) return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// 모드 창에서 지운 누적 캐릭터를 지금 게임에서도 내린다 — 그 자리(인물 276+자리)의 등장 칸을 끄고 행적 되짚기를 뗀다.
+    /// </summary>
+    /// <remarks>
+    /// 원본에 없는 것이다. 앉힌 자리 표지(<see cref="Support.Local.Models.Player.AccSeats"/>)는 그대로 둔다 — 지운 사람의
+    /// 표지가 남아 있어야 세상을 다시 지을 때(불러오기 포함) <see cref="Engine.AccData.Place"/> 가 그 자리를 비워 두고,
+    /// 뒷사람이 당겨 앉아 그 자리의 늦어짐 · 튼 줄 수를 물려받지 않는다.
+    /// </remarks>
+    private void DropCumulative(string id)
+    {
+        int seat = CumulativeSeat(id);
+        if (seat < 0) return;
+        int person = Engine.AccData.FirstPerson + seat;
+        if (_game.World is not { } world) return;
+        if (world.People.FirstOrDefault(r => r.Id == person) is { } row) Engine.AccData.Unseat(row);
+        world.Replay?.Drop(person);
     }
 
     /// <summary>
@@ -3998,7 +4042,7 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreExecuted(saved.Executed);
             // 누적 캐릭터를 앉힌 날과 늦어짐 — 세상을 새로 지을 때 AttachCumulative 가 다시 앉힌다.
             // 이 칸 앞의 세이브는 등장시키지 않은 판으로 연다.
-            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate, saved.AccPlayed);
+            _game.Player.RestoreAcc(saved.AccOpened, saved.AccLate, saved.AccPlayed, saved.AccSeats);
             // 판 표지. 이 칸 앞의 세이브는 새로 뽑는다 — 앞 칸들은 은퇴·삭제 때 이름으로 가린다.
             _game.Player.GameId = !string.IsNullOrEmpty(saved.GameId) ? saved.GameId : Guid.NewGuid().ToString("N");
             _game.Player.Hardcore = saved.Hardcore == true;
@@ -4146,6 +4190,38 @@ public sealed class WorldMapWindow : Window
     }
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=mod[:찾는 말]</c>) — 모드 창을 띄우고 찾기 칸에 그 말을 넣는다.</summary>
+    /// <summary>
+    /// 화면 밖 시험(CDS_DIALOG=acc) — 이 게임에 누적 캐릭터를 등장시킨 것으로 두고(아직이면) 인물 276~280 과 행적 대본을 한 줄로 적는다.
+    /// </summary>
+    internal string CumulativeStateForTest(bool open)
+    {
+        var player = _game.Player;
+        if (open && player.AccOpened == null)
+        {
+            player.SetAccOpened(player.Date);
+            player.SetAccSeats(Engine.AccData.SeatsForNewGame());
+            _game.ResetWorld();
+        }
+        var world = _game.World;
+        var seats = player.AccSeats ?? [];
+        var parts = new List<string>();
+        for (int i = 0; i < Engine.AccData.Slots; i++)
+        {
+            int person = Engine.AccData.FirstPerson + i;
+            var row = world?.People.FirstOrDefault(r => r.Id == person);
+            string seat = i < seats.Count ? seats[i] ?? "-" : "-";
+            parts.Add($"{person}[{seat}] {row?.Name ?? "?"} 등장={row?.Appear} 도시={row?.City} 대본={(world?.Replay?.Runs(person) == true ? "O" : "X")}");
+        }
+        return string.Join(" | ", parts);
+    }
+
+    /// <summary>화면 밖 시험 — 모드 창을 거치지 않고 누적 캐릭터 창을 띄운다.</summary>
+    internal void OpenCumulativeForTest(Action<AccCharacterDialog>? opened) =>
+        AccCharacterDialog.Show(this, CumulativeHooks(), opened);
+
+    /// <summary>화면 밖 시험 — 세상을 새로 지은 것처럼(불러오기와 같은 길) 누적 캐릭터를 다시 앉힌다.</summary>
+    internal void RebuildWorldForTest() => _game.ResetWorld();
+
     internal void OpenModForTest(string? query)
     {
         _modQuery = query;
@@ -4158,6 +4234,7 @@ public sealed class WorldMapWindow : Window
     private void ShowModDialogCore() => ModDialog.Show(this, new ModDialog.Options
     {
         StartQuery = _modQuery,
+        Cumulative = CumulativeHooks(),
         // 발견물 수는 도시 창 쪽지다 — 켜고 끄면 떠 있는 도시 창이 설정 알림을 받아 곧바로 고친다.
         DiscoveryCountOn = () => GameSettings.ShowDiscoveryCount,
         SetDiscoveryCount = on => GameSettings.ShowDiscoveryCount = on,

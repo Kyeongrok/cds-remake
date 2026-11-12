@@ -1767,6 +1767,22 @@ public sealed class Player
     /// <summary>누적 캐릭터를 앉힌 날을 적는다(없애려면 null).</summary>
     public void SetAccOpened(DateTime? on) => AccOpened = on;
 
+    private List<string?>? _accSeats;
+
+    /// <summary>
+    /// 이 판이 인물 276~280 에 앉힌 누적 캐릭터의 표지 — 자리 i 가 인물 276+i 다. 모르면 null.
+    /// </summary>
+    /// <remarks>
+    /// 원본은 인물 레코드째로 세이브에 적어 파일이 바뀌어도 그 판의 다섯은 그대로다(<c>0x00431E90</c>). 우리는
+    /// 세상을 지을 때마다 누적캐릭터.json 에서 다시 앉히므로, 모드 창에서 한 사람을 지우면 뒷사람들이 당겨져
+    /// 엉뚱한 사람이 그 자리(와 그 자리의 늦어짐 · 튼 줄 수)를 물려받았다. 그래서 앉힌 사람을 표지로 기억한다.
+    /// 지운 사람의 표지는 그대로 남아 그 자리는 빈다. 이 칸 앞의 세이브는 파일 차례로 채운다.
+    /// </remarks>
+    public IReadOnlyList<string?>? AccSeats => _accSeats;
+
+    /// <summary>앉힌 사람들의 표지를 적는다(없애려면 null).</summary>
+    public void SetAccSeats(IEnumerable<string?>? seats) => _accSeats = seats == null ? null : [.. seats];
+
     private readonly Dictionary<int, int> _accLate = [];
 
     /// <summary>
@@ -1798,10 +1814,12 @@ public sealed class Player
 
     /// <summary>세이브에서 누적 캐릭터를 되돌린다. 이 칸 앞의 세이브는 등장시키지 않은 판이다.</summary>
     /// <param name="played">튼 줄 수. 이 칸 앞의 세이브면 null — 그때는 불러온 날로 가늠한다.</param>
+    /// <param name="seats">앉힌 사람들의 표지. 이 칸 앞의 세이브면 null — 그때는 파일 차례로 채운다.</param>
     public void RestoreAcc(DateTime? opened, IReadOnlyDictionary<int, int>? late,
-                           IReadOnlyDictionary<int, int>? played = null)
+                           IReadOnlyDictionary<int, int>? played = null, IEnumerable<string?>? seats = null)
     {
         AccOpened = opened;
+        SetAccSeats(seats);
         _accLate.Clear();
         foreach (var (person, days) in late ?? new Dictionary<int, int>()) AddAccLate(person, days);
         _accPlayed.Clear();
