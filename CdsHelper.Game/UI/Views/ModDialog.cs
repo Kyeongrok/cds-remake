@@ -493,6 +493,13 @@ public sealed class ModDialog : GameWindow
         general.Children.Add(CustomBgmControls());
         general.Children.Add(CustomSfxControls());
 
+        // 볼륨 믹서 음량 기억 — 늘 켜 두었더니 몇몇 환경에서 소리가 끊긴다는 제보가 와(v1.2.8) 모드로 뺐다.
+        general.Children.Add(Toggle("볼륨 믹서 음량 기억", GameSettings.KeepMixerVolume,
+            on => GameSettings.KeepMixerVolume = on,
+            "Windows 볼륨 믹서에서 맞춘 게임 음량을 기억해 두었다가 다음에 켤 때 되돌립니다."
+            + " 볼륨 믹서로 게임 음량을 따로 줄여 두는 분만 켜세요 — 일부 환경에서 배경음악 · 효과음이 끊길 수 있습니다."
+            + " 게임을 다시 켜야 적용됩니다."));
+
         // 바다 입체 효과 — 지도 셰이더가 바다 칸에 물결 굴곡·햇빛·깊이·물보라를 얹는다.
         // 배 중심 — 가장자리에서 화면을 넘기지 않고 배를 늘 한가운데에 둔다. 아직 다듬는 중이라 실험에 둔다.
         // 뭍 자동이동 — 발견물 지도에서 발견물 점을 오른쪽 단추로 누르면 그 자리까지 걸어간다.

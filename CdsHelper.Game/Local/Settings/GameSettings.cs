@@ -67,6 +67,9 @@ public sealed class GameSettingsData
     public double AppVolume { get; set; } = -1;
     public bool AppMute { get; set; }
 
+    /// <summary>볼륨 믹서 음량 기억(<see cref="Helpers.AppVolumeKeeper"/>)을 켤지. 몇몇 환경에서 소리가 끊긴다는 제보가 있어 꺼 두고 시작한다.</summary>
+    public bool KeepMixerVolume { get; set; }
+
     /// <summary>해상 지도 배율(0.5~1.5, 0.25 칸). 기본 0.75 — 원본 크기에 맞춘 값이다.</summary>
     public double MapScale { get; set; } = GameSettings.DefaultMapScale;
     public int SfxVolume { get; set; } = GameSettings.MaxVolume;
@@ -789,6 +792,13 @@ public static class GameSettings
         d.AppVolume = Math.Clamp(level, 0, 1);
         d.AppMute = mute;
     });
+
+    /// <summary>볼륨 믹서 음량 기억을 켤지 — 모드 창 「일반」. 다음에 켤 때부터 듣는다.</summary>
+    public static bool KeepMixerVolume
+    {
+        get => Get(d => d.KeepMixerVolume);
+        set => Set(d => d.KeepMixerVolume = value);
+    }
 
     /// <summary>게임 창이 뒤로 가거나 접히면 배경음악을 죽일지 — 설정 창 「일반」.</summary>
     public static bool MuteBgmInBackground

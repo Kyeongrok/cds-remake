@@ -105,9 +105,14 @@ internal sealed class App : Application
         CrashReport.Start(typeof(App).Assembly);
         if (OffscreenTest.Isolated) return;
 
-        // 볼륨 믹서에서 맞춘 앱 음량을 되돌린다 — 배경음악 · 효과음 세션은 Windows 가 기억 못 해 다시 켜면 100% 였다(버그 리포트 #51).
-        AppVolumeKeeper.Start();
-        Exit += (_, _) => AppVolumeKeeper.Stop();
+        // 볼륨 믹서 음량 기억(AppVolumeKeeper, 버그 리포트 #51)은 모드 「볼륨 믹서 음량 기억」을 켠 사람만 — v1.2.8 에 늘 켜 두었더니
+        // 「켜고 얼마 지나면 배경음악 · 효과음이 끊기고 발견물(이구아수 폭포)을 찾으면 멈춘다」는 제보가 왔다(#55, 카페).
+        // 1초마다 모든 세션을 훑고 오디오 서비스 새 세션 알림에 훅을 거는데, 그 말고는 v1.2.7 → v1.2.8 사이 소리 쪽 변경이 없다.
+        if (GameSettings.KeepMixerVolume)
+        {
+            AppVolumeKeeper.Start();
+            Exit += (_, _) => AppVolumeKeeper.Stop();
+        }
 
         // 창이 다 뜬 뒤에 띄운다 — 지금 띄우면 주인 창이 아직 자리를 못 잡아 알림이 엉뚱한 데 선다.
         window.Dispatcher.BeginInvoke(() => { ShowReleaseNotes(window); AskKeptBooks(window); AskStats(window); },
