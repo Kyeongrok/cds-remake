@@ -222,6 +222,10 @@ public sealed class BgmPlayer : IDisposable
         (ChurchTrack, "교회"),
         (PalaceTrack, "왕궁(유럽 문화권)"),
         (SponsorTrack, "후원자 알현(보고 · 설득 · 계약중단)"),
+        // 버그 리포트 #58 — 커스텀 BGM 목록에 빠져 있던 둘. 14 는 은퇴(HomeMenu.RetireTrack, 원본 0x0046216C 소리 0x0C),
+        // 17 은 아틀란티스 발견 대본(DISEV 파트 92 의 0E 03 0F)이 튼다. 29 는 원본 · 앱 어디서도 안 틀어 넣지 않는다.
+        (14, "은퇴"),
+        (17, "아틀란티스 발견"),
     ];
 
     private readonly MediaVoice _player = new();
