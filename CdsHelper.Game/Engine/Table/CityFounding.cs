@@ -50,7 +50,12 @@ public static class CityFounding
     /// 조건 <c>02 0B [n]</c> 과 <c>1B 0B [n] 16 [해]</c> 가 이것이다 — 뒤의 것은 「찾은 뒤 몇 해」 꼴이지만
     /// 원본 판정(<c>0x004076A1</c>)이 부호를 어긋나게 비교해 찾았기만 하면 참이 된다.
     /// </param>
-    public readonly record struct Rule(int Year, int Month, bool Wait, int Needs, int[] Cities, int Discovery = -1);
+    /// <param name="FromMonth">
+    /// <c>1B</c> 꼴인데 <b>그 해는 그 달부터</b> 볼지. 원본 <c>1B</c> 는 달을 안 보므로 원본 줄은 다 거짓이고,
+    /// 우리가 바로잡은 줄(파나마)만 참이다.
+    /// </param>
+    public readonly record struct Rule(int Year, int Month, bool Wait, int Needs, int[] Cities, int Discovery = -1,
+                                       bool FromMonth = false);
 
     /// <summary>
     /// 그 발견물이 그 날짜까지 찾아졌는지 — 게임(<c>Game</c>)이 판을 열 때 걸어 둔다.
@@ -85,15 +90,22 @@ public static class CityFounding
         new(1522, 7, true, -1, [205], 192),     // 파트 50  아카풀코     — 02 0B C0 00(아즈텍왕국)
         new(1523, 1, true, 210, [209]),         // 파트 56  레온     — 파나마가 있어야
         new(1525, 1, true, 209, [212, 208]),    // 파트 59  코로·트루히요
-        new(1531, 3, false, 215, [210]),        // 파트 70  파나마   — 그 달에만!
+        // 파트 70  파나마 — 원본은 1C 17 03 16 FB 05(1531년 3월, 그 달에만)라 1523 · 1525 년부터 파나마를 기다리던
+        // 레온 · 코로 · 트루히요가 1531년에 한꺼번에 섰다(볼트 75 §4, 버그 리포트 #53). 역사대로 1519년 3월로 당기고,
+        // 그 달에 바이앙이 아직 없으면 넷이 영영 안 서므로 그 달부터 기다리게 한다.
+        new(1519, 3, true, 215, [210], FromMonth: true),
         new(1535, 1, true, -1, [173], 5),       // 파트 75  오문         — 1B 0B 05 00(중국)
+        // 원본 HIST_EV 에 없는 둘 — 도시 표 · 건물 자료는 다 있는데 세우는 줄이 없어 끝까지 안 섰다(버그 리포트 #53).
+        // 날짜는 역사대로다. 리마는 파나마에서 나간 피사로가 세웠으므로 파나마가 있어야 한다.
+        new(1525, 1, true, -1, [211], 1),       // 산타마르타 — 1525년
+        new(1535, 1, true, 210, [222]),         // 리마       — 1535년 1월
     ];
 
     /// <summary>게임이 시작하는 해. 여기서부터 달을 훑는다.</summary>
     private const int FirstYear = 1480;
 
     /// <summary>
-    /// <b>영영 안 나오는 세 도시.</b> 표에는 숨김 비트가 서 있는데 <c>HIST_EV.CDS</c>
+    /// <b>날짜로는 안 서는 도시.</b> 원본에서는 셋(멕시코 · 산타마르타 · 리마)이 표에 숨김 비트가 서 있는데 <c>HIST_EV.CDS</c>
     /// 어디에도 그 번호가 한 번도 안 나온다 — 걷어 줄 이벤트가 없다.
     /// </summary>
     /// <remarks>
@@ -106,7 +118,8 @@ public static class CityFounding
     /// <c>22 08 C8 00</c>(테노치티틀란을 없앰) · <c>26 08 C9 00</c>(멕시코를 세움)을 둔다.
     /// 날짜로는 안 나오므로 <c>Player.ScriptedCities</c> 가 따로 든다.
     /// </remarks>
-    public static readonly IReadOnlySet<int> NeverFounded = new HashSet<int> { 201, 211, 222 };
+    /// <para>산타마르타 · 리마는 원본과 달리 <see cref="Rules"/> 에 줄을 더해 세운다(버그 리포트 #53) — 이제 멕시코만 남는다.</para>
+    public static readonly IReadOnlySet<int> NeverFounded = new HashSet<int> { 201 };
 
     /// <summary>
     /// 그 날짜까지 <b>세워진</b> 도시들. 처음부터 있던 도시는 안 들어간다.
@@ -134,7 +147,7 @@ public static class CityFounding
 
                 // 1B 17 은 달을 안 본다 — 원본 0x004077BB 의 jge 가 같은 해의 달 비교를 건너뛴다.
                 bool now = rule.Wait
-                    ? year >= rule.Year
+                    ? year > rule.Year || year == rule.Year && (!rule.FromMonth || month >= rule.Month)
                     : year == rule.Year && month == rule.Month;
                 if (!now) continue;
 
@@ -166,7 +179,7 @@ public static class CityFounding
     public static (int Year, int Month)? WhenOf(int city)
     {
         foreach (var rule in Rules)
-            if (rule.Cities.Contains(city)) return (rule.Year, rule.Wait ? 1 : rule.Month);   // 1B 는 달을 안 본다
+            if (rule.Cities.Contains(city)) return (rule.Year, rule.Wait && !rule.FromMonth ? 1 : rule.Month);   // 1B 는 달을 안 본다
         return null;
     }
 }

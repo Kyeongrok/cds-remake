@@ -5420,9 +5420,8 @@ public sealed class WorldMapWindow : Window
     /// 새로 선 도시를 지도에 올린다 — 신대륙 식민 도시가 해마다 하나씩 늘어난다.
     /// </summary>
     /// <remarks>
-    /// 언제 무엇이 서는지는 <see cref="CityFounding"/> 에 있다. 1531년에는 파나마가 선
-    /// 다음 달에 레온·코로·트루히요가 <b>한꺼번에</b> 선다 — 원본의 제작 오류를 그대로
-    /// 옮긴 것이라 그 무더기도 그대로 나온다.
+    /// 언제 무엇이 서는지는 <see cref="CityFounding"/> 에 있다. 원본은 파나마가 1531년에야 서서
+    /// 레온·코로·트루히요가 그때 <b>한꺼번에</b> 섰는데, 파나마를 역사대로 1519년으로 당겨 이제 제 해에 하나씩 선다.
     /// </remarks>
     private void TellFounded()
     {
