@@ -568,7 +568,7 @@ public sealed class WorldMapHost : HwndHost
         while (_wakeTrail.Count > MapD3DRenderer.MaxWake - 1) _wakeTrail.RemoveAt(0);
 
         // 「배 중심」이면 배 그림이 걸음 사이를 메운 자리(한가운데)에 있으니 물보라 머리도 거기서 뺀다.
-        var (headX, headY) = CenteredFollow ? (_centerX, _centerY) : (_shipX, _shipY);
+        var (headX, headY) = CenteredFollow ? (_centerX, _centerY) : (Fold(_shipX, _centerX), _shipY);   // 날짜변경선 — SpriteRectAt 과 같이 접는다
         float shipPx = (float)((headX - origin.X) / _cellsPerPixel), shipPy = (float)((headY - origin.Y) / _cellsPerPixel);
         int n = 0;
         _wakeDraw[n++] = (shipPx, shipPy, 0);
@@ -1392,6 +1392,10 @@ public sealed class WorldMapHost : HwndHost
         double cellX, double cellY, (double X, double Y) origin)
     {
         float size = (float)(3.0 / _cellsPerPixel);
+        // 가로는 화면 한가운데 쪽으로 접는다 — 날짜변경선(x 0 ↔ 2499)을 넘으면 따라가기(FollowShip)는 WrapDx 로 재
+        // 「아직 화면 안」이라 화면을 안 넘기는데, 접지 않은 x 로 재면 그림이 세계 폭만큼 떨어진 화면 밖에 찍혀
+        // 말 · 배가 사라졌다(버그 리포트 #57, 북위 66 서경 179 에서 남서로 걷기).
+        cellX = Fold(cellX, _centerX);
         return ((float)((cellX - origin.X) / _cellsPerPixel - size / 2),
                 (float)((cellY - origin.Y) / _cellsPerPixel - size / 2),
                 size, size);
