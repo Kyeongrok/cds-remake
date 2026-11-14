@@ -165,7 +165,9 @@ internal sealed class LandDeployDialog : GameWindow
         // 판을 <b>화면 점</b>에 딱 떨어지게 앉힌다 — 배율이 175%인 화면에서 그냥
         // DIP 로 재면 곱이 1 로 깎이고, 그 1배 그림을 창이 다시 1.75배로 늘리면서
         // 점이 고르지 않게 겹쳐 그림이 찌그러진다.
-        double scale = GameUi.PixelFitDip(owner, LandArt.BoardWidth, LandArt.BoardHeight);
+        // 곱은 <b>육상전 판(640x480)</b>으로 잰다 — 원본은 부대배치 판(592x320)을 전장 화면과 같은 크기로 띄운다.
+        // 판 제 크기로 재면 1280x960 창에서 전장은 1배인데 배치 판만 2배로 늘어나 흐릿했다(버그 리포트 #54).
+        double scale = GameUi.PixelFitDip(owner, LandArt.FieldWidth, LandArt.FieldHeight);
 
         var window = new LandDeployDialog(game, cityName, roster, scale);
         if (owner != null) window.Owner = owner;

@@ -656,9 +656,19 @@ public static class SeaPathfinder
     private static bool Passable(byte[] world, TerrainTable terrain, int x, int y, bool land)
     {
         if (y < 0 || y >= MapH) return false;
+        if (!land && (y < PolarNorthRow || y > PolarSouthRow)) return false;
         int cell = CellValue(world, x, y);
         return land ? terrain.CanWalk(cell) : terrain.CanSail(cell);
     }
+
+    /// <summary>
+    /// 바닷길이 들어가지 않는 극지 — 얼어 죽는 위도(<see cref="SeaEvents.PolarDoomNorth"/> 77도 ·
+    /// <see cref="SeaEvents.PolarDoomSouth"/> 80도)보다 1도 앞에서 막는다. 북극해로 아시아를 넘어가는 자동항로를 따라가다
+    /// 함대가 전멸했다(버그 리포트 #54) — 시베리아 북쪽 끝(77.7도)이 죽는 위도 너머라 그 길은 원래 못 지난다.
+    /// 막힌 띠도 뭍처럼 해안 덤을 받아 길이 그 앞에서 두세 칸 더 띄워진다. 행 가운데의 위도로 잰다(위도 = 90 − (y + 0.5) x 180 / 1250).
+    /// </summary>
+    private static readonly int PolarNorthRow = (int)Math.Ceiling((90 - (SeaEvents.PolarDoomNorth - 1)) * MapH / 180.0 - 0.5);
+    private static readonly int PolarSouthRow = (int)Math.Floor((90 + (SeaEvents.PolarDoomSouth - 1)) * MapH / 180.0 - 0.5);
 
     /// <summary>
     /// 그 칸의 원본 낱말(두 바이트) — <see cref="Rendering.WorldMapHost"/> 의 <c>RawAt</c>·
