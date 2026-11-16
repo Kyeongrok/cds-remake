@@ -142,6 +142,22 @@ public sealed class BookTable
     public HintNeed NeedFor(int hint) =>
         hint >= 0 && hint < _hintNeeds.Length ? _hintNeeds[hint] : new HintNeed(-1, 0);
 
+    /// <summary>원본 힌트 번호인지 — 힌트 조건 표 안이다. 그 밖은 이 PC 에서 더한 커스텀 힌트다.</summary>
+    public bool IsOriginalHint(int hint) => hint >= 0 && hint < _hintNeeds.Length;
+
+    /// <summary>
+    /// 그 제목의 책이 있는지 — 원본(표준 표기) · 더한 책을 모두 본다. 모드 「추가 발견물」을 꺼서
+    /// <see cref="Books"/> 에 안 나오는 더한 책도 센다.
+    /// </summary>
+    public bool HasTitle(string title) =>
+        _books.Any(b => b.Title == title)
+        || BookEdits.All.Values.Any(b => b.Title == title || StandardText.Apply(b.Title) == title);
+
+    /// <summary>책을 새로 더할 때 받을 번호 — 원본과 더한 책 번호 다음 칸.</summary>
+    public int NextIndex() =>
+        Math.Max(_books.Select(b => b.Index).DefaultIfEmpty(-1).Max(),
+                 BookEdits.All.Keys.DefaultIfEmpty(-1).Max()) + 1;
+
     /// <summary>
     /// 그 도시 도서관 서가에 꽂히는 책. 그 도시에 놓였고 <paramref name="year"/> 까지
     /// 나온 것만 고른다. 원본도 들어갈 때마다 이렇게 훑는다(색인을 안 만든다).

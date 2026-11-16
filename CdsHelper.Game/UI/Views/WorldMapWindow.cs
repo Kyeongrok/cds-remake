@@ -370,7 +370,8 @@ public sealed class WorldMapWindow : Window
         foreach (string file in picked)
         {
             var (entry, message) = UserDiscoveries.Import(file, (had, got) => ConfirmDialog.Ask(this,
-                $"같은 발견물 「{had.Name}」 이 이미 있습니다. 불러온 「{got.Name}」 으로 덮어쓸까요?", "발견물 불러오기"));
+                $"같은 발견물 「{had.Name}」 이 이미 있습니다. 불러온 「{got.Name}」 으로 덮어쓸까요?", "발견물 불러오기"),
+                books: _game.Books);
             lines.Add(entry != null ? message : $"{Path.GetFileName(file)} — {message}");
         }
         if (!Local.Settings.GameSettings.ExtraDiscoveries)

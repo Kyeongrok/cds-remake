@@ -736,7 +736,8 @@ public sealed class UserDiscoveryDialog : GameWindow
         var (entry, message) = UserDiscoveries.Import(pick.FileName,
             (had, got) => ConfirmDialog.Ask(this, $"같은 발견물 「{had.Name}」 이 이미 있습니다. 불러온 「{got.Name}」 으로 덮어쓸까요?", "발견물 불러오기"),
             // 같은 UUID 의 아이템인데 알맹이가 다를 때만 묻는다 — 덮어도 안 덮어도 아이템 번호는 그대로다.
-            (had, got) => ConfirmDialog.Ask(this, $"같은 아이템 「{had.Name}」 이 이미 있습니다. 불러온 「{got.Name}」 으로 덮어쓸까요?", "아이템 불러오기"));
+            (had, got) => ConfirmDialog.Ask(this, $"같은 아이템 「{had.Name}」 이 이미 있습니다. 불러온 「{got.Name}」 으로 덮어쓸까요?", "아이템 불러오기"),
+            _game?.Books);
         Refresh(entry?.Uuid ?? _editing?.Uuid);
         RefreshItems(_itemEditing?.Uuid);
         Tell(message);

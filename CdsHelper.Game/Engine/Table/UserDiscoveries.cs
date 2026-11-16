@@ -306,6 +306,9 @@ public static class UserDiscoveries
 
     private const string EntryFile = "discovery.json", PictureFile = "picture.png", MovieStem = "movie";
 
+    /// <summary>내보낸 파일에 함께 담는 책 — 힌트를 실을 책이 사람이 더하거나 고친 책일 때만 있다.</summary>
+    private const string BookFile = "book.json";
+
     /// <summary>모아 둔 자리.</summary>
     public static string Folder =>
         UserDataFolder.Combine("discoveries");
@@ -706,6 +709,16 @@ public static class UserDiscoveries
             if (l.PicturePath is { } picture) zip.CreateEntryFromFile(picture, PictureFile);
             if (l.MoviePath is { } movie) zip.CreateEntryFromFile(movie, Path.GetFileName(movie), CompressionLevel.NoCompression);
             foreach (string item in ItemRefs(l.Entry)) UserItems.WriteTo(zip, item);
+            // 힌트를 실을 책이 이 PC 에서 더하거나 고친 책이면 그 책도 담는다 — 제목만 적어 두면 불러온 PC 에 그 책이 없어
+            // 힌트가 어느 서가에도 안 꽂힌다.
+            if (l.Entry.HasHint && l.Entry.Book.Length > 0
+                && BookEdits.All.Values.Where(b => b.Title == l.Entry.Book || StandardText.Apply(b.Title) == l.Entry.Book)
+                                       .Select(b => (BookTable.Book?)b).FirstOrDefault() is { } book)
+            {
+                var head = zip.CreateEntry(BookFile);
+                using var writer = new StreamWriter(head.Open());
+                writer.Write(JsonSerializer.Serialize(book with { Title = l.Entry.Book }, Pretty));
+            }
             return null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException) { return ex.Message; }
@@ -717,7 +730,8 @@ public static class UserDiscoveries
     /// <paramref name="overwriteItem"/> 으로 물어 덮는다. 새 아이템은 이 PC 의 빈 번호를 받으니 남의 PC 번호와 겹칠 일이 없다.
     /// </summary>
     public static (Entry? Entry, string Message) Import(string path, Func<Entry, Entry, bool> overwrite,
-                                                        Func<UserItems.Entry, UserItems.Entry, bool>? overwriteItem = null)
+                                                        Func<UserItems.Entry, UserItems.Entry, bool>? overwriteItem = null,
+                                                        BookTable? books = null)
     {
         try
         {
@@ -733,6 +747,22 @@ public static class UserDiscoveries
 
             // 아이템을 먼저 들인다 — 발견물 줄(발견하면 주는 아이템)이 아이템 번호를 찾아 쥔다.
             var items = UserItems.ImportFrom(zip, overwriteItem);
+
+            // 파일에 책이 담겨 있고 이 PC 에 그 제목의 책이 없으면 더한다 — 있으면(원본 책이거나 먼저 불러온 것) 그대로 둔다.
+            string? addedBook = null;
+            if (entry.HasHint && entry.Book.Length > 0 && books != null && !books.HasTitle(entry.Book)
+                && zip.GetEntry(BookFile) is { } bookHead)
+            {
+                BookTable.Book shared;
+                using (var stream = bookHead.Open()) shared = JsonSerializer.Deserialize<BookTable.Book>(stream);
+                // 번호는 이 PC 의 빈 칸으로, 힌트는 원본 것만 남긴다 — 만든 PC 의 커스텀 힌트 번호는 여기서 딴 것이다.
+                BookEdits.Set(shared with
+                {
+                    Index = books.NextIndex(), Title = entry.Book, Author = shared.Author ?? "",
+                    Cities = shared.Cities ?? [], Hints = [.. (shared.Hints ?? []).Where(books.IsOriginalHint)],
+                });
+                addedBook = entry.Book;
+            }
 
             string dir = Path.Combine(Folder, entry.Uuid);
             Directory.CreateDirectory(dir);
@@ -750,6 +780,7 @@ public static class UserDiscoveries
             var message = new List<string> { $"「{entry.Name}」 을 불러왔습니다 — 발견물 {numbers.Id}번." };
             var got = items.Added.Concat(items.Replaced).ToList();
             if (got.Count > 0) message.Add($"아이템도 불러왔습니다 — {string.Join(" · ", got.Select(i => $"{i.Entry.Name}({i.Id}번)"))}.");
+            if (addedBook != null) message.Add($"힌트를 실을 책 「{addedBook}」 도 더했습니다.");
             if (items.Kept.Count > 0) message.Add($"이미 있던 아이템 {items.Kept.Count}개는 그대로 두었습니다.");
             int missing = ItemRefs(entry).Count(u => UserItems.ByUuid(u) == null);
             if (missing > 0) message.Add($"장면이 주는 아이템 {missing}개가 파일에 없어 그 줄은 건너뜁니다.");
