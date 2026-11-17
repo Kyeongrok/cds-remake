@@ -55,6 +55,21 @@ public static class ReleaseNotes
                                       shown.Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}")), text);
     }
 
+    /// <summary>
+    /// <paramref name="from"/> 뒤부터 <paramref name="to"/> 까지의 대목을 새 판부터 이어 낸다(명단은 안 붙인다).
+    /// 새 버전을 받아 다시 시작할지 물을 때 무엇이 바뀌는지 함께 보여 준다. 없으면 빈 글.
+    /// </summary>
+    public static string Between(string text, Version from, Version to)
+    {
+        from = Trim(from);
+        to = Trim(to);
+        return string.Join(Environment.NewLine + Environment.NewLine,
+                           Parse(text).Where(s => s.Version > from && s.Version <= to)
+                                      .OrderByDescending(s => s.Version)
+                                      .Take(MaxSections)
+                                      .Select(s => $"v{s.Version}{Environment.NewLine}{s.Body}"));
+    }
+
     /// <summary>명단 대목의 제목 — <c>## 도움 주신 분들</c>. 판 번호가 아니라 판 대목으로는 안 읽힌다.</summary>
     public const string ThanksTitle = "도움 주신 분들";
 
