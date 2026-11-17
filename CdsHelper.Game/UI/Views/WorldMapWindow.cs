@@ -5845,6 +5845,10 @@ public sealed class WorldMapWindow : Window
         }
         if (fresh.Count == 0) return false;
 
+        // 모드 「다른 배 지나치기」 — 걸쇠만 걸고 묻지 않는다(벗어났다 다시 붙어도 안 묻는다). 쫓아온 해적은 그대로 덮친다.
+        // 붙은 배가 없던 틱처럼 바다 주사위는 그대로 굴린다.
+        if (GameSettings.PassShips && !fresh.Exists(r => Chasing(r.Id))) return false;
+
         _asking = true;
         _host.Paused = true;
         bool over = false;

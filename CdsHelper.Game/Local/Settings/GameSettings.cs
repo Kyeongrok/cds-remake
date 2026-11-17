@@ -338,6 +338,9 @@ public sealed class GameSettingsData
     /// <summary>바다에서 다가간 함대의 신상 쪽지를 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool FleetCard { get; set; }
 
+    /// <summary>바다에서 다른 배에 붙어도 「배가 보입니다」를 묻지 않고 지나칠지. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PassShips { get; set; }
+
     /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MateDismiss { get; set; }
 
@@ -1773,6 +1776,12 @@ public static class GameSettings
     }
 
     /// <summary>접근 함대 정보 — 「우호적으로 접근한다 · 습격한다」 고르기 위에 상대의 초상화 · 국적 · 직업 · 함대 규모.</summary>
+    public static bool PassShips
+    {
+        get => Get(d => d.PassShips);
+        set => Set(d => d.PassShips = value);
+    }
+
     public static bool FleetCard
     {
         get => Get(d => d.FleetCard);

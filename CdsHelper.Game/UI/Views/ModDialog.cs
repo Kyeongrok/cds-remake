@@ -316,6 +316,12 @@ public sealed class ModDialog : GameWindow
             + " 고르기 창 없이 「도망」을 고릅니다. 짐승·독충은 그대로 묻습니다."
             + " 도망 성공 여부는 원본 그대로 굴리므로 실패하면 싸움이 이어집니다."));
 
+        // 다른 배 지나치기 — 사람 배에 두 칸 안으로 붙을 때마다 「배가 보입니다」를 묻는 것을 건너뛴다(요청).
+        rows.Children.Add(Toggle("다른 배 지나치기", GameSettings.PassShips,
+            on => GameSettings.PassShips = on,
+            "원본에 없는 것입니다 — 바다에서 다른 함대에 가까이 가도 「배가 보입니다. 가까이 가 보겠습니까?」를 묻지 않고"
+            + " 그대로 지나칩니다. 쫓아온 해적(모드 「해적 추격」)과 해적 · 이슬람 함대의 습격은 그대로 일어납니다."));
+
         // 자동 보급 — 출항할 때 물·식량을 10일분까지, 또는 실을 수 있는 데까지.
         rows.Children.Add(AutoSupplyControls());
 
