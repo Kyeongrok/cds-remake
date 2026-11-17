@@ -74,10 +74,15 @@ public sealed class GoodsTrend
         return years < 0 ? basis * 30 / 100 : Math.Min(3 * years + 30, 200) * basis / 100;
     }
 
-    /// <summary>그 발견물을 보고·발표한 뒤 지난 햇수(0 밑은 0). 안 했으면 -1.</summary>
+    /// <summary>그 발견물을 보고·발표한 뒤 지난 햇수(0 밑은 0). 아무도 안 했으면 -1.</summary>
+    /// <remarks>
+    /// 칸 2 는 <b>누가 보고했든</b> 차므로 누적 캐릭터 · 역사 항해자가 먼저 발표한 해(<see cref="Player.ScoopedOn"/>)도 센다.
+    /// 예전에는 제 보고만 봐서, 남이 먼저 발표하면 다시는 발표할 수 없으니 유럽 값이 영영 30% 에 묶였다(버그 리포트 #59).
+    /// </remarks>
     private int YearsSince(Player player, string discovery)
     {
-        if (!_ids.TryGetValue(discovery, out int id) || player.AnnouncedYearOf(id) is not { } year) return -1;
+        if (!_ids.TryGetValue(discovery, out int id)
+            || (player.AnnouncedYearOf(id) ?? player.ScoopedOn(id)?.Year) is not { } year) return -1;
         return Math.Max(0, player.Date.Year - year);
     }
 }
