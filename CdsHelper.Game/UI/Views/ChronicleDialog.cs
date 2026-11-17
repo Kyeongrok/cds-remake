@@ -41,7 +41,8 @@ public sealed class ChronicleDialog : GameWindow
     /// <param name="What">발견물 이름.</param>
     /// <param name="Reported">보고 줄인지(<c>보고했다</c>). 아니면 <c>발견했다</c>.</param>
     /// <param name="Mine">제독 제 줄인지. 남(누적 캐릭터)이 보고한 줄이면 글색이 다르다.</param>
-    public readonly record struct Row(DateTime When, string Who, string What, bool Reported, bool Mine = true);
+    /// <param name="Did">「공략」 따위 — 주면 발견 · 보고 대신 이 말로 맺는다(향상된 연표).</param>
+    public readonly record struct Row(DateTime When, string Who, string What, bool Reported, bool Mine = true, string? Did = null);
 
     /// <summary>
     /// 줄 글색(공용 색표) — 사람 이름이 제독이면 <c>0x49</c>, 남이면 <c>0x3B</c> 다
@@ -152,7 +153,7 @@ public sealed class ChronicleDialog : GameWindow
     /// <summary>줄 글 — 항해일지는 사람 이름이 없다.</summary>
     private static string Words(in Row row)
     {
-        string what = $"{row.What}{GameUi.Josa(row.What, "을", "를")} {(row.Reported ? "보고" : "발견")}했다";
+        string what = $"{row.What}{GameUi.Josa(row.What, "을", "를")} {row.Did ?? (row.Reported ? "보고" : "발견")}했다";
         return row.Who.Length == 0 ? what : $"{row.Who}{GameUi.Josa(row.Who, "이", "가")} {what}";
     }
 
@@ -185,7 +186,8 @@ public sealed class ChronicleDialog : GameWindow
     /// 「보고」 줄은 누가 알렸든 넣는다(<c>0x004245FA</c> ~ <c>0x0042466E</c>). 남이 알린 것은
     /// <see cref="Player.Scooped"/> 다 — 그 날짜를 안 적던 세이브에서 온 것은 줄을 세울 수 없어 뺀다.
     /// </remarks>
-    public static void ShowChronicle(Window owner, Player player, DiscoveryTable? table)
+    /// <param name="cityName">도시 이름 — 모드 「향상된 연표」의 공략 줄에 쓴다.</param>
+    public static void ShowChronicle(Window owner, Player player, DiscoveryTable? table, Func<int, string>? cityName = null)
     {
         var rows = new List<Row>();
         foreach (int id in player.Announced)
@@ -205,7 +207,23 @@ public sealed class ChronicleDialog : GameWindow
             if (player.HasAnnounced(id) || player.ScoopedOn(id) is not { } told) continue;
             rows.Add(new Row(told, who, NameOf(table, id), Reported: true, Mine: false));
         }
+        if (Local.Settings.GameSettings.EnhancedChronicle) rows.AddRange(Conquests(player, cityName));
         Open(owner, rows, "연표");
+    }
+
+    /// <summary>
+    /// 모드 「향상된 연표」 — 도시 공략 줄(<see cref="Player.Conquests"/>). 제독 · 선대 · 누적 캐릭터 · 역사 항해자가 한 것을 다 싣고,
+    /// 지금 제독 것만 제 글색이다. 기록이 생기기 전 세이브의 제 공략은 행적의 공략 줄(<see cref="Player.TraceCapture"/>)에서 가져온다
+    /// — 누가 했는지 안 적혀 지금 제독 이름으로 싣는다. 원본에 없는 줄이다(버그 리포트 #61).
+    /// </summary>
+    private static IEnumerable<Row> Conquests(Player player, Func<int, string>? cityName)
+    {
+        string Town(int city) => cityName?.Invoke(city) is { Length: > 0 } name ? name : $"도시 {city}";
+        foreach (var c in player.Conquests)
+            yield return new Row(c.On, c.Who, Town(c.City), Reported: false, Mine: c.Who == player.Name, Did: "공략");
+        foreach (var t in player.Traces)
+            if (t.Kind == Player.TraceCapture && !player.Conquests.Any(c => c.City == t.A && c.On == t.On))
+                yield return new Row(t.On, player.Name, Town(t.A), Reported: false, Did: "공략");
     }
 
     /// <summary>

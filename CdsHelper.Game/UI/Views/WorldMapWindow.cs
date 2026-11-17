@@ -2690,6 +2690,7 @@ public sealed class WorldMapWindow : Window
             Engine.Market.CityHistory.ChangeNation(_game.Player, _game.CityRows, _game.Nations, city, nation);
             string who = world.People.FirstOrDefault(r => r.Id == person)?.Name ?? "";
             string town = _game.CityName(city);
+            if (who.Length > 0) _game.Player.NoteConquest(_game.Player.Date, who, city, nation);   // 향상된 연표
             if (who.Length > 0)
                 NoticeDialog.Show(this, $"{who}{GameUi.Josa(who, "이", "가")} [{town}]{GameUi.Josa(town, "을", "를")} 공략했습니다");
         };
@@ -3971,6 +3972,7 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestorePurses(saved.Purses);
             _game.Player.RestoreHidden(saved.Hidden);
             _game.Player.RestoreTraces(saved.Traces);
+            _game.Player.RestoreConquests(saved.Conquests);
             // 대본으로 지어 준 발견물 이름을 표에 도로 덧씌운다 — 원본은 레코드에 직접 쓴다.
             _game.Player.RestoreNamedDiscoveries(saved.NamedDiscoveries);
             // 남이 먼저 발표한 발견물. 이 칸 앞의 세이브는 아무도 안 앞지른 판으로 연다.

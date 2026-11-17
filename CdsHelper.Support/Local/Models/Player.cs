@@ -2038,6 +2038,32 @@ public sealed class Player
     /// </remarks>
     public IReadOnlyList<Trace> Traces => _traces;
 
+    /// <summary>
+    /// 도시 공략 한 건 — 누가(제독 · 선대 · 누적 캐릭터 · 역사 항해자) 어느 도시를 어느 나라 것으로 만들었는지. 원본에 없는 기록이다.
+    /// 모드 「향상된 연표」가 자택 연표에 싣는다(버그 리포트 #61).
+    /// </summary>
+    /// <param name="Nation">넘겨받은 나라. 모르면 -1.</param>
+    public readonly record struct Conquest(DateTime On, string Who, int City, int Nation);
+
+    private readonly List<Conquest> _conquests = [];
+
+    /// <summary>적어 둔 도시 공략들.</summary>
+    public IReadOnlyList<Conquest> Conquests => _conquests;
+
+    /// <summary>도시 공략을 적는다. 같은 날 같은 사람이 같은 도시를 거듭 적지는 않는다.</summary>
+    public void NoteConquest(DateTime on, string who, int city, int nation)
+    {
+        if (city < 0 || _conquests.Any(c => c.On == on && c.Who == who && c.City == city)) return;
+        _conquests.Add(new Conquest(on, who, city, nation));
+    }
+
+    /// <summary>세이브에서 되돌린다.</summary>
+    public void RestoreConquests(IEnumerable<Conquest>? conquests)
+    {
+        _conquests.Clear();
+        _conquests.AddRange(conquests ?? []);
+    }
+
     private readonly Dictionary<int, string> _namedDiscoveries = [];
 
     /// <summary>

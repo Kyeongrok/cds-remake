@@ -306,8 +306,12 @@ public sealed class Game
                     bool tell = now - key < 12;
                     if (tell) TellVoyagerFinds(player, when);
                     RunVoyagerGoods(player, when, when, tell);
-                    History?.RunMonth(player, year, month, CityRows, Nations, Found,
-                                      tell ? TellVoyagerCapture : null);
+                    // 공략은 알리지 않는 달에도 적어 둔다 — 모드 「향상된 연표」가 싣는다.
+                    History?.RunMonth(player, year, month, CityRows, Nations, Found, (voyager, city) =>
+                    {
+                        player.NoteConquest(when, HistoryVoyages.NameOf(voyager), city, CityRows?.NationOf(city) ?? -1);
+                        if (tell) TellVoyagerCapture(voyager, city);
+                    });
                     HistoryRumors.RunMonth(player, when);   // 더해 넣은 역사 소문(1507년 제노바 따위)
                     RunVoyagerReports(player, when, when, tell);
                 }

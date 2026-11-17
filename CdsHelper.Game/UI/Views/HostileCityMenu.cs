@@ -185,6 +185,7 @@ internal static class HostileCityMenu
                     Engine.Market.CityHistory.ChangeNation(player, game.CityRows, game.Nations, city, player.Nation);
                     // 행적에 공략을 적는다(0x00468A01, 원본 갈래 1) — 은퇴하면 누적 캐릭터가 이 도시를 되빼앗는다.
                     player.Note(Player.TraceCapture, city, player.Nation);
+                    player.NoteConquest(player.Date, player.Name, city, player.Nation);   // 향상된 연표
                     // 공략 문구는 교섭 것과 따로다(0x004689BA) — 마을 이름이 안 들어간다.
                     if (game.AideFace is { } wonFace)
                         TalkDialog.Say(owner, wonFace, "", Standoff.RaidWonWord);
