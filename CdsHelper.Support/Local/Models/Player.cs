@@ -2521,6 +2521,13 @@ public sealed class Player
     public DateTime? ScoopedOn(int discovery) =>
         _scoopedOn.TryGetValue(discovery, out var on) ? on : null;
 
+    /// <summary>
+    /// 그 날까지 남(누적 캐릭터 · 역사 항해자)이 발표했는지 — 날짜를 안 적던 세이브에서 온 것은 날을 안 따진다.
+    /// 도서관 힌트의 선행 발견물과 신도시 조건이 주인공이 못 찾았어도 이것을 찾은 것으로 친다(버그 리포트 #60).
+    /// </summary>
+    public bool ScoopedBefore(int discovery, DateTime when) =>
+        _scooped.ContainsKey(discovery) && (ScoopedOn(discovery) is not { } on || on <= when);
+
     /// <summary>남이 발표한 날들 — 세이브에 적는다.</summary>
     public IReadOnlyDictionary<int, DateTime> ScoopedDates => _scoopedOn;
 

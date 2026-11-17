@@ -65,8 +65,12 @@ public sealed class DiscoveryLog
     /// 찾아도 칸 1 이 차고(<c>0x004AAC65</c> — 칸 1 이 비었을 때만 적는다), 지도 지우기
     /// (<c>0x004AADD0</c>)가 이것으로 그 자리를 드러낸다.
     /// </remarks>
+    /// <remarks>
+    /// 누적 캐릭터가 발표한 것도 찾은 것으로 친다 — 원본은 안 보지만, 누적 캐릭터와 겨루는 게임에서 「인도 발견」 같은
+    /// 조건이 걸린 책을 못 읽던 것을 풀었다(버그 리포트 #60).
+    /// </remarks>
     public bool Named(Player player, int id, DateTime date) =>
-        player.HasFound(id) || (_history?.TakenBy(id, date) ?? -1) >= 0;
+        player.HasFound(id) || (_history?.TakenBy(id, date) ?? -1) >= 0 || player.ScoopedBefore(id, date);
 
     /// <summary>발견물 표.</summary>
     public DiscoveryTable Table => _table;

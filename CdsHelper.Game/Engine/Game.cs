@@ -81,7 +81,7 @@ public sealed class Game
     /// </summary>
     private bool FoundBy(int id, DateTime when) =>
         (Player.FoundDateOf(id) is { } on ? on <= when : Player.HasFound(id))
-        || (Voyagers?.TakenBy(id, when) ?? -1) >= 0;
+        || (Voyagers?.TakenBy(id, when) ?? -1) >= 0 || Player.ScoopedBefore(id, when);   // 누적 캐릭터가 발표한 것도(버그 리포트 #60)
 
     /// <summary>바다 사건 주사위.</summary>
     public Random Random { get; } = new();
@@ -228,7 +228,7 @@ public sealed class Game
         if (History is not { } history) return [];
         var player = Player;
         var voyagers = Voyagers;
-        bool Found(int id, DateTime when) => player.HasFound(id) || (voyagers?.TakenBy(id, when) ?? -1) >= 0;
+        bool Found(int id, DateTime when) => player.HasFound(id) || (voyagers?.TakenBy(id, when) ?? -1) >= 0 || player.ScoopedBefore(id, when);
         var finds = Discoveries?.Table?.Discoveries.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.First().Name) ?? [];
         var names = new CityHistory.Namer(
             city => CityName(city) is { Length: > 0 } c ? c : $"도시 {city}",
@@ -285,7 +285,7 @@ public sealed class Game
 
             var voyagers = Voyagers;
             bool Found(int id, DateTime when) =>
-                player.HasFound(id) || (voyagers?.TakenBy(id, when) ?? -1) >= 0;
+                player.HasFound(id) || (voyagers?.TakenBy(id, when) ?? -1) >= 0 || player.ScoopedBefore(id, when);
 
             int first = Math.Min(player.RatesMonth, player.HistoryMonth) + 1;
             for (int key = first; key <= now; key++)
