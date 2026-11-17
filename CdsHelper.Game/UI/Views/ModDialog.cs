@@ -937,9 +937,30 @@ public sealed class ModDialog : GameWindow
         FontSize = 14,
         VerticalContentAlignment = VerticalAlignment.Center,
         Padding = new Thickness(2, 1, 2, 1),
-        BorderThickness = new Thickness(2),
-        BorderBrush = GameUi.ItemEdge,
+        BorderThickness = new Thickness(1),
+        // 흰 바탕 · 파란 초점 테가 어두운 창에서 혼자 튀었다 — 창 바탕보다 조금 짙은 칸에 창 글색으로 쓴다.
+        Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x0E, 0x0E)),
+        BorderBrush = new SolidColorBrush(Color.FromRgb(0x7A, 0x5A, 0x48)),
+        Foreground = GameUi.Text,
+        CaretBrush = GameUi.Text,
+        SelectionBrush = new SolidColorBrush(Color.FromRgb(0xB0, 0x80, 0x50)),
+        Template = PlainBoxTemplate(),
     };
+
+    /// <summary>윈도 기본 꼴(마우스를 올리거나 초점이 오면 테가 파래진다) 대신 제 테만 그리는 글 칸 꼴.</summary>
+    private static ControlTemplate PlainBoxTemplate()
+    {
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Control.Background)) { RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent });
+        border.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding(nameof(Control.BorderBrush)) { RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent });
+        border.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding(nameof(Control.BorderThickness)) { RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent });
+        var host = new FrameworkElementFactory(typeof(ScrollViewer), "PART_ContentHost");
+        host.SetValue(ScrollViewer.FocusableProperty, false);
+        host.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Hidden);
+        host.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Hidden);
+        border.AppendChild(host);
+        return new ControlTemplate(typeof(TextBox)) { VisualTree = border };
+    }
 
     /// <summary>찾은 줄 수 · 「찾는 모드가 없습니다」.</summary>
     private readonly TextBlock _hitNote = new()
@@ -983,7 +1004,7 @@ public sealed class ModDialog : GameWindow
         var hint = new TextBlock
         {
             Text = "모드 이름 · 설명으로 찾기 (Ctrl+F)",
-            Foreground = Brushes.Gray, FontSize = 13, IsHitTestVisible = false,
+            Foreground = GameUi.Text, Opacity = 0.45, FontSize = 13, IsHitTestVisible = false,
             Margin = new Thickness(6, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
         };
         _search.TextChanged += (_, _) =>
