@@ -544,6 +544,16 @@ public sealed class ModDialog : GameWindow
         hires.Children.Add(Toggle("도시 그림 크게", GameSettings.CityPicLarge, on => GameSettings.CityPicLarge = on,
             "원본에 없는 것입니다 — 입항했을 때 도시 그림을 지도를 반쯤 덮는 크기 대신, 금테까지 화면에 들어가는 가장 큰"
             + " 정수배로 키워 띄웁니다(1080p 화면이면 2배 → 3배). 도트는 각진 그대로 키웁니다. 다음에 입항할 때부터 듭니다."));
+        hires.Children.Add(Toggle("도시 그림 업스케일링", GameSettings.CityPicUpscale,
+            on =>
+            {
+                GameSettings.CityPicUpscale = on;
+                if (on) WorldMapWindow.Current?.StartCityUpscale();
+            },
+            "원본에 없는 것입니다 — 도시 그림을 원본 400x320 도트 대신, 업스케일 모델(Rebout Blend 4x)로 네 배 키운 그림으로 그립니다."
+            + " 건물 윤곽이 매끈해지고 시가지 · 땅의 잔무늬는 붓질처럼 풀립니다. 그림은 이 PC 에서 게임을 켜 둔 동안 뒤에서 한 장씩 만들어"
+            + " 쌓아 둡니다(한 장에 수십 초, 처음 켤 때 모델 64MB 를 받습니다). 입항한 도시는 먼저 만들고, 다 되면 그 자리에서 바뀝니다."
+            + " 「도시 그림 크게」와 함께 쓰면 좋습니다."));
         hires.Children.Add(Toggle("선박 업스케일링", GameSettings.ShipUpscale,
             on =>
             {

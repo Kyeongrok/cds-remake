@@ -864,6 +864,22 @@ public sealed class WorldMapWindow : Window
         finally { _navOpen = false; }
     }
 
+    /// <summary>
+    /// 모드 「도시 그림 업스케일링」 — 아직 안 키운 도시 그림을 뒤에서 차례로 키운다(<see cref="CityUpscale.Prefill"/>).
+    /// 게임을 처음 열 때와 모드를 켤 때 부른다. 이미 돌고 있으면 그대로 둔다.
+    /// </summary>
+    internal void StartCityUpscale()
+    {
+        CityUpscale.Enabled = () => GameSettings.CityPicUpscale;
+        CityUpscale.Say = text => Dispatcher.BeginInvoke(() => Say(text));
+        if (!GameSettings.CityPicUpscale || !_started) return;
+        if (_game.CityPics is not { } pictures) return;
+        // 그림 풀기는 UI 실에서 한다 — 묶음 파일 읽기를 실 여럿이 나눠 쓰지 않게.
+        CityUpscale.Prefill(pictures.Count,
+                            id => Dispatcher.Invoke(() => pictures.TryGetBgra(id)),
+                            CityPictures.Width, CityPictures.Height);
+    }
+
     /// <summary>도시락의 여급 수첩 줄 이름. 모드 창이 이 줄을 켜고 끈다.</summary>
     internal const string BarmaidBookRow = "여급 수첩";
 
@@ -3917,6 +3933,7 @@ public sealed class WorldMapWindow : Window
             }
             finally { loading.Close(); }
             _started = true;
+            StartCityUpscale();
         }
 
         // 상태 시계는 <b>들어올 때마다</b> 켠다. 타이틀로 돌아가면(ReturnToTitle) 멈추는데, 첫 판에서만

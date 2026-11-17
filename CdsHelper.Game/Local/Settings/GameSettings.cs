@@ -176,6 +176,9 @@ public sealed class GameSettingsData
     /// <summary>도시 그림을 지도 자리에 들어가는 가장 큰 정수배로 키울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CityPicLarge { get; set; }
 
+    /// <summary>도시 그림을 업스케일 모델로 키운 그림으로 그릴지(뒤에서 만들어 쌓아 둔다). 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool CityPicUpscale { get; set; }
+
     /// <summary>뭍 세부 질감(지형마다 화면 해상도 잔무늬). 꺼 두고 시작한다.</summary>
     public bool LandDetail { get; set; }
 
@@ -2152,6 +2155,12 @@ public static class GameSettings
     }
 
     /// <summary>선박 업스케일링 — 모드 창 「고해상도」에서 켜고 끈다.</summary>
+    public static bool CityPicUpscale
+    {
+        get => Get(d => d.CityPicUpscale);
+        set => Set(d => d.CityPicUpscale = value);
+    }
+
     public static bool CityPicLarge
     {
         get => Get(d => d.CityPicLarge);

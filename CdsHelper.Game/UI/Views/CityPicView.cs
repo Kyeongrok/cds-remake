@@ -402,6 +402,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         };
         // 도트 그림이라 늘릴 때 섞으면 뭉개진다 — 게임 화면처럼 각을 살린다.
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
+        // 모드 「도시 그림 업스케일링」 — 키워 둔 그림이 있으면 그것으로, 없으면 먼저 만들게 하고 다 되면 갈아 끼운다.
+        Upscaled(image, picture, CityPictures.Width, CityPictures.Height);
 
         // 그림 위에 따로 올리는 건물 — 도시 그림에 섞어 칠하지 않고 한 겹 위에 얹는다.
         // 지금은 시나리오가 본거지로 삼은 도시의 자택 하나다(원본 그림에는 리스본 · 세비야에만 자택이 그려져 있다).
@@ -420,6 +422,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 Stretch = Stretch.Fill,
             };
             RenderOptions.SetBitmapScalingMode(house, GameUi.SpriteScaling);
+            Upscaled(house, sprite, BuildingSprites.BoxW, BuildingSprites.BoxH);
             Canvas.SetLeft(house, home.X * scale);
             Canvas.SetTop(house, home.Y * scale);
             raised.Children.Add(house);
@@ -3204,6 +3207,24 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         dlg.Closed += (_, _) => FocusWatch.After("도시그림창 닫힘");
         dlg.Deactivated += (_, _) => FocusWatch.After("도시그림창 초점 잃음");
         return dlg;
+    }
+
+    /// <summary>
+    /// 모드 「도시 그림 업스케일링」이면 그림 칸을 네 배로 키운 그림으로 갈아 끼운다(<see cref="CityUpscale"/>). 아직 없으면
+    /// 줄 맨 앞에서 만들게 하고, 다 되면 — 창이 아직 떠 있으면 — 그때 갈아 끼운다. 그동안은 도트 그림 그대로다.
+    /// </summary>
+    private void Upscaled(Image target, BitmapSource dots, int width, int height)
+    {
+        if (!GameSettings.CityPicUpscale) return;
+        var px = new uint[width * height];
+        dots.CopyPixels(px, width * 4, 0);
+        void Use(BitmapSource hd)
+        {
+            target.Source = hd;
+            RenderOptions.SetBitmapScalingMode(target, BitmapScalingMode.HighQuality);
+        }
+        if (CityUpscale.TryLoad(px, width, height) is { } ready) { Use(ready); return; }
+        CityUpscale.Request(px, width, height, hd => Dispatcher.BeginInvoke(() => { if (IsVisible) Use(hd); }));
     }
 
     /// <summary>
