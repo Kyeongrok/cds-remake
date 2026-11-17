@@ -29,28 +29,41 @@ internal sealed class LandBattleInfoDialog : InfoDialog
     /// <summary>줄 사이(<c>0x62B2D4</c> 에 24 씩 더한다).</summary>
     private const double RowHeight = 24;
 
+    private readonly LandBattle _battle;
+    private readonly Grid _columns = new() { Margin = new Thickness(-6, 0, -6, 0) };
+
     public LandBattleInfoDialog(LandBattle battle)
     {
-        var columns = new Grid { Margin = new Thickness(-6, 0, -6, 0) };
+        _battle = battle;
+        var columns = _columns;
         columns.ColumnDefinitions.Add(new ColumnDefinition());
         columns.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         columns.ColumnDefinitions.Add(new ColumnDefinition());
-
-        var mine = Column(battle, 0);
-        var foe = Column(battle, LandBattle.FirstFoe);
-        // 세로줄(0x0044481A) — 가로줄 아래로 판 끝까지 내려간다.
-        var split = new Border { Width = 1, Background = Ink };
-        Grid.SetColumn(split, 1);
-        Grid.SetColumn(foe, 2);
-        columns.Children.Add(mine);
-        columns.Children.Add(split);
-        columns.Children.Add(foe);
+        Refresh();
 
         var body = new StackPanel();
         // 제목 아래 가로줄(0x004447F0).
         body.Children.Add(new Border { Height = 1, Background = Ink, Margin = new Thickness(-6, 0, -6, 0) });
         body.Children.Add(columns);
         Build("육상전 전황정보", body, BoardWidth, BoardHeight);
+    }
+
+    /// <summary>
+    /// 값을 다시 읽어 칸을 새로 짓는다 — 원본 창은 열 때 한 번 찍지만, 설정 「육상전 전황정보 늘 보기」로 띄워 둔
+    /// 창은 턴마다 병사수가 바뀌므로 판이 고쳐 부른다.
+    /// </summary>
+    public void Refresh()
+    {
+        _columns.Children.Clear();
+        var mine = Column(_battle, 0);
+        var foe = Column(_battle, LandBattle.FirstFoe);
+        // 세로줄(0x0044481A) — 가로줄 아래로 판 끝까지 내려간다.
+        var split = new Border { Width = 1, Background = Ink };
+        Grid.SetColumn(split, 1);
+        Grid.SetColumn(foe, 2);
+        _columns.Children.Add(mine);
+        _columns.Children.Add(split);
+        _columns.Children.Add(foe);
     }
 
     /// <summary>한 편의 여섯 줄. 글 모양은 원본 서식 그대로다 — 이름 뒤 칸 수로 값 자리를 맞춘다.</summary>

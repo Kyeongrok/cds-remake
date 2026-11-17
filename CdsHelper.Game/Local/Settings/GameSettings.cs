@@ -61,6 +61,9 @@ public sealed class GameSettingsData
     /// <summary>게임 창이 뒤로 가거나 접히면 배경음악을 죽일지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MuteBgmInBackground { get; set; }
 
+    /// <summary>육상전 내내 「육상전 전황정보」 창을 띄워 둘지. 원본은 기능명령 「정보」로만 열어 꺼 두고 시작한다.</summary>
+    public bool LandBattleInfoAlways { get; set; }
+
     /// <summary>
     /// 볼륨 믹서에서 맞춘 이 앱의 음량(0~1, -1 은 아직 안 만짐) · 음소거 — Windows 가 다시 켤 때 잊으므로 여기 적어 둔다(<see cref="Helpers.AppVolumeKeeper"/>).
     /// </summary>
@@ -805,6 +808,13 @@ public static class GameSettings
     {
         get => Get(d => d.MuteBgmInBackground);
         set => Set(d => d.MuteBgmInBackground = value);
+    }
+
+    /// <summary>육상전 내내 「육상전 전황정보」 창을 띄워 둘지 — 설정 창 「일반」.</summary>
+    public static bool LandBattleInfoAlways
+    {
+        get => Get(d => d.LandBattleInfoAlways);
+        set => Set(d => d.LandBattleInfoAlways = value);
     }
 
     /// <summary>효과음 크기(0~100). 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 0 이다.</summary>

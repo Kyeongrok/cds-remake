@@ -347,6 +347,35 @@ internal sealed class LandBattleScene : GameWindow
     /// <summary>떠 있는 부대 정보 창(<c>+0x134</c>)과 전황정보 창(<c>+0x138</c>).</summary>
     private Window? _unitInfo, _fieldInfo;
 
+    /// <summary>설정 「육상전 전황정보 늘 보기」로 띄운 창을 이번 싸움에서 손으로 닫았는지 — 닫았으면 다시 안 띄운다.</summary>
+    private bool _fieldInfoDismissed;
+
+    /// <summary>
+    /// 설정 「육상전 전황정보 늘 보기」를 켰으면 공격명령을 물을 때마다 전황정보 창을 판 왼쪽 위에 띄워 두고 값을 새로 찍는다
+    /// — 원본에 없는 것이다(버그 리포트 #62). 공격명령 차림표가 오른아래라 겹치지 않는다. 손으로 닫으면 이번 싸움에서는
+    /// 다시 안 띄우고, 기능명령 「정보」로는 여전히 연다.
+    /// </summary>
+    private void KeepFieldInfo()
+    {
+        if (!Local.Settings.GameSettings.LandBattleInfoAlways) return;
+        if (_fieldInfo is LandBattleInfoDialog { IsVisible: true } open) { open.Refresh(); return; }
+        if (_fieldInfoDismissed) return;
+
+        var box = new LandBattleInfoDialog(_battle) { Owner = this, ShowActivated = false };
+        box.WindowStartupLocation = WindowStartupLocation.Manual;
+        box.Loaded += (_, _) =>
+        {
+            box.Left = Left + MenuPad * _scale;
+            box.Top = Top + MenuPad * _scale;
+        };
+        bool closing = false;
+        Closing += (_, _) => closing = true;
+        box.Closed += (_, _) => { if (!closing) _fieldInfoDismissed = true; };
+        _fieldInfo = box;
+        BackToMenu(box);
+        box.Show();
+    }
+
     /// <summary>
     /// 왼쪽 단추 — 누른 자리의 부대 정보 창을 편다(<c>0x00446A78</c> → <c>0x00446830</c> → <c>0x00446900</c>).
     /// </summary>
@@ -481,6 +510,7 @@ internal sealed class LandBattleScene : GameWindow
     {
         _showMen = true;
         Redraw();
+        KeepFieldInfo();
         try
         {
             // 「제N턴」도 새 턴에만 내건다(0x00449D23).

@@ -26,6 +26,7 @@ public sealed class SettingsDialog : GameWindow
     private readonly Border _bgmVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _awayRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sfxVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
+    private readonly Border _landInfoRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sizeRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _mapRow = new() { Padding = new Thickness(8, 2, 8, 2) };
 
@@ -51,6 +52,7 @@ public sealed class SettingsDialog : GameWindow
         _sfxVolRow.Child = VolumeRow("효과음  ", GameSettings.SfxVolume, StepSfx);
         _sizeRow.Child = SizeRow();
         _mapRow.Child = MapRow();
+        _landInfoRow.Child = LandInfoToggle();
 
         var title = GameUi.TitleBar("설정", Close);
         GameUi.EnableDrag(this, title);
@@ -64,6 +66,7 @@ public sealed class SettingsDialog : GameWindow
         general.Children.Add(_sfxVolRow);
         general.Children.Add(_sizeRow);
         general.Children.Add(_mapRow);
+        general.Children.Add(_landInfoRow);
         var navigation = NavigationPage();
 
         var pages = new Grid();
@@ -224,6 +227,14 @@ public sealed class SettingsDialog : GameWindow
             GameSettings.MuteBgmInBackground = !GameSettings.MuteBgmInBackground;
             BgmPlayer.Refresh();
             _awayRow.Child = AwayToggle();
+        });
+
+    /// <summary>「육상전 전황정보 늘 보기」 — 원본에 없는 것이다. 육상전 내내 전황정보 창을 판 왼쪽 위에 띄워 둔다(버그 리포트 #62).</summary>
+    private UIElement LandInfoToggle() =>
+        new GameButton(Label("육상전 전황정보 늘 보기", GameSettings.LandBattleInfoAlways), () =>
+        {
+            GameSettings.LandBattleInfoAlways = !GameSettings.LandBattleInfoAlways;
+            _landInfoRow.Child = LandInfoToggle();
         });
 
     private UIElement SfxToggle() =>
