@@ -18,6 +18,46 @@ namespace CdsHelper.Game.UI.Views;
 /// </summary>
 internal static class GameUi
 {
+    /// <summary>
+    /// 글 칸을 어두운 창 색에 맞춘다 — 윈도 기본 꼴(흰 바탕 · 마우스를 올리거나 초점이 오면 파래지는 테)이 게임 창에서 혼자 튀었다.
+    /// 창 바탕보다 조금 짙은 칸에 창 글색 · 갈색 가는 테로 쓰고, 테가 바뀌지 않게 제 꼴을 씌운다. 모드 · 네비게이션 찾기 칸이 쓴다.
+    /// </summary>
+    public static TextBox Dark(this TextBox box)
+    {
+        box.BorderThickness = new Thickness(1);
+        box.Background = DarkFieldFill;
+        box.BorderBrush = DarkFieldEdge;
+        box.Foreground = Text;
+        box.CaretBrush = Text;
+        box.SelectionBrush = DarkFieldSelect;
+        box.Template = DarkFieldTemplate;
+        return box;
+    }
+
+    private static readonly Brush DarkFieldFill = Frozen(Color.FromRgb(0x1E, 0x0E, 0x0E));
+    private static readonly Brush DarkFieldEdge = Frozen(Color.FromRgb(0x7A, 0x5A, 0x48));
+    private static readonly Brush DarkFieldSelect = Frozen(Color.FromRgb(0xB0, 0x80, 0x50));
+
+    private static readonly ControlTemplate DarkFieldTemplate = MakeDarkFieldTemplate();
+
+    private static ControlTemplate MakeDarkFieldTemplate()
+    {
+        static System.Windows.Data.Binding Up(string path) =>
+            new(path) { RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent };
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetBinding(Border.BackgroundProperty, Up(nameof(Control.Background)));
+        border.SetBinding(Border.BorderBrushProperty, Up(nameof(Control.BorderBrush)));
+        border.SetBinding(Border.BorderThicknessProperty, Up(nameof(Control.BorderThickness)));
+        var host = new FrameworkElementFactory(typeof(ScrollViewer), "PART_ContentHost");
+        host.SetValue(UIElement.FocusableProperty, false);
+        host.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Hidden);
+        host.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Hidden);
+        border.AppendChild(host);
+        var made = new ControlTemplate(typeof(TextBox)) { VisualTree = border };
+        made.Seal();
+        return made;
+    }
+
     /// <summary>다이얼로그 바탕. 게임 화면에서 뽑은 <c>#311818</c> 이다.</summary>
     public static readonly Brush Back = new SolidColorBrush(Color.FromRgb(0x31, 0x18, 0x18));
     /// <summary>

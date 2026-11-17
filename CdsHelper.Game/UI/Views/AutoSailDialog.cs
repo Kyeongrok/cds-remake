@@ -194,9 +194,7 @@ public sealed class AutoSailDialog : GameWindow
             FontSize = 14,
             VerticalContentAlignment = VerticalAlignment.Center,
             Padding = new Thickness(2, 0, 2, 0),
-            BorderThickness = new Thickness(2),
-            BorderBrush = GameUi.ItemEdge,
-        };
+        }.Dark();
         _query.TextChanged += (_, _) => Search();
         _query.PreviewKeyDown += (_, e) =>
         {
