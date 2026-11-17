@@ -163,6 +163,9 @@ public sealed class LiveMapWindow : Window
 
     private Border _baseButton = null!, _spotsButton = null!, _yetButton = null!, _cityButton = null!, _followButton = null!;
 
+    /// <summary>「칸 정보 켜기 · 끄기」 — 고르기 모드에는 없다(그때는 칸 정보 줄을 늘 띄운다).</summary>
+    private Border? _hoverButton;
+
     private int _zoom = ZoomStart;
     private double _vx, _vy;               // 보이는 자리의 왼쪽 위(칸)
     private bool _dragging;
@@ -336,6 +339,8 @@ public sealed class LiveMapWindow : Window
         if (pick == null)
         {
             bar.Children.Add(_followButton);
+            _hoverButton = Button("", () => { GameSettings.LiveMapHover = !GameSettings.LiveMapHover; RefreshButtons(); }, 130);
+            bar.Children.Add(_hoverButton);
             bar.Children.Add(Button("내 위치로", ToShip, 100));
             bar.Children.Add(Button("경로 지우기", () => { ShipTrail.Clear(); Tick(); }, 110));
         }
@@ -550,6 +555,11 @@ public sealed class LiveMapWindow : Window
         SetText(_yetButton, Lang.T("못 찾은 것") + " " + Lang.T(GameSettings.DiscoveryMapYet ? "끄기" : "켜기"));
         SetText(_cityButton, Lang.T("도시") + " " + Lang.T(GameSettings.DiscoveryMapCities ? "끄기" : "켜기"));
         SetText(_followButton, Lang.T("따라가기") + " " + Lang.T(GameSettings.LiveMapFollow ? "끄기" : "켜기"));
+        if (_hoverButton != null)
+        {
+            SetText(_hoverButton, Lang.T("칸 정보") + " " + Lang.T(GameSettings.LiveMapHover ? "끄기" : "켜기"));
+            _hover.Visibility = GameSettings.LiveMapHover ? Visibility.Visible : Visibility.Collapsed;
+        }
         if (_areasButton != null)
             SetText(_areasButton, Lang.T("다른 발견물") + " " + Lang.T(_areaLayer.Visibility == Visibility.Visible ? "끄기" : "켜기"));
         if (_landButton != null) SetText(_landButton, Lang.T("자리") + ": " + Lang.T(_pickLand ? "육지" : "바다"));

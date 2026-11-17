@@ -487,6 +487,9 @@ public sealed class GameSettingsData
     /// <summary>세계지도 창이 내 배를 따라 지도를 옮기지 않을지. 기본은 따라간다.</summary>
     public bool LiveMapNoFollow { get; set; }
 
+    /// <summary>세계지도 창 아래에 마우스를 올린 칸의 정보 줄을 띄울지. 꺼 두고 시작한다.</summary>
+    public bool LiveMapHover { get; set; }
+
     /// <summary>
     /// 게임 상단 띠에 켜 둔 칸 이름들("날짜"·"소지금" …). 한 번도 안 건드렸으면 null 이라
     /// 부르는 쪽 기본값이 선다.
@@ -1233,6 +1236,13 @@ public static class GameSettings
     {
         get => Get(d => d.LiveMapSpots);
         set => Set(d => d.LiveMapSpots = value);
+    }
+
+    /// <summary>세계지도 창 아래 칸 정보 줄(위도 · 경도 · 칸 · 바다/육지 · 도시)을 띄울지 — 창 위 「칸 정보」 단추로. 기본은 끔.</summary>
+    public static bool LiveMapHover
+    {
+        get => Get(d => d.LiveMapHover);
+        set => Set(d => d.LiveMapHover = value);
     }
 
     /// <summary>세계지도 창이 내 배를 따라 지도를 옮길지. 기본은 켬.</summary>
