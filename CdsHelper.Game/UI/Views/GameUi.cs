@@ -34,9 +34,9 @@ internal static class GameUi
         return box;
     }
 
-    private static readonly Brush DarkFieldFill = Frozen(Color.FromRgb(0x1E, 0x0E, 0x0E));
-    private static readonly Brush DarkFieldEdge = Frozen(Color.FromRgb(0x7A, 0x5A, 0x48));
-    private static readonly Brush DarkFieldSelect = Frozen(Color.FromRgb(0xB0, 0x80, 0x50));
+    public static readonly Brush DarkFieldFill = Frozen(Color.FromRgb(0x1E, 0x0E, 0x0E));
+    public static readonly Brush DarkFieldEdge = Frozen(Color.FromRgb(0x7A, 0x5A, 0x48));
+    public static readonly Brush DarkFieldSelect = Frozen(Color.FromRgb(0xB0, 0x80, 0x50));
 
     private static readonly ControlTemplate DarkFieldTemplate = MakeDarkFieldTemplate();
 

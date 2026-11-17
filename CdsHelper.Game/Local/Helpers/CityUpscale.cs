@@ -42,6 +42,16 @@ public static class CityUpscale
     /// <summary>모드가 켜져 있는지 — 꺼지면 줄에 남은 것을 버리고 멈춘다.</summary>
     public static Func<bool> Enabled { get; set; } = () => false;
 
+    private static volatile int _checked, _total, _made;
+    private static volatile bool _filling, _busy, _downloading, _failed;
+
+    /// <summary>
+    /// 지금 진행 — 모드 창에 띄운다. <c>Checked</c>/<c>Total</c> 은 채우기가 훑은 도시 그림 수(이미 있던 것 포함),
+    /// <c>Made</c> 는 이번에 새로 키운 장 수, <c>Busy</c> 는 일꾼이 지금 한 장을 키우는 중인지.
+    /// </summary>
+    public static (int Checked, int Total, int Made, bool Filling, bool Busy, bool Downloading, bool Failed) Progress
+        => (_checked, _total, _made, _filling, _busy, _downloading, _failed);
+
     private sealed record Job(string Key, uint[] Bgra, int Width, int Height, List<Action<BitmapSource>> Done);
 
     /// <summary>그림 점의 이름 — 같은 그림이면 같은 이름이다.</summary>
@@ -94,25 +104,33 @@ public static class CityUpscale
     public static void Prefill(int count, Func<int, uint[]?> picture, int width, int height)
     {
         lock (Gate) if (_filler is { IsAlive: true }) return;
+        _total = count;
+        _checked = 0;
+        _made = 0;
+        _filling = true;
         var filler = new Thread(() =>
         {
-            int made = 0;
-            for (int i = 0; i < count && Enabled(); i++)
+            try
             {
-                uint[]? px;
-                try { px = picture(i); }
-                catch { continue; }
-                if (px == null) continue;
-                string key = KeyOf(px, width, height);
-                if (File.Exists(PathOf(key))) continue;
-                using var finished = new ManualResetEventSlim();
-                Enqueue(key, px, width, height, _ => finished.Set(), front: false);
-                // 하나씩 넣는다 — 줄에 다 쌓아 두면 그림 점이 한꺼번에 수십 MB 잡힌다.
-                while (!finished.Wait(2000))
-                    if (!Enabled()) return;
-                made++;
+                for (int i = 0; i < count && Enabled(); i++, _checked = i)
+                {
+                    uint[]? px;
+                    try { px = picture(i); }
+                    catch { continue; }
+                    if (px == null) continue;
+                    string key = KeyOf(px, width, height);
+                    if (File.Exists(PathOf(key))) continue;
+                    using var finished = new ManualResetEventSlim();
+                    Enqueue(key, px, width, height, _ => finished.Set(), front: false);
+                    // 하나씩 넣는다 — 줄에 다 쌓아 두면 그림 점이 한꺼번에 수십 MB 잡힌다.
+                    while (!finished.Wait(2000))
+                        if (!Enabled()) return;
+                    _made++;
+                }
+                if (Enabled()) _checked = count;
+                if (_made > 0 && Enabled()) Say?.Invoke($"도시 그림 업스케일링을 마쳤습니다({_made}장).");
             }
-            if (made > 0 && Enabled()) Say?.Invoke($"도시 그림 업스케일링을 마쳤습니다({made}장).");
+            finally { _filling = false; }
         })
         { IsBackground = true, Priority = ThreadPriority.Lowest, Name = "도시 그림 채우기" };
         lock (Gate) _filler = filler;
@@ -155,6 +173,7 @@ public static class CityUpscale
                 Queue.RemoveFirst();
             }
 
+            _busy = true;
             try
             {
                 if (!EnsureSession()) { lock (Gate) Queue.Clear(); continue; }
@@ -171,6 +190,7 @@ public static class CityUpscale
             {
                 System.Diagnostics.Debug.WriteLine($"[CityUpscale] {ex.GetType().Name}: {ex.Message}");
             }
+            finally { _busy = false; }
         }
     }
 
@@ -183,7 +203,9 @@ public static class CityUpscale
             if (!UpscaleModelAsset.Exists)
             {
                 Say?.Invoke("도시 그림 업스케일링 모델(64MB)을 받는 중입니다...");
-                UpscaleModelAsset.DownloadAsync().GetAwaiter().GetResult();
+                _downloading = true;
+                try { UpscaleModelAsset.DownloadAsync().GetAwaiter().GetResult(); }
+                finally { _downloading = false; }
             }
             // 코어 절반만 쓴다 — 게임이 끊기지 않게.
             var options = new SessionOptions
@@ -193,10 +215,12 @@ public static class CityUpscale
             };
             _session = new InferenceSession(UpscaleModelAsset.CachePath, options);
             _input = _session.InputMetadata.Keys.First();
+            _failed = false;
             return true;
         }
         catch (Exception ex)
         {
+            _failed = true;
             Say?.Invoke($"도시 그림 업스케일링 모델을 열지 못했습니다 — {ex.Message}");
             return false;
         }

@@ -550,16 +550,7 @@ public sealed class ModDialog : GameWindow
             Math.Max(0, Array.IndexOf(GameSettings.CityPicZoomChoices, GameSettings.CityPicZoom)),
             i => GameSettings.CityPicZoom = GameSettings.CityPicZoomChoices[i],
             "모드 「도시 그림 크게」에서 도시 그림을 보통 크기의 몇 배로 띄울지 고릅니다."));
-        hires.Children.Add(Toggle("도시 그림 업스케일링", GameSettings.CityPicUpscale,
-            on =>
-            {
-                GameSettings.CityPicUpscale = on;
-                if (on) WorldMapWindow.Current?.StartCityUpscale();
-            },
-            "원본에 없는 것입니다 — 도시 그림을 원본 400x320 도트 대신, 업스케일 모델(Rebout Blend 4x)로 네 배 키운 그림으로 그립니다."
-            + " 건물 윤곽이 매끈해지고 시가지 · 땅의 잔무늬는 붓질처럼 풀립니다. 그림은 이 PC 에서 게임을 켜 둔 동안 뒤에서 한 장씩 만들어"
-            + " 쌓아 둡니다(한 장에 수십 초, 처음 켤 때 모델 64MB 를 받습니다). 입항한 도시는 먼저 만들고, 다 되면 그 자리에서 바뀝니다."
-            + " 「도시 그림 크게」와 함께 쓰면 좋습니다."));
+        hires.Children.Add(CityUpscaleControls());
         hires.Children.Add(Toggle("선박 업스케일링", GameSettings.ShipUpscale,
             on =>
             {
@@ -1561,6 +1552,78 @@ public sealed class ModDialog : GameWindow
         line.Children.Add(slider);
         line.Children.Add(value);
         Watch(line, "바다 밝기", "바다 입체 효과의 밝기입니다. 85% 에서 시작하고 60~160% 사이로 고릅니다. 효과를 켜야 조절할 수 있습니다.");
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(line);
+        return group;
+    }
+
+    /// <summary>
+    /// 도시 그림 업스케일링 켜기와 그 밑의 진행 줄 — 뒤에서 키우는 동안 게임이 느려질 수 있어 얼마나 남았는지 보인다(요청).
+    /// 창이 떠 있는 동안 1초마다 <see cref="Local.Helpers.CityUpscale.Progress"/> 를 읽는다.
+    /// </summary>
+    private UIElement CityUpscaleControls()
+    {
+        var box = Toggle("도시 그림 업스케일링", GameSettings.CityPicUpscale,
+            on =>
+            {
+                GameSettings.CityPicUpscale = on;
+                if (on) WorldMapWindow.Current?.StartCityUpscale();
+            },
+            "원본에 없는 것입니다 — 도시 그림을 원본 400x320 도트 대신, 업스케일 모델(Rebout Blend 4x)로 네 배 키운 그림으로 그립니다."
+            + " 건물 윤곽이 매끈해지고 시가지 · 땅의 잔무늬는 붓질처럼 풀립니다. 그림은 이 PC 에서 게임을 켜 둔 동안 뒤에서 한 장씩 만들어"
+            + " 쌓아 둡니다(한 장에 수십 초, 처음 켤 때 모델 64MB 를 받습니다). 입항한 도시는 먼저 만들고, 다 되면 그 자리에서 바뀝니다."
+            + " 만드는 동안 게임이 느려질 수 있습니다 — 끄면 멈추고, 다시 켜면 남은 것부터 이어서 만듭니다. 진행은 아래 줄에 보입니다."
+            + " 「도시 그림 크게」와 함께 쓰면 좋습니다.");
+
+        const double barWidth = 220;
+        var fill = new Border { Width = 0, HorizontalAlignment = HorizontalAlignment.Left, Background = GameUi.DarkFieldSelect };
+        var bar = new Border
+        {
+            Width = barWidth, Height = 8, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 2, 0, 0),
+            Background = GameUi.DarkFieldFill,
+            BorderBrush = GameUi.DarkFieldEdge, BorderThickness = new Thickness(1),
+            Child = fill,
+        };
+        var text = new TextBlock
+        {
+            Foreground = GameUi.Text, Opacity = 0.8, FontSize = 13, Margin = new Thickness(0, 3, 0, 0),
+            TextWrapping = TextWrapping.Wrap,
+        };
+        var line = new StackPanel { Margin = new Thickness(22, 0, 0, 4) };
+        line.Children.Add(bar);
+        line.Children.Add(text);
+        Watch(line, "도시 그림 업스케일링 진행",
+            "뒤에서 키운 도시 그림 수입니다. 이미 만들어 둔 그림도 셉니다. 끄면 멈추고, 다시 켜면 남은 것부터 이어서 만듭니다.");
+
+        void Refresh()
+        {
+            bool on = box.IsChecked == true;
+            line.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            if (!on) return;
+            var p = Local.Helpers.CityUpscale.Progress;
+            double ratio = p.Total > 0 ? Math.Clamp((double)p.Checked / p.Total, 0, 1) : 0;
+            fill.Width = (barWidth - 2) * ratio;
+            text.Text = p switch
+            {
+                { Downloading: true } => Local.Helpers.Lang.T("모델(64MB)을 받는 중입니다..."),
+                { Failed: true } => Local.Helpers.Lang.T("모델을 열지 못했습니다."),
+                { Total: 0 } => Local.Helpers.Lang.T("게임을 시작하면 뒤에서 만들기 시작합니다."),
+                { Filling: true } => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 이번에 {p.Made}장 만듦")
+                    + (p.Busy ? Local.Helpers.Lang.T(" — 만드는 중(게임이 느려질 수 있습니다)") : ""),
+                _ when p.Checked >= p.Total => Local.Helpers.Lang.T($"{p.Total}장 모두 준비됐습니다."),
+                _ => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 멈춤"),
+            };
+        }
+
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        timer.Tick += (_, _) => Refresh();
+        box.Checked += (_, _) => Refresh();
+        box.Unchecked += (_, _) => Refresh();
+        line.Loaded += (_, _) => { Refresh(); timer.Start(); };
+        Closed += (_, _) => timer.Stop();
+        Refresh();
 
         var group = new StackPanel();
         group.Children.Add(box);
