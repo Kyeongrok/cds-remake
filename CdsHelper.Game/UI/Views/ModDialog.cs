@@ -541,6 +541,9 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 덧그림입니다 — 바다에 뜬 내 배 뒤로 지나온 길을 따라 물거품 항적이 벌어지며 스러지고,"
             + " 배 밑에 옅은 그림자가 깔리고 배가 살짝 출렁입니다. 빠를수록 항적이 길고, 서면 사라집니다."
             + " 켜 둔 동안은 화면을 계속 다시 그립니다. 남의 배와 뭍의 말에는 안 듭니다."));
+        hires.Children.Add(Toggle("도시 그림 크게", GameSettings.CityPicLarge, on => GameSettings.CityPicLarge = on,
+            "원본에 없는 것입니다 — 입항했을 때 도시 그림을 지도를 반쯤 덮는 크기 대신, 금테까지 화면에 들어가는 가장 큰"
+            + " 정수배로 키워 띄웁니다(1080p 화면이면 2배 → 3배). 도트는 각진 그대로 키웁니다. 다음에 입항할 때부터 듭니다."));
         hires.Children.Add(Toggle("선박 업스케일링", GameSettings.ShipUpscale,
             on =>
             {

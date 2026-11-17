@@ -3208,9 +3208,15 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>
     /// 그림 배율. 원본처럼 지도의 반쯤을 덮는 크기로 잡는다(자리가 좁아도 1배는 쓴다).
+    /// 모드 「도시 그림 크게」면 금테까지 지도 자리에 들어가는 가장 큰 정수배다 — 1080p 에서 2배 → 3배.
     /// </summary>
     private static int PickScale(double areaWidth, double areaHeight)
     {
+        if (GameSettings.CityPicLarge)
+        {
+            int big = (int)Math.Min(areaWidth * 0.95 / CityFrame.Width, areaHeight * 0.95 / CityFrame.Height);
+            return Math.Max(1, Math.Min(big, 8));
+        }
         int scale = (int)Math.Min(areaWidth * 0.6 / CityPictures.Width,
                                   areaHeight * 0.7 / CityPictures.Height);
         return Math.Max(1, Math.Min(scale, 4));
