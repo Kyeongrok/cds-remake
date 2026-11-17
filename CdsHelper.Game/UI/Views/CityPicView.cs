@@ -121,6 +121,13 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>그림 배율. 건물 사진도 같은 배율로 놓아야 자리가 맞는다.</summary>
     private readonly int _scale;
 
+    /// <summary>
+    /// 도시 그림만의 배율 — 모드 「도시 그림 크게」면 <see cref="_scale"/> 에 고른 배율(기본 1.5배)을 곱한 것이고, 아니면 같다.
+    /// 그림 · 금테 · 건물 누르는 자리 · 이름표 자리 · 가운데 애니메이션이 이것을 탄다. 쪽지 · 명령 창 · 도시 안 창들은
+    /// <see cref="_scale"/> 그대로라 커지지 않는다(그림만 키워 달라는 요청).
+    /// </summary>
+    private readonly double _pic;
+
     /// <summary>그림 배율 — 도시 안에서 뜨는 창(아이템·시장)이 같은 배로 커지려고 본다.</summary>
     public int Scale => _scale;
 
@@ -287,7 +294,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>확대/축소가 시작하는 배율.</summary>
     private const double ZoomFrom = 0.3;
 
-    private CityPicView(Engine.Game game, string cityName, BitmapSource picture, int scale,
+    private CityPicView(Engine.Game game, string cityName, BitmapSource picture, int scale, double picScale,
                           int cityId, Rect mapArea, int cityTrack, string culture)
     {
         // 판이 든 것을 그대로 든다 — 표를 여기서 따로 열지 않는다.
@@ -302,6 +309,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 문화권 번호는 열 때 한 번만 묻는다 — 시설들이 제 화자 얼굴을 찾는 데 쓴다.
         _cultureNo = game.CityRows?.CultureOf(cityId) ?? 0;
         _scale = scale;
+        _pic = picScale;
         _cityTrack = cityTrack;
         _cityName = cityName;
         _cityId = cityId;
@@ -326,8 +334,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 틀을 못 읽으면 그림 크기 그대로다. 제목 줄이 없어(WindowStyle.None) 테가 붙지 않는다.
         var frame = CityFrame.TryGetBgra(game.Directory, CityFrame.GoldPart);
         _frameBorder = frame != null ? CityFrame.Border : 0;
-        double fullW = (CityPictures.Width + _frameBorder * 2) * scale,
-               fullH = (CityPictures.Height + _frameBorder * 2) * scale;
+        double fullW = (CityPictures.Width + _frameBorder * 2) * _pic,
+               fullH = (CityPictures.Height + _frameBorder * 2) * _pic;
 
         // 지도를 덮는 남색 막은 이 창이 아니라 지도(D3D) 쪽에서 씌운다 — 그래야 이 그림을
         // 끌어 옮겨도 막이 따라오지 않는다. 원본도 막과 그림이 따로다.
@@ -396,8 +404,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         var image = new Image
         {
             Source = picture,
-            Width = CityPictures.Width * scale,
-            Height = CityPictures.Height * scale,
+            Width = CityPictures.Width * _pic,
+            Height = CityPictures.Height * _pic,
             Stretch = Stretch.Fill,
         };
         // 도트 그림이라 늘릴 때 섞으면 뭉개진다 — 게임 화면처럼 각을 살린다.
@@ -417,14 +425,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             var house = new Image
             {
                 Source = sprite,
-                Width = BuildingSprites.BoxW * scale,
-                Height = BuildingSprites.BoxH * scale,
+                Width = BuildingSprites.BoxW * _pic,
+                Height = BuildingSprites.BoxH * _pic,
                 Stretch = Stretch.Fill,
             };
             RenderOptions.SetBitmapScalingMode(house, GameUi.SpriteScaling);
             Upscaled(house, sprite, BuildingSprites.BoxW, BuildingSprites.BoxH);
-            Canvas.SetLeft(house, home.X * scale);
-            Canvas.SetTop(house, home.Y * scale);
+            Canvas.SetLeft(house, home.X * _pic);
+            Canvas.SetTop(house, home.Y * _pic);
             raised.Children.Add(house);
         }
 
@@ -453,7 +461,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         }
         picBox.HorizontalAlignment = HorizontalAlignment.Left;
         picBox.VerticalAlignment = VerticalAlignment.Top;
-        picBox.Margin = new Thickness(_frameBorder * scale);
+        picBox.Margin = new Thickness(_frameBorder * _pic);
         frameBox.Children.Add(picBox);
 
         // 사건이 도는 동안 그림을 파랗게 덮는 막. 지도 쪽의 WorldMapHost.Shaded 와 같은 몫이다.
@@ -502,14 +510,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         };
 
         // 도시 그림에 그려진 마을 사람들. <b>건물보다 먼저</b> 깐다 — 자리가 겹치면 건물이 이긴다(0x00491DC0).
-        foreach (var folk in _game.TownFolk?.InCity(cityId) ?? []) AddFolk(folk, scale);
+        foreach (var folk in _game.TownFolk?.InCity(cityId) ?? []) AddFolk(folk, _pic);
 
         // 게임 건물 표에 적힌 그대로 얹는다 — 그 도시에 있는 건물만, 원본이 쓰는 자리에.
         // 코드가 <b>큰</b> 것부터 깔아 낮은 것이 위에 오게 한다 — 겹치면 낮은 코드가 이긴다(0x00491D58).
         bool harborPlaced = false;
         foreach (var building in Enumerable.Reverse(Standing(cityId)))
         {
-            AddSpot(building, scale);
+            AddSpot(building, _pic);
             if (building.Kind == "항구") harborPlaced = true;
         }
 
@@ -589,7 +597,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>
     /// 건물 하나를 누를 수 있게 한다. 커서를 올리면 이름표가 밑에 뜨고, 누르면 명령 창이 열린다.
     /// </summary>
-    private void AddSpot(CityBuildingTable.Building building, int scale)
+    private void AddSpot(CityBuildingTable.Building building, double scale)
     {
         var facility = Facility.For(building.Kind, building.Code);
         var tag = GameUi.NameTag(building.Kind);   // 지도 이름표에는 종류가 뜬다("술집")
@@ -648,7 +656,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>그림에 올린 건물들 — 글쇠로 고를 때 차례와 이름표 자리를 여기서 찾는다.</summary>
-    private readonly List<(CityBuildingTable.Building Building, Border Tag, Rect Area, int Scale)> _spots = [];
+    private readonly List<(CityBuildingTable.Building Building, Border Tag, Rect Area, double Scale)> _spots = [];
 
     /// <summary>글쇠로 고른 건물 코드(<c>[+0x1E0]</c>). 닿은 건물(항구·성문)이나 마지막에 든 건물에서 시작한다.</summary>
     private int _pickedCode = -1;
@@ -696,7 +704,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 사람 그림은 도시 그림에 이미 있고 표는 누를 자리만 준다. 건물 자리와 겹치면 건물이 먼저다 —
     /// 건물 자리를 뒤에 얹지 않고 여기서 먼저 깔아 두는 것으로 갈음한다.
     /// </remarks>
-    private void AddFolk(TownFolkTable.Folk folk, int scale)
+    private void AddFolk(TownFolkTable.Folk folk, double scale)
     {
         var a = new Rect(folk.HitX, folk.HitY, folk.HitWidth, folk.HitHeight);
 
@@ -1659,7 +1667,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         bool wasShown = Menus.FacilityWindow is { Visibility: Visibility.Visible };
         if (wasShown) HideMenu(true);
 
-        double side = EffectAnim.Size * _scale;
+        double side = EffectAnim.Size * _pic;
         var image = new Image { Width = side, Height = side, Stretch = Stretch.Fill };
         RenderOptions.SetBitmapScalingMode(image, GameUi.SpriteScaling);
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
@@ -1851,8 +1859,8 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 도시마다 갈아 끼운 사진이 먼저다(한양 왕궁 — asset/buildingphoto).
         var art = photos.TryGetCityBgra(_cityId, buildingCode) ?? photos.TryGetBgra(k);
         _photoWindow = BuildingPhotoWindow.Show(this, art, people, _scale,
-                                                new Point(Left + (PhotoLeft + _frameBorder) * _scale,
-                                                          Top + (PhotoTop + _frameBorder) * _scale));
+                                                new Point(Left + (PhotoLeft + _frameBorder) * _pic,
+                                                          Top + (PhotoTop + _frameBorder) * _pic));
     }
 
     /// <summary>
@@ -1862,7 +1870,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     internal Point StashPhoto()
     {
         _photoWindow?.Hide();
-        return new Point(Left + (PhotoLeft + _frameBorder) * _scale, Top + (PhotoTop + _frameBorder) * _scale);
+        return new Point(Left + (PhotoLeft + _frameBorder) * _pic, Top + (PhotoTop + _frameBorder) * _pic);
     }
 
     /// <summary>걷어 둔 사진을 되살린다(<c>0x004A2180</c>).</summary>
@@ -1957,7 +1965,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// 앉아 글자가 가린다 — 커서가 누르는 자리는 늘 이름표 아래가 되게 위로 올렸다.
     /// 그림 꼭대기에 붙은 건물이라 위로 넘칠 때만 밑으로 돌린다.
     /// </summary>
-    private void ShowTag(Border tag, Rect area, int scale)
+    private void ShowTag(Border tag, Rect area, double scale)
     {
         tag.Visibility = Visibility.Visible;
         tag.UpdateLayout();
@@ -3013,7 +3021,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 자택이 이 도시에 선다 — 도시 그림을 다시 열지 않아도 곧바로 들어가지게 판을 얹는다.
         if (Standing(_cityId).FirstOrDefault(b => b.Code == CityExeTable.HomeCode) is { } home
             && !_spots.Any(s => s.Building.Code == home.Code))
-            AddSpot(home, _scale);
+            AddSpot(home, _pic);
         GameDialog.Show(owner, $"{nationName}에 망명했습니다{Environment.NewLine}자택이 {_player.CityName}(으)로 옮겨졌습니다");
         Menu.Refresh();
     }
@@ -3195,7 +3203,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         double areaW = mapArea.Width > 0 ? mapArea.Width : owner.ActualWidth;
         double areaH = mapArea.Height > 0 ? mapArea.Height : owner.ActualHeight;
 
-        var dlg = new CityPicView(game, cityName, picture, PickScale(areaW, areaH), cityId,
+        int uiScale = PickScale(areaW, areaH);
+        if (OffscreenTest.Enabled) UI.Testing.OffscreenHarness.Log($"도시 그림 배율 — 창 {uiScale} · 그림 {PictureScale(uiScale, areaW, areaH):0.##} (자리 {areaW:0}x{areaH:0})");
+        var dlg = new CityPicView(game, cityName, picture, uiScale, PictureScale(uiScale, areaW, areaH), cityId,
                                     mapArea, cityTrack, culture)
         {
             Owner = owner,
@@ -3228,18 +3238,23 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     }
 
     /// <summary>
-    /// 그림 배율. 원본처럼 지도의 반쯤을 덮는 크기로 잡는다(자리가 좁아도 1배는 쓴다).
-    /// 모드 「도시 그림 크게」면 금테까지 지도 자리에 들어가는 가장 큰 정수배다 — 1080p 에서 2배 → 3배.
+    /// 그림 배율. 원본처럼 지도의 반쯤을 덮는 크기로 잡는다(자리가 좁아도 1배는 쓴다). 쪽지 · 명령 창 · 도시 안 창도 이 배율이다.
     /// </summary>
     private static int PickScale(double areaWidth, double areaHeight)
     {
-        if (GameSettings.CityPicLarge)
-        {
-            int big = (int)Math.Min(areaWidth * 0.95 / CityFrame.Width, areaHeight * 0.95 / CityFrame.Height);
-            return Math.Max(1, Math.Min(big, 8));
-        }
         int scale = (int)Math.Min(areaWidth * 0.6 / CityPictures.Width,
                                   areaHeight * 0.7 / CityPictures.Height);
         return Math.Max(1, Math.Min(scale, 4));
+    }
+
+    /// <summary>
+    /// 도시 그림만의 배율 — 모드 「도시 그림 크게」면 <paramref name="uiScale"/> 에 고른 배율을 곱하되 금테까지 지도 자리의 95% 를
+    /// 넘지 않게 줄인다. 정수배가 아니면 도트가 고르지 않게 늘어나는데, 「도시 그림 업스케일링」을 함께 켜면 매끈하다.
+    /// </summary>
+    private static double PictureScale(int uiScale, double areaWidth, double areaHeight)
+    {
+        if (!GameSettings.CityPicLarge) return uiScale;
+        double fit = Math.Min(areaWidth * 0.95 / CityFrame.Width, areaHeight * 0.95 / CityFrame.Height);
+        return Math.Max(uiScale, Math.Min(uiScale * GameSettings.CityPicZoom, fit));
     }
 }

@@ -176,6 +176,9 @@ public sealed class GameSettingsData
     /// <summary>도시 그림을 지도 자리에 들어가는 가장 큰 정수배로 키울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CityPicLarge { get; set; }
 
+    /// <summary>「도시 그림 크게」의 배율 — <see cref="GameSettings.CityPicZoomChoices"/> 가운데 하나다.</summary>
+    public double CityPicZoom { get; set; } = 1.5;
+
     /// <summary>도시 그림을 업스케일 모델로 키운 그림으로 그릴지(뒤에서 만들어 쌓아 둔다). 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CityPicUpscale { get; set; }
 
@@ -2159,6 +2162,16 @@ public static class GameSettings
     {
         get => Get(d => d.CityPicUpscale);
         set => Set(d => d.CityPicUpscale = value);
+    }
+
+    /// <summary>「도시 그림 크게」에서 고를 수 있는 배율.</summary>
+    public static readonly double[] CityPicZoomChoices = [1.25, 1.5, 1.75, 2, 2.5, 3];
+
+    /// <summary>「도시 그림 크게」의 배율 — 보통 크기에 곱한다. 화면을 넘으면 들어가는 데까지만 키운다. 기본 1.5배.</summary>
+    public static double CityPicZoom
+    {
+        get => Get(d => CityPicZoomChoices.Contains(d.CityPicZoom) ? d.CityPicZoom : 1.5);
+        set => Set(d => d.CityPicZoom = value);
     }
 
     public static bool CityPicLarge

@@ -542,8 +542,14 @@ public sealed class ModDialog : GameWindow
             + " 배 밑에 옅은 그림자가 깔리고 배가 살짝 출렁입니다. 빠를수록 항적이 길고, 서면 사라집니다."
             + " 켜 둔 동안은 화면을 계속 다시 그립니다. 남의 배와 뭍의 말에는 안 듭니다."));
         hires.Children.Add(Toggle("도시 그림 크게", GameSettings.CityPicLarge, on => GameSettings.CityPicLarge = on,
-            "원본에 없는 것입니다 — 입항했을 때 도시 그림을 지도를 반쯤 덮는 크기 대신, 금테까지 화면에 들어가는 가장 큰"
-            + " 정수배로 키워 띄웁니다(1080p 화면이면 2배 → 3배). 도트는 각진 그대로 키웁니다. 다음에 입항할 때부터 듭니다."));
+            "원본에 없는 것입니다 — 입항했을 때 도시 그림만 아래 배율만큼 키워 띄웁니다(기본 1.5배). 함대 · 발견물 쪽지와"
+            + " 시설 명령 창, 도시 안에서 뜨는 창은 원래 크기 그대로입니다. 화면을 넘으면 들어가는 데까지만 키웁니다."
+            + " 「도시 그림 업스케일링」을 함께 켜면 키운 그림이 매끈합니다. 다음에 입항할 때부터 듭니다."));
+        hires.Children.Add(Select("도시 그림 배율",
+            [.. GameSettings.CityPicZoomChoices.Select(z => $"{z:0.##}배")],
+            Math.Max(0, Array.IndexOf(GameSettings.CityPicZoomChoices, GameSettings.CityPicZoom)),
+            i => GameSettings.CityPicZoom = GameSettings.CityPicZoomChoices[i],
+            "모드 「도시 그림 크게」에서 도시 그림을 보통 크기의 몇 배로 띄울지 고릅니다."));
         hires.Children.Add(Toggle("도시 그림 업스케일링", GameSettings.CityPicUpscale,
             on =>
             {
