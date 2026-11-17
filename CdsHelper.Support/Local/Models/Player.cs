@@ -1932,6 +1932,9 @@ public sealed class Player
     /// <summary>힌트를 얻는다. 처음 얻는 것이면 true.</summary>
     public bool GainHint(int hint) => hint >= 0 && _hints.Add(hint);
 
+    /// <summary>힌트를 잃는다 — 개발 창 「힌트」 탭만 쓴다(게임에는 힌트를 잃는 길이 없다). 가지고 있었으면 true.</summary>
+    public bool LoseHint(int hint) => _hints.Remove(hint);
+
     private readonly HashSet<int> _found = [];
 
     /// <summary>

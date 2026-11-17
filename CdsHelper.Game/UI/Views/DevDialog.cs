@@ -76,6 +76,14 @@ public sealed partial class DevDialog : GameWindow
         /// </summary>
         public Func<int, bool>? EventDone { get; init; }
 
+        /// <summary>힌트 표 — 「힌트」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
+        public HintTable? Hints { get; init; }
+
+        /// <summary>그 힌트가 가리키는 발견물을 누가 보고해 일람에서 빠졌는지(<see cref="Engine.Discovery.DiscoveryLog.IsHintDone"/>).</summary>
+        public Func<int, bool>? HintDone { get; init; }
+
+        /// <summary>그 힌트가 가리키는 발견물 이름 — 「힌트」 탭 줄 끝에 단다.</summary>
+        public Func<int, string>? HintTargets { get; init; }
 
         /// <summary>등록된 역사 대본 칸들 — 「역사이벤트」 탭이 늘어놓는다. 못 읽었으면 탭이 안 선다.</summary>
         public Func<List<Engine.Market.CityHistory.Entry>>? HistoryEvents { get; init; }
@@ -417,6 +425,9 @@ public sealed partial class DevDialog : GameWindow
             pages.Add(("발견물", FindsPage(table, options.EventDone)));
             Closed += (_, _) => { if (_findsChanged) options.DiscoveriesChanged?.Invoke(); };
         }
+        // 「힌트」 탭 — 주인공이 가진 힌트를 체크로 넣고 뺀다.
+        if (options.Hints is { } hints)
+            pages.Add(("힌트", HintsPage(hints, options.HintDone, options.HintTargets)));
         if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
             pages.Add(("역사이벤트", HistoryPage(events)));
         if (options.Barmaids is { } maids)
@@ -923,6 +934,124 @@ public sealed partial class DevDialog : GameWindow
         page.Children.Add(new TextBlock
         {
             Text = "체크하면 발견한 것으로 적습니다(보고는 따로 해야 합니다). 풀면 보고한 기록까지 지웁니다.",
+            Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        Count();
+        return page;
+    }
+
+    /// <summary>
+    /// 「힌트」 탭 — 힌트 186개를 늘어놓고, 체크로 주인공이 가진 힌트(<see cref="Player.Hints"/>)를 넣고 뺀다.
+    /// </summary>
+    /// <remarks>
+    /// 가리키는 발견물을 누가 보고한 힌트는 가지고 있어도 취득 힌트 일람에서 빠진다 — 그건 「발견물」 탭에서 바꾼다.
+    /// 지금 맺은 계약의 힌트를 빼도 계약은 그대로다.
+    /// </remarks>
+    private FrameworkElement HintsPage(HintTable table, Func<int, bool>? done, Func<int, string>? targets)
+    {
+        var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 560 };
+        var count = new TextBlock { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
+        var find = Field();
+        find.Width = 180;
+        find.TextAlignment = TextAlignment.Left;
+        var list = new StackPanel();
+        var boxes = new List<(CheckBox Box, string Key)>();
+        bool bulk = false;
+        var header = new CheckBox
+        {
+            Content = "전체", Foreground = GameUi.Text, FontSize = 14, FontWeight = FontWeights.Bold,
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+
+        void Count()
+        {
+            count.Text = $"  {boxes.Count(b => b.Box.IsChecked == true)} / {boxes.Count}";
+            var shown = boxes.Where(b => b.Box.Visibility == Visibility.Visible).ToList();
+            int on = shown.Count(b => b.Box.IsChecked == true);
+            header.IsChecked = shown.Count > 0 && on == shown.Count ? true : on == 0 ? false : null;
+        }
+
+        foreach (var hint in table.Hints)
+        {
+            if (hint.Name.Length == 0) continue;
+            int id = hint.Id;
+            string category = table.CategoryOf(hint.Category);
+            string target = targets?.Invoke(id) ?? "";
+            var box = new CheckBox
+            {
+                Content = $"{id,3}  {hint.Name}" + (category.Length > 0 ? $"  [{category}]" : "")
+                          + (target.Length > 0 ? $"  → {target}" : "")
+                          + (done?.Invoke(id) == true ? "  (보고됨)" : "")
+                          + (_player.Contract?.Hint == id ? "  (계약 중)" : ""),
+                IsChecked = _player.HasHint(id),
+                Foreground = GameUi.Text,
+                FontSize = 14,
+                Margin = new Thickness(0, 2, 0, 2),
+                VerticalContentAlignment = VerticalAlignment.Center,
+            };
+            box.Checked += (_, _) =>
+            {
+                Engine.HardcoreRules.Mark("dev:hint", _player);
+                _player.GainHint(id);
+                if (!bulk) Count();
+            };
+            box.Unchecked += (_, _) =>
+            {
+                Engine.HardcoreRules.Mark("dev:hint", _player);
+                _player.LoseHint(id);
+                if (!bulk) Count();
+            };
+            boxes.Add((box, $"{id} {hint.Name} {category} {target}"));
+            list.Children.Add(box);
+        }
+
+        find.TextChanged += (_, _) =>
+        {
+            string want = find.Text.Trim();
+            foreach (var (box, key) in boxes)
+                box.Visibility = want.Length == 0 || key.Contains(want, StringComparison.OrdinalIgnoreCase)
+                    ? Visibility.Visible : Visibility.Collapsed;
+            Count();
+        };
+
+        header.Click += (_, _) =>
+        {
+            var shown = boxes.Where(b => b.Box.Visibility == Visibility.Visible).ToList();
+            bool on = !(shown.Count > 0 && shown.All(b => b.Box.IsChecked == true));
+            bulk = true;
+            foreach (var (box, _) in shown) box.IsChecked = on;
+            bulk = false;
+            Count();
+        };
+
+        var top = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+        top.Children.Add(new TextBlock
+        {
+            Text = "찾기", Width = 40, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        top.Children.Add(find);
+        top.Children.Add(count);
+        page.Children.Add(top);
+        var sheet = new DockPanel();
+        var head = new Border
+        {
+            BorderBrush = GameUi.Edge, BorderThickness = new Thickness(0, 0, 0, 1),
+            Padding = new Thickness(8, 4, 8, 4), Child = header,
+        };
+        DockPanel.SetDock(head, Dock.Top);
+        sheet.Children.Add(head);
+        sheet.Children.Add(new ScrollViewer
+        {
+            Height = 394, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Padding = new Thickness(8, 4, 8, 4), Content = list,
+        });
+        page.Children.Add(new Border { BorderBrush = GameUi.Edge, BorderThickness = new Thickness(1), Child = sheet });
+        page.Children.Add(new TextBlock
+        {
+            Text = "체크하면 그 힌트를 가진 것으로, 풀면 안 가진 것으로 적습니다. 「보고됨」은 가리키는 발견물을 누가 보고해 "
+                   + "취득 힌트 일람에서 빠진 것입니다 — 「발견물」 탭에서 바꿉니다.",
             Foreground = GameUi.Text, Opacity = 0.75, FontSize = 12, Margin = new Thickness(0, 6, 0, 0),
             TextWrapping = TextWrapping.Wrap,
         });
