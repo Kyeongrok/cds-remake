@@ -192,9 +192,13 @@ public sealed class ChronicleDialog : GameWindow
         {
             string name = NameOf(table, id);
             if (player.AnnouncedDateOf(id) is not { } told) continue;
-            if (player.FoundDateOf(id) is { } found)
-                rows.Add(new Row(found, player.Name, name, Reported: false));
-            rows.Add(new Row(told, player.Name, name, Reported: true));
+            // 칸 2 의 이름 — 세대교체 전에 아버지 · 할아버지가 보고한 것은 그 이름으로, 남의 글색으로 「보고」 한 줄만 싣는다.
+            // 예전에는 늘 지금 제독 이름을 써서 선대의 기록이 다 제 것으로 보였다(버그 리포트 #61).
+            string who = player.ReporterOf(id);
+            bool mine = who == player.Name;
+            if (mine && player.FoundDateOf(id) is { } found)
+                rows.Add(new Row(found, who, name, Reported: false));
+            rows.Add(new Row(told, who, name, Reported: true, Mine: mine));
         }
         foreach (var (id, who) in player.Scooped)
         {
