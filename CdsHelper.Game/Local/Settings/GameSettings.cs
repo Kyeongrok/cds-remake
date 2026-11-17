@@ -222,6 +222,9 @@ public sealed class GameSettingsData
 
     /// <summary>자동항해를 「최소 조타」로 몰지. 끄면 「속도 중시」다.</summary>
     public bool SteadyHelm { get; set; }
+
+    /// <summary>네비게이션 도시 목록에서 항구가 있는 도시를 앞에 둘지. 끄면 이름 차례다.</summary>
+    public bool NavHarborFirst { get; set; }
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
@@ -995,6 +998,13 @@ public static class GameSettings
     {
         get => Get(d => d.SteadyHelm);
         set => Set(d => d.SteadyHelm = value);
+    }
+
+    /// <summary>네비게이션 도시 목록에서 항구가 있는 도시를 앞에 둘지 — 네비게이션 창 「정렬」 단추로 고른다. 기본은 이름 차례.</summary>
+    public static bool NavHarborFirst
+    {
+        get => Get(d => d.NavHarborFirst);
+        set => Set(d => d.NavHarborFirst = value);
     }
 
     /// <summary><b>네비게이션</b>(목적지 도시를 골라 자동항해) 단축키. 기본은 <c>R</c> 이다.</summary>

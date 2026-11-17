@@ -204,6 +204,20 @@ public static class OffscreenHarness
                     foreach (Window w in window.OwnedWindows)
                         if (w is LiveMapWindow) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=nav — 네비게이션 창(목적지 도시 고르기)을 띄운다.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "nav")
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    Log("네비게이션 창을 띄운다");
+                    // 딸린 창은 창 안에 들어와야 스냅샷에 찍힌다 — 뜬 뒤에 자리를 옮긴다.
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is AutoSailDialog) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
+                    }, DispatcherPriority.ApplicationIdle);
+                    window.NavByKey();
+                    Log("네비게이션 창이 닫혔다");
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_FOUND=<이름>[,<이름>…] — 그 이름의 발견물들을 찾은 것으로 적는다(사람 발견물 그림이 지도에 서는지 본다).
             if (Environment.GetEnvironmentVariable("CDS_FOUND") is { Length: > 0 } found)
                 window.Dispatcher.BeginInvoke(() =>

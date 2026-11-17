@@ -121,6 +121,9 @@ public sealed class AutoSailDialog : GameWindow
 
     /// <summary>도시 판들과 그 위에 겹쳐 두는 항로 판 · 탭 머리와 그 위에 겹쳐 두는 항로 제목.</summary>
     private readonly Grid _pages = new();
+
+    /// <summary>판마다 칸들의 본디 차례(이름순 · 자주 간 차례)와 항구가 있는지 — 「정렬」 단추가 다시 늘어놓는다.</summary>
+    private readonly List<(UniformGrid Grid, List<(Border Cell, bool Harbor)> Cells)> _sorted = [];
     private readonly Grid _heads = new();
 
     private AutoSailDialog(IReadOnlyList<(int Id, string Name, string Culture, bool Harbor)> cities, BitmapSource? chart,
@@ -158,9 +161,12 @@ public sealed class AutoSailDialog : GameWindow
             // 먼저 골라 둘 도시가 든 첫 판을 연다 — 자주 간 도시 판에 있으면 그 판이다.
             if (firstTab < 0 && group.Cities.Exists(c => c.Id == preselect)) firstTab = tabs.Count;
             var grid = new UniformGrid { Columns = Columns, Width = CellWidth * Columns, VerticalAlignment = VerticalAlignment.Top };
+            var order = new List<(Border Cell, bool Harbor)>();
+            _sorted.Add((grid, order));
             foreach (var (id, name, _, harbor) in group.Cities)
             {
                 var cell = Cell(name, harbor ? Mark.Harbor : Mark.Inland);
+                order.Add((cell, harbor));
                 cell.MouseLeftButtonDown += (_, e) =>
                 {
                     e.Handled = true;
@@ -222,6 +228,19 @@ public sealed class AutoSailDialog : GameWindow
                 _hitNote,
             },
         };
+        // 정렬 — 항구가 있는 도시를 앞에 둘지(요청). 고른 것은 기억해 다음에 열 때도 그대로다.
+        GameButton sort = null!;
+        void ShowSort() => sort.Text = Lang.T(GameSettings.NavHarborFirst ? "정렬: 항구 먼저" : "정렬: 이름순");
+        sort = new GameButton("", () =>
+        {
+            GameSettings.NavHarborFirst = !GameSettings.NavHarborFirst;
+            ShowSort();
+            Resort();
+            if (_query.Text.Length > 0) Search();
+        }, BandStyle.Button, 150) { Height = UiSprites.BandHeight, Margin = new Thickness(12, 0, 0, 0) };
+        ShowSort();
+        Resort();
+        _finder.Children.Insert(_finder.Children.IndexOf(_hitNote), sort);
 
         // 자동이동 모드 · 항로 표시 · 항로 굵기 · 짙기는 설정 창 「네비게이션」 탭으로 옮겼다(요청, SettingsDialog.NavigationPage).
 
@@ -280,6 +299,17 @@ public sealed class AutoSailDialog : GameWindow
         {
             Pick(preselect);
             if (suggestion != null) _hitNote.Text = suggestion;
+        }
+    }
+
+    /// <summary>판마다 칸을 다시 늘어놓는다 — 항구 먼저면 항구 도시를 앞으로(그 안에서는 본디 차례), 아니면 본디 차례.</summary>
+    private void Resort()
+    {
+        foreach (var (grid, cells) in _sorted)
+        {
+            grid.Children.Clear();
+            var shown = GameSettings.NavHarborFirst ? cells.OrderBy(c => c.Harbor ? 0 : 1).ToList() : cells;
+            foreach (var (cell, _) in shown) grid.Children.Add(cell);
         }
     }
 
@@ -448,6 +478,7 @@ public sealed class AutoSailDialog : GameWindow
 
         var found = _cities.Where(c => Bare(c.Name).Contains(want) || Bare(Lang.T(c.Name)).Contains(want))
                            .OrderBy(c => Bare(c.Name).StartsWith(want) ? 0 : 1)
+                           .ThenBy(c => GameSettings.NavHarborFirst && !c.Harbor ? 1 : 0)
                            .ThenBy(c => c.Name, StringComparer.Ordinal);
         foreach (var (id, name, _, harbor) in found)
         {
