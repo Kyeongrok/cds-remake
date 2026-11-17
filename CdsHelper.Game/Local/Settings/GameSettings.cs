@@ -212,6 +212,7 @@ public sealed class GameSettingsData
     /// <summary>저장·발견물 지도·모드 단축키(글쇠 이름). 비면 기본값을 쓴다.</summary>
     public string SaveKey { get; set; } = "V";
     public string MapKey { get; set; } = "D";
+    public string LiveMapKey { get; set; } = "G";
     public string ModKey { get; set; } = "M";
     public string ItemsKey { get; set; } = "I";
     public string NavKey { get; set; } = "R";
@@ -947,6 +948,13 @@ public static class GameSettings
     {
         get => Get(d => d.MapKey);
         set => Set(d => d.MapKey = value);
+    }
+
+    /// <summary><b>세계지도</b>(도시락의 보조 지도 창) 단축키. 기본은 <c>G</c> 다 — W 는 발견물 지도의 바람 글쇠다.</summary>
+    public static string LiveMapKey
+    {
+        get => Get(d => d.LiveMapKey);
+        set => Set(d => d.LiveMapKey = value);
     }
 
     /// <summary><b>모드</b> 창 단축키. 기본은 <c>M</c> 이다.</summary>

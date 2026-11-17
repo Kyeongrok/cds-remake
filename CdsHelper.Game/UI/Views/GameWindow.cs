@@ -162,6 +162,13 @@ public class GameWindow : Window
             return;
         }
 
+        if (e.Key == KeyOf(Local.Settings.GameSettings.LiveMapKey, Key.G))
+        {
+            WorldMapWindow.Current?.LiveMapByKey(window);
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key == KeyOf(Local.Settings.GameSettings.ModKey, Key.M))
         {
             WorldMapWindow.Current?.ModByKey();

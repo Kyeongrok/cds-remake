@@ -29,6 +29,7 @@ public sealed class ShortcutDialog : GameWindow
         var general = new StackPanel();
         general.Children.Add(Row("저장", GameSettings.SaveKey, key => GameSettings.SaveKey = key));
         general.Children.Add(Row("발견물 지도", GameSettings.MapKey, key => GameSettings.MapKey = key));
+        general.Children.Add(Row("세계지도", GameSettings.LiveMapKey, key => GameSettings.LiveMapKey = key));
         general.Children.Add(Row("모드", GameSettings.ModKey, key => GameSettings.ModKey = key));
         general.Children.Add(Row("네비게이션", GameSettings.NavKey, key => GameSettings.NavKey = key));
         general.Children.Add(Row("소지품 정보", GameSettings.ItemsKey, key => GameSettings.ItemsKey = key));

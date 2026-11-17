@@ -3303,6 +3303,21 @@ public sealed class WorldMapWindow : Window
     }
 
     /// <summary>
+    /// 단축키로 <b>세계지도</b> 창을 연다 — 어느 창에서 눌러도 여기로 온다. 모달이 아니라 게임을 안 세운다.
+    /// 이미 떠 있으면 앞으로 내고, 세계지도 창 안에서 또 누르면 닫힌다(<see cref="LiveMapWindow"/>).
+    /// </summary>
+    internal void LiveMapByKey(Window owner)
+    {
+        if (!_started) return;
+        if (!GameSettings.ShowLiveMapMenu)
+        {
+            NoticeDialog.Show(owner, "모드 「세계지도」를 켜면 쓸 수 있습니다.");
+            return;
+        }
+        ShowLiveMap();
+    }
+
+    /// <summary>
     /// 단축키로 <b>모드</b> 창을 연다 — 어느 창에서 눌러도 여기로 온다. 이미 떠 있으면 또 열지 않는다.
     /// </summary>
     internal void ModByKey()
@@ -3500,6 +3515,13 @@ public sealed class WorldMapWindow : Window
         {
             e.Handled = true;
             if (GameSettings.ShowDiscoveryMapMenu) Hold(ShowDiscoveryMap);
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.LiveMapKey, Key.G))
+        {
+            e.Handled = true;
+            LiveMapByKey(this);
             return;
         }
 
@@ -4397,6 +4419,12 @@ public sealed class WorldMapWindow : Window
         DiscoveriesChanged = () => HideCities(),
         // 인물 · 비보는 대본이 발견을 안 적는다 — 발견물 지도처럼 사건을 마쳤으면 찾은 것으로 본다.
         EventDone = id => _game.Player.IsSettled(id) && !Engine.Disev.DisevRunner.RecordsDiscovery(_game, id),
+        // 「힌트」 탭 — 주인공이 가진 힌트를 넣고 뺀다.
+        Hints = _game.Hints,
+        HintDone = id => _game.Discoveries?.IsHintDone(_game.Player, id) == true,
+        HintTargets = id => _game.Hints?.Find(id) is { Discovery: >= 0 } h && _game.Discoveries?.Table is { } dt
+            ? string.Join(" · ", dt.Discoveries.Where(r => r.Hint == h.Discovery && r.Name.Length > 0).Select(r => r.Name).Distinct())
+            : "",
         // 「역사이벤트」 탭 — 등록된 역사 대본 칸과 지금 날짜로 본 상태.
         HistoryEvents = () => _game.HistoryCatalog(),
         // 「여급」 탭 — 여급 127명의 서는 해 · 도시 · 언어 · 취향.

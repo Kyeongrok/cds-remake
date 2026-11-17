@@ -114,6 +114,8 @@ public sealed class LiveMapWindow : Window
 
     private static readonly Brush Found = Frozen(Color.FromRgb(0xE0, 0x30, 0x20));
     private static readonly Brush Yet = Frozen(Color.FromRgb(0x60, 0x60, 0x60));
+    /// <summary>못 찾은 발견물의 이름 글자 — 점 색(<see cref="Yet"/>)은 검은 그늘 위에서 안 읽혀 밝게 쓴다.</summary>
+    private static readonly Brush YetText = Frozen(Color.FromRgb(0xD0, 0xD0, 0xD0));
     private static readonly Brush Mine = Frozen(Color.FromRgb(0x20, 0x60, 0xFF));
     private static readonly Brush CityInk = Frozen(Color.FromRgb(0xF0, 0x90, 0x10));
     private static readonly Brush TrailInk = Frozen(Color.FromArgb(0xE0, 0xFF, 0xE0, 0x40));
@@ -208,6 +210,17 @@ public sealed class LiveMapWindow : Window
         MinWidth = 420;
         MinHeight = 300;
         ResizeMode = ResizeMode.CanResize;
+        // 윈도 제목 줄 대신 모드 창과 같은 게임 제목 줄을 단다 — 윈도 띠는 게임 창들 사이에서 혼자 튀었다.
+        // 크기는 그대로 바꿀 수 있게 테두리만 WindowChrome 으로 살린다.
+        WindowStyle = WindowStyle.None;
+        System.Windows.Shell.WindowChrome.SetWindowChrome(this, new System.Windows.Shell.WindowChrome
+        {
+            CaptionHeight = 0,
+            ResizeBorderThickness = new Thickness(6),
+            GlassFrameThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(0),
+            UseAeroCaptionButtons = false,
+        });
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ShowInTaskbar = false;
         Background = GameUi.Back;
@@ -361,7 +374,24 @@ public sealed class LiveMapWindow : Window
         DockPanel.SetDock(foot, Dock.Bottom);
         root.Children.Add(foot);
         root.Children.Add(_viewport);
-        Content = root;
+
+        var title = GameUi.TitleBar(Title, () => { if (Picking) DialogResult = false; else Close(); });
+        title.MouseLeftButtonDown += (_, e) =>
+        {
+            if (e.ClickCount == 2) WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            else if (e.ButtonState == MouseButtonState.Pressed) DragMove();
+        };
+        var frame = new DockPanel { LastChildFill = true };
+        DockPanel.SetDock(title, Dock.Top);
+        frame.Children.Add(title);
+        frame.Children.Add(root);
+        Content = new Border
+        {
+            Background = GameUi.Back,
+            BorderBrush = GameUi.Edge,
+            BorderThickness = new Thickness(2),
+            Child = frame,
+        };
 
         KeyDown += OnKey;
 
@@ -694,16 +724,17 @@ public sealed class LiveMapWindow : Window
         foreach (var c in cities)
             Mark(_cityLayer, c.X, c.Y, c.Library ? 9 : 7, CityInk, c.Library ? $"{Lang.T(c.Name)} ({Lang.T("도서관")})" : Lang.T(c.Name), Lang.T(c.Name));
         foreach (var s in spots)
-            Mark(s.Found ? _spotLayer : _yetLayer, s.X, s.Y, 7, s.Found ? Found : Yet, Lang.T(s.Name), Lang.T(s.Name));
+            Mark(s.Found ? _spotLayer : _yetLayer, s.X, s.Y, 7, s.Found ? Found : Yet, Lang.T(s.Name), Lang.T(s.Name),
+                 s.Found ? null : YetText);
     }
 
-    private void Mark(Canvas layer, double x, double y, double size, Brush fill, string tip, string name)
+    private void Mark(Canvas layer, double x, double y, double size, Brush fill, string tip, string name, Brush? ink = null)
     {
         var dot = new System.Windows.Shapes.Ellipse { Fill = fill, Stroke = Brushes.Black, ToolTip = tip };
         layer.Children.Add(dot);
         var tag = new TextBlock
         {
-            Text = name, Foreground = fill, FontWeight = FontWeights.Bold, IsHitTestVisible = false,
+            Text = name, Foreground = ink ?? fill, FontWeight = FontWeights.Bold, IsHitTestVisible = false,
             Background = Shade, Visibility = Visibility.Collapsed,
         };
         layer.Children.Add(tag);
@@ -718,6 +749,10 @@ public sealed class LiveMapWindow : Window
             case Key.Escape when Picking: DialogResult = false; return;
             case Key.Enter when Picking: ConfirmPick(); e.Handled = true; return;
             case Key.Escape: Close(); return;
+            // 여는 단축키를 이 창에서 또 누르면 닫는다 — 이 창은 GameWindow 가 아니라 공용 글쇠 손이 안 온다.
+            case var k when !Picking && Keyboard.Modifiers == ModifierKeys.None
+                            && Enum.TryParse(GameSettings.LiveMapKey, true, out Key mine) && k == mine:
+                Close(); e.Handled = true; return;
             case Key.Left: _vx -= Step / Z; SetFollow(false); break;
             case Key.Right: _vx += Step / Z; SetFollow(false); break;
             case Key.Up: _vy -= Step / Z; SetFollow(false); break;
