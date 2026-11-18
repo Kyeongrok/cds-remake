@@ -39,6 +39,8 @@
     <ItemGroup>
       <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
       <PackageReference Include="Velopack" Version="0.0.1298" />
+      <!-- 배 등록 창의 리마스터를 GPU 로 — DirectML.dll 은 이 패키지의 build 대상이 실행 프로젝트에 직접 걸려야 복사된다 -->
+      <PackageReference Include="Microsoft.AI.DirectML" Version="1.13.1" />
     </ItemGroup>
 
     <ItemGroup>

@@ -221,18 +221,10 @@ public static class CityUpscale
                 try { UpscaleModelAsset.DownloadAsync().GetAwaiter().GetResult(); }
                 finally { _downloading = false; }
             }
-            _session = _cpuOnly ? null : OpenGpu();
-            if (_session == null)
-            {
-                // 코어 절반만 쓴다 — 게임이 끊기지 않게.
-                var options = new SessionOptions
-                {
-                    IntraOpNumThreads = Math.Max(1, Environment.ProcessorCount / 2),
-                    InterOpNumThreads = 1,
-                };
-                _session = new InferenceSession(UpscaleModelAsset.CachePath, options);
-                _gpu = false;
-            }
+            // CPU 면 코어 절반만 쓴다 — 게임이 끊기지 않게.
+            _session = OnnxGpu.Open(UpscaleModelAsset.CachePath, out bool gpu,
+                                    cpuThreads: Math.Max(1, Environment.ProcessorCount / 2), allowGpu: !_cpuOnly);
+            _gpu = gpu;
             _input = _session.InputMetadata.Keys.First();
             _failed = false;
             return true;
@@ -242,31 +234,6 @@ public static class CityUpscale
             _failed = true;
             Say?.Invoke($"도시 그림 업스케일링 모델을 열지 못했습니다 — {ex.Message}");
             return false;
-        }
-    }
-
-    /// <summary>
-    /// GPU(DirectML — DirectX 12 가 되는 NVIDIA · AMD · 인텔 모두)로 연다. 안 되면 null — CPU 로 물러선다.
-    /// </summary>
-    /// <remarks>DirectML 은 메모리 패턴 · 병렬 실행을 못 쓴다(ONNX Runtime 문서).</remarks>
-    private static InferenceSession? OpenGpu()
-    {
-        try
-        {
-            var options = new SessionOptions
-            {
-                EnableMemoryPattern = false,
-                ExecutionMode = ExecutionMode.ORT_SEQUENTIAL,
-            };
-            options.AppendExecutionProvider_DML(0);
-            var session = new InferenceSession(UpscaleModelAsset.CachePath, options);
-            _gpu = true;
-            return session;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[CityUpscale] GPU 를 못 연다 — CPU 로: {ex.Message}");
-            return null;
         }
     }
 

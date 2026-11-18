@@ -21,12 +21,18 @@ namespace CdsHelper.Support.Local.Helpers;
 /// </remarks>
 public sealed class ShipRemaster : IDisposable
 {
-    private readonly InferenceSession _session;
+    private readonly string _modelPath;
+    private InferenceSession _session;
     private readonly string _input;
+
+    /// <summary>GPU(DirectML)로 돌고 있는지 — 안 되면 CPU 로 물러서 있다(<see cref="OnnxGpu"/>).</summary>
+    public bool OnGpu { get; private set; }
 
     public ShipRemaster(string modelPath)
     {
-        _session = new InferenceSession(modelPath);
+        _modelPath = modelPath;
+        _session = OnnxGpu.Open(modelPath, out bool gpu);
+        OnGpu = gpu;
         _input = _session.InputMetadata.Keys.First();
     }
 
@@ -94,9 +100,21 @@ public sealed class ShipRemaster : IDisposable
 
     private (float[] Planes, int Side) Run(DenseTensor<float> tensor)
     {
-        using var results = _session.Run([NamedOnnxValue.CreateFromTensor(_input, tensor)]);
-        var output = results.First().AsTensor<float>();
-        return (output.ToArray(), output.Dimensions[3]);
+        IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results;
+        try { results = _session.Run([NamedOnnxValue.CreateFromTensor(_input, tensor)]); }
+        catch (OnnxRuntimeException) when (OnGpu)
+        {
+            // GPU 로 돌리다 실패하면(메모리 모자람 따위) CPU 로 다시 열어 한다.
+            _session.Dispose();
+            _session = OnnxGpu.Open(_modelPath, out _, allowGpu: false);
+            OnGpu = false;
+            results = _session.Run([NamedOnnxValue.CreateFromTensor(_input, tensor)]);
+        }
+        using (results)
+        {
+            var output = results.First().AsTensor<float>();
+            return (output.ToArray(), output.Dimensions[3]);
+        }
     }
 
     private static byte ToByte(float value) => (byte)Math.Clamp((int)MathF.Round(value * 255f), 0, 255);
