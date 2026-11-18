@@ -1611,6 +1611,7 @@ public sealed class ModDialog : GameWindow
                 { Failed: true } => Local.Helpers.Lang.T("모델을 열지 못했습니다."),
                 { Total: 0 } => Local.Helpers.Lang.T("게임을 시작하면 뒤에서 만들기 시작합니다."),
                 { Filling: true } => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 이번에 {p.Made}장 만듦")
+                    + (Local.Helpers.CityUpscale.OnGpu is { } gpu ? (gpu ? " · GPU" : " · CPU") : "")
                     + (p.Busy ? Local.Helpers.Lang.T(" — 만드는 중(게임이 느려질 수 있습니다)") : ""),
                 _ when p.Checked >= p.Total => Local.Helpers.Lang.T($"{p.Total}장 모두 준비됐습니다."),
                 _ => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 멈춤"),

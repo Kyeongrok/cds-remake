@@ -16,7 +16,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 나눠 주는 꼴이 된다. 그래서 그 PC 의 CITYCG 를 그 자리에서 키운다. 모델은 선박 리마스터와 같은 Rebout Blend 4x 다
 /// (<see cref="UpscaleModelAsset"/>, 없으면 처음에 받는다).
 /// <para>
-/// 한 장에 CPU 로 수십 초 걸려서 <b>뒤에서 한 장씩</b> 만든다 — 실 하나, 낮은 우선순위, 코어 절반. 입항한 도시는 줄 맨 앞으로
+/// GPU(DirectML)가 되면 GPU 로, 안 되면 CPU 로 돌린다(CPU 면 한 장에 수십 초). <b>뒤에서 한 장씩</b> 만든다 — 실 하나, 낮은 우선순위, CPU 면 코어 절반. 입항한 도시는 줄 맨 앞으로
 /// 당기고, 다 되면 그 창 그림을 갈아 끼운다(<see cref="Request"/>). 남은 도시는 게임을 켜 둔 동안 차례로 채운다(<see cref="Prefill"/>).
 /// </para>
 /// 만든 그림은 <c>%LOCALAPPDATA%\CdsHelper\cityhd</c> 에 그림 점의 해시 이름으로 둔다 — 커스텀 팩 · 도시 성장으로 그림이 바뀌면
@@ -43,7 +43,7 @@ public static class CityUpscale
     public static Func<bool> Enabled { get; set; } = () => false;
 
     private static volatile int _checked, _total, _made;
-    private static volatile bool _filling, _busy, _downloading, _failed;
+    private static volatile bool _filling, _busy, _downloading, _failed, _gpu, _cpuOnly;
 
     /// <summary>
     /// 지금 진행 — 모드 창에 띄운다. <c>Checked</c>/<c>Total</c> 은 채우기가 훑은 도시 그림 수(이미 있던 것 포함),
@@ -51,6 +51,9 @@ public static class CityUpscale
     /// </summary>
     public static (int Checked, int Total, int Made, bool Filling, bool Busy, bool Downloading, bool Failed) Progress
         => (_checked, _total, _made, _filling, _busy, _downloading, _failed);
+
+    /// <summary>모델을 GPU 로 열었는지 — 아직 안 열었으면 null.</summary>
+    public static bool? OnGpu => _session == null ? null : _gpu;
 
     private sealed record Job(string Key, uint[] Bgra, int Width, int Height, List<Action<BitmapSource>> Done);
 
@@ -177,7 +180,18 @@ public static class CityUpscale
             try
             {
                 if (!EnsureSession()) { lock (Gate) Queue.Clear(); continue; }
-                var made = Upscale(job.Bgra, job.Width, job.Height);
+                BitmapSource made;
+                try { made = Upscale(job.Bgra, job.Width, job.Height); }
+                catch (OnnxRuntimeException) when (_gpu)
+                {
+                    // GPU 메모리가 모자라는 따위 — CPU 로 열어 다시 한다.
+                    System.Diagnostics.Debug.WriteLine("[CityUpscale] GPU 실행 실패 — CPU 로 다시");
+                    _session?.Dispose();
+                    _session = null;
+                    _cpuOnly = true;
+                    if (!EnsureSession()) { lock (Gate) Queue.Clear(); continue; }
+                    made = Upscale(job.Bgra, job.Width, job.Height);
+                }
                 Directory.CreateDirectory(Folder);
                 string path = PathOf(job.Key), temp = path + ".tmp";
                 var encoder = new PngBitmapEncoder();
@@ -207,13 +221,18 @@ public static class CityUpscale
                 try { UpscaleModelAsset.DownloadAsync().GetAwaiter().GetResult(); }
                 finally { _downloading = false; }
             }
-            // 코어 절반만 쓴다 — 게임이 끊기지 않게.
-            var options = new SessionOptions
+            _session = _cpuOnly ? null : OpenGpu();
+            if (_session == null)
             {
-                IntraOpNumThreads = Math.Max(1, Environment.ProcessorCount / 2),
-                InterOpNumThreads = 1,
-            };
-            _session = new InferenceSession(UpscaleModelAsset.CachePath, options);
+                // 코어 절반만 쓴다 — 게임이 끊기지 않게.
+                var options = new SessionOptions
+                {
+                    IntraOpNumThreads = Math.Max(1, Environment.ProcessorCount / 2),
+                    InterOpNumThreads = 1,
+                };
+                _session = new InferenceSession(UpscaleModelAsset.CachePath, options);
+                _gpu = false;
+            }
             _input = _session.InputMetadata.Keys.First();
             _failed = false;
             return true;
@@ -223,6 +242,31 @@ public static class CityUpscale
             _failed = true;
             Say?.Invoke($"도시 그림 업스케일링 모델을 열지 못했습니다 — {ex.Message}");
             return false;
+        }
+    }
+
+    /// <summary>
+    /// GPU(DirectML — DirectX 12 가 되는 NVIDIA · AMD · 인텔 모두)로 연다. 안 되면 null — CPU 로 물러선다.
+    /// </summary>
+    /// <remarks>DirectML 은 메모리 패턴 · 병렬 실행을 못 쓴다(ONNX Runtime 문서).</remarks>
+    private static InferenceSession? OpenGpu()
+    {
+        try
+        {
+            var options = new SessionOptions
+            {
+                EnableMemoryPattern = false,
+                ExecutionMode = ExecutionMode.ORT_SEQUENTIAL,
+            };
+            options.AppendExecutionProvider_DML(0);
+            var session = new InferenceSession(UpscaleModelAsset.CachePath, options);
+            _gpu = true;
+            return session;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[CityUpscale] GPU 를 못 연다 — CPU 로: {ex.Message}");
+            return null;
         }
     }
 

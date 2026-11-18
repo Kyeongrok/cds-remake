@@ -9,7 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.*" />
-      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.3" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.17.3" />
       <PackageReference Include="Prism.Core" Version="9.0.537" />
       <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
       <PackageReference Include="OpenCvSharp4.Extensions" Version="4.10.0.20241108" />
