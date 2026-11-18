@@ -151,9 +151,12 @@ public sealed class DiscoveryLog
     /// <summary>
     /// 아직 살아 있는 힌트 — 얻었고 아직 보고 안 한 것(상태 13). 번호 차례로 낸다.
     /// </summary>
-    /// <remarks>「취득 힌트 일람」과 후원자 설득 목록이 함께 쓴다.</remarks>
+    /// <remarks>
+    /// 「취득 힌트 일람」과 후원자 설득 목록이 함께 쓴다. 힌트 표에 없는 번호는 뺀다 — 커스텀 발견물의 힌트를 얻은 뒤 그 발견물을
+    /// 지우면 「힌트 4626」처럼 이름 없이 남았다. 세이브에서는 지우지 않아 같은 발견물을 다시 넣으면 되살아난다.
+    /// </remarks>
     public List<int> LiveHints(Player player) =>
-        [.. player.Hints.Where(id => !IsHintDone(player, id)).Order()];
+        [.. player.Hints.Where(id => (_hints == null || _hints.Find(id) != null) && !IsHintDone(player, id)).Order()];
 
     /// <summary>
     /// 그 힌트가 가리키는 발견물(같은 유적 번호)을 <b>하나라도 찾았는지</b> — 보고 여부는 안 본다.
