@@ -423,7 +423,11 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
 
         // 이 후원자가 좋아하는 갈래의 힌트는 갈색(#DEC6AD) 바탕으로 도드라지게 한다 — 설득이
         // 갈래 취향을 그대로 따지므로(후원자 정보의 「발견물의 취향」) 고르기 전에 보이는 편이 낫다.
-        var liked = mine.Select(id => _game.Hints?.Find(id) is { } h && patron.Likes(h.Category)).ToList();
+        // 판정(Decide)과 같은 후원자 표 취향을 본다 — 개발도구 · 팩으로 고친 취향은 표(SponsorEdits)에만 얹혀서,
+        // patrons.json 의 옛 취향을 보던 예전에는 고친 갈래가 아니라 원래 갈래가 칠해졌다(버그 리포트 #66).
+        var sponsorRow = _game.Sponsors?.FindByName(patron.Name);
+        var liked = mine.Select(id => _game.Hints?.Find(id) is { } h
+                                      && (sponsorRow is { } sr ? Persuasion.Likes(sr.Tastes, h.Category) : patron.Likes(h.Category))).ToList();
 
         // 「다른 이야기는 없는가?」면 <b>목록을 다시 띄운다</b>(0x004AE8E0 의 되풀이). 한 번 내민 힌트는
         // 그 줄을 막아 두고(0x004AE993), 아직 안 내민 것이 남아 있는 동안 되풀이한다(0x004AE99A).
