@@ -131,7 +131,7 @@ public sealed class AutoSailDialog : GameWindow
 
     private AutoSailDialog(IReadOnlyList<(int Id, string Name, string Culture, bool Harbor)> cities, BitmapSource? chart,
                            Func<int, (bool Ok, string Message, IReadOnlyList<Plan> Plans)> start,
-                           IReadOnlyList<int> frequent, int preselect, string? suggestion)
+                           IReadOnlyList<int> frequent, int preselect, string? suggestion, IReadOnlyList<int>? recent = null)
     {
         _start = start;
         _chart = chart;
@@ -158,6 +158,9 @@ public sealed class AutoSailDialog : GameWindow
                            .OrderBy(g => CultureRank(g.Key)).ThenBy(g => g.Key, StringComparer.Ordinal)
                            .Select(g => (Text: $"{Lang.T(g.Key)} {g.Count()}", Cities: g.OrderBy(c => c.Name, StringComparer.Ordinal).ToList()))
                            .ToList();
+        // 「최근 방문 도시」 — 자주 간 도시 다음 판, 최근에 들른 차례(요청). 같은 도시가 다른 판에도 선다.
+        var lately = (recent ?? []).Where(known.ContainsKey).Select(id => known[id]).ToList();
+        if (lately.Count > 0) groups.Insert(0, ($"{Lang.T("최근 방문 도시")} {lately.Count}", lately));
         if (often.Count > 0) groups.Insert(0, ($"{Lang.T("자주 간 도시")} {often.Count}", often));
         foreach (var group in groups)
         {
@@ -735,11 +738,12 @@ public sealed class AutoSailDialog : GameWindow
     public static (int City, int Plan) Show(Window owner, IEnumerable<(int Id, string Name, string Culture, bool Harbor)> cities,
                                             BitmapSource? chart,
                                             Func<int, (bool Ok, string Message, IReadOnlyList<Plan> Plans)> start,
-                                            IReadOnlyList<int>? frequent = null, int preselect = -1, string? suggestion = null)
+                                            IReadOnlyList<int>? frequent = null, int preselect = -1, string? suggestion = null,
+                                            IReadOnlyList<int>? recent = null)
     {
         var list = cities.ToList();
         if (list.Count == 0) { NoticeDialog.Show(owner, "아는 도시가 없습니다"); return (-1, -1); }
-        var dialog = new AutoSailDialog(list, chart, start, frequent ?? [], preselect, suggestion) { Owner = owner };
+        var dialog = new AutoSailDialog(list, chart, start, frequent ?? [], preselect, suggestion, recent) { Owner = owner };
         dialog.ShowDialog();
         return dialog._confirmed && dialog._bound >= 0 ? (dialog._bound, dialog._plan) : (-1, -1);
     }

@@ -1099,6 +1099,10 @@ public sealed class WorldMapWindow : Window
         var frequent = _game.Player.CityVisits.Where(v => v.Key != here)
             .OrderByDescending(v => v.Value).ThenBy(v => v.Key).Take(FrequentCities).Select(v => v.Key).ToList();
 
+        // 둘째 탭 — 최근에 들른 도시 20곳(요청). 행적의 입항(갈래 1)을 새것부터 훑어 겹치지 않게 모은다. 지금 있는 도시는 빠진다.
+        var recent = _game.Player.Traces.Where(t => t.Kind == Player.TraceArrival && t.A >= 0 && t.A != here)
+            .Reverse().Select(t => t.A).Distinct().Take(FrequentCities).ToList();
+
         // 먼저 골라 둘 도시 — 계약 뒤 처음 열면 그 발견물에서 가장 가까운 도시, 아니면 바다에서 열었을 때 마지막으로 간 도시.
         int preselect = -1;
         string? suggestion = null;
@@ -1138,7 +1142,7 @@ public sealed class WorldMapWindow : Window
 
             string name = _game.CityName(id);
             return (true, goals[0].Afoot ? $"[{name}] 가는 길 (내륙 도시라 배를 대고 걸어갑니다)" : $"[{name}] 가는 길", plans);
-        }, frequent, preselect, suggestion);
+        }, frequent, preselect, suggestion, recent);
 
         if (chosen < 0 || pick < 0 || pick >= goals.Count) return;
         _sailTo = chosen;
