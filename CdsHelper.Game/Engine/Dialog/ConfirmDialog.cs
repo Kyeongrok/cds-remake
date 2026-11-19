@@ -313,7 +313,7 @@ public sealed class ConfirmDialog : GameWindow
     }
 
     /// <summary>제목 띠의 높이. 원본도 제목이 붙으면 창이 이만큼 길어진다.</summary>
-    private const double BarHeight = UiSprites.BandHeight;
+    private static double BarHeight => UI.Views.GameUi.BandRows;   // 설정 「글자 크기」를 따라 높아진다
 
     /// <summary>창 위(또는 제목 띠)와 본문 사이, 본문과 단추 줄 사이.</summary>
     private const double BodyGap = 6, TextGap = 10;
@@ -359,7 +359,8 @@ public sealed class ConfirmDialog : GameWindow
     private const int MaxCells = 60;
 
     /// <summary>단추 크기와 사이. 폭은 마구리 둘에 가운데 넉 칸이다(16+8*4+16).</summary>
-    private const double ButtonWidth = 64, ButtonHeight = UiSprites.BandHeight, ButtonGap = 16;
+    private const double ButtonWidth = 64, ButtonGap = 16;
+    private static double ButtonHeight => UI.Views.GameUi.BandRows;
 
     /// <summary>
     /// 물어보고 YES 를 골랐으면 true. <paramref name="title"/> 을 주면 제목 띠를 얹는다.

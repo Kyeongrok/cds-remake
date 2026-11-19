@@ -869,28 +869,67 @@ internal static class GameUi
     /// <paramref name="scale"/> 배 키운다. 늘릴 때 섞으면 획이 흐려지므로 안 섞는다.
     /// </remarks>
     public static Image? GameFontLabel(string text, byte color, int scale,
-                                        int height = UiSprites.BandHeight, bool shadow = true)
+                                        int height = UiSprites.BandHeight, bool shadow = true, double zoom = 1)
     {
         if (Font == null) return null;
         var bgra = Font.Render(text, color, shadow, GameFont.ShadowColor, height, out int w);
         if (bgra == null || w <= 0) return null;
 
-        var bmp = BitmapSource.Create(w, height, 96, 96,
-                                      PixelFormats.Bgra32, null, bgra, w * 4);
+        // 설정 「글자 크기」로 키울 때 — 원본 도트를 Scale2x 로 두 배씩 키워 대각선 계단을 깎은 뒤 원하는 크기로 줄여 찍는다.
+        // 그냥 1.25배로 늘리면 점 몇 줄만 두 배가 돼 획 굵기가 들쭉날쭉하다.
+        int bw = w, bh = height;
+        if (zoom > 1.001)
+            for (int k = 1; k < zoom * scale && bw < 4096; k *= 2) bgra = Scale2x(bgra, ref bw, ref bh);
+
+        var bmp = BitmapSource.Create(bw, bh, 96, 96,
+                                      PixelFormats.Bgra32, null, bgra, bw * 4);
         bmp.Freeze();
 
         var image = new Image
         {
             Source = bmp,
-            Width = w * scale,
-            Height = height * scale,
+            Width = w * scale * zoom,
+            Height = height * scale * zoom,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             IsHitTestVisible = false,        // 제목 줄 끌기를 가리지 않게
         };
-        RenderOptions.SetBitmapScalingMode(image, SpriteScaling);
+        RenderOptions.SetBitmapScalingMode(image, zoom > 1.001 ? BitmapScalingMode.HighQuality : SpriteScaling);
         RenderOptions.SetEdgeMode(image, EdgeMode.Aliased);
         return image;
+    }
+
+    /// <summary>
+    /// 설정 「글자 크기」 배율(1 · 1.25 · 1.5) — 게임 띠(메뉴 줄 · 단추 · 상단 띠)의 글자와 띠 높이를 함께 키운다.
+    /// </summary>
+    public static double TextZoom => Math.Clamp(GameSettings.TextScale, 100, 200) / 100.0;
+
+    /// <summary>지금 글자 크기에서의 띠 높이(점) — 원본 24 에 배율을 곱한다. 띠는 가운데 줄을 되풀이해 이 높이로 짓는다(<see cref="UiSprites.Band(BandStyle, int, out int, int)"/>).</summary>
+    public static int BandRows => (int)Math.Round(UiSprites.BandHeight * TextZoom);
+
+    /// <summary>
+    /// Scale2x(EPX) — 도트 그림을 두 배로 키우며 대각선 계단만 깎는다. 획 모양 · 색은 그대로라 비트맵 글꼴에 맞는다.
+    /// 점 P 의 위 · 오른 · 왼 · 아래 이웃 A · B · C · D 로 네 점을 정한다(같은 색 이웃이 둘 맞물리면 그 색으로).
+    /// </summary>
+    private static uint[] Scale2x(uint[] src, ref int w, ref int h)
+    {
+        int ow = w * 2, oh = h * 2;
+        var dst = new uint[ow * oh];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                uint p = src[y * w + x];
+                uint a = y > 0 ? src[(y - 1) * w + x] : p, b = x < w - 1 ? src[y * w + x + 1] : p;
+                uint c = x > 0 ? src[y * w + x - 1] : p, d = y < h - 1 ? src[(y + 1) * w + x] : p;
+                uint e0 = c == a && c != d && a != b ? a : p;
+                uint e1 = a == b && a != c && b != d ? b : p;
+                uint e2 = d == c && d != b && c != a ? c : p;
+                uint e3 = b == d && b != a && d != c ? d : p;
+                int o = y * 2 * ow + x * 2;
+                dst[o] = e0; dst[o + 1] = e1; dst[o + ow] = e2; dst[o + ow + 1] = e3;
+            }
+        w = ow; h = oh;
+        return dst;
     }
 
     /// <summary>
@@ -930,8 +969,11 @@ internal static class GameUi
         // 그림은 <see cref="Image"/> 가 아니라 <b>배경 솔</b>로 깐다. Image 로 두면 그 그림
         // 크기가 다시 자리 계산에 먹혀 들어가, 넓어질수록 칸 수가 늘고 그래서 또 넓어지는
         // 되먹임이 생긴다(띠가 화면 끝까지 자란다). 배경 솔은 자리 계산에 끼어들지 않는다.
+        // 설정 「글자 크기」 — 글자를 키우고 띠는 가운데 줄을 되풀이해 그만큼 높인다(폭은 마구리 · 가운데 칸 그대로).
+        double zoom = TextZoom;
+        int rows = BandRows;
         var back = new Border();
-        var grid = new Grid { Height = UiSprites.BandHeight * scale };
+        var grid = new Grid { Height = rows * scale };
         grid.Children.Add(back);
 
         int drawn = -1;
@@ -941,8 +983,8 @@ internal static class GameUi
             if (cells == drawn) return;                 // 같은 칸 수면 다시 찍을 것 없다
             drawn = cells;
 
-            var bgra = sprites.Band(style, cells, out int w);
-            var bmp = BitmapSource.Create(w, UiSprites.BandHeight, 96, 96,
+            var bgra = sprites.Band(style, cells, out int w, rows);
+            var bmp = BitmapSource.Create(w, rows, 96, 96,
                                           PixelFormats.Bgra32, null, bgra, w * 4);
             bmp.Freeze();
 
@@ -965,13 +1007,14 @@ internal static class GameUi
         // 제 폭이 곧 창 폭이라 늘어날 일이 없어 눌린 채로 남는다.
         if (width > 0)
         {
-            grid.Width = width * scale;
-            Redraw(width * scale);
+            // 못 박은 폭도 글자 배율만큼 넓힌다 — 안 그러면 키운 글자가 마구리 밖으로 넘친다.
+            grid.Width = width * scale * zoom;
+            Redraw(width * scale * zoom);
         }
         else
         {
             double least = Math.Max(UiSprites.WidthFor(1),
-                                    GameSettings.BandPad * 2 + LayoutWidth(title));
+                                    GameSettings.BandPad * 2 + LayoutWidth(title) * zoom);
             grid.MinWidth = least * scale;
             Redraw(least * scale);
         }
@@ -979,13 +1022,13 @@ internal static class GameUi
         // 글씨는 띠 전체 위에 얹는다 — 마구리를 넘어가도 가운데에 오게.
         // 게임 비트맵 글꼴을 읽었으면 그것으로 찍는다. 획 굵기까지 원본과 같아진다.
         FrameworkElement? label = GameFontLabel(title, textColor, scale,
-                                                UiSprites.BandHeight, shadow);
+                                                UiSprites.BandHeight, shadow, zoom);
         label ??= new TextBlock
         {
             Text = title,
             Foreground = Text,
             FontWeight = FontWeights.Bold,
-            FontSize = 15,
+            FontSize = 15 * zoom,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
@@ -1662,11 +1705,13 @@ internal static class GameUi
     {
         if (Sprites == null || Font == null) return null;
 
-        var label = GameFontLabel(text, color, 1, UiSprites.BandHeight, shadow);
+        double zoom = TextZoom;
+        int rows = BandRows;
+        var label = GameFontLabel(text, color, 1, UiSprites.BandHeight, shadow, zoom);
         if (label == null) return null;
 
-        var bgra = Sprites.Band(style, UiSprites.CellsAround(Font.TextWidth(text)), out int w);
-        var bmp = BitmapSource.Create(w, UiSprites.BandHeight, 96, 96,
+        var bgra = Sprites.Band(style, UiSprites.CellsAround(Font.TextWidth(text) * zoom), out int w, rows);
+        var bmp = BitmapSource.Create(w, rows, 96, 96,
                                       PixelFormats.Bgra32, null, bgra, w * 4);
         bmp.Freeze();
 
@@ -1675,7 +1720,7 @@ internal static class GameUi
         RenderOptions.SetEdgeMode(brush, EdgeMode.Aliased);
         brush.Freeze();
 
-        var grid = new Grid { Width = w, Height = UiSprites.BandHeight, Background = brush };
+        var grid = new Grid { Width = w, Height = rows, Background = brush };
         grid.Children.Add(label);
         return new Border { Child = grid };
     }

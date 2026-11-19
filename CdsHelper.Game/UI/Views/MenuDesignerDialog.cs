@@ -300,7 +300,7 @@ public sealed class MenuDesignerDialog : GameWindow
         foreach (string text in Items().Take(most))
         {
             var key = focus.Add(text, () => { }, wide);
-            key.Height = UiSprites.BandHeight;
+            key.Height = GameUi.BandRows;
             key.Margin = new Thickness(0, 0, 0, 2);
             column.Children.Add(key);
         }
@@ -342,7 +342,7 @@ public sealed class MenuDesignerDialog : GameWindow
         foreach (string name in _yesNo.IsChecked == true ? ["YES", "NO"] : new[] { "OK" })
         {
             var key = focus.Add(name, () => { }, Math.Max(56, wide / 2));
-            key.Height = UiSprites.BandHeight;
+            key.Height = GameUi.BandRows;
             key.Margin = new Thickness(6, 0, 6, 0);
             keys.Children.Add(key);
         }
@@ -388,7 +388,7 @@ public sealed class MenuDesignerDialog : GameWindow
         }
 
         // 한 화면에 낼 줄 수만큼만 보이고 나머지는 굴려 본다 — 원본도 그렇다.
-        double tall = most * (UiSprites.BandHeight + 5);
+        double tall = most * (GameUi.BandRows + 5);
         var scroll = new ScrollViewer
         {
             MaxHeight = tall,

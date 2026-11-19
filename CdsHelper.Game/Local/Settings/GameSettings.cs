@@ -239,6 +239,8 @@ public sealed class GameSettingsData
     public bool NavHarborFirst { get; set; }
     /// <summary>네비게이션 「항해 시작」에서 길 후보를 묻지 않고 가장 빠른 길로 바로 떠날지.</summary>
     public bool NavQuickRoute { get; set; }
+    /// <summary>게임 띠(메뉴 줄 · 단추 · 상단 띠) 글자 크기(%). 100 이 원본이다.</summary>
+    public int TextScale { get; set; } = 100;
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
@@ -2205,6 +2207,19 @@ public static class GameSettings
 
     /// <summary>「도시 그림 크게」에서 고를 수 있는 배율.</summary>
     public static readonly double[] CityPicZoomChoices = [1.25, 1.5, 1.75, 2, 2.5, 3];
+
+    /// <summary>설정 「글자 크기」에서 고르는 값(%).</summary>
+    public static readonly int[] TextScaleChoices = [100, 125, 150];
+
+    /// <summary>
+    /// 게임 띠의 글자 크기(%) — 모드 창 「UI」. 글자는 Scale2x 로 키워 찍고, 띠는 가운데 줄을 되풀이해 그만큼 높인다(GameUi.BandFrame).
+    /// 이미 떠 있는 창 · 상단 띠는 다시 열거나 게임을 다시 켜야 바뀐다.
+    /// </summary>
+    public static int TextScale
+    {
+        get => Get(d => TextScaleChoices.Contains(d.TextScale) ? d.TextScale : 100);
+        set => Set(d => d.TextScale = value);
+    }
 
     /// <summary>「도시 그림 크게」의 배율 — 보통 크기에 곱한다. 화면을 넘으면 들어가는 데까지만 키운다. 기본 1.5배.</summary>
     public static double CityPicZoom

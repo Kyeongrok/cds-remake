@@ -718,7 +718,7 @@ public sealed class DuelDialog : GameWindow
             int pick = i;
             // 명령을 누르면 칼 부딪히는 소리부터 낸다(사운드 ID 72).
             var key = focus.Add(names[i], () => { Clang(); Step(pick); }, width);
-            key.Height = UiSprites.BandHeight;
+            key.Height = GameUi.BandRows;
             key.Margin = new Thickness(0, 0, 0, 2);
             column.Children.Add(key);
         }

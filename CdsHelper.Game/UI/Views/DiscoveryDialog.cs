@@ -68,7 +68,8 @@ public sealed class DiscoveryDialog : GameWindow
         b.Freeze();
         return b;
     }
-    private const double ButtonWidth = 64, ButtonHeight = UiSprites.BandHeight;
+    private const double ButtonWidth = 64;
+    private static double ButtonHeight => GameUi.BandRows;
 
     private readonly GameUi.FocusGroup _focus = new();
 

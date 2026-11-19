@@ -232,6 +232,13 @@ public sealed class ModDialog : GameWindow
         }
 
         // 발견물 지도 — 커맨드 「정보」 줄과 단축키를 함께 여닫는다. 원본 항해지도는 표식을 안 찍는다.
+        // 글자 크기 — 게임 띠의 글자와 띠 높이를 함께 키운다(요청). 띠는 늘리지 않고 가운데 줄을 되풀이해 높인다.
+        ui.Children.Add(Select("글자 크기",
+            [.. GameSettings.TextScaleChoices.Select(p => p == 100 ? "100% (원본)" : $"{p}%")],
+            Math.Max(0, Array.IndexOf(GameSettings.TextScaleChoices, GameSettings.TextScale)),
+            i => GameSettings.TextScale = GameSettings.TextScaleChoices[i],
+            "메뉴 줄 · 단추 · 화면 위 상태 띠의 게임 글자를 키웁니다. 띠도 테두리 무늬는 그대로 두고 그만큼 높아집니다."
+            + " 원본 도트 글자를 매끈하게 키워 찍습니다. 새로 여는 창부터 바뀌고, 화면 위 상태 띠는 게임을 다시 켜면 바뀝니다."));
         ui.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,
             "처음 하시는 분께 추천합니다. 세계지도 위에 발견물과 도시가 어디 있는지 한눈에 보여 주는 창입니다."

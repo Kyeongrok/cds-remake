@@ -221,7 +221,7 @@ public sealed class ListPickDialog : GameWindow
         // 고르는 창이라도 아직 아무것도 안 골랐으면 결정은 흐리다 — 원본도 그렇다.
         _decide = new GameButton("결정", Decide, BandStyle.Button, ButtonWidth)
         {
-            Height = UiSprites.BandHeight,
+            Height = GameUi.BandRows,
             Margin = new Thickness(0, 0, ButtonGap / 2, 0),
             On = false,
         };
@@ -234,7 +234,7 @@ public sealed class ListPickDialog : GameWindow
         };
         var stop = new GameButton("중단", Cancel, BandStyle.Button, ButtonWidth)
         {
-            Height = UiSprites.BandHeight,
+            Height = GameUi.BandRows,
             Margin = new Thickness(ButtonGap / 2, 0, 0, 0),
         };
         buttons.Children.Add(_decide);

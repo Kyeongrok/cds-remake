@@ -235,7 +235,7 @@ public sealed class AutoSailDialog : GameWindow
             ShowSort();
             Resort();
             if (_query.Text.Length > 0) Search();
-        }, BandStyle.Button, 150) { Height = UiSprites.BandHeight, Margin = new Thickness(12, 0, 0, 0) };
+        }, BandStyle.Button, 150) { Height = GameUi.BandRows, Margin = new Thickness(12, 0, 0, 0) };
         ShowSort();
         Resort();
         _finder.Children.Insert(_finder.Children.IndexOf(_hitNote), sort);
@@ -244,7 +244,7 @@ public sealed class AutoSailDialog : GameWindow
         GameButton route = null!;
         void ShowRoute() => route.Text = Lang.T(GameSettings.NavQuickRoute ? "경로: 가장 빠른 길" : "경로: 고르기");
         route = new GameButton("", () => { GameSettings.NavQuickRoute = !GameSettings.NavQuickRoute; ShowRoute(); },
-                               BandStyle.Button, 170) { Height = UiSprites.BandHeight, Margin = new Thickness(8, 0, 0, 0) };
+                               BandStyle.Button, 170) { Height = GameUi.BandRows, Margin = new Thickness(8, 0, 0, 0) };
         ShowRoute();
         _finder.Children.Insert(_finder.Children.IndexOf(_hitNote), route);
 
@@ -253,13 +253,13 @@ public sealed class AutoSailDialog : GameWindow
         // 아직 아무것도 안 골랐으면 「항해 시작」은 흐리다 — 게임 목록 창의 「결정」과 같다.
         _go = new GameButton("항해 시작", Start, BandStyle.Button, ButtonWidth)
         {
-            Height = UiSprites.BandHeight,
+            Height = GameUi.BandRows,
             Margin = new Thickness(0, 0, ButtonGap / 2, 0),
             On = false,
         };
         var stop = new GameButton("중단", Close, BandStyle.Button, ButtonWidth)
         {
-            Height = UiSprites.BandHeight,
+            Height = GameUi.BandRows,
             Margin = new Thickness(ButtonGap / 2, 0, 0, 0),
         };
         var buttons = new StackPanel

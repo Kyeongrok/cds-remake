@@ -83,7 +83,7 @@ public sealed class SaveListDialog : GameWindow
 
         _decide = new GameButton("결정", Decide, BandStyle.Button, 106)
         {
-            Height = UiSprites.BandHeight,
+            Height = GameUi.BandRows,
             Margin = new Thickness(0, 0, 6, 0),
             On = false,
         };
@@ -97,7 +97,7 @@ public sealed class SaveListDialog : GameWindow
                 _decide,
                 new GameButton("중단", Cancel, BandStyle.Button, 106)
                 {
-                    Height = UiSprites.BandHeight,
+                    Height = GameUi.BandRows,
                     Margin = new Thickness(6, 0, 0, 0),
                 },
             },

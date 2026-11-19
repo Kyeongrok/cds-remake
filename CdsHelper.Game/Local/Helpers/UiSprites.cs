@@ -392,6 +392,34 @@ public sealed class UiSprites
     public static int CellsAround(double contentWidth) =>
         Math.Max(1, (int)Math.Ceiling(contentWidth / MidWidth));
 
+    /// <summary>세로로 늘릴 때 그대로 두는 위 줄 수와, 그 아래에서 되풀이하는 가운데 줄 수(아래 8줄도 그대로 둔다).</summary>
+    /// <remarks>
+    /// 띠 24줄은 위 테두리(0~4) · 질감(5~18) · 아래 테두리(19~23)이고, 제목 띠 마구리는 위아래 모서리에 덩굴이 붙는다.
+    /// 한가운데 8줄(8~15)만 되풀이하면 세 무늬 모두 테두리 · 덩굴이 깨지지 않는다.
+    /// </remarks>
+    public const int BandKeepTop = 8, BandRepeatRows = 8;
+
+    /// <summary>
+    /// 띠를 <paramref name="height"/> 줄로 짓는다 — 설정 「글자 크기」로 글자를 키울 때 띠도 같이 높인다.
+    /// 가로처럼 세로도 늘리지 않고 <b>되풀이</b>한다: 위 8줄 · 가운데 8줄을 모자란 만큼 되풀이 · 아래 8줄. 점이 안 뭉개진다.
+    /// </summary>
+    public uint[] Band(BandStyle style, int cells, out int width, int height)
+    {
+        var src = Band(style, cells, out width);
+        if (height == BandHeight) return src;
+        height = Math.Max(height, BandHeight - BandRepeatRows);   // 가운데를 다 빼도 위아래 테두리는 남는다
+        var bgra = new uint[width * height];
+        int keepBottom = BandHeight - BandKeepTop - BandRepeatRows;
+        for (int y = 0; y < height; y++)
+        {
+            int from = y < BandKeepTop ? y
+                     : y >= height - keepBottom ? BandHeight - (height - y)
+                     : BandKeepTop + (y - BandKeepTop) % BandRepeatRows;
+            Array.Copy(src, from * width, bgra, y * width, width);
+        }
+        return bgra;
+    }
+
     /// <summary>
     /// 띠 하나를 BGRA 로 짓는다. 높이는 늘 <see cref="BandHeight"/> 다.
     /// 왼끝을 깔고 가운데를 <paramref name="cells"/> 번 되풀이한 뒤 오른끝을 덮는다 —

@@ -1970,7 +1970,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         tag.Visibility = Visibility.Visible;
         tag.UpdateLayout();
         double w = tag.ActualWidth > 0 ? tag.ActualWidth : 52;
-        double h = tag.ActualHeight > 0 ? tag.ActualHeight : UiSprites.BandHeight;
+        double h = tag.ActualHeight > 0 ? tag.ActualHeight : GameUi.BandRows;
         double x = (area.X + area.Width / 2) * scale - w / 2;
         Canvas.SetLeft(tag, Math.Clamp(x, 0, Math.Max(0, CityPictures.Width * scale - w)));
 

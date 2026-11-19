@@ -98,8 +98,8 @@ internal sealed class CharacterMakeDialog : GameWindow
     /// 한글 두 자(32점)가 마구리를 조금 물고 앉는다. 64 로 두면 눈에 띄게 길쭉했다.
     /// 나라 이름은 여덟 자라 128 이다.
     /// </remarks>
-    private const double SmallWidth = 48, SmallHeight = UiSprites.BandHeight,
-                         PickWidth = 40, NationWidth = 128;
+    private const double SmallWidth = 48, PickWidth = 40, NationWidth = 128;
+    private static double SmallHeight => GameUi.BandRows;
 
     /// <summary>단추 사이. 화면 어디서나 3~4 다.</summary>
     private const double Gap = 3;
