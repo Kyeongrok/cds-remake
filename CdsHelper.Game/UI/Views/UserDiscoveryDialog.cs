@@ -391,7 +391,10 @@ public sealed class UserDiscoveryDialog : GameWindow
         _hintDeadline.Text = $"{e.HintDeadline}";
         _hintText.Text = e.HintText;
         ShowRumors(UserDiscoveries.RumorsOf(e));
-        _book.Text = e.Book;
+        // 더한 책을 가리키면 그 책의 지금 제목을 보인다(책 이름을 고쳤어도).
+        _bookId = e.BookId;
+        _book.Text = BookEdits.ByUuid(e.BookId) is { } linkedBook ? linkedBook.Title : e.Book;
+        _bookIdTitle = _book.Text;
         _description.Text = e.Description;
         _scene.Text = string.Join("\n", (e.Lines ?? []).Select(SceneText));
         _credit.Text = e.Credit;
@@ -516,7 +519,7 @@ public sealed class UserDiscoveryDialog : GameWindow
             X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Chance = Math.Max(1, chance),
             HintName = _hintName.Text.Trim(), HintGrade = Math.Clamp(grade, 1, 3), HintCategory = Math.Max(0, hintCategory),
             HintFunds = Math.Max(0, funds), HintDeadline = Math.Max(1, deadline), HintText = _hintText.Text.Trim(),
-            Rumors = rumors, Book = _book.Text.Trim(),
+            Rumors = rumors, Book = _book.Text.Trim(), BookId = _book.Text == _bookIdTitle ? _bookId : "",
             Description = _description.Text.Trim(), Lines = ParseScene(_scene.Text),
             Credit = _credit.Text.Trim(), Author = _author.Text.Trim(),
             License = _license.Text.Trim() is { Length: > 0 } license ? license : UserDiscoveries.DefaultLicense,
@@ -947,12 +950,19 @@ public sealed class UserDiscoveryDialog : GameWindow
             : string.Join(", ", ids.Select(id => _game?.CityName(id) is { Length: > 0 } name ? name : $"도시 {id}"));
     }
 
+    /// <summary>
+    /// 고른 책의 고유 번호 — 더한 책이면 그 책의 Uuid, 원본 책이면 ""(제목으로 잇는다). 책 칸 글을 손으로 고치면
+    /// (<see cref="_bookIdTitle"/> 과 달라지면) 버리고 제목으로 잇는다.
+    /// </summary>
+    private string _bookId = "", _bookIdTitle = "";
+
     /// <summary>책 고르기 창을 띄워 힌트를 실을 책을 고른다.</summary>
     private void PickBook()
     {
-        if (BookPickerDialog.Pick(this, _game, _book.Text.Trim()) is { } title)
+        if (BookPickerDialog.Pick(this, _game, _book.Text.Trim()) is ({ } title, { } bookId))
         {
-            _book.Text = title;
+            _bookId = bookId;
+            _book.Text = _bookIdTitle = title;
             Tell($"힌트를 『{title}』 에 싣습니다 — 「저장」을 눌러야 적힙니다.");
         }
     }

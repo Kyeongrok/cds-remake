@@ -42,6 +42,9 @@ public static class BookEdits
     /// </summary>
     public static void Set(BookTable.Book book)
     {
+        // 고유 번호는 한 번 받으면 그대로 — 고쳐 다시 얹어도(제목이 바뀌어도) 그 책을 가리킨 발견물 힌트가 이어진다.
+        if (string.IsNullOrEmpty(book.Uuid))
+            book = book with { Uuid = Map.TryGetValue(book.Index, out var had) && !string.IsNullOrEmpty(had.Uuid) ? had.Uuid : NewUuid() };
         Map[book.Index] = book;
         Save();
     }
@@ -67,9 +70,26 @@ public static class BookEdits
     {
         var saved = TableCache.Read<Snapshot>(CacheName);
         var map = new Dictionary<int, BookTable.Book>();
-        foreach (var row in saved?.Data.Books ?? []) map[row.Index] = row;
+        bool stamped = false;
+        foreach (var row in saved?.Data.Books ?? [])
+        {
+            // 고유 번호가 생기기 전에 적어 둔 책은 여기서 받는다.
+            if (string.IsNullOrEmpty(row.Uuid)) { map[row.Index] = row with { Uuid = NewUuid() }; stamped = true; }
+            else map[row.Index] = row;
+        }
+        if (stamped)
+        {
+            var rows = map.OrderBy(p => p.Key).Select(p => p.Value).ToList();
+            TableCache.Write(CacheName, new TableCache.Cached<Snapshot>($"{rows.Count}권", new Snapshot(rows), "사람이 더한 것"));
+        }
         return map;
     }
+
+    private static string NewUuid() => Guid.NewGuid().ToString();
+
+    /// <summary>그 고유 번호의 책. 없으면 null.</summary>
+    public static BookTable.Book? ByUuid(string uuid) =>
+        uuid.Length == 0 ? null : Map.Values.Where(b => b.Uuid == uuid).Select(b => (BookTable.Book?)b).FirstOrDefault();
 
     private static void Save()
     {

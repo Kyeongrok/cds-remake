@@ -27,7 +27,7 @@ public sealed class BookPickerDialog : GameWindow
     private readonly List<BookTable.Book> _books;
 
     /// <summary>고른 책 제목. 고르지 않고 닫았으면 null.</summary>
-    public string? Picked { get; private set; }
+    public (string Title, string Id)? Picked { get; private set; }
 
     private BookPickerDialog(Engine.Game? game, string current)
     {
@@ -80,7 +80,9 @@ public sealed class BookPickerDialog : GameWindow
     private void Choose()
     {
         if (_list.SelectedItem is not ListBoxItem { Tag: string title }) return;
-        Picked = title;
+        // 더한 책이면 고유 번호로 잇는다 — 이름을 고치거나 다른 PC 로 불러가도 힌트가 따라간다.
+        var book = _books.FirstOrDefault(b => b.Title == title);
+        Picked = (title, _game?.Books is { } table && book.Title == title ? table.LinkIdOf(book) : "");
         Close();
     }
 
@@ -122,8 +124,8 @@ public sealed class BookPickerDialog : GameWindow
         _detail.Text = text.ToString();
     }
 
-    /// <summary>창을 띄워 책을 고르게 한다. 고른 제목, 안 골랐으면 null.</summary>
-    public static string? Pick(Window owner, Engine.Game? game, string current)
+    /// <summary>창을 띄워 책을 고르게 한다. 고른 제목과 고유 번호(원본 책이면 ""), 안 골랐으면 null.</summary>
+    public static (string Title, string Id)? Pick(Window owner, Engine.Game? game, string current)
     {
         var window = new BookPickerDialog(game, current) { Owner = owner };
         window.ShowDialog();

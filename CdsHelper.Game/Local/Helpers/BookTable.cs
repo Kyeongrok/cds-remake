@@ -52,7 +52,10 @@ public sealed class BookTable
     [method: JsonConstructor]
     public readonly record struct Book(
         int Index, string Title, string Author, int Language, int Year,
-        IReadOnlyList<int> Cities, IReadOnlyList<int> Hints);
+        IReadOnlyList<int> Cities, IReadOnlyList<int> Hints, string Uuid = "");
+
+    // Uuid: 사람이 더하거나 고친 책(BookEdits)이 받는 고유 번호 — Index 는 PC 마다 다르게 받으니(불러올 때 빈 칸),
+    // 커스텀 발견물이 더한 책을 가리킬 때는 이것으로 잇는다(UserDiscoveries.Entry.BookId). 원본 책은 비어 있다.
 
     /// <summary>
     /// 힌트를 알아들으려면 있어야 하는 것 — 기능 자리와 <b>먼저 발견해 두어야 할 것들</b>.
@@ -123,20 +126,38 @@ public sealed class BookTable
                 var book = edits.TryGetValue(b.Index, out var edited) ? edited : b;
                 if (!extras && book.Hints.Any(h => h >= _hintNeeds.Length))
                     book = book with { Hints = [.. book.Hints.Where(h => h < _hintNeeds.Length)] };
-                // 사람이 지어 넣은 발견물의 힌트를 그 제목의 책에 싣는다.
-                if (extras && UserDiscoveries.HintsInBook(book.Title).ToList() is { Count: > 0 } added)
-                    book = book with { Hints = [.. book.Hints, .. added.Where(h => !book.Hints.Contains(h))] };
-                merged.Add(book);
+                merged.Add(extras ? WithUserHints(book) : book);
             }
             if (!extras) return merged;
+            // 더한 책에도 싣는다 — 불러온 PC 에서는 책에 커스텀 힌트 번호가 없고(만든 PC 번호라 뺀다) 제목으로만 이어진다.
             foreach (var (id, b) in edits)
-                if (_books.All(o => o.Index != id)) merged.Add(b);
+                if (_books.All(o => o.Index != id)) merged.Add(WithUserHints(b));
             return merged;
         }
     }
 
+    /// <summary>
+    /// 사람이 지어 넣은 발견물 중 그 책에 실을 힌트를 더한다 — 더한 책은 책 고유 번호(<see cref="Book.Uuid"/>)로,
+    /// 원본 책은 제목(원래 표기 · 표준 표기 — 같은 제목의 언어별 책 모두)으로 잇는다.
+    /// </summary>
+    private Book WithUserHints(Book book)
+    {
+        string? uuid = IsOriginalBook(book.Index) || book.Uuid.Length == 0 ? null : book.Uuid;
+        var added = UserDiscoveries.HintsInBook(book.Title, uuid).ToList();
+        string standard = StandardText.Apply(book.Title);
+        if (standard != book.Title) added.AddRange(UserDiscoveries.HintsInBook(standard, uuid));
+        if (added.Count == 0) return book;
+        return book with { Hints = [.. book.Hints, .. added.Distinct().Where(h => !book.Hints.Contains(h))] };
+    }
+
     /// <summary><see cref="BookEdits"/> 로 덧씌우기 전의 원본 값. 표 밖이면 null.</summary>
     public Book? Original(int id) => id >= 0 && id < _books.Count ? _books[id] : null;
+
+    /// <summary>원본 책 번호인지 — 원본 책은 제목으로, 더한 책은 고유 번호로 커스텀 힌트를 잇는다.</summary>
+    public bool IsOriginalBook(int index) => _books.Any(b => b.Index == index);
+
+    /// <summary>커스텀 발견물이 그 책을 가리킬 고유 번호 — 더한 책이면 <see cref="Book.Uuid"/>, 원본 책이면 ""(제목으로 잇는다).</summary>
+    public string LinkIdOf(Book book) => IsOriginalBook(book.Index) ? "" : book.Uuid;
 
     /// <summary>그 힌트를 알아들으려면 있어야 하는 것. 번호가 표 밖이면 기능 -1(조건 없음).</summary>
     public HintNeed NeedFor(int hint) =>

@@ -99,7 +99,11 @@ public static class UserDiscoveries
         string HintName, int HintGrade, int HintCategory, int HintFunds, int HintDeadline, string HintText,
         int[] RumorCities, string RumorText, string Book, string Description,
         int Chance, List<SceneLine> Lines, string Credit = "", string Author = "", int Version = FormatVersion,
-        string License = DefaultLicense, string Lock = "", bool HasHint = true, List<RumorEntry>? Rumors = null);
+        string License = DefaultLicense, string Lock = "", bool HasHint = true, List<RumorEntry>? Rumors = null,
+        string BookId = "");
+
+    // BookId: 힌트를 실을 책이 사람이 더한 책이면 그 책의 고유 번호(BookTable.Book.Uuid) — 제목은 보이는 이름일 뿐이고
+    // 이것으로 잇는다(책 이름을 고쳐도, 다른 PC 로 불러가도 이어진다). 원본 책이거나 예전에 지은 것은 비어 있고 제목으로 잇는다.
 
     /// <summary>술집 소문 한 벌 — 들려줄 도시(넷까지, <see cref="RumorTable.CitySlots"/>)와 그 도시들에서 들려줄 글.</summary>
     public sealed record RumorEntry(int[] Cities, string Text);
@@ -443,9 +447,15 @@ public static class UserDiscoveries
         return four;
     }
 
-    /// <summary>그 책(제목)에 실을 힌트 번호들(모드를 켰을 때).</summary>
-    public static IEnumerable<int> HintsInBook(string title) =>
-        On ? All.Where(l => l.Entry.HasHint && l.Entry.Book.Length > 0 && l.Entry.Book == title).Select(l => l.Numbers.Hint) : [];
+    /// <summary>
+    /// 그 책에 실을 힌트 번호들(모드를 켰을 때). 책 고유 번호(<paramref name="bookUuid"/>, 더한 책)를 가리킨 발견물은 그 번호로만,
+    /// 고유 번호가 없는 발견물(원본 책 · 예전에 지은 것)은 제목으로 맞댄다.
+    /// </summary>
+    public static IEnumerable<int> HintsInBook(string title, string? bookUuid = null) =>
+        On ? All.Where(l => l.Entry.HasHint && Points(l.Entry, title, bookUuid)).Select(l => l.Numbers.Hint) : [];
+
+    private static bool Points(Entry e, string title, string? bookUuid) =>
+        e.BookId is { Length: > 0 } id ? id == bookUuid : e.Book.Length > 0 && e.Book == title;
 
     /// <summary>그 번호의 설명 글. 없으면 null.</summary>
     public static string? Description(int id) => ById(id)?.Entry.Description;
@@ -711,13 +721,18 @@ public static class UserDiscoveries
             foreach (string item in ItemRefs(l.Entry)) UserItems.WriteTo(zip, item);
             // 힌트를 실을 책이 이 PC 에서 더하거나 고친 책이면 그 책도 담는다 — 제목만 적어 두면 불러온 PC 에 그 책이 없어
             // 힌트가 어느 서가에도 안 꽂힌다.
-            if (l.Entry.HasHint && l.Entry.Book.Length > 0
-                && BookEdits.All.Values.Where(b => b.Title == l.Entry.Book || StandardText.Apply(b.Title) == l.Entry.Book)
-                                       .Select(b => (BookTable.Book?)b).FirstOrDefault() is { } book)
+            if (l.Entry.HasHint
+                && (l.Entry.BookId.Length > 0
+                        ? BookEdits.ByUuid(l.Entry.BookId)
+                        : l.Entry.Book.Length > 0
+                            ? BookEdits.All.Values.Where(b => b.Title == l.Entry.Book || StandardText.Apply(b.Title) == l.Entry.Book)
+                                                  .Select(b => (BookTable.Book?)b).FirstOrDefault()
+                            : null) is { } book)
             {
                 var head = zip.CreateEntry(BookFile);
                 using var writer = new StreamWriter(head.Open());
-                writer.Write(JsonSerializer.Serialize(book with { Title = l.Entry.Book }, Pretty));
+                // 고유 번호째 담는다 — 불러온 PC 에서도 같은 번호로 이어진다.
+                writer.Write(JsonSerializer.Serialize(l.Entry.BookId.Length > 0 ? book : book with { Title = l.Entry.Book }, Pretty));
             }
             return null;
         }
@@ -749,24 +764,33 @@ public static class UserDiscoveries
             var items = UserItems.ImportFrom(zip, overwriteItem);
 
             // 파일에 책이 담겨 있고 이 PC 에 그 제목의 책이 없으면 더한다 — 있으면(원본 책이거나 먼저 불러온 것) 그대로 둔다.
+            // 책 고유 번호(BookId)가 있으면 그 번호의 책이 이 PC 에 있는지로, 없으면(예전 파일) 제목으로 본다.
             string? addedBook = null;
-            if (entry.HasHint && entry.Book.Length > 0 && books != null && !books.HasTitle(entry.Book)
+            bool linked = false;
+            bool haveBook = entry.BookId.Length > 0 ? BookEdits.ByUuid(entry.BookId) != null : books?.HasTitle(entry.Book) == true;
+            if (entry.HasHint && (entry.BookId.Length > 0 || entry.Book.Length > 0) && books != null && !haveBook
                 && zip.GetEntry(BookFile) is { } bookHead)
             {
                 BookTable.Book shared;
                 using (var stream = bookHead.Open()) shared = JsonSerializer.Deserialize<BookTable.Book>(stream);
                 // 번호는 이 PC 의 빈 칸으로, 힌트는 원본 것만 남긴다 — 만든 PC 의 커스텀 힌트 번호는 여기서 딴 것이다.
+                // 고유 번호는 파일 것을 그대로(예전 파일이라 없으면 새로 받아 발견물이 그 번호를 가리키게 한다).
+                string uuid = entry.BookId.Length > 0 ? entry.BookId
+                            : !string.IsNullOrEmpty(shared.Uuid) ? shared.Uuid : Guid.NewGuid().ToString();
+                string title = entry.BookId.Length > 0 && !string.IsNullOrEmpty(shared.Title) ? shared.Title : entry.Book;
                 BookEdits.Set(shared with
                 {
-                    Index = books.NextIndex(), Title = entry.Book, Author = shared.Author ?? "",
-                    Cities = shared.Cities ?? [], Hints = [.. (shared.Hints ?? []).Where(books.IsOriginalHint)],
+                    Index = books.NextIndex(), Title = title, Author = shared.Author ?? "",
+                    Cities = shared.Cities ?? [], Hints = [.. (shared.Hints ?? []).Where(books.IsOriginalHint)], Uuid = uuid,
                 });
-                addedBook = entry.Book;
+                addedBook = title;
+                if (entry.BookId != uuid) { entry = entry with { BookId = uuid }; linked = true; }
             }
 
             string dir = Path.Combine(Folder, entry.Uuid);
             Directory.CreateDirectory(dir);
-            head.ExtractToFile(Path.Combine(dir, EntryFile), overwrite: true);
+            if (linked) File.WriteAllText(Path.Combine(dir, EntryFile), JsonSerializer.Serialize(entry, Pretty));
+            else head.ExtractToFile(Path.Combine(dir, EntryFile), overwrite: true);
             string picture = Path.Combine(dir, PictureFile);
             if (zip.GetEntry(PictureFile) is { } art) art.ExtractToFile(picture, overwrite: true);
             else if (File.Exists(picture)) File.Delete(picture);
