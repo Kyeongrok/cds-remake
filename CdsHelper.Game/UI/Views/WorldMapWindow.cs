@@ -996,7 +996,8 @@ public sealed class WorldMapWindow : Window
             },
             IsLand: _host.IsLandCell,
             Cities: KnownCityMarks,
-            Spots: Spots));
+            Spots: Spots,
+            SailToCity: SailToCityAt));
     }
 
     /// <summary>가로로 이어진 칸 자리를 0~2500 으로 접는다.</summary>
@@ -1049,6 +1050,43 @@ public sealed class WorldMapWindow : Window
         PlayStats.Hero(player.GameId, player.Name, _game.Nations?.Find(player.Nation)?.Name ?? "", player.Date,
                        [.. player.Abilities.Select(Ability.Display)], player.FlagshipHull?.Hull.Name ?? "",
                        player.Investments.Select(p => KeyValuePair.Create(_game.CityName(p.Key), p.Value)));
+    }
+
+    /// <summary>
+    /// 세계지도 창에서 도시 점 · 이름을 오른쪽 단추로 눌러 「자동이동」을 골랐다 — 네비게이션에서 그 도시를 고르고 첫 길(가장 빠른 길,
+    /// 내륙 도시면 배 + 걷기가 가장 빠른 자리)로 떠난 것과 같다(요청). 도시 안이면 출항하면서 걸린다.
+    /// </summary>
+    /// <returns>알릴 말 — 지도 창 아래 줄에 뜬다. 걸었으면 아래 띠에도 알린다.</returns>
+    private string SailToCityAt(double cellX, double cellY)
+    {
+        int city = Enumerable.Range(0, GameMapCoords.CityCount).FirstOrDefault(id => _game.CityVisible(id)
+            && GameMapCoords.TryCityCell(id, out double cx, out double cy) && Math.Abs(cx - cellX) < 0.01 && Math.Abs(cy - cellY) < 0.01, -1);
+        if (city < 0) return Lang.T("그 도시를 찾지 못했습니다");
+        string name = _game.CityName(city);
+        var town = _cityView;
+        bool inCity = town != null;
+        if (inCity && city == _game.Player.CityId) return Lang.T("지금 있는 도시입니다");
+        if (inCity && town is not { CanSailOut: true }) return Lang.T("이 도시에는 함대가 없어 배로 떠날 수 없습니다");
+        if (!inCity && (_host.SeaBlocked || _host.IsOnLand)) return Lang.T("바다에 있을 때만 자동이동할 수 있습니다");
+        if (SailGoals(city) is not [var goal, ..]) return Lang.T("바닷길을 찾지 못했습니다");
+
+        _sailTo = city;
+        _sailGoal = goal;
+        if (inCity)
+        {
+            // 네비게이션과 같다 — 걸어 두고 곧바로 출항한다. 자동항해는 도시 창이 닫히면서 걸린다.
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (_cityView != town || _sailTo != city || town!.SailNow()) return;
+                Say($"출항하면 [{name}]{GameUi.Josa(name, "으로", "로")} 자동항해합니다");
+            });
+            return "";
+        }
+        var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
+        if (!ok) { _sailTo = -1; return message; }
+        NavStarted(goal.Tag + ":map");
+        Say($"[{name}]까지 {message}");
+        return "";
     }
 
     /// <summary>자동항해를 걸었다 — 무엇을 골랐는지 적는다(<see cref="PlayStats.Nav"/>).</summary>

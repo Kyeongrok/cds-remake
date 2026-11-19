@@ -97,7 +97,11 @@ public sealed class LiveMapWindow : Window
         Func<(uint[] Pixels, int Width, int Height)?> Parchment,
         Func<int, int, bool?> IsLand,
         Func<IReadOnlyList<(string Name, double X, double Y, bool Library)>> Cities,
-        Func<IReadOnlyList<(string Name, double X, double Y, bool Found)>> Spots);
+        Func<IReadOnlyList<(string Name, double X, double Y, bool Found)>> Spots,
+        Func<double, double, string>? SailToCity = null);
+
+    // SailToCity — 도시 점 · 이름을 오른쪽 단추로 눌러 「자동이동」을 고르면 그 자리 도시로 네비게이션처럼 자동이동을 건다(요청).
+    // 받는 것은 도시 칸 자리, 돌려주는 것은 알릴 말(빈 글이면 말 없음). 고르기 모드 · 지도 창 밖에서 연 것은 null 이다.
 
     /// <summary>휠로 오갈 배율 — 칸 하나가 화면 몇 점인지.</summary>
     private static readonly double[] Zooms = [0.25, 0.35, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16];
@@ -732,10 +736,33 @@ public sealed class LiveMapWindow : Window
         _spotLayer.Children.Add(_yetLayer);
 
         foreach (var c in cities)
+        {
             Mark(_cityLayer, c.X, c.Y, c.Library ? 9 : 7, CityInk, c.Library ? $"{Lang.T(c.Name)} ({Lang.T("도서관")})" : Lang.T(c.Name), Lang.T(c.Name));
+            if (_src.SailToCity is { } sail && !Picking) AttachCityMenu(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, sail);
+        }
         foreach (var s in spots)
             Mark(s.Found ? _spotLayer : _yetLayer, s.X, s.Y, 7, s.Found ? Found : Yet, Lang.T(s.Name), Lang.T(s.Name),
                  s.Found ? null : YetText);
+    }
+
+    /// <summary>
+    /// 도시 점 · 이름표에 오른쪽 단추 메뉴 「자동이동」을 단다 — 고르면 네비게이션에서 그 도시를 고른 것처럼(가장 빠른 길) 자동이동이 걸린다.
+    /// 못 걸었으면(도시 안에 함대가 없다 · 바닷길이 없다 따위) 그 까닭을 안내 창으로 띄운다 — 칸 정보 줄은 꺼 두고 시작해 안 보일 수 있다.
+    /// </summary>
+    private void AttachCityMenu(FrameworkElement dot, TextBlock tag, double x, double y, Func<double, double, string> sail)
+    {
+        var go = new MenuItem { Header = Lang.T("자동이동") };
+        go.Click += (_, _) =>
+        {
+            string said = sail(x, y);
+            if (said.Length > 0) NoticeDialog.Show(this, said);
+        };
+        var menu = new ContextMenu { Items = { go } };
+        dot.ContextMenu = menu;
+        tag.IsHitTestVisible = true;   // 이름표를 눌러도 메뉴가 뜨게(도시만 — 발견물 이름표는 그대로 손을 안 받는다)
+        tag.ContextMenu = menu;
+        tag.Cursor = Cursors.Hand;
+        dot.Cursor = Cursors.Hand;
     }
 
     private void Mark(Canvas layer, double x, double y, double size, Brush fill, string tip, string name, Brush? ink = null)
