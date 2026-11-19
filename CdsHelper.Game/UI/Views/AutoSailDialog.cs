@@ -240,6 +240,14 @@ public sealed class AutoSailDialog : GameWindow
         Resort();
         _finder.Children.Insert(_finder.Children.IndexOf(_hitNote), sort);
 
+        // 경로 — 「항해 시작」 뒤에 길 후보를 물을지, 가장 빠른 길(첫 후보)로 바로 떠날지(요청). 고른 것은 기억한다.
+        GameButton route = null!;
+        void ShowRoute() => route.Text = Lang.T(GameSettings.NavQuickRoute ? "경로: 가장 빠른 길" : "경로: 고르기");
+        route = new GameButton("", () => { GameSettings.NavQuickRoute = !GameSettings.NavQuickRoute; ShowRoute(); },
+                               BandStyle.Button, 170) { Height = UiSprites.BandHeight, Margin = new Thickness(8, 0, 0, 0) };
+        ShowRoute();
+        _finder.Children.Insert(_finder.Children.IndexOf(_hitNote), route);
+
         // 자동이동 모드 · 항로 표시 · 항로 굵기 · 짙기는 설정 창 「네비게이션」 탭으로 옮겼다(요청, SettingsDialog.NavigationPage).
 
         // 아직 아무것도 안 골랐으면 「항해 시작」은 흐리다 — 게임 목록 창의 「결정」과 같다.
@@ -520,6 +528,15 @@ public sealed class AutoSailDialog : GameWindow
         try { (ok, message, plans) = _start(city); }
         finally { loading.Close(); }
         if (!ok || plans.Count == 0) { _note.Text = ok ? "바닷길을 찾지 못했습니다" : message; return; }
+        // 「경로: 가장 빠른 길」이면 후보를 띄우지 않고 첫 후보(가장 빠른 길 — 내륙 도시면 배 + 걷기가 가장 빠른 자리)로 바로 떠난다.
+        if (GameSettings.NavQuickRoute && _bound < 0)
+        {
+            _bound = city;
+            _plan = 0;
+            _confirmed = true;
+            Close();
+            return;
+        }
         _note.Text = "";
         _plans = plans;
         _planRows.Clear();

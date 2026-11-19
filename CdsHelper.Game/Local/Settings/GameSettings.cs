@@ -237,6 +237,8 @@ public sealed class GameSettingsData
 
     /// <summary>네비게이션 도시 목록에서 항구가 있는 도시를 앞에 둘지. 끄면 이름 차례다.</summary>
     public bool NavHarborFirst { get; set; }
+    /// <summary>네비게이션 「항해 시작」에서 길 후보를 묻지 않고 가장 빠른 길로 바로 떠날지.</summary>
+    public bool NavQuickRoute { get; set; }
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
@@ -1034,6 +1036,13 @@ public static class GameSettings
     {
         get => Get(d => d.NavHarborFirst);
         set => Set(d => d.NavHarborFirst = value);
+    }
+
+    /// <summary>네비게이션 「경로」 단추 — 켜면 「항해 시작」에서 길 후보 화면 없이 가장 빠른 길(첫 후보)로 바로 떠난다(요청).</summary>
+    public static bool NavQuickRoute
+    {
+        get => Get(d => d.NavQuickRoute);
+        set => Set(d => d.NavQuickRoute = value);
     }
 
     /// <summary><b>네비게이션</b>(목적지 도시를 골라 자동항해) 단축키. 기본은 <c>R</c> 이다.</summary>
