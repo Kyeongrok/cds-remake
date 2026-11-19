@@ -5137,10 +5137,6 @@ public sealed class WorldMapWindow : Window
             if (!PassGate(city, name, byLand: _host.IsOnLand)) return;
 
             _host.EnterPort(name);
-
-            // 행적에 적는다(원본 갈래 0, 0x0049270F — 도시 화면을 펼 때) — 은퇴하면 이 줄들이 누적 캐릭터의 발자취가 된다.
-            _game.Player.Note(Player.TraceArrival, city, _game.Player.Nation);
-
             inCity = ShowCityPicture(city, name);
         }
         finally
@@ -8492,6 +8488,11 @@ public sealed class WorldMapWindow : Window
     {
         // 그림도 건물 표도 Game 이 처음 쓸 때 연다. 둘 중 하나라도 없으면 도시 화면을 안 연다.
         if (_game.CityPics == null || _game.Buildings == null) return false;
+
+        // 행적에 적는다(원본 갈래 0, 0x0049270F — 도시 화면을 펼 때) — 은퇴하면 이 줄들이 누적 캐릭터의 발자취가 되고,
+        // 네비게이션 「최근 방문 도시」 탭도 이것을 본다. 예전에는 커맨드로 들어가는 길(EnterCity)에서만 적어, 다가가서
+        // 들어가는 보통 길로는 한 줄도 안 남아 탭이 안 떴다. 세이브를 불러 도시에서 재개할 때는 새 입항이 아니라 안 적는다.
+        if (!resumed) _game.Player.Note(Player.TraceArrival, city, _game.Player.Nation);
 
         // 새 판의 모항·도시에서 재개하는 길은 EnterCity 를 거치지 않는다.
         // 이때도 항해가 끝난 것이므로 해상재해를 푼다 — 입항이라 말은 없다.
