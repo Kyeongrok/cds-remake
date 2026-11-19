@@ -904,6 +904,15 @@ internal static class GameUi
     /// </summary>
     public static double TextZoom => Math.Clamp(GameSettings.TextScale, 100, 200) / 100.0;
 
+    /// <summary>
+    /// 글자 크기를 바꿨다 — 떠 있는 게임 단추(상단 띠 칸 포함)가 이것을 듣고 다시 짓는다. 안 그러면 글이 바뀐 칸만 새 크기로
+    /// 다시 그려져 상단 띠에 큰 칸 · 작은 칸이 섞였다(사용자 보고).
+    /// </summary>
+    public static event Action? TextZoomChanged;
+
+    /// <summary>글자 크기를 바꾼 뒤 부른다(<see cref="TextZoomChanged"/>).</summary>
+    public static void NotifyTextZoom() => TextZoomChanged?.Invoke();
+
     /// <summary>지금 글자 크기에서의 띠 높이(점) — 원본 24 에 배율을 곱한다. 띠는 가운데 줄을 되풀이해 이 높이로 짓는다(<see cref="UiSprites.Band(BandStyle, int, out int, int)"/>).</summary>
     public static int BandRows => (int)Math.Round(UiSprites.BandHeight * TextZoom);
 

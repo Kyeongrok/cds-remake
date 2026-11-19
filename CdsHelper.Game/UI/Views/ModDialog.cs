@@ -236,9 +236,9 @@ public sealed class ModDialog : GameWindow
         ui.Children.Add(Select("글자 크기",
             [.. GameSettings.TextScaleChoices.Select(p => p == 100 ? "100% (원본)" : $"{p}%")],
             Math.Max(0, Array.IndexOf(GameSettings.TextScaleChoices, GameSettings.TextScale)),
-            i => GameSettings.TextScale = GameSettings.TextScaleChoices[i],
+            i => { GameSettings.TextScale = GameSettings.TextScaleChoices[i]; GameUi.NotifyTextZoom(); },
             "메뉴 줄 · 단추 · 화면 위 상태 띠의 게임 글자를 키웁니다. 띠도 테두리 무늬는 그대로 두고 그만큼 높아집니다."
-            + " 원본 도트 글자를 매끈하게 키워 찍습니다. 새로 여는 창부터 바뀌고, 화면 위 상태 띠는 게임을 다시 켜면 바뀝니다."));
+            + " 원본 도트 글자를 매끈하게 키워 찍습니다. 단추와 상태 띠는 바로 바뀌고, 창 크기 · 제목 줄은 창을 다시 열면 맞춰집니다."));
         ui.Children.Add(Toggle("발견물 지도", GameSettings.ShowDiscoveryMapMenu,
             on => GameSettings.ShowDiscoveryMapMenu = on,
             "처음 하시는 분께 추천합니다. 세계지도 위에 발견물과 도시가 어디 있는지 한눈에 보여 주는 창입니다."

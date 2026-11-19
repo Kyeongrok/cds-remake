@@ -88,6 +88,10 @@ internal sealed class GameButton : Border
             _run();
         };
 
+        // 글자 크기를 바꾸면 그 자리에서 다시 짓는다 — 화면에 붙어 있는 동안만 듣는다(닫힌 창의 단추가 붙들려 남지 않게).
+        Loaded += (_, _) => { GameUi.TextZoomChanged -= Build; GameUi.TextZoomChanged += Build; };
+        Unloaded += (_, _) => GameUi.TextZoomChanged -= Build;
+
         Build();
     }
 
