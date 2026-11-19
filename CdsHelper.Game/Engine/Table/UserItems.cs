@@ -42,7 +42,44 @@ public static class UserItems
     /// <param name="Effect">효과 — 무기 · 방어구면 장비 셈에 든다.</param>
     public sealed record Entry(
         string Uuid, string Name, int Category, int BuyList, int SellList, int Effect, string Description,
-        string Author = "", int Version = FormatVersion);
+        string Author = "", int Version = FormatVersion, int Backdrop = BackdropParchment);
+
+    /// <summary>아이템 그림의 배경 — 그림의 비치는 자리에 깔린다. 양피지가 기본이다(원본 아이템 그림은 양피지째 그려져 있다).</summary>
+    public const int BackdropParchment = 0, BackdropNone = 1;
+
+    /// <summary>배경 고르기 줄 — 번호 차례.</summary>
+    public static readonly string[] BackdropNames = ["양피지 (기본)", "없음 (투명)"];
+
+    /// <summary>
+    /// 원본 아이템 그림 206장에서 칸마다 가장 흔한 색을 모은 공통 양피지(asset/item/item-back.png) — 원본에는 배경만 따로 든 그림이 없다.
+    /// 못 읽으면 null(배경 없이 그린다).
+    /// </summary>
+    public static uint[]? Parchment => _parchment ??= ReadPicture(Path.Combine(AppContext.BaseDirectory, "asset", "item", "item-back.png")) ?? [];
+
+    private static uint[]? _parchment;
+
+    /// <summary>그 아이템 그림을 배경 위에 얹어 낸다 — 아이템 창 · 소지품이 쓴다. 그림이 없으면 null.</summary>
+    public static uint[]? ComposedPicture(int pic)
+    {
+        if (ById(pic) is not { PicturePath: { } path } l || ReadPicture(path) is not { } art) return null;
+        return Compose(art, l.Entry.Backdrop);
+    }
+
+    /// <summary>그림(곧은 알파 BGRA)을 고른 배경 위에 얹는다. 배경이 없거나 못 읽으면 그림 그대로.</summary>
+    public static uint[] Compose(uint[] art, int backdrop)
+    {
+        if (backdrop != BackdropParchment || Parchment is not { Length: PictureWidth * PictureHeight } back) return art;
+        var made = new uint[art.Length];
+        for (int i = 0; i < art.Length; i++)
+        {
+            uint p = art[i], b = back[i], a = p >> 24;
+            if (a == 255) { made[i] = p; continue; }
+            if (a == 0) { made[i] = b | 0xFF000000; continue; }
+            uint Mix(int shift) => (((p >> shift) & 0xFF) * a + ((b >> shift) & 0xFF) * (255 - a)) / 255;
+            made[i] = 0xFF000000 | Mix(16) << 16 | Mix(8) << 8 | Mix(0);
+        }
+        return made;
+    }
 
     /// <summary>읽어 둔 한 벌 — 알맹이와 이 PC 에서 받은 번호.</summary>
     public sealed record Loaded(Entry Entry, int Id, string Folder)

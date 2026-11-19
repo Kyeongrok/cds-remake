@@ -107,6 +107,9 @@ public sealed class UserDiscoveryDialog : GameWindow
     private readonly TextBox _itemDescription = Area(60);
     private readonly ComboBox _itemCategory = new() { Width = 160 };
 
+    /// <summary>아이템 그림의 배경 — 양피지(기본) · 없음. 고르면 그림 칸 바탕도 그것으로 보인다.</summary>
+    private readonly ComboBox _itemBackdrop = new() { Width = 160 };
+
     /// <summary>아이템 그림 — 120x120 을 두 배로 보이며 끌고 굴려 자리를 고른다. 남는 자리는 투명이다.</summary>
     private readonly CropBox _itemPicture = new(UserItems.PictureWidth, UserItems.PictureHeight, 2, Brushes.Transparent);
 
@@ -960,6 +963,9 @@ public sealed class UserDiscoveryDialog : GameWindow
     private UIElement ItemPage()
     {
         foreach (string name in ItemTable.CategoryNames) _itemCategory.Items.Add(name);
+        foreach (string name in UserItems.BackdropNames) _itemBackdrop.Items.Add(name);
+        _itemBackdrop.SelectedIndex = UserItems.BackdropParchment;
+        _itemBackdrop.SelectionChanged += (_, _) => ShowItemBackdrop();
         // 왼쪽에 아이템 목록이 하나 더 서서 발견물 탭보다 좁다 — 글 칸을 거기에 맞춘다.
         _itemDescription.Width = HintWidth;
 
@@ -990,6 +996,8 @@ public sealed class UserDiscoveryDialog : GameWindow
             },
         };
         Part(Line("그림", _itemPicture, tools));
+        Part(Line("배경", _itemBackdrop));
+        Part(Hint("그림의 비치는(투명한) 자리에 깔리는 바탕입니다. 「양피지」는 원본 아이템 그림의 양피지와 같은 바탕입니다(원본 그림 206장에서 칸마다 가장 흔한 색을 모았습니다)."));
         Part(Hint("그림을 고르면 120x120 아이템 그림 크기로 줄여 넣습니다. 그림 안을 끌어 자리를 옮기고, 휠(또는 ＋ · －)로 키우고 줄여 원하는 곳만 고를 수 있습니다."
                   + " 「가득 채우기」는 칸을 채우고 넘치는 곳을 자르고, 「통째로 넣기」는 그림 전체가 들어가게 줄입니다."));
         Part(Line("만든 이", _itemAuthor, Label("닉네임이나 이름")));
@@ -1051,6 +1059,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         var e = l.Entry;
         _itemName.Text = e.Name;
         _itemCategory.SelectedIndex = Math.Clamp(e.Category, 0, _itemCategory.Items.Count - 1);
+        _itemBackdrop.SelectedIndex = Math.Clamp(e.Backdrop, 0, _itemBackdrop.Items.Count - 1);
         _itemBuy.Text = $"{e.BuyList}";
         _itemSell.Text = $"{e.SellList}";
         _itemEffect.Text = $"{e.Effect}";
@@ -1059,6 +1068,23 @@ public sealed class UserDiscoveryDialog : GameWindow
         _itemPicture.ShowFixed(l.PicturePath is { } path ? UserItems.ReadPicture(path) : null);
         Tell($"아이템 {l.Id}번 — UUID {e.Uuid}");
     }
+
+    /// <summary>그림 칸 바탕을 고른 배경으로 — 양피지면 그 그림을, 없음이면 비침을 보이는 바둑판(본디 바탕)을 깐다.</summary>
+    private void ShowItemBackdrop()
+    {
+        _itemCheckerBack ??= _itemPicture.Background;
+        if (_itemBackdrop.SelectedIndex == UserItems.BackdropParchment && UserItems.Parchment is { Length: UserItems.PictureWidth * UserItems.PictureHeight } back)
+        {
+            var bmp = BitmapSource.Create(UserItems.PictureWidth, UserItems.PictureHeight, 96, 96, PixelFormats.Bgra32, null, back, UserItems.PictureWidth * 4);
+            bmp.Freeze();
+            var brush = new ImageBrush(bmp) { Stretch = Stretch.Fill };
+            RenderOptions.SetBitmapScalingMode(brush, BitmapScalingMode.NearestNeighbor);
+            _itemPicture.Background = brush;
+        }
+        else _itemPicture.Background = _itemCheckerBack;
+    }
+
+    private Brush? _itemCheckerBack;
 
     /// <summary>지난번에 적은 만든 이 — 아이템에 없으면 발견물 쪽.</summary>
     private static string LastItemAuthor() =>
@@ -1092,6 +1118,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         {
             Name = name, Category = Math.Max(0, _itemCategory.SelectedIndex), BuyList = Math.Max(0, buy), SellList = Math.Max(0, sell),
             Effect = effect, Description = _itemDescription.Text.Trim(), Author = _itemAuthor.Text.Trim(),
+            Backdrop = Math.Max(0, _itemBackdrop.SelectedIndex),
         };
         if (UserItems.Save(made, _itemPicture.Shaped, _itemDropPicture) is { } why) { Tell($"적지 못했습니다 — {why}"); return; }
         RefreshItems(made.Uuid);
