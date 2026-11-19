@@ -5637,7 +5637,8 @@ public sealed class WorldMapWindow : Window
         try
         {
             // 항구가 있는 도시(건물 낱말 비트 0)면 넷에 한 번 갈매기가 먼저 난다(0x0048D9B2 ~ 0x0048D9D0).
-            if (_game.Random.Next(4) == 0 && rows.HasBuilding(spotted[0], 0))
+            // 설정 「갈매기 연출」을 끄면 안 난다. 주사위는 그대로 굴려 다른 운수가 바뀌지 않게 한다.
+            if (_game.Random.Next(4) == 0 && rows.HasBuilding(spotted[0], 0) && GameSettings.Gulls)
                 PlayEventScene(EventAnimation.GullsAtCity);
             if (_game.Player.MateAt(0).Length > 0)
                 ConfirmDialog.Tell(this, "제독, 도시가 보입니다!", face: MateFace());
@@ -8586,7 +8587,7 @@ public sealed class WorldMapWindow : Window
                 if (!_gullsShown)
                 {
                     _gullsShown = true;
-                    if (!walking) PlayEventScene(EventAnimation.Gulls);
+                    if (!walking && GameSettings.Gulls) PlayEventScene(EventAnimation.Gulls);
                 }
             }
             finally

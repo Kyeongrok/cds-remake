@@ -67,6 +67,9 @@ public sealed class GameSettingsData
     /// <summary>자동 업데이트를 끌지 — 켜면 새 버전을 받지 않고 알리기만 한다. 기본은 받는다(꺼짐 아님).</summary>
     public bool NoAutoUpdate { get; set; }
 
+    /// <summary>갈매기 연출을 끌지 — 첫 출항 · 항구 도시를 발견할 때 나는 갈매기. 기본은 원본대로 난다.</summary>
+    public bool NoGulls { get; set; }
+
     /// <summary>
     /// 볼륨 믹서에서 맞춘 이 앱의 음량(0~1, -1 은 아직 안 만짐) · 음소거 — Windows 가 다시 켤 때 잊으므로 여기 적어 둔다(<see cref="Helpers.AppVolumeKeeper"/>).
     /// </summary>
@@ -850,6 +853,13 @@ public static class GameSettings
     {
         get => !Get(d => d.NoAutoUpdate);
         set => Set(d => d.NoAutoUpdate = !value);
+    }
+
+    /// <summary>갈매기 연출 — 설정 창 「일반」. 끄면 첫 출항 · 항구 도시 발견 때 갈매기가 안 난다(버그 리포트 #66 요청).</summary>
+    public static bool Gulls
+    {
+        get => !Get(d => d.NoGulls);
+        set => Set(d => d.NoGulls = !value);
     }
 
     /// <summary>효과음 크기(0~100). 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 0 이다.</summary>
