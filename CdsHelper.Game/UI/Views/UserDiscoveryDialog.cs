@@ -703,7 +703,29 @@ public sealed class UserDiscoveryDialog : GameWindow
         if (pick.ShowDialog(this) != true) return;
         _newMovie = pick.FileName;
         _movie.Text = System.IO.Path.GetFileName(pick.FileName);
-        Tell("동영상을 골랐습니다 — 장면에 「[동영상]」 줄을 넣어야 재생되고, 「저장」을 눌러야 적힙니다. 내보내면 파일에 함께 담깁니다.");
+        Tell(AddMovieLine()
+            ? "동영상을 골랐습니다 — 장면에 「[동영상]」 줄을 넣었습니다. 원하는 자리로 옮기고 「저장」을 눌러 주세요. 내보내면 파일에 함께 담깁니다."
+            : "동영상을 골랐습니다 — 「저장」을 눌러야 적힙니다. 내보내면 파일에 함께 담깁니다.");
+    }
+
+    /// <summary>
+    /// 장면에 「[동영상]」 줄이 없으면 넣는다 — 그림은 기본 장면에 「[그림]」 줄이 들어 있지만 동영상은 손으로 적어야 해서
+    /// 빠뜨리기 쉬웠다(제보). 「[그림]」 앞, 없으면 「[발견]」 앞, 그것도 없으면 맨 끝. 넣었으면 true.
+    /// </summary>
+    private bool AddMovieLine()
+    {
+        var lines = _scene.Text.Replace("\r\n", "\n").Split('\n').ToList();
+        if (lines.Any(l => l.Trim() == "[동영상]")) return false;
+        int at = lines.FindIndex(l => l.Trim() == "[그림]");
+        if (at < 0) at = lines.FindIndex(l => l.TrimStart().StartsWith("[발견]"));
+        if (at < 0)
+        {
+            while (lines.Count > 0 && lines[^1].Trim().Length == 0) lines.RemoveAt(lines.Count - 1);
+            at = lines.Count;
+        }
+        lines.Insert(at, "[동영상]");
+        _scene.Text = string.Join("\n", lines);
+        return true;
     }
 
     private void DropMovie()
@@ -711,7 +733,11 @@ public sealed class UserDiscoveryDialog : GameWindow
         if (_editing == null) return;
         _newMovie = "";
         _movie.Text = "(없음)";
-        Tell("동영상을 뺍니다 — 「저장」을 눌러야 적힙니다.");
+        // 고를 때 넣어 준 「[동영상]」 줄도 함께 뺀다 — 동영상 없이 남으면 아무것도 안 띄우는 줄이다.
+        var lines = _scene.Text.Replace("\r\n", "\n").Split('\n').ToList();
+        bool had = lines.RemoveAll(l => l.Trim() == "[동영상]") > 0;
+        if (had) _scene.Text = string.Join("\n", lines);
+        Tell(had ? "동영상을 빼고 장면의 「[동영상]」 줄도 지웠습니다 — 「저장」을 눌러야 적힙니다." : "동영상을 뺍니다 — 「저장」을 눌러야 적힙니다.");
     }
 
     private void Export()
