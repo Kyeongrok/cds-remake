@@ -5,7 +5,7 @@ using CdsHelper.Support.Local.Models;
 namespace CdsHelper.Game.Engine;
 
 /// <summary>
-/// <b>누적 캐릭터</b> — 은퇴한 제독을 다섯 자리에 올려 두고 다음 판에 남으로 내보내는 자리.
+/// <b>누적 캐릭터</b> — 은퇴한 제독을 열 자리(원본은 다섯)에 올려 두고 다음 판에 남으로 내보내는 자리.
 /// </summary>
 /// <remarks>
 /// 원본은 자리마다 파일 둘을 쓴다(<c>0x00425220</c> 이 EXE 옆을 가리킨다).
@@ -19,13 +19,14 @@ namespace CdsHelper.Game.Engine;
 /// 다섯이 다 차 있으면 <b>아무 말 없이</b> 세이브만 지운다(원본 그대로다 — 5명이 찼다고
 /// 이르는 문구 <c>0x00571D88</c> 는 절대 안 걸리는 가지에 있다).
 ///
-/// <see cref="Place"/> 가 인물 번호 <b>276~280</b> 에 앉히고, <see cref="AccReplay"/> 가 옛 판의
+/// <see cref="Place"/> 가 인물 번호 <b>276~285</b> 에 앉히고, <see cref="AccReplay"/> 가 옛 판의
 /// 발자취를 날마다 되짚어 그때 그 도시로 옮긴다.
 /// </remarks>
 public static class AccData
 {
-    /// <summary>자리 수 — 다섯이다(<c>0x0041AC60</c> 의 <c>cmp 5</c>).</summary>
-    public const int Slots = 5;
+    /// <summary>자리 수 — 열이다. 원본은 다섯(<c>0x0041AC60</c> 의 <c>cmp 5</c>)인데 늘려 달라는 요청으로 늘렸다(버그 리포트 #65).
+    /// 281~285 칸은 원본 표에 없어 세상을 지을 때 덧붙인다(<see cref="Table.PersonWorld"/>).</summary>
+    public const int Slots = 10;
 
     /// <summary>은퇴한 제독 하나.</summary>
     /// <param name="Face">얼굴 번호. MALE 그림의 자리다.</param>
@@ -87,7 +88,7 @@ public static class AccData
     private static string NewId() => Guid.NewGuid().ToString("N");
 
     /// <summary>
-    /// 새 게임에 앉힐 사람들의 표지 — 「등장 안 함」을 뺀 앞의 다섯. 이 차례가 인물 276~280 이 된다.
+    /// 새 게임에 앉힐 사람들의 표지 — 「등장 안 함」을 뺀 앞의 열. 이 차례가 인물 276~285 가 된다.
     /// </summary>
     public static List<string?> SeatsForNewGame() =>
         [.. Load().Where(c => !c.Hidden).Take(Slots).Select(c => (string?)c.Id)];
@@ -172,7 +173,7 @@ public static class AccData
     public const int FirstPerson = 276;
 
     /// <summary>
-    /// 올라 있는 사람들을 인물 <b>276~280</b> 자리에 앉힌다(<c>0x0041AF00</c>).
+    /// 올라 있는 사람들을 인물 <b>276~285</b> 자리에 앉힌다(<c>0x0041AF00</c>).
     /// </summary>
     /// <remarks>
     /// 원본은 여기서 <c>ACCDATA%d.IDX</c> 의 인물 레코드를 그대로 그 칸에 부어 넣는다. 우리는

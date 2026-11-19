@@ -88,7 +88,12 @@ public sealed class PersonTemplate
     }
 
     /// <summary>그 사람의 밑줄. 범위 밖이면 null.</summary>
-    public Template? Find(int id) => id >= 0 && id < _rows.Length ? _rows[id] : null;
+    public Template? Find(int id) =>
+        id >= 0 && id < _rows.Length ? _rows[id]
+        // 누적 캐릭터 자리를 늘린 칸(281~, 버그 리포트 #65)은 원본 첫 자리(276)의 밑표를 빌린다 — 바다에서 만나도 함대를 짓는다.
+        : id >= _rows.Length && id < Engine.AccData.FirstPerson + Engine.AccData.Slots && Engine.AccData.FirstPerson < _rows.Length
+            ? _rows[Engine.AccData.FirstPerson] with { Id = id }
+            : null;
 
     private static Snapshot? ReadFromExe(PeImage exe, out string error)
     {

@@ -152,7 +152,29 @@ public sealed class PersonWorld
         // 떠나 온 도시가 없어 거리를 잴 수가 없다. 길에서 걷어 제자리에 세운다.
         foreach (var row in _rows)
             if (row.Dest >= 0 && row.From < 0) row.Dest = -1;
+
+        // 누적 캐릭터 자리를 늘린 만큼(원본 다섯 → 열, 버그 리포트 #65) 표 끝(인물 280) 뒤에 빈 칸을 덧붙인다.
+        // 번호가 곧 자리라(People[id]) 차례대로 붙이고, 앉히기 전에는 세상에 안 나온다(등장 0). AccData.Place 가 채운다.
+        if (_rows.Count == PersonTable.Count)
+            for (int id = _rows.Count; id < AccData.FirstPerson + AccData.Slots; id++)
+                _rows.Add(SpareSeat(_rows[AccData.FirstPerson], id));
     }
+
+    /// <summary>누적 캐릭터 자리를 늘려 덧붙이는 빈 칸 — 원본 첫 자리(인물 276)를 본뜨고 세상에서는 내려 둔다.</summary>
+    private static PersonTable.Row SpareSeat(PersonTable.Row model, int id) => new()
+    {
+        Id = id,
+        Grade = model.Grade,
+        Age = model.Age,
+        Hire = model.Hire,
+        Kind = model.Kind,
+        Appear = 0,
+        Fee = model.Fee,
+        Female = model.Female,
+        Stats = [.. model.Stats],
+        Skills = [.. model.Skills],
+        Languages = [.. model.Languages],
+    };
 
     /// <summary>지금 인물들. 표를 연 그 줄을 그대로 옮겨 다닌다.</summary>
     public IReadOnlyList<PersonTable.Row> People => _rows;
