@@ -418,6 +418,7 @@ public static class GameSave
         List<int>? MetBarmaids = null,
         int? Laps = null, Dictionary<string, int>? Purses = null,
         List<int>? Hidden = null,
+        List<int>? KeptEvidence = null,
         List<Player.Trace>? Traces = null,
         Dictionary<int, string>? NamedDiscoveries = null,
         Dictionary<int, bool>? ScriptedCities = null,
@@ -573,6 +574,8 @@ public static class GameSave
                             Purses: player.Purses.ToDictionary(e => e.Key, e => e.Value),
                             // 감찰관을 매수해 숨겨 둔 발견물.
                             Hidden: [.. player.HiddenDiscoveries],
+                            // 숨겼다가 증거품을 이미 받은 발견물 — 나중에 발표 · 보고해도 물건을 또 안 준다.
+                            KeptEvidence: [.. player.KeptEvidence],
                             // 누적 캐릭터가 먼저 세상에 알려 버린 발견물(발견물 칸 2).
                             Scooped: player.Scooped.ToDictionary(e => e.Key, e => e.Value),
                             // 남이 발표한 연월(칸 2). 이 칸 앞의 세이브는 그 줄이 연표에 안 선다.

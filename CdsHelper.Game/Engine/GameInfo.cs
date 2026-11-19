@@ -38,7 +38,8 @@ public static class GameInfo
         var table = game.Discoveries?.Table;
         var player = game.Player;
         if (table == null) return [];
-        return [.. player.Discoveries.Where(id => !player.HasAnnounced(id)).Order()
+        // 감찰관을 매수해 증거품을 이미 받은 것은 진짜 소지품에 들었으니 비치지 않는다 — 두 개로 보이던 것.
+        return [.. player.Discoveries.Where(id => !player.HasAnnounced(id) && !player.HasKeptEvidence(id)).Order()
                    .Select(id => table.Find(id)).Where(r => r is { GivesItem: true })
                    .Select(r => r!.Value.ItemId)];
     }
@@ -163,7 +164,7 @@ public static class GameInfo
             found.Add(row?.Name ?? $"발견물 {id}");
 
             // 증거품은 아직 보고 안 한 발견물의 아이템이다 — 소지품 16칸에 든 것이 아니다(VirtualItems).
-            if (row is not { GivesItem: true } got || game.Player.HasAnnounced(id)) continue;
+            if (row is not { GivesItem: true } got || game.Player.HasAnnounced(id) || game.Player.HasKeptEvidence(id)) continue;
             evidence.Add(items?.Find(got.ItemId)?.Name ?? $"아이템 {got.ItemId}");
         }
 

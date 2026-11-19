@@ -2021,6 +2021,31 @@ public sealed class Player
         foreach (int id in hidden ?? []) _hidden.Add(id);
     }
 
+    /// <summary>
+    /// 감찰관을 매수해 숨겼다가 <b>증거품을 이미 받은</b> 발견물. 숨긴 것은 보고로 알려지지 않아 나중에 항구에서 발표하거나
+    /// 다시 보고할 수 있는데, 그때 그 물건을 한 번 더 주면 두 개가 된다 — 원본은 숨긴 비트만 지우고(<c>0x0041C537</c>)
+    /// 이 일을 따로 막지 않는다. 우리는 이것으로 물건만 건너뛴다(명성 · 사례는 그대로).
+    /// </summary>
+    public IReadOnlyCollection<int> KeptEvidence => _keptEvidence;
+
+    private readonly HashSet<int> _keptEvidence = [];
+
+    /// <summary>그 발견물의 물건을 증거품으로 이미 받았는지.</summary>
+    public bool HasKeptEvidence(int discovery) => _keptEvidence.Contains(discovery);
+
+    /// <summary>증거품을 받은 것으로 적는다.</summary>
+    public void KeepEvidence(IEnumerable<int> discoveries)
+    {
+        foreach (int id in discoveries) _keptEvidence.Add(id);
+    }
+
+    /// <summary>적어 둔 것을 되돌린다.</summary>
+    public void RestoreKeptEvidence(IEnumerable<int>? kept)
+    {
+        _keptEvidence.Clear();
+        foreach (int id in kept ?? []) _keptEvidence.Add(id);
+    }
+
     // ── 행적(ACCDATA) ────────────────────────────────────────────────────────
 
     /// <summary>

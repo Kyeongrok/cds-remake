@@ -749,7 +749,7 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             picked = ListPickDialog.PickMany(owner, [.. rows.Select(r => r.Name)], "발표할 발견물 선택", picked);
             if (picked.Count == 0) return;
 
-            int gives = picked.Count(i => rows[i].GivesItem);
+            int gives = picked.Count(i => rows[i].GivesItem && !_player.HasKeptEvidence(rows[i].Id));
             if (_player.Items.Count + gives <= _player.ItemLimit
                 || ConfirmDialog.Ask(owner, "소지품을 다 갖진 못하게 됩니다만, 괜찮습니까?"))
                 break;
@@ -761,7 +761,8 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             var row = rows[at];
             // 행적은 자리로 잡히는 것(깃발 0x04)이고 남이 먼저 발표하지 않은 것만 남는다(0x0047E630).
             if (!_player.Announce(row.Id, trace: !row.Indirect && _player.ScoopedBy(row.Id) == null)) continue;
-            if (row.GivesItem) found.Add(row.ItemId);
+            // 감찰관을 매수해 증거품으로 이미 받은 물건은 또 안 준다 — 숨긴 것은 알려지지 않은 채라 여기서 발표할 수 있다.
+            if (row.GivesItem && !_player.HasKeptEvidence(row.Id)) found.Add(row.ItemId);
 
             // 어느 것이든 먼저 「%s의 발견을 발표했다!」와 동영상이다(0x0047E953 · 0x0047E96F) — 그 다음에
             // 들어 주는지를 가린다(0x0047E810).

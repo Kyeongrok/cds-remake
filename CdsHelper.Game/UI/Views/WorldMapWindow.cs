@@ -4052,6 +4052,16 @@ public sealed class WorldMapWindow : Window
             _game.Player.Laps = saved.Laps ?? 0;
             _game.Player.RestorePurses(saved.Purses);
             _game.Player.RestoreHidden(saved.Hidden);
+            _game.Player.RestoreKeptEvidence(saved.KeptEvidence);
+            // 이 칸 앞의 세이브 — 감찰관 매수로 이미 받은 증거품은 적혀 있지 않다. 알리지 않은 발견물의 물건(시장에서 안 파는 것)이
+            // 진짜 소지품 · 보관함에 이미 있으면 받은 것으로 친다(그것 말고는 그 물건이 들어올 길이 없다).
+            if (saved.KeptEvidence == null && _game.Discoveries?.Table is { } keptTable)
+            {
+                var held = _game.Player.Items.Concat(_game.Player.Stored).ToHashSet();
+                _game.Player.KeepEvidence(_game.Player.Discoveries
+                    .Where(id => !_game.Player.HasAnnounced(id) && !_game.Player.IsHidden(id))
+                    .Where(id => keptTable.Find(id) is { GivesItem: true, SoldIn: < 0 } row && held.Contains(row.ItemId)).ToList());
+            }
             _game.Player.RestoreTraces(saved.Traces);
             _game.Player.RestoreConquests(saved.Conquests);
             // 대본으로 지어 준 발견물 이름을 표에 도로 덧씌운다 — 원본은 레코드에 직접 쓴다.

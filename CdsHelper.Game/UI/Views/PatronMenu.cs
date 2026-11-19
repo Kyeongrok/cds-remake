@@ -1108,7 +1108,9 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             // 나머지는 후원자가 가져가 일람에서 사라진다 — 발견물 아이템은 보고 전까지 소지품에 없던 것이다.
             // 말투 셋(0x0052FBE0 · 0x0052FC00 · 0x0052FC60) 뒤에 「%s%s 손에 넣었다!」(0x0052FCB0)이고,
             // 넘치면 물릴 수 없는 버리기 창이다(0x004B1710).
-            if (row.GivesItem && _game.Items?.Find(row.ItemId) is { } gift
+            // 감찰관 매수로 그 물건을 이미 받았으면 둘 다 건너뛴다.
+            bool kept = _player.HasKeptEvidence(row.Id);
+            if (row.GivesItem && !kept && _game.Items?.Find(row.ItemId) is { } gift
                 && gift.Category == Palace.KeepsakeCategory)
             {
                 int s = StyleOf(patron);
@@ -1120,7 +1122,7 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             }
             // 모드 「후원자에게 무기 · 방어구 받기」 — 원본은 서적 말고는 후원자가 가져가, 엑스칼리버 같은 무기 · 방어구를
             // 가지려면 계약 없이 찾아 항구에서 발표해야 했다. 가지겠다면 남은 사례를 친밀도만큼 깎는다(Palace.ArmsCut).
-            else if (row.GivesItem && Local.Settings.GameSettings.PatronGivesArms
+            else if (row.GivesItem && !kept && Local.Settings.GameSettings.PatronGivesArms
                      && _game.Items?.Find(row.ItemId) is { Category: ItemTable.WeaponCategory or ItemTable.ArmorCategory } arms)
             {
                 int cut = Palace.ArmsCut(_player.ClosenessOf(patron.Name));
@@ -2591,6 +2593,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
             if (_game.Discoveries?.Table?.Find(id) is { GivesItem: true } row) got.Add(row.ItemId);
 
         ItemGain.AddForced(_view, _game, got);
+        // 받은 것을 적어 둔다 — 숨긴 발견물은 알려지지 않은 채라 나중에 항구에서 발표하면 물건이 또 들어오던 것.
+        _player.KeepEvidence(_player.HiddenDiscoveries);
         _player.ClearHidden();
     }
 
