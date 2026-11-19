@@ -64,6 +64,9 @@ public sealed class GameSettingsData
     /// <summary>육상전 내내 「육상전 전황정보」 창을 띄워 둘지. 원본은 기능명령 「정보」로만 열어 꺼 두고 시작한다.</summary>
     public bool LandBattleInfoAlways { get; set; }
 
+    /// <summary>자동 업데이트를 끌지 — 켜면 새 버전을 받지 않고 알리기만 한다. 기본은 받는다(꺼짐 아님).</summary>
+    public bool NoAutoUpdate { get; set; }
+
     /// <summary>
     /// 볼륨 믹서에서 맞춘 이 앱의 음량(0~1, -1 은 아직 안 만짐) · 음소거 — Windows 가 다시 켤 때 잊으므로 여기 적어 둔다(<see cref="Helpers.AppVolumeKeeper"/>).
     /// </summary>
@@ -837,6 +840,13 @@ public static class GameSettings
     {
         get => Get(d => d.LandBattleInfoAlways);
         set => Set(d => d.LandBattleInfoAlways = value);
+    }
+
+    /// <summary>게임을 켤 때 새 버전을 저절로 받아 적용할지 — 설정 창 「일반」. 끄면 새 버전이 있다고 알리기만 한다(버그 리포트 #66).</summary>
+    public static bool AutoUpdate
+    {
+        get => !Get(d => d.NoAutoUpdate);
+        set => Set(d => d.NoAutoUpdate = !value);
     }
 
     /// <summary>효과음 크기(0~100). 화면 밖 시험(<see cref="OffscreenTest.Muted"/>)이면 0 이다.</summary>

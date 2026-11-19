@@ -31,7 +31,11 @@ internal sealed class App : Application
     {
         // 설치판(Setup.exe)의 메인 exe 가 이것이다 — Velopack 이 설치·업데이트·제거 때 특수 인자로 불러
         // 곧바로 끝나기를 기다리므로 <b>맨 앞</b>에서 받아 준다. 그냥 켰으면 아무 일 없이 지나간다.
-        VelopackApp.Build().Run();
+        // 설정 「자동 업데이트」를 껐으면 예전에 받아 둔 새 버전도 켤 때 적용하지 않는다(Velopack 기본은 적용한다).
+        bool autoUpdate = true;
+        try { autoUpdate = GameSettings.AutoUpdate; }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Update] 설정을 못 읽음: {ex.Message}"); }
+        VelopackApp.Build().SetAutoApplyOnStartup(autoUpdate).Run();
 
         var app = new App();
         app.InitializeComponent_();
@@ -201,6 +205,14 @@ internal sealed class App : Application
 
             var update = await manager.CheckForUpdatesAsync();
             if (update == null) return;
+
+            // 설정 「자동 업데이트」를 껐으면 받지 않고 알리기만 한다(버그 리포트 #66).
+            if (!GameSettings.AutoUpdate)
+            {
+                window.Say(Lang.T($"새 버전({update.TargetFullRelease.Version})이 있습니다.")
+                           + " " + Lang.T("설정 「일반」에서 「자동 업데이트」를 켜면 다음에 켤 때 받습니다."));
+                return;
+            }
 
             // 받는 동안 몇 % 받았는지 띄운다 — 통짜(약 160MB)를 받을 때는 몇 분 걸리는데, 「확인합니다」만 떠 있으면
             // 멈춘 줄 알고 게임을 꺼 받다 만 채로 끝났다(건의). 5% 마다 한 번만 고쳐 쓴다.

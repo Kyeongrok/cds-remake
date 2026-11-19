@@ -27,6 +27,7 @@ public sealed class SettingsDialog : GameWindow
     private readonly Border _awayRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sfxVolRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _landInfoRow = new() { Padding = new Thickness(8, 2, 8, 2) };
+    private readonly Border _updateRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _sizeRow = new() { Padding = new Thickness(8, 2, 8, 2) };
     private readonly Border _mapRow = new() { Padding = new Thickness(8, 2, 8, 2) };
 
@@ -53,6 +54,7 @@ public sealed class SettingsDialog : GameWindow
         _sizeRow.Child = SizeRow();
         _mapRow.Child = MapRow();
         _landInfoRow.Child = LandInfoToggle();
+        _updateRow.Child = UpdateToggle();
 
         var title = GameUi.TitleBar("설정", Close);
         GameUi.EnableDrag(this, title);
@@ -67,6 +69,7 @@ public sealed class SettingsDialog : GameWindow
         general.Children.Add(_sizeRow);
         general.Children.Add(_mapRow);
         general.Children.Add(_landInfoRow);
+        general.Children.Add(_updateRow);
         var navigation = NavigationPage();
 
         var pages = new Grid();
@@ -235,6 +238,17 @@ public sealed class SettingsDialog : GameWindow
         {
             GameSettings.LandBattleInfoAlways = !GameSettings.LandBattleInfoAlways;
             _landInfoRow.Child = LandInfoToggle();
+        });
+
+    /// <summary>
+    /// 「자동 업데이트」 — 끄면 게임을 켤 때 새 버전을 받지 않고 아래 띠로 알리기만 한다(버그 리포트 #66 — 업데이트마다
+    /// 고친 인물 · 후원자를 다시 손봐야 해 게임 흐름이 끊긴다는 요청). 다시 켜면 다음에 켤 때 받는다.
+    /// </summary>
+    private UIElement UpdateToggle() =>
+        new GameButton(Label("자동 업데이트", GameSettings.AutoUpdate), () =>
+        {
+            GameSettings.AutoUpdate = !GameSettings.AutoUpdate;
+            _updateRow.Child = UpdateToggle();
         });
 
     private UIElement SfxToggle() =>
