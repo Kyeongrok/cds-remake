@@ -31,6 +31,7 @@ public sealed class Game
     public Game()
     {
         CityFounding.Discovered = FoundBy;
+        CityFounding.AllCities = () => Local.Settings.GameSettings.AllCities;
         // 고르는 둘 밖의 나라(시나리오의 주인공)는 나라 표에서 이름을 찾는다.
         Player.NationNameOf = id => Nations?.Find(id)?.Name;
         // 부하 나이 — 표의 나이는 표를 구운 해의 것이라 해로 셈한다. 해를 모르는 표는 적어 둔 나이를 쓴다.
@@ -299,6 +300,13 @@ public sealed class Game
                                       Found(MarketRates.Aztec, when), Found(MarketRates.Inca, when));
                     player.RecoverGoodsRates();   // 교역품별 시세(모드)가 100 쪽으로 돌아온다
                 }
+
+                // 모드 「모든 도시 등장」을 켜 둔 동안 신도시 이벤트가 탄 도시는 남긴다 — 모드를 꺼도 지도에 그대로 선다(요청).
+                // 대본 도시 표(서 있음)에 적으면 날짜 셈보다 먼저라 그대로 남고 세이브에도 함께 실린다.
+                if (Local.Settings.GameSettings.AllCities)
+                    foreach (int city in CityFounding.DueBy(when))
+                        if (!player.ScriptedCities.ContainsKey(city) && !CityFounding.NeverFounded.Contains(city))
+                            player.SetScriptedCity(city, true);
 
                 if (key > player.HistoryMonth)
                 {

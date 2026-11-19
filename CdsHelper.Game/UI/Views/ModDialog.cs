@@ -646,6 +646,13 @@ public sealed class ModDialog : GameWindow
             + " 배로 곧장 지나갈 수 있게 합니다.",
             images: ["suez-canal.png"]));
 
+        // 모든 도시 등장 — 신대륙 식민 도시를 등장 연도와 상관없이 다 세운다(건의).
+        general.Children.Add(Toggle("모든 도시 등장", GameSettings.AllCities,
+            on => { GameSettings.AllCities = on; WorldMapWindow.Current?.RefreshFoundedCities(); },
+            "원본에 없는 것입니다 — 아메리카 등 나중에 생기는 신도시를 등장 연도와 상관없이 모두 지도에 세웁니다."
+            + " 끄면 원래 등장 연도대로 돌아가는데, 켜 둔 동안 등장 연도가 된 도시는 그대로 남습니다."
+            + " 멕시코는 아스텍 이벤트로만 섭니다."));
+
         // 교역품별 시세 — 도시마다 물건마다 시세를 따로 둔다. 시세 꼼수를 막으려고 켠 채로 시작한다.
         general.Children.Add(Toggle("교역품별 시세", GameSettings.GoodsMarkets, on => GameSettings.GoodsMarkets = on,
             "원본과 다릅니다 — 도시마다 교역품마다 시세를 따로 둡니다. 팔면 그 물건 시세만 내려가고 사면 오르며,"

@@ -129,7 +129,28 @@ public static class CityFounding
     /// 안 되고, <c>1B</c> 꼴은 그 해부터 조건이 맞을 때까지 기다린다 — 파나마가 늦어
     /// 레온·코로·트루히요가 1531년에 한꺼번에 나오는 것이 이 셈에서 그대로 나온다.
     /// </remarks>
-    public static HashSet<int> FoundedBy(DateTime when)
+    public static HashSet<int> FoundedBy(DateTime when) =>
+        AllCities() ? [.. Hidden.Where(c => !NeverFounded.Contains(c))] : Compute(when, relaxNeeds: false);
+
+    /// <summary>
+    /// 모드 「모든 도시 등장」을 켰는지 — 켜면 아직 안 선 도시가 다 선다(<see cref="NeverFounded"/> 는 빼고).
+    /// 게임(<c>Game</c>)이 설정에 걸어 둔다. 원본에 없는 것이다(버그 리포트 #60 건의).
+    /// </summary>
+    public static Func<bool> AllCities { get; set; } = () => false;
+
+    /// <summary>모드를 켜고 끌 때 올린다 — 달 · 날짜로 셈을 들고 있는 쪽(<c>CityHistory</c> · <c>PersonWorld</c>)이 다시 센다.</summary>
+    public static int Version { get; private set; }
+
+    /// <summary>모드 「모든 도시 등장」을 켜거나 껐다.</summary>
+    public static void Changed() => Version++;
+
+    /// <summary>
+    /// 그 날짜까지 <b>신도시 이벤트가 탔을</b> 도시 — 「먼저 서 있어야 하는 도시」 조건은 안 본다(모드로 다 서 있으므로).
+    /// 모드 「모든 도시 등장」을 켜 둔 동안 달마다 이것을 세이브에 남겨, 모드를 꺼도 그 도시는 지도에 남는다(<c>Game</c>).
+    /// </summary>
+    public static HashSet<int> DueBy(DateTime when) => Compute(when, relaxNeeds: true);
+
+    private static HashSet<int> Compute(DateTime when, bool relaxNeeds)
     {
         var up = new HashSet<int>();
         var done = new bool[Rules.Length];
@@ -153,7 +174,7 @@ public static class CityFounding
 
                 // 그 달에만 보는 꼴은 조건이 안 맞으면 그대로 흘려보낸다.
                 // 발견물 조건도 함께 본다 — 예전에는 날짜만 보아, 그 발견물을 아무도 못 찾았어도 섰다.
-                bool needsMet = rule.Needs < 0 || up.Contains(rule.Needs);
+                bool needsMet = relaxNeeds || rule.Needs < 0 || up.Contains(rule.Needs);
                 if (needsMet && rule.Discovery >= 0 && Discovered is { } found)
                     needsMet = found(rule.Discovery, new DateTime(year, month, 1));
                 if (!needsMet)

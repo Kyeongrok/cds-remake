@@ -77,16 +77,16 @@ public sealed class PersonWorld
     {
         get
         {
-            if (_notFounded.At != _asOf || _notFounded.Cities == null)
+            if (_notFounded.At != _asOf || _notFounded.Version != CityFounding.Version || _notFounded.Cities == null)
             {
                 var up = CityFounding.FoundedBy(_asOf);
-                _notFounded = (_asOf, [.. CityFounding.Hidden.Where(c => !up.Contains(c))]);
+                _notFounded = (_asOf, CityFounding.Version, [.. CityFounding.Hidden.Where(c => !up.Contains(c))]);
             }
             return _notFounded.Cities!;
         }
     }
 
-    private (DateTime At, HashSet<int>? Cities) _notFounded;
+    private (DateTime At, int Version, HashSet<int>? Cities) _notFounded;
 
     private readonly PersonTable _table;
     private readonly List<PersonTable.Row> _rows;

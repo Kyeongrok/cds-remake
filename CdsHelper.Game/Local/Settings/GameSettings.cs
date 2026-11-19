@@ -356,6 +356,9 @@ public sealed class GameSettingsData
     /// <summary>바다에서 다른 배에 붙어도 「배가 보입니다」를 묻지 않고 지나칠지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool PassShips { get; set; }
 
+    /// <summary>모드 「모든 도시 등장」 — 아직 안 선 신도시를 다 세운다. 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool AllCities { get; set; }
+
     /// <summary>부하편성에서 부하를 해고할 수 있게 할지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool MateDismiss { get; set; }
 
@@ -1809,6 +1812,13 @@ public static class GameSettings
     {
         get => Get(d => d.PassShips);
         set => Set(d => d.PassShips = value);
+    }
+
+    /// <summary>모드 「모든 도시 등장」 — 켜면 아직 안 선 신도시가 다 서고, 켜 둔 동안 날짜가 된 도시는 꺼도 남는다(CityFounding).</summary>
+    public static bool AllCities
+    {
+        get => Get(d => d.AllCities);
+        set => Set(d => d.AllCities = value);
     }
 
     public static bool FleetCard

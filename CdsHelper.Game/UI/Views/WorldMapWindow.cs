@@ -5471,6 +5471,15 @@ public sealed class WorldMapWindow : Window
     /// 언제 무엇이 서는지는 <see cref="CityFounding"/> 에 있다. 원본은 파나마가 1531년에야 서서
     /// 레온·코로·트루히요가 그때 <b>한꺼번에</b> 섰는데, 파나마를 역사대로 1519년으로 당겨 이제 제 해에 하나씩 선다.
     /// </remarks>
+    /// <summary>모드 「모든 도시 등장」을 켜고 껐다 — 셈을 다시 하고 지도의 도시를 그 자리에서 다시 가린다.</summary>
+    internal void RefreshFoundedCities()
+    {
+        CityFounding.Changed();
+        if (!_started) return;
+        _founded = null;
+        TellFounded();
+    }
+
     private void TellFounded()
     {
         var now = CityFounding.FoundedBy(_game.Player.Date);

@@ -479,7 +479,8 @@ public sealed class CityHistory
     {
         if (player.ScriptedCities.TryGetValue(city, out bool set)) return set;
         if (!CityFounding.Hidden.Contains(city)) return true;
-        int key = MonthKey(when.Year, when.Month);
+        // 모드 「모든 도시 등장」을 켜고 끄면 다시 센다.
+        int key = MonthKey(when.Year, when.Month) * 1000 + CityFounding.Version % 1000;
         if (key != _standingKey)
         {
             _standing = CityFounding.FoundedBy(when);
