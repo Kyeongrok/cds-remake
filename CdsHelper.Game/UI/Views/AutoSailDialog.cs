@@ -109,6 +109,9 @@ public sealed class AutoSailDialog : GameWindow
     private readonly StackPanel _finder;
     private readonly UniformGrid _hitGrid = new() { Columns = Columns, Width = CellWidth * Columns, VerticalAlignment = VerticalAlignment.Top };
     private readonly FrameworkElement _hitPage;
+    /// <summary>먼저 골라 둔 까닭(「계약 발견물에서 가장 가까운 도시: …」) — 찾기 줄 끝에 붙이면 창이 옆으로 길어져 그 아래 줄에 따로 둔다(요청).</summary>
+    private readonly TextBlock _suggest = new() { Foreground = GameUi.Text, FontSize = 14, Visibility = Visibility.Collapsed, TextWrapping = TextWrapping.Wrap };
+
     private readonly TextBlock _hitNote = new() { Foreground = GameUi.Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
 
     /// <summary>찾은 판의 칸과 그 도시 번호 — 다시 찾을 때마다 새로 짓는다.</summary>
@@ -273,6 +276,8 @@ public sealed class AutoSailDialog : GameWindow
         var stack = new StackPanel();
         stack.Children.Add(title);
         stack.Children.Add(_finder);
+        _suggest.Margin = new Thickness(Side, 4, Side, 0);
+        stack.Children.Add(_suggest);
         _heads.Children.Add(Tabs(tabs, page =>
         {
             _tabPage = page;
@@ -304,7 +309,7 @@ public sealed class AutoSailDialog : GameWindow
         if (preselect >= 0 && known.ContainsKey(preselect))
         {
             Pick(preselect);
-            if (suggestion != null) _hitNote.Text = suggestion;
+            if (suggestion != null) { _suggest.Text = suggestion; _suggest.Visibility = Visibility.Visible; }
         }
     }
 
@@ -571,6 +576,7 @@ public sealed class AutoSailDialog : GameWindow
         _pages.Children.Add(body);
         foreach (UIElement head in _heads.Children) head.Visibility = Visibility.Collapsed;
         _finder.Visibility = Visibility.Collapsed;
+        _suggest.Visibility = Visibility.Collapsed;
         _heads.Children.Add(new TextBlock
         {
             Text = message,
