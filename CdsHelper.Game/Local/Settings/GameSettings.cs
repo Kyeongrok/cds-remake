@@ -439,6 +439,9 @@ public sealed class GameSettingsData
     /// <summary>수에즈 지협에 바닷길을 뚫을지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SuezCanal { get; set; }
 
+    /// <summary>파나마 지협에 바닷길을 뚫을지. 원본에 없어 꺼 두고 시작한다(요청).</summary>
+    public bool PanamaCanal { get; set; }
+
     /// <summary>스폰서 제안에서 고르기 없이 자금 증가를 고를지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool AutoFundRaise { get; set; }
 
@@ -1669,6 +1672,13 @@ public static class GameSettings
     {
         get => Get(d => d.SuezCanal);
         set => Set(d => d.SuezCanal = value);
+    }
+
+    /// <summary>파나마 운하 — 카리브해와 파나마만 사이에 배가 지나갈 바닷길을 뚫는다(Engine.Sea.Canals).</summary>
+    public static bool PanamaCanal
+    {
+        get => Get(d => d.PanamaCanal);
+        set => Set(d => d.PanamaCanal = value);
     }
 
     /// <summary>게임 로드 창 글꼴 — 세이브 고르기 창(게임 로드 · CONTINUE)을 리디바탕 표로 띄운다(SaveListDialog).</summary>

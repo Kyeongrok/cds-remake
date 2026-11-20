@@ -655,10 +655,16 @@ public sealed class ModDialog : GameWindow
 
         // 수에즈 운하 — 지중해와 수에즈만 사이에 바닷길.
         general.Children.Add(Toggle("수에즈 운하", GameSettings.SuezCanal,
-            on => { GameSettings.SuezCanal = on; WorldMapWindow.Current?.RefreshSuezCanal(); },
+            on => { GameSettings.SuezCanal = on; WorldMapWindow.Current?.RefreshCanals(); },
             "원본에 없는 것입니다(운하는 1869년) — 포트사이드와 수에즈 사이 지협에 두 칸 폭의 바닷길을 뚫어, 지중해에서 홍해로"
             + " 배로 곧장 지나갈 수 있게 합니다.",
             images: ["suez-canal.png"]));
+
+        // 파나마 운하 — 카리브해와 파나마만 사이에 바닷길(요청).
+        general.Children.Add(Toggle("파나마 운하", GameSettings.PanamaCanal,
+            on => { GameSettings.PanamaCanal = on; WorldMapWindow.Current?.RefreshCanals(); },
+            "원본에 없는 것입니다(운하는 1914년) — 파나마 바로 옆 지협에 두 칸 폭의 바닷길을 뚫어, 카리브해에서 태평양으로"
+            + " 배로 곧장 지나갈 수 있게 합니다. 남아메리카 끝을 돌아가지 않아도 됩니다."));
 
         // 모든 도시 등장 — 신대륙 식민 도시를 등장 연도와 상관없이 다 세운다(건의).
         general.Children.Add(Toggle("모든 도시 등장", GameSettings.AllCities,

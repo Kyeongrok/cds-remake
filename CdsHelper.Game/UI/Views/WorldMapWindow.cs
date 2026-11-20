@@ -3455,8 +3455,8 @@ public sealed class WorldMapWindow : Window
         ShowModDialog();
     }
 
-    /// <summary>모드 「수에즈 운하」를 켜고 끈 것을 지도에 곧바로 들인다.</summary>
-    internal void RefreshSuezCanal() => _host.RefreshSuezCanal();
+    /// <summary>모드 「수에즈 운하」 · 「파나마 운하」를 켜고 끈 것을 지도에 곧바로 들인다.</summary>
+    internal void RefreshCanals() => _host.RefreshCanals();
 
     /// <summary>녹화용 거울 — 켜 둔 동안 도시 화면을 이 창 안에 비춘다.</summary>
     private readonly CaptureMirror _captureMirror;

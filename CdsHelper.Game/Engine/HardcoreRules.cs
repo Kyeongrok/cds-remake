@@ -26,6 +26,7 @@ public static class HardcoreRules
     private static readonly (string Name, Func<bool> On)[] Switches =
     [
         (nameof(GameSettings.SuezCanal), () => GameSettings.SuezCanal),
+        (nameof(GameSettings.PanamaCanal), () => GameSettings.PanamaCanal),
         (nameof(GameSettings.NoWeight), () => GameSettings.NoWeight),
         (nameof(GameSettings.RichCap), () => GameSettings.RichCap),
         (nameof(GameSettings.LongRest), () => GameSettings.LongRest),

@@ -52,8 +52,8 @@ public sealed class WorldCells
                 LastError = $"WORLD.CDS 크기가 뜻밖입니다({raw.Length}바이트)";
                 return null;
             }
-            // 모드 「수에즈 운하」 — 지도 화면과 같은 칸을 바다로(Engine.Sea.SuezCanal).
-            Engine.Sea.SuezCanal.Apply(raw, TerrainTable.Open(gameDirectory));
+            // 모드 「수에즈 운하」 · 「파나마 운하」 — 지도 화면과 같은 칸을 바다로(Engine.Sea.Canals).
+            Engine.Sea.Canals.Apply(raw, TerrainTable.Open(gameDirectory));
             return new WorldCells(raw);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
