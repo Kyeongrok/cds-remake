@@ -1070,11 +1070,25 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>
     /// 세계지도 창 빈 곳 오른쪽 단추 「여기로 자동이동」 — 그 칸까지 자동항해를 건다(요청). 걸렸으면 빈 글, 아니면 까닭.
-    /// 바다에 있을 때만이다(도시 · 육지에서는 배를 그 자리에서 띄울 수 없다).
+    /// 도시 안이면 도시 자동이동처럼 걸어 두고 곧바로 출항한다 — 자동항해는 도시 창이 닫히면서 걸린다(요청).
+    /// 도시 밖 육지에서는 못 건다.
     /// </summary>
     private string SailToSpotAt(double cellX, double cellY)
     {
-        if (_cityView != null || _host.SeaBlocked || _host.IsOnLand) return Lang.T("바다에 있을 때만 자동이동할 수 있습니다");
+        if (_cityView is { } town)
+        {
+            if (town is not { CanSailOut: true }) return Lang.T("이 도시에는 함대가 없어 배로 떠날 수 없습니다");
+            var spot = (cellX, cellY);
+            _sailTo = -1;
+            _sailSpot = spot;
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (_cityView != town || _sailSpot != spot || town.SailNow()) return;
+                Say($"출항하면 {WorldMapHost.SpotText(cellX, cellY)}까지 자동항해합니다");
+            });
+            return "";
+        }
+        if (_host.SeaBlocked || _host.IsOnLand) return Lang.T("바다에 있을 때만 자동이동할 수 있습니다");
         var (ok, message) = _host.StartAutoSail(cellX, cellY);
         if (!ok) return message;
         NavStarted("livemap");
@@ -1123,6 +1137,7 @@ public sealed class WorldMapWindow : Window
         if (SailGoals(city) is not [var goal, ..]) return Lang.T("바닷길을 찾지 못했습니다");
 
         _sailTo = city;
+        _sailSpot = null;
         _sailGoal = goal;
         if (inCity)
         {
@@ -1236,6 +1251,7 @@ public sealed class WorldMapWindow : Window
 
         if (chosen < 0 || pick < 0 || pick >= goals.Count) return;
         _sailTo = chosen;
+        _sailSpot = null;
         _sailGoal = goals[pick];
 
         // 도시 안이면 걸어 두고 곧바로 출항한다 — 자동항해는 도시 창이 닫히면서 걸린다.
@@ -1310,6 +1326,9 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>네비게이션에서 고른 길 — 도시 안에서 골랐으면 출항한 뒤 이것으로 건다.</summary>
     private SailGoal _sailGoal;
+
+    /// <summary>도시 안에서 세계지도 「여기로 자동이동」으로 걸어 둔 칸 — 출항한 뒤 그리로 자동항해한다. 없으면 null.</summary>
+    private (double X, double Y)? _sailSpot;
 
     /// <summary>
     /// 그 도시로 가는 길 후보. 앞의 것이 기본이다.
@@ -8632,6 +8651,8 @@ public sealed class WorldMapWindow : Window
             // CheckPort 가 지우지 않게 여기서 빼 둔다.
             int sailTo = dialog.Sailed ? _sailTo : -1;
             _sailTo = -1;
+            var sailSpot = dialog.Sailed ? _sailSpot : null;
+            _sailSpot = null;
 
             SetInCity(false);
 
@@ -8699,6 +8720,15 @@ public sealed class WorldMapWindow : Window
             {
                 _host.Paused = false;
                 _asking = false;
+            }
+
+            // 세계지도에서 짚어 둔 칸이 있으면 그리로 간다(도시가 아니라 바다 한 자리).
+            if (sailSpot is { } at && !_host.SeaBlocked && !_host.IsOnLand)
+            {
+                var (spotOk, spotMessage) = _host.StartAutoSail(at.X, at.Y);
+                if (spotOk) NavStarted("livemap");
+                Say(spotOk ? $"{WorldMapHost.SpotText(at.X, at.Y)}까지 {spotMessage}" : spotMessage);
+                return;
             }
 
             // 걸어 둔 목적지가 있으면 닻을 올리고 그리로 간다. 대본이 싸움 · 딴 도시로 끌고 갔으면 걸지 않는다.
@@ -8821,6 +8851,7 @@ public sealed class WorldMapWindow : Window
     {
         if (SailGoals(city) is not [var goal, ..]) return $"도시 {city} 로 가는 길 후보가 없다";
         _sailTo = city;
+        _sailSpot = null;
         _sailGoal = goal;
         var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
         if (!ok) { _sailTo = -1; return message; }
