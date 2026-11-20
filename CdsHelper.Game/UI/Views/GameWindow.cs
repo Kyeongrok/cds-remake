@@ -197,7 +197,7 @@ public class GameWindow : Window
             return;
         }
 
-        if (e.Key == KeyOf(Local.Settings.GameSettings.PersonKey, Key.X))
+        if (e.Key == KeyOf(Local.Settings.GameSettings.PersonKey, Key.C))
         {
             WorldMapWindow.Current?.PersonByKey(window);
             e.Handled = true;

@@ -3682,7 +3682,7 @@ public sealed class WorldMapWindow : Window
             return;
         }
 
-        if (e.Key == KeyOf(GameSettings.PersonKey, Key.X))
+        if (e.Key == KeyOf(GameSettings.PersonKey, Key.C))
         {
             e.Handled = true;
             if (_started && !_personOpen) Hold(() => PersonByKey(this));

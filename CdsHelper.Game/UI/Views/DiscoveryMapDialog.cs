@@ -499,6 +499,13 @@ public sealed class DiscoveryMapDialog : GameWindow
         Content = stack;
 
         KeyDown += OnKey;
+        // C(해류)는 먼저 받는다 — 인물정보 단축키 기본이 C 라 공용 글쇠 손(GameWindow, 창 KeyDown 보다 먼저 돈다)이 가로챈다.
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key != Key.C || e.OriginalSource is TextBox || Keyboard.Modifiers != ModifierKeys.None) return;
+            _toggleCurrent?.Invoke();
+            e.Handled = true;
+        };
 
         // 함대 자리를 가운데 두고 연다 — 모드도 그렇게 연다.
         if (ship is { } spot)
