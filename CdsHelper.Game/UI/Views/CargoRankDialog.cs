@@ -32,6 +32,9 @@ internal sealed class CargoRankDialog : InfoDialog
     /// </summary>
     private const double GoodsWidth = 200, CountWidth = 60, ShelfWidth = 60, GapWidth = 24, BestCityWidth = 126, BestPriceWidth = 110;
 
+    /// <summary>짐 줄 맨 왼쪽 교역품 그림 칸(요청) — 머리 줄은 같은 너비를 비워 둔다.</summary>
+    private const double PictureWidth = 40, PictureSize = 34;
+
     /// <summary>고른 짐 줄 바탕.</summary>
     private static readonly Brush Picked = Frozen(Color.FromRgb(0x5C, 0x40, 0x38));
 
@@ -48,7 +51,7 @@ internal sealed class CargoRankDialog : InfoDialog
     /// 예전에는 짐이 여럿이면 첫 짐의 순위를 띄우고 위에 교역품 단추만 늘어놓아, 누르면 창을 닫았다 다시 열었다(건의).
     /// </summary>
     private CargoRankDialog(Engine.Game game, TradePost post, IReadOnlyList<Player.Cargo> hold, int index,
-                            Action<Player.Cargo>? showInfo)
+                            Action<Player.Cargo>? showInfo, Action<Window>? cityPrices)
     {
         _game = game;
         _post = post;
@@ -73,7 +76,7 @@ internal sealed class CargoRankDialog : InfoDialog
         body.Children.Add(Label($"교역품 {goods} · 보급품 {loaded - goods}   교역품 칸 {hold.Count} / {Player.CargoSlots}"));
         body.Children.Add(Gap(6));
 
-        body.Children.Add(Row(null, ("교역품", GoodsWidth, false), ("개수", CountWidth, true), ("기한", ShelfWidth, true),
+        body.Children.Add(Row(null, null, ("교역품", GoodsWidth, false), ("개수", CountWidth, true), ("기한", ShelfWidth, true),
                               ("매입가", BoughtWidth, true), ("", GapWidth, false), ("가장 비싼 도시", BestCityWidth, false), ("단가", BestPriceWidth, true)));
         for (int i = 0; i < hold.Count; i++)
         {
@@ -81,7 +84,8 @@ internal sealed class CargoRankDialog : InfoDialog
             var best = _ranked[i].FirstOrDefault();
             bool any = !cargo.Spoiled && _ranked[i].Count > 0;
             int at = i;
-            var row = Row(() => Pick(at),
+            var picture = game.Goods?.Find(cargo.Kind) is { } goodsRow ? game.ItemPictures?.TryGetImage(goodsRow.Pic) : null;
+            var row = Row(() => Pick(at), picture,
                           (Engine.GameInfo.CargoLabel(game, cargo), GoodsWidth, false), ($"{cargo.Count}", CountWidth, true),
                           (cargo.Shelf == Player.NeverSpoils ? "-" : cargo.Spoiled ? "썩음" : $"{cargo.Months}개월", ShelfWidth, true),
                           ($"{post.BuyPrice(player, cargo.Origin, cargo.Kind)}닢", BoughtWidth, true), ("", GapWidth, false),
@@ -93,8 +97,12 @@ internal sealed class CargoRankDialog : InfoDialog
         body.Children.Add(_rank);
         Pick(index);
 
-        Build("매입 정보", body, RankWidth + CultureWidth + CityWidth + BoughtWidth + PriceWidth + TotalWidth, double.NaN,
-              new GameButton("교역품 정보", () => showInfo?.Invoke(_hold[_index])), new GameButton("취소", Close));
+        Build("매입 정보", body, Math.Max(RankWidth + CultureWidth + CityWidth + BoughtWidth + PriceWidth + TotalWidth,
+                                         PictureWidth + GoodsWidth + CountWidth + ShelfWidth + BoughtWidth + GapWidth + BestCityWidth + BestPriceWidth), double.NaN,
+              // 「시세」 — 세계지도에서 도시를 누르면 그 도시에서 비싸게 팔리는 교역품 20 가지(요청). 지도 창을 못 여는 데서는 단추가 없다.
+              [new GameButton("교역품 정보", () => showInfo?.Invoke(_hold[_index])),
+               .. cityPrices != null ? [new GameButton("시세", () => cityPrices(this))] : Array.Empty<GameButton>(),
+               new GameButton("취소", Close)]);
 
         PreviewKeyDown += (_, e) =>
         {
@@ -137,11 +145,20 @@ internal sealed class CargoRankDialog : InfoDialog
     }
 
     /// <summary>짐 목록 한 줄. 누르는 손이 있으면 눌러 고르는 줄이다.</summary>
-    private static Border Row(Action? pick, params (string Text, double Width, bool Right)[] cells)
+    private static Border Row(Action? pick, ImageSource? picture, params (string Text, double Width, bool Right)[] cells)
     {
         var line = new StackPanel { Orientation = Orientation.Horizontal };
+        // 맨 왼쪽 교역품 그림 — 머리 줄(그림 없음)도 같은 너비를 비워 칸이 맞는다.
+        var slot = new Border { Width = PictureWidth, Height = picture != null ? PictureSize : double.NaN, VerticalAlignment = VerticalAlignment.Center };
+        if (picture != null)
+            slot.Child = new Image { Source = picture, Width = PictureSize, Height = PictureSize, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left };
+        line.Children.Add(slot);
         foreach (var (text, width, right) in cells)
-            line.Children.Add(Cell(text, width, right ? HorizontalAlignment.Right : HorizontalAlignment.Left));
+        {
+            var cell = Cell(text, width, right ? HorizontalAlignment.Right : HorizontalAlignment.Left);
+            ((FrameworkElement)cell).VerticalAlignment = VerticalAlignment.Center;
+            line.Children.Add(cell);
+        }
         var row = new Border { Child = line, Padding = new Thickness(0, 2, 0, 1), Background = Brushes.Transparent };
         if (pick != null)
         {
@@ -177,13 +194,13 @@ internal sealed class CargoRankDialog : InfoDialog
     /// 순위 창을 연다 — 실은 짐 가운데 <paramref name="index"/> 번째를 골라 둔 채로. 교역품 표를 못 읽은 게임이거나
     /// 그 짐이 없으면 거짓 — 부르는 쪽이 여느 교역품 창을 낸다.
     /// </summary>
-    public static bool Show(Window owner, Engine.Game game, int index, Action<Player.Cargo>? showInfo)
+    public static bool Show(Window owner, Engine.Game game, int index, Action<Player.Cargo>? showInfo, Action<Window>? cityPrices = null)
     {
         if (game.Trade is not { } trade || game.Goods is not { } goods) return false;
         var hold = game.Player.CargoHold;
         if (index < 0 || index >= hold.Count) return false;
         var post = new TradePost(trade, goods, game.Rates, game.CityRows, game.Nations, game.Discoveries?.Table);
-        new CargoRankDialog(game, post, hold, index, showInfo) { Owner = owner }.ShowDialog();
+        new CargoRankDialog(game, post, hold, index, showInfo, cityPrices) { Owner = owner }.ShowDialog();
         return true;
     }
 }

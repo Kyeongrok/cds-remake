@@ -204,6 +204,19 @@ public static class OffscreenHarness
                     foreach (Window w in window.OwnedWindows)
                         if (w is LiveMapWindow) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_DIALOG=cityprice:<도시 번호> — 매입 정보 「시세」에서 그 도시를 누른 창 · citypick — 그 도시 고르기 지도.
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } priceDialog && (priceDialog is "citypick" or "cargo" || priceDialog.StartsWith("cityprice:")))
+                window.Dispatcher.BeginInvoke(() =>
+                {
+                    window.Dispatcher.BeginInvoke(() =>
+                    {
+                        foreach (Window w in window.OwnedWindows)
+                            if (w is CityPriceDialog or LiveMapWindow or CargoRankDialog) { w.Left = window.Left + 60; w.Top = window.Top + 40; }
+                    }, DispatcherPriority.ApplicationIdle);
+                    if (priceDialog == "citypick") window.CityPickForTest();
+                    else if (priceDialog == "cargo") window.CargoForTest();
+                    else if (int.TryParse(priceDialog[10..], out int city)) window.CityPriceForTest(city);
+                }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=nav — 네비게이션 창(목적지 도시 고르기)을 띄운다.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "nav")
                 window.Dispatcher.BeginInvoke(() =>

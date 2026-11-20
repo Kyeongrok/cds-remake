@@ -961,6 +961,35 @@ public sealed class WorldMapWindow : Window
     private void ShowLiveMap()
     {
         if (!_started) return;
+        LiveMapWindow.Toggle(this, LiveSource());
+    }
+
+    /// <summary>
+    /// 매입 정보 「시세」 — 세계지도를 도시 고르기로 띄워, 도시를 누르면 그 도시에서 비싸게 팔리는 교역품을 띄운다(요청).
+    /// 지도는 닫을 때까지 떠 있어 도시를 여럿 견줘 볼 수 있다.
+    /// </summary>
+    internal void ShowCityPrices(Window owner)
+    {
+        if (!_started) return;
+        LiveMapWindow.ShowCityPick(owner, LiveSource() with
+        {
+            SailToCity = null,
+            CityClick = (map, x, y) =>
+            {
+                int city = CityAtCell(x, y);
+                if (city >= 0) CityPriceDialog.Show(map, _game, city);
+            },
+        });
+    }
+
+    /// <summary>세계지도 도시 표식 자리(칸)의 도시 번호. 없으면 -1.</summary>
+    private int CityAtCell(double cellX, double cellY) =>
+        Enumerable.Range(0, GameMapCoords.CityCount).FirstOrDefault(id => _game.CityVisible(id)
+            && GameMapCoords.TryCityCell(id, out double cx, out double cy) && Math.Abs(cx - cellX) < 0.01 && Math.Abs(cy - cellY) < 0.01, -1);
+
+    /// <summary>세계지도 창이 지도에서 읽어 오는 것들 — 늘 떠 있는 창과 시세 도시 고르기가 함께 쓴다.</summary>
+    private LiveMapWindow.Source LiveSource()
+    {
         Dictionary<int, (double X, double Y)>? inTown = null;
         List<(string Name, double X, double Y, bool Found)> spots = [];
         DateTime spotsAt = DateTime.MinValue;
@@ -984,7 +1013,7 @@ public sealed class WorldMapWindow : Window
             return spots = list;
         }
 
-        LiveMapWindow.Toggle(this, new LiveMapWindow.Source(
+        return new LiveMapWindow.Source(
             Ship: () => _host.ShipCell is { } c ? (WrapCell(c.X), c.Y) : null,
             MapVersion: () => _host.ShownMapVersion,
             Tiles: _host.GameTiles,
@@ -997,7 +1026,7 @@ public sealed class WorldMapWindow : Window
             IsLand: _host.IsLandCell,
             Cities: KnownCityMarks,
             Spots: Spots,
-            SailToCity: SailToCityAt));
+            SailToCity: SailToCityAt);
     }
 
     /// <summary>가로로 이어진 칸 자리를 0~2500 으로 접는다.</summary>
@@ -1059,8 +1088,7 @@ public sealed class WorldMapWindow : Window
     /// <returns>알릴 말 — 지도 창 아래 줄에 뜬다. 걸었으면 아래 띠에도 알린다.</returns>
     private string SailToCityAt(double cellX, double cellY)
     {
-        int city = Enumerable.Range(0, GameMapCoords.CityCount).FirstOrDefault(id => _game.CityVisible(id)
-            && GameMapCoords.TryCityCell(id, out double cx, out double cy) && Math.Abs(cx - cellX) < 0.01 && Math.Abs(cy - cellY) < 0.01, -1);
+        int city = CityAtCell(cellX, cellY);
         if (city < 0) return Lang.T("그 도시를 찾지 못했습니다");
         string name = _game.CityName(city);
         var town = _cityView;
@@ -3477,7 +3505,7 @@ public sealed class WorldMapWindow : Window
                 NoticeDialog.Show(owner, "실은 교역품이 없습니다.");
                 return;
             }
-            CargoRankDialog.Show(owner, _game, 0, c => GoodsInfoDialog.Show(owner, _game, c.Kind, c.Shelf));
+            CargoRankDialog.Show(owner, _game, 0, c => GoodsInfoDialog.Show(owner, _game, c.Kind, c.Shelf), ShowCityPrices);
         }
         finally { _cargoOpen = false; }
     }
@@ -8842,6 +8870,21 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>시험 장치(<c>CDS_DIALOG=livemap</c>)가 도시락 「세계지도」를 누른 것처럼 연다.</summary>
     internal void OpenLiveMapForTest() => ShowLiveMap();
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=cityprice:&lt;도시&gt;</c>) — 매입 정보 「시세」에서 그 도시를 누른 창. 닫힐 때까지 돌아오지 않는다.</summary>
+    internal void CityPriceForTest(int city) => CityPriceDialog.Show(this, _game, city);
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=citypick</c>) — 매입 정보 「시세」의 도시 고르기 지도. 닫힐 때까지 돌아오지 않는다.</summary>
+    internal void CityPickForTest() => ShowCityPrices(this);
+
+    /// <summary>화면 밖 시험(<c>CDS_DIALOG=cargo</c>) — 교역품 둘을 싣고 매입 정보(T) 창을 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
+    internal void CargoForTest()
+    {
+        GameSettings.CargoPriceRank = true;
+        foreach (int kind in (int[])[0, 5])
+            _game.Player.LoadCargo(kind, 20, _game.Player.CityId, _game.Goods?.Find(kind)?.Weight ?? 1);
+        CargoByKey(this);
+    }
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=areapick</c>) — 발견물 자리 고르기 창을 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
     internal DiscoveryAreaPicker.Area? PickAreaForTest(DiscoveryAreaPicker.Area? start) =>

@@ -98,7 +98,11 @@ public sealed class LiveMapWindow : Window
         Func<int, int, bool?> IsLand,
         Func<IReadOnlyList<(string Name, double X, double Y, bool Library)>> Cities,
         Func<IReadOnlyList<(string Name, double X, double Y, bool Found)>> Spots,
-        Func<double, double, string>? SailToCity = null);
+        Func<double, double, string>? SailToCity = null,
+        Action<Window, double, double>? CityClick = null);
+
+    // CityClick — 도시 고르기로 띄운 창(ShowCityPick)에서 도시 점 · 이름을 왼쪽 단추로 누르면 부른다(지도 창, 도시 칸 자리).
+    // 매입 정보의 「시세」가 그 도시에서 비싸게 팔리는 교역품을 띄우는 데 쓴다.
 
     // SailToCity — 도시 점 · 이름을 오른쪽 단추로 눌러 「자동이동」을 고르면 그 자리 도시로 네비게이션처럼 자동이동을 건다(요청).
     // 받는 것은 도시 칸 자리, 돌려주는 것은 알릴 말(빈 글이면 말 없음). 고르기 모드 · 지도 창 밖에서 연 것은 null 이다.
@@ -200,6 +204,9 @@ public sealed class LiveMapWindow : Window
 
     private bool Picking => _pick != null;
 
+    /// <summary>도시 고르기로 띄웠는지(<see cref="ShowCityPick"/>) — 도시를 늘 보이고, 누르면 <see cref="Source.CityClick"/>.</summary>
+    private bool CityPicking => _src.CityClick != null;
+
     /// <summary>따라가기 — 고르기 모드에서는 늘 끈다.</summary>
     private bool Follow => !Picking && GameSettings.LiveMapFollow;
 
@@ -211,7 +218,7 @@ public sealed class LiveMapWindow : Window
     {
         _src = src;
         _pick = pick;
-        Title = Lang.T(pick != null ? "발견물 자리 고르기" : "세계지도");
+        Title = Lang.T(pick != null ? "발견물 자리 고르기" : src.CityClick != null ? "시세 — 도시 고르기" : "세계지도");
         Width = pick != null ? 1200 : 900;
         Height = pick != null ? 800 : 620;
         MinWidth = 420;
@@ -338,7 +345,8 @@ public sealed class LiveMapWindow : Window
         _yetButton = Button("", () => { GameSettings.DiscoveryMapYet = !GameSettings.DiscoveryMapYet; Refresh(); }, 140);
         bar.Children.Add(_yetButton);
         _cityButton = Button("", () => { GameSettings.DiscoveryMapCities = !GameSettings.DiscoveryMapCities; Refresh(); }, 110);
-        bar.Children.Add(_cityButton);
+        // 도시 고르기에서는 도시를 늘 보이니 켜고 끄는 단추가 없다.
+        if (src.CityClick == null) bar.Children.Add(_cityButton);
         _followButton = Button("", () => SetFollow(!GameSettings.LiveMapFollow), 130);
         if (pick == null)
         {
@@ -476,6 +484,18 @@ public sealed class LiveMapWindow : Window
         win.Show();
     }
 
+    /// <summary>
+    /// 도시 고르기로 띄운다 — 도시를 누를 때마다 <see cref="Source.CityClick"/> 를 부르고, 닫을 때까지 기다린다.
+    /// 늘 떠 있는 세계지도 창(<see cref="Toggle"/>)과는 따로 연다.
+    /// </summary>
+    internal static void ShowCityPick(Window owner, Source src)
+    {
+        var win = new LiveMapWindow(src);
+        if (GameWindow.Alive(owner) is { } alive) win.Owner = alive;
+        win.Loaded += (_, _) => win._status.Text = Lang.T("시세를 볼 도시를 누르세요 — 휠로 키우고 줄이며, 끌어서 옮깁니다.");
+        win.ShowDialog();
+    }
+
     /// <summary>떠 있으면 닫는다 — 게임을 새로 불러올 때 따위.</summary>
     internal static void CloseOpen() => _open?.Close();
 
@@ -588,7 +608,7 @@ public sealed class LiveMapWindow : Window
         bool spots = GameSettings.LiveMapParchment ? GameSettings.DiscoveryMapSpots : GameSettings.LiveMapSpots;
         _spotLayer.Visibility = spots ? Visibility.Visible : Visibility.Collapsed;
         _yetLayer.Visibility = GameSettings.DiscoveryMapYet ? Visibility.Visible : Visibility.Collapsed;
-        _cityLayer.Visibility = GameSettings.DiscoveryMapCities ? Visibility.Visible : Visibility.Collapsed;
+        _cityLayer.Visibility = GameSettings.DiscoveryMapCities || CityPicking ? Visibility.Visible : Visibility.Collapsed;
         RefreshButtons();
         Apply();
     }
@@ -739,6 +759,7 @@ public sealed class LiveMapWindow : Window
         {
             Mark(_cityLayer, c.X, c.Y, c.Library ? 9 : 7, CityInk, c.Library ? $"{Lang.T(c.Name)} ({Lang.T("도서관")})" : Lang.T(c.Name), Lang.T(c.Name));
             if (_src.SailToCity is { } sail && !Picking) AttachCityMenu(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, sail);
+            if (_src.CityClick is { } click && !Picking) AttachCityClick(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, click);
         }
         foreach (var s in spots)
             Mark(s.Found ? _spotLayer : _yetLayer, s.X, s.Y, 7, s.Found ? Found : Yet, Lang.T(s.Name), Lang.T(s.Name),
@@ -761,6 +782,24 @@ public sealed class LiveMapWindow : Window
         dot.ContextMenu = menu;
         tag.IsHitTestVisible = true;   // 이름표를 눌러도 메뉴가 뜨게(도시만 — 발견물 이름표는 그대로 손을 안 받는다)
         tag.ContextMenu = menu;
+        tag.Cursor = Cursors.Hand;
+        dot.Cursor = Cursors.Hand;
+    }
+
+    /// <summary>
+    /// 도시 고르기 — 도시 점 · 이름표를 왼쪽 단추로 누르면 그 도시를 넘긴다. 누름을 여기서 받아 지도 끌기로 새지 않게 하고,
+    /// 넘기는 것은 누름이 끝난 뒤에 한다(그 손이 창을 띄워도 마우스 잡기가 꼬이지 않게).
+    /// </summary>
+    private void AttachCityClick(FrameworkElement dot, TextBlock tag, double x, double y, Action<Window, double, double> click)
+    {
+        void Down(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            Dispatcher.BeginInvoke(() => click(this, x, y));
+        }
+        dot.MouseLeftButtonDown += Down;
+        tag.MouseLeftButtonDown += Down;
+        tag.IsHitTestVisible = true;
         tag.Cursor = Cursors.Hand;
         dot.Cursor = Cursors.Hand;
     }
@@ -883,7 +922,9 @@ public sealed class LiveMapWindow : Window
             return;
         }
         string where = _shipAt is { } me ? $"   ·   {Lang.T("내 위치")} {LatLon(me.X, me.Y)}" : "";
-        _status.Text = $"{Lang.T("배율")} x{Z:0.##}{where}   ·   " + Lang.T("휠 키우기·줄이기 · 끌어서 옮기기 · 노랑 지나온 뱃길 · 파랑 내 위치");
+        _status.Text = $"{Lang.T("배율")} x{Z:0.##}{where}   ·   " + Lang.T(CityPicking
+            ? "도시를 누르면 그 도시에서 비싸게 팔리는 교역품 · 휠 키우기·줄이기 · 끌어서 옮기기"
+            : "휠 키우기·줄이기 · 끌어서 옮기기 · 노랑 지나온 뱃길 · 파랑 내 위치");
     }
 
     /// <summary>마우스를 올린 칸 — 좌표 · 바다/육지 · 가까운 도시.</summary>
