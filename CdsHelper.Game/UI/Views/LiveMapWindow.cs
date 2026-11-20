@@ -384,6 +384,12 @@ public sealed class LiveMapWindow : Window
         var root = new DockPanel { LastChildFill = true, Margin = new Thickness(2) };
         DockPanel.SetDock(bar, Dock.Top);
         root.Children.Add(bar);
+        // 해역 탭 — 누르면 그 바다가 화면에 꽉 차게 옮기고 키운다(요청).
+        var regions = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 4) };
+        foreach (var (name, x1, y1, x2, y2) in Regions)
+            regions.Children.Add(Button(name, () => ShowRegion(x1, y1, x2, y2), 110));
+        DockPanel.SetDock(regions, Dock.Top);
+        root.Children.Add(regions);
         var foot = new StackPanel();
         foot.Children.Add(_hover);
         foot.Children.Add(_status);
@@ -841,6 +847,40 @@ public sealed class LiveMapWindow : Window
         }
         e.Handled = true;
         Apply();
+    }
+
+    /// <summary>
+    /// 해역 탭 — 이름과 그 바다를 덮는 칸 범위(지도 2500x1250). 범위는 도시 자리로 잡았다 —
+    /// 북유럽(런던 · 베르겐 · 스톡홀름), 지중해(리스본~이스탄불 · 알렉산드리아), 동남아시아(말라카 · 암보이나),
+    /// 동아시아(북경 · 한양 · 나가사키), 아메리카(베라크루스 · 아바나 · 리마 · 부에노스아이레스),
+    /// 아프리카(세우타~루안다 · 소팔라), 인도양(모잠비크 · 아덴 · 호르무즈 · 캘리컷 · 말라카).
+    /// </summary>
+    private static readonly (string Name, double X1, double Y1, double X2, double Y2)[] Regions =
+    [
+        ("북유럽", 1150, 150, 1520, 310),
+        ("지중해", 1160, 300, 1500, 430),
+        ("동남아시아", 1890, 500, 2250, 720),
+        ("동아시아", 1950, 290, 2260, 530),
+        ("아메리카", 500, 380, 1060, 900),
+        ("아프리카", 1150, 370, 1600, 900),
+        ("인도양", 1480, 400, 1990, 790),
+    ];
+
+    /// <summary>그 범위가 화면에 다 들어가는 가장 큰 배율로 키우고 가운데에 둔다. 따라가기는 끈다(배로 되돌아가지 않게).</summary>
+    private void ShowRegion(double x1, double y1, double x2, double y2)
+    {
+        if (Follow) SetFollow(false);
+        int fit = 0;
+        for (int i = 0; i < Zooms.Length; i++)
+            if ((x2 - x1) * Zooms[i] <= ViewW && (y2 - y1) * Zooms[i] <= ViewH) fit = i;
+        _zoom = fit;
+        CenterOn((x1 + x2) / 2, (y1 + y2) / 2);
+    }
+
+    /// <summary>화면 밖 시험(<c>CDS_MAPREGION=&lt;번호&gt;</c>) — 그 해역 탭을 누른 것처럼.</summary>
+    internal void ShowRegionForTest(int index)
+    {
+        if (index >= 0 && index < Regions.Length) ShowRegion(Regions[index].X1, Regions[index].Y1, Regions[index].X2, Regions[index].Y2);
     }
 
     private void CenterOn(double x, double y, bool apply = true)

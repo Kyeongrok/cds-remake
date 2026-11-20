@@ -203,6 +203,13 @@ public static class OffscreenHarness
                     window.OpenLiveMapForTest();
                     foreach (Window w in window.OwnedWindows)
                         if (w is LiveMapWindow) { w.Left = window.Left + 60; w.Top = window.Top + 60; }
+                    // CDS_MAPREGION=<번호> — 그 해역 탭을 누른 것처럼(창이 다 그려진 뒤).
+                    if (int.TryParse(Environment.GetEnvironmentVariable("CDS_MAPREGION"), out int region))
+                        window.Dispatcher.BeginInvoke(() =>
+                        {
+                            foreach (Window w in window.OwnedWindows)
+                                if (w is LiveMapWindow map) map.ShowRegionForTest(region);
+                        }, DispatcherPriority.ApplicationIdle);
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=cityprice:<도시 번호> — 매입 정보 「시세」에서 그 도시를 누른 창 · citypick — 그 도시 고르기 지도.
             if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } priceDialog && (priceDialog is "citypick" or "cargo" || priceDialog.StartsWith("cityprice:")))
