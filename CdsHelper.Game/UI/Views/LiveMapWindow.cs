@@ -777,6 +777,8 @@ public sealed class LiveMapWindow : Window
         {
             string said = sail(x, y);
             if (said.Length > 0) NoticeDialog.Show(this, said);
+            // 걸렸으면 지도를 닫는다 — 떠 있으면 지도에 가려 곧바로 떠나는 것이 안 보인다(요청).
+            else { var owner = Owner; Close(); owner?.Activate(); }
         };
         var menu = new ContextMenu { Items = { go } };
         dot.ContextMenu = menu;
