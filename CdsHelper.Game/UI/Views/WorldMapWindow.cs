@@ -974,6 +974,7 @@ public sealed class WorldMapWindow : Window
         LiveMapWindow.ShowCityPick(owner, LiveSource() with
         {
             SailToCity = null,
+            CityPrices = null,
             CityClick = (map, x, y) =>
             {
                 int city = CityAtCell(x, y);
@@ -1026,7 +1027,12 @@ public sealed class WorldMapWindow : Window
             IsLand: _host.IsLandCell,
             Cities: KnownCityMarks,
             Spots: Spots,
-            SailToCity: SailToCityAt);
+            SailToCity: SailToCityAt,
+            CityPrices: (map, x, y) =>
+            {
+                int city = CityAtCell(x, y);
+                if (city >= 0) CityPriceDialog.Show(map, _game, city);
+            });
     }
 
     /// <summary>가로로 이어진 칸 자리를 0~2500 으로 접는다.</summary>
@@ -8872,7 +8878,7 @@ public sealed class WorldMapWindow : Window
     internal void OpenLiveMapForTest() => ShowLiveMap();
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=cityprice:&lt;도시&gt;</c>) — 매입 정보 「시세」에서 그 도시를 누른 창. 닫힐 때까지 돌아오지 않는다.</summary>
-    internal void CityPriceForTest(int city, bool sold = false) => CityPriceDialog.Show(this, _game, city, sold);
+    internal void CityPriceForTest(int city, bool sold = false, int sourcesOf = -1) => CityPriceDialog.Show(this, _game, city, sold, sourcesOf);
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=citypick</c>) — 매입 정보 「시세」의 도시 고르기 지도. 닫힐 때까지 돌아오지 않는다.</summary>
     internal void CityPickForTest() => ShowCityPrices(this);

@@ -223,6 +223,8 @@ public static class OffscreenHarness
                     if (priceDialog == "citypick") window.CityPickForTest();
                     else if (priceDialog == "cargo") window.CargoForTest();
                     else if (priceDialog.StartsWith("citysold:") && int.TryParse(priceDialog[9..], out int soldCity)) window.CityPriceForTest(soldCity, sold: true);
+                    else if (priceDialog[10..].Split(':') is [var cityText, var kindText] && int.TryParse(cityText, out int srcCity) && int.TryParse(kindText, out int srcKind))
+                        window.CityPriceForTest(srcCity, sourcesOf: srcKind);   // cityprice:<도시>:<교역품> — 그 교역품을 파는 도시
                     else if (int.TryParse(priceDialog[10..], out int city)) window.CityPriceForTest(city);
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=nav — 네비게이션 창(목적지 도시 고르기)을 띄운다.

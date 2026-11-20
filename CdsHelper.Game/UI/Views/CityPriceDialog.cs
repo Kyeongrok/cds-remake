@@ -93,13 +93,52 @@ internal sealed class CityPriceDialog : InfoDialog
             for (int i = 0; i < ranked.Count; i++)
             {
                 var (goods, price) = ranked[i];
-                body.Children.Add(Line($"{i + 1}", game.ItemPictures?.TryGetImage(goods.Pic), goods.Name, game.Goods!.CategoryName(goods.Category), $"{price}닢",
-                                       held.Contains(goods.Id) ? "싣고 있음" : ""));
+                int kind = goods.Id, sell = price;
+                body.Children.Add(Clickable(Line($"{i + 1}", game.ItemPictures?.TryGetImage(goods.Pic), goods.Name, game.Goods!.CategoryName(goods.Category), $"{price}닢",
+                                                 held.Contains(goods.Id) ? "싣고 있음" : ""), () => ShowSources(kind, sell)));
             }
             body.Children.Add(Gap(6));
-            body.Children.Add(Label("이 도시 교역소에 팔 때 받는 지금 시세입니다."));
+            body.Children.Add(Label("이 도시 교역소에 팔 때 받는 지금 시세입니다. 교역품을 누르면 파는 도시가 나옵니다."));
             body.Children.Add(Gap(8));
         }
+    }
+
+    /// <summary>
+    /// 그 교역품을 <b>파는 도시</b>와 구입가 — 싼 차례(요청). 아는 도시 가운데 교역소가 그것을 파는 곳만이고(교역소 매매 창과 같은 줄,
+    /// <see cref="TradePost.RowsOf"/>), 끝 칸은 이 도시에서 팔 때의 한 통 차익이다. 「시세」 단추로 돌아간다.
+    /// </summary>
+    private void ShowSources(int kind, int sellHere)
+    {
+        string goods = _post.NameOf(kind);
+        if (!Head("파는 도시")) return;
+        var player = _game.Player;
+        var sources = Enumerable.Range(0, CityExeTable.Count)
+            .Where(c => _game.CityVisible(c) && (_game.CityRows?.HasBuilding(c, TradePostCode) ?? true))
+            .SelectMany(c => _post.RowsOf(player, c).Where(r => r.Kind == kind).Select(r => (City: c, r.Price, Special: r.Cell == TradePost.SpecialCell)))
+            .OrderBy(r => r.Price).ThenBy(r => r.City)
+            .Take(Top).ToList();
+        _page.Children.Add(Label($"{goods} — {_game.CityName(_city)}{Lang.T("에서 팔면")} {sellHere}닢"));
+        _page.Children.Add(Gap(6));
+        _page.Children.Add(Line("순위", null, "도시", "문화권", "구입가", "차익"));
+        for (int i = 0; i < sources.Count; i++)
+        {
+            var (city, price, special) = sources[i];
+            string culture = _game.CultureOf(city);
+            _page.Children.Add(Line($"{i + 1}", null, _game.CityName(city) + (special ? "  ★" : ""), culture.Length > 0 ? Lang.T(culture) : "",
+                                    $"{price}닢", $"{sellHere - price}닢"));
+        }
+        if (sources.Count == 0) _page.Children.Add(Label("아는 도시 가운데 이것을 파는 곳이 없습니다."));
+        _page.Children.Add(Gap(6));
+        _page.Children.Add(Label("아는 도시 교역소에서 살 때 내는 지금 값입니다. ★ 는 특산품으로 파는 곳입니다."));
+        _page.Children.Add(Gap(8));
+    }
+
+    /// <summary>줄을 누르면 그 일을 한다 — 손 모양 커서. 누름은 여기서 받아 창 끌기로 새지 않게 한다.</summary>
+    private static UIElement Clickable(UIElement line, Action run)
+    {
+        var row = new Border { Child = line, Background = System.Windows.Media.Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
+        row.MouseLeftButtonDown += (_, e) => { e.Handled = true; run(); };
+        return row;
     }
 
     /// <summary>순위 · 교역품 · 분류 · 단가 · 싣고 있는지 한 줄. 단가는 오른쪽으로 붙인다.</summary>
@@ -127,12 +166,13 @@ internal sealed class CityPriceDialog : InfoDialog
     }
 
     /// <summary>그 도시의 시세 창을 띄운다 — 교역품 표를 못 읽은 게임이면 안 뜬다.</summary>
-    public static void Show(Window owner, Engine.Game game, int city, bool sold = false)
+    public static void Show(Window owner, Engine.Game game, int city, bool sold = false, int sourcesOf = -1)
     {
         if (game.Trade is not { } trade || game.Goods is not { } goods) return;
         var post = new TradePost(trade, goods, game.Rates, game.CityRows, game.Nations, game.Discoveries?.Table);
         var dialog = new CityPriceDialog(game, post, city) { Owner = owner };
         if (sold) dialog.ShowSold();
+        if (sourcesOf >= 0) dialog.ShowSources(sourcesOf, post.SellPrice(game.Player, city, sourcesOf));
         dialog.ShowDialog();
     }
 }

@@ -99,7 +99,10 @@ public sealed class LiveMapWindow : Window
         Func<IReadOnlyList<(string Name, double X, double Y, bool Library)>> Cities,
         Func<IReadOnlyList<(string Name, double X, double Y, bool Found)>> Spots,
         Func<double, double, string>? SailToCity = null,
-        Action<Window, double, double>? CityClick = null);
+        Action<Window, double, double>? CityClick = null,
+        Action<Window, double, double>? CityPrices = null);
+
+    // CityPrices — 도시 오른쪽 단추 메뉴의 「시세」(요청). 그 도시의 시세 · 판매 물품 창을 띄운다.
 
     // CityClick — 도시 고르기로 띄운 창(ShowCityPick)에서 도시 점 · 이름을 왼쪽 단추로 누르면 부른다(지도 창, 도시 칸 자리).
     // 매입 정보의 「시세」가 그 도시에서 비싸게 팔리는 교역품을 띄우는 데 쓴다.
@@ -764,7 +767,7 @@ public sealed class LiveMapWindow : Window
         foreach (var c in cities)
         {
             Mark(_cityLayer, c.X, c.Y, c.Library ? 9 : 7, CityInk, c.Library ? $"{Lang.T(c.Name)} ({Lang.T("도서관")})" : Lang.T(c.Name), Lang.T(c.Name));
-            if (_src.SailToCity is { } sail && !Picking) AttachCityMenu(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, sail);
+            if ((_src.SailToCity != null || _src.CityPrices != null) && !Picking) AttachCityMenu(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y);
             if (_src.CityClick is { } click && !Picking) AttachCityClick(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, click);
         }
         foreach (var s in spots)
@@ -776,17 +779,28 @@ public sealed class LiveMapWindow : Window
     /// 도시 점 · 이름표에 오른쪽 단추 메뉴 「자동이동」을 단다 — 고르면 네비게이션에서 그 도시를 고른 것처럼(가장 빠른 길) 자동이동이 걸린다.
     /// 못 걸었으면(도시 안에 함대가 없다 · 바닷길이 없다 따위) 그 까닭을 안내 창으로 띄운다 — 칸 정보 줄은 꺼 두고 시작해 안 보일 수 있다.
     /// </summary>
-    private void AttachCityMenu(FrameworkElement dot, TextBlock tag, double x, double y, Func<double, double, string> sail)
+    private void AttachCityMenu(FrameworkElement dot, TextBlock tag, double x, double y)
     {
-        var go = new MenuItem { Header = Lang.T("자동이동") };
-        go.Click += (_, _) =>
+        var menu = new ContextMenu();
+        if (_src.SailToCity is { } sail)
         {
-            string said = sail(x, y);
-            if (said.Length > 0) NoticeDialog.Show(this, said);
-            // 걸렸으면 지도를 닫는다 — 떠 있으면 지도에 가려 곧바로 떠나는 것이 안 보인다(요청).
-            else { var owner = Owner; Close(); owner?.Activate(); }
-        };
-        var menu = new ContextMenu { Items = { go } };
+            var go = new MenuItem { Header = Lang.T("자동이동") };
+            go.Click += (_, _) =>
+            {
+                string said = sail(x, y);
+                if (said.Length > 0) NoticeDialog.Show(this, said);
+                // 걸렸으면 지도를 닫는다 — 떠 있으면 지도에 가려 곧바로 떠나는 것이 안 보인다(요청).
+                else { var owner = Owner; Close(); owner?.Activate(); }
+            };
+            menu.Items.Add(go);
+        }
+        // 「시세」 — 그 도시에서 비싸게 팔리는 교역품 · 판매 물품 창(지도는 그대로 둔다).
+        if (_src.CityPrices is { } prices)
+        {
+            var price = new MenuItem { Header = Lang.T("시세") };
+            price.Click += (_, _) => prices(this, x, y);
+            menu.Items.Add(price);
+        }
         dot.ContextMenu = menu;
         tag.IsHitTestVisible = true;   // 이름표를 눌러도 메뉴가 뜨게(도시만 — 발견물 이름표는 그대로 손을 안 받는다)
         tag.ContextMenu = menu;
