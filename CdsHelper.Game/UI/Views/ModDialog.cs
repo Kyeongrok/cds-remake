@@ -509,6 +509,13 @@ public sealed class ModDialog : GameWindow
         if (Engine.HardcoreRules.Current?.Invoke() is { Hardcore: true }) autoSave.IsEnabled = false;
         save.Children.Add(autoSave);
 
+        // 세이브 칸 고르기 — 저장할 때 열 칸 가운데 적을 칸을 고른다(요청).
+        save.Children.Add(Toggle("세이브 칸 고르기", GameSettings.SaveSlotPick,
+            on => GameSettings.SaveSlotPick = on,
+            "원본에 없는 것입니다 — 저장할 때 1~10번 칸 가운데 적을 칸을 고릅니다. 찬 칸을 고르면 겹쳐 쓸지 한 번 더 묻습니다."
+            + " 고른 칸은 오래돼도 지워지지 않아, 중요한 이벤트 앞을 남겨 두고 나중에 「로드」로 다시 볼 수 있습니다."
+            + " 끄면 예전처럼 저장할 때마다 새 칸에 적고, 10개를 넘으면 가장 오래된 것부터 지웁니다."));
+
         // 커스텀 BGM — 등록한 곡으로 갈아 끼운다. 곡 등록 창은 햄버거에 있던 것을 이 줄 밑 단추로 옮겼다.
         general.Children.Add(CustomBgmControls());
         general.Children.Add(CustomSfxControls());

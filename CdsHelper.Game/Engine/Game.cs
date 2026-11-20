@@ -949,11 +949,12 @@ public sealed class Game
     }
 
     /// <summary>지금 판을 적는다. 적히는 자리는 <see cref="GameSave"/> 참고.</summary>
-    public string Save(bool suspended = false)
+    /// <param name="slot">고른 칸(1부터, 모드 「세이브 칸 고르기」). 0 이면 돌려 쓰는 칸이다.</param>
+    public string Save(bool suspended = false, int slot = 0)
     {
         BeforeSave?.Invoke();
         Aging.OnSave(Player, Random);   // 원본은 제독을 적는 첫머리에서 늙는다(0x0047C680)
-        string error = GameSave.Save(Player, suspended);
+        string error = GameSave.Save(Player, suspended, slot: slot);
         // 적고 나면 「아직 저장 안 됨」이 풀린다(0x00479174 · 0x004794A2).
         if (error.Length == 0) Unsaved = false;
         return error;

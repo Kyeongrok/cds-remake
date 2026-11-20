@@ -3922,6 +3922,7 @@ public sealed class WorldMapWindow : Window
                         : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } full ? full : "이름 없는 제독";
             if (d.Hardcore == true) name += "(H)";   // 하드코어 주인공 — 게임 오버가 되면 이 세이브가 지워진다
             if (GameSave.IsSuspendFile(s.File)) name += Lang.T("(중단)");   // 게임 중단으로 적은 것 — 열면 지워진다
+            if (GameSave.SlotOf(s.File) is > 0 and var no) name = $"[{no}] {name}";   // 고른 칸(모드 「세이브 칸 고르기」)
             string city = string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName;
             return Row(name, city, Day(d), $"{d.SavedAt:yyyy-MM-dd HH:mm}", $"{d.Discoveries?.Count ?? 0,3}개");
         }).ToList();
@@ -3937,6 +3938,7 @@ public sealed class WorldMapWindow : Window
                            : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } whole ? whole : "이름 없는 제독";
                 if (d.Hardcore == true) who += "(H)";
                 if (GameSave.IsSuspendFile(s.File)) who += Lang.T("(중단)");
+                if (GameSave.SlotOf(s.File) is > 0 and var no) who = $"[{no}] {who}";
                 return new[]
                 {
                     who, string.IsNullOrEmpty(d.CityName) ? "바다" : d.CityName, Day(d),

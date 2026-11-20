@@ -495,6 +495,9 @@ public sealed class GameSettingsData
     /// </summary>
     public bool AutoSaveOnPort { get; set; }
 
+    /// <summary>저장할 때 열 칸 가운데 적을 칸을 고를지. 게임에는 없는 것이라 꺼 두고 시작한다(요청).</summary>
+    public bool SaveSlotPick { get; set; }
+
     /// <summary>햄버거에 「여급 수첩」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowBarmaidBookMenu { get; set; }
 
@@ -1978,6 +1981,13 @@ public static class GameSettings
     {
         get => Get(d => d.AutoSaveOnPort);
         set => Set(d => d.AutoSaveOnPort = value);
+    }
+
+    /// <summary>세이브 칸 고르기 — 저장할 때 1~10 칸 가운데 적을 칸을 고른다(GameSave.SlotPath). 돌려 쓰는 칸과 달리 안 지워진다.</summary>
+    public static bool SaveSlotPick
+    {
+        get => Get(d => d.SaveSlotPick);
+        set => Set(d => d.SaveSlotPick = value);
     }
 
     /// <summary>

@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
+using CdsHelper.Game.Engine;
+using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Game.Engine.Menu;
 using CdsHelper.Game.Engine.Models;
 
@@ -76,12 +80,49 @@ internal static class GameSystemMenu
     {
         // 원본은 「데이터를 겹쳐 쓰겠습니다」다 — 세이브가 한 파일이라 앞의 것이 사라진다. 우리는 지난 것을
         // 열 칸까지 남기므로(GameSave.ManualSlots) 겹쳐 쓴다고 하지 않는다.
-        if (!ConfirmDialog.Ask(owner, "데이터를 저장하겠습니다. 좋습니까?")) return false;
+        // 모드 「세이브 칸 고르기」 — 열 칸 가운데 적을 칸을 고르고, 찬 칸이면 덮을지 한 번 더 묻는다(요청).
+        int slot = 0;
+        if (GameSettings.SaveSlotPick)
+        {
+            slot = PickSlot(owner);
+            if (slot <= 0) return false;
+            if (File.Exists(GameSave.SlotPath(slot))
+                && !ConfirmDialog.Ask(owner, Lang.T($"{slot}번 칸에 겹쳐 쓰겠습니다. 좋습니까?"))) return false;
+        }
+        else if (!ConfirmDialog.Ask(owner, "데이터를 저장하겠습니다. 좋습니까?")) return false;
 
-        string error = game.Save();
+        string error = game.Save(slot: slot);
         ConfirmDialog.Tell(owner, error.Length == 0 ? "데이터를 저장했습니다."
                                                     : $"기록하지 못했다 — {error}");
         return true;
+    }
+
+    /// <summary>
+    /// 세이브 칸 1~10 을 늘어놓고 적을 칸을 고르게 한다 — 모드 「세이브 칸 고르기」. 원본에 없는 창이다.
+    /// </summary>
+    /// <returns>고른 칸 번호(1부터). 그만두었으면 0.</returns>
+    private static int PickSlot(Window owner)
+    {
+        static string Row(string no, string name, string city, string day, string at) =>
+            GameUi.Pad(no, 5) + GameUi.Pad(name, 28) + GameUi.Pad(city, 12) + GameUi.Pad(day, 18) + at;
+
+        var rows = GameSave.PickedSlots().Select((d, i) =>
+        {
+            string no = $"{i + 1,2}";
+            if (d is null)
+                return Row(no, File.Exists(GameSave.SlotPath(i + 1)) ? Lang.T("(못 읽음)") : Lang.T("(빈 칸)"), "", "", "");
+            string name = !string.IsNullOrEmpty(d.Name) ? d.Name
+                        : $"{d.Given} {d.Family}".Trim() is { Length: > 0 } full ? full : Lang.T("이름 없는 제독");
+            if (d.Hardcore == true) name += "(H)";
+            string city = string.IsNullOrEmpty(d.CityName) ? Lang.T("바다") : d.CityName;
+            string day = d.Date == default ? "-" : Lang.T($"{d.Date.Year}년 {d.Date.Month,2}월 {d.Date.Day,2}일");
+            return Row(no, name, city, day, $"{d.SavedAt:yyyy-MM-dd HH:mm}");
+        }).ToList();
+
+        int at = ListPickDialog.Pick(owner, rows, Lang.T("저장할 칸"), "",
+                                     header: Row(Lang.T("칸"), Lang.T("캐릭터"), Lang.T("도시"), Lang.T("날짜"), Lang.T("저장한 시각")),
+                                     listWidth: 680, preselect: 0);
+        return at >= 0 && at < rows.Count ? at + 1 : 0;
     }
 
     /// <summary>

@@ -165,6 +165,39 @@ public static class GameSave
     /// <summary>손으로 적은 세이브를 들고 있는 칸 수 — 다섯이던 것을 열로 늘렸다.</summary>
     public const int ManualSlots = 10;
 
+    /// <summary>
+    /// <b>고른 칸</b>(모드 「세이브 칸 고르기」)을 두는 폴더 — 돌려 쓰는 <see cref="ManualDirectory"/> 와 따로 둔다.
+    /// </summary>
+    /// <remarks>
+    /// 원본에 없는 것이다(요청). 칸마다 이름이 정해져 있어(<c>SLOT_01.CDS</c>~) 다시 적으면 그 칸만 덮이고,
+    /// 오래됐다고 지워지지 않는다 — 공주 구출 같은 장면 앞을 남겨 두고 다시 볼 수 있게.
+    /// </remarks>
+    public static string SlotDirectory => UserDataFolder.Combine("slot");
+
+    /// <summary>고를 수 있는 칸 수.</summary>
+    public const int PickSlots = 10;
+
+    /// <summary>고른 칸 <paramref name="slot"/>(1부터)의 파일 자리.</summary>
+    public static string SlotPath(int slot) => System.IO.Path.Combine(SlotDirectory, $"SLOT_{slot:00}.CDS");
+
+    /// <summary>파일이 고른 칸이면 그 번호(1부터), 아니면 0.</summary>
+    public static int SlotOf(string? file)
+    {
+        if (string.IsNullOrEmpty(file)) return 0;
+        for (int i = 1; i <= PickSlots; i++)
+            if (string.Equals(System.IO.Path.GetFullPath(file), System.IO.Path.GetFullPath(SlotPath(i)),
+                              StringComparison.OrdinalIgnoreCase))
+                return i;
+        return 0;
+    }
+
+    /// <summary>고른 칸 1~<see cref="PickSlots"/> 를 차례로 — 비었거나 못 읽는 칸은 null.</summary>
+    public static List<Data?> PickedSlots() =>
+        [.. Enumerable.Range(1, PickSlots).Select(i => File.Exists(SlotPath(i)) ? Load(SlotPath(i)) : null)];
+
+    private static List<string> SlotFiles() =>
+        [.. Enumerable.Range(1, PickSlots).Select(SlotPath).Where(File.Exists)];
+
     private static string NewManualPath() => System.IO.Path.Combine(
         ManualDirectory, $"SAVE_{DateTime.Now:yyyyMMdd_HHmmss_fff}.CDS");
 
@@ -191,7 +224,7 @@ public static class GameSave
     /// </remarks>
     public static List<AutoSlot> ManualSaves()
     {
-        var slots = Slots(ManualFiles());
+        var slots = Slots(ManualFiles().Concat(SlotFiles()));
         if (Load() is { } latest && !slots.Any(s => s.Save.SavedAt == latest.SavedAt))
             slots = [.. slots.Append(new AutoSlot(Path, latest)).OrderByDescending(s => s.Save.SavedAt)];
         // 중단저장도 한 줄로 낸다 — 원본 로드는 이것부터 연다(0x00478ABD). 열고 나면 지워진다.
@@ -201,7 +234,8 @@ public static class GameSave
     }
 
     /// <summary>손으로 적은 세이브(중단저장 포함)가 하나라도 있는지 — 파일만 보고 열지는 않는다.</summary>
-    public static bool HasManualSave() => File.Exists(Path) || File.Exists(SuspendPath) || ManualFiles().Count > 0;
+    public static bool HasManualSave() =>
+        File.Exists(Path) || File.Exists(SuspendPath) || ManualFiles().Count > 0 || SlotFiles().Count > 0;
 
     /// <summary><see cref="ManualSlots"/> 개를 넘는 오래된 칸을 지운다. <see cref="Path"/> 는 안 건드린다.</summary>
     private static void PruneManualSaves()
@@ -289,7 +323,7 @@ public static class GameSave
         int gone = 0;
         // 손으로 적은 지난 칸(ManualDirectory)도 같이 걷는다 — 남기면 LOAD GAME 목록에서 은퇴한 제독이 되살아난다.
         // 중단저장(SAVEDATA.TMP)도 그 판 것이면 지운다 — 원본도 은퇴 · 삭제에서 함께 지운다(0x0045F909).
-        foreach (var slot in AutoSaves().Concat(Slots(ManualFiles())).Concat(Slots(File.Exists(SuspendPath) ? [SuspendPath] : [])))
+        foreach (var slot in AutoSaves().Concat(Slots(ManualFiles().Concat(SlotFiles()))).Concat(Slots(File.Exists(SuspendPath) ? [SuspendPath] : [])))
         {
             if (!Same(slot.Save)) continue;
             try { File.Delete(slot.File); gone++; }
@@ -472,7 +506,10 @@ public static class GameSave
     /// <param name="path">
     /// 적을 자리. 안 주면 <see cref="Path"/> 다 — <b>자동저장</b>만 <see cref="AutoPath"/> 를 준다.
     /// </param>
-    public static string Save(Player player, bool suspended = false, string? path = null)
+    /// <param name="slot">
+    /// 고른 칸(1부터, 모드 「세이브 칸 고르기」). 주면 돌려 쓰는 칸 대신 그 칸에 적는다 — <see cref="Path"/> 에도 함께 적는다.
+    /// </param>
+    public static string Save(Player player, bool suspended = false, string? path = null, int slot = 0)
     {
         // 하드코어 판이면 지금 켜 둔 모드를 적어 두고 봉인한다(HardcoreRules) — 끈 뒤에 적어도 한 번 켠 것은 남는다.
         HardcoreRules.Note(player);
@@ -670,7 +707,7 @@ public static class GameSave
             // 「가장 새 것」 자리를 덮기 전에, 그 자리에 있던 것이 지난 칸에 없으면 한 칸으로 옮겨 둔다 —
             // 칸이 생기기 전에 적은 세이브나, 딴 캐릭터를 남겨 둔 채 새 캐릭터가 처음 적을 때 앞의 것이 사라지지 않게.
             if (manual && Load() is { } before
-                && !Slots(ManualFiles()).Any(s => s.Save.SavedAt == before.SavedAt))
+                && !Slots(ManualFiles().Concat(SlotFiles())).Any(s => s.Save.SavedAt == before.SavedAt))
             {
                 try
                 {
@@ -695,11 +732,21 @@ public static class GameSave
                     DeleteSuspend();
                 try
                 {
-                    Directory.CreateDirectory(ManualDirectory);
-                    File.WriteAllText(NewManualPath(), json);
-                    PruneManualSaves();
+                    if (slot is < 1 or > PickSlots)
+                    {
+                        Directory.CreateDirectory(ManualDirectory);
+                        File.WriteAllText(NewManualPath(), json);
+                        PruneManualSaves();
+                    }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+                // 고른 칸 — 그 칸만 덮는다. 돌려 쓰는 칸에는 안 남긴다(같은 것이 두 줄로 나온다).
+                // 이것은 사람이 고른 자리라 못 적으면 까닭을 올린다.
+                if (slot is >= 1 and <= PickSlots)
+                {
+                    Directory.CreateDirectory(SlotDirectory);
+                    File.WriteAllText(SlotPath(slot), json);
+                }
             }
             return "";
         }
@@ -845,12 +892,13 @@ public static class GameSave
         try
         {
             var manual = Count(ManualFiles());
+            var picked = Count(SlotFiles());
             var autoFiles = new List<string>();
             if (Directory.Exists(AutoDirectory)) autoFiles.AddRange(Directory.GetFiles(AutoDirectory, "*.CDS"));
             if (File.Exists(AutoPath)) autoFiles.Add(AutoPath);
             var auto = Count(autoFiles);
             string Main(string file) => !File.Exists(file) ? "없음" : Load(file) != null ? "읽힘" : "못 읽음";
-            string line = $"SAVEDATA.CDS {Main(Path)} · save {manual.Read}/{manual.Files} · autosave {auto.Read}/{auto.Files}"
+            string line = $"SAVEDATA.CDS {Main(Path)} · save {manual.Read}/{manual.Files} · slot {picked.Read}/{picked.Files} · autosave {auto.Read}/{auto.Files}"
                         + $" · SAVEDATA.TMP {Main(SuspendPath)}";
             var errors = LoadErrorLines();
             if (errors.Count > 0) line += " · 못 읽은 것 " + string.Join(" | ", errors.Take(3));
