@@ -680,7 +680,9 @@ public sealed class TradePostDialog : GameWindow
         var b = GameUi.PushButton(text, run, width);
         b.Margin = new Thickness(2, 0, 0, 0);
         b.Padding = new Thickness(0);
-        if (b.Child is TextBlock t) t.FontSize = 12;
+        // 누르기 좋게 높이를 키운다(요청) — 글은 가운데에.
+        b.Height = 28;
+        if (b.Child is TextBlock t) { t.FontSize = 13; t.VerticalAlignment = VerticalAlignment.Center; }
         return b;
     }
 
