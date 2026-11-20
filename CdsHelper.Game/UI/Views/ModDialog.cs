@@ -755,6 +755,14 @@ public sealed class ModDialog : GameWindow
             $"항구·마을에 들어가고 나올 때 각각 지나는 날수. 원본 기본값 {GameSettings.DefaultPortDays}일입니다."
             + " 바꾼 값은 다음 출입부터 곧바로 듭니다."));
 
+        // 해상전 배속 — 포격 · 이동 · 백병전 몸짓을 빨리 돌린다(요청).
+        rows.Children.Add(Select("해상전 배속",
+            [.. GameSettings.SeaBattleSpeeds.Select((s, i) => i == 0 ? $"x{s} (원본)" : $"x{s}")],
+            GameSettings.SeaBattleSpeed,
+            i => GameSettings.SeaBattleSpeed = i,
+            "원본에 없는 것입니다 — 해상전에서 배가 움직이고 포를 쏘고 백병전을 벌이는 몸짓을 이 배수만큼 빨리 돌립니다."
+            + " 셈과 결과는 그대로이고, 바꾼 값은 해상전 중에도 곧바로 듭니다."));
+
         // 인물 이동 — 떠날지 굴리는 때와 확률. 원본은 매월 1일 5분의 1이다.
         // 첫 줄(0)이 원본 「매월 1일」이고, 그 뒤 줄 번호가 곧 날수다.
         character.Children.Add(Select("이동 주기",

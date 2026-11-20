@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CdsHelper.Game.Engine.Sea;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
@@ -959,7 +960,9 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         if (!_battle.Delegated) return;
         if (_autoTimer == null)
         {
-            _autoTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = AutoTurnPause };
+            // 배속이면 턴 사이 틈도 줄인다 — 되찾을 틈은 남게 0.2초 밑으로는 안 내린다.
+            var pause = TimeSpan.FromMilliseconds(Math.Max(200, AutoTurnPause.TotalMilliseconds / GameSettings.SeaBattleScale));
+            _autoTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = pause };
             _autoTimer.Tick += (_, _) =>
             {
                 _autoTimer.Stop();
@@ -1309,7 +1312,7 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
             Image? puff = null;
             while (true)
             {
-                double t = Math.Min(1, clock.Elapsed.TotalMilliseconds / BallFlight.TotalMilliseconds);
+                double t = Math.Min(1, clock.Elapsed.TotalMilliseconds * GameSettings.SeaBattleScale / BallFlight.TotalMilliseconds);
                 while (puffs < 3 && t >= puffs / 3.0)
                 {
                     if (puff != null) _fx.Children.Remove(puff);
@@ -1609,8 +1612,10 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
         if (image != null) _fx.Children.Remove(image);
     }
 
+    /// <remarks>모드 「해상전 배속」이면 기다림을 그 배수로 나눈다(요청) — 몸짓은 다 여기를 지난다.</remarks>
     private static void Wait(TimeSpan span)
     {
+        if (GameSettings.SeaBattleScale > 1) span /= GameSettings.SeaBattleScale;
         var frame = new DispatcherFrame();
         var timer = new DispatcherTimer(span, DispatcherPriority.Normal,
                                         (_, _) => frame.Continue = false, Dispatcher.CurrentDispatcher);

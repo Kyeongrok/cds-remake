@@ -7,6 +7,7 @@ using CdsHelper.Game.Engine;
 using CdsHelper.Game.Engine.Land;
 using CdsHelper.Game.Engine.Town;
 using CdsHelper.Game.Local.Helpers;
+using CdsHelper.Game.Local.Settings;
 using CdsHelper.Support.Local.Models;
 
 namespace CdsHelper.Game.UI.Views;
@@ -314,7 +315,10 @@ internal sealed class LandBattleScene : GameWindow
     }
 
     /// <summary>애니메이션을 끄면 한 줄씩 안 세우고 몰아서 낸다.</summary>
-    private bool _quick;
+    /// <remarks>
+    /// 고른 것을 기억해 다음 지상전도 그대로 연다(요청) — 예전에는 판마다 「O N」으로 돌아가 매번 다시 꺼야 했다.
+    /// </remarks>
+    private bool _quick = GameSettings.LandBattleQuick;
 
     /// <summary>
     /// 「애니메이션」 차림표 — 「O N」·「O F F」 두 줄뿐이다(<c>0x00449190</c>).
@@ -327,7 +331,7 @@ internal sealed class LandBattleScene : GameWindow
     private void Animation()
     {
         int pick = ChoiceDialog.Pick(this, "애니메이션", ["O N", "O F F"]);
-        if (pick >= 0) _quick = pick == 1;
+        if (pick >= 0) GameSettings.LandBattleQuick = _quick = pick == 1;
     }
 
     // ── 판 위의 손 — 0x00446A70 ─────────────────────────────────────────────────

@@ -501,6 +501,12 @@ public sealed class GameSettingsData
     /// <summary>저장할 때 열 칸 가운데 적을 칸을 고를지. 게임에는 없는 것이라 꺼 두고 시작한다(요청).</summary>
     public bool SaveSlotPick { get; set; }
 
+    /// <summary>지상전 「애니메이션」을 OFF 로 골라 두었는지 — 다음 지상전도 그대로 연다(요청).</summary>
+    public bool LandBattleQuick { get; set; }
+
+    /// <summary>해상전 몸짓 배속의 차례(<see cref="GameSettings.SeaBattleSpeeds"/>). 원본은 x1(요청).</summary>
+    public int SeaBattleSpeed { get; set; }
+
     /// <summary>햄버거에 「여급 수첩」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowBarmaidBookMenu { get; set; }
 
@@ -1998,6 +2004,26 @@ public static class GameSettings
     {
         get => Get(d => d.SaveSlotPick);
         set => Set(d => d.SaveSlotPick = value);
+    }
+
+    /// <summary>지상전 「애니메이션」 OFF — 지상전 차림표에서 고른 것을 기억한다(LandBattleScene).</summary>
+    /// <summary>해상전 몸짓 배속 — 포격 · 이동 · 백병전 몸짓의 기다림을 이만큼 줄인다(SeaCombatDialog.Wait).</summary>
+    public static readonly int[] SeaBattleSpeeds = [1, 2, 3, 4, 8];
+
+    /// <summary>해상전 배속 차례 — 0 이 원본 x1.</summary>
+    public static int SeaBattleSpeed
+    {
+        get => Math.Clamp(Get(d => d.SeaBattleSpeed), 0, SeaBattleSpeeds.Length - 1);
+        set => Set(d => d.SeaBattleSpeed = Math.Clamp(value, 0, SeaBattleSpeeds.Length - 1));
+    }
+
+    /// <summary>지금 고른 해상전 배수.</summary>
+    public static int SeaBattleScale => SeaBattleSpeeds[SeaBattleSpeed];
+
+    public static bool LandBattleQuick
+    {
+        get => Get(d => d.LandBattleQuick);
+        set => Set(d => d.LandBattleQuick = value);
     }
 
     /// <summary>
