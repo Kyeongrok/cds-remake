@@ -242,10 +242,7 @@ public sealed class GameSettingsData
     /// <summary>게임 띠(메뉴 줄 · 단추 · 상단 띠) 글자 크기(%). 100 이 원본이다.</summary>
     public int TextScale { get; set; } = 100;
     public string HintsKey { get; set; } = "H";
-    public string PersonKey { get; set; } = "C";
-
-    /// <summary>인물정보 단축키 기본을 X 에서 C 로 옮겼는지 — 옛 기본값 X 가 적힌 설정은 한 번 C 로 바꾼다(요청).</summary>
-    public bool PersonKeyMovedToC { get; set; }
+    public string PersonKey { get; set; } = "X";
     public string PatronKey { get; set; } = "P";
     public string CargoKey { get; set; } = "T";
 
@@ -655,13 +652,6 @@ public static class GameSettings
             if (File.Exists(FilePath))
             {
                 _data = JsonSerializer.Deserialize<GameSettingsData>(File.ReadAllText(FilePath)) ?? new();
-                // 인물정보 단축키 기본이 X → C 로 바뀌었다 — 옛 기본값 그대로면 한 번 옮긴다(손으로 고른 딴 글쇠는 그대로).
-                if (!_data.PersonKeyMovedToC)
-                {
-                    if (_data.PersonKey == "X") _data.PersonKey = "C";
-                    _data.PersonKeyMovedToC = true;
-                    Save();
-                }
                 return;
             }
 
@@ -1085,7 +1075,7 @@ public static class GameSettings
         set => Set(d => d.PatronKey = value);
     }
 
-    /// <summary><b>인물정보</b> 단축키. 기본은 <c>C</c> 다(예전 기본 X).</summary>
+    /// <summary><b>인물정보</b> 단축키. 기본은 <c>X</c> 다.</summary>
     public static string PersonKey
     {
         get => Get(d => d.PersonKey);
