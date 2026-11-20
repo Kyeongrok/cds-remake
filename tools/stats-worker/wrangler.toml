@@ -7,3 +7,8 @@ compatibility_date = "2026-10-01"
 binding = "DB"
 database_name = "cds-remake-stats"
 database_id = "561cea8a-128e-416b-b281-80e3886398c7"
+
+# 커스텀 발견물 공유 — .cdsdiscovery 파일(file:<uuid>)과 미리보기 그림(pic:<uuid>). 목록은 D1 shared_discoveries 표.
+[[kv_namespaces]]
+binding = "SHARES"
+id = "602cf4d1d43c49638bfd2696e8068abb"

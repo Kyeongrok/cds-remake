@@ -40,7 +40,7 @@ public static class BugReport
     /// <summary>보낸 결과.</summary>
     public enum Result { Sent, Later, NotThisBuild }
 
-    private static string Url
+    internal static string Url
     {
         get
         {

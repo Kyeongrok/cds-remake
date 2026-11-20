@@ -91,7 +91,7 @@ public sealed class UserDiscoveryDialog : GameWindow
 
     /// <summary>칸을 고치는 단추들 — 예제 · 잠긴 것을 볼 때 끈다.</summary>
     private readonly List<Button> _editors = [];
-    private readonly Button _save, _remove, _export, _unlock, _unlockDrop;
+    private readonly Button _save, _remove, _export, _upload, _unlock, _unlockDrop;
 
     private UserDiscoveries.Entry? _editing;
     private (uint[] Bgra, int Width, int Height)? _newPicture;
@@ -223,6 +223,13 @@ public sealed class UserDiscoveryDialog : GameWindow
         bar.Children.Add(_remove);
         bar.Children.Add(_export);
         bar.Children.Add(Push("불러오기…", Import));
+        // 클라우드 공유 — 받는 곳이 있는 판(릴리즈)만 단추를 낸다.
+        _upload = Push("클라우드에 올리기…", Upload);
+        if (DiscoveryShare.Available)
+        {
+            bar.Children.Add(_upload);
+            bar.Children.Add(Push("공유 발견물…", OpenShared));
+        }
 
         var body = new DockPanel();
         DockPanel.SetDock(_list, Dock.Left);
@@ -292,7 +299,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _category.IsEnabled = _land.IsEnabled = _open.IsEnabled = _license.IsEnabled = _hasHint.IsEnabled = on;
         foreach (var button in _editors) button.IsEnabled = on;
         _save.IsEnabled = on;
-        _remove.IsEnabled = _export.IsEnabled = !_example;
+        _remove.IsEnabled = _export.IsEnabled = _upload.IsEnabled = !_example;
 
         bool locked = _editing is { } e && UserDiscoveries.IsLocked(e);
         _password.IsEnabled = !_example;
@@ -773,6 +780,39 @@ public sealed class UserDiscoveryDialog : GameWindow
         Refresh(entry?.Uuid ?? _editing?.Uuid);
         RefreshItems(_itemEditing?.Uuid);
         Tell(message);
+    }
+
+    /// <summary>
+    /// 고른 발견물을 클라우드에 올린다 — 저장해 둔 것을 내보내기 파일로 묶어 올린다. 잠긴 것은 비밀번호를 풀어야 올린다
+    /// (남의 것을 불러와 제 것처럼 올리지 않게). 올리기 전 창이 정식 버전에 넣어도 좋은지 묻는다.
+    /// </summary>
+    private async void Upload()
+    {
+        if (_example || _editing is not { } e) return;
+        if (UserDiscoveries.All.All(l => l.Entry.Uuid != e.Uuid)) { Tell("먼저 「저장」해 주세요."); return; }
+        if (UserDiscoveries.IsLocked(e) && !_unlocked.Contains(e.Uuid)) { Tell("잠긴 발견물은 비밀번호로 잠금을 풀어야 올릴 수 있습니다."); return; }
+        _upload.IsEnabled = false;
+        try
+        {
+            Tell("공유 목록을 확인하는 중입니다…");
+            bool update = (await DiscoveryShare.List())?.Any(s => s.Uuid == e.Uuid && s.Mine) == true;
+            if (ShareUploadDialog.Ask(this, e.Name, e.License, update) is not { } official) { Tell(""); return; }
+            Tell("올리는 중입니다…");
+            Tell(await DiscoveryShare.Upload(e.Uuid, official) is { } why
+                ? why
+                : $"「{e.Name}」 을 클라우드에 올렸습니다 — 저장해 둔 내용으로 올렸습니다.");
+        }
+        finally { _upload.IsEnabled = !_example; }
+    }
+
+    /// <summary>「공유 발견물」 창 — 받아서 들인 것이 있으면 목록을 다시 읽는다.</summary>
+    private void OpenShared()
+    {
+        if (SharedDiscoveryDialog.Open(this, _game) is { } got)
+        {
+            Refresh(got);
+            RefreshItems(_itemEditing?.Uuid);
+        }
     }
 
     /// <summary>비밀번호로 잠금을 푼다 — 이 창을 연 동안만 풀려 있다.</summary>

@@ -11,11 +11,13 @@
 //   GET  /v1/bugs?since=<id>&status=new&order=desc   받은 버그 리포트(관리자만 — Authorization: Bearer <BUG_ADMIN_KEY>)
 //   POST /v1/bugs/<id>/status {status, note, reply}  버그 리포트의 상태를 바꾼다(관리자만) — reply 는 보낸 사람에게 보이는 답
 //   GET  /v1/bugs/mine?install=<id>                  그 설치가 보낸 리포트의 상태 · 답(게임의 「내 리포트」, 키 없이)
+//   /v1/shares …         커스텀 발견물 공유(올리기 · 목록 · 받기 · 지우기 · 신고) — src/shares.js
 //
 // 누가 보냈는지는 설치할 때 만든 무작위 번호(install)뿐이다. IP 는 적지 않는다. 이름은 주인공 이름(heroes · hardcore)만 받는다.
 
 import { DASHBOARD_HTML, EMBED_JS } from './dashboard.js';
 import { RANKING_HTML } from './ranking.js';
+import { routeShares } from './shares.js';
 
 const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
 // 차림표 줄(menu) · 들른 도시(city)는 이제 안 받는다 — 옛 판이 보내도 여기서 걸러진다. 표에 남은 옛 줄은 집계에도 안 든다.
@@ -484,6 +486,8 @@ async function route(request, env) {
       if (request.method === 'GET' && pathname === '/v1/ranking') return await getRanking(env);
       if (request.method === 'POST' && pathname === '/v1/bug') return await postBug(request, env);
       if (request.method === 'GET' && pathname === '/v1/bugs/mine') return await myBugs(url, env);
+      if (pathname === '/v1/shares' || pathname.startsWith('/v1/shares/'))
+        return await routeShares(request, env, url, { json, text, int, isId, isAdmin });
       if (pathname === '/v1/bugs' || pathname.startsWith('/v1/bugs/')) {
         if (!isAdmin(request, env)) return json({ error: 'unauthorized' }, 401);
         if (request.method === 'GET' && pathname === '/v1/bugs') return await listBugs(url, env);
