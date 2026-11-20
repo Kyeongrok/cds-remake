@@ -101,7 +101,10 @@ public sealed class LiveMapWindow : Window
         Func<double, double, string>? SailToCity = null,
         Action<Window, double, double>? CityClick = null,
         Action<Window, double, double>? CityPrices = null,
-        Func<double, double, string>? SailToSpot = null);
+        Func<double, double, string>? SailToSpot = null,
+        Func<(IReadOnlyList<(double X, double Y)> Route, int Index)?>? PlannedRoute = null);
+
+    // PlannedRoute — 자동항해 중이면 가고 있는 항로와 다음 꺾는 점 번호(요청). 남은 길을 지나온 뱃길과 다른 색으로 긋는다.
 
     // SailToSpot — 지도 빈 곳을 오른쪽 단추로 눌러 「여기로 자동이동」을 고르면 그 칸으로 자동항해를 건다(요청).
     // 받는 것은 칸 자리, 돌려주는 것은 못 걸었을 때의 까닭(걸렸으면 빈 글).
@@ -134,6 +137,8 @@ public sealed class LiveMapWindow : Window
     private static readonly Brush Mine = Frozen(Color.FromRgb(0x20, 0x60, 0xFF));
     private static readonly Brush CityInk = Frozen(Color.FromRgb(0xF0, 0x90, 0x10));
     private static readonly Brush TrailInk = Frozen(Color.FromArgb(0xE0, 0xFF, 0xE0, 0x40));
+    /// <summary>자동항해로 갈 길 — 지나온 뱃길(노랑)과 갈리게 하늘색 점선.</summary>
+    private static readonly Brush PlanInk = Frozen(Color.FromArgb(0xE8, 0x40, 0xE0, 0xFF));
     private static readonly Brush Shade = Frozen(Color.FromArgb(0xA0, 0, 0, 0));
     private static readonly Brush AreaInk = Frozen(Color.FromRgb(0x60, 0x90, 0xFF));
     private static readonly Brush AreaFill = Frozen(Color.FromArgb(0x38, 0x20, 0x50, 0xFF));
@@ -155,6 +160,8 @@ public sealed class LiveMapWindow : Window
     private readonly Image _base = new() { Width = WorldW, Height = WorldH };
     private readonly Image _detail = new() { Visibility = Visibility.Collapsed };
     private readonly System.Windows.Shapes.Path _trail = new() { Stroke = TrailInk, IsHitTestVisible = false };
+    private readonly System.Windows.Shapes.Path _plan = new() { Stroke = PlanInk, IsHitTestVisible = false };
+    private string _planKey = "";
     private readonly Canvas _cityLayer = new();
     private readonly Canvas _spotLayer = new();
     private readonly Canvas _yetLayer = new();
@@ -250,6 +257,7 @@ public sealed class LiveMapWindow : Window
         _world.Children.Add(_base);
         _world.Children.Add(_detail);
         _world.Children.Add(_trail);
+        _world.Children.Add(_plan);
         _world.Children.Add(_areaLayer);
         _world.Children.Add(_cityLayer);
         _world.Children.Add(_spotLayer);
@@ -672,6 +680,7 @@ public sealed class LiveMapWindow : Window
             _trailVersion = ShipTrail.Version;
             DrawTrail();
         }
+        if (!Picking) DrawPlan();
 
         // 표식 — 찾은 것이 바뀌거나 도시가 서면 다시 찍는다.
         var cities = _src.Cities();
@@ -761,6 +770,43 @@ public sealed class LiveMapWindow : Window
         Canvas.SetTop(_detail, y0);
         _detail.Visibility = Visibility.Visible;
         _detailFor = (x0, y0, cols, rows, scale);
+    }
+
+    /// <summary>
+    /// 자동항해로 갈 길 — 배 자리에서 다음 꺾는 점부터 끝까지(요청). 지도는 가로로 이어져 있어 칸을 0~2500 으로 접고,
+    /// 접힌 자리(반 바퀴 넘게 뛰는 곳)에서 선을 끊는다. 배 자리 · 꺾는 점이 그대로면 다시 긋지 않는다.
+    /// </summary>
+    private void DrawPlan()
+    {
+        var plan = _src.PlannedRoute?.Invoke();
+        string key = plan is { } p && _shipAt is { } s ? $"{p.Route.GetHashCode()}|{p.Index}|{s.X:0.0}|{s.Y:0.0}" : "";
+        if (key == _planKey) return;
+        _planKey = key;
+        if (key.Length == 0) { _plan.Data = null; return; }
+
+        static double Fold(double x) { x %= WorldW; return x < 0 ? x + WorldW : x; }
+        var (route, index) = plan!.Value;
+        var points = new List<Point> { new(_shipAt!.Value.X, _shipAt.Value.Y) };
+        for (int i = Math.Max(0, index); i < route.Count; i++) points.Add(new Point(Fold(route[i].X), route[i].Y));
+
+        var geo = new StreamGeometry();
+        using (var g = geo.Open())
+        {
+            var run = new List<Point>();
+            void Flush()
+            {
+                if (run.Count >= 2) { g.BeginFigure(run[0], false, false); g.PolyLineTo(run.Skip(1).ToList(), true, true); }
+                run.Clear();
+            }
+            foreach (var pt in points)
+            {
+                if (run.Count > 0 && Math.Abs(pt.X - run[^1].X) > WorldW / 2) Flush();
+                run.Add(pt);
+            }
+            Flush();
+        }
+        geo.Freeze();
+        _plan.Data = geo;
     }
 
     private void DrawTrail()
@@ -990,6 +1036,8 @@ public sealed class LiveMapWindow : Window
             Canvas.SetTop(_ship, at.Y - s / 2);
         }
         _trail.StrokeThickness = 2.5 / Z;
+        _plan.StrokeThickness = 2.5 / Z;
+        _plan.StrokeDashArray = [3, 2];
 
         if (_parchmentActual || Z < DetailFrom) _detail.Visibility = Visibility.Collapsed;
         else QueueDetail();
@@ -1002,7 +1050,7 @@ public sealed class LiveMapWindow : Window
         string where = _shipAt is { } me ? $"   ·   {Lang.T("내 위치")} {LatLon(me.X, me.Y)}" : "";
         _status.Text = $"{Lang.T("배율")} x{Z:0.##}{where}   ·   " + Lang.T(CityPicking
             ? "도시를 누르면 그 도시에서 비싸게 팔리는 교역품 · 휠 키우기·줄이기 · 끌어서 옮기기"
-            : "휠 키우기·줄이기 · 끌어서 옮기기 · 노랑 지나온 뱃길 · 파랑 내 위치");
+            : "휠 키우기·줄이기 · 끌어서 옮기기 · 노랑 지나온 뱃길 · 하늘색 갈 길 · 파랑 내 위치");
     }
 
     /// <summary>마우스를 올린 칸 — 좌표 · 바다/육지 · 가까운 도시.</summary>

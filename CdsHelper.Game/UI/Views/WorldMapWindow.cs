@@ -1030,6 +1030,7 @@ public sealed class WorldMapWindow : Window
             Spots: Spots,
             SailToCity: SailToCityAt,
             SailToSpot: SailToSpotAt,
+            PlannedRoute: () => _host.AutoRoute is { } route ? (route, _host.AutoWaypointIndex) : null,
             CityPrices: (map, x, y) =>
             {
                 int city = CityAtCell(x, y);
