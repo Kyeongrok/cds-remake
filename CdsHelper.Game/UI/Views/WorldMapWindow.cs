@@ -8878,7 +8878,7 @@ public sealed class WorldMapWindow : Window
     internal void OpenLiveMapForTest() => ShowLiveMap();
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=cityprice:&lt;도시&gt;</c>) — 매입 정보 「시세」에서 그 도시를 누른 창. 닫힐 때까지 돌아오지 않는다.</summary>
-    internal void CityPriceForTest(int city, bool sold = false, int sourcesOf = -1) => CityPriceDialog.Show(this, _game, city, sold, sourcesOf);
+    internal void CityPriceForTest(int city, bool sold = false, int sourcesOf = -1, int buyersOf = -1) => CityPriceDialog.Show(this, _game, city, sold, sourcesOf, buyersOf);
 
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=citypick</c>) — 매입 정보 「시세」의 도시 고르기 지도. 닫힐 때까지 돌아오지 않는다.</summary>
     internal void CityPickForTest() => ShowCityPrices(this);

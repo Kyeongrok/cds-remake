@@ -133,6 +133,39 @@ internal sealed class CityPriceDialog : InfoDialog
         _page.Children.Add(Gap(8));
     }
 
+    /// <summary>
+    /// 그 교역품이 <b>비싸게 팔리는 도시</b> — 매입 정보 순위와 같은 셈(아는 도시 · 교역소 매각 단가)으로 15 곳, 끝 칸은
+    /// 이 도시에서 사서 거기 팔 때의 한 통 차익이다. 교역소 매매 창에서 교역품을 누를 때 뜬다(요청).
+    /// </summary>
+    private void ShowBuyers(int kind)
+    {
+        string goods = _post.NameOf(kind);
+        if (!Head("비싸게 팔리는 도시")) return;
+        var player = _game.Player;
+        int buyHere = _post.RowsOf(player, _city).Where(r => r.Kind == kind).Select(r => r.Price).DefaultIfEmpty(-1).First();
+        var ranked = Enumerable.Range(0, CityExeTable.Count)
+            .Where(c => _game.CityVisible(c) && (_game.CityRows?.HasBuilding(c, TradePostCode) ?? true))
+            .Select(c => (City: c, Price: _post.SellPrice(player, c, kind)))
+            .OrderByDescending(r => r.Price).ThenBy(r => r.City)
+            .Take(BuyerTop).ToList();
+        _page.Children.Add(Label(buyHere >= 0 ? $"{goods} — {_game.CityName(_city)}{Lang.T("에서 사면")} {buyHere}닢" : goods));
+        _page.Children.Add(Gap(6));
+        _page.Children.Add(Line("순위", null, "도시", "문화권", "단가", buyHere >= 0 ? "차익" : ""));
+        for (int i = 0; i < ranked.Count; i++)
+        {
+            var (city, price) = ranked[i];
+            string culture = _game.CultureOf(city);
+            _page.Children.Add(Line($"{i + 1}", null, _game.CityName(city), culture.Length > 0 ? Lang.T(culture) : "",
+                                    $"{price}닢", buyHere >= 0 ? $"{price - buyHere}닢" : ""));
+        }
+        _page.Children.Add(Gap(6));
+        _page.Children.Add(Label("아는 도시의 지금 시세입니다."));
+        _page.Children.Add(Gap(8));
+    }
+
+    /// <summary>비싸게 팔리는 도시 수 — 매입 정보 순위와 같다.</summary>
+    private const int BuyerTop = 15;
+
     /// <summary>줄을 누르면 그 일을 한다 — 손 모양 커서. 누름은 여기서 받아 창 끌기로 새지 않게 한다.</summary>
     private static UIElement Clickable(UIElement line, Action run)
     {
@@ -166,13 +199,14 @@ internal sealed class CityPriceDialog : InfoDialog
     }
 
     /// <summary>그 도시의 시세 창을 띄운다 — 교역품 표를 못 읽은 게임이면 안 뜬다.</summary>
-    public static void Show(Window owner, Engine.Game game, int city, bool sold = false, int sourcesOf = -1)
+    public static void Show(Window owner, Engine.Game game, int city, bool sold = false, int sourcesOf = -1, int buyersOf = -1)
     {
         if (game.Trade is not { } trade || game.Goods is not { } goods) return;
         var post = new TradePost(trade, goods, game.Rates, game.CityRows, game.Nations, game.Discoveries?.Table);
         var dialog = new CityPriceDialog(game, post, city) { Owner = owner };
         if (sold) dialog.ShowSold();
         if (sourcesOf >= 0) dialog.ShowSources(sourcesOf, post.SellPrice(game.Player, city, sourcesOf));
+        if (buyersOf >= 0) dialog.ShowBuyers(buyersOf);
         dialog.ShowDialog();
     }
 }

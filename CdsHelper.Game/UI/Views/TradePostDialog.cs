@@ -654,8 +654,12 @@ public sealed class TradePostDialog : GameWindow
     private void AskGoodsInfo(int kind)
     {
         if (_game.Goods?.Find(kind) is null) return;
-        if (ChoiceDialog.Pick(this, _post.NameOf(kind), ["정보를 본다", "그만둔다"]) == 0)
-            GoodsInfoDialog.Show(this, _game, kind);
+        // 「비싸게 팔리는 도시」 — 매입 정보 순위처럼 어느 도시에서 비싸게 팔리는지(요청). 시세 창의 그 쪽으로 연다.
+        switch (ChoiceDialog.Pick(this, _post.NameOf(kind), ["정보를 본다", "비싸게 팔리는 도시", "그만둔다"]))
+        {
+            case 0: GoodsInfoDialog.Show(this, _game, kind); break;
+            case 1: CityPriceDialog.Show(this, _game, _city, buyersOf: kind); break;
+        }
     }
 
     /// <param name="share">
