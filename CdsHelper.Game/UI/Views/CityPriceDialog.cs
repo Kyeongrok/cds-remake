@@ -22,18 +22,66 @@ internal sealed class CityPriceDialog : InfoDialog
 
     private const double RankWidth = 40, PictureWidth = 30, PictureSize = 22, GoodsWidth = 200, CategoryWidth = 130, PriceWidth = 110, HeldWidth = 110;
 
+    private readonly Engine.Game _game;
+    private readonly TradePost _post;
+    private readonly int _city;
+    private readonly StackPanel _page = new();
+
     private CityPriceDialog(Engine.Game game, TradePost post, int city)
     {
-        var player = game.Player;
-        string name = game.CityName(city);
-        var body = new StackPanel();
-        string culture = game.CultureOf(city);
-        body.Children.Add(Label($"{name}{(culture.Length > 0 ? "  (" + Lang.T(culture) + ")" : "")}"));
-        body.Children.Add(Gap(6));
+        _game = game;
+        _post = post;
+        _city = city;
+        ShowPrices();
+        // 「시세」(팔 때 받는 값 순위)와 「판매 물품」(이 도시 교역소가 파는 것)을 오간다(요청).
+        Build("", _page, RankWidth + PictureWidth + GoodsWidth + CategoryWidth + PriceWidth + HeldWidth, double.NaN,
+              new GameButton("시세", ShowPrices), new GameButton("판매 물품", ShowSold), new GameButton("닫기", Close));
+    }
 
-        if (game.CityRows?.HasBuilding(city, TradePostCode) == false)
-            body.Children.Add(Label("이 도시에는 교역소가 없습니다."));
-        else
+    /// <summary>머리 — 「시세 — 마르세유 (지중해)」. 교역소가 없으면 그렇다고 적고 거짓.</summary>
+    private bool Head(string what)
+    {
+        _page.Children.Clear();
+        string culture = _game.CultureOf(_city);
+        _page.Children.Add(Label($"{Lang.T(what)} — {_game.CityName(_city)}{(culture.Length > 0 ? "  (" + Lang.T(culture) + ")" : "")}"));
+        _page.Children.Add(Gap(6));
+        if (_game.CityRows?.HasBuilding(_city, TradePostCode) != false) return true;
+        _page.Children.Add(Label("이 도시에는 교역소가 없습니다."));
+        _page.Children.Add(Gap(8));
+        return false;
+    }
+
+    /// <summary>
+    /// 판매 물품 — 이 도시 교역소가 파는 것과 구입 단가 · 남은 재고(<see cref="TradePost.RowsOf"/>, 교역소 매매 창과 같은 줄).
+    /// 특산품(딸린 내륙 도시 것 포함)은 이름 뒤에 표시한다.
+    /// </summary>
+    private void ShowSold()
+    {
+        if (!Head("판매 물품")) return;
+        var rows = _post.RowsOf(_game.Player, _city);
+        _page.Children.Add(Line("", null, "교역품", "분류", "구입가", "재고"));
+        foreach (var row in rows)
+        {
+            var goods = _game.Goods?.Find(row.Kind);
+            string name = _post.NameOf(row.Kind) + (row.Cell == TradePost.SpecialCell ? "  ★" : "");
+            _page.Children.Add(Line("", goods is { } g ? _game.ItemPictures?.TryGetImage(g.Pic) : null, name,
+                                    goods is { } c ? _game.Goods!.CategoryName(c.Category) : "", $"{row.Price}닢", $"{row.Supply}"));
+        }
+        if (rows.Count == 0) _page.Children.Add(Label("파는 물건이 없습니다."));
+        _page.Children.Add(Gap(6));
+        _page.Children.Add(Label("이 도시 교역소에서 살 때 내는 지금 값입니다. ★ 는 특산품입니다."));
+        _page.Children.Add(Gap(8));
+    }
+
+    /// <summary>시세 — 이 도시에서 비싸게 팔리는 교역품 20 가지.</summary>
+    private void ShowPrices()
+    {
+        var game = _game;
+        var post = _post;
+        int city = _city;
+        var player = game.Player;
+        var body = _page;
+        if (Head("시세"))
         {
             var held = player.CargoHold.Where(c => !c.Spoiled).Select(c => c.Kind).ToHashSet();
             var ranked = (game.Goods?.Items ?? [])
@@ -50,10 +98,8 @@ internal sealed class CityPriceDialog : InfoDialog
             }
             body.Children.Add(Gap(6));
             body.Children.Add(Label("이 도시 교역소에 팔 때 받는 지금 시세입니다."));
+            body.Children.Add(Gap(8));
         }
-        body.Children.Add(Gap(8));
-
-        Build("시세", body, RankWidth + PictureWidth + GoodsWidth + CategoryWidth + PriceWidth + HeldWidth, double.NaN, new GameButton("닫기", Close));
     }
 
     /// <summary>순위 · 교역품 · 분류 · 단가 · 싣고 있는지 한 줄. 단가는 오른쪽으로 붙인다.</summary>
@@ -81,10 +127,12 @@ internal sealed class CityPriceDialog : InfoDialog
     }
 
     /// <summary>그 도시의 시세 창을 띄운다 — 교역품 표를 못 읽은 게임이면 안 뜬다.</summary>
-    public static void Show(Window owner, Engine.Game game, int city)
+    public static void Show(Window owner, Engine.Game game, int city, bool sold = false)
     {
         if (game.Trade is not { } trade || game.Goods is not { } goods) return;
         var post = new TradePost(trade, goods, game.Rates, game.CityRows, game.Nations, game.Discoveries?.Table);
-        new CityPriceDialog(game, post, city) { Owner = owner }.ShowDialog();
+        var dialog = new CityPriceDialog(game, post, city) { Owner = owner };
+        if (sold) dialog.ShowSold();
+        dialog.ShowDialog();
     }
 }

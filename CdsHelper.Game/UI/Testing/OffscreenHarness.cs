@@ -212,7 +212,7 @@ public static class OffscreenHarness
                         }, DispatcherPriority.ApplicationIdle);
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=cityprice:<도시 번호> — 매입 정보 「시세」에서 그 도시를 누른 창 · citypick — 그 도시 고르기 지도.
-            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } priceDialog && (priceDialog is "citypick" or "cargo" || priceDialog.StartsWith("cityprice:")))
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") is { } priceDialog && (priceDialog is "citypick" or "cargo" || priceDialog.StartsWith("cityprice:") || priceDialog.StartsWith("citysold:")))
                 window.Dispatcher.BeginInvoke(() =>
                 {
                     window.Dispatcher.BeginInvoke(() =>
@@ -222,6 +222,7 @@ public static class OffscreenHarness
                     }, DispatcherPriority.ApplicationIdle);
                     if (priceDialog == "citypick") window.CityPickForTest();
                     else if (priceDialog == "cargo") window.CargoForTest();
+                    else if (priceDialog.StartsWith("citysold:") && int.TryParse(priceDialog[9..], out int soldCity)) window.CityPriceForTest(soldCity, sold: true);
                     else if (int.TryParse(priceDialog[10..], out int city)) window.CityPriceForTest(city);
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=nav — 네비게이션 창(목적지 도시 고르기)을 띄운다.
