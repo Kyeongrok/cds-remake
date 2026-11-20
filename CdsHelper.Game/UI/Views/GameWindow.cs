@@ -204,6 +204,13 @@ public class GameWindow : Window
             return;
         }
 
+        if (e.Key == KeyOf(Local.Settings.GameSettings.PlayerKey, Key.C))
+        {
+            WorldMapWindow.Current?.PlayerByKey(window);
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key == KeyOf(Local.Settings.GameSettings.PatronKey, Key.P))
         {
             WorldMapWindow.Current?.PatronsByKey(window);

@@ -243,6 +243,7 @@ public sealed class GameSettingsData
     public int TextScale { get; set; } = 100;
     public string HintsKey { get; set; } = "H";
     public string PersonKey { get; set; } = "X";
+    public string PlayerKey { get; set; } = "C";
     public string PatronKey { get; set; } = "P";
     public string CargoKey { get; set; } = "T";
 
@@ -1080,6 +1081,13 @@ public static class GameSettings
     {
         get => Get(d => d.PersonKey);
         set => Set(d => d.PersonKey = value);
+    }
+
+    /// <summary><b>플레이어 정보</b>(제독 본인의 인물정보 창을 곧바로) 단축키. 기본은 <c>C</c> 다(요청).</summary>
+    public static string PlayerKey
+    {
+        get => Get(d => d.PlayerKey);
+        set => Set(d => d.PlayerKey = value);
     }
 
     /// <summary>

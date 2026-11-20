@@ -3510,6 +3510,15 @@ public sealed class WorldMapWindow : Window
         finally { _personOpen = false; }
     }
 
+    /// <summary>단축키로 <b>플레이어 정보</b> — 제독 본인의 인물정보 창을 고르기 없이 곧바로 연다(요청).</summary>
+    internal void PlayerByKey(Window owner)
+    {
+        if (!_started || _personOpen) return;
+        _personOpen = true;
+        try { PersonInfoDialog.Show(owner, _game.Player, _game.Directory, _game); }
+        finally { _personOpen = false; }
+    }
+
     /// <summary>인물정보가 떠 있는지 — 그 창 안에서 X 를 또 눌러 겹쳐 뜨지 않게.</summary>
     private bool _personOpen;
 
@@ -3686,6 +3695,13 @@ public sealed class WorldMapWindow : Window
         {
             e.Handled = true;
             if (_started && !_personOpen) Hold(() => PersonByKey(this));
+            return;
+        }
+
+        if (e.Key == KeyOf(GameSettings.PlayerKey, Key.C))
+        {
+            e.Handled = true;
+            if (_started && !_personOpen) Hold(() => PlayerByKey(this));
             return;
         }
 
