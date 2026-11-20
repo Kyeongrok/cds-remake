@@ -2048,5 +2048,30 @@
     "wealth": 1000000,
     "power": "A",
     "note": "원본에 없는 후원자 — 콘스탄티노플을 정복한 오스만 술탄. 프톨레마이오스 지리서를 옮기게 하고 세계지도를 그리게 했다."
+  },
+  {
+    "id": 82,
+    "name": "왕양명",
+    "nationality": "명",
+    "city": "항주",
+    "supportRate": "70%",
+    "discernment": 85,
+    "occupation": "관리",
+    "appearYear": 1500,
+    "retireYear": 1529,
+    "preferences": {
+      "geography": true,
+      "treasure": false,
+      "tradeGoods": false,
+      "creature": false,
+      "history": true,
+      "religion": true,
+      "superstition": false,
+      "ethnicity": false
+    },
+    "fame": 8000,
+    "wealth": 400000,
+    "power": "B",
+    "note": "원본에 없는 후원자 — 명나라의 유학자 · 관료 왕수인(1472~1529). 절강 여요 사람으로 양명학을 열었고, 1519년 영왕의 난을 진압했다. 얼굴은 명대 초상화(퍼블릭 도메인)."
   }
 ]

@@ -20,6 +20,25 @@
         "Zodiac": 0,
         "Wealth": 1000000,
         "Retire": 1510
+      },
+      {
+        "Index": 82,
+        "Name": "왕양명",
+        "Face": 9005,
+        "IsFemale": false,
+        "JobCode": 20,
+        "Eye": 85,
+        "Closeness": 70,
+        "Tastes": 11,
+        "Nation": 69,
+        "Blood": 0,
+        "Languages": 128,
+        "City": 177,
+        "Building": 12,
+        "Appear": 20,
+        "Zodiac": 7,
+        "Wealth": 400000,
+        "Retire": 1529
       }
     ]
   },
