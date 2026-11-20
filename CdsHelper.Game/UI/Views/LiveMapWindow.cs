@@ -100,7 +100,11 @@ public sealed class LiveMapWindow : Window
         Func<IReadOnlyList<(string Name, double X, double Y, bool Found)>> Spots,
         Func<double, double, string>? SailToCity = null,
         Action<Window, double, double>? CityClick = null,
-        Action<Window, double, double>? CityPrices = null);
+        Action<Window, double, double>? CityPrices = null,
+        Func<double, double, string>? SailToSpot = null);
+
+    // SailToSpot — 지도 빈 곳을 오른쪽 단추로 눌러 「여기로 자동이동」을 고르면 그 칸으로 자동항해를 건다(요청).
+    // 받는 것은 칸 자리, 돌려주는 것은 못 걸었을 때의 까닭(걸렸으면 빈 글).
 
     // CityPrices — 도시 오른쪽 단추 메뉴의 「시세」(요청). 그 도시의 시세 · 판매 물품 창을 띄운다.
 
@@ -326,7 +330,25 @@ public sealed class LiveMapWindow : Window
             if (_picked is { } a) SetPickLand(MostlyLand(a));
             e.Handled = true;
         };
-        _viewport.MouseRightButtonUp += (_, e) => { if (Picking) { EndPan(); e.Handled = true; } };
+        _viewport.MouseRightButtonUp += (_, e) =>
+        {
+            if (Picking) { EndPan(); e.Handled = true; return; }
+            // 빈 곳 오른쪽 단추 — 「여기로 자동이동」(요청). 도시 점 · 이름표는 제 메뉴가 있어 거기서 뜬다.
+            if (_src.SailToSpot is not { } spot || e.Handled) return;
+            // 도시 점 · 이름표 위면 그 메뉴(자동이동 · 시세)에 맡긴다 — 여기서 삼키면 그 메뉴가 안 뜬다.
+            if (e.OriginalSource is FrameworkElement { Parent: var parent } && ReferenceEquals(parent, _cityLayer)) return;
+            var (cx, cy) = CellUnder(e.GetPosition(_viewport));
+            var go = new MenuItem { Header = Lang.T("여기로 자동이동") };
+            go.Click += (_, _) =>
+            {
+                string said = spot(cx + 0.5, cy + 0.5);
+                if (said.Length > 0) NoticeDialog.Show(this, said);
+                else { var owner = Owner; Close(); owner?.Activate(); }
+            };
+            var menu = new ContextMenu { Items = { go }, PlacementTarget = _viewport, Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint };
+            menu.IsOpen = true;
+            e.Handled = true;
+        };
 
         // 위 단추 줄 — 바탕 · 표식 켜고 끄기 · 따라가기 · 내 위치로 · 경로 지우기.
         var bar = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };

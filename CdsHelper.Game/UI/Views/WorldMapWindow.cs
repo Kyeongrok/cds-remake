@@ -974,6 +974,7 @@ public sealed class WorldMapWindow : Window
         LiveMapWindow.ShowCityPick(owner, LiveSource() with
         {
             SailToCity = null,
+            SailToSpot = null,
             CityPrices = null,
             CityClick = (map, x, y) =>
             {
@@ -1028,6 +1029,7 @@ public sealed class WorldMapWindow : Window
             Cities: KnownCityMarks,
             Spots: Spots,
             SailToCity: SailToCityAt,
+            SailToSpot: SailToSpotAt,
             CityPrices: (map, x, y) =>
             {
                 int city = CityAtCell(x, y);
@@ -1063,6 +1065,20 @@ public sealed class WorldMapWindow : Window
         if (_host.SeaBlocked || _host.IsOnLand) return null;
         if (!_host.PlaceAtSea(cellX, cellY, waterOnly: true)) return null;
         return _host.ShipCell is { } cell ? (cell.X, cell.Y) : null;
+    }
+
+    /// <summary>
+    /// 세계지도 창 빈 곳 오른쪽 단추 「여기로 자동이동」 — 그 칸까지 자동항해를 건다(요청). 걸렸으면 빈 글, 아니면 까닭.
+    /// 바다에 있을 때만이다(도시 · 육지에서는 배를 그 자리에서 띄울 수 없다).
+    /// </summary>
+    private string SailToSpotAt(double cellX, double cellY)
+    {
+        if (_cityView != null || _host.SeaBlocked || _host.IsOnLand) return Lang.T("바다에 있을 때만 자동이동할 수 있습니다");
+        var (ok, message) = _host.StartAutoSail(cellX, cellY);
+        if (!ok) return message;
+        NavStarted("livemap");
+        Say($"그곳까지 {message}");
+        return "";
     }
 
     /// <summary>
