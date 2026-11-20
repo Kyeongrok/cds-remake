@@ -123,6 +123,9 @@ public sealed class TradePost
         return list;
     }
 
+    /// <summary>그 도시에 딸린 내륙 도시들(도시 표 <c>+0x10</c> · <c>+0x14</c>).</summary>
+    public IReadOnlyList<int> InlandOf(int city) => _table.InlandOf(city);
+
     /// <summary>그 도시를 아는지 — 도시 레코드 <c>+0x04</c> 비트 0.</summary>
     private bool Known(Player player, int city) =>
         city == player.CityId || player.Knows(city) || (_cities?.KnownAtStart(city) ?? true);

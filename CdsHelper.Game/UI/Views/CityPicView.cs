@@ -2144,10 +2144,17 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
     /// <summary>도시 정보 창을 낸다. 표를 못 읽어도 열린다 — 그 줄만 비는 채로 뜬다.</summary>
     private void ShowCityInfo() => KeepCityMenu(() =>
+    {
+        // 도시정보를 보면 딸린 내륙 도시(호르무즈 ← 사마르칸트 따위)를 알게 된다(요청) — 세계지도에 뜨고
+        // 그 특산품도 이 항구에 들어온다. 원본은 항해 중 시야(0x0048D98F)로만 알았다.
+        if (TradeRules is { } rules)
+            foreach (int inland in rules.InlandOf(_cityId))
+                if (_game.CityStanding(inland)) _player.Know(inland);
         CityInfoDialog.Show(this, _cityName, _cityId, _game.CityRows,
                             _game.Nations, _game.Goods, _game.ItemPictures,
                             Market?.Rates ?? _game.Rates,
-                            TradeRules?.ShownSpecials(_player, _cityId)));
+                            TradeRules?.ShownSpecials(_player, _cityId));
+    });
 
     /// <summary>
     /// 여관에 묵는다. 게임 차례 그대로 — 값을 부르고, YES 면 그때서야 돈을 본다.
