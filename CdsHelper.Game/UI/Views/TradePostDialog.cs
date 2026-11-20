@@ -636,6 +636,14 @@ public sealed class TradePostDialog : GameWindow
             e.Handled = true;
             AskGoodsInfo(kind);
         };
+        // 왼쪽 단추로 누르면 곧바로 「비싸게 팔리는 도시」 — 매입 정보 순위처럼(요청). 수량 단추는 제 누름을 삼켜 여기 안 온다.
+        border.Cursor = Cursors.Hand;
+        border.MouseLeftButtonUp += (_, e) =>
+        {
+            if (e.Handled || _game.Goods?.Find(kind) is null) return;
+            e.Handled = true;
+            CityPriceDialog.Show(this, _game, _city, buyersOf: kind);
+        };
         return border;
     }
 
@@ -674,6 +682,8 @@ public sealed class TradePostDialog : GameWindow
             panel.Children.Add(Small($"{n}", () => add(n), n switch { 1 => 26, 10 => 32, _ => 40 }));
         panel.Children.Add(Small("모두", all, 50));
         panel.MouseRightButtonUp += (_, e) => { e.Handled = true; share(); };
+        // 단추 사이 틈을 왼쪽으로 눌러도 줄의 「비싸게 팔리는 도시」가 뜨지 않게 여기서 삼킨다.
+        panel.MouseLeftButtonUp += (_, e) => e.Handled = true;
         return panel;
     }
 
