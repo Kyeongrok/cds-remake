@@ -504,7 +504,9 @@ public sealed class SupplyDialog : GameWindow
     /// <param name="first">누른 첫 번인지 — 막는 말은 첫 번에만 낸다(누르고 있는 동안 되풀이해 뜨지 않게).</param>
     private bool Bump(int index, int by, bool first = true)
     {
-        int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step;
+        // 식량 · 물은 10 통씩(요청), 자재 · 탄약은 1 통씩 — Shift 면 열 배.
+        int unit = Supply.All[index].Kind is SupplyKind.Food or SupplyKind.Water ? 10 : 1;
+        int step = (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step) * unit;
         bool moved = false;
         for (int i = 0; i < step; i++)
         {

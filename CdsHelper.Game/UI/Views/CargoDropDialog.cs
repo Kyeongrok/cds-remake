@@ -146,8 +146,9 @@ public sealed class CargoDropDialog : GameWindow
                 Clickable(Label(s.Name), () => Enter(s.Name, _now[at], _original[at], s.UnitWeight, v => _now[at] = v)),
                 Cell(Label($"{s.UnitWeight,6}/ {0,6}"), UnitWidth),
                 Cell(Label($"{_original[i],6}통"), HaveWidth),
-                Cell(Spin(_now[i] - _original[i], () => Bump(ref _now[at], _original[at], +1),
-                                                  () => Bump(ref _now[at], _original[at], -1)), AddWidth),
+                // 식량 · 물은 10 통씩(요청), 자재 · 탄약은 1 통씩.
+                Cell(Spin(_now[i] - _original[i], () => Bump(ref _now[at], _original[at], +1, UnitOf(s.Kind)),
+                                                  () => Bump(ref _now[at], _original[at], -1, UnitOf(s.Kind))), AddWidth),
                 Cell(Label($"{0,6}닢"), PriceWidth)));
         }
 
@@ -196,15 +197,18 @@ public sealed class CargoDropDialog : GameWindow
 
     /// <summary>↑↓ — 원래 수를 넘어 더할 수는 없다.</summary>
     /// <summary>한 걸음 올리거나 내린다. 더 못 움직였으면 거짓 — 누르고 있던 되풀이가 거기서 멈춘다.</summary>
-    private bool Bump(ref int value, int max, int by)
+    private bool Bump(ref int value, int max, int by, int unit = 1)
     {
-        int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step;
+        int step = (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? FastStep : Step) * unit;
         int was = value;
         value = Math.Clamp(value + by * step, 0, max);
         if (value == was) return false;
         Paint();
         return true;
     }
+
+    /// <summary>↑↓ 한 번의 통 수 — 식량 · 물은 10, 그 밖은 1(Shift 면 열 배).</summary>
+    private static int UnitOf(SupplyKind kind) => kind is SupplyKind.Food or SupplyKind.Water ? 10 : 1;
 
     private bool BumpRow(GoodsRow r, int by)
     {
