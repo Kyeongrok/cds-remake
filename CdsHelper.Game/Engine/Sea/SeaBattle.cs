@@ -1694,7 +1694,9 @@ public sealed class SeaBattle
     {
         for (int d = 2; d <= range; d++)
         {
+            // 잠수한 괴물은 안 보이니 포격 과녁이 안 된다(요청) — 원본(0x004369E0)은 잠수 여부를 안 보고 빈 바다에 쐈다.
             var hits = Ships.Where(s => s.CanAct && s.Mine != ship.Mine
+                                        && !(IsMonster(s) && !MonsterUp)
                                         && InBroadside(ship.X, ship.Y, ship.Way, s.X, s.Y, d))
                             .ToList();
             if (hits.Count == 0) continue;
