@@ -1077,7 +1077,8 @@ public sealed class WorldMapWindow : Window
         var (ok, message) = _host.StartAutoSail(cellX, cellY);
         if (!ok) return message;
         NavStarted("livemap");
-        Say($"그곳까지 {message}");
+        // 「그곳까지」 대신 짚은 자리의 위도 · 경도(요청).
+        Say($"{WorldMapHost.SpotText(cellX, cellY)}까지 {message}");
         return "";
     }
 

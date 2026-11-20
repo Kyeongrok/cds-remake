@@ -1578,16 +1578,19 @@ public sealed class WorldMapHost : HwndHost
     /// 항로를 <b>어디서 어느 쪽으로 뱃머리를 트는지</b>의 줄들로 — 「1  북위38.7 서경9.1  남서로」.
     /// 같은 쪽으로 이어지는 토막은 한 줄로 묶는다. 띠 · 목록 글꼴에 없는 글자(화살표 · 도 기호)는 안 쓴다.
     /// </summary>
+    /// <summary>칸 자리를 「북위38.7 서경9.1」 꼴로 — 띠 글꼴에 있는 글자만 쓴다(도 기호 없음).</summary>
+    public static string SpotText(double cellX, double cellY)
+    {
+        double lat = 90.0 - cellY * 180.0 / WorldMapRenderer.CellH;
+        double x = cellX % WorldMapRenderer.UnfoldedW;
+        if (x < 0) x += WorldMapRenderer.UnfoldedW;
+        double lon = x * 360.0 / WorldMapRenderer.UnfoldedW - 180.0;
+        return $"{(lat >= 0 ? "북" : "남")}위{Math.Abs(lat):0.0} {(lon >= 0 ? "동" : "서")}경{Math.Abs(lon):0.0}";
+    }
+
     public static List<string> DescribeRoute(IReadOnlyList<(double X, double Y)> route)
     {
-        static string Spot((double X, double Y) p)
-        {
-            double lat = 90.0 - p.Y * 180.0 / WorldMapRenderer.CellH;
-            double x = p.X % WorldMapRenderer.UnfoldedW;
-            if (x < 0) x += WorldMapRenderer.UnfoldedW;
-            double lon = x * 360.0 / WorldMapRenderer.UnfoldedW - 180.0;
-            return $"{(lat >= 0 ? "북" : "남")}위{Math.Abs(lat):0.0} {(lon >= 0 ? "동" : "서")}경{Math.Abs(lon):0.0}";
-        }
+        static string Spot((double X, double Y) p) => SpotText(p.X, p.Y);
 
         var lines = new List<string>();
         string was = "";
@@ -1684,12 +1687,11 @@ public sealed class WorldMapHost : HwndHost
         _dirty = true;
         _routes.Save();   // 떠날 때 한 번 적어 둔다 — 다음에 같은 데로 갈 때 찾지 않는다
         // 띠에는 걸리는 날수를 낸다 — 바람 · 해류로 셈한 어림이다(네비게이션 후보의 날수와 같은 셈). 못 셈했으면 날수 없이.
-        // 바람 · 해류를 탄 길을 골랐으면 가장 짧은 길보다 몇 % 빠른지도 붙인다.
+        // 「가장 짧은 길보다 몇 % 빠릅니다」는 뺐다(요청).
         // 띠 글꼴에 없는 글자(긴 줄표 따위)는 물음표로 찍힌다 — 쉼표와 마침표만 쓴다.
         string days = double.IsNaN(ticks) ? ""
             : $" 약 {Math.Max(1, (int)Math.Ceiling(ticks / TerrainTable.TicksPerDay))}일 걸립니다.";
-        string faster = gain.Length > 0 ? $" 가장 짧은 길보다 {gain}% 빠릅니다." : "";
-        return (true, $"항로를 잡았습니다.{days}{faster}");
+        return (true, $"항로를 잡았습니다.{days}");
     }
 
     /// <summary>지금 자리에서 그 칸까지의 바닷길 — 가장 짧은 길, 또는 뚜렷이 빠르면 바람 · 해류를 본 길.</summary>
