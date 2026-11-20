@@ -122,7 +122,7 @@ internal sealed class CrewShareDialog : InfoDialog
         grid.Children.Add(element);
     }
 
-    private FrameworkElement Arrow(int icon, Action run)
+    private FrameworkElement Arrow(int icon, Func<bool> run)
     {
         FrameworkElement box = GameUi.GameIcon(icon) ?? (FrameworkElement)new TextBlock
         {
@@ -132,8 +132,8 @@ internal sealed class CrewShareDialog : InfoDialog
         box.Margin = new Thickness(ArrowGap, 0, 0, 0);
         box.Cursor = Cursors.Hand;
         box.VerticalAlignment = VerticalAlignment.Center;
-        box.MouseLeftButtonDown += (_, e) => e.Handled = true;
-        box.MouseLeftButtonUp += (_, e) => { e.Handled = true; run(); };
+        // 누르고 있으면 되풀이한다(요청) — 보급 창 ↑↓ 와 같다. 더 못 움직이면 멈춘다.
+        HoldRepeat.Attach(box, _ => run());
         return box;
     }
 
@@ -149,23 +149,25 @@ internal sealed class CrewShareDialog : InfoDialog
         return true;
     }
 
-    private void Bump(int at, int by)
+    /// <summary>한 명 올리거나 내린다. 움직였으면 참 — 누르고 있는 되풀이가 거짓에서 멈춘다.</summary>
+    private bool Bump(int at, int by)
     {
-        if (Stale()) return;
+        if (Stale()) return false;
         var ship = _player.Ships[at];
         if (by > 0)
         {
-            if (_free < 1 || _shares[at] >= Player.MaxCrewOf(ship)) return;
+            if (_free < 1 || _shares[at] >= Player.MaxCrewOf(ship)) return false;
             _shares[at]++;
             _free--;
         }
         else
         {
-            if (_shares[at] <= 0) return;
+            if (_shares[at] <= 0) return false;
             _shares[at]--;
             _free++;
         }
         Sync();
+        return true;
     }
 
     private void Optimize()
