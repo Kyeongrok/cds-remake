@@ -65,9 +65,10 @@ internal sealed class PersonInfoDialog : InfoDialog
             };
             if (nobleOn)
                 lines.Add($"작위 {Engine.Town.Nobility.NameOf(player.NobleRank)}   공적 {Engine.Town.Nobility.MeritOf(game!)}");
-            if (PlayerInfoDialog.DevRecord(player) is { } dev) lines.Add($"개발 기록 {dev}");
             var acts = new List<(string, Action)> { ("특기", () => ShowSkills(player)) };
             if (nobleOn) acts.Add(("작위", () => ShowNobility(this, game!)));
+            // 개발 기록은 줄로 늘어놓지 않고 단추로 — 길면 판 밖으로 넘쳤다(요청). 고친 것이 없으면 단추도 없다.
+            if (PlayerInfoDialog.DevRecord(player) is { } dev) acts.Add(("개발 기록", () => ShowDevRecord(this, dev)));
             acts.Add(("취소", Close));
             BuildDh2(faces?.TryGetBgra(PortraitAges.At(player.Face, player.Age, false, faces), female: false), player.Name,
                 [("연령", $"{player.Age}세"), ("체력", $"{Show(Ability.Body)}"), ("명성", $"{player.Fame}"),
@@ -104,9 +105,6 @@ internal sealed class PersonInfoDialog : InfoDialog
         rows.Children.Add(BlackLine($"  소지금/{player.Gold,10}닢"));
         rows.Children.Add(BlackLine($"  저금  /{player.Savings,10}닢"));
         rows.Children.Add(BlackLine($"  빚    /{player.Debt,10}닢"));
-        // 개발 창으로 값을 고친 기록 — 세이브 봉인에 묶여 지울 수 없다. 고친 것이 없으면 줄을 안 낸다.
-        if (PlayerInfoDialog.DevRecord(player) is { } devRecord)
-            rows.Children.Add(BlackLine($"  개발 기록/{devRecord}"));
 
         // 모드 「작위」 — 작위와 공적 한 줄, 그리고 혜택을 보는 단추.
         bool noble = Engine.Town.Nobility.Enabled && game != null;
@@ -120,6 +118,9 @@ internal sealed class PersonInfoDialog : InfoDialog
 
         var buttons = new List<GameButton> { new("특기", () => ShowSkills(player)) };
         if (noble) buttons.Add(new GameButton("작위", () => ShowNobility(this, game!)));
+        // 개발 창으로 값을 고친 기록 — 세이브 봉인에 묶여 지울 수 없다. 줄로 적으면 판 밖으로 넘쳐 단추로 연다(요청).
+        // 고친 것이 없으면 단추도 없다.
+        if (PlayerInfoDialog.DevRecord(player) is { } devRecord) buttons.Add(new GameButton("개발 기록", () => ShowDevRecord(this, devRecord)));
         buttons.Add(new GameButton("취소", Close));
         Build("", rows, BoardWidth, noble ? BoardHeight + 20 : BoardHeight, [.. buttons]);
     }
@@ -150,6 +151,13 @@ internal sealed class PersonInfoDialog : InfoDialog
             lines.Add($"{mark} {Lang.T(Engine.Town.Nobility.Names[rank])}({Engine.Town.Nobility.Thresholds[rank]}) : {what}");
         }
         NoticeDialog.Show(owner, string.Join(Environment.NewLine, lines), "작위");
+    }
+
+    /// <summary>개발 기록 — 개발 창으로 고친 것들을 한 줄씩.</summary>
+    private static void ShowDevRecord(Window owner, string record)
+    {
+        NoticeDialog.Show(owner, "개발 창으로 고친 것입니다." + Environment.NewLine + Environment.NewLine
+                                 + record.Replace(" · ", Environment.NewLine), "개발 기록");
     }
 
     /// <summary>
