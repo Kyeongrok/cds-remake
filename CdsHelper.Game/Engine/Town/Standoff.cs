@@ -314,6 +314,21 @@ public static class Standoff
         tongue * 33 + (turban ? 100 : 0) + (player.AbilityOf(Ability.Luck) + 1) / 2
         >= dice.Next(250);
 
+    /// <summary><c>점수 &gt;= rand(n)</c> 이 될 확률(%) — rand 는 0 ~ n−1 이다.</summary>
+    public static int Odds(int score, int n) => score < 0 ? 0 : Math.Min(n, score + 1) * 100 / n;
+
+    /// <summary>잠입이 될 확률(%) — <see cref="Sneaks"/> 와 같은 식이다(정보 등급 「상세」 표시용).</summary>
+    public static int SneakOdds(Player player, int tongue, bool turban) =>
+        Odds(tongue * 33 + (turban ? 100 : 0) + (player.AbilityOf(Ability.Luck) + 1) / 2, 250);
+
+    /// <summary>조약 문 침입이 될 확률(%) — <see cref="Intrudes"/> 와 같은 식이다.</summary>
+    public static int IntrudeOdds(Player player, int tongue) =>
+        Odds(tongue * 20 + (player.AbilityOf(Ability.Luck) + 1) / 2, 100);
+
+    /// <summary>교섭이 될 확률(%) — <see cref="Talks"/> 와 같은 식이다.</summary>
+    public static int TalkOdds(Player player, int roll = 200) =>
+        Odds(player.LevelOf(Skill.Names[Skill.Rhetoric]) * 33 + player.AbilityOf(Ability.Charm) + 1, roll);
+
     /// <summary>
     /// 조약 문 「침입한다」가 되는지(<c>0x0046A867</c>) — <c>말*20 + (운+1)/2 ≥ rand(100)</c>. 터번은 안 본다.
     /// </summary>

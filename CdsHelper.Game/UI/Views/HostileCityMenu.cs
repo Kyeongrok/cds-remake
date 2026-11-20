@@ -139,8 +139,18 @@ internal static class HostileCityMenu
             var shown = new List<(int Choice, (string, bool) Row)>();
             if (byLand) shown.Add((Standoff.Attack, (say.Rows[Standoff.Attack], true)));
             // 조약 문의 「침입한다」는 종파를 안 본다(0x0046AC12) — 종파 3·4 검사는 적대도 쪽 잠입뿐이다.
-            shown.Add((Standoff.Sneak, (say.Rows[Standoff.Sneak], byTreaty || Standoff.CanSneak(sect))));
-            shown.Add((Standoff.Talk, (say.Rows[Standoff.Talk], canTalk)));
+            // 정보 등급 「상세」면 잠입 · 교섭 줄 옆에 될 확률을 붙인다(요청). 굴림과 같은 식이다.
+            string sneakRow = say.Rows[Standoff.Sneak], talkRow = say.Rows[Standoff.Talk];
+            if (Local.Settings.GameSettings.Shows(Local.Settings.GameSettings.InfoDetailed))
+            {
+                int tongue = TongueAt(game, city);
+                int sneak = byTreaty ? Standoff.IntrudeOdds(player, tongue)
+                                     : Standoff.SneakOdds(player, tongue, HasTurban(game, player));
+                sneakRow += $" ({sneak}%)";
+                talkRow += $" ({Standoff.TalkOdds(player, say.TalkRoll)}%)";
+            }
+            shown.Add((Standoff.Sneak, (sneakRow, byTreaty || Standoff.CanSneak(sect))));
+            shown.Add((Standoff.Talk, (talkRow, canTalk)));
             shown.Add((Standoff.Leave, (say.Rows[Standoff.Leave], true)));
 
             int at = ChoiceDialog.Pick(owner, Standoff.GateTitle(cityName), [.. shown.Select(r => r.Row)]);
