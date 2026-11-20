@@ -22,7 +22,7 @@ public static class Exile
     public const int Fame = 60000;
 
     /// <summary>망명하면 깎이는 명성.</summary>
-    public const int FameCost = 50000;
+    public const int FameCost = 30000;   // 예전 50000 — 3만으로 줄였다(요청)
 
     /// <summary>망명에 바치는 금화.</summary>
     public const int Fee = 1_000_000;
