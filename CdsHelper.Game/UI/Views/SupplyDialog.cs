@@ -175,7 +175,8 @@ public sealed class SupplyDialog : GameWindow
         var board = new DockPanel
         {
             Width = BoardWidth,
-            Height = BoardHeight,
+            // 최소 높이만 — 교역품이 열 가지까지 실리면 줄이 늘어 총계와 겹치지 않게 판이 같이 는다.
+            MinHeight = BoardHeight,
             Margin = new Thickness(14, 10, 14, 2),
             LastChildFill = false,
         };

@@ -3173,8 +3173,11 @@ public sealed class Player
         }
     }
 
-    /// <summary>짐 칸 수. <b>함대 통틀어</b> 여덟이다 — 배마다가 아니다(<c>0x004B5780</c>).</summary>
-    public const int CargoSlots = 8;
+    /// <summary>
+    /// 짐 칸 수. <b>함대 통틀어</b>다 — 배마다가 아니다. 원본은 여덟(<c>0x004B5780</c>)인데, 소도시는 50 · 100 개씩 팔아
+    /// 금방 칸이 차서 열로 늘렸다(요청, 버그 리포트 #69). 세이브는 줄 목록이라 형식은 그대로다.
+    /// </summary>
+    public const int CargoSlots = 10;
 
     private readonly List<Cargo> _cargo = [];
 
