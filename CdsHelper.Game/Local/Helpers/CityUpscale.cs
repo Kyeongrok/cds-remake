@@ -12,12 +12,14 @@ namespace CdsHelper.Game.Local.Helpers;
 /// 도시 그림(400x320 도트)을 업스케일 모델로 네 배 키워 쌓아 둔다 — 모드 「도시 그림 업스케일링」. 원본에 없는 것이다.
 /// </summary>
 /// <remarks>
-/// <b>미리 구워 배포하지 않는다.</b> 100여 장을 키우면 PNG 로 수백 MB 라 업데이트가 무거워지고, 원본 그림을 키운 것을
-/// 나눠 주는 꼴이 된다. 그래서 그 PC 의 CITYCG 를 그 자리에서 키운다. 모델은 선박 리마스터와 같은 Rebout Blend 4x 다
-/// (<see cref="UpscaleModelAsset"/>, 없으면 처음에 받는다).
+/// <b>미리 키운 그림을 받는다.</b> 고정 릴리즈 <c>city-hd</c> 에 그림 점 해시 이름의 PNG 와 그 목록(<c>index.txt</c>)을 올려 두고,
+/// 목록에 있는 그림은 입항할 때 그 한 장만 받는다(장마다 3~4MB — 다 합치면 800MB 라 한꺼번에 받지 않는다).
+/// 예전에는 PC 마다 GPU 로 키웠는데, 내장 그래픽에서 한 번 실행이 2초를 넘겨 윈도가 GPU 를 리셋하고 지도 장치까지 끊겼다(제보 #70).
 /// <para>
-/// GPU(DirectML)가 되면 GPU 로, 안 되면 CPU 로 돌린다(CPU 면 한 장에 수십 초). <b>뒤에서 한 장씩</b> 만든다 — 실 하나, 낮은 우선순위, CPU 면 코어 절반. 입항한 도시는 줄 맨 앞으로
-/// 당기고, 다 되면 그 창 그림을 갈아 끼운다(<see cref="Request"/>). 남은 도시는 게임을 켜 둔 동안 차례로 채운다(<see cref="Prefill"/>).
+/// 목록에 없는 그림(커스텀 팩 · 받기 실패)만 그 자리에서 키운다. 모델은 선박 리마스터와 같은 Rebout Blend 4x 다
+/// (<see cref="UpscaleModelAsset"/>, 없으면 처음에 받는다). GPU(DirectML)가 되면 GPU 로 — VRAM 1GB 미만이면 CPU 로 — 돌린다
+/// (CPU 면 한 장에 수십 초). <b>뒤에서 한 장씩</b> 만든다 — 실 하나, 낮은 우선순위, CPU 면 코어 절반. 입항한 도시는 줄 맨 앞으로
+/// 당기고, 다 되면 그 창 그림을 갈아 끼운다(<see cref="Request"/>). 목록에 없는 남은 도시는 게임을 켜 둔 동안 차례로 채운다(<see cref="Prefill"/>).
 /// </para>
 /// 만든 그림은 <c>%LOCALAPPDATA%\CdsHelper\cityhd</c> 에 그림 점의 해시 이름으로 둔다 — 커스텀 팩 · 도시 성장으로 그림이 바뀌면
 /// 이름도 바뀐다. 비치는 점이 있는 그림(위에 얹는 건물)은 비침도 같은 모델로 키운다.
@@ -122,7 +124,8 @@ public static class CityUpscale
                     catch { continue; }
                     if (px == null) continue;
                     string key = KeyOf(px, width, height);
-                    if (File.Exists(PathOf(key))) continue;
+                    // 올려 둔 그림은 미리 받지 않는다 — 입항할 때 그 한 장만 받는다.
+                    if (File.Exists(PathOf(key)) || Hosted(key)) continue;
                     using var finished = new ManualResetEventSlim();
                     Enqueue(key, px, width, height, _ => finished.Set(), front: false);
                     // 하나씩 넣는다 — 줄에 다 쌓아 두면 그림 점이 한꺼번에 수십 MB 잡힌다.
@@ -179,6 +182,12 @@ public static class CityUpscale
             _busy = true;
             try
             {
+                // 올려 둔 그림이면 받는다. 못 받으면 아래에서 그 자리에서 키운다.
+                if (Download(job.Key) is { } fetched)
+                {
+                    foreach (var done in job.Done) done(fetched);
+                    continue;
+                }
                 if (!EnsureSession()) { lock (Gate) Queue.Clear(); continue; }
                 BitmapSource made;
                 try { made = Upscale(job.Bgra, job.Width, job.Height); }
@@ -208,6 +217,64 @@ public static class CityUpscale
         }
     }
 
+    /// <summary>미리 키운 그림을 올려 둔 고정 릴리즈.</summary>
+    private const string HostedBase = "https://github.com/Kyeongrok/cds-remake/releases/download/city-hd/";
+
+    private static readonly System.Net.Http.HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(2) };
+    private static readonly object IndexGate = new();
+    private static HashSet<string>? _hosted;
+
+    /// <summary>
+    /// 올려 둔 그림 이름 목록 — 켤 때 한 번 받고, 못 받으면 지난번에 받아 둔 것을 쓴다. 둘 다 없으면 빈 목록(모두 그 자리에서 키운다).
+    /// </summary>
+    private static HashSet<string> HostedKeys()
+    {
+        lock (IndexGate)
+        {
+            if (_hosted != null) return _hosted;
+            string cached = Path.Combine(Folder, "index.txt");
+            string? text = null;
+            try
+            {
+                text = Http.GetStringAsync(HostedBase + "index.txt").GetAwaiter().GetResult();
+                Directory.CreateDirectory(Folder);
+                File.WriteAllText(cached, text);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CityUpscale] 목록을 못 받음: {ex.Message}");
+                try { if (File.Exists(cached)) text = File.ReadAllText(cached); } catch { /* 빈 목록 */ }
+            }
+            _hosted = text == null
+                ? []
+                : text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+            return _hosted;
+        }
+    }
+
+    private static bool Hosted(string key) => HostedKeys().Contains(key);
+
+    /// <summary>올려 둔 그림이면 받아 쌓아 두고 연다. 목록에 없거나 못 받으면 null.</summary>
+    private static BitmapSource? Download(string key)
+    {
+        if (!Hosted(key)) return null;
+        string path = PathOf(key), temp = path + ".part";
+        try
+        {
+            Directory.CreateDirectory(Folder);
+            var bytes = Http.GetByteArrayAsync(HostedBase + key + ".png").GetAwaiter().GetResult();
+            File.WriteAllBytes(temp, bytes);
+            File.Move(temp, path, overwrite: true);
+            return TryLoad(key);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[CityUpscale] {key} 를 못 받음: {ex.Message}");
+            try { if (File.Exists(temp)) File.Delete(temp); } catch { /* 다음에 덮어쓴다 */ }
+            return null;
+        }
+    }
+
     /// <summary>모델을 연다 — 없으면 받는다(64MB). 못 열면 false.</summary>
     private static bool EnsureSession()
     {
@@ -222,8 +289,10 @@ public static class CityUpscale
                 finally { _downloading = false; }
             }
             // CPU 면 코어 절반만 쓴다 — 게임이 끊기지 않게.
+            // VRAM 이 작은 그래픽은 GPU 를 건너뛴다 — 한 장 실행이 길어 GPU 가 리셋되면 지도 장치까지 끊긴다(제보 #70).
             _session = OnnxGpu.Open(UpscaleModelAsset.CachePath, out bool gpu,
-                                    cpuThreads: Math.Max(1, Environment.ProcessorCount / 2), allowGpu: !_cpuOnly);
+                                    cpuThreads: Math.Max(1, Environment.ProcessorCount / 2),
+                                    allowGpu: !_cpuOnly && !UI.Views.GpuInfo.LowVram);
             _gpu = gpu;
             _input = _session.InputMetadata.Keys.First();
             _failed = false;

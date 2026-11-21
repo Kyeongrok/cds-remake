@@ -17,6 +17,15 @@ public static class GpuInfo
     private static WeakReference<ID3D11Device>? _device;
     private static string _adapter = "";
 
+    /// <summary>지도 장치 그래픽 카드의 전용 VRAM(MB). 모르면 0.</summary>
+    public static long DedicatedMb { get; private set; }
+
+    /// <summary>
+    /// VRAM 이 작은 그래픽(내장 그래픽 따위)인지 — 이런 카드에서 업스케일 모델을 GPU 로 돌리면 한 번 실행이 2초를 넘겨
+    /// 윈도가 GPU 를 리셋하고(DXGI_ERROR_DEVICE_HUNG) 지도 장치까지 끊긴다(제보 #70, AMD 내장 VRAM 495MB).
+    /// </summary>
+    public static bool LowVram => DedicatedMb is > 0 and < 1024;
+
     /// <summary>지도 렌더러가 장치를 연 뒤 부른다.</summary>
     public static void Watch(ID3D11Device device, bool software)
     {
@@ -26,6 +35,7 @@ public static class GpuInfo
             using var dxgi = device.QueryInterface<IDXGIDevice>();
             using var adapter = dxgi.GetAdapter();
             var d = adapter.Description;
+            DedicatedMb = software ? 0 : (long)((ulong)d.DedicatedVideoMemory / (1024 * 1024));
             string driver = adapter.CheckInterfaceSupport(typeof(IDXGIDevice), out long umd)
                 ? $"{(umd >> 48) & 0xFFFF}.{(umd >> 32) & 0xFFFF}.{(umd >> 16) & 0xFFFF}.{umd & 0xFFFF}"
                 : "?";
