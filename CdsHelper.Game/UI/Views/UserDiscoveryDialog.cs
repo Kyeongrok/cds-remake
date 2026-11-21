@@ -77,6 +77,9 @@ public sealed class UserDiscoveryDialog : GameWindow
     private readonly PasswordBox _password = new() { Width = 160, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center };
     private readonly TextBlock _lockState = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
 
+    /// <summary>「출처 · 공유」 탭 — 클라우드 공유 상태(내가 올린 것 · 몇 판 · 올린 뒤 고침 / 받은 남의 것).</summary>
+    private readonly TextBlock _shareState = new() { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxWidth = 520 };
+
     /// <summary>책 표 · 도시 이름을 볼 게임. 없으면 책 고르기 창이 비어 뜬다.</summary>
     private readonly Engine.Game? _game;
 
@@ -203,6 +206,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         });
         _share.Children.Add(Line("만든 이", _author, Label("닉네임이나 이름")));
         _share.Children.Add(Line("라이선스", _license));
+        if (DiscoveryShare.Available) _share.Children.Add(Line("클라우드", _shareState));
         _unlock = Push("잠금 풀기", Unlock);
         _unlockDrop = Push("비밀번호 빼기", DropLock);
         _share.Children.Add(Line("비밀번호", _password, _unlock, _unlockDrop, _lockState));
@@ -299,15 +303,35 @@ public sealed class UserDiscoveryDialog : GameWindow
         _category.IsEnabled = _land.IsEnabled = _open.IsEnabled = _license.IsEnabled = _hasHint.IsEnabled = on;
         foreach (var button in _editors) button.IsEnabled = on;
         _save.IsEnabled = on;
-        _remove.IsEnabled = _export.IsEnabled = _upload.IsEnabled = !_example;
+        _remove.IsEnabled = _export.IsEnabled = !_example;
+        _upload.IsEnabled = !_example && !Others;
+        ShowShareState();
 
         bool locked = _editing is { } e && UserDiscoveries.IsLocked(e);
         _password.IsEnabled = !_example;
         _unlock.IsEnabled = !_example && locked && !on;
         _unlockDrop.IsEnabled = on && locked;
         _lockState.Text = _example ? "예제는 고칠 수 없습니다"
+            : Others ? "다른 분이 올린 발견물이라 고칠 수 없습니다"
             : !locked ? "잠기지 않음"
             : on ? "잠금 풀림 — 고칠 수 있습니다" : "잠김 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요";
+    }
+
+    /// <summary>고르고 있는 것이 「공유 발견물」에서 받은 남의 것인지 — 고칠 수 없고 「복제」해서 고친다.</summary>
+    private bool Others => !_example && _editing is { } e && DiscoveryShare.IsOthers(e.Uuid);
+
+    /// <summary>「클라우드」 줄 — 공유 상태를 적는다.</summary>
+    private void ShowShareState()
+    {
+        if (_example || _editing is not { } e) { _shareState.Text = ""; return; }
+        _shareState.Text = DiscoveryShare.StateOf(e.Uuid) switch
+        {
+            { Mine: false } st => $"다른 분이 올린 발견물(v{st.Rev})을 받은 것입니다 — 고칠 수 없습니다. 고쳐 쓰려면 「복제」로 내 발견물을 만들어 주세요."
+                                  + " 새 버전은 「공유 발견물」 창에서 받습니다.",
+            { Mine: true } st when DiscoveryShare.ChangedSinceUpload(e.Uuid) => $"내가 올린 발견물(v{st.Rev}) — 올린 뒤 고친 것이 있습니다. 「클라우드에 올리기…」로 새 버전을 올려 주세요.",
+            { Mine: true } st => $"내가 올린 발견물(v{st.Rev}) — 올린 그대로입니다.",
+            _ => "아직 올리지 않았습니다.",
+        };
     }
 
     /// <summary>「힌트 있음」을 풀면 힌트 줄들을 흐리게 — 값은 그대로 둔다.</summary>
@@ -336,7 +360,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         foreach (var l in UserDiscoveries.All.OrderBy(l => l.Entry.Name, StringComparer.Ordinal))
             _list.Items.Add(new ListBoxItem
             {
-                Content = $"{l.Numbers.Id}  {l.Entry.Name}" + (UserDiscoveries.IsLocked(l.Entry) ? "  🔒" : ""),
+                Content = $"{l.Numbers.Id}  {l.Entry.Name}" + (UserDiscoveries.IsLocked(l.Entry) ? "  🔒" : "") + ShareMark(l.Entry.Uuid),
                 Tag = l.Entry.Uuid,
             });
         var items = _list.Items.OfType<ListBoxItem>().ToList();
@@ -344,6 +368,15 @@ public sealed class UserDiscoveryDialog : GameWindow
         _list.SelectedItem = items.FirstOrDefault(i => (string)i.Tag == pick)
                              ?? items.Skip(UserDiscoveries.Examples.Count).FirstOrDefault() ?? items[0];
     }
+
+    /// <summary>목록 표시 — ☁ 내가 올린 것(* 는 올린 뒤 고침), ⬇ 받은 남의 것.</summary>
+    private static string ShareMark(string uuid) => DiscoveryShare.StateOf(uuid) switch
+    {
+        { Mine: false } => "  ⬇",
+        { Mine: true } when DiscoveryShare.ChangedSinceUpload(uuid) => "  ☁*",
+        { Mine: true } => "  ☁",
+        _ => "",
+    };
 
     private void Show(string uuid)
     {
@@ -374,8 +407,10 @@ public sealed class UserDiscoveryDialog : GameWindow
         _movie.Text = l.MoviePath is { } clip
             ? $"{System.IO.Path.GetFileName(clip)}  ({new System.IO.FileInfo(clip).Length / 1048576.0:0.0}MB)" : "(없음)";
         _picture.Source = l.PicturePath is { } path ? LoadPicture(path) : null;
-        SetEditable(!UserDiscoveries.IsLocked(e) || _unlocked.Contains(e.Uuid));
-        Tell($"발견물 {l.Numbers.Id}번 · 힌트 {l.Numbers.Hint}번 · 그림 {l.Numbers.Picture}번 — UUID {e.Uuid}");
+        SetEditable(!Others && (!UserDiscoveries.IsLocked(e) || _unlocked.Contains(e.Uuid)));
+        Tell(Others
+            ? $"다른 분이 올린 발견물입니다 — 고칠 수 없습니다. 「복제」하면 내 발견물로 베껴 고칠 수 있습니다. (발견물 {l.Numbers.Id}번)"
+            : $"발견물 {l.Numbers.Id}번 · 힌트 {l.Numbers.Hint}번 · 그림 {l.Numbers.Picture}번 — UUID {e.Uuid}");
     }
 
     /// <summary>칸들을 그 발견물로 채운다.</summary>
@@ -536,7 +571,7 @@ public sealed class UserDiscoveryDialog : GameWindow
 
     /// <summary>지난번에 적은 만든 이 — 같은 사람이 여럿 짓는 일이 많다.</summary>
     private static string LastAuthor() =>
-        UserDiscoveries.All.Select(l => l.Entry.Author).LastOrDefault(a => a.Length > 0) ?? "";
+        UserDiscoveries.All.Where(l => !DiscoveryShare.IsOthers(l.Entry.Uuid)).Select(l => l.Entry.Author).LastOrDefault(a => a.Length > 0) ?? "";
 
     /// <summary>
     /// 고른 발견물을 새 UUID 로 베낀다 — 그림 · 동영상도 함께. 예제(돌묵상어)를 베껴 고쳐 쓰라고 둔다.
@@ -554,12 +589,19 @@ public sealed class UserDiscoveryDialog : GameWindow
             return;
         }
 
+        // 받은 남의 것을 베끼면 내 것이 된다 — 만든 이는 나로, 원작자는 출처에 남긴다(라이선스가 저작자 표시를 요구한다).
+        bool others = Others;
+        string credit = others
+            ? string.Join("\r\n", new[] { source.Credit, $"원작: 「{source.Name}」 — {(source.Author.Length > 0 ? source.Author : "이름 없음")} (공유 발견물, {source.License})" }
+                                          .Where(x => x.Length > 0))
+            : source.Credit;
         var copy = source with
         {
             Uuid = Guid.NewGuid().ToString(),
             Name = $"{source.Name} 복사본",
             Lock = "",
-            Author = _example ? LastAuthor() : source.Author,
+            Author = _example || others ? LastAuthor() : source.Author,
+            Credit = credit,
             Version = UserDiscoveries.FormatVersion,
         };
 
@@ -617,6 +659,7 @@ public sealed class UserDiscoveryDialog : GameWindow
     private void Save()
     {
         if (_example) { Tell("예제는 적을 수 없습니다 — 「새 발견물」을 눌러 새로 만들어 주세요."); return; }
+        if (Others) { Tell("다른 분이 올린 발견물은 고칠 수 없습니다 — 「복제」로 내 발견물을 만들어 고쳐 주세요."); return; }
         if (_editing is { } now && UserDiscoveries.IsLocked(now) && !_unlocked.Contains(now.Uuid))
         {
             Tell("잠긴 발견물입니다 — 비밀번호를 적고 「잠금 풀기」를 눌러 주세요.");
@@ -791,18 +834,35 @@ public sealed class UserDiscoveryDialog : GameWindow
         if (_example || _editing is not { } e) return;
         if (UserDiscoveries.All.All(l => l.Entry.Uuid != e.Uuid)) { Tell("먼저 「저장」해 주세요."); return; }
         if (UserDiscoveries.IsLocked(e) && !_unlocked.Contains(e.Uuid)) { Tell("잠긴 발견물은 비밀번호로 잠금을 풀어야 올릴 수 있습니다."); return; }
+        if (Others) { Tell("다른 분이 올린 발견물은 올릴 수 없습니다 — 「복제」로 내 발견물을 만들어 올려 주세요."); return; }
+        if (DiscoveryShare.StateOf(e.Uuid) is { Mine: true, Hash.Length: > 0 } was && !DiscoveryShare.ChangedSinceUpload(e.Uuid))
+        {
+            Tell($"올린 v{was.Rev} 와 같습니다 — 고친 뒤 「저장」하고 올려 주세요.");
+            return;
+        }
         _upload.IsEnabled = false;
         try
         {
             Tell("공유 목록을 확인하는 중입니다…");
-            bool update = (await DiscoveryShare.List())?.Any(s => s.Uuid == e.Uuid && s.Mine) == true;
-            if (ShareUploadDialog.Ask(this, e.Name, e.License, update) is not { } official) { Tell(""); return; }
+            var list = await DiscoveryShare.List();
+            if (list == null) { Tell("공유 목록을 받지 못했습니다 — 인터넷 연결을 확인해 주세요."); return; }
+            var there = list.FirstOrDefault(s => s.Uuid == e.Uuid);
+            if (there is { Mine: false })
+            {
+                // 같은 UUID 를 남이 먼저 올렸다 — 받아서 들인 것을 예전 판 앱에서 고친 경우다. 받은 것으로 적어 두고 막는다.
+                DiscoveryShare.SetState(e.Uuid, new DiscoveryShare.LocalState(false, there.Revision, ""));
+                Refresh(e.Uuid);
+                Tell("다른 분이 올린 발견물입니다 — 처음 올린 분만 고쳐 올릴 수 있습니다. 「복제」로 내 발견물을 만들어 올려 주세요.");
+                return;
+            }
+            if (ShareUploadDialog.Ask(this, e.Name, e.License, there?.Revision ?? 0) is not var (official, note)) { Tell(""); return; }
             Tell("올리는 중입니다…");
-            Tell(await DiscoveryShare.Upload(e.Uuid, official) is { } why
-                ? why
-                : $"「{e.Name}」 을 클라우드에 올렸습니다 — 저장해 둔 내용으로 올렸습니다.");
+            if (await DiscoveryShare.Upload(e.Uuid, official, note) is { } why) { Tell(why); return; }
+            int rev = DiscoveryShare.StateOf(e.Uuid)?.Rev ?? 0;
+            Refresh(e.Uuid);
+            Tell($"「{e.Name}」 을 클라우드에 올렸습니다{(rev > 0 ? $"(v{rev})" : "")} — 저장해 둔 내용으로 올렸습니다.");
         }
-        finally { _upload.IsEnabled = !_example; }
+        finally { _upload.IsEnabled = !_example && !Others; }
     }
 
     /// <summary>「공유 발견물」 창 — 받아서 들인 것이 있으면 목록을 다시 읽는다.</summary>

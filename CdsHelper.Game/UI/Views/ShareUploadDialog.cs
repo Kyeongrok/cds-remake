@@ -18,10 +18,14 @@ public sealed class ShareUploadDialog : GameWindow
         Margin = new Thickness(0, 12, 0, 0),
     };
 
+    /// <summary>고친 내용 — 판 이력에 남아 받는 분들이 「공유 발견물」 창에서 본다.</summary>
+    private readonly TextBox _note = new() { MaxLength = 200, Margin = new Thickness(0, 4, 0, 0), TextWrapping = TextWrapping.Wrap, AcceptsReturn = false };
+
     private bool _ok;
 
-    private ShareUploadDialog(string name, string license, bool update)
+    private ShareUploadDialog(string name, string license, int currentRev)
     {
+        bool update = currentRev > 0;
         Title = "클라우드에 올리기";
         Width = 560;
         SizeToContent = SizeToContent.Height;
@@ -44,9 +48,16 @@ public sealed class ShareUploadDialog : GameWindow
                 {
                     TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0),
                     Text = Lang.T(update
-                        ? "이미 올린 발견물입니다. 올리면 새 버전으로 바뀝니다."
-                        : "올리면 다른 분들이 「공유 발견물」 창에서 받아 갈 수 있습니다. 동영상은 5MB 까지 올릴 수 있습니다."),
+                        ? "이미 올린 발견물입니다. 올리면 새 버전으로 바뀌고, 받아 간 분들에게 새 버전이 있다고 보입니다."
+                        : "올리면 다른 분들이 「공유 발견물」 창에서 받아 갈 수 있습니다. 동영상은 5MB 까지 올릴 수 있습니다.")
+                           + (update ? $"  (v{currentRev} → v{currentRev + 1})" : ""),
                 },
+                new TextBlock
+                {
+                    Margin = new Thickness(0, 10, 0, 0), FontWeight = FontWeights.Bold,
+                    Text = Lang.T(update ? "고친 내용" : "소개 한 줄(판 이력에 남습니다, 비워도 됩니다)"),
+                },
+                _note,
                 new TextBlock
                 {
                     TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0), Foreground = Brushes.DimGray,
@@ -67,11 +78,13 @@ public sealed class ShareUploadDialog : GameWindow
         };
     }
 
-    /// <summary>창을 띄운다. 올리기를 눌렀으면 정식 버전 허락 여부, 취소했으면 null.</summary>
-    public static bool? Ask(Window owner, string name, string license, bool update)
+    /// <summary>창을 띄운다. 올리기를 눌렀으면 (정식 버전 허락 여부, 고친 내용), 취소했으면 null.</summary>
+    /// <param name="currentRev">이미 올린 판(처음 올리면 0).</param>
+    public static (bool Official, string Note)? Ask(Window owner, string name, string license, int currentRev)
     {
-        var window = new ShareUploadDialog(name, license, update) { Owner = owner };
+        var window = new ShareUploadDialog(name, license, currentRev) { Owner = owner };
+        window.Loaded += (_, _) => window._note.Focus();
         window.ShowDialog();
-        return window._ok ? window._official.IsChecked == true : null;
+        return window._ok ? (window._official.IsChecked == true, window._note.Text.Trim()) : null;
     }
 }

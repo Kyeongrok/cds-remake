@@ -2,9 +2,11 @@
 //
 //   POST /v1/shares                         올리기(multipart: meta JSON · file .cdsdiscovery · picture PNG(없어도 된다)) — 같은 UUID 면 고친다(올린 설치만)
 //                                           meta.official — 올린 분이 정식 버전(게임 기본 발견물)에 넣어도 좋다고 했는지
+//                                           meta.note — 고친 내용(200자, 판 이력에 남는다) · 답은 { ok, updated, rev }
 //   GET  /v1/shares?install=<id>            목록(숨긴 것 빼고, 새로 고친 차례) — install 을 주면 제 것에 mine: true
 //   GET  /v1/shares/<uuid>/file             파일 받기 — 받은 수가 오른다
 //   GET  /v1/shares/<uuid>/picture          미리보기 그림
+//   GET  /v1/shares/<uuid>/history          판 이력(새 판부터) — { revisions: [{ rev, note, size, created_at }] }
 //   POST /v1/shares/<uuid>/delete {install} 지우기 — 올린 설치 또는 관리자(Authorization: Bearer <BUG_ADMIN_KEY>)
 //   POST /v1/shares/<uuid>/report {install, reason}  신고 — 설치마다 한 번, 다섯 곳이 신고하면 숨는다
 //   POST /v1/shares/<uuid>/hide {hidden}    숨기기 · 되살리기(관리자만)
@@ -24,11 +26,12 @@ export async function routeShares(request, env, url, { json, text, int, isId, is
     if (request.method === 'POST') return postShare(request, env, json, text, int, isId);
     return json({ error: 'not found' }, 404);
   }
-  const m = pathname.match(/^\/v1\/shares\/([0-9a-fA-F-]{36})\/(file|picture|delete|report|hide)$/);
+  const m = pathname.match(/^\/v1\/shares\/([0-9a-fA-F-]{36})\/(file|picture|history|delete|report|hide)$/);
   if (!m || !isUuid(m[1])) return json({ error: 'not found' }, 404);
   const uuid = m[1].toLowerCase(), action = m[2];
   if (request.method === 'GET' && action === 'file') return getFile(uuid, env, json);
   if (request.method === 'GET' && action === 'picture') return getPicture(uuid, env, json);
+  if (request.method === 'GET' && action === 'history') return getHistory(uuid, env, json);
   if (request.method !== 'POST') return json({ error: 'not found' }, 404);
   let b = {};
   try { b = (await request.json()) || {}; } catch { b = {}; }
@@ -78,7 +81,7 @@ async function postShare(request, env, json, text, int, isId) {
   }
 
   const uuid = meta.uuid.toLowerCase(), now = new Date().toISOString();
-  const had = await env.DB.prepare('SELECT owner, hidden FROM shared_discoveries WHERE uuid = ?').bind(uuid).first();
+  const had = await env.DB.prepare('SELECT owner, hidden, rev FROM shared_discoveries WHERE uuid = ?').bind(uuid).first();
   if (had && had.owner !== meta.install) return json({ error: 'not yours' }, 403);
   if (had && had.hidden) return json({ error: 'hidden' }, 403);
 
@@ -98,6 +101,7 @@ async function postShare(request, env, json, text, int, isId) {
   const row = [text(meta.name.trim(), 80), int(meta.category, 99), text(meta.author || '', 60), text(meta.license || '', 200),
                text(meta.description || '', 300), bytes.byteLength, meta.hasMovie ? 1 : 0, pic ? 1 : 0, text(meta.version || '', 32),
                meta.official ? 1 : 0];
+  const rev = had ? had.rev + 1 : 1;
   if (had)
     await env.DB.prepare(`UPDATE shared_discoveries SET name = ?, category = ?, author = ?, license = ?, description = ?, size = ?,
                             has_movie = ?, has_picture = ?, version = ?, wants_official = ?, updated_at = ?, rev = rev + 1 WHERE uuid = ?`)
@@ -106,7 +110,9 @@ async function postShare(request, env, json, text, int, isId) {
     await env.DB.prepare(`INSERT INTO shared_discoveries (uuid, name, category, author, license, description, size, has_movie, has_picture,
                             version, wants_official, owner, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .bind(uuid, ...row, meta.install, now, now).run();
-  return json({ ok: true, updated: !!had });
+  await env.DB.prepare('INSERT OR REPLACE INTO share_revisions (uuid, rev, note, size, created_at) VALUES (?, ?, ?, ?, ?)')
+    .bind(uuid, rev, text(meta.note || '', 200), bytes.byteLength, now).run();
+  return json({ ok: true, updated: !!had, rev });
 }
 
 async function getFile(uuid, env, json) {
@@ -116,6 +122,15 @@ async function getFile(uuid, env, json) {
   if (!bytes) return json({ error: 'not found' }, 404);
   await env.DB.prepare('UPDATE shared_discoveries SET downloads = downloads + 1 WHERE uuid = ?').bind(uuid).run();
   return new Response(bytes, { headers: { 'content-type': 'application/zip', 'cache-control': 'no-store' } });
+}
+
+async function getHistory(uuid, env, json) {
+  const row = await env.DB.prepare('SELECT hidden FROM shared_discoveries WHERE uuid = ?').bind(uuid).first();
+  if (!row || row.hidden) return json({ error: 'not found' }, 404);
+  const { results } = await env.DB.prepare(
+    'SELECT rev, note, size, created_at FROM share_revisions WHERE uuid = ? ORDER BY rev DESC LIMIT 100').bind(uuid).all();
+  return new Response(JSON.stringify({ revisions: results }),
+    { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 }
 
 async function getPicture(uuid, env, json) {
@@ -133,6 +148,7 @@ async function deleteShare(uuid, b, request, env, json, isId, isAdmin) {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM shared_discoveries WHERE uuid = ?').bind(uuid),
     env.DB.prepare('DELETE FROM share_reports WHERE uuid = ?').bind(uuid),
+    env.DB.prepare('DELETE FROM share_revisions WHERE uuid = ?').bind(uuid),
   ]);
   return json({ ok: true });
 }

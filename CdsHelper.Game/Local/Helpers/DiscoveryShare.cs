@@ -38,6 +38,75 @@ public static class DiscoveryShare
                                 long Size, bool HasMovie, bool HasPicture, string Version, string UpdatedAt, int Revision,
                                 int Downloads, bool Mine, bool WantsOfficial);
 
+    /// <summary>판 이력 한 줄 — 몇 판 · 고친 내용 · 크기 · 올린 때.</summary>
+    public sealed record Revision(int Rev, string Note, long Size, string CreatedAt);
+
+    /// <summary>
+    /// 이 PC 가 아는 공유 상태(발견물 폴더의 <c>share.json</c>) — 내보내기 파일에는 안 담긴다.
+    /// </summary>
+    /// <param name="Mine">내가 올린 것인지. 거짓이면 「공유 발견물」에서 받은 남의 것이라 고칠 수 없다(복제해서 고친다).</param>
+    /// <param name="Rev">올리거나 받은 판.</param>
+    /// <param name="Hash">그때의 알맹이 셈(<see cref="ContentHash"/>) — 다르면 올린 뒤 고친 것이 있다.</param>
+    public sealed record LocalState(bool Mine, int Rev, string Hash);
+
+    private const string StateFile = "share.json";
+
+    /// <summary>그 발견물의 공유 상태. 올리거나 받은 적 없으면 null.</summary>
+    public static LocalState? StateOf(string uuid)
+    {
+        try
+        {
+            string path = Path.Combine(UserDiscoveries.Folder, uuid, StateFile);
+            return File.Exists(path) ? JsonSerializer.Deserialize<LocalState>(File.ReadAllText(path)) : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return null; }
+    }
+
+    /// <summary>공유 상태를 적는다 — 발견물 폴더가 없으면 안 적는다.</summary>
+    public static void SetState(string uuid, LocalState state)
+    {
+        try
+        {
+            string dir = Path.Combine(UserDiscoveries.Folder, uuid);
+            if (Directory.Exists(dir)) File.WriteAllText(Path.Combine(dir, StateFile), JsonSerializer.Serialize(state, Json));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>공유 상태를 지운다 — 내 공유를 내렸을 때.</summary>
+    public static void ClearState(string uuid)
+    {
+        try { File.Delete(Path.Combine(UserDiscoveries.Folder, uuid, StateFile)); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>받은 남의 발견물인지 — 고칠 수 없다.</summary>
+    public static bool IsOthers(string uuid) => StateOf(uuid) is { Mine: false };
+
+    /// <summary>
+    /// 알맹이 셈 — discovery.json · 그림 · 동영상 바이트를 묶어 SHA-256. 올린 판과 지금이 같은지 볼 때 쓴다. 못 읽으면 빈 글.
+    /// </summary>
+    public static string ContentHash(string uuid)
+    {
+        if (UserDiscoveries.All.FirstOrDefault(l => l.Entry.Uuid == uuid) is not { } loaded) return "";
+        try
+        {
+            using var sha = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+            foreach (string? path in new[] { Path.Combine(loaded.Folder, "discovery.json"), loaded.PicturePath, loaded.MoviePath })
+            {
+                if (path == null) { sha.AppendData([0]); continue; }
+                sha.AppendData(File.ReadAllBytes(path));
+                sha.AppendData([1]);
+            }
+            return Convert.ToHexString(sha.GetHashAndReset());
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return ""; }
+    }
+
+    /// <summary>내가 올린 것인데 올린 뒤 고친 것이 있는지.</summary>
+    public static bool ChangedSinceUpload(string uuid) =>
+        StateOf(uuid) is { Mine: true } state && state.Hash.Length > 0 && state.Hash != ContentHash(uuid);
+
     private static HttpClient Client(int seconds) => new() { Timeout = TimeSpan.FromSeconds(seconds) };
 
     /// <summary>
@@ -45,7 +114,8 @@ public static class DiscoveryShare
     /// <paramref name="official"/> 은 올린 분이 정식 버전(게임 기본 발견물)에 넣어도 좋다고 했는지다 — 정식 버전에 넣은 것은
     /// 받는 곳에서 지워 용량을 비운다.
     /// </summary>
-    public static async Task<string?> Upload(string uuid, bool official)
+    /// <param name="note">고친 내용 — 판 이력에 남는다(200자).</param>
+    public static async Task<string?> Upload(string uuid, bool official, string note = "")
     {
         string url = BugReport.Url;
         if (url.Length == 0) return "이 버전에서는 공유할 수 없습니다(개발 빌드).";
@@ -67,6 +137,7 @@ public static class DiscoveryShare
                 category = e.Category, author = e.Author, license = e.License,
                 description = e.Description.Length > 300 ? e.Description[..300] : e.Description,
                 hasMovie = loaded.MoviePath != null, official,
+                note = note.Trim().Length > 200 ? note.Trim()[..200] : note.Trim(),
             };
             // 이름은 따옴표로 싼다 — .NET 은 form-data 이름을 따옴표 없이 적는데, Workers 의 formData() 는 그것을 못 읽는다.
             using var form = new MultipartFormDataContent();
@@ -83,7 +154,20 @@ public static class DiscoveryShare
 
             using var http = Client(120);
             using var reply = await http.PostAsync(url + "/v1/shares", form);
-            if (reply.IsSuccessStatusCode) return null;
+            if (reply.IsSuccessStatusCode)
+            {
+                // 받는 곳이 판 번호를 돌려주면 그것을, 예전 받는 곳이면 목록에서 찾는다.
+                int rev = 0;
+                try
+                {
+                    using var doc = JsonDocument.Parse(await reply.Content.ReadAsStringAsync());
+                    if (doc.RootElement.TryGetProperty("rev", out var r) && r.ValueKind == JsonValueKind.Number) rev = r.GetInt32();
+                }
+                catch (JsonException) { }
+                if (rev == 0) rev = (await List())?.FirstOrDefault(x => x.Uuid == uuid)?.Revision ?? 0;
+                SetState(uuid, new LocalState(true, rev, ContentHash(uuid)));
+                return null;
+            }
             return (int)reply.StatusCode switch
             {
                 403 => "다른 분이 이미 올린 발견물입니다 — 처음 올린 분만 고쳐 올릴 수 있습니다.",
@@ -128,6 +212,32 @@ public static class DiscoveryShare
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException)
         {
             System.Diagnostics.Debug.WriteLine($"[DiscoveryShare] list {ex.GetType().Name}: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>판 이력(새 판부터). 못 받으면 null — 이력을 모르는 예전 받는 곳도 null.</summary>
+    public static async Task<List<Revision>?> History(string uuid)
+    {
+        string url = BugReport.Url;
+        if (url.Length == 0) return null;
+        try
+        {
+            using var http = Client(15);
+            using var reply = await http.GetAsync($"{url}/v1/shares/{uuid}/history");
+            if (!reply.IsSuccessStatusCode) return null;
+            using var doc = JsonDocument.Parse(await reply.Content.ReadAsStringAsync());
+            var list = new List<Revision>();
+            foreach (var r in doc.RootElement.GetProperty("revisions").EnumerateArray())
+            {
+                string Str(string key) => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
+                long Num(string key) => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetInt64() : 0;
+                list.Add(new Revision((int)Num("rev"), Str("note"), Num("size"), Str("created_at")));
+            }
+            return list;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException)
+        {
             return null;
         }
     }
