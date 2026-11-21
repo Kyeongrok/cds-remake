@@ -2073,5 +2073,55 @@
     "wealth": 400000,
     "power": "B",
     "note": "원본에 없는 후원자 — 명나라의 유학자 · 관료 왕수인(1472~1529). 절강 여요 사람으로 양명학을 열었고, 1519년 영왕의 난을 진압했다. 얼굴은 명대 초상화(퍼블릭 도메인)."
+  },
+  {
+    "id": 83,
+    "name": "성종",
+    "nationality": "조선 왕조",
+    "city": "한양",
+    "supportRate": "65%",
+    "discernment": 90,
+    "occupation": "국왕",
+    "appearYear": 1480,
+    "retireYear": null,
+    "preferences": {
+      "geography": true,
+      "treasure": false,
+      "tradeGoods": false,
+      "creature": false,
+      "history": true,
+      "religion": false,
+      "superstition": false,
+      "ethnicity": false
+    },
+    "fame": 9000,
+    "wealth": 600000,
+    "power": "A",
+    "note": "원본에 없는 후원자 — 조선 9대 임금 성종(1457~1494). 『동국여지승람』(1481)과 『동국통감』(1485)을 엮게 하고 『경국대전』을 펴냈다. 얼굴은 원본 남자 초상화 370."
+  },
+  {
+    "id": 84,
+    "name": "아미르 2세",
+    "nationality": "라슬",
+    "city": "아덴",
+    "supportRate": "60%",
+    "discernment": 75,
+    "occupation": "국왕",
+    "appearYear": 1480,
+    "retireYear": 1517,
+    "preferences": {
+      "geography": true,
+      "treasure": true,
+      "tradeGoods": true,
+      "creature": false,
+      "history": false,
+      "religion": true,
+      "superstition": false,
+      "ethnicity": false
+    },
+    "fame": 8000,
+    "wealth": 700000,
+    "power": "B",
+    "note": "원본에 없는 후원자 — 예멘 타히르 왕조의 술탄 알말리크 알자피르 아미르 2세(재위 1489~1517). 인도양 교역으로 번영한 아덴을 다스렸고 라다아에 아미리야 마드라사를 세웠다. 1517년 맘루크군에 져 죽었다. 얼굴은 원본 남자 초상화 312."
   }
 ]
