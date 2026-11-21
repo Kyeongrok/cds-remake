@@ -2092,7 +2092,7 @@
       "history": true,
       "religion": false,
       "superstition": false,
-      "ethnicity": false
+      "ethnicity": true
     },
     "fame": 9000,
     "wealth": 600000,
