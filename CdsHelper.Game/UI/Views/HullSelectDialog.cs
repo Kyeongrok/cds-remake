@@ -19,15 +19,15 @@ namespace CdsHelper.Game.UI.Views;
 public sealed class HullSelectDialog : GameWindow
 {
     /// <summary>
-    /// 표 머리글. <b>값 칸은 없다</b> — 게임 표도 대포수에서 끝난다.
+    /// 표 머리글. <b>값 칸은 없다</b> — 게임 표도 대포수에서 끝난다. 최대승원은 원본 표에 없는 칸이다(요청).
     /// </summary>
     /// <remarks>값은 "결정" 을 누른 뒤 "…은(는) %d닢일세. 사겠나?" 로 묻는다.</remarks>
     private static readonly string[] Headers =
-        ["선체명", "내구력", "추진력", "적재용량", "적재중량", "필요승인", "대포수"];
+        ["선체명", "내구력", "추진력", "적재용량", "적재중량", "필요승인", "최대승원", "대포수"];
 
     /// <summary>칸 폭. 이름만 넓고 숫자는 글자에 맞춰 좁다.</summary>
-    /// <remarks>네 글자 머리글(적재용량·적재중량·필요승원)이 잘리지 않게 넓혔다 — 게임 글꼴 한 글자가 16점이다.</remarks>
-    private static readonly double[] Widths = [108, 64, 64, 80, 80, 80, 64];
+    /// <remarks>네 글자 머리글(적재용량·적재중량·필요승원·최대승원)이 잘리지 않게 넓혔다 — 게임 글꼴 한 글자가 16점이다.</remarks>
+    private static readonly double[] Widths = [108, 64, 64, 80, 80, 80, 80, 64];
 
     /// <summary>
     /// 머리글 띠와 줄 띠의 색. 원본 갈무리에서 그대로 뽑았다 — 머리글이 한 톤 짙다.
@@ -115,7 +115,7 @@ public sealed class HullSelectDialog : GameWindow
             string[] cells =
             [
                 hull.Name, $"{hull.Hp}", $"{hull.Speed}", $"{hull.Capacity}",
-                $"{hull.Tonnage}", $"{hull.Crew}", $"{hull.Guns}",
+                $"{hull.Tonnage}", $"{hull.Crew}", $"{Player.MaxCrewOf(hull)}", $"{hull.Guns}",
             ];
             // 원본 표는 돈이 모자라도 흐리지 않는다 — 돈은 YES 뒤에 본다(0x0044B5A0).
             var row = Row(cells, header: false);
