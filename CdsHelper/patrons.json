@@ -2110,14 +2110,14 @@
     "appearYear": 1480,
     "retireYear": 1517,
     "preferences": {
-      "geography": true,
-      "treasure": true,
+      "geography": false,
+      "treasure": false,
       "tradeGoods": true,
       "creature": false,
       "history": false,
       "religion": true,
       "superstition": false,
-      "ethnicity": false
+      "ethnicity": true
     },
     "fame": 8000,
     "wealth": 700000,
