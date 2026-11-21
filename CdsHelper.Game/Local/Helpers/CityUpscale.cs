@@ -13,13 +13,13 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </summary>
 /// <remarks>
 /// <b>미리 키운 그림을 받는다.</b> 고정 릴리즈 <c>city-hd</c> 에 그림 점 해시 이름의 PNG 와 그 목록(<c>index.txt</c>)을 올려 두고,
-/// 목록에 있는 그림은 입항할 때 그 한 장만 받는다(장마다 3~4MB — 다 합치면 800MB 라 한꺼번에 받지 않는다).
+/// 모드를 켜면 목록에 있는 그림을 뒤에서 한 장씩 받는다(장마다 3~4MB, 다 합치면 800MB). 입항한 도시는 줄 맨 앞으로 당긴다.
 /// 예전에는 PC 마다 GPU 로 키웠는데, 내장 그래픽에서 한 번 실행이 2초를 넘겨 윈도가 GPU 를 리셋하고 지도 장치까지 끊겼다(제보 #70).
 /// <para>
 /// 목록에 없는 그림(커스텀 팩 · 받기 실패)만 그 자리에서 키운다. 모델은 선박 리마스터와 같은 Rebout Blend 4x 다
 /// (<see cref="UpscaleModelAsset"/>, 없으면 처음에 받는다). GPU(DirectML)가 되면 GPU 로 — VRAM 1GB 미만이면 CPU 로 — 돌린다
 /// (CPU 면 한 장에 수십 초). <b>뒤에서 한 장씩</b> 만든다 — 실 하나, 낮은 우선순위, CPU 면 코어 절반. 입항한 도시는 줄 맨 앞으로
-/// 당기고, 다 되면 그 창 그림을 갈아 끼운다(<see cref="Request"/>). 목록에 없는 남은 도시는 게임을 켜 둔 동안 차례로 채운다(<see cref="Prefill"/>).
+/// 당기고, 다 되면 그 창 그림을 갈아 끼운다(<see cref="Request"/>). 남은 도시는 게임을 켜 둔 동안 차례로 받거나 만든다(<see cref="Prefill"/>).
 /// </para>
 /// 만든 그림은 <c>%LOCALAPPDATA%\CdsHelper\cityhd</c> 에 그림 점의 해시 이름으로 둔다 — 커스텀 팩 · 도시 성장으로 그림이 바뀌면
 /// 이름도 바뀐다. 비치는 점이 있는 그림(위에 얹는 건물)은 비침도 같은 모델로 키운다.
@@ -124,8 +124,8 @@ public static class CityUpscale
                     catch { continue; }
                     if (px == null) continue;
                     string key = KeyOf(px, width, height);
-                    // 올려 둔 그림은 미리 받지 않는다 — 입항할 때 그 한 장만 받는다.
-                    if (File.Exists(PathOf(key)) || Hosted(key)) continue;
+                    // 올려 둔 그림이면 일꾼이 받고, 없으면 그 자리에서 키운다.
+                    if (File.Exists(PathOf(key))) continue;
                     using var finished = new ManualResetEventSlim();
                     Enqueue(key, px, width, height, _ => finished.Set(), front: false);
                     // 하나씩 넣는다 — 줄에 다 쌓아 두면 그림 점이 한꺼번에 수십 MB 잡힌다.
@@ -254,11 +254,17 @@ public static class CityUpscale
 
     private static bool Hosted(string key) => HostedKeys().Contains(key);
 
+    private static volatile bool _fetching;
+
+    /// <summary>일꾼이 지금 올려 둔 그림을 받는 중인지 — 진행 줄에 「받는 중」으로 낸다.</summary>
+    public static bool Fetching => _fetching;
+
     /// <summary>올려 둔 그림이면 받아 쌓아 두고 연다. 목록에 없거나 못 받으면 null.</summary>
     private static BitmapSource? Download(string key)
     {
         if (!Hosted(key)) return null;
         string path = PathOf(key), temp = path + ".part";
+        _fetching = true;
         try
         {
             Directory.CreateDirectory(Folder);
@@ -273,6 +279,7 @@ public static class CityUpscale
             try { if (File.Exists(temp)) File.Delete(temp); } catch { /* 다음에 덮어쓴다 */ }
             return null;
         }
+        finally { _fetching = false; }
     }
 
     /// <summary>모델을 연다 — 없으면 받는다(64MB). 못 열면 false.</summary>

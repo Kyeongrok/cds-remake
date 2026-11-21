@@ -1607,7 +1607,7 @@ public sealed class ModDialog : GameWindow
                 if (on) WorldMapWindow.Current?.StartCityUpscale();
             },
             "원본에 없는 것입니다 — 도시 그림을 원본 400x320 도트 대신, 업스케일 모델(Rebout Blend 4x)로 네 배 키운 그림으로 그립니다."
-            + " 건물 윤곽이 매끈해지고 시가지 · 땅의 잔무늬는 붓질처럼 풀립니다. 미리 키워 둔 그림은 입항할 때 그 도시 것만 받습니다(한 장에 3~4MB)."
+            + " 건물 윤곽이 매끈해지고 시가지 · 땅의 잔무늬는 붓질처럼 풀립니다. 켜면 미리 키워 둔 그림을 뒤에서 한 장씩 받습니다(한 장에 3~4MB, 모두 800MB 쯤 — 입항한 도시를 먼저 받습니다)."
             + " 받을 수 없는 그림(커스텀 팩 따위)만 이 PC 에서 게임을 켜 둔 동안 뒤에서 한 장씩 만들어 쌓아 둡니다(한 장에 수십 초,"
             + " 처음 만들 때 모델 64MB 를 받습니다). 다 되면 그 자리에서 바뀝니다."
             + " 만드는 동안 게임이 느려질 수 있습니다 — 끄면 멈추고, 다시 켜면 남은 것부터 이어서 만듭니다. 진행은 아래 줄에 보입니다."
@@ -1645,10 +1645,11 @@ public sealed class ModDialog : GameWindow
             {
                 { Downloading: true } => Local.Helpers.Lang.T("모델(64MB)을 받는 중입니다..."),
                 { Failed: true } => Local.Helpers.Lang.T("모델을 열지 못했습니다."),
-                { Total: 0 } => Local.Helpers.Lang.T("게임을 시작하면 뒤에서 만들기 시작합니다."),
-                { Filling: true } => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 이번에 {p.Made}장 만듦")
+                { Total: 0 } => Local.Helpers.Lang.T("게임을 시작하면 뒤에서 받기 시작합니다."),
+                { Filling: true } => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 이번에 {p.Made}장 받음 · 만듦")
                     + (Local.Helpers.CityUpscale.OnGpu is { } gpu ? (gpu ? " · GPU" : " · CPU") : "")
-                    + (p.Busy ? Local.Helpers.Lang.T(" — 만드는 중(게임이 느려질 수 있습니다)") : ""),
+                    + (Local.Helpers.CityUpscale.Fetching ? Local.Helpers.Lang.T(" — 받는 중")
+                       : p.Busy ? Local.Helpers.Lang.T(" — 만드는 중(게임이 느려질 수 있습니다)") : ""),
                 _ when p.Checked >= p.Total => Local.Helpers.Lang.T($"{p.Total}장 모두 준비됐습니다."),
                 _ => Local.Helpers.Lang.T($"{p.Checked}/{p.Total}장 · 멈춤"),
             };
