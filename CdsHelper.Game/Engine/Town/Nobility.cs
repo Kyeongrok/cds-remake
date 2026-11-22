@@ -37,8 +37,8 @@ public static class Nobility
     public const string GrandPerk = "모든 도시에서 언어 1";
 
     /// <summary>작위마다 넘어야 할 누적 공적. 대본 「작위」의 조건과 같은 값이다.</summary>
-    /// <remarks>대공은 향사를 더할 때 옛 대공 문턱(5000)의 두 배로 올렸다(요청).</remarks>
-    public static readonly int[] Thresholds = [0, 125, 375, 750, 1375, 2250, 3500, 5000, 10000];
+    /// <remarks>대공은 향사를 더할 때 옛 대공 문턱(5000)의 두 배로 올렸다가 7000 으로 낮췄다(요청).</remarks>
+    public static readonly int[] Thresholds = [0, 125, 375, 750, 1375, 2250, 3500, 5000, 7000];
 
     /// <summary>대본이 읽는 능력치 칸.</summary>
     public const int MeritStat = 40, RankStat = 41, HomeCapitalStat = 42;
