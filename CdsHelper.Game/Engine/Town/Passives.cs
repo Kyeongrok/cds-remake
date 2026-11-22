@@ -37,7 +37,7 @@ public enum PassiveEffect
 /// <param name="Name">보이는 이름(「매력 +10」 따위).</param>
 /// <param name="Effect">무엇을 바꾸는지.</param>
 /// <param name="Amount">얼마나 — 갈래마다 단위가 다르다(<see cref="Passives.UnitOf"/>).</param>
-/// <param name="Rank">붙는 작위(1 기사 ~ 7 대공). 0 이면 미배치 — 표에만 있고 어느 작위에도 안 붙는다.</param>
+/// <param name="Rank">붙는 작위(1 향사 ~ 8 대공). 0 이면 미배치 — 표에만 있고 어느 작위에도 안 붙는다.</param>
 /// <param name="Stat">능력치 갈래일 때 어느 능력치인지(<see cref="Support.Local.Models.Ability"/> 0~5).</param>
 public sealed record Passive(string Name, PassiveEffect Effect, int Amount, int Rank, int Stat = 0);
 

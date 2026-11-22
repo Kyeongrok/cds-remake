@@ -145,9 +145,11 @@ internal sealed class PersonInfoDialog : InfoDialog
         };
         for (int rank = 1; rank <= Engine.Town.Nobility.MaxRank; rank++)
         {
-            var perks = Engine.Town.Passives.All.Where(p => p.Rank == rank).ToList();
+            var perks = Engine.Town.Passives.All.Where(p => p.Rank == rank).Select(p => Lang.T(p.Name)).ToList();
+            // 대공 혜택(어느 도시에서나 언어 1)은 패시브 표 밖이라 따로 붙인다.
+            if (rank == Engine.Town.Nobility.MaxRank) perks.Add(Lang.T(Engine.Town.Nobility.GrandPerk));
             string mark = player.NobleRank >= rank ? "●" : "○";
-            string what = perks.Count > 0 ? string.Join(" · ", perks.Select(p => Lang.T(p.Name))) : "-";
+            string what = perks.Count > 0 ? string.Join(" · ", perks) : "-";
             lines.Add($"{mark} {Lang.T(Engine.Town.Nobility.Names[rank])}({Engine.Town.Nobility.Thresholds[rank]}) : {what}");
         }
         NoticeDialog.Show(owner, string.Join(Environment.NewLine, lines), "작위");

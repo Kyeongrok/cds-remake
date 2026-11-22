@@ -430,6 +430,15 @@ public sealed class Player
     /// <summary>그 언어의 자리.</summary>
     public int TongueOf(string language) => _tongues.GetValueOrDefault(language);
 
+    /// <summary>
+    /// 대화에서 알아듣는 그 언어의 자리 — 제 자리에 바닥(<see cref="TongueFloor"/>)을 친 것. 모드 「작위」 대공이면 어느 말이든
+    /// 적어도 1 로 대화한다(요청). 배우기 · 물려주기 · 능력치 창은 제 자리(<see cref="TongueOf"/>)를 그대로 본다.
+    /// </summary>
+    public int SpeaksOf(string language) => Math.Max(TongueOf(language), TongueFloor(this));
+
+    /// <summary>대화 언어의 바닥. 설정은 Game 쪽에 있어 판이 이 물음을 걸어 둔다.</summary>
+    public static Func<Player, int> TongueFloor { get; set; } = _ => 0;
+
     /// <summary>언어 자리를 박는다.</summary>
     public void SetTongue(string language, int level) =>
         _tongues[language] = Math.Clamp(level, 0, Skill.MaxLevel);
@@ -869,7 +878,7 @@ public sealed class Player
     public int NobleRank { get; private set; }
 
     /// <summary>작위를 적는다.</summary>
-    public void SetNobleRank(int rank) => NobleRank = Math.Clamp(rank, 0, 7);
+    public void SetNobleRank(int rank) => NobleRank = Math.Clamp(rank, 0, 8);
 
     private readonly Dictionary<int, long> _invested = [];
 

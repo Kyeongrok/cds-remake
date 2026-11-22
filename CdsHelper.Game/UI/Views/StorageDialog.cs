@@ -60,7 +60,7 @@ public sealed class StorageDialog : GameWindow
     {
         _player = player;
         _items = items;
-        // 소지품 칸 수는 작위 혜택(자작)으로 늘 수 있다 — 이미 더 지녔으면 그만큼.
+        // 소지품 칸 수는 작위 혜택(남작)으로 늘 수 있다 — 이미 더 지녔으면 그만큼.
         _bag = new int[Math.Max(player.ItemLimit, player.Items.Count)];
         // 보관 칸 수는 작위 혜택(보관함 넓히기)으로 늘 수 있다.
         _box = new int[Math.Max(player.StoreLimit, player.Stored.Count)];

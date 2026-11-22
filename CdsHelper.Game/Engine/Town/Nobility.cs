@@ -13,7 +13,7 @@ namespace CdsHelper.Game.Engine.Town;
 ///               + 교역소 투자 1000 닢마다 1(<see cref="InvestPerMerit"/>, Player.Investments)
 ///   작위 받기    대본 「작위」(exe-tables/작위.json) — 개인 이야기처럼 단계 카운터로 돈다. 파트 k 가 작위 k → k+1 이다.
 ///                술집에 들면 「본국 왕궁에서 부른다」, 본국 수도 왕궁에 들면 국왕이 작위를 준다(승리 효과음)
-///   작위 값     Player.NobleRank(0 없음 ~ 7 대공) — 대본이 SetStat 41 로 적는다
+///   작위 값     Player.NobleRank(0 없음 · 1 향사 ~ 8 대공) — 대본이 SetStat 41 로 적는다
 ///   혜택        패시브 표(<see cref="Passives"/>, 도구 앱 「패시브」 창) — 엔진 곳곳이 <see cref="Sum"/> 으로 묻는다. 혜택은 쌓인다
 /// </code>
 /// 대본이 읽는 값은 능력치 칸 40 공적 · 41 작위 · 42 본국 수도에 있는지(1/0)다(DisevRunner.ValueOf).
@@ -24,13 +24,21 @@ public static class Nobility
     public static bool Enabled => GameSettings.Nobility;
 
     /// <summary>작위 이름. 0 은 없음이다.</summary>
-    public static readonly string[] Names = ["", "기사", "남작", "자작", "백작", "후작", "공작", "대공"];
+    /// <remarks>맨 아래 향사는 나중에 더했다(요청) — 혜택 · 문턱은 번호를 따라 한 칸씩 내려갔다(옛 기사 혜택이 향사 것이다).</remarks>
+    public static readonly string[] Names = ["", "향사", "기사", "남작", "자작", "백작", "후작", "공작", "대공"];
 
     /// <summary>가장 높은 작위(대공).</summary>
-    public const int MaxRank = 7;
+    public const int MaxRank = 8;
+
+    /// <summary>대공이 어느 도시에서나 대화하는 언어 자리 — 제 자리가 이보다 낮으면 이것으로 친다(<see cref="Player.SpeaksOf"/>, 요청).</summary>
+    public const int GrandTongue = 1;
+
+    /// <summary>대공 혜택의 이름 — 패시브 표 밖의 혜택이라 작위 창에 따로 적는다.</summary>
+    public const string GrandPerk = "모든 도시에서 언어 1";
 
     /// <summary>작위마다 넘어야 할 누적 공적. 대본 「작위」의 조건과 같은 값이다.</summary>
-    public static readonly int[] Thresholds = [0, 125, 375, 750, 1375, 2250, 3500, 5000];
+    /// <remarks>대공은 향사를 더할 때 옛 대공 문턱(5000)의 두 배로 올렸다(요청).</remarks>
+    public static readonly int[] Thresholds = [0, 125, 375, 750, 1375, 2250, 3500, 5000, 10000];
 
     /// <summary>대본이 읽는 능력치 칸.</summary>
     public const int MeritStat = 40, RankStat = 41, HomeCapitalStat = 42;
@@ -102,7 +110,7 @@ public static class Nobility
 
     /// <summary>
     /// 보관함 넓히기 한 번의 값 단위 — k 번째 넓히기는 작위 k 가 있어야 하고 k x 10만 닢이다
-    /// (기사 10만 · 남작 20만 … 대공 70만, 모두 280만 — 사용자, 2026-10-25). 원본에 없는 혜택이다.
+    /// (향사 10만 · 기사 20만 … 공작 70만, 모두 280만 — 사용자, 2026-10-25. 향사를 더하며 한 칸씩 내려갔다). 원본에 없는 혜택이다.
     /// </summary>
     public const int StorePricePerRank = 100_000;
 
@@ -112,8 +120,11 @@ public static class Nobility
     /// <summary>다음 넓히기의 값.</summary>
     public static int StoreExpansionPrice(Player player) => NextStoreRank(player) * StorePricePerRank;
 
-    /// <summary>더 넓힐 칸이 남았는지(대공까지 일곱 번).</summary>
-    public static bool StoreCanGrow(Player player) => player.StoreExpansions < MaxRank;
+    /// <summary>넓히기 횟수의 끝 — 일곱 번(향사 ~ 공작). 대공 혜택은 언어다.</summary>
+    public const int StoreMaxExpansions = 7;
+
+    /// <summary>더 넓힐 칸이 남았는지(공작까지 일곱 번).</summary>
+    public static bool StoreCanGrow(Player player) => player.StoreExpansions < StoreMaxExpansions;
 
     /// <summary>지금 작위로 다음 넓히기를 할 수 있는지 — 모드를 켰고, 작위가 닿았을 때.</summary>
     public static bool StoreRankReached(Player player) =>

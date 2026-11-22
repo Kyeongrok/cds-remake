@@ -45,6 +45,8 @@ public sealed class Game
     {
         Player.IgnoresWeight = () => Local.Settings.GameSettings.NoWeight;
         Player.RichCap = () => Local.Settings.GameSettings.RichCap;
+        // 모드 「작위」 대공은 어느 도시에서나 언어 1 로 대화한다(요청).
+        Player.TongueFloor = p => Town.Nobility.Enabled && p.NobleRank >= Town.Nobility.MaxRank ? Town.Nobility.GrandTongue : 0;
         // 작위 패시브 — 소지품 칸이 늘고, 능력치가 늘 그만큼 높다.
         Player.ExtraItems = p => Town.Nobility.Sum(p, Town.PassiveEffect.ItemSlots);
         Player.AbilityBonus = (p, which) => Town.Nobility.Sum(p, Town.PassiveEffect.Ability, which);

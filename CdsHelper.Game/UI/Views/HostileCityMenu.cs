@@ -439,7 +439,7 @@ internal static class HostileCityMenu
         if (language < 0 || language >= Skill.Languages.Length) return new(Skill.MaxLevel, null, 0);
 
         var player = game.Player;
-        int mine = player.TongueOf(Skill.Languages[language]);
+        int mine = player.SpeaksOf(Skill.Languages[language]);
         uint[]? relayer = null;
         int best = mine;
         if (game.World?.People is { } people)
@@ -460,7 +460,7 @@ internal static class HostileCityMenu
         int nation = game.CityRows?.NationOf(city) ?? -1;
         if (nation < 0 || game.Nations?.Find(nation) is not { } row) return 0;
         if (row.Language < 0 || row.Language >= Skill.Languages.Length) return 0;
-        return game.Player.TongueOf(Skill.Languages[row.Language]);
+        return game.Player.SpeaksOf(Skill.Languages[row.Language]);
     }
 
     /// <summary>터번을 들었는지. 아이템 표를 못 읽으면 안 든 것으로 본다.</summary>

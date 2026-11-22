@@ -769,7 +769,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 말은 그 도시 나라 말이다 — 제독 수준으로 뭉개 들린다(0x004780E0).
         int language = _game.Nations?.Find(_game.CityRows?.NationOf(_cityId) ?? -1)?.Language ?? -1;
         int mine = language >= 0 && language < Skill.Languages.Length
-            ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
+            ? _player.SpeaksOf(Skill.Languages[language]) : Skill.MaxLevel;
 
         // 부하 가운데 그 말을 더 잘 아는 사람이 있으면 그 사람이 옮겨 준다(0x00492F47 → 0x0047CD20) —
         // 그 사람 수준으로 뭉갠 글을 그 얼굴로 「[%s]라고 말하고 있는 것 같습니다.」(0x0053BDE8) 한다.
@@ -800,7 +800,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         // 말을 모르는 나라(원주민 마을 따위)면 다 알아듣는 것으로 둔다.
         if (spoken.Count == 0) return new(Skill.MaxLevel, null, 0);
 
-        int mine = spoken.Max(i => _player.TongueOf(Skill.Languages[i]));
+        int mine = spoken.Max(i => _player.SpeaksOf(Skill.Languages[i]));
         uint[]? relayer = null;
         int best = mine;
         if (_game.World?.People is { } people)
@@ -1153,7 +1153,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         int language = _game.Nations?.Find(_game.CityRows?.NationOf(_cityId) ?? -1)?.Language ?? -1;
         int mine = language >= 0 && language < Skill.Languages.Length
-            ? _player.TongueOf(Skill.Languages[language]) : Skill.MaxLevel;
+            ? _player.SpeaksOf(Skill.Languages[language]) : Skill.MaxLevel;
         if (mine < 2) return;
 
         // 갈래마다 표에서 처음 걸리는 사람이다(0x00473800).
@@ -2723,7 +2723,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             if (_game.CityRows is not { } rows || _game.Nations is not { } nations) return 0;
             if (nations.Find(rows.NationOf(_cityId)) is not { } nation) return 0;
             return nation.Language >= 0 && nation.Language < Skill.Languages.Length
-                ? _player.TongueOf(Skill.Languages[nation.Language])
+                ? _player.SpeaksOf(Skill.Languages[nation.Language])
                 : 0;
         }
     }

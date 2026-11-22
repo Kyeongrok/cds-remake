@@ -979,7 +979,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         var theirs = new int[Skill.Languages.Length];
         for (int i = 0; i < theirs.Length; i++)
             theirs[i] = (her.Tongues & (1 << i)) != 0 ? FluentTongue : 0;
-        return Shared(theirs, i => _player.TongueOf(Skill.Languages[i]));
+        return Shared(theirs, i => _player.SpeaksOf(Skill.Languages[i]));
     }
 
     /// <summary>소지품 가운데 선물감(<see cref="Barmaids.GiftCategory"/>)을 모은다(<c>0x004B0A20(1, …)</c>). 하나라도 있으면 참.</summary>
@@ -1269,7 +1269,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     {
         int nationId = _game.CityRows?.NationOf(_cityId) ?? -1;
         int language = _game.Nations?.Find(nationId)?.Language ?? -1;
-        mine = language is >= 0 and < 14 ? _player.TongueOf(Skill.Languages[language]) : FluentTongue;
+        mine = language is >= 0 and < 14 ? _player.SpeaksOf(Skill.Languages[language]) : FluentTongue;
         int best = mine;
         relayer = "";
         if (language is >= 0 and < 14)
