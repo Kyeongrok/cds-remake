@@ -307,7 +307,7 @@ public sealed class GameSettingsData
     /// <summary>보급품 · 교역품 무게를 안 따질지. 원본은 따지므로 꺼 두고 시작한다.</summary>
     public bool NoWeight { get; set; }
 
-    /// <summary>소지금 · 저금 상한을 열 배(천만 닢)로 할지. 원본은 백만 닢이라 꺼 두고 시작한다.</summary>
+    /// <summary>소지금 · 저금 상한을 백 배(일억 닢)로 할지. 원본은 백만 닢이라 꺼 두고 시작한다.</summary>
     public bool RichCap { get; set; }
 
     /// <summary>자택 장기 휴양을 120개월까지 고를지. 원본은 12개월이라 꺼 두고 시작한다.</summary>
@@ -1472,7 +1472,7 @@ public static class GameSettings
         set => Set(d => d.NoWeight = value);
     }
 
-    /// <summary>소지금 상한 10배 — 소지금 · 저금이 백만 닢이 아니라 천만 닢에서 잘린다. 모드 창에서 켜고 끈다.</summary>
+    /// <summary>소지금 상한 100배 — 소지금 · 저금이 백만 닢이 아니라 일억 닢에서 잘린다. 모드 창에서 켜고 끈다.</summary>
     public static bool RichCap
     {
         get => Get(d => d.RichCap);

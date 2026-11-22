@@ -1045,14 +1045,14 @@ public sealed class Player
     /// 돈을 더하는 자리(<c>0x0047CBC0</c> 소지금 · <c>0x0047CC00</c> 저금)가 둘 다
     /// <c>0x0049E5A0(지금, 더할값, 0, 0xF4240)</c> 으로 0~1000000 사이에 가둔다.
     /// 넘치면 "금화는 더 이상 늘릴 수 없습니다"(<c>0x0055A488</c>) 가 뜬다.
-    /// 모드 「소지금 상한 10배」(<see cref="RichCap"/>)면 천만 닢이다.
+    /// 모드 「소지금 상한 100배」(<see cref="RichCap"/>)면 일억 닢이다.
     /// </remarks>
-    public static int MaxGold => RichCap() ? BaseMaxGold * 10 : BaseMaxGold;
+    public static int MaxGold => RichCap() ? BaseMaxGold * 100 : BaseMaxGold;
 
     /// <summary>원본의 소지금 · 저금 위쪽 끝(<c>0xF4240</c>).</summary>
     public const int BaseMaxGold = 1_000_000;
 
-    /// <summary>모드 「소지금 상한 10배」가 켜졌는지. 설정은 Game 쪽에 있어 판이 이 물음을 걸어 둔다.</summary>
+    /// <summary>모드 「소지금 상한 100배」가 켜졌는지. 설정은 Game 쪽에 있어 판이 이 물음을 걸어 둔다.</summary>
     public static Func<bool> RichCap { get; set; } = () => false;
 
     /// <summary>
@@ -2429,7 +2429,7 @@ public sealed class Player
 
     /// <summary>예금을 그 몫만 남기고 잃는다(도둑 — <c>0x00450060</c> 은 30% 만 남긴다).</summary>
     public void LoseSavings(int keepPercent) =>
-        Savings = Math.Clamp(Savings * Math.Clamp(keepPercent, 0, 100) / 100, 0, MaxGold);
+        Savings = (int)Math.Clamp((long)Savings * Math.Clamp(keepPercent, 0, 100) / 100, 0, MaxGold);
 
     /// <summary>자택 보관 칸에서 한 칸을 잃는다.</summary>
     public void LoseStored(int index)
