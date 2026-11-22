@@ -72,6 +72,25 @@ public sealed class DrinkTable
     }
 
     /// <summary>
+    /// 그 도시 술집이 파는 술 — 지역 무리 것(<see cref="InRegion"/>) 앞에 도시마다 덧붙인 술(<see cref="CityExtras"/>)을 놓는다.
+    /// </summary>
+    public List<Drink> InCity(int city, int region)
+    {
+        var got = CityExtras.TryGetValue(city, out var extra) ? [.. extra] : new List<Drink>();
+        got.AddRange(InRegion(region));
+        return got;
+    }
+
+    /// <summary>
+    /// 원본에 없는 도시별 술(요청). 한양(190)은 지역 무리 21(중국 북부)에 들어 노주(도수 55)만 팔아, 주량 0 이면
+    /// 문턱(50)을 넘어 한 잔에 취했다 — 막걸리 · 소주를 앞에 더한다.
+    /// </summary>
+    private static readonly Dictionary<int, Drink[]> CityExtras = new()
+    {
+        [190] = [new("막걸리", 2, 21, 6, "흰 술"), new("소주", 3, 21, 20, "투명한 술")],
+    };
+
+    /// <summary>
     /// 술집 줄에 적을 이름. 그 도시 말을 <b>둘 이상</b> 알아야 진짜 이름이 나온다
     /// (<c>0x0042FB44</c> 의 <c>cmp eax,1 / jle</c>).
     /// </summary>

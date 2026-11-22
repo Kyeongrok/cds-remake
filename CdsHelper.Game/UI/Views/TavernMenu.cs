@@ -2478,7 +2478,7 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
     public bool BuyDrink()
     {
         var drinks = _game.Drinks is { } table && _game.CityRows is { } rows
-            ? table.InRegion(rows.RegionOf(_cityId))
+            ? table.InCity(_cityId, rows.RegionOf(_cityId))
             : [];
         if (drinks.Count == 0) return true;
 

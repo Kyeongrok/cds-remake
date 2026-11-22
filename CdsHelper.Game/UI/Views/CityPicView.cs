@@ -2691,7 +2691,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
     /// <summary>이 고장 술집이 파는 술. 도시 표의 지역 무리로 고른다.</summary>
     private List<DrinkTable.Drink> Drinks =>
         _drinks ??= _game.Drinks is { } table && _game.CityRows is { } rows
-            ? table.InRegion(rows.RegionOf(_cityId))
+            ? table.InCity(_cityId, rows.RegionOf(_cityId))
             : [];
 
     private List<DrinkTable.Drink>? _drinks;
