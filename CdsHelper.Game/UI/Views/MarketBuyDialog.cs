@@ -103,7 +103,11 @@ public sealed class MarketBuyDialog : GameWindow
 
         _decide = new GameButton("결정", Decide, width: 110) { On = false };
         // 원본도 아무것도 안 고른 동안은 이 단추가 흐리다.
-        _list.SelectionChanged += () => _decide.On = _list.Chosen.Count > 0;
+        _list.SelectionChanged += () =>
+        {
+            _decide.On = _list.Chosen.Count > 0;
+            ShowPicture(_list.Selected);
+        };
 
         var buttons = new StackPanel
         {
@@ -117,9 +121,28 @@ public sealed class MarketBuyDialog : GameWindow
         var title = GameUi.TitleBar("구입 아이템 선택", Close);
         GameUi.EnableDrag(this, title);
 
+        // 목록 왼쪽에 지금 고른 줄의 아이템 그림을 둔다 — 원본에 없는 것이다(요청). 그림이 없으면 빈 칸이다.
+        var picture = new Border
+        {
+            Width = ItemArt.Width,
+            Height = ItemArt.Height,
+            Margin = new Thickness(0, 0, 6, 0),
+            VerticalAlignment = VerticalAlignment.Top,
+            Background = GameUi.InfoBack,
+            BorderBrush = GameUi.Edge,
+            BorderThickness = new Thickness(1),
+            Child = _picture,
+            Visibility = (_art ?? game?.ItemPictures) == null || _stock.Length == 0 ? Visibility.Collapsed : Visibility.Visible,
+        };
+        var body = new DockPanel { Margin = new Thickness(0, 4, 0, 0) };
+        DockPanel.SetDock(picture, Dock.Left);
+        body.Children.Add(picture);
+        body.Children.Add(_list);
+        ShowPicture(0);
+
         var stack = new StackPanel { MinWidth = ListWidth };
         stack.Children.Add(title);
-        stack.Children.Add(_list);
+        stack.Children.Add(body);
         stack.Children.Add(buttons);
 
         // 도시 그림과 같은 배로 키운다 — 원본은 한 화면이라 시장 창도 그림과 같은 배율이다.
@@ -129,6 +152,13 @@ public sealed class MarketBuyDialog : GameWindow
 
         KeyDown += OnKey;
     }
+
+    /// <summary>왼쪽 그림 칸의 그림.</summary>
+    private readonly Image _picture = new() { Stretch = System.Windows.Media.Stretch.Uniform };
+
+    /// <summary>그 줄 아이템의 그림을 왼쪽 칸에 띄운다. 그림이 없는 아이템이면 비운다.</summary>
+    private void ShowPicture(int index) =>
+        _picture.Source = index >= 0 && index < _stock.Length && _stock[index].HasPic ? (_art ?? _game?.ItemPictures)?.TryGetImage(_stock[index].Pic) : null;
 
     /// <summary>줄 하나의 칸 글자 — 값 · (갈래) · 이름. <see cref="Columns"/> 와 차례가 같다.</summary>
     private IReadOnlyList<string> Cells(int index)
