@@ -3369,6 +3369,14 @@ public sealed class Player
             if (v != ParRate) _goodsRates[key] = Math.Clamp(v, MinGoodsRate, MaxGoodsRate);
     }
 
+    /// <summary>
+    /// 부관이 항구에서 「마을정보」를 귀띔한 마지막 달(해 x 12 + 달). 0 이면 아직 안 했다 — 원본에 없는 칸이다(요청).
+    /// </summary>
+    public int CityInfoTipMonth { get; private set; }
+
+    /// <summary>「마을정보」 귀띔한 달을 적는다.</summary>
+    public void SetCityInfoTipMonth(int monthKey) => CityInfoTipMonth = Math.Max(0, monthKey);
+
     /// <summary>시세를 마지막으로 흔든 달(해 x 12 + 달). 0 이면 아직 안 셌다 — 지금 달부터 센다.</summary>
     public int RatesMonth { get; private set; }
 

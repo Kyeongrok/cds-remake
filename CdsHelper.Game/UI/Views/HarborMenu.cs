@@ -54,8 +54,25 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
     {
         if (!arrived && _player.MateAt(MateSlot).Length > 0)
             ConfirmDialog.Tell(_view, "제독, 바다에 나가시겠습니까?", face: MateFace());
+        if (arrived) TipCityInfo();
 
         GreetLoan();
+    }
+
+    /// <summary>부관이 「마을정보」를 다시 귀띔하기까지의 달 — 두 해.</summary>
+    private const int CityInfoTipMonths = 24;
+
+    /// <summary>
+    /// 배로 닿았을 때 부관이 두 해에 한 번 「마을정보」를 귀띔한다 — 원본에 없는 것이다(요청).
+    /// 값을 치르고 들은 마을은 아는 도시가 되어 지도에 뜬다(<see cref="CityInfo"/>). 부관이 없으면 안 한다.
+    /// </summary>
+    private void TipCityInfo()
+    {
+        if (_player.MateAt(MateSlot).Length == 0) return;
+        int now = _player.Date.Year * 12 + _player.Date.Month;
+        if (_player.CityInfoTipMonth > 0 && now - _player.CityInfoTipMonth < CityInfoTipMonths) return;
+        _player.SetCityInfoTipMonth(now);
+        ConfirmDialog.Tell(_view, "제독, 항구의 「마을정보」를 누르면 다른 도시의 위치를 알 수 있습니다.", face: MateFace());
     }
 
     /// <summary>
