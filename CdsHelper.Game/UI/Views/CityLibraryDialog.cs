@@ -215,7 +215,7 @@ public sealed class CityLibraryDialog : GameWindow
             if (need.Skill >= 0 && need.Skill < Skill.Names.Length) facts.Add($"{Skill.Names[need.Skill]} {need.Level} 이상");
             if (need.Parents is { Count: > 0 } parents)
                 facts.Add("먼저 찾을 발견물: " + string.Join(", ", parents.Select(p => _game.Discoveries?.Table?.NameOf(p) ?? $"발견물 {p}")));
-            if (need.Skill < 0 && need.Parents is not { Count: > 0 }) facts.Add("조건 없음 — 책만 읽으면 들어옵니다");
+            if (need.Skill < 0 && need.Parents is not { Count: > 0 }) facts.Add("조건 없음");
             if (_game.Player.HasHint(id)) facts.Add("힌트");
             _detail.Children.Add(Text(string.Join(" · ", facts), 12.5, opacity: 0.75, margin: new Thickness(0, 0, 0, 4)));
 
