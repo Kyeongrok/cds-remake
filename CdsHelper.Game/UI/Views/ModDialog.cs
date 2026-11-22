@@ -191,7 +191,8 @@ public sealed class ModDialog : GameWindow
         // 빠른 메뉴 — 항해 화면 오른쪽 위 단추로 함대정보 · 실린 짐을 곧바로 연다(요청).
         info.Children.Add(Toggle("빠른 메뉴", GameSettings.SeaQuickMenu, on => GameSettings.SeaQuickMenu = on,
             "원본에 없는 것입니다 — 항해 중 지도 오른쪽 위에 ☰ 단추를 띄웁니다. 누르면 「함대정보」 · 「실린 짐」을 골라"
-            + " 커맨드 창을 거치지 않고 곧바로 봅니다. 보는 동안 항해는 멈춥니다. 뭍·도시에서는 안 뜹니다."));
+            + " 커맨드 창을 거치지 않고 곧바로 봅니다. 보는 동안 항해는 멈춥니다. 뭍·도시에서는 안 뜹니다."
+            + " 단축키는 Ctrl+1 입니다(단축키 창에서 바꿉니다)."));
 
         // 발견물 수 — 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄운다.
         info.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,

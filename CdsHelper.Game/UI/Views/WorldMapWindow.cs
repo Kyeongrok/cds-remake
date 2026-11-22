@@ -1987,6 +1987,15 @@ public sealed class WorldMapWindow : Window
     /// 빠른 메뉴 — 함대정보 · 실린 짐 · 취소. 메뉴와 고른 판이 떠 있는 동안 항해를 멈춘다(커맨드 창과 같다).
     /// 이미 멈춰 있으면(커맨드 창 · 물음이 떠 있으면) 안 연다.
     /// </summary>
+    /// <summary>빠른 메뉴 단축키 — ☰ 단추 바로 밑에 메뉴를 연다. 단추가 안 떠 있어도 같은 자리다.</summary>
+    private void QuickMenuByKey()
+    {
+        if (!_started || _input.ActualWidth <= 0 || _game.Player.Ships.Count == 0) return;
+        var inside = _input.TranslatePoint(new Point(_input.ActualWidth - DaysInset - SeaQuickButton.Size,
+                                                     DaysInset + SeaQuickButton.Size + 2), this);
+        OpenQuickMenu(GameUi.ToScreen(this, inside));
+    }
+
     private void OpenQuickMenu(Point at)
     {
         if (_host.Paused || _asking || _host.IsOnLand || _host.InCity) return;
@@ -3678,6 +3687,15 @@ public sealed class WorldMapWindow : Window
         {
             if (CommandMenu.IsOpen) { CommandMenu.Close(); e.Handled = true; return; }
             if (InfoMenu.IsOpen) { InfoMenu.Close(); e.Handled = true; return; }
+        }
+
+        // 빠른 메뉴(모드) — 조합 글쇠라 아래 「조합 없음」 거름보다 먼저 본다. 기본 Ctrl+1(요청).
+        if (!e.Handled && GameSettings.SeaQuickMenu && ReferenceEquals(_screen.Content, _mapRoot)
+            && GameSettings.ComboMatches(GameSettings.QuickKey, e.Key == Key.System ? e.SystemKey : e.Key, Keyboard.Modifiers))
+        {
+            e.Handled = true;
+            QuickMenuByKey();
+            return;
         }
 
         if (e.Handled || Keyboard.Modifiers != ModifierKeys.None) return;

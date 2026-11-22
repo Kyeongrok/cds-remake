@@ -238,6 +238,9 @@ public sealed class GameSettingsData
     public string ItemsKey { get; set; } = "I";
     public string NavKey { get; set; } = "R";
 
+    /// <summary>빠른 메뉴 단축키 — 조합 글쇠(「Ctrl+D1」 꼴)를 받는다. 기본은 Ctrl+1.</summary>
+    public string QuickKey { get; set; } = "Ctrl+D1";
+
     /// <summary>자동항해를 「최소 조타」로 몰지. 끄면 「속도 중시」다.</summary>
     public bool SteadyHelm { get; set; }
 
@@ -1074,6 +1077,31 @@ public static class GameSettings
     {
         get => Get(d => d.NavKey);
         set => Set(d => d.NavKey = value);
+    }
+
+    /// <summary><b>빠른 메뉴</b>(모드 — 함대정보 · 실린 짐) 단축키. 「Ctrl+D1」 꼴로 조합을 적고, 기본은 <c>Ctrl+1</c> 이다(요청).</summary>
+    public static string QuickKey
+    {
+        get => Get(d => d.QuickKey);
+        set => Set(d => d.QuickKey = value);
+    }
+
+    /// <summary>「Ctrl+D1」 꼴 단축키가 이 글쇠 누름과 맞는지 — 앞의 Ctrl · Shift · Alt 가 지금 눌린 조합과 꼭 같아야 한다.</summary>
+    public static bool ComboMatches(string spec, System.Windows.Input.Key key, System.Windows.Input.ModifierKeys mods)
+    {
+        if (string.IsNullOrWhiteSpace(spec)) return false;
+        var want = System.Windows.Input.ModifierKeys.None;
+        var parts = spec.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return false;
+        foreach (string part in parts[..^1])
+            want |= part.ToLowerInvariant() switch
+            {
+                "ctrl" => System.Windows.Input.ModifierKeys.Control,
+                "shift" => System.Windows.Input.ModifierKeys.Shift,
+                "alt" => System.Windows.Input.ModifierKeys.Alt,
+                _ => System.Windows.Input.ModifierKeys.None,
+            };
+        return mods == want && Enum.TryParse(parts[^1], ignoreCase: true, out System.Windows.Input.Key k) && k == key;
     }
 
     /// <summary><b>힌트 정보</b>(취득 힌트 일람) 단축키. 기본은 <c>H</c> 다.</summary>

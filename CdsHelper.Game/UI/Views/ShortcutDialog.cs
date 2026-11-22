@@ -38,6 +38,8 @@ public sealed class ShortcutDialog : GameWindow
         general.Children.Add(Row("플레이어 정보", GameSettings.PlayerKey, key => GameSettings.PlayerKey = key));
         general.Children.Add(Row("후원자 정보", GameSettings.PatronKey, key => GameSettings.PatronKey = key));
         general.Children.Add(Row("매입 정보", GameSettings.CargoKey, key => GameSettings.CargoKey = key));
+        // 빠른 메뉴는 조합 글쇠(Ctrl · Shift · Alt + 글쇠)를 받는다 — 기본 Ctrl+1(요청).
+        general.Children.Add(Row("빠른 메뉴", GameSettings.QuickKey, key => GameSettings.QuickKey = key, combo: true));
         general.Children.Add(Note("각 칸을 누른 뒤 지정할 글쇠를 누르십시오."));
 
         var sail = new StackPanel();
@@ -123,7 +125,7 @@ public sealed class ShortcutDialog : GameWindow
 
     /// <summary>이름 한 칸에 글쇠 한 칸인 줄. 칸을 누르고 글쇠를 누르면 곧바로 적힌다.</summary>
     /// <param name="clearable">Delete · 백스페이스로 비울 수 있는지 — 항해 글쇠는 안 쓰는 것을 비워 둔다.</param>
-    private UIElement Row(string name, string key, Action<string> store, bool clearable = false)
+    private UIElement Row(string name, string key, Action<string> store, bool clearable = false, bool combo = false)
     {
         var box = new TextBox
         {
@@ -134,7 +136,7 @@ public sealed class ShortcutDialog : GameWindow
             Margin = new Thickness(8, 0, 0, 0),
             Text = key,
         };
-        box.PreviewKeyDown += (_, e) => Assign(e, box, store, clearable);
+        box.PreviewKeyDown += (_, e) => Assign(e, box, store, clearable, combo);
         _boxes.Add(box);
 
         return new StackPanel
@@ -156,7 +158,7 @@ public sealed class ShortcutDialog : GameWindow
         };
     }
 
-    private void Assign(KeyEventArgs e, TextBox box, Action<string> store, bool clearable)
+    private void Assign(KeyEventArgs e, TextBox box, Action<string> store, bool clearable, bool combo = false)
     {
         if (e.Key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl
             or Key.LeftAlt or Key.RightAlt or Key.System or Key.None or Key.Escape or Key.Tab)
@@ -171,6 +173,14 @@ public sealed class ShortcutDialog : GameWindow
         }
 
         string key = e.Key.ToString();
+        // 조합 칸이면 눌린 Ctrl · Shift · Alt 를 앞에 붙인다(「Ctrl+D1」).
+        if (combo)
+        {
+            var mods = Keyboard.Modifiers;
+            if (mods.HasFlag(ModifierKeys.Alt)) key = "Alt+" + key;
+            if (mods.HasFlag(ModifierKeys.Shift)) key = "Shift+" + key;
+            if (mods.HasFlag(ModifierKeys.Control)) key = "Ctrl+" + key;
+        }
         if (_boxes.Any(b => b != box && string.Equals(key, b.Text, StringComparison.OrdinalIgnoreCase)))
         {
             e.Handled = true;
