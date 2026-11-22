@@ -132,6 +132,16 @@ public static class Figureheads
         _ => [0, 1],
     };
 
+    /// <summary>아덴(도시 124)과 인마상(23 — 폭풍 · 2등급).</summary>
+    public const int Aden = 124, Centaur = 23;
+
+    /// <summary>
+    /// 도시가 커져 더 갖춰 두는 선수상 — 원본에 없다(요청). 아덴이 규모 끝(<see cref="Town.CityGrowth.MaxScale"/>)이면
+    /// 인마상, 그 밖은 없다(null).
+    /// </summary>
+    public static int? GrownStockFor(int city, int scale) =>
+        city == Aden && scale >= Town.CityGrowth.MaxScale ? Centaur : null;
+
     /// <summary>
     /// 이 선수상이 그 재앙을 막았는지.
     /// </summary>

@@ -621,7 +621,15 @@ internal sealed class ShipyardMenu(Window view, Engine.Game game, GameMenuHost m
     /// <summary>
     /// 조선소가 갖춰 둔 선수상 — 어디나 둘, 문화권마다 한둘이 더 있다.
     /// </summary>
-    private IReadOnlyList<int> Stock() => Figureheads.StockFor(_culture);
+    /// <remarks>
+    /// 원본에 없는 것 하나 — 아덴이 규모 끝까지 자라면 인마상(폭풍 2등급)도 판다(요청, <see cref="Figureheads.GrownStockFor"/>).
+    /// </remarks>
+    private IReadOnlyList<int> Stock()
+    {
+        var stock = Figureheads.StockFor(_culture);
+        int scale = _game.CityRows?.ScaleOf(_cityId) ?? 0;
+        return Figureheads.GrownStockFor(_cityId, scale) is { } more ? [.. stock, more] : stock;
+    }
 
     /// <summary>지금 지니고 있는 선수상들 — 소지품에서 갈래 6 을 골라낸 것이다.</summary>
     /// <remarks>원본의 <c>0x00495BA0</c> 이 소지품을 훑어 같은 목록을 짓는다.</remarks>
