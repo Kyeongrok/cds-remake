@@ -159,6 +159,11 @@ internal sealed class FleetInfoDialog : InfoDialog
                             Action<Window, Player.Cargo>? cargoInfo = null, Engine.Game? game = null) =>
         new FleetInfoDialog(player, coord, items, cargoName, cargoInfo, game) { Owner = owner }.ShowDialog();
 
+    /// <summary>「짐」 판만 곧바로 연다 — 항해 화면 빠른 메뉴(모드)가 쓴다.</summary>
+    public static void ShowCargo(Window owner, Player player, Func<Player.Cargo, string>? cargoName = null,
+                                 Action<Window, Player.Cargo>? cargoInfo = null, Engine.Game? game = null) =>
+        CargoView.Show(owner, player, cargoName, cargoInfo, game);
+
     /// <summary>
     /// 「짐」 판 — 보급물자 한 줄과 교역품일람(<c>0x0046F97D</c> ~ <c>0x0046FC6D</c>).
     /// </summary>

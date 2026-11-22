@@ -214,6 +214,9 @@ public sealed class WorldMapWindow : Window
     /// <summary>모드 「항해 일수」의 동그라미. 처음 띄울 때 만든다.</summary>
     private SeaDaysBadge? _daysBadge;
 
+    /// <summary>모드 「빠른 메뉴」의 ☰ 단추(지도 오른쪽 위).</summary>
+    private SeaQuickButton? _quickButton;
+
     /// <summary>만난 사람 상자를 켜 두었는지.</summary>
     private bool _peopleWanted = GameSettings.ShowPeopleOverlay;
 
@@ -727,6 +730,7 @@ public sealed class WorldMapWindow : Window
             if (_miniWanted) SyncMiniMap();
             SyncSpeedNote();
             SyncDaysBadge();
+            SyncQuickButton();
             SyncSeaMusic();
         });
 
@@ -1708,6 +1712,7 @@ public sealed class WorldMapWindow : Window
         SyncMiniMap();
         SyncSpeedNote();
         SyncDaysBadge();
+        SyncQuickButton();
     }
 
     /// <summary>
@@ -1960,6 +1965,49 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>항해 일수 동그라미를 지도 왼쪽 위에서 들이는 거리.</summary>
     private const double DaysInset = 10;
+
+    /// <summary>
+    /// 모드 「빠른 메뉴」 — 항해 중 지도 오른쪽 위에 ☰ 단추를 띄우거나 걷는다(요청). 띄우는 때는 항해 일수 동그라미와 같다.
+    /// </summary>
+    private void SyncQuickButton()
+    {
+        bool show = GameSettings.SeaQuickMenu && _started && WindowState != WindowState.Minimized
+                    && ReferenceEquals(_screen.Content, _mapRoot) && !_host.IsOnLand && !_host.InCity
+                    && _game.Player.Ships.Count > 0;
+        if (!show) { _quickButton?.Set(false, default); return; }
+        if (ShuttingDown || _input.ActualWidth <= 0) return;
+        if (_quickButton is { IsClosed: true }) _quickButton = null;
+        _quickButton ??= new SeaQuickButton(this, OpenQuickMenu);
+
+        var inside = _input.TranslatePoint(new Point(_input.ActualWidth - DaysInset - SeaQuickButton.Size, DaysInset), this);
+        _quickButton.Set(true, GameUi.ToScreen(this, inside));
+    }
+
+    /// <summary>
+    /// 빠른 메뉴 — 함대정보 · 실린 짐 · 취소. 메뉴와 고른 판이 떠 있는 동안 항해를 멈춘다(커맨드 창과 같다).
+    /// 이미 멈춰 있으면(커맨드 창 · 물음이 떠 있으면) 안 연다.
+    /// </summary>
+    private void OpenQuickMenu(Point at)
+    {
+        if (_host.Paused || _asking || _host.IsOnLand || _host.InCity) return;
+        _host.Paused = true;
+        Action? next = null;
+        var menu = new GameMenuHost(this);
+        menu.Closed += () => Dispatcher.BeginInvoke(() =>
+        {
+            try { next?.Invoke(); }
+            finally { if (!_asking && !_host.SeaBlocked) _host.Paused = false; }
+        });
+        menu.Open(() => new GameMenu("", null,
+            ("함대정보", () => { next = () => FleetInfoDialog.Show(this, _game.Player, CoordLine(), _game.Items,
+                                                                 c => GameInfo.CargoLabel(_game, c),
+                                                                 (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind, c.Shelf), _game);
+                                 menu.Close(); }),
+            ("실린 짐", () => { next = () => FleetInfoDialog.ShowCargo(this, _game.Player, c => GameInfo.CargoLabel(_game, c),
+                                                                     (w, c) => GoodsInfoDialog.Show(w, _game, c.Kind, c.Shelf), _game);
+                                menu.Close(); }),
+            ("취소", menu.Close)), at);
+    }
 
     /// <summary>
     /// 함대 속도를 노트로 — 한 눈금에 나아갈 칸 수 × 하루 눈금(48) × 한 칸의 해리(8.64) ÷ 24 시간.

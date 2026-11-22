@@ -116,6 +116,9 @@ public sealed class GameSettingsData
     /// <summary>항해 중 지도 왼쪽 위에 출항한 지 며칠인지 동그라미로 띄울지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool ShowSeaDays { get; set; }
 
+    /// <summary>항해 화면 오른쪽 위에 빠른 메뉴 단추(함대정보 · 실린 짐)를 띄울지. 원본에 없는 것이라 꺼 두고 시작한다.</summary>
+    public bool SeaQuickMenu { get; set; }
+
     /// <summary>지도가 배를 늘 한가운데에 두고 따라 흐를지. 원본은 가장자리에서 넘기므로 꺼 두고 시작한다.</summary>
     public bool ShipCentered { get; set; }
 
@@ -1206,6 +1209,13 @@ public static class GameSettings
     {
         get => Get(d => d.ShowShipSpeed);
         set => Set(d => d.ShowShipSpeed = value);
+    }
+
+    /// <summary>빠른 메뉴 — 항해 중 지도 오른쪽 위에 단추를 띄우고, 누르면 함대정보 · 실린 짐을 고른다. 모드 창에서 켜고 끈다.</summary>
+    public static bool SeaQuickMenu
+    {
+        get => Get(d => d.SeaQuickMenu);
+        set => Set(d => d.SeaQuickMenu = value);
     }
 
     /// <summary>항해 일수 — 항해 중 지도 왼쪽 위 동그라미에 출항한 지 며칠인지 띄운다. 모드 창에서 켜고 끈다.</summary>
