@@ -76,7 +76,8 @@ public static class UserDiscoveries
     /// 「say」 대사 · 「picture」 발견물 그림 · 「movie」 발견물 동영상 · 「found」 효과음과 「~을 발견했다！」, 발견 처리 ·
     /// 「battle」 바다 괴물과 해전(<see cref="SceneLine.Text"/> 가 괴물 이름, <see cref="Monsters"/>) ·
     /// 「land」 인물이 이끄는 무리와 육상전(<see cref="LandTerms"/>) ·
-    /// 「lose」 싸움에서 지거나 놓쳤을 때의 갈래가 여기서부터다 · 「item」 아이템을 준다(글이 아이템 번호) · 「gameover」 게임 오버.
+    /// 「lose」 싸움에서 지거나 놓쳤을 때의 갈래가 여기서부터다 · 「item」 아이템을 준다(글이 아이템 번호) · 「gameover」 게임 오버 ·
+    /// 「sound」 효과음을 낸다(글이 WAVES.CDS 파트 번호, <see cref="SoundPart"/>).
     /// </param>
     /// <param name="Speaker">대사 화자(부관 · 감찰관 · 항해사 …). 비우면 화자 없는 글.</param>
     public sealed record SceneLine(string Kind, string? Speaker = null, string Text = "");
@@ -167,6 +168,19 @@ public static class UserDiscoveries
         ("크라켄", Engine.Sea.EnemyFleet.Kraken), ("시서펜트", Engine.Sea.EnemyFleet.SeaSerpent),
         ("식인상어", Engine.Sea.EnemyFleet.ManEater), ("맨터", Engine.Sea.EnemyFleet.Manta),
     ];
+
+    /// <summary>장면 「[효과음]」 줄에 쓸 수 있는 효과음 수 — WAVES.CDS 파트 0~49.</summary>
+    public const int SoundParts = 50;
+
+    /// <summary>
+    /// 「[효과음]」 줄의 글을 파트 번호로 — 앞의 수만 읽는다(창은 「2 총격」처럼 라벨을 뒤에 붙여 보인다).
+    /// 수로 시작하지 않거나 0~49 를 벗어나면 null.
+    /// </summary>
+    public static int? SoundPart(string text)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(text.Trim(), @"^\d+");
+        return m.Success && int.TryParse(m.Value, out int part) && part >= 0 && part < SoundParts ? part : null;
+    }
 
     /// <summary>잠겼는지 — 비밀번호를 걸어 두면 그것을 모르는 사람은 불러와도 고치지 못한다.</summary>
     public static bool IsLocked(Entry entry) => entry.Lock.Length > 0;
@@ -538,6 +552,10 @@ public static class UserDiscoveries
                     break;
                 case "gameover":
                     body.Add(new JsonObject { ["OpCode"] = "4A", ["Call"] = "GameOver" });
+                    break;
+                // 효과음은 파트 번호로 들고 사운드 ID(파트 + 28)로 낸다 — 원본 대본의 「0E 03」과 같다. 어긋난 번호면 건너뛴다.
+                case "sound" when SoundPart(line.Text) is int part:
+                    body.Add(new JsonObject { ["OpCode"] = "0E 03", ["Call"] = "PlaySound", ["Args"] = new JsonObject { ["Id"] = part + WaveBank.FirstSoundId } });
                     break;
             }
         }

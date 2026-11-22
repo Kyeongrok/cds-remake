@@ -572,7 +572,7 @@ public sealed class WorldMapWindow : Window
                 UserDiscoveriesRow => GameSettings.ExtraDiscoveries,
                 _ => true,
             },
-            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동 · 애드온 · 발견물 추가)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
+            // 햄버거 왼쪽 도시락 — 모드로 켜는 보조 창(여급 수첩 · 인물 이동 · 애드온 · 추가 발견물)만 따로 둔다. 다 꺼 두면 단추째 숨는다.
             [
                 // 낯을 튼 여급과 그 궁합. 궁합은 초상화 번호 하나로 갈리는데 화면에서는 볼 길이 없다.
                 (BarmaidBookRow, MenuItem(() => BarmaidBookDialog.Show(this, _game))),
@@ -893,7 +893,7 @@ public sealed class WorldMapWindow : Window
     internal const string AddOnsRow = "애드온";
 
     /// <summary>도시락의 커스텀 발견물 줄 이름. 모드 「추가 발견물」이 이 줄을 켜고 끈다.</summary>
-    internal const string UserDiscoveriesRow = "발견물 추가";
+    internal const string UserDiscoveriesRow = "추가 발견물";
 
     private void ShowDiscoveryMap()
     {
@@ -976,6 +976,7 @@ public sealed class WorldMapWindow : Window
             SailToCity = null,
             SailToSpot = null,
             CityPrices = null,
+            CityLibrary = null,
             CityClick = (map, x, y) =>
             {
                 int city = CityAtCell(x, y);
@@ -1035,6 +1036,11 @@ public sealed class WorldMapWindow : Window
             {
                 int city = CityAtCell(x, y);
                 if (city >= 0) CityPriceDialog.Show(map, _game, city);
+            },
+            CityLibrary: (map, x, y) =>
+            {
+                int city = CityAtCell(x, y);
+                if (city >= 0) CityLibraryDialog.Show(map, _game, city);
             });
     }
 
@@ -4541,7 +4547,7 @@ public sealed class WorldMapWindow : Window
     /// <summary>화면 밖 시험(CDS_DIALOG=dev:&lt;탭&gt;) — 개발 창을 그 탭으로 띄운다.</summary>
     internal void OpenDevForTest(string tab) => ShowDevDialog(tab);
 
-    /// <summary>화면 밖 시험(CDS_DIALOG=userdiscovery[:&lt;탭&gt;]) — 도시락 「발견물 추가」처럼 커스텀 발견물 창을 그 탭으로 띄운다.</summary>
+    /// <summary>화면 밖 시험(CDS_DIALOG=userdiscovery[:&lt;탭&gt;]) — 도시락 「추가 발견물」처럼 커스텀 발견물 창을 그 탭으로 띄운다.</summary>
     internal void OpenUserDiscoveriesForTest(string? tab) => UserDiscoveryDialog.Show(this, DiscoveryAreaMap, _game, tab);
 
     private void ShowDevDialog() => ShowDevDialog(null);

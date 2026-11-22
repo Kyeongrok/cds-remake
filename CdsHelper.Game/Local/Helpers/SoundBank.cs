@@ -296,6 +296,16 @@ public sealed class SoundBank : IDisposable
         }
     }
 
+    /// <summary>
+    /// 들어 보기 — 효과음을 꺼 두었거나 크기를 줄여 두었어도 그 소리를 제 크기로 낸다(발견물 창의 효과음 고르기).
+    /// 못 내면 false.
+    /// </summary>
+    public bool Preview(int part)
+    {
+        try { return WavOf(part) is { } wav && PlayMemory(wav); }
+        catch (Exception) { return false; }
+    }
+
     [DllImport("winmm.dll")]
     internal static extern uint waveOutGetNumDevs();
 

@@ -42,7 +42,7 @@ public sealed class BookPickerDialog : GameWindow
         _books = [.. (game?.Books?.Books ?? []).Where(b => b.Title.Length > 0).GroupBy(b => b.Title).Select(g => g.First())
                   .OrderBy(b => b.Title, StringComparer.Ordinal)];
         foreach (var book in _books)
-            _list.Items.Add(new ListBoxItem { Content = $"{book.Title}  ({LanguageName(book.Language)})", Tag = book.Title });
+            _list.Items.Add(new ListBoxItem { Content = $"{book.Index,3}  {book.Title}  ({LanguageName(book.Language)})", Tag = book.Title });
 
         _list.SelectionChanged += (_, _) => { if (_list.SelectedItem is ListBoxItem { Tag: string title }) Describe(title); };
         _list.MouseDoubleClick += (_, _) => Choose();

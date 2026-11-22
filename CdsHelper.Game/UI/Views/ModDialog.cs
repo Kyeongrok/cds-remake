@@ -153,7 +153,7 @@ public sealed class ModDialog : GameWindow
         var general = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「정보」 — 화면에 쪽지·덧그림·창으로 무언가를 더 보여 주는 것만 모은다.
         var info = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
-        // 「미니맵」 — 미니맵을 띄울지와 그 위에 찍는 표식.
+        // 「지도」 — 위에 「세계지도」 묶음(도시락 세계지도 창과 그 위에 더하는 것), 아래에 「미니맵」 묶음(미니맵과 그 위에 찍는 표식).
         var mini = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「고해상도」 — 지도를 키웠을 때 얹는 덧그림(바다 입체 · 질감 · 필터 · 항적 · 구름).
         var hires = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
@@ -161,8 +161,6 @@ public sealed class ModDialog : GameWindow
         var ui = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「추가 기능」 — 원본에 없는 창을 도시락 단추에 내는 것(여급 수첩 · 인물 이동).
         var extra = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
-        // 「폰트」 — 어느 창을 어떤 글꼴로 찍는지.
-        var font = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「캐릭터」 — 주인공을 만들 때와 부하를 거느릴 때의 것.
         var character = new StackPanel { Width = ListWidth, Margin = new Thickness(12, 10, 8, 4) };
         // 「발견물」 — 원본 274개에 더해 넣은 발견물.
@@ -193,18 +191,6 @@ public sealed class ModDialog : GameWindow
         // 발견물 수 — 찾은 발견물이 전체 몇 개 가운데 몇 개인지 지도 왼쪽 아래에 띄운다.
         info.Children.Add(Toggle("발견물 수", options.DiscoveryCountOn(), options.SetDiscoveryCount,
             "원본에 없는 것입니다 — 도시에 들어가면 지금까지 찾은 발견물이 전체 몇 개 가운데 몇 개인지 도시 창 곁에 띄웁니다. 끌어 옮길 수 있습니다."));
-
-        mini.Children.Add(MiniMapControls(options));
-        mini.Children.Add(Toggle("찾은 발견물", GameSettings.MiniMapFound, on => GameSettings.MiniMapFound = on,
-            "미니맵에 찾은 발견물을 빨간 점으로 찍습니다."));
-        mini.Children.Add(Toggle("못 찾은 발견물", GameSettings.MiniMapYet, on => GameSettings.MiniMapYet = on,
-            "미니맵에 아직 못 찾은 발견물을 회색 점으로 찍습니다."));
-        mini.Children.Add(Toggle("도시", GameSettings.MiniMapCities, on => GameSettings.MiniMapCities = on,
-            "미니맵에 지금 아는 도시를 주황 점으로 찍습니다."));
-        mini.Children.Add(Toggle("풍향", GameSettings.MiniMapWind, on => GameSettings.MiniMapWind = on,
-            "미니맵에 풍향 화살표를 깝니다. 미니맵 오른쪽 위 「풍」 단추와 같습니다."));
-        mini.Children.Add(Toggle("해류", GameSettings.MiniMapCurrent, on => GameSettings.MiniMapCurrent = on,
-            "미니맵에 해류 화살표를 깝니다. 미니맵 오른쪽 위 「류」 단추와 같습니다."));
 
         // 바람·해류 화살표 — 원본은 물결로만 흐름을 보인다. 개발 창에 있던 것을 여기로 옮겼다.
         info.Children.Add(Toggle("바람·해류 화살표", options.ArrowsOn(), options.SetArrows,
@@ -279,12 +265,34 @@ public sealed class ModDialog : GameWindow
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「인물 이동」을 냅니다. 인물이 어느 도시로 가고 있는지 늘어놓습니다."));
 
         // 세계지도 — 게임 옆에 띄워 두는 보조 지도(버그 리포트 #30). 발견물 지도처럼 원본보다 많이 보여 준다.
-        extra.Children.Add(Toggle("세계지도", GameSettings.ShowLiveMapMenu,
+        // 「추가 기능」에 있던 것을 「지도」 탭 「세계지도」 묶음으로 옮겼다(요청).
+        mini.Children.Add(GroupHead("세계지도"));
+        mini.Children.Add(Toggle("세계지도", GameSettings.ShowLiveMapMenu,
             on => GameSettings.ShowLiveMapMenu = on,
             "제목 줄 왼쪽 위 도시락 단추(점 아홉, 햄버거 왼쪽)에 「세계지도」를 냅니다."
             + " 게임 옆에 띄워 두는 지도 창으로, 띄워 둔 채 항해해도 게임이 멈추지 않고 내 배를 따라갑니다."
             + " 바탕은 게임 지도와 양피지 가운데 고르고, 지나온 뱃길 · 마우스를 올린 칸의 좌표 · 바다/육지 · 가까운 도시를 보여 줍니다."
             + " 발견물 표시도 켤 수 있습니다."));
+        // 도서관 책 보기 — 세계지도 도시 오른쪽 단추 메뉴에 「도서관」(요청).
+        var libraryBox = Toggle("도서관 책 보기", GameSettings.LiveMapLibrary,
+            on => GameSettings.LiveMapLibrary = on,
+            "원본에 없는 것입니다 — 세계지도 창에서 도서관이 있는 도시(「도」가 붙은 점)를 오른쪽 단추로 누르면 「도서관」 줄이 생깁니다."
+            + " 고르면 그 도시 도서관에 놓인 책과, 책마다 실린 힌트(갈래 · 등급 · 알아듣는 조건 · 힌트 글)를 보여 줍니다."
+            + " 아직 서가에 안 나온 책은 나오는 해를 붙여 회색으로 늘어놓습니다. 위의 「세계지도」를 켜야 쓸 수 있습니다.");
+        libraryBox.Margin = new Thickness(18, 8, 0, 2);
+        mini.Children.Add(libraryBox);
+        mini.Children.Add(GroupHead("미니맵"));
+        mini.Children.Add(MiniMapControls(options));
+        mini.Children.Add(Toggle("찾은 발견물", GameSettings.MiniMapFound, on => GameSettings.MiniMapFound = on,
+            "미니맵에 찾은 발견물을 빨간 점으로 찍습니다."));
+        mini.Children.Add(Toggle("못 찾은 발견물", GameSettings.MiniMapYet, on => GameSettings.MiniMapYet = on,
+            "미니맵에 아직 못 찾은 발견물을 회색 점으로 찍습니다."));
+        mini.Children.Add(Toggle("도시", GameSettings.MiniMapCities, on => GameSettings.MiniMapCities = on,
+            "미니맵에 지금 아는 도시를 주황 점으로 찍습니다."));
+        mini.Children.Add(Toggle("풍향", GameSettings.MiniMapWind, on => GameSettings.MiniMapWind = on,
+            "미니맵에 풍향 화살표를 깝니다. 미니맵 오른쪽 위 「풍」 단추와 같습니다."));
+        mini.Children.Add(Toggle("해류", GameSettings.MiniMapCurrent, on => GameSettings.MiniMapCurrent = on,
+            "미니맵에 해류 화살표를 깝니다. 미니맵 오른쪽 위 「류」 단추와 같습니다."));
 
         // 애드온은 아직 만드는 중이라 개발 창 「애드온」 탭에서만 켠다(DevDialog).
 
@@ -346,8 +354,9 @@ public sealed class ModDialog : GameWindow
             + " 끄면 묻지 않고 안 빌린 것으로 넘어갑니다 — 배를 이미 갖추고 있어 물음이 성가실 때 씁니다.",
             images: ["lend-ships-1.png", "lend-ships-2.png"]));
 
-        // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로.
-        font.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
+        // 리디바탕 글꼴 — 윈도 글꼴로 찍는 창 글씨를 리디바탕으로. 「폰트」 탭을 없애고 「UI」로 옮겼다(요청).
+        // 리디바탕은 한글 글꼴이라 일본어에서는 줄을 안 낸다.
+        if (UiFont.Supported) ui.Children.Add(Toggle("리디바탕 글꼴", GameSettings.RidiFont,
             on => { GameSettings.RidiFont = on; UiFont.Refresh(); },
             "원본에 없는 것입니다 — 게임 비트맵 글꼴이 아니라 윈도 글꼴로 찍는 글씨(이 모드 창, 향상된 힌트 보기, 교역소 숫자 따위)를"
             + " 리디바탕(명조)으로 바꿉니다. 게임 비트맵 글씨는 그대로입니다. 켜고 끄면 떠 있는 창에도 곧바로 듭니다."
@@ -848,7 +857,6 @@ public sealed class ModDialog : GameWindow
         pages.Children.Add(hires);
         pages.Children.Add(ui);
         pages.Children.Add(extra);
-        pages.Children.Add(font);
         pages.Children.Add(character);
         pages.Children.Add(discovery);
         pages.Children.Add(save);
@@ -859,7 +867,6 @@ public sealed class ModDialog : GameWindow
         hires.Visibility = Visibility.Hidden;
         ui.Visibility = Visibility.Hidden;
         extra.Visibility = Visibility.Hidden;
-        font.Visibility = Visibility.Hidden;
         character.Visibility = Visibility.Hidden;
         discovery.Visibility = Visibility.Hidden;
         save.Visibility = Visibility.Hidden;
@@ -881,10 +888,8 @@ public sealed class ModDialog : GameWindow
 
         var tabs = Tabs(
         [
-            ("권장", preset), ("편의성", rows), ("정보", info), ("미니맵", mini), ("고해상도", hires), ("UI", ui),
+            ("권장", preset), ("편의성", rows), ("정보", info), ("지도", mini), ("고해상도", hires), ("UI", ui),
             ("추가 기능", extra),
-            // 리디바탕은 한글 글꼴이라 일본어에서는 탭을 안 낸다
-            .. (UiFont.Supported ? new[] { ("폰트", font) } : Array.Empty<(string, StackPanel)>()),
             ("캐릭터", character), ("발견물", discovery), ("저장", save), ("일반", general), ("실험", lab),
         ]);
         BuildSearchIndex();
@@ -1533,6 +1538,17 @@ public sealed class ModDialog : GameWindow
         row.GotKeyboardFocus += (_, _) => Show();
         row.PreviewMouseLeftButtonDown += (_, _) => Show();
     }
+
+    /// <summary>탭 안 묶음의 머리 줄(「지도」 탭의 「세계지도」 · 「미니맵」) — 밑에 오는 줄들이 이 묶음에 든다.</summary>
+    private static Border GroupHead(string title) => new()
+    {
+        Background = new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF)),
+        BorderBrush = GameUi.Edge,
+        BorderThickness = new Thickness(0, 0, 0, 1),
+        Padding = new Thickness(6, 2, 6, 2),
+        Margin = new Thickness(0, 10, 0, 0),
+        Child = new TextBlock { Text = title, Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 14 },
+    };
 
     /// <summary>켜고 끄는 줄 하나.</summary>
     private CheckBox Toggle(string label, bool on, Action<bool> set, string tip, IReadOnlyList<string>? images = null)

@@ -519,6 +519,9 @@ public sealed class GameSettingsData
     /// <summary>도시락에 「세계지도」 줄을 낼지. 게임에는 없는 것이라 꺼 두고 시작한다.</summary>
     public bool ShowLiveMapMenu { get; set; }
 
+    /// <summary>세계지도 도시 오른쪽 단추 메뉴에 「도서관」을 낼지. 원본보다 많이 보여 주는 것이라 꺼 두고 시작한다.</summary>
+    public bool LiveMapLibrary { get; set; }
+
     /// <summary>세계지도 창 바탕을 양피지(발견물 지도 그림)로 깔지. 기본은 게임 지도 그림이다.</summary>
     public bool LiveMapParchment { get; set; }
 
@@ -1298,6 +1301,16 @@ public static class GameSettings
     {
         get => Get(d => d.ShowLiveMapMenu);
         set => Set(d => d.ShowLiveMapMenu = value);
+    }
+
+    /// <summary>
+    /// 세계지도 창에서 도서관이 있는 도시를 오른쪽 단추로 누르면 「도서관」 줄을 낼지 — 고르면 그 도시 도서관의 책과 실린 힌트를 본다.
+    /// 모드 창 「지도」 탭 「세계지도」 묶음의 「도서관 책 보기」가 켜고 끈다.
+    /// </summary>
+    public static bool LiveMapLibrary
+    {
+        get => Get(d => d.LiveMapLibrary);
+        set => Set(d => d.LiveMapLibrary = value);
     }
 
     /// <summary>세계지도 창 바탕이 양피지인지 — 창 위 「바탕」 단추로 고른다. 기본은 게임 지도.</summary>
@@ -2329,56 +2342,56 @@ public static class GameSettings
         set => Set(d => d.MiniMapCurrent = value);
     }
 
-    /// <summary>미니맵에 찾은 발견물 점을 찍을지 — 모드 창 「미니맵」 탭.</summary>
+    /// <summary>미니맵에 찾은 발견물 점을 찍을지 — 모드 창 「지도」 탭 「미니맵」 묶음.</summary>
     public static bool MiniMapFound
     {
         get => Get(d => d.MiniMapFound);
         set => Set(d => d.MiniMapFound = value);
     }
 
-    /// <summary>미니맵에 아직 못 찾은 발견물 점을 찍을지 — 모드 창 「미니맵」 탭.</summary>
+    /// <summary>미니맵에 아직 못 찾은 발견물 점을 찍을지 — 모드 창 「지도」 탭 「미니맵」 묶음.</summary>
     public static bool MiniMapYet
     {
         get => Get(d => d.MiniMapYet);
         set => Set(d => d.MiniMapYet = value);
     }
 
-    /// <summary>미니맵 창 크기 배율 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    /// <summary>미니맵 창 크기 배율 — 모드 창 「지도」 탭 「미니맵」 묶음의 굴림대.</summary>
     public static double MiniMapScale
     {
         get => Math.Clamp(Get(d => d.MiniMapScale), 0.5, 2.5);
         set => Set(d => d.MiniMapScale = Math.Clamp(value, 0.5, 2.5));
     }
 
-    /// <summary>미니맵 지도 배율 — 모드 창 「미니맵」 탭의 굴림대. 창 크기는 그대로 두고 지도만 당기거나 민다.</summary>
+    /// <summary>미니맵 지도 배율 — 모드 창 「지도」 탭 「미니맵」 묶음의 굴림대. 창 크기는 그대로 두고 지도만 당기거나 민다.</summary>
     public static double MiniMapZoom
     {
         get => Math.Clamp(Get(d => d.MiniMapZoom), 1.0, 4.0);
         set => Set(d => d.MiniMapZoom = Math.Clamp(value, 1.0, 4.0));
     }
 
-    /// <summary>마우스를 올렸거나 배가 밑에 들어갔을 때의 미니맵 불투명도 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    /// <summary>마우스를 올렸거나 배가 밑에 들어갔을 때의 미니맵 불투명도 — 모드 창 「지도」 탭 「미니맵」 묶음의 굴림대.</summary>
     public static double MiniMapHoverOpacity
     {
         get => Math.Clamp(Get(d => d.MiniMapHoverOpacity), 0.05, 1.0);
         set => Set(d => d.MiniMapHoverOpacity = Math.Clamp(value, 0.05, 1.0));
     }
 
-    /// <summary>미니맵의 내 자리 점(파란 점) 크기 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    /// <summary>미니맵의 내 자리 점(파란 점) 크기 — 모드 창 「지도」 탭 「미니맵」 묶음의 굴림대.</summary>
     public static double MiniMapShipSize
     {
         get => Math.Clamp(Get(d => d.MiniMapShipSize), 2.0, 12.0);
         set => Set(d => d.MiniMapShipSize = Math.Clamp(value, 2.0, 12.0));
     }
 
-    /// <summary>미니맵 표식(발견물 · 도시 점) 크기 — 모드 창 「미니맵」 탭의 굴림대.</summary>
+    /// <summary>미니맵 표식(발견물 · 도시 점) 크기 — 모드 창 「지도」 탭 「미니맵」 묶음의 굴림대.</summary>
     public static double MiniMapMarkSize
     {
         get => Math.Clamp(Get(d => d.MiniMapMarkSize), 1.0, 5.0);
         set => Set(d => d.MiniMapMarkSize = Math.Clamp(value, 1.0, 5.0));
     }
 
-    /// <summary>미니맵에 도시 점을 찍을지 — 모드 창 「미니맵」 탭.</summary>
+    /// <summary>미니맵에 도시 점을 찍을지 — 모드 창 「지도」 탭 「미니맵」 묶음.</summary>
     public static bool MiniMapCities
     {
         get => Get(d => d.MiniMapCities);

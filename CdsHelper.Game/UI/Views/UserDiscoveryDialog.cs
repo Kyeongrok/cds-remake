@@ -158,7 +158,7 @@ public sealed class UserDiscoveryDialog : GameWindow
                      Line("힌트 이름", _hintName, Label("등급(1~3)"), _hintGrade, Label("갈래"), _hintCategory,
                           Label("자금"), _hintFunds, Label("기한(년)"), _hintDeadline),
                      Line("힌트 글", _hintText),
-                     Line("힌트를 실을 책", _book, Edit("책 고르기…", PickBook)),
+                     Line("힌트를 실을 책", _bookNo, _book, Edit("책 고르기…", PickBook)),
                      _rumorPanel,
                      Line("", Edit("소문 더하기", AddRumor)),
                      new TextBlock
@@ -190,13 +190,14 @@ public sealed class UserDiscoveryDialog : GameWindow
                    + "싸우려면 「[육상전] 인물 이름 상대 100~139 아군 70 그림 3」(아래 「육상전 넣기…」로 짓습니다) — 그 아래 줄은 이겼을 때,"
                    + " 「[놓쳤을 때]」 아래 줄은 졌을 때입니다. 놓치면 다음에 또 만나고, 「[게임 오버]」를 두면 게임이 끝납니다."
                    + " 「[아이템] 이름」은 아이템을 줍니다(아래 「아이템 넣기…」로 고릅니다). 「[그림]」 · 「[동영상]」은 위에서 올린 것을 띄웁니다."
+                   + " 「[효과음] 번호」는 효과음을 냅니다(아래 「효과음 넣기…」로 들어 보고 고릅니다)."
                    + " 「(예제) 파르테논 신전」을 보세요.",
         });
         // 장면에 줄을 넣는 단추들 — 장면 칸 옆에 두면 창 밖으로 잘려 아래 줄에 둔다.
         _form.Children.Add(new StackPanel
         {
             Orientation = Orientation.Horizontal, Margin = new Thickness(90, 0, 0, 8),
-            Children = { Edit("아이템 넣기…", InsertItem), Edit("육상전 넣기…", InsertLand) },
+            Children = { Edit("아이템 넣기…", InsertItem), Edit("육상전 넣기…", InsertLand), Edit("효과음 넣기…", InsertSound) },
         });
         _share.Children.Add(Line("출처", _credit));
         _share.Children.Add(new TextBlock
@@ -254,6 +255,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         Content = page;
 
         _list.SelectionChanged += (_, _) => { if (_list.SelectedItem is ListBoxItem { Tag: string uuid }) Show(uuid); };
+        _book.TextChanged += (_, _) => ShowBookNo();
         _itemList.SelectionChanged += (_, _) => { if (_itemList.SelectedItem is ListBoxItem { Tag: string uuid }) ShowItem(uuid); };
         Loaded += (_, _) =>
         {
@@ -437,6 +439,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         _bookId = e.BookId;
         _book.Text = BookEdits.ByUuid(e.BookId) is { } linkedBook ? linkedBook.Title : e.Book;
         _bookIdTitle = _book.Text;
+        ShowBookNo();
         _description.Text = e.Description;
         _scene.Text = string.Join("\n", (e.Lines ?? []).Select(SceneText));
         _credit.Text = e.Credit;
@@ -496,6 +499,8 @@ public sealed class UserDiscoveryDialog : GameWindow
         // 아이템은 번호로 들고 이름으로 보인다 — 「[아이템] 4」로는 무엇인지 모른다.
         "item" => $"[아이템] {ItemName(line.Text) ?? line.Text}",
         "gameover" => "[게임 오버]",
+        // 효과음은 번호로 들고 「[효과음] 2 총격」처럼 라벨을 붙여 보인다.
+        "sound" => UserDiscoveries.SoundPart(line.Text) is int part ? SoundPickerDialog.SceneLine(part) : $"[효과음] {line.Text}",
         "lose" => "[놓쳤을 때]",
         _ => string.IsNullOrWhiteSpace(line.Speaker) ? line.Text : $"{line.Speaker}: {line.Text}",
     };
@@ -519,6 +524,12 @@ public sealed class UserDiscoveryDialog : GameWindow
                 lines.Add(new("item", null, ItemRef(s[5..].Trim())));
             }
             else if (s == "[게임 오버]") lines.Add(new("gameover"));
+            else if (s.StartsWith("[효과음]"))
+            {
+                // 라벨은 보이기만 하는 것 — 번호만 든다. 번호가 없으면 적은 그대로 두고 「저장」에서 알린다.
+                string what = s[5..].Trim();
+                lines.Add(new("sound", null, UserDiscoveries.SoundPart(what) is int part ? $"{part}" : what));
+            }
             else if (s.IndexOf(':') is var at and > 0 and <= 12 && !s[..at].Contains(' '))
                 lines.Add(new("say", s[..at].Trim(), s[(at + 1)..].Trim()));
             else lines.Add(new("say", null, s));
@@ -687,6 +698,11 @@ public sealed class UserDiscoveryDialog : GameWindow
             if (line.Kind == "item" && !int.TryParse(line.Text.Trim(), out _) && !UserItems.IsReference(line.Text))
             {
                 Tell($"「[아이템] {line.Text}」 — 그런 아이템이 없습니다. 「아이템 넣기…」로 골라 주세요.");
+                return;
+            }
+            if (line.Kind == "sound" && UserDiscoveries.SoundPart(line.Text) == null)
+            {
+                Tell($"「[효과음] {line.Text}」 — 효과음 번호는 0~{UserDiscoveries.SoundParts - 1} 입니다. 「효과음 넣기…」로 골라 주세요.");
                 return;
             }
         }
@@ -913,6 +929,34 @@ public sealed class UserDiscoveryDialog : GameWindow
     }
 
     /// <summary>
+    /// 효과음 고르기 창을 띄워, 고른 효과음을 「[효과음] 번호」 줄로 장면의 커서 자리 줄 뒤에 넣는다. 커서 줄이 이미 효과음 줄이면
+    /// 그 번호로 창을 열고, 고르면 그 줄을 바꾼다.
+    /// </summary>
+    private void InsertSound()
+    {
+        string text = _scene.Text.Replace("\r\n", "\n");
+        var lines = text.Split('\n').ToList();
+        int caret = Math.Min(_scene.CaretIndex, text.Length);
+        // 커서가 든 줄 — 칸이 줄을 접어 보이므로 TextBox 의 줄 번호가 아니라 줄바꿈 수로 센다.
+        int row = text.Length == 0 ? -1 : text.AsSpan(0, caret).Count('\n');
+        bool onSound = row >= 0 && row < lines.Count && lines[row].TrimStart().StartsWith("[효과음]");
+        int now = onSound ? UserDiscoveries.SoundPart(lines[row].Trim()[5..]) ?? -1 : -1;
+        if (SoundPickerDialog.Pick(this, _game, now) is not int part) return;
+        string line = SoundPickerDialog.SceneLine(part);
+        if (onSound)
+        {
+            lines[row] = line;
+            _scene.Text = string.Join("\n", lines);
+            Tell($"효과음 줄을 「{line}」 로 바꿨습니다 — 「저장」을 눌러 주세요.");
+            return;
+        }
+        int end = text.IndexOf('\n', caret);
+        if (end < 0) _scene.Text = text.TrimEnd('\n') + (text.Length > 0 ? "\n" : "") + line;
+        else _scene.Text = text.Insert(end + 1, line + "\n");
+        Tell($"장면에 「{line}」 을 넣었습니다 — 소리를 낼 대사 앞으로 옮기고 「저장」을 눌러 주세요.");
+    }
+
+    /// <summary>
     /// 육상전 넣기 창을 띄워 「[육상전] …」 줄을 짓는다 — 장면에 싸움 줄이 이미 있으면 그 줄을 고치고, 없으면 커서 줄 뒤에 넣는다.
     /// 싸움 줄은 하나만 둘 수 있다.
     /// </summary>
@@ -1055,6 +1099,25 @@ public sealed class UserDiscoveryDialog : GameWindow
     /// (<see cref="_bookIdTitle"/> 과 달라지면) 버리고 제목으로 잇는다.
     /// </summary>
     private string _bookId = "", _bookIdTitle = "";
+
+    /// <summary>책 칸 앞의 책 번호 — 칸의 제목과 같은 책들의 번호(언어만 다른 같은 제목이 여러 권이면 「12 · 140」). 없으면 「-」.</summary>
+    private readonly TextBlock _bookNo = new()
+    {
+        MinWidth = 36, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0),
+        Foreground = Brushes.DimGray, Text = "-",
+    };
+
+    /// <summary>책 칸 글로 책 번호를 다시 적는다. 더한 책은 고른 고유 번호(<see cref="_bookId"/>)로 먼저 찾는다.</summary>
+    private void ShowBookNo()
+    {
+        string title = _book.Text.Trim();
+        var books = _game?.Books?.Books ?? [];
+        var hit = _bookId.Length > 0 && _book.Text == _bookIdTitle
+            ? books.Where(b => b.Uuid == _bookId).ToList()
+            : [];
+        if (hit.Count == 0 && title.Length > 0) hit = books.Where(b => b.Title == title).ToList();
+        _bookNo.Text = hit.Count == 0 ? "-" : string.Join(" · ", hit.Select(b => b.Index).Distinct().OrderBy(i => i));
+    }
 
     /// <summary>책 고르기 창을 띄워 힌트를 실을 책을 고른다.</summary>
     private void PickBook()

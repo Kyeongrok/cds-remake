@@ -102,7 +102,11 @@ public sealed class LiveMapWindow : Window
         Action<Window, double, double>? CityClick = null,
         Action<Window, double, double>? CityPrices = null,
         Func<double, double, string>? SailToSpot = null,
-        Func<(IReadOnlyList<(double X, double Y)> Route, int Index)?>? PlannedRoute = null);
+        Func<(IReadOnlyList<(double X, double Y)> Route, int Index)?>? PlannedRoute = null,
+        Action<Window, double, double>? CityLibrary = null);
+
+    // CityLibrary — 도서관이 있는 도시 오른쪽 단추 메뉴의 「도서관」(요청, 모드 「도서관 책 보기」를 켰을 때만 보인다).
+    // 그 도시 도서관의 책과 실린 힌트를 늘어놓는 창을 띄운다.
 
     // PlannedRoute — 자동항해 중이면 가고 있는 항로와 다음 꺾는 점 번호(요청). 남은 길을 지나온 뱃길과 다른 색으로 긋는다.
 
@@ -181,7 +185,8 @@ public sealed class LiveMapWindow : Window
     private readonly DispatcherTimer _timer;
 
     /// <summary>표식 — 화면에서 늘 같은 크기로 보이게 배율마다 다시 놓는다.</summary>
-    private readonly List<(System.Windows.Shapes.Ellipse Dot, TextBlock? Tag, double X, double Y, double Size)> _pins = [];
+    /// <remarks>Badge: 점 위에 얹는 글자 — 도서관이 있는 도시는 「도」(요청). 없으면 null.</remarks>
+    private readonly List<(System.Windows.Shapes.Ellipse Dot, TextBlock? Tag, double X, double Y, double Size, TextBlock? Badge)> _pins = [];
 
     private Border _baseButton = null!, _spotsButton = null!, _yetButton = null!, _cityButton = null!, _followButton = null!;
 
@@ -346,16 +351,18 @@ public sealed class LiveMapWindow : Window
             // 도시 점 · 이름표 위면 그 메뉴(자동이동 · 시세)에 맡긴다 — 여기서 삼키면 그 메뉴가 안 뜬다.
             if (e.OriginalSource is FrameworkElement { Parent: var parent } && ReferenceEquals(parent, _cityLayer)) return;
             var (cx, cy) = CellUnder(e.GetPosition(_viewport));
-            var go = new MenuItem { Header = Lang.T("여기로 자동이동") };
-            go.Click += (_, _) =>
-            {
-                string said = spot(cx + 0.5, cy + 0.5);
-                if (said.Length > 0) NoticeDialog.Show(this, said);
-                else { var owner = Owner; Close(); owner?.Activate(); }
-            };
-            var menu = new ContextMenu { Items = { go }, PlacementTarget = _viewport, Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint };
-            menu.IsOpen = true;
+            // 도시 메뉴와 같은 원본 스타일 단추 창으로 낸다(요청).
             e.Handled = true;
+            GameUi.ContextMenuAt(this, e.GetPosition(this),
+            [
+                (Lang.T("여기로 자동이동"), () =>
+                {
+                    string said = spot(cx + 0.5, cy + 0.5);
+                    if (said.Length > 0) NoticeDialog.Show(this, said);
+                    else { var owner = Owner; Close(); owner?.Activate(); }
+                }),
+                (Lang.T("취소"), () => { }),
+            ]);
         };
 
         // 위 단추 줄 — 바탕 · 표식 켜고 끄기 · 따라가기 · 내 위치로 · 경로 지우기.
@@ -834,8 +841,11 @@ public sealed class LiveMapWindow : Window
 
         foreach (var c in cities)
         {
-            Mark(_cityLayer, c.X, c.Y, c.Library ? 9 : 7, CityInk, c.Library ? $"{Lang.T(c.Name)} ({Lang.T("도서관")})" : Lang.T(c.Name), Lang.T(c.Name));
-            if ((_src.SailToCity != null || _src.CityPrices != null) && !Picking) AttachCityMenu(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y);
+            // 도서관이 있는 도시는 점을 키우고 그 위에 「도」를 얹는다(요청).
+            Mark(_cityLayer, c.X, c.Y, c.Library ? 14 : 7, CityInk, c.Library ? $"{Lang.T(c.Name)} ({Lang.T("도서관")})" : Lang.T(c.Name), Lang.T(c.Name),
+                 badge: c.Library ? Lang.T("도") : null);
+            if ((_src.SailToCity != null || _src.CityPrices != null || (_src.CityLibrary != null && c.Library)) && !Picking)
+                AttachCityMenu(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, c.Library);
             if (_src.CityClick is { } click && !Picking) AttachCityClick(_pins[^1].Dot, _pins[^1].Tag, c.X, c.Y, click);
         }
         foreach (var s in spots)
@@ -847,31 +857,35 @@ public sealed class LiveMapWindow : Window
     /// 도시 점 · 이름표에 오른쪽 단추 메뉴 「자동이동」을 단다 — 고르면 네비게이션에서 그 도시를 고른 것처럼(가장 빠른 길) 자동이동이 걸린다.
     /// 못 걸었으면(도시 안에 함대가 없다 · 바닷길이 없다 따위) 그 까닭을 안내 창으로 띄운다 — 칸 정보 줄은 꺼 두고 시작해 안 보일 수 있다.
     /// </summary>
-    private void AttachCityMenu(FrameworkElement dot, TextBlock tag, double x, double y)
+    /// <remarks>
+    /// 메뉴는 원본 스타일 단추 창(<see cref="GameUi.ContextMenuAt"/> — 시설 명령 창과 같은 띠 단추)으로 낸다(요청).
+    /// 마지막 줄은 원본처럼 「취소」(회녹색)다. Esc · 오른쪽 단추로도 닫힌다.
+    /// </remarks>
+    private void AttachCityMenu(FrameworkElement dot, TextBlock tag, double x, double y, bool library)
     {
-        var menu = new ContextMenu();
-        if (_src.SailToCity is { } sail)
+        void Open(object sender, MouseButtonEventArgs e)
         {
-            var go = new MenuItem { Header = Lang.T("자동이동") };
-            go.Click += (_, _) =>
-            {
-                string said = sail(x, y);
-                if (said.Length > 0) NoticeDialog.Show(this, said);
-                // 걸렸으면 지도를 닫는다 — 떠 있으면 지도에 가려 곧바로 떠나는 것이 안 보인다(요청).
-                else { var owner = Owner; Close(); owner?.Activate(); }
-            };
-            menu.Items.Add(go);
+            e.Handled = true;
+            var rows = new List<(string Text, Action? Run)>();
+            if (_src.SailToCity is { } sail)
+                rows.Add((Lang.T("자동이동"), () =>
+                {
+                    string said = sail(x, y);
+                    if (said.Length > 0) NoticeDialog.Show(this, said);
+                    // 걸렸으면 지도를 닫는다 — 떠 있으면 지도에 가려 곧바로 떠나는 것이 안 보인다(요청).
+                    else { var owner = Owner; Close(); owner?.Activate(); }
+                }));
+            // 「시세」 — 그 도시에서 비싸게 팔리는 교역품 · 판매 물품 창(지도는 그대로 둔다).
+            if (_src.CityPrices is { } prices) rows.Add((Lang.T("시세"), () => prices(this, x, y)));
+            // 「도서관」 — 그 도시 도서관의 책과 힌트(모드 「도서관 책 보기」). 모드는 지도를 띄워 둔 채 켜고 끌 수 있어 열 때마다 본다.
+            if (library && GameSettings.LiveMapLibrary && _src.CityLibrary is { } books) rows.Add((Lang.T("도서관"), () => books(this, x, y)));
+            if (rows.Count == 0) return;
+            rows.Add((Lang.T("취소"), () => { }));
+            GameUi.ContextMenuAt(this, e.GetPosition(this), rows);
         }
-        // 「시세」 — 그 도시에서 비싸게 팔리는 교역품 · 판매 물품 창(지도는 그대로 둔다).
-        if (_src.CityPrices is { } prices)
-        {
-            var price = new MenuItem { Header = Lang.T("시세") };
-            price.Click += (_, _) => prices(this, x, y);
-            menu.Items.Add(price);
-        }
-        dot.ContextMenu = menu;
+        dot.MouseRightButtonUp += Open;
+        tag.MouseRightButtonUp += Open;
         tag.IsHitTestVisible = true;   // 이름표를 눌러도 메뉴가 뜨게(도시만 — 발견물 이름표는 그대로 손을 안 받는다)
-        tag.ContextMenu = menu;
         tag.Cursor = Cursors.Hand;
         dot.Cursor = Cursors.Hand;
     }
@@ -894,7 +908,7 @@ public sealed class LiveMapWindow : Window
         dot.Cursor = Cursors.Hand;
     }
 
-    private void Mark(Canvas layer, double x, double y, double size, Brush fill, string tip, string name, Brush? ink = null)
+    private void Mark(Canvas layer, double x, double y, double size, Brush fill, string tip, string name, Brush? ink = null, string? badge = null)
     {
         var dot = new System.Windows.Shapes.Ellipse { Fill = fill, Stroke = Brushes.Black, ToolTip = tip };
         layer.Children.Add(dot);
@@ -904,7 +918,14 @@ public sealed class LiveMapWindow : Window
             Background = Shade, Visibility = Visibility.Collapsed,
         };
         layer.Children.Add(tag);
-        _pins.Add((dot, tag, x, y, size));
+        // 점 위 글자는 손을 안 받는다 — 누름 · 오른쪽 단추는 아래 점이 받는다.
+        TextBlock? mark = badge == null ? null : new TextBlock
+        {
+            Text = badge, Foreground = Brushes.Black, FontWeight = FontWeights.Bold, IsHitTestVisible = false,
+            TextAlignment = TextAlignment.Center,
+        };
+        if (mark != null) layer.Children.Add(mark);
+        _pins.Add((dot, tag, x, y, size, mark));
     }
 
     private void OnKey(object sender, KeyEventArgs e)
@@ -1002,13 +1023,22 @@ public sealed class LiveMapWindow : Window
         _shift.Y = -_vy;
 
         bool labels = Z >= LabelFrom;
-        foreach (var (dot, tag, x, y, size) in _pins)
+        foreach (var (dot, tag, x, y, size, badge) in _pins)
         {
             double s = size / Z;
             dot.Width = dot.Height = s;
             dot.StrokeThickness = 1 / Z;
             Canvas.SetLeft(dot, x - s / 2);
             Canvas.SetTop(dot, y - s / 2);
+            if (badge != null)
+            {
+                badge.FontSize = 10 / Z;
+                badge.Width = s;
+                badge.LineHeight = s;
+                badge.LineStackingStrategy = LineStackingStrategy.BlockLineHeight;
+                Canvas.SetLeft(badge, x - s / 2);
+                Canvas.SetTop(badge, y - s / 2);
+            }
             if (tag == null) continue;
             tag.Visibility = labels ? Visibility.Visible : Visibility.Collapsed;
             if (!labels) continue;

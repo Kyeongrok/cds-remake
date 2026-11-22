@@ -906,7 +906,7 @@ public sealed partial class DevDialog : GameWindow
         });
         top.Children.Add(find);
         top.Children.Add(count);
-        // 사람이 지어 넣는 발견물(UserDiscoveryDialog)은 제목 줄 도시락 「발견물 추가」로 옮겼다(요청).
+        // 사람이 지어 넣는 발견물(UserDiscoveryDialog)은 제목 줄 도시락 「추가 발견물」로 옮겼다(요청).
         page.Children.Add(top);
         var sheet = new DockPanel();
         var head = new Border
