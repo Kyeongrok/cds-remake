@@ -53,8 +53,13 @@ public static class TavernRumors
         // 여관이면 술집에서만 하는 줄을 뺀다 — 원본 벌은 그 줄이 맨 앞에 몰려 있어 rand(전체 − k) + k 와 같은 줄이 나온다.
         var pool = inn ? [.. lines.Where(l => !l.TavernOnly)] : lines;
         if (pool.Count == 0) pool = lines;
-        return pool[random.Next(pool.Count)].Text;
+        // 원본에 없는 한 줄 — 어느 고장에서나 벌의 한 줄처럼 같은 몫으로 섞어 낸다(요청).
+        int at = random.Next(pool.Count + 1);
+        return at == pool.Count ? CityInfoTip : pool[at].Text;
     }
+
+    /// <summary>항구 「마을정보」를 알려 주는 소문 — 원본에 없다. 값을 치르고 들은 마을은 지도에 뜬다(요청).</summary>
+    public const string CityInfoTip = "다른 도시의 위치를 알고 싶다면 항구의 관리에게 마을정보에 대해 물어보게.";
 
     /// <summary>소문 갈래 열(원본 아홉 + 동아시아)의 이름 — 편집 창에 쓴다. 0 은 북유럽 · 이베리아 · 지중해가 함께 쓴다.</summary>
     public static readonly string[] SetNames =
