@@ -27,6 +27,9 @@ public sealed class CityLibraryDialog : GameWindow
     /// <summary>커서가 올라간 줄 바탕.</summary>
     private static readonly Brush Hover = Frozen(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF));
 
+    /// <summary>목록 저자 글빛 — 제목보다 흐리게.</summary>
+    private static readonly Brush AuthorInk = Frozen(Color.FromArgb(0xA0, 0xE8, 0xDC, 0xC8));
+
     private static Brush Frozen(Color c)
     {
         var b = new SolidColorBrush(c);
@@ -139,12 +142,15 @@ public sealed class CityLibraryDialog : GameWindow
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var name = new TextBlock
         {
-            Text = $"{book.Index,3}  {Lang.T(book.Title)}",
             Foreground = GameUi.Text,
             FontSize = 14,
             TextTrimming = TextTrimming.CharacterEllipsis,
             VerticalAlignment = VerticalAlignment.Center,
         };
+        name.Inlines.Add(new System.Windows.Documents.Run($"{book.Index,3}  {Lang.T(book.Title)}"));
+        // 저자는 제목 뒤에 흐리게 붙인다(요청) — 모르는 책은 안 붙인다.
+        if (book.Author.Length > 0)
+            name.Inlines.Add(new System.Windows.Documents.Run($"  {Lang.T(book.Author)}") { FontSize = 12, Foreground = AuthorInk });
         var right = new TextBlock
         {
             Text = later ? $"{book.Year}년부터" : Lang.T(LanguageName(book.Language)),
