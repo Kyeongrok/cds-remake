@@ -197,6 +197,155 @@
                   "Name": "공적"
                 },
                 "B": {
+                  "Const": 250
+                }
+              },
+              "Note": "공적 >= 250"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 4
+              },
+              "Note": "건물 조건: 4(술집)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
+                  "Const": 250
+                }
+              },
+              "Note": "공적 >= 250"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "국왕",
+                "Text": "<제독>， 그대의 항해가 나라에 이로움을 더하였노라． 그 공훈을 기려 그대를 훈작사로 삼노라．"
+              }
+            },
+            {
+              "OpCode": "0E 03",
+              "Call": "PlaySound",
+              "Args": {
+                "Id": 77
+              },
+              "Note": "음원 재생: 승리"
+            },
+            {
+              "OpCode": "26 1C",
+              "Call": "SetStat",
+              "Args": {
+                "Stat": 41,
+                "Value": {
+                  "Const": 2
+                }
+              },
+              "Note": "작위 = 1(기사)"
+            },
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Text": "<제독><은/는> 훈작사의 작위를 받았다！"
+              }
+            },
+            {
+              "OpCode": "06",
+              "Call": "AdvanceStep",
+              "Note": "다음 단계"
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ],
+          [
+            {
+              "OpCode": "00 0A",
+              "Call": "Say",
+              "Args": {
+                "Speaker": "술집",
+                "Text": "본국 왕궁에서 <제독>님을 찾고 계시다는군요． 그간의 공적을 치하하신다나 봅니다．"
+              }
+            },
+            {
+              "OpCode": "FF",
+              "Call": "End",
+              "Note": "덩이/갈래 끝"
+            }
+          ]
+        ]
+      },
+      {
+        "Index": 2,
+        "Step": 2,
+        "Slots": [
+          {
+            "Condition": 0,
+            "Body": 2
+          },
+          {
+            "Condition": 1,
+            "Body": 3
+          }
+        ],
+        "Chunks": [
+          [
+            {
+              "OpCode": "17 10",
+              "Call": "InBuilding",
+              "Args": {
+                "Building": 2
+              },
+              "Note": "건물 조건: 2(왕궁)"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 42,
+                  "Name": "본국 수도에 있음(1/0)"
+                },
+                "B": {
+                  "Const": 1
+                }
+              },
+              "Note": "본국 수도에 있음"
+            },
+            {
+              "OpCode": "2B",
+              "Call": "GreaterOrEqual",
+              "Args": {
+                "A": {
+                  "Stat": 40,
+                  "Name": "공적"
+                },
+                "B": {
                   "Const": 375
                 }
               },
@@ -260,7 +409,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 2
+                  "Const": 3
                 }
               },
               "Note": "작위 = 1(기사)"
@@ -301,8 +450,8 @@
         ]
       },
       {
-        "Index": 2,
-        "Step": 2,
+        "Index": 3,
+        "Step": 3,
         "Slots": [
           {
             "Condition": 0,
@@ -409,7 +558,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 3
+                  "Const": 4
                 }
               },
               "Note": "작위 = 2(남작)"
@@ -450,8 +599,8 @@
         ]
       },
       {
-        "Index": 3,
-        "Step": 3,
+        "Index": 4,
+        "Step": 4,
         "Slots": [
           {
             "Condition": 0,
@@ -558,7 +707,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 4
+                  "Const": 5
                 }
               },
               "Note": "작위 = 3(자작)"
@@ -599,8 +748,8 @@
         ]
       },
       {
-        "Index": 4,
-        "Step": 4,
+        "Index": 5,
+        "Step": 5,
         "Slots": [
           {
             "Condition": 0,
@@ -707,7 +856,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 5
+                  "Const": 6
                 }
               },
               "Note": "작위 = 4(백작)"
@@ -748,8 +897,8 @@
         ]
       },
       {
-        "Index": 5,
-        "Step": 5,
+        "Index": 6,
+        "Step": 6,
         "Slots": [
           {
             "Condition": 0,
@@ -856,7 +1005,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 6
+                  "Const": 7
                 }
               },
               "Note": "작위 = 5(후작)"
@@ -897,8 +1046,8 @@
         ]
       },
       {
-        "Index": 6,
-        "Step": 6,
+        "Index": 7,
+        "Step": 7,
         "Slots": [
           {
             "Condition": 0,
@@ -1005,7 +1154,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 7
+                  "Const": 8
                 }
               },
               "Note": "작위 = 6(공작)"
@@ -1046,8 +1195,8 @@
         ]
       },
       {
-        "Index": 7,
-        "Step": 7,
+        "Index": 8,
+        "Step": 8,
         "Slots": [
           {
             "Condition": 0,
@@ -1154,7 +1303,7 @@
               "Args": {
                 "Stat": 41,
                 "Value": {
-                  "Const": 8
+                  "Const": 9
                 }
               },
               "Note": "작위 = 7(대공)"
@@ -1197,5 +1346,5 @@
     ]
   },
   "Source": "모드 「작위」 — 원본에 없는 전역 대본",
-  "Version": 17
+  "Version": 18
 }

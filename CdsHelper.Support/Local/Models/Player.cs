@@ -878,7 +878,7 @@ public sealed class Player
     public int NobleRank { get; private set; }
 
     /// <summary>작위를 적는다.</summary>
-    public void SetNobleRank(int rank) => NobleRank = Math.Clamp(rank, 0, 8);
+    public void SetNobleRank(int rank) => NobleRank = Math.Clamp(rank, 0, 9);
 
     private readonly Dictionary<int, long> _invested = [];
 

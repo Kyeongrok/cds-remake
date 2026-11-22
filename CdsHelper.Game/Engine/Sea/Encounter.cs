@@ -285,7 +285,8 @@ public static class Encounter
         int floor = kind == EnemyKind.Islam ? rng.Next(5) : rng.Next(10) + 30;
         // 첫 항은 <b>말하는 이와 제독의 운 가운데 높은 쪽 + 1 의 절반</b>이다(0x004555D0 이 미리 담아 둔 값).
         int luck = Math.Max(mateLuck, player.AbilityOf(Ability.Luck));
-        return (luck + 1) / 2 + rhetoric * 10 + floor;
+        // 모드 「작위」 훈작사 혜택 — 교섭 확률 +20%(요청). 원본에 없다.
+        return (luck + 1) / 2 + rhetoric * 10 + floor + Town.Nobility.Sum(player, Town.PassiveEffect.TalkOdds);
     }
 
     /// <summary>
