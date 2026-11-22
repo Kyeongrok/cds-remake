@@ -480,7 +480,8 @@ public static class GameSave
         List<string>? DevMarks = null, string? DevSeal = null,
         string? Pack = null, string? PackPrint = null,
         List<string?>? AccSeats = null,
-        List<Player.Conquest>? Conquests = null)
+        List<Player.Conquest>? Conquests = null,
+        Dictionary<int, int>? GoodsSold = null)
     {
         /// <summary>읽을 때 봉인을 대 본 결과 — 맞으면 참, 안 맞거나 없으면 거짓, 따지지 않는 앞 판이면 null. 파일에는 안 적는다.</summary>
         [JsonIgnore] public bool? SealOk { get; init; }
@@ -694,7 +695,9 @@ public static class GameSave
                             // 누적 캐릭터를 앉힌 자리(표지). 이 칸 앞의 세이브는 누적캐릭터.json 차례로 채운다.
                             AccSeats: player.AccSeats is { } seats ? [.. seats] : null,
                             // 도시 공략 기록(향상된 연표). 이 칸 앞의 세이브는 행적의 공략 줄로만 센다.
-                            Conquests: [.. player.Conquests]);
+                            Conquests: [.. player.Conquests],
+                            // 도시마다 판 교역품 개수(모드 「교역품별 시세」). 이 칸 앞의 세이브는 하나도 안 판 것으로 연다.
+                            GoodsSold: player.GoodsSold.Count > 0 ? player.GoodsSold.ToDictionary(e => e.Key, e => e.Value) : null);
         try
         {
             // 중단은 제 자리(SAVEDATA.TMP)에만 적는다 — 일반 세이브와 손으로 적은 칸은 그대로 둔다(0x00479447~0x0047946F).

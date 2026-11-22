@@ -582,7 +582,7 @@ public sealed class TradePostDialog : GameWindow
     }
 
     /// <summary>
-    /// 첫 줄 — 교역품 이름, 모드 「교역품별 시세」면 오른쪽 끝에 이 도시의 그 물건 시세(%)를 붙인다. 많이 팔면 내려간다.
+    /// 첫 줄 — 교역품 이름, 모드 「교역품별 시세」면 오른쪽 끝에 이 도시의 그 물건 시세(%)와 판 개수를 붙인다. 많이 팔면 내려간다.
     /// </summary>
     /// <remarks>
     /// 시세는 예전에 셋째 줄 끝에 붙였는데, 그 줄은 원산지 · 매입가 · 팔 것 · 내구도까지 들어 길어서 잘려 안 보였다
@@ -592,7 +592,10 @@ public sealed class TradePostDialog : GameWindow
     {
         if (!Local.Settings.GameSettings.GoodsMarkets) return Dark(name, 14, Ink);
         var line = new DockPanel { LastChildFill = true };
-        var rate = Dark($"   시세 {_player.GoodsRateOf(_city, kind)}%", 12, Dim);
+        // 이 도시에 판 개수가 쌓여 있으면 붙인다 — 많이 풀릴수록 값이 내려간다(요청).
+        int sold = _player.GoodsSoldOf(_city, kind);
+        string glut = sold > 0 ? $" · 판매 {sold}개" : "";
+        var rate = Dark($"   시세 {_player.GoodsRateOf(_city, kind)}%{glut}", 12, Dim);
         rate.VerticalAlignment = VerticalAlignment.Bottom;
         DockPanel.SetDock(rate, Dock.Right);
         line.Children.Add(rate);

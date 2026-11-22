@@ -3323,6 +3323,44 @@ public sealed class Player
         }
     }
 
+    /// <summary>
+    /// 도시마다 교역품을 판 개수(모드 「교역품별 시세」) — 열쇠는 <see cref="GoodsKey"/>, 값은 개수다. 많이 풀릴수록 그 도시의
+    /// 그 물건 값이 내려가고(Engine.Market.TradePost.GlutPct), 달마다 1/6 씩(적어도 1) 팔려 나가 줄어든다(요청).
+    /// </summary>
+    private readonly Dictionary<int, int> _goodsSold = [];
+
+    public IReadOnlyDictionary<int, int> GoodsSold => _goodsSold;
+
+    /// <summary>그 도시에 그 교역품이 풀려 있는 개수.</summary>
+    public int GoodsSoldOf(int city, int kind) => _goodsSold.TryGetValue(GoodsKey(city, kind), out int v) ? v : 0;
+
+    /// <summary>그 도시에 그 교역품을 판 개수를 더한다.</summary>
+    public void AddGoodsSold(int city, int kind, int count)
+    {
+        if (city < 0 || kind < 0 || count <= 0) return;
+        int key = GoodsKey(city, kind);
+        _goodsSold[key] = (int)Math.Min(int.MaxValue, (long)_goodsSold.GetValueOrDefault(key) + count);
+    }
+
+    /// <summary>한 달 지남 — 풀린 개수가 1/6 씩(적어도 1) 줄어든다. 반년이면 거의 다 팔려 나간다.</summary>
+    public void DecayGoodsSold()
+    {
+        foreach (var (key, v) in _goodsSold.ToList())
+        {
+            int now = v - Math.Max(1, v / 6);
+            if (now <= 0) _goodsSold.Remove(key);
+            else _goodsSold[key] = now;
+        }
+    }
+
+    /// <summary>판 개수를 통째로 박는다 — 적어 둔 판을 열 때 쓴다.</summary>
+    public void RestoreGoodsSold(IReadOnlyDictionary<int, int>? saved)
+    {
+        _goodsSold.Clear();
+        foreach (var (key, v) in saved ?? new Dictionary<int, int>())
+            if (v > 0) _goodsSold[key] = v;
+    }
+
     /// <summary>교역품별 시세를 통째로 박는다 — 적어 둔 판을 열 때 쓴다.</summary>
     public void RestoreGoodsRates(IReadOnlyDictionary<int, int>? saved)
     {

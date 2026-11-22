@@ -4177,6 +4177,7 @@ public sealed class WorldMapWindow : Window
             _game.Player.RestoreInvestments(saved.Investments);
             _game.Player.RestoreGrowthFunds(saved.GrowthFunds);
             _game.Player.RestoreGoodsRates(saved.GoodsRates);
+            _game.Player.RestoreGoodsSold(saved.GoodsSold);
             _host.RefreshGrownCities();
             _game.Player.RestoreFoundDates(saved.FoundOn);
             // 찾은 사람·보고한 사람 이름. 이 칸 앞의 세이브는 지금 제독 이름으로 본다.

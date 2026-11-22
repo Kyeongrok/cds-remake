@@ -299,6 +299,7 @@ public sealed class Game
                     MarketRates.Drift(player, Random, CityExeTable.Count,
                                       Found(MarketRates.Aztec, when), Found(MarketRates.Inca, when));
                     player.RecoverGoodsRates();   // 교역품별 시세(모드)가 100 쪽으로 돌아온다
+                    player.DecayGoodsSold();      // 도시에 풀린 교역품이 팔려 나간다
                 }
 
                 // 모드 「모든 도시 등장」을 켜 둔 동안 신도시 이벤트가 탄 도시는 남긴다 — 모드를 꺼도 지도에 그대로 선다(요청).

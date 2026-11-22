@@ -272,7 +272,8 @@ public sealed class TradePost
         }
         // 교역품 값 배율과 교역품별 시세(모드) — 금 · 은도 그 물건 시세는 탄다(도시 물가는 원본처럼 안 탄다).
         long scaled = (long)price * Local.Settings.GameSettings.GoodsPriceScale;
-        if (Local.Settings.GameSettings.GoodsMarkets) scaled = scaled * player.GoodsRateOf(city, kind) / MarketRates.Par;
+        if (Local.Settings.GameSettings.GoodsMarkets)
+            scaled = scaled * player.GoodsRateOf(city, kind) / MarketRates.Par * GlutPct(player, city, kind) / 100;
         price = (int)Math.Clamp(scaled, 1, int.MaxValue);
 
         price = CityState.Adjust(_rates.StateOf(city), goods, price);
@@ -281,6 +282,28 @@ public sealed class TradePost
 
     /// <summary>그 도시 상태.</summary>
     public int StateOf(int city) => _rates.StateOf(city);
+
+    /// <summary>
+    /// 풀린 개수로 깎는 값(%) — 모드 「교역품별 시세」. 그 도시에 판 개수(<see cref="Player.GoodsSoldOf"/>)가
+    /// 소화량(재고 한도 x 5 — 규모 2 인 아테네는 500, 규모 4 인 리스본은 1750)만큼 쌓이면 값이 절반이 된다(요청).
+    /// <code>
+    ///   값(%) = 100 x 소화량 / (소화량 + 판 개수)          ; 10 밑으로는 안 내려간다
+    /// </code>
+    /// 판 개수는 달마다 1/6 씩 줄어 값이 돌아온다(<see cref="Player.DecayGoodsSold"/>).
+    /// </summary>
+    public int GlutPct(Player player, int city, int kind)
+    {
+        int sold = player.GoodsSoldOf(city, kind);
+        if (sold <= 0) return 100;
+        long room = GlutRoom(city);
+        return (int)Math.Max(MinGlutPct, 100 * room / (room + sold));
+    }
+
+    /// <summary>값이 절반이 되는 판 개수 — 규모의 재고 한도(<see cref="StockCaps"/>) x 5.</summary>
+    public int GlutRoom(int city) => StockCaps[Math.Clamp(_cities?.ScaleOf(city) ?? 0, 0, StockCaps.Length - 1)] * 5;
+
+    /// <summary>풀린 개수로 깎이는 바닥(%).</summary>
+    private const int MinGlutPct = 10;
 
     // ── 회화 ────────────────────────────────────────────────────────────────
 
@@ -461,6 +484,10 @@ public sealed class TradePost
             .Where(s => s.Count > 0 && s.Slot >= 0 && s.Slot < player.CargoHold.Count)
             .Select(s => (Kind: player.CargoHold[s.Slot].Kind, Money: (long)s.Count * SellPriceOf(player, city, player.CargoHold[s.Slot])))
             .ToList();
+        var soldCounts = deal.Sells
+            .Where(s => s.Count > 0 && s.Slot >= 0 && s.Slot < player.CargoHold.Count)
+            .Select(s => (Kind: player.CargoHold[s.Slot].Kind, s.Count))
+            .ToList();
         // 뒤 칸부터 판다 — 다 판 칸이 빠지며 당겨져도 앞 번호가 안 어긋난다.
         foreach (var (slot, n) in deal.Sells.Where(s => s.Count > 0).OrderByDescending(s => s.Slot))
             player.UnloadCargo(slot, n);
@@ -491,6 +518,8 @@ public sealed class TradePost
                 net[row.Kind] = net.GetValueOrDefault(row.Kind) + (long)n * Discounted(row.Price, deal.Pct);
             foreach (var (kind, money) in sold)
                 net[kind] = net.GetValueOrDefault(kind) - money;
+            // 판 개수를 센다 — 그 도시에 많이 풀릴수록 값이 내려간다(GlutPct).
+            foreach (var (slot, n) in soldCounts) player.AddGoodsSold(city, slot, n);
             foreach (var (kind, money) in net)
             {
                 int move = (int)Math.Clamp(money / per, -MaxRateStep, MaxRateStep);
