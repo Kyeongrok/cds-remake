@@ -43,7 +43,7 @@
       {
         "Index": 83,
         "Name": "성종",
-        "Face": 370,
+        "Face": 9006,
         "IsFemale": false,
         "JobCode": 14,
         "Eye": 90,
@@ -81,5 +81,5 @@
     ]
   },
   "Source": "더한 후원자",
-  "Version": 7
+  "Version": 8
 }
