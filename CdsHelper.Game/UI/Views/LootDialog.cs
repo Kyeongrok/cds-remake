@@ -275,7 +275,7 @@ public sealed class LootDialog : GameWindow
 
     /// <summary>
     /// 「최대」 — 풀에 남은 보급품을 실을 수 있는 데까지 싣는다. 식량과 물은 <b>한 통씩 번갈아</b> 올리고
-    /// (보급 창 「최대」처럼 짝으로), 그다음 탄약 · 자재 차례다.
+    /// (보급 창 「최대」처럼 짝으로). 자재 · 탄약은 건드리지 않는다 — ↑↓ · 계산기로 손수 올린다(요청).
     /// </summary>
     private void Fill()
     {
@@ -287,13 +287,6 @@ public sealed class LootDialog : GameWindow
                      : PoolLeft(water) > 0 ? water : -1;
             if (pick < 0 || RoomLeft <= 0 || ByWeight(pick) <= 0) break;
             _now[pick]++;
-            moved = true;
-        }
-        foreach (int i in new[] { (int)SupplyKind.Ammo, (int)SupplyKind.Material })
-        {
-            int n = Math.Min(PoolLeft(i), Math.Min(RoomLeft, ByWeight(i)));
-            if (n <= 0) continue;
-            _now[i] += n;
             moved = true;
         }
         if (moved) Paint();
