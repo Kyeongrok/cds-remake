@@ -37,9 +37,12 @@ public static class BuildingSprites
     /// <summary>뽑을 폴더 이름.</summary>
     public const string Folder = "asset/buildingsprite";
 
-    /// <summary>뽑은 건물 그림 하나 — 문화권 · 갈래 · 변형 번호 · 쓰는 건물들 · 96x80 BGRA(비침 알파 0) · 남은 점 수.</summary>
+    /// <summary>
+    /// 뽑은 건물 그림 하나 — 문화권 · 갈래 · 변형 번호 · 쓰는 건물들 · 96x80 BGRA(비침 알파 0) · 남은 점 수 ·
+    /// 색을 가져온 기준 건물(고해상도 그림도 이 도시의 업스케일 그림에서 오려 낸다, <see cref="CityComposer"/>).
+    /// </summary>
     public sealed record Sprite(string Culture, string Kind, int Variant, List<CityBuildingTable.Building> Members,
-                                uint[] Bgra, int Points)
+                                uint[] Bgra, int Points, CityBuildingTable.Building Reference)
     {
         public string FileName => $"{Culture}_{Kind}_{Variant}.png";
         public override string ToString() => $"{Culture} · {Kind} {Variant + 1}  ({Members.Count}곳 · {Points}점)";
@@ -150,7 +153,7 @@ public static class BuildingSprites
                     if (members.Count < minMembers) break;
                     var refB = rest[best];
                     var (bgra, points) = Consensus(Pic(refB.City)!, refB, members.Select(m => (Pic(m.City)!, m)).ToList());
-                    result.Add(new Sprite(byCulture.Key, byKind.Key, variant++, members, bgra, points));
+                    result.Add(new Sprite(byCulture.Key, byKind.Key, variant++, members, bgra, points, refB));
                     rest = [.. rest.Except(members)];
                 }
             }

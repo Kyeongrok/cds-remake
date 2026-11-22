@@ -56,6 +56,7 @@ namespace CdsHelper.Form.UI.Views;
 [TemplatePart(Name = PART_WorldMapMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_WorldEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_CitySpriteMenu, Type = typeof(MenuItem))]
+[TemplatePart(Name = PART_CityImageMakerMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_DiscoveryStillMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_CultureEditMenu, Type = typeof(MenuItem))]
 [TemplatePart(Name = PART_AccordionMenu, Type = typeof(NavigationMenu))]
@@ -102,6 +103,7 @@ public class CdsHelperWindow : CdsWindow
     private const string PART_WorldMapMenu = "PART_WorldMapMenu";
     private const string PART_WorldEditMenu = "PART_WorldEditMenu";
     private const string PART_CitySpriteMenu = "PART_CitySpriteMenu";
+    private const string PART_CityImageMakerMenu = "PART_CityImageMakerMenu";
     private const string PART_DiscoveryStillMenu = "PART_DiscoveryStillMenu";
     private const string PART_CultureEditMenu = "PART_CultureEditMenu";
     private const string PART_AccordionMenu = "PART_AccordionMenu";
@@ -332,6 +334,9 @@ public class CdsHelperWindow : CdsWindow
         {
             citySpriteMenu.Click += (_, _) => CdsHelper.Game.UI.Views.CitySpriteDialog.Show(Window.GetWindow(this)!);
         }
+
+        if (GetTemplateChild(PART_CityImageMakerMenu) is MenuItem cityImageMakerMenu)
+            cityImageMakerMenu.Click += (_, _) => CdsHelper.Game.UI.Views.CityImageMakerDialog.Show(this);
 
         if (GetTemplateChild(PART_WorldEditMenu) is MenuItem worldEditMenu)
         {
