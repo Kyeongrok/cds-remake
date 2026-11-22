@@ -1007,6 +1007,7 @@ public sealed class WorldMapWindow : Window
             var list = new List<(string Name, double X, double Y, bool Found)>();
             foreach (var row in _game.Discoveries?.Table.Discoveries ?? [])
             {
+                if (row.IsTreasure) continue;   // 비보는 발견물이 아니다 — 발견물 지도의 「비보」 켜에만 찍는다(요청)
                 double x, y;
                 if (row.HasPlace) { x = (row.X1 + row.X2) / 2.0; y = (row.Y1 + row.Y2) / 2.0; }
                 else if (inTown.TryGetValue(row.Id, out var town)) (x, y) = town;

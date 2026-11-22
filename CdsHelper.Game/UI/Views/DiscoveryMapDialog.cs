@@ -69,6 +69,9 @@ public sealed class DiscoveryMapDialog : GameWindow
 
     private static readonly Brush Found = Frozen(Color.FromRgb(0xC0, 0x30, 0x20));
     private static readonly Brush Yet = Frozen(Color.FromRgb(0x50, 0x50, 0x50));
+
+    /// <summary>비보 점의 금빛 — 발견물(빨강 · 회색)과 갈라 보이게.</summary>
+    private static readonly Brush TreasureInk = Frozen(Color.FromRgb(0xE0, 0xB0, 0x20));
     private static readonly Brush Mine = Frozen(Color.FromRgb(0x20, 0x40, 0xC0));
 
     /// <summary>도시 표식 색 — 발견물(빨강 · 회색) · 내 자리(파랑) · 화살표(보라 · 청록)와 안 겹치는 주황.</summary>
@@ -145,6 +148,9 @@ public sealed class DiscoveryMapDialog : GameWindow
 
     /// <summary>아직 못 찾은 발견물(회색) 켜 — 「못 찾은 것」 단추로 켜고 끈다. 발견물 켜 <b>안</b>에 있어 「발견물」을 끄면 같이 꺼진다.</summary>
     private readonly Canvas _yetLayer = new();
+
+    /// <summary>비보(술집 사건 여덟) 켜 — 「비보」 단추로 켜고 끈다. 발견물이 아니라 발견물 켜 밖에 따로 둔다(요청).</summary>
+    private readonly Canvas _treasureLayer = new();
 
     /// <summary>위도·경도 격자 켜 — 25도마다 어두운 흰 선. 도수 글씨는 <see cref="_gridTags"/> 에 따로 띄운다.</summary>
     private readonly Canvas _gridLayer = new() { IsHitTestVisible = false };
@@ -296,6 +302,8 @@ public sealed class DiscoveryMapDialog : GameWindow
 
         _world.Children.Add(_spotLayer);
         _spotLayer.Children.Add(_yetLayer);
+        _world.Children.Add(_treasureLayer);
+        _treasureLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
         // 켜를 끄고 켜면 이름표 비키기를 다시 센다 — 꺼진 켜의 이름표가 자리를 차지하지 않게.
         _cityLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
         _spotLayer.IsVisibleChanged += (_, _) => { if (IsLoaded) Apply(); };
@@ -305,6 +313,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         Loaded += (_, _) => { _declutteredFor = ""; Apply(); };
         _spotLayer.Visibility = GameSettings.DiscoveryMapSpots ? Visibility.Visible : Visibility.Collapsed;
         _yetLayer.Visibility = GameSettings.DiscoveryMapYet ? Visibility.Visible : Visibility.Collapsed;
+        _treasureLayer.Visibility = GameSettings.DiscoveryMapTreasure ? Visibility.Visible : Visibility.Collapsed;
 
         int shown = 0, done = 0;
         // 0~Count-1 로만 돌면 DiscoveryEdits 로 더한 줄(274 이상)이 안 뜬다 — table.Discoveries 를 돈다.
@@ -323,6 +332,16 @@ public sealed class DiscoveryMapDialog : GameWindow
             else continue;
 
             bool found = player.HasFound(row.Id) || eventsDone?.Contains(row.Id) == true;
+
+            // 비보는 발견물이 아니다 — 금빛 점으로 따로 찍고 발견물 셈에도 안 넣는다(요청).
+            if (row.IsTreasure)
+            {
+                Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
+                     MarkSize, TreasureInk, row.Name, label: true, layer: _treasureLayer);
+                _searchable.Add((row.Name, _pins[^1], _treasureLayer));
+                continue;
+            }
+
             var spotDot = Mark(x / ExploredMap.CellsPerBlock, y / ExploredMap.CellsPerBlock,
                             MarkSize, found ? Found : Yet, row.Name, label: true, layer: found ? _spotLayer : _yetLayer);
             _searchable.Add((row.Name, _pins[^1], found ? _spotLayer : _yetLayer));
@@ -428,6 +447,8 @@ public sealed class DiscoveryMapDialog : GameWindow
         // 못 찾은 것(회색)은 따로 끈다 — 미니맵처럼 감춰 두고 싶은데 여기서만 늘 보여 스포일러가 됐다(제보).
         toggles.Children.Add(Toggle("못 찾은 것", () => GameSettings.DiscoveryMapYet,
                                     v => GameSettings.DiscoveryMapYet = v, _yetLayer, out _, 136));
+        toggles.Children.Add(Toggle("비보", () => GameSettings.DiscoveryMapTreasure,
+                                    v => GameSettings.DiscoveryMapTreasure = v, _treasureLayer, out _));
         if (cities is { Count: > 0 })
             toggles.Children.Add(Toggle("도시", () => GameSettings.DiscoveryMapCities,
                                         v => GameSettings.DiscoveryMapCities = v, _cityLayer, out _toggleCities));
@@ -544,7 +565,8 @@ public sealed class DiscoveryMapDialog : GameWindow
         string want = Bare(_query.Text);
         _hits = want.Length == 0
             ? []
-            : [.. _searchable.Where(s => s.Layer != _yetLayer || _yetLayer.Visibility == Visibility.Visible)
+            : [.. _searchable.Where(s => (s.Layer != _yetLayer || _yetLayer.Visibility == Visibility.Visible)
+                                         && (s.Layer != _treasureLayer || _treasureLayer.Visibility == Visibility.Visible))
                              .Where(s => Bare(s.Name).Contains(want) || Bare(Lang.T(s.Name)).Contains(want))
                              .OrderBy(s => Bare(s.Name).StartsWith(want) ? 0 : 1)];
         _hit = 0;
@@ -570,7 +592,9 @@ public sealed class DiscoveryMapDialog : GameWindow
         }
 
         var (name, pin, layer) = _hits[_hit];
-        if (layer == _cityLayer ? _cityLayer.Visibility != Visibility.Visible : _spotLayer.Visibility != Visibility.Visible)
+        // 비보는 켜 있을 때만 찾기에 걸리니 켤 것이 없다.
+        if (layer != _treasureLayer
+            && (layer == _cityLayer ? _cityLayer.Visibility != Visibility.Visible : _spotLayer.Visibility != Visibility.Visible))
             (layer == _cityLayer ? _toggleCities : _toggleSpots)?.Invoke();
         _hitNote.Text = $"{_hit + 1}/{_hits.Count}  {Lang.T(name)}";
         _ring.Visibility = Visibility.Visible;
@@ -627,7 +651,7 @@ public sealed class DiscoveryMapDialog : GameWindow
 
         // 이름표는 어느 배율부터 단다 — 온 지도에 가까우면 이름끼리 겹친다.
         bool labels = Z >= LabelFrom;
-        string state = $"{_zoom}|{_cityLayer.Visibility}|{_spotLayer.Visibility}|{_yetLayer.Visibility}";
+        string state = $"{_zoom}|{_cityLayer.Visibility}|{_spotLayer.Visibility}|{_yetLayer.Visibility}|{_treasureLayer.Visibility}";
         if (labels && state != _declutteredFor && IsLoaded) { _declutteredFor = state; Declutter(); }
         foreach (var pin in _pins)
             if (pin.Tag is { } tag) tag.Visibility = labels && !pin.Crowded ? Visibility.Visible : Visibility.Collapsed;
@@ -641,6 +665,7 @@ public sealed class DiscoveryMapDialog : GameWindow
         if (_autoSail != null) usage.Add(Lang.T("Shift+오른쪽 단추: 그 자리로 자동항해"));
         usage.Add("");
         usage.Add(Lang.T("빨강: 찾은 발견물 · 회색: 아직 못 찾은 발견물"));
+        usage.Add(Lang.T("금색: 비보(술집 사건)"));
         usage.Add(Lang.T("파랑: 내 자리"));
         usage.Add(Lang.T("주황: 도시(「도」는 도서관)"));
         if (_hasFlows)

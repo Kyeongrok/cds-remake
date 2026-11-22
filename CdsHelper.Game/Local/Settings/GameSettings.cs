@@ -131,6 +131,9 @@ public sealed class GameSettingsData
     /// <summary>발견물 지도에서 아직 못 찾은 발견물(회색)을 감출지. 기본은 보인다.</summary>
     public bool DiscoveryMapHideYet { get; set; }
 
+    /// <summary>발견물 지도에 비보(지중해 술집 사건 여덟)를 찍을지. 원본에 없는 칸이라 꺼 두고 시작한다.</summary>
+    public bool DiscoveryMapTreasure { get; set; }
+
     /// <summary>바다 입체 효과(물결 굴곡·햇빛·깊이·해안 물보라). 켜 두고 시작한다.</summary>
     public bool SeaEffect { get; set; } = true;
 
@@ -2148,6 +2151,16 @@ public static class GameSettings
     {
         get => !Get(d => d.DiscoveryMapHideSpots);
         set => Set(d => d.DiscoveryMapHideSpots = !value);
+    }
+
+    /// <summary>
+    /// 발견물 지도에 비보(시라쿠사의 비보 따위 — 술집에 묶인 사건 여덟)를 금빛 점으로 찍을지 — 지도 아래 「비보」 단추로 켜고 끈다.
+    /// 비보는 발견물이 아니라(발견물 수에도 안 든다) 발견물 점과 따로 둔다(요청). 기본은 끔.
+    /// </summary>
+    public static bool DiscoveryMapTreasure
+    {
+        get => Get(d => d.DiscoveryMapTreasure);
+        set => Set(d => d.DiscoveryMapTreasure = value);
     }
 
     /// <summary>

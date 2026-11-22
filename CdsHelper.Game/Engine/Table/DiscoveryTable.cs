@@ -148,6 +148,12 @@ public sealed class DiscoveryTable
         [JsonIgnore] public bool IsCounterfeit => Id is >= 230 and <= 257;
 
         /// <summary>
+        /// <b>비보</b>인지 — 「시라쿠사의 비보」 따위 여덟(265~272). 지중해 여덟 도시 술집에 묶인 사건으로, 원본이 장소 사건을
+        /// 걸 칸이 발견물 표뿐이라 빌려 쓴 줄이다. 발견물이 아니라 지도에서는 발견물 점과 따로 둔다(요청).
+        /// </summary>
+        [JsonIgnore] public bool IsTreasure => Id is >= 265 and <= 272;
+
+        /// <summary>
         /// 좁을수록 앞세우려고 재는 값. 원본이 쓰는 것 그대로 <b>가로 길이의 제곱</b>이다
         /// (<c>0x004256D9</c>) — 세로는 안 본다.
         /// </summary>
