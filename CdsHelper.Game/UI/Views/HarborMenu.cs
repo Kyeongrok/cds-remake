@@ -673,6 +673,9 @@ internal sealed class HarborMenu(Window view, Engine.Game game, GameMenuHost men
             if (pick < 0) return;
 
             _player.Pay(fee);
+            // 값을 치르고 들은 마을은 아는 도시가 된다(요청) — 세계지도 · 발견물 지도에 뜨고, 도시정보로 내륙 도시를 알 때와 같다.
+            // 원본은 항해 중 시야(0x0048D98F)로만 알았다.
+            _player.Know(towns[pick]);
             ConfirmDialog.Tell(owner, WhereIs(towns[pick]), face: face);
         }
 
