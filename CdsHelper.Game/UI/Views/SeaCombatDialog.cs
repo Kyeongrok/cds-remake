@@ -378,6 +378,14 @@ public sealed class SeaCombatDialog : GameWindow, SeaBattle.IStage
                 SeaShipInfoDialog.Show(this, shown);
                 e.Handled = true;
             }
+            // S 는 아래 띠 Set, C 는 Cancel 을 누른 것과 같다(요청, 원본에 없다).
+            else if (e.Key is Key.S or Key.C && Keyboard.Modifiers == ModifierKeys.None && !e.IsRepeat)
+            {
+                e.Handled = true;
+                if (_battle.Over || !TookBack()) return;
+                if (e.Key == Key.S) Decide();
+                else ClearOrders();
+            }
         };
 
         Loaded += (_, _) => Redraw();
