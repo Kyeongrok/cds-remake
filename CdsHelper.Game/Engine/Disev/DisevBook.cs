@@ -189,10 +189,12 @@ public sealed class DisevBook
 
         // 판 1 은 버리지 않고 옮겨 적는다 — 사람이 고쳐 둔 대본이 들어 있을 수 있다.
         var cached = TableCache.Read<Snapshot>(cache);
-        if (cached is { Version: >= 1 and <= SnapshotVersion } && cached.Data.Parts.Count > 0)
+        // 판이 알맹이 모양 판보다 높아도 읽는다 — 원본에 없는 대본(작위 따위)은 고칠 때 판을 올려 왔는데(작위 판 16~18),
+        // 예전에는 여기서 버리고 앱 옆의 실은 JSON 을 찾다 못 찾아 책이 통째로 안 열렸다(작위가 더 안 올랐다).
+        if (cached is { Version: >= 1 } && cached.Data.Parts.Count > 0)
         {
             var book = FromEntries(cached.Data.Parts, cached.Stamp, cache);
-            if (book != null && cached.Version != SnapshotVersion) book.Write();
+            if (book != null && cached.Version < SnapshotVersion) book.Write();
             return book;
         }
 

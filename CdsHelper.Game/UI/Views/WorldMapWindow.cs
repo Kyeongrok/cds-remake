@@ -211,6 +211,9 @@ public sealed class WorldMapWindow : Window
     /// <summary>배 속도 쪽지 — 모드 「배 속도」를 켜면 바다에 있는 동안 지도 위에 뜬다. 끌어 옮길 수 있다.</summary>
     private FleetLabelWindow? _speedNote;
 
+    /// <summary>속도 쪽지를 띄우는 중인지 — 띄우는 동안 다시 불려 둘 뜨지 않게.</summary>
+    private bool _makingSpeedNote;
+
     /// <summary>모드 「항해 일수」의 동그라미. 처음 띄울 때 만든다.</summary>
     private SeaDaysBadge? _daysBadge;
 
@@ -1106,11 +1109,13 @@ public sealed class WorldMapWindow : Window
             if (!GameSettings.LandAutoWalk) return Lang.T("육지에서 걸어가려면 모드 창 「실험」 탭의 「뭍 자동이동」을 켜 주세요");
             var (walked, said) = _host.StartAutoWalk(cellX, cellY);
             if (!walked) return Lang.T(said);
+            CloseCommandForAutoMove();
             Say($"{WorldMapHost.SpotText(cellX, cellY)}까지 걸어갑니다");
             return "";
         }
         var (ok, message) = _host.StartAutoSail(cellX, cellY);
         if (!ok) return message;
+        CloseCommandForAutoMove();
         NavStarted("livemap");
         // 「그곳까지」 대신 짚은 자리의 위도 · 경도(요청).
         Say($"{WorldMapHost.SpotText(cellX, cellY)}까지 {message}");
@@ -1171,9 +1176,21 @@ public sealed class WorldMapWindow : Window
         }
         var (ok, message) = _host.StartAutoSail(goal.X, goal.Y, goal.City, goal.Exact, goal.Kind);
         if (!ok) { _sailTo = -1; return message; }
+        CloseCommandForAutoMove();
         NavStarted(goal.Tag + ":map");
         Say($"[{name}]까지 {message}");
         return "";
+    }
+
+    /// <summary>
+    /// 세계지도 창에서 자동이동을 걸면 떠 있던 커맨드 창을 닫는다 — 커맨드 창이 떠 있는 동안 게임이 서 있어,
+    /// 세계지도만 닫히고 커맨드 창을 손으로 닫아야 떠났다(요청).
+    /// </summary>
+    private void CloseCommandForAutoMove()
+    {
+        if (!CommandMenu.IsOpen) return;
+        CommandMenu.Close();
+        if (!_asking && !_host.SeaBlocked) _host.Paused = false;
     }
 
     /// <summary>자동항해를 걸었다 — 무엇을 골랐는지 적는다(<see cref="PlayStats.Nav"/>).</summary>
@@ -1937,7 +1954,21 @@ public sealed class WorldMapWindow : Window
         if (!show) { _speedNote?.Set(""); return; }
         if (ShuttingDown) return;
         if (_speedNote is { IsClosed: true }) _speedNote = null;
-        _speedNote ??= FleetLabelWindow.Attach(this, SpeedFontSize, FleetLabelWindow.Slot.Speed);
+        if (_speedNote == null)
+        {
+            // 띄우는 동안(Show) 이 손이 다시 불려 쪽지가 둘 뜬 적이 있다(속도 칸이 두 개) — 다시 들어오면 그냥 돌아가고,
+            // 남은 속도 쪽지가 있으면 걷고 새로 띄운다.
+            if (_makingSpeedNote) return;
+            _makingSpeedNote = true;
+            try
+            {
+                foreach (var stray in OwnedWindows.OfType<FleetLabelWindow>()
+                                                  .Where(w => w.Kind == FleetLabelWindow.Slot.Speed && !w.IsClosed).ToList())
+                    stray.Close();
+                _speedNote = FleetLabelWindow.Attach(this, SpeedFontSize, FleetLabelWindow.Slot.Speed);
+            }
+            finally { _makingSpeedNote = false; }
+        }
         // 정보 등급 「상세」 — 밑에 셈식을 작은 글씨로 붙인다(배마다의 값 · 기함과 평균 · 작위 혜택 · 노트 바꾸기).
         string? detail = null;
         if (GameSettings.Shows(GameSettings.InfoDetailed))
@@ -9073,6 +9104,29 @@ public sealed class WorldMapWindow : Window
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=areapick</c>) — 발견물 자리 고르기 창을 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
     internal DiscoveryAreaPicker.Area? PickAreaForTest(DiscoveryAreaPicker.Area? start) =>
         (DiscoveryAreaMap() ?? DiscoveryAreaPicker.FromGame(_game)) is { } map ? DiscoveryAreaPicker.Pick(this, map, start) : null;
+
+    /// <summary>
+    /// 화면 밖 시험(<c>CDS_NOBLE=&lt;국적&gt;:&lt;작위&gt;:&lt;도시&gt;</c>) — 그 국적 · 작위(단계도 같게)에 공적 1만(투자)을 주고,
+    /// 그 도시 술집(4) · 왕궁(2)에 들 때 작위 대본이 열리는지와 조건 줄 값을 적는다.
+    /// </summary>
+    internal string NobleProbeForTest(int nation, int rank, int city)
+    {
+        var p = _game.Player;
+        p.Nation = nation;
+        p.SetNobleRank(rank);
+        p.SetStoryStep(Engine.Town.Nobility.BookName, rank);
+        p.RestoreInvestments(new Dictionary<int, long> { [city] = 10_000_000 });
+        EnterCity(city);
+        var lines = new List<string> { $"켜짐 {Engine.Town.Nobility.Enabled} · 도시 {p.CityId} · 공적 {Engine.Town.Nobility.MeritOf(_game)} · 본국 수도 {Engine.Town.Nobility.InHomeCapital(_game)} · 도시 안 {_cityView != null}" };
+        foreach (int b in new[] { 4, 2 })
+        {
+            var ev = Engine.Disev.DisevEvent.EnterBuilding(city, b);
+            lines.Add($"건물 {b}: 열리는 파트 {StoryLog.NextPart(p, _game, ev, Engine.Town.Nobility.BookName)?.ToString() ?? "없음"}");
+            if (Engine.Disev.DisevRunner.Inspect(_game, Engine.Town.Nobility.BookName, rank, b) is { } slots)
+                foreach (var s in slots) lines.Add("  " + s.Passes + " : " + string.Join(" / ", s.Checks.Select(c => $"{c.Text}={c.Value}")));
+        }
+        return string.Join("\n", lines);
+    }
 
     /// <summary>화면 밖 시험(<c>CDS_HOSTILE=all</c>) — 항구를 가진 모든 나라를 적대로 둔다.</summary>
     internal string HostileAllForTest()

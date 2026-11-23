@@ -247,6 +247,10 @@ public static class OffscreenHarness
             // CDS_HOSTILE=all — 항구를 가진 모든 나라를 적대(출입여부 2)로 둔다. CDS_PIRATE=1 이면 이어서 해적 공화국에 가담한다(Piracy).
             if (Environment.GetEnvironmentVariable("CDS_HOSTILE") == "all")
                 window.Dispatcher.BeginInvoke(() => Log(window.HostileAllForTest()), DispatcherPriority.ApplicationIdle);
+            // CDS_NOBLE=<국적>:<작위>:<도시> — 작위 대본이 그 도시 술집 · 왕궁에서 열리는지 적는다.
+            if (Environment.GetEnvironmentVariable("CDS_NOBLE") is { } noble && noble.Split(':') is [var nn, var nr, var nc]
+                && int.TryParse(nn, out int nobleNation) && int.TryParse(nr, out int nobleRank) && int.TryParse(nc, out int nobleCity))
+                window.Dispatcher.BeginInvoke(() => Log(window.NobleProbeForTest(nobleNation, nobleRank, nobleCity)), DispatcherPriority.ApplicationIdle);
             if (Environment.GetEnvironmentVariable("CDS_PIRATE") == "1")
                 window.Dispatcher.BeginInvoke(() => Log(window.JoinPiratesForTest()), DispatcherPriority.ApplicationIdle);
             // CDS_FOUND=<이름>[,<이름>…] — 그 이름의 발견물들을 찾은 것으로 적는다(사람 발견물 그림이 지도에 서는지 본다).
