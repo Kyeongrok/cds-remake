@@ -2088,7 +2088,7 @@
       "geography": true,
       "treasure": false,
       "tradeGoods": false,
-      "creature": false,
+      "creature": true,
       "history": true,
       "religion": false,
       "superstition": false,
@@ -2123,5 +2123,30 @@
     "wealth": 700000,
     "power": "B",
     "note": "원본에 없는 후원자 — 예멘 타히르 왕조의 술탄 알말리크 알자피르 아미르 2세(재위 1489~1517). 인도양 교역으로 번영한 아덴을 다스렸고 라다아에 아미리야 마드라사를 세웠다. 1517년 맘루크군에 져 죽었다. 얼굴은 원본 남자 초상화 312."
+  },
+  {
+    "id": 85,
+    "name": "에드워드 티치",
+    "nationality": "해적 공화국",
+    "city": "나소",
+    "supportRate": "50%",
+    "discernment": 70,
+    "occupation": "총독",
+    "appearYear": 1480,
+    "retireYear": null,
+    "preferences": {
+      "geography": false,
+      "treasure": true,
+      "tradeGoods": true,
+      "creature": false,
+      "history": false,
+      "religion": false,
+      "superstition": true,
+      "ethnicity": false
+    },
+    "fame": 0,
+    "wealth": 500000,
+    "power": "B",
+    "note": "원본에 없는 후원자 — 해적 「검은수염」 에드워드 티치(1680?~1718). 나소 해적 공화국(1706~1718)의 상징이다. 게임 배경보다 200년쯤 뒤 사람이지만 해적 공화국과 짝을 맞춰 나소 총독부에 앉힌다. 얼굴은 『해적의 일반 역사』(1724) 판화를 참고로 그린 그림(asset/face/male-9007.png)."
   }
 ]

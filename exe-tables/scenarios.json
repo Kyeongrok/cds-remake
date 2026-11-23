@@ -109,6 +109,14 @@
         "Capital": 44,
         "Sect": 0,
         "Entry": 0
+      },
+      {
+        "Id": 79,
+        "Name": "해적 공화국",
+        "Language": 3,
+        "Capital": 226,
+        "Sect": 0,
+        "Entry": 0
       }
     ]
   },

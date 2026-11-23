@@ -134,7 +134,7 @@ public sealed class ShortcutDialog : GameWindow
             Focusable = true,
             TextAlignment = TextAlignment.Center,
             Margin = new Thickness(8, 0, 0, 0),
-            Text = key,
+            Text = Pretty(key),
         };
         box.PreviewKeyDown += (_, e) => Assign(e, box, store, clearable, combo);
         _boxes.Add(box);
@@ -181,17 +181,24 @@ public sealed class ShortcutDialog : GameWindow
             if (mods.HasFlag(ModifierKeys.Shift)) key = "Shift+" + key;
             if (mods.HasFlag(ModifierKeys.Control)) key = "Ctrl+" + key;
         }
-        if (_boxes.Any(b => b != box && string.Equals(key, b.Text, StringComparison.OrdinalIgnoreCase)))
+        if (_boxes.Any(b => b != box && string.Equals(Pretty(key), b.Text, StringComparison.OrdinalIgnoreCase)))
         {
             e.Handled = true;
             NoticeDialog.Show(this, "같은 글쇠를 두 단축키에 함께 지정할 수 없습니다.");
             return;
         }
 
-        box.Text = key;
+        box.Text = Pretty(key);
         store(key);
         e.Handled = true;
     }
+
+    /// <summary>
+    /// 칸에 보일 글쇠 이름 — 숫자 줄 글쇠는 WPF 이름(「D1」) 대신 숫자(「1」)로 보인다. 「Ctrl+D1」로 보여 릴리즈 노트의
+    /// 「Ctrl+1」과 달라 헷갈렸다(버그 리포트 #75). 적는 값은 그대로 WPF 이름이다.
+    /// </summary>
+    private static string Pretty(string key) =>
+        System.Text.RegularExpressions.Regex.Replace(key ?? "", @"(?<=^|\+)D(\d)$", "$1");
 
     public static void Show(Window owner)
     {

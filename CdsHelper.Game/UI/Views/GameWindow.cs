@@ -48,6 +48,9 @@ public class GameWindow : Window
     {
         EventManager.RegisterClassHandler(typeof(GameWindow), Keyboard.KeyDownEvent,
                                           new KeyEventHandler(OnAnyKey));
+        // 쪽지 창(함대 · 기능 쪽지, ☰ 단추 따위)도 초점을 쥘 수 있다 — 그때 단축키가 안 먹었다(버그 리포트 #75~#77).
+        EventManager.RegisterClassHandler(typeof(Window), Keyboard.KeyDownEvent,
+                                          new KeyEventHandler(OnOtherWindowKey));
 
         // 상자 밑에 깔린 창은 손도 글쇠도 안 받는다. 지도 창은 GameWindow 가 아니라서 Window 에 건다.
         EventManager.RegisterClassHandler(typeof(Window), Keyboard.PreviewKeyDownEvent,
@@ -140,6 +143,17 @@ public class GameWindow : Window
 
         e.Handled = true;
         if (e.RoutedEvent == Mouse.PreviewMouseDownEvent && !box.IsActive) box.Activate();
+    }
+
+    /// <summary>
+    /// GameWindow 가 아닌 <b>쪽지 창</b>에 온 글쇠 — 그 주인 창에서 누른 것처럼 공용 단축키를 돈다. 개발 도구 창 같은 딴 창에서
+    /// D · R 이 게임을 움직이면 안 되니 쪽지 갈래만 받는다.
+    /// </summary>
+    private static void OnOtherWindowKey(object sender, KeyEventArgs e)
+    {
+        if (sender is not (FleetLabelWindow or SkillOverlayWindow or SeaQuickButton or SeaDaysBadge)) return;
+        var window = (Window)sender;
+        OnAnyKey(Alive(window.Owner) ?? window, e);
     }
 
     private static void OnAnyKey(object sender, KeyEventArgs e)

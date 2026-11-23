@@ -38,6 +38,9 @@ public enum TownWork
     /// <summary>왕궁 「망명」 — 원본에 없는 줄(모드 「망명」, <see cref="Exile"/>).</summary>
     Exile,
 
+    /// <summary>나소 총독부 「해적 가담」 — 원본에 없는 줄(<see cref="Piracy"/>).</summary>
+    JoinPirates,
+
     // ── 조합 ──────────────────────────────────────────────────────────────
 
     /// <summary>조합 「의뢰」 — 맡을 수 있는 의뢰 목록. 원본에 없는 줄이다 — 늘 서고, 의뢰가 없으면 없다고 알린다.</summary>
@@ -130,6 +133,7 @@ public static class TownWorks
         // ── 그 밖 ─────────────────────────────────────────────────────────
         new(TownWork.Read, "열람", FacilityKind.Library),
         new(TownWork.Exile, Facility.Exile, FacilityKind.Palace),
+        new(TownWork.JoinPirates, Facility.JoinPirates, FacilityKind.Other),
         new(TownWork.GuildQuest, Facility.GuildQuest, FacilityKind.Guild),
         new(TownWork.Explore, "탐험을 떠난다", FacilityKind.Gate),
         // 자리를 안 적는다 — 발견물이 된 건물이면 어느 시설에나 붙는다(0x004733B1).
@@ -196,7 +200,8 @@ public static class TownWorks
                                             bool Wed = false, bool PatronBribe = false,
                                             bool PatronBorrow = false, bool HasSon = false,
                                             bool HasBooks = true, bool PatronDim = false,
-                                            bool CanExile = false, bool ExileReady = false);
+                                            bool CanExile = false, bool ExileReady = false,
+                                            bool CanJoinPirates = false);
 
     /// <summary>
     /// 그 시설의 명령 창에 늘어놓을 줄들. 차례와 문구는 <see cref="Facility.Menu"/> 것이고,
@@ -239,6 +244,9 @@ public static class TownWorks
         // 왕궁 「망명」도 원본에 없는 줄이다 — 모드 「망명」을 켰고 망명을 받는 왕궁(리스본 · 세비야 · 런던)일 때만 선다.
         if (facility.Kind == FacilityKind.Palace && !state.CanExile)
             items.Remove(NameOf(TownWork.Exile));
+        // 나소 총독부 「해적 가담」도 원본에 없는 줄이다 — 아직 해적이 아닐 때 나가기 바로 위에 선다(Piracy).
+        if (facility.Kind == FacilityKind.Other && state.CanJoinPirates && !items.Contains(Facility.JoinPirates))
+            items.Insert(Math.Max(0, items.IndexOf(facility.ExitItem)), Facility.JoinPirates);
 
         // 아이가 없으면 교육·세대교체는 <b>줄에서 뺀다</b>. 가르칠 아이도 물려줄 아이도
         // 없는데 줄만 서 있으면 눌러 보고서야 알게 된다.

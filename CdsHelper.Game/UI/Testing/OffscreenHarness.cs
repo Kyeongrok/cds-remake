@@ -244,6 +244,11 @@ public static class OffscreenHarness
                     window.NavByKey();
                     Log("네비게이션 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
+            // CDS_HOSTILE=all — 항구를 가진 모든 나라를 적대(출입여부 2)로 둔다. CDS_PIRATE=1 이면 이어서 해적 공화국에 가담한다(Piracy).
+            if (Environment.GetEnvironmentVariable("CDS_HOSTILE") == "all")
+                window.Dispatcher.BeginInvoke(() => Log(window.HostileAllForTest()), DispatcherPriority.ApplicationIdle);
+            if (Environment.GetEnvironmentVariable("CDS_PIRATE") == "1")
+                window.Dispatcher.BeginInvoke(() => Log(window.JoinPiratesForTest()), DispatcherPriority.ApplicationIdle);
             // CDS_FOUND=<이름>[,<이름>…] — 그 이름의 발견물들을 찾은 것으로 적는다(사람 발견물 그림이 지도에 서는지 본다).
             if (Environment.GetEnvironmentVariable("CDS_FOUND") is { Length: > 0 } found)
                 window.Dispatcher.BeginInvoke(() =>

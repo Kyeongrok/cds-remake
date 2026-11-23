@@ -531,9 +531,13 @@ public sealed class CityComposer
     // ── 짜 맞추기 ─────────────────────────────────────────────────────────
 
     /// <summary>배경 위에 건물(아래쪽 것이 앞)과 테두리를 얹는다. 결과는 400x320 의 <paramref name="scale"/> 배 BGRA.</summary>
-    public uint[] Compose(int backgroundCity, FrameStyle? frame, IEnumerable<Placed> placed, int scale)
+    public uint[] Compose(int backgroundCity, FrameStyle? frame, IEnumerable<Placed> placed, int scale) =>
+        Compose(Background(backgroundCity, scale), frame, placed, scale);
+
+    /// <summary>바깥에서 가져온 배경(400x320 의 <paramref name="scale"/> 배 — 생성 그림 따위) 위에 건물 · 테두리를 얹는다.</summary>
+    public uint[] Compose(uint[] background, FrameStyle? frame, IEnumerable<Placed> placed, int scale)
     {
-        var canvas = (uint[])Background(backgroundCity, scale).Clone();
+        var canvas = (uint[])background.Clone();
         int sw = W * scale, sh = H * scale;
         foreach (var p in placed.OrderBy(p => p.Y))
         {

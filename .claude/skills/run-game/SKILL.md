@@ -77,6 +77,7 @@ options : "실행한다"   — 앱을 닫고 다시 구워 띄운다
 | `CDS_DIALOG=storm` | `CDS_START=sea:…` 와 함께 — 지도를 멈춘 채 폭풍 장면만 돌리고, 앞 · 도는 동안(1초마다) · 뒤의 소리 진단(곡 상태 · 장치 음량 · 앱 음량 · 장치 음량이 바뀐 자취 `deviceChanges`)을 기록에 적는다(버그 리포트 #45). 곡을 들으려면 `CDS_MUTE=0` 과 시험 폴더 `game-settings.json` 의 작은 `BgmVolume` |
 | `CDS_DIALOG=landbattle-sound` | `CDS_START=sea:…` 와 함께 — 육상전이 곡을 다루는 차례(전투 곡 → 끝맺음 숨죽임 → 듣던 곡)와 해전 · 일기토 승패 소리의 멈춤(Pause → Resume)을 1초 간격으로 밟으며 곡 상태 · 장치 음량 · `deviceChanges` 를 적는다(버그 리포트 #46 · #47). 흐름이 안 끊기면 내내 `wpf Playing` 이고 자리가 흐른다. `CDS_MUTE=0` 과 시험 폴더 `game-settings.json` 의 `BgmVolume` 0 |
 | `CDS_DIALOG=areapick[:x1,y1,x2,y2[,1]]` | 사람 발견물 창의 「지도에서 고르기…」(세계지도 고르기 모드)를 그 범위에서 띄운다(끝의 1 은 육지). `CDS_START` 없이 걸면 타이틀에서 WORLD.CDS 로 지은 지도로 뜬다 |
+| `CDS_HOSTILE=all` · `CDS_PIRATE=1` | 바로 시작한 뒤 항구를 가진 모든 나라를 적대(출입여부 2)로 두고, `CDS_PIRATE=1` 이면 묻지 않고 해적 공화국에 가담한다(Piracy) — 해적 가담(적대 · 수배)을 볼 때. 나소는 처음 알아볼 때 물음이 먼저 떠 `patrons:…:city:226` 이 못 드니, 시험 빌드의 `exe-tables/cities-added.json` 에서 `Flags` 를 75(아는 도시)로 바꿔 둔다 |
 | `CDS_FOUND=<이름>[,<이름>…]` | 바로 시작한 뒤 그 이름의 발견물들을 찾은 것으로 적고 지도를 다시 짓는다 — 사람 발견물 그림이 지도에 서는지 볼 때(사람 발견물은 `<SAVEDIR>\discoveries\<uuid>\discovery.json` 에 미리 넣어 두고 `-KeepSave`) |
 | `CDS_DIALOG=childname` | 자녀 이름 다시 짓기 창(선명입력 창)을 띄우고 그 창이 쥔 초점(글상자 · 고른 글자 수)을 기록에 적은 뒤 닫는다 |
 | `CDS_DIALOG=dev:<탭>` | 개발 창을 그 탭으로 띄운다(`dev:에디터` = 주인공 능력치 · 기능 · 언어 고치기). `CDS_START` 와 함께 쓴다 |

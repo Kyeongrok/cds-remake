@@ -108,6 +108,7 @@ internal static class HostileCityMenu
         var dice = new GameRandom(Environment.TickCount);
         int nation = game.CityRows?.NationOf(city) ?? -1;
         int sect = nation >= 0 ? game.Nations?.Find(nation)?.Sect ?? 0 : 0;
+        int playerSect = game.Nations?.Find(player.Nation)?.Sect ?? 0;
         string where = Standoff.Where(byLand);
         bool canTalk = true;
 
@@ -149,7 +150,7 @@ internal static class HostileCityMenu
                 sneakRow += $" ({sneak}%)";
                 talkRow += $" ({Standoff.TalkOdds(player, say.TalkRoll)}%)";
             }
-            shown.Add((Standoff.Sneak, (sneakRow, byTreaty || Standoff.CanSneak(sect))));
+            shown.Add((Standoff.Sneak, (sneakRow, byTreaty || Standoff.CanSneak(sect, playerSect))));
             shown.Add((Standoff.Talk, (talkRow, canTalk)));
             shown.Add((Standoff.Leave, (say.Rows[Standoff.Leave], true)));
 

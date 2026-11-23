@@ -64,6 +64,11 @@ public static class CityFounding
     public static Func<int, DateTime, bool>? Discovered { get; set; }
 
     /// <summary>
+    /// 더한 도시(<see cref="AddedCities"/>, 나소 따위)가 서 있는지 — 모드로 켜고 끈다(게임이 판을 열 때 건다). 비어 있으면 늘 선다.
+    /// </summary>
+    public static Func<int, bool>? AddedOn { get; set; }
+
+    /// <summary>
     /// <c>HIST_EV.CDS</c> 에서 뽑은 스무 벌. 파트 번호 차례다.
     /// </summary>
     /// <remarks>
@@ -193,7 +198,8 @@ public static class CityFounding
     /// <summary>그 도시가 그 날짜에 지도에 있는지.</summary>
     /// <param name="scripted">발견 대본이 세우거나 없앤 도시(<c>Player.ScriptedCities</c>) — 날짜보다 먼저다.</param>
     public static bool Standing(int city, DateTime when, IReadOnlyDictionary<int, bool>? scripted = null) =>
-        scripted != null && scripted.TryGetValue(city, out bool set) ? set
+        city >= CityExeTable.ExeCount ? AddedOn?.Invoke(city) ?? true
+        : scripted != null && scripted.TryGetValue(city, out bool set) ? set
         : !Hidden.Contains(city) || FoundedBy(when).Contains(city);
 
     /// <summary>그 도시가 서는 해와 달. 영영 안 서면 null.</summary>

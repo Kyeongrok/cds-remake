@@ -52,8 +52,11 @@ public sealed class CityExeTable
     /// <summary>줄 안에서 시장 칸이 시작되는 자리.</summary>
     private const int StockOffset = 0x3C;
 
-    /// <summary>도시 수.</summary>
-    public const int Count = 226;
+    /// <summary>원본 EXE 표의 도시 수.</summary>
+    public const int ExeCount = 226;
+
+    /// <summary>도시 수 — 원본 226곳에 더한 도시(<see cref="AddedCities"/>, 나소 따위)까지.</summary>
+    public static int Count => ExeCount + AddedCities.Count;
 
     /// <summary>한 도시가 내놓는 칸 수.</summary>
     public const int Slots = 8;
@@ -370,28 +373,28 @@ public sealed class CityExeTable
         var snapshot = ExeTable.Open<Snapshot>(CacheName, gameDirectory, ReadFromExe, out string error,
                                                Version);
         LastError = error;
-        return snapshot == null ? null : new CityExeTable(snapshot);
+        return snapshot == null ? null : new CityExeTable(AddedCities.Extend(snapshot));
     }
 
     private static Snapshot? ReadFromExe(PeImage exe, out string error)
     {
         error = "";
 
-        var stock = new int[Count][];
-        var cultures = new int[Count];
-        var scales = new int[Count];
-        var nations = new int[Count];
-        var specials = new int[Count][];
-        var cellX = new int[Count];
-        var cellY = new int[Count];
-        var reach = new int[Count];
-        var regions = new int[Count];
-        var erase = new ushort[Count][];
-        var flags = new int[Count];
-        var buildings = new int[Count];
-        var hullMasks = new int[Count];
-        var discoveries = new int[Count][];
-        for (int city = 0; city < Count; city++)
+        var stock = new int[ExeCount][];
+        var cultures = new int[ExeCount];
+        var scales = new int[ExeCount];
+        var nations = new int[ExeCount];
+        var specials = new int[ExeCount][];
+        var cellX = new int[ExeCount];
+        var cellY = new int[ExeCount];
+        var reach = new int[ExeCount];
+        var regions = new int[ExeCount];
+        var erase = new ushort[ExeCount][];
+        var flags = new int[ExeCount];
+        var buildings = new int[ExeCount];
+        var hullMasks = new int[ExeCount];
+        var discoveries = new int[ExeCount][];
+        for (int city = 0; city < ExeCount; city++)
         {
             int row = TableVa + city * RowSize;
 
@@ -433,7 +436,7 @@ public sealed class CityExeTable
             foreach (int at in InlandOffsets)
             {
                 int inland = exe.Int(row + at);
-                if (inland >= 0 && inland < Count) Add(TableVa + inland * RowSize);
+                if (inland >= 0 && inland < ExeCount) Add(TableVa + inland * RowSize);
             }
             specials[city] = [.. made];
 

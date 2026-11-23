@@ -30,8 +30,12 @@ public sealed class Game
     /// <summary>판을 짓는다 — 신도시의 발견물 조건이 이 판의 발견을 보게 건다.</summary>
     public Game()
     {
+        // 더한 도시(나소 따위)의 지도 좌표부터 올린다 — 도시 표를 열기 전에 좌표를 쓰는 자리가 있다.
+        Local.Helpers.AddedCities.Install();
         CityFounding.Discovered = FoundBy;
         CityFounding.AllCities = () => Local.Settings.GameSettings.AllCities;
+        // 모드 「해적 국가 나소」 — 끄면 나소가 지도에 없다.
+        CityFounding.AddedOn = city => city != Town.Piracy.Haven || Local.Settings.GameSettings.PirateHaven;
         // 고르는 둘 밖의 나라(시나리오의 주인공)는 나라 표에서 이름을 찾는다.
         Player.NationNameOf = id => Nations?.Find(id)?.Name;
         // 부하 나이 — 표의 나이는 표를 구운 해의 것이라 해로 셈한다. 해를 모르는 표는 적어 둔 나이를 쓴다.

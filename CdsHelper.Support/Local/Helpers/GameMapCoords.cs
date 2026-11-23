@@ -24,7 +24,14 @@
 /// 한 곳에서 읽는다. 여기 남은 것은 도시 좌표와 발견물 번호 ↔ 도우미 DB Id 짝뿐이다.
 public static class GameMapCoords
 {
-    public const int CityCount = 226;
+    /// <summary>원본 도시 수(226)에 더한 도시(나소 따위)까지 — 게임이 켜질 때 <see cref="SetExtraCities"/> 로 받는다.</summary>
+    public static int CityCount => CityLonRaw.Length + _extra.Length;
+
+    /// <summary>더한 도시의 가운데 원본 좌표(경도 · 위도 원본값). 번호는 226 부터 차례다.</summary>
+    private static (int Lon, int Lat)[] _extra = [];
+
+    /// <summary>더한 도시 좌표를 건다 — 게임 쪽 「도시-더한것」 표(AddedCities)가 부른다.</summary>
+    public static void SetExtraCities((int Lon, int Lat)[] cities) => _extra = cities;
     public const int DiscoveryCount = 274;
 
     /// <summary>경도 원본값의 최댓값(0 = 서경180, 40000 = 동경180).</summary>
@@ -101,8 +108,11 @@ public static class GameMapCoords
     {
         cellX = cellY = 0;
         if (cityId < 0 || cityId >= CityCount) return false;
-        cellX = CityLonRaw[cityId] * (double)WorldMapRenderer.UnfoldedW / LonRawMax;
-        cellY = CityLatRaw[cityId] * (double)WorldMapRenderer.CellH / LatRawMax;
+        var (lon, lat) = cityId < CityLonRaw.Length
+            ? (CityLonRaw[cityId], CityLatRaw[cityId])
+            : _extra[cityId - CityLonRaw.Length];
+        cellX = lon * (double)WorldMapRenderer.UnfoldedW / LonRawMax;
+        cellY = lat * (double)WorldMapRenderer.CellH / LatRawMax;
         return true;
     }
 

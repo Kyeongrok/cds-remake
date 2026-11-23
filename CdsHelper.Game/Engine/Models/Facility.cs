@@ -157,6 +157,9 @@ public sealed record Facility(FacilityKind Kind, string Name, string[] Menu)
     /// <summary>왕궁 「망명」 — 원본에 없는 줄(모드 「망명」).</summary>
     public const string Exile = "망명";
 
+    /// <summary>나소 총독부 「해적 가담」 — 원본에 없는 줄(해적 공화국, <see cref="Town.Piracy"/>).</summary>
+    public const string JoinPirates = Town.Piracy.JoinLine;
+
     /// <summary>조합 「의뢰」 — 창고를 늘릴 목재 배송. 원본에 없는 줄이다(모드 「작위」).</summary>
     public const string GuildQuest = "의뢰";
 

@@ -263,6 +263,12 @@ public static class Standoff
     /// </remarks>
     public static bool CanSneak(int sect) => sect is 3 or 4;
 
+    /// <summary>
+    /// 주인공 나라의 갈래까지 보고 숨어들 수 있는지 — 원본 규칙(<see cref="CanSneak(int)"/>)에 더해, <b>유럽 사람이 유럽 나라</b>(갈래 0~2)에
+    /// 숨어드는 것도 된다(요청). 해적 공화국 사람이 적이 된 유럽 도시에 섞여 들어가는 길이다. 굴림은 같다(<see cref="Sneaks"/>).
+    /// </summary>
+    public static bool CanSneak(int sect, int playerSect) => CanSneak(sect) || sect is >= 0 and <= 2 && playerSect is >= 0 and <= 2;
+
     /// <summary>잠입에 보태 주는 물건(<c>0x00551F18</c>). 들고 있으면 백 점이다.</summary>
     public const string TurbanName = "터번";
 

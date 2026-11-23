@@ -60,6 +60,9 @@ public sealed class CityPictures
     /// </summary>
     public uint[]? TryGetBgra(int cityId)
     {
+        // 더한 도시(나소 따위)는 원본 그림이 없다 — 제 그림(asset/citypic)이 있으면 그것을, 없으면 빌려 올 도시의 그림을 쓴다(AddedCities).
+        if (AddedCities.OwnPicture(cityId) is { } own) return own;
+        cityId = AddedCities.PictureOf(cityId);
         if (cityId == _cached) return _cache;
         if (cityId < 0 || cityId >= Count) return null;
 

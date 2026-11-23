@@ -64,6 +64,9 @@ internal static class TownMenu
     /// <summary>성문 「발표」 줄이 대본에 올라가는 번호 — 원본 성문 칸(0 탐험 · 1 돌아간다)과 안 겹치게 붙박는다.</summary>
     public const int GateAnnounceRow = 13;
 
+    /// <summary>나소 총독부 「해적 가담」 줄이 대본에 올라가는 번호 — 원본 칸과 안 겹치게 붙박는다.</summary>
+    public const int JoinPiratesRow = 14;
+
     /// <summary>
     /// 이야기 대본에 올리는 줄 번호 — 원본은 <b>보이는 차례가 아니라 차림표 칸 번호</b>를 넘긴다
     /// (<c>0x00469E80</c> 이 고른 칸을 그대로 돌려 <c>0x004AB5F0(건물, 칸)</c>).
@@ -97,6 +100,7 @@ internal static class TownMenu
             TownWork.Train => 3,
             TownWork.Comment => palace ? 3 : 4,
             TownWork.Exile => ExileRow,
+            TownWork.JoinPirates => JoinPiratesRow,
             TownWork.Exit => palace ? 4 : 5,
             _ => row,
         };
@@ -176,6 +180,7 @@ internal static class TownMenu
             TownWork.Talk when screen.CanTrade => screen.TradeTalk,
             TownWork.Invest => screen.Invest,
             TownWork.Exile => () => screen.Exile(code),
+            TownWork.JoinPirates => () => screen.JoinPirates(code),
             TownWork.GuildQuest => screen.GuildQuest,
 
             TownWork.Stay => screen.Stay,

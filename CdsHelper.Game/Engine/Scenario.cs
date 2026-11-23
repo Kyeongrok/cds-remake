@@ -90,6 +90,8 @@ public static class Scenarios
             GenoaCity => (34, 177),
             LondonCity => (262, 173),
             ParisCity => (282, 95),
+            // 나소는 해적 공화국에 가담하면 모항이 된다(Town.Piracy) — 그림 왼쪽 숲(빌려 쓰는 아바나 그림의 술집 · 원주민과 안 겹친다).
+            Town.Piracy.Haven => (20, 100),
             _ => null,
         };
     }

@@ -548,6 +548,7 @@ public sealed class ModDialog : GameWindow
         lab.Children.Add(Toggle("뭍 자동이동", GameSettings.LandAutoWalk, on => GameSettings.LandAutoWalk = on,
             "원본에 없는 것입니다 — 뭍에 올라 있을 때 발견물 지도를 열고 발견물 점에 마우스를 올리면 점에 흰 테두리가 생깁니다."
             + " 그 점을 오른쪽 단추로 누르면 지도가 닫히고 그 자리까지 뭍길을 찾아 저절로 걸어갑니다(바다 자동항해와 같은 마디 따라가기)."
+            + " 세계지도 창에서도 빈 곳을 오른쪽 단추로 눌러 「여기로 자동이동」을 고르면 그 자리까지 걸어갑니다."
             + " 길을 못 찾거나 바다에 있으면 아래 줄에 알립니다. 사건이 나면 멈춥니다."));
 
         lab.Children.Add(Toggle("녹화용 창 합치기", GameSettings.CaptureMirror, on => GameSettings.CaptureMirror = on,
@@ -682,12 +683,21 @@ public sealed class ModDialog : GameWindow
             "원본에 없는 것입니다(운하는 1914년) — 파나마 바로 옆 지협에 두 칸 폭의 바닷길을 뚫어, 카리브해에서 태평양으로"
             + " 배로 곧장 지나갈 수 있게 합니다. 남아메리카 끝을 돌아가지 않아도 됩니다."));
 
+        // 해적 국가 나소 — 바하마에 해적 공화국의 나소를 세운다(요청).
+        general.Children.Add(Toggle("해적 국가 나소", GameSettings.PirateHaven,
+            on => { GameSettings.PirateHaven = on; WorldMapWindow.Current?.RefreshFoundedCities(); },
+            "원본에 없는 것입니다 — 바하마 뉴프로비던스 섬(플로리다 남동쪽, 쿠바 북쪽)에 해적 공화국의 근거지 나소가 지도에 나타납니다."
+            + " 누구나 드나들 수 있고, 총독부의 에드워드 티치(검은수염)에게 「해적 가담」을 하면 국적이 해적 공화국이 되고 자택이 나소로 옮겨집니다."
+            + " 그 대신 항구를 가진 모든 나라와 적대가 되고, 모든 나라의 모든 후원자가 수배를 내려 추격대와 현상금 사냥꾼이 쫓아옵니다."
+            + " 원래 나라로 돌아가려면 그 나라 왕궁에서 망명해야 합니다 — 수배가 풀리고 적대도 처음으로 돌아갑니다.",
+            images: ["pirate-haven.png"]));
+
         // 모든 도시 등장 — 신대륙 식민 도시를 등장 연도와 상관없이 다 세운다(건의).
         general.Children.Add(Toggle("모든 도시 등장", GameSettings.AllCities,
             on => { GameSettings.AllCities = on; WorldMapWindow.Current?.RefreshFoundedCities(); },
-            "원본에 없는 것입니다 — 아메리카 등 나중에 생기는 신도시를 등장 연도와 상관없이 모두 지도에 세웁니다."
+            "원본에 없는 것입니다 — 아메리카 등 나중에 생기는 신도시를 등장 연도와 상관없이 모두 지도에 나타나게 합니다."
             + " 끄면 원래 등장 연도대로 돌아가는데, 켜 둔 동안 등장 연도가 된 도시는 그대로 남습니다."
-            + " 멕시코는 아스텍 이벤트로만 섭니다."));
+            + " 멕시코는 아스텍 이벤트로만 나타납니다."));
 
         // 교역품별 시세 — 도시마다 물건마다 시세를 따로 둔다. 시세 꼼수를 막으려고 켠 채로 시작한다.
         general.Children.Add(Toggle("교역품별 시세", GameSettings.GoodsMarkets, on => GameSettings.GoodsMarkets = on,
@@ -1366,6 +1376,7 @@ public sealed class ModDialog : GameWindow
         "향상된 힌트 보기", "향상된 후원자 정보", "향상된 인물정보 목록", "부하 해고", "직업 누르면 다시 굴림",
         "향상된 NPC 이동", "추가 발견물", "도시 자동저장", "교역품별 시세", "도시 투자 성장", "조선소 특별주문",
         "새 발견물 동영상", "작위", "하드코어 모드", "제노바 · 잉글랜드 국적", "망명", "추가 선박", "향상된 연표",
+        "해적 국가 나소",
     ];
 
     /// <summary>
@@ -1392,7 +1403,8 @@ public sealed class ModDialog : GameWindow
             + " 적하 시세 순위 · 교역품별 시세 · 도시 투자 성장 · 조선소 특별주문, 작위 · 부하 해고 · 직업 누르면 다시 굴림,"
             + " 추가 발견물 · 추가 선박 · 새 발견물 동영상 · 향상된 NPC 이동, 보기 좋은 목록 창(힌트 · 후원자 · 인물정보), 배 속도 · 발견물 수,"
             + " 도시 자동저장, 하드코어 모드를 켭니다. 출입 일수는 5일입니다. 이미 켜 둔 다른 옵션은 그대로 둡니다."
-            + " 새 주인공은 제노바 · 잉글랜드 국적도 고를 수 있고, 리스본 · 세비야 · 런던 왕궁과 제노바 총독부에서 망명할 수 있습니다.",
+            + " 새 주인공은 제노바 · 잉글랜드 국적도 고를 수 있고, 리스본 · 세비야 · 런던 왕궁과 제노바 총독부에서 망명할 수 있습니다."
+            + " 바하마에 해적 공화국의 나소도 나타납니다.",
             // 켜기만 하고 끄는 것은 없다 — 이미 켜 둔 옵션은 그대로 둔다(사용자, 2026-10-18).
             PresetPowerUp, [],
             [("출입 일수", 4)]),
@@ -1764,7 +1776,7 @@ public sealed class ModDialog : GameWindow
         line.Children.Add(slider);
         line.Children.Add(value);
         Watch(line, "해류 결", "고해상도 바다에서 해류를 보이는 결과 띠의 짙기입니다. 해류가 흐르는 쪽으로 결이 늘어지고 셀수록 또렷합니다."
-            + " 0% 면 잔물결만 해류를 따라 흐르고 결은 안 섭니다. 고해상도 바다를 켜야 조절할 수 있습니다.");
+            + " 0% 면 잔물결만 해류를 따라 흐르고 결은 생기지 않습니다. 고해상도 바다를 켜야 조절할 수 있습니다.");
 
         var group = new StackPanel();
         group.Children.Add(box);

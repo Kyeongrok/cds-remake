@@ -448,6 +448,9 @@ public sealed class GameSettingsData
     /// <summary>수에즈 지협에 바닷길을 뚫을지. 원본에 없어 꺼 두고 시작한다.</summary>
     public bool SuezCanal { get; set; }
 
+    /// <summary>해적 국가 나소(해적 공화국)를 세울지. 원본에 없어 꺼 두고 시작한다(요청).</summary>
+    public bool PirateHaven { get; set; }
+
     /// <summary>파나마 지협에 바닷길을 뚫을지. 원본에 없어 꺼 두고 시작한다(요청).</summary>
     public bool PanamaCanal { get; set; }
 
@@ -1725,6 +1728,14 @@ public static class GameSettings
     {
         get => Get(d => d.SkipMinigames);
         set => Set(d => d.SkipMinigames = value);
+    }
+
+    /// <summary>해적 국가 나소 — 바하마에 해적 공화국의 나소를 세운다(Engine.Town.Piracy). 끄면 나소가 지도에 없고 들어갈 수도 없다. 파워업키트가 켠다.</summary>
+    /// <remarks>파워업키트면 적힌 값과 상관없이 켜진 것으로 친다 — <see cref="MoreNations"/> 와 같은 까닭이다.</remarks>
+    public static bool PirateHaven
+    {
+        get => Get(d => d.PirateHaven) || ModPreset == 4;
+        set => Set(d => d.PirateHaven = value);
     }
 
     /// <summary>수에즈 운하 — 지중해와 수에즈만 사이에 배가 지나갈 바닷길을 뚫는다(Engine.Sea.SuezCanal). 판을 다시 열 때 든다.</summary>

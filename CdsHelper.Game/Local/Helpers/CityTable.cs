@@ -51,7 +51,9 @@ public sealed class CityTable
     private CityTable(Snapshot snapshot)
     {
         // 이름은 표준 표기(StandardText)를 거친다 — 적어 둔 표 · 앱 DB 는 원본 그대로다.
-        Cities = [.. snapshot.Cities.Select(c => c with { Name = StandardText.Apply(c.Name) })];
+        Cities = [.. snapshot.Cities.Select(c => c with { Name = StandardText.Apply(c.Name) }),
+                  // 더한 도시(나소 따위) — 앱 DB · cities.json 에는 없다(AddedCities).
+                  .. AddedCities.EntriesMissingFrom([.. snapshot.Cities.Select(c => c.Id)])];
         foreach (var c in Cities) _byId[c.Id] = c;
     }
 

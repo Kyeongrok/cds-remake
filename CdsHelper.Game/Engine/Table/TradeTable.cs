@@ -82,7 +82,7 @@ public sealed class TradeTable
     {
         var snapshot = ExeTable.Open<Snapshot>(CacheName, gameDirectory, ReadFromExe, out string error, Version);
         LastError = error;
-        return snapshot == null ? null : new TradeTable(snapshot);
+        return snapshot == null ? null : new TradeTable(AddedCities.Extend(snapshot));
     }
 
     private static Snapshot? ReadFromExe(PeImage exe, out string error)
@@ -114,7 +114,7 @@ public sealed class TradeTable
             common[r] = [.. list];
         }
 
-        int n = CityExeTable.Count;
+        int n = CityExeTable.ExeCount;
         var region = new int[n];
         var inland = new int[n][];
         var special = new int[n];

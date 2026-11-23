@@ -2690,6 +2690,10 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
         return copy;
     }
 
+    /// <summary>후원자가 앉는 도시 이름 — 게임 표(고친 값까지)를 먼저, 없으면 patrons.json. 모르면 빈 글.</summary>
+    private string SponsorCity(Patron patron, SponsorTable.Sponsor? row) =>
+        row is { City: >= 0 } r ? _game.CityName(r.City) : patron.City ?? "";
+
     /// <summary>후원자 자료. 못 읽으면 빈 목록이다 — 그렇다고 도시 화면까지 막을 일은 아니다.</summary>
     private static List<Patron> LoadPatrons()
     {
@@ -2727,8 +2731,8 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
     /// 이름은 게임 표에서 가져온다 — <c>patrons.json</c> 은 "페르난 마르틴스" 인데 게임 화면은
     /// 가운뎃점을 쓴다("페르난·마르틴스").
     /// </remarks>
-    /// <summary>스폰서 일람 너비 — 오른쪽에 권력·친밀도(「권력 A  친밀도 100」)를 달아 여느 목록(264)보다 넓힌다.</summary>
-    private const double StatsListWidth = 400;
+    /// <summary>스폰서 일람 너비 — 오른쪽에 권력·친밀도·도시(「권력 A  친밀도 100   세비야」)를 달아 여느 목록(264)보다 넓힌다.</summary>
+    private const double StatsListWidth = 520;
 
     public void ShowPatrons() => ShowPatrons(_view);
 
@@ -2771,7 +2775,13 @@ internal sealed class PatronMenu(Window view, Engine.Game game, string cityName,
                         .ToList();
 
         // 줄 오른쪽 — 권력과 친밀도. 원본 일람에는 없고 상세 창에만 있는 값이라, 하나하나 열어 보지 않게 앞으로 꺼낸다.
-        var stats = mine.Select(m => $"권력 {m.Patron.Power}  친밀도 {_player.ClosenessOf(m.Patron.Name),3}").ToList();
+        // 친밀도 오른쪽에 있는 도시(요청) — 이름 뒤에 붙였더니 긴 이름은 도시가 잘렸다. 도시 이름 길이가 달라도
+        // 앞이 맞게 모자란 글자만큼 띄운다(한글 한 자 = 빈칸 둘).
+        var cities = mine.Select(m => SponsorCity(m.Patron, m.Row)).ToList();
+        int cityLen = cities.Count == 0 ? 0 : cities.Max(c => c.Length);
+        var stats = mine.Select((m, i) => $"권력 {m.Patron.Power}  친밀도 {_player.ClosenessOf(m.Patron.Name),3}"
+                                          + (cityLen > 0 ? "   " + cities[i] + new string(' ', (cityLen - cities[i].Length) * 2) : ""))
+                        .ToList();
 
         // 고르면 상세를 띄우고 닫으면 목록으로 돌아온다 — 원본도 그렇다(0x0049348E 가
         // 목록 짓는 데로 되돌아간다).

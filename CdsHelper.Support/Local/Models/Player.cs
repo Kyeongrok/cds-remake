@@ -2357,7 +2357,8 @@ public sealed class Player
     /// <param name="Sponsor">후원자 이름.</param>
     /// <param name="City">계약을 맺었던 도시.</param>
     /// <param name="DueOn">원래 계약의 기한. 이 날이 지나야 추격이 시작된다(후원자 <c>+0x30</c> 남은 날수 ≤ 0).</param>
-    public readonly record struct Betrayal(string Sponsor, string City, DateTime DueOn);
+    /// <param name="Spent">그 후원자가 추격대에 쓴 돈(닢) — 추격대를 물리칠 때마다 늘고, 재력을 넘으면 추격을 그만둔다(요청).</param>
+    public readonly record struct Betrayal(string Sponsor, string City, DateTime DueOn, int Spent = 0);
 
     private readonly Dictionary<string, Betrayal> _betrayals = [];
 
@@ -2370,6 +2371,14 @@ public sealed class Player
     /// <summary>후원자를 배신했다고 적는다.</summary>
     public void Betray(string sponsor, string city, DateTime dueOn) =>
         _betrayals[sponsor] = new Betrayal(sponsor, city, dueOn);
+
+    /// <summary>그 후원자가 추격대 하나를 잃었다 — 쓴 돈을 더하고 모두 얼마 썼는지 돌려준다. 배신이 없으면 0.</summary>
+    public int SpendOnChase(string sponsor, int cost)
+    {
+        if (!_betrayals.TryGetValue(sponsor, out var b)) return 0;
+        _betrayals[sponsor] = b with { Spent = b.Spent + cost };
+        return b.Spent + cost;
+    }
 
     /// <summary>결판이 났다 — 배신 표시를 지운다.</summary>
     public void SettleBetrayal(string sponsor) => _betrayals.Remove(sponsor);

@@ -51,7 +51,7 @@ internal static class TableCache
         ["건물사진표"] = "building-photos", ["건물표"] = "buildings", ["경쟁자-고친것"] = "voyagers-edits",
         ["교역소표"] = "trade-posts", ["교역품표"] = "goods", ["나라표"] = "nations", ["나라-고친것"] = "nations-edits",
         ["도시-문화권-고친것"] = "city-cultures-edits", ["도시-왕국-고친것"] = "city-nations-edits",
-        ["도시표-게임"] = "cities-exe", ["도시표"] = "cities", ["돛효율표"] = "sails", ["마을대사"] = "town-lines",
+        ["도시표-게임"] = "cities-exe", ["도시-더한것"] = "cities-added", ["도시표"] = "cities", ["돛효율표"] = "sails", ["마을대사"] = "town-lines",
         ["마을사람표"] = "town-folk", ["바람표"] = "winds", ["발견물-고친것"] = "discoveries-edits",
         ["발견물설명"] = "discovery-descriptions", ["발견물표"] = "discoveries", ["발견이벤트"] = "disev",
         ["소문-고친것"] = "rumors-added", ["손님소문-고친것"] = "tavern-rumors-edits", ["소문표"] = "rumors", ["손님표"] = "tavern-guests", ["술표"] = "drinks",

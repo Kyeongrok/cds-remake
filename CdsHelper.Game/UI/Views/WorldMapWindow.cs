@@ -1099,7 +1099,16 @@ public sealed class WorldMapWindow : Window
             });
             return "";
         }
-        if (_host.SeaBlocked || _host.IsOnLand) return Lang.T("바다에 있을 때만 자동이동할 수 있습니다");
+        if (_host.SeaBlocked) return Lang.T("바다에 있을 때만 자동이동할 수 있습니다");
+        if (_host.IsOnLand)
+        {
+            // 육지면 모드 「뭍 자동이동」으로 걸어간다 — 발견물 지도에서만 되던 것을 세계지도 창에도(요청).
+            if (!GameSettings.LandAutoWalk) return Lang.T("육지에서 걸어가려면 모드 창 「실험」 탭의 「뭍 자동이동」을 켜 주세요");
+            var (walked, said) = _host.StartAutoWalk(cellX, cellY);
+            if (!walked) return Lang.T(said);
+            Say($"{WorldMapHost.SpotText(cellX, cellY)}까지 걸어갑니다");
+            return "";
+        }
         var (ok, message) = _host.StartAutoSail(cellX, cellY);
         if (!ok) return message;
         NavStarted("livemap");
@@ -5188,6 +5197,9 @@ public sealed class WorldMapWindow : Window
         // 가는 길에 스치는 딴 항구는 묻지 않는다 — 물음창이 뜰 때마다 배가 서면 자동이 아니다.
         bool bound = _sailTo >= 0 && !byLand;
         if (bound && city != _sailTo) return;
+        // 도시가 아니라 자리로 건 자동이동(세계지도 「여기로 자동이동」 · 발견물 지도 Shift+오른쪽 · 뭍 자동이동)도 스치는 도시는
+        // 묻지 않는다 — 세비야에서 지중해로 가다 세우타에 걸려 입항 물음이 떴다(버그 리포트 #74). 멎은 뒤 그 자리가 도시면 그때 묻는다.
+        if (_sailTo < 0 && _host.AutoSailing) return;
         _askedCity = city;
 
         var name = _game.CityName(city);
@@ -5723,7 +5735,9 @@ public sealed class WorldMapWindow : Window
 
         for (int city = 0; city < CityExeTable.Count; city++)
         {
-            bool standing = _game.Player.ScriptedCities.TryGetValue(city, out bool set) ? set
+            // 더한 도시(나소 따위)는 모드로 선다(CityFounding.AddedOn).
+            bool standing = city >= CityExeTable.ExeCount ? CityFounding.Standing(city, _game.Player.Date)
+                            : _game.Player.ScriptedCities.TryGetValue(city, out bool set) ? set
                             : !CityFounding.Hidden.Contains(city) || up.Contains(city);
             if (!standing || !_game.CityKnown(city)) gone.Add(city);
         }
@@ -7469,6 +7483,7 @@ public sealed class WorldMapWindow : Window
         var rng = _game.Random;
 
         bool over = false;
+        string? chaseBoss = null;
         _asking = true;
         _host.Paused = true;
         try
@@ -7483,6 +7498,7 @@ public sealed class WorldMapWindow : Window
                                                 && _game.Sponsors.IsSeated(s, year)).ToList();
                 if (seated.Count > 0) chasers = seated;
                 var who = chasers[rng.Next(chasers.Count)];
+                chaseBoss = who.Sponsor;
                 var boss = _game.Sponsors?.FindByName(who.Sponsor);
                 // 서식 0x0055F6A8 「네가 %s%s군. 찾고 있었다! %s%s 너를 토벌하라는 명령이다. 각오해라.」 —
                 // 제독 이름 조사는 갈래 10(로/으로, 0x004556CD), 후원자 이름 조사는 갈래 13(로부터/으로부터,
@@ -7546,6 +7562,8 @@ public sealed class WorldMapWindow : Window
                 GameOver(GameOverDialog.FleetLost);   // 해전 패배는 까닭 2(0x0044386D)
                 over = true;
             }
+            else if (chaseBoss != null && outcome is SeaCombatDialog.Outcome.Won or SeaCombatDialog.Outcome.EnemyRetreated)
+                ChaseFunds(chaseBoss, face);
         }
         finally
         {
@@ -7555,6 +7573,24 @@ public sealed class WorldMapWindow : Window
 
         // 창을 되돌리는 것은 try 밖에서 한다 — 안에서 하면 닫히는 창에 잠금을 풀게 된다.
         if (over) ReturnToTitle();
+    }
+
+    /// <summary>추격대 하나를 꾸리는 데 후원자가 쓰는 돈(닢) — 재력 17만~100만 닢이면 2~10번 물리치면 손을 뗀다.</summary>
+    private const int ChaseCost = 100_000;
+
+    /// <summary>
+    /// 추격대를 물리쳤다 — 보낸 후원자의 돈이 그만큼 줄고, 재력을 다 쓰면 추격을 그만둔다(요청 — 후원자 자금도 끝이 있다).
+    /// 원본은 결판을 내기 전까지 끝없이 보낸다.
+    /// </summary>
+    private void ChaseFunds(string sponsor, uint[]? face)
+    {
+        int spent = _game.Player.SpendOnChase(sponsor, ChaseCost);
+        int wealth = _game.Sponsors?.FindByName(sponsor)?.Wealth ?? 0;
+        if (spent < wealth) return;
+        _game.Player.SettleBetrayal(sponsor);
+        string lord = _game.Sponsors?.FindByName(sponsor)?.Name ?? sponsor;
+        ConfirmDialog.Tell(this, $"제독, {lord}{GameUi.Josa(lord, "은", "는")} 추격대를 꾸릴 돈이 바닥난 모양입니다. 이제 더는 쫓아오지 않을 겁니다.",
+                           "", face);
     }
 
     /// <summary>
@@ -9037,6 +9073,22 @@ public sealed class WorldMapWindow : Window
     /// <summary>화면 밖 시험(<c>CDS_DIALOG=areapick</c>) — 발견물 자리 고르기 창을 띄운다. 닫힐 때까지 돌아오지 않는다.</summary>
     internal DiscoveryAreaPicker.Area? PickAreaForTest(DiscoveryAreaPicker.Area? start) =>
         (DiscoveryAreaMap() ?? DiscoveryAreaPicker.FromGame(_game)) is { } map ? DiscoveryAreaPicker.Pick(this, map, start) : null;
+
+    /// <summary>화면 밖 시험(<c>CDS_HOSTILE=all</c>) — 항구를 가진 모든 나라를 적대로 둔다.</summary>
+    internal string HostileAllForTest()
+    {
+        var all = Engine.Town.Piracy.PortNations(_game.CityRows);
+        foreach (int n in all) _game.Player.SetHostility(n, 2);
+        return $"적대로 둔 나라 {all.Count}곳";
+    }
+
+    /// <summary>화면 밖 시험(<c>CDS_PIRATE=1</c>) — 묻지 않고 해적 공화국에 가담한다.</summary>
+    internal string JoinPiratesForTest()
+    {
+        int wanted = Engine.Town.Piracy.Join(_game.Player, _game.Sponsors, _game.CityRows);
+        int open = Engine.Town.Piracy.PortNations(_game.CityRows).Count(n => Standoff.EntryOf(_game.Player, _game.Nations, n) <= 0);
+        return $"해적 가담 — 국적 {_game.Player.Nation}({_game.Player.NationName}) · 모항 {_game.Player.HomePort} · 수배 {wanted}명 · 추격 {_game.Player.Pursuers.Count()}명 · 드나들 수 있는 나라 {open}곳";
+    }
 
     /// <summary>화면 밖 시험(<c>CDS_FOUND</c>) — 그 이름의 발견물들을 찾은 것으로 적고 지도를 다시 짓는다. 찾은 이름들을 돌려준다.</summary>
     internal List<string> DiscoverForTest(IEnumerable<string> names)

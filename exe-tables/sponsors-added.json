@@ -48,7 +48,7 @@
         "JobCode": 14,
         "Eye": 90,
         "Closeness": 65,
-        "Tastes": 131,
+        "Tastes": 195,
         "Nation": 70,
         "Blood": 0,
         "Languages": 8320,
@@ -77,9 +77,28 @@
         "Zodiac": 0,
         "Wealth": 700000,
         "Retire": 1517
+      },
+      {
+        "Index": 85,
+        "Name": "에드워드 티치",
+        "Face": 9007,
+        "IsFemale": false,
+        "JobCode": 16,
+        "Eye": 70,
+        "Closeness": 50,
+        "Tastes": 52,
+        "Nation": 79,
+        "Blood": 0,
+        "Languages": 11,
+        "City": 226,
+        "Building": 12,
+        "Appear": 0,
+        "Zodiac": 0,
+        "Wealth": 500000,
+        "Retire": 0
       }
     ]
   },
   "Source": "더한 후원자",
-  "Version": 8
+  "Version": 10
 }

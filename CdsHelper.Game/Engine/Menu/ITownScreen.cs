@@ -157,6 +157,9 @@ internal interface ITownScreen
     /// <param name="code">왕궁의 건물 코드 — 국왕(앉은 후원자)을 찾는다.</param>
     void Exile(int code);
 
+    /// <summary>나소 총독부 「해적 가담」 — 해적 공화국으로 국적과 자택을 옮긴다. 원본에 없는 줄이다(<see cref="Town.Piracy"/>).</summary>
+    void JoinPirates(int code);
+
     /// <summary>조합 「의뢰」 — 창고를 늘릴 목재를 실어 온다. 원본에 없는 줄이다(모드 「작위」).</summary>
     void GuildQuest();
 

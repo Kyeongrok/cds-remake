@@ -39,8 +39,17 @@ public sealed class CityLibraryDialog : GameWindow
 
     private readonly Engine.Game _game;
     private readonly int _year;
-    private readonly List<BookTable.Book> _books;
+    private List<BookTable.Book> _books = [];
+    private readonly List<BookTable.Book> _all;
     private readonly List<Border> _rows = [];
+    private readonly StackPanel _list = new();
+
+    /// <summary>
+    /// 목록 거르기(요청) — 0 모든 책 · 1 힌트가 실린 책 · 2 아직 못 찾은 발견물의 힌트가 실린 책. 창을 다시 열어도 이어 간다.
+    /// </summary>
+    private static int _filter;
+
+    private static readonly string[] FilterNames = ["모든 책", "힌트 있는 책", "못 찾은 힌트만"];
     private readonly StackPanel _detail = new();
     private int _at = -1;
 
@@ -59,16 +68,11 @@ public sealed class CityLibraryDialog : GameWindow
         Background = GameUi.Back;
 
         // 서가에 나온 책이 먼저, 그다음 나올 책 — 같은 무리 안에서는 나오는 해 · 번호 차례.
-        _books = [.. (game.Books?.Books ?? []).Where(b => b.Title.Length > 0 && b.Cities.Contains(city))
+        _all = [.. (game.Books?.Books ?? []).Where(b => b.Title.Length > 0 && b.Cities.Contains(city))
             .OrderBy(b => b.Year > _year).ThenBy(b => b.Year).ThenBy(b => b.Index)];
 
-        var list = new StackPanel();
-        for (int i = 0; i < _books.Count; i++) list.Children.Add(Row(i));
-        if (_books.Count == 0)
-            list.Children.Add(Text(game.Books == null ? "책 표를 읽지 못했습니다." : "이 도시 도서관에는 책이 없습니다.", 14));
-
         // 굴림대는 게임 것(GameUi.Scroller)이다 — 윈도 기본 막대가 판 위에서 튄다.
-        var scroll = GameUi.Scroller(list, PaneHeight);
+        var scroll = GameUi.Scroller(_list, PaneHeight);
         scroll.Width = ListWidth;
         scroll.Height = PaneHeight;
         scroll.Margin = new Thickness(12, 10, 8, 4);
@@ -100,7 +104,7 @@ public sealed class CityLibraryDialog : GameWindow
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 6, 0, 12),
-            Children = { new GameButton("닫기", Close, width: 110) },
+            Children = { FilterButton(), new GameButton("닫기", Close, width: 110) },
         });
 
         Content = new Border
@@ -114,6 +118,47 @@ public sealed class CityLibraryDialog : GameWindow
 
         KeyDown += OnKey;
         MouseRightButtonUp += (_, _) => Close();
+        Fill();
+    }
+
+    /// <summary>거르기 단추 — 누를 때마다 모든 책 → 힌트 있는 책 → 못 찾은 힌트만 차례로 돈다.</summary>
+    private GameButton FilterButton()
+    {
+        GameButton? button = null;
+        button = new GameButton($"{Lang.T("보기")}: {Lang.T(FilterNames[_filter])}", () =>
+        {
+            _filter = (_filter + 1) % FilterNames.Length;
+            button!.Text = $"{Lang.T("보기")}: {Lang.T(FilterNames[_filter])}";
+            Fill();
+        }, width: 190) { Margin = new Thickness(0, 0, 10, 0) };
+        return button;
+    }
+
+    /// <summary>책이 거르기에 걸리는지 — 힌트가 실렸는지, 실린 힌트 가운데 발견물을 아직 못 찾은 것이 있는지.</summary>
+    private bool Passes(BookTable.Book book) => _filter switch
+    {
+        1 => book.Hints.Any(id => _game.Hints?.Find(id) != null),
+        2 => book.Hints.Any(id => _game.Hints?.Find(id) != null
+                                  && !(_game.Discoveries?.IsHintFound(_game.Player, id) ?? false)),
+        _ => true,
+    };
+
+    /// <summary>거른 책으로 목록을 다시 짓고 첫 책을 고른다.</summary>
+    private void Fill()
+    {
+        _books = [.. _all.Where(Passes)];
+        _rows.Clear();
+        _list.Children.Clear();
+        _at = -1;
+        for (int i = 0; i < _books.Count; i++) _list.Children.Add(Row(i));
+        if (_books.Count == 0)
+        {
+            _list.Children.Add(Text(_game.Books == null ? "책 표를 읽지 못했습니다."
+                                    : _all.Count == 0 ? "이 도시 도서관에는 책이 없습니다."
+                                    : "고른 보기에 맞는 책이 없습니다.", 14));
+            _detail.Children.Clear();
+            return;
+        }
         Select(0);
     }
 

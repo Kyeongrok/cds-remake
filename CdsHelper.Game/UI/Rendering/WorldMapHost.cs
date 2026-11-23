@@ -396,9 +396,12 @@ public sealed class WorldMapHost : HwndHost
         // 자란 도시는 그림을 큰 도시에서 빌려 온다 — 판 자리는 제 번호 그대로, 그림만 그 도시 칸에서 뜬다.
         _grownArt = GrownCities();
         var list = new List<(int X, int Y, ushort[] Block, int Width)>();
+        // 더한 도시(나소 따위)는 지도에 그림이 안 박혀 있다 — 빌려 올 도시 칸에서 그림을 뜬다(AddedCities.ArtOf).
         for (int id = 0; id < GameMapCoords.CityCount; id++)
             list.Add(_grownArt.TryGetValue(id, out int from) && _cities.TryCell(from, out int fx, out int fy, out _)
                 ? (fx, fy, _cities.EraseOf(from), CityExeTable.EraseWidth)
+                : AddedCities.ArtOf(id) is >= 0 and var art && _cities.TryCell(art, out int ax, out int ay, out _)
+                    ? (ax, ay, _cities.EraseOf(art), CityExeTable.EraseWidth)
                 : _cities.TryCell(id, out int cx, out int cy, out _)
                     ? (cx, cy, _cities.EraseOf(id), CityExeTable.EraseWidth) : (0, 0, [], 0));
         _placeSprite.Clear();
@@ -439,6 +442,9 @@ public sealed class WorldMapHost : HwndHost
         }
         // 지도에 까는 블록은 제 자리다 — 자란 도시는 3x3 을 다 쓰되, 원래 도시가 아니던 칸은 그 칸의 지형을 그대로 바탕으로 둔다.
         var shown = blocks.ToArray();
+        for (int id = CityExeTable.ExeCount; id < GameMapCoords.CityCount; id++)
+            if (_cities.TryCell(id, out int nx, out int ny, out _))
+                shown[id] = (nx, ny, _cities.EraseOf(id), CityExeTable.EraseWidth);
         foreach (var (id, _) in _grownArt)
         {
             if (!_cities.TryCell(id, out int cx, out int cy, out _)) continue;

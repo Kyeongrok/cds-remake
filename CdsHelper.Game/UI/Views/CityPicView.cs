@@ -436,6 +436,27 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             raised.Children.Add(house);
         }
 
+        // 더한 도시(나소 따위)의 건물 — 배경 그림에는 건물이 없고, 원본 도시 그림에서 오려 낸 건물을 자택처럼 한 겹 위에 얹는다(AddedCities).
+        foreach (var b in game.Buildings?.InCity(cityId) ?? [])
+        {
+            if (Local.Helpers.AddedCities.BuildingArt(cityId, b.Code) is not { } px) continue;
+            var sprite = BitmapSource.Create(BuildingSprites.BoxW, BuildingSprites.BoxH, 96, 96,
+                                             PixelFormats.Bgra32, null, px, BuildingSprites.BoxW * 4);
+            sprite.Freeze();
+            var piece = new Image
+            {
+                Source = sprite,
+                Width = BuildingSprites.BoxW * _pic,
+                Height = BuildingSprites.BoxH * _pic,
+                Stretch = Stretch.Fill,
+            };
+            RenderOptions.SetBitmapScalingMode(piece, GameUi.SpriteScaling);
+            Upscaled(piece, sprite, BuildingSprites.BoxW, BuildingSprites.BoxH);
+            Canvas.SetLeft(piece, b.X * _pic);
+            Canvas.SetTop(piece, b.Y * _pic);
+            raised.Children.Add(piece);
+        }
+
         var picBox = new Grid
         {
             Width = image.Width,
@@ -2469,7 +2490,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                 Wed: Home.CanLeaveHeir(_player),
                 CanExile: facility.Kind == FacilityKind.Palace && Engine.Town.Exile.Offered(_player, _cityId, _game.CityRows, _game.Nations),
                 ExileReady: facility.Kind == FacilityKind.Palace
-                            && Engine.Town.Exile.Ready(_player, _cityId, patron == null ? -1 : _player.ClosenessOf(patron.Name)));
+                            && Engine.Town.Exile.Ready(_player, _cityId, patron == null ? -1 : _player.ClosenessOf(patron.Name)),
+                CanJoinPirates: facility.Kind == FacilityKind.Other && code == PiracyGovernorCode
+                                && Engine.Town.Piracy.Offered(_player, _cityId));
 
     /// <summary>
     /// 그 건물에 <b>해설</b> 줄이 붙는지 — 발견물인 건물을 이미 발견했고 해설 글이 있을 때다.
@@ -3010,7 +3033,7 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         string needs = $"{nationName}에 망명하려면 다음이 필요합니다{nl}"
                        + $"· 명성 {Engine.Town.Exile.Fame} 이상 (지금 {_player.Fame}){nl}"
                        + $"· 금화 {Engine.Town.Exile.Fee}닢 (지금 {_player.Gold}닢){nl}"
-                       + $"망명하면 국적이 {nationName}(으)로 바뀌고 자택도 {_player.CityName}(으)로 옮겨집니다";
+                       + $"망명하면 국적이 {nationName}{GameUi.Josa(nationName, "으로", "로")} 바뀌고 자택도 {_player.CityName}{GameUi.Josa(_player.CityName, "으로", "로")} 옮겨집니다";
         if (!Engine.Town.Exile.Affords(_player))
         {
             NoticeDialog.Show(owner, needs + nl + (_player.Fame < Engine.Town.Exile.Fame ? "명성이 모자랍니다" : "금화가 모자랍니다"),
@@ -3023,13 +3046,59 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
         if (!_player.Pay(Engine.Town.Exile.Fee)) return;
         _player.Fame -= Engine.Town.Exile.FameCost;
 
+        // 해적이 망명해 돌아가면 해적 가담으로 내려진 수배가 풀린다(Piracy).
+        if (Engine.Town.Piracy.IsPirate(_player)) Engine.Town.Piracy.Pardon(_player, _game.CityRows, _game.Nations);
         _player.Nation = nation;
         _player.SetHomePort(_cityId);
         // 자택이 이 도시에 선다 — 도시 그림을 다시 열지 않아도 곧바로 들어가지게 판을 얹는다.
         if (Standing(_cityId).FirstOrDefault(b => b.Code == CityExeTable.HomeCode) is { } home
             && !_spots.Any(s => s.Building.Code == home.Code))
             AddSpot(home, _pic);
-        GameDialog.Show(owner, $"{nationName}에 망명했습니다{Environment.NewLine}자택이 {_player.CityName}(으)로 옮겨졌습니다");
+        GameDialog.Show(owner, $"{nationName}에 망명했습니다{Environment.NewLine}자택이 {_player.CityName}{GameUi.Josa(_player.CityName, "으로", "로")} 옮겨졌습니다");
+        Menu.Refresh();
+    }
+
+    /// <summary>나소 총독부의 건물 코드 — 「해적 가담」 줄이 서는 자리.</summary>
+    private const int PiracyGovernorCode = 12;
+
+    /// <summary>
+    /// 나소 총독부 「해적 가담」 — 해적 공화국으로 국적과 자택을 옮기고, 모든 나라의 모든 후원자가 수배를 내린다(<see cref="Engine.Town.Piracy"/>).
+    /// </summary>
+    /// <remarks>계약 중 · 의뢰 중이면 망명처럼 아래 띠에 적고 막는다. 고르기 전에 무엇이 달라지는지 묻는다.</remarks>
+    void ITownScreen.JoinPirates(int code)
+    {
+        if (!Engine.Town.Piracy.Offered(_player, _cityId)) return;
+        var owner = Menu.Window ?? this;
+        if (Engine.Town.Exile.Busy(_player) is { } why)
+        {
+            (Owner as WorldMapWindow)?.Say(why);
+            _game.Sfx?.Play(SoundBank.BandNoticePart);
+            return;
+        }
+
+        string nationName = _game.Nations?.Find(Engine.Town.Piracy.Nation)?.Name ?? "해적 공화국";
+        string nl = Environment.NewLine;
+        if (!ConfirmDialog.Ask(owner, $"{nationName}에 가담하겠습니까?{nl}"
+                                      + $"· 국적이 {nationName}{GameUi.Josa(nationName, "으로", "로")} 바뀌고 자택이 {_player.CityName}{GameUi.Josa(_player.CityName, "으로", "로")} 옮겨집니다{nl}"
+                                      + $"· 항구를 가진 모든 나라와 적대가 됩니다{nl}"
+                                      + $"· 모든 나라의 모든 후원자가 수배를 내려 추격대와 현상금 사냥꾼이 쫓아옵니다{nl}"
+                                      + "· 돌아가려면 왕궁에서 망명해야 합니다",
+                               title: Facility.JoinPirates))
+            return;
+        // 한 번 더 묻는다(요청) — 모든 나라가 적이 되어 쉽게 되돌릴 수 없다.
+        if (!ConfirmDialog.Ask(owner, $"정말 괜찮겠습니까?{nl}해적이 되면 게임이 아주 어렵고 고통스러워질 수 있습니다.{nl}"
+                                      + $"어느 항구에도 마음대로 들어갈 수 없고, 바다에서도 도시에서도 쉴 새 없이 쫓기게 됩니다.{nl}"
+                                      + "그래도 감수할 준비가 되었습니까?",
+                               title: Facility.JoinPirates))
+            return;
+
+        int wanted = Engine.Town.Piracy.Join(_player, _game.Sponsors, _game.CityRows);
+        // 자택이 이 도시에 선다 — 망명처럼 도시 그림을 다시 열지 않아도 곧바로 들어가지게 판을 얹는다.
+        if (Standing(_cityId).FirstOrDefault(b => b.Code == CityExeTable.HomeCode) is { } home
+            && !_spots.Any(s => s.Building.Code == home.Code))
+            AddSpot(home, _pic);
+        GameDialog.Show(owner, $"{nationName}에 가담했습니다{nl}자택이 {_player.CityName}{GameUi.Josa(_player.CityName, "으로", "로")} 옮겨졌습니다{nl}"
+                               + $"후원자 {wanted}명이 수배를 내렸습니다");
         Menu.Refresh();
     }
 
