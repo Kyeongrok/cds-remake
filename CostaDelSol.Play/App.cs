@@ -127,7 +127,7 @@ internal sealed class App : Application
         Exit += (_, _) =>
         {
             window.NoteHero();
-            PlayStats.Flush();
+            PlayStats.Close();
         };
 
         _ = CheckForUpdateAsync(window);

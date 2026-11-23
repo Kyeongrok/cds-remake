@@ -22,8 +22,8 @@ namespace CdsHelper.Game.Local.Helpers;
 /// </code>
 /// 받는 쪽은 열쇠마다 수를 <b>더하기만</b> 한다. 차림표 줄(menu)과 항해(voyage — 「떠난 도시>닿은 도시」 횟수 · 날수 · 선회)는
 /// 예전에 셌는데 이제 안 센다. 주인공(<see cref="Hero"/>)은 셈이 아니라 판마다 마지막 값 한 벌이다 — 바뀌었을 때만 덩이에 싣는다.
-/// 셈은 메모리에 모았다가 <b>도시를 나설 때</b>(출항 · 성문)와 끌 때 한 덩이로 줄(파일)에 세워 뒤에서 보낸다
-/// (나서지 않고 오래 있으면 <see cref="FlushEvery"/> 마다) —
+///   play          seconds — 켠 뒤 끌 때까지의 초(<see cref="Close"/>)
+/// 셈은 메모리에 모았다가 <b>끌 때</b> 한 덩이로 줄(파일)에 세워 뒤에서 보낸다(오류가 나면 그때도) —
 /// 인터넷이 없으면 다음에 켤 때 다시 보낸다. <b>게임 exe 가 <see cref="Start"/> 를 불러야만</b> 세기 시작하고,
 /// 모은다고 한 번 알린 뒤(<see cref="GameSettings.SendStats"/>)에만, 태그로 낸 릴리즈 판에서만 보낸다.
 /// 누가 보냈는지는 설치마다 만든 무작위 번호뿐이다 — 세이브 · IP 는 안 적는다. 이름은 주인공 이름만 싣는다.
@@ -34,16 +34,10 @@ public static class PlayStats
     public const string UrlFile = "stats-url.txt";
 
     /// <summary>
-    /// 도시를 나서지 않고 이만큼 지나면 그때까지 모은 셈을 줄에 세운다 — 바다나 도시에 오래 머물다 강제로 꺼져도
-    /// 다 잃지 않게 둔 안전판이다. 예전에는 5분마다 보냈는데 덩이가 너무 잦아 받는 곳의 하루 한도가 찼다.
+    /// 셈은 <b>끌 때 한 번</b>만 보낸다(요청, 2026-11-23) — 예전에는 30분마다 · 도시를 나설 때도 덩이를 보냈다.
+    /// 끌 때 켠 뒤 지난 시간(초)을 「play / seconds」 셈으로 함께 싣는다(<see cref="Close"/>). 오류가 나면 그때도 보낸다.
     /// </summary>
-    private static readonly TimeSpan FlushEvery = TimeSpan.FromMinutes(30);
-
-    /// <summary>
-    /// 도시를 나설 때 보내는 덩이 사이의 가장 짧은 틈. 받는 곳(D1)은 덩이 안의 셈 하나마다 한 줄을 쓰므로, 덩이를 드물게 보내
-    /// 같은 열쇠가 한 덩이에 모일수록 쓰기가 준다 — 10분일 때 하루 쓰기 한도의 4분의 3까지 찼다.
-    /// </summary>
-    private static readonly TimeSpan LeaveGap = TimeSpan.FromMinutes(30);
+    private static DateTime _startedAt = DateTime.UtcNow;
 
     /// <summary>열쇠·이름의 가장 긴 길이. 받는 쪽도 같은 데서 자른다.</summary>
     private const int MaxKey = 96;
@@ -82,7 +76,6 @@ public static class PlayStats
     private static string _url = "";
     private static string _version = "";
     private static bool _release, _modsSent;
-    private static DateTime _flushedAt = DateTime.UtcNow;
     private static int _uploading;
 
     /// <summary>세기 시작했는가 — 게임 exe 만 켠다. 개발도구에서 돌린 게임은 안 센다.</summary>
@@ -111,6 +104,7 @@ public static class PlayStats
         // 릴리즈 노트에 대목이 있는 판만 릴리즈다 — 릴리즈 빌드만 태그 번호로 판을 박는다(release.yml).
         _release = version is not null && ReleaseNotes.Since(ReleaseNotes.Read(), "", version).Length > 0;
         Started = true;
+        _startedAt = DateTime.UtcNow;
         UploadInBackground();
         BugReport.ResendInBackground();
     }
@@ -267,25 +261,22 @@ public static class PlayStats
         if (key.Length > MaxKey) key = key[..MaxKey];
         if (name is { Length: > MaxKey }) name = name[..MaxKey];
 
-        bool due;
         lock (Gate)
         {
             Counts.TryGetValue((kind, key), out var was);
             Counts[(kind, key)] = (name ?? was.Name ?? "", was.Count + by);
-            due = DateTime.UtcNow - _flushedAt >= FlushEvery;
         }
-        if (due) Flush();
     }
 
     /// <summary>
-    /// 도시를 나설 때 부른다 — 앞서 보낸 지 <see cref="LeaveGap"/> 이 지났을 때만 줄에 세운다.
-    /// 항구를 잇달아 들르면 몇 분마다 한 덩이씩 나가, 하는 사람이 늘자 받는 곳의 하루 쓰기 한도가 찼다.
+    /// 끌 때 부른다 — 켠 뒤 지난 시간(초)을 플레이 시간으로 셈에 얹고 모은 셈을 보낸다.
     /// </summary>
-    public static void FlushOnLeave()
+    public static void Close()
     {
-        bool due;
-        lock (Gate) due = DateTime.UtcNow - _flushedAt >= LeaveGap;
-        if (due) Flush();
+        if (!Started) return;
+        int seconds = (int)Math.Min(1_000_000, Math.Max(0, (DateTime.UtcNow - _startedAt).TotalSeconds));
+        if (seconds > 0) Count("play", "seconds", null, seconds);
+        Flush();
     }
 
     /// <summary>
@@ -299,7 +290,6 @@ public static class PlayStats
         HeroInfo? hero;
         lock (Gate)
         {
-            _flushedAt = DateTime.UtcNow;
             // 주인공은 이름 · 나라 · 능력치가 바뀌었을 때만 싣는다 — 날짜는 실을 때 따라간다.
             hero = _hero != null && !_hero.SameAs(_heroSent) ? _hero : null;
             if (Counts.Count == 0 && hero == null) return;

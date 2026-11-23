@@ -22,7 +22,7 @@ import { routeShares } from './shares.js';
 const MAX_BODY = 128 * 1024, MAX_COUNTS = 2000, MAX_MODS = 300, MAX_KEY = 96;
 // 차림표 줄(menu) · 들른 도시(city)는 이제 안 받는다 — 옛 판이 보내도 여기서 걸러진다. 표에 남은 옛 줄은 집계에도 안 든다.
 // 항해(voyage · voyage_days · voyage_turns — 「떠난 도시>닿은 도시」 횟수 · 날수 · 선회)도 v1.1.31 부터 안 받는다. 옛 줄은 집계에 그대로 든다.
-const KINDS = ['discovery', 'hire', 'dismiss', 'nav', 'battle', 'event', 'error'];
+const KINDS = ['discovery', 'hire', 'dismiss', 'nav', 'battle', 'event', 'error', 'play'];
 // 이제 안 받는 셈 — 메시지마다 끼어 D1 쓰기 몫만 먹었다(하루 십만 줄 한도의 8할). 답은 이미 나왔고, 옛 판이 보내도 여기서 걸러진다.
 //   event 의 날 밑수(sea:day · sea:eligible · land:day) · nav 의 수동/자동(trip:* — 항해 횟수와 겹친다) · 조타(helm:*) · 건 자리(from:*)
 const DROPPED = (kind, key) =>
@@ -282,7 +282,7 @@ async function setBugStatus(id, request, env) {
 
 // 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
 const SNAPSHOT_TTL = 60 * 60 * 1000;
-const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, nav: 100, battle: 50, event: 100, error: 200 };
+const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, nav: 100, battle: 50, event: 100, error: 200, play: 5 };   // play — 끌 때 보내는 플레이 시간(seconds, 초)
 // 집계가 읽는 갈래 — tally 의 주키가 갈래로 시작하므로 이렇게 거르면 옛 voyage_days · voyage_turns · city 줄은 아예 안 읽는다.
 // 옛 항해 날수 · 선회는 voyage_legacy 에 버전마다 한 줄로 묶어 두었다(migrate-reads.sql).
 const READ_KINDS = Object.keys(LIMITS);

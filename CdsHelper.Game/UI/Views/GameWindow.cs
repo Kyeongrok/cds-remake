@@ -57,6 +57,9 @@ public class GameWindow : Window
                                           new KeyEventHandler(OnKeyUnderBox));
         EventManager.RegisterClassHandler(typeof(Window), Mouse.PreviewMouseDownEvent,
                                           new MouseButtonEventHandler(OnMouseUnderBox));
+        // 단축키가 안 먹는 까닭을 잡으려고 글쇠마다 받은 창 · 초점을 적어 둔다(버그 리포트 #78) — 다른 처리기가 삼킨 것도 본다.
+        EventManager.RegisterClassHandler(typeof(Window), Keyboard.PreviewKeyDownEvent,
+                                          new KeyEventHandler(NoteKey), handledEventsToo: true);
         EventManager.RegisterClassHandler(typeof(Window), Mouse.PreviewMouseUpEvent,
                                           new MouseButtonEventHandler(OnMouseUnderBox));
     }
@@ -156,9 +159,36 @@ public class GameWindow : Window
         OnAnyKey(Alive(window.Owner) ?? window, e);
     }
 
+    /// <summary>최근 글쇠 기록 — 버그 리포트 「keys」 칸에 싣는다(<see cref="RecentKeys"/>).</summary>
+    private static readonly Queue<string> KeyLog = new();
+
+    /// <summary>최근 글쇠 기록, 오래된 것부터 — 「시각 글쇠 받은 창 / 초점 → 결과」.</summary>
+    internal static string[] RecentKeys() { lock (KeyLog) return [.. KeyLog]; }
+
+    private static void Log(string line)
+    {
+        lock (KeyLog)
+        {
+            KeyLog.Enqueue($"{DateTime.Now:HH:mm:ss} {line}");
+            while (KeyLog.Count > 16) KeyLog.Dequeue();
+        }
+    }
+
+    private static void NoteKey(object sender, KeyEventArgs e)
+    {
+        // 창마다 미리 보기가 한 번씩 올라오니 맨 처음 받은 창(원래 초점 창)에서만 적는다.
+        if (e.Key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt) return;
+        if (!ReferenceEquals(sender, Window.GetWindow(e.OriginalSource as DependencyObject ?? (DependencyObject)sender))) return;
+        var focus = Keyboard.FocusedElement;
+        var active = Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
+        Log($"{e.Key} 창 {sender.GetType().Name} · 초점 {focus?.GetType().Name ?? "없음"} · 활성 {active?.GetType().Name ?? "없음"}"
+            + (Keyboard.Modifiers != ModifierKeys.None ? $" · 고침 {Keyboard.Modifiers}" : "") + (e.Handled ? " · 이미 받음" : ""));
+    }
+
     private static void OnAnyKey(object sender, KeyEventArgs e)
     {
-        if (e.Handled || Keyboard.Modifiers != ModifierKeys.None) return;
+        if (e.Handled) { Log($"  {e.Key} 단축키 건너뜀 — 앞에서 받음({sender.GetType().Name})"); return; }
+        if (Keyboard.Modifiers != ModifierKeys.None) { Log($"  {e.Key} 단축키 건너뜀 — 고침 {Keyboard.Modifiers}"); return; }
         if (e.OriginalSource is TextBoxBase or PasswordBox) return;
         if (sender is not Window window) return;
 

@@ -318,7 +318,9 @@ function render() {
   const kind = (k) => (data.kinds || []).find((r) => r.kind === k) || { n: 0, keys: 0 };
   $('tiles').innerHTML = [[data.total?.installs, '설치'], [data.total?.batches, '받은 덩이'], [kind('discovery').n, '발견'], [kind('hire').n, '부하 고용'], [kind('dismiss').n, '부하 해고'],
       [(data.heroes || []).length, '주인공'], [kind('battle').n, '전투'], [kind('error').n, '오류']]
-    .map(([v, label]) => '<div class="tile"><b>' + n(v) + '</b><span>' + label + '</span></div>').join('');
+    .map(([v, label]) => '<div class="tile"><b>' + n(v) + '</b><span>' + label + '</span></div>').join('')
+    // 플레이 시간 — 게임이 끌 때 보내는 play/seconds 의 합(v1.2.44 부터)
+    + '<div class="tile"><b>' + (kind('play').n / 3600).toFixed(1) + '</b><span>플레이 시간(시간)</span></div>';
 
   renderMods();
   rankTable('discoveries', '발견물', data.discoveries, (r) => esc(r.name || '#' + r.key));

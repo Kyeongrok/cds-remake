@@ -3706,6 +3706,7 @@ public sealed class WorldMapWindow : Window
             title ? null : _game.Nations?.Find(player.Nation)?.Name,
             title ? null : player.FlagshipHull?.Hull.Name);
         if (!title) context["mapState"] = _beforeMenu;
+        context["keys"] = GameWindow.RecentKeys();   // 단축키가 안 먹는 까닭(버그 리포트 #78)
         if (BugReportDialog.Ask(this, BugReport.Summary(context), text => BugReport.Submit(text, context)) is not { } result) return;
         NoticeDialog.Show(this, result switch
         {
@@ -8850,9 +8851,8 @@ public sealed class WorldMapWindow : Window
             // 예전에는 그때도 버려질 판으로 이야기 대본이 돌고 갈매기가 날았다.
             if (!dialog.Sailed && !dialog.Explored) return;
 
-            // 도시에서 한 일의 셈은 나설 때 한 덩이로 보낸다 — 몇 분마다 보내면 받는 곳(D1)의 하루 한도가 찬다.
+            // 주인공 기록만 고쳐 둔다 — 셈은 끌 때 한 번에 보낸다(PlayStats.Close).
             NoteHero();
-            PlayStats.FlushOnLeave();
 
             // 나선 자리에서 하루를 새로 센다 — 들어오기 전에 쌓인 눈금이 남아 있으면 나서자마자 날이 넘어가
             // 규율이 깎였다. 원본에 있는 것이 아니라 우리가 넣은 것이다.
