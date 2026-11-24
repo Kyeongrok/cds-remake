@@ -300,8 +300,10 @@ public sealed class Player
     /// <remarks>
     /// 원본은 나쁜 짓(해적질·약탈·흥정)으로 올리고, 매달 1일에 30 씩 깎는다(<c>0x0047CFD0</c>,
     /// <see cref="InfamyDecayPerMonth"/>).
+    /// 원본은 <c>0x004800E0</c> 이 어느 길로 오르내리든 0..99999 로 자르므로, 값을 넣을 때 여기서 자른다.
     /// </remarks>
-    public int Infamy { get; set; }
+    public int Infamy { get => _infamy; set => _infamy = Math.Clamp(value, 0, MaxRenown); }
+    private int _infamy;
 
     /// <summary>
     /// 지구를 몇 바퀴 돌았는가(<c>0x005B63D0</c> = 제독 <c>+0x330</c>) — 동으로 돌면 +1, 서로 돌면 −1 이다.
@@ -474,8 +476,11 @@ public sealed class Player
     /// 항구에서 발견물을 <b>발표</b>하면 오른다 — 그 발견물의 보수를 70 으로 나눈 만큼이고
     /// 적어도 10 이다(<c>0x0047E849</c>). <see cref="StartingFame"/> 이면 여든한 명 가운데
     /// 열몇이 만나 주고, 알릴수록 문이 열린다.
+    /// 원본은 <c>0x004800E0</c> 이 어느 길로 오르내리든 0..99999 로 자른다 — 발견물 발표·전투처럼
+    /// 따로 자르지 않던 자리도 여기서 잘리게 한다(10만을 넘었다가 사건에서 99999 로 떨어지던 것).
     /// </remarks>
-    public int Fame { get; set; }
+    public int Fame { get => _fame; set => _fame = Math.Clamp(value, 0, MaxRenown); }
+    private int _fame;
 
     /// <summary>지금 날짜. 기술을 배우면 그만큼 달이 넘어간다.</summary>
     public DateTime Date { get; private set; }
