@@ -83,7 +83,7 @@ public sealed class SharedDiscoveryDialog : GameWindow
     {
         _status.Text = Lang.T("목록을 받는 중입니다…");
         var got = await DiscoveryShare.List();
-        if (got == null) { _status.Text = Lang.T("목록을 받지 못했습니다 — 인터넷 연결을 확인해 주세요."); return; }
+        if (got == null) { _status.Text = Lang.T("목록을 받지 못했습니다.") + " " + DiscoveryShare.ListFailure; return; }
         string? keep = Selected?.Uuid;
         _shares = got;
         _list.Items.Clear();

@@ -78,6 +78,26 @@ CREATE TABLE IF NOT EXISTS daily (
   PRIMARY KEY (day, version, install)
 ) WITHOUT ROWID;
 
+-- 누적 집계 — 하루 · 주 · 달 · 전체마다, 버전마다와 모든 버전('')에 설치 수 · 덩이 수(migrate-rollup.sql). 받을 때 더한다.
+-- 대시보드는 daily 를 훑지 않고 이것을 읽는다 — daily 를 통째로 훑던 날짜별 탭이 D1 하루 읽기 한도를 넘겼다(2026-11-24).
+CREATE TABLE IF NOT EXISTS rollup (
+  grain    TEXT NOT NULL,          -- day · week · month · all
+  key      TEXT NOT NULL,          -- yyyy-MM-dd · 그 주 월요일 yyyy-MM-dd · yyyy-MM · ''(all)
+  version  TEXT NOT NULL,          -- 게임 버전, ''는 모든 버전
+  installs INTEGER NOT NULL,
+  batches  INTEGER NOT NULL,
+  PRIMARY KEY (grain, key, version)
+) WITHOUT ROWID;
+
+-- 그 칸에서 이미 센 설치 — 처음 보는 설치일 때만 rollup.installs 를 더한다. 지난 날 · 주 · 달의 줄은 Worker 가 지운다.
+CREATE TABLE IF NOT EXISTS rollup_seen (
+  grain   TEXT NOT NULL,
+  key     TEXT NOT NULL,
+  version TEXT NOT NULL,
+  install TEXT NOT NULL,
+  PRIMARY KEY (grain, key, version, install)
+) WITHOUT ROWID;
+
 -- 옛 판이 voyage_days · voyage_turns 갈래로 따로 적은 항해 날수 · 선회 — 버전마다 한 줄로 묶어 둔다(migrate-reads.sql).
 -- 집계는 tally 의 그 줄들을 안 읽고 이것을 읽는다. 새 항해는 voyage 줄의 days · turns 칸에 더해지므로 이 표는 더 늘지 않는다.
 CREATE TABLE IF NOT EXISTS voyage_legacy (

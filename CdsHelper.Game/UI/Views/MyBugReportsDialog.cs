@@ -95,7 +95,7 @@ public sealed class MyBugReportsDialog : GameWindow
         string waiting = queued > 0 ? " · " + string.Format(Lang.T("아직 못 보낸 것 {0}건"), queued) : "";
         if (mine == null)
         {
-            _status.Text = Lang.T("불러오지 못했습니다. 인터넷 연결을 확인해 주세요.") + waiting;
+            _status.Text = Lang.T("불러오지 못했습니다.") + " " + BugReport.MineFailure + waiting;
             return;
         }
         _status.Text = string.Format(Lang.T("{0}건"), mine.Count) + waiting;

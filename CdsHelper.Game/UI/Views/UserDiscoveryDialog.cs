@@ -861,7 +861,7 @@ public sealed class UserDiscoveryDialog : GameWindow
         {
             Tell("공유 목록을 확인하는 중입니다…");
             var list = await DiscoveryShare.List();
-            if (list == null) { Tell("공유 목록을 받지 못했습니다 — 인터넷 연결을 확인해 주세요."); return; }
+            if (list == null) { Tell(Lang.T("공유 목록을 받지 못했습니다.") + " " + DiscoveryShare.ListFailure); return; }
             var there = list.FirstOrDefault(s => s.Uuid == e.Uuid);
             if (there is { Mine: false })
             {

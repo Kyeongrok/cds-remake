@@ -116,6 +116,25 @@ async function postPlay(request, env) {
             hero.flagship, hero.flagship, hero.invested, hero.investments, b.batch));
 
   // 날마다 설치 하나에 한 줄 — 대시보드의 설치 수 · 덩이 수 · 날짜별 표 · 버전 목록은 batches 대신 이 작은 표를 센다.
+  // 누적 집계 — 하루 · 주 · 달 · 전체마다, 그 버전과 모든 버전('')에 설치 수 · 덩이 수를 받을 때 더해 둔다(migrate-rollup.sql).
+  // 대시보드는 이 작은 표만 읽는다 — 예전에는 날짜별 탭을 낼 때마다 daily 를 통째로 세 번 훑어 D1 하루 읽기 한도를 넘겼다.
+  // 설치 수는 그 칸에서 처음 본 설치일 때만 하나 더한다(rollup_seen). 차례가 중요하다 — 더한 뒤에 「봤다」를 적는다.
+  const day = now.slice(0, 10);
+  const cells = JSON.stringify([['day', day], ['week', weekOf(day)], ['month', day.slice(0, 7)], ['all', '']]
+    .flatMap(([grain, key]) => (version ? [[grain, key, version], [grain, key, '']] : [[grain, key, '']])));
+  rows.push(env.DB.prepare(
+    `INSERT INTO rollup (grain, key, version, installs, batches)
+     SELECT json_extract(c.value, '$[0]'), json_extract(c.value, '$[1]'), json_extract(c.value, '$[2]'),
+            NOT EXISTS (SELECT 1 FROM rollup_seen s WHERE s.grain = json_extract(c.value, '$[0]') AND s.key = json_extract(c.value, '$[1]')
+                                                     AND s.version = json_extract(c.value, '$[2]') AND s.install = ?), 1
+     FROM json_each(?) c WHERE ${fresh}
+     ON CONFLICT (grain, key, version) DO UPDATE SET installs = installs + excluded.installs, batches = batches + 1`)
+    .bind(b.install, cells, b.batch));
+  rows.push(env.DB.prepare(
+    `INSERT OR IGNORE INTO rollup_seen (grain, key, version, install)
+     SELECT json_extract(value, '$[0]'), json_extract(value, '$[1]'), json_extract(value, '$[2]'), ? FROM json_each(?) WHERE ${fresh}`)
+    .bind(b.install, cells, b.batch));
+
   rows.push(env.DB.prepare(
     `INSERT INTO daily (day, version, install, batches) SELECT ?, ?, ?, 1 WHERE ${fresh}
      ON CONFLICT (day, version, install) DO UPDATE SET batches = batches + 1`)
@@ -294,6 +313,11 @@ const DEFAULT_PERIOD = 'week';
 // tally_daily 를 남겨 두는 날수 — 가장 긴 기간(달)보다 조금 길게.
 const PERIOD_KEEP_DAYS = 35;
 const sinceDay = (days) => new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
+// 그 날(yyyy-MM-dd, UTC)이 든 주의 월요일 — SQL 의 date(day, 'weekday 0', '-6 days') 와 같다.
+const weekOf = (day) => {
+  const d = new Date(day + 'T00:00:00Z');
+  return new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86400_000).toISOString().slice(0, 10);
+};
 
 // 대시보드 집계 — 기간과 버전(없으면 전체)으로 거른다. 모드 옵션은 설치마다 마지막 값이라 버전으로 안 거른다.
 async function getDashboard(url, env) {
@@ -340,8 +364,12 @@ async function aggregate(env, period, version, whole) {
   if (period === 'month' && !version) await pruneDaily(env);
 
   const [total, tally, legacy, modValues, days, known, heroes, byDay, byWeek, byMonth] = await Promise.all([
-    env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${dayCond} ${cond}`)
-      .bind(...dayArgs, ...args).first(),
+    // 기간이면 daily 를 그 날들만(열쇠 첫머리가 day 라 범위만 읽는다), 전체면 누적 표 한 줄.
+    since
+      ? env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COUNT(DISTINCT install) AS installs FROM daily WHERE 1 = 1 ${dayCond} ${cond}`)
+          .bind(...dayArgs, ...args).first()
+      : env.DB.prepare(`SELECT COALESCE(SUM(batches), 0) AS batches, COALESCE(SUM(installs), 0) AS installs FROM rollup WHERE grain = 'all' AND key = '' AND version = ?`)
+          .bind(version).first(),
     since
       ? all(`SELECT kind, key, MAX(name) AS name, SUM(n) AS n, 0 AS days, 0 AS turns, COUNT(DISTINCT install) AS installs
              FROM tally_daily WHERE day >= ? AND kind IN (${READ_KINDS.map(() => '?').join(', ')}) ${cond} GROUP BY kind, key`, since, ...READ_KINDS, ...args)
@@ -352,17 +380,18 @@ async function aggregate(env, period, version, whole) {
     whole ? whole.modValues
       : since ? all('SELECT body FROM options WHERE install IN (SELECT install FROM daily WHERE day >= ?)', since).then(countModValues)
       : all('SELECT body FROM options').then(countModValues),
-    all(`SELECT day, version, COUNT(*) AS installs, SUM(batches) AS batches
-         FROM daily WHERE 1 = 1 ${cond} GROUP BY day, version ORDER BY day DESC, version DESC LIMIT 120`, ...args),
-    whole ? whole.versions : all('SELECT DISTINCT version FROM daily ORDER BY version DESC LIMIT 50').then((r) => r.map((v) => v.version)),
+    // 날마다 · 버전마다 — 누적 표에서(버전을 고르지 않았으면 모든 버전의 줄들).
+    all(`SELECT key AS day, version, installs, batches FROM rollup WHERE grain = 'day' AND ${version ? 'version = ?' : "version <> ''"}
+         ORDER BY key DESC, version DESC LIMIT 120`, ...args),
+    whole ? whole.versions
+      : all(`SELECT version FROM rollup WHERE grain = 'all' AND key = '' AND version <> '' ORDER BY version DESC LIMIT 50`).then((r) => r.map((v) => v.version)),
     // 주인공 — 마지막으로 받은 차례로 앞 HERO_LIMIT 판만(색인 heroes_recent 를 따라 그만큼만 읽는다). 버전은 마지막으로 보낸 판의 것이다.
     all(`SELECT name, nation, first_date, date, first_abilities, abilities, first_flagship, flagship, invested, version, updated_at
          FROM heroes WHERE updated_at >= ? ${cond} ORDER BY updated_at DESC LIMIT ${HERO_LIMIT}`, since, ...args)
       .then((r) => r.map(({ first_abilities, abilities, ...h }) => ({ ...h, first: JSON.parse(first_abilities), now: JSON.parse(abilities) }))),
-    // 날짜별 탭의 묶음 — 하루 · 주(월요일 시작) · 달마다 설치 수(겹치지 않게) · 덩이 수. daily 의 day 는 UTC 날짜다.
-    ...[['day', 400], [`date(day, 'weekday 0', '-6 days')`, 200], ['substr(day, 1, 7)', 120]].map(([key, limit]) =>
-      all(`SELECT ${key} AS key, COUNT(DISTINCT install) AS installs, SUM(batches) AS batches
-           FROM daily WHERE 1 = 1 ${cond} GROUP BY 1 ORDER BY 1 DESC LIMIT ${limit}`, ...args)),
+    // 날짜별 탭의 묶음 — 하루 · 주(월요일 시작) · 달마다 설치 수(겹치지 않게) · 덩이 수. 받을 때 더해 둔 누적 표(rollup)를 읽는다. 날은 UTC 다.
+    ...[['day', 400], ['week', 200], ['month', 120]].map(([grain, limit]) =>
+      all(`SELECT key, installs, batches FROM rollup WHERE grain = ? AND version = ? ORDER BY key DESC LIMIT ${limit}`, grain, version)),
   ]);
   const { nations, flagships, investCities } = await nationsOf(all, 'AND updated_at >= ? ' + cond, [since, ...args]);
 
@@ -405,6 +434,12 @@ async function aggregate(env, period, version, whole) {
 async function pruneDaily(env) {
   try { await env.DB.prepare('DELETE FROM tally_daily WHERE day < ?').bind(sinceDay(PERIOD_KEEP_DAYS)).run(); }
   catch (e) { console.error(e && e.stack || e); }
+  // 지난 날 · 주 · 달의 「본 설치」는 더 안 쓴다 — 그 칸에는 이제 아무것도 안 더해진다. 전체(all)는 남긴다.
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    await env.DB.prepare(`DELETE FROM rollup_seen WHERE (grain = 'day' AND key < ?) OR (grain = 'week' AND key < ?) OR (grain = 'month' AND key < ?)`)
+      .bind(today, weekOf(today), today.slice(0, 7)).run();
+  } catch (e) { console.error(e && e.stack || e); }
 }
 
 // 나라 · 기함 · 투자 — 판마다 한 줄인 heroes 를 통째로 센다(한 시간에 한 번). 기함 · 투자는 v1.1.57 부터 온 판에만 있다.
@@ -504,6 +539,8 @@ async function route(request, env) {
       return json({ error: 'not found' }, 404);
     } catch (e) {
       console.error(e && e.stack || e);
+      // D1 무료 한도(하루 읽기 오백만 · 쓰기 십만 줄)가 차면 UTC 자정까지 모든 쿼리가 막힌다 — 게임이 「인터넷 연결」 탓으로 알리지 않게 503 으로 가른다.
+      if (/exceeded|limit/i.test(String(e && e.message))) return json({ error: 'quota' }, 503);
       return json({ error: 'server error' }, 500);
     }
 }

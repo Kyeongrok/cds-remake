@@ -89,12 +89,13 @@ public static class BugReport
     public static async Task<List<Mine>?> LoadMine()
     {
         string url = Url;
+        MineFailure = Lang.T("이 버전에서는 리포트를 받을 곳이 없습니다(개발 빌드).");
         if (url.Length == 0) return null;
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
             using var reply = await http.GetAsync($"{url}/v1/bugs/mine?install={Uri.EscapeDataString(PlayStats.InstallId())}");
-            if (!reply.IsSuccessStatusCode) return null;
+            if (!reply.IsSuccessStatusCode) { MineFailure = ServerReply.Why(reply.StatusCode); return null; }
             using var doc = JsonDocument.Parse(await reply.Content.ReadAsStringAsync());
             var list = new List<Mine>();
             foreach (var b in doc.RootElement.GetProperty("bugs").EnumerateArray())
@@ -108,9 +109,13 @@ public static class BugReport
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException)
         {
             System.Diagnostics.Debug.WriteLine($"[BugReport] mine {ex.GetType().Name}: {ex.Message}");
+            MineFailure = ServerReply.Why(ex);
             return null;
         }
     }
+
+    /// <summary><see cref="LoadMine"/> 가 null 을 냈을 때 그 까닭(사용자에게 보일 글).</summary>
+    public static string MineFailure { get; private set; } = "";
 
     /// <summary>지난번에 못 보낸 것을 뒤에서 보낸다 — 켤 때.</summary>
     public static void ResendInBackground()

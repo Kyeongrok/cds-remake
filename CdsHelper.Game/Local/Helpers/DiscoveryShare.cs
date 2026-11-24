@@ -173,6 +173,7 @@ public static class DiscoveryShare
                 403 => "다른 분이 이미 올린 발견물입니다 — 처음 올린 분만 고쳐 올릴 수 있습니다.",
                 413 => "파일이 너무 큽니다.",
                 429 => "오늘 올릴 수 있는 수를 넘었습니다 — 내일 다시 올려 주세요.",
+                503 => ServerReply.Why(reply.StatusCode),
                 _ => $"올리지 못했습니다(응답 {(int)reply.StatusCode}).",
             };
         }
@@ -186,16 +187,20 @@ public static class DiscoveryShare
         }
     }
 
-    /// <summary>올라온 목록(새로 고친 차례). 못 받으면 null.</summary>
+    /// <summary><see cref="List"/> 가 null 을 냈을 때 그 까닭(사용자에게 보일 글).</summary>
+    public static string ListFailure { get; private set; } = "";
+
+    /// <summary>올라온 목록(새로 고친 차례). 못 받으면 null — 까닭은 <see cref="ListFailure"/>.</summary>
     public static async Task<List<Shared>?> List()
     {
         string url = BugReport.Url;
+        ListFailure = Lang.T("이 버전에서는 공유할 수 없습니다(개발 빌드).");
         if (url.Length == 0) return null;
         try
         {
             using var http = Client(15);
             using var reply = await http.GetAsync($"{url}/v1/shares?install={Uri.EscapeDataString(PlayStats.InstallId())}");
-            if (!reply.IsSuccessStatusCode) return null;
+            if (!reply.IsSuccessStatusCode) { ListFailure = ServerReply.Why(reply.StatusCode); return null; }
             using var doc = JsonDocument.Parse(await reply.Content.ReadAsStringAsync());
             var list = new List<Shared>();
             foreach (var s in doc.RootElement.GetProperty("shares").EnumerateArray())
@@ -212,6 +217,7 @@ public static class DiscoveryShare
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException)
         {
             System.Diagnostics.Debug.WriteLine($"[DiscoveryShare] list {ex.GetType().Name}: {ex.Message}");
+            ListFailure = ServerReply.Why(ex);
             return null;
         }
     }
