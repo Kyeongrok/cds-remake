@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS rollup (
   version  TEXT NOT NULL,          -- 게임 버전, ''는 모든 버전
   installs INTEGER NOT NULL,
   batches  INTEGER NOT NULL,
+  play     INTEGER NOT NULL DEFAULT 0,   -- 플레이 시간 합(초, play 갈래의 n) — /v1/playtime 이 읽는다(migrate-playtime.sql)
   PRIMARY KEY (grain, key, version)
 ) WITHOUT ROWID;
 

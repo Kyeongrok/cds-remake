@@ -2,7 +2,7 @@
 //
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
 //   GET  /v1/dashboard   집계(?period=day|week|month|all · ?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 여섯 시간에 한 번만 새로 센다.
-//   GET  /v1/playtime    플레이 시간(초) 합만 — {day, week, month, total}. 창세기전3 통계 대시보드 맨 위 오버뷰가 부른다. 여섯 시간에 한 번만 새로 센다.
+//   GET  /v1/playtime    플레이 시간(초) 합만 — {day, week, month, total}. 창세기전3 통계 대시보드 맨 위 오버뷰가 부른다. 누적 표(rollup)의 play 칸 30줄 남짓만 읽는다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
 //   GET  /embed.js       대시보드 화면 부품 <cds-dashboard> — /dashboard 와 창세기전3 통계 대시보드가 불러 쓴다.
 //   POST /v1/hardcore    하드코어 판 하나가 끝난 기록 — 판 표지(gameId)마다 한 번만 들어간다.
@@ -120,17 +120,19 @@ async function postPlay(request, env) {
   // 누적 집계 — 하루 · 주 · 달 · 전체마다, 그 버전과 모든 버전('')에 설치 수 · 덩이 수를 받을 때 더해 둔다(migrate-rollup.sql).
   // 대시보드는 이 작은 표만 읽는다 — 예전에는 날짜별 탭을 낼 때마다 daily 를 통째로 세 번 훑어 D1 하루 읽기 한도를 넘겼다.
   // 설치 수는 그 칸에서 처음 본 설치일 때만 하나 더한다(rollup_seen). 차례가 중요하다 — 더한 뒤에 「봤다」를 적는다.
+  // play 칸 — 이 덩이의 플레이 시간(play 갈래 n 의 합, 초)도 같은 줄에 더한다. 쓰는 줄은 늘지 않고, /v1/playtime 이 tally_daily 를 훑지 않고 이 칸을 읽는다(migrate-playtime.sql).
+  const playSec = counts.reduce((sum, c) => sum + (c.kind === 'play' ? c.n : 0), 0);
   const day = now.slice(0, 10);
   const cells = JSON.stringify([['day', day], ['week', weekOf(day)], ['month', day.slice(0, 7)], ['all', '']]
     .flatMap(([grain, key]) => (version ? [[grain, key, version], [grain, key, '']] : [[grain, key, '']])));
   rows.push(env.DB.prepare(
-    `INSERT INTO rollup (grain, key, version, installs, batches)
+    `INSERT INTO rollup (grain, key, version, installs, batches, play)
      SELECT json_extract(c.value, '$[0]'), json_extract(c.value, '$[1]'), json_extract(c.value, '$[2]'),
             NOT EXISTS (SELECT 1 FROM rollup_seen s WHERE s.grain = json_extract(c.value, '$[0]') AND s.key = json_extract(c.value, '$[1]')
-                                                     AND s.version = json_extract(c.value, '$[2]') AND s.install = ?), 1
+                                                     AND s.version = json_extract(c.value, '$[2]') AND s.install = ?), 1, ?
      FROM json_each(?) c WHERE ${fresh}
-     ON CONFLICT (grain, key, version) DO UPDATE SET installs = installs + excluded.installs, batches = batches + 1`)
-    .bind(b.install, cells, b.batch));
+     ON CONFLICT (grain, key, version) DO UPDATE SET installs = installs + excluded.installs, batches = batches + 1, play = play + excluded.play`)
+    .bind(b.install, playSec, cells, b.batch));
   rows.push(env.DB.prepare(
     `INSERT OR IGNORE INTO rollup_seen (grain, key, version, install)
      SELECT json_extract(value, '$[0]'), json_extract(value, '$[1]'), json_extract(value, '$[2]'), ? FROM json_each(?) WHERE ${fresh}`)
@@ -335,24 +337,15 @@ async function getDashboard(url, env) {
   return json(await snapshot(env, period, version, all));
 }
 
-// 플레이 시간(play 갈래의 n, 초) 합만 — 기간 셋은 tally_daily 의 지난 30일(열쇠 첫머리가 day 라 그 날들만 읽는다), 전체는 tally 의 play 줄만(열쇠 첫머리가 kind).
-// 기간은 대시보드와 같다(하루는 어제부터). snapshots 표의 'playtime' 칸에 묵힌다.
+// 플레이 시간(play 갈래의 n, 초) 합만 — 받을 때 더해 둔 rollup 의 play 칸에서, 모든 버전('') 줄의 지난 30일 날 줄(31줄 남짓)과 전체 줄 하나만 읽는다.
+// 예전에는 tally_daily 의 지난 30일을 갈래 가리지 않고 훑었다(약 6만 줄). 읽는 줄이 적어 묵히지 않는다. 기간은 대시보드와 같다(하루는 어제부터).
 async function getPlaytime(env) {
-  const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind('playtime').first();
-  if (kept && Date.now() - Date.parse(kept.made_at) < SNAPSHOT_TTL) return json(JSON.parse(kept.body));
-  let body;
-  try {
-    const [d, w, m] = [PERIODS.day, PERIODS.week, PERIODS.month].map(sinceDay);
-    const r = await env.DB.prepare(
-      `SELECT COALESCE(SUM(CASE WHEN day >= ? THEN n END), 0) AS day, COALESCE(SUM(CASE WHEN day >= ? THEN n END), 0) AS week, COALESCE(SUM(n), 0) AS month
-       FROM tally_daily WHERE day >= ? AND kind = 'play'`).bind(d, w, m).first();
-    const t = await env.DB.prepare(`SELECT COALESCE(SUM(n), 0) AS total FROM tally WHERE kind = 'play'`).first();
-    body = { madeAt: new Date().toISOString(), day: r.day, week: r.week, month: r.month, total: t.total };
-  } catch (e) { if (!kept) throw e; console.error(e && e.stack || e); return json(JSON.parse(kept.body)); }
-  try {
-    await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)').bind('playtime', body.madeAt, JSON.stringify(body)).run();
-  } catch (e) { console.error(e && e.stack || e); }
-  return json(body);
+  const [d, w, m] = [PERIODS.day, PERIODS.week, PERIODS.month].map(sinceDay);
+  const r = await env.DB.prepare(
+    `SELECT COALESCE(SUM(CASE WHEN key >= ? THEN play END), 0) AS day, COALESCE(SUM(CASE WHEN key >= ? THEN play END), 0) AS week, COALESCE(SUM(play), 0) AS month
+     FROM rollup WHERE grain = 'day' AND version = '' AND key >= ?`).bind(d, w, m).first();
+  const t = await env.DB.prepare(`SELECT COALESCE(play, 0) AS total FROM rollup WHERE grain = 'all' AND key = '' AND version = ''`).first();
+  return json({ day: r.day, week: r.week, month: r.month, total: t?.total ?? 0 });
 }
 
 // 묵혀 둔 집계를 내고, 없거나 낡았으면 새로 세어 적어 둔다. 전체 기간은 예전처럼 버전 글 그대로, 다른 기간은 「기간:버전」을 열쇠로 둔다.
