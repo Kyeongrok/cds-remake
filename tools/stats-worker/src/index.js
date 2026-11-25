@@ -1,7 +1,8 @@
 // 게임 통계를 받는 Cloudflare Worker — 게임(CdsHelper.Game/Local/Helpers/PlayStats.cs)이 몇 분마다, 그리고 끌 때 셈 한 덩이를 보낸다.
 //
 //   POST /v1/play        셈 한 덩이(JSON)를 D1 의 합계 표(tally)에 더한다. 같은 batch 번호는 한 번만 들어간다(다시 보내도 안 겹친다).
-//   GET  /v1/dashboard   집계(?period=day|week|month|all · ?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 한 시간에 한 번만 새로 센다.
+//   GET  /v1/dashboard   집계(?period=day|week|month|all · ?version= 으로 거른다) — 발견물 · 부하 고용 · 해고 · 항해 · 네비게이션 · 전투 · 사건 · 오류 · 모드 옵션. 여섯 시간에 한 번만 새로 센다.
+//   GET  /v1/playtime    플레이 시간(초) 합만 — {day, week, month, total}. 창세기전3 통계 대시보드 맨 위 오버뷰가 부른다. 여섯 시간에 한 번만 새로 센다.
 //   GET  /dashboard      대시보드 페이지(dashboard.js). 지금은 누구나 볼 수 있다.
 //   GET  /embed.js       대시보드 화면 부품 <cds-dashboard> — /dashboard 와 창세기전3 통계 대시보드가 불러 쓴다.
 //   POST /v1/hardcore    하드코어 판 하나가 끝난 기록 — 판 표지(gameId)마다 한 번만 들어간다.
@@ -300,7 +301,8 @@ async function setBugStatus(id, request, env) {
 }
 
 // 대시보드 집계는 한 번 세면 이만큼 묵힌다 — 열 때마다 표를 훑으면 D1 무료 읽기 한도(하루 오백만 줄)가 금세 찬다.
-const SNAPSHOT_TTL = 60 * 60 * 1000;
+// 한 시간이던 때 창세기전3 대시보드 오버뷰가 기간 넷을 한꺼번에 불러, 열 때마다 육십만 줄씩 읽어 하루 한도를 넘었다(2026-11-25) — 여섯 시간으로 늘리고 오버뷰는 /v1/playtime 으로 돌렸다.
+const SNAPSHOT_TTL = 6 * 60 * 60 * 1000;
 const LIMITS = { discovery: 400, hire: 300, dismiss: 300, voyage: 400, nav: 100, battle: 50, event: 100, error: 200, play: 5 };   // play — 끌 때 보내는 플레이 시간(seconds, 초)
 // 집계가 읽는 갈래 — tally 의 주키가 갈래로 시작하므로 이렇게 거르면 옛 voyage_days · voyage_turns · city 줄은 아예 안 읽는다.
 // 옛 항해 날수 · 선회는 voyage_legacy 에 버전마다 한 줄로 묶어 두었다(migrate-reads.sql).
@@ -331,6 +333,26 @@ async function getDashboard(url, env) {
     return json({ ...all, total: { batches: 0, installs: 0 }, kinds: [], discoveries: [], hires: [], dismisses: [], voyages: [], navs: [], battles: [], events: [], errors: [], days: [], periods: { day: [], week: [], month: [] }, heroes: [],
                   nations: [], flagships: [], investCities: [] });
   return json(await snapshot(env, period, version, all));
+}
+
+// 플레이 시간(play 갈래의 n, 초) 합만 — 기간 셋은 tally_daily 의 지난 30일(열쇠 첫머리가 day 라 그 날들만 읽는다), 전체는 tally 의 play 줄만(열쇠 첫머리가 kind).
+// 기간은 대시보드와 같다(하루는 어제부터). snapshots 표의 'playtime' 칸에 묵힌다.
+async function getPlaytime(env) {
+  const kept = await env.DB.prepare('SELECT made_at, body FROM snapshots WHERE version = ?').bind('playtime').first();
+  if (kept && Date.now() - Date.parse(kept.made_at) < SNAPSHOT_TTL) return json(JSON.parse(kept.body));
+  let body;
+  try {
+    const [d, w, m] = [PERIODS.day, PERIODS.week, PERIODS.month].map(sinceDay);
+    const r = await env.DB.prepare(
+      `SELECT COALESCE(SUM(CASE WHEN day >= ? THEN n END), 0) AS day, COALESCE(SUM(CASE WHEN day >= ? THEN n END), 0) AS week, COALESCE(SUM(n), 0) AS month
+       FROM tally_daily WHERE day >= ? AND kind = 'play'`).bind(d, w, m).first();
+    const t = await env.DB.prepare(`SELECT COALESCE(SUM(n), 0) AS total FROM tally WHERE kind = 'play'`).first();
+    body = { madeAt: new Date().toISOString(), day: r.day, week: r.week, month: r.month, total: t.total };
+  } catch (e) { if (!kept) throw e; console.error(e && e.stack || e); return json(JSON.parse(kept.body)); }
+  try {
+    await env.DB.prepare('INSERT OR REPLACE INTO snapshots (version, made_at, body) VALUES (?, ?, ?)').bind('playtime', body.madeAt, JSON.stringify(body)).run();
+  } catch (e) { console.error(e && e.stack || e); }
+  return json(body);
 }
 
 // 묵혀 둔 집계를 내고, 없거나 낡았으면 새로 세어 적어 둔다. 전체 기간은 예전처럼 버전 글 그대로, 다른 기간은 「기간:버전」을 열쇠로 둔다.
@@ -517,6 +539,7 @@ async function route(request, env) {
     try {
       if (request.method === 'POST' && pathname === '/v1/play') return await postPlay(request, env);
       if (request.method === 'GET' && pathname === '/v1/dashboard') return await getDashboard(url, env);
+      if (request.method === 'GET' && pathname === '/v1/playtime') return await getPlaytime(env);
       if (request.method === 'POST' && pathname === '/v1/hardcore') return await postHardcore(request, env);
       if (request.method === 'GET' && pathname === '/v1/ranking') return await getRanking(env);
       if (request.method === 'POST' && pathname === '/v1/bug') return await postBug(request, env);
