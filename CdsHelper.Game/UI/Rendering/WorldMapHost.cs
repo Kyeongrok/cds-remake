@@ -730,6 +730,18 @@ public sealed class WorldMapHost : HwndHost
     private bool _dirty = true;
 
     /// <summary>
+    /// 화면이 가려졌는지(모니터를 끄거나 화면을 잠갔을 때). 이때 Present 는 내보내지도, vsync 를 기다리지도 않고
+    /// 곧장 돌아온다. 그래도 계속 그리면 소비되지 않은 프레임의 Map(WriteDiscard) 버퍼를 드라이버가 끝없이 새로 잡아
+    /// 밤새 수십 GB 를 먹었다(제보: 켜 두고 잔 사이 38GB). 가려진 동안은 그리지 않고 시험 Present 로 돌아오기만 기다린다.
+    /// </summary>
+    private bool _occluded;
+
+    /// <summary>장치를 잃어(DXGI_ERROR_DEVICE_REMOVED 등) Present 가 실패했는지. 그 뒤로는 그리지 않는다.</summary>
+    private bool _presentFailed;
+
+    private const int DxgiStatusOccluded = 0x087A0001;
+
+    /// <summary>
     /// 참이면 배가 서 있는다. 물음창이 떠 있는 동안 계속 나아가지 않게 하려고 둔다 —
     /// 모달 창을 띄워도 CompositionTarget.Rendering 은 그대로 돈다.
     /// </summary>
@@ -1182,6 +1194,14 @@ public sealed class WorldMapHost : HwndHost
         if (!_dirty && origin == _drawnOrigin && rect == _drawnShip && overlay == _drawnAnchor
             && flowKey == _drawnFlow) return;
 
+        if (_presentFailed) return;
+        if (_occluded)
+        {
+            // 시험 Present 는 그림을 내보내지 않고 지금 보이는지만 알려 준다.
+            if (_swapChain!.Present(0, PresentFlags.Test).Code == DxgiStatusOccluded) return;
+            _occluded = false;
+        }
+
         _renderer.RenderTo(_backBufferView, w, h, origin, (_cellsPerPixel, _cellsPerPixel), rect, overlay);
         // 화면 밖 시험의 스냅샷 — Present 앞에서 백버퍼를 내려받는다(Flip 방식은 Present 뒤 백버퍼 값이 정해져 있지 않다).
         if (_grab is { } grab)
@@ -1196,7 +1216,22 @@ public sealed class WorldMapHost : HwndHost
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[WorldMap] 스냅샷 실패: {ex.Message}"); }
             grab(pixels, pixels.Length > 0 ? w : 0, pixels.Length > 0 ? h : 0);
         }
-        _swapChain!.Present(1, PresentFlags.None);
+        var presented = _swapChain!.Present(1, PresentFlags.None);
+        if (presented.Code == DxgiStatusOccluded)
+        {
+            // 그린 것이 안 나갔다 — 다시 보이면 한 번은 그려야 한다.
+            _occluded = true;
+            _dirty = true;
+            return;
+        }
+        if (presented.Failure)
+        {
+            _presentFailed = true;
+            var ex = new InvalidOperationException($"Present 실패 0x{presented.Code:X8}");
+            PlayStats.Error(ex);
+            Status = $"그래픽 장치를 잃었습니다 — 다시 켜 주세요 (0x{presented.Code:X8})";
+            return;
+        }
         _drawnOrigin = origin;
         _drawnShip = rect;
         _drawnAnchor = overlay;
