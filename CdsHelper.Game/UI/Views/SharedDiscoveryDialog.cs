@@ -42,7 +42,21 @@ public sealed class SharedDiscoveryDialog : GameWindow
     {
         Foreground = Dim, FontSize = 12, Margin = new Thickness(14, 0, 14, 10), TextWrapping = TextWrapping.Wrap, MaxWidth = ListWidth + TipWidth + 20,
     };
-    private readonly GameButton _get, _like, _report, _remove;
+    private readonly GameButton _report;
+
+    /// <summary>내려받는 중인지 — 그동안 + 를 또 눌러도 안 받는다.</summary>
+    private bool _getting;
+
+    /// <summary>
+    /// 좋아요 하트 — 오른쪽 칸 이름 줄의 오른쪽 끝에 둔다. 누르면 누르거나 거둔다(아래 단추 줄에 두니 어색했다, 요청).
+    /// </summary>
+    private readonly Border _heart = new()
+    {
+        Cursor = Cursors.Hand, Padding = new Thickness(8, 2, 8, 2), CornerRadius = new CornerRadius(10),
+        BorderThickness = new Thickness(1), VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed,
+    };
+    private readonly TextBlock _heartText = new() { FontSize = 15, Foreground = LikeInk };
+    private bool _liking;
     private readonly Engine.Game? _game;
     private readonly Func<DiscoveryAreaPicker.Map?>? _map;
     private List<DiscoveryShare.Shared> _shares = [];
@@ -84,7 +98,18 @@ public sealed class SharedDiscoveryDialog : GameWindow
             HorizontalAlignment = HorizontalAlignment.Left, Child = _picture, Visibility = Visibility.Collapsed,
         };
         var tip = new StackPanel();
-        tip.Children.Add(_tipName);
+        // 이름 줄 — 왼쪽 이름, 오른쪽 끝 좋아요 하트.
+        _heart.Child = _heartText;
+        _heart.BorderBrush = LikeInk;
+        _heart.MouseEnter += (_, _) => _heart.Background = Hover;
+        _heart.MouseLeave += (_, _) => _heart.Background = Brushes.Transparent;
+        _heart.MouseLeftButtonDown += (_, e) => { e.Handled = true; LikeSelected(); };
+        _heart.Background = Brushes.Transparent;
+        var head = new DockPanel { LastChildFill = true };
+        DockPanel.SetDock(_heart, Dock.Right);
+        head.Children.Add(_heart);
+        head.Children.Add(_tipName);
+        tip.Children.Add(head);
         tip.Children.Add(_pictureFrame);
         tip.Children.Add(_detail);
         var side = new Border
@@ -99,22 +124,14 @@ public sealed class SharedDiscoveryDialog : GameWindow
         body.Children.Add(list);
         body.Children.Add(side);
 
-        _get = new GameButton("받아서 추가", GetSelected, width: 130);
-        _like = new GameButton("좋아요", LikeSelected, width: 130);
-        _report = new GameButton("신고", ReportSelected, width: 130);
-        _remove = new GameButton("내 공유 내리기", RemoveSelected, width: 160);
-        // 단추가 많아 한 줄이면 창이 옆으로 늘어난다 — 두 줄로 나눠 가운데 맞춘다. 윗줄은 고른 공유 발견물, 아랫줄은 내 것 · 창.
-        var shareRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 2) };
-        shareRow.Children.Add(_get);
-        shareRow.Children.Add(_like);
-        shareRow.Children.Add(_report);
-        shareRow.Children.Add(_remove);
-        var ownRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 6) };
+        _report = new GameButton("신고", ReportSelected, width: 110);
+        // 받아서 추가는 왼쪽 줄의 + 로, 좋아요는 오른쪽 칸의 하트로 옮겼다 — 아래에는 창 단추만 둔다(요청).
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 6) };
         // 「발견물 추가」 — 짓는 창을 연다. 새 줄은 그 창의 「새 발견물」로 짓고, 「클라우드에 올리기」로 이 목록에 올린다.
-        ownRow.Children.Add(new GameButton("발견물 추가", OpenEditor, width: 130));
-        ownRow.Children.Add(new GameButton("새로 고침", () => _ = Load(), width: 130));
-        ownRow.Children.Add(new GameButton("닫기", Close, width: 130));
-        var buttons = new StackPanel { Children = { shareRow, ownRow } };
+        buttons.Children.Add(new GameButton("발견물 추가", OpenEditor, width: 130));
+        buttons.Children.Add(_report);
+        buttons.Children.Add(new GameButton("새로 고침", () => _ = Load(), width: 120));
+        buttons.Children.Add(new GameButton("닫기", Close, width: 100));
 
         var stack = new StackPanel();
         stack.Children.Add(title);
@@ -192,8 +209,8 @@ public sealed class SharedDiscoveryDialog : GameWindow
         _picked = -1;
         foreach (var s in _shares)
         {
-            var row = Row(s);
             int index = _rowOf.Count;
+            var row = Row(s, index);
             row.MouseEnter += (_, _) => { if (_picked != index) row.Background = Hover; };
             row.MouseLeave += (_, _) => { if (_picked != index) row.Background = Brushes.Transparent; };
             row.MouseLeftButtonDown += (_, e) =>
@@ -210,18 +227,22 @@ public sealed class SharedDiscoveryDialog : GameWindow
         Pick(at >= 0 ? at : 0);
     }
 
-    /// <summary>한 줄 — 이름 · 만든 이 · 판, 오른쪽에 ♥ 좋아요 · ⬇ 받은 수 · 추가했는지.</summary>
-    private static Border Row(DiscoveryShare.Shared s)
+    /// <summary>
+    /// 한 줄 — 이름 · 만든 이 · 판, 오른쪽에 ♥ 좋아요 · ⬇ 받은 수, 맨 오른쪽에 + (받아서 추가) 또는 ✓ (추가됨).
+    /// + 에 커서를 올리면 「추가」 툴팁이 뜬다(요청).
+    /// </summary>
+    private Border Row(DiscoveryShare.Shared s, int index)
     {
         bool have = Have(s);
         string author = s.Author.Length > 0 ? s.Author : Lang.T("이름 없음");
+        bool newer = have && Newer(s);
         var (mark, ink) = s.Mine ? (Lang.T("내 것"), NewerInk)
-            : !have ? ("", Dim)
-            : Newer(s) ? (Lang.T("새 버전"), NewerInk)
-            : (Lang.T("추가됨"), HaveInk);
+            : newer ? (Lang.T("새 버전"), NewerInk)
+            : ("", Dim);
 
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         var left = new StackPanel();
@@ -239,7 +260,48 @@ public sealed class SharedDiscoveryDialog : GameWindow
         Grid.SetColumn(right, 1);
         grid.Children.Add(right);
 
-        return new Border { Padding = new Thickness(10, 4, 10, 4), Cursor = Cursors.Hand, Background = Brushes.Transparent, Child = grid };
+        // 맨 오른쪽 — 안 가졌거나 새 판이 있으면 + (누르면 받는다), 가졌으면 ✓.
+        bool canGet = !have || newer;
+        var plus = new Border
+        {
+            Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
+            BorderThickness = new Thickness(1), BorderBrush = canGet ? (newer ? NewerInk : HaveInk) : Dim, Background = Brushes.Transparent,
+            Cursor = canGet ? Cursors.Hand : Cursors.Arrow,
+            ToolTip = Lang.T(canGet ? (newer ? "새 버전 받기" : "추가") : "추가됨"),
+            Child = new TextBlock
+            {
+                Text = canGet ? "+" : "✓", FontSize = canGet ? 18 : 13, FontWeight = FontWeights.Bold,
+                Foreground = canGet ? (newer ? NewerInk : HaveInk) : Dim,
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, canGet ? -3 : 0, 0, 0),
+            },
+        };
+        if (canGet)
+        {
+            plus.MouseEnter += (_, _) => plus.Background = Hover;
+            plus.MouseLeave += (_, _) => plus.Background = Brushes.Transparent;
+            plus.MouseLeftButtonDown += (_, e) =>
+            {
+                e.Handled = true;
+                Pick(index);
+                GetSelected();
+            };
+        }
+        Grid.SetColumn(plus, 2);
+        grid.Children.Add(plus);
+
+        var line = new Border { Padding = new Thickness(10, 4, 10, 4), Cursor = Cursors.Hand, Background = Brushes.Transparent, Child = grid };
+        // 내가 올린 줄은 오른쪽 클릭 메뉴에 「내 공유 내리기」 — 아래 단추 줄에 두니 어색했다(요청).
+        if (s.Mine)
+        {
+            var drop = new MenuItem { Header = Lang.T("내 공유 내리기"), Foreground = GameUi.Text };
+            drop.Click += (_, _) => { Pick(index); RemoveSelected(); };
+            line.ContextMenu = new ContextMenu
+            {
+                Background = GameUi.Back, BorderBrush = GameUi.DarkFieldEdge, Foreground = GameUi.Text, Items = { drop },
+            };
+            line.PreviewMouseRightButtonDown += (_, _) => Pick(index);
+        }
+        return line;
     }
 
     private void ShowEmpty(string why)
@@ -286,11 +348,9 @@ public sealed class SharedDiscoveryDialog : GameWindow
     private async void ShowSelected()
     {
         var s = Selected;
-        _get.On = _like.On = _report.On = s != null;
-        _remove.On = s is { Mine: true };
+        _report.On = s != null;
+        ShowHeart(s);
         bool have = s != null && Have(s);
-        _get.Text = s == null || !have ? Lang.T("받아서 추가") : Newer(s) ? Lang.T("새 버전 받기") : Lang.T("다시 받기");
-        _like.Text = s is { Liked: true } ? Lang.T("좋아요 취소") : Lang.T("좋아요");
         if (s == null) return;
 
         _tipName.Text = s.Name;
@@ -329,8 +389,8 @@ public sealed class SharedDiscoveryDialog : GameWindow
         text.AppendLine($"{Lang.T("크기")}: {s.Size / 1024.0:0.#} KB{(s.HasMovie ? " · " + Lang.T("동영상 있음") : "")}");
         text.AppendLine($"♥ {s.Likes} · ⬇ {s.Downloads} · {Lang.T("고친 날")}: {(s.UpdatedAt.Length >= 10 ? s.UpdatedAt[..10] : s.UpdatedAt)} (v{s.Revision})");
         text.AppendLine(s.Mine && have ? Lang.T("내가 올린 발견물입니다 — 받으면 내 PC 의 것을 덮어쓸지 묻습니다.")
-            : !have ? Lang.T("아직 추가하지 않았습니다 — 「받아서 추가」(Enter)로 게임에 넣습니다.")
-            : Newer(s) ? $"{Lang.T("가진 판")}: v{DiscoveryShare.StateOf(s.Uuid)?.Rev} → {Lang.T("새 판")}: v{s.Revision} — {Lang.T("「새 버전 받기」로 바꿉니다.")}"
+            : !have ? Lang.T("아직 추가하지 않았습니다 — 왼쪽 줄의 + (또는 Enter)로 게임에 넣습니다.")
+            : Newer(s) ? $"{Lang.T("가진 판")}: v{DiscoveryShare.StateOf(s.Uuid)?.Rev} → {Lang.T("새 판")}: v{s.Revision} — {Lang.T("왼쪽 줄의 + 로 바꿉니다.")}"
             : Lang.T("이미 추가한 발견물입니다(최신)."));
         if (!s.Mine) text.AppendLine(Lang.T("다른 분이 올린 발견물은 받아도 고칠 수 없습니다 — 「복제」해서 내 발견물로 고쳐 쓸 수 있습니다."));
         text.AppendLine();
@@ -355,11 +415,11 @@ public sealed class SharedDiscoveryDialog : GameWindow
 
     private async void GetSelected()
     {
-        if (Selected is not { } s) return;
-        _get.On = false;
+        if (Selected is not { } s || _getting) return;
+        _getting = true;
         _status.Text = Lang.T("내려받는 중입니다…");
         string? path = await DiscoveryShare.Download(s.Uuid);
-        _get.On = true;
+        _getting = false;
         if (path == null) { _status.Text = Lang.T("내려받지 못했습니다."); return; }
         try
         {
@@ -383,14 +443,24 @@ public sealed class SharedDiscoveryDialog : GameWindow
         await Load();
     }
 
+    /// <summary>하트를 그 발견물의 좋아요 수 · 눌렀는지로 맞춘다. 고른 것이 없으면 숨긴다.</summary>
+    private void ShowHeart(DiscoveryShare.Shared? s)
+    {
+        _heart.Visibility = s == null ? Visibility.Collapsed : Visibility.Visible;
+        if (s == null) return;
+        _heartText.Text = (s.Liked ? "♥ " : "♡ ") + s.Likes;
+        _heart.ToolTip = Lang.T(s.Liked ? "좋아요 취소" : "좋아요");
+    }
+
     /// <summary>좋아요를 누르거나 거둔다 — 받는 곳이 답한 수로 그 줄만 고친다.</summary>
     private async void LikeSelected()
     {
         if (Selected is not { } s) return;
         bool on = !s.Liked;
-        _like.On = false;
+        if (_liking) return;
+        _liking = true;
         int? likes = await DiscoveryShare.Like(s.Uuid, on);
-        _like.On = true;
+        _liking = false;
         if (likes == null) { _status.Text = Lang.T("좋아요를 보내지 못했습니다."); return; }
         int at = _shares.FindIndex(x => x.Uuid == s.Uuid);
         if (at >= 0) _shares[at] = s with { Likes = likes.Value, Liked = on };
