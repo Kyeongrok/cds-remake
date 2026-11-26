@@ -28,7 +28,6 @@ public sealed class SharedDiscoveryDialog : GameWindow
     private static readonly Brush HaveInk = Frozen(Color.FromRgb(0x9C, 0xD0, 0x8C));
     private static readonly Brush NewerInk = Frozen(Color.FromRgb(0xF0, 0xC0, 0x60));
     private static readonly Brush LikeInk = Frozen(Color.FromRgb(0xF0, 0x80, 0x80));
-    private static readonly Brush SirenInk = Frozen(Color.FromRgb(0xF0, 0x60, 0x50));
 
     private readonly StackPanel _rows = new() { Margin = new Thickness(0, 2, 0, 2) };
     private readonly ScrollViewer _rowScroll;
@@ -42,15 +41,6 @@ public sealed class SharedDiscoveryDialog : GameWindow
     private readonly TextBlock _status = new()
     {
         Foreground = Dim, FontSize = 12, Margin = new Thickness(14, 0, 14, 10), TextWrapping = TextWrapping.Wrap, MaxWidth = ListWidth + TipWidth + 20,
-    };
-    /// <summary>신고 — 하트 왼쪽의 사이렌 아이콘(아래 단추 줄에서 옮겼다, 요청). 내가 올린 것에는 안 보인다.</summary>
-    private readonly Border _siren = new()
-    {
-        Cursor = Cursors.Hand, Padding = new Thickness(6, 1, 6, 1), CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 6, 0),
-        BorderThickness = new Thickness(1), VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed,
-        Background = Brushes.Transparent,
-        // WPF 는 컬러 이모지를 못 그려 글자색으로 칠한다 — 기본 검정이면 밤색 판에서 안 보였다.
-        Child = new TextBlock { Text = "🚨", FontSize = 15, FontFamily = new FontFamily("Segoe UI Emoji"), Foreground = SirenInk },
     };
 
     /// <summary>내려받는 중인지 — 그동안 + 를 또 눌러도 안 받는다.</summary>
@@ -117,13 +107,6 @@ public sealed class SharedDiscoveryDialog : GameWindow
         var head = new DockPanel { LastChildFill = true };
         DockPanel.SetDock(_heart, Dock.Right);
         head.Children.Add(_heart);
-        _siren.BorderBrush = SirenInk;
-        _siren.ToolTip = Lang.T("신고");
-        _siren.MouseEnter += (_, _) => _siren.Background = Hover;
-        _siren.MouseLeave += (_, _) => _siren.Background = Brushes.Transparent;
-        _siren.MouseLeftButtonDown += (_, e) => { e.Handled = true; ReportSelected(); };
-        DockPanel.SetDock(_siren, Dock.Right);
-        head.Children.Add(_siren);
         head.Children.Add(_tipName);
         tip.Children.Add(head);
         tip.Children.Add(_pictureFrame);
@@ -140,7 +123,7 @@ public sealed class SharedDiscoveryDialog : GameWindow
         body.Children.Add(list);
         body.Children.Add(side);
 
-        // 받아서 추가는 왼쪽 줄의 + 로, 좋아요 · 신고는 오른쪽 칸의 하트 · 사이렌으로 옮겼다 — 아래에는 창 단추만 둔다(요청).
+        // 받아서 추가는 왼쪽 줄의 + 로, 좋아요는 오른쪽 칸의 하트로, 신고는 줄의 오른쪽 클릭 메뉴로 옮겼다 — 아래에는 창 단추만 둔다(요청).
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 6) };
         // 「발견물 추가」 — 짓는 창을 연다. 새 줄은 그 창의 「새 발견물」로 짓고, 「클라우드에 올리기」로 이 목록에 올린다.
         buttons.Children.Add(new GameButton("발견물 추가", OpenEditor, width: 130));
@@ -304,17 +287,19 @@ public sealed class SharedDiscoveryDialog : GameWindow
         grid.Children.Add(plus);
 
         var line = new Border { Padding = new Thickness(10, 4, 10, 4), Cursor = Cursors.Hand, Background = Brushes.Transparent, Child = grid };
-        // 내가 올린 줄은 오른쪽 클릭 메뉴에 「내 공유 내리기」 — 아래 단추 줄에 두니 어색했다(요청).
-        if (s.Mine)
+        // 오른쪽 클릭 메뉴 — 내가 올린 줄은 「내 공유 내리기」, 남의 줄은 「신고」(단추 · 아이콘으로 두니 어색했다, 요청).
+        var act = new MenuItem { Header = Lang.T(s.Mine ? "내 공유 내리기" : "신고"), Foreground = GameUi.Text };
+        act.Click += (_, _) =>
         {
-            var drop = new MenuItem { Header = Lang.T("내 공유 내리기"), Foreground = GameUi.Text };
-            drop.Click += (_, _) => { Pick(index); RemoveSelected(); };
-            line.ContextMenu = new ContextMenu
-            {
-                Background = GameUi.Back, BorderBrush = GameUi.DarkFieldEdge, Foreground = GameUi.Text, Items = { drop },
-            };
-            line.PreviewMouseRightButtonDown += (_, _) => Pick(index);
-        }
+            Pick(index);
+            if (s.Mine) RemoveSelected();
+            else ReportSelected();
+        };
+        line.ContextMenu = new ContextMenu
+        {
+            Background = GameUi.Back, BorderBrush = GameUi.DarkFieldEdge, Foreground = GameUi.Text, Items = { act },
+        };
+        line.PreviewMouseRightButtonDown += (_, _) => Pick(index);
         return line;
     }
 
@@ -362,7 +347,6 @@ public sealed class SharedDiscoveryDialog : GameWindow
     private async void ShowSelected()
     {
         var s = Selected;
-        _siren.Visibility = s is { Mine: false } ? Visibility.Visible : Visibility.Collapsed;
         ShowHeart(s);
         bool have = s != null && Have(s);
         if (s == null) return;
