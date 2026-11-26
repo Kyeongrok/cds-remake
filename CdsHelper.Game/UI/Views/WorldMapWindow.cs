@@ -590,7 +590,8 @@ public sealed class WorldMapWindow : Window
                 (AddOnsRow, MenuItem(() => AddOnListDialog.Show(this))),
                 // 사람이 지어 넣는 발견물 — 짓기 · 고치기 · 내보내기 · 불러오기. 개발 창 「발견물」 탭에서 옮겼다(요청).
                 // 지은 발견물은 모드 「추가 발견물」을 켜야 게임에 나오므로 그때만 줄이 선다. 닫은 뒤 지도의 발견물 그림을 다시 맞춘다.
-                (UserDiscoveriesRow, MenuItem(() => { UserDiscoveryDialog.Show(this, DiscoveryAreaMap, _game); HideCities(); })),
+                // 먼저 지어 둔 것 목록을 보이고, 거기서 「발견물 추가」 · 「고치기」로 짓는 창에 간다(요청).
+                (UserDiscoveriesRow, MenuItem(() => { UserDiscoveryListDialog.Show(this, DiscoveryAreaMap, _game); HideCities(); })),
             ],
             out _refreshApps,
             // 햄버거 오른쪽 「네비게이션(R)」 — 목적지 도시를 골라 자동항해(도시 안이면 출항부터)를 건다.
@@ -4659,6 +4660,9 @@ public sealed class WorldMapWindow : Window
 
     /// <summary>화면 밖 시험(CDS_DIALOG=userdiscovery[:&lt;탭&gt;]) — 도시락 「추가 발견물」처럼 커스텀 발견물 창을 그 탭으로 띄운다.</summary>
     internal void OpenUserDiscoveriesForTest(string? tab) => UserDiscoveryDialog.Show(this, DiscoveryAreaMap, _game, tab);
+
+    /// <summary>화면 밖 시험(CDS_DIALOG=userdiscoverylist) — 도시락 「추가 발견물」의 목록 창을 띄운다.</summary>
+    internal void OpenUserDiscoveryListForTest() => UserDiscoveryListDialog.Show(this, DiscoveryAreaMap, _game);
 
     private void ShowDevDialog() => ShowDevDialog(null);
 
