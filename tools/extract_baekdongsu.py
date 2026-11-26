@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ls12  # noqa: E402
 
 FIRST_PART = 7          # 백동수 이야기가 시작하는 파트(모드 세이브의 이야기 카운터)
-OUT_DIR = "exe-tables"
+OUT_DIR = "tools/baekdongsu"   # 공개 배포하지 않는다 — 이 PC 설치 앱의 exe-tables 에만 복사한다(README)
 
 
 def fix_empty_bodies(raw):
