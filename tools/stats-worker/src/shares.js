@@ -10,6 +10,8 @@
 //   POST /v1/shares/<uuid>/delete {install} 지우기 — 올린 설치 또는 관리자(Authorization: Bearer <BUG_ADMIN_KEY>)
 //   POST /v1/shares/<uuid>/report {install, reason}  신고 — 설치마다 한 번, 다섯 곳이 신고하면 숨는다
 //   POST /v1/shares/<uuid>/hide {hidden}    숨기기 · 되살리기(관리자만)
+//   POST /v1/shares/<uuid>/like {install, on}  좋아요 · 취소 — 설치마다 하나. 답은 { ok, likes, liked }
+//   목록의 likes · liked — 좋아요 수와 이 설치가 눌렀는지(migrate-share-likes.sql)
 //
 // 파일은 KV(SHARES)에, 목록은 D1(shared_discoveries)에 둔다. 올린 설치 번호는 목록에 안 낸다.
 
@@ -26,7 +28,7 @@ export async function routeShares(request, env, url, { json, text, int, isId, is
     if (request.method === 'POST') return postShare(request, env, json, text, int, isId);
     return json({ error: 'not found' }, 404);
   }
-  const m = pathname.match(/^\/v1\/shares\/([0-9a-fA-F-]{36})\/(file|picture|history|delete|report|hide)$/);
+  const m = pathname.match(/^\/v1\/shares\/([0-9a-fA-F-]{36})\/(file|picture|history|delete|report|hide|like)$/);
   if (!m || !isUuid(m[1])) return json({ error: 'not found' }, 404);
   const uuid = m[1].toLowerCase(), action = m[2];
   if (request.method === 'GET' && action === 'file') return getFile(uuid, env, json);
@@ -37,6 +39,7 @@ export async function routeShares(request, env, url, { json, text, int, isId, is
   try { b = (await request.json()) || {}; } catch { b = {}; }
   if (action === 'delete') return deleteShare(uuid, b, request, env, json, isId, isAdmin);
   if (action === 'report') return reportShare(uuid, b, env, json, text, isId);
+  if (action === 'like') return likeShare(uuid, b, env, json, isId);
   if (action === 'hide') {
     if (!isAdmin(request, env)) return json({ error: 'unauthorized' }, 401);
     await env.DB.prepare('UPDATE shared_discoveries SET hidden = ? WHERE uuid = ?').bind(b.hidden ? 1 : 0, uuid).run();
@@ -49,9 +52,10 @@ async function listShares(url, env, isId) {
   const install = url.searchParams.get('install') || '';
   const { results } = await env.DB.prepare(
     `SELECT uuid, name, category, author, license, description, size, has_movie, has_picture, version,
-            created_at, updated_at, rev, downloads, wants_official, owner = ? AS mine
-       FROM shared_discoveries WHERE hidden = 0 ORDER BY updated_at DESC LIMIT 1000`).bind(isId(install) ? install : '').all();
-  const shares = results.map(r => ({ ...r, mine: !!r.mine, wants_official: !!r.wants_official, has_movie: !!r.has_movie, has_picture: !!r.has_picture }));
+            created_at, updated_at, rev, downloads, likes, wants_official, owner = ? AS mine,
+            EXISTS (SELECT 1 FROM share_likes l WHERE l.uuid = shared_discoveries.uuid AND l.install = ?) AS liked
+       FROM shared_discoveries WHERE hidden = 0 ORDER BY updated_at DESC LIMIT 1000`).bind(isId(install) ? install : '', isId(install) ? install : '').all();
+  const shares = results.map(r => ({ ...r, mine: !!r.mine, liked: !!r.liked, wants_official: !!r.wants_official, has_movie: !!r.has_movie, has_picture: !!r.has_picture }));
   return new Response(JSON.stringify({ shares }),
     { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 }
@@ -148,9 +152,23 @@ async function deleteShare(uuid, b, request, env, json, isId, isAdmin) {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM shared_discoveries WHERE uuid = ?').bind(uuid),
     env.DB.prepare('DELETE FROM share_reports WHERE uuid = ?').bind(uuid),
+    env.DB.prepare('DELETE FROM share_likes WHERE uuid = ?').bind(uuid),
     env.DB.prepare('DELETE FROM share_revisions WHERE uuid = ?').bind(uuid),
   ]);
   return json({ ok: true });
+}
+
+async function likeShare(uuid, b, env, json, isId) {
+  if (!isId(b.install)) return json({ error: 'bad install' }, 400);
+  const row = await env.DB.prepare('SELECT hidden FROM shared_discoveries WHERE uuid = ?').bind(uuid).first();
+  if (!row || row.hidden) return json({ error: 'not found' }, 404);
+  const change = b.on
+    ? await env.DB.prepare('INSERT OR IGNORE INTO share_likes (uuid, install, created_at) VALUES (?, ?, ?)').bind(uuid, b.install, new Date().toISOString()).run()
+    : await env.DB.prepare('DELETE FROM share_likes WHERE uuid = ? AND install = ?').bind(uuid, b.install).run();
+  if (change.meta.changes > 0)
+    await env.DB.prepare(`UPDATE shared_discoveries SET likes = MAX(0, likes + ?) WHERE uuid = ?`).bind(b.on ? 1 : -1, uuid).run();
+  const got = await env.DB.prepare('SELECT likes FROM shared_discoveries WHERE uuid = ?').bind(uuid).first();
+  return json({ ok: true, likes: got ? got.likes : 0, liked: !!b.on });
 }
 
 async function reportShare(uuid, b, env, json, text, isId) {

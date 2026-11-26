@@ -34,6 +34,81 @@ internal static class GameUi
         return box;
     }
 
+    /// <summary>
+    /// 그 칸 안의 스크롤바를 모두 어두운 창 색에 맞춘다 — 윈도 기본(밝은 회색 홈 · 화살표 단추)이 밤색 창에서 혼자 튀었다(요청).
+    /// 짙은 홈에 갈색 손잡이, 화살표 단추는 뺀다. 창(Window)에 걸면 그 창의 스크롤바가 다 바뀐다.
+    /// </summary>
+    public static T DarkScrollBars<T>(this T element) where T : FrameworkElement
+    {
+        element.Resources.MergedDictionaries.Add(DarkScrollBarResources.Value);
+        return element;
+    }
+
+    private static readonly Lazy<ResourceDictionary> DarkScrollBarResources = new(() =>
+        (ResourceDictionary)System.Windows.Markup.XamlReader.Parse("""
+            <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+              <Style x:Key="DarkThumb" TargetType="Thumb">
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                      <Border x:Name="Grip" Background="#7A5A48" CornerRadius="4" Margin="2"/>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Grip" Property="Background" Value="#9A7458"/></Trigger>
+                        <Trigger Property="IsDragging" Value="True"><Setter TargetName="Grip" Property="Background" Value="#B08050"/></Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+              <Style x:Key="DarkPage" TargetType="RepeatButton">
+                <Setter Property="Focusable" Value="False"/>
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+              <Style TargetType="ScrollBar">
+                <Setter Property="Width" Value="12"/>
+                <Setter Property="MinWidth" Value="12"/>
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                      <Border Background="#1E0E0E" BorderBrush="#4A3028" BorderThickness="1" CornerRadius="5">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                          <Track.DecreaseRepeatButton><RepeatButton Style="{StaticResource DarkPage}" Command="ScrollBar.PageUpCommand"/></Track.DecreaseRepeatButton>
+                          <Track.IncreaseRepeatButton><RepeatButton Style="{StaticResource DarkPage}" Command="ScrollBar.PageDownCommand"/></Track.IncreaseRepeatButton>
+                          <Track.Thumb><Thumb Style="{StaticResource DarkThumb}"/></Track.Thumb>
+                        </Track>
+                      </Border>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                  <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="MinWidth" Value="0"/>
+                    <Setter Property="Height" Value="12"/>
+                    <Setter Property="Template">
+                      <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                          <Border Background="#1E0E0E" BorderBrush="#4A3028" BorderThickness="1" CornerRadius="5">
+                            <Track x:Name="PART_Track">
+                              <Track.DecreaseRepeatButton><RepeatButton Style="{StaticResource DarkPage}" Command="ScrollBar.PageLeftCommand"/></Track.DecreaseRepeatButton>
+                              <Track.IncreaseRepeatButton><RepeatButton Style="{StaticResource DarkPage}" Command="ScrollBar.PageRightCommand"/></Track.IncreaseRepeatButton>
+                              <Track.Thumb><Thumb Style="{StaticResource DarkThumb}"/></Track.Thumb>
+                            </Track>
+                          </Border>
+                        </ControlTemplate>
+                      </Setter.Value>
+                    </Setter>
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </ResourceDictionary>
+            """));
+
     public static readonly Brush DarkFieldFill = Frozen(Color.FromRgb(0x1E, 0x0E, 0x0E));
     public static readonly Brush DarkFieldEdge = Frozen(Color.FromRgb(0x7A, 0x5A, 0x48));
     public static readonly Brush DarkFieldSelect = Frozen(Color.FromRgb(0xB0, 0x80, 0x50));

@@ -36,7 +36,7 @@ public static class DiscoveryShare
     /// <summary>올라온 발견물 한 줄.</summary>
     public sealed record Shared(string Uuid, string Name, int Category, string Author, string License, string Description,
                                 long Size, bool HasMovie, bool HasPicture, string Version, string UpdatedAt, int Revision,
-                                int Downloads, bool Mine, bool WantsOfficial);
+                                int Downloads, bool Mine, bool WantsOfficial, int Likes = 0, bool Liked = false);
 
     /// <summary>판 이력 한 줄 — 몇 판 · 고친 내용 · 크기 · 올린 때.</summary>
     public sealed record Revision(int Rev, string Note, long Size, string CreatedAt);
@@ -210,7 +210,8 @@ public static class DiscoveryShare
                 bool Flag(string key) => s.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.True;
                 list.Add(new Shared(Str("uuid"), Str("name"), (int)Num("category"), Str("author"), Str("license"), Str("description"),
                                     Num("size"), Flag("has_movie"), Flag("has_picture"), Str("version"), Str("updated_at"),
-                                    (int)Num("rev"), (int)Num("downloads"), Flag("mine"), Flag("wants_official")));
+                                    (int)Num("rev"), (int)Num("downloads"), Flag("mine"), Flag("wants_official"),
+                                    (int)Num("likes"), Flag("liked")));
             }
             return list;
         }
@@ -288,6 +289,23 @@ public static class DiscoveryShare
     /// <summary>신고한다(설치마다 한 번 센다). 잘 받았으면 true.</summary>
     public static Task<bool> Report(string uuid, string reason) =>
         Post($"/v1/shares/{uuid}/report", new { install = PlayStats.InstallId(), reason });
+
+    /// <summary>좋아요를 누르거나 거둔다 — 설치마다 하나. 받는 곳이 답한 좋아요 수, 못 했으면 null.</summary>
+    public static async Task<int?> Like(string uuid, bool on)
+    {
+        string url = BugReport.Url;
+        if (url.Length == 0) return null;
+        try
+        {
+            using var http = Client(15);
+            using var content = new StringContent(JsonSerializer.Serialize(new { install = PlayStats.InstallId(), on }, Json), Encoding.UTF8, "application/json");
+            using var reply = await http.PostAsync($"{url}/v1/shares/{uuid}/like", content);
+            if (!reply.IsSuccessStatusCode) return null;
+            using var doc = JsonDocument.Parse(await reply.Content.ReadAsStringAsync());
+            return doc.RootElement.TryGetProperty("likes", out var v) && v.ValueKind == JsonValueKind.Number ? v.GetInt32() : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException) { return null; }
+    }
 
     private static async Task<bool> Post(string path, object body)
     {

@@ -354,18 +354,18 @@ public static class OffscreenHarness
                     window.OpenUserDiscoveriesForTest(tab);
                     Log("커스텀 발견물 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
-            // CDS_DIALOG=userdiscoverylist — 도시락 「추가 발견물」을 누르면 먼저 뜨는 목록 창을 띄운다.
-            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "userdiscoverylist")
+            // CDS_DIALOG=shareddiscovery — 도시락 「추가 발견물」을 누르면 먼저 뜨는 공유 발견물 창을 띄운다(목록은 CDS_STATS_URL 에서 받는다).
+            if (Environment.GetEnvironmentVariable("CDS_DIALOG") == "shareddiscovery")
                 window.Dispatcher.BeginInvoke(() =>
                 {
-                    Log("추가 발견물 목록 창을 띄운다");
+                    Log("공유 발견물 창을 띄운다");
                     window.Dispatcher.BeginInvoke(() =>
                     {
                         foreach (Window w in window.OwnedWindows)
-                            if (w is UserDiscoveryListDialog) (w.Left, w.Top) = (window.Left + 10, window.Top + 10);
+                            if (w is SharedDiscoveryDialog) (w.Left, w.Top) = (window.Left + 10, window.Top + 10);
                     }, DispatcherPriority.ApplicationIdle);
-                    window.OpenUserDiscoveryListForTest();
-                    Log("추가 발견물 목록 창이 닫혔다");
+                    window.OpenSharedDiscoveriesForTest();
+                    Log("공유 발견물 창이 닫혔다");
                 }, DispatcherPriority.ApplicationIdle);
             // CDS_DIALOG=childname — 자녀 이름 다시 짓기 창(선명입력 창)을 띄우고, 뜬 뒤 그 창의 초점이 어디 갔는지 적은 다음 닫는다.
             // 화면 밖 창은 활성이 안 되므로 글쇠 초점(Keyboard)이 아니라 창이 쥔 논리 초점(FocusManager)을 본다.

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CdsHelper.Game.Engine.Table;
@@ -12,98 +13,243 @@ namespace CdsHelper.Game.UI.Views;
 /// 「공유 발견물」 창 — 다른 분들이 클라우드에 올린 커스텀 발견물 목록. 고르면 그림 · 설명 · 만든 이를 보이고,
 /// 「받아서 추가」로 내려받아 「불러오기」와 똑같이 들인다(<see cref="UserDiscoveries.Import"/>). 원본에 없는 것이다.
 /// </summary>
+/// <remarks>
+/// 도시락 「추가 발견물」이 이 창을 먼저 띄우고, 「발견물 추가」로 짓는 창(<see cref="UserDiscoveryDialog"/>)에 간다(요청).
+/// 모양은 모드 창을 따른다 — 밤색 판 · 제목 띠 · 왼쪽 줄 목록 · 오른쪽 설명 칸 · 게임 단추 · 어두운 스크롤바.
+/// 줄마다 좋아요 수 · 받은 수 · 추가했는지를 바로 보이고, 위아래 글쇠로 고르고 Enter 로 받는다.
+/// </remarks>
 public sealed class SharedDiscoveryDialog : GameWindow
 {
-    private readonly ListBox _list = new() { Width = 300, Margin = new Thickness(10, 10, 6, 6) };
-    private readonly Image _picture = new() { Width = 320, Height = 240, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left };
-    private readonly TextBox _detail = new()
+    private const double ListWidth = 360, TipWidth = 470, BodyHeight = 470;
+
+    private static readonly Brush Hover = Frozen(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF));
+    private static readonly Brush Picked = Frozen(Color.FromArgb(0x70, 0xB0, 0x80, 0x50));
+    private static readonly Brush Dim = Frozen(Color.FromRgb(0xB8, 0xA8, 0x98));
+    private static readonly Brush HaveInk = Frozen(Color.FromRgb(0x9C, 0xD0, 0x8C));
+    private static readonly Brush NewerInk = Frozen(Color.FromRgb(0xF0, 0xC0, 0x60));
+    private static readonly Brush LikeInk = Frozen(Color.FromRgb(0xF0, 0x80, 0x80));
+
+    private readonly StackPanel _rows = new() { Margin = new Thickness(0, 2, 0, 2) };
+    private readonly ScrollViewer _rowScroll;
+    private readonly TextBlock _tipName = new()
     {
-        IsReadOnly = true, TextWrapping = TextWrapping.Wrap, BorderThickness = new Thickness(0), FontSize = 13,
-        VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(0, 8, 0, 0),
+        Foreground = GameUi.Text, FontWeight = FontWeights.Bold, FontSize = 15, Margin = new Thickness(0, 0, 0, 6), TextWrapping = TextWrapping.Wrap,
     };
-    private readonly TextBlock _status = new() { Margin = new Thickness(10, 0, 10, 8), Foreground = Brushes.DimGray, TextWrapping = TextWrapping.Wrap };
-    private readonly Button _get, _report, _remove;
+    private readonly TextBlock _detail = new() { Foreground = GameUi.Text, FontSize = 13, LineHeight = 20, TextWrapping = TextWrapping.Wrap };
+    private readonly Image _picture = new() { Width = 320, Height = 240, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left };
+    private readonly Border _pictureFrame;
+    private readonly TextBlock _status = new()
+    {
+        Foreground = Dim, FontSize = 12, Margin = new Thickness(14, 0, 14, 10), TextWrapping = TextWrapping.Wrap, MaxWidth = ListWidth + TipWidth + 20,
+    };
+    private readonly GameButton _get, _like, _report, _remove;
     private readonly Engine.Game? _game;
+    private readonly Func<DiscoveryAreaPicker.Map?>? _map;
     private List<DiscoveryShare.Shared> _shares = [];
+    private readonly List<(DiscoveryShare.Shared Share, Border Row)> _rowOf = [];
+    private int _picked = -1;
     private int _pictureAsk;
 
     /// <summary>하나라도 들였으면 그 UUID — 닫은 뒤 부른 창이 목록을 다시 읽는다.</summary>
     public string? Imported { get; private set; }
 
-    private SharedDiscoveryDialog(Engine.Game? game)
+    private SharedDiscoveryDialog(Engine.Game? game, Func<DiscoveryAreaPicker.Map?>? map)
     {
         _game = game;
+        _map = map;
         Title = "공유 발견물";
-        Width = 900;
-        Height = 640;
-        Background = Brushes.White;
+        WindowStyle = WindowStyle.None;
+        ResizeMode = ResizeMode.NoResize;
+        SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        ShowInTaskbar = false;
+        Background = GameUi.Back;
+        this.DarkScrollBars();
 
-        _get = Push("받아서 추가", GetSelected);
-        _report = Push("신고…", ReportSelected);
-        _remove = Push("내 공유 내리기", RemoveSelected);
-        var refresh = Push("새로 고침", () => _ = Load());
-        var close = Push("닫기", Close);
-        var bar = new WrapPanel { Margin = new Thickness(10, 0, 10, 4), Children = { _get, _report, _remove, refresh, close } };
+        var title = GameUi.TitleBar("공유 발견물", Close);
+        GameUi.EnableDrag(this, title);
 
-        var right = new DockPanel { Margin = new Thickness(6, 10, 10, 6) };
-        DockPanel.SetDock(_picture, Dock.Top);
-        right.Children.Add(_picture);
-        right.Children.Add(_detail);
+        _rowScroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _rows };
+        var list = new Border
+        {
+            Width = ListWidth, Height = BodyHeight, Margin = new Thickness(12, 10, 8, 4),
+            BorderBrush = GameUi.Edge, BorderThickness = new Thickness(1),
+            Background = new SolidColorBrush(Color.FromArgb(0x20, 0, 0, 0)),
+            Child = _rowScroll,
+        };
 
-        var body = new DockPanel();
-        DockPanel.SetDock(_list, Dock.Left);
-        body.Children.Add(_list);
-        body.Children.Add(right);
+        _pictureFrame = new Border
+        {
+            BorderBrush = GameUi.Edge, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 8),
+            HorizontalAlignment = HorizontalAlignment.Left, Child = _picture, Visibility = Visibility.Collapsed,
+        };
+        var tip = new StackPanel();
+        tip.Children.Add(_tipName);
+        tip.Children.Add(_pictureFrame);
+        tip.Children.Add(_detail);
+        var side = new Border
+        {
+            Width = TipWidth, Height = BodyHeight, Margin = new Thickness(0, 10, 12, 4), Padding = new Thickness(10, 8, 10, 8),
+            Background = new SolidColorBrush(Color.FromArgb(0x30, 0, 0, 0)),
+            BorderBrush = GameUi.Edge, BorderThickness = new Thickness(1),
+            Child = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = tip },
+        };
 
-        var page = new DockPanel();
-        DockPanel.SetDock(_status, Dock.Bottom);
-        DockPanel.SetDock(bar, Dock.Bottom);
-        page.Children.Add(_status);
-        page.Children.Add(bar);
-        page.Children.Add(body);
-        Content = page;
+        var body = new StackPanel { Orientation = Orientation.Horizontal };
+        body.Children.Add(list);
+        body.Children.Add(side);
 
-        _list.SelectionChanged += (_, _) => ShowSelected();
-        _list.MouseDoubleClick += (_, _) => GetSelected();
+        _get = new GameButton("받아서 추가", GetSelected, width: 130);
+        _like = new GameButton("좋아요", LikeSelected, width: 130);
+        _report = new GameButton("신고", ReportSelected, width: 130);
+        _remove = new GameButton("내 공유 내리기", RemoveSelected, width: 160);
+        // 단추가 많아 한 줄이면 창이 옆으로 늘어난다 — 두 줄로 나눠 가운데 맞춘다. 윗줄은 고른 공유 발견물, 아랫줄은 내 것 · 창.
+        var shareRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 2) };
+        shareRow.Children.Add(_get);
+        shareRow.Children.Add(_like);
+        shareRow.Children.Add(_report);
+        shareRow.Children.Add(_remove);
+        var ownRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 6) };
+        // 「발견물 추가」 — 짓는 창을 열자마자 새로 짓는다. 짓는 창에서 지은 것도 거기서 「클라우드에 올리기」로 이어진다.
+        ownRow.Children.Add(new GameButton("발견물 추가", AddOwn, width: 130));
+        ownRow.Children.Add(new GameButton("내 발견물", () => OpenEditor(add: false), width: 130));
+        ownRow.Children.Add(new GameButton("새로 고침", () => _ = Load(), width: 130));
+        ownRow.Children.Add(new GameButton("닫기", Close, width: 130));
+        var buttons = new StackPanel { Children = { shareRow, ownRow } };
+
+        var stack = new StackPanel();
+        stack.Children.Add(title);
+        stack.Children.Add(body);
+        stack.Children.Add(buttons);
+        stack.Children.Add(_status);
+        Content = new Border
+        {
+            Background = GameUi.Back, BorderBrush = GameUi.Edge, BorderThickness = new Thickness(2), Margin = new Thickness(4),
+            Child = stack,
+        };
+
+        // 위아래 · PageUp/Down · Home/End 로 고르고 Enter 로 받는다. Esc 는 닫는다.
+        PreviewKeyDown += (_, e) =>
+        {
+            int count = _rowOf.Count;
+            int to = e.Key switch
+            {
+                Key.Up => _picked - 1,
+                Key.Down => _picked + 1,
+                Key.PageUp => _picked - 8,
+                Key.PageDown => _picked + 8,
+                Key.Home => 0,
+                Key.End => count - 1,
+                _ => int.MinValue,
+            };
+            if (to != int.MinValue)
+            {
+                if (count > 0) Pick(Math.Clamp(to, 0, count - 1));
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && _picked >= 0) { GetSelected(); e.Handled = true; }
+            else if (e.Key == Key.Escape) { Close(); e.Handled = true; }
+        };
         Loaded += (_, _) => _ = Load();
-        ShowSelected();
+        Pick(-1);
     }
 
-    private static Button Push(string text, Action act)
+    private static Brush Frozen(Color c)
     {
-        var button = new Button { Content = text, Padding = new Thickness(10, 2, 10, 2), Margin = new Thickness(0, 4, 6, 4) };
-        button.Click += (_, _) => act();
-        return button;
+        var b = new SolidColorBrush(c);
+        b.Freeze();
+        return b;
     }
 
-    private DiscoveryShare.Shared? Selected => _list.SelectedItem is ListBoxItem { Tag: DiscoveryShare.Shared s } ? s : null;
+    private DiscoveryShare.Shared? Selected => _picked >= 0 && _picked < _rowOf.Count ? _rowOf[_picked].Share : null;
+
+    private static bool Have(DiscoveryShare.Shared s) => UserDiscoveries.All.Any(l => l.Entry.Uuid == s.Uuid);
 
     private async Task Load()
     {
         _status.Text = Lang.T("목록을 받는 중입니다…");
         var got = await DiscoveryShare.List();
-        if (got == null) { _status.Text = Lang.T("목록을 받지 못했습니다.") + " " + DiscoveryShare.ListFailure; return; }
+        if (got == null)
+        {
+            _status.Text = Lang.T("목록을 받지 못했습니다.") + " " + DiscoveryShare.ListFailure;
+            if (_rowOf.Count == 0) ShowEmpty(Lang.T("목록을 받지 못했습니다."));
+            return;
+        }
         string? keep = Selected?.Uuid;
         _shares = got;
-        _list.Items.Clear();
         foreach (var s in _shares)
-        {
-            bool have = UserDiscoveries.All.Any(l => l.Entry.Uuid == s.Uuid);
-            if (have) Adopt(s);
-            string author = s.Author.Length > 0 ? s.Author : Lang.T("이름 없음");
-            string mark = s.Mine ? "  ★" : !have ? "" : Newer(s) ? "  ↑" : "  ✓";
-            _list.Items.Add(new ListBoxItem
-            {
-                Tag = s,
-                Content = $"{s.Name}  —  {author}  v{s.Revision}{mark}",
-            });
-        }
-        _list.SelectedItem = _list.Items.OfType<ListBoxItem>().FirstOrDefault(i => ((DiscoveryShare.Shared)i.Tag).Uuid == keep)
-                             ?? _list.Items.OfType<ListBoxItem>().FirstOrDefault();
+            if (Have(s)) Adopt(s);
+        Fill(keep);
         _status.Text = _shares.Count == 0
             ? Lang.T("아직 올라온 발견물이 없습니다.")
-            : $"{_shares.Count}" + Lang.T("개 — ★ 는 내가 올린 것, ✓ 는 이미 가진 것, ↑ 는 가진 것보다 새 버전이 올라온 것입니다.");
+            : $"{_shares.Count}" + Lang.T("개 — ♥ 좋아요 · ⬇ 받은 수. 위아래 글쇠로 고르고 Enter 로 받습니다.");
+    }
+
+    /// <summary>목록 줄을 다시 짓고 그 UUID 를(없으면 첫 줄을) 고른다.</summary>
+    private void Fill(string? keep)
+    {
+        _rows.Children.Clear();
+        _rowOf.Clear();
+        _picked = -1;
+        foreach (var s in _shares)
+        {
+            var row = Row(s);
+            int index = _rowOf.Count;
+            row.MouseEnter += (_, _) => { if (_picked != index) row.Background = Hover; };
+            row.MouseLeave += (_, _) => { if (_picked != index) row.Background = Brushes.Transparent; };
+            row.MouseLeftButtonDown += (_, e) =>
+            {
+                e.Handled = true;
+                Pick(index);
+                if (e.ClickCount >= 2) GetSelected();
+            };
+            _rowOf.Add((s, row));
+            _rows.Children.Add(row);
+        }
+        if (_rowOf.Count == 0) { ShowEmpty(Lang.T("아직 올라온 발견물이 없습니다.")); return; }
+        int at = _rowOf.FindIndex(r => r.Share.Uuid == keep);
+        Pick(at >= 0 ? at : 0);
+    }
+
+    /// <summary>한 줄 — 이름 · 만든 이 · 판, 오른쪽에 ♥ 좋아요 · ⬇ 받은 수 · 추가했는지.</summary>
+    private static Border Row(DiscoveryShare.Shared s)
+    {
+        bool have = Have(s);
+        string author = s.Author.Length > 0 ? s.Author : Lang.T("이름 없음");
+        var (mark, ink) = s.Mine ? (Lang.T("내 것"), NewerInk)
+            : !have ? ("", Dim)
+            : Newer(s) ? (Lang.T("새 버전"), NewerInk)
+            : (Lang.T("추가됨"), HaveInk);
+
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var left = new StackPanel();
+        left.Children.Add(new TextBlock { Text = s.Name, Foreground = GameUi.Text, FontSize = 14, TextTrimming = TextTrimming.CharacterEllipsis });
+        left.Children.Add(new TextBlock { Text = $"{author}  v{s.Revision}", Foreground = Dim, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis });
+        grid.Children.Add(left);
+
+        var right = new StackPanel { HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(8, 0, 0, 0) };
+        var counts = new TextBlock { FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right };
+        counts.Inlines.Add(new System.Windows.Documents.Run((s.Liked ? "♥ " : "♡ ") + s.Likes) { Foreground = LikeInk });
+        counts.Inlines.Add(new System.Windows.Documents.Run($"   ⬇ {s.Downloads}") { Foreground = GameUi.Text });
+        right.Children.Add(counts);
+        if (mark.Length > 0)
+            right.Children.Add(new TextBlock { Text = mark, Foreground = ink, FontSize = 11, FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right });
+        Grid.SetColumn(right, 1);
+        grid.Children.Add(right);
+
+        return new Border { Padding = new Thickness(10, 4, 10, 4), Cursor = Cursors.Hand, Background = Brushes.Transparent, Child = grid };
+    }
+
+    private void ShowEmpty(string why)
+    {
+        _tipName.Text = Lang.T("공유 발견물");
+        _picture.Source = null;
+        _pictureFrame.Visibility = Visibility.Collapsed;
+        _detail.Text = why + "\n\n" + Lang.T("「발견물 추가」로 직접 발견물을 지을 수 있습니다. 지은 발견물은 짓는 창의 「클라우드에 올리기」로 다른 분들과 나눌 수 있습니다.");
+        Pick(-1);
     }
 
     /// <summary>
@@ -124,33 +270,36 @@ public sealed class SharedDiscoveryDialog : GameWindow
     private static bool Newer(DiscoveryShare.Shared s) =>
         !s.Mine && DiscoveryShare.StateOf(s.Uuid) is { Mine: false } state && s.Revision > state.Rev;
 
+    /// <summary>그 줄을 고르고(−1 이면 아무것도) 오른쪽 칸 · 단추를 맞춘다.</summary>
+    private void Pick(int index)
+    {
+        if (_picked >= 0 && _picked < _rowOf.Count) _rowOf[_picked].Row.Background = Brushes.Transparent;
+        _picked = index;
+        if (index >= 0 && index < _rowOf.Count)
+        {
+            var row = _rowOf[index].Row;
+            row.Background = Picked;
+            row.BringIntoView();
+        }
+        ShowSelected();
+    }
+
     private async void ShowSelected()
     {
         var s = Selected;
-        _get.IsEnabled = _report.IsEnabled = s != null;
-        _remove.IsEnabled = s is { Mine: true };
-        bool have = s != null && UserDiscoveries.All.Any(l => l.Entry.Uuid == s.Uuid);
-        _get.Content = s == null || !have ? Lang.T("받아서 추가") : Newer(s) ? Lang.T("새 버전 받기") : Lang.T("다시 받기");
-        _picture.Source = null;
-        if (s == null) { _detail.Text = ""; return; }
+        _get.On = _like.On = _report.On = s != null;
+        _remove.On = s is { Mine: true };
+        bool have = s != null && Have(s);
+        _get.Text = s == null || !have ? Lang.T("받아서 추가") : Newer(s) ? Lang.T("새 버전 받기") : Lang.T("다시 받기");
+        _like.Text = s is { Liked: true } ? Lang.T("좋아요 취소") : Lang.T("좋아요");
+        if (s == null) return;
 
-        string category = s.Category >= 0 && s.Category < DiscoveryTable.CategoryNames.Length ? Lang.T(DiscoveryTable.CategoryNames[s.Category]) : "";
-        var text = new System.Text.StringBuilder();
-        text.AppendLine($"『{s.Name}』  {category}");
-        text.AppendLine($"{Lang.T("만든 이")}: {(s.Author.Length > 0 ? s.Author : Lang.T("이름 없음"))}");
-        text.AppendLine($"{Lang.T("라이선스")}: {s.License}");
-        if (s.WantsOfficial) text.AppendLine(Lang.T("정식 버전에 넣어도 좋다고 한 발견물입니다."));
-        text.AppendLine($"{Lang.T("크기")}: {s.Size / 1024.0:0.#} KB{(s.HasMovie ? " · " + Lang.T("동영상 있음") : "")}");
-        text.AppendLine($"{Lang.T("받은 수")}: {s.Downloads} · {Lang.T("고친 날")}: {(s.UpdatedAt.Length >= 10 ? s.UpdatedAt[..10] : s.UpdatedAt)} (v{s.Revision})");
-        if (have)
-            text.AppendLine(s.Mine ? Lang.T("내가 올린 발견물입니다 — 받으면 내 PC 의 것을 덮어쓸지 묻습니다.")
-                : Newer(s) ? $"{Lang.T("가진 판")}: v{DiscoveryShare.StateOf(s.Uuid)?.Rev} → {Lang.T("새 판")}: v{s.Revision} — {Lang.T("「새 버전 받기」로 바꿉니다.")}"
-                : Lang.T("이미 가진 발견물입니다(최신)."));
-        if (!s.Mine) text.AppendLine(Lang.T("다른 분이 올린 발견물은 받아도 고칠 수 없습니다 — 「복제」해서 내 발견물로 고쳐 쓸 수 있습니다."));
-        text.AppendLine();
-        text.AppendLine(s.Description);
-        _detail.Text = text.ToString();
-        ShowHistory(s, text.ToString());
+        _tipName.Text = s.Name;
+        _picture.Source = null;
+        _pictureFrame.Visibility = s.HasPicture ? Visibility.Visible : Visibility.Collapsed;
+        string head = Head(s, have);
+        _detail.Text = head;
+        ShowHistory(s, head);
 
         if (!s.HasPicture) return;
         int ask = ++_pictureAsk;
@@ -169,6 +318,27 @@ public sealed class SharedDiscoveryDialog : GameWindow
         catch (Exception ex) when (ex is NotSupportedException or IOException or InvalidOperationException) { }
     }
 
+    /// <summary>오른쪽 칸의 글 — 갈래 · 만든 이 · 받은 수 · 좋아요 · 가졌는지 · 설명.</summary>
+    private static string Head(DiscoveryShare.Shared s, bool have)
+    {
+        string category = s.Category >= 0 && s.Category < DiscoveryTable.CategoryNames.Length ? Lang.T(DiscoveryTable.CategoryNames[s.Category]) : "";
+        var text = new System.Text.StringBuilder();
+        if (category.Length > 0) text.AppendLine(category);
+        text.AppendLine($"{Lang.T("만든 이")}: {(s.Author.Length > 0 ? s.Author : Lang.T("이름 없음"))}");
+        text.AppendLine($"{Lang.T("라이선스")}: {s.License}");
+        if (s.WantsOfficial) text.AppendLine(Lang.T("정식 버전에 넣어도 좋다고 한 발견물입니다."));
+        text.AppendLine($"{Lang.T("크기")}: {s.Size / 1024.0:0.#} KB{(s.HasMovie ? " · " + Lang.T("동영상 있음") : "")}");
+        text.AppendLine($"♥ {s.Likes} · ⬇ {s.Downloads} · {Lang.T("고친 날")}: {(s.UpdatedAt.Length >= 10 ? s.UpdatedAt[..10] : s.UpdatedAt)} (v{s.Revision})");
+        text.AppendLine(s.Mine && have ? Lang.T("내가 올린 발견물입니다 — 받으면 내 PC 의 것을 덮어쓸지 묻습니다.")
+            : !have ? Lang.T("아직 추가하지 않았습니다 — 「받아서 추가」(Enter)로 게임에 넣습니다.")
+            : Newer(s) ? $"{Lang.T("가진 판")}: v{DiscoveryShare.StateOf(s.Uuid)?.Rev} → {Lang.T("새 판")}: v{s.Revision} — {Lang.T("「새 버전 받기」로 바꿉니다.")}"
+            : Lang.T("이미 추가한 발견물입니다(최신)."));
+        if (!s.Mine) text.AppendLine(Lang.T("다른 분이 올린 발견물은 받아도 고칠 수 없습니다 — 「복제」해서 내 발견물로 고쳐 쓸 수 있습니다."));
+        text.AppendLine();
+        text.Append(s.Description);
+        return text.ToString();
+    }
+
     /// <summary>판 이력을 받아 설명 아래에 붙인다 — 예전 받는 곳이면 안 붙인다.</summary>
     private async void ShowHistory(DiscoveryShare.Shared s, string head)
     {
@@ -177,19 +347,20 @@ public sealed class SharedDiscoveryDialog : GameWindow
         if (ask != _pictureAsk || Selected?.Uuid != s.Uuid || revisions is not { Count: > 0 }) return;
         var text = new System.Text.StringBuilder(head);
         text.AppendLine();
+        text.AppendLine();
         text.AppendLine(Lang.T("판 이력"));
         foreach (var r in revisions)
             text.AppendLine($"  v{r.Rev}  {(r.CreatedAt.Length >= 10 ? r.CreatedAt[..10] : r.CreatedAt)}  {(r.Note.Length > 0 ? r.Note : "—")}");
-        _detail.Text = text.ToString();
+        _detail.Text = text.ToString().TrimEnd();
     }
 
     private async void GetSelected()
     {
         if (Selected is not { } s) return;
-        _get.IsEnabled = false;
+        _get.On = false;
         _status.Text = Lang.T("내려받는 중입니다…");
         string? path = await DiscoveryShare.Download(s.Uuid);
-        _get.IsEnabled = true;
+        _get.On = true;
         if (path == null) { _status.Text = Lang.T("내려받지 못했습니다."); return; }
         try
         {
@@ -213,6 +384,21 @@ public sealed class SharedDiscoveryDialog : GameWindow
         await Load();
     }
 
+    /// <summary>좋아요를 누르거나 거둔다 — 받는 곳이 답한 수로 그 줄만 고친다.</summary>
+    private async void LikeSelected()
+    {
+        if (Selected is not { } s) return;
+        bool on = !s.Liked;
+        _like.On = false;
+        int? likes = await DiscoveryShare.Like(s.Uuid, on);
+        _like.On = true;
+        if (likes == null) { _status.Text = Lang.T("좋아요를 보내지 못했습니다."); return; }
+        int at = _shares.FindIndex(x => x.Uuid == s.Uuid);
+        if (at >= 0) _shares[at] = s with { Likes = likes.Value, Liked = on };
+        Fill(s.Uuid);
+        _status.Text = on ? Lang.T("좋아요를 눌렀습니다.") : Lang.T("좋아요를 거뒀습니다.");
+    }
+
     private async void ReportSelected()
     {
         if (Selected is not { } s) return;
@@ -233,10 +419,22 @@ public sealed class SharedDiscoveryDialog : GameWindow
         await Load();
     }
 
-    /// <summary>창을 띄운다. 들인 발견물의 UUID(없으면 null).</summary>
-    public static string? Open(Window owner, Engine.Game? game)
+    /// <summary>「발견물 추가」 — 짓는 창을 열자마자 새로 짓는다.</summary>
+    private void AddOwn() => OpenEditor(add: true);
+
+    /// <summary>짓는 창을 연다. 닫으면 목록의 「추가됨」 · 「내 것」을 다시 맞춘다.</summary>
+    private void OpenEditor(bool add)
     {
-        var window = new SharedDiscoveryDialog(game) { Owner = owner };
+        string? keep = Selected?.Uuid;
+        UserDiscoveryDialog.Show(this, _map, _game, add: add);
+        Fill(keep);
+    }
+
+    /// <summary>창을 띄운다. 들인 발견물의 UUID(없으면 null).</summary>
+    /// <param name="map">「발견물 추가」로 연 짓는 창이 자리를 고를 세계 지도.</param>
+    public static string? Open(Window owner, Engine.Game? game, Func<DiscoveryAreaPicker.Map?>? map = null)
+    {
+        var window = new SharedDiscoveryDialog(game, map) { Owner = owner };
         window.ShowDialog();
         return window.Imported;
     }

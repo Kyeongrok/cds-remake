@@ -164,7 +164,16 @@ CREATE TABLE IF NOT EXISTS shared_discoveries (
   downloads   INTEGER NOT NULL DEFAULT 0,
   reports     INTEGER NOT NULL DEFAULT 0,
   hidden      INTEGER NOT NULL DEFAULT 0,  -- 관리자가 숨겼거나 신고가 쌓여 숨은 것
-  wants_official INTEGER NOT NULL DEFAULT 0  -- 올린 분이 정식 버전에 넣어도 좋다고 했는지(올리기 창 체크박스)
+  wants_official INTEGER NOT NULL DEFAULT 0,  -- 올린 분이 정식 버전에 넣어도 좋다고 했는지(올리기 창 체크박스)
+  likes       INTEGER NOT NULL DEFAULT 0      -- 좋아요 수(share_likes 줄 수)
+);
+
+-- 좋아요 — 설치마다 한 번. 누른 줄을 지우면 취소다.
+CREATE TABLE IF NOT EXISTS share_likes (
+  uuid       TEXT NOT NULL,
+  install    TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (uuid, install)
 );
 CREATE INDEX IF NOT EXISTS shared_discoveries_updated ON shared_discoveries (updated_at);
 

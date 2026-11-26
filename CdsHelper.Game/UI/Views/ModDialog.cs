@@ -841,6 +841,8 @@ public sealed class ModDialog : GameWindow
         // 닫기는 게임 띠 단추다 — 설정·단축키 창과 같이 원본 단추 결로 맞춘다.
         buttons.Children.Add(new GameButton("닫기", Close, width: 110));
 
+        // 설명 칸 · 찾기 판의 스크롤바도 창 색에 맞춘다(요청).
+        this.DarkScrollBars();
         var title = GameUi.TitleBar("모드", Close);
         GameUi.EnableDrag(this, title);
 
