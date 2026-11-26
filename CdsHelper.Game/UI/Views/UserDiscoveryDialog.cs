@@ -266,7 +266,7 @@ public sealed class UserDiscoveryDialog : GameWindow
             Refresh(_startPick);
             RefreshItems(null);
             Tell(Local.Settings.GameSettings.ExtraDiscoveries ? "" : "모드 「추가 발견물」이 꺼져 있어 지은 발견물이 게임에 안 나옵니다.");
-            // 목록 창의 「발견물 추가」로 열었으면 곧바로 새로 짓는다 — 창이 뜬 뒤에 지도 고르기가 떠야 한다.
+            // 공유 발견물 창의 「발견물 추가」로 열었으면 곧바로 새로 짓는다 — 목록이 다 찬 뒤에 짓는다.
             if (_startAdd) Dispatcher.BeginInvoke(Add);
         };
     }
@@ -667,10 +667,9 @@ public sealed class UserDiscoveryDialog : GameWindow
         var made = UserDiscoveries.Blank(LastAuthor());
         if (UserDiscoveries.Save(made) is { } why) { Tell($"짓지 못했습니다 — {why}"); return; }
         Refresh(made.Uuid);
-        // 자리부터 고른다 — 자리 없는 발견물은 어디서도 안 잡힌다.
-        Tell(PickArea()
-            ? "새 발견물을 지었습니다 — 나머지 칸을 채우고 「저장」을 눌러 주세요."
-            : "새 발견물을 지었습니다 — 「지도에서 고르기…」로 자리를 잡고 칸을 채운 뒤 「저장」을 눌러 주세요.");
+        // 지도는 저절로 띄우지 않는다 — 만들자마자 지도부터 나와 어리둥절했다(요청). 자리는 「지도에서 고르기…」로 잡는다.
+        _name.Focus();
+        Tell("새 발견물을 지었습니다 — 「지도에서 고르기…」로 자리를 잡고 칸을 채운 뒤 「저장」을 눌러 주세요.");
     }
 
     private void Save()
