@@ -110,9 +110,8 @@ public sealed class SharedDiscoveryDialog : GameWindow
         shareRow.Children.Add(_report);
         shareRow.Children.Add(_remove);
         var ownRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 6) };
-        // 「발견물 추가」 — 짓는 창을 열자마자 새로 짓는다. 짓는 창에서 지은 것도 거기서 「클라우드에 올리기」로 이어진다.
-        ownRow.Children.Add(new GameButton("발견물 추가", AddOwn, width: 130));
-        ownRow.Children.Add(new GameButton("내 발견물", () => OpenEditor(add: false), width: 130));
+        // 「발견물 추가」 — 짓는 창을 연다. 새 줄은 그 창의 「새 발견물」로 짓고, 「클라우드에 올리기」로 이 목록에 올린다.
+        ownRow.Children.Add(new GameButton("발견물 추가", OpenEditor, width: 130));
         ownRow.Children.Add(new GameButton("새로 고침", () => _ = Load(), width: 130));
         ownRow.Children.Add(new GameButton("닫기", Close, width: 130));
         var buttons = new StackPanel { Children = { shareRow, ownRow } };
@@ -419,14 +418,14 @@ public sealed class SharedDiscoveryDialog : GameWindow
         await Load();
     }
 
-    /// <summary>「발견물 추가」 — 짓는 창을 열자마자 새로 짓는다.</summary>
-    private void AddOwn() => OpenEditor(add: true);
-
-    /// <summary>짓는 창을 연다. 닫으면 목록의 「추가됨」 · 「내 것」을 다시 맞춘다.</summary>
-    private void OpenEditor(bool add)
+    /// <summary>
+    /// 「발견물 추가」 — 짓는 창을 연다. 줄은 짓는 창의 「새 발견물」을 눌러야 생긴다(요청 — 열자마자 빈 줄이 생겼다).
+    /// 닫으면 목록의 「추가됨」 · 「내 것」을 다시 맞춘다.
+    /// </summary>
+    private void OpenEditor()
     {
         string? keep = Selected?.Uuid;
-        UserDiscoveryDialog.Show(this, _map, _game, add: add);
+        UserDiscoveryDialog.Show(this, _map, _game);
         Fill(keep);
     }
 

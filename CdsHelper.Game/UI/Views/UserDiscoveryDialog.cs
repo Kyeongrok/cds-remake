@@ -96,9 +96,8 @@ public sealed class UserDiscoveryDialog : GameWindow
     private readonly List<Button> _editors = [];
     private readonly Button _save, _remove, _export, _upload, _unlock, _unlockDrop;
 
-    /// <summary>열 때 고를 발견물 · 곧바로 새로 지을지 — <see cref="Show"/> 가 넣는다.</summary>
+    /// <summary>열 때 고를 발견물 — <see cref="Show"/> 가 넣는다.</summary>
     private string? _startPick;
-    private bool _startAdd;
 
     private UserDiscoveries.Entry? _editing;
     private (uint[] Bgra, int Width, int Height)? _newPicture;
@@ -266,8 +265,6 @@ public sealed class UserDiscoveryDialog : GameWindow
             Refresh(_startPick);
             RefreshItems(null);
             Tell(Local.Settings.GameSettings.ExtraDiscoveries ? "" : "모드 「추가 발견물」이 꺼져 있어 지은 발견물이 게임에 안 나옵니다.");
-            // 공유 발견물 창의 「발견물 추가」로 열었으면 곧바로 새로 짓는다 — 목록이 다 찬 뒤에 짓는다.
-            if (_startAdd) Dispatcher.BeginInvoke(Add);
         };
     }
 
@@ -1371,11 +1368,10 @@ public sealed class UserDiscoveryDialog : GameWindow
     /// <summary>창을 띄운다.</summary>
     /// <param name="tab">처음 보일 탭 이름(「아이템」 따위). null 이면 「발견물」.</param>
     /// <param name="pick">처음 고를 발견물의 UUID. null 이면 지어 둔 첫 것.</param>
-    /// <param name="add">열자마자 새 발견물을 짓는다(목록 창의 「발견물 추가」).</param>
     public static void Show(Window? owner, Func<DiscoveryAreaPicker.Map?>? map, Engine.Game? game = null, string? tab = null,
-                            string? pick = null, bool add = false)
+                            string? pick = null)
     {
-        var window = new UserDiscoveryDialog(map, game) { _startPick = pick, _startAdd = add };
+        var window = new UserDiscoveryDialog(map, game) { _startPick = pick };
         if (owner != null) window.Owner = owner;
         if (tab != null)
             window._tabs.SelectedItem = window._tabs.Items.OfType<TabItem>().FirstOrDefault(t => (string)t.Header == tab) ?? window._tabs.Items[0];
