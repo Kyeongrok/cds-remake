@@ -249,18 +249,50 @@ public static class DiscoveryShare
         }
     }
 
-    /// <summary>미리보기 그림(PNG 바이트). 없으면 null.</summary>
-    public static async Task<byte[]?> Picture(string uuid)
+    /// <summary>받아 둔 미리보기 그림 — 「UUID 판」 열쇠. 창을 닫았다 열어도 앱을 켜 둔 동안 남는다.</summary>
+    private static readonly Dictionary<string, byte[]> PictureMemory = [];
+
+    /// <summary>미리보기 그림을 디스크에 남겨 두는 자리 — 앱을 다시 켜도 다시 안 받는다.</summary>
+    private static string PictureCacheFolder => CdsHelper.Support.Local.Helpers.UserDataFolder.Combine("share-pictures");
+
+    /// <summary>
+    /// 미리보기 그림(PNG 바이트). 없으면 null. 한 번 받은 것은 메모리와 디스크(<see cref="PictureCacheFolder"/>)에 남겨
+    /// 다시 고를 때 서버에 안 묻는다(요청 — 고를 때마다 새로 받았다). 판(<paramref name="rev"/>)이 바뀌면 새로 받는다.
+    /// </summary>
+    public static async Task<byte[]?> Picture(string uuid, int rev = 0)
     {
+        string key = $"{uuid}-{rev}";
+        if (PictureMemory.TryGetValue(key, out var kept)) return kept;
+        string file = Path.Combine(PictureCacheFolder, key + ".png");
+        try
+        {
+            if (File.Exists(file)) return PictureMemory[key] = await File.ReadAllBytesAsync(file);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+
         string url = BugReport.Url;
         if (url.Length == 0) return null;
+        byte[] bytes;
         try
         {
             using var http = Client(15);
             using var reply = await http.GetAsync($"{url}/v1/shares/{uuid}/picture");
-            return reply.IsSuccessStatusCode ? await reply.Content.ReadAsByteArrayAsync() : null;
+            if (!reply.IsSuccessStatusCode) return null;
+            bytes = await reply.Content.ReadAsByteArrayAsync();
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { return null; }
+
+        PictureMemory[key] = bytes;
+        try
+        {
+            Directory.CreateDirectory(PictureCacheFolder);
+            // 같은 발견물의 예전 판 그림은 지운다 — 쌓이지 않게.
+            foreach (string old in Directory.GetFiles(PictureCacheFolder, uuid + "-*.png"))
+                if (!string.Equals(old, file, StringComparison.OrdinalIgnoreCase)) File.Delete(old);
+            await File.WriteAllBytesAsync(file, bytes);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        return bytes;
     }
 
     /// <summary>파일을 내려받아 임시 파일로 둔다 — 그 자리, 못 받으면 null. 다 쓰면 부른 쪽이 지운다.</summary>

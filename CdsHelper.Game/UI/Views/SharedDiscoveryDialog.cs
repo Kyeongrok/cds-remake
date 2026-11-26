@@ -360,7 +360,7 @@ public sealed class SharedDiscoveryDialog : GameWindow
 
         if (!s.HasPicture) return;
         int ask = ++_pictureAsk;
-        var bytes = await DiscoveryShare.Picture(s.Uuid);
+        var bytes = await DiscoveryShare.Picture(s.Uuid, s.Revision);
         if (ask != _pictureAsk || bytes == null) return;
         try
         {
