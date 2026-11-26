@@ -194,6 +194,9 @@ public sealed class GameSettingsData
     /// <summary>도시 그림을 업스케일 모델로 키운 그림으로 그릴지(뒤에서 만들어 쌓아 둔다). 원본에 없어 꺼 두고 시작한다.</summary>
     public bool CityPicUpscale { get; set; }
 
+    /// <summary>인물 초상화를 미리 4배로 키운 그림으로 걸지(켜면 뒤에서 받는다). 원본에 없어 꺼 두고 시작한다.</summary>
+    public bool PortraitUpscale { get; set; }
+
     /// <summary>뭍 세부 질감(지형마다 화면 해상도 잔무늬). 꺼 두고 시작한다.</summary>
     public bool LandDetail { get; set; }
 
@@ -2332,6 +2335,13 @@ public static class GameSettings
     {
         get => Get(d => d.CityPicUpscale);
         set => Set(d => d.CityPicUpscale = value);
+    }
+
+    /// <summary>초상화 업스케일링 — 모드 창 「고해상도」에서 켜고 끈다.</summary>
+    public static bool PortraitUpscale
+    {
+        get => Get(d => d.PortraitUpscale);
+        set => Set(d => d.PortraitUpscale = value);
     }
 
     /// <summary>「도시 그림 크게」에서 고를 수 있는 배율.</summary>

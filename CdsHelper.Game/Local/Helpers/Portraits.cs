@@ -127,7 +127,9 @@ public sealed class Portraits
         }
 
         // 줄이지 않고 넣은 그림이 있으면 이 배열에 짝지어 둔다 — Bitmap 이 그것을 건다.
+        // 없으면 모드 「초상화 업스케일링」이 받아 둔 네 배 그림을 짝짓는다(PortraitUpscale).
         if (Hd(face, female) is { } hd) HdOf.AddOrUpdate(bgra, hd);
+        else if (PortraitUpscale.TryLoad(bgra) is { } up) HdOf.AddOrUpdate(bgra, up);
         return bgra;
     }
 

@@ -581,6 +581,7 @@ public sealed class ModDialog : GameWindow
             i => GameSettings.CityPicZoom = GameSettings.CityPicZoomChoices[i],
             "모드 「도시 그림 크게」에서 도시 그림을 보통 크기의 몇 배로 띄울지 고릅니다."));
         hires.Children.Add(CityUpscaleControls());
+        hires.Children.Add(PortraitUpscaleControls());
         hires.Children.Add(Toggle("선박 업스케일링", GameSettings.ShipUpscale,
             on =>
             {
@@ -1705,6 +1706,58 @@ public sealed class ModDialog : GameWindow
         var group = new StackPanel();
         group.Children.Add(box);
         group.Children.Add(line);
+        return group;
+    }
+
+    /// <summary>
+    /// 초상화 업스케일링 켜기와 그 밑의 받기 진행 줄 — 도시 그림 업스케일링처럼 미리 키운 그림을 받는다(<see cref="Local.Helpers.PortraitUpscale"/>).
+    /// </summary>
+    private UIElement PortraitUpscaleControls()
+    {
+        var box = Toggle("초상화 업스케일링", GameSettings.PortraitUpscale,
+            on =>
+            {
+                GameSettings.PortraitUpscale = on;
+                if (on) Local.Helpers.PortraitUpscale.Start(retry: true);
+            },
+            "원본에 없는 것입니다 — 인물 초상화를 원본 80x96 도트 대신, 업스케일 모델(Rebout Blend 4x)로 네 배 키운 그림으로 겁니다."
+            + " 켜면 미리 키워 둔 그림을 뒤에서 받습니다(모두 90MB 쯤). 넣거나 바꾼 얼굴은 도트 그대로입니다."
+            + " 이미 떠 있는 얼굴은 창을 다시 열면 바뀝니다.");
+
+        var text = new TextBlock
+        {
+            Foreground = GameUi.Text, Opacity = 0.8, FontSize = 13, Margin = new Thickness(22, 0, 0, 4),
+            TextWrapping = TextWrapping.Wrap,
+        };
+
+        void Refresh()
+        {
+            bool on = box.IsChecked == true;
+            text.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            if (!on) return;
+            var p = Local.Helpers.PortraitUpscale.Progress;
+            text.Text = p switch
+            {
+                { Total: > 0 } when p.Got >= p.Total => Local.Helpers.Lang.T($"{p.Total}장 모두 준비됐습니다."),
+                { Running: true, Total: > 0 } => Local.Helpers.Lang.T($"{p.Got}/{p.Total}장 — 받는 중"),
+                { Running: true } => Local.Helpers.Lang.T("목록을 받는 중입니다…"),
+                { Failed: true } => Local.Helpers.Lang.T("그림을 받지 못했습니다. 다시 켜면 이어서 받습니다."),
+                _ => Local.Helpers.Lang.T($"{p.Got}/{p.Total}장 · 멈춤"),
+            };
+        }
+
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        timer.Tick += (_, _) => Refresh();
+        box.Checked += (_, _) => Refresh();
+        box.Unchecked += (_, _) => Refresh();
+        text.Loaded += (_, _) => { Refresh(); timer.Start(); };
+        Closed += (_, _) => timer.Stop();
+        if (GameSettings.PortraitUpscale) Local.Helpers.PortraitUpscale.Start();
+        Refresh();
+
+        var group = new StackPanel();
+        group.Children.Add(box);
+        group.Children.Add(text);
         return group;
     }
 
