@@ -1930,6 +1930,8 @@ public sealed class DisevRunner
         else body = Local.Helpers.StandardText.Apply(body);
         // <도시> — 지금 있는 도시 이름(원본에 없는 자리표, 마을대사 책이 쓴다).
         if (body.Contains("<도시>")) body = body.Replace("<도시>", _game.Player.CityName);
+        // <나라> — 제독 국적 이름(원본에 없는 자리표, 황금제국 성문에서 제 나라를 댈 때 쓴다).
+        if (body.Contains("<나라>")) body = body.Replace("<나라>", Local.Helpers.Lang.T(_game.Player.NationName));
         // 대사 사건이 넘긴 자리표(<금액> · <개월> 따위)를 그때 값으로.
         if (_event.Vars is { } vars)
             foreach (var (name, value) in vars) body = body.Replace($"<{name}>", value);
