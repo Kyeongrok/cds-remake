@@ -96,6 +96,9 @@ public sealed partial class DevDialog : GameWindow
         /// <summary>초상화 — 「여급」 탭이 줄 왼쪽에 얼굴을 낸다. 없으면 얼굴 없이 늘어놓는다.</summary>
         public Portraits? Faces { get; init; }
 
+        /// <summary>초상화 벌을 다시 읽어 낸다 — 「여급」 탭에서 그림을 새로 넣은 뒤 부른다.</summary>
+        public Func<Portraits?>? ReloadFaces { get; init; }
+
         /// <summary>아이템 표 — 「특수템추가」 탭이 이름을 읽는다. 못 읽었으면 원본 이름을 그대로 쓴다.</summary>
         public ItemTable? Items { get; init; }
 
@@ -429,7 +432,7 @@ public sealed partial class DevDialog : GameWindow
         if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
             pages.Add(("역사이벤트", HistoryPage(events)));
         if (options.Barmaids is { } maids)
-            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"), options.Faces)));
+            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"), options.Faces, options.ReloadFaces)));
         pages.Add(("선박", ShipsPage()));
         pages.Add(("대항2", dh2));
         pages.Add(("애드온", addOns));
@@ -1118,14 +1121,15 @@ public sealed partial class DevDialog : GameWindow
     }
 
     /// <summary>
-    /// 「여급」 탭 — 여급 127명을 표 차례로 늘어놓는다. 보기만 한다.
+    /// 「여급」 탭 — 여급 127명을 표 차례로 늘어놓는다. 얼굴만 바꿀 수 있다(요청).
     /// </summary>
     /// <remarks>
     /// 서는 해는 1480 년 나이(표 <c>+0x08</c>)로 15~40살인 해다(<c>0x004797B0</c>, <see cref="BarmaidTable.Barmaid.Works"/>).
     /// 취향은 성격(<c>+0x18</c>)이다 — 「이야기한다」에서 그녀가 말하는 이상형이고, 제독의 성미 칸이 맞으면 말이 통한다
     /// (<see cref="Engine.Town.Barmaids.Suits"/>). 언어(<c>+0x20</c> 비트)는 그녀가 하는 말이다 — 제독 혼자 그 말이 3 이상이어야 설득 · 선물 · 프로포즈 줄이 서고(<c>0x00466850</c>), 아내가 되면 자식에게 가르친다.
     /// </remarks>
-    private FrameworkElement BarmaidPage(BarmaidTable table, Func<int, string> cityName, Portraits? faces)
+    private FrameworkElement BarmaidPage(BarmaidTable table, Func<int, string> cityName, Portraits? faces,
+                                         Func<Portraits?>? reloadFaces)
     {
         var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
         var find = Field();
@@ -1172,21 +1176,25 @@ public sealed partial class DevDialog : GameWindow
                     Text = "    " + taste, Foreground = GameUi.Text, FontSize = 12,
                     Opacity = dim ? 0.45 : 0.7, TextWrapping = TextWrapping.Wrap,
                 });
-            // 줄 왼쪽에 얼굴 — 수첩에서 바꾼 얼굴이면 그것이다(표가 BarmaidEdits 를 얹어 낸다).
+            // 줄 왼쪽에 얼굴 — 고친 얼굴이면 그것이다(표가 BarmaidEdits 를 얹어 낸다).
             var row = new DockPanel { Margin = new Thickness(0, 3, 0, 3) };
-            if (faces?.TryGetBgra(her.Face, female: true) is { } px)
+            var image = new Image
             {
+                Width = Portraits.Width, Height = Portraits.Height,
+                Margin = new Thickness(0, 0, 8, 0), Opacity = dim ? 0.6 : 1, VerticalAlignment = VerticalAlignment.Top,
+            };
+            void ShowFace(int face)
+            {
+                if (faces?.TryGetBgra(face, female: true) is not { } px) { image.Source = null; return; }
                 var bmp = Portraits.Bitmap(px);
                 bmp.Freeze();
-                var image = new Image
-                {
-                    Source = bmp, Width = Portraits.Width, Height = Portraits.Height,
-                    Margin = new Thickness(0, 0, 8, 0), Opacity = dim ? 0.6 : 1, VerticalAlignment = VerticalAlignment.Top,
-                };
+                image.Source = bmp;
                 RenderOptions.SetBitmapScalingMode(image, Portraits.Scaling(image.Source));
-                DockPanel.SetDock(image, Dock.Left);
-                row.Children.Add(image);
             }
+            ShowFace(her.Face);
+            DockPanel.SetDock(image, Dock.Left);
+            row.Children.Add(image);
+            line.Children.Add(FaceEditor(her.Id, her.Face, ShowFace));
             row.Children.Add(line);
             lines.Add((row, $"{head} {body} {taste}"));
             list.Children.Add(row);
@@ -1236,6 +1244,54 @@ public sealed partial class DevDialog : GameWindow
         });
         Filter();
         return page;
+
+        // 얼굴 바꾸기(요청 — 여급 그림이 마음에 안 들 때) — 여자 초상화 번호를 넣어 고르거나, 그림을 새로 넣어 씌운다.
+        // 원래 얼굴은 씌운 것만 걷는다. 술집 · 수첩 · 대화 모두 표(BarmaidTable.Barmaids)를 거쳐 바뀐 얼굴을 쓴다.
+        FrameworkElement FaceEditor(int id, int face, Action<int> showFace)
+        {
+            var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 4, 0, 0) };
+            var number = Field();
+            number.Width = 70;
+            number.Text = $"{face}";
+            FrameworkElement? back = null;
+            void Put(int value)
+            {
+                BarmaidEdits.SetFace(id, value);
+                int now = table.Barmaids.FirstOrDefault(b => b.Id == id).Face;
+                number.Text = $"{now}";
+                showFace(now);
+                if (back != null) back.Visibility = BarmaidEdits.FaceOf(id) >= 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            bar.Children.Add(new TextBlock
+            {
+                Text = "얼굴 번호", Foreground = GameUi.Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center,
+            });
+            bar.Children.Add(number);
+            bar.Children.Add(GameUi.PushButton("바꾸기", () =>
+            {
+                if (!int.TryParse(number.Text.Trim(), out int want) || want < 0) return;
+                if (faces?.TryGetBgra(want, female: true) is null)
+                {
+                    ConfirmDialog.Tell(this, $"여자 초상화 {want}번이 없습니다");
+                    return;
+                }
+                Put(want);
+            }, 70));
+            var add = GameUi.PushButton("그림 넣기", () =>
+            {
+                int put = PortraitAddDialog.Show(this, female: true);
+                if (put < 0) return;
+                if (reloadFaces?.Invoke() is { } fresh) faces = fresh;   // 들고 있던 초상화 벌에는 새 얼굴이 없다
+                Put(put);
+            }, 80);
+            add.Margin = new Thickness(6, 0, 0, 0);
+            bar.Children.Add(add);
+            back = GameUi.PushButton("원래 얼굴", () => Put(-1), 80);
+            back.Margin = new Thickness(6, 0, 0, 0);
+            back.Visibility = BarmaidEdits.FaceOf(id) >= 0 ? Visibility.Visible : Visibility.Collapsed;
+            bar.Children.Add(back);
+            return bar;
+        }
     }
 
     /// <summary>
