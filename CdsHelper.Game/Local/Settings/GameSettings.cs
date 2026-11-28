@@ -179,6 +179,9 @@ public sealed class GameSettingsData
     /// <summary>도트 확대 필터(대각선 계단을 사선으로). 꺼 두고 시작한다.</summary>
     public bool PixelFilter { get; set; }
 
+    /// <summary>세계지도를 대항해시대4 지도 그림으로(모드 창). 꺼 두고 시작한다.</summary>
+    public bool Dk4MapArt { get; set; }
+
     /// <summary>배 항적(항적·그림자·출렁임). 꺼 두고 시작한다.</summary>
     public bool ShipWake { get; set; }
 
@@ -2377,6 +2380,13 @@ public static class GameSettings
     {
         get => Get(d => d.ShipUpscale);
         set => Set(d => d.ShipUpscale = value);
+    }
+
+    /// <summary>대항해시대4 지도 그림 — 모드 창에서 켜고 끈다.</summary>
+    public static bool Dk4MapArt
+    {
+        get => Get(d => d.Dk4MapArt);
+        set => Set(d => d.Dk4MapArt = value);
     }
 
     /// <summary>고해상도 바다 — 모드 창 「실험」에서 켜고 끈다.</summary>

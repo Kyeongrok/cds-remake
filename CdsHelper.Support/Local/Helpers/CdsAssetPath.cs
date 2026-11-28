@@ -27,6 +27,15 @@ public static class CdsAssetPath
             : string.Equals(Path.GetExtension(cdsName), ".P", StringComparison.OrdinalIgnoreCase)
                 ? Path.GetFileNameWithoutExtension(cdsName).ToUpperInvariant() + ".PX"
                 : Path.GetFileNameWithoutExtension(cdsName).ToUpperInvariant() + ".CDSX";
+        return Fetch(assetName) ?? original;
+    }
+
+    /// <summary>
+    /// 릴리즈 <c>map-assets</c> 의 그 자산 — 실행 폴더에 받아 둔 것이 있으면 그것을, 없으면 받아서 남긴다. 못 받으면 null.
+    /// </summary>
+    /// <remarks>게임 폴더에 없는 자료(대항해시대4 지도 그림 <c>DK4WORLD.DAT</c> · <c>DK4CHIP.G1T</c> 따위)도 이것으로 받는다.</remarks>
+    public static string? Fetch(string assetName)
+    {
         string local = Path.Combine(DownloadDirectory, assetName);
         if (File.Exists(local)) return local;
 
@@ -34,7 +43,7 @@ public static class CdsAssetPath
         if (OffscreenTest.Isolated)
         {
             string real = Path.Combine(UserDataFolder.RealRoaming, "asset", "cds", assetName);
-            return File.Exists(real) ? real : original;
+            return File.Exists(real) ? real : null;
         }
 
         string temp = local + ".part";
@@ -46,10 +55,11 @@ public static class CdsAssetPath
             File.Move(temp, local, overwrite: true);
             return local;
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException
+                                       or UnauthorizedAccessException)
         {
             try { if (File.Exists(temp)) File.Delete(temp); } catch { }
-            return original;
+            return null;
         }
     }
 

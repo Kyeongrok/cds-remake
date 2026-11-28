@@ -48,6 +48,10 @@ public sealed class ModDialog : GameWindow
         public Action<double> SetSeaFlowAmount { get; init; } = _ => { };
 
         /// <summary>뭍 세부 질감.</summary>
+        /// <summary>대항해시대4 지도 그림 — 켜면 지금 연 지도에 곧바로 들인다.</summary>
+        public Func<bool> Dk4MapArtOn { get; init; } = () => false;
+        public Action<bool> SetDk4MapArt { get; init; } = _ => { };
+
         public Func<bool> LandDetailOn { get; init; } = () => false;
         public Action<bool> SetLandDetail { get; init; } = _ => { };
 
@@ -560,6 +564,9 @@ public sealed class ModDialog : GameWindow
             + " 켜면 배를 늘 화면 한가운데에 두고 지도가 배를 따라 실시간으로 흐릅니다. 뭍에서 말로 다닐 때도 같습니다."));
         hires.Children.Add(SeaControls(options));
         hires.Children.Add(HiResSeaControls(options));
+        // 대항해시대4 지도 그림 — 두 게임 지도가 같은 2500x1250 격자라 그림만 갈아 끼운다.
+        hires.Children.Add(Toggle("대항해시대4 지도 그림", options.Dk4MapArtOn(), options.SetDk4MapArt,
+            "세계지도를 대항해시대4 지도 그림으로 그립니다. 처음 켤 때 지도 파일을 내려받습니다. 지나갈 수 있는 곳은 그대로입니다"));
         hires.Children.Add(Toggle("뭍 세부 질감", options.LandDetailOn(), options.SetLandDetail,
             "지도를 키웠을 때 원본 도트는 그대로 두고, 지형마다 화면 해상도의 잔무늬를 얇게 얹습니다 —"
             + " 사막은 모래 결, 산은 바위 결, 숲은 잎 덩이, 평지는 풀 결. 도시·발견물 그림과 물은 건드리지 않습니다."

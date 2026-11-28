@@ -40,7 +40,6 @@ public sealed partial class DevDialog : GameWindow
         /// <summary>좌표 겹쳐 보기.</summary>
         public Func<bool> CoordsOn { get; init; } = () => false;
         public Action<bool> SetCoords { get; init; } = _ => { };
-
         /// <summary>도구 앱(Editor.exe) 띄우기 — 창을 닫은 뒤 부른다.</summary>
         public Action? HelperApp { get; init; }
 
@@ -138,7 +137,6 @@ public sealed partial class DevDialog : GameWindow
         // 게임에는 없는 것이라 이 창으로 옮겨 두었다.
         rows.Children.Add(Toggle("좌표 겹쳐 보기", options.CoordsOn(), options.SetCoords,
             "배가 선 자리를 WORLD.CDS 의 칸·파일 오프셋까지 지도 위에 띄웁니다"));
-
         // 일기토 불사 — 베타 테스트용. 내 체력이 안 떨어지고, 판은 오른쪽 단추 「승리 · 항복」으로 끝낸다.
         tests.Children.Add(Toggle("일기토 불사", GameSettings.DuelImmortal, on =>
             {

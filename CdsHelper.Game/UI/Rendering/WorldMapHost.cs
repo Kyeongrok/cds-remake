@@ -496,6 +496,39 @@ public sealed class WorldMapHost : HwndHost
         _renderer.SetCityHiRes(atlas, Math.Max(1, atlasW), atlasH, info, spriteCount);
     }
 
+    /// <summary>
+    /// 대항해시대4 지도 그림으로 그릴지(모드 창). 처음 켤 때 릴리즈 자산을 받아(<see cref="Dk4MapArt"/>) 그림 판과 칸 표를 건다 —
+    /// 못 받으면 꺼진 채로 두고 까닭을 <see cref="Status"/> 에 남긴다. 통행 · 항해 규칙은 WORLD.CDS 그대로다.
+    /// </summary>
+    public bool Dk4Art
+    {
+        get => _renderer.Dk4Art;
+        set
+        {
+            if (!_ready) return;   // 지도를 아직 안 열었다 — 열 때 설정을 보고 켠다(WorldMapWindow)
+            if (value && !_renderer.Dk4ArtReady)
+            {
+                if (Dk4MapArt.Open() is not { } art || _world == null)
+                {
+                    Status = $"대항해시대4 지도 그림을 열지 못했습니다 — {Dk4MapArt.LastError}";
+                    value = false;
+                }
+                else
+                {
+                    // 원본 해안선을 따르는 칸이 점마다 물인지 가르는 데 물 색 표를 쓴다.
+                    if (!_renderer.WaterPaletteReady && BuildWaterPalette() is { } water) _renderer.SetWaterPalette(water);
+                    // 투명한 먼바다 타일 밑에 까는 바다가 수심(뭍까지 몇 칸)으로 빛을 정한다.
+                    if (!_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);
+                    var (cells, sea, land) = art.Plan(_world, _terrain);
+                    _renderer.SetDk4Cells(cells, sea, land);
+                    _renderer.SetDk4Atlas(art.Mips);
+                }
+            }
+            _renderer.Dk4Art = value;
+            _dirty = true;
+        }
+    }
+
     /// <summary>뭍 세부 질감을 얹을지. 켜면 타일 부류 표를 한 번 짓는다.</summary>
     public bool LandDetail
     {
@@ -971,6 +1004,12 @@ public sealed class WorldMapHost : HwndHost
         if (_renderer.SeaDepthReady && BuildSeaDepth() is { } depth) _renderer.SetSeaDepth(depth);
         if (_renderer.TileKindsReady && BuildTileKinds() is { } kinds) _renderer.SetTileKinds(kinds);
         if (_renderer.WaterPaletteReady && BuildWaterPalette() is { } water) _renderer.SetWaterPalette(water);
+        // 운하 자리는 대항해시대4 그림에선 육지라 원본 그림으로 돌린다 — 칸 표를 다시 짓는다.
+        if (_renderer.Dk4ArtReady && Dk4MapArt.Open() is { } art)
+        {
+            var (cells, sea, land) = art.Plan(_world, _terrain);
+            _renderer.SetDk4Cells(cells, sea, land);
+        }
         _dirty = true;
     }
 
@@ -1182,8 +1221,8 @@ public sealed class WorldMapHost : HwndHost
         // 항적은 배 뒤로 벌어지며 스러지고 배는 출렁이므로, 켜 둔 동안에는 바다 효과처럼 프레임마다 다시 그린다.
         bool wake = SyncWake(dt, origin, now.TotalSeconds);
 
-        // 바다 입체 효과를 켜 두면 물결이 흐르므로 프레임마다 다시 그린다.
-        if (_renderer.SeaEffect || _renderer.HiResSea || wake)
+        // 바다 입체 효과를 켜 두면 물결이 흐르므로 프레임마다 다시 그린다. 대항해시대4 그림의 바다도 잔물결이 흐른다.
+        if (_renderer.SeaEffect || _renderer.HiResSea || _renderer.Dk4Art || wake)
         {
             _renderer.SeaTime = (float)now.TotalSeconds;
             _dirty = true;

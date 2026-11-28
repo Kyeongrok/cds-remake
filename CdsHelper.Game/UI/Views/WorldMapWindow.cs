@@ -4174,6 +4174,7 @@ public sealed class WorldMapWindow : Window
                 _host.PixelFilter = GameSettings.PixelFilter;
                 _host.ShipWake = GameSettings.ShipWake;
                 _host.LandDetail = GameSettings.LandDetail;
+                if (GameSettings.Dk4MapArt) _host.Dk4Art = true;
                 // 도시 분리는 늘 켠다 — 도시 그림을 바탕 지형 위에 따로 얹어야 고해상도 바다·세부 질감·도트 필터가 그림을 안 건드린다.
                 _host.CitySprites = true;
             }
@@ -4580,6 +4581,13 @@ public sealed class WorldMapWindow : Window
         {
             _host.HiResSea = on;
             GameSettings.HiResSea = on;
+        },
+        Dk4MapArtOn = () => GameSettings.Dk4MapArt,
+        SetDk4MapArt = on =>
+        {
+            GameSettings.Dk4MapArt = on;
+            _host.Dk4Art = on;
+            if (on && _started && !_host.Dk4Art) _status.Text = _host.Status;
         },
         LandDetailOn = () => _host.LandDetail,
         SetLandDetail = on =>

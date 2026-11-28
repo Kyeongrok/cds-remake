@@ -82,6 +82,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         Texture2D<float4> CityHi   : register(t19);
         Texture2D<float4> SpriteHi : register(t20);
         Texture2D<float4> ShipHi   : register(t21);
+        Texture2D<uint>   Dk4Map   : register(t22);
+        Texture2D<float4> Dk4Atlas : register(t23);
         SamplerState      Lin      : register(s0);
 
         cbuffer Frame : register(b0)
@@ -307,6 +309,44 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                           t3) / 6.0;
         }
 
+        float3 OpenSea(float2 cell, float3 shallow, float3 deep)
+        {
+            float2 cb = cell - 0.5;
+            int2   cq = int2(floor(cb));
+            float2 ct = cb - floor(cb);
+            float d = lerp(lerp(DepthAt(cq), DepthAt(cq + int2(1, 0)), ct.x),
+                           lerp(DepthAt(cq + int2(0, 1)), DepthAt(cq + int2(1, 1)), ct.x), ct.y);
+            float3 tone = lerp(shallow, deep, saturate((d - 1.0) / 5.0));
+
+            float t = Sea.x;
+            float2 drift = Flow.xy;
+            float grain = 0.55 * Noise((cell - drift * 0.25) * 21.0 + float2(t * 0.35, t * 0.10))
+                        + 0.45 * Noise((cell - drift * 0.5) * 8.5 - float2(t * 0.15, t * 0.22) + 7.0);
+            float3 sea = tone * (0.92 + 0.16 * grain);
+
+            float flow = Flow.z;
+            if (flow > 0.01)
+            {
+                float2 fd = FlowDir.xy;
+                float2 q = cell - drift;
+                float streak = 0.10 * Noise((q - fd * 0.66) * 7.0)
+                             + 0.15 * Noise((q - fd * 0.44) * 7.0)
+                             + 0.17 * Noise((q - fd * 0.22) * 7.0)
+                             + 0.16 * Noise(q * 7.0)
+                             + 0.17 * Noise((q + fd * 0.22) * 7.0)
+                             + 0.15 * Noise((q + fd * 0.44) * 7.0)
+                             + 0.10 * Noise((q + fd * 0.66) * 7.0);
+                streak = saturate((streak - 0.5) * 2.6 + 0.5);
+                sea *= 1.0 + flow * 0.34 * (streak - 0.5);
+                sea += flow * 0.09 * smoothstep(0.62, 0.90, streak);
+
+                float band = (dot(Ripple.xy, cell) - Ripple.z * Flow.w * 16.0) / 64.0;
+                sea *= 1.0 + flow * 0.06 * sin(band * 0.3926991);
+            }
+
+            return sea;
+        }
+
         float3 HiResSeaCore(float3 col, float2 cell, uint pal)
         {
             float2 g = cell * 16.0 - 0.5;
@@ -365,39 +405,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 land = lerp(land, cliff, saturate(rim));
             }
 
-            float2 cb = cell - 0.5;
-            int2   cq = int2(floor(cb));
-            float2 ct = cb - floor(cb);
-            float d = lerp(lerp(DepthAt(cq), DepthAt(cq + int2(1, 0)), ct.x),
-                           lerp(DepthAt(cq + int2(0, 1)), DepthAt(cq + int2(1, 1)), ct.x), ct.y);
-            float3 tone = lerp(float3(0.31, 0.44, 0.52), float3(0.21, 0.34, 0.43), saturate((d - 1.0) / 5.0));
-
-            float t = Sea.x;
-            float2 drift = Flow.xy;
-            float grain = 0.55 * Noise((cell - drift * 0.25) * 21.0 + float2(t * 0.35, t * 0.10))
-                        + 0.45 * Noise((cell - drift * 0.5) * 8.5 - float2(t * 0.15, t * 0.22) + 7.0);
-            float3 sea = tone * (0.92 + 0.16 * grain);
-
-            float flow = Flow.z;
-            if (flow > 0.01)
-            {
-                float2 fd = FlowDir.xy;
-                float2 q = cell - drift;
-                float streak = 0.10 * Noise((q - fd * 0.66) * 7.0)
-                             + 0.15 * Noise((q - fd * 0.44) * 7.0)
-                             + 0.17 * Noise((q - fd * 0.22) * 7.0)
-                             + 0.16 * Noise(q * 7.0)
-                             + 0.17 * Noise((q + fd * 0.22) * 7.0)
-                             + 0.15 * Noise((q + fd * 0.44) * 7.0)
-                             + 0.10 * Noise((q + fd * 0.66) * 7.0);
-                streak = saturate((streak - 0.5) * 2.6 + 0.5);
-                sea *= 1.0 + flow * 0.34 * (streak - 0.5);
-                sea += flow * 0.09 * smoothstep(0.62, 0.90, streak);
-
-                float band = (dot(Ripple.xy, cell) - Ripple.z * Flow.w * 16.0) / 64.0;
-                sea *= 1.0 + flow * 0.06 * sin(band * 0.3926991);
-            }
-
+            float3 sea = OpenSea(cell, float3(0.31, 0.44, 0.52), float3(0.21, 0.34, 0.43));
             return lerp(land, sea, edge);
         }
 
@@ -591,6 +599,44 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             return lerp(col, float3(0.90, 0.95, 0.97), saturate(foam * n * 0.62) * wet);
         }
 
+        // Dk4ArtNote in C#: DK4 tiles are 32px, 16 per atlas row, 6 mip levels (32..1)
+        float4 Dk4Texel(int2 gi, uint fallback)
+        {
+            int w32 = int(MapCells.x) * 32;
+            gi.x = int(uint(gi.x + w32) % uint(w32));
+            gi.y = clamp(gi.y, 0, int(MapCells.y) * 32 - 1);
+            int2 c = gi / 32;
+            uint t = Dk4Map.Load(int3(c, 0));
+            t = t == 65535u ? fallback : (t & 1023u);
+            int2 org = int2(int(t % 16u), int(t / 16u)) * 32;
+            return Dk4Atlas.Load(int3(org + (gi - c * 32), 0));
+        }
+
+        float4 Dk4Color(float2 cell, uint t)
+        {
+            float ppc = 1.0 / max(CellPerPixel.x, 1e-5);
+            if (ppc > 32.0)
+            {
+                float2 g = cell * 32.0 - 0.5;
+                int2 b = int2(floor(g));
+                float2 f = g - floor(g);
+                float4 a00 = Dk4Texel(b, t), a10 = Dk4Texel(b + int2(1, 0), t);
+                float4 a01 = Dk4Texel(b + int2(0, 1), t), a11 = Dk4Texel(b + int2(1, 1), t);
+                return lerp(lerp(a00, a10, f.x), lerp(a01, a11, f.x), f.y);
+            }
+            int lv = clamp(int(floor(log2(32.0 / ppc) + 0.5)), 0, 5);
+            int s = 32 >> lv;
+            int2 org = int2(int(t % 16u), int(t / 16u)) * s;
+            return Dk4Atlas.Load(int3(org + int2(frac(cell) * s), lv));
+        }
+
+        // DK4 open-sea tiles are fully transparent (the game paints water underneath); atlas is premultiplied
+        float3 Dk4Over(float4 c, float2 cell)
+        {
+            if (c.a >= 0.999) return c.rgb;
+            return c.rgb + OpenSea(cell, float3(0.24, 0.40, 0.50), float3(0.13, 0.25, 0.36)) * (1.0 - c.a);
+        }
+
         float4 PS(VSOut i) : SV_Target
         {
             float2 cellRaw = OriginCell + i.pos.xy * CellPerPixel;
@@ -600,9 +646,11 @@ public sealed unsafe class MapD3DRenderer : IDisposable
 
             int2 c    = int2(cell);
             uint tile = CellMap.Load(int3(c, 0));
+            uint dk4  = Extra.w > 0.5 ? Dk4Map.Load(int3(c, 0)) : 65535u;
+            bool art4 = dk4 != 65535u;
 
             bool swapped = false;
-            if (Ripple.z > 0)
+            if (Ripple.z > 0 && !art4)
             {
                 float p = (Ripple.x * float(c.x) + Ripple.y * float(c.y)
                            - Ripple.z * Ripple.w * 16.0) / 64.0;
@@ -619,7 +667,18 @@ public sealed unsafe class MapD3DRenderer : IDisposable
 
             float4 col;
             uint pal = 0u;
-            if (Detail < 0.5)      col = Avg1.Load(int3(org, 0));
+            if (art4)
+            {
+                uint t4 = dk4 & 1023u;
+                if ((dk4 & 32768u) != 0u)
+                {
+                    bool wetPx = Detail > 2.5 ? WaterOf(Atlas.Load(int3(org * 16 + int2(f * 16.0), 0))) > 0.5
+                                              : (dk4 & 8192u) != 0u;
+                    t4 = wetPx ? uint(FlowDir.z) : ((dk4 & 16384u) != 0u ? uint(FlowDir.w) : t4);
+                }
+                col = float4(Dk4Over(Dk4Color(cell, t4), cell), 1);
+            }
+            else if (Detail < 0.5) col = Avg1.Load(int3(org, 0));
             else if (Detail < 1.5) col = Avg2.Load(int3(org * 2 + int2(f * 2.0), 0));
             else if (Detail < 2.5) col = Avg4.Load(int3(org * 4 + int2(f * 4.0), 0));
             else
@@ -629,8 +688,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
                 col = Palette.Load(int3(int(pal), 0, 0));
             }
 
-            if (Extra.y > 0.5 && Detail > 2.5) col.rgb = LandDetail(col.rgb, cell, tile);
-            if (Sea.w > 0.5 && Detail > 2.5) col.rgb = HiResSea(col.rgb, cell, pal);
+            if (Extra.y > 0.5 && Detail > 2.5 && !art4) col.rgb = LandDetail(col.rgb, cell, tile);
+            if (Sea.w > 0.5 && Detail > 2.5 && !art4) col.rgb = HiResSea(col.rgb, cell, pal);
             if (SeaOn > 0.5) col.rgb = SeaShade(col.rgb, cell);
             float wet = saturate((col.b - max(col.r, col.g)) * 14.0 + 0.14);
 
@@ -701,9 +760,9 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         public fixed float Folk[MaxFolk * 4];       // x, y, 뱃머리(0~3), 배수
         public fixed float Route[MaxRoutePoints * 4]; // x, y, (0 · 1 번만 굵기 배수 · 짙기), 켜졌는지
         public float SeaTime, CloudSmooth, SeaBright, HiSea;
-        public float PixelOn, LandOn, CityOn, ExtraPad3;
+        public float PixelOn, LandOn, CityOn, Dk4On;
         public float FlowX, FlowY, FlowStrength, FlowTick;
-        public float FlowDirX, FlowDirY, FlowPad0, FlowPad1;
+        public float FlowDirX, FlowDirY, Dk4SeaTile, Dk4LandTile;
         public float ShipFxOn, ShipHiSide, ShipBobV, ShipPad;
         public fixed float Wake[MaxWake * 4];       // x, y(화면 점), 나이 0~1, 켜졌는지
     }
@@ -1250,6 +1309,74 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _cityHiSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
         _spriteHiSrv = CreateImmutable(new float[4], 1, 1, Format.R32G32B32A32_Float, sizeof(float) * 4);
         _shipHiSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
+        _dk4MapSrv = CreateImmutable(new ushort[] { Dk4MapArt.UseOriginal }, 1, 1, Format.R16_UInt, sizeof(ushort));
+        _dk4AtlasSrv = CreateImmutable(new uint[1], 1, 1, Format.B8G8R8A8_UNorm, sizeof(uint));
+    }
+
+    // Dk4ArtNote — 대항해시대4 지도 그림(모드 창). 칸 지도(t22)는 칸마다 DK4 타일 번호, 0xFFFF 면 그 칸은 원본 그림으로 간다.
+    // 0x8000 이 선 칸은 원본 해안선을 따른다 — 원본 타일 점이 물이면 DK4 바다 타일(FlowDir.z), 뭍이면 그 칸 DK4 타일(물 타일이면 들 타일 FlowDir.w).
+    // 축소해 원본 점을 못 짚을 때는 칸이 물인지(0x2000)로 가른다.
+    // 타일 그림(t23)은 512x2048 에 32점 타일 16열이고 밉 여섯 단계(32 · 16 · 8 · 4 · 2 · 1점)를 단다 — 화면 한 점에 맞는 단계를
+    // 셰이더가 Load 로 골라 쓴다(Sample 을 쓰면 이웃 타일이 번진다). 칸이 32점보다 크게 보이면 이웃 칸 타일까지 짚는 겹선형으로 늘린다.
+    // 그 칸에서는 원본 팔레트에 묶인 것(물결 타일 갈기 · 도트 필터 · 뭍 세부 질감 · 고해상도 바다)을 건너뛰고, 바다 입체 효과 · 도시 그림 ·
+    // 구름 · 배는 그대로 얹는다.
+    private ID3D11ShaderResourceView _dk4MapSrv = null!;
+    private ID3D11ShaderResourceView _dk4AtlasSrv = null!;
+
+    /// <summary>대항해시대4 지도 그림으로 그릴지. <see cref="SetDk4Art"/> 로 그림을 건 뒤에야 든다.</summary>
+    public bool Dk4Art { get; set; }
+
+    /// <summary>대항해시대4 그림 판을 이미 걸었는지.</summary>
+    public bool Dk4ArtReady { get; private set; }
+
+    /// <summary>대항해시대4 그림 판(밉 단계들)을 건다.</summary>
+    public void SetDk4Atlas(uint[][] mips)
+    {
+        var handles = new GCHandle[mips.Length];
+        try
+        {
+            var subs = new SubresourceData[mips.Length];
+            for (int l = 0; l < mips.Length; l++)
+            {
+                handles[l] = GCHandle.Alloc(mips[l], GCHandleType.Pinned);
+                subs[l] = new SubresourceData(handles[l].AddrOfPinnedObject(), (uint)((Dk4MapArt.AtlasWidth >> l) * sizeof(uint)));
+            }
+            using var tex = _device.CreateTexture2D(new Texture2DDescription
+            {
+                Width = Dk4MapArt.AtlasWidth,
+                Height = Dk4MapArt.AtlasHeight,
+                MipLevels = (uint)mips.Length,
+                ArraySize = 1,
+                Format = Format.B8G8R8A8_UNorm,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = ResourceUsage.Immutable,
+                BindFlags = BindFlags.ShaderResource,
+            }, subs);
+            var old = _dk4AtlasSrv;
+            _dk4AtlasSrv = _device.CreateShaderResourceView(tex);
+            old?.Dispose();
+        }
+        finally
+        {
+            foreach (var h in handles) if (h.IsAllocated) h.Free();
+        }
+        Dk4ArtReady = true;
+    }
+
+    private float _dk4SeaTile, _dk4LandTile;
+
+    /// <summary>
+    /// 칸마다 그릴 대항해시대4 타일과 원본 해안선을 따르는 칸에 깔 바다 · 들 타일(<see cref="Dk4MapArt.Plan"/>)을 건다.
+    /// 운하를 켜고 끄면 다시 건다. 원본 해안선을 따르는 칸은 물 색 표(<see cref="SetWaterPalette"/>)로 점마다 물인지 가른다.
+    /// </summary>
+    public void SetDk4Cells(ushort[] cells, int seaTile, int landTile)
+    {
+        if (cells.Length != Dk4MapArt.Width * Dk4MapArt.Height) return;
+        _dk4SeaTile = seaTile;
+        _dk4LandTile = landTile;
+        var old = _dk4MapSrv;
+        _dk4MapSrv = CreateImmutable(cells, Dk4MapArt.Width, Dk4MapArt.Height, Format.R16_UInt, sizeof(ushort));
+        old?.Dispose();
     }
 
     /// <summary>
@@ -1667,6 +1794,7 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             PixelOn = PixelFilter ? 1 : 0,
             LandOn = LandDetail && _tileKindsReady ? 1 : 0,
             CityOn = CitySprites && CityArtReady ? 1 : 0,
+            Dk4On = Dk4Art && Dk4ArtReady ? 1 : 0,
             SeaBright = SeaBrightness,
             OverlayX = overlayRect.X,
             OverlayY = overlayRect.Y,
@@ -1686,6 +1814,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
             FlowTick = FlowDrift.Tick,
             FlowDirX = FlowDrift.DirX,
             FlowDirY = FlowDrift.DirY,
+            Dk4SeaTile = _dk4SeaTile,
+            Dk4LandTile = _dk4LandTile,
             ShipFxOn = ShipFx ? 1 : 0,
             ShipHiSide = _shipHiSide,
             ShipBobV = ShipFx ? ShipBob : 0,
@@ -1713,7 +1843,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _ctx.PSSetShaderResources(0, [_cellSrv, _atlasSrv, _paletteSrv, _spriteSrv,
                                       _avgSrv[0], _avgSrv[1], _avgSrv[2], _overlaySrv,
                                       _nextSrv, _flowSrv, _arrowSrv, _cloudSrv, _folkSrv, _seaSrv, _cloudSoftSrv, _palWaterSrv, _tileKindSrv,
-                                      _cityMapSrv, _cityTexSrv, _cityHiSrv, _spriteHiSrv, _shipHiSrv]);
+                                      _cityMapSrv, _cityTexSrv, _cityHiSrv, _spriteHiSrv, _shipHiSrv,
+                                      _dk4MapSrv, _dk4AtlasSrv]);
         _ctx.PSSetSampler(0, _linear);
         _ctx.Draw(3, 0);
     }
@@ -1765,6 +1896,8 @@ public sealed unsafe class MapD3DRenderer : IDisposable
         _cityHiSrv?.Dispose();
         _spriteHiSrv?.Dispose();
         _shipHiSrv?.Dispose();
+        _dk4MapSrv?.Dispose();
+        _dk4AtlasSrv?.Dispose();
         _tileKindSrv?.Dispose();
         _linear?.Dispose();
         _folkSrv?.Dispose();
