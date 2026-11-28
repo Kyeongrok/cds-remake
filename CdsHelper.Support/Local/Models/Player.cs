@@ -988,12 +988,13 @@ public sealed class Player
     public void SetStoreExpansions(int count) => StoreExpansions = Math.Clamp(count, 0, 7);
 
     /// <summary>
-    /// 조합 「의뢰」(목재 배송)로 풀어 둔 보관함 넓히기 번호 — k 면 k 번째 넓히기까지 풀렸다. 원본에 없는 칸이다.
+    /// 조합 「의뢰」(목재 배송)로 풀어 둔 보관함 넓히기의 <b>작위</b> — 그 작위가 요구하는 넓히기까지 풀렸다
+    /// (Nobility.NextStoreRank 값, 공작 8 까지). 원본에 없는 칸이다.
     /// </summary>
     public int StoreQuestCleared { get; private set; }
 
-    /// <summary>풀어 둔 넓히기 번호를 적는다.</summary>
-    public void SetStoreQuestCleared(int count) => StoreQuestCleared = Math.Clamp(count, 0, 7);
+    /// <summary>풀어 둔 넓히기의 작위를 적는다. 예전에는 7 로 잘려 마지막(공작 8) 넓히기가 목재를 넘겨도 안 풀렸다(버그 리포트 #85).</summary>
+    public void SetStoreQuestCleared(int rank) => StoreQuestCleared = Math.Clamp(rank, 0, 9);
 
     /// <summary>조합 「의뢰」(목재 배송)를 맡아 수행하는 중인지.</summary>
     public bool StoreQuestTaken { get; private set; }
