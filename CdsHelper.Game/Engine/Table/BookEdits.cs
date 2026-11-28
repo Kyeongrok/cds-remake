@@ -1,3 +1,6 @@
+using System.IO;
+using CdsHelper.Support.Local.Helpers;
+
 namespace CdsHelper.Game.Local.Helpers;
 
 /// <summary>
@@ -66,6 +69,23 @@ public static class BookEdits
 
     private static Dictionary<int, BookTable.Book> Map => _map ??= Load();
 
+    /// <summary>
+    /// 이 PC 에서 더하거나 고친 책을 따로 적어 두는 자리 — <c>%APPDATA%\CdsHelper\books-user.json</c>.
+    /// </summary>
+    /// <remarks>
+    /// 기본 자리(<see cref="TableCache.Folder"/>)는 설치 폴더(<c>…\current\exe-tables</c>)라 업데이트가 통째로 갈아 끼운다 —
+    /// 커스텀 발견물을 실으려고 더한 책이 업데이트마다 사라졌다(제보). 발견물 본문은 <see cref="UserDiscoveries"/> 가
+    /// 이미 %APPDATA% 에 두므로 책만 빠져, 힌트를 실을 곳이 없어졌다. 이제 배포본 줄과 다른 줄은 여기에도 적고,
+    /// 읽을 때 배포본 위에 얹는다.
+    /// </remarks>
+    private static string UserFile => UserDataFolder.Combine("books-user.json");
+
+    private static readonly System.Text.Json.JsonSerializerOptions UserJson = new()
+    {
+        WriteIndented = true,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     private static Dictionary<int, BookTable.Book> Load()
     {
         var saved = TableCache.Read<Snapshot>(CacheName);
@@ -77,12 +97,54 @@ public static class BookEdits
             if (string.IsNullOrEmpty(row.Uuid)) { map[row.Index] = row with { Uuid = NewUuid() }; stamped = true; }
             else map[row.Index] = row;
         }
+
+        // 이 PC 에서 더한 책을 얹는다. 같은 고유 번호의 책이 배포본에 이미 있으면 그 자리를, 번호가 배포본의 다른 책과
+        // 겹치면(업데이트가 그 번호에 책을 더함) 빈 번호를 새로 받는다 — 발견물은 책을 고유 번호로 잇으니 번호가 바뀌어도 된다.
+        foreach (var row in ReadUserRows())
+        {
+            int at = row.Index;
+            int? same = string.IsNullOrEmpty(row.Uuid) ? null
+                      : map.Where(p => p.Value.Uuid == row.Uuid).Select(p => (int?)p.Key).FirstOrDefault();
+            if (same is int found)
+                at = found;
+            else if (map.TryGetValue(at, out var other) && !string.IsNullOrEmpty(other.Uuid) && other.Uuid != row.Uuid
+                     && !string.IsNullOrEmpty(row.Uuid))
+                at = Math.Max(map.Keys.DefaultIfEmpty(0).Max(), row.Index) + 1;
+            map[at] = row with { Index = at };
+        }
+
         if (stamped)
         {
             var rows = map.OrderBy(p => p.Key).Select(p => p.Value).ToList();
             TableCache.Write(CacheName, new TableCache.Cached<Snapshot>($"{rows.Count}권", new Snapshot(rows), "사람이 더한 것"));
         }
         return map;
+    }
+
+    private static List<BookTable.Book> ReadUserRows()
+    {
+        try
+        {
+            if (!File.Exists(UserFile)) return [];
+            return System.Text.Json.JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(UserFile))?.Books ?? [];
+        }
+        catch (Exception) { return []; }
+    }
+
+    /// <summary>배포본(기본 자리 · 팩) 줄과 다른 줄만 이 PC 자리에 적는다 — 배포본이 같은 줄을 고쳐 내면 그것을 받게.</summary>
+    private static void SaveUserRows()
+    {
+        try
+        {
+            var shipped = (TableCache.ReadBase<Snapshot>(CacheName)?.Data.Books ?? []).ToDictionary(b => b.Index);
+            string Key(BookTable.Book b) => System.Text.Json.JsonSerializer.Serialize(b);
+            var mine = Map.OrderBy(p => p.Key).Select(p => p.Value)
+                          .Where(b => !shipped.TryGetValue(b.Index, out var s) || Key(s) != Key(b)).ToList();
+            if (mine.Count == 0) { if (File.Exists(UserFile)) File.Delete(UserFile); return; }
+            Directory.CreateDirectory(Path.GetDirectoryName(UserFile)!);
+            File.WriteAllText(UserFile, System.Text.Json.JsonSerializer.Serialize(new Snapshot(mine), UserJson));
+        }
+        catch (Exception) { }
     }
 
     private static string NewUuid() => Guid.NewGuid().ToString();
@@ -96,6 +158,7 @@ public static class BookEdits
         var rows = Map.OrderBy(p => p.Key).Select(p => p.Value).ToList();
         TableCache.Write(CacheName, new TableCache.Cached<Snapshot>(
             $"{rows.Count}권", new Snapshot(rows), "사람이 더한 것"));
+        SaveUserRows();
         Changed?.Invoke();
     }
 }
