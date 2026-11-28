@@ -266,8 +266,12 @@ public sealed class TavernGuests
     /// 앞서 앉은 수를 뺀 자리에서 <c>min(규모, rand(5 - 앉은 수)) + 1</c> 명만 세운다(<c>0x004A1B07</c>~<c>0x004A1B29</c>).
     /// 음수면 남는 자리를 다 채운다.
     /// </param>
+    /// <param name="maidBodies">
+    /// 여급마다 손으로 씌운 전신 그림(손님 번호, <see cref="BarmaidEdits.BodyOf"/>) — <paramref name="maids"/> 와 같은 차례다.
+    /// −1 이거나 빠졌으면 씨앗으로 고른 그림이다. 씌운 그림은 문화권을 가리지 않는다(요청 — 버그 리포트 #86).
+    /// </param>
     public IReadOnlyList<Slot> Seat(string? culture, IReadOnlyList<Sitter> persons,
-                                    IReadOnlyList<int> maids, int scale = -1)
+                                    IReadOnlyList<int> maids, int scale = -1, IReadOnlyList<int>? maidBodies = null)
     {
         if (!Ranges.TryGetValue(culture ?? "", out var range)) range = Ranges["이베리아"];
 
@@ -282,8 +286,15 @@ public sealed class TavernGuests
         // 여급 — 그 문화권에 여자가 없으면 그냥 건너뛴다(구간이 열한 명뿐인 문화권도 있다).
         // 여급은 그 마을 사람이라 늘 같은 모습이어야 하므로 씨앗으로 고정한다. 여럿이면 겹치지 않게 다음 그림으로 민다.
         var maidArt = new HashSet<int>();
-        for (int m = 0; m < maids.Count && women.Count > 0 && seats.Count < MaxOnScreen - 1; m++)
+        for (int m = 0; m < maids.Count && seats.Count < MaxOnScreen - 1; m++)
         {
+            if (maidBodies != null && m < maidBodies.Count && At(maidBodies[m]) is { } chosen)
+            {
+                maidArt.Add(chosen.Index);
+                seats.Add(new Slot(chosen, -1, Maid: m));
+                continue;
+            }
+            if (women.Count == 0) continue;
             int at = new Random(maids[m]).Next(women.Count);
             for (int step = 0; step < women.Count && !maidArt.Add(women[at]); step++) at = (at + 1) % women.Count;
             seats.Add(new Slot(_guests[women[at]], -1, Maid: m));
@@ -324,6 +335,12 @@ public sealed class TavernGuests
             if (_guests[range.Start + i].Female) women.Add(range.Start + i);
         return women.Count == 0 ? null : _guests[women[new Random(seed).Next(women.Count)]];
     }
+
+    /// <summary>손님 그림 번호로 한 장 — 범위 밖이면 null.</summary>
+    public Guest? At(int index) => index >= 0 && index < _guests.Length ? _guests[index] : null;
+
+    /// <summary>여자 손님 그림 전부(문화권 가리지 않고, 번호 차례) — 여급 전신 그림을 고를 때 쓴다.</summary>
+    public IReadOnlyList<Guest> Women => [.. _guests.Where(g => g.Female)];
 
     /// <summary>음수가 나오지 않는 나머지. 세이브 번호는 늘 0 이상이지만 눌러 둔다.</summary>
     private static int Mod(int value, int n) => ((value % n) + n) % n;

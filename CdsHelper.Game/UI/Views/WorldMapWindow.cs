@@ -4719,6 +4719,8 @@ public sealed class WorldMapWindow : Window
         Faces = _game.Faces,
         // 「여급」 탭에서 그림을 새로 넣으면 초상화 벌을 다시 읽는다 — 들고 있던 벌에는 새 얼굴이 없다.
         ReloadFaces = () => { _game.ReloadFaces(); return _game.Faces; },
+        Guests = _game.Guests,
+        CultureOf = _game.CultureOf,
     });
 
     /// <summary>

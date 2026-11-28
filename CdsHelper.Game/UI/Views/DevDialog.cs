@@ -99,6 +99,12 @@ public sealed partial class DevDialog : GameWindow
         /// <summary>초상화 벌을 다시 읽어 낸다 — 「여급」 탭에서 그림을 새로 넣은 뒤 부른다.</summary>
         public Func<Portraits?>? ReloadFaces { get; init; }
 
+        /// <summary>술집 손님 그림 — 「여급」 탭이 여급의 전신 그림을 보이고 바꾼다. 없으면 전신 줄이 안 선다.</summary>
+        public TavernGuests? Guests { get; init; }
+
+        /// <summary>도시 번호 → 문화권 이름 — 여급의 원래 전신 그림(그 마을 문화권 여자 가운데 한 장)을 고를 때 쓴다.</summary>
+        public Func<int, string?>? CultureOf { get; init; }
+
         /// <summary>아이템 표 — 「특수템추가」 탭이 이름을 읽는다. 못 읽었으면 원본 이름을 그대로 쓴다.</summary>
         public ItemTable? Items { get; init; }
 
@@ -432,7 +438,8 @@ public sealed partial class DevDialog : GameWindow
         if (options.HistoryEvents?.Invoke() is { Count: > 0 } events)
             pages.Add(("역사이벤트", HistoryPage(events)));
         if (options.Barmaids is { } maids)
-            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"), options.Faces, options.ReloadFaces)));
+            pages.Add(("여급", BarmaidPage(maids, options.CityName ?? (c => $"도시 {c}"), options.Faces, options.ReloadFaces,
+                                                  options.Guests, options.CultureOf)));
         pages.Add(("선박", ShipsPage()));
         pages.Add(("대항2", dh2));
         pages.Add(("애드온", addOns));
@@ -1129,7 +1136,8 @@ public sealed partial class DevDialog : GameWindow
     /// (<see cref="Engine.Town.Barmaids.Suits"/>). 언어(<c>+0x20</c> 비트)는 그녀가 하는 말이다 — 제독 혼자 그 말이 3 이상이어야 설득 · 선물 · 프로포즈 줄이 서고(<c>0x00466850</c>), 아내가 되면 자식에게 가르친다.
     /// </remarks>
     private FrameworkElement BarmaidPage(BarmaidTable table, Func<int, string> cityName, Portraits? faces,
-                                         Func<Portraits?>? reloadFaces)
+                                         Func<Portraits?>? reloadFaces, TavernGuests? guests = null,
+                                         Func<int, string?>? cultureOf = null)
     {
         var page = new StackPanel { Margin = new Thickness(12, 10, 12, 4), Width = 760 };
         var find = Field();
@@ -1195,6 +1203,16 @@ public sealed partial class DevDialog : GameWindow
             DockPanel.SetDock(image, Dock.Left);
             row.Children.Add(image);
             line.Children.Add(FaceEditor(her.Id, her.Face, ShowFace));
+            if (guests != null)
+            {
+                // 줄 오른쪽에 전신 그림 — 술집에 서는 모습이고, 아내가 되면 자택에도 이 모습으로 선다(요청 — 버그 리포트 #86).
+                var full = new Image { Margin = new Thickness(8, 0, 0, 0), Opacity = dim ? 0.6 : 1, VerticalAlignment = VerticalAlignment.Top };
+                RenderOptions.SetBitmapScalingMode(full, BitmapScalingMode.NearestNeighbor);
+                DockPanel.SetDock(full, Dock.Right);
+                row.Children.Add(full);
+                var own = guests.MaidArt(cultureOf?.Invoke(her.City), TavernGuests.MaidSeed(her.City, her.Id));
+                line.Children.Add(BodyEditor(her.Id, own, full));
+            }
             row.Children.Add(line);
             lines.Add((row, $"{head} {body} {taste}"));
             list.Children.Add(row);
@@ -1244,6 +1262,72 @@ public sealed partial class DevDialog : GameWindow
         });
         Filter();
         return page;
+
+        // 전신 그림 바꾸기(요청 — 버그 리포트 #86) — 술집 손님 그림 가운데 여자 그림을 문화권 가리지 않고 고른다.
+        // ◀ ▶ 로 넘기거나 번호를 넣는다. 「원래 전신」은 씌운 것만 걷어 그 마을 문화권 그림으로 돌아간다.
+        FrameworkElement BodyEditor(int id, TavernGuests.Guest? own, Image full)
+        {
+            var women = guests!.Women;
+            var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 4, 0, 0) };
+            var number = Field();
+            number.Width = 70;
+            FrameworkElement? back = null;
+            void Show()
+            {
+                var art = guests.At(BarmaidEdits.BodyOf(id)) ?? own;
+                number.Text = art is { } a ? $"{a.Index}" : "";
+                full.Source = null;
+                if (art is { } g && guests.TryGetBgra(g) is { } px)
+                {
+                    var bmp = System.Windows.Media.Imaging.BitmapSource.Create(g.Width, g.Height, 96, 96, PixelFormats.Bgra32, null, px, g.Width * 4);
+                    bmp.Freeze();
+                    full.Source = bmp;
+                    full.Width = g.Width;
+                    full.Height = g.Height;
+                }
+                if (back != null) back.Visibility = BarmaidEdits.BodyOf(id) >= 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            void Put(int value)
+            {
+                BarmaidEdits.SetBody(id, value);
+                Show();
+            }
+            void Step(int by)
+            {
+                if (women.Count == 0) return;
+                int now = int.TryParse(number.Text.Trim(), out int n) ? n : -1;
+                int at = -1;
+                for (int i = 0; i < women.Count; i++) if (women[i].Index == now) { at = i; break; }
+                at = at < 0 ? 0 : ((at + by) % women.Count + women.Count) % women.Count;
+                Put(women[at].Index);
+            }
+            bar.Children.Add(new TextBlock
+            {
+                Text = "전신 번호", Foreground = GameUi.Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center,
+            });
+            bar.Children.Add(number);
+            var prev = GameUi.PushButton("◀", () => Step(-1), 34);
+            prev.Margin = new Thickness(6, 0, 0, 0);
+            bar.Children.Add(prev);
+            bar.Children.Add(GameUi.PushButton("▶", () => Step(1), 34));
+            var change = GameUi.PushButton("바꾸기", () =>
+            {
+                if (!int.TryParse(number.Text.Trim(), out int want)) return;
+                if (guests.At(want) is not { Female: true })
+                {
+                    ConfirmDialog.Tell(this, $"여자 전신 그림 {want}번이 없습니다");
+                    return;
+                }
+                Put(want);
+            }, 70);
+            change.Margin = new Thickness(6, 0, 0, 0);
+            bar.Children.Add(change);
+            back = GameUi.PushButton("원래 전신", () => Put(-1), 80);
+            back.Margin = new Thickness(6, 0, 0, 0);
+            bar.Children.Add(back);
+            Show();
+            return bar;
+        }
 
         // 얼굴 바꾸기(요청 — 여급 그림이 마음에 안 들 때) — 여자 초상화 번호를 넣어 고르거나, 그림을 새로 넣어 씌운다.
         // 원래 얼굴은 씌운 것만 걷는다. 술집 · 수첩 · 대화 모두 표(BarmaidTable.Barmaids)를 거쳐 바뀐 얼굴을 쓴다.

@@ -10,6 +10,7 @@ namespace CdsHelper.Game.Local.Helpers;
 /// (<see cref="FortuneCodes"/>). 자리마다 여급이 고르게 있지 않아 — 열둘·열셋·열다섯은
 /// 둘뿐이고 셋·여섯은 아홉이다 — 쏠린 데를 손볼 때 쓴다.
 /// 얼굴은 여급 수첩에서 바꾼다 — 여자 초상화 번호이고, 궁합 코드와는 따로 논다.
+/// 전신 그림(술집에 서고, 아내가 되면 자택에 서는 작은 그림)은 개발 창 「여급」 탭에서 바꾼다.
 ///
 /// 고친 것(<c>barmaids-edits.json</c>)은 표 자리(<c>exe-tables</c>, 설치판은 <c>%LOCALAPPDATA%\CdsHelper\current\exe-tables</c> — 업데이트가 갈아 끼운다)에 적고, 개발도구에서 커스텀 팩을 골라 두면 그 팩 폴더(<c>%APPDATA%\CdsHelper\packs</c>)에 고친 줄만 적어 업데이트 뒤에도 남는다(<see cref="CustomPacks"/>). 적어 둔
 /// 여급표(<c>여급표.json</c>)는 EXE 를 읽어 구운 본이라 손대지 않는다.
@@ -20,7 +21,9 @@ public static class BarmaidEdits
     private const string CacheName = "여급-고친것";
 
     /// <summary>고쳐 둔 한 줄. 안 고친 칸은 −1 이다(얼굴 칸이 없던 파일도 −1 로 읽는다).</summary>
-    public readonly record struct Entry(int Id, int Fortune, int Face = -1);
+    /// <param name="Body">술집 · 자택에 서는 작은 전신 그림(손님 그림 번호 0~145, <see cref="TavernGuests"/>). 안 고쳤으면 −1.</param>
+    [method: System.Text.Json.Serialization.JsonConstructor]
+    public readonly record struct Entry(int Id, int Fortune, int Face = -1, int Body = -1);
 
     /// <summary>JSON 으로 적어 두는 알맹이.</summary>
     internal sealed record Snapshot(List<Entry> Barmaids);
@@ -42,6 +45,9 @@ public static class BarmaidEdits
     /// <summary>그 여급에 씌워 둔 얼굴(여자 초상화 번호). 안 고쳤으면 −1.</summary>
     public static int FaceOf(int id) => Map.TryGetValue(id, out var row) ? row.Face : -1;
 
+    /// <summary>그 여급에 씌워 둔 전신 그림(손님 그림 번호). 안 고쳤으면 −1.</summary>
+    public static int BodyOf(int id) => Map.TryGetValue(id, out var row) ? row.Body : -1;
+
     /// <summary>그 여급의 코드를 갈아 씌운다. −1 이면 씌운 것을 걷는다.</summary>
     public static void Set(int id, int fortune) =>
         Put(id, row => row with { Fortune = fortune < 0 ? -1 : Math.Clamp(fortune, 0, FortuneCodes.Slots * 2 - 1) });
@@ -49,12 +55,15 @@ public static class BarmaidEdits
     /// <summary>그 여급의 얼굴을 갈아 씌운다. −1 이면 씌운 것을 걷는다.</summary>
     public static void SetFace(int id, int face) => Put(id, row => row with { Face = Math.Max(-1, face) });
 
-    /// <summary>한 줄을 고친다 — 코드도 얼굴도 안 씌운 줄이면 지운다.</summary>
+    /// <summary>그 여급의 전신 그림을 갈아 씌운다(요청 — 버그 리포트 #86). −1 이면 씌운 것을 걷는다.</summary>
+    public static void SetBody(int id, int body) => Put(id, row => row with { Body = Math.Max(-1, body) });
+
+    /// <summary>한 줄을 고친다 — 코드도 얼굴도 전신도 안 씌운 줄이면 지운다.</summary>
     private static void Put(int id, Func<Entry, Entry> change)
     {
         if (id < 0) return;
         var row = change(Map.TryGetValue(id, out var had) ? had : new Entry(id, -1));
-        if (row.Fortune < 0 && row.Face < 0) Map.Remove(id);
+        if (row.Fortune < 0 && row.Face < 0 && row.Body < 0) Map.Remove(id);
         else Map[id] = row;
         Save();
     }
@@ -74,7 +83,7 @@ public static class BarmaidEdits
         var saved = TableCache.Read<Snapshot>(CacheName);
         var map = new Dictionary<int, Entry>();
         foreach (var row in saved?.Data.Barmaids ?? [])
-            if (row.Id >= 0 && (row.Fortune >= 0 || row.Face >= 0)) map[row.Id] = row;
+            if (row.Id >= 0 && (row.Fortune >= 0 || row.Face >= 0 || row.Body >= 0)) map[row.Id] = row;
         return map;
     }
 

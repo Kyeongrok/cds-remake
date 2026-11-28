@@ -743,7 +743,8 @@ internal sealed class TavernMenu(Window view, Engine.Game game, int cityId, stri
         Shuffle(maids, _game.Random);
 
         foreach (var seat in book.Seat(_culture, keys, [.. maids.Select(m => TavernGuests.MaidSeed(_cityId, m.Id))],
-                                       scale: _game.CityRows?.ScaleOf(_cityId) ?? -1))
+                                       scale: _game.CityRows?.ScaleOf(_cityId) ?? -1,
+                                       maidBodies: [.. maids.Select(m => BarmaidEdits.BodyOf(m.Id))]))
         {
             var bgra = book.TryGetBgra(seat.Art);
             if (bgra == null) continue;

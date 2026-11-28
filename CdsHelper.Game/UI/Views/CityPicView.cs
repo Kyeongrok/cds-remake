@@ -1929,7 +1929,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
 
         // 술집 손님처럼 <b>작은 전신 그림</b>으로 선다 — 그 여급이 제 마을 술집에 서던 그림 그대로다
         // (그 마을 문화권 여자 가운데 마을 · 여급 번호로 고른 한 장, TavernGuests.MaidArt). 그림을 못 읽으면 얼굴로 물러선다.
-        if (_game.Guests?.MaidArt(_game.CultureOf(her.City), TavernGuests.MaidSeed(her.City, her.Id)) is { } art
+        // 개발 창 「여급」 탭에서 씌운 전신 그림이 먼저다(요청 — 버그 리포트 #86).
+        if ((_game.Guests?.At(BarmaidEdits.BodyOf(her.Id))
+             ?? _game.Guests?.MaidArt(_game.CultureOf(her.City), TavernGuests.MaidSeed(her.City, her.Id))) is { } art
             && _game.Guests.TryGetBgra(art) is { } body)
             return [new(body, art.Width, art.Height, _player.Spouse, TalkToWife)];
 
