@@ -2019,6 +2019,9 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
             _photoWindow = null;
             _bgm?.Play(_cityTrack);
             _guests?.Left();
+            // 시설에서 함대 · 부하가 바뀌었을 수 있다(항구 함대편성, 술집 부하 들이기 따위) — 나설 때 쪽지를 고쳐 쓴다.
+            RefreshShipLabel();
+            _skillNote?.Refresh(_game);
 
             // 이번에 든 후원자 건물에서 계약을 맺었으면 나설 때 「후원자 건물 나섬」(갈래 5)을 올린다 — 원본의
             // 나서기(0x0044E6C0)는 나가기 줄 · ESC · 설득 끝 어느 길로 나서든 돌고, [+0xC0](계약을 맺음, 0x004AF3C9)이
@@ -2966,12 +2969,14 @@ public sealed class CityPicView : GameWindow, ITownScreen, IGateStage
                           c => (_game.Goods?.Find(c.Kind)?.Name ?? $"교역품 {c.Kind}",
                                 c.Origin >= 0 ? $"{_game.CityName(c.Origin)}산" : ""));
 
-    void ITownScreen.BuyShip() => Yard.BuyShip();
-    void ITownScreen.SpecialOrder() => Yard.SpecialOrder();
+    // 배를 사고팔고 고치면 함대 쪽지를 곧바로 고쳐 쓴다 — 도시 창 Activated 만 믿었더니, 구입 창이 닫히면
+    // 시설 명령 창이 초점을 받아 도시 창이 활성화되지 않아 쪽지가 옛 함대로 남았다(버그 리포트 #84).
+    void ITownScreen.BuyShip() { Yard.BuyShip(); RefreshShipLabel(); }
+    void ITownScreen.SpecialOrder() { Yard.SpecialOrder(); RefreshShipLabel(); }
     bool ITownScreen.CanSpecialOrder => Yard.CanSpecialOrder;
-    void ITownScreen.SellShip() => Yard.SellShip();
-    void ITownScreen.RepairShip() => Yard.RepairShip();
-    void ITownScreen.RefitShip() => Yard.RefitShip();
+    void ITownScreen.SellShip() { Yard.SellShip(); RefreshShipLabel(); }
+    void ITownScreen.RepairShip() { Yard.RepairShip(); RefreshShipLabel(); }
+    void ITownScreen.RefitShip() { Yard.RefitShip(); RefreshShipLabel(); }
 
     void ITownScreen.BuyGoods() => Shop.Buy();
     void ITownScreen.SellGoods() => Shop.Sell();
